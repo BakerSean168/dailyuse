@@ -1,0 +1,547 @@
+﻿node.exe : (node:36412) [DEP0169] DeprecationWarning: `url.parse()` behavior is
+ not standardized and prone to errors that have security implications. Use the 
+WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+所在位置 D:\scoop\apps\nvm\current\nodejs\nodejs\pnpm.ps1:16 字符: 5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:36412) [D...ulnerabilities. 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ NX   Running target build for project api and 17 tasks it depends on:
+
+
+
+> nx run contracts:build  [local cache]
+
+
+> nx run database:build  [local cache]
+
+
+> nx run utils:build  [local cache]
+
+
+> nx run http-client:build  [local cache]
+
+
+> nx run domain-shared:build  [local cache]
+
+
+> nx run patterns:build  [local cache]
+
+
+> nx run governance:build  [local cache]
+
+
+> nx run goal:build  [local cache]
+
+
+> nx run notification:build  [local cache]
+
+
+> nx run setting:build  [local cache]
+
+
+> nx run repository:build  [local cache]
+
+
+> nx run authentication:build
+
+> pnpm tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/application-server/index.ts, src/electron-entry/index.ts, src/domain-server/index.ts, src/domain-shared/index.ts, src/infrastructure-client/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\authentication\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\index.js                       [22m[32m85.76 KB[39m
+[32mESM[39m [1mdist\application-server\index.js    [22m[32m64.67 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js        [22m[32m735.00 B[39m
+[32mESM[39m [1mdist\domain-shared\index.js         [22m[32m28.03 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js [22m[32m4.65 KB[39m
+[32mESM[39m [1mdist\api\index.js                   [22m[32m86.96 KB[39m
+[32mESM[39m [1mdist\domain-server\index.js         [22m[32m60.01 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js [22m[32m81.35 KB[39m
+[32mESM[39m 鈿★笍 Build success in 33ms
+[34mDTS[39m Build start
+src/api/module.ts(103,73): error TS2345: Argument of type '{}' is not assignable to parameter of type 'void'.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+> pnpm tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/application-server/index.ts, src/electron-entry/index.ts, src/domain-server/index.ts, src/domain-shared/index.ts, src/infrastructure-client/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\authentication\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\index.js                       [22m[32m85.76 KB[39m
+[32mESM[39m [1mdist\application-server\index.js    [22m[32m64.67 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js        [22m[32m735.00 B[39m
+[32mESM[39m [1mdist\domain-shared\index.js         [22m[32m28.03 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js [22m[32m4.65 KB[39m
+[32mESM[39m [1mdist\api\index.js                   [22m[32m86.96 KB[39m
+[32mESM[39m [1mdist\domain-server\index.js         [22m[32m60.01 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js [22m[32m81.35 KB[39m
+[32mESM[39m 鈿★笍 Build success in 33ms
+[34mDTS[39m Build start
+src/api/module.ts(103,73): error TS2345: Argument of type '{}' is not assignable to parameter of type 'void'.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+Warning: command "pnpm tsup" exited with non-zero status code
+> nx run account:build
+
+> tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/application-client/index.ts, src/application-server/index.ts, src/domain-client/index.ts, src/domain-server/index.ts, src/domain-shared/index.ts, src/electron-entry/index.ts, src/infrastructure-client/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\account\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\infrastructure-server\index.js     [22m[32m499.00 B[39m
+[32mESM[39m [1mdist\index.js                           [22m[32m1.40 KB[39m
+[32mESM[39m [1mdist\chunk-QG5SXVT4.js                  [22m[32m1.32 KB[39m
+[32mESM[39m [1mdist\application-server\index.js        [22m[32m578.00 B[39m
+[32mESM[39m [1mdist\api\index.js                       [22m[32m4.43 KB[39m
+[32mESM[39m [1mdist\chunk-XE4E6RUY.js                  [22m[32m2.23 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js             [22m[32m433.00 B[39m
+[32mESM[39m [1mdist\domain-shared\index.js             [22m[32m372.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js             [22m[32m223.00 B[39m
+[32mESM[39m [1mdist\chunk-42PBM2OA.js                  [22m[32m2.00 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js            [22m[32m1.78 KB[39m
+[32mESM[39m [1mdist\chunk-S2QU4M34.js                  [22m[32m13.99 KB[39m
+[32mESM[39m [1mdist\chunk-SGKKHPTM.js                  [22m[32m6.98 KB[39m
+[32mESM[39m [1mdist\chunk-2GUGXCNZ.js                  [22m[32m5.27 KB[39m
+[32mESM[39m [1mdist\chunk-EQVQU6FT.js                  [22m[32m13.43 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\index.js.map                       [22m[32m1.54 KB[39m
+[32mESM[39m [1mdist\chunk-QG5SXVT4.js.map              [22m[32m3.08 KB[39m
+[32mESM[39m [1mdist\api\index.js.map                   [22m[32m10.98 KB[39m
+[32mESM[39m [1mdist\application-server\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-XE4E6RUY.js.map              [22m[32m5.79 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-shared\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-42PBM2OA.js.map              [22m[32m4.23 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js.map        [22m[32m3.72 KB[39m
+[32mESM[39m [1mdist\chunk-S2QU4M34.js.map              [22m[32m28.92 KB[39m
+[32mESM[39m [1mdist\chunk-SGKKHPTM.js.map              [22m[32m14.66 KB[39m
+[32mESM[39m [1mdist\chunk-2GUGXCNZ.js.map              [22m[32m10.50 KB[39m
+[32mESM[39m [1mdist\chunk-EQVQU6FT.js.map              [22m[32m29.77 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js     [22m[32m424.00 B[39m
+[32mESM[39m [1mdist\application-client\index.js        [22m[32m399.00 B[39m
+[32mESM[39m [1mdist\chunk-V6TY7KAL.js                  [22m[32m383.00 B[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\application-client\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-V6TY7KAL.js.map              [22m[32m71.00 B[39m
+[32mESM[39m 鈿★笍 Build success in 37ms
+[34mDTS[39m Build start
+src/api/module.ts(52,34): error TS2322: Type 'Promise<SuccessResult<AccountClientDTO | null>>' is not assignable to type 'Promise<Result<AccountClientDTO>>'.
+  Type 'SuccessResult<AccountClientDTO | null>' is not assignable to type 'Result<AccountClientDTO>'.
+    Type 'SuccessResult<AccountClientDTO | null>' is not assignable to type 'SuccessResult<AccountClientDTO>'.
+      Type 'AccountClientDTO | null' is not assignable to type 'AccountClientDTO'.
+        Type 'null' is not assignable to type 'AccountClientDTO'.
+src/api/module.ts(53,43): error TS2322: Type 'Promise<SuccessResult<UpdateProfileResult>>' is not assignable to type 'Promise<Result<AccountClientDTO>>'.
+  Type 'SuccessResult<UpdateProfileResult>' is not assignable to type 'Result<AccountClientDTO>'.
+    Type 'SuccessResult<UpdateProfileResult>' is not assignable to type 'SuccessResult<AccountClientDTO>'.
+      Type 'UpdateProfileResult' is missing the following properties from type 'AccountClientDTO': id, status, profile, settings, and 6 more.
+src/api/module.ts(55,42): error TS2322: Type 'Promise<SuccessResult<CloseAccountResult>>' is not assignable to type 'Promise<Result<void>>'.
+  Type 'SuccessResult<CloseAccountResult>' is not assignable to type 'Result<void>'.
+    Type 'SuccessResult<CloseAccountResult>' is not assignable to type 'SuccessResult<void>'.
+      Type 'CloseAccountResult' is not assignable to type 'void'.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+> tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/application-client/index.ts, src/application-server/index.ts, src/domain-client/index.ts, src/domain-server/index.ts, src/domain-shared/index.ts, src/electron-entry/index.ts, src/infrastructure-client/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\account\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\infrastructure-server\index.js     [22m[32m499.00 B[39m
+[32mESM[39m [1mdist\index.js                           [22m[32m1.40 KB[39m
+[32mESM[39m [1mdist\chunk-QG5SXVT4.js                  [22m[32m1.32 KB[39m
+[32mESM[39m [1mdist\application-server\index.js        [22m[32m578.00 B[39m
+[32mESM[39m [1mdist\api\index.js                       [22m[32m4.43 KB[39m
+[32mESM[39m [1mdist\chunk-XE4E6RUY.js                  [22m[32m2.23 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js             [22m[32m433.00 B[39m
+[32mESM[39m [1mdist\domain-shared\index.js             [22m[32m372.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js             [22m[32m223.00 B[39m
+[32mESM[39m [1mdist\chunk-42PBM2OA.js                  [22m[32m2.00 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js            [22m[32m1.78 KB[39m
+[32mESM[39m [1mdist\chunk-S2QU4M34.js                  [22m[32m13.99 KB[39m
+[32mESM[39m [1mdist\chunk-SGKKHPTM.js                  [22m[32m6.98 KB[39m
+[32mESM[39m [1mdist\chunk-2GUGXCNZ.js                  [22m[32m5.27 KB[39m
+[32mESM[39m [1mdist\chunk-EQVQU6FT.js                  [22m[32m13.43 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\index.js.map                       [22m[32m1.54 KB[39m
+[32mESM[39m [1mdist\chunk-QG5SXVT4.js.map              [22m[32m3.08 KB[39m
+[32mESM[39m [1mdist\api\index.js.map                   [22m[32m10.98 KB[39m
+[32mESM[39m [1mdist\application-server\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-XE4E6RUY.js.map              [22m[32m5.79 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-shared\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-42PBM2OA.js.map              [22m[32m4.23 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js.map        [22m[32m3.72 KB[39m
+[32mESM[39m [1mdist\chunk-S2QU4M34.js.map              [22m[32m28.92 KB[39m
+[32mESM[39m [1mdist\chunk-SGKKHPTM.js.map              [22m[32m14.66 KB[39m
+[32mESM[39m [1mdist\chunk-2GUGXCNZ.js.map              [22m[32m10.50 KB[39m
+[32mESM[39m [1mdist\chunk-EQVQU6FT.js.map              [22m[32m29.77 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js     [22m[32m424.00 B[39m
+[32mESM[39m [1mdist\application-client\index.js        [22m[32m399.00 B[39m
+[32mESM[39m [1mdist\chunk-V6TY7KAL.js                  [22m[32m383.00 B[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\application-client\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-V6TY7KAL.js.map              [22m[32m71.00 B[39m
+[32mESM[39m 鈿★笍 Build success in 37ms
+[34mDTS[39m Build start
+src/api/module.ts(52,34): error TS2322: Type 'Promise<SuccessResult<AccountClientDTO | null>>' is not assignable to type 'Promise<Result<AccountClientDTO>>'.
+  Type 'SuccessResult<AccountClientDTO | null>' is not assignable to type 'Result<AccountClientDTO>'.
+    Type 'SuccessResult<AccountClientDTO | null>' is not assignable to type 'SuccessResult<AccountClientDTO>'.
+      Type 'AccountClientDTO | null' is not assignable to type 'AccountClientDTO'.
+        Type 'null' is not assignable to type 'AccountClientDTO'.
+src/api/module.ts(53,43): error TS2322: Type 'Promise<SuccessResult<UpdateProfileResult>>' is not assignable to type 'Promise<Result<AccountClientDTO>>'.
+  Type 'SuccessResult<UpdateProfileResult>' is not assignable to type 'Result<AccountClientDTO>'.
+    Type 'SuccessResult<UpdateProfileResult>' is not assignable to type 'SuccessResult<AccountClientDTO>'.
+      Type 'UpdateProfileResult' is missing the following properties from type 'AccountClientDTO': id, status, profile, settings, and 6 more.
+src/api/module.ts(55,42): error TS2322: Type 'Promise<SuccessResult<CloseAccountResult>>' is not assignable to type 'Promise<Result<void>>'.
+  Type 'SuccessResult<CloseAccountResult>' is not assignable to type 'Result<void>'.
+    Type 'SuccessResult<CloseAccountResult>' is not assignable to type 'SuccessResult<void>'.
+      Type 'CloseAccountResult' is not assignable to type 'void'.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+Warning: command "tsup" exited with non-zero status code
+> nx run schedule:build
+
+> tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/application-client/index.ts, src/application-server/index.ts, src/domain-client/index.ts, src/domain-shared/index.ts, src/domain-server/index.ts, src/electron-entry/index.ts, src/infrastructure-client/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\schedule\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\chunk-K5TP5CF7.js                  [22m[32m10.62 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js     [22m[32m448.00 B[39m
+[32mESM[39m [1mdist\api\index.js                       [22m[32m8.79 KB[39m
+[32mESM[39m [1mdist\index.js                           [22m[32m4.60 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js     [22m[32m858.00 B[39m
+[32mESM[39m [1mdist\application-server\index.js        [22m[32m1.62 KB[39m
+[32mESM[39m [1mdist\chunk-6B22ZENK.js                  [22m[32m4.19 KB[39m
+[32mESM[39m [1mdist\domain-server\index.js             [22m[32m1.91 KB[39m
+[32mESM[39m [1mdist\chunk-QLGA6MGK.js                  [22m[32m14.98 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js             [22m[32m3.33 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js             [22m[32m799.00 B[39m
+[32mESM[39m [1mdist\chunk-IPECRC2T.js                  [22m[32m11.94 KB[39m
+[32mESM[39m [1mdist\chunk-LCZG5EUL.js                  [22m[32m4.36 KB[39m
+[32mESM[39m [1mdist\application-client\index.js        [22m[32m383.00 B[39m
+[32mESM[39m [1mdist\chunk-6PX77M7A.js                  [22m[32m8.50 KB[39m
+[32mESM[39m [1mdist\chunk-AKGWXEBF.js                  [22m[32m249.00 B[39m
+[32mESM[39m [1mdist\chunk-3FS6XHZV.js                  [22m[32m38.25 KB[39m
+[32mESM[39m [1mdist\chunk-5OG3X7NI.js                  [22m[32m62.97 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js            [22m[32m1.91 KB[39m
+[32mESM[39m [1mdist\chunk-EVE3KUIE.js                  [22m[32m14.44 KB[39m
+[32mESM[39m [1mdist\chunk-4A53PO2V.js                  [22m[32m383.47 KB[39m
+[32mESM[39m [1mdist\chunk-E7FRHHD3.js                  [22m[32m229.00 B[39m
+[32mESM[39m [1mdist\chunk-BJNOTN5A.js                  [22m[32m2.84 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\api\index.js.map                   [22m[32m20.09 KB[39m
+[32mESM[39m [1mdist\index.js.map                       [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\application-server\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-K5TP5CF7.js.map              [22m[32m27.64 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js.map         [22m[32m5.42 KB[39m
+[32mESM[39m [1mdist\application-client\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-6B22ZENK.js.map              [22m[32m10.83 KB[39m
+[32mESM[39m [1mdist\chunk-IPECRC2T.js.map              [22m[32m27.42 KB[39m
+[32mESM[39m [1mdist\chunk-QLGA6MGK.js.map              [22m[32m31.51 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-LCZG5EUL.js.map              [22m[32m14.75 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js.map        [22m[32m3.57 KB[39m
+[32mESM[39m [1mdist\chunk-3FS6XHZV.js.map              [22m[32m73.34 KB[39m
+[32mESM[39m [1mdist\chunk-5OG3X7NI.js.map              [22m[32m124.23 KB[39m
+[32mESM[39m [1mdist\chunk-AKGWXEBF.js.map              [22m[32m565.00 B[39m
+[32mESM[39m [1mdist\chunk-6PX77M7A.js.map              [22m[32m21.05 KB[39m
+[32mESM[39m [1mdist\chunk-EVE3KUIE.js.map              [22m[32m31.25 KB[39m
+[32mESM[39m [1mdist\chunk-BJNOTN5A.js.map              [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-E7FRHHD3.js.map              [22m[32m520.00 B[39m
+[32mESM[39m [1mdist\chunk-4A53PO2V.js.map              [22m[32m609.90 KB[39m
+[32mESM[39m 鈿★笍 Build success in 89ms
+[34mDTS[39m Build start
+src/api/module.ts(60,11): error TS2322: Type 'Partial<RetryPolicyServerDTO> | undefined' is not assignable to type 'RetryPolicyServerDTO | undefined'.
+  Type 'Partial<RetryPolicyServerDTO>' is not assignable to type 'RetryPolicyServerDTO'.
+    Types of property 'enabled' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+src/api/module.ts(83,11): error TS2322: Type 'Partial<ScheduleConfigServerDTO> | undefined' is not assignable to type 'ScheduleConfigServerDTO | undefined'.
+  Type 'Partial<ScheduleConfigServerDTO>' is not assignable to type 'ScheduleConfigServerDTO'.
+    Types of property 'cronExpression' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/api/module.ts(84,11): error TS2322: Type 'Partial<RetryPolicyServerDTO> | undefined' is not assignable to type 'RetryPolicyServerDTO | undefined'.
+  Type 'Partial<RetryPolicyServerDTO>' is not assignable to type 'RetryPolicyServerDTO'.
+    Types of property 'enabled' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+> tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/application-client/index.ts, src/application-server/index.ts, src/domain-client/index.ts, src/domain-shared/index.ts, src/domain-server/index.ts, src/electron-entry/index.ts, src/infrastructure-client/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\schedule\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\chunk-K5TP5CF7.js                  [22m[32m10.62 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js     [22m[32m448.00 B[39m
+[32mESM[39m [1mdist\api\index.js                       [22m[32m8.79 KB[39m
+[32mESM[39m [1mdist\index.js                           [22m[32m4.60 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js     [22m[32m858.00 B[39m
+[32mESM[39m [1mdist\application-server\index.js        [22m[32m1.62 KB[39m
+[32mESM[39m [1mdist\chunk-6B22ZENK.js                  [22m[32m4.19 KB[39m
+[32mESM[39m [1mdist\domain-server\index.js             [22m[32m1.91 KB[39m
+[32mESM[39m [1mdist\chunk-QLGA6MGK.js                  [22m[32m14.98 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js             [22m[32m3.33 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js             [22m[32m799.00 B[39m
+[32mESM[39m [1mdist\chunk-IPECRC2T.js                  [22m[32m11.94 KB[39m
+[32mESM[39m [1mdist\chunk-LCZG5EUL.js                  [22m[32m4.36 KB[39m
+[32mESM[39m [1mdist\application-client\index.js        [22m[32m383.00 B[39m
+[32mESM[39m [1mdist\chunk-6PX77M7A.js                  [22m[32m8.50 KB[39m
+[32mESM[39m [1mdist\chunk-AKGWXEBF.js                  [22m[32m249.00 B[39m
+[32mESM[39m [1mdist\chunk-3FS6XHZV.js                  [22m[32m38.25 KB[39m
+[32mESM[39m [1mdist\chunk-5OG3X7NI.js                  [22m[32m62.97 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js            [22m[32m1.91 KB[39m
+[32mESM[39m [1mdist\chunk-EVE3KUIE.js                  [22m[32m14.44 KB[39m
+[32mESM[39m [1mdist\chunk-4A53PO2V.js                  [22m[32m383.47 KB[39m
+[32mESM[39m [1mdist\chunk-E7FRHHD3.js                  [22m[32m229.00 B[39m
+[32mESM[39m [1mdist\chunk-BJNOTN5A.js                  [22m[32m2.84 KB[39m
+[32mESM[39m [1mdist\infrastructure-client\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\api\index.js.map                   [22m[32m20.09 KB[39m
+[32mESM[39m [1mdist\index.js.map                       [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\application-server\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-K5TP5CF7.js.map              [22m[32m27.64 KB[39m
+[32mESM[39m [1mdist\domain-client\index.js.map         [22m[32m5.42 KB[39m
+[32mESM[39m [1mdist\application-client\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-6B22ZENK.js.map              [22m[32m10.83 KB[39m
+[32mESM[39m [1mdist\chunk-IPECRC2T.js.map              [22m[32m27.42 KB[39m
+[32mESM[39m [1mdist\chunk-QLGA6MGK.js.map              [22m[32m31.51 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-LCZG5EUL.js.map              [22m[32m14.75 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js.map        [22m[32m3.57 KB[39m
+[32mESM[39m [1mdist\chunk-3FS6XHZV.js.map              [22m[32m73.34 KB[39m
+[32mESM[39m [1mdist\chunk-5OG3X7NI.js.map              [22m[32m124.23 KB[39m
+[32mESM[39m [1mdist\chunk-AKGWXEBF.js.map              [22m[32m565.00 B[39m
+[32mESM[39m [1mdist\chunk-6PX77M7A.js.map              [22m[32m21.05 KB[39m
+[32mESM[39m [1mdist\chunk-EVE3KUIE.js.map              [22m[32m31.25 KB[39m
+[32mESM[39m [1mdist\chunk-BJNOTN5A.js.map              [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-E7FRHHD3.js.map              [22m[32m520.00 B[39m
+[32mESM[39m [1mdist\chunk-4A53PO2V.js.map              [22m[32m609.90 KB[39m
+[32mESM[39m 鈿★笍 Build success in 89ms
+[34mDTS[39m Build start
+src/api/module.ts(60,11): error TS2322: Type 'Partial<RetryPolicyServerDTO> | undefined' is not assignable to type 'RetryPolicyServerDTO | undefined'.
+  Type 'Partial<RetryPolicyServerDTO>' is not assignable to type 'RetryPolicyServerDTO'.
+    Types of property 'enabled' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+src/api/module.ts(83,11): error TS2322: Type 'Partial<ScheduleConfigServerDTO> | undefined' is not assignable to type 'ScheduleConfigServerDTO | undefined'.
+  Type 'Partial<ScheduleConfigServerDTO>' is not assignable to type 'ScheduleConfigServerDTO'.
+    Types of property 'cronExpression' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/api/module.ts(84,11): error TS2322: Type 'Partial<RetryPolicyServerDTO> | undefined' is not assignable to type 'RetryPolicyServerDTO | undefined'.
+  Type 'Partial<RetryPolicyServerDTO>' is not assignable to type 'RetryPolicyServerDTO'.
+    Types of property 'enabled' are incompatible.
+      Type 'boolean | undefined' is not assignable to type 'boolean'.
+        Type 'undefined' is not assignable to type 'boolean'.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+Warning: command "tsup" exited with non-zero status code
+> nx run editor:build
+
+> tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/domain-server/index.ts, src/domain-client/index.ts, src/electron-entry/index.ts, src/application-server/index.ts, src/domain-shared/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\editor\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\index.js                           [22m[32m1.26 KB[39m
+[32mESM[39m [1mdist\chunk-27A42SN3.js                  [22m[32m20.13 KB[39m
+[32mESM[39m [1mdist\api\index.js                       [22m[32m8.43 KB[39m
+[32mESM[39m [1mdist\chunk-Z4OVHKIH.js                  [22m[32m16.01 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js            [22m[32m1.84 KB[39m
+[32mESM[39m [1mdist\application-server\index.js        [22m[32m351.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js             [22m[32m848.00 B[39m
+[32mESM[39m [1mdist\domain-client\index.js             [22m[32m17.33 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js             [22m[32m816.00 B[39m
+[32mESM[39m [1mdist\chunk-SVM5F7KD.js                  [22m[32m15.44 KB[39m
+[32mESM[39m [1mdist\chunk-HU5LJ2UD.js                  [22m[32m8.62 KB[39m
+[32mESM[39m [1mdist\chunk-OK2X2KXF.js                  [22m[32m42.00 B[39m
+[32mESM[39m [1mdist\chunk-KOBVFRDG.js                  [22m[32m1.45 KB[39m
+[32mESM[39m [1mdist\chunk-6CFNVMG6.js                  [22m[32m33.87 KB[39m
+[32mESM[39m [1mdist\chunk-HFOB5ZXI.js                  [22m[32m24.28 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js     [22m[32m371.00 B[39m
+[32mESM[39m [1mdist\api\index.js.map                   [22m[32m19.42 KB[39m
+[32mESM[39m [1mdist\index.js.map                       [22m[32m1.16 KB[39m
+[32mESM[39m [1mdist\chunk-27A42SN3.js.map              [22m[32m41.15 KB[39m
+[32mESM[39m [1mdist\application-server\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-Z4OVHKIH.js.map              [22m[32m34.30 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-client\index.js.map         [22m[32m37.78 KB[39m
+[32mESM[39m [1mdist\chunk-SVM5F7KD.js.map              [22m[32m29.84 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js.map        [22m[32m3.78 KB[39m
+[32mESM[39m [1mdist\chunk-OK2X2KXF.js.map              [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-HU5LJ2UD.js.map              [22m[32m17.51 KB[39m
+[32mESM[39m [1mdist\chunk-KOBVFRDG.js.map              [22m[32m2.83 KB[39m
+[32mESM[39m [1mdist\chunk-6CFNVMG6.js.map              [22m[32m71.38 KB[39m
+[32mESM[39m [1mdist\chunk-HFOB5ZXI.js.map              [22m[32m56.98 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m 鈿★笍 Build success in 38ms
+[34mDTS[39m Build start
+src/api/module.ts(61,11): error TS2322: Type 'string' is not assignable to type 'ProjectType | undefined'.
+src/api/module.ts(62,20): error TS2352: Conversion of type 'Record<string, unknown> | null | undefined' to type 'WorkspaceLayoutServerDTO' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'WorkspaceLayoutServerDTO': sidebarPosition, sidebarWidth, panelPosition, panelHeight, and 2 more.
+src/api/module.ts(63,22): error TS2352: Conversion of type 'Record<string, unknown> | null | undefined' to type 'WorkspaceSettingsServerDTO' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'WorkspaceSettingsServerDTO': theme, fontSize, fontFamily, lineHeight, and 5 more.
+src/api/module.ts(104,11): error TS2322: Type 'string' is not assignable to type 'DocumentLanguage | undefined'.
+src/api/module.ts(106,22): error TS2352: Conversion of type 'Record<string, unknown> | null | undefined' to type 'DocumentMetadataServerDTO' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'DocumentMetadataServerDTO': tags, category, wordCount, characterCount, and 3 more.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+> tsup
+
+[34mCLI[39m Building entry: src/index.ts, src/api/index.ts, src/domain-server/index.ts, src/domain-client/index.ts, src/electron-entry/index.ts, src/application-server/index.ts, src/domain-shared/index.ts, src/infrastructure-server/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Using tsup config: D:\home\projects\dailyuse\packages\editor\tsup.config.ts
+[34mCLI[39m Target: es2020
+[34mCLI[39m Cleaning output folder
+[34mESM[39m Build start
+[32mESM[39m [1mdist\index.js                           [22m[32m1.26 KB[39m
+[32mESM[39m [1mdist\chunk-27A42SN3.js                  [22m[32m20.13 KB[39m
+[32mESM[39m [1mdist\api\index.js                       [22m[32m8.43 KB[39m
+[32mESM[39m [1mdist\chunk-Z4OVHKIH.js                  [22m[32m16.01 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js            [22m[32m1.84 KB[39m
+[32mESM[39m [1mdist\application-server\index.js        [22m[32m351.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js             [22m[32m848.00 B[39m
+[32mESM[39m [1mdist\domain-client\index.js             [22m[32m17.33 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js             [22m[32m816.00 B[39m
+[32mESM[39m [1mdist\chunk-SVM5F7KD.js                  [22m[32m15.44 KB[39m
+[32mESM[39m [1mdist\chunk-HU5LJ2UD.js                  [22m[32m8.62 KB[39m
+[32mESM[39m [1mdist\chunk-OK2X2KXF.js                  [22m[32m42.00 B[39m
+[32mESM[39m [1mdist\chunk-KOBVFRDG.js                  [22m[32m1.45 KB[39m
+[32mESM[39m [1mdist\chunk-6CFNVMG6.js                  [22m[32m33.87 KB[39m
+[32mESM[39m [1mdist\chunk-HFOB5ZXI.js                  [22m[32m24.28 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js     [22m[32m371.00 B[39m
+[32mESM[39m [1mdist\api\index.js.map                   [22m[32m19.42 KB[39m
+[32mESM[39m [1mdist\index.js.map                       [22m[32m1.16 KB[39m
+[32mESM[39m [1mdist\chunk-27A42SN3.js.map              [22m[32m41.15 KB[39m
+[32mESM[39m [1mdist\application-server\index.js.map    [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-server\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-Z4OVHKIH.js.map              [22m[32m34.30 KB[39m
+[32mESM[39m [1mdist\domain-shared\index.js.map         [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\domain-client\index.js.map         [22m[32m37.78 KB[39m
+[32mESM[39m [1mdist\chunk-SVM5F7KD.js.map              [22m[32m29.84 KB[39m
+[32mESM[39m [1mdist\electron-entry\index.js.map        [22m[32m3.78 KB[39m
+[32mESM[39m [1mdist\chunk-OK2X2KXF.js.map              [22m[32m71.00 B[39m
+[32mESM[39m [1mdist\chunk-HU5LJ2UD.js.map              [22m[32m17.51 KB[39m
+[32mESM[39m [1mdist\chunk-KOBVFRDG.js.map              [22m[32m2.83 KB[39m
+[32mESM[39m [1mdist\chunk-6CFNVMG6.js.map              [22m[32m71.38 KB[39m
+[32mESM[39m [1mdist\chunk-HFOB5ZXI.js.map              [22m[32m56.98 KB[39m
+[32mESM[39m [1mdist\infrastructure-server\index.js.map [22m[32m71.00 B[39m
+[32mESM[39m 鈿★笍 Build success in 38ms
+[34mDTS[39m Build start
+src/api/module.ts(61,11): error TS2322: Type 'string' is not assignable to type 'ProjectType | undefined'.
+src/api/module.ts(62,20): error TS2352: Conversion of type 'Record<string, unknown> | null | undefined' to type 'WorkspaceLayoutServerDTO' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'WorkspaceLayoutServerDTO': sidebarPosition, sidebarWidth, panelPosition, panelHeight, and 2 more.
+src/api/module.ts(63,22): error TS2352: Conversion of type 'Record<string, unknown> | null | undefined' to type 'WorkspaceSettingsServerDTO' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'WorkspaceSettingsServerDTO': theme, fontSize, fontFamily, lineHeight, and 5 more.
+src/api/module.ts(104,11): error TS2322: Type 'string' is not assignable to type 'DocumentLanguage | undefined'.
+src/api/module.ts(106,22): error TS2352: Conversion of type 'Record<string, unknown> | null | undefined' to type 'DocumentMetadataServerDTO' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'DocumentMetadataServerDTO': tags, category, wordCount, characterCount, and 3 more.
+
+[31mError: error occurred in dts build
+    at Worker.<anonymous> (D:\home\projects\dailyuse\node_modules\.pnpm\tsup@8.5.1_@microsoft+api-extractor@7.55.2_@types+node@22.13.14__@swc+core@1.15.3_@swc+_621f75d616f18a5e5e49e573a6172ada\node_modules\tsup\dist\index.js:1545:26)
+    at Worker.emit (node:events:508:28)
+    at MessagePort.<anonymous> (node:internal/worker:332:53)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:845:20)
+    at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)[39m
+[31mDTS[39m [31mBuild error[39m
+Warning: command "tsup" exited with non-zero status code
+
+
+ NX   Running target build for project api and 17 tasks it depends on failed
+
+Failed tasks:
+
+- authentication:build
+- account:build
+- schedule:build
+- editor:build
+
+Hint: run the command with --verbose for more details.
+
+
+鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?                   Tasks run for command: nx build api --output-style=static                     鈹?鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?Status 鈹?                         Task                           鈹?Duration 鈹?   Cache Status    鈹?鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?  鉁?   鈹?contracts:build                                         鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?database:build                                          鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?utils:build                                             鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?http-client:build                                       鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?domain-shared:build                                     鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?patterns:build                                          鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?governance:build                                        鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?goal:build                                              鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?notification:build                                      鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?setting:build                                           鈹?   0s    鈹? Local Cache Hit   鈹?鈹?  鉁?   鈹?repository:build                                        鈹?   0s    鈹? Local Cache Hit   鈹?鈹?       鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?  鉁?     schedule:build                                              17s          Cache Miss     鈹?鈹?          > Logs: https://cloud.nx.app/runs/9wGLbIEk1n/task/schedule%3Abuild                     鈹?鈹?  鉁?     account:build                                               15s          Cache Miss     鈹?鈹?          > Logs: https://cloud.nx.app/runs/9wGLbIEk1n/task/account%3Abuild                      鈹?鈹?  鉁?     authentication:build                                        12s          Cache Miss     鈹?鈹?          > Logs: https://cloud.nx.app/runs/9wGLbIEk1n/task/authentication%3Abuild               鈹?鈹?  鉁?     editor:build                                                12s          Cache Miss     鈹?鈹?          > Logs: https://cloud.nx.app/runs/9wGLbIEk1n/task/editor%3Abuild                       鈹?鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?                                  Nx Cloud Task Runner Report                                    鈹?鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?11     鈹?Successful Tasks                       鈹?73.33% 鈹?Success Percentage                    鈹?鈹?4      鈹?Failed Tasks                           鈹?26.67% 鈹?Failure Percentage                    鈹?鈹溾攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹尖攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹?11     鈹?Cached Tasks                           鈹?73.33% 鈹?Cache Hit Percentage                  鈹?鈹?15     鈹?Total Executed Tasks                   鈹?25s    鈹?Run Duration                          鈹?鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹粹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹? See more details at: https://cloud.nx.app/runs/9wGLbIEk1n 
+

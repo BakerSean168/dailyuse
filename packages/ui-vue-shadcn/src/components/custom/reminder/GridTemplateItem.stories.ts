@@ -5,10 +5,13 @@ const meta = {
   title: 'Business/Reminder/GridTemplateItem',
   component: GridTemplateItem,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  decorators: [
+    () => ({ template: '<div style="width: 140px; height: 160px;"><story /></div>' }),
+  ],
   argTypes: {
-    item: { control: 'object' },
+    item: { description: '提醒模板对象' },
   },
-  decorators: [() => ({ template: '<div class="w-40 p-4"><story /></div>' })],
 } satisfies Meta<typeof GridTemplateItem>;
 
 export default meta;
@@ -17,8 +20,8 @@ type Story = StoryObj<typeof meta>;
 export const Enabled: Story = {
   args: {
     item: {
-      id: 'tmpl-1',
-      name: 'Drink Water',
+      id: 'tpl-1',
+      name: '喝水提醒',
       effectiveEnabled: true,
     },
   },
@@ -27,8 +30,8 @@ export const Enabled: Story = {
 export const Disabled: Story = {
   args: {
     item: {
-      id: 'tmpl-2',
-      name: 'Morning Meditation',
+      id: 'tpl-2',
+      name: '午休提醒',
       effectiveEnabled: false,
     },
   },
@@ -37,8 +40,8 @@ export const Disabled: Story = {
 export const LongName: Story = {
   args: {
     item: {
-      id: 'tmpl-3',
-      name: 'Take medication after lunch and log it in the health tracker',
+      id: 'tpl-3',
+      name: '每日站立会议提醒（周一至周五）',
       effectiveEnabled: true,
     },
   },

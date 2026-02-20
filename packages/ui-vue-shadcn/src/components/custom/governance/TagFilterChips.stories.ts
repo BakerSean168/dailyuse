@@ -5,42 +5,40 @@ const meta = {
   title: 'Business/Governance/TagFilterChips',
   component: TagFilterChips,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   argTypes: {
-    tags: { control: 'object' },
-    selectedTags: { control: 'object' },
+    tags: { description: '所有可选标签' },
+    selectedTags: { description: '已选中的标签' },
   },
-  decorators: [() => ({ template: '<div class="max-w-lg p-4"><story /></div>' })],
 } satisfies Meta<typeof TagFilterChips>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const allTags = ['typescript', 'api', 'database', 'testing', 'architecture', 'naming'];
-
-export const NoneSelected: Story = {
+export const Default: Story = {
   args: {
-    tags: allTags,
+    tags: ['TypeScript', 'Vue', 'React', 'Node.js', '代码规范', '安全'],
     selectedTags: [],
   },
 };
 
-export const SomeSelected: Story = {
+export const WithSelections: Story = {
   args: {
-    tags: allTags,
-    selectedTags: ['typescript', 'api'],
+    tags: ['TypeScript', 'Vue', 'React', 'Node.js', '代码规范', '安全'],
+    selectedTags: ['TypeScript', 'Vue'],
   },
 };
 
 export const AllSelected: Story = {
   args: {
-    tags: allTags,
-    selectedTags: [...allTags],
+    tags: ['TypeScript', 'Vue', 'React'],
+    selectedTags: ['TypeScript', 'Vue', 'React'],
   },
 };
 
 export const SingleTag: Story = {
   args: {
-    tags: ['typescript'],
-    selectedTags: ['typescript'],
+    tags: ['TypeScript'],
+    selectedTags: [],
   },
 };

@@ -5,15 +5,17 @@ const meta = {
   title: 'Business/Goal/AIGenerateKRButton',
   component: AIGenerateKRButton,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   argTypes: {
-    isGenerating: { control: 'boolean' },
-    hasQuota: { control: 'boolean' },
-  },
-  args: {
-    initialGoalTitle: '提升团队工作效率',
-    initialGoalDescription: '通过优化流程和工具提升整体效率',
-    hasQuota: true,
-    isGenerating: false,
+    initialGoalTitle: { description: '目标标题', control: 'text' },
+    initialGoalDescription: { description: '目标描述', control: 'text' },
+    initialStartDate: { description: '开始日期', control: 'text' },
+    initialEndDate: { description: '结束日期', control: 'text' },
+    isGenerating: { description: '生成中', control: 'boolean' },
+    error: { description: '错误信息', control: 'text' },
+    quota: { description: '剩余配额', control: 'number' },
+    hasQuota: { description: '是否有配额', control: 'boolean' },
+    timeToReset: { description: '配额重置时间', control: 'text' },
   },
 } satisfies Meta<typeof AIGenerateKRButton>;
 
@@ -21,37 +23,40 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
-};
-
-export const WithQuota: Story = {
   args: {
-    quota: { remainingQuota: 8, quotaLimit: 10 },
+    initialGoalTitle: '提升编程能力',
+    initialGoalDescription: '通过系统学习和项目实践来提升编程技能',
+    isGenerating: false,
     hasQuota: true,
-    timeToReset: '6小时',
-  },
-};
-
-export const QuotaExhausted: Story = {
-  args: {
-    quota: { remainingQuota: 0, quotaLimit: 10 },
-    hasQuota: false,
-    timeToReset: '2小时',
+    quota: 5,
   },
 };
 
 export const Generating: Story = {
   args: {
+    initialGoalTitle: '提升编程能力',
     isGenerating: true,
-    quota: { remainingQuota: 5, quotaLimit: 10 },
     hasQuota: true,
+    quota: 4,
+  },
+};
+
+export const NoQuota: Story = {
+  args: {
+    initialGoalTitle: '提升编程能力',
+    isGenerating: false,
+    hasQuota: false,
+    quota: 0,
+    timeToReset: '2小时后',
   },
 };
 
 export const WithError: Story = {
   args: {
+    initialGoalTitle: '提升编程能力',
+    isGenerating: false,
     error: 'AI 服务暂时不可用，请稍后重试',
-    quota: { remainingQuota: 3, quotaLimit: 10 },
     hasQuota: true,
+    quota: 5,
   },
 };

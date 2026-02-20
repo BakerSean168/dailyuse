@@ -2,17 +2,18 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import GoalDAGVisualization from './GoalDAGVisualization.vue';
 
 const meta = {
-  title: 'Business/Goal/DAG/GoalDAGVisualization',
+  title: 'Business/Goal/Dag/GoalDAGVisualization',
   component: GoalDAGVisualization,
   tags: ['autodocs'],
-  argTypes: {
-    syncViewport: { control: 'boolean' },
-    compact: { control: 'boolean' },
+  parameters: {
+    layout: 'fullscreen',
+    docs: { description: { component: '目标依赖关系 DAG 可视化。依赖 `useGoal()` composable 获取数据。' } },
   },
-  args: {
-    goalId: 'goal-abc-123',
-    syncViewport: false,
-    compact: false,
+  decorators: [() => ({ template: '<div style="height: 600px;"><story /></div>' })],
+  argTypes: {
+    goalId: { description: '目标 ID', control: 'text' },
+    syncViewport: { description: '同步视口', control: 'boolean' },
+    compact: { description: '紧凑模式', control: 'boolean' },
   },
 } satisfies Meta<typeof GoalDAGVisualization>;
 
@@ -20,50 +21,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => ({
-    components: { GoalDAGVisualization },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 800px; height: 500px;"><GoalDAGVisualization v-bind="args" /></div>',
-  }),
+  args: { goalId: 'goal-1', syncViewport: false, compact: false },
 };
 
 export const Compact: Story = {
-  render: (args) => ({
-    components: { GoalDAGVisualization },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 400px;"><GoalDAGVisualization v-bind="args" /></div>',
-  }),
-  args: {
-    compact: true,
-  },
-};
-
-export const SyncedViewport: Story = {
-  render: (args) => ({
-    components: { GoalDAGVisualization },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 800px; height: 500px;"><GoalDAGVisualization v-bind="args" /></div>',
-  }),
-  args: {
-    syncViewport: true,
-  },
-};
-
-export const DifferentGoal: Story = {
-  render: (args) => ({
-    components: { GoalDAGVisualization },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 800px; height: 500px;"><GoalDAGVisualization v-bind="args" /></div>',
-  }),
-  args: {
-    goalId: 'goal-def-456',
-  },
+  args: { goalId: 'goal-1', syncViewport: false, compact: true },
 };

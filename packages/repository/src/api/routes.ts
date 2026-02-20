@@ -23,25 +23,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { RepositoryController } from './controller';
-
-export interface RepositoryRouteHandlers {
-  // Repository CRUD
-  createRepository(identityId: string, data: { name: string; type: string; path?: string; description?: string; config?: Record<string, unknown> }): Promise<unknown>;
-  listRepositories(identityId: string, filters: { status?: string; type?: string }): Promise<unknown>;
-  getRepository(id: string): Promise<unknown>;
-  updateRepository(id: string, data: { name?: string; description?: string; config?: Record<string, unknown> }): Promise<unknown>;
-  deleteRepository(id: string): Promise<unknown>;
-  archiveRepository(id: string): Promise<unknown>;
-  activateRepository(id: string): Promise<unknown>;
-
-  // Resource CRUD
-  createResource(data: { repositoryId: string; name: string; type: string; mimeType?: string; content?: string; folderId?: string }): Promise<unknown>;
-  listResources(repositoryId: string, filters: { folderId?: string; status?: string }): Promise<unknown>;
-  getResource(id: string): Promise<unknown>;
-  updateResource(id: string, data: { name?: string; content?: string; metadata?: Record<string, unknown> }): Promise<unknown>;
-  deleteResource(id: string): Promise<unknown>;
-}
+import { RepositoryController } from '../controllers/repository.controller';
+import type { RepositoryUseCases } from '../controllers/repository.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -49,7 +32,7 @@ interface PlatformMiddleware {
 }
 
 export function registerRepositoryRoutes(
-  handlers: RepositoryRouteHandlers,
+  handlers: RepositoryUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -59,15 +42,15 @@ export function registerRepositoryRoutes(
   // ── Repository CRUD ──────────────────────────────────────────────
 
   router.post('/', auth, expressAdapter(
-    (req, ctx) => controller.createRepository(ctx.identityId, req.body),
+    (req, ctx) => controller.createRepository(req.body, ctx),
     { successStatus: 201 },
   ));
 
   router.get('/', auth, expressAdapter(
-    (req, ctx) => controller.listRepositories(ctx.identityId, {
+    (req, ctx) => controller.listRepositories({
       status: typeof req.query?.status === 'string' ? req.query.status : undefined,
       type: typeof req.query?.type === 'string' ? req.query.type : undefined,
-    }),
+    }, ctx),
   ));
 
   router.get('/:id', auth, expressAdapter(
@@ -112,7 +95,7 @@ export function registerRepositoryRoutes(
  * Mounted at /resources by the module.
  */
 export function registerResourceRoutes(
-  handlers: RepositoryRouteHandlers,
+  handlers: RepositoryUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();

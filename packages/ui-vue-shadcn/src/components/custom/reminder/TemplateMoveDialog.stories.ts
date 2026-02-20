@@ -1,86 +1,62 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { ref } from 'vue';
 import TemplateMoveDialog from './TemplateMoveDialog.vue';
+
+const groups = [
+  { id: 'grp-1', name: '工作提醒', description: '工作相关', icon: 'mdi-briefcase', enabled: true },
+  { id: 'grp-2', name: '健康管理', description: '健康相关', icon: 'mdi-heart', enabled: true },
+  { id: 'grp-3', name: '学习计划', description: '已停用', icon: 'mdi-school', enabled: false },
+];
+
+const templates = [
+  { id: 'tpl-1', name: '喝水提醒', groupId: 'grp-2' },
+  { id: 'tpl-2', name: '站会提醒', groupId: 'grp-1' },
+  { id: 'tpl-3', name: '阅读提醒', groupId: 'grp-3' },
+  { id: 'tpl-4', name: '独立提醒', groupId: null },
+];
 
 const meta = {
   title: 'Business/Reminder/TemplateMoveDialog',
   component: TemplateMoveDialog,
   tags: ['autodocs'],
-  argTypes: {
-    template: { control: 'object' },
-    groups: { control: 'object' },
-    templates: { control: 'object' },
-  },
+  parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof TemplateMoveDialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockGroups = [
-  { id: 'grp-1', name: 'Work Reminders', description: 'Work related', icon: 'mdi-briefcase', enabled: true },
-  { id: 'grp-2', name: 'Health & Fitness', description: 'Health goals', icon: 'mdi-heart', enabled: true },
-  { id: 'grp-3', name: 'Archived', description: 'Old reminders', icon: 'mdi-folder', enabled: false },
-];
-
-const mockTemplates = [
-  { id: 'tmpl-1', name: 'Drink Water', groupId: 'grp-2' },
-  { id: 'tmpl-2', name: 'Standup', groupId: 'grp-1' },
-  { id: 'tmpl-3', name: 'Exercise', groupId: 'grp-2' },
-  { id: 'tmpl-4', name: 'Read', groupId: null },
-];
-
 export const MoveFromGroup: Story = {
-  render: (args) => ({
+  render: () => ({
     components: { TemplateMoveDialog },
     setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const dialogRef = ref();
+      const templateToMove = { id: 'tpl-1', name: '喝水提醒', groupId: 'grp-2' };
+      const open = () => dialogRef.value?.open();
+      return { dialogRef, open, templateToMove, groups, templates };
     },
-    template: `<TemplateMoveDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">移动模板</button>
+        <TemplateMoveDialog ref="dialogRef" :template="templateToMove" :groups="groups" :templates="templates" />
+      </div>
+    `,
   }),
-  args: {
-    template: { id: 'tmpl-1', name: 'Drink Water', groupId: 'grp-2' },
-    groups: mockGroups,
-    templates: mockTemplates,
-  },
 };
 
 export const MoveUngrouped: Story = {
-  render: (args) => ({
+  render: () => ({
     components: { TemplateMoveDialog },
     setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const dialogRef = ref();
+      const templateToMove = { id: 'tpl-4', name: '独立提醒', groupId: null };
+      const open = () => dialogRef.value?.open();
+      return { dialogRef, open, templateToMove, groups, templates };
     },
-    template: `<TemplateMoveDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md" @click="open">移动未分组模板</button>
+        <TemplateMoveDialog ref="dialogRef" :template="templateToMove" :groups="groups" :templates="templates" />
+      </div>
+    `,
   }),
-  args: {
-    template: { id: 'tmpl-4', name: 'Read', groupId: null },
-    groups: mockGroups,
-    templates: mockTemplates,
-  },
-};
-
-export const SingleGroup: Story = {
-  render: (args) => ({
-    components: { TemplateMoveDialog },
-    setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
-    },
-    template: `<TemplateMoveDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
-  }),
-  args: {
-    template: { id: 'tmpl-2', name: 'Standup', groupId: 'grp-1' },
-    groups: [mockGroups[0]],
-    templates: mockTemplates,
-  },
 };

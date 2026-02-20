@@ -5,80 +5,92 @@ const meta = {
   title: 'Business/Repository/SearchPanel',
   component: SearchPanel,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 600px; height: 500px;"><story /></div>' }),
+  ],
   argTypes: {
-    searching: { control: 'boolean' },
-    hasSearched: { control: 'boolean' },
-    totalResults: { control: 'number' },
-    totalMatches: { control: 'number' },
-    searchTime: { control: 'number' },
-  },
-  args: {
-    repositoryId: 'repo-1',
-    searching: false,
-    hasSearched: false,
+    repositoryId: { description: '仓库 ID', control: 'text' },
+    searching: { description: '搜索中', control: 'boolean' },
+    hasSearched: { description: '已执行过搜索', control: 'boolean' },
+    totalResults: { description: '结果数', control: 'number' },
+    totalMatches: { description: '匹配数', control: 'number' },
+    searchTime: { description: '搜索耗时 (ms)', control: 'number' },
   },
 } satisfies Meta<typeof SearchPanel>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockResults = [
-  {
-    id: 'res-1',
-    name: 'Getting Started.md',
-    path: '/docs/Getting Started.md',
-    matches: [
-      { line: 5, content: 'Welcome to the **knowledge base** platform.', highlight: [19, 33] },
-      { line: 12, content: 'Use the **knowledge base** to organize your research.', highlight: [9, 23] },
-    ],
-  },
-  {
-    id: 'res-2',
-    name: 'Architecture.md',
-    path: '/docs/technical/Architecture.md',
-    matches: [
-      { line: 23, content: 'The knowledge layer handles core business logic.', highlight: [4, 13] },
-    ],
-  },
-  {
-    id: 'res-3',
-    name: 'FAQ.md',
-    path: '/FAQ.md',
-    matches: [
-      { line: 8, content: 'Q: How do I create a new knowledge entry?', highlight: [30, 39] },
-      { line: 15, content: 'Knowledge management is a core feature.', highlight: [0, 9] },
-      { line: 42, content: 'Share knowledge across your team.', highlight: [6, 15] },
-    ],
-  },
-];
-
-export const Default: Story = {
-  args: {},
-};
-
 export const WithResults: Story = {
   args: {
-    results: mockResults,
+    repositoryId: 'repo-1',
+    results: [
+      {
+        resourceId: 'res-1',
+        resourceName: 'Vue 3 指南.md',
+        resourcePath: '/docs/vue3-guide.md',
+        resourceType: 'Markdown',
+        matchType: 'line',
+        matchCount: 3,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        matches: [
+          { lineNumber: 15, lineContent: 'Vue 3 引入了 Composition API', startIndex: 0, endIndex: 4 },
+          { lineNumber: 42, lineContent: '使用 ref 和 reactive 管理状态', startIndex: 3, endIndex: 6 },
+          { lineNumber: 78, lineContent: 'Vue 3 的性能相比 Vue 2 提升显著', startIndex: 0, endIndex: 4 },
+        ],
+      },
+      {
+        resourceId: 'res-2',
+        resourceName: 'README.md',
+        resourcePath: '/README.md',
+        resourceType: 'Markdown',
+        matchType: 'line',
+        matchCount: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        matches: [
+          { lineNumber: 5, lineContent: '基于 Vue 3 + TypeScript 构建', startIndex: 3, endIndex: 7 },
+        ],
+      },
+    ] as any,
+    searching: false,
     hasSearched: true,
-    totalResults: 3,
-    totalMatches: 6,
-    searchTime: 0.045,
+    totalResults: 2,
+    totalMatches: 4,
+    searchTime: 42,
   },
 };
 
 export const Searching: Story = {
   args: {
+    repositoryId: 'repo-1',
+    results: [],
     searching: true,
     hasSearched: false,
+    totalResults: 0,
+    totalMatches: 0,
   },
 };
 
 export const NoResults: Story = {
   args: {
+    repositoryId: 'repo-1',
     results: [],
+    searching: false,
     hasSearched: true,
     totalResults: 0,
     totalMatches: 0,
-    searchTime: 0.012,
+    searchTime: 15,
+  },
+};
+
+export const Initial: Story = {
+  args: {
+    repositoryId: 'repo-1',
+    results: [],
+    searching: false,
+    hasSearched: false,
   },
 };

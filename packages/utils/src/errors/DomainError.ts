@@ -172,7 +172,7 @@ export abstract class DomainError extends Error {
  */
 export class BusinessRuleViolationError extends DomainError {
   constructor(message: string, context?: Record<string, any>) {
-    super('BUSINESS_RULE_VIOLATION', message, context, 400);
+    super('BUSINESS_ERROR', message, context, 400);
   }
 }
 
@@ -202,7 +202,7 @@ export class NotFoundError extends DomainError {
  */
 export class ValidationError extends DomainError {
   constructor(message: string, fields?: Record<string, string>) {
-    super('VALIDATION_ERROR', message, fields ? { fields } : undefined, 400);
+    super('VALIDATION_ERROR', message, fields ? { fields } : undefined, 422);
   }
 }
 
@@ -262,7 +262,7 @@ export class ConflictError extends DomainError {
  */
 export class InternalServerError extends DomainError {
   constructor(message: string = 'Internal server error', context?: Record<string, any>) {
-    super('INTERNAL_SERVER_ERROR', message, context, 500);
+    super('INTERNAL_ERROR', message, context, 500);
   }
 }
 

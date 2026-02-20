@@ -3,15 +3,10 @@
  *
  * Encapsulates Zod validation and use case orchestration.
  * Shared by both Express (HTTP) and IPC transport layers.
- *
- * Each method:
- * 1. Validates input via Zod schema (where applicable)
- * 2. Delegates to the corresponding handler
- * 3. Returns a Result<T> (transport-agnostic)
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import {
   CreateNotificationSchema,
   UpdateNotificationSchema,
@@ -20,21 +15,36 @@ import {
   DeleteNotificationsBatchSchema,
   CleanupOldNotificationsSchema,
 } from '@dailyuse/contracts/notification';
+import type {
+  CreateNotificationReq,
+  UpdateNotificationReq,
+  NotificationQuery,
+  MarkAsReadBatchReq,
+  DeleteNotificationsBatchReq,
+  CleanupOldNotificationsReq,
+} from '@dailyuse/contracts/notification';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { NotificationRouteHandlers } from './routes';
 
-/**
- * Notification Controller
- *
- * Provides validated handler calls for the Notification module.
- * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
- */
+// ============ Use Case Port ============
+
+export interface NotificationUseCases {
+  createNotification(data: CreateNotificationReq): Promise<Result<unknown>>;
+  listNotifications(query: NotificationQuery): Promise<Result<unknown>>;
+  getNotification(id: string): Promise<Result<unknown>>;
+  updateNotification(id: string, data: UpdateNotificationReq): Promise<Result<unknown>>;
+  deleteNotification(id: string): Promise<Result<unknown>>;
+  markAsRead(id: string): Promise<Result<unknown>>;
+  batchMarkAsRead(data: MarkAsReadBatchReq): Promise<Result<unknown>>;
+  batchDelete(data: DeleteNotificationsBatchReq): Promise<Result<unknown>>;
+  cleanupOldNotifications(data: CleanupOldNotificationsReq): Promise<Result<unknown>>;
+}
+
 export class NotificationController {
-  constructor(private readonly handlers: NotificationRouteHandlers) {}
+  constructor(private readonly useCases: NotificationUseCases) {}
 
   // ==================== CRUD Operations ====================
 
-  async create(input: unknown): Promise<Result<unknown>> {
+  async create(input: CreateNotificationReq): Promise<Result<unknown>> {
     const parsed = CreateNotificationSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -43,8 +53,7 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.createNotification(parsed.data);
-    return ok(data);
+    return this.useCases.createNotification(parsed.data);
   }
 
   async list(query: Record<string, unknown>): Promise<Result<unknown>> {
@@ -56,19 +65,14 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.listNotifications(parsed.data);
-    return ok(data);
+    return this.useCases.listNotifications(parsed.data);
   }
 
   async get(id: string): Promise<Result<unknown>> {
-    const data = await this.handlers.getNotification(id);
-    if (!data) {
-      return fail({ code: 'NOT_FOUND', message: 'Notification not found' });
-    }
-    return ok(data);
+    return this.useCases.getNotification(id);
   }
 
-  async update(id: string, input: unknown): Promise<Result<unknown>> {
+  async update(id: string, input: UpdateNotificationReq): Promise<Result<unknown>> {
     const parsed = UpdateNotificationSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -77,23 +81,20 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.updateNotification(id, parsed.data);
-    return ok(data);
+    return this.useCases.updateNotification(id, parsed.data);
   }
 
   async delete(id: string): Promise<Result<unknown>> {
-    await this.handlers.deleteNotification(id);
-    return ok(null);
+    return this.useCases.deleteNotification(id);
   }
 
   // ==================== Read/Batch Operations ====================
 
   async markAsRead(id: string): Promise<Result<unknown>> {
-    await this.handlers.markAsRead(id);
-    return ok(null);
+    return this.useCases.markAsRead(id);
   }
 
-  async batchMarkAsRead(input: unknown): Promise<Result<unknown>> {
+  async batchMarkAsRead(input: MarkAsReadBatchReq): Promise<Result<unknown>> {
     const parsed = MarkAsReadBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -102,11 +103,10 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.batchMarkAsRead(parsed.data);
-    return ok(data);
+    return this.useCases.batchMarkAsRead(parsed.data);
   }
 
-  async batchDelete(input: unknown): Promise<Result<unknown>> {
+  async batchDelete(input: DeleteNotificationsBatchReq): Promise<Result<unknown>> {
     const parsed = DeleteNotificationsBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -115,11 +115,10 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.batchDelete(parsed.data);
-    return ok(data);
+    return this.useCases.batchDelete(parsed.data);
   }
 
-  async cleanup(input: unknown): Promise<Result<unknown>> {
+  async cleanup(input: CleanupOldNotificationsReq): Promise<Result<unknown>> {
     const parsed = CleanupOldNotificationsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -128,7 +127,6 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.cleanupOldNotifications(parsed.data);
-    return ok(data);
+    return this.useCases.cleanupOldNotifications(parsed.data);
   }
 }

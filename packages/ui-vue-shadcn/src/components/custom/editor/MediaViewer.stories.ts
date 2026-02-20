@@ -5,59 +5,26 @@ const meta = {
   title: 'Business/Editor/MediaViewer',
   component: MediaViewer,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  decorators: [() => ({ template: '<div style="width: 600px;"><story /></div>' })],
   argTypes: {
-    filePath: { control: 'text' },
-    fileType: {
-      control: 'select',
-      options: ['image', 'video', 'audio'],
-    },
-    fileName: { control: 'text' },
-  },
-  args: {
-    filePath: 'https://via.placeholder.com/600x400',
-    fileType: 'image',
-    fileName: 'sample-image.png',
+    filePath: { description: '文件路径', control: 'text' },
+    fileType: { description: '文件类型', control: 'select', options: ['image', 'video', 'audio'] },
+    fileName: { description: '文件名', control: 'text' },
   },
 } satisfies Meta<typeof MediaViewer>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ImageFile: Story = {
-  args: {
-    filePath: 'https://via.placeholder.com/600x400',
-    fileType: 'image',
-    fileName: 'photo.png',
-  },
+export const Image: Story = {
+  args: { filePath: 'https://placehold.co/600x400', fileType: 'image', fileName: 'example.png' },
 };
 
-export const VideoFile: Story = {
-  args: {
-    filePath: '/media/sample-video.mp4',
-    fileType: 'video',
-    fileName: 'presentation.mp4',
-  },
+export const Video: Story = {
+  args: { filePath: 'https://www.w3schools.com/html/mov_bbb.mp4', fileType: 'video', fileName: 'demo.mp4' },
 };
 
-export const AudioFile: Story = {
-  args: {
-    filePath: '/media/sample-audio.mp3',
-    fileType: 'audio',
-    fileName: 'recording.mp3',
-  },
-};
-
-export const WithoutFileName: Story = {
-  args: {
-    filePath: 'https://via.placeholder.com/800x600',
-    fileType: 'image',
-  },
-};
-
-export const LongFileName: Story = {
-  args: {
-    filePath: '/media/screenshot.png',
-    fileType: 'image',
-    fileName: 'very-long-file-name-that-might-overflow-the-container-screenshot-2024.png',
-  },
+export const Audio: Story = {
+  args: { filePath: 'https://www.w3schools.com/html/horse.ogg', fileType: 'audio', fileName: 'horse.ogg' },
 };

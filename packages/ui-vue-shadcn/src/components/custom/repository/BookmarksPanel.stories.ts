@@ -1,81 +1,64 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import BookmarksPanel from './BookmarksPanel.vue';
 
+const now = new Date().toISOString();
+
+function mockBookmark(overrides: Record<string, unknown> = {}) {
+  return {
+    id: Math.random().toString(36).slice(2),
+    resourceId: 'res-1',
+    identityId: 'user-1',
+    aliasName: '书签',
+    icon: null,
+    color: null,
+    sortOrder: 0,
+    version: 1,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    displayName: '书签',
+    isOwner: true,
+    ...overrides,
+  } as any;
+}
+
 const meta = {
   title: 'Business/Repository/BookmarksPanel',
   component: BookmarksPanel,
   tags: ['autodocs'],
-  argTypes: {},
-  args: {},
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 320px;"><story /></div>' }),
+  ],
+  argTypes: {
+    bookmarks: { description: '书签列表' },
+  },
 } satisfies Meta<typeof BookmarksPanel>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
-const mockBookmarks = [
-  {
-    id: 'bm-1',
-    resourceId: 'res-1',
-    identityId: 'user-1',
-    aliasName: 'Getting Started Guide',
-    icon: '📖',
-    color: '#4CAF50',
-    sortOrder: 0,
-    version: 1,
-    createdAt: now - 86400000,
-    updatedAt: now - 3600000,
-    deletedAt: null,
-    displayName: 'Getting Started Guide',
-    isOwner: true,
-  },
-  {
-    id: 'bm-2',
-    resourceId: 'res-2',
-    identityId: 'user-1',
-    aliasName: null,
-    icon: '🔧',
-    color: null,
-    sortOrder: 1,
-    version: 2,
-    createdAt: now - 172800000,
-    updatedAt: now - 7200000,
-    deletedAt: null,
-    displayName: 'API Reference',
-    isOwner: true,
-  },
-  {
-    id: 'bm-3',
-    resourceId: 'res-3',
-    identityId: 'user-1',
-    aliasName: 'Project Roadmap',
-    icon: null,
-    color: '#2196F3',
-    sortOrder: 2,
-    version: 1,
-    createdAt: now - 259200000,
-    updatedAt: now - 86400000,
-    deletedAt: null,
-    displayName: 'Project Roadmap',
-    isOwner: false,
-  },
-];
-
 export const Default: Story = {
   args: {
-    bookmarks: mockBookmarks,
-  },
-};
-
-export const SingleBookmark: Story = {
-  args: {
-    bookmarks: [mockBookmarks[0]],
+    bookmarks: [
+      mockBookmark({ id: '1', aliasName: 'Vue 3 入门指南', displayName: 'Vue 3 入门指南', sortOrder: 0 }),
+      mockBookmark({ id: '2', aliasName: 'TypeScript 最佳实践', displayName: 'TypeScript 最佳实践', sortOrder: 1 }),
+      mockBookmark({ id: '3', aliasName: 'Prisma ORM 文档', displayName: 'Prisma ORM 文档', sortOrder: 2 }),
+      mockBookmark({ id: '4', aliasName: '部署流程', displayName: '部署流程', sortOrder: 3 }),
+    ],
   },
 };
 
 export const Empty: Story = {
   args: {
     bookmarks: [],
+  },
+};
+
+export const SingleBookmark: Story = {
+  args: {
+    bookmarks: [
+      mockBookmark({ id: '1', aliasName: '项目 README', displayName: '项目 README', sortOrder: 0 }),
+    ],
   },
 };

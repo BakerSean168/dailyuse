@@ -1,21 +1,31 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import MarkdownEditor from './MarkdownEditor.vue';
 
+const sampleContent = `# Hello World
+
+这是一段测试内容。
+
+## 子标题
+
+- 列表项 1
+- 列表项 2
+
+\`\`\`typescript
+const x = 42;
+\`\`\`
+`;
+
 const meta = {
   title: 'Business/Editor/MarkdownEditor',
   component: MarkdownEditor,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [() => ({ template: '<div style="height: 400px;"><story /></div>' })],
   argTypes: {
-    modelValue: { control: 'text' },
-    darkMode: { control: 'boolean' },
-    readonly: { control: 'boolean' },
-    placeholder: { control: 'text' },
-  },
-  args: {
-    modelValue: '# Hello World\n\nStart typing your **markdown** here.',
-    darkMode: false,
-    readonly: false,
-    placeholder: 'Start writing...',
+    modelValue: { description: 'Markdown 内容', control: 'text' },
+    darkMode: { description: '暗色模式', control: 'boolean' },
+    readonly: { description: '只读', control: 'boolean' },
+    placeholder: { description: '占位文本', control: 'text' },
   },
 } satisfies Meta<typeof MarkdownEditor>;
 
@@ -23,86 +33,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    modelValue: '# Hello World\n\nStart typing your **markdown** here.',
-  },
-  render: (args) => ({
-    components: { MarkdownEditor },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 400px;"><MarkdownEditor v-bind="args" /></div>',
-  }),
-};
-
-export const DarkMode: Story = {
-  args: {
-    modelValue: '# Dark Mode\n\nThis editor is in dark mode.',
-    darkMode: true,
-  },
-  render: (args) => ({
-    components: { MarkdownEditor },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 400px; background: #1e1e2e;"><MarkdownEditor v-bind="args" /></div>',
-  }),
+  args: { modelValue: sampleContent, darkMode: false, readonly: false, placeholder: '开始输入...' },
 };
 
 export const ReadOnly: Story = {
-  args: {
-    modelValue: '# Read Only\n\nThis content **cannot** be edited.',
-    readonly: true,
-  },
-  render: (args) => ({
-    components: { MarkdownEditor },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 400px;"><MarkdownEditor v-bind="args" /></div>',
-  }),
+  args: { modelValue: sampleContent, readonly: true },
 };
 
-export const WithPlaceholder: Story = {
-  args: {
-    modelValue: '',
-    placeholder: 'Type your notes here...',
-  },
-  render: (args) => ({
-    components: { MarkdownEditor },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 400px;"><MarkdownEditor v-bind="args" /></div>',
-  }),
+export const DarkMode: Story = {
+  args: { modelValue: sampleContent, darkMode: true },
 };
 
-export const RichContent: Story = {
-  args: {
-    modelValue: [
-      '# Project Documentation',
-      '',
-      '## Overview',
-      'This is a comprehensive document with various markdown features.',
-      '',
-      '## Code Example',
-      '```typescript',
-      'const greeting: string = "Hello";',
-      'console.log(greeting);',
-      '```',
-      '',
-      '## Links',
-      '- [[Related Document]]',
-      '- [External Link](https://example.com)',
-      '',
-      '> A blockquote for important notes.',
-    ].join('\n'),
-  },
-  render: (args) => ({
-    components: { MarkdownEditor },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 500px;"><MarkdownEditor v-bind="args" /></div>',
-  }),
+export const Empty: Story = {
+  args: { modelValue: '', placeholder: '在此输入 Markdown 内容...' },
 };

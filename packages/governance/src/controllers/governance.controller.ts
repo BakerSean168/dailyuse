@@ -4,12 +4,14 @@
  * Encapsulates Zod validation and use case orchestration.
  * Shared by both Express (HTTP) and IPC transport layers.
  *
- * Note: Governance handlers return Result<T> directly, so
- * the controller passes through the Result from the handler.
+ * Accepts standard Context from the adapter and converts to
+ * ExecutionContext internally for the domain layer.
  */
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
+import type { Context } from '@dailyuse/contracts/shared';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import {
   CreateRuleSchema,
   UpdateRuleSchema,
@@ -19,13 +21,42 @@ import {
   GetRuleRevisionsQuerySchema,
 } from '../contracts';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { GovernanceCrudHandlers } from './routes';
 import type { ExecutionContext } from '../application-server';
+import type {
+  CreateRuleReq,
+  CreateRuleRes,
+  DeleteRuleReq,
+  DeleteRuleRes,
+  GetRuleReq,
+  GetRuleRes,
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
+  ListRulesQuery,
+  ListRulesRes,
+  UpdateRuleReq,
+  UpdateRuleRes,
+} from '../contracts';
+
+// ============ Use Case Port ============
+
+export interface GovernanceUseCases {
+  createRule: (req: CreateRuleReq, cx: ExecutionContext) => Promise<Result<CreateRuleRes>>;
+  updateRule: (id: string, req: UpdateRuleReq, cx: ExecutionContext) => Promise<Result<UpdateRuleRes>>;
+  deleteRule: (req: DeleteRuleReq, cx: ExecutionContext) => Promise<Result<DeleteRuleRes>>;
+  getRule: (req: GetRuleReq) => Promise<Result<GetRuleRes>>;
+  listRules: (query: ListRulesQuery) => Promise<Result<ListRulesRes>>;
+  getRevisions: (query: GetRuleRevisionsQuery) => Promise<Result<GetRuleRevisionsRes>>;
+}
 
 export class GovernanceController {
-  constructor(private readonly handlers: GovernanceCrudHandlers) {}
+  constructor(private readonly useCases: GovernanceUseCases) {}
 
-  async createRule(input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
+  /** Convert standard Context to Governance ExecutionContext */
+  private toExecutionContext(ctx: Context): ExecutionContext {
+    return { identityId: ctx.identityId as IdentityId };
+  }
+
+  async createRule(input: CreateRuleReq, ctx: Context): Promise<Result<CreateRuleRes>> {
     const parsed = CreateRuleSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -34,10 +65,10 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.createRule(parsed.data, cx);
+    return this.useCases.createRule(parsed.data, this.toExecutionContext(ctx));
   }
 
-  async updateRule(id: string, input: unknown, cx: ExecutionContext): Promise<Result<unknown>> {
+  async updateRule(id: string, input: UpdateRuleReq, ctx: Context): Promise<Result<UpdateRuleRes>> {
     const parsed = UpdateRuleSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -46,10 +77,10 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.updateRule(id, parsed.data, cx);
+    return this.useCases.updateRule(id, parsed.data, this.toExecutionContext(ctx));
   }
 
-  async deleteRule(id: string, cx: ExecutionContext): Promise<Result<unknown>> {
+  async deleteRule(id: string, ctx: Context): Promise<Result<DeleteRuleRes>> {
     const parsed = DeleteRuleSchema.safeParse({ id });
     if (!parsed.success) {
       return fail({
@@ -58,10 +89,10 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.deleteRule(parsed.data, cx);
+    return this.useCases.deleteRule(parsed.data, this.toExecutionContext(ctx));
   }
 
-  async getRuleByCode(code: string): Promise<Result<unknown>> {
+  async getRuleByCode(code: string): Promise<Result<GetRuleRes>> {
     const parsed = GetRuleSchema.safeParse({ code });
     if (!parsed.success) {
       return fail({
@@ -70,10 +101,10 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.getRule(parsed.data);
+    return this.useCases.getRule(parsed.data);
   }
 
-  async getRuleById(id: string): Promise<Result<unknown>> {
+  async getRuleById(id: string): Promise<Result<GetRuleRes>> {
     const parsed = GetRuleSchema.safeParse({ id });
     if (!parsed.success) {
       return fail({
@@ -82,10 +113,10 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.getRule(parsed.data);
+    return this.useCases.getRule(parsed.data);
   }
 
-  async listRules(query: Record<string, unknown>): Promise<Result<unknown>> {
+  async listRules(query: ListRulesQuery): Promise<Result<ListRulesRes>> {
     const parsed = ListRulesQuerySchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -94,10 +125,10 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.listRules(parsed.data);
+    return this.useCases.listRules(parsed.data);
   }
 
-  async getRevisions(ruleId: string, query: Record<string, unknown>): Promise<Result<unknown>> {
+  async getRevisions(ruleId: string, query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {
     const parsed = GetRuleRevisionsQuerySchema.safeParse({
       ruleId,
       ...query,
@@ -109,6 +140,6 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.handlers.getRevisions(parsed.data);
+    return this.useCases.getRevisions(parsed.data);
   }
 }

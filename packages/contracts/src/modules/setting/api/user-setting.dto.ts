@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { openApiJsonValue } from '@/primitives';
 import type { UserSettingClientDTO } from '../aggregates';
 
 const identityIdSchema = z.string().min(1);
-const unknownRecordSchema = z.record(z.string(), z.unknown());
+const unknownRecordSchema = z.record(z.string(), openApiJsonValue);
 
 export const GetUserSettingSchema = z.object({
   identityId: identityIdSchema.optional(),

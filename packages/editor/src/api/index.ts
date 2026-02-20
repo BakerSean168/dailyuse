@@ -1,3 +1,3 @@
 export { EditorApiModule } from './module';
 export type { EditorApiModuleContext, EditorApiModuleDef } from './module';
-export type { EditorRouteHandlers } from './routes';
+export { EditorController, type EditorUseCases } from '../controllers';

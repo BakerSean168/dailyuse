@@ -14,16 +14,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { AccountController } from './controller';
-
-// ============ Types ============
-
-export interface AccountRouteHandlers {
-  getProfile(accountId: string): Promise<any>;
-  updateProfile(accountId: string, data: any): Promise<any>;
-  checkAvailability(data: any): Promise<any>;
-  closeAccount(accountId: string, data: any): Promise<any>;
-}
+import { AccountController } from '../controllers/account.controller';
+import type { AccountUseCases } from '../controllers/account.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -33,7 +25,7 @@ interface PlatformMiddleware {
 // ============ Route Registration ============
 
 export function registerAccountRoutes(
-  handlers: AccountRouteHandlers,
+  handlers: AccountUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -42,12 +34,12 @@ export function registerAccountRoutes(
 
   // GET /me — 获取当前用户资料
   router.get('/me', auth, expressAdapter(
-    (_req, ctx) => controller.getProfile(ctx.identityId),
+    (_req, ctx) => controller.getProfile(ctx),
   ));
 
   // PUT /me — 更新当前用户资料 (UpdateAccountSchema)
   router.put('/me', auth, expressAdapter(
-    (req, ctx) => controller.updateProfile(ctx.identityId, req.body),
+    (req, ctx) => controller.updateProfile(req.body, ctx),
   ));
 
   // POST /availability — 检查可用性 (CheckAvailabilitySchema)
@@ -57,12 +49,12 @@ export function registerAccountRoutes(
 
   // POST /me/close — 注销账户 (CloseAccountSchema)
   router.post('/me/close', auth, expressAdapter(
-    (req, ctx) => controller.closeAccount(ctx.identityId, req.body),
+    (req, ctx) => controller.closeAccount(req.body, ctx),
   ));
 
   // DELETE /me — 注销账户（别名）
   router.delete('/me', auth, expressAdapter(
-    (req, ctx) => controller.closeAccount(ctx.identityId, req.body),
+    (req, ctx) => controller.closeAccount(req.body, ctx),
   ));
 
   return router;

@@ -5,56 +5,21 @@ const meta = {
   title: 'Business/Editor/LinkSuggestion',
   component: LinkSuggestion,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   argTypes: {
-    visible: { control: 'boolean' },
-    searchQuery: { control: 'text' },
-  },
-  args: {
-    visible: true,
-    searchQuery: '',
-    position: { x: 100, y: 200 },
+    visible: { description: '是否可见', control: 'boolean' },
+    searchQuery: { description: '搜索关键词', control: 'text' },
+    position: { description: '弹出位置', control: 'object' },
   },
 } satisfies Meta<typeof LinkSuggestion>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    visible: true,
-    searchQuery: '',
-    position: { x: 100, y: 200 },
-  },
-};
-
-export const WithSearchQuery: Story = {
-  args: {
-    visible: true,
-    searchQuery: 'meeting',
-    position: { x: 150, y: 250 },
-  },
+export const Visible: Story = {
+  args: { visible: true, searchQuery: '项目', position: { x: 200, y: 200 } },
 };
 
 export const Hidden: Story = {
-  args: {
-    visible: false,
-    searchQuery: '',
-    position: { x: 100, y: 200 },
-  },
-};
-
-export const PartialMatch: Story = {
-  args: {
-    visible: true,
-    searchQuery: 'arc',
-    position: { x: 200, y: 300 },
-  },
-};
-
-export const TopLeftPosition: Story = {
-  args: {
-    visible: true,
-    searchQuery: 'notes',
-    position: { x: 0, y: 0 },
-  },
+  args: { visible: false, searchQuery: '', position: { x: 0, y: 0 } },
 };

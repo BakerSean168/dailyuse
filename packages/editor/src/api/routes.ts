@@ -19,27 +19,9 @@
 
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import type {
-  CreateEditorWorkspaceRequest,
-  UpdateEditorWorkspaceRequest,
-  CreateDocumentRequest,
-  UpdateDocumentRequest,
-} from '@dailyuse/contracts/editor';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { EditorController } from './controller';
-
-export interface EditorRouteHandlers {
-  createWorkspace: (identityId: string, data: CreateEditorWorkspaceRequest) => Promise<any>;
-  listWorkspaces: (identityId: string) => Promise<any>;
-  getWorkspace: (id: string) => Promise<any>;
-  updateWorkspace: (id: string, data: UpdateEditorWorkspaceRequest) => Promise<any>;
-  deleteWorkspace: (id: string) => Promise<any>;
-  createDocument: (identityId: string, data: CreateDocumentRequest) => Promise<any>;
-  listDocuments: (params: { workspaceId?: string; folderId?: string; identityId: string }) => Promise<any>;
-  getDocument: (id: string) => Promise<any>;
-  updateDocument: (id: string, data: UpdateDocumentRequest) => Promise<any>;
-  deleteDocument: (id: string) => Promise<any>;
-}
+import { EditorController } from '../controllers/editor.controller';
+import type { EditorUseCases } from '../controllers/editor.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -47,7 +29,7 @@ interface PlatformMiddleware {
 }
 
 export function registerEditorRoutes(
-  handlers: EditorRouteHandlers,
+  handlers: EditorUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -57,12 +39,12 @@ export function registerEditorRoutes(
   // ============ Workspace Routes ============
 
   router.post('/workspaces', auth, expressAdapter(
-    (req, ctx) => controller.createWorkspace(req.body, ctx.identityId),
+    (req, ctx) => controller.createWorkspace(req.body, ctx),
     { successStatus: 201 },
   ));
 
   router.get('/workspaces', auth, expressAdapter(
-    (_req, ctx) => controller.listWorkspaces(ctx.identityId),
+    (_req, ctx) => controller.listWorkspaces(ctx),
   ));
 
   router.get('/workspaces/:id', auth, expressAdapter(
@@ -80,15 +62,15 @@ export function registerEditorRoutes(
   // ============ Document Routes ============
 
   router.post('/documents', auth, expressAdapter(
-    (req, ctx) => controller.createDocument(req.body, ctx.identityId),
+    (req, ctx) => controller.createDocument(req.body, ctx),
     { successStatus: 201 },
   ));
 
   router.get('/documents', auth, expressAdapter(
-    (req, ctx) => controller.listDocuments(ctx.identityId, {
+    (req, ctx) => controller.listDocuments({
       workspaceId: req.query?.workspaceId as string | undefined,
       folderId: req.query?.folderId as string | undefined,
-    }),
+    }, ctx),
   ));
 
   router.get('/documents/:id', auth, expressAdapter(

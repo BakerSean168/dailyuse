@@ -1,60 +1,65 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ScheduleStatusCard from './ScheduleStatusCard.vue';
 
+const now = new Date();
+const nextRun = new Date(now.getTime() + 3600_000 * 2);
+const lastRun = new Date(now.getTime() - 3600_000 * 4);
+
 const meta = {
   title: 'Business/Reminder/ScheduleStatusCard',
   component: ScheduleStatusCard,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 500px;"><story /></div>' }),
+  ],
   argTypes: {
-    scheduleStatus: { control: 'object' },
-    isLoading: { control: 'boolean' },
-    error: { control: 'text' },
+    isLoading: { description: '加载状态', control: 'boolean' },
+    error: { description: '错误信息', control: 'text' },
   },
-  decorators: [() => ({ template: '<div class="max-w-lg p-4"><story /></div>' })],
 } satisfies Meta<typeof ScheduleStatusCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
-export const ActiveSchedule: Story = {
+export const Active: Story = {
   args: {
     scheduleStatus: {
       enabled: true,
       hasSchedule: true,
       cronExpression: '0 */2 * * *',
-      cronDescription: 'Every 2 hours',
+      cronDescription: '每 2 小时执行一次',
       triggerType: 'INTERVAL',
-      nextRunAt: now + 1000 * 60 * 45,
-      lastRunAt: now - 1000 * 60 * 75,
-      executionCount: 128,
+      nextRunAt: nextRun.toISOString(),
+      lastRunAt: lastRun.toISOString(),
+      executionCount: 142,
       status: 'ACTIVE',
       recentExecutions: [
-        { executedAt: now - 1000 * 60 * 75, success: true },
-        { executedAt: now - 1000 * 60 * 195, success: true },
-        { executedAt: now - 1000 * 60 * 315, success: false, error: 'Notification service timeout' },
+        { executedAt: lastRun.toISOString(), success: true },
+        { executedAt: new Date(lastRun.getTime() - 7200_000).toISOString(), success: true },
+        { executedAt: new Date(lastRun.getTime() - 14400_000).toISOString(), success: false, error: 'Network timeout' },
       ],
     },
     isLoading: false,
+    error: null,
   },
 };
 
-export const PausedSchedule: Story = {
+export const Paused: Story = {
   args: {
     scheduleStatus: {
       enabled: false,
       hasSchedule: true,
       cronExpression: '0 9 * * 1-5',
-      cronDescription: 'Every weekday at 9:00 AM',
+      cronDescription: '每周一至周五 9:00',
       triggerType: 'FIXED_TIME',
-      nextRunAt: null,
-      lastRunAt: now - 1000 * 60 * 60 * 48,
-      executionCount: 42,
+      scheduledTime: '09:00',
+      lastRunAt: lastRun.toISOString(),
+      executionCount: 56,
       status: 'PAUSED',
-      recentExecutions: [],
     },
     isLoading: false,
+    error: null,
   },
 };
 
@@ -66,6 +71,7 @@ export const NoSchedule: Story = {
       executionCount: 0,
     },
     isLoading: false,
+    error: null,
   },
 };
 
@@ -73,13 +79,14 @@ export const Loading: Story = {
   args: {
     scheduleStatus: null,
     isLoading: true,
+    error: null,
   },
 };
 
-export const ErrorState: Story = {
+export const Error: Story = {
   args: {
     scheduleStatus: null,
     isLoading: false,
-    error: 'Unable to fetch schedule status. The server returned a 503 error.',
+    error: '无法加载调度状态信息。',
   },
 };

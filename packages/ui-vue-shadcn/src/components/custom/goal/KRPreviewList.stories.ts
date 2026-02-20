@@ -2,76 +2,32 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import KRPreviewList from './KRPreviewList.vue';
 
 const mockResults = [
-  {
-    id: 'kr-1',
-    title: '将月活用户提升至 50,000',
-    description: '通过营销推广和产品优化提升用户活跃度',
-    targetValue: 50000,
-    unit: '人',
-    weight: 40,
-    importance: 'high',
-  },
-  {
-    id: 'kr-2',
-    title: '客户满意度达到 4.5 分',
-    description: '通过优化客服流程和产品质量提升满意度',
-    targetValue: 4.5,
-    unit: '分',
-    weight: 30,
-    importance: 'medium',
-  },
-  {
-    id: 'kr-3',
-    title: '缩短平均响应时间至 200ms',
-    description: '优化后端服务和缓存策略',
-    targetValue: 200,
-    unit: 'ms',
-    weight: 30,
-    importance: 'high',
-  },
+  { id: '1', title: '提升代码覆盖率到80%', targetValue: 80, unit: '%', weight: 40, importance: 'high', description: '通过单元测试和集成测试提升覆盖率', selected: true },
+  { id: '2', title: '减少Bug数量50%', targetValue: 50, unit: '%', weight: 35, importance: 'medium', description: null, selected: true },
+  { id: '3', title: '完成10次Code Review', targetValue: 10, unit: '次', weight: 25, importance: 'low', description: '每周至少参与2次团队代码审查', selected: false },
 ];
 
 const meta = {
   title: 'Business/Goal/KRPreviewList',
   component: KRPreviewList,
   tags: ['autodocs'],
-  args: {
-    results: mockResults,
+  parameters: { layout: 'padded' },
+  argTypes: {
+    results: { description: 'AI 生成的关键结果列表', control: 'object' },
   },
-  decorators: [() => ({ template: '<div style="max-width: 700px;"><story /></div>' })],
 } satisfies Meta<typeof KRPreviewList>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {},
+export const WithResults: Story = {
+  args: { results: mockResults },
 };
 
 export const Empty: Story = {
-  args: {
-    results: [],
-  },
+  args: { results: [] },
 };
 
 export const SingleResult: Story = {
-  args: {
-    results: [mockResults[0]],
-  },
-};
-
-export const LowImportance: Story = {
-  args: {
-    results: [
-      {
-        id: 'kr-low',
-        title: '整理技术文档',
-        description: '更新 API 文档和使用指南',
-        targetValue: 10,
-        unit: '篇',
-        weight: 20,
-        importance: 'low',
-      },
-    ],
-  },
+  args: { results: [mockResults[0]] },
 };

@@ -9,6 +9,7 @@
 
 import type { Router, Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok } from '@dailyuse/contracts/result';
 import type { IdentityId, EditorWorkspaceId } from '@dailyuse/contracts/primitives';
 import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO, DocumentMetadataServerDTO } from '@dailyuse/contracts/editor';
 import {
@@ -19,7 +20,7 @@ import { EditorContainer } from '../infrastructure-server/di/editor-container';
 import { EditorWorkspace } from '../domain-server';
 import { Document } from '../domain-server';
 import { registerEditorRoutes } from './routes';
-import type { EditorRouteHandlers } from './routes';
+import type { EditorUseCases } from '../controllers/editor.controller';
 import { registerEditorInitializationTasks } from './initialization';
 
 export interface EditorApiModuleContext {
@@ -50,92 +51,94 @@ export const EditorApiModule: EditorApiModuleDef = {
     const documentRepo = new DocumentPrismaRepository(prismaClient);
 
     // 2. Wire handlers directly to repository methods
-    const handlers: EditorRouteHandlers = {
-      createWorkspace: async (identityId, data) => {
+    const handlers: EditorUseCases = {
+      createWorkspace: async (data, ctx) => {
         const workspace = EditorWorkspace.create({
-          identityId: identityId as IdentityId,
+          identityId: ctx.identityId as IdentityId,
           name: data.name,
           description: data.description ?? undefined,
           projectPath: data.projectPath,
-          projectType: data.projectType,
-          layout: (data.layout as WorkspaceLayoutServerDTO) ?? undefined,
-          settings: (data.settings as WorkspaceSettingsServerDTO) ?? undefined,
+          projectType: data.projectType as any,
+          layout: (data.layout as unknown as WorkspaceLayoutServerDTO) ?? undefined,
+          settings: (data.settings as unknown as WorkspaceSettingsServerDTO) ?? undefined,
         });
         await workspaceRepo.save(workspace);
-        return workspace.toServerDTO();
+        return ok(workspace.toServerDTO());
       },
 
-      listWorkspaces: async (identityId) => {
-        const workspaces = await workspaceRepo.findByIdentityId(identityId);
-        return {
+      listWorkspaces: async (ctx) => {
+        const workspaces = await workspaceRepo.findByIdentityId(ctx.identityId);
+        return ok({
           workspaces: workspaces.map((w) => w.toServerDTO()),
           total: workspaces.length,
-        };
+        });
       },
 
       getWorkspace: async (id) => {
         const workspace = await workspaceRepo.findById(id);
-        return workspace?.toServerDTO() ?? null;
+        return ok(workspace?.toServerDTO() ?? null);
       },
 
       updateWorkspace: async (id, data) => {
         const workspace = await workspaceRepo.findById(id);
-        if (!workspace) return null;
+        if (!workspace) return ok(null);
         if (data.name !== undefined) workspace.updateName(data.name);
         if (data.description !== undefined) workspace.updateDescription(data.description ?? null);
         if (data.layout != null) workspace.updateLayout(data.layout);
         if (data.settings != null) workspace.updateSettings(data.settings);
         await workspaceRepo.save(workspace);
-        return workspace.toServerDTO();
+        return ok(workspace.toServerDTO());
       },
 
       deleteWorkspace: async (id) => {
         await workspaceRepo.delete(id);
+        return ok(undefined);
       },
 
-      createDocument: async (identityId, data) => {
+      createDocument: async (data, ctx) => {
         const doc = Document.create({
           workspaceId: data.workspaceId as unknown as EditorWorkspaceId,
-          identityId: identityId as IdentityId,
+          identityId: ctx.identityId as IdentityId,
           path: data.path,
           name: data.name,
-          language: data.language,
+          language: data.language as any,
           content: data.content,
-          metadata: (data.metadata as DocumentMetadataServerDTO) ?? undefined,
+          metadata: (data.metadata as unknown as DocumentMetadataServerDTO) ?? undefined,
         });
         await documentRepo.save(doc);
-        return doc.toServerDTO();
+        return ok(doc.toServerDTO());
       },
 
-      listDocuments: async ({ workspaceId, identityId }) => {
-        const documents = workspaceId
-          ? await documentRepo.findByWorkspaceId(workspaceId)
-          : await documentRepo.findByIdentityId(identityId);
-        return {
+      listDocuments: async (params, ctx) => {
+        const documents = params.workspaceId
+          ? await documentRepo.findByWorkspaceId(params.workspaceId)
+          : await documentRepo.findByIdentityId(ctx.identityId);
+        return ok({
           documents: documents.map((d) => d.toServerDTO()),
           total: documents.length,
-        };
+        });
       },
 
       getDocument: async (id) => {
         const doc = await documentRepo.findById(id);
-        return doc?.toServerDTO() ?? null;
+        return ok(doc?.toServerDTO() ?? null);
       },
 
       updateDocument: async (id, data) => {
         const doc = await documentRepo.findById(id);
-        if (!doc) return null;
+        if (!doc) return ok(null);
         if (data.content !== undefined) doc.updateContent(data.content);
         if (data.metadata != null) {
           const merged = { ...doc.metadata, ...data.metadata } as DocumentMetadataServerDTO;
           doc.updateMetadata(merged);
         }
         await documentRepo.save(doc);
-        return doc.toServerDTO();
+        return ok(doc.toServerDTO());
       },
 
       deleteDocument: async (id) => {
         await documentRepo.delete(id);
+        return ok(undefined);
       },
     };
 

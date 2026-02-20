@@ -1,95 +1,41 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import GoalProgressChart from './GoalProgressChart.vue';
+import { createMockGoal } from '../__stories__/mock-data';
 
-const mockGoal = {
-  id: 'g1',
-  title: '提升产品月活用户',
-  progress: 65,
-  startDate: '2024-01-01',
-  endDate: '2024-06-30',
-  weightedProgress: 62.5,
-  timeProgressPercentage: 50,
-  timeProgressRatio: 0.5,
-  timeRangeSummary: {
-    totalDays: 181,
-    elapsedDays: 90,
-    remainingDays: 91,
-  },
-  keyResults: [
-    { id: 'kr1', title: '月活达到 50,000', progress: 80, weight: 50 },
-    { id: 'kr2', title: '日均使用时长 30 分钟', progress: 50, weight: 50 },
-  ],
+const baseGoal = createMockGoal();
+
+const goalWithDerived = {
+  ...baseGoal,
+  weightedProgress: 52,
+  timeProgressPercentage: 45,
+  timeProgressRatio: 0.45,
+  timeRangeSummary: { startDate: baseGoal.startDate, endDate: baseGoal.endDate, totalDays: 90, elapsedDays: 40, remainingDays: 50 },
 };
 
 const meta = {
-  title: 'Business/Goal/ECharts/GoalProgressChart',
+  title: 'Business/Goal/Echarts/GoalProgressChart',
   component: GoalProgressChart,
   tags: ['autodocs'],
-  args: {
-    goal: mockGoal,
+  parameters: { layout: 'padded' },
+  decorators: [() => ({ template: '<div style="height: 200px;"><story /></div>' })],
+  argTypes: {
+    goal: { description: '含派生指标的目标数据', control: 'object' },
   },
 } satisfies Meta<typeof GoalProgressChart>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: (args) => ({
-    components: { GoalProgressChart },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 200px;"><GoalProgressChart v-bind="args" /></div>',
-  }),
+export const AheadOfSchedule: Story = {
+  args: { goal: goalWithDerived },
 };
 
-export const HighProgress: Story = {
-  render: (args) => ({
-    components: { GoalProgressChart },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 200px;"><GoalProgressChart v-bind="args" /></div>',
-  }),
+export const BehindSchedule: Story = {
   args: {
-    goal: {
-      ...mockGoal,
-      progress: 95,
-      weightedProgress: 92,
-      timeProgressPercentage: 80,
-      timeProgressRatio: 0.8,
-    },
+    goal: { ...goalWithDerived, weightedProgress: 20, timeProgressPercentage: 60, timeProgressRatio: 0.6 },
   },
 };
 
-export const LowProgress: Story = {
-  render: (args) => ({
-    components: { GoalProgressChart },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 200px;"><GoalProgressChart v-bind="args" /></div>',
-  }),
-  args: {
-    goal: {
-      ...mockGoal,
-      progress: 10,
-      weightedProgress: 8,
-      timeProgressPercentage: 50,
-      timeProgressRatio: 0.5,
-    },
-  },
-};
-
-export const NoGoal: Story = {
-  render: (args) => ({
-    components: { GoalProgressChart },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 200px;"><GoalProgressChart v-bind="args" /></div>',
-  }),
-  args: {
-    goal: null,
-  },
+export const Null: Story = {
+  args: { goal: null },
 };

@@ -5,75 +5,55 @@ const meta = {
   title: 'Business/Repository/ObsidianEditor',
   component: ObsidianEditor,
   tags: ['autodocs'],
+  parameters: { layout: 'fullscreen' },
   argTypes: {
-    isSaving: { control: 'boolean' },
-    isDirty: { control: 'boolean' },
-    fileName: { control: 'text' },
-    folderPath: { control: 'text' },
-  },
-  args: {
-    isSaving: false,
-    isDirty: false,
+    content: { description: 'Markdown 内容', control: 'text' },
+    fileName: { description: '文件名', control: 'text' },
+    folderPath: { description: '文件夹路径', control: 'text' },
+    isSaving: { description: '保存中', control: 'boolean' },
+    isDirty: { description: '有未保存更改', control: 'boolean' },
   },
 } satisfies Meta<typeof ObsidianEditor>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const sampleContent = `# Project Architecture
-
-## Overview
-
-The system is built using a **domain-driven design** approach with clear layer separation.
-
-## Layers
-
-1. **Domain** - Core business logic and entities
-2. **Application** - Use cases and orchestration
-3. **Infrastructure** - Database, external services
-4. **Presentation** - UI components and views
-
-## Key Decisions
-
-- Event-driven communication between modules
-- Repository pattern for data access
-- CQRS for complex read/write scenarios
-
-> Note: All modules follow the [[Coding Standards]] document.
-
-See also: [[API Reference]] and [[Deployment Guide]].
-`;
-
 export const Default: Story = {
   args: {
-    content: sampleContent,
-    fileName: 'Architecture.md',
-    folderPath: '/docs/technical',
-  },
-};
-
-export const Dirty: Story = {
-  args: {
-    content: sampleContent,
-    fileName: 'Draft Notes.md',
-    folderPath: '/notes',
-    isDirty: true,
+    content: `# 欢迎使用编辑器\n\n这是一个 Markdown 编辑器组件。\n\n## 功能特性\n\n- 实时预览\n- 语法高亮\n- [[内部链接]] 支持\n- 文件拖放上传\n\n## 代码示例\n\n\`\`\`typescript\nconst message = 'Hello World';\nconsole.log(message);\n\`\`\``,
+    fileName: '学习笔记.md',
+    folderPath: '知识库/技术文档',
+    isSaving: false,
+    isDirty: false,
   },
 };
 
 export const Saving: Story = {
   args: {
-    content: sampleContent,
-    fileName: 'Architecture.md',
-    folderPath: '/docs/technical',
+    content: '# 保存中的文档\n\n内容正在保存...',
+    fileName: 'draft.md',
+    folderPath: '草稿',
     isSaving: true,
+    isDirty: true,
   },
 };
 
-export const EmptyEditor: Story = {
+export const DirtyState: Story = {
+  args: {
+    content: '# 已修改的文档\n\n这个文档有未保存的修改。',
+    fileName: 'notes.md',
+    folderPath: '日记',
+    isSaving: false,
+    isDirty: true,
+  },
+};
+
+export const Empty: Story = {
   args: {
     content: '',
-    fileName: 'New Document.md',
-    folderPath: '/drafts',
+    fileName: '无标题',
+    folderPath: '',
+    isSaving: false,
+    isDirty: false,
   },
 };

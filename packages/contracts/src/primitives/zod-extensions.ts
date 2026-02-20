@@ -1,4 +1,15 @@
 import { z } from 'zod';
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
+
+// Extend Zod with .openapi() method — must run before any schema that uses .openapi()
+extendZodWithOpenApi(z);
+
+/**
+ * OpenAPI-friendly schema for unknown/any JSON values.
+ * Use this instead of raw z.unknown() inside z.record() or other composite types,
+ * so that zod-to-openapi can generate a valid OpenAPI document.
+ */
+export const openApiJsonValue = z.unknown().openapi({ type: 'object' });
 
 /**
  * Creates a Zod schema for a branded ID type.

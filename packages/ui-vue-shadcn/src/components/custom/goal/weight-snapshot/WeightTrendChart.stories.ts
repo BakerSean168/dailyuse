@@ -5,8 +5,13 @@ const meta = {
   title: 'Business/Goal/WeightSnapshot/WeightTrendChart',
   component: WeightTrendChart,
   tags: ['autodocs'],
-  args: {
-    goalId: 'goal-abc-123',
+  parameters: {
+    layout: 'padded',
+    docs: { description: { component: '权重变化趋势图。依赖 `useWeightSnapshot()` composable 获取数据。' } },
+  },
+  decorators: [() => ({ template: '<div style="height: 400px;"><story /></div>' })],
+  argTypes: {
+    goalId: { description: '目标 ID', control: 'text' },
   },
 } satisfies Meta<typeof WeightTrendChart>;
 
@@ -14,24 +19,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => ({
-    components: { WeightTrendChart },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 350px;"><WeightTrendChart v-bind="args" /></div>',
-  }),
-};
-
-export const DifferentGoal: Story = {
-  render: (args) => ({
-    components: { WeightTrendChart },
-    setup() {
-      return { args };
-    },
-    template: '<div style="width: 600px; height: 350px;"><WeightTrendChart v-bind="args" /></div>',
-  }),
-  args: {
-    goalId: 'goal-def-456',
-  },
+  args: { goalId: 'goal-1' },
 };

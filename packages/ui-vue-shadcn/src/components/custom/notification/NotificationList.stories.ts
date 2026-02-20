@@ -1,64 +1,59 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import NotificationList from './NotificationList.vue';
 
+const now = new Date().toISOString();
+const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+const dayAgo = new Date(Date.now() - 86400_000).toISOString();
+
+function mockNotification(overrides: Record<string, unknown> = {}) {
+  return {
+    id: Math.random().toString(36).slice(2),
+    identityId: 'user-1',
+    title: '通知',
+    content: '这是一条通知内容。',
+    type: 'SYSTEM',
+    category: 'System',
+    importance: 'Moderate',
+    isRead: false,
+    readAt: null,
+    status: 'Delivered',
+    actions: null,
+    metadata: null,
+    version: 1,
+    createdAt: hourAgo,
+    updatedAt: hourAgo,
+    deletedAt: null,
+    notificationChannels: null,
+    ...overrides,
+  } as any;
+}
+
 const meta = {
   title: 'Business/Notification/NotificationList',
   component: NotificationList,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 540px;"><story /></div>' }),
+  ],
   argTypes: {
-    notifications: { control: 'object' },
-    loading: { control: 'boolean' },
+    notifications: { description: '通知列表数据' },
+    loading: { description: '加载状态', control: 'boolean' },
   },
-  decorators: [() => ({ template: '<div class="max-w-lg border rounded-lg"><story /></div>' })],
 } satisfies Meta<typeof NotificationList>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
-const mockNotifications = [
-  {
-    id: 'notif-1',
-    title: 'New task assigned',
-    content: 'You have been assigned to review the authentication module.',
-    type: 'TASK',
-    importance: 'IMPORTANT',
-    isRead: false,
-    createdAt: new Date(now - 1000 * 60 * 5).toISOString(),
-  },
-  {
-    id: 'notif-2',
-    title: 'Goal milestone reached',
-    content: 'You completed 80% of your monthly reading goal. Keep going!',
-    type: 'GOAL',
-    importance: 'MODERATE',
-    isRead: false,
-    createdAt: new Date(now - 1000 * 60 * 30).toISOString(),
-  },
-  {
-    id: 'notif-3',
-    title: 'System update complete',
-    content: 'The application has been updated to version 2.5.0.',
-    type: 'SYSTEM',
-    importance: 'MINOR',
-    isRead: true,
-    createdAt: new Date(now - 1000 * 60 * 60 * 2).toISOString(),
-  },
-  {
-    id: 'notif-4',
-    title: 'Drink water reminder',
-    content: 'Stay hydrated! Take a short break.',
-    type: 'REMINDER',
-    importance: 'MINOR',
-    isRead: true,
-    createdAt: new Date(now - 1000 * 60 * 60 * 5).toISOString(),
-  },
-];
-
 export const Default: Story = {
   args: {
-    notifications: mockNotifications,
+    notifications: [
+      mockNotification({ id: '1', title: '紧急：生产环境告警', content: 'API 响应时间超过阈值，请立即检查。', type: 'SYSTEM', importance: 'Vital', createdAt: now }),
+      mockNotification({ id: '2', title: '任务即将到期', content: '「编写 API 文档」将在 2 小时后到期。', type: 'TASK', category: 'Task', importance: 'Important', createdAt: hourAgo }),
+      mockNotification({ id: '3', title: '目标进度', content: '目标「Q4 KPI 达标」已完成 60%。', type: 'GOAL', category: 'Goal', importance: 'Moderate', createdAt: hourAgo }),
+      mockNotification({ id: '4', title: '日程提醒', content: '30 分钟后有「Sprint 规划会」。', type: 'REMINDER', category: 'Reminder', createdAt: now }),
+      mockNotification({ id: '5', title: '系统更新', content: 'v2.3.1 补丁已部署。', type: 'SYSTEM', importance: 'Minor', isRead: true, readAt: dayAgo, status: 'Read', createdAt: dayAgo }),
+    ],
     loading: false,
   },
 };
@@ -77,9 +72,12 @@ export const Empty: Story = {
   },
 };
 
-export const SingleItem: Story = {
+export const AllRead: Story = {
   args: {
-    notifications: [mockNotifications[0]],
+    notifications: [
+      mockNotification({ id: '1', title: '系统维护完成', content: '维护窗口已结束，所有服务恢复正常。', isRead: true, readAt: hourAgo, status: 'Read', createdAt: dayAgo }),
+      mockNotification({ id: '2', title: '欢迎使用 DailyUse', content: '感谢注册，开始您的高效之旅！', isRead: true, readAt: dayAgo, status: 'Read', createdAt: dayAgo }),
+    ],
     loading: false,
   },
 };

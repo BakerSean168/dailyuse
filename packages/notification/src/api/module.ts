@@ -12,10 +12,11 @@
 import { Router } from 'express';
 import type { Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok } from '@dailyuse/contracts/result';
 import { NotificationModule } from '../infrastructure-server';
 import { NotificationContainer } from '../infrastructure-server/di/notification-container';
 import { registerNotificationRoutes } from './routes';
-import type { NotificationRouteHandlers } from './routes';
+import type { NotificationUseCases } from '../controllers/notification.controller';
 import { registerNotificationInitializationTasks } from './initialization';
 
 /**
@@ -49,31 +50,37 @@ export const NotificationApiModule: NotificationApiModuleDef = {
     const notificationModule = new NotificationModule('prisma', prismaClient);
 
     // 2. Create route handlers delegating to application services
-    const handlers: NotificationRouteHandlers = {
-      createNotification: (data) =>
-        notificationModule.notificationService.createNotification(data),
-      listNotifications: (query) =>
-        notificationModule.notificationService.listNotifications(query),
-      getNotification: (id) =>
-        notificationModule.notificationService.getNotification(id),
-      updateNotification: (_id, _data) =>
-        Promise.resolve(_data),
-      deleteNotification: (id) =>
-        notificationModule.notificationService.deleteNotification(id),
-      markAsRead: (id) =>
-        notificationModule.notificationService.markAsRead(id),
-      batchMarkAsRead: (data) =>
-        notificationModule.notificationService.markAsRead(data.notificationIds?.[0])
-          .then(() => ({ success: true, affected: data.notificationIds?.length ?? 0 })),
-      batchDelete: (data) =>
-        Promise.all(
+    const handlers: NotificationUseCases = {
+      createNotification: async (data) =>
+        ok(await notificationModule.notificationService.createNotification(data)),
+      listNotifications: async (query) =>
+        ok(await notificationModule.notificationService.listNotifications(query)),
+      getNotification: async (id) =>
+        ok(await notificationModule.notificationService.getNotification(id)),
+      updateNotification: async (_id, _data) =>
+        ok(_data),
+      deleteNotification: async (id) => {
+        await notificationModule.notificationService.deleteNotification(id);
+        return ok(undefined);
+      },
+      markAsRead: async (id) =>
+        ok(await notificationModule.notificationService.markAsRead(id)),
+      batchMarkAsRead: async (data) => {
+        await notificationModule.notificationService.markAsRead(data.notificationIds?.[0]);
+        return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
+      },
+      batchDelete: async (data) => {
+        await Promise.all(
           (data.notificationIds ?? []).map((id: string) =>
             notificationModule.notificationService.deleteNotification(id),
           ),
-        ).then(() => ({ success: true, affected: data.notificationIds?.length ?? 0 })),
-      cleanupOldNotifications: (data) =>
-        notificationModule.notificationService.clearAll(data.identityId)
-          .then(() => ({ success: true, affected: 0 })),
+        );
+        return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
+      },
+      cleanupOldNotifications: async (data) => {
+        await notificationModule.notificationService.clearAll(data.identityId);
+        return ok({ success: true, affected: 0 });
+      },
     };
 
     // 3. Register routes (inject platform middleware)

@@ -1,60 +1,35 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ResourcesPanel from './ResourcesPanel.vue';
 
+const now = Date.now();
+
 const meta = {
   title: 'Business/Repository/ResourcesPanel',
   component: ResourcesPanel,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 600px;"><story /></div>' }),
+  ],
   argTypes: {
-    isLoading: { control: 'boolean' },
-  },
-  args: {
-    isLoading: false,
+    repositoryId: { description: '仓库 ID' },
+    resources: { description: '资源列表' },
+    isLoading: { description: '加载状态', control: 'boolean' },
   },
 } satisfies Meta<typeof ResourcesPanel>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockResources = [
-  {
-    id: 'res-1',
-    name: 'Architecture Overview.md',
-    type: 'markdown',
-    size: 8192,
-    updatedAt: Date.now() - 3600000,
-    path: '/docs/Architecture Overview.md',
-  },
-  {
-    id: 'res-2',
-    name: 'system-diagram.png',
-    type: 'image',
-    size: 2097152,
-    updatedAt: Date.now() - 86400000,
-    path: '/assets/system-diagram.png',
-  },
-  {
-    id: 'res-3',
-    name: 'Meeting Notes Jan 2024.md',
-    type: 'markdown',
-    size: 4096,
-    updatedAt: Date.now() - 172800000,
-    path: '/notes/Meeting Notes Jan 2024.md',
-  },
-  {
-    id: 'res-4',
-    name: 'API Spec.yaml',
-    type: 'yaml',
-    size: 16384,
-    updatedAt: Date.now() - 259200000,
-    path: '/specs/API Spec.yaml',
-  },
-];
-
 export const Default: Story = {
   args: {
     repositoryId: 'repo-1',
-    resources: mockResources,
+    resources: [
+      { id: 'r1', name: 'README.md', type: 'markdown', size: 2048, updatedAt: now, path: '/README.md' },
+      { id: 'r2', name: 'architecture.png', type: 'image', size: 524288, updatedAt: now - 86400_000, path: '/images/architecture.png' },
+      { id: 'r3', name: 'config.json', type: 'json', size: 512, updatedAt: now - 86400_000 * 7, path: '/config.json' },
+    ],
+    isLoading: false,
   },
 };
 
@@ -70,12 +45,14 @@ export const Empty: Story = {
   args: {
     repositoryId: 'repo-1',
     resources: [],
+    isLoading: false,
   },
 };
 
-export const SingleResource: Story = {
+export const NoRepository: Story = {
   args: {
-    repositoryId: 'repo-1',
-    resources: [mockResources[0]],
+    repositoryId: null,
+    resources: [],
+    isLoading: false,
   },
 };

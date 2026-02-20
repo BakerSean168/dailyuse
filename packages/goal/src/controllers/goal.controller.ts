@@ -21,9 +21,50 @@ import {
   UpdateKeyResultProgressSchema,
   CreateGoalReviewSchema,
 } from '@dailyuse/contracts/goal';
+import type {
+  CreateGoalReq,
+  UpdateGoalReq,
+  QueryGoalsReq,
+  AddKeyResultReq,
+  UpdateKeyResultReq,
+  UpdateKeyResultProgressReq,
+  CreateGoalReviewReq,
+} from '@dailyuse/contracts/goal';
 import type { Context } from '@dailyuse/contracts/shared';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { GoalRouteHandlers } from './routes';
+import type {
+  CreateGoal,
+  GetGoal,
+  ListGoals,
+  UpdateGoal,
+  DeleteGoal,
+  ArchiveGoal,
+  ActivateGoal,
+  SearchGoals,
+  AddGoalKeyResult,
+  UpdateGoalKeyResult,
+  UpdateGoalKeyResultProgress,
+  DeleteGoalKeyResult,
+  AddGoalReview,
+} from '../application-server';
+
+// ============ Use Case Port ============
+
+export interface GoalUseCases {
+  createGoal: CreateGoal;
+  getGoal: GetGoal;
+  listGoals: ListGoals;
+  updateGoal: UpdateGoal;
+  deleteGoal: DeleteGoal;
+  archiveGoal: ArchiveGoal;
+  activateGoal: ActivateGoal;
+  searchGoals: SearchGoals;
+  addKeyResult: AddGoalKeyResult;
+  updateKeyResult: UpdateGoalKeyResult;
+  updateKeyResultProgress: UpdateGoalKeyResultProgress;
+  deleteKeyResult: DeleteGoalKeyResult;
+  addReview: AddGoalReview;
+}
 
 /**
  * Goal Controller
@@ -32,11 +73,11 @@ import type { GoalRouteHandlers } from './routes';
  * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class GoalController {
-  constructor(private readonly useCases: GoalRouteHandlers) {}
+  constructor(private readonly useCases: GoalUseCases) {}
 
   // ==================== Goal CRUD ====================
 
-  async create(input: unknown, context: Context): Promise<Result<unknown>> {
+  async create(input: CreateGoalReq, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -45,10 +86,10 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createGoal.execute(parsed.data, context);
+    return this.useCases.createGoal.execute(parsed.data, ctx);
   }
 
-  async list(query: unknown): Promise<Result<unknown>> {
+  async list(query: QueryGoalsReq): Promise<Result<unknown>> {
     const parsed = QueryGoalsSchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -60,21 +101,21 @@ export class GoalController {
     return this.useCases.listGoals.execute(parsed.data);
   }
 
-  async search(identityId: string, query: string): Promise<Result<unknown>> {
+  async search(query: string, ctx: Context): Promise<Result<unknown>> {
     if (!query.trim()) {
       return fail({
         code: 'VALIDATION_ERROR',
         message: 'Search query (q) is required',
       });
     }
-    return this.useCases.searchGoals.execute(identityId, query);
+    return this.useCases.searchGoals.execute(ctx.identityId, query);
   }
 
   async get(id: string, includeChildren = true): Promise<Result<unknown>> {
     return this.useCases.getGoal.execute(id, includeChildren);
   }
 
-  async update(id: string, input: unknown): Promise<Result<unknown>> {
+  async update(id: string, input: UpdateGoalReq): Promise<Result<unknown>> {
     const parsed = UpdateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -102,7 +143,7 @@ export class GoalController {
 
   // ==================== Key Results ====================
 
-  async addKeyResult(goalId: string, input: unknown): Promise<Result<unknown>> {
+  async addKeyResult(goalId: string, input: AddKeyResultReq): Promise<Result<unknown>> {
     const parsed = AddKeyResultSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,
@@ -125,7 +166,7 @@ export class GoalController {
     });
   }
 
-  async updateKeyResult(goalId: string, krId: string, input: unknown): Promise<Result<unknown>> {
+  async updateKeyResult(goalId: string, krId: string, input: UpdateKeyResultReq): Promise<Result<unknown>> {
     const parsed = UpdateKeyResultSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -143,7 +184,7 @@ export class GoalController {
     });
   }
 
-  async updateKeyResultProgress(goalId: string, krId: string, input: unknown): Promise<Result<unknown>> {
+  async updateKeyResultProgress(goalId: string, krId: string, input: UpdateKeyResultProgressReq): Promise<Result<unknown>> {
     const parsed = UpdateKeyResultProgressSchema.safeParse({
       ...(input as Record<string, unknown>),
       keyResultId: krId,
@@ -169,7 +210,7 @@ export class GoalController {
 
   // ==================== Reviews ====================
 
-  async addReview(goalId: string, input: unknown): Promise<Result<unknown>> {
+  async addReview(goalId: string, input: CreateGoalReviewReq): Promise<Result<unknown>> {
     const parsed = CreateGoalReviewSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,

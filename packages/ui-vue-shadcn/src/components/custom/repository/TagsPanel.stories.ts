@@ -5,60 +5,83 @@ const meta = {
   title: 'Business/Repository/TagsPanel',
   component: TagsPanel,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 320px;"><story /></div>' }),
+  ],
   argTypes: {
-    loading: { control: 'boolean' },
-    error: { control: 'text' },
-  },
-  args: {
-    loading: false,
-    error: null,
+    statistics: { description: '标签统计信息' },
+    selectedTag: { description: '当前选中的标签', control: 'text' },
+    filteredResources: { description: '已筛选的资源' },
+    loading: { description: '加载状态', control: 'boolean' },
+    error: { description: '错误信息', control: 'text' },
   },
 } satisfies Meta<typeof TagsPanel>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockStatistics = [
-  { tag: 'architecture', count: 12 },
-  { tag: 'api', count: 8 },
-  { tag: 'frontend', count: 15 },
-  { tag: 'database', count: 6 },
-  { tag: 'security', count: 4 },
-  { tag: 'devops', count: 9 },
-  { tag: 'testing', count: 7 },
-  { tag: 'documentation', count: 11 },
-];
-
-const mockFilteredResources = [
-  { id: 'res-1', title: 'System Architecture Overview', path: '/docs/architecture/overview.md', updatedAt: '2024-01-15T10:30:00Z' },
-  { id: 'res-2', title: 'Microservices Design', path: '/docs/architecture/microservices.md', updatedAt: '2024-01-12T14:20:00Z' },
-  { id: 'res-3', title: 'Database Schema Design', path: '/docs/architecture/database.md', updatedAt: '2024-01-10T09:00:00Z' },
-];
-
 export const Default: Story = {
   args: {
-    statistics: mockStatistics,
+    statistics: [
+      { tag: 'TypeScript', count: 15 },
+      { tag: 'Vue', count: 12 },
+      { tag: 'Architecture', count: 8 },
+      { tag: 'Testing', count: 6 },
+      { tag: 'DevOps', count: 4 },
+      { tag: 'Database', count: 3 },
+    ],
+    selectedTag: null,
+    filteredResources: [],
+    loading: false,
+    error: null,
   },
 };
 
-export const WithSelectedTag: Story = {
+export const WithSelection: Story = {
   args: {
-    statistics: mockStatistics,
-    selectedTag: 'architecture',
-    filteredResources: mockFilteredResources,
+    statistics: [
+      { tag: 'TypeScript', count: 15 },
+      { tag: 'Vue', count: 12 },
+      { tag: 'Architecture', count: 8 },
+    ],
+    selectedTag: 'TypeScript',
+    filteredResources: [
+      { id: 'r1', title: 'TypeScript 类型体操指南', path: '/docs/ts-types.md', updatedAt: new Date().toISOString() },
+      { id: 'r2', title: 'TS 配置最佳实践', path: '/docs/tsconfig.md', updatedAt: new Date(Date.now() - 86400_000).toISOString() },
+      { id: 'r3', title: '泛型编程入门', path: '/docs/generics.md', updatedAt: new Date(Date.now() - 86400_000 * 3).toISOString() },
+    ],
+    loading: false,
+    error: null,
   },
 };
 
 export const Loading: Story = {
   args: {
     statistics: [],
+    selectedTag: null,
+    filteredResources: [],
     loading: true,
+    error: null,
   },
 };
 
-export const WithError: Story = {
+export const Error: Story = {
   args: {
     statistics: [],
-    error: 'Failed to load tag statistics. Please try again.',
+    selectedTag: null,
+    filteredResources: [],
+    loading: false,
+    error: '加载标签统计失败。',
+  },
+};
+
+export const Empty: Story = {
+  args: {
+    statistics: [],
+    selectedTag: null,
+    filteredResources: [],
+    loading: false,
+    error: null,
   },
 };

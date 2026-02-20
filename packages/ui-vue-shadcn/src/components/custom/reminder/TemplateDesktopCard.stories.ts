@@ -1,99 +1,66 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { ref } from 'vue';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
 const meta = {
   title: 'Business/Reminder/TemplateDesktopCard',
   component: TemplateDesktopCard,
   tags: ['autodocs'],
-  argTypes: {
-    template: { control: 'object' },
-  },
+  parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof TemplateDesktopCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
+const mockTemplate = {
+  id: 'tpl-1',
+  name: '每日喝水提醒',
+  description: '每隔 2 小时提醒喝一杯水，保持身体水分充足。',
+  icon: null,
+  color: '#2196F3',
+  effectiveEnabled: true,
+  groupId: 'grp-1',
+  triggerText: '每 2 小时',
+  trigger: {
+    type: 'INTERVAL',
+    interval: { minutes: 120 },
+    fixedTime: null,
+  },
+  createdAt: Date.now() - 86400_000 * 30,
+  updatedAt: Date.now() - 86400_000,
+};
 
 export const ActiveTemplate: Story = {
-  render: (args) => ({
+  render: () => ({
     components: { TemplateDesktopCard },
     setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const dialogRef = ref();
+      const open = () => dialogRef.value?.open();
+      return { dialogRef, open, template: mockTemplate };
     },
-    template: `<TemplateDesktopCard ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">查看模板详情</button>
+        <TemplateDesktopCard ref="dialogRef" :template="template" />
+      </div>
+    `,
   }),
-  args: {
-    template: {
-      id: 'tmpl-1',
-      name: 'Drink Water Reminder',
-      description: 'Stay hydrated throughout the day by drinking water every 2 hours.',
-      icon: null,
-      color: '#2196F3',
-      effectiveEnabled: true,
-      groupId: 'grp-1',
-      triggerText: 'Every 2 hours',
-      trigger: {
-        type: 'INTERVAL',
-        interval: { minutes: 120 },
-        fixedTime: null,
-      },
-      createdAt: now - 1000 * 60 * 60 * 24 * 30,
-      updatedAt: now - 1000 * 60 * 60 * 2,
-    },
-  },
 };
 
 export const PausedTemplate: Story = {
-  render: (args) => ({
+  render: () => ({
     components: { TemplateDesktopCard },
     setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const dialogRef = ref();
+      const pausedTemplate = { ...mockTemplate, id: 'tpl-2', name: '午休提醒', description: '已暂停的午休时间提醒。', effectiveEnabled: false, groupId: null, triggerText: '每天 12:30', trigger: { type: 'FIXED_TIME', fixedTime: { time: '12:30' }, interval: null } };
+      const open = () => dialogRef.value?.open();
+      return { dialogRef, open, template: pausedTemplate };
     },
-    template: `<TemplateDesktopCard ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md" @click="open">查看已暂停模板</button>
+        <TemplateDesktopCard ref="dialogRef" :template="template" />
+      </div>
+    `,
   }),
-  args: {
-    template: {
-      id: 'tmpl-2',
-      name: 'Morning Meditation',
-      description: 'Start your day with a 10-minute meditation session.',
-      icon: null,
-      color: '#4CAF50',
-      effectiveEnabled: false,
-      groupId: null,
-      triggerText: 'Daily at 7:00 AM',
-      trigger: {
-        type: 'FIXED_TIME',
-        interval: null,
-        fixedTime: { time: '07:00' },
-      },
-      createdAt: now - 1000 * 60 * 60 * 24 * 60,
-      updatedAt: now - 1000 * 60 * 60 * 24 * 5,
-    },
-  },
-};
-
-export const NoTemplate: Story = {
-  render: (args) => ({
-    components: { TemplateDesktopCard },
-    setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
-    },
-    template: `<TemplateDesktopCard ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
-  }),
-  args: {
-    template: null,
-  },
 };

@@ -5,10 +5,11 @@ const meta = {
   title: 'Business/Notification/NotificationPermissionWarning',
   component: NotificationPermissionWarning,
   tags: ['autodocs'],
+  parameters: { layout: 'fullscreen' },
   argTypes: {
-    showWarning: { control: 'boolean' },
-    statusMessage: { control: 'text' },
-    canRequestPermission: { control: 'boolean' },
+    showWarning: { description: '是否显示警告', control: 'boolean' },
+    statusMessage: { description: '状态提示文本', control: 'text' },
+    canRequestPermission: { description: '是否可以请求权限', control: 'boolean' },
   },
 } satisfies Meta<typeof NotificationPermissionWarning>;
 
@@ -18,7 +19,7 @@ type Story = StoryObj<typeof meta>;
 export const CanRequest: Story = {
   args: {
     showWarning: true,
-    statusMessage: 'Enable browser notifications to receive real-time reminders and updates.',
+    statusMessage: '浏览器通知权限尚未开启，您可能会错过重要提醒。',
     canRequestPermission: true,
   },
 };
@@ -26,7 +27,7 @@ export const CanRequest: Story = {
 export const CannotRequest: Story = {
   args: {
     showWarning: true,
-    statusMessage: 'Notification permission was denied. Please enable it in your browser settings.',
+    statusMessage: '浏览器通知权限已被永久拒绝，请在浏览器设置中手动开启。',
     canRequestPermission: false,
   },
 };
@@ -34,7 +35,7 @@ export const CannotRequest: Story = {
 export const Hidden: Story = {
   args: {
     showWarning: false,
-    statusMessage: 'This should not be visible.',
-    canRequestPermission: true,
+    statusMessage: '',
+    canRequestPermission: false,
   },
 };

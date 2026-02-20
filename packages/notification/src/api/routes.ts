@@ -25,21 +25,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { NotificationController } from './controller';
-
-// ============ Types ============
-
-export interface NotificationRouteHandlers {
-  createNotification(data: any): Promise<any>;
-  listNotifications(query: any): Promise<any>;
-  getNotification(id: string): Promise<any>;
-  updateNotification(id: string, data: any): Promise<any>;
-  deleteNotification(id: string): Promise<any>;
-  markAsRead(id: string): Promise<any>;
-  batchMarkAsRead(data: any): Promise<any>;
-  batchDelete(data: any): Promise<any>;
-  cleanupOldNotifications(data: any): Promise<any>;
-}
+import { NotificationController } from '../controllers/notification.controller';
+import type { NotificationUseCases } from '../controllers/notification.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -76,7 +63,7 @@ function parseBoolean(value: unknown): boolean | undefined {
 // ============ Route Registration ============
 
 export function registerNotificationRoutes(
-  handlers: NotificationRouteHandlers,
+  handlers: NotificationUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();

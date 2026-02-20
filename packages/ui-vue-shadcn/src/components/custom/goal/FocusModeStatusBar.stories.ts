@@ -5,19 +5,14 @@ const meta = {
   title: 'Business/Goal/FocusModeStatusBar',
   component: FocusModeStatusBar,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
   argTypes: {
-    status: { control: 'select', options: ['active', 'expired'] },
-    show: { control: 'boolean' },
-    loading: { control: 'boolean' },
-    remainingDays: { control: { type: 'number', min: 0, max: 90 } },
-  },
-  args: {
-    show: true,
-    status: 'active',
-    statusText: '专注模式已启用',
-    detailText: '当前专注：提升团队交付效率、优化系统性能',
-    remainingDays: 14,
-    loading: false,
+    show: { description: '是否显示', control: 'boolean' },
+    status: { description: '状态', control: 'select', options: ['active', 'expired'] },
+    statusText: { description: '状态文本', control: 'text' },
+    detailText: { description: '详情文本', control: 'text' },
+    remainingDays: { description: '剩余天数', control: 'number' },
+    loading: { description: '加载中', control: 'boolean' },
   },
 } satisfies Meta<typeof FocusModeStatusBar>;
 
@@ -25,34 +20,44 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Active: Story = {
-  args: {},
+  args: {
+    show: true,
+    status: 'active',
+    statusText: '专注模式已启用',
+    detailText: '正在专注「提升编程能力」',
+    remainingDays: 14,
+    loading: false,
+  },
 };
 
 export const Expired: Story = {
   args: {
+    show: true,
     status: 'expired',
-    statusText: '专注模式已过期',
-    detailText: '请延期或关闭当前专注周期',
+    statusText: '专注周期已过期',
+    detailText: '「提升编程能力」专注周期已结束',
     remainingDays: 0,
+    loading: false,
   },
 };
 
-export const WarningFewDays: Story = {
+export const UrgentDeadline: Story = {
   args: {
+    show: true,
+    status: 'active',
     statusText: '专注模式即将到期',
-    detailText: '专注周期将在 3 天内结束',
-    remainingDays: 3,
-  },
-};
-
-export const Loading: Story = {
-  args: {
-    loading: true,
+    detailText: '请尽快完成当前目标',
+    remainingDays: 2,
+    loading: false,
   },
 };
 
 export const Hidden: Story = {
   args: {
     show: false,
+    status: 'active',
+    statusText: '',
+    detailText: '',
+    remainingDays: 0,
   },
 };

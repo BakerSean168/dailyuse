@@ -1,97 +1,56 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { ref } from 'vue';
 import GroupDialog from './GroupDialog.vue';
 
 const meta = {
   title: 'Business/Reminder/GroupDialog',
   component: GroupDialog,
   tags: ['autodocs'],
-  argTypes: {
-    group: { control: 'object' },
-  },
+  parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof GroupDialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const CreateNew: Story = {
-  render: (args) => ({
+export const CreateMode: Story = {
+  render: () => ({
     components: { GroupDialog },
     setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const dialogRef = ref();
+      const open = () => dialogRef.value?.open();
+      return { dialogRef, open };
     },
-    template: `<GroupDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">新建分组</button>
+        <GroupDialog ref="dialogRef" />
+      </div>
+    `,
   }),
-  args: { group: null },
 };
 
-export const EditExisting: Story = {
-  render: (args) => ({
+export const EditMode: Story = {
+  render: () => ({
     components: { GroupDialog },
     setup() {
-      const dialogRef = { value: null as any };
-      const group = {
+      const dialogRef = ref();
+      const editGroup = {
         id: 'grp-1',
-        name: 'Work Reminders',
-        description: 'All work-related reminder templates',
+        name: '工作提醒',
+        description: '所有工作相关提醒',
         icon: 'mdi-briefcase',
         color: '#2196F3',
         controlMode: 'Individual',
         order: 1,
       };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.openForEdit(group), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const open = () => dialogRef.value?.openForEdit(editGroup);
+      return { dialogRef, open, editGroup };
     },
-    template: `<GroupDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">编辑分组</button>
+        <GroupDialog ref="dialogRef" :group="editGroup" />
+      </div>
+    `,
   }),
-  args: {
-    group: {
-      id: 'grp-1',
-      name: 'Work Reminders',
-      description: 'All work-related reminder templates',
-      icon: 'mdi-briefcase',
-      color: '#2196F3',
-      controlMode: 'Individual',
-      order: 1,
-    },
-  },
-};
-
-export const GroupControlMode: Story = {
-  render: (args) => ({
-    components: { GroupDialog },
-    setup() {
-      const dialogRef = { value: null as any };
-      const group = {
-        id: 'grp-2',
-        name: 'Health Goals',
-        description: 'All controlled together',
-        icon: 'mdi-heart',
-        color: '#4CAF50',
-        controlMode: 'Group',
-        order: 2,
-      };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.openForEdit(group), 100);
-      };
-      return { args, dialogRef, onMounted };
-    },
-    template: `<GroupDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
-  }),
-  args: {
-    group: {
-      id: 'grp-2',
-      name: 'Health Goals',
-      description: 'All controlled together',
-      icon: 'mdi-heart',
-      color: '#4CAF50',
-      controlMode: 'Group',
-      order: 2,
-    },
-  },
 };

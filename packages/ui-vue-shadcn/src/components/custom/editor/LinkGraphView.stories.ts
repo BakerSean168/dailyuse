@@ -5,13 +5,11 @@ const meta = {
   title: 'Business/Editor/LinkGraphView',
   component: LinkGraphView,
   tags: ['autodocs'],
+  parameters: { layout: 'fullscreen' },
+  decorators: [() => ({ template: '<div style="height: 500px;"><story /></div>' })],
   argTypes: {
-    documentId: { control: 'text' },
-    initialDepth: { control: { type: 'number', min: 1, max: 5, step: 1 } },
-  },
-  args: {
-    documentId: 'doc-abc-123',
-    initialDepth: 2,
+    documentId: { description: '文档 ID', control: 'text' },
+    initialDepth: { description: '初始深度', control: { type: 'range', min: 1, max: 3 } },
   },
 } satisfies Meta<typeof LinkGraphView>;
 
@@ -19,43 +17,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    documentId: 'doc-abc-123',
-    initialDepth: 2,
-  },
-  render: (args) => ({
-    components: { LinkGraphView },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 500px; width: 100%;"><LinkGraphView v-bind="args" /></div>',
-  }),
+  args: { documentId: 'doc-1', initialDepth: 2 },
 };
 
 export const ShallowDepth: Story = {
-  args: {
-    documentId: 'doc-abc-123',
-    initialDepth: 1,
-  },
-  render: (args) => ({
-    components: { LinkGraphView },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 500px; width: 100%;"><LinkGraphView v-bind="args" /></div>',
-  }),
-};
-
-export const DeepDepth: Story = {
-  args: {
-    documentId: 'doc-abc-123',
-    initialDepth: 4,
-  },
-  render: (args) => ({
-    components: { LinkGraphView },
-    setup() {
-      return { args };
-    },
-    template: '<div style="height: 500px; width: 100%;"><LinkGraphView v-bind="args" /></div>',
-  }),
+  args: { documentId: 'doc-1', initialDepth: 1 },
 };

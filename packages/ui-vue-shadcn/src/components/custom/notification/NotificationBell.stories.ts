@@ -5,35 +5,40 @@ const meta = {
   title: 'Business/Notification/NotificationBell',
   component: NotificationBell,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   argTypes: {
-    unreadCount: { control: { type: 'number', min: 0, max: 200 } },
-    loading: { control: 'boolean' },
-  },
-  args: {
-    unreadCount: 0,
-    loading: false,
+    unreadCount: { description: '未读通知数量', control: { type: 'number', min: 0, max: 200 } },
+    loading: { description: '加载状态', control: 'boolean' },
   },
 } satisfies Meta<typeof NotificationBell>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const NoUnread: Story = {
-  args: { unreadCount: 0 },
+export const Default: Story = {
+  args: {
+    unreadCount: 0,
+    loading: false,
+  },
 };
 
-export const FewUnread: Story = {
-  args: { unreadCount: 3 },
+export const WithUnread: Story = {
+  args: {
+    unreadCount: 5,
+    loading: false,
+  },
 };
 
 export const ManyUnread: Story = {
-  args: { unreadCount: 42 },
-};
-
-export const OverflowCount: Story = {
-  args: { unreadCount: 150 },
+  args: {
+    unreadCount: 128,
+    loading: false,
+  },
 };
 
 export const Loading: Story = {
-  args: { unreadCount: 5, loading: true },
+  args: {
+    unreadCount: 0,
+    loading: true,
+  },
 };

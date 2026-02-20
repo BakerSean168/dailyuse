@@ -1,113 +1,68 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { ref } from 'vue';
 import TemplateDialog from './TemplateDialog.vue';
+
+const groupOptions = [
+  { id: 'grp-1', name: '工作提醒' },
+  { id: 'grp-2', name: '健康管理' },
+  { id: 'grp-3', name: '学习计划' },
+];
 
 const meta = {
   title: 'Business/Reminder/TemplateDialog',
   component: TemplateDialog,
   tags: ['autodocs'],
-  argTypes: {
-    template: { control: 'object' },
-    groupOptions: { control: 'object' },
-  },
+  parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof TemplateDialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockGroups = [
-  { id: 'grp-1', name: 'Work Reminders' },
-  { id: 'grp-2', name: 'Health & Fitness' },
-  { id: 'grp-3', name: 'Personal' },
-];
-
-export const CreateNew: Story = {
-  render: (args) => ({
+export const CreateMode: Story = {
+  render: () => ({
     components: { TemplateDialog },
     setup() {
-      const dialogRef = { value: null as any };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.open(), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const dialogRef = ref();
+      const open = () => dialogRef.value?.openForCreate();
+      return { dialogRef, open, groupOptions };
     },
-    template: `<TemplateDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">新建提醒模板</button>
+        <TemplateDialog ref="dialogRef" :group-options="groupOptions" />
+      </div>
+    `,
   }),
-  args: {
-    template: null,
-    groupOptions: mockGroups,
-  },
 };
 
-export const EditExisting: Story = {
-  render: (args) => ({
+export const EditMode: Story = {
+  render: () => ({
     components: { TemplateDialog },
     setup() {
-      const dialogRef = { value: null as any };
-      const template = {
-        id: 'tmpl-1',
-        name: 'Drink Water',
-        description: 'Stay hydrated every 2 hours',
+      const dialogRef = ref();
+      const existingTemplate = {
+        id: 'tpl-1',
+        name: '每日喝水提醒',
+        description: '每 2 小时提醒喝水',
         importanceLevel: 'MODERATE',
-        triggerType: 'INTERVAL',
-        trigger: { type: 'INTERVAL', interval: { minutes: 120 }, fixedTime: null },
-        color: '#2196F3',
+        color: '#4CAF50',
         icon: 'mdi-bell',
-        tags: ['health', 'daily'],
+        tags: ['健康', '日常'],
         groupId: 'grp-2',
+        trigger: {
+          type: 'INTERVAL',
+          interval: { minutes: 120 },
+          fixedTime: null,
+        },
       };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.openForEdit(template), 100);
-      };
-      return { args, dialogRef, onMounted };
+      const open = () => dialogRef.value?.openForEdit(existingTemplate);
+      return { dialogRef, open, groupOptions, existingTemplate };
     },
-    template: `<TemplateDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
+    template: `
+      <div class="p-8">
+        <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md" @click="open">编辑模板</button>
+        <TemplateDialog ref="dialogRef" :template="existingTemplate" :group-options="groupOptions" />
+      </div>
+    `,
   }),
-  args: {
-    template: {
-      id: 'tmpl-1',
-      name: 'Drink Water',
-      description: 'Stay hydrated every 2 hours',
-      importanceLevel: 'MODERATE',
-      trigger: { type: 'INTERVAL', interval: { minutes: 120 }, fixedTime: null },
-      color: '#2196F3',
-      tags: ['health', 'daily'],
-      groupId: 'grp-2',
-    },
-    groupOptions: mockGroups,
-  },
-};
-
-export const FixedTimeTemplate: Story = {
-  render: (args) => ({
-    components: { TemplateDialog },
-    setup() {
-      const dialogRef = { value: null as any };
-      const template = {
-        id: 'tmpl-2',
-        name: 'Morning Standup',
-        description: 'Join daily standup at 9 AM',
-        importanceLevel: 'IMPORTANT',
-        triggerType: 'FIXED_TIME',
-        trigger: { type: 'FIXED_TIME', fixedTime: { time: '09:00' }, interval: null },
-        color: '#FF9800',
-        icon: 'mdi-bell',
-        tags: ['work'],
-        groupId: 'grp-1',
-      };
-      const onMounted = () => {
-        setTimeout(() => dialogRef.value?.openForEdit(template), 100);
-      };
-      return { args, dialogRef, onMounted };
-    },
-    template: `<TemplateDialog ref="dialogRef" v-bind="args" @vue:mounted="onMounted" />`,
-  }),
-  args: {
-    template: {
-      id: 'tmpl-2',
-      name: 'Morning Standup',
-      trigger: { type: 'FIXED_TIME', fixedTime: { time: '09:00' }, interval: null },
-      groupId: 'grp-1',
-    },
-    groupOptions: mockGroups,
-  },
 };

@@ -5,11 +5,9 @@ const meta = {
   title: 'Business/Governance/RuleStatusBadge',
   component: RuleStatusBadge,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   argTypes: {
-    status: {
-      control: 'select',
-      options: ['Active', 'Draft', 'Deprecated'],
-    },
+    status: { description: '规则状态', control: 'select', options: ['Active', 'Draft', 'Deprecated'] },
   },
 } satisfies Meta<typeof RuleStatusBadge>;
 
@@ -26,21 +24,4 @@ export const Draft: Story = {
 
 export const Deprecated: Story = {
   args: { status: 'Deprecated' },
-};
-
-export const Unknown: Story = {
-  args: { status: 'CustomStatus' },
-};
-
-export const AllStatuses: Story = {
-  render: () => ({
-    components: { RuleStatusBadge },
-    template: `
-      <div class="flex items-center gap-3">
-        <RuleStatusBadge status="Active" />
-        <RuleStatusBadge status="Draft" />
-        <RuleStatusBadge status="Deprecated" />
-      </div>
-    `,
-  }),
 };

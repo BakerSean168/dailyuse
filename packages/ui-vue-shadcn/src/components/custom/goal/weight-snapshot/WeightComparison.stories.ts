@@ -5,21 +5,18 @@ const meta = {
   title: 'Business/Goal/WeightSnapshot/WeightComparison',
   component: WeightComparison,
   tags: ['autodocs'],
-  args: {
-    goalId: 'goal-abc-123',
+  parameters: {
+    layout: 'padded',
+    docs: { description: { component: '权重对比视图。依赖 `useWeightSnapshot()` composable 获取快照数据。' } },
   },
-  decorators: [() => ({ template: '<div style="max-width: 700px;"><story /></div>' })],
+  argTypes: {
+    goalId: { description: '目标 ID', control: 'text' },
+  },
 } satisfies Meta<typeof WeightComparison>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
-};
-
-export const DifferentGoal: Story = {
-  args: {
-    goalId: 'goal-def-456',
-  },
+  args: { goalId: 'goal-1' },
 };

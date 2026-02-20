@@ -9,15 +9,15 @@ import type {
 import type { RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
 import type { TaskTimeConfigDTO } from '../value-objects';
 
-export const TaskTimeConfigSchema = z.custom<TaskTimeConfigDTO>();
+export const TaskTimeConfigSchema = z.custom<TaskTimeConfigDTO>().openapi({ type: 'object', description: '任务时间配置' });
 
 export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
 
-export const RecurrenceConfigSchema = z.custom<RecurrenceRuleDTO>();
+export const RecurrenceConfigSchema = z.custom<RecurrenceRuleDTO>().openapi({ type: 'object', description: '循环规则配置' });
 
 export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;
 
-export const TaskReminderConfigSchema = z.custom<TaskReminderConfigDTO>();
+export const TaskReminderConfigSchema = z.custom<TaskReminderConfigDTO>().openapi({ type: 'object', description: '任务提醒配置' });
 
 export const CreateTaskTemplateSchema = z.object({
   identityId: brandedId<IdentityId>().optional(),
@@ -27,7 +27,7 @@ export const CreateTaskTemplateSchema = z.object({
   timeConfig: TaskTimeConfigSchema,
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   reminderConfig: TaskReminderConfigSchema.optional().nullable(),
-  importance: z.custom<ImportanceLevel>(),
+  importance: z.custom<ImportanceLevel>().openapi({ type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: '重要程度' }),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional().default([]),
   color: z.string().optional().nullable(),
@@ -44,7 +44,7 @@ export const UpdateTaskTemplateSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
-  importance: z.custom<ImportanceLevel>().optional(),
+  importance: z.custom<ImportanceLevel>().openapi({ type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: '重要程度' }).optional(),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),

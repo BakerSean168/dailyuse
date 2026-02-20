@@ -5,10 +5,11 @@ const meta = {
   title: 'Business/Governance/CodeSnippetView',
   component: CodeSnippetView,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  decorators: [() => ({ template: '<div style="width: 600px;"><story /></div>' })],
   argTypes: {
-    snippet: { control: 'object' },
+    snippet: { description: '代码片段数据', control: 'object' },
   },
-  decorators: [() => ({ template: '<div class="max-w-2xl p-4"><story /></div>' })],
 } satisfies Meta<typeof CodeSnippetView>;
 
 export default meta;
@@ -19,10 +20,8 @@ export const GoodExample: Story = {
     snippet: {
       type: 'GoodExample',
       language: 'typescript',
-      content: `export function calculateTotal(items: CartItem[]): number {
-  return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-}`,
-      caption: 'Use pure functions for calculations',
+      content: `interface User {\n  id: string;\n  name: string;\n  email: string;\n}\n\nfunction createUser(data: User): User {\n  return { ...data };\n}`,
+      caption: '使用接口定义类型，确保类型安全',
     },
   },
 };
@@ -32,11 +31,8 @@ export const BadExample: Story = {
     snippet: {
       type: 'BadExample',
       language: 'typescript',
-      content: `let total = 0;
-for (let i = 0; i < items.length; i++) {
-  total = total + items[i].price * items[i].quantity;
-}`,
-      caption: 'Avoid mutable state in calculations',
+      content: `function createUser(data: any): any {\n  return data;\n}`,
+      caption: '避免使用 any 类型',
     },
   },
 };
@@ -46,27 +42,7 @@ export const JsonSnippet: Story = {
     snippet: {
       type: 'GoodExample',
       language: 'json',
-      content: `{
-  "name": "@dailyuse/contracts",
-  "version": "1.0.0",
-  "type": "module"
-}`,
-    },
-  },
-};
-
-export const YamlSnippet: Story = {
-  args: {
-    snippet: {
-      type: 'GoodExample',
-      language: 'yaml',
-      content: `services:
-  api:
-    build: ./Dockerfile.api
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgres://localhost/dailyuse`,
+      content: `{\n  "name": "@dailyuse/contracts",\n  "version": "1.0.0",\n  "type": "module"\n}`,
     },
   },
 };

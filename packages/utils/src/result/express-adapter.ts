@@ -1,25 +1,25 @@
 /**
  * Express Adapter
  *
- * 将 Controller/UseCase 函数适配为 Express 路由处理器。
- * 统一处理 Zod 验证、上下文提取、错误处理和响应格式化。
+ * 将 Controller 函数适配为 Express 路由处理器。
+ * 统一处理上下文提取、错误处理和响应格式化。
+ *
+ * 所有 Zod 验证必须在 Controller 内部完成（Plan B 策略）。
  *
  * @module @dailyuse/utils/result/express-adapter
  *
  * @example
  * ```ts
- * import { expressAdapter, expressAdapterWithValidation } from '@dailyuse/utils/result';
+ * import { expressAdapter } from '@dailyuse/utils/result';
  *
- * // 无验证（适用于无 body 的 GET/DELETE）
- * router.get('/:id', auth, expressAdapter(
- *   (req, ctx) => handlers.getGoal.execute(req.params.id),
+ * // Controller handles validation internally
+ * router.post('/', auth, expressAdapter(
+ *   (req, ctx) => controller.create(req.body, ctx),
+ *   { successStatus: 201 },
  * ));
  *
- * // 带 Zod 验证（适用于 POST/PUT/PATCH）
- * router.post('/', auth, expressAdapterWithValidation(
- *   CreateGoalSchema,
- *   (data, ctx, req) => handlers.createGoal.execute(data, ctx),
- *   { successStatus: 201 },
+ * router.get('/:id', auth, expressAdapter(
+ *   (req, ctx) => controller.get(req.params.id),
  * ));
  * ```
  */
@@ -65,13 +65,6 @@ interface ExpressLikeResponse {
 }
 
 /**
- * Zod-like schema interface (avoid hard Zod dependency)
- */
-interface ZodLikeSchema<T = unknown> {
-  safeParse(data: unknown): { success: true; data: T } | { success: false; error: { issues: Array<{ path: (string | number)[]; message: string }> } };
-}
-
-/**
  * Options for the Express adapter
  */
 export interface ExpressAdapterOptions {
@@ -100,9 +93,9 @@ function defaultExtractContext(req: ExpressLikeRequest): Context {
 /**
  * Format Zod issues into ResultErrorDetail array
  */
-export function formatZodErrors(issues: Array<{ path: (string | number)[]; message: string }>): ResultErrorDetail[] {
+export function formatZodErrors(issues: Array<{ path: PropertyKey[]; message: string }>): ResultErrorDetail[] {
   return issues.map((issue) => ({
-    field: issue.path.join('.'),
+    field: issue.path.map(String).join('.'),
     code: 'INVALID_FIELD',
     message: issue.message,
   }));
@@ -163,77 +156,16 @@ export function expressAdapter<T>(
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
-      res.status(500).json(responseBuilder.internalError(
-        err instanceof Error ? err.message : 'Internal server error',
-      ));
-    }
-  };
-}
-
-/**
- * Adapt a controller function with Zod validation to an Express route handler.
- *
- * Automatically validates `req.body` against the provided Zod schema,
- * extracts the context, and formats errors consistently.
- *
- * @example
- * ```ts
- * router.post('/', auth, expressAdapterWithValidation(
- *   CreateGoalSchema,
- *   (data, ctx) => handlers.createGoal.execute(data, ctx),
- *   { successStatus: 201 },
- * ));
- *
- * router.put('/:id', auth, expressAdapterWithValidation(
- *   UpdateGoalSchema,
- *   (data, ctx, req) => handlers.updateGoal.execute(req.params.id, data),
- * ));
- * ```
- */
-export function expressAdapterWithValidation<T, S>(
-  schema: ZodLikeSchema<S>,
-  controllerFn: (data: S, context: Context, req: ExpressLikeRequest) => Promise<Result<T>>,
-  options: ExpressAdapterOptions = {},
-): (req: ExpressLikeRequest, res: ExpressLikeResponse) => Promise<void> {
-  const {
-    successStatus = 200,
-    extractContext = defaultExtractContext,
-    requireAuth = true,
-  } = options;
-
-  return async (req: ExpressLikeRequest, res: ExpressLikeResponse) => {
-    const traceId = req.traceId ?? req.id;
-    const startTime = req.startTime ?? Date.now();
-    const responseBuilder = createHttpResponseBuilder({ traceId, startTime });
-
-    try {
-      // Validate input
-      const parsed = schema.safeParse(req.body);
-      if (!parsed.success) {
-        const details = formatZodErrors(parsed.error.issues);
-        res.status(400).json(responseBuilder.validationError(details));
-        return;
-      }
-
-      // Auth check
-      if (requireAuth && !req.user?.identityId) {
-        res.status(401).json(responseBuilder.unauthorized());
-        return;
-      }
-
-      const context = extractContext(req);
-      const result = await controllerFn(parsed.data, context, req);
-
-      if (isOk(result)) {
-        res.status(successStatus).json(responseBuilder.success(result.data as T));
+      // Recognize DomainError (or any Error with a string `code`) and map properly
+      if (err instanceof Error && 'code' in err && typeof (err as Record<string, unknown>).code === 'string') {
+        const code = (err as Record<string, unknown>).code as string;
+        const status = errorCodeToHttpStatus(code);
+        res.status(status).json(responseBuilder.error(code, err.message));
       } else {
-        const status = errorCodeToHttpStatus(result.error?.code ?? 'INTERNAL_ERROR');
-        res.status(status).json(responseBuilder.fromResult(result));
+        res.status(500).json(responseBuilder.internalError(
+          err instanceof Error ? err.message : 'Internal server error',
+        ));
       }
-    } catch (err) {
-      res.status(500).json(responseBuilder.internalError(
-        err instanceof Error ? err.message : 'Internal server error',
-      ));
     }
   };
 }

@@ -5,11 +5,9 @@ const meta = {
   title: 'Business/Editor/EditorToolbar',
   component: EditorToolbar,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
   argTypes: {
-    saving: { control: 'boolean' },
-  },
-  args: {
-    saving: false,
+    saving: { description: '保存中状态', control: 'boolean' },
   },
 } satisfies Meta<typeof EditorToolbar>;
 
@@ -17,13 +15,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    saving: false,
-  },
+  args: { saving: false },
 };
 
 export const Saving: Story = {
-  args: {
-    saving: true,
-  },
+  args: { saving: true },
 };

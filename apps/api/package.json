@@ -31,6 +31,7 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.4.1",
     "@dailyuse/account": "workspace:*",
     "@dailyuse/authentication": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
@@ -38,6 +39,7 @@
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/editor": "workspace:*",
     "@dailyuse/goal": "workspace:*",
+    "@dailyuse/governance": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
     "@dailyuse/patterns": "workspace:*",
@@ -46,7 +48,6 @@
     "@dailyuse/schedule": "workspace:*",
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/task": "workspace:*",
-    "@dailyuse/governance": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",

@@ -1,87 +1,125 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import NotificationItem from './NotificationItem.vue';
 
+const now = new Date().toISOString();
+const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+const dayAgo = new Date(Date.now() - 86400_000).toISOString();
+
+function mockNotification(overrides: Record<string, unknown> = {}) {
+  return {
+    id: crypto.randomUUID?.() ?? '1',
+    identityId: 'user-1',
+    title: '任务提醒',
+    content: '您的任务「编写单元测试」将在 1 小时后到期。',
+    type: 'TASK',
+    category: 'Task',
+    importance: 'Moderate',
+    isRead: false,
+    readAt: null,
+    status: 'Delivered',
+    actions: null,
+    metadata: null,
+    version: 1,
+    createdAt: hourAgo,
+    updatedAt: hourAgo,
+    deletedAt: null,
+    notificationChannels: null,
+    ...overrides,
+  } as any;
+}
+
 const meta = {
   title: 'Business/Notification/NotificationItem',
   component: NotificationItem,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 500px;"><story /></div>' }),
+  ],
   argTypes: {
-    notification: { control: 'object' },
+    notification: { description: '通知数据对象 (NotificationClientDTO)' },
   },
-  decorators: [() => ({ template: '<div class="max-w-lg border rounded-lg"><story /></div>' })],
 } satisfies Meta<typeof NotificationItem>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
 export const Unread: Story = {
   args: {
-    notification: {
-      id: 'notif-1',
-      title: 'New task assigned',
-      content: 'You have been assigned to review the authentication module refactoring PR.',
-      type: 'TASK',
-      importance: 'IMPORTANT',
-      isRead: false,
-      createdAt: new Date(now - 1000 * 60 * 15).toISOString(),
-    },
+    notification: mockNotification(),
   },
 };
 
 export const Read: Story = {
   args: {
-    notification: {
-      id: 'notif-2',
-      title: 'Weekly report generated',
-      content: 'Your weekly productivity report is ready for review.',
+    notification: mockNotification({
+      title: '系统升级完成',
+      content: 'DailyUse v2.3.0 已成功部署，包含多项性能优化。',
       type: 'SYSTEM',
-      importance: 'MODERATE',
+      category: 'System',
+      importance: 'Minor',
       isRead: true,
-      createdAt: new Date(now - 1000 * 60 * 60 * 3).toISOString(),
-    },
+      readAt: now,
+      status: 'Read',
+      createdAt: dayAgo,
+      updatedAt: now,
+    }),
   },
 };
 
-export const Vital: Story = {
+export const Urgent: Story = {
   args: {
-    notification: {
-      id: 'notif-3',
-      title: 'Critical deadline approaching',
-      content: 'The Q4 project milestone is due in 2 hours. Please submit your deliverables.',
+    notification: mockNotification({
+      title: '紧急：生产环境告警',
+      content: 'API 响应时间超过阈值 (> 5s)，请立即检查。',
+      type: 'SYSTEM',
+      category: 'System',
+      importance: 'Vital',
+      status: 'Delivered',
+      createdAt: now,
+      updatedAt: now,
+    }),
+  },
+};
+
+export const Important: Story = {
+  args: {
+    notification: mockNotification({
+      title: '目标进度里程碑',
+      content: '恭喜！年度目标「技术能力提升」已达成 90%。',
       type: 'GOAL',
-      importance: 'VITAL',
-      isRead: false,
-      createdAt: new Date(now - 1000 * 60 * 5).toISOString(),
-    },
+      category: 'Goal',
+      importance: 'Important',
+      createdAt: hourAgo,
+      updatedAt: hourAgo,
+    }),
   },
 };
 
-export const ReminderType: Story = {
+export const Reminder: Story = {
   args: {
-    notification: {
-      id: 'notif-4',
-      title: 'Drink water',
-      content: 'Time to take a break and stay hydrated!',
+    notification: mockNotification({
+      title: '日程提醒',
+      content: '15 分钟后有「产品评审会」，请提前准备材料。',
       type: 'REMINDER',
-      importance: 'MINOR',
-      isRead: false,
-      createdAt: new Date(now - 1000 * 60 * 2).toISOString(),
-    },
+      category: 'Reminder',
+      importance: 'Moderate',
+      createdAt: now,
+      updatedAt: now,
+    }),
   },
 };
 
-export const ScheduleType: Story = {
+export const Schedule: Story = {
   args: {
-    notification: {
-      id: 'notif-5',
-      title: 'Meeting at 3 PM',
-      content: 'Sprint retrospective with the development team in Room A.',
+    notification: mockNotification({
+      title: '日程冲突',
+      content: '「团队站会」与「客户 Demo」时间冲突，请调整。',
       type: 'SCHEDULE',
-      importance: 'MODERATE',
-      isRead: true,
-      createdAt: new Date(now - 1000 * 60 * 60 * 24).toISOString(),
-    },
+      category: 'Schedule',
+      importance: 'Important',
+      createdAt: hourAgo,
+      updatedAt: hourAgo,
+    }),
   },
 };

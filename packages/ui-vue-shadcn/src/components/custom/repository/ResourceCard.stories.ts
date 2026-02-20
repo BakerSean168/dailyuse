@@ -1,84 +1,90 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ResourceCard from './ResourceCard.vue';
 
+const now = new Date().toISOString();
+
+function mockResource(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'res-1',
+    repositoryId: 'repo-1',
+    folderId: 'folder-1',
+    name: 'README.md',
+    type: 'Markdown',
+    mimeType: 'text/markdown',
+    path: '/docs/README.md',
+    size: 2048,
+    content: null,
+    metadata: {},
+    stats: {},
+    status: 'Active',
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    version: 1,
+    isDeleted: false,
+    isArchived: false,
+    isActive: true,
+    isDraft: false,
+    statusText: '活跃',
+    typeText: 'Markdown',
+    displayName: 'README',
+    formattedSize: '2 KB',
+    createdAtText: '2024-01-15',
+    updatedAtText: '2024-12-01',
+    extension: '.md',
+    icon: 'file-text',
+    ...overrides,
+  } as any;
+}
+
 const meta = {
   title: 'Business/Repository/ResourceCard',
   component: ResourceCard,
   tags: ['autodocs'],
-  argTypes: {},
-  args: {},
+  parameters: { layout: 'centered' },
+  decorators: [
+    () => ({ template: '<div style="width: 360px;"><story /></div>' }),
+  ],
+  argTypes: {
+    resource: { description: '资源数据对象 (ResourceClientDTO)' },
+  },
 } satisfies Meta<typeof ResourceCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
-const mockResource = {
-  id: 'res-1',
-  repositoryId: 'repo-1',
-  folderId: 'folder-1',
-  name: 'Getting Started Guide.md',
-  type: 'markdown' as const,
-  mimeType: 'text/markdown',
-  path: '/docs/Getting Started Guide.md',
-  size: 4096,
-  content: null,
-  metadata: {},
-  stats: {},
-  status: 'active' as const,
-  createdAt: now - 604800000,
-  updatedAt: now - 3600000,
-  deletedAt: null,
-  version: 5,
-  isDeleted: false,
-  isArchived: false,
-  isActive: true,
-  isDraft: false,
-  statusText: 'Active',
-  typeText: 'Markdown',
-  displayName: 'Getting Started Guide',
-  formattedSize: '4.0 KB',
-  createdAtText: '7 days ago',
-  updatedAtText: '1 hour ago',
-  extension: 'md',
-  icon: 'file-text',
-};
-
-export const Default: Story = {
+export const Markdown: Story = {
   args: {
-    resource: mockResource,
+    resource: mockResource(),
   },
 };
 
-export const DraftResource: Story = {
+export const Image: Story = {
   args: {
-    resource: {
-      ...mockResource,
+    resource: mockResource({
       id: 'res-2',
-      name: 'Work in Progress.md',
-      isDraft: true,
-      statusText: 'Draft',
-      displayName: 'Work in Progress',
-      updatedAtText: 'Just now',
-    },
+      name: 'architecture-diagram.png',
+      type: 'Image',
+      mimeType: 'image/png',
+      path: '/docs/images/architecture-diagram.png',
+      size: 524288,
+      typeText: '图片',
+      displayName: 'architecture-diagram',
+      formattedSize: '512 KB',
+      extension: '.png',
+    }),
   },
 };
 
-export const LargeFile: Story = {
+export const Draft: Story = {
   args: {
-    resource: {
-      ...mockResource,
+    resource: mockResource({
       id: 'res-3',
-      name: 'Architecture Diagram.png',
-      type: 'image' as const,
-      mimeType: 'image/png',
-      size: 2097152,
-      typeText: 'Image',
-      displayName: 'Architecture Diagram',
-      formattedSize: '2.0 MB',
-      extension: 'png',
-      icon: 'image',
-    },
+      name: '草稿笔记.md',
+      isDraft: true,
+      status: 'Draft',
+      statusText: '草稿',
+      displayName: '草稿笔记',
+    }),
   },
 };

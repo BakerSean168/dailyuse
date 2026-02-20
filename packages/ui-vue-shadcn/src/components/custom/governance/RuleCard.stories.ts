@@ -1,85 +1,57 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import RuleCard from './RuleCard.vue';
 
+const mockRule = {
+  code: 'RULE-001',
+  title: '使用严格类型检查',
+  description: '所有 TypeScript 文件必须启用 strict 模式，禁止使用 any 类型，确保编译时类型安全。这有助于在开发阶段就发现潜在的类型错误。',
+  severity: 'Mandatory' as const,
+  status: 'Active' as const,
+  tags: ['typescript', 'type-safety', 'best-practice'],
+  goodExamples: [{ id: '1' }, { id: '2' }],
+  badExamples: [{ id: '3' }],
+  updatedAt: new Date().toISOString(),
+};
+
 const meta = {
   title: 'Business/Governance/RuleCard',
   component: RuleCard,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  decorators: [() => ({ template: '<div style="width: 400px;"><story /></div>' })],
   argTypes: {
-    rule: { control: 'object' },
+    rule: { description: '规则数据', control: 'object' },
   },
-  decorators: [() => ({ template: '<div class="max-w-lg p-4"><story /></div>' })],
 } satisfies Meta<typeof RuleCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const baseRule = {
-  code: 'GOV-001',
-  title: 'Use strict TypeScript mode',
-  description:
-    'All TypeScript projects must enable strict mode in tsconfig.json to catch common type errors at compile time and improve code quality across the codebase.',
-  severity: 'Mandatory' as const,
-  status: 'Active',
-  tags: ['typescript', 'config'],
-  goodExamples: [{ id: '1' }, { id: '2' }],
-  badExamples: [{ id: '3' }],
-  updatedAt: '2025-01-15T10:30:00Z',
-};
-
-export const Default: Story = {
-  args: { rule: baseRule },
+export const Mandatory: Story = {
+  args: { rule: mockRule as any },
 };
 
 export const Recommended: Story = {
   args: {
-    rule: {
-      ...baseRule,
-      code: 'GOV-012',
-      title: 'Prefer composition over inheritance',
-      severity: 'Recommended',
-      tags: ['architecture', 'design-patterns'],
-      goodExamples: [{ id: '1' }],
-      badExamples: [],
-    },
+    rule: { ...mockRule, code: 'RULE-002', title: '优先使用组合式 API', severity: 'Recommended', tags: ['vue', 'composition-api'] } as any,
   },
 };
 
 export const Draft: Story = {
   args: {
-    rule: {
-      ...baseRule,
-      code: 'GOV-045',
-      title: 'Database migration naming convention',
-      status: 'Draft',
-      tags: ['database', 'naming'],
-      goodExamples: [],
-      badExamples: [],
-    },
+    rule: { ...mockRule, code: 'RULE-003', title: '新规则草稿', status: 'Draft', tags: ['draft'] } as any,
   },
 };
 
 export const Deprecated: Story = {
   args: {
     rule: {
-      ...baseRule,
-      code: 'GOV-003',
-      title: 'Use CommonJS modules',
+      ...mockRule,
+      code: 'RULE-004',
+      title: '已弃用规则',
       status: 'Deprecated',
-      tags: ['modules', 'legacy'],
-      deprecationReason:
-        'ESM is now the standard. Migrate all projects to ES modules by Q2 2025.',
-    },
-  },
-};
-
-export const LongDescription: Story = {
-  args: {
-    rule: {
-      ...baseRule,
-      description:
-        'This is a very long description that should be truncated after 150 characters to ensure the card layout remains consistent and visually appealing across all viewport sizes. The full description should be visible on the detail page.',
-      tags: ['api', 'rest', 'naming', 'versioning', 'documentation'],
-    },
+      deprecationReason: '该规则已被 RULE-005 替代',
+      tags: ['deprecated'],
+    } as any,
   },
 };

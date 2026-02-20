@@ -19,8 +19,8 @@ import {
 import { GovernanceContainer } from '../infrastructure-server/di/governance-container';
 import {
   registerGovernanceCrudRoutes,
-  type GovernanceCrudHandlers,
 } from './routes';
+import type { GovernanceUseCases } from '../controllers/governance.controller';
 import { registerGovernanceInitializationTasks } from './initialization';
 
 /**
@@ -67,7 +67,7 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
       revisionRepository,
     });
 
-    const handlers: GovernanceCrudHandlers = {
+    const handlers: GovernanceUseCases = {
       createRule: (req, cx) =>
         governanceModule.createRule.execute(req, cx),
       updateRule: (id, req, cx) =>

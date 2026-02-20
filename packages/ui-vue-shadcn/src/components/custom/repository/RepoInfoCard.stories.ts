@@ -5,10 +5,14 @@ const meta = {
   title: 'Business/Repository/RepoInfoCard',
   component: RepoInfoCard,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  decorators: [
+    () => ({ template: '<div style="width: 320px;"><story /></div>' }),
+  ],
   argTypes: {
-    updateLabel: { control: 'text' },
+    repository: { description: '仓库对象' },
+    updateLabel: { description: '更新标签文本', control: 'text' },
   },
-  args: {},
 } satisfies Meta<typeof RepoInfoCard>;
 
 export default meta;
@@ -17,28 +21,31 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     repository: {
-      name: 'Knowledge Base',
-      description: 'A comprehensive collection of research notes and technical documentation.',
-      updatedAt: Date.now() - 3600000,
+      name: '个人知识库',
+      description: '存储个人学习笔记和技术文档。',
+      updatedAt: new Date().toISOString(),
     },
+    updateLabel: '更新',
   },
 };
 
-export const WithCustomLabel: Story = {
+export const NoDescription: Story = {
   args: {
     repository: {
-      name: 'Project Docs',
-      description: 'Internal project documentation and meeting notes.',
-      updatedAt: Date.now() - 86400000,
+      name: '项目文档',
+      updatedAt: new Date(Date.now() - 86400_000 * 7).toISOString(),
     },
-    updateLabel: 'Last synced',
+    updateLabel: '更新',
   },
 };
 
-export const MinimalInfo: Story = {
+export const CustomLabel: Story = {
   args: {
     repository: {
-      name: 'New Repository',
+      name: '技术博客',
+      description: '发布在博客上的技术文章集合。',
+      updatedAt: new Date(Date.now() - 86400_000 * 30).toISOString(),
     },
+    updateLabel: 'Last updated',
   },
 };

@@ -5,12 +5,11 @@ const meta = {
   title: 'Business/Repository/LinkPreviewPopover',
   component: LinkPreviewPopover,
   tags: ['autodocs'],
+  parameters: { layout: 'fullscreen' },
   argTypes: {
-    visible: { control: 'boolean' },
-  },
-  args: {
-    visible: true,
-    position: { x: 200, y: 150 },
+    visible: { description: '是否可见', control: 'boolean' },
+    content: { description: '预览内容' },
+    position: { description: '定位坐标' },
   },
 } satisfies Meta<typeof LinkPreviewPopover>;
 
@@ -19,37 +18,44 @@ type Story = StoryObj<typeof meta>;
 
 export const MarkdownPreview: Story = {
   args: {
+    visible: true,
     content: {
-      type: 'markdown',
-      name: 'Architecture Overview.md',
-      excerpt: 'The system uses a domain-driven design approach with clear separation of concerns across multiple layers including domain, application, and infrastructure.',
+      type: 'markdown' as const,
+      name: 'Vue 3 入门指南.md',
+      url: '/docs/vue3-guide.md',
+      excerpt: 'Vue 3 是一个渐进式 JavaScript 框架，用于构建用户界面。本指南将介绍 Composition API 的基本用法...',
       size: 4096,
       id: 'res-1',
     },
+    position: { x: 200, y: 200 },
   },
 };
 
 export const ImagePreview: Story = {
   args: {
+    visible: true,
     content: {
-      type: 'image',
-      name: 'system-diagram.png',
-      url: 'https://via.placeholder.com/400x300',
-      size: 2097152,
+      type: 'image' as const,
+      name: 'architecture-diagram.png',
+      url: '/images/architecture.png',
+      size: 524288,
       id: 'res-2',
     },
+    position: { x: 200, y: 200 },
   },
 };
 
-export const PdfPreview: Story = {
+export const PDFPreview: Story = {
   args: {
+    visible: true,
     content: {
-      type: 'pdf',
-      name: 'Technical Specification.pdf',
-      excerpt: 'This document outlines the technical requirements and specifications for the platform.',
-      size: 1048576,
+      type: 'pdf' as const,
+      name: '设计规范.pdf',
+      url: '/docs/design-spec.pdf',
+      size: 2097152,
       id: 'res-3',
     },
+    position: { x: 200, y: 200 },
   },
 };
 

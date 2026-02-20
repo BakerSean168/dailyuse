@@ -3,9 +3,13 @@ import { ref } from 'vue';
 import ExportDialog from './ExportDialog.vue';
 
 const meta = {
-  title: 'Business/Goal/DAG/ExportDialog',
+  title: 'Business/Goal/Dag/ExportDialog',
   component: ExportDialog,
   tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+    docs: { description: { component: 'DAG 导出弹窗。支持 PNG/SVG/PDF 格式、分辨率、背景色等设置。' } },
+  },
 } satisfies Meta<typeof ExportDialog>;
 
 export default meta;
@@ -15,25 +19,10 @@ export const Default: Story = {
   render: () => ({
     components: { ExportDialog },
     setup() {
-      const open = ref(true);
-      return { open };
+      const dialogRef = ref<InstanceType<typeof ExportDialog>>();
+      const open = () => dialogRef.value?.open();
+      return { dialogRef, open };
     },
-    template: '<ExportDialog v-model="open" />',
-  }),
-};
-
-export const Closed: Story = {
-  render: () => ({
-    components: { ExportDialog },
-    setup() {
-      const open = ref(false);
-      return { open };
-    },
-    template: `
-      <div>
-        <button class="px-4 py-2 bg-primary text-white rounded" @click="open = true">打开导出对话框</button>
-        <ExportDialog v-model="open" />
-      </div>
-    `,
+    template: `<div class="p-4"><button class="px-4 py-2 rounded bg-primary text-primary-foreground" @click="open">导出 DAG</button><ExportDialog ref="dialogRef" /></div>`,
   }),
 };

@@ -1,117 +1,88 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ResourceList from './ResourceList.vue';
 
+const now = new Date().toISOString();
+
+function mockResource(overrides: Record<string, unknown> = {}) {
+  return {
+    id: Math.random().toString(36).slice(2),
+    repositoryId: 'repo-1',
+    folderId: 'folder-1',
+    name: 'document.md',
+    type: 'Markdown',
+    mimeType: 'text/markdown',
+    path: '/docs/document.md',
+    size: 1024,
+    content: null,
+    metadata: {},
+    stats: {},
+    status: 'Active',
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    version: 1,
+    isDeleted: false,
+    isArchived: false,
+    isActive: true,
+    isDraft: false,
+    statusText: '活跃',
+    typeText: 'Markdown',
+    displayName: 'document',
+    formattedSize: '1 KB',
+    createdAtText: '2024-06-01',
+    updatedAtText: '2024-12-01',
+    extension: '.md',
+    icon: 'file-text',
+    ...overrides,
+  } as any;
+}
+
 const meta = {
   title: 'Business/Repository/ResourceList',
   component: ResourceList,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
+  decorators: [
+    () => ({ template: '<div style="max-width: 600px;"><story /></div>' }),
+  ],
   argTypes: {
-    selectedId: { control: 'text' },
+    resources: { description: '资源列表' },
+    selectedId: { description: '选中的资源 ID', control: 'text' },
+    bookmarkedIds: { description: '已书签的资源 ID 列表' },
   },
-  args: {},
 } satisfies Meta<typeof ResourceList>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
-const baseResource = {
-  repositoryId: 'repo-1',
-  folderId: 'folder-1',
-  content: null,
-  metadata: {},
-  stats: {},
-  status: 'active' as const,
-  deletedAt: null,
-  version: 1,
-  isDeleted: false,
-  isArchived: false,
-  isActive: true,
-  isDraft: false,
-  statusText: 'Active',
-};
-
-const mockResources = [
-  {
-    ...baseResource,
-    id: 'res-1',
-    name: 'README.md',
-    type: 'markdown' as const,
-    mimeType: 'text/markdown',
-    path: '/README.md',
-    size: 2048,
-    typeText: 'Markdown',
-    displayName: 'README',
-    formattedSize: '2.0 KB',
-    createdAt: now - 604800000,
-    updatedAt: now - 3600000,
-    createdAtText: '7 days ago',
-    updatedAtText: '1 hour ago',
-    extension: 'md',
-    icon: 'file-text',
-  },
-  {
-    ...baseResource,
-    id: 'res-2',
-    name: 'Architecture.md',
-    type: 'markdown' as const,
-    mimeType: 'text/markdown',
-    path: '/docs/Architecture.md',
-    size: 8192,
-    typeText: 'Markdown',
-    displayName: 'Architecture',
-    formattedSize: '8.0 KB',
-    createdAt: now - 1209600000,
-    updatedAt: now - 86400000,
-    createdAtText: '14 days ago',
-    updatedAtText: '1 day ago',
-    extension: 'md',
-    icon: 'file-text',
-  },
-  {
-    ...baseResource,
-    id: 'res-3',
-    name: 'Meeting Notes 2024.md',
-    type: 'markdown' as const,
-    mimeType: 'text/markdown',
-    path: '/notes/Meeting Notes 2024.md',
-    size: 15360,
-    typeText: 'Markdown',
-    displayName: 'Meeting Notes 2024',
-    formattedSize: '15.0 KB',
-    createdAt: now - 2592000000,
-    updatedAt: now - 7200000,
-    createdAtText: '30 days ago',
-    updatedAtText: '2 hours ago',
-    extension: 'md',
-    icon: 'file-text',
-  },
-];
-
 export const Default: Story = {
   args: {
-    resources: mockResources,
-  },
-};
-
-export const WithSelection: Story = {
-  args: {
-    resources: mockResources,
-    selectedId: 'res-2',
-  },
-};
-
-export const WithBookmarks: Story = {
-  args: {
-    resources: mockResources,
-    selectedId: 'res-1',
-    bookmarkedIds: ['res-1', 'res-3'],
+    resources: [
+      mockResource({ id: 'r1', name: 'README.md', displayName: 'README', path: '/README.md', formattedSize: '2 KB' }),
+      mockResource({ id: 'r2', name: 'architecture.md', displayName: 'architecture', path: '/docs/architecture.md', formattedSize: '8 KB' }),
+      mockResource({ id: 'r3', name: 'api-reference.md', displayName: 'api-reference', path: '/docs/api-reference.md', formattedSize: '15 KB' }),
+      mockResource({ id: 'r4', name: 'deployment-guide.md', displayName: 'deployment-guide', path: '/ops/deployment-guide.md', formattedSize: '4 KB' }),
+    ],
+    selectedId: 'r1',
+    bookmarkedIds: ['r1', 'r3'],
   },
 };
 
 export const Empty: Story = {
   args: {
     resources: [],
+    selectedId: undefined,
+    bookmarkedIds: [],
+  },
+};
+
+export const NoSelection: Story = {
+  args: {
+    resources: [
+      mockResource({ id: 'r1', name: 'notes.md', displayName: 'notes', formattedSize: '1 KB' }),
+      mockResource({ id: 'r2', name: 'todo.md', displayName: 'todo', formattedSize: '512 B' }),
+    ],
+    selectedId: undefined,
+    bookmarkedIds: [],
   },
 };

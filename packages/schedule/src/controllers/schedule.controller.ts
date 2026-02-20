@@ -3,36 +3,43 @@
  *
  * Encapsulates Zod validation and use case orchestration.
  * Shared by both Express (HTTP) and IPC transport layers.
- *
- * Each method:
- * 1. Validates input via Zod schema (where applicable)
- * 2. Delegates to the corresponding handler
- * 3. Returns a Result<T> (transport-agnostic)
  */
 
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
+import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateScheduleTaskRequestSchema,
   UpdateScheduleTaskRequestSchema,
   ScheduleTaskQueryParamsSchema,
   BatchScheduleTaskOperationRequestSchema,
 } from '@dailyuse/contracts/schedule';
+import type {
+  CreateScheduleTaskRequest,
+  UpdateScheduleTaskRequest,
+  BatchScheduleTaskOperationRequest,
+} from '@dailyuse/contracts/schedule';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { ScheduleRouteHandlers } from './routes';
 
-/**
- * Schedule Controller
- *
- * Provides validated handler calls for the Schedule module.
- * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
- */
+// ============ Use Case Port ============
+
+export interface ScheduleUseCases {
+  createTask(data: CreateScheduleTaskRequest, ctx: Context): Promise<Result<unknown>>;
+  listTasks(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
+  getTask(id: string): Promise<Result<unknown>>;
+  updateTask(id: string, data: UpdateScheduleTaskRequest): Promise<Result<unknown>>;
+  deleteTask(id: string): Promise<Result<unknown>>;
+  pauseTask(id: string): Promise<Result<unknown>>;
+  resumeTask(id: string): Promise<Result<unknown>>;
+  triggerTask(id: string): Promise<Result<unknown>>;
+}
+
 export class ScheduleController {
-  constructor(private readonly handlers: ScheduleRouteHandlers) {}
+  constructor(private readonly useCases: ScheduleUseCases) {}
 
   // ==================== Task CRUD ====================
 
-  async createTask(input: unknown, identityId: string): Promise<Result<unknown>> {
+  async createTask(input: CreateScheduleTaskRequest, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateScheduleTaskRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -41,21 +48,10 @@ export class ScheduleController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.createTask({
-      name: parsed.data.name,
-      sourceModule: parsed.data.sourceModule,
-      sourceId: parsed.data.sourceEntityId,
-      scheduleConfig: parsed.data.schedule,
-      handlerType: parsed.data.sourceModule,
-      description: parsed.data.description,
-      retryPolicy: parsed.data.retryPolicy,
-      enabled: parsed.data.enabled,
-      identityId,
-    });
-    return ok(data);
+    return this.useCases.createTask(parsed.data as unknown as CreateScheduleTaskRequest, ctx);
   }
 
-  async listTasks(identityId: string, query: Record<string, unknown>): Promise<Result<unknown>> {
+  async listTasks(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>> {
     const parsed = ScheduleTaskQueryParamsSchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -64,27 +60,14 @@ export class ScheduleController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-
-    let result: any;
-    if (parsed.data.status) {
-      result = await this.handlers.listTasksByStatus(parsed.data.status);
-    } else if (parsed.data.sourceModule && parsed.data.sourceEntityId) {
-      result = await this.handlers.listTasksBySource(parsed.data.sourceModule, parsed.data.sourceEntityId);
-    } else {
-      result = await this.handlers.listTasksByAccount(identityId);
-    }
-    return ok(result);
+    return this.useCases.listTasks(parsed.data, ctx);
   }
 
   async getTask(id: string): Promise<Result<unknown>> {
-    const data = await this.handlers.getTask(id);
-    if (!data) {
-      return fail({ code: 'NOT_FOUND', message: 'Schedule task not found' });
-    }
-    return ok(data);
+    return this.useCases.getTask(id);
   }
 
-  async updateTask(id: string, input: unknown): Promise<Result<unknown>> {
+  async updateTask(id: string, input: UpdateScheduleTaskRequest): Promise<Result<unknown>> {
     const parsed = UpdateScheduleTaskRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -93,41 +76,30 @@ export class ScheduleController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    const data = await this.handlers.updateTask({
-      id,
-      scheduleConfig: parsed.data.schedule,
-      retryPolicy: parsed.data.retryPolicy,
-      enabled: parsed.data.enabled,
-      description: parsed.data.description,
-    });
-    return ok(data);
+    return this.useCases.updateTask(id, parsed.data as unknown as UpdateScheduleTaskRequest);
   }
 
   async deleteTask(id: string): Promise<Result<unknown>> {
-    await this.handlers.deleteTask(id);
-    return ok(null);
+    return this.useCases.deleteTask(id);
   }
 
   // ==================== Task Actions ====================
 
   async pauseTask(id: string): Promise<Result<unknown>> {
-    const data = await this.handlers.pauseTask(id);
-    return ok(data);
+    return this.useCases.pauseTask(id);
   }
 
   async resumeTask(id: string): Promise<Result<unknown>> {
-    const data = await this.handlers.resumeTask(id);
-    return ok(data);
+    return this.useCases.resumeTask(id);
   }
 
   async triggerTask(id: string): Promise<Result<unknown>> {
-    await this.handlers.triggerTask(id);
-    return ok(null);
+    return this.useCases.triggerTask(id);
   }
 
   // ==================== Batch Operations ====================
 
-  async batchOperation(input: unknown): Promise<Result<unknown>> {
+  async batchOperation(input: BatchScheduleTaskOperationRequest): Promise<Result<unknown>> {
     const parsed = BatchScheduleTaskOperationRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -144,10 +116,10 @@ export class ScheduleController {
       try {
         switch (operation) {
           case 'pause':
-            await this.handlers.pauseTask(taskId);
+            await this.useCases.pauseTask(taskId);
             break;
           case 'resume':
-            await this.handlers.resumeTask(taskId);
+            await this.useCases.resumeTask(taskId);
             break;
           default:
             throw new Error(`Unsupported batch operation: ${operation}`);

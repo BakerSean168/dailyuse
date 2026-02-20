@@ -2,6 +2,7 @@
  * Authentication API Routes
  *
  * Uses expressAdapter to eliminate boilerplate code.
+ * Context extraction is handled by the adapter's defaultExtractContext.
  *
  * Routes:
  *   POST   /register   — 用户注册 (RegisterByEmailSchema)
@@ -12,18 +13,11 @@
 
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import type { Context } from '@dailyuse/contracts/shared';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { AuthenticationController } from './controller';
+import { AuthenticationController } from '../controllers/auth.controller';
+import type { AuthenticationUseCases } from '../controllers/auth.controller';
 
 // ============ Types ============
-
-export interface AuthenticationRouteHandlers {
-  register(data: any, cx: Context): Promise<any>;
-  login(data: any, cx: Context): Promise<any>;
-  logout(data: any, cx: Context): Promise<void>;
-  refreshToken(data: any, cx: Context): Promise<any>;
-}
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -33,7 +27,7 @@ interface PlatformMiddleware {
 // ============ Route Registration ============
 
 export function registerAuthenticationRoutes(
-  handlers: AuthenticationRouteHandlers,
+  handlers: AuthenticationUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -41,49 +35,26 @@ export function registerAuthenticationRoutes(
   const controller = new AuthenticationController(handlers);
 
   // POST /register — 用户注册 (no auth required)
+  // ctx.identityId will be '' for unauthenticated routes; deviceId auto-extracted
   router.post('/register', expressAdapter(
-    (req) => {
-      const cx: Context = {
-        identityId: '',
-        deviceId: (req.headers?.['x-device-id'] as string) || 'unknown',
-      };
-      return controller.register(req.body, cx);
-    },
+    (req, ctx) => controller.register(req.body, ctx),
     { requireAuth: false, successStatus: 201 },
   ));
 
   // POST /login — 用户登录 (no auth required)
   router.post('/login', expressAdapter(
-    (req) => {
-      const cx: Context = {
-        identityId: '',
-        deviceId: (req.headers?.['x-device-id'] as string) || 'unknown',
-      };
-      return controller.login(req.body, cx);
-    },
+    (req, ctx) => controller.login(req.body, ctx),
     { requireAuth: false },
   ));
 
   // POST /logout — 用户登出
   router.post('/logout', auth, expressAdapter(
-    (req, ctx) => {
-      const cx: Context = {
-        identityId: ctx.identityId,
-        deviceId: (req.headers?.['x-device-id'] as string) || 'unknown',
-      };
-      return controller.logout(cx);
-    },
+    (req, ctx) => controller.logout(ctx),
   ));
 
   // POST /refresh — 刷新访问令牌
   router.post('/refresh', auth, expressAdapter(
-    (req, ctx) => {
-      const cx: Context = {
-        identityId: ctx.identityId,
-        deviceId: (req.headers?.['x-device-id'] as string) || 'unknown',
-      };
-      return controller.refreshToken(req.body, cx);
-    },
+    (req, ctx) => controller.refreshToken(req.body, ctx),
   ));
 
   return router;

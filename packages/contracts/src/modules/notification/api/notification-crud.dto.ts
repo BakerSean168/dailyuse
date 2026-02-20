@@ -6,7 +6,7 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
+import { brandedId, openApiJsonValue } from '@/primitives';
 import type { IdentityId } from '@/primitives';
 import type { NotificationServerDTO } from '../aggregates/notification-server';
 import {
@@ -31,8 +31,8 @@ export const CreateNotificationSchema = z.object({
   urgency: z.string().optional(),
   relatedEntityType: z.nativeEnum(RelatedEntityType).optional(),
   relatedEntityId: z.string().uuid().optional(),
-  actions: z.array(z.any()).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  actions: z.array(z.any().openapi({ type: 'object' })).optional(),
+  metadata: z.record(z.string(), openApiJsonValue).optional(),
   expiresAt: z.number().int().optional(),
   sendImmediately: z.boolean().optional().default(false),
   channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
@@ -49,7 +49,7 @@ export const UpdateNotificationSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).optional(),
   status: z.nativeEnum(NotificationStatus).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  metadata: z.record(z.string(), openApiJsonValue).optional(),
   expiresAt: z.number().int().optional(),
 });
 

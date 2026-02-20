@@ -5,46 +5,53 @@ const meta = {
   title: 'Business/Repository/TabManager',
   component: TabManager,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
   argTypes: {
-    activeTabId: { control: 'text' },
+    tabs: { description: '标签页列表' },
+    activeTabId: { description: '当前活跃标签 ID', control: 'text' },
   },
-  args: {},
 } satisfies Meta<typeof TabManager>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const mockTabs = [
-  { id: 'tab-1', name: 'README.md', icon: null, isDirty: false, isPinned: true },
-  { id: 'tab-2', name: 'Architecture.md', icon: null, isDirty: true, isPinned: false },
-  { id: 'tab-3', name: 'API Reference.md', icon: null, isDirty: false, isPinned: false },
-  { id: 'tab-4', name: 'Meeting Notes.md', icon: null, isDirty: true, isPinned: false },
-];
-
 export const Default: Story = {
   args: {
-    tabs: mockTabs,
+    tabs: [
+      { id: 'tab-1', name: 'README.md', icon: null, isDirty: false, isPinned: true },
+      { id: 'tab-2', name: 'architecture.md', icon: null, isDirty: true, isPinned: false },
+      { id: 'tab-3', name: 'api-reference.md', icon: null, isDirty: false, isPinned: false },
+    ],
     activeTabId: 'tab-2',
   },
 };
 
 export const SingleTab: Story = {
   args: {
-    tabs: [mockTabs[0]],
+    tabs: [
+      { id: 'tab-1', name: 'notes.md', icon: null, isDirty: false, isPinned: false },
+    ],
     activeTabId: 'tab-1',
   },
 };
 
-export const AllPinned: Story = {
+export const ManyTabs: Story = {
   args: {
-    tabs: mockTabs.map((t) => ({ ...t, isPinned: true, isDirty: false })),
-    activeTabId: 'tab-1',
+    tabs: [
+      { id: 'tab-1', name: 'index.md', icon: null, isDirty: false, isPinned: true },
+      { id: 'tab-2', name: 'guide.md', icon: null, isDirty: false, isPinned: true },
+      { id: 'tab-3', name: 'components.md', icon: null, isDirty: true, isPinned: false },
+      { id: 'tab-4', name: 'hooks.md', icon: null, isDirty: false, isPinned: false },
+      { id: 'tab-5', name: 'utils.md', icon: null, isDirty: true, isPinned: false },
+      { id: 'tab-6', name: 'types.md', icon: null, isDirty: false, isPinned: false },
+    ],
+    activeTabId: 'tab-3',
   },
 };
 
-export const NoActiveTab: Story = {
+export const NoTabs: Story = {
   args: {
-    tabs: mockTabs,
+    tabs: [],
     activeTabId: null,
   },
 };

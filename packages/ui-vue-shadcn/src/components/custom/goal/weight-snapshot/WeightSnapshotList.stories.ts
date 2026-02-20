@@ -5,21 +5,18 @@ const meta = {
   title: 'Business/Goal/WeightSnapshot/WeightSnapshotList',
   component: WeightSnapshotList,
   tags: ['autodocs'],
-  args: {
-    goalId: 'goal-abc-123',
+  parameters: {
+    layout: 'padded',
+    docs: { description: { component: '权重快照列表。依赖 `useWeightSnapshot()` 和 `useGoal()` composable 获取数据。' } },
   },
-  decorators: [() => ({ template: '<div style="max-width: 600px;"><story /></div>' })],
+  argTypes: {
+    goalId: { description: '目标 ID', control: 'text' },
+  },
 } satisfies Meta<typeof WeightSnapshotList>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
-};
-
-export const DifferentGoal: Story = {
-  args: {
-    goalId: 'goal-def-456',
-  },
+  args: { goalId: 'goal-1' },
 };

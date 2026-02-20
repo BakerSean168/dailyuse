@@ -15,18 +15,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { SettingController } from './controller';
-
-// ============ Types ============
-
-export interface SettingRouteHandlers {
-  getUserSetting(identityId: string): Promise<any>;
-  updateUserSetting(identityId: string, data: any): Promise<any>;
-  resetUserSetting(identityId: string): Promise<any>;
-  exportSettings(identityId: string): Promise<any>;
-  importSettings(identityId: string, data: Record<string, any>, options?: { merge?: boolean; validate?: boolean }): Promise<any>;
-  getDefaultSettings(): any;
-}
+import { SettingController } from '../controllers/setting.controller';
+import type { SettingUseCases } from '../controllers/setting.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -36,7 +26,7 @@ interface PlatformMiddleware {
 // ============ Route Registration ============
 
 export function registerSettingRoutes(
-  handlers: SettingRouteHandlers,
+  handlers: SettingUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -45,27 +35,27 @@ export function registerSettingRoutes(
 
   // GET / — 获取用户设置
   router.get('/', auth, expressAdapter(
-    (_req, ctx) => controller.getUserSetting(ctx.identityId),
+    (_req, ctx) => controller.getUserSetting(ctx),
   ));
 
   // PUT / — 更新用户设置 (UpdateUserSettingSchema)
   router.put('/', auth, expressAdapter(
-    (req, ctx) => controller.updateUserSetting(ctx.identityId, req.body),
+    (req, ctx) => controller.updateUserSetting(req.body, ctx),
   ));
 
   // POST /reset — 重置用户设置 (ResetUserSettingSchema)
   router.post('/reset', auth, expressAdapter(
-    (req, ctx) => controller.resetUserSetting(ctx.identityId, req.body),
+    (req, ctx) => controller.resetUserSetting(req.body, ctx),
   ));
 
   // POST /export — 导出设置 (ExportSettingsSchema)
   router.post('/export', auth, expressAdapter(
-    (req, ctx) => controller.exportSettings(ctx.identityId, req.body),
+    (req, ctx) => controller.exportSettings(req.body, ctx),
   ));
 
   // POST /import — 导入设置 (ImportSettingsSchema)
   router.post('/import', auth, expressAdapter(
-    (req, ctx) => controller.importSettings(ctx.identityId, req.body),
+    (req, ctx) => controller.importSettings(req.body, ctx),
     { successStatus: 201 },
   ));
 

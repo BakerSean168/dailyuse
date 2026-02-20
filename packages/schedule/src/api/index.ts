@@ -6,4 +6,4 @@
 
 export { ScheduleApiModule } from './module';
 export type { ScheduleApiModuleContext, ScheduleApiModuleDef } from './module';
-export type { ScheduleRouteHandlers } from './routes';
+export { ScheduleController, type ScheduleUseCases } from '../controllers';

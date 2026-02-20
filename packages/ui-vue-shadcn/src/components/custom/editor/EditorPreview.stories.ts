@@ -1,15 +1,34 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorPreview from './EditorPreview.vue';
 
+const sampleMarkdown = `# 示例文档
+
+这是一段 **加粗** 和 *斜体* 文本。
+
+## 链接示例
+
+这里有一个 [[双向链接]] 和一个 [[带别名的链接|显示文本]]。
+
+## 代码
+
+\`\`\`typescript
+const hello = 'world';
+\`\`\`
+
+## 列表
+
+- 项目一
+- 项目二
+  - 子项目
+`;
+
 const meta = {
   title: 'Business/Editor/EditorPreview',
   component: EditorPreview,
   tags: ['autodocs'],
+  parameters: { layout: 'padded' },
   argTypes: {
-    content: { control: 'text' },
-  },
-  args: {
-    content: '# Sample Document\n\nThis is a **bold** and *italic* paragraph.\n\n## Links\n\nCheck out [[Related Note]] for more details.\n\n- List item 1\n- List item 2\n\n```js\nconsole.log("hello");\n```',
+    content: { description: 'Markdown 内容', control: 'text' },
   },
 } satisfies Meta<typeof EditorPreview>;
 
@@ -17,61 +36,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    content: '# My Document\n\nSome **markdown** content with a [[Wiki Link]] inside.',
-  },
+  args: { content: sampleMarkdown },
 };
 
-export const WithMultipleWikiLinks: Story = {
-  args: {
-    content:
-      '# Project Notes\n\nSee [[Architecture]] for design decisions.\n\nRelated: [[Meeting Notes]] and [[TODO List]].\n\n> A blockquote for emphasis.',
-  },
+export const Empty: Story = {
+  args: { content: '' },
 };
 
-export const EmptyContent: Story = {
-  args: {
-    content: '',
-  },
-};
-
-export const RichContent: Story = {
-  args: {
-    content: [
-      '# Full Featured Preview',
-      '',
-      '## Headings and text',
-      'Normal text with **bold**, *italic*, and `inline code`.',
-      '',
-      '## Lists',
-      '- Unordered item',
-      '- Another item',
-      '',
-      '1. Ordered item',
-      '2. Second item',
-      '',
-      '## Code Block',
-      '```typescript',
-      'const x: number = 42;',
-      '```',
-      '',
-      '## Links',
-      'A [[Wiki Link]] and a [regular link](https://example.com).',
-      '',
-      '## Table',
-      '| Name | Value |',
-      '|------|-------|',
-      '| A    | 1     |',
-      '| B    | 2     |',
-    ].join('\n'),
-  },
-};
-
-export const WithLinkClickHandler: Story = {
-  args: {
-    content: 'Click [[This Link]] to trigger the handler.',
-    onLinkClick: (title: string) => {
-      console.log('Link clicked:', title);
-    },
-  },
+export const WithLinks: Story = {
+  args: { content: '# 链接测试\n\n查看 [[项目文档]] 获取更多信息。\n\n也可以参考 [[API指南|接口文档]]。' },
 };

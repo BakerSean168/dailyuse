@@ -11,10 +11,11 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok, fail } from '@dailyuse/contracts/result';
 import { SettingModule } from '../infrastructure-server';
 import { SettingContainer } from '../infrastructure-server/di/setting-container';
 import { registerSettingRoutes } from './routes';
-import type { SettingRouteHandlers } from './routes';
+import type { SettingUseCases } from '../controllers/setting.controller';
 import { registerSettingInitializationTasks } from './initialization';
 
 export interface SettingApiModuleContext {
@@ -43,19 +44,31 @@ export const SettingApiModule: SettingApiModuleDef = {
     const settingModule = new SettingModule('prisma', db as PrismaClient);
 
     // 2. 创建路由处理器
-    const handlers: SettingRouteHandlers = {
-      getUserSetting: (identityId) =>
-        settingModule.getUserSetting.execute(identityId),
-      updateUserSetting: (identityId, data) =>
-        settingModule.updateUserSetting.execute(identityId, data),
-      resetUserSetting: (identityId) =>
-        settingModule.resetUserSetting.execute(identityId),
-      exportSettings: (identityId) =>
-        settingModule.exportSettings.execute(identityId),
-      importSettings: (identityId, data, options) =>
-        settingModule.importSettings.execute(identityId, data, options),
+    const handlers: SettingUseCases = {
+      getUserSetting: async (ctx) =>
+        ok(await settingModule.getUserSetting.execute(ctx.identityId)),
+      updateUserSetting: async (data, ctx) =>
+        ok(await settingModule.updateUserSetting.execute(ctx.identityId, data)),
+      resetUserSetting: async (ctx) =>
+        ok(await settingModule.resetUserSetting.execute(ctx.identityId)),
+      exportSettings: async (ctx) =>
+        ok(await settingModule.exportSettings.execute(ctx.identityId)),
+      importSettings: async (data, ctx) => {
+        let importData: Record<string, any>;
+        try {
+          importData = JSON.parse(data.data) as Record<string, any>;
+        } catch {
+          return fail({ code: 'VALIDATION_ERROR' as const, message: 'Invalid JSON in data field' });
+        }
+        const result = await settingModule.importSettings.execute(
+          ctx.identityId,
+          importData,
+          { merge: !data.overwrite },
+        );
+        return ok(result);
+      },
       getDefaultSettings: () =>
-        settingModule.getDefaultSettings.execute(),
+        ok(settingModule.getDefaultSettings.execute()),
     };
 
     // 3. 注册路由

@@ -5,57 +5,56 @@ const meta = {
   title: 'Business/Reminder/ContextMenu',
   component: ContextMenu,
   tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   argTypes: {
-    show: { control: 'boolean' },
-    x: { control: 'number' },
-    y: { control: 'number' },
-    items: { control: 'object' },
+    show: { description: '是否显示', control: 'boolean' },
+    x: { description: 'X 坐标', control: 'number' },
+    y: { description: 'Y 坐标', control: 'number' },
+    items: { description: '菜单项列表' },
   },
 } satisfies Meta<typeof ContextMenu>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const basicItems = [
-  { label: 'Edit Template', icon: 'Pencil' },
-  { label: 'View Instances', icon: 'Eye' },
-  { divider: true },
-  { label: 'Delete', icon: 'Trash2', danger: true },
-];
-
 export const Default: Story = {
   args: {
     show: true,
-    x: 100,
-    y: 100,
-    items: basicItems,
+    x: 200,
+    y: 150,
+    items: [
+      { label: '编辑', icon: 'mdi-pencil' },
+      { label: '查看', icon: 'mdi-eye' },
+      { divider: true },
+      { label: '移动到分组', icon: 'mdi-folder-move' },
+      { label: '暂停', icon: 'mdi-pause' },
+      { divider: true },
+      { label: '删除', icon: 'mdi-delete', danger: true },
+    ],
   },
 };
 
 export const WithShortcuts: Story = {
   args: {
     show: true,
-    x: 100,
-    y: 100,
+    x: 200,
+    y: 150,
     items: [
-      { label: 'Edit', icon: 'Pencil', shortcut: '⌘E' },
-      { label: 'Move to Group', icon: 'mdi-folder-move' },
-      { divider: true },
-      { label: 'Delete', icon: 'Trash2', danger: true, shortcut: '⌫' },
+      { label: '编辑', icon: 'mdi-pencil', shortcut: 'Ctrl+E' },
+      { label: '删除', icon: 'mdi-delete', shortcut: 'Del', danger: true },
     ],
   },
 };
 
-export const WithDisabledItems: Story = {
+export const WithDisabled: Story = {
   args: {
     show: true,
-    x: 100,
-    y: 100,
+    x: 200,
+    y: 150,
     items: [
-      { label: 'Edit', icon: 'Pencil' },
-      { label: 'Move', icon: 'mdi-folder-move', disabled: true },
-      { divider: true },
-      { label: 'Delete', icon: 'Trash2', danger: true, disabled: true },
+      { label: '编辑', icon: 'mdi-pencil' },
+      { label: '移动到分组', icon: 'mdi-folder-move', disabled: true },
+      { label: '删除', icon: 'mdi-delete', danger: true, disabled: true },
     ],
   },
 };
@@ -65,6 +64,6 @@ export const Hidden: Story = {
     show: false,
     x: 0,
     y: 0,
-    items: basicItems,
+    items: [],
   },
 };

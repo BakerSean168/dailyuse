@@ -5,15 +5,11 @@ const meta = {
   title: 'Business/Repository/AIKnowledgeGeneratorDialog',
   component: AIKnowledgeGeneratorDialog,
   tags: ['autodocs'],
+  parameters: { layout: 'fullscreen' },
   argTypes: {
-    open: { control: 'boolean' },
-    repositoryName: { control: 'text' },
-    parentFolderName: { control: 'text' },
-  },
-  args: {
-    open: true,
-    repositoryName: 'My Knowledge Base',
-    parentFolderName: 'Research Notes',
+    open: { description: '是否打开对话框', control: 'boolean' },
+    repositoryName: { description: '知识库名称', control: 'text' },
+    parentFolderName: { description: '父文件夹名称', control: 'text' },
   },
 } satisfies Meta<typeof AIKnowledgeGeneratorDialog>;
 
@@ -21,27 +17,25 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => ({
-    components: { AIKnowledgeGeneratorDialog },
-    setup: () => ({ args }),
-    template: '<AIKnowledgeGeneratorDialog v-bind="args" />',
-  }),
-  args: {},
+  args: {
+    open: true,
+    repositoryName: '个人知识库',
+    parentFolderName: '技术笔记',
+  },
 };
 
-export const WithoutFolder: Story = {
-  render: (args) => ({
-    components: { AIKnowledgeGeneratorDialog },
-    setup: () => ({ args }),
-    template: '<AIKnowledgeGeneratorDialog v-bind="args" />',
-  }),
+export const NoFolder: Story = {
   args: {
-    parentFolderName: undefined,
+    open: true,
+    repositoryName: '项目文档',
+    parentFolderName: '',
   },
 };
 
 export const Closed: Story = {
   args: {
     open: false,
+    repositoryName: '知识库',
+    parentFolderName: '',
   },
 };

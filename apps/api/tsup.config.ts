@@ -60,6 +60,7 @@ export default defineConfig({
     'jsonwebtoken',
     'swagger-jsdoc',
     'swagger-ui-express',
+    '@asteasolutions/zod-to-openapi',
     'node-cron',
     'zod',
     'ioredis',

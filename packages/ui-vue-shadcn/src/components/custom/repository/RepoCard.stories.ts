@@ -1,82 +1,82 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import RepoCard from './RepoCard.vue';
 
+const now = new Date().toISOString();
+
+function mockRepository(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'repo-1',
+    identityId: 'user-1',
+    name: '个人知识库',
+    type: 'Personal',
+    path: '/repos/personal',
+    description: '存储个人学习笔记和技术文档。',
+    config: {},
+    stats: {},
+    status: 'Active',
+    version: 1,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    isDeleted: false,
+    isArchived: false,
+    isActive: true,
+    statusText: '活跃',
+    typeText: '个人',
+    folderCount: 12,
+    resourceCount: 48,
+    totalSize: 5242880,
+    formattedSize: '5 MB',
+    createdAtText: '2024-01-01',
+    updatedAtText: '2024-12-01',
+    ...overrides,
+  } as any;
+}
+
 const meta = {
   title: 'Business/Repository/RepoCard',
   component: RepoCard,
   tags: ['autodocs'],
-  argTypes: {},
-  args: {},
+  parameters: { layout: 'centered' },
+  decorators: [
+    () => ({ template: '<div style="width: 360px;"><story /></div>' }),
+  ],
+  argTypes: {
+    repository: { description: '仓库数据对象 (RepositoryClientDTO)' },
+  },
 } satisfies Meta<typeof RepoCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const now = Date.now();
-
-const mockRepository = {
-  id: 'repo-1',
-  identityId: 'user-1',
-  name: 'Knowledge Base',
-  type: 'personal' as const,
-  path: '/repos/knowledge-base',
-  description: 'A comprehensive knowledge base for organizing research notes, technical documentation, and project references.',
-  config: {},
-  stats: {},
-  status: 'active' as const,
-  version: 3,
-  createdAt: now - 2592000000,
-  updatedAt: now - 3600000,
-  deletedAt: null,
-  isDeleted: false,
-  isArchived: false,
-  isActive: true,
-  statusText: 'Active',
-  typeText: 'Personal',
-  folderCount: 12,
-  resourceCount: 87,
-  totalSize: 5242880,
-  formattedSize: '5.0 MB',
-  createdAtText: '30 days ago',
-  updatedAtText: '1 hour ago',
-};
-
 export const Default: Story = {
   args: {
-    repository: mockRepository,
+    repository: mockRepository(),
   },
 };
 
-export const ArchivedRepo: Story = {
+export const Archived: Story = {
   args: {
-    repository: {
-      ...mockRepository,
+    repository: mockRepository({
       id: 'repo-2',
-      name: 'Legacy Documentation',
-      status: 'archived' as const,
+      name: '旧项目文档',
+      description: '已归档的旧项目文档合集。',
+      status: 'Archived',
       isArchived: true,
       isActive: false,
-      statusText: 'Archived',
-      description: 'Archived documentation from the previous version of the platform.',
-      resourceCount: 234,
-      folderCount: 28,
-    },
+      statusText: '已归档',
+    }),
   },
 };
 
-export const EmptyRepo: Story = {
+export const NoDescription: Story = {
   args: {
-    repository: {
-      ...mockRepository,
+    repository: mockRepository({
       id: 'repo-3',
-      name: 'New Project',
+      name: '临时笔记',
       description: null,
-      folderCount: 0,
-      resourceCount: 0,
-      totalSize: 0,
-      formattedSize: '0 B',
-      createdAtText: 'Just now',
-      updatedAtText: 'Just now',
-    },
+      resourceCount: 3,
+      folderCount: 1,
+    }),
   },
 };
