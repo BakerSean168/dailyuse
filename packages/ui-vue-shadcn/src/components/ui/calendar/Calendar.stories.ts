@@ -12,6 +12,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => ({
-    template: '<div class="text-sm text-muted-foreground">Calendar story scaffold.</div>',
+    components: { Calendar },
+    template: '<Calendar class="rounded-md border" />',
+  }),
+};
+
+export const FixedWeeks: Story = {
+  render: () => ({
+    components: { Calendar },
+    template: '<Calendar :fixed-weeks="true" class="rounded-md border" />',
   }),
 };
