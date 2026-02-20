@@ -1,6 +1,20 @@
 import type { RepositoryClientDTO, ResourceClientDTO } from '../aggregates';
 import type { ResourceBookmarkClientDTO } from '../entities';
 
+// ============ Zod Validation Schemas ============
+export {
+  CreateRepositorySchema,
+  type CreateRepositoryReq as CreateRepositoryZodReq,
+  UpdateRepositorySchema,
+  type UpdateRepositoryReq as UpdateRepositoryZodReq,
+  CreateResourceSchema,
+  type CreateResourceReq as CreateResourceZodReq,
+  UpdateResourceSchema,
+  type UpdateResourceReq as UpdateResourceZodReq,
+} from './repository.dto';
+
+// ============ Legacy Interfaces (kept for backward compatibility) ============
+
 export interface CreateRepositoryReq {
   name: string;
   type: string;

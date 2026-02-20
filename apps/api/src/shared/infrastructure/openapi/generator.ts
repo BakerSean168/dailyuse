@@ -9,6 +9,9 @@
 import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './registry';
 
+// Import all module OpenAPI registrations (side-effect imports)
+import './modules';
+
 /**
  * Generate the complete OpenAPI 3.0 document
  */

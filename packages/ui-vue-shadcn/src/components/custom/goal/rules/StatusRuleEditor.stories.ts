@@ -5,13 +5,14 @@ const meta = {
   title: 'Business/Goal/Rules/StatusRuleEditor',
   component: StatusRuleEditor,
   tags: ['autodocs'],
+  parameters: {
+    layout: 'padded',
+    docs: { description: { component: '自动状态规则编辑器。内部使用 `useAutoStatusRules()` composable 管理状态。支持创建、编辑、删除规则，配置全局开关。' } },
+  },
 } satisfies Meta<typeof StatusRuleEditor>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: () => ({
-    template: '<div class="text-sm text-muted-foreground">StatusRuleEditor story scaffold.</div>',
-  }),
-};
+/** 规则编辑器主视图（数据由 composable 内部管理） */
+export const Default: Story = {};

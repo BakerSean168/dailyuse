@@ -15,7 +15,7 @@ We adopt a typed classification of errors and a structured handling pattern.
 ### 1. Custom Error Types
 Use specific error classes extending a base `AppError`.
 *   `NotFoundError`: Resource missing (404).
-*   `ValidationError`: Bad input (400).
+*   `ValidationError`: Bad input (422).
 *   `AppError`: Generic application base.
 
 ### 2. Error Codes

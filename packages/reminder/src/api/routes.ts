@@ -28,27 +28,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { ReminderController } from './controller';
-
-// ============ Types ============
-
-export interface ReminderRouteHandlers {
-  // Template CRUD
-  createTemplate(identityId: string, data: any): Promise<any>;
-  listTemplates(identityId: string): Promise<any>;
-  getUpcomingReminders(identityId: string, params: any): Promise<any>;
-  getTemplate(id: string): Promise<any>;
-  updateTemplate(id: string, data: any): Promise<any>;
-  deleteTemplate(id: string): Promise<any>;
-  // Group CRUD
-  createGroup(identityId: string, data: any): Promise<any>;
-  listGroups(identityId: string): Promise<any>;
-  getGroup(id: string): Promise<any>;
-  updateGroup(id: string, data: any): Promise<any>;
-  deleteGroup(id: string): Promise<any>;
-  switchGroupControlMode(id: string, data: any): Promise<any>;
-  batchGroupTemplates(id: string, data: any): Promise<any>;
-}
+import { ReminderController } from '../controllers/reminder.controller';
+import type { ReminderUseCases } from '../controllers/reminder.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -71,7 +52,7 @@ function parseString(value: unknown): string | undefined {
 // ============ Route Registration ============
 
 export function registerReminderRoutes(
-  handlers: ReminderRouteHandlers,
+  handlers: ReminderUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -82,21 +63,21 @@ export function registerReminderRoutes(
 
   // POST /templates — Create reminder template
   router.post('/templates', auth, expressAdapter(
-    (req, ctx) => controller.createTemplate(req.body, ctx.identityId),
+    (req, ctx) => controller.createTemplate(req.body, ctx),
     { successStatus: 201 },
   ));
 
   // GET /templates — List templates for current user
   router.get('/templates', auth, expressAdapter(
-    (_req, ctx) => controller.listTemplates(ctx.identityId),
+    (_req, ctx) => controller.listTemplates(ctx),
   ));
 
   // GET /templates/upcoming — Get upcoming reminders
   router.get('/templates/upcoming', auth, expressAdapter(
-    (req, ctx) => controller.getUpcomingReminders(ctx.identityId, {
+    (req, ctx) => controller.getUpcomingReminders({
       limit: parseNumber(req.query?.limit),
       beforeTime: parseString(req.query?.beforeTime),
-    }),
+    }, ctx),
   ));
 
   // GET /templates/:id — Get template by ID
@@ -118,13 +99,13 @@ export function registerReminderRoutes(
 
   // POST /groups — Create reminder group
   router.post('/groups', auth, expressAdapter(
-    (req, ctx) => controller.createGroup(req.body, ctx.identityId),
+    (req, ctx) => controller.createGroup(req.body, ctx),
     { successStatus: 201 },
   ));
 
   // GET /groups — List groups for current user
   router.get('/groups', auth, expressAdapter(
-    (_req, ctx) => controller.listGroups(ctx.identityId),
+    (_req, ctx) => controller.listGroups(ctx),
   ));
 
   // GET /groups/:id — Get group by ID

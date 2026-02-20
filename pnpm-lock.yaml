@@ -306,6 +306,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@asteasolutions/zod-to-openapi':
+        specifier: ^8.4.1
+        version: 8.4.1(zod@4.1.13)
       '@dailyuse/account':
         specifier: workspace:*
         version: link:../../packages/account
@@ -879,6 +882,9 @@ importers:
 
   packages/contracts:
     dependencies:
+      '@asteasolutions/zod-to-openapi':
+        specifier: ^8.4.1
+        version: 8.4.1(zod@4.1.13)
       zod:
         specifier: ^4.1.13
         version: 4.1.13

@@ -7,4 +7,4 @@
 export { RepositoryApiModule } from './module';
 export { registerRepositoryInitializationTasks } from './initialization';
 export type { RepositoryApiModuleContext, RepositoryApiModuleDef } from './module';
-export type { RepositoryRouteHandlers } from './routes';
+export { RepositoryController, type RepositoryUseCases } from '../controllers';

@@ -32,40 +32,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import type {
-  CreateGoal,
-  GetGoal,
-  ListGoals,
-  UpdateGoal,
-  DeleteGoal,
-  ArchiveGoal,
-  ActivateGoal,
-  SearchGoals,
-  AddGoalKeyResult,
-  UpdateGoalKeyResult,
-  UpdateGoalKeyResultProgress,
-  DeleteGoalKeyResult,
-  AddGoalReview,
-} from '../application-server';
-import { GoalController } from './controller';
-
-// ============ Types ============
-
-export interface GoalRouteHandlers {
-  createGoal: CreateGoal;
-  getGoal: GetGoal;
-  listGoals: ListGoals;
-  updateGoal: UpdateGoal;
-  deleteGoal: DeleteGoal;
-  archiveGoal: ArchiveGoal;
-  activateGoal: ActivateGoal;
-  searchGoals: SearchGoals;
-  addKeyResult: AddGoalKeyResult;
-  updateKeyResult: UpdateGoalKeyResult;
-  updateKeyResultProgress: UpdateGoalKeyResultProgress;
-  deleteKeyResult: DeleteGoalKeyResult;
-  addReview: AddGoalReview;
-}
+import { GoalController } from '../controllers/goal.controller';
+import type { GoalUseCases } from '../controllers/goal.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -99,7 +67,7 @@ function parseStringArray(value: unknown): string[] | undefined {
 // ============ Route Registration ============
 
 export function registerGoalRoutes(
-  handlers: GoalRouteHandlers,
+  handlers: GoalUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -138,8 +106,8 @@ export function registerGoalRoutes(
   // GET /search — 搜索目标
   router.get('/search', auth, expressAdapter(
     (req, ctx) => controller.search(
-      ctx.identityId,
       typeof req.query?.q === 'string' ? req.query.q : '',
+      ctx,
     ),
   ));
 

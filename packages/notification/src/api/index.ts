@@ -12,4 +12,4 @@
 export { NotificationApiModule } from './module';
 export type { NotificationApiModuleContext, NotificationApiModuleDef } from './module';
 export { registerNotificationInitializationTasks } from './initialization';
-export type { NotificationRouteHandlers } from './routes';
+export { NotificationController, type NotificationUseCases } from '../controllers';

@@ -8,6 +8,21 @@ import type { DocumentLanguage } from '../value-objects/document-language';
 import type { TabType } from '../value-objects/tab-type';
 import type { LinkedSourceType } from '../value-objects/linked-source-type';
 import type { LinkedTargetType } from '../value-objects/linked-target-type';
+
+// ============ Zod Validation Schemas ============
+export {
+  CreateEditorWorkspaceSchema,
+  type CreateEditorWorkspaceReq,
+  UpdateEditorWorkspaceSchema,
+  type UpdateEditorWorkspaceReq,
+} from './editor-workspace.dto';
+
+export {
+  CreateDocumentSchema,
+  type CreateDocumentReq,
+  UpdateDocumentSchema,
+  type UpdateDocumentReq,
+} from './editor-document.dto';
 import type {
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,

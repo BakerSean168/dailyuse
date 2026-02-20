@@ -157,7 +157,7 @@ test.describe('Settings Error Handling', () => {
         body: JSON.stringify({
           success: false,
           error: {
-            code: 'INTERNAL_SERVER_ERROR',
+            code: 'INTERNAL_ERROR',
             message: '???????',
           },
         }),

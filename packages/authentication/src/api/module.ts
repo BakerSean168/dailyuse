@@ -11,6 +11,7 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok } from '@dailyuse/contracts/result';
 import { AuthenticationContainer, AuthenticationModule } from '../infrastructure-server';
 // Commented out temporarily:
 // import {
@@ -28,7 +29,7 @@ import { AuthenticationContainer, AuthenticationModule } from '../infrastructure
 //   RevokeApiKey,
 // } from '../application-server';
 import { registerAuthenticationRoutes } from './routes';
-import type { AuthenticationRouteHandlers } from './routes';
+import type { AuthenticationUseCases } from '../controllers/auth.controller';
 import { registerAuthenticationInitializationTasks } from './initialization';
 import { JwtTokenProvider } from '@/infrastructure-server/services/jwt-token-provider';
 
@@ -96,11 +97,11 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
     // const revokeApiKeyService = new RevokeApiKey(identityRepo);
 
     // 3. Build handler map
-    const handlers: AuthenticationRouteHandlers = {
-      register: (data, cx) => authenticationModule.register.execute(data, cx),
-      login: (data, cx) => authenticationModule.login.execute(data, cx),
-      logout: (data, cx) => authenticationModule.logout.execute(data, cx),
-      refreshToken: (data, cx) => authenticationModule.refreshToken.execute(data, cx),
+    const handlers: AuthenticationUseCases = {
+      register: async (data, cx) => ok(await authenticationModule.register.execute(data, cx)),
+      login: async (data, cx) => ok(await authenticationModule.login.execute(data, cx)),
+      logout: async (cx) => { await authenticationModule.logout.execute(undefined as void, cx); return ok(undefined as void); },
+      refreshToken: async (data, cx) => ok(await authenticationModule.refreshToken.execute(data, cx)),
       // getActiveSessions: (identityId) => getActiveSessionsService.execute(identityId),
       // revokeSession: (sessionId, identityId) => revokeSessionService.execute(sessionId, identityId),
       // revokeAllSessions: (identityId) => revokeAllSessionsService.executeForWeb(identityId),

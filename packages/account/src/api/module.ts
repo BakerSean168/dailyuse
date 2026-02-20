@@ -10,10 +10,11 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok } from '@dailyuse/contracts/result';
 import { PrismaAccountRepository, AccountModule } from '../infrastructure-server';
 import { AccountContainer } from '../infrastructure-server/di/account-container';
 import { registerAccountRoutes } from './routes';
-import type { AccountRouteHandlers } from './routes';
+import type { AccountUseCases } from '../controllers/account.controller';
 import { registerAccountInitializationTasks } from './initialization';
 
 /**
@@ -47,11 +48,11 @@ export const AccountApiModule: AccountApiModuleDef = {
     const accountModule = new AccountModule({ accountRepository });
 
     // 2. 创建路由处理�?
-    const handlers: AccountRouteHandlers = {
-      getProfile: (accountId) => accountModule.getProfile.execute(accountId),
-      updateProfile: (accountId, data) => accountModule.updateProfile.execute(accountId, data),
-      checkAvailability: (data) => accountModule.checkAvailability.execute(data),
-      closeAccount: (accountId, data) => accountModule.closeAccount.execute(accountId, data),
+    const handlers: AccountUseCases = {
+      getProfile: async (ctx) => ok(await accountModule.getProfile.execute(ctx.identityId) as any),
+      updateProfile: async (data, ctx) => ok(await accountModule.updateProfile.execute(ctx.identityId, data) as any),
+      checkAvailability: async (data) => ok(await accountModule.checkAvailability.execute(data) as any),
+      closeAccount: async (data, ctx) => { await accountModule.closeAccount.execute(ctx.identityId, data); return ok(undefined as any); },
     };
 
     // 3. 注册路由

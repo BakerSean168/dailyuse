@@ -18,34 +18,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { GovernanceController } from './controller';
-import type { Result } from '@dailyuse/utils/result';
-import type { ExecutionContext } from '../application-server';
-import type {
-  CreateRuleReq,
-  CreateRuleRes,
-  DeleteRuleReq,
-  DeleteRuleRes,
-  GetRuleReq,
-  GetRuleRes,
-  GetRuleRevisionsQuery,
-  GetRuleRevisionsRes,
-  ListRulesQuery,
-  ListRulesRes,
-  UpdateRuleReq,
-  UpdateRuleRes,
-} from '../contracts';
-
-// ============ Types ============
-
-export interface GovernanceCrudHandlers {
-  createRule: (req: CreateRuleReq, cx: ExecutionContext) => Promise<Result<CreateRuleRes>>;
-  updateRule: (id: string, req: UpdateRuleReq, cx: ExecutionContext) => Promise<Result<UpdateRuleRes>>;
-  deleteRule: (req: DeleteRuleReq, cx: ExecutionContext) => Promise<Result<DeleteRuleRes>>;
-  getRule: (req: GetRuleReq) => Promise<Result<GetRuleRes>>;
-  listRules: (query: ListRulesQuery) => Promise<Result<ListRulesRes>>;
-  getRevisions: (query: GetRuleRevisionsQuery) => Promise<Result<GetRuleRevisionsRes>>;
-}
+import { GovernanceController } from '../controllers/governance.controller';
+import type { GovernanceUseCases } from '../controllers/governance.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -89,7 +63,7 @@ function parseStringArray(value: unknown): string[] | undefined {
 // ============ Route Registration ============
 
 export function registerGovernanceCrudRoutes(
-  handlers: GovernanceCrudHandlers,
+  handlers: GovernanceUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -98,20 +72,20 @@ export function registerGovernanceCrudRoutes(
 
   // POST / — 创建规则
   router.post('/', auth, requireRole(['TechLead', 'Architect']), expressAdapter(
-    (req, ctx) => controller.createRule(req.body, { identityId: ctx.identityId }),
+    (req, ctx) => controller.createRule(req.body, ctx),
     { successStatus: 201 },
   ));
 
   // PUT/PATCH /:id — 更新规则
   const updateHandler = expressAdapter(
-    (req, ctx) => controller.updateRule(req.params!.id, req.body, { identityId: ctx.identityId }),
+    (req, ctx) => controller.updateRule(req.params!.id, req.body, ctx),
   );
   router.put('/:id', auth, requireRole(['TechLead', 'Architect']), updateHandler);
   router.patch('/:id', auth, requireRole(['TechLead', 'Architect']), updateHandler);
 
   // DELETE /:id — 删除规则
   router.delete('/:id', auth, requireRole(['TechLead', 'Architect']), expressAdapter(
-    (req, ctx) => controller.deleteRule(req.params!.id, { identityId: ctx.identityId }),
+    (req, ctx) => controller.deleteRule(req.params!.id, ctx),
   ));
 
   // GET /by-code/:code — 按代码获取规则

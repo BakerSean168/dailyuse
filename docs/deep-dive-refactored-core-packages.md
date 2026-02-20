@@ -567,7 +567,7 @@ const validated = UserId.of(rawString); // Type cast with prefix validation
 DomainError (abstract)
 ├── BusinessRuleViolationError (400)
 ├── NotFoundError (404)
-├── ValidationError (400)
+├── ValidationError (422)
 ├── UnauthorizedError (401)
 ├── ForbiddenError (403)
 ├── ConflictError (409)

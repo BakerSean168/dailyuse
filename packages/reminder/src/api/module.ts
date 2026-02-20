@@ -10,10 +10,11 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok } from '@dailyuse/contracts/result';
 import { ReminderModule } from '../infrastructure-server';
 import { ReminderContainer } from '../infrastructure-server/di/reminder-container';
 import { registerReminderRoutes } from './routes';
-import type { ReminderRouteHandlers } from './routes';
+import type { ReminderUseCases } from '../controllers/reminder.controller';
 import { registerReminderInitializationTasks } from './initialization';
 
 export interface ReminderApiModuleContext {
@@ -42,52 +43,56 @@ export const ReminderApiModule: ReminderApiModuleDef = {
     const reminderModule = new ReminderModule('prisma', db as PrismaClient);
 
     // 2. Wire route handlers directly to repositories
-    const handlers: ReminderRouteHandlers = {
+    const handlers: ReminderUseCases = {
       // Template CRUD
-      createTemplate: (identityId, data) =>
-        reminderModule.reminderTemplateRepository.save({ ...data, identityId }),
-      listTemplates: (identityId) =>
-        reminderModule.reminderTemplateRepository.findByIdentityId(identityId),
-      getUpcomingReminders: (identityId, params) =>
-        reminderModule.reminderTemplateRepository.findByNextTriggerBefore(
-          params.beforeTime ? new Date(params.beforeTime).getTime() : Date.now(),
-          identityId,
-        ),
-      getTemplate: (id) =>
-        reminderModule.reminderTemplateRepository.findById(id),
+      createTemplate: async (data, ctx) =>
+        ok(await reminderModule.reminderTemplateRepository.save({ ...data, identityId: ctx.identityId } as any)),
+      listTemplates: async (ctx) =>
+        ok(await reminderModule.reminderTemplateRepository.findByIdentityId(ctx.identityId)),
+      getUpcomingReminders: async (params, ctx) =>
+        ok(await reminderModule.reminderTemplateRepository.findByNextTriggerBefore(
+          params.beforeTime ? new Date(params.beforeTime as string | number).getTime() : Date.now(),
+          ctx.identityId as any,
+        )),
+      getTemplate: async (id) =>
+        ok(await reminderModule.reminderTemplateRepository.findById(id)),
       updateTemplate: async (id, data) => {
         const existing = await reminderModule.reminderTemplateRepository.findById(id);
         if (!existing) throw new Error('Template not found');
-        return reminderModule.reminderTemplateRepository.save({ ...existing, ...data });
+        return ok(await reminderModule.reminderTemplateRepository.save({ ...existing, ...data } as any));
       },
-      deleteTemplate: (id) =>
-        reminderModule.reminderTemplateRepository.delete(id),
+      deleteTemplate: async (id) => {
+        await reminderModule.reminderTemplateRepository.delete(id);
+        return ok(undefined);
+      },
 
       // Group CRUD
-      createGroup: (identityId, data) =>
-        reminderModule.reminderGroupRepository.save({ ...data, identityId }),
-      listGroups: (identityId) =>
-        reminderModule.reminderGroupRepository.findByIdentityId(identityId),
-      getGroup: (id) =>
-        reminderModule.reminderGroupRepository.findById(id),
+      createGroup: async (data, ctx) =>
+        ok(await reminderModule.reminderGroupRepository.save({ ...data, identityId: ctx.identityId } as any)),
+      listGroups: async (ctx) =>
+        ok(await reminderModule.reminderGroupRepository.findByIdentityId(ctx.identityId)),
+      getGroup: async (id) =>
+        ok(await reminderModule.reminderGroupRepository.findById(id)),
       updateGroup: async (id, data) => {
         const existing = await reminderModule.reminderGroupRepository.findById(id);
         if (!existing) throw new Error('Group not found');
-        return reminderModule.reminderGroupRepository.save({ ...existing, ...data });
+        return ok(await reminderModule.reminderGroupRepository.save({ ...existing, ...data } as any));
       },
-      deleteGroup: (id) =>
-        reminderModule.reminderGroupRepository.delete(id),
+      deleteGroup: async (id) => {
+        await reminderModule.reminderGroupRepository.delete(id);
+        return ok(undefined);
+      },
       switchGroupControlMode: async (id, data) => {
         const existing = await reminderModule.reminderGroupRepository.findById(id);
         if (!existing) throw new Error('Group not found');
-        return reminderModule.reminderGroupRepository.save({ ...existing, ...data });
+        return ok(await reminderModule.reminderGroupRepository.save({ ...existing, ...data } as any));
       },
       batchGroupTemplates: async (groupId, data) => {
         const templates = await reminderModule.reminderTemplateRepository.findByGroupId(groupId);
         const results = await Promise.all(
-          templates.map((t) => reminderModule.reminderTemplateRepository.save({ ...t, ...data })),
+          templates.map((t) => reminderModule.reminderTemplateRepository.save({ ...t, ...data } as any)),
         );
-        return results;
+        return ok(results);
       },
     };
 

@@ -6,6 +6,7 @@
 
 import type { Express, Request, Response, NextFunction } from 'express';
 import { createLogger } from '@dailyuse/utils';
+import { errorCodeToHttpStatus } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ErrorHandler');
 
@@ -22,15 +23,18 @@ export function applyErrorHandlers(app: Express): void {
 
   // Global error handler (must have 4 args for Express to recognize it)
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const code: string = err?.code ?? 'INTERNAL_ERROR';
+    // Use canonical ResultCode→HTTP mapping for consistency with expressAdapter
+    const status = errorCodeToHttpStatus(code);
+
     logger.error('Express error handler caught error', err, {
-      status: err?.status,
-      code: err?.code,
+      status,
+      code,
       message: err?.message,
     });
 
-    const status = Number(err?.status ?? 500);
     res.status(status).json({
-      code: err?.code ?? 'INTERNAL_ERROR',
+      code,
       message: err?.message ?? 'Internal Server Error',
     });
   });

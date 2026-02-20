@@ -25,22 +25,8 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
 import { expressAdapter } from '@dailyuse/utils/result';
-import { ScheduleController } from './controller';
-
-// ============ Types ============
-
-export interface ScheduleRouteHandlers {
-  createTask(data: any): Promise<any>;
-  updateTask(data: any): Promise<any>;
-  deleteTask(id: string): Promise<void>;
-  pauseTask(id: string): Promise<any>;
-  resumeTask(id: string): Promise<any>;
-  triggerTask(id: string): Promise<void>;
-  getTask(id: string): Promise<any>;
-  listTasksByAccount(identityId: string): Promise<any>;
-  listTasksBySource(sourceModule: string, sourceEntityId: string): Promise<any>;
-  listTasksByStatus(status: string): Promise<any>;
-}
+import { ScheduleController } from '../controllers/schedule.controller';
+import type { ScheduleUseCases } from '../controllers/schedule.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -70,7 +56,7 @@ function parseBoolean(value: unknown): boolean | undefined {
 // ============ Route Registration ============
 
 export function registerScheduleRoutes(
-  handlers: ScheduleRouteHandlers,
+  handlers: ScheduleUseCases,
   middleware: PlatformMiddleware,
 ): Router {
   const router = Router();
@@ -84,13 +70,13 @@ export function registerScheduleRoutes(
 
   // POST /tasks — Create schedule task
   router.post('/tasks', auth, expressAdapter(
-    (req, ctx) => controller.createTask(req.body, ctx.identityId),
+    (req, ctx) => controller.createTask(req.body, ctx),
     { successStatus: 201 },
   ));
 
   // GET /tasks — List tasks with query params
   router.get('/tasks', auth, expressAdapter(
-    (req, ctx) => controller.listTasks(ctx.identityId, {
+    (req, ctx) => controller.listTasks({
       sourceModule: parseString(req.query?.sourceModule),
       sourceEntityId: parseString(req.query?.sourceEntityId),
       status: parseString(req.query?.status),
@@ -100,7 +86,7 @@ export function registerScheduleRoutes(
       limit: parseNumber(req.query?.limit),
       sortBy: parseString(req.query?.sortBy),
       sortOrder: parseString(req.query?.sortOrder),
-    }),
+    }, ctx),
   ));
 
   // GET /tasks/:id — Get task by ID

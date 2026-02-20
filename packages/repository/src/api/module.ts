@@ -10,6 +10,7 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
+import { ok } from '@dailyuse/contracts/result';
 import { RepositoryModule } from '../infrastructure-server';
 import { RepositoryContainer } from '../infrastructure-server/di/repository-container-v2';
 import {
@@ -27,7 +28,7 @@ import {
   registerRepositoryRoutes,
   registerResourceRoutes,
 } from './routes';
-import type { RepositoryRouteHandlers } from './routes';
+import type { RepositoryUseCases } from '../controllers/repository.controller';
 import { registerRepositoryInitializationTasks } from './initialization';
 
 export interface RepositoryApiModuleContext {
@@ -67,47 +68,48 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     const listResources = new ListResources(repositoryModule.resourceRepository);
 
     // 3. Wire route handlers to use cases
-    const handlers: RepositoryRouteHandlers = {
+    const handlers: RepositoryUseCases = {
       // Repository CRUD
-      createRepository: async (identityId, data) => {
+      createRepository: async (data, ctx) => {
         const result = await createRepository.execute({
-          identityId,
+          identityId: ctx.identityId,
           name: data.name,
           type: data.type as any,
           path: data.path ?? data.name,
           description: data.description,
           config: data.config as any,
         });
-        return result.repository;
+        return ok(result.repository);
       },
-      listRepositories: async (identityId, filters) => {
+      listRepositories: async (filters, ctx) => {
         const result = await listRepositories.execute({
-          identityId,
+          identityId: ctx.identityId,
           status: filters.status as any,
         });
-        return result.repositories;
+        return ok(result.repositories);
       },
       getRepository: async (id) => {
         const result = await getRepository.execute({ id });
-        return result.repository;
+        return ok(result.repository);
       },
       updateRepository: async (id, data) => {
         const result = await updateRepositoryConfig.execute({
           id,
           config: data.config ?? {},
         });
-        return result.repository;
+        return ok(result.repository);
       },
       deleteRepository: async (id) => {
         await deleteRepository.execute({ id });
+        return ok(undefined);
       },
       archiveRepository: async (id) => {
         const result = await archiveRepository.execute({ id });
-        return result.repository;
+        return ok(result.repository);
       },
       activateRepository: async (id) => {
         const result = await activateRepository.execute({ id });
-        return result.repository;
+        return ok(result.repository);
       },
 
       // Resource CRUD — direct repository access (resource use cases require IStoragePort)
@@ -119,23 +121,24 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
       },
       listResources: async (repositoryId) => {
         const result = await listResources.execute({ repositoryId });
-        return result.resources;
+        return ok(result.resources);
       },
       getResource: async (id) => {
         const result = await getResource.execute({ id });
-        return result.resource;
+        return ok(result.resource);
       },
       updateResource: async (id) => {
         // TODO: Wire UpdateResourceContent use case when IStoragePort adapter is available
         const result = await getResource.execute({ id });
         if (!result.resource) throw new Error(`Resource not found: ${id}`);
-        return result.resource;
+        return ok(result.resource);
       },
       deleteResource: async (id) => {
         const resource = await repositoryModule.resourceRepository.findById(id);
         if (!resource) throw new Error(`Resource not found: ${id}`);
         resource.delete();
         await repositoryModule.resourceRepository.save(resource);
+        return ok(undefined);
       },
     };
 
