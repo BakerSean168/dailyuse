@@ -6,6 +6,7 @@
  */
 
 import { Router, type RequestHandler } from 'express';
+import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
 import { registerTaskTemplateRoutes } from './task-template.routes';
@@ -32,11 +33,13 @@ export function registerTaskRoutes(
   controllers: TaskControllers,
   middleware: PlatformMiddleware,
   rootRouter: Router,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): void {
   // Task Templates: /api/task-templates
   const templateRouter = registerTaskTemplateRoutes(
     controllers.templateController,
     middleware,
+    openApiRegistry,
   );
   rootRouter.use('/task-templates', templateRouter);
 
@@ -44,6 +47,7 @@ export function registerTaskRoutes(
   const instanceRouter = registerTaskInstanceRoutes(
     controllers.instanceController,
     middleware,
+    openApiRegistry,
   );
   rootRouter.use('/task-instances', instanceRouter);
 }

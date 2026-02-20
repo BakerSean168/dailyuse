@@ -26,6 +26,7 @@ export interface SettingApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface SettingApiModuleDef {
@@ -72,7 +73,7 @@ export const SettingApiModule: SettingApiModuleDef = {
     };
 
     // 3. 注册路由
-    const settingRoutes = registerSettingRoutes(handlers, middleware);
+    const settingRoutes = registerSettingRoutes(handlers, middleware, context.openApiRegistry);
 
     // 4. 挂载到 API 路由
     router.use('/settings', settingRoutes);

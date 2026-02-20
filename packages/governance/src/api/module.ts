@@ -37,6 +37,7 @@ export interface GovernanceApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface GovernanceApiModuleOptions {
@@ -83,7 +84,7 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
     };
 
     // 2. 创建路由（注入平台中间件）
-    const governanceRoutes = registerGovernanceCrudRoutes(handlers, middleware);
+    const governanceRoutes = registerGovernanceCrudRoutes(handlers, middleware, context.openApiRegistry);
 
     // 3. 挂载到主路由（模块自决前缀）
     router.use('/governance/rules', governanceRoutes);

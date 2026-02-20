@@ -31,6 +31,7 @@ export interface NotificationApiModuleContext {
     readonly auth: RequestHandler;
     requireRole(roles: string[]): RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface NotificationApiModuleDef {
@@ -84,7 +85,7 @@ export const NotificationApiModule: NotificationApiModuleDef = {
     };
 
     // 3. Register routes (inject platform middleware)
-    const notificationRoutes = registerNotificationRoutes(handlers, middleware);
+    const notificationRoutes = registerNotificationRoutes(handlers, middleware, context.openApiRegistry);
 
     // 4. Mount to main router
     router.use('/notifications', notificationRoutes);

@@ -1,14 +1,7 @@
 /**
- * Notification API Routes
+ * Notification API Routes — Unified Route + OpenAPI Registration
  *
- * Route definitions and request handling.
- * Middleware injected via parameters (from ApiBootstrapper context),
- * no direct dependency on apps/api internals.
- *
- * Uses expressAdapter to eliminate boilerplate code:
- * - Zod validation is handled by the NotificationController
- * - Error handling is unified via the adapter
- * - Context extraction is automatic
+ * 路由定义与 OpenAPI 文档在同一处注册，消除"双重记账"问题。
  *
  * Routes:
  *   POST   /                — Create notification (CreateNotificationSchema)
@@ -22,9 +15,23 @@
  *   POST   /cleanup         — Cleanup old notifications (CleanupOldNotificationsSchema)
  */
 
+import { z } from 'zod';
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { expressAdapter } from '@dailyuse/utils/result';
+import {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  successResponse,
+  errorResponse,
+} from '@dailyuse/utils/result';
+import {
+  CreateNotificationSchema,
+  UpdateNotificationSchema,
+  NotificationQuerySchema,
+  MarkAsReadBatchSchema,
+  DeleteNotificationsBatchSchema,
+  CleanupOldNotificationsSchema,
+} from '@dailyuse/contracts/notification';
 import { NotificationController } from '../controllers/notification.controller';
 import type { NotificationUseCases } from '../controllers/notification.controller';
 
@@ -60,24 +67,71 @@ function parseBoolean(value: unknown): boolean | undefined {
   return undefined;
 }
 
+// ============ Response Schemas ============
+
+const NotificationResponseSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  content: z.string(),
+  type: z.string(),
+  category: z.string(),
+  status: z.string(),
+  isRead: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+const BatchResultSchema = z.object({
+  successCount: z.number(),
+  failedCount: z.number(),
+});
+
 // ============ Route Registration ============
 
 export function registerNotificationRoutes(
   handlers: NotificationUseCases,
   middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
   const controller = new NotificationController(handlers);
 
+  const r = new RouteRegistrar(router, openApiRegistry ?? null, {
+    basePath: '/api/v1/notifications',
+    defaultTags: ['Notification'],
+    defaultSecurity: [{ bearerAuth: [] }],
+  });
+
   // POST / — Create notification
-  router.post('/', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/',
+      summary: '创建通知',
+      request: { body: { content: { 'application/json': { schema: CreateNotificationSchema } } } },
+      responses: {
+        201: successResponse(NotificationResponseSchema, '创建成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req) => controller.create(req.body),
     { successStatus: 201 },
-  ));
+  );
 
   // GET / — List/query notifications
-  router.get('/', auth, expressAdapter(
+  r.route(
+    {
+      method: 'get',
+      path: '/',
+      summary: '查询通知列表',
+      request: { query: NotificationQuerySchema },
+      responses: {
+        200: successResponse(z.array(NotificationResponseSchema), '获取成功'),
+      },
+    },
+    [auth],
     (req) => controller.list({
       identityId: parseString(req.query?.identityId),
       type: parseString(req.query?.type),
@@ -94,42 +148,122 @@ export function registerNotificationRoutes(
       sortBy: parseString(req.query?.sortBy),
       sortOrder: parseString(req.query?.sortOrder),
     }),
-  ));
+  );
+
+  // POST /batch/read — Batch mark as read (must be before /:id)
+  r.route(
+    {
+      method: 'post',
+      path: '/batch/read',
+      summary: '批量标记为已读',
+      request: { body: { content: { 'application/json': { schema: MarkAsReadBatchSchema } } } },
+      responses: {
+        200: successResponse(BatchResultSchema, '操作成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req) => controller.batchMarkAsRead(req.body),
+  );
+
+  // POST /batch/delete — Batch delete (must be before /:id)
+  r.route(
+    {
+      method: 'post',
+      path: '/batch/delete',
+      summary: '批量删除通知',
+      request: { body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } } },
+      responses: {
+        200: successResponse(BatchResultSchema, '删除成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req) => controller.batchDelete(req.body),
+  );
+
+  // POST /cleanup — Cleanup old notifications (must be before /:id)
+  r.route(
+    {
+      method: 'post',
+      path: '/cleanup',
+      summary: '清理过期通知',
+      request: { body: { content: { 'application/json': { schema: CleanupOldNotificationsSchema } } } },
+      responses: {
+        200: successResponse(BatchResultSchema, '清理成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req) => controller.cleanup(req.body),
+  );
 
   // GET /:id — Get notification by ID
-  router.get('/:id', auth, expressAdapter(
+  r.route(
+    {
+      method: 'get',
+      path: '/:id',
+      summary: '获取通知详情',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(NotificationResponseSchema, '获取成功'),
+        404: errorResponse('通知不存在'),
+      },
+    },
+    [auth],
     (req) => controller.get(req.params!.id),
-  ));
+  );
 
   // PUT /:id — Update notification
-  router.put('/:id', auth, expressAdapter(
+  r.route(
+    {
+      method: 'put',
+      path: '/:id',
+      summary: '更新通知',
+      request: {
+        params: z.object({ id: z.string().uuid() }),
+        body: { content: { 'application/json': { schema: UpdateNotificationSchema } } },
+      },
+      responses: {
+        200: successResponse(NotificationResponseSchema, '更新成功'),
+        404: errorResponse('通知不存在'),
+      },
+    },
+    [auth],
     (req) => controller.update(req.params!.id, req.body),
-  ));
+  );
 
   // DELETE /:id — Delete notification
-  router.delete('/:id', auth, expressAdapter(
+  r.route(
+    {
+      method: 'delete',
+      path: '/:id',
+      summary: '删除通知',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(z.null(), '删除成功'),
+        404: errorResponse('通知不存在'),
+      },
+    },
+    [auth],
     (req) => controller.delete(req.params!.id),
-  ));
+  );
 
   // POST /:id/read — Mark single notification as read
-  router.post('/:id/read', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/read',
+      summary: '标记通知为已读',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(NotificationResponseSchema, '操作成功'),
+        404: errorResponse('通知不存在'),
+      },
+    },
+    [auth],
     (req) => controller.markAsRead(req.params!.id),
-  ));
-
-  // POST /batch/read — Batch mark as read
-  router.post('/batch/read', auth, expressAdapter(
-    (req) => controller.batchMarkAsRead(req.body),
-  ));
-
-  // POST /batch/delete — Batch delete
-  router.post('/batch/delete', auth, expressAdapter(
-    (req) => controller.batchDelete(req.body),
-  ));
-
-  // POST /cleanup — Cleanup old notifications
-  router.post('/cleanup', auth, expressAdapter(
-    (req) => controller.cleanup(req.body),
-  ));
+  );
 
   return router;
 }

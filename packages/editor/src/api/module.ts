@@ -31,6 +31,7 @@ export interface EditorApiModuleContext {
     readonly auth: RequestHandler;
     requireRole(roles: string[]): RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface EditorApiModuleDef {
@@ -143,7 +144,7 @@ export const EditorApiModule: EditorApiModuleDef = {
     };
 
     // 3. Register routes
-    const editorRoutes = registerEditorRoutes(handlers, middleware);
+    const editorRoutes = registerEditorRoutes(handlers, middleware, context.openApiRegistry);
     router.use('/editor', editorRoutes);
 
     // 4. Register initialization tasks
