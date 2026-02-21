@@ -12,7 +12,6 @@ import type { RouteRecordRaw } from 'vue-router';
 export const accountRoutes: RouteRecordRaw[] = [
   {
     path: '/account',
-    name: 'account',
     meta: {
       title: '账户',
       showInNav: false, // 不在侧边栏显示，通过头像菜单访问

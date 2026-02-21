@@ -1,7 +1,7 @@
 /**
- * Repository API Routes
+ * Repository API Routes — Unified Route + OpenAPI Registration
  *
- * Uses expressAdapter to eliminate boilerplate code.
+ * 路由定义与 OpenAPI 文档在同一处注册，消除"双重记账"问题。
  *
  * Routes (Repositories):
  *   POST   /                   — Create repository
@@ -20,9 +20,21 @@
  *   DELETE /:id                — Delete resource
  */
 
+import { z } from 'zod';
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { expressAdapter } from '@dailyuse/utils/result';
+import {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  successResponse,
+  errorResponse,
+} from '@dailyuse/utils/result';
+import {
+  CreateRepositorySchema,
+  UpdateRepositorySchema,
+  CreateResourceSchema,
+  UpdateResourceSchema,
+} from '@dailyuse/contracts/repository';
 import { RepositoryController } from '../controllers/repository.controller';
 import type { RepositoryUseCases } from '../controllers/repository.controller';
 
@@ -31,61 +43,213 @@ interface PlatformMiddleware {
   requireRole(roles: string[]): RequestHandler;
 }
 
+// ============ Response Schemas ============
+
+const RepositoryResponseSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  type: z.string(),
+  status: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+const ResourceResponseSchema = z.object({
+  id: z.string().uuid(),
+  repositoryId: z.string().uuid(),
+  name: z.string(),
+  type: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+// ============ Route Registration ============
+
 export function registerRepositoryRoutes(
   handlers: RepositoryUseCases,
   middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
   const controller = new RepositoryController(handlers);
 
+  const r = new RouteRegistrar(router, openApiRegistry ?? null, {
+    basePath: '/api/v1/repositories',
+    defaultTags: ['Repository'],
+    defaultSecurity: [{ bearerAuth: [] }],
+  });
+
   // ── Repository CRUD ──────────────────────────────────────────────
 
-  router.post('/', auth, expressAdapter(
+  // POST / — Create repository
+  r.route(
+    {
+      method: 'post',
+      path: '/',
+      summary: '创建仓库',
+      request: { body: { content: { 'application/json': { schema: CreateRepositorySchema } } } },
+      responses: {
+        201: successResponse(RepositoryResponseSchema, '创建成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.createRepository(req.body, ctx),
     { successStatus: 201 },
-  ));
+  );
 
-  router.get('/', auth, expressAdapter(
+  // GET / — List repositories
+  r.route(
+    {
+      method: 'get',
+      path: '/',
+      summary: '获取仓库列表',
+      request: {
+        query: z.object({
+          status: z.string().optional(),
+          type: z.string().optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(z.array(RepositoryResponseSchema), '获取成功'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.listRepositories({
       status: typeof req.query?.status === 'string' ? req.query.status : undefined,
       type: typeof req.query?.type === 'string' ? req.query.type : undefined,
     }, ctx),
-  ));
+  );
 
-  router.get('/:id', auth, expressAdapter(
+  // GET /:id — Get repository by ID
+  r.route(
+    {
+      method: 'get',
+      path: '/:id',
+      summary: '获取仓库详情',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(RepositoryResponseSchema, '获取成功'),
+        404: errorResponse('仓库不存在'),
+      },
+    },
+    [auth],
     (req) => controller.getRepository(req.params!.id),
-  ));
+  );
 
-  router.put('/:id', auth, expressAdapter(
+  // PUT /:id — Update repository
+  r.route(
+    {
+      method: 'put',
+      path: '/:id',
+      summary: '更新仓库',
+      request: {
+        params: z.object({ id: z.string().uuid() }),
+        body: { content: { 'application/json': { schema: UpdateRepositorySchema } } },
+      },
+      responses: {
+        200: successResponse(RepositoryResponseSchema, '更新成功'),
+        404: errorResponse('仓库不存在'),
+      },
+    },
+    [auth],
     (req) => controller.updateRepository(req.params!.id, req.body),
-  ));
+  );
 
-  router.delete('/:id', auth, expressAdapter(
+  // DELETE /:id — Delete repository
+  r.route(
+    {
+      method: 'delete',
+      path: '/:id',
+      summary: '删除仓库',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(z.null(), '删除成功'),
+        404: errorResponse('仓库不存在'),
+      },
+    },
+    [auth],
     (req) => controller.deleteRepository(req.params!.id),
-  ));
+  );
 
-  router.post('/:id/archive', auth, expressAdapter(
+  // POST /:id/archive — Archive repository
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/archive',
+      summary: '归档仓库',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(RepositoryResponseSchema, '归档成功'),
+        404: errorResponse('仓库不存在'),
+      },
+    },
+    [auth],
     (req) => controller.archiveRepository(req.params!.id),
-  ));
+  );
 
-  router.post('/:id/activate', auth, expressAdapter(
+  // POST /:id/activate — Activate repository
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/activate',
+      summary: '激活仓库',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(RepositoryResponseSchema, '激活成功'),
+        404: errorResponse('仓库不存在'),
+      },
+    },
+    [auth],
     (req) => controller.activateRepository(req.params!.id),
-  ));
+  );
 
   // ── Nested Resource Routes ───────────────────────────────────────
 
-  router.post('/:repoId/resources', auth, expressAdapter(
+  // POST /:repoId/resources — Create resource
+  r.route(
+    {
+      method: 'post',
+      path: '/:repoId/resources',
+      summary: '创建资源',
+      request: {
+        params: z.object({ repoId: z.string().uuid() }),
+        body: { content: { 'application/json': { schema: CreateResourceSchema } } },
+      },
+      responses: {
+        201: successResponse(ResourceResponseSchema, '创建成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req) => controller.createResource(req.params!.repoId, req.body),
     { successStatus: 201 },
-  ));
+  );
 
-  router.get('/:repoId/resources', auth, expressAdapter(
+  // GET /:repoId/resources — List resources
+  r.route(
+    {
+      method: 'get',
+      path: '/:repoId/resources',
+      summary: '获取资源列表',
+      request: {
+        params: z.object({ repoId: z.string().uuid() }),
+        query: z.object({
+          folderId: z.string().uuid().optional(),
+          status: z.string().optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(z.array(ResourceResponseSchema), '获取成功'),
+      },
+    },
+    [auth],
     (req) => controller.listResources(req.params!.repoId, {
       folderId: typeof req.query?.folderId === 'string' ? req.query.folderId : undefined,
       status: typeof req.query?.status === 'string' ? req.query.status : undefined,
     }),
-  ));
+  );
 
   return router;
 }
@@ -97,22 +261,68 @@ export function registerRepositoryRoutes(
 export function registerResourceRoutes(
   handlers: RepositoryUseCases,
   middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
   const controller = new RepositoryController(handlers);
 
-  router.get('/:id', auth, expressAdapter(
+  const r = new RouteRegistrar(router, openApiRegistry ?? null, {
+    basePath: '/api/v1/resources',
+    defaultTags: ['Resource'],
+    defaultSecurity: [{ bearerAuth: [] }],
+  });
+
+  // GET /:id — Get resource by ID
+  r.route(
+    {
+      method: 'get',
+      path: '/:id',
+      summary: '获取资源详情',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(ResourceResponseSchema, '获取成功'),
+        404: errorResponse('资源不存在'),
+      },
+    },
+    [auth],
     (req) => controller.getResource(req.params!.id),
-  ));
+  );
 
-  router.put('/:id', auth, expressAdapter(
+  // PUT /:id — Update resource
+  r.route(
+    {
+      method: 'put',
+      path: '/:id',
+      summary: '更新资源',
+      request: {
+        params: z.object({ id: z.string().uuid() }),
+        body: { content: { 'application/json': { schema: UpdateResourceSchema } } },
+      },
+      responses: {
+        200: successResponse(ResourceResponseSchema, '更新成功'),
+        404: errorResponse('资源不存在'),
+      },
+    },
+    [auth],
     (req) => controller.updateResource(req.params!.id, req.body),
-  ));
+  );
 
-  router.delete('/:id', auth, expressAdapter(
+  // DELETE /:id — Delete resource
+  r.route(
+    {
+      method: 'delete',
+      path: '/:id',
+      summary: '删除资源',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(z.null(), '删除成功'),
+        404: errorResponse('资源不存在'),
+      },
+    },
+    [auth],
     (req) => controller.deleteResource(req.params!.id),
-  ));
+  );
 
   return router;
 }

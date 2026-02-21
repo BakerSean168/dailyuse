@@ -39,6 +39,7 @@ export interface RepositoryApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface RepositoryApiModuleDef {
@@ -143,8 +144,8 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     };
 
     // 4. Register routes
-    const repositoryRoutes = registerRepositoryRoutes(handlers, middleware);
-    const resourceRoutes = registerResourceRoutes(handlers, middleware);
+    const repositoryRoutes = registerRepositoryRoutes(handlers, middleware, context.openApiRegistry);
+    const resourceRoutes = registerResourceRoutes(handlers, middleware, context.openApiRegistry);
 
     // 5. Mount sub-API routes
     router.use('/repositories', repositoryRoutes);

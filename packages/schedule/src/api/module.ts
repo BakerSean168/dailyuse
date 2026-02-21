@@ -30,6 +30,7 @@ export interface ScheduleApiModuleContext {
     readonly auth: RequestHandler;
     requireRole(roles: string[]): RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface ScheduleApiModuleDef {
@@ -95,7 +96,7 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
     };
 
     // 3. Register routes
-    const scheduleRoutes = registerScheduleRoutes(handlers, middleware);
+    const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
 
     // 4. Mount onto API router
     router.use('/schedules', scheduleRoutes);

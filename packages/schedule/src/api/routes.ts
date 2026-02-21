@@ -1,30 +1,35 @@
 /**
- * Schedule API Routes
+ * Schedule API Routes — Unified Route + OpenAPI Registration
  *
- * Route definitions and request handling for schedule tasks.
- * Middleware is injected via parameters (from ApiBootstrapper context),
- * no direct dependency on apps/api internals.
- *
- * Uses expressAdapter to eliminate boilerplate code:
- * - Zod validation is handled by the ScheduleController
- * - Error handling is unified via the adapter
- * - Context extraction is automatic
+ * 路由定义与 OpenAPI 文档在同一处注册，消除"双重记账"问题。
  *
  * Routes:
- *   POST   /tasks            — Create schedule task
- *   GET    /tasks            — List tasks with query params
- *   GET    /tasks/:id        — Get task by ID
- *   PUT    /tasks/:id        — Update task
- *   DELETE /tasks/:id        — Delete task
+ *   POST   /tasks/batch     — Batch operations (must be before /tasks/:id)
+ *   POST   /tasks           — Create schedule task
+ *   GET    /tasks           — List tasks with query params
+ *   GET    /tasks/:id       — Get task by ID
+ *   PUT    /tasks/:id       — Update task
+ *   DELETE /tasks/:id       — Delete task
  *   POST   /tasks/:id/pause  — Pause task
  *   POST   /tasks/:id/resume — Resume task
  *   POST   /tasks/:id/trigger — Trigger task
- *   POST   /tasks/batch      — Batch operations
  */
 
+import { z } from 'zod';
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { expressAdapter } from '@dailyuse/utils/result';
+import {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  successResponse,
+  errorResponse,
+} from '@dailyuse/utils/result';
+import {
+  CreateScheduleTaskRequestSchema,
+  UpdateScheduleTaskRequestSchema,
+  ScheduleTaskQueryParamsSchema,
+  BatchScheduleTaskOperationRequestSchema,
+} from '@dailyuse/contracts/schedule';
 import { ScheduleController } from '../controllers/schedule.controller';
 import type { ScheduleUseCases } from '../controllers/schedule.controller';
 
@@ -53,29 +58,89 @@ function parseBoolean(value: unknown): boolean | undefined {
   return undefined;
 }
 
+// ============ Response Schemas ============
+
+const ScheduleTaskResponseSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  sourceModule: z.string(),
+  sourceEntityId: z.string(),
+  status: z.string(),
+  enabled: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+const BatchOperationResponseSchema = z.object({
+  success: z.array(z.string()),
+  failed: z.array(z.object({ taskId: z.string(), error: z.string() })),
+  total: z.number(),
+  successCount: z.number(),
+  failedCount: z.number(),
+});
+
 // ============ Route Registration ============
 
 export function registerScheduleRoutes(
   handlers: ScheduleUseCases,
   middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
   const controller = new ScheduleController(handlers);
 
+  const r = new RouteRegistrar(router, openApiRegistry ?? null, {
+    basePath: '/api/v1/schedules',
+    defaultTags: ['Schedule'],
+    defaultSecurity: [{ bearerAuth: [] }],
+  });
+
   // POST /tasks/batch — Batch operations (must be before /tasks/:id)
-  router.post('/tasks/batch', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/batch',
+      summary: '批量操作调度任务',
+      request: { body: { content: { 'application/json': { schema: BatchScheduleTaskOperationRequestSchema } } } },
+      responses: {
+        200: successResponse(BatchOperationResponseSchema, '操作成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req) => controller.batchOperation(req.body),
-  ));
+  );
 
   // POST /tasks — Create schedule task
-  router.post('/tasks', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks',
+      summary: '创建调度任务',
+      request: { body: { content: { 'application/json': { schema: CreateScheduleTaskRequestSchema } } } },
+      responses: {
+        201: successResponse(ScheduleTaskResponseSchema, '创建成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.createTask(req.body, ctx),
     { successStatus: 201 },
-  ));
+  );
 
   // GET /tasks — List tasks with query params
-  router.get('/tasks', auth, expressAdapter(
+  r.route(
+    {
+      method: 'get',
+      path: '/tasks',
+      summary: '获取调度任务列表',
+      request: { query: ScheduleTaskQueryParamsSchema },
+      responses: {
+        200: successResponse(z.array(ScheduleTaskResponseSchema), '获取成功'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.listTasks({
       sourceModule: parseString(req.query?.sourceModule),
       sourceEntityId: parseString(req.query?.sourceEntityId),
@@ -87,37 +152,106 @@ export function registerScheduleRoutes(
       sortBy: parseString(req.query?.sortBy),
       sortOrder: parseString(req.query?.sortOrder),
     }, ctx),
-  ));
+  );
 
   // GET /tasks/:id — Get task by ID
-  router.get('/tasks/:id', auth, expressAdapter(
+  r.route(
+    {
+      method: 'get',
+      path: '/tasks/:id',
+      summary: '获取调度任务详情',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '获取成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
     (req) => controller.getTask(req.params!.id),
-  ));
+  );
 
   // PUT /tasks/:id — Update task
-  router.put('/tasks/:id', auth, expressAdapter(
+  r.route(
+    {
+      method: 'put',
+      path: '/tasks/:id',
+      summary: '更新调度任务',
+      request: {
+        params: z.object({ id: z.string().uuid() }),
+        body: { content: { 'application/json': { schema: UpdateScheduleTaskRequestSchema } } },
+      },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '更新成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
     (req) => controller.updateTask(req.params!.id, req.body),
-  ));
+  );
 
   // DELETE /tasks/:id — Delete task
-  router.delete('/tasks/:id', auth, expressAdapter(
+  r.route(
+    {
+      method: 'delete',
+      path: '/tasks/:id',
+      summary: '删除调度任务',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(z.null(), '删除成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
     (req) => controller.deleteTask(req.params!.id),
-  ));
+  );
 
   // POST /tasks/:id/pause — Pause task
-  router.post('/tasks/:id/pause', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/:id/pause',
+      summary: '暂停调度任务',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '暂停成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
     (req) => controller.pauseTask(req.params!.id),
-  ));
+  );
 
   // POST /tasks/:id/resume — Resume task
-  router.post('/tasks/:id/resume', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/:id/resume',
+      summary: '恢复调度任务',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '恢复成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
     (req) => controller.resumeTask(req.params!.id),
-  ));
+  );
 
   // POST /tasks/:id/trigger — Trigger task
-  router.post('/tasks/:id/trigger', auth, expressAdapter(
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/:id/trigger',
+      summary: '手动触发调度任务',
+      request: { params: z.object({ id: z.string().uuid() }) },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '触发成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
     (req) => controller.triggerTask(req.params!.id),
-  ));
+  );
 
   return router;
 }

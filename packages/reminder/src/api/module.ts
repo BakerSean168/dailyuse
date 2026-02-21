@@ -25,6 +25,7 @@ export interface ReminderApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface ReminderApiModuleDef {
@@ -97,7 +98,7 @@ export const ReminderApiModule: ReminderApiModuleDef = {
     };
 
     // 3. Register routes
-    const reminderRoutes = registerReminderRoutes(handlers, middleware);
+    const reminderRoutes = registerReminderRoutes(handlers, middleware, context.openApiRegistry);
 
     // 4. Mount sub-API routes
     router.use('/reminders', reminderRoutes);

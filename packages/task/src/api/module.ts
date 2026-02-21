@@ -32,6 +32,7 @@ export interface TaskApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface TaskApiModuleOptions {
@@ -87,6 +88,7 @@ export const TaskApiModule: TaskApiModuleDef = {
       },
       middleware,
       router,
+      context.openApiRegistry,
     );
 
     // 4. Register initialization tasks (event handlers, background jobs)

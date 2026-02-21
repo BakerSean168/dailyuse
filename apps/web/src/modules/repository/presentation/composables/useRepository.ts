@@ -10,7 +10,7 @@ import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '@/shared/di';
 import { resultHttpClient } from '@/shared/http';
 import type { RepositoryClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
-import type { CreateRepositoryRequest } from '@dailyuse/repository';
+import type { CreateRepositoryRequest } from '@dailyuse/repository/infrastructure-client';
 import type { Repository } from '@dailyuse/repository/domain-client';
 
 const BASE = '/repositories';

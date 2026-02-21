@@ -20,6 +20,7 @@ import {
 import { GoalContainer } from '../infrastructure-server/di/goal-container';
 import { registerGoalRoutes } from './routes';
 import { registerGoalInitializationTasks } from './initialization';
+import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 
 export interface GoalApiModuleContext {
   readonly app: import('express').Express;
@@ -29,6 +30,7 @@ export interface GoalApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: OpenApiRegistryLike;
 }
 
 export interface GoalApiModuleDef {
@@ -73,8 +75,8 @@ export const GoalApiModule: GoalApiModuleDef = {
       addReview: goalModule.addReview,
     };
 
-    // 4. 注册路由
-    const goalRoutes = registerGoalRoutes(handlers, middleware);
+    // 4. 注册路由（同时注册 OpenAPI 文档）
+    const goalRoutes = registerGoalRoutes(handlers, middleware, context.openApiRegistry);
     router.use('/goals', goalRoutes);
 
     // 5. 注册初始化任务

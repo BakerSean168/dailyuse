@@ -45,6 +45,7 @@ export interface AuthenticationApiModuleContext {
     readonly auth: import('express').RequestHandler;
     requireRole(roles: string[]): import('express').RequestHandler;
   };
+  readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
 export interface AuthenticationApiModuleDef {
@@ -117,7 +118,7 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
     };
 
     // 4. Register routes
-    const authRoutes = registerAuthenticationRoutes(handlers, middleware);
+    const authRoutes = registerAuthenticationRoutes(handlers, middleware, context.openApiRegistry);
 
     // 5. Mount onto API router
     router.use('/auth', authRoutes);

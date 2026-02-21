@@ -1,7 +1,7 @@
 /**
- * Setting API Routes
+ * Setting API Routes — Unified Route + OpenAPI Registration
  *
- * Uses expressAdapter to eliminate boilerplate code.
+ * 路由定义与 OpenAPI 文档在同一处注册，消除"双重记账"问题。
  *
  * Routes:
  *   GET    /              — 获取用户设置
@@ -12,9 +12,21 @@
  *   GET    /defaults      — 获取默认设置
  */
 
+import { z } from 'zod';
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import { expressAdapter } from '@dailyuse/utils/result';
+import {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  successResponse,
+  errorResponse,
+} from '@dailyuse/utils/result';
+import {
+  UpdateUserSettingSchema,
+  ResetUserSettingSchema,
+  ExportSettingsSchema,
+  ImportSettingsSchema,
+} from '@dailyuse/contracts/setting';
 import { SettingController } from '../controllers/setting.controller';
 import type { SettingUseCases } from '../controllers/setting.controller';
 
@@ -23,47 +35,123 @@ interface PlatformMiddleware {
   requireRole(roles: string[]): RequestHandler;
 }
 
+// ============ Response Schemas ============
+
+const UserSettingResponseSchema = z.object({
+  id: z.string(),
+  identityId: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
 // ============ Route Registration ============
 
 export function registerSettingRoutes(
   handlers: SettingUseCases,
   middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
   const controller = new SettingController(handlers);
 
+  const r = new RouteRegistrar(router, openApiRegistry ?? null, {
+    basePath: '/api/v1/settings',
+    defaultTags: ['Setting'],
+    defaultSecurity: [{ bearerAuth: [] }],
+  });
+
   // GET / — 获取用户设置
-  router.get('/', auth, expressAdapter(
+  r.route(
+    {
+      method: 'get',
+      path: '/',
+      summary: '获取用户设置',
+      responses: {
+        200: successResponse(UserSettingResponseSchema, '获取成功'),
+      },
+    },
+    [auth],
     (_req, ctx) => controller.getUserSetting(ctx),
-  ));
+  );
 
-  // PUT / — 更新用户设置 (UpdateUserSettingSchema)
-  router.put('/', auth, expressAdapter(
+  // PUT / — 更新用户设置
+  r.route(
+    {
+      method: 'put',
+      path: '/',
+      summary: '更新用户设置',
+      request: { body: { content: { 'application/json': { schema: UpdateUserSettingSchema } } } },
+      responses: {
+        200: successResponse(UserSettingResponseSchema, '更新成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.updateUserSetting(req.body, ctx),
-  ));
+  );
 
-  // POST /reset — 重置用户设置 (ResetUserSettingSchema)
-  router.post('/reset', auth, expressAdapter(
+  // POST /reset — 重置用户设置
+  r.route(
+    {
+      method: 'post',
+      path: '/reset',
+      summary: '重置用户设置',
+      request: { body: { content: { 'application/json': { schema: ResetUserSettingSchema } } } },
+      responses: {
+        200: successResponse(UserSettingResponseSchema, '重置成功'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.resetUserSetting(req.body, ctx),
-  ));
+  );
 
-  // POST /export — 导出设置 (ExportSettingsSchema)
-  router.post('/export', auth, expressAdapter(
+  // POST /export — 导出设置
+  r.route(
+    {
+      method: 'post',
+      path: '/export',
+      summary: '导出设置',
+      request: { body: { content: { 'application/json': { schema: ExportSettingsSchema } } } },
+      responses: {
+        200: successResponse(z.object({ data: z.string(), fileName: z.string() }), '导出成功'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.exportSettings(req.body, ctx),
-  ));
+  );
 
-  // POST /import — 导入设置 (ImportSettingsSchema)
-  router.post('/import', auth, expressAdapter(
+  // POST /import — 导入设置
+  r.route(
+    {
+      method: 'post',
+      path: '/import',
+      summary: '导入设置',
+      request: { body: { content: { 'application/json': { schema: ImportSettingsSchema } } } },
+      responses: {
+        201: successResponse(z.object({ imported: z.number(), skipped: z.number() }), '导入成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
     (req, ctx) => controller.importSettings(req.body, ctx),
     { successStatus: 201 },
-  ));
+  );
 
   // GET /defaults — 获取默认设置
-  router.get('/defaults', auth, expressAdapter(
+  r.route(
+    {
+      method: 'get',
+      path: '/defaults',
+      summary: '获取默认设置',
+      responses: {
+        200: successResponse(UserSettingResponseSchema, '获取成功'),
+      },
+    },
+    [auth],
     () => controller.getDefaultSettings(),
     { requireAuth: false },
-  ));
+  );
 
   return router;
 }
