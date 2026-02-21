@@ -47,7 +47,7 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "zod": "^3.24.0",
+    "zod": "^4.1.13",
     "express": "^5.1.0"
   },
   "devDependencies": {

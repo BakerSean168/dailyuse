@@ -54,7 +54,7 @@
     "@dailyuse/utils": "workspace:*",
     "ai": "^4.0.0",
     "better-sqlite3": "^12.5.0",
-    "zod": "^3.24.0"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13"

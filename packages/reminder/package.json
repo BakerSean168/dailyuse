@@ -58,7 +58,7 @@
     "@dailyuse/schedule": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "express": "^5.1.0",
-    "zod": "^3.24.0"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",
