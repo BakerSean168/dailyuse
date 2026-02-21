@@ -25,6 +25,16 @@ if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
 }
 
 async function startApp() {
+  // Enable MSW mock service worker in development when VITE_ENABLE_MOCK_API=true
+  if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_API === 'true') {
+    const { worker } = await import('./mocks/browser');
+    await worker.start({
+      // Let unmatched requests pass through to the real server (or proxy)
+      onUnhandledRequest: 'bypass',
+    });
+    console.log('[MSW] Mock Service Worker started');
+  }
+
   const app = createApp(App);
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);

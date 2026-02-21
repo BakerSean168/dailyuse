@@ -21,6 +21,17 @@ extendZodWithOpenApi(z);
 export const registry = new OpenAPIRegistry();
 
 // ============================================================================
+// Security Schemes
+// ============================================================================
+
+registry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+  description: '使用 `/auth/login` 获取的 accessToken 进行认证',
+});
+
+// ============================================================================
 // Common Schemas
 // ============================================================================
 

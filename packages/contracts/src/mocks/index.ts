@@ -1,0 +1,22 @@
+/**
+ * @dailyuse/contracts - Mock Generators
+ *
+ * Re-exports all mock factory functions from sub-modules.
+ * These are **development-only** helpers — do not import in production code.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   createMockGoal,
+ *   createMockGoalList,
+ *   createMockTaskTemplate,
+ *   createMockAccount,
+ *   createMockAuthResponse,
+ * } from '@dailyuse/contracts/mocks';
+ * ```
+ */
+
+export * from './goal.mock';
+export * from './task.mock';
+export * from './account.mock';
+export * from './auth.mock';
