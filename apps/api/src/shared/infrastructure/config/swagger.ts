@@ -13,6 +13,7 @@
 
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
+import { env } from './env';
 import { generateOpenApiDocument } from '../openapi/generator';
 
 /**
@@ -53,6 +54,6 @@ export function setupSwagger(app: Express): void {
     res.json(getDocument());
   });
 
-  console.log('📚 Swagger UI: http://localhost:3888/api/docs');
-  console.log('📄 OpenAPI JSON: http://localhost:3888/api/docs.json');
+  console.log(`📚 Swagger UI: http://localhost:${env.API_PORT}/api/docs`);
+  console.log(`📄 OpenAPI JSON: http://localhost:${env.API_PORT}/api/docs.json`);
 }
