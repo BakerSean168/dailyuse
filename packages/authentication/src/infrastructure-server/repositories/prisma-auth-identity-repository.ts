@@ -5,8 +5,8 @@
  * Uses constructor-injected PrismaClient from @dailyuse/database.
  *
  * Maps between:
- * - Prisma models (AuthIdentity, AuthCredential) from the database
- * - Domain AuthIdentityPersistenceDTO / AuthCredentialServer discriminated unions
+ * - Prisma models (AuthIdentity, AuthIdentifier, AuthOAuthBinding, AuthCredential) from the database
+ * - Domain AuthIdentityPersistenceDTO / discriminated unions
  * 
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
@@ -18,8 +18,8 @@ import type {
   AuthIdentityPersistenceDTO,
   AuthCredentialServer,
   PasswordCredentialServer,
-  OAuthCredentialServer,
-  PhoneCredentialServer,
+  AuthIdentifierPersistenceDTO,
+  OAuthBindingPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 import { CredentialType } from '../../domain-shared';
 import type { OAuthProvider } from '../../domain-shared';
@@ -55,7 +55,7 @@ export class PrismaAuthIdentityRepository
       const dto = identity.toPersistenceDTO();
 
       await this.prisma.$transaction(async (tx: any) => {
-        // Upsert the identity record
+        // 1. Upsert the identity record
         await tx.authIdentity.upsert({
           where: { id: dto.id },
           create: {
@@ -80,13 +80,27 @@ export class PrismaAuthIdentityRepository
           },
         });
 
-        // Upsert each credential
+        // 2. Sync identifiers - delete old and re-create
+        await tx.authIdentifier.deleteMany({ where: { identityId: dto.id } });
+        for (const identifier of dto.identifiers) {
+          await tx.authIdentifier.create({
+            data: this.identifierToRow(identifier, dto.id),
+          });
+        }
+
+        // 3. Sync OAuth bindings
+        await tx.authOAuthBinding.deleteMany({ where: { identityId: dto.id } });
+        for (const binding of dto.oauthBindings) {
+          await tx.authOAuthBinding.create({
+            data: this.oauthBindingToRow(binding, dto.id),
+          });
+        }
+
+        // 4. Sync credentials
+        await tx.authCredential.deleteMany({ where: { identityId: dto.id } });
         for (const cred of dto.credentials) {
-          const commonData = this.credentialToRow(cred, dto.id);
-          await tx.authCredential.upsert({
-            where: { id: cred.id },
-            create: commonData,
-            update: commonData,
+          await tx.authCredential.create({
+            data: this.credentialToRow(cred, dto.id),
           });
         }
       });
@@ -103,65 +117,83 @@ export class PrismaAuthIdentityRepository
   async findById(id: string): Promise<AuthIdentity | null> {
     const row = await this.prisma.authIdentity.findUnique({
       where: { id },
-      include: { credentials: true },
+      include: {
+        identifiers: true,
+        oauthBindings: true,
+        credentials: true,
+      },
     });
 
     if (!row) return null;
     return AuthIdentity.fromPersistenceDTO(this.mapRowToDTO(row));
   }
 
+  /**
+   * 根据邮箱查找身份（查标识符表）
+   */
   async findByEmail(email: string): Promise<AuthIdentity | null> {
-    const credential = await this.prisma.authCredential.findFirst({
+    const identifier = await this.prisma.authIdentifier.findFirst({
       where: {
-        identifier: email,
-        type: CredentialType.PASSWORD,
+        type: 'EMAIL',
+        value: email,
       },
     });
 
-    if (!credential) return null;
-    return this.findById(credential.identityId);
+    if (!identifier) return null;
+    return this.findById(identifier.identityId);
   }
 
+  /**
+   * 根据手机号查找身份（查标识符表）
+   */
   async findByPhone(phoneNumber: string): Promise<AuthIdentity | null> {
-    const credential = await this.prisma.authCredential.findFirst({
+    const identifier = await this.prisma.authIdentifier.findFirst({
       where: {
-        identifier: phoneNumber,
-        type: CredentialType.PHONE,
+        type: 'PHONE',
+        value: phoneNumber,
       },
     });
 
-    if (!credential) return null;
-    return this.findById(credential.identityId);
+    if (!identifier) return null;
+    return this.findById(identifier.identityId);
   }
 
+  /**
+   * 根据 OAuth 信息查找身份（查绑定表）
+   */
   async findByOAuth(provider: OAuthProvider, subjectId: string): Promise<AuthIdentity | null> {
-    const credential = await this.prisma.authCredential.findFirst({
+    const binding = await this.prisma.authOAuthBinding.findFirst({
       where: {
-        provider,
+        provider: provider as string,
         providerSubjectId: subjectId,
-        type: CredentialType.OAUTH,
       },
     });
 
-    if (!credential) return null;
-    return this.findById(credential.identityId);
+    if (!binding) return null;
+    return this.findById(binding.identityId);
   }
 
+  /**
+   * 检查邮箱是否已存在
+   */
   async existsByEmail(email: string): Promise<boolean> {
-    const count = await this.prisma.authCredential.count({
+    const count = await this.prisma.authIdentifier.count({
       where: {
-        identifier: email,
-        type: CredentialType.PASSWORD,
+        type: 'EMAIL',
+        value: email,
       },
     });
     return count > 0;
   }
 
+  /**
+   * 检查手机号是否已存在
+   */
   async existsByPhone(phoneNumber: string): Promise<boolean> {
-    const count = await this.prisma.authCredential.count({
+    const count = await this.prisma.authIdentifier.count({
       where: {
-        identifier: phoneNumber,
-        type: CredentialType.PHONE,
+        type: 'PHONE',
+        value: phoneNumber,
       },
     });
     return count > 0;
@@ -170,6 +202,8 @@ export class PrismaAuthIdentityRepository
   async delete(identity: AuthIdentity): Promise<void> {
     const id = identity.id;
     await this.prisma.$transaction(async (tx: any) => {
+      await tx.authIdentifier.deleteMany({ where: { identityId: id } });
+      await tx.authOAuthBinding.deleteMany({ where: { identityId: id } });
       await tx.authCredential.deleteMany({ where: { identityId: id } });
       await tx.authSession.deleteMany({ where: { identityId: id } });
       await tx.authIdentity.delete({ where: { id } });
@@ -179,7 +213,7 @@ export class PrismaAuthIdentityRepository
   // ============ Private Mapping Helpers ============
 
   /**
-   * Map Prisma row (with included credentials) to AuthIdentityPersistenceDTO
+   * Map Prisma row (with included relations) to AuthIdentityPersistenceDTO
    */
   private mapRowToDTO(row: any): AuthIdentityPersistenceDTO {
     return {
@@ -188,6 +222,8 @@ export class PrismaAuthIdentityRepository
       failedLoginAttempts: row.failedLoginAttempts,
       lastFailedAttempt: row.lastFailedAttempt ?? null,
       lockedUntil: row.lockedUntil ?? null,
+      identifiers: (row.identifiers ?? []).map((i: any) => this.mapIdentifierRow(i)),
+      oauthBindings: (row.oauthBindings ?? []).map((b: any) => this.mapOAuthBindingRow(b)),
       credentials: (row.credentials ?? []).map((c: any) => this.mapCredentialRow(c)),
       version: row.version,
       createdAt: row.createdAt,
@@ -197,7 +233,44 @@ export class PrismaAuthIdentityRepository
   }
 
   /**
-   * Map a Prisma AuthCredential row to the discriminated union AuthCredentialServer
+   * Map a Prisma AuthIdentifier row to AuthIdentifierPersistenceDTO
+   */
+  private mapIdentifierRow(i: any): AuthIdentifierPersistenceDTO {
+    if (i.type === 'EMAIL') {
+      return {
+        type: 'EMAIL',
+        value: i.value,
+        isVerified: i.isVerified ?? false,
+      };
+    }
+    if (i.type === 'PHONE') {
+      return {
+        type: 'PHONE',
+        value: { value: i.value },
+        isVerified: i.isVerified ?? false,
+      };
+    }
+    throw new Error(`Unknown identifier type: ${i.type}`);
+  }
+
+  /**
+   * Map a Prisma AuthOAuthBinding row to OAuthBindingPersistenceDTO
+   */
+  private mapOAuthBindingRow(b: any): OAuthBindingPersistenceDTO {
+    return {
+      id: b.id,
+      provider: b.provider,
+      providerSubjectId: b.providerSubjectId,
+      accessToken: b.accessToken ?? null,
+      refreshToken: b.refreshToken ?? null,
+      expiresAt: b.expiresAt ?? null,
+      createdAt: b.createdAt,
+      lastUsedAt: b.lastUsedAt ?? null,
+    };
+  }
+
+  /**
+   * Map a Prisma AuthCredential row to PasswordCredentialServer
    */
   private mapCredentialRow(c: any): AuthCredentialServer {
     const base = {
@@ -207,37 +280,47 @@ export class PrismaAuthIdentityRepository
       lastUsedAt: c.lastUsedAt ?? null,
     };
 
-    switch (c.type) {
-      case CredentialType.PASSWORD:
-        return {
-          ...base,
-          type: CredentialType.PASSWORD,
-          hashedPassword: c.passwordHash,
-          passwordLastChangedAt: c.passwordLastChangedAt ?? c.createdAt,
-        } as PasswordCredentialServer;
-
-      case CredentialType.OAUTH:
-        return {
-          ...base,
-          type: CredentialType.OAUTH,
-          provider: c.provider,
-          providerSubjectId: c.providerSubjectId,
-          accessToken: c.accessToken ?? null,
-          refreshToken: c.refreshToken ?? null,
-          expiresAt: c.oauthExpiresAt ?? null,
-        } as OAuthCredentialServer;
-
-      case CredentialType.PHONE:
-        return {
-          ...base,
-          type: CredentialType.PHONE,
-          phoneNumber: c.identifier,
-          isVerified: c.isVerified ?? false,
-        } as PhoneCredentialServer;
-
-      default:
-        throw new Error(`Unknown credential type: ${c.type}`);
+    if (c.type === CredentialType.PASSWORD || c.type === 'PASSWORD') {
+      return {
+        ...base,
+        type: CredentialType.PASSWORD,
+        hashedPassword: c.passwordHash,
+        passwordLastChangedAt: c.passwordLastChangedAt ?? c.createdAt,
+      } as PasswordCredentialServer;
     }
+
+    throw new Error(`Unknown credential type: ${c.type}`);
+  }
+
+  /**
+   * Convert identifier to flat row
+   */
+  private identifierToRow(identifier: AuthIdentifierPersistenceDTO, identityId: string): Record<string, any> {
+    return {
+      identityId,
+      type: identifier.type,
+      value: identifier.type === 'PHONE'
+        ? (identifier.value as { value: string }).value
+        : identifier.value as string,
+      isVerified: identifier.isVerified,
+    };
+  }
+
+  /**
+   * Convert OAuth binding to flat row
+   */
+  private oauthBindingToRow(binding: OAuthBindingPersistenceDTO, identityId: string): Record<string, any> {
+    return {
+      id: binding.id,
+      identityId,
+      provider: binding.provider as string,
+      providerSubjectId: binding.providerSubjectId,
+      accessToken: binding.accessToken,
+      refreshToken: binding.refreshToken,
+      expiresAt: binding.expiresAt,
+      createdAt: binding.createdAt,
+      lastUsedAt: binding.lastUsedAt,
+    };
   }
 
   /**
@@ -253,28 +336,10 @@ export class PrismaAuthIdentityRepository
       lastUsedAt: cred.lastUsedAt ?? null,
     };
 
-    switch (cred.type) {
-      case CredentialType.PASSWORD: {
-        const p = cred as PasswordCredentialServer;
-        row.passwordHash = p.hashedPassword;
-        row.passwordLastChangedAt = p.passwordLastChangedAt;
-        break;
-      }
-      case CredentialType.OAUTH: {
-        const o = cred as OAuthCredentialServer;
-        row.provider = o.provider;
-        row.providerSubjectId = o.providerSubjectId;
-        row.accessToken = o.accessToken;
-        row.refreshToken = o.refreshToken;
-        row.oauthExpiresAt = o.expiresAt;
-        break;
-      }
-      case CredentialType.PHONE: {
-        const ph = cred as PhoneCredentialServer;
-        row.identifier = (ph as any).phoneNumber;
-        row.isVerified = (ph as any).isVerified ?? false;
-        break;
-      }
+    if (cred.type === CredentialType.PASSWORD || cred.type === 'PASSWORD') {
+      const p = cred as PasswordCredentialServer;
+      row.passwordHash = p.hashedPassword;
+      row.passwordLastChangedAt = p.passwordLastChangedAt;
     }
 
     return row;
