@@ -41,5 +41,8 @@ export default createTsupConfig({
 
     // 原语类型入口
     'src/primitives/index.ts',
+
+    // Mock 数据生成器（仅用于开发/测试）
+    'src/mocks/index.ts',
   ],
 });
