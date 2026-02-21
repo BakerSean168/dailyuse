@@ -8322,7 +8322,6 @@ export namespace Prisma {
 
   export type AccountMinAggregateOutputType = {
     id: string | null
-    identityId: string | null
     status: string | null
     emailAddress: string | null
     emailIsVerified: boolean | null
@@ -8341,7 +8340,6 @@ export namespace Prisma {
 
   export type AccountMaxAggregateOutputType = {
     id: string | null
-    identityId: string | null
     status: string | null
     emailAddress: string | null
     emailIsVerified: boolean | null
@@ -8360,7 +8358,6 @@ export namespace Prisma {
 
   export type AccountCountAggregateOutputType = {
     id: number
-    identityId: number
     status: number
     profile: number
     settings: number
@@ -8391,7 +8388,6 @@ export namespace Prisma {
 
   export type AccountMinAggregateInputType = {
     id?: true
-    identityId?: true
     status?: true
     emailAddress?: true
     emailIsVerified?: true
@@ -8410,7 +8406,6 @@ export namespace Prisma {
 
   export type AccountMaxAggregateInputType = {
     id?: true
-    identityId?: true
     status?: true
     emailAddress?: true
     emailIsVerified?: true
@@ -8429,7 +8424,6 @@ export namespace Prisma {
 
   export type AccountCountAggregateInputType = {
     id?: true
-    identityId?: true
     status?: true
     profile?: true
     settings?: true
@@ -8537,7 +8531,6 @@ export namespace Prisma {
 
   export type AccountGroupByOutputType = {
     id: string
-    identityId: string
     status: string
     profile: JsonValue
     settings: JsonValue
@@ -8577,7 +8570,6 @@ export namespace Prisma {
 
   export type AccountSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8639,7 +8631,6 @@ export namespace Prisma {
 
   export type AccountSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8661,7 +8652,6 @@ export namespace Prisma {
 
   export type AccountSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8683,7 +8673,6 @@ export namespace Prisma {
 
   export type AccountSelectScalar = {
     id?: boolean
-    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8702,7 +8691,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "status" | "profile" | "settings" | "emailAddress" | "emailIsVerified" | "emailVerifiedAt" | "emailIsPrimary" | "phoneCountryCode" | "phoneNumber" | "phoneFullNumber" | "phoneIsVerified" | "phoneVerifiedAt" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "profile" | "settings" | "emailAddress" | "emailIsVerified" | "emailVerifiedAt" | "emailIsPrimary" | "phoneCountryCode" | "phoneNumber" | "phoneFullNumber" | "phoneIsVerified" | "phoneVerifiedAt" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
     documents?: boolean | Account$documentsArgs<ExtArgs>
@@ -8799,7 +8788,6 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      identityId: string
       status: string
       profile: Prisma.JsonValue
       settings: Prisma.JsonValue
@@ -9280,7 +9268,6 @@ export namespace Prisma {
    */
   interface AccountFieldRefs {
     readonly id: FieldRef<"Account", 'String'>
-    readonly identityId: FieldRef<"Account", 'String'>
     readonly status: FieldRef<"Account", 'String'>
     readonly profile: FieldRef<"Account", 'Json'>
     readonly settings: FieldRef<"Account", 'Json'>
@@ -94919,7 +94906,6 @@ export namespace Prisma {
 
   export const AccountScalarFieldEnum: {
     id: 'id',
-    identityId: 'identityId',
     status: 'status',
     profile: 'profile',
     settings: 'settings',
@@ -96521,7 +96507,6 @@ export namespace Prisma {
     OR?: AccountWhereInput[]
     NOT?: AccountWhereInput | AccountWhereInput[]
     id?: StringFilter<"Account"> | string
-    identityId?: StringFilter<"Account"> | string
     status?: StringFilter<"Account"> | string
     profile?: JsonFilter<"Account">
     settings?: JsonFilter<"Account">
@@ -96582,7 +96567,6 @@ export namespace Prisma {
 
   export type AccountOrderByWithRelationInput = {
     id?: SortOrder
-    identityId?: SortOrder
     status?: SortOrder
     profile?: SortOrder
     settings?: SortOrder
@@ -96643,7 +96627,6 @@ export namespace Prisma {
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    identityId?: string
     emailAddress?: string
     AND?: AccountWhereInput | AccountWhereInput[]
     OR?: AccountWhereInput[]
@@ -96703,11 +96686,10 @@ export namespace Prisma {
     syncSessions?: SyncSessionListRelationFilter
     syncConflicts?: SyncConflictListRelationFilter
     pendingChanges?: PendingChangeListRelationFilter
-  }, "id" | "identityId" | "emailAddress">
+  }, "id" | "emailAddress">
 
   export type AccountOrderByWithAggregationInput = {
     id?: SortOrder
-    identityId?: SortOrder
     status?: SortOrder
     profile?: SortOrder
     settings?: SortOrder
@@ -96736,7 +96718,6 @@ export namespace Prisma {
     OR?: AccountScalarWhereWithAggregatesInput[]
     NOT?: AccountScalarWhereWithAggregatesInput | AccountScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Account"> | string
-    identityId?: StringWithAggregatesFilter<"Account"> | string
     status?: StringWithAggregatesFilter<"Account"> | string
     profile?: JsonWithAggregatesFilter<"Account">
     settings?: JsonWithAggregatesFilter<"Account">
@@ -103992,7 +103973,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -104053,7 +104033,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -104112,7 +104091,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -104173,7 +104151,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -104233,7 +104210,6 @@ export namespace Prisma {
 
   export type AccountCreateManyInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -104253,7 +104229,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -104274,7 +104249,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -113111,7 +113085,6 @@ export namespace Prisma {
 
   export type AccountCountOrderByAggregateInput = {
     id?: SortOrder
-    identityId?: SortOrder
     status?: SortOrder
     profile?: SortOrder
     settings?: SortOrder
@@ -113136,7 +113109,6 @@ export namespace Prisma {
 
   export type AccountMaxOrderByAggregateInput = {
     id?: SortOrder
-    identityId?: SortOrder
     status?: SortOrder
     emailAddress?: SortOrder
     emailIsVerified?: SortOrder
@@ -113155,7 +113127,6 @@ export namespace Prisma {
 
   export type AccountMinOrderByAggregateInput = {
     id?: SortOrder
-    identityId?: SortOrder
     status?: SortOrder
     emailAddress?: SortOrder
     emailIsVerified?: SortOrder
@@ -127081,7 +127052,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiConversationsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -127141,7 +127111,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiConversationsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -127241,7 +127210,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiConversationsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -127301,7 +127269,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiConversationsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -127455,7 +127422,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiGenerationTasksInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -127515,7 +127481,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiGenerationTasksInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -127589,7 +127554,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiGenerationTasksInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -127649,7 +127613,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiGenerationTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -127707,7 +127670,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiUsageQuotasInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -127767,7 +127729,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiUsageQuotasInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -127841,7 +127802,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiUsageQuotasInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -127901,7 +127861,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiUsageQuotasInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -127959,7 +127918,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiProviderConfigsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -128019,7 +127977,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiProviderConfigsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -128093,7 +128050,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiProviderConfigsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -128153,7 +128109,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiProviderConfigsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -128211,7 +128166,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutDashboardConfigsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -128271,7 +128225,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutDashboardConfigsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -128345,7 +128298,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutDashboardConfigsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -128405,7 +128357,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutDashboardConfigsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -128557,7 +128508,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutIdentityInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -128616,7 +128566,6 @@ export namespace Prisma {
   }
 
   export type AccountUncheckedCreateWithoutIdentityInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -128782,7 +128731,6 @@ export namespace Prisma {
     OR?: AccountScalarWhereInput[]
     NOT?: AccountScalarWhereInput | AccountScalarWhereInput[]
     id?: StringFilter<"Account"> | string
-    identityId?: StringFilter<"Account"> | string
     status?: StringFilter<"Account"> | string
     profile?: JsonFilter<"Account">
     settings?: JsonFilter<"Account">
@@ -128946,7 +128894,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutDocumentsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -129006,7 +128953,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutDocumentsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -129186,7 +129132,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutDocumentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -129246,7 +129191,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutDocumentsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -129413,7 +129357,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutDocumentVersionsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -129473,7 +129416,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutDocumentVersionsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -129598,7 +129540,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutDocumentVersionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -129658,7 +129599,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutDocumentVersionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -129944,7 +129884,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspacesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130004,7 +129943,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspacesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130094,7 +130032,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspacesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130154,7 +130091,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspacesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130250,7 +130186,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspaceSessionsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130310,7 +130245,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130439,7 +130373,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspaceSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130499,7 +130432,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130648,7 +130580,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspaceSessionGroupsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130708,7 +130639,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionGroupsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130829,7 +130759,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspaceSessionGroupsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130889,7 +130818,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130984,7 +130912,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspaceSessionGroupTabsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131044,7 +130971,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionGroupTabsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131151,7 +131077,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspaceSessionGroupTabsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -131211,7 +131136,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionGroupTabsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -131308,7 +131232,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutGoalsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131368,7 +131291,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutGoalsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131800,7 +131722,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutGoalsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -131860,7 +131781,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutGoalsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -132179,7 +132099,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutGoalFoldersInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -132239,7 +132158,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutGoalFoldersInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -132480,7 +132398,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutGoalFoldersInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -132540,7 +132457,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutGoalFoldersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133400,7 +133316,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutFocusSessionsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133460,7 +133375,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutFocusSessionsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133601,7 +133515,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutFocusSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133661,7 +133574,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutFocusSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133792,7 +133704,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutFocusModesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133852,7 +133763,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutFocusModesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133926,7 +133836,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutFocusModesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133986,7 +133895,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutFocusModesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134044,7 +133952,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutGoalStatisticsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134104,7 +134011,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutGoalStatisticsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134178,7 +134084,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutGoalStatisticsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134238,7 +134143,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutGoalStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134505,7 +134409,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutNotificationsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134565,7 +134468,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutNotificationsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134698,7 +134600,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutNotificationsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134758,7 +134659,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135140,7 +135040,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderTemplatesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135200,7 +135099,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderTemplatesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135389,7 +135287,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderTemplatesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135449,7 +135346,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderTemplatesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135554,7 +135450,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderGroupsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135614,7 +135509,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderGroupsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135782,7 +135676,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderGroupsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135842,7 +135735,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135916,7 +135808,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderInstancesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135976,7 +135867,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderInstancesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136139,7 +136029,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderInstancesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136199,7 +136088,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderInstancesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136536,7 +136424,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderStatisticsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136596,7 +136483,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderStatisticsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136670,7 +136556,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderStatisticsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136730,7 +136615,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136972,7 +136856,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutUserReminderPreferencesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137032,7 +136915,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutUserReminderPreferencesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137106,7 +136988,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutUserReminderPreferencesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -137166,7 +137047,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutUserReminderPreferencesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -137224,7 +137104,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutRepositoriesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137284,7 +137163,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutRepositoriesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137540,7 +137418,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutRepositoriesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -137600,7 +137477,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutRepositoriesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138714,7 +138590,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutRepositoryExplorersInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138774,7 +138649,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutRepositoryExplorersInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138899,7 +138773,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutRepositoryExplorersInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138959,7 +138832,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutRepositoryExplorersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139074,7 +138946,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutRepositoryStatisticsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139134,7 +139005,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutRepositoryStatisticsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139208,7 +139078,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutRepositoryStatisticsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139268,7 +139137,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutRepositoryStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139326,7 +139194,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSchedulesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139386,7 +139253,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSchedulesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139460,7 +139326,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSchedulesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139520,7 +139385,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSchedulesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139578,7 +139442,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutScheduleJobsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139638,7 +139501,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutScheduleJobsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139712,7 +139574,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutScheduleJobsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139772,7 +139633,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutScheduleJobsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139862,7 +139722,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutScheduleTasksInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139922,7 +139781,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutScheduleTasksInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140027,7 +139885,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutScheduleTasksInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140087,7 +139944,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutScheduleTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140301,7 +140157,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutScheduleStatisticsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140361,7 +140216,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutScheduleStatisticsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140435,7 +140289,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutScheduleStatisticsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140495,7 +140348,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutScheduleStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140553,7 +140405,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSettings_Input = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140613,7 +140464,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSettings_Input = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140726,7 +140576,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSettings_Input = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140786,7 +140635,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSettings_Input = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141275,7 +141123,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutUserSettingsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141335,7 +141182,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutUserSettingsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141409,7 +141255,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutUserSettingsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141469,7 +141314,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutUserSettingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141527,7 +141371,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSyncProfilesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141587,7 +141430,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSyncProfilesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141717,7 +141559,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSyncProfilesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141777,7 +141618,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSyncProfilesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141851,7 +141691,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSyncSessionsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141911,7 +141750,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSyncSessionsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142074,7 +141912,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSyncSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142134,7 +141971,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSyncSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142257,7 +142093,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSyncConflictsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142317,7 +142152,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSyncConflictsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142442,7 +142276,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSyncConflictsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142502,7 +142335,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSyncConflictsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142617,7 +142449,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutPendingChangesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142677,7 +142508,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutPendingChangesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142751,7 +142581,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutPendingChangesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142811,7 +142640,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutPendingChangesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142869,7 +142697,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskFoldersInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142929,7 +142756,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskFoldersInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143101,7 +142927,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskFoldersInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143161,7 +142986,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskFoldersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143235,7 +143059,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskTemplatesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143295,7 +143118,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskTemplatesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143723,7 +143545,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskTemplatesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143783,7 +143604,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskTemplatesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144083,7 +143903,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskInstancesInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144143,7 +143962,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskInstancesInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144310,7 +144128,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskInstancesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144370,7 +144187,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskInstancesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145103,7 +144919,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskStatisticsInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145163,7 +144978,6 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskStatisticsInput = {
     id: string
-    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145237,7 +145051,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskStatisticsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145297,7 +145110,6 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -147758,7 +147570,6 @@ export namespace Prisma {
   }
 
   export type AccountCreateManyIdentityInput = {
-    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -147889,7 +147700,6 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -147948,7 +147758,6 @@ export namespace Prisma {
   }
 
   export type AccountUncheckedUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -148007,7 +147816,6 @@ export namespace Prisma {
   }
 
   export type AccountUncheckedUpdateManyWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue

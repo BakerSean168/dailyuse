@@ -11,8 +11,9 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, fail } from '@dailyuse/contracts/result';
 import { AuthenticationContainer, AuthenticationModule } from '../infrastructure-server';
+import { UserAlreadyExistsError } from '../domain-server/services/registration';
 // Commented out temporarily:
 // import {
 //   ChangePassword,
@@ -99,7 +100,16 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
 
     // 3. Build handler map
     const handlers: AuthenticationUseCases = {
-      register: async (data, cx) => ok(await authenticationModule.register.execute(data, cx)),
+      register: async (data, cx) => {
+        try {
+          return ok(await authenticationModule.register.execute(data, cx));
+        } catch (err) {
+          if (err instanceof UserAlreadyExistsError) {
+            return fail({ code: 'CONFLICT', message: err.message });
+          }
+          throw err;
+        }
+      },
       login: async (data, cx) => ok(await authenticationModule.login.execute(data, cx)),
       logout: async (cx) => { await authenticationModule.logout.execute(undefined as void, cx); return ok(undefined as void); },
       refreshToken: async (data, cx) => ok(await authenticationModule.refreshToken.execute(data, cx)),

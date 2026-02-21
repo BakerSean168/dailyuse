@@ -2,7 +2,7 @@
  * Account API Module Definition
  *
  * Implements IApiModule standard interface:
- * 1. Composition Root (PrismaAccountRepository �?UseCases �?Handlers)
+ * 1. Composition Root (PrismaAccountRepository → UseCases → Handlers)
  * 2. Route definition and mounting
  *
  * Middleware comes from context.middleware, no dependency on apps/api internals.
@@ -44,22 +44,31 @@ export const AccountApiModule: AccountApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root �?使用共享数据库单�?
+    // 1. Composition Root — 使用共享数据库单例
     const accountRepository = new PrismaAccountRepository(db as PrismaClient);
     const accountModule = new AccountModule({ accountRepository });
 
-    // 2. 创建路由处理�?
+    // 1.5 设置 Container（供事件监听器使用）
+    AccountContainer.getInstance().setAccountRepository(accountRepository);
+
+    // 2. 创建路由处理器
     const handlers: AccountUseCases = {
-      getProfile: async (ctx) => ok(await accountModule.getProfile.execute(ctx.identityId) as any),
-      updateProfile: async (data, ctx) => ok(await accountModule.updateProfile.execute(ctx.identityId, data) as any),
-      checkAvailability: async (data) => ok(await accountModule.checkAvailability.execute(data) as any),
-      closeAccount: async (data, ctx) => { await accountModule.closeAccount.execute(ctx.identityId, data); return ok(undefined as any); },
+      getProfile: async (ctx) =>
+        ok((await accountModule.getProfile.execute(ctx.identityId)) as any),
+      updateProfile: async (data, ctx) =>
+        ok((await accountModule.updateProfile.execute(ctx.identityId, data)) as any),
+      checkAvailability: async (data) =>
+        ok((await accountModule.checkAvailability.execute(data)) as any),
+      closeAccount: async (data, ctx) => {
+        await accountModule.closeAccount.execute(ctx.identityId, data);
+        return ok(undefined as any);
+      },
     };
 
     // 3. 注册路由
     const accountRoutes = registerAccountRoutes(handlers, middleware, context.openApiRegistry);
 
-    // 4. 挂载�?API 路由
+    // 4. 挂载 API 路由
     router.use('/accounts', accountRoutes);
 
     // 5. 注册初始化任务（事件监听等）

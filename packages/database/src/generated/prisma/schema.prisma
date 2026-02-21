@@ -21,8 +21,7 @@ datasource db {
 // ==========================================
 
 model Account {
-  id               String    @id
-  identityId       String    @unique @map("identity_id") // 关联 AuthIdentity
+  id               String    @id // same as AuthIdentity.id
   status           String    @default("ACTIVE") // AccountStatus: ACTIVE | INACTIVE | SUSPENDED | DELETED
   // profile
   profile          Json
@@ -45,7 +44,7 @@ model Account {
   deletedAt        DateTime? @map("deleted_at")
 
   // 关联关系
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  identity AuthIdentity @relation(fields: [id], references: [id], onDelete: Cascade)
 
   // 关联的业务模块
   documents                       Document[]
@@ -90,7 +89,6 @@ model Account {
 
   @@index([emailAddress])
   @@index([phoneFullNumber])
-  @@index([identityId])
   @@map("accounts")
 }
 

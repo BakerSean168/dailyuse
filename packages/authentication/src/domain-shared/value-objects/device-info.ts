@@ -109,13 +109,13 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
       throw new Error(`Invalid device type: ${props.deviceType}`);
     }
 
-    // 设备名称不能为空
-    if (!props.deviceName || props.deviceName.trim().length === 0) {
+    // 设备名称如果提供则不能为空字符串（null 表示未知设备，允许）
+    if (props.deviceName !== null && props.deviceName !== undefined && props.deviceName.trim().length === 0) {
       throw new Error('Device name cannot be empty');
     }
 
     // 设备名称长度限制
-    if (props.deviceName.length > 100) {
+    if (props.deviceName && props.deviceName.length > 100) {
       throw new Error('Device name too long (max 100 characters)');
     }
 
