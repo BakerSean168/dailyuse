@@ -16,6 +16,7 @@ import {
 import {
   CompleteTaskInstanceSchema,
   SkipTaskInstanceSchema,
+  TaskInstanceResponseSchema,
 } from '@dailyuse/contracts/task';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
 
@@ -25,17 +26,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const TaskInstanceResponseSchema = z.object({
-  id: z.string().uuid(),
-  templateId: z.string().uuid(),
-  status: z.string(),
-  scheduledDate: z.number(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============ Route Registration ============
 

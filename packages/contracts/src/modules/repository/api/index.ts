@@ -13,6 +13,8 @@ export {
   type UpdateResourceReq as UpdateResourceZodReq,
 } from './repository.dto';
 
+export * from './response-schemas';
+
 // ============ Legacy Interfaces (kept for backward compatibility) ============
 
 export interface CreateRepositoryReq {

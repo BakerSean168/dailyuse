@@ -42,6 +42,6 @@ export const PriorityLevel = {
    * 通常是 trivial + none 的组合
    */
   None: 'None',
-}
+} as const;
 export type PriorityLevel = keyof typeof PriorityLevel;
 

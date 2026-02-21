@@ -33,8 +33,8 @@ export type CreateGoalRecordRes = GoalRecordClientDTO;
 export const GetGoalRecordsSchema = z.object({
   goalId: z.string().uuid('目标 UUID 无效').optional(),
   keyResultId: z.string().uuid('关键结果 UUID 无效').optional(),
-  limit: z.number().int().min(1).max(100).optional().default(20),
-  offset: z.number().int().min(0).optional().default(0),
+  limit: z.number().int().min(1).max(100).default(20).optional(),
+  offset: z.number().int().min(0).default(0).optional(),
 });
 
 export type GetGoalRecordsReq = z.infer<typeof GetGoalRecordsSchema>;

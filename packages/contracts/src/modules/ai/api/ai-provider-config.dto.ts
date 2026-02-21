@@ -24,7 +24,7 @@ export const CreateAIProviderConfigSchema = z.object({
   apiKey: z.string().min(1),
   baseUrl: z.string().url().optional(),
   model: z.string(),
-  isDefault: z.boolean().optional().default(false),
+  isDefault: z.boolean().default(false).optional(),
   maxTokens: z.number().int().min(1).optional(),
   temperature: z.number().min(0).max(2).optional(),
 });
@@ -76,7 +76,7 @@ export type DeleteAIProviderConfigRes = void;
  */
 export const TestAIProviderSchema = z.object({
   providerId: brandedId<AiProviderConfigId>(),
-  testPrompt: z.string().optional().default('Hello, this is a test.'),
+  testPrompt: z.string().default('Hello, this is a test.').optional(),
 });
 
 export type TestAIProviderReq = z.infer<typeof TestAIProviderSchema>;

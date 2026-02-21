@@ -9,6 +9,15 @@ import { z } from 'zod';
 import { brandedId } from '@/primitives';
 import type { ReminderGroupId } from '@/primitives';
 import type { ReminderTemplateClientDTO } from '../aggregates';
+import {
+  ReminderType,
+  TriggerType,
+  NotificationChannel,
+  NotificationAction,
+  RecurrenceType,
+  WeekDay,
+} from '../value-objects';
+import { ImportanceLevel } from '@/shared/value-objects/importance';
 
 // ============================================================================
 // REMINDER TEMPLATE Operations
@@ -19,9 +28,9 @@ import type { ReminderTemplateClientDTO } from '../aggregates';
  */
 export const CreateReminderTemplateSchema = z.object({
   title: z.string().min(1).max(200),
-  type: z.enum(['ONE_TIME', 'RECURRING']),
+  type: z.nativeEnum(ReminderType),
   trigger: z.object({
-    type: z.enum(['FIXED_TIME', 'INTERVAL']),
+    type: z.nativeEnum(TriggerType),
     fixedTime: z.object({
       time: z.string(),
       timezone: z.string().nullable(),
@@ -36,7 +45,7 @@ export const CreateReminderTemplateSchema = z.object({
     endDate: z.number().nullable(),
   }),
   notificationConfig: z.object({
-    channels: z.array(z.enum(['IN_APP', 'PUSH', 'EMAIL', 'SMS'])),
+    channels: z.array(z.nativeEnum(NotificationChannel)),
     title: z.string().nullable(),
     body: z.string().nullable(),
     sound: z.object({
@@ -50,17 +59,17 @@ export const CreateReminderTemplateSchema = z.object({
     actions: z.array(z.object({
       id: z.string(),
       label: z.string(),
-      action: z.enum(['DISMISS', 'SNOOZE', 'COMPLETE', 'CUSTOM']),
+      action: z.nativeEnum(NotificationAction),
       customAction: z.string().nullable(),
     })).nullable(),
   }),
   description: z.string().max(1000).optional(),
   recurrence: z.object({
-    type: z.enum(['DAILY', 'WEEKLY', 'CUSTOM']),
+    type: z.nativeEnum(RecurrenceType),
     daily: z.object({ interval: z.number().min(1) }).nullable(),
     weekly: z.object({
       interval: z.number().min(1),
-      weekDays: z.array(z.enum(['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'])),
+      weekDays: z.array(z.nativeEnum(WeekDay)),
     }).nullable(),
     customDays: z.object({ dates: z.array(z.number()) }).nullable(),
   }).optional(),
@@ -69,7 +78,7 @@ export const CreateReminderTemplateSchema = z.object({
     endHour: z.number().min(0).max(23),
     timezone: z.string().nullable(),
   }).optional(),
-  importanceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  importanceLevel: z.nativeEnum(ImportanceLevel).optional(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional(),
   icon: z.string().optional(),
@@ -93,8 +102,8 @@ export type UpdateReminderTemplateRes = ReminderTemplateClientDTO;
 export const GetUpcomingRemindersSchema = z.object({
   days: z.number().int().min(1).max(365).optional(),
   limit: z.number().int().min(1).max(100).optional(),
-  importanceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
-  type: z.enum(['ONE_TIME', 'RECURRING']).optional(),
+  importanceLevel: z.nativeEnum(ImportanceLevel).optional(),
+  type: z.nativeEnum(ReminderType).optional(),
 });
 
 export type GetUpcomingRemindersReq = z.infer<typeof GetUpcomingRemindersSchema>;

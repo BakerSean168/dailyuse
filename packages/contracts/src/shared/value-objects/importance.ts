@@ -4,5 +4,5 @@ export const ImportanceLevel = {
   Moderate: "Moderate",
   Minor: "Minor",
   Trivial: "Trivial",
-}
+} as const;
 export type ImportanceLevel = keyof typeof ImportanceLevel;

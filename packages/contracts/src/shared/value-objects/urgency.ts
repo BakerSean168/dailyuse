@@ -28,5 +28,5 @@ export const UrgencyLevel = {
    * 示例: 兴趣学习、休闲活动
    */
   None: 'None',
-}
+} as const;
 export type UrgencyLevel = keyof typeof UrgencyLevel;

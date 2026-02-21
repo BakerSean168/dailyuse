@@ -36,7 +36,7 @@ export type KnowledgeGenerationRes = KnowledgeGenerationResultDTO;
 export const SummarizationSchema = z.object({
   text: z.string().min(100, '文本至少需要 100 个字符'),
   maxLength: z.number().int().min(50).max(1000).optional(),
-  language: z.enum(['zh-CN', 'en-US']).optional().default('zh-CN'),
+  language: z.enum(['zh-CN', 'en-US']).default('zh-CN').optional(),
   providerId: brandedId<AiProviderConfigId>().optional(),
 });
 

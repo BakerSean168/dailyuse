@@ -30,6 +30,8 @@ import {
   UpdateEditorWorkspaceSchema,
   CreateDocumentSchema,
   UpdateDocumentSchema,
+  WorkspaceResponseSchema,
+  DocumentResponseSchema,
 } from '@dailyuse/contracts/editor';
 import { EditorController } from '../controllers/editor.controller';
 import type { EditorUseCases } from '../controllers/editor.controller';
@@ -38,28 +40,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const WorkspaceResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  projectPath: z.string(),
-  projectType: z.string(),
-  isActive: z.boolean(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const DocumentResponseSchema = z.object({
-  id: z.string().uuid(),
-  workspaceId: z.string().uuid(),
-  path: z.string(),
-  name: z.string(),
-  language: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============ Route Registration ============
 

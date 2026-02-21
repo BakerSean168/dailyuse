@@ -71,9 +71,9 @@ export type DeleteGoalFolderRes = GoalFolderClientDTO;
 export const QueryGoalFoldersSchema = z.object({
   identityId: brandedId<IdentityId>(),
   parentFolderId: brandedId<GoalFolderId>().optional(),
-  includeSystemFolders: z.boolean().optional().default(false),
-  sortBy: z.enum(['name', 'createdAt', 'sortOrder']).optional().default('name'),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
+  includeSystemFolders: z.boolean().default(false).optional(),
+  sortBy: z.enum(['name', 'createdAt', 'sortOrder']).default('name').optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('asc').optional(),
 });
 
 export type QueryGoalFoldersReq = z.infer<typeof QueryGoalFoldersSchema>;

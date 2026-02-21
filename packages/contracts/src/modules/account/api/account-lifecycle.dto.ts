@@ -13,8 +13,8 @@ export type ExportAccountDataReq = void;
 export type ExportAccountDataRes = ExportAccountDataDTO;
 
 export const ImportAccountDataSchema = z.object({
-  data: z.union([z.string(), z.instanceof(Uint8Array)]),
-  mergeMode: z.enum(['REPLACE', 'MERGE', 'SKIP']).optional().default('MERGE'),
+  data: z.union([z.string(), z.custom<Uint8Array>((val) => val instanceof Uint8Array)]),
+  mergeMode: z.enum(['REPLACE', 'MERGE', 'SKIP']).default('MERGE').optional(),
 });
 
 export type ImportAccountDataReq = z.infer<typeof ImportAccountDataSchema>;

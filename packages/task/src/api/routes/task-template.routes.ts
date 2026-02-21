@@ -16,6 +16,7 @@ import {
 import {
   CreateTaskTemplateSchema,
   UpdateTaskTemplateSchema,
+  TaskTemplateResponseSchema,
 } from '@dailyuse/contracts/task';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 
@@ -25,17 +26,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const TaskTemplateResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  taskType: z.string(),
-  status: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============ Route Registration ============
 

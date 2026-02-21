@@ -24,6 +24,8 @@ import {
   UpdateAccountSchema,
   CheckAvailabilitySchema,
   CloseAccountSchema,
+  AccountResponseSchema,
+  AvailabilityResponseSchema,
 } from '@dailyuse/contracts/account';
 import { AccountController } from '../controllers/account.controller';
 import type { AccountUseCases } from '../controllers/account.controller';
@@ -32,22 +34,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const AccountResponseSchema = z.object({
-  id: z.string(),
-  email: z.string().email().optional(),
-  nickname: z.string().optional(),
-  avatar: z.string().nullable().optional(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const AvailabilityResponseSchema = z.object({
-  available: z.boolean(),
-  suggestion: z.string().optional(),
-});
 
 // ============ Route Registration ============
 

@@ -29,6 +29,8 @@ import {
   UpdateScheduleTaskRequestSchema,
   ScheduleTaskQueryParamsSchema,
   BatchScheduleTaskOperationRequestSchema,
+  ScheduleTaskResponseSchema,
+  BatchOperationResponseSchema,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleController } from '../controllers/schedule.controller';
 import type { ScheduleUseCases } from '../controllers/schedule.controller';
@@ -57,27 +59,6 @@ function parseBoolean(value: unknown): boolean | undefined {
   if (value === 'false' || value === false) return false;
   return undefined;
 }
-
-// ============ Response Schemas ============
-
-const ScheduleTaskResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  sourceModule: z.string(),
-  sourceEntityId: z.string(),
-  status: z.string(),
-  enabled: z.boolean(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const BatchOperationResponseSchema = z.object({
-  success: z.array(z.string()),
-  failed: z.array(z.object({ taskId: z.string(), error: z.string() })),
-  total: z.number(),
-  successCount: z.number(),
-  failedCount: z.number(),
-});
 
 // ============ Route Registration ============
 

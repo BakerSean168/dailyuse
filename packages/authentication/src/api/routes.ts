@@ -23,6 +23,7 @@ import {
   RegisterByEmailSchema,
   LoginByEmailSchema,
   RefreshTokenSchema,
+  AuthResponseSchema,
 } from '@dailyuse/contracts/authentication';
 import { AuthenticationController } from '../controllers/auth.controller';
 import type { AuthenticationUseCases } from '../controllers/auth.controller';
@@ -33,14 +34,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const AuthResponseSchema = z.object({
-  accessToken: z.string(),
-  refreshToken: z.string().optional(),
-  expiresAt: z.number().optional(),
-});
 
 // ============ Route Registration ============
 

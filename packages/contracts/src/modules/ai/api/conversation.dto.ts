@@ -36,8 +36,8 @@ export type UpdateConversationRes = AIConversationClientDTO;
 // ============================================================================
 
 export const ListConversationsSchema = z.object({
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(20),
+  page: z.number().int().min(1).default(1).optional(),
+  pageSize: z.number().int().min(1).max(100).default(20).optional(),
   status: z.string().optional(),
 });
 

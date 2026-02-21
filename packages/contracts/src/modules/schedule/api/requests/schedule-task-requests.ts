@@ -8,16 +8,16 @@ import { brandedId } from '@/primitives';
 import type { ScheduleTaskId } from '@/primitives';
 import type { ScheduleTaskClientDTO } from '../../aggregates/schedule-task-client';
 import type { ScheduleConfigServerDTO, RetryPolicyServerDTO, TaskMetadataServerDTO } from '../../value-objects';
-import type { SourceModule } from '../../value-objects/source-module';
-import type { ScheduleTaskStatus } from '../../value-objects/schedule-task-status';
-import type { TaskPriority } from '../../value-objects/task-priority';
-import type { Timezone } from '../../value-objects/timezone';
+import { SourceModule } from '../../value-objects/source-module';
+import { ScheduleTaskStatus } from '../../value-objects/schedule-task-status';
+import { TaskPriority } from '../../value-objects/task-priority';
+import { Timezone } from '../../value-objects/timezone';
 
 // ============ Zod Schemas ============
 
 const ScheduleConfigSchema = z.object({
   cronExpression: z.string().min(1),
-  timezone: z.enum(['UTC', 'ASIA_SHANGHAI', 'AMERICA_NEW_YORK', 'EUROPE_LONDON']),
+  timezone: z.nativeEnum(Timezone),
   startDate: z.number().nullable().optional(),
   endDate: z.number().nullable().optional(),
   maxExecutions: z.number().min(1).nullable().optional(),
@@ -33,13 +33,13 @@ const RetryPolicySchema = z.object({
 const TaskMetadataSchema = z.object({
   payload: z.record(z.string(), z.any().openapi({ type: 'object' })).optional(),
   tags: z.array(z.string()).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  priority: z.nativeEnum(TaskPriority).optional(),
   timeout: z.number().min(1000).nullable().optional(),
 });
 
 export const CreateScheduleTaskRequestSchema = z.object({
   name: z.string().min(1).max(200),
-  sourceModule: z.enum(['REMINDER', 'TASK', 'GOAL', 'SCHEDULE']),
+  sourceModule: z.nativeEnum(SourceModule),
   sourceEntityId: z.string().uuid(),
   schedule: ScheduleConfigSchema,
   description: z.string().max(2000).optional(),
@@ -59,7 +59,7 @@ export const UpdateScheduleTaskRequestSchema = z.object({
 
 export const UpdateScheduleConfigRequestSchema = z.object({
   cronExpression: z.string().min(1).optional(),
-  timezone: z.enum(['UTC', 'ASIA_SHANGHAI', 'AMERICA_NEW_YORK', 'EUROPE_LONDON']).optional(),
+  timezone: z.nativeEnum(Timezone).optional(),
   startDate: z.number().nullable().optional(),
   endDate: z.number().nullable().optional(),
   maxExecutions: z.number().min(1).nullable().optional(),
@@ -68,14 +68,14 @@ export const UpdateScheduleConfigRequestSchema = z.object({
 export const UpdateTaskMetadataRequestSchema = z.object({
   payload: z.record(z.string(), z.any().openapi({ type: 'object' })).optional(),
   tags: z.array(z.string()).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  priority: z.nativeEnum(TaskPriority).optional(),
   timeout: z.number().min(1000).nullable().optional(),
 });
 
 export const ScheduleTaskQueryParamsSchema = z.object({
-  sourceModule: z.enum(['REMINDER', 'TASK', 'GOAL', 'SCHEDULE']).optional(),
+  sourceModule: z.nativeEnum(SourceModule).optional(),
   sourceEntityId: z.string().uuid().optional(),
-  status: z.enum(['PENDING', 'RUNNING', 'PAUSED', 'COMPLETED', 'CANCELLED', 'FAILED']).optional(),
+  status: z.nativeEnum(ScheduleTaskStatus).optional(),
   enabled: z.boolean().optional(),
   search: z.string().optional(),
   page: z.number().min(1).optional(),

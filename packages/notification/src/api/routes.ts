@@ -31,6 +31,8 @@ import {
   MarkAsReadBatchSchema,
   DeleteNotificationsBatchSchema,
   CleanupOldNotificationsSchema,
+  NotificationResponseSchema,
+  NotificationBatchResultSchema,
 } from '@dailyuse/contracts/notification';
 import { NotificationController } from '../controllers/notification.controller';
 import type { NotificationUseCases } from '../controllers/notification.controller';
@@ -66,25 +68,6 @@ function parseBoolean(value: unknown): boolean | undefined {
   if (raw === 'false' || raw === '0') return false;
   return undefined;
 }
-
-// ============ Response Schemas ============
-
-const NotificationResponseSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  content: z.string(),
-  type: z.string(),
-  category: z.string(),
-  status: z.string(),
-  isRead: z.boolean(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const BatchResultSchema = z.object({
-  successCount: z.number(),
-  failedCount: z.number(),
-});
 
 // ============ Route Registration ============
 
@@ -158,7 +141,7 @@ export function registerNotificationRoutes(
       summary: '批量标记为已读',
       request: { body: { content: { 'application/json': { schema: MarkAsReadBatchSchema } } } },
       responses: {
-        200: successResponse(BatchResultSchema, '操作成功'),
+        200: successResponse(NotificationBatchResultSchema, '操作成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -174,7 +157,7 @@ export function registerNotificationRoutes(
       summary: '批量删除通知',
       request: { body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } } },
       responses: {
-        200: successResponse(BatchResultSchema, '删除成功'),
+        200: successResponse(NotificationBatchResultSchema, '删除成功'),
         400: errorResponse('参数错误'),
       },
     },
@@ -190,7 +173,7 @@ export function registerNotificationRoutes(
       summary: '清理过期通知',
       request: { body: { content: { 'application/json': { schema: CleanupOldNotificationsSchema } } } },
       responses: {
-        200: successResponse(BatchResultSchema, '清理成功'),
+        200: successResponse(NotificationBatchResultSchema, '清理成功'),
         400: errorResponse('参数错误'),
       },
     },

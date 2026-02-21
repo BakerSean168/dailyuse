@@ -11,3 +11,4 @@ export * from './register.dto';
 export * from './password.dto';
 export * from './oauth.dto';
 export * from './session.dto';
+export * from './response-schemas';

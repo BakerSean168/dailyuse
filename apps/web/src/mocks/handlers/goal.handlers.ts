@@ -13,7 +13,13 @@ import {
 } from '@dailyuse/contracts/mocks';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
-const BASE = '/api/v1/goals';
+// 1. 读取环境变量中的基础路径 (与你的 http client 保持一致)
+// 如果获取不到，默认回退到 '/api/v1' 以防万一
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
+// 2. 动态拼接当前模块的路径
+// 结果类似于: '/api/v1/account'
+const BASE = `${API_BASE}/goals`;
 
 // Narrow MSW path params (which can be string | readonly string[]) to a GoalId
 const toGoalId = (p: string | readonly string[]) =>

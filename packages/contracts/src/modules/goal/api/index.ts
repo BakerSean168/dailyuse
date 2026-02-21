@@ -12,4 +12,5 @@ export * from './goal-record.dto';
 export * from './focus-session.dto';
 export * from './goal-folder.dto';
 export * from './goal-review.dto';
+export * from './response-schemas';
 

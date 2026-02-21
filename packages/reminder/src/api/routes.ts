@@ -35,6 +35,9 @@ import {
   UpdateReminderGroupSchema,
   SwitchGroupControlModeSchema,
   BatchGroupTemplatesSchema,
+  ReminderTemplateResponseSchema,
+  ReminderGroupResponseSchema,
+  ReminderBatchResultSchema,
 } from '@dailyuse/contracts/reminder';
 import { ReminderController } from '../controllers/reminder.controller';
 import type { ReminderUseCases } from '../controllers/reminder.controller';
@@ -46,41 +49,22 @@ interface PlatformMiddleware {
 
 // ============ Helpers ============
 
-function parseNumber(value: unknown): number | undefined {
-  if (value === undefined || value === null || value === '') return undefined;
-  const num = Number(value);
-  return Number.isNaN(num) ? undefined : num;
-}
-
 function parseString(value: unknown): string | undefined {
-  if (value === undefined || value === null || value === '') return undefined;
+  if (Array.isArray(value)) {
+    return value.length > 0 ? String(value[0]) : undefined;
+  }
+  if (value === undefined || value === null) {
+    return undefined;
+  }
   return String(value);
 }
 
-// ============ Response Schemas ============
-
-const ReminderTemplateResponseSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  type: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const ReminderGroupResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  controlMode: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const BatchResultSchema = z.object({
-  successCount: z.number(),
-  failedCount: z.number(),
-});
-
-// ============ Route Registration ============
+function parseNumber(value: unknown): number | undefined {
+  const raw = parseString(value);
+  if (!raw) return undefined;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
 export function registerReminderRoutes(
   handlers: ReminderUseCases,
@@ -324,7 +308,7 @@ export function registerReminderRoutes(
         body: { content: { 'application/json': { schema: BatchGroupTemplatesSchema } } },
       },
       responses: {
-        200: successResponse(BatchResultSchema, '操作成功'),
+        200: successResponse(ReminderBatchResultSchema, '操作成功'),
         404: errorResponse('分组不存在'),
       },
     },

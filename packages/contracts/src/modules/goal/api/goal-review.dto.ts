@@ -6,6 +6,7 @@
 
 import { z } from 'zod';
 import type { GoalReviewServerDTO } from '../entities';
+import { ReviewType } from '../value-objects/review-type';
 
 // ============================================================================
 // CREATE Review
@@ -18,7 +19,7 @@ export const CreateGoalReviewSchema = z.object({
   goalId: z.string().uuid('目标 UUID 无效'),
   title: z.string().min(1, '复盘标题不能为空').max(256),
   content: z.string().min(1, '复盘内容不能为空').max(10000),
-  reviewType: z.string().min(1, '复盘类型不能为空').max(100),
+  reviewType: z.nativeEnum(ReviewType),
   rating: z.number().int().min(1).max(5).optional(),
   achievements: z.string().max(2000).optional(),
   challenges: z.string().max(2000).optional(),

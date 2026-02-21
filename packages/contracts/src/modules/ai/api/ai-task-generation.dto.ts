@@ -22,7 +22,7 @@ export const GenerateTasksSchema = z.object({
   keyResultId: brandedId<KeyResultId>().optional(),
   description: z.string().min(10),
   context: z.string().optional(),
-  taskCount: z.number().int().min(1).max(10).optional().default(5),
+  taskCount: z.number().int().min(1).max(10).default(5).optional(),
   providerId: brandedId<AiProviderConfigId>().optional(),
 });
 

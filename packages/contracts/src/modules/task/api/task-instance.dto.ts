@@ -18,7 +18,7 @@ import type { TaskInstanceClientDTO } from '../aggregates';
 export const GetTaskInstancesByRangeSchema = z.object({
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
-  includeArchived: z.boolean().optional().default(false),
+  includeArchived: z.boolean().default(false).optional(),
 });
 
 export type GetTaskInstancesByRangeReq = z.infer<typeof GetTaskInstancesByRangeSchema>;

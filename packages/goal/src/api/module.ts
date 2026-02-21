@@ -18,7 +18,7 @@ import {
   GoalModule,
 } from '../infrastructure-server';
 import { GoalContainer } from '../infrastructure-server/di/goal-container';
-import { registerGoalRoutes } from './routes';
+import { registerGoalRoutes } from './routes/index';
 import { registerGoalInitializationTasks } from './initialization';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 

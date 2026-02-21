@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { brandedId } from '@/primitives';
 import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '@/primitives';
-import type { ImportanceLevel } from '../../../shared/value-objects/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -27,9 +27,9 @@ export const CreateTaskTemplateSchema = z.object({
   timeConfig: TaskTimeConfigSchema,
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   reminderConfig: TaskReminderConfigSchema.optional().nullable(),
-  importance: z.custom<ImportanceLevel>().openapi({ type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: '重要程度' }),
+  importance: z.nativeEnum(ImportanceLevel),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
-  tags: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).default([]).optional(),
   color: z.string().optional().nullable(),
 });
 

@@ -11,17 +11,20 @@ export default defineConfig(({ mode, command }) => {
   
   // 开发模式判断：serve 命令或非 production mode
   const isDev = command === 'serve' || mode !== 'production';
+
+  
   const isCiOrDocker =
     process.env.CI === 'true' ||
     process.env.DOCKER === 'true' ||
     process.env.NO_OPEN === 'true';
   
-  // 根据 mode 决定是否需要代理（只在本地开发时使用代理）
-  const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:3888';
+  // 分离代理目标。如果 env 里没有配置，默认指向本地 3000
+  // 注意这里用的是给后端直连的地址，比如 http://localhost:3000
+  const proxyTarget = env.PROXY_TARGET_URL || env.API_URL || 'http://localhost:3000';
   const needProxy = mode === 'development';
   
   console.log(`[Vite Config] Command: ${command}, Mode: ${mode}`);
-  console.log(`[Vite Config] API Base URL: ${apiBaseUrl}`);
+  console.log(`[Vite Config] API Base URL: ${proxyTarget}`);
   console.log(`[Vite Config] Using Proxy: ${needProxy}`);
   console.log(`[Vite Config] Is Dev: ${isDev}`);
   
@@ -67,8 +70,8 @@ export default defineConfig(({ mode, command }) => {
       // 添加代理配置,解决 EventSource 跨域问题
       // 仅在使用本地开发环境时启用代理
       proxy: mode === 'development' ? {
-        '/api': {
-          target: apiBaseUrl.replace('/api/v1', ''),
+        '/api/v1': {
+          target: proxyTarget,
           changeOrigin: true,
           secure: false,
           ws: true, // 支持 WebSocket

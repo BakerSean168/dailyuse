@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { brandedId } from '@/primitives';
 import type { AiConversationId, AiProviderConfigId } from '@/primitives';
 import type { MessageClientDTO } from '../entities/message-client';
-import type { MessageRole } from '../value-objects/message-role';
+import { MessageRole } from '../value-objects/message-role';
 
 // ============================================================================
 // Send Message
@@ -18,7 +18,7 @@ import type { MessageRole } from '../value-objects/message-role';
 export const SendMessageSchema = z.object({
   conversationId: brandedId<AiConversationId>(),
   content: z.string().min(1),
-  role: z.enum(['User', 'Assistant', 'System']).optional().default('User'),
+  role: z.nativeEnum(MessageRole).default('User').optional(),
 });
 
 export type SendMessageReq = z.infer<typeof SendMessageSchema>;
@@ -30,8 +30,8 @@ export type SendMessageRes = MessageClientDTO;
 
 export const ListMessagesSchema = z.object({
   conversationId: brandedId<AiConversationId>(),
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(50),
+  page: z.number().int().min(1).default(1).optional(),
+  pageSize: z.number().int().min(1).max(100).default(50).optional(),
 });
 
 export type ListMessagesQuery = z.infer<typeof ListMessagesSchema>;

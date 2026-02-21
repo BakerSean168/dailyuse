@@ -26,6 +26,9 @@ import {
   ResetUserSettingSchema,
   ExportSettingsSchema,
   ImportSettingsSchema,
+  UserSettingResponseSchema,
+  ExportSettingsResponseSchema,
+  ImportSettingsResponseSchema,
 } from '@dailyuse/contracts/setting';
 import { SettingController } from '../controllers/setting.controller';
 import type { SettingUseCases } from '../controllers/setting.controller';
@@ -34,15 +37,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const UserSettingResponseSchema = z.object({
-  id: z.string(),
-  identityId: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============ Route Registration ============
 
@@ -114,7 +108,7 @@ export function registerSettingRoutes(
       summary: '导出设置',
       request: { body: { content: { 'application/json': { schema: ExportSettingsSchema } } } },
       responses: {
-        200: successResponse(z.object({ data: z.string(), fileName: z.string() }), '导出成功'),
+        200: successResponse(ExportSettingsResponseSchema, '导出成功'),
       },
     },
     [auth],
@@ -129,7 +123,7 @@ export function registerSettingRoutes(
       summary: '导入设置',
       request: { body: { content: { 'application/json': { schema: ImportSettingsSchema } } } },
       responses: {
-        201: successResponse(z.object({ imported: z.number(), skipped: z.number() }), '导入成功'),
+        201: successResponse(ImportSettingsResponseSchema, '导入成功'),
         400: errorResponse('参数错误'),
       },
     },

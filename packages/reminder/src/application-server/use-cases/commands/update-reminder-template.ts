@@ -10,12 +10,6 @@ import type {
   ReminderTemplateClientDTO,
   UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
-import {
-  RecurrenceType,
-  WeekDay,
-  NotificationChannel,
-  NotificationAction,
-} from '@dailyuse/contracts/reminder';
 import { eventBus } from '@dailyuse/utils';
 import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
 
@@ -51,57 +45,6 @@ export class UpdateReminderTemplate {
       policy.assertValidGroupAssignment(template, group);
     }
 
-    const normalizedRecurrence = request.recurrence
-      ? {
-          ...request.recurrence,
-          type:
-            request.recurrence.type === 'DAILY'
-              ? RecurrenceType.Daily
-              : request.recurrence.type === 'WEEKLY'
-                ? RecurrenceType.Weekly
-                : RecurrenceType.CustomDays,
-          weekly: request.recurrence.weekly
-            ? {
-                ...request.recurrence.weekly,
-                weekDays: request.recurrence.weekly.weekDays.map((day) => {
-                  if (day === 'MON') return WeekDay.Monday;
-                  if (day === 'TUE') return WeekDay.Tuesday;
-                  if (day === 'WED') return WeekDay.Wednesday;
-                  if (day === 'THU') return WeekDay.Thursday;
-                  if (day === 'FRI') return WeekDay.Friday;
-                  if (day === 'SAT') return WeekDay.Saturday;
-                  return WeekDay.Sunday;
-                }),
-              }
-            : null,
-        }
-      : undefined;
-
-    const normalizedNotificationConfig = request.notificationConfig
-      ? {
-          ...request.notificationConfig,
-          channels: request.notificationConfig.channels.map((channel) => {
-            if (channel === 'IN_APP') return NotificationChannel.InApp;
-            if (channel === 'PUSH') return NotificationChannel.Push;
-            if (channel === 'EMAIL') return NotificationChannel.Email;
-            return NotificationChannel.Sms;
-          }),
-          actions: request.notificationConfig.actions
-            ? request.notificationConfig.actions.map((action) => ({
-                ...action,
-                action:
-                  action.action === 'DISMISS'
-                    ? NotificationAction.Dismiss
-                    : action.action === 'SNOOZE'
-                      ? NotificationAction.Snooze
-                      : action.action === 'COMPLETE'
-                        ? NotificationAction.Complete
-                        : NotificationAction.Custom,
-              }))
-            : null,
-        }
-      : undefined;
-
     // Use domain entity's update method
     template.update({
       title: request.title,
@@ -109,8 +52,18 @@ export class UpdateReminderTemplate {
       activeTime: request.activeTime
         ? { activatedAt: request.activeTime.startDate }
         : undefined,
-      notificationConfig: normalizedNotificationConfig,
-      recurrence: normalizedRecurrence,
+      notificationConfig: request.notificationConfig
+        ? {
+            ...request.notificationConfig,
+            actions: request.notificationConfig.actions ?? null,
+          }
+        : undefined,
+      recurrence: request.recurrence
+        ? {
+            ...request.recurrence,
+            weekly: request.recurrence.weekly ?? null,
+          }
+        : undefined,
       activeHours: request.activeHours
         ? {
             enabled: true,
@@ -118,16 +71,7 @@ export class UpdateReminderTemplate {
             endHour: request.activeHours.endHour,
           }
         : undefined,
-      importanceLevel:
-        request.importanceLevel === 'CRITICAL'
-          ? 'Vital'
-          : request.importanceLevel === 'HIGH'
-            ? 'Important'
-            : request.importanceLevel === 'MEDIUM'
-              ? 'Moderate'
-              : request.importanceLevel === 'LOW'
-                ? 'Minor'
-                : undefined,
+      importanceLevel: request.importanceLevel,
       tags: request.tags,
       color: request.color,
       icon: request.icon,

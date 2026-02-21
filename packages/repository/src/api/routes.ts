@@ -34,6 +34,8 @@ import {
   UpdateRepositorySchema,
   CreateResourceSchema,
   UpdateResourceSchema,
+  RepositoryResponseSchema,
+  ResourceResponseSchema,
 } from '@dailyuse/contracts/repository';
 import { RepositoryController } from '../controllers/repository.controller';
 import type { RepositoryUseCases } from '../controllers/repository.controller';
@@ -42,26 +44,6 @@ interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole(roles: string[]): RequestHandler;
 }
-
-// ============ Response Schemas ============
-
-const RepositoryResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  type: z.string(),
-  status: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
-
-const ResourceResponseSchema = z.object({
-  id: z.string().uuid(),
-  repositoryId: z.string().uuid(),
-  name: z.string(),
-  type: z.string(),
-  createdAt: z.number(),
-  updatedAt: z.number(),
-});
 
 // ============ Route Registration ============
 

@@ -6,6 +6,8 @@
 
 import { z } from 'zod';
 import type { KeyResultServerDTO } from '../entities';
+import { KeyResultValueType } from '../value-objects/key-result-value-type';
+import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 
 // ============================================================================
 // ADD Key Result
@@ -18,8 +20,8 @@ export const AddKeyResultSchema = z.object({
   goalId: z.string().uuid('目标 UUID 无效'),
   title: z.string().min(1, '关键结果标题不能为空').max(256),
   description: z.string().max(2000).optional(),
-  valueType: z.string().min(1, '关键结果类型不能为空'),
-  calculationMethod: z.string().min(1, '计算方法不能为空'),
+  valueType: z.nativeEnum(KeyResultValueType),
+  calculationMethod: z.nativeEnum(KeyResultCalculationMethod),
   targetValue: z.number().min(0, '目标值不能为负数'),
   currentValue: z.number().optional(),
   unit: z.string().max(50).optional(),

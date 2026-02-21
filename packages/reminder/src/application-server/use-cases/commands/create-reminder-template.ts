@@ -12,14 +12,6 @@ import type {
   ReminderTemplateClientDTO,
   CreateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
-import {
-  ReminderType,
-  TriggerType,
-  RecurrenceType,
-  WeekDay,
-  NotificationChannel,
-  NotificationAction,
-} from '@dailyuse/contracts/reminder';
 import { eventBus } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 
@@ -43,24 +35,8 @@ export class CreateReminderTemplate {
       throw new Error(`Invalid groupId: ${input.groupId}`);
     }
 
-    const mappedImportance: 'Vital' | 'Important' | 'Moderate' | 'Minor' | 'Trivial' | undefined =
-      input.importanceLevel === 'CRITICAL'
-        ? 'Vital'
-        : input.importanceLevel === 'HIGH'
-          ? 'Important'
-          : input.importanceLevel === 'MEDIUM'
-            ? 'Moderate'
-            : input.importanceLevel === 'LOW'
-              ? 'Minor'
-              : undefined;
-
     const normalizedInput = {
       ...input,
-      type: input.type === 'ONE_TIME' ? ReminderType.OneTime : ReminderType.Recurring,
-      trigger: {
-        ...input.trigger,
-        type: input.trigger.type === 'FIXED_TIME' ? TriggerType.FixedTime : TriggerType.Interval,
-      },
       activeTime: {
         activatedAt: input.activeTime.startDate,
       },
@@ -74,51 +50,14 @@ export class CreateReminderTemplate {
       recurrence: input.recurrence
         ? {
             ...input.recurrence,
-            type:
-              input.recurrence.type === 'DAILY'
-                ? RecurrenceType.Daily
-                : input.recurrence.type === 'WEEKLY'
-                  ? RecurrenceType.Weekly
-                  : RecurrenceType.CustomDays,
-            weekly: input.recurrence.weekly
-              ? {
-                  ...input.recurrence.weekly,
-                  weekDays: input.recurrence.weekly.weekDays.map((day) => {
-                    if (day === 'MON') return WeekDay.Monday;
-                    if (day === 'TUE') return WeekDay.Tuesday;
-                    if (day === 'WED') return WeekDay.Wednesday;
-                    if (day === 'THU') return WeekDay.Thursday;
-                    if (day === 'FRI') return WeekDay.Friday;
-                    if (day === 'SAT') return WeekDay.Saturday;
-                    return WeekDay.Sunday;
-                  }),
-                }
-              : null,
+            weekly: input.recurrence.weekly ?? null,
           }
         : undefined,
       notificationConfig: {
         ...input.notificationConfig,
-        channels: input.notificationConfig.channels.map((channel) => {
-          if (channel === 'IN_APP') return NotificationChannel.InApp;
-          if (channel === 'PUSH') return NotificationChannel.Push;
-          if (channel === 'EMAIL') return NotificationChannel.Email;
-          return NotificationChannel.Sms;
-        }),
-        actions: input.notificationConfig.actions
-          ? input.notificationConfig.actions.map((action) => ({
-              ...action,
-              action:
-                action.action === 'DISMISS'
-                  ? NotificationAction.Dismiss
-                  : action.action === 'SNOOZE'
-                    ? NotificationAction.Snooze
-                    : action.action === 'COMPLETE'
-                      ? NotificationAction.Complete
-                      : NotificationAction.Custom,
-            }))
-          : null,
+        actions: input.notificationConfig.actions ?? null,
       },
-      importanceLevel: mappedImportance,
+      importanceLevel: input.importanceLevel,
     };
 
     const template = ReminderTemplate.create({

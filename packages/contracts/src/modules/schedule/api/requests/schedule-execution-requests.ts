@@ -7,13 +7,13 @@ import { z } from 'zod';
 import { brandedId } from '@/primitives';
 import type { ScheduleTaskId } from '@/primitives';
 import type { ScheduleExecutionClientDTO } from '../../entities/schedule-execution-client';
-import type { ExecutionStatus } from '../../value-objects/execution-status';
+import { ExecutionStatus } from '../../value-objects/execution-status';
 
 // ============ Zod Schemas ============
 
 export const ScheduleExecutionQueryParamsSchema = z.object({
   taskId: brandedId<ScheduleTaskId>().optional(),
-  status: z.enum(['SUCCESS', 'FAILED', 'SKIPPED', 'TIMEOUT', 'RETRYING']).optional(),
+  status: z.nativeEnum(ExecutionStatus).optional(),
   startTime: z.number().positive().optional(),
   endTime: z.number().positive().optional(),
   page: z.number().min(1).optional(),

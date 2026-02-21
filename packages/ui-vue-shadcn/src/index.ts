@@ -56,6 +56,7 @@ export { useLoading, type UseLoadingReturn } from './composables/useLoading';
 export { useMessage, type UseMessageReturn } from './composables/useMessage';
 export { useDialog, type UseDialogReturn } from './composables/useDialog';
 export { useColorPicker, type UseColorPickerReturn } from './composables/useColorPicker';
+export { useConfirm, type ConfirmOptions, type ConfirmVariant } from './composables/useConfirm';
 
 // ==========================================
 // 3. Utility Functions
@@ -118,6 +119,9 @@ export * from './components/ui/tooltip';
 // ==========================================
 // 4. Custom Components
 // ==========================================
+// Application-level Global Components
+export * from './components/custom/application';
+
 // Account Components
 export * from './components/custom/account';
 

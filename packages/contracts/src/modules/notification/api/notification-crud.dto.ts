@@ -34,7 +34,7 @@ export const CreateNotificationSchema = z.object({
   actions: z.array(z.any().openapi({ type: 'object' })).optional(),
   metadata: z.record(z.string(), openApiJsonValue).optional(),
   expiresAt: z.number().int().optional(),
-  sendImmediately: z.boolean().optional().default(false),
+  sendImmediately: z.boolean().default(false).optional(),
   channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
 });
 

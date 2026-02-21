@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { brandedId } from '@/primitives';
 import type { GoalId, IdentityId, GoalFolderId } from '@/primitives';
 import type { GoalClientDTO } from '../aggregates';
+import { GoalStatus } from '../value-objects/goal-status';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 // ============================================================================
 // CREATE Goal
@@ -22,7 +24,7 @@ export const CreateGoalSchema = z.object({
   color: z.string().regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式').optional(),
   feasibilityAnalysis: z.string().max(2000).optional(),
   motivation: z.string().max(2000).optional(),
-  importance: z.enum(['low', 'medium', 'high', 'critical'] as const),
+  importance: z.nativeEnum(ImportanceLevel),
   category: z.string().max(100).optional(),
   tags: z.array(z.string().max(50)).optional(),
   startDate: z.number().int().optional(),
@@ -47,7 +49,7 @@ export const UpdateGoalSchema = z.object({
   color: z.string().regex(/^#[0-9A-F]{6}$/i).nullable().optional(),
   feasibilityAnalysis: z.string().max(2000).nullable().optional(),
   motivation: z.string().max(2000).nullable().optional(),
-  importance: z.enum(['low', 'medium', 'high', 'critical'] as const).optional(),
+  importance: z.nativeEnum(ImportanceLevel).optional(),
   category: z.string().max(100).nullable().optional(),
   tags: z.array(z.string().max(50)).nullable().optional(),
   startDate: z.number().int().nullable().optional(),
@@ -84,34 +86,25 @@ export type DeleteGoalRes = GoalClientDTO;
  */
 export const QueryGoalsSchema = z.object({
   identityId: brandedId<IdentityId>(),
-  status: z.array(z.string()).optional(),
-  importance: z.array(z.enum(['low', 'medium', 'high', 'critical'] as const)).optional(),
+  status: z.array(z.nativeEnum(GoalStatus)).optional(),
+  importance: z.array(z.nativeEnum(ImportanceLevel)).optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   folderId: brandedId<GoalFolderId>().optional(),
   keyword: z.string().max(256).optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'targetDate', 'priority']).optional().default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(20),
-  includeKeyResults: z.boolean().optional().default(false),
-  includeReviews: z.boolean().optional().default(false),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'targetDate', 'priority']).default('createdAt').optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
+  page: z.number().int().min(1).default(1).optional(),
+  pageSize: z.number().int().min(1).max(100).default(20).optional(),
+  includeKeyResults: z.boolean().default(false).optional(),
+  includeReviews: z.boolean().default(false).optional(),
 });
 
 export type QueryGoalsReq = z.infer<typeof QueryGoalsSchema>;
 
-export interface QueryGoalsRes {
-  data: GoalClientDTO[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    hasMore: boolean;
-    totalPages: number;
-  };
-}
+// QueryGoalsRes 由 response-schemas.ts 中 QueryGoalsResSchema 的 z.infer 导出
 
 // ============================================================================
 // AGGREGATE View
@@ -122,19 +115,7 @@ export interface QueryGoalsRes {
  */
 export type GetGoalAggregateReq = void;
 
-export interface GetGoalAggregateRes {
-  goal: GoalClientDTO;
-  keyResults?: any[];
-  records?: any[];
-  reviews?: any[];
-  statistics?: {
-    totalKeyResults: number;
-    completedKeyResults: number;
-    totalRecords: number;
-    totalReviews: number;
-    overallProgress: number;
-  };
-}
+// GetGoalAggregateRes 由 response-schemas.ts 中 GetGoalAggregateResSchema 的 z.infer 导出
 
 // ============================================================================
 // BATCH Operations
@@ -145,7 +126,7 @@ export interface GetGoalAggregateRes {
  */
 export const BatchUpdateGoalStatusSchema = z.object({
   goalIds: z.array(brandedId<GoalId>()).min(1, '至少需要选择一个目标'),
-  status: z.string().min(1, '状态不能为空'),
+  status: z.nativeEnum(GoalStatus),
 });
 
 export type BatchUpdateGoalStatusReq = z.infer<typeof BatchUpdateGoalStatusSchema>;
@@ -167,7 +148,7 @@ export type BatchMoveGoalsRes = GoalClientDTO[];
  */
 export const BatchDeleteGoalsSchema = z.object({
   goalIds: z.array(brandedId<GoalId>()).min(1),
-  hardDelete: z.boolean().optional().default(false),
+  hardDelete: z.boolean().default(false).optional(),
 });
 
 export type BatchDeleteGoalsReq = z.infer<typeof BatchDeleteGoalsSchema>;
@@ -184,8 +165,8 @@ export const ExportGoalsSchema = z.object({
   identityId: brandedId<IdentityId>(),
   goalIds: z.array(brandedId<GoalId>()).optional(),
   format: z.enum(['json', 'csv', 'markdown']),
-  includeKeyResults: z.boolean().optional().default(true),
-  includeReviews: z.boolean().optional().default(true),
+  includeKeyResults: z.boolean().default(true).optional(),
+  includeReviews: z.boolean().default(true).optional(),
 });
 
 export type ExportGoalsReq = z.infer<typeof ExportGoalsSchema>;
@@ -201,10 +182,10 @@ export interface ExportGoalsRes {
  */
 export const ImportGoalsSchema = z.object({
   identityId: brandedId<IdentityId>(),
-  data: z.union([z.string(), z.instanceof(Uint8Array)]),
+  data: z.union([z.string(), z.custom<Uint8Array>((val) => val instanceof Uint8Array)]),
   format: z.enum(['json', 'csv']),
   folderId: brandedId<GoalFolderId>().optional(),
-  overwriteExisting: z.boolean().optional().default(false),
+  overwriteExisting: z.boolean().default(false).optional(),
 });
 
 export type ImportGoalsReq = z.infer<typeof ImportGoalsSchema>;

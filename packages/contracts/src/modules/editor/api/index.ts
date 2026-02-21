@@ -23,6 +23,8 @@ export {
   UpdateDocumentSchema,
   type UpdateDocumentReq,
 } from './editor-document.dto';
+
+export * from './response-schemas';
 import type {
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
