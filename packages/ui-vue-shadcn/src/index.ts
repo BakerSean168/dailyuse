@@ -57,6 +57,21 @@ export { useMessage, type UseMessageReturn } from './composables/useMessage';
 export { useDialog, type UseDialogReturn } from './composables/useDialog';
 export { useColorPicker, type UseColorPickerReturn } from './composables/useColorPicker';
 export { useConfirm, type ConfirmOptions, type ConfirmVariant } from './composables/useConfirm';
+export { useSheet, closeSheet, type SheetOptions, type SheetSide } from './composables/useSheet';
+export {
+  openCommandPalette,
+  closeCommandPalette,
+  toggleCommandPalette,
+  registerStaticCommands,
+  registerDynamicCommands,
+  type CommandItem,
+  type CommandGroup,
+} from './composables/useCommandPalette';
+export {
+  progressStart,
+  progressDone,
+  progressFinish,
+} from './composables/useProgressBar';
 
 // ==========================================
 // 3. Utility Functions

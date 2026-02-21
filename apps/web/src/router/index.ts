@@ -12,6 +12,7 @@
 
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { authGuard } from './guards';
+import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
 // ============ 模块路由懒导入 ============
 // 各模块路由配置中的 component 已使用 () => import() 实现组件级懒加载
@@ -75,10 +76,16 @@ const router = createRouter({
 
 // ============ 全局守卫 ============
 
+// 路由切换进度条
+router.beforeEach(() => {
+  progressStart();
+});
+
 router.beforeEach(authGuard);
 
-// 页面标题
+// 页面标题 + 进度条完成
 router.afterEach((to) => {
+  progressDone();
   const title = to.meta.title as string | undefined;
   document.title = title ? `${title} - DailyUse` : 'DailyUse';
 });
