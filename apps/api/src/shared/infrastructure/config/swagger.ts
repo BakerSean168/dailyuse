@@ -18,26 +18,39 @@ import { generateOpenApiDocument } from '../openapi/generator';
 /**
  * 设置 Swagger UI 中间件。
  *
+ * 文档采用懒加载策略：在首次请求时生成并缓存 OpenAPI 文档，
+ * 确保所有模块（包括 RouteRegistrar 注册的路由）都已加载完毕。
+ *
  * @param app - Express 应用实例
  */
 export function setupSwagger(app: Express): void {
-  const openApiDocument = generateOpenApiDocument();
+  let cachedDocument: ReturnType<typeof generateOpenApiDocument> | null = null;
 
-  app.use(
-    '/api/docs',
-    swaggerUi.serve,
-    swaggerUi.setup(openApiDocument, {
+  function getDocument() {
+    if (!cachedDocument) {
+      cachedDocument = generateOpenApiDocument();
+    }
+    return cachedDocument;
+  }
+
+  // Swagger UI — 懒加载，首次访问时才生成文档
+  app.use('/api/docs', swaggerUi.serve);
+  app.get('/api/docs', (req, res, next) => {
+    swaggerUi.setup(getDocument(), {
       explorer: true,
+      customSiteTitle: 'DailyUse API 文档',
       swaggerOptions: {
         filter: true,
         showRequestHeaders: true,
+        persistAuthorization: true,
       },
-    }),
-  );
+    })(req, res, next);
+  });
 
+  // OpenAPI JSON 端点
   app.get('/api/docs.json', (_req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.json(openApiDocument);
+    res.json(getDocument());
   });
 
   console.log('📚 Swagger UI: http://localhost:3888/api/docs');

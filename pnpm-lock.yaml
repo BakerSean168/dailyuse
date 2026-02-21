@@ -1010,8 +1010,8 @@ importers:
         specifier: ^5.1.0
         version: 5.2.1
       zod:
-        specifier: ^3.24.0
-        version: 3.25.76
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@types/better-sqlite3':
         specifier: 7.6.13
@@ -1708,6 +1708,9 @@ importers:
       winston-daily-rotate-file:
         specifier: 5.0.0
         version: 5.0.0(winston@3.19.0)
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
     devDependencies:
       concurrently:
         specifier: ^9.2.1
