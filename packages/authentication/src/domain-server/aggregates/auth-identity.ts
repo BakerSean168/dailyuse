@@ -1,11 +1,13 @@
 /**
- * AuthIdentity 聚合根实�?
+ * AuthIdentity 聚合根实现
  * 实现 AuthIdentityServer 接口
  * 
  * 核心职责:
- * 1. 管理多种凭证 (密码、OAuth、手机等)
- * 2. 协调凭证生命周期 (添加、删除、更�?
- * 3. 实施业务规则 (至少保留一个凭证、登录失败锁定等)
+ * 1. 管理标识符集合 (邮箱/手机号 VO) —— 解决"如何找到用户"
+ * 2. 管理 OAuth 绑定集合 (Entity 形式的标识符) —— 解决"通过第三方如何找到用户"
+ * 3. 管理凭证集合 (仅密码凭证) —— 解决"如何验证用户"
+ * 4. 协调生命周期 (添加、删除、更新)
+ * 5. 实施业务规则 (至少保留一个登录途径、登录失败锁定等)
  */
 
 import type {
@@ -13,15 +15,13 @@ import type {
   AuthIdentityServer,
   AuthIdentityServerDTO,
   AuthCredentialServer,
-  AuthEventMap,
   PasswordCredentialServerDTO,
   PasswordCredentialPersistenceDTO,
-  OAuthCredentialServerDTO,
-  OAuthCredentialPersistenceDTO,
-  PhoneCredentialServerDTO,
-  PhoneCredentialPersistenceDTO,
-  AuthCredentialServerDTO,
-  AuthCredentialPersistenceDTO
+  AuthEventMap,
+  AuthIdentifierDTO,
+  AuthIdentifierPersistenceDTO,
+  OAuthBindingServerDTO,
+  OAuthBindingPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 
@@ -39,39 +39,38 @@ import {
   IdentityId,
 } from '@dailyuse/domain-shared/shared';
 
-import {
-  OAuthCredential,
-  PhoneCredential,
-  PasswordCredential
-} from '../entities';
+import { PasswordCredential, OAuthBinding } from '../entities';
+import { EmailIdentifier, PhoneIdentifier, type ConcreteIdentifier } from '../value-objects';
 import type { IPasswordHasher } from '../../domain-shared';
 import type { AuthIdentityClientDTO } from '@dailyuse/contracts/authentication';
 
 // ================= 常量定义 =================
 
-/** 最大登录失败次�?*/
+/** 最大登录失败次数 */
 const MAX_FAILED_ATTEMPTS = 5;
 /** 锁定时长（毫秒）- 15分钟 */
 const LOCK_DURATION_MS = 15 * 60 * 1000;
 
 /**
- * AuthIdentity 聚合�?
- * 管理用户的认证身份和凭证
+ * AuthIdentity 聚合根
+ * 管理用户的认证身份、标识符、绑定和凭证
  */
 export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdentityServer {
 
-  // ================= 1. 内部状�?(Backing Fields) =================
+  // ================= 1. 内部状态 (Backing Fields) =================
   private _status: typeof AuthIdentityStatus.ACTIVE;
   private _failedLoginAttempts: number;
   private _lastFailedAttempt: Date | null;
   private _lockedUntil: Date | null;
+  private _identifiers: ConcreteIdentifier[];
+  private _oauthBindings: OAuthBinding[];
   private _credentials: AuthCredentialServer[];
   private _version: number;
   private _createdAt: Date;
   private _updatedAt: Date;
   private _deletedAt: Date | null;
 
-  // ================= 2. 构造函�?(Private) =================
+  // ================= 2. 构造函数 (Private) =================
   private constructor(props: AuthIdentityServerDTO) {
     super(props.id);
 
@@ -79,25 +78,36 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     this._failedLoginAttempts = props.failedLoginAttempts;
     this._lastFailedAttempt = props.lastFailedAttempt ? new Date(props.lastFailedAttempt) : null;
     this._lockedUntil = props.lockedUntil ? new Date(props.lockedUntil) : null;
+
+    // 恢复标识符集合
+    this._identifiers = (props.identifiers ?? []).map(dto => {
+      if (dto.type === 'EMAIL') {
+        return EmailIdentifier.fromDTO(dto);
+      }
+      if (dto.type === 'PHONE') {
+        return PhoneIdentifier.fromDTO(dto);
+      }
+      throw new Error(`Unknown identifier type: ${(dto as any).type}`);
+    });
+
+    // 恢复 OAuth 绑定集合
+    this._oauthBindings = (props.oauthBindings ?? []).map(dto => OAuthBinding.fromServerDTO(dto));
+
+    // 恢复凭证集合（仅 PasswordCredential）
     this._credentials = props.credentials.map(cred => {
       if (cred.type === CredentialType.PASSWORD) {
         return PasswordCredential.fromServerDTO(cred as PasswordCredentialServerDTO);
       }
-      if (cred.type === CredentialType.OAUTH) {
-        return OAuthCredential.fromServerDTO(cred as OAuthCredentialServerDTO);
-      }
-      if (cred.type === CredentialType.PHONE) {
-        return PhoneCredential.fromServerDTO(cred as PhoneCredentialServerDTO);
-      }
       throw new Error(`Unknown credential type: ${cred.type}`);
     });
+
     this._version = props.version ?? 1;
     this._createdAt = new Date(props.createdAt);
     this._updatedAt = new Date(props.updatedAt);
     this._deletedAt = props.deletedAt ? new Date(props.deletedAt) : null;
   }
 
-  // ================= 3. 公共属�?(Getters) =================
+  // ================= 3. 公共属性 (Getters) =================
   get status(): typeof AuthIdentityStatus.ACTIVE {
     return this._status;
   }
@@ -112,6 +122,14 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
 
   get lockedUntil(): Date | null {
     return this._lockedUntil;
+  }
+
+  get identifiers(): AuthIdentifierDTO[] {
+    return this._identifiers.map(i => i.toDTO());
+  }
+
+  get oauthBindings(): OAuthBindingServerDTO[] {
+    return this._oauthBindings.map(b => b.toServerDTO());
   }
 
   get credentials(): AuthCredentialServer[] {
@@ -136,7 +154,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
 
   // ================= 4. 工厂方法 (Factories) =================
 
-  public static async createWithEmail(params: {
+  /**
+   * 🏭 通过邮箱和密码创建身份
+   * Email 进入 Identifier 集合，Password 进入 Credential 集合
+   */
+  public static async createWithEmailAndPassword(params: {
     email: string;
     plainPassword: string;
     hasher: IPasswordHasher;
@@ -146,6 +168,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     const plainPassword = PlainPassword.create({ value: params.plainPassword });
     const hashedPassword = await HashedPassword.create(plainPassword, params.hasher);
 
+    const emailIdentifier = EmailIdentifier.create(params.email, false);
     const passwordCredential = PasswordCredential.create({
       id: AuthCredentialId.generate(),
       hashedPassword: hashedPassword
@@ -155,6 +178,8 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     const dto: AuthIdentityServerDTO = {
       id: identityId,
       status: AuthIdentityStatus.UNVERIFIED,
+      identifiers: [emailIdentifier.toDTO()],
+      oauthBindings: [],
       credentials: [passwordCredential.toServerDTO()],
       failedLoginAttempts: 0,
       lastFailedAttempt: null,
@@ -176,11 +201,15 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     return identity;
   }
 
+  /**
+   * 🏭 通过 OAuth 创建身份
+   * OAuthBinding 进入 oauthBindings 集合
+   */
   public static createWithOAuth(params: {
     provider: OAuthProvider;
     sub: string;
   }): AuthIdentity {
-    const oauthCredential = OAuthCredential.create({
+    const oauthBinding = OAuthBinding.create({
         id: AuthCredentialId.generate(),
         provider: params.provider,
         providerSubjectId: params.sub
@@ -189,7 +218,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     const identityId = IdentityId.generate();
     const identity = new AuthIdentity({
         id: identityId,
-        credentials: [oauthCredential.toServerDTO()],
+        identifiers: [],
+        oauthBindings: [oauthBinding.toServerDTO()],
+        credentials: [],
         status: AuthIdentityStatus.UNVERIFIED,
         failedLoginAttempts: 0,
         lastFailedAttempt: null,
@@ -209,6 +240,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     return identity;
   }
 
+  /**
+   * 🏭 从持久化 DTO 恢复
+   */
   public static fromPersistenceDTO(dto: AuthIdentityPersistenceDTO): AuthIdentity {
     const serverDTO: AuthIdentityServerDTO = {
       id: dto.id,
@@ -216,17 +250,15 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       failedLoginAttempts: dto.failedLoginAttempts,
       lastFailedAttempt: dto.lastFailedAttempt?.getTime() ?? null,
       lockedUntil: dto.lockedUntil?.getTime() ?? null,
+      identifiers: (dto.identifiers ?? []).map(i => i as AuthIdentifierDTO),
+      oauthBindings: (dto.oauthBindings ?? []).map(b => {
+        return OAuthBinding.fromPersistenceDTO(b).toServerDTO();
+      }),
       credentials: dto.credentials.map(cred => {
-      if (cred.type === CredentialType.PASSWORD) {
-        return PasswordCredential.fromPersistenceDTO(cred as PasswordCredentialPersistenceDTO).toServerDTO();
-      }
-      if (cred.type === CredentialType.OAUTH) {
-        return OAuthCredential.fromPersistenceDTO(cred as OAuthCredentialPersistenceDTO).toServerDTO();
-      }
-      if (cred.type === CredentialType.PHONE) {
-        return PhoneCredential.fromPersistenceDTO(cred as PhoneCredentialPersistenceDTO).toServerDTO();
-      }
-      throw new Error(`Unknown credential type: ${cred.type}`);
+        if (cred.type === CredentialType.PASSWORD) {
+          return PasswordCredential.fromPersistenceDTO(cred as PasswordCredentialPersistenceDTO).toServerDTO();
+        }
+        throw new Error(`Unknown credential type: ${cred.type}`);
       }),
       version: dto.version,
       createdAt: dto.createdAt.getTime(),
@@ -236,11 +268,128 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     return new AuthIdentity(serverDTO);
   }
 
+  /**
+   * 🏭 从 Server DTO 恢复
+   */
   public static fromServerDTO(dto: AuthIdentityServerDTO): AuthIdentity {
     return new AuthIdentity(dto);
   }
 
-  // ================= 5. 业务行为 (Business Actions) =================
+  // ================= 5. 标识符操作方法 =================
+
+  /**
+   * 添加邮箱标识符
+   */
+  public addEmailIdentifier(email: string): void {
+    const existing = this.findIdentifierByEmail(email);
+    if (existing) throw new Error('Email already bound');
+    this._identifiers.push(EmailIdentifier.create(email, false));
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 移除邮箱标识符
+   */
+  public removeEmailIdentifier(email: string): void {
+    const idx = this._identifiers.findIndex(i => i.type === 'EMAIL' && i.value === email);
+    if (idx < 0) throw new Error('Email identifier not found');
+    if (!this.hasOtherLoginPathAfterIdentifierRemoval(idx)) {
+      throw new Error('Cannot remove the last login path');
+    }
+    this._identifiers.splice(idx, 1);
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 添加手机标识符
+   */
+  public addPhoneIdentifier(phone: string): void {
+    const existing = this.findIdentifierByPhone(phone);
+    if (existing) throw new Error('Phone already bound');
+    this._identifiers.push(PhoneIdentifier.create(phone, false));
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 移除手机标识符
+   */
+  public removePhoneIdentifier(phone: string): void {
+    const idx = this._identifiers.findIndex(i => i.type === 'PHONE' && i.value === phone);
+    if (idx < 0) throw new Error('Phone identifier not found');
+    if (!this.hasOtherLoginPathAfterIdentifierRemoval(idx)) {
+      throw new Error('Cannot remove the last login path');
+    }
+    this._identifiers.splice(idx, 1);
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 验证邮箱标识符
+   */
+  public verifyEmailIdentifier(email: string): void {
+    const idx = this._identifiers.findIndex(i => i.type === 'EMAIL' && i.value === email);
+    if (idx < 0) throw new Error('Email identifier not found');
+    this._identifiers[idx] = (this._identifiers[idx] as EmailIdentifier).verify();
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 验证手机标识符
+   */
+  public verifyPhoneIdentifier(phone: string): void {
+    const idx = this._identifiers.findIndex(i => i.type === 'PHONE' && i.value === phone);
+    if (idx < 0) throw new Error('Phone identifier not found');
+    this._identifiers[idx] = (this._identifiers[idx] as PhoneIdentifier).verify();
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 根据邮箱查找标识符
+   */
+  public findIdentifierByEmail(email: string): EmailIdentifier | null {
+    return (this._identifiers.find(i => i.type === 'EMAIL' && i.value === email) as EmailIdentifier) ?? null;
+  }
+
+  /**
+   * 根据手机号查找标识符
+   */
+  public findIdentifierByPhone(phone: string): PhoneIdentifier | null {
+    return (this._identifiers.find(i => i.type === 'PHONE' && i.value === phone) as PhoneIdentifier) ?? null;
+  }
+
+  /**
+   * 获取所有 OAuth 绑定
+   */
+  public getOAuthBindings(): OAuthBinding[] {
+    return [...this._oauthBindings];
+  }
+
+  /**
+   * 添加 OAuth 绑定
+   */
+  public addOAuthBinding(binding: OAuthBinding): void {
+    const existing = this._oauthBindings.find(
+      b => b.provider === binding.provider && b.providerSubjectId === binding.providerSubjectId
+    );
+    if (existing) throw new Error(`OAuth binding for ${binding.provider} already exists`);
+    this._oauthBindings.push(binding);
+    this.refreshUpdatedAt();
+  }
+
+  /**
+   * 移除 OAuth 绑定
+   */
+  public removeOAuthBinding(bindingId: string): void {
+    const idx = this._oauthBindings.findIndex(b => b.id === bindingId);
+    if (idx < 0) throw new Error(`OAuth binding with id ${bindingId} not found`);
+    if (!this.hasOtherLoginPathAfterOAuthRemoval(idx)) {
+      throw new Error('Cannot remove the last login path');
+    }
+    this._oauthBindings.splice(idx, 1);
+    this.refreshUpdatedAt();
+  }
+
+  // ================= 6. 业务行为 (Business Actions) =================
 
   public async verifyPassword(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
     const credential = this.getCredentialByType(CredentialType.PASSWORD);
@@ -349,8 +498,8 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
   }
 
   public removeCredential(credentialId: AuthCredentialId): void {
-    if (this._credentials.length <= 1) {
-      throw new Error('Cannot remove the last credential. At least one credential must be kept.');
+    if (this._credentials.length <= 1 && this._oauthBindings.length === 0) {
+      throw new Error('Cannot remove the last credential. At least one login path must be kept.');
     }
 
     const index = this._credentials.findIndex(c => c.id === credentialId);
@@ -370,8 +519,16 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     return this._credentials.some(c => c.type === CredentialType.PASSWORD);
   }
 
+  public hasEmail(): boolean {
+    return this._identifiers.some(i => i.type === 'EMAIL');
+  }
+
+  public hasPhone(): boolean {
+    return this._identifiers.some(i => i.type === 'PHONE');
+  }
+
   public hasOAuth(): boolean {
-    return this._credentials.some(c => c.type === CredentialType.OAUTH);
+    return this._oauthBindings.length > 0;
   }
 
   public disable(): void {
@@ -387,7 +544,25 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     });
   }
 
-  // ================= 6. 序列�?(Serialization) =================
+  // ================= 7. 私有辅助方法 =================
+
+  /**
+   * 移除某个标识符后，是否还有其他登录途径
+   */
+  private hasOtherLoginPathAfterIdentifierRemoval(removeIdx: number): boolean {
+    const remainingIdentifiers = this._identifiers.filter((_, idx) => idx !== removeIdx);
+    return remainingIdentifiers.length > 0 || this._oauthBindings.length > 0 || this._credentials.length > 0;
+  }
+
+  /**
+   * 移除某个 OAuth 绑定后，是否还有其他登录途径
+   */
+  private hasOtherLoginPathAfterOAuthRemoval(removeIdx: number): boolean {
+    const remainingBindings = this._oauthBindings.filter((_, idx) => idx !== removeIdx);
+    return this._identifiers.length > 0 || remainingBindings.length > 0 || this._credentials.length > 0;
+  }
+
+  // ================= 8. 序列化 (Serialization) =================
 
   public toServerDTO(): AuthIdentityServerDTO {
     return {
@@ -396,17 +571,13 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       failedLoginAttempts: this._failedLoginAttempts,
       lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
       lockedUntil: this._lockedUntil?.getTime() ?? null,
+      identifiers: this._identifiers.map(i => i.toDTO()),
+      oauthBindings: this._oauthBindings.map(b => b.toServerDTO()),
       credentials: this._credentials.map(cred => {
-        switch (cred.type) {
-          case CredentialType.PASSWORD:
-            return PasswordCredential.fromPersistenceDTO(cred as PasswordCredentialPersistenceDTO).toServerDTO();
-          case CredentialType.OAUTH:
-            return OAuthCredential.fromPersistenceDTO(cred as OAuthCredentialPersistenceDTO).toServerDTO();
-          case CredentialType.PHONE:
-            return PhoneCredential.fromPersistenceDTO(cred as PhoneCredentialPersistenceDTO).toServerDTO();
-          default:
-            throw new Error(`Unknown credential type: ${cred.type}`);
+        if (cred.type === CredentialType.PASSWORD) {
+          return PasswordCredential.fromPersistenceDTO(cred as PasswordCredentialPersistenceDTO).toServerDTO();
         }
+        throw new Error(`Unknown credential type: ${cred.type}`);
       }),
       version: this._version,
       createdAt: this._createdAt.getTime(),
@@ -416,34 +587,30 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
   }
 
   public toClientDTO(): AuthIdentityClientDTO {
-    const hasPassword = this._credentials.some(c => c.type === CredentialType.PASSWORD);
-    const hasOAuth = this._credentials.some(c => c.type === CredentialType.OAUTH);
-
     return {
       id: this.id,
       status: this._status,
       failedLoginAttempts: this._failedLoginAttempts,
       lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
       lockedUntil: this._lockedUntil?.getTime() ?? null,
+      identifiers: this._identifiers.map(i => i.toDTO()),
       credentials: this._credentials.map(cred => {
         return {
           id: cred.id,
           type: cred.type,
-          displayName: cred.type === CredentialType.OAUTH
-            ? (cred as any).provider ?? 'OAuth'
-            : cred.type === CredentialType.PASSWORD
-              ? 'Password'
-              : 'Phone',
+          displayName: 'Password',
           lastUsedAt: (cred as any).lastUsedAt?.getTime?.() ?? null,
-          isPrimary: (cred as any).isPrimary ?? false,
+          isPrimary: true,
           version: 1,
           createdAt: (cred as any).createdAt?.getTime?.() ?? Date.now(),
           updatedAt: (cred as any).updatedAt?.getTime?.() ?? Date.now(),
           deletedAt: null,
         };
       }),
-      hasPassword,
-      hasOAuth,
+      hasPassword: this.hasPassword(),
+      hasEmail: this.hasEmail(),
+      hasPhone: this.hasPhone(),
+      hasOAuth: this.hasOAuth(),
       version: 1,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
@@ -458,6 +625,8 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       failedLoginAttempts: this._failedLoginAttempts,
       lastFailedAttempt: this._lastFailedAttempt,
       lockedUntil: this._lockedUntil,
+      identifiers: this._identifiers.map(i => i.toPersistenceDTO()),
+      oauthBindings: this._oauthBindings.map(b => b.toPersistenceDTO()),
       credentials: this._credentials,
       version: this._version,
       createdAt: this._createdAt,
