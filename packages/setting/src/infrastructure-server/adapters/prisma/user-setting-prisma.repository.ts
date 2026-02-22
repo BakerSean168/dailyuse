@@ -4,60 +4,21 @@
  * Prisma implementation of IUserSettingRepository.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, UserSetting as PrismaUserSetting } from '@dailyuse/database';
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import { PrismaUserSettingMapper } from '../../mappers/prisma-user-setting-mapper';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(data: any): UserSetting {
-    const entries: any[] = [];
-    const excludedKeys = ['id', 'identityId', 'version', 'createdAt', 'updatedAt', 'deletedAt'];
-
-    for (const key in data) {
-      if (!excludedKeys.includes(key) && data[key] !== null) {
-        entries.push({
-          id: 'generated',
-          key: key,
-          value: data[key],
-          updatedAt: data.updatedAt.getTime(),
-        });
-      }
-    }
-
-    return UserSetting.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      entries: JSON.stringify(entries),
-      version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt,
-    });
+  private toDomain(data: PrismaUserSetting): UserSetting {
+    return PrismaUserSettingMapper.toDomain(data);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private toPrisma(setting: UserSetting): any {
-    const dto = setting.toPersistenceDTO();
-    const entries = JSON.parse(dto.entries);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const flatData: any = {
-      id: dto.id,
-      identityId: dto.identityId,
-      version: dto.version,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const entry of entries) {
-      flatData[entry.key] = entry.value;
-    }
-
-    return flatData;
+    return PrismaUserSettingMapper.toPersistence(setting);
   }
 
   async save(setting: UserSetting): Promise<void> {

@@ -10,6 +10,7 @@
  * - Web 鍓嶇浣跨敤 IndexedDB锛堟湭鏉ワ級
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { RepositoryContainer } from './di/repository-container-v2';
 import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
@@ -33,7 +34,7 @@ export enum DatabaseProvider {
 export interface IDatabaseProviderConfig {
   provider: DatabaseProvider | string;
   /** Prisma 瀹炰緥锛堝綋浣跨敤 Prisma 鏃讹級 */
-  prisma?: any;
+  prisma?: PrismaClient;
   /** SQLite 鏁版嵁搴撹矾寰勶紙褰撲娇鐢?SQLite 鏃讹級 */
   sqliteDbPath?: string;
   /** SQLite 鏁版嵁搴撹繛鎺ュ疄渚嬶紙褰撳凡Create鏃讹級 */
@@ -186,7 +187,7 @@ export class DatabaseProviderFactory {
  * 渚挎嵎鏂规硶锛氬垵濮嬪寲 API锛圥risma锛夌幆澧?
  */
 export async function initializePrismaProvider(
-  prismaClient: any,
+  prismaClient: PrismaClient,
   container: RepositoryContainer,
 ): Promise<IProviderInitializer> {
   const factory = DatabaseProviderFactory.getInstance();

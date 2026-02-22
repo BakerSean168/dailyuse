@@ -5,12 +5,12 @@
  * Handles CRUD operations for goal progress records.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, GoalRecord as PrismaGoalRecord, Prisma } from '@dailyuse/database';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-server';
 import { GoalRecord } from '@/domain-server';
-import type { GoalRecordPersistenceDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaGoalRecordMapper } from '../../mappers/prisma-goal-record-mapper';
 
 /**
  * Global EventBus adapter
@@ -35,31 +35,24 @@ export class GoalRecordPrismaRepository
   /**
    * Map Prisma row to domain aggregate
    */
-  private mapToEntity(data: any): GoalRecord {
-    const dto: GoalRecordPersistenceDTO = {
-      id: data.id,
-      keyResultId: data.keyResultId,
-      value: data.value,
-      note: data.note ?? null,
-      recordedAt: data.recordedAt,
-      version: data.version ?? 1,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    };
-    return GoalRecord.fromPersistenceDTO(dto);
+  private mapToEntity(data: PrismaGoalRecord): GoalRecord {
+    return PrismaGoalRecordMapper.toDomain(data);
   }
 
   /**
    * Build Prisma where/orderBy/take from query options
    */
   private buildQueryOptions(options?: GoalRecordQueryOptions) {
-    const where: any = {};
-    if (options?.startTime) {
-      where.recordedAt = { ...where.recordedAt, gte: options.startTime };
-    }
-    if (options?.endTime) {
-      where.recordedAt = { ...where.recordedAt, lte: options.endTime };
+    const where: Prisma.GoalRecordWhereInput = {};
+    if (options?.startTime || options?.endTime) {
+      const recordedAtFilter: Record<string, unknown> = {};
+      if (options?.startTime) {
+        recordedAtFilter.gte = options.startTime;
+      }
+      if (options?.endTime) {
+        recordedAtFilter.lte = options.endTime;
+      }
+      where.recordedAt = recordedAtFilter;
     }
 
     const orderBy = { recordedAt: options?.orderBy ?? 'desc' };
@@ -74,13 +67,13 @@ export class GoalRecordPrismaRepository
   async findByKeyResultId(keyResultId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
-    const data = await (this.prisma as any).goalRecord.findMany({
+    const data = await this.prisma.goalRecord.findMany({
       where: { keyResultId, deletedAt: null, ...where },
       orderBy,
       ...(take ? { take } : {}),
     });
 
-    return data.map((item: any) => this.mapToEntity(item));
+    return data.map((item: PrismaGoalRecord) => this.mapToEntity(item));
   }
 
   /**
@@ -89,7 +82,7 @@ export class GoalRecordPrismaRepository
   async findByGoalId(goalId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
-    const data = await (this.prisma as any).goalRecord.findMany({
+    const data = await this.prisma.goalRecord.findMany({
       where: {
         keyResult: { goalId },
         deletedAt: null,
@@ -99,7 +92,7 @@ export class GoalRecordPrismaRepository
       ...(take ? { take } : {}),
     });
 
-    return data.map((item: any) => this.mapToEntity(item));
+    return data.map((item: PrismaGoalRecord) => this.mapToEntity(item));
   }
 
   /**
@@ -111,7 +104,7 @@ export class GoalRecordPrismaRepository
   ): Promise<Map<string, GoalRecord[]>> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
-    const data = await (this.prisma as any).goalRecord.findMany({
+    const data = await this.prisma.goalRecord.findMany({
       where: {
         keyResultId: { in: keyResultIds },
         deletedAt: null,
@@ -138,7 +131,7 @@ export class GoalRecordPrismaRepository
    * Count records for a key result
    */
   async countByKeyResultId(keyResultId: string): Promise<number> {
-    return (this.prisma as any).goalRecord.count({
+    return this.prisma.goalRecord.count({
       where: { keyResultId, deletedAt: null },
     });
   }
@@ -149,7 +142,7 @@ export class GoalRecordPrismaRepository
   protected async persist(record: GoalRecord): Promise<void> {
     const dto = record.toPersistenceDTO();
 
-    await (this.prisma as any).goalRecord.upsert({
+    await this.prisma.goalRecord.upsert({
       where: { id: dto.id as string },
       create: {
         id: dto.id as string,
@@ -177,7 +170,7 @@ export class GoalRecordPrismaRepository
    * Delete a record by ID
    */
   async delete(recordId: string): Promise<void> {
-    await (this.prisma as any).goalRecord.delete({
+    await this.prisma.goalRecord.delete({
       where: { id: recordId },
     });
   }
@@ -186,7 +179,7 @@ export class GoalRecordPrismaRepository
    * Delete multiple records by IDs
    */
   async deleteMany(recordIds: string[]): Promise<void> {
-    await (this.prisma as any).goalRecord.deleteMany({
+    await this.prisma.goalRecord.deleteMany({
       where: { id: { in: recordIds } },
     });
   }

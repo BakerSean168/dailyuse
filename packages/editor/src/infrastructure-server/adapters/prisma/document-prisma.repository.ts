@@ -1,89 +1,18 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, Document as PrismaDocument } from '@dailyuse/database';
 import type { IDocumentRepository } from '../../../domain-server/repositories/IDocumentRepository';
 import { Document } from '../../../domain-server/entities/document';
 import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
+import { PrismaDocumentMapper } from '../../mappers/prisma-document-mapper';
 
 export class DocumentPrismaRepository implements IDocumentRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(data: any): Document {
-    const mappedIndexStatus = this.mapPrismaStatusToIndexStatus(data.status);
-    return Document.fromPersistenceDTO({
-      id: data.id,
-      workspace_id: data.identityId,
-      identityId: data.identityId,
-      path: data.folderPath,
-      name: data.title,
-      language: DocumentLanguage.Other,
-      content: data.content,
-      content_hash: this.hashContent(data.content),
-      metadata: JSON.stringify({
-        tags: Array.isArray(data.tags) ? data.tags : [],
-        category: null,
-        wordCount: null,
-        characterCount: null,
-        readingTime: null,
-        encoding: null,
-        language: null,
-        customFields: null,
-      }),
-      index_status: mappedIndexStatus,
-      last_indexed_at: data.lastVersionedAt,
-      last_modified_at: data.lastEditedAt,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    });
+  private toDomain(data: PrismaDocument): Document {
+    return PrismaDocumentMapper.toDomain(data);
   }
 
   private toPrisma(document: Document) {
-    const dto = document.toPersistenceDTO();
-    return {
-      id: dto.id,
-      identityId: dto.identityId,
-      title: dto.name,
-      content: dto.content,
-      folderPath: dto.path,
-      tags: this.readMetadataTags(dto.metadata),
-      status: this.mapIndexStatusToPrismaStatus(dto.index_status),
-      currentVersion: 0,
-      lastVersionedAt: dto.last_indexed_at,
-      lastEditedAt: dto.last_modified_at,
-      version: 1,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: null,
-    };
-  }
-
-  private readMetadataTags(metadata: string): string[] {
-    try {
-      const parsed = JSON.parse(metadata);
-      return Array.isArray(parsed?.tags) ? parsed.tags : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private hashContent(content: string): string {
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return hash.toString(16);
-  }
-
-  private mapPrismaStatusToIndexStatus(status: string): IndexStatus {
-    if (status === 'PUBLISHED') return IndexStatus.Indexed;
-    if (status === 'ARCHIVED') return IndexStatus.Outdated;
-    return IndexStatus.NotIndexed;
-  }
-
-  private mapIndexStatusToPrismaStatus(status: IndexStatus): string {
-    if (status === IndexStatus.Indexed) return 'PUBLISHED';
-    if (status === IndexStatus.Outdated || status === IndexStatus.Failed) return 'ARCHIVED';
-    return 'DRAFT';
+    return PrismaDocumentMapper.toPersistence(document);
   }
 
   async save(document: Document): Promise<void> {
@@ -106,7 +35,7 @@ export class DocumentPrismaRepository implements IDocumentRepository {
     const data = await this.prisma.document.findMany({
       where: { identityId, deletedAt: null },
     });
-    return data.map((d: any) => this.toDomain(d));
+    return data.map((d: PrismaDocument) => this.toDomain(d));
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
@@ -125,7 +54,7 @@ export class DocumentPrismaRepository implements IDocumentRepository {
       where: { deletedAt: null },
     });
     return data
-      .map((d: any) => this.toDomain(d))
+      .map((d: PrismaDocument) => this.toDomain(d))
       .filter((document) => document.contentHash === contentHash);
   }
 
@@ -147,7 +76,7 @@ export class DocumentPrismaRepository implements IDocumentRepository {
       orderBy: { updatedAt: 'desc' },
       take: limit,
     });
-    return data.map((d: any) => this.toDomain(d));
+    return data.map((d: PrismaDocument) => this.toDomain(d));
   }
 
   async delete(id: string): Promise<void> {
@@ -183,6 +112,6 @@ export class DocumentPrismaRepository implements IDocumentRepository {
       const data = await this.prisma.document.findMany({
           where: { identityId, folderPath, deletedAt: null }
       });
-      return data.map((d: any) => this.toDomain(d));
+      return data.map((d: PrismaDocument) => this.toDomain(d));
   }
 }

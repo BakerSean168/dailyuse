@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { IAppConfigRepository } from '@/domain-server';
 
 /**
@@ -13,7 +14,7 @@ import type { IAppConfigRepository } from '@/domain-server';
  * Skeleton implementation - to be completed when extracting from apps/api.
  */
 export class AppConfigPrismaRepository implements IAppConfigRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(config: any): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');

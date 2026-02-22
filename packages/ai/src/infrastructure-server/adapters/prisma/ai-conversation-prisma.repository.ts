@@ -5,18 +5,23 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient, AiConversation as PrismaAiConversation, AiMessage as PrismaAiMessage } from '@dailyuse/database';
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import type { ConversationStatus } from '@dailyuse/contracts/ai';
 import type { AIConversationPersistenceDTO, MessagePersistenceDTO } from '@dailyuse/contracts/ai';
 
+type PrismaAiConversationWithMessages = PrismaAiConversation & {
+  messages?: PrismaAiMessage[];
+};
+
 /**
  * AIConversation Prisma Repository
  *
- * Skeleton implementation - to be completed when extracting from apps/api.
+ * Prisma implementation of IAIConversationRepository.
  */
 export class AIConversationPrismaRepository implements IAIConversationRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(conversation: AIConversation): Promise<void> {
     const data = conversation.toPersistenceDTO();
@@ -90,7 +95,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       orderBy: { updatedAt: 'desc' },
     });
 
-    return rows.map((row: any) =>
+    return rows.map((row: PrismaAiConversationWithMessages) =>
       AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, Boolean(options?.includeChildren))),
     );
   }
@@ -106,7 +111,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       orderBy: { updatedAt: 'desc' },
     });
 
-    return rows.map((row: any) =>
+    return rows.map((row: PrismaAiConversationWithMessages) =>
       AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, Boolean(options?.includeChildren))),
     );
   }
@@ -119,7 +124,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       skip: offset ?? 0,
     });
 
-    return rows.map((row: any) => AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, false)));
+    return rows.map((row: PrismaAiConversationWithMessages) => AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, false)));
   }
 
   async delete(id: string): Promise<void> {
@@ -140,9 +145,9 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     return count > 0;
   }
 
-  private toPersistenceDTO(row: any, includeMessages: boolean): AIConversationPersistenceDTO {
+  private toPersistenceDTO(row: PrismaAiConversationWithMessages, includeMessages: boolean): AIConversationPersistenceDTO {
     const messages = includeMessages
-      ? ((row.messages ?? []) as any[]).map((message) => this.toMessagePersistenceDTO(message))
+      ? (row.messages ?? []).map((message) => this.toMessagePersistenceDTO(message))
       : null;
 
     return {
@@ -160,7 +165,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     };
   }
 
-  private toMessagePersistenceDTO(row: any): MessagePersistenceDTO {
+  private toMessagePersistenceDTO(row: PrismaAiMessage): MessagePersistenceDTO {
     let tokenCount: number | null = null;
 
     if (row.tokenUsage) {

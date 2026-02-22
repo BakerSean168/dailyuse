@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { INotificationTemplateRepository } from '../../../domain-server';
 import type { NotificationTemplate } from '../../../domain-server/aggregates/notification-template';
 import type { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
@@ -15,7 +16,7 @@ import type { NotificationCategory, NotificationType } from '@dailyuse/contracts
  * Skeleton implementation - to be completed when extracting from apps/api.
  */
 export class NotificationTemplatePrismaRepository implements INotificationTemplateRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(template: NotificationTemplate): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');

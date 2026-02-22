@@ -11,7 +11,7 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IAuthIdentityRepository } from '../../domain-server';
 import { AuthIdentity } from '../../domain-server';
 import type {
@@ -54,7 +54,7 @@ export class PrismaAuthIdentityRepository
     try {
       const dto = identity.toPersistenceDTO();
 
-      await this.prisma.$transaction(async (tx: any) => {
+      await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // 1. Upsert the identity record
         await tx.authIdentity.upsert({
           where: { id: dto.id },
@@ -201,7 +201,7 @@ export class PrismaAuthIdentityRepository
 
   async delete(identity: AuthIdentity): Promise<void> {
     const id = identity.id;
-    await this.prisma.$transaction(async (tx: any) => {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.authIdentifier.deleteMany({ where: { identityId: id } });
       await tx.authOAuthBinding.deleteMany({ where: { identityId: id } });
       await tx.authCredential.deleteMany({ where: { identityId: id } });
@@ -295,7 +295,7 @@ export class PrismaAuthIdentityRepository
   /**
    * Convert identifier to flat row
    */
-  private identifierToRow(identifier: AuthIdentifierPersistenceDTO, identityId: string): Record<string, any> {
+  private identifierToRow(identifier: AuthIdentifierPersistenceDTO, identityId: string): Prisma.AuthIdentifierUncheckedCreateInput {
     return {
       identityId,
       type: identifier.type,
@@ -309,7 +309,7 @@ export class PrismaAuthIdentityRepository
   /**
    * Convert OAuth binding to flat row
    */
-  private oauthBindingToRow(binding: OAuthBindingPersistenceDTO, identityId: string): Record<string, any> {
+  private oauthBindingToRow(binding: OAuthBindingPersistenceDTO, identityId: string): Prisma.AuthOAuthBindingUncheckedCreateInput {
     return {
       id: binding.id,
       identityId,
@@ -326,8 +326,8 @@ export class PrismaAuthIdentityRepository
   /**
    * Convert a domain credential to a flat Prisma row object
    */
-  private credentialToRow(cred: AuthCredentialServer, identityId: string): Record<string, any> {
-    const row: Record<string, any> = {
+  private credentialToRow(cred: AuthCredentialServer, identityId: string): Prisma.AuthCredentialUncheckedCreateInput {
+    const row: Prisma.AuthCredentialUncheckedCreateInput = {
       id: cred.id,
       identityId,
       type: cred.type,

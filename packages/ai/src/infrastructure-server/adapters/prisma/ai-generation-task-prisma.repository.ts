@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient, AiGenerationTask as PrismaAiGenerationTask } from '@dailyuse/database';
 import type { IAIGenerationTaskRepository } from '../../../domain-server';
 import type { AIGenerationTaskServerDTO, TaskStatus, GenerationTaskType } from '@dailyuse/contracts/ai';
 import { AIProvider, AIModel } from '@dailyuse/contracts/ai';
@@ -12,10 +13,10 @@ import { AIProvider, AIModel } from '@dailyuse/contracts/ai';
 /**
  * AIGenerationTask Prisma Repository
  *
- * Skeleton implementation - to be completed when extracting from apps/api.
+ * Prisma implementation of IAIGenerationTaskRepository.
  */
 export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(task: AIGenerationTaskServerDTO): Promise<void> {
     const input = this.buildInputPayload(task);
@@ -72,7 +73,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row: any) => this.toServerDTO(row));
+    return rows.map((row: PrismaAiGenerationTask) => this.toServerDTO(row));
   }
 
   async findByTaskType(identityId: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
@@ -81,7 +82,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row: any) => this.toServerDTO(row));
+    return rows.map((row: PrismaAiGenerationTask) => this.toServerDTO(row));
   }
 
   async findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
@@ -90,7 +91,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row: any) => this.toServerDTO(row));
+    return rows.map((row: PrismaAiGenerationTask) => this.toServerDTO(row));
   }
 
   async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
@@ -101,7 +102,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       skip: offset ?? 0,
     });
 
-    return rows.map((row: any) => this.toServerDTO(row));
+    return rows.map((row: PrismaAiGenerationTask) => this.toServerDTO(row));
   }
 
   async delete(id: string): Promise<void> {
@@ -132,7 +133,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
     };
   }
 
-  private toServerDTO(row: any): AIGenerationTaskServerDTO {
+  private toServerDTO(row: PrismaAiGenerationTask): AIGenerationTaskServerDTO {
     const parsedInput = this.parseJson<Record<string, any>>(row.input, {});
     const inputData = parsedInput?.data ?? parsedInput ?? {};
     const inputMeta = parsedInput?.meta ?? {};
