@@ -28,14 +28,10 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalRecordId, KeyResultId } from '../../domain-shared';
-import type {
-  GoalRecordPersistenceDTO,
-  GoalRecordServer,
-  GoalRecordServerDTO,
-} from '@dailyuse/contracts/goal';
+import type { GoalRecordServerDTO } from '@dailyuse/contracts/goal';
 
 // 内部状态接口
-interface GoalRecordState {
+export interface GoalRecordState {
   id: GoalRecordId;
   keyResultId: KeyResultId;
   value: number;
@@ -50,33 +46,23 @@ interface GoalRecordState {
 /**
  * GoalRecord 聚合根
  */
-export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecordServer {
+export class GoalRecord extends AggregateRoot<GoalRecordId> {
   // ================= 1. 内部状态 (Props) =================
   private _props: GoalRecordState;
 
   // ================= 2. 构造函数 (Private) =================
-  private constructor(params: {
-    id: GoalRecordId;
-    keyResultId: KeyResultId;
-    value: number;
-    note: string | null;
-    recordedAt: Date;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
+  private constructor(state: GoalRecordState) {
+    super(state.id);
     this._props = {
-      id: params.id,
-      keyResultId: params.keyResultId,
-      value: params.value,
-      note: params.note ?? null,
-      recordedAt: params.recordedAt,
-      version: params.version ?? 1,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      deletedAt: params.deletedAt ?? null,
+      id: state.id,
+      keyResultId: state.keyResultId,
+      value: state.value,
+      note: state.note ?? null,
+      recordedAt: state.recordedAt,
+      version: state.version ?? 1,
+      createdAt: state.createdAt,
+      updatedAt: state.updatedAt,
+      deletedAt: state.deletedAt ?? null,
     };
   }
 
@@ -160,37 +146,10 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
   }
 
   /**
-   * 🏭 恢复工厂：从 ServerDTO 恢复
+   * 🏭 恢复工厂：从状态恢复
    */
-  public static fromServerDTO(dto: GoalRecordServerDTO): GoalRecord {
-    return new GoalRecord({
-      id: GoalRecordId.of(dto.id),
-      keyResultId: KeyResultId.of(dto.keyResultId),
-      value: dto.value,
-      note: dto.note ?? null,
-      recordedAt: new Date(dto.recordedAt),
-      version: dto.version ?? 1,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: GoalRecordPersistenceDTO): GoalRecord {
-    return new GoalRecord({
-      id: GoalRecordId.of(dto.id),
-      keyResultId: KeyResultId.of(dto.keyResultId),
-      value: dto.value,
-      note: dto.note ?? null,
-      recordedAt: dto.recordedAt,
-      version: dto.version ?? 1,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
-    });
+  public static load(state: GoalRecordState): GoalRecord {
+    return new GoalRecord(state);
   }
 
   // ================= 5. 业务行为 (Business Actions) =================
@@ -265,20 +224,4 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> implements GoalRecor
     };
   }
 
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): GoalRecordPersistenceDTO {
-    return {
-      id: this.id,
-      keyResultId: this._props.keyResultId,
-      value: this._props.value,
-      note: this._props.note,
-      recordedAt: this._props.recordedAt,
-      version: this._props.version,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt,
-    };
-  }
 }

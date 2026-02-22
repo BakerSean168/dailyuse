@@ -130,7 +130,7 @@ export class GoalRecordPrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(record: GoalRecord): Promise<void> {
-    const dto = record.toPersistenceDTO();
+    const dto = record.toServerDTO();
 
     await this.prisma.goalRecord.upsert({
       where: { id: dto.id as string },
@@ -139,19 +139,19 @@ export class GoalRecordPrismaRepository
         keyResultId: dto.keyResultId as string,
         value: dto.value,
         note: dto.note,
-        recordedAt: dto.recordedAt,
+        recordedAt: new Date(dto.recordedAt),
         version: dto.version,
-        createdAt: dto.createdAt,
-        updatedAt: dto.updatedAt,
-        deletedAt: dto.deletedAt,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
+        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },
       update: {
         value: dto.value,
         note: dto.note,
-        recordedAt: dto.recordedAt,
+        recordedAt: new Date(dto.recordedAt),
         version: dto.version,
-        updatedAt: dto.updatedAt,
-        deletedAt: dto.deletedAt,
+        updatedAt: new Date(dto.updatedAt),
+        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },
     });
   }
