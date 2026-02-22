@@ -5,3 +5,4 @@
 
 export { GoalReview } from './goal-review';
 export { KeyResult } from './key-result';
+export type { KeyResultState } from './key-result';

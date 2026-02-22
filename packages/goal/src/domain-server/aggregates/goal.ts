@@ -29,7 +29,7 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { GoalId, GoalFolderId, KeyResultWeightSnapshotId } from '../../domain-shared';
+import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import {
   GoalStatus,
@@ -45,6 +45,7 @@ import type {
   GoalReviewServerDTO,
   GoalServer,
   GoalServerDTO,
+  KeyResultPersistenceDTO,
   KeyResultServerDTO,
   ProgressBreakdown,
   KeyResultWeightSnapshotDTO,
@@ -427,7 +428,18 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   public static fromServerDTO(dto: GoalServerDTO): Goal {
     // Initialize child entities from DTO
     const keyResults = (dto.keyResults || []).map((kr: KeyResultServerDTO) =>
-      KeyResult.fromServerDTO(kr),
+      KeyResult.load({
+        id: KeyResultId.of(kr.id),
+        title: kr.title,
+        description: kr.description ?? null,
+        progress: kr.progress,
+        weight: kr.weight,
+        sortOrder: kr.sortOrder,
+        version: kr.version ?? 1,
+        createdAt: new Date(kr.createdAt),
+        updatedAt: new Date(kr.updatedAt),
+        deletedAt: kr.deletedAt ? new Date(kr.deletedAt) : null,
+      }),
     );
     const goalReviews = (dto.goalReviews || []).map((r: GoalReviewServerDTO) =>
       GoalReview.fromServerDTO(r),
@@ -1428,7 +1440,29 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       sortOrder: this._props.sortOrder,
       reminderConfig: this._props.reminderConfig?.toPersistenceDTO() ?? null,
       keyResults: this._props.keyResults.length > 0
-        ? this._props.keyResults.map((kr) => kr.toPersistenceDTO(this.id))
+        ? this._props.keyResults.map((kr): KeyResultPersistenceDTO => {
+            const serverDto = kr.toServerDTO();
+            return {
+              id: serverDto.id,
+              goalId: this.id,
+              title: serverDto.title,
+              description: serverDto.description,
+              progress: JSON.stringify({
+                initialValue: (serverDto.progress as any).initialValue,
+                currentValue: serverDto.progress.currentValue,
+                targetValue: serverDto.progress.targetValue,
+                valueType: serverDto.progress.valueType,
+                aggregationMethod: serverDto.progress.aggregationMethod,
+                unit: serverDto.progress.unit,
+              }),
+              weight: serverDto.weight,
+              sortOrder: serverDto.sortOrder,
+              version: serverDto.version,
+              createdAt: new Date(serverDto.createdAt),
+              updatedAt: new Date(serverDto.updatedAt),
+              deletedAt: serverDto.deletedAt ? new Date(serverDto.deletedAt) : null,
+            };
+          })
         : null,
       goalReviews: this._props.goalReviews.length > 0
         ? this._props.goalReviews.map((r) => r.toPersistenceDTO())
