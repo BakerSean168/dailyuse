@@ -1,19 +1,13 @@
 /**
- * OAuth 凭证 (Server 端持有 Provider 信息)
+ * OAuth 凭证 DTO (Server 端持有 Provider 信息)
+ * 
+ * Server 端实体接口已移至领域模型内部定义 (OAuthCredentialState)
+ * 此处仅保留 DTO 定义
  */
 
-import type { DomainDate, TransferDate } from '@/primitives';
-import type { BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
+import type { TransferDate } from '@/primitives';
+import type { BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 import { OAuthProvider } from '../value-objects/oauth-provider';
-
-export interface OAuthCredentialServer extends BaseAuthCredentialServer {
-  type: 'OAUTH';
-  provider: OAuthProvider;
-  providerSubjectId: string;
-  accessToken: string | null;
-  refreshToken: string | null;
-  expiresAt: DomainDate | null;
-}
 
 export interface OAuthCredentialServerDTO extends BaseAuthCredentialServerDTO {
   type: 'OAUTH';
@@ -23,5 +17,3 @@ export interface OAuthCredentialServerDTO extends BaseAuthCredentialServerDTO {
   refreshToken: string | null;
   expiresAt: TransferDate | null;
 }
-
-

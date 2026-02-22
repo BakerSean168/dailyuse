@@ -11,7 +11,6 @@
 
 import type {
   AuthIdentityServerDTO,
-  AuthCredentialServer,
   AuthEventMap,
   AuthIdentifierDTO,
   OAuthBindingServerDTO,
@@ -52,7 +51,7 @@ export interface AuthIdentityState {
   lockedUntil: Date | null;
   identifiers: ConcreteIdentifier[];
   oauthBindings: OAuthBinding[];
-  credentials: AuthCredentialServer[];
+  credentials: PasswordCredential[];
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -72,7 +71,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   private _lockedUntil: Date | null;
   private _identifiers: ConcreteIdentifier[];
   private _oauthBindings: OAuthBinding[];
-  private _credentials: AuthCredentialServer[];
+  private _credentials: PasswordCredential[];
   private _version: number;
   private _createdAt: Date;
   private _updatedAt: Date;
@@ -120,7 +119,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     return this._oauthBindings.map(b => b.toServerDTO());
   }
 
-  get credentials(): AuthCredentialServer[] {
+  get credentials(): PasswordCredential[] {
     return [...this._credentials];
   }
 
@@ -353,11 +352,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   public async verifyPassword(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
     const credential = this.getCredentialByType(CredentialType.PASSWORD);
 
-    if (credential instanceof PasswordCredential) {
-      return credential.compare(plainPassword, hasher);
+    if (!credential) {
+      throw new Error('Credential not found or is not a password credential');
     }
 
-    throw new Error('Credential not found or is not a password credential');
+    return credential.compare(plainPassword, hasher);
   }
 
   private refreshUpdatedAt(): void {
@@ -443,7 +442,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   }
 
-  public addCredential(credential: AuthCredentialServer): void {
+  public addCredential(credential: PasswordCredential): void {
     const existingIndex = this._credentials.findIndex(
       c => c.type === credential.type && c.id === credential.id
     );
@@ -470,7 +469,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
   }
 
-  public getCredentialByType(type: typeof CredentialType.PASSWORD): AuthCredentialServer | null {
+  public getCredentialByType(type: typeof CredentialType.PASSWORD): PasswordCredential | null {
     return this._credentials.find(c => c.type === type) ?? null;
   }
 
@@ -532,12 +531,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       lockedUntil: this._lockedUntil?.getTime() ?? null,
       identifiers: this._identifiers.map(i => i.toDTO()),
       oauthBindings: this._oauthBindings.map(b => b.toServerDTO()),
-      credentials: this._credentials.map(cred => {
-        if (cred instanceof PasswordCredential) {
-          return cred.toServerDTO();
-        }
-        throw new Error(`Unknown credential type: ${cred.type}`);
-      }),
+      credentials: this._credentials.map(cred => cred.toServerDTO()),
       version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
@@ -553,19 +547,17 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
       lockedUntil: this._lockedUntil?.getTime() ?? null,
       identifiers: this._identifiers.map(i => i.toDTO()),
-      credentials: this._credentials.map(cred => {
-        return {
-          id: cred.id,
-          type: cred.type,
-          displayName: 'Password',
-          lastUsedAt: (cred as any).lastUsedAt?.getTime?.() ?? null,
-          isPrimary: true,
-          version: 1,
-          createdAt: (cred as any).createdAt?.getTime?.() ?? Date.now(),
-          updatedAt: (cred as any).updatedAt?.getTime?.() ?? Date.now(),
-          deletedAt: null,
-        };
-      }),
+      credentials: this._credentials.map(cred => ({
+        id: cred.id,
+        type: cred.type,
+        displayName: 'Password',
+        lastUsedAt: cred.lastUsedAt?.getTime() ?? null,
+        isPrimary: true,
+        version: 1,
+        createdAt: cred.createdAt.getTime(),
+        updatedAt: cred.passwordLastChangedAt.getTime(),
+        deletedAt: null,
+      })),
       hasPassword: this.hasPassword(),
       hasEmail: this.hasEmail(),
       hasPhone: this.hasPhone(),

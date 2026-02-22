@@ -1,57 +1,13 @@
 /**
- * AuthSession Aggregate Root - Client Interface
- * 会话聚合根 - 客户端接口
+ * AuthSession Aggregate Root - Client DTO
+ * 会话聚合根 - 客户端 DTO
  *
- * Client 端看到的会话是脱敏的
- * - 不包含 Token 本体
- * - 显示用户友好的会话列表 (当前设备、其他设备)
+ * Client 端聚合根接口已移至领域模型内部定义
+ * 此处仅保留 DTO 定义用于 API Response
  */
 
 import type { AuthSessionId, DeviceInfo, IdentityId } from '../value-objects';
-import type { TransferDate, DomainDate } from '@/primitives';
-
-// ============ 聚合根接口 ============
-
-/**
- * Client 端会话聚合根
- * 用于显示"当前登录设备"列表
- */
-export interface AuthSessionClient {
-  /**
-   * 会话 ID
-   */
-  id: AuthSessionId;
-
-  /**
-   * 关联的身份 ID
-   */
-  identityId: IdentityId;
-
-  /**
-   * ✅ 设备信息 (用户可以看到的信息)
-   */
-  deviceInfo: DeviceInfo;
-
-  /**
-   * 创建时间
-   */
-  createdAt: DomainDate;
-
-  /**
-   * 过期时间
-   */
-  expiresAt: DomainDate;
-
-  /**
-   * 最后活跃时间
-   */
-  lastActiveAt: DomainDate;
-
-  // 同步字段
-  version: number;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
+import type { TransferDate } from '@/primitives';
 
 // ============ DTO 定义 ============
 
