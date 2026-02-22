@@ -12,7 +12,6 @@
 import type {
   OAuthBindingServer,
   OAuthBindingServerDTO,
-  OAuthBindingPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
@@ -106,23 +105,6 @@ export class OAuthBinding extends Entity<string> implements OAuthBindingServer {
   }
 
   /**
-   * 🏭 恢复工厂：从持久化 DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: OAuthBindingPersistenceDTO): OAuthBinding {
-    const serverDTO: OAuthBindingServerDTO = {
-      id: dto.id,
-      provider: OAuthProvider.of(dto.provider),
-      providerSubjectId: dto.providerSubjectId,
-      accessToken: dto.accessToken,
-      refreshToken: dto.refreshToken,
-      expiresAt: dto.expiresAt?.getTime() ?? null,
-      createdAt: dto.createdAt.getTime(),
-      lastUsedAt: dto.lastUsedAt?.getTime() ?? null,
-    };
-    return new OAuthBinding(serverDTO);
-  }
-
-  /**
    * 🏭 恢复工厂：从 Server DTO 恢复
    */
   public static fromServerDTO(dto: OAuthBindingServerDTO): OAuthBinding {
@@ -189,22 +171,6 @@ export class OAuthBinding extends Entity<string> implements OAuthBindingServer {
       expiresAt: this._expiresAt?.getTime() ?? null,
       createdAt: this._createdAt.getTime(),
       lastUsedAt: this._lastUsedAt?.getTime() ?? null,
-    };
-  }
-
-  /**
-   * 转换为持久化 DTO
-   */
-  public toPersistenceDTO(): OAuthBindingPersistenceDTO {
-    return {
-      id: this.id,
-      provider: this._provider,
-      providerSubjectId: this._providerSubjectId,
-      accessToken: this._accessToken,
-      refreshToken: this._refreshToken,
-      expiresAt: this._expiresAt,
-      createdAt: this._createdAt,
-      lastUsedAt: this._lastUsedAt,
     };
   }
 }

@@ -1,5 +1,5 @@
-import type { PhoneNumber, PhoneNumberDTO, PhoneNumberPersistenceDTO } from "../value-objects/phone-number";
-import type { BaseAuthCredentialPersistenceDTO, BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
+import type { PhoneNumber, PhoneNumberDTO } from "../value-objects/phone-number";
+import type { BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 
 /**
  * 手机凭证
@@ -16,8 +16,4 @@ export interface PhoneCredentialServerDTO extends BaseAuthCredentialServerDTO {
   isVerified: boolean;
 }
 
-export interface PhoneCredentialPersistenceDTO extends BaseAuthCredentialPersistenceDTO {
-  type: 'PHONE';
-  phoneNumber: PhoneNumberPersistenceDTO;
-  isVerified: boolean;
-}
+

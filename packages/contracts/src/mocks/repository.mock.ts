@@ -14,6 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { RepositoryClientDTO, ResourceClientDTO } from '../modules/repository';
+import type { RepositoryId, IdentityId } from '@/primitives/ids';
 
 export function createMockRepository(
   overrides: Partial<RepositoryClientDTO> = {},
@@ -23,8 +24,8 @@ export function createMockRepository(
   const status = faker.helpers.arrayElement(['Active', 'Archived', 'Syncing', 'Error']);
 
   return {
-    id,
-    identityId: faker.string.uuid(),
+    id: id as RepositoryId,
+    identityId: faker.string.uuid() as IdentityId,
     name: faker.helpers.arrayElement(['工作笔记', '个人项目', '学习资料', '代码仓库', '文档库']),
     type: faker.helpers.arrayElement(['Local', 'Git', 'Cloud', 'Hybrid']),
     path: faker.datatype.boolean() ? faker.system.directoryPath() : null,

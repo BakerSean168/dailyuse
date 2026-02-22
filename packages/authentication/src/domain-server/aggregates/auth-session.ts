@@ -9,7 +9,6 @@
  */
 
 import type {
-  AuthSessionPersistenceDTO,
   AuthSessionServer,
   AuthSessionServerDTO,
   DeviceInfo as IDeviceInfo,
@@ -159,24 +158,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     });
 
     return {AuthSession: authSession, tokens};
-  }
-
-  /**
-   * 🏭 恢复工厂：从持久�?DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: AuthSessionPersistenceDTO): AuthSession {
-    const serverDTO: AuthSessionServerDTO = {
-      id: dto.id,
-      identityId: dto.identityId,
-      deviceInfo: dto.deviceInfo,
-      refreshTokenHash: dto.refreshTokenHash,
-      status: dto.status,
-      createdAt: dto.createdAt.getTime(),
-      expiresAt: dto.expiresAt.getTime(),
-      lastActiveAt: dto.lastActiveAt.getTime(),
-      isRevoked: dto.isRevoked,
-    };
-    return new AuthSession(serverDTO);
   }
 
   /**
@@ -342,20 +323,4 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     };
   }
 
-  /**
-   * 转换为持久化 DTO
-   */
-  public toPersistenceDTO(): AuthSessionPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._identityId,
-      deviceInfo: this._deviceInfo.toDTO(),
-      refreshTokenHash: this._refreshTokenHash,
-      status: this._status,
-      createdAt: this._createdAt,
-      expiresAt: this._expiresAt,
-      lastActiveAt: this._lastActiveAt,
-      isRevoked: this._isRevoked,
-    };
-  }
 }

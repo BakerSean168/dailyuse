@@ -13,6 +13,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { AccountClientDTO } from '../modules/account';
+import type { IdentityId } from '@/primitives/ids';
 
 // ============================================================================
 // AccountClientDTO
@@ -28,7 +29,7 @@ export function createMockAccount(
   const now = Date.now();
 
   return {
-    id: faker.string.uuid() as AccountClientDTO['id'],
+    id: faker.string.uuid() as IdentityId,
     status: 'ACTIVE',
     profile: {
       nickname: faker.internet.username(),

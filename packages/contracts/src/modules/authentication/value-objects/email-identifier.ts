@@ -11,9 +11,3 @@ export interface EmailIdentifierDTO {
   value: string;
   isVerified: boolean;
 }
-
-export interface EmailIdentifierPersistenceDTO {
-  type: 'EMAIL';
-  value: string;
-  isVerified: boolean;
-}

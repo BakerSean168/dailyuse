@@ -14,6 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { ScheduleTaskClientDTO, ScheduleExecutionClientDTO } from '../modules/schedule';
+import type { ScheduleTaskId, IdentityId } from '@/primitives/ids';
 
 export function createMockScheduleTask(
   overrides: Partial<ScheduleTaskClientDTO> = {},
@@ -22,8 +23,8 @@ export function createMockScheduleTask(
   const id = faker.string.uuid();
 
   return {
-    id,
-    identityId: faker.string.uuid(),
+    id: id as ScheduleTaskId,
+    identityId: faker.string.uuid() as IdentityId,
     name: faker.lorem.words({ min: 2, max: 4 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     sourceModule: faker.helpers.arrayElement(['reminder', 'task', 'goal']),

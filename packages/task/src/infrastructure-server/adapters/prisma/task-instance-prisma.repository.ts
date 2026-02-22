@@ -9,21 +9,11 @@ import type { PrismaClient, TaskInstance as PrismaTaskInstance } from '@dailyuse
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaTaskInstanceMapper } from '../../mappers/prisma-task-instance-mapper';
 
-/**
- * Global EventBus adapter
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class TaskInstancePrismaRepository
   extends AggregateRepositoryBase<TaskInstance>

@@ -11,9 +11,9 @@
  */
 
 import type { AuthCredentialServer, AuthCredentialServerDTO } from '../entities/auth-credential-server';
-import type { AuthIdentifierDTO, AuthIdentifierPersistenceDTO } from '../value-objects';
-import type { OAuthBindingServerDTO, OAuthBindingPersistenceDTO } from '../entities/oauth-binding';
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { AuthIdentifierDTO } from '../value-objects';
+import type { OAuthBindingServerDTO, OAuthBindingServer } from '../entities/oauth-binding';
+import type { DomainDate, TransferDate } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 import type { IdentityId } from '@/primitives';
 
@@ -60,7 +60,7 @@ export interface AuthIdentityServer {
    * OAuth 绑定集合 (Entity 形式的标识符)
    * 解决"通过第三方如何找到用户"
    */
-  oauthBindings: OAuthBindingServerDTO[];
+  oauthBindings: OAuthBindingServer[];
 
   /**
    * 凭证列表 (仅 PasswordCredential)
@@ -111,21 +111,4 @@ export interface AuthIdentityServerDTO {
   deletedAt: TransferDate | null;
 }
 
-/**
- * Persistence DTO (数据库存储)
- * 使用 PersistenceDate (Date 对象)
- */
-export interface AuthIdentityPersistenceDTO {
-  id: IdentityId;
-  status: AuthIdentityStatus;
-  failedLoginAttempts: number;
-  lastFailedAttempt: PersistenceDate | null;
-  lockedUntil: PersistenceDate | null;
-  identifiers: AuthIdentifierPersistenceDTO[];
-  oauthBindings: OAuthBindingPersistenceDTO[];
-  credentials: AuthCredentialServer[];
-  version: number;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-}
+

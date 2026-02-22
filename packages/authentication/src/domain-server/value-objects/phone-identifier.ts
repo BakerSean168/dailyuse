@@ -7,7 +7,6 @@
 
 import type {
   PhoneIdentifierDTO,
-  PhoneIdentifierPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 
 import { PhoneNumber } from '../../domain-shared';
@@ -37,14 +36,6 @@ export class PhoneIdentifier {
    * 🏭 恢复工厂：从 DTO 恢复
    */
   public static fromDTO(dto: PhoneIdentifierDTO): PhoneIdentifier {
-    const phone = PhoneNumber.fromDTO(dto.value);
-    return new PhoneIdentifier(phone, dto.isVerified);
-  }
-
-  /**
-   * 🏭 恢复工厂：从持久化 DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: PhoneIdentifierPersistenceDTO): PhoneIdentifier {
     const phone = PhoneNumber.fromDTO(dto.value);
     return new PhoneIdentifier(phone, dto.isVerified);
   }
@@ -92,14 +83,6 @@ export class PhoneIdentifier {
   // ================= 序列化 =================
 
   public toDTO(): PhoneIdentifierDTO {
-    return {
-      type: 'PHONE',
-      value: this._value.toDTO(),
-      isVerified: this._isVerified,
-    };
-  }
-
-  public toPersistenceDTO(): PhoneIdentifierPersistenceDTO {
     return {
       type: 'PHONE',
       value: this._value.toDTO(),

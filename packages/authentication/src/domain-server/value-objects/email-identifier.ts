@@ -7,7 +7,6 @@
 
 import type {
   EmailIdentifierDTO,
-  EmailIdentifierPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 
 import { EmailAddress } from '../../domain-shared';
@@ -37,14 +36,6 @@ export class EmailIdentifier {
    * 🏭 恢复工厂：从 DTO 恢复
    */
   public static fromDTO(dto: EmailIdentifierDTO): EmailIdentifier {
-    const emailAddress = EmailAddress.fromDTO({ value: dto.value });
-    return new EmailIdentifier(emailAddress, dto.isVerified);
-  }
-
-  /**
-   * 🏭 恢复工厂：从持久化 DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: EmailIdentifierPersistenceDTO): EmailIdentifier {
     const emailAddress = EmailAddress.fromDTO({ value: dto.value });
     return new EmailIdentifier(emailAddress, dto.isVerified);
   }
@@ -92,14 +83,6 @@ export class EmailIdentifier {
   // ================= 序列化 =================
 
   public toDTO(): EmailIdentifierDTO {
-    return {
-      type: 'EMAIL',
-      value: this._value.value,
-      isVerified: this._isVerified,
-    };
-  }
-
-  public toPersistenceDTO(): EmailIdentifierPersistenceDTO {
     return {
       type: 'EMAIL',
       value: this._value.value,

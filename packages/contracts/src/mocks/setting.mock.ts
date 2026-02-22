@@ -14,6 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { UserSettingClientDTO } from '../modules/setting';
+import type { SettingId, IdentityId } from '@/primitives/ids';
 
 export interface AppConfigClientDTO {
   id: string;
@@ -57,8 +58,8 @@ export function createMockUserSetting(
   };
 
   return {
-    id,
-    identityId: faker.string.uuid(),
+    id: id as SettingId,
+    identityId: faker.string.uuid() as IdentityId,
     entries: JSON.stringify(entries),
     version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 365 * 24 * 60 * 60 * 1000 }),

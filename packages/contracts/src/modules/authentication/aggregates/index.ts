@@ -2,7 +2,6 @@
 export type {
   AuthIdentityServer,
   AuthIdentityServerDTO,
-  AuthIdentityPersistenceDTO,
 } from './auth-identity-server';
 
 export type {
@@ -14,7 +13,6 @@ export type {
 export type {
   AuthSessionServer,
   AuthSessionServerDTO,
-  AuthSessionPersistenceDTO,
 } from './auth-session-server';
 
 export type {

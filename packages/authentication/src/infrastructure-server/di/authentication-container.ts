@@ -8,25 +8,12 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '../../domain-server';
 import type { IPasswordHasher } from '../../domain-shared';
-import { PrismaAuthIdentityRepository } from '../repositories/prisma-auth-identity-repository';
-import { PrismaAuthSessionRepository } from '../repositories/prisma-auth-session-repository';
+import { PrismaAuthIdentityRepository, PrismaAuthSessionRepository } from '../adapters/prisma';
 import { Argon2Hasher } from '../encryptors/argon2-hasher';
 import { eventBus } from '@dailyuse/utils';
-import type { IEventBus } from '@dailyuse/patterns';
+import { createEventBusAdapter } from '@dailyuse/patterns';
 
-/**
- * 全局 EventBus 适配器
- * 将 utils 中的 eventBus 适配为 IEventBus 接口
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    // eventBus.send 接受 (eventType, payload) 两个参数
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * Authentication 依赖注入容器

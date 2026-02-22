@@ -6,7 +6,7 @@
 
 import type { CredentialStatus } from '../value-objects/credential-status';
 import { CredentialType, type AuthCredentialId } from '../value-objects';
-import type { DomainDate, PersistenceDate, TransferDate } from '@/primitives';
+import type { DomainDate, TransferDate } from '@/primitives';
 
 // ============ Base Credential Interface ============
 
@@ -45,10 +45,4 @@ export interface BaseAuthCredentialServerDTO {
   lastUsedAt: TransferDate | null;
 }
 
-export interface BaseAuthCredentialPersistenceDTO {
-  id: AuthCredentialId;
-  type: CredentialType;
-  status: CredentialStatus;
-  createdAt: PersistenceDate;
-  lastUsedAt: PersistenceDate | null;
-}
+

@@ -11,17 +11,13 @@
  */
 
 import type {
-  AuthIdentityPersistenceDTO,
   AuthIdentityServer,
   AuthIdentityServerDTO,
   AuthCredentialServer,
   PasswordCredentialServerDTO,
-  PasswordCredentialPersistenceDTO,
   AuthEventMap,
   AuthIdentifierDTO,
-  AuthIdentifierPersistenceDTO,
   OAuthBindingServerDTO,
-  OAuthBindingPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 
@@ -238,34 +234,6 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     });
     
     return identity;
-  }
-
-  /**
-   * 🏭 从持久化 DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: AuthIdentityPersistenceDTO): AuthIdentity {
-    const serverDTO: AuthIdentityServerDTO = {
-      id: dto.id,
-      status: dto.status,
-      failedLoginAttempts: dto.failedLoginAttempts,
-      lastFailedAttempt: dto.lastFailedAttempt?.getTime() ?? null,
-      lockedUntil: dto.lockedUntil?.getTime() ?? null,
-      identifiers: (dto.identifiers ?? []).map(i => i as AuthIdentifierDTO),
-      oauthBindings: (dto.oauthBindings ?? []).map(b => {
-        return OAuthBinding.fromPersistenceDTO(b).toServerDTO();
-      }),
-      credentials: dto.credentials.map(cred => {
-        if (cred.type === CredentialType.PASSWORD) {
-          return PasswordCredential.fromPersistenceDTO(cred as PasswordCredentialPersistenceDTO).toServerDTO();
-        }
-        throw new Error(`Unknown credential type: ${cred.type}`);
-      }),
-      version: dto.version,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
-      deletedAt: dto.deletedAt?.getTime() ?? null,
-    };
-    return new AuthIdentity(serverDTO);
   }
 
   /**
@@ -574,8 +542,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       identifiers: this._identifiers.map(i => i.toDTO()),
       oauthBindings: this._oauthBindings.map(b => b.toServerDTO()),
       credentials: this._credentials.map(cred => {
+        if (cred instanceof PasswordCredential) {
+          return cred.toServerDTO();
+        }
         if (cred.type === CredentialType.PASSWORD) {
-          return PasswordCredential.fromPersistenceDTO(cred as PasswordCredentialPersistenceDTO).toServerDTO();
+          return PasswordCredential.fromServerDTO(cred as PasswordCredentialServerDTO).toServerDTO();
         }
         throw new Error(`Unknown credential type: ${cred.type}`);
       }),
@@ -618,20 +589,4 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     };
   }
 
-  public toPersistenceDTO(): AuthIdentityPersistenceDTO {
-    return {
-      id: this.id,
-      status: this._status,
-      failedLoginAttempts: this._failedLoginAttempts,
-      lastFailedAttempt: this._lastFailedAttempt,
-      lockedUntil: this._lockedUntil,
-      identifiers: this._identifiers.map(i => i.toPersistenceDTO()),
-      oauthBindings: this._oauthBindings.map(b => b.toPersistenceDTO()),
-      credentials: this._credentials,
-      version: this._version,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
-    };
-  }
 }

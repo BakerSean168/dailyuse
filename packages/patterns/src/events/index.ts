@@ -1,5 +1,4 @@
 // Event patterns - base event handler and dispatcher
-// To be populated with BaseEventHandler and EventDispatcher
 
 import type { IDomainEvent } from '@dailyuse/contracts/shared';
 
@@ -49,4 +48,66 @@ export interface IEventBus {
    * @param payload 事件负载
    */
   send?(eventType: string, payload: any): Promise<void>;
+}
+
+// ============ Mapper 接口 ============
+
+/**
+ * 持久化 Mapper 接口
+ * 
+ * 定义领域实体与数据库模型之间的双向映射规范。
+ * 每个数据源（Prisma、SQLite）应提供自己的 Mapper 实现。
+ * 
+ * @typeParam TDomain - 领域聚合根/实体类型
+ * @typeParam TRecord - 数据库记录类型（Prisma model / SQLite row）
+ * @typeParam TPersistence - 持久化写入数据类型（不含 id, createdAt 等自动字段）
+ */
+export interface IPersistenceMapper<TDomain, TRecord, TPersistence = Record<string, unknown>> {
+  /** 数据库记录 → 领域实体 */
+  toDomain(record: TRecord): TDomain;
+
+  /** 领域实体 → 数据库写入数据 */
+  toPersistence(entity: TDomain): TPersistence;
+}
+
+// ============ EventBus 适配器工厂 ============
+
+/**
+ * 可发送事件的最小接口
+ * 
+ * 与 GlobalEventBus.send() 匹配，但不依赖具体实现
+ */
+export interface IEventSender {
+  send(eventType: any, payload: any): void;
+}
+
+/**
+ * 创建 IEventBus 适配器
+ * 
+ * 将应用层的事件总线（如 GlobalEventBus）适配为 IEventBus 接口，
+ * 供 AggregateRepositoryBase 使用。
+ * 
+ * 消除各仓储中重复定义 eventBusAdapter 的问题。
+ * 
+ * @param sender - 实现 send(eventType, payload) 的事件发送器
+ * @returns IEventBus 适配器实例
+ * 
+ * @example
+ * ```typescript
+ * import { eventBus } from '@dailyuse/utils';
+ * import { createEventBusAdapter } from '@dailyuse/patterns';
+ * 
+ * const eventBusAdapter = createEventBusAdapter(eventBus);
+ * // 在仓储构造函数中使用：super(eventBusAdapter)
+ * ```
+ */
+export function createEventBusAdapter(sender: IEventSender): IEventBus {
+  return {
+    async publish(event) {
+      sender.send(event.eventType as any, event.payload);
+    },
+    async send(eventType, payload) {
+      sender.send(eventType as any, payload);
+    },
+  };
 }

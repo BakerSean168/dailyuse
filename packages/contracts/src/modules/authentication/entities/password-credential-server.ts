@@ -1,6 +1,6 @@
-import type { BaseAuthCredentialPersistenceDTO, BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
+import type { BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 import type { HashedPassword } from '../value-objects/hashed-password';
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { DomainDate, TransferDate } from '@/primitives';
 
 /**
  * 密码凭证 (Server 端持有哈希值)
@@ -19,8 +19,3 @@ export interface PasswordCredentialServerDTO extends BaseAuthCredentialServerDTO
   passwordLastChangedAt: TransferDate;
 }
 
-export interface PasswordCredentialPersistenceDTO extends BaseAuthCredentialPersistenceDTO {
-  type: 'PASSWORD';
-  hashedPassword: HashedPassword;
-  passwordLastChangedAt: PersistenceDate;
-}

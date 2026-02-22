@@ -6,7 +6,7 @@
  * OAuthCredential → 迁移为 OAuthBinding (实体形式标识符)
  */
 
-import type { PasswordCredentialServer, PasswordCredentialServerDTO, PasswordCredentialPersistenceDTO } from "./password-credential-server";
+import type { PasswordCredentialServer, PasswordCredentialServerDTO } from "./password-credential-server";
 
 export type AuthCredentialServer = PasswordCredentialServer;
 
@@ -17,8 +17,3 @@ export type AuthCredentialServer = PasswordCredentialServer;
  * 内部 DTO (用于构造函数)
  */
 export type AuthCredentialServerDTO = PasswordCredentialServerDTO;
-
-/**
- * 持久化 DTO (数据库存储)
- */
-export type AuthCredentialPersistenceDTO = PasswordCredentialPersistenceDTO;

@@ -4,9 +4,11 @@
  * Ports and Adapters for Authentication module persistence.
  */
 
-// Repositories
-export { PrismaAuthIdentityRepository } from './repositories/prisma-auth-identity-repository';
-export { PrismaAuthSessionRepository } from './repositories/prisma-auth-session-repository';
+// Adapters (Repositories)
+export { PrismaAuthIdentityRepository, PrismaAuthSessionRepository } from './adapters/prisma';
+
+// Mappers
+export { PrismaAuthIdentityMapper, PrismaAuthSessionMapper } from './mappers/prisma';
 
 // Encryptors
 export { Argon2Hasher } from './encryptors/argon2-hasher';

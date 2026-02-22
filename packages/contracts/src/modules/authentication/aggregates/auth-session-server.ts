@@ -16,7 +16,6 @@ import type { IdentityId } from '../value-objects/identity-id';
 import { SessionStatus } from '../value-objects/session-status';
 import type { DomainDate } from '@/primitives';
 import type { TransferDate } from '@/primitives';
-import type { PersistenceDate } from '@/primitives';
 
 // ============ 聚合根接口 ============
 
@@ -91,18 +90,4 @@ export interface AuthSessionServerDTO {
   isRevoked: boolean;
 }
 
-/**
- * Persistence DTO (数据库存储)
- * 使用 PersistenceDate (Date 对象)
- */
-export interface AuthSessionPersistenceDTO {
-  id: AuthSessionId;
-  identityId: IdentityId;
-  deviceInfo: DeviceInfo;
-  refreshTokenHash?: string;
-  status: SessionStatus;
-  createdAt: PersistenceDate;
-  expiresAt: PersistenceDate;
-  lastActiveAt: PersistenceDate;
-  isRevoked: boolean;
-}
+

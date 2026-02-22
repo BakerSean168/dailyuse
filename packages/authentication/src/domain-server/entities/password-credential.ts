@@ -1,15 +1,14 @@
 /**
  * PasswordCredential 实体实现
- * 密码凭证 - Server 端持有哈希�?
+ * 密码凭证 - Server 端持有哈希�?
  * 
- * �?Server 可以看到哈希值和盐�?
- * �?绝对不能序列化给 Client �?
+ * �?Server 可以看到哈希值和盐�?
+ * �?绝对不能序列化给 Client �?
  */
 
 import type {
   PasswordCredentialServer,
   PasswordCredentialServerDTO,
-  PasswordCredentialPersistenceDTO,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
@@ -27,7 +26,7 @@ import type { IPasswordHasher } from '../../domain-shared';
  */
 export class PasswordCredential extends Entity<AuthCredentialId> implements PasswordCredentialServer {
 
-  // ================= 1. 内部状�?=================
+  // ================= 1. 内部状�?=================
   private _status: typeof CredentialStatus.ACTIVE;
   private _hashedPassword: HashedPassword;
   private _passwordLastChangedAt: Date;
@@ -37,7 +36,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   // 只读类型标识
   public readonly type = 'PASSWORD';
 
-  // ================= 2. 构造函�?=================
+  // ================= 2. 构造函�?=================
   private constructor(props: PasswordCredentialServerDTO) {
     super(props.id);
 
@@ -72,7 +71,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   // ================= 4. 工厂方法 =================
 
   /**
-   * 🏭 业务工厂：创建新的密码凭�?
+   * 🏭 业务工厂：创建新的密码凭�?
    */
   public static create(params: {
     id: AuthCredentialId;
@@ -92,22 +91,6 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * 🏭 恢复工厂：从持久�?DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: PasswordCredentialPersistenceDTO): PasswordCredential {
-    const serverDTO: PasswordCredentialServerDTO = {
-      id: dto.id,
-      type: 'PASSWORD',
-      status: dto.status,
-      hashedPassword: dto.hashedPassword,
-      passwordLastChangedAt: dto.passwordLastChangedAt.getTime(),
-      createdAt: dto.createdAt.getTime(),
-      lastUsedAt: dto.lastUsedAt?.getTime() ?? null,
-    };
-    return new PasswordCredential(serverDTO);
-  }
-
-  /**
    * 🏭 恢复工厂：从 Server DTO 恢复
    */
   public static fromServerDTO(dto: PasswordCredentialServerDTO): PasswordCredential {
@@ -117,14 +100,14 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   // ================= 5. 业务行为 =================
 
   /**
-   * �?比较明文密码是否匹配
+   * �?比较明文密码是否匹配
    */
   public compare(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
     return hasher.compare(plainPassword, this._hashedPassword.hash);
   }
 
   /**
-   * �?更新密码
+   * �?更新密码
    */
   public updatePassword(newHashedPassword: HashedPassword): void {
     if (!CredentialStatus.isActive(this._status)) {
@@ -136,14 +119,14 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?记录使用时间
+   * �?记录使用时间
    */
   public recordUsage(): void {
     this._lastUsedAt = new Date();
   }
 
   /**
-   * �?暂停凭证
+   * �?暂停凭证
    */
   public suspend(): void {
     if (CredentialStatus.isSuspended(this._status)) {
@@ -154,7 +137,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?恢复凭证
+   * �?恢复凭证
    */
   public activate(): void {
     if (CredentialStatus.isActive(this._status)) {
@@ -169,7 +152,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?吊销凭证
+   * �?吊销凭证
    */
   public revoke(): void {
     if (CredentialStatus.isRevoked(this._status)) {
@@ -180,24 +163,24 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?检查密码是否需要更新（超过指定天数�?
+   * �?检查密码是否需要更新（超过指定天数�?
    */
   public needsPasswordChange(maxAgeDays: number = 90): boolean {
     return this._hashedPassword.needsReset(maxAgeDays);
   }
 
   /**
-   * �?获取密码上次更新距今的天�?
+   * �?获取密码上次更新距今的天�?
    */
   public getPasswordAgeDays(): number {
     const dayMs = 24 * 60 * 60 * 1000;
     return Math.floor((Date.now() - this._passwordLastChangedAt.getTime()) / dayMs);
   }
 
-  // ================= 6. 序列�?=================
+  // ================= 6. 序列�?=================
 
   /**
-   * 转换�?Server DTO
+   * 转换�?Server DTO
    */
   public toServerDTO(): PasswordCredentialServerDTO {
     return {
@@ -208,21 +191,6 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
       passwordLastChangedAt: this._passwordLastChangedAt.getTime(),
       createdAt: this._createdAt.getTime(),
       lastUsedAt: this._lastUsedAt?.getTime() ?? null,
-    };
-  }
-
-  /**
-   * 转换为持久化 DTO
-   */
-  public toPersistenceDTO(): PasswordCredentialPersistenceDTO {
-    return {
-      id: this.id,
-      type: 'PASSWORD',
-      status: this._status,
-      hashedPassword: this._hashedPassword.toDTO(),
-      passwordLastChangedAt: this._passwordLastChangedAt,
-      createdAt: this._createdAt,
-      lastUsedAt: this._lastUsedAt,
     };
   }
 }

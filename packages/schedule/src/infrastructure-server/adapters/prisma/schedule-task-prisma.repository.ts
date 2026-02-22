@@ -17,22 +17,12 @@ import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaScheduleTaskMapper, type PrismaScheduleTaskWithExecutions } from '../../mappers/prisma-schedule-task-mapper';
 import { PrismaScheduleExecutionMapper } from '../../mappers/prisma-schedule-execution-mapper';
 
-/**
- * Global EventBus adapter
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * ScheduleTask 閺屻儴顕楅柅澶愩€?

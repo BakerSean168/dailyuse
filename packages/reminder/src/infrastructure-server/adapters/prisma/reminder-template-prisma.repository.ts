@@ -12,21 +12,11 @@ import type { PrismaClient, ReminderTemplate as PrismaReminderTemplate, Reminder
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaReminderTemplateMapper, type PrismaReminderTemplateWithHistory } from '../../mappers/prisma-reminder-template-mapper';
 
-/**
- * 全局 EventBus 适配器
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class ReminderTemplatePrismaRepository
   extends AggregateRepositoryBase<ReminderTemplate>

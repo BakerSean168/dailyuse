@@ -13,6 +13,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { AuthResponseDTO } from '../modules/authentication';
+import type { IdentityId } from '@/primitives/ids';
 
 // ============================================================================
 // AuthResponseDTO
@@ -25,7 +26,7 @@ export function createMockAuthResponse(
   overrides: Partial<AuthResponseDTO> = {},
 ): AuthResponseDTO {
   const now = Date.now();
-  const identityId = faker.string.uuid() as AuthResponseDTO['identity']['id'];
+  const identityId = faker.string.uuid() as IdentityId;
 
   return {
     accessToken: faker.string.alphanumeric(64),
@@ -45,7 +46,7 @@ export function createMockAuthResponse(
       ],
       credentials: [
         {
-          id: faker.string.uuid() as any,
+          id: faker.string.uuid() as unknown as any,
           type: 'PASSWORD' as const,
           displayName: 'Password',
           lastUsedAt: now,
@@ -66,8 +67,8 @@ export function createMockAuthResponse(
       deletedAt: null,
     },
     session: {
-      id: faker.string.uuid() as any,
-      identityId,
+      id: faker.string.uuid() as unknown as any,
+      identityId: identityId as any,
       deviceInfo: {
         deviceId: faker.string.uuid(),
         deviceFingerprint: faker.string.alphanumeric(32),

@@ -8,6 +8,7 @@ export * from './create-goal-folder';
 export * from './delete-goal';
 export * from './delete-goal-folder';
 export * from './delete-goal-key-result';
+export * from './permanently-delete-goal';
 export * from './update-goal';
 export * from './update-goal-folder';
 export * from './update-goal-key-result';

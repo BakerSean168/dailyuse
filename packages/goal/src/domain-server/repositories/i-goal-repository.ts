@@ -66,22 +66,16 @@ export interface IGoalRepository {
   findByFolderId(folderId: string): Promise<Goal[]>;
 
   /**
-   * 删除聚合根（物理删除）
+   * 永久删除聚合根（物理删除）
    *
    * 注意：
    * - 这是事务操作
    * - 级联删除所有子实体
+   * - 仅在聚合根已归档时允许删除（由 use case 层保证）
    *
    * @param id - 目标 ID
    */
   delete(id: string): Promise<void>;
-
-  /**
-   * 软删除（标记为已删除）
-   *
-   * @param id - 目标 ID
-   */
-  softDelete(id: string): Promise<void>;
 
   /**
    * 检查目标是否存在

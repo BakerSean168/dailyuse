@@ -9,21 +9,11 @@ import type { PrismaClient, ReminderGroup as PrismaReminderGroup, Prisma } from 
 import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
 import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaReminderGroupMapper } from '../../mappers/prisma-reminder-group-mapper';
 
-/**
- * Global EventBus adapter
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class ReminderGroupPrismaRepository
   extends AggregateRepositoryBase<ReminderGroup>

@@ -744,42 +744,50 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
 
   /**
    * ✅ 归档目标
+   * 
+   * 归档 = 原来的 "软删除"。归档后的目标不会在列表中显示，
+   * 但数据不会被物理删除。可通过 restore() 恢复。
+   * 
+   * 前置条件：
+   * - 目标尚未归档（幂等）
+   * - 活跃目标必须先完成才能归档
    */
   public archive(): void {
     if (this._props.archivedAt) return; // 幂等
-    if (this._props.deletedAt) {
-      throw new GoalDeletedError(this.id);
-    }
     if (this._props.status === GoalStatus.Active) {
       throw new Error('Active goals must be completed before archiving');
     }
 
+    const now = new Date();
     this._props.status = GoalStatus.Archived;
-    this._props.updatedAt = new Date();
+    this._props.archivedAt = now;
+    this._props.deletedAt = now; // 兼容现有查询过滤
+    this._props.updatedAt = now;
 
     this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
   }
 
   /**
-   * ✅ 软删除
+   * ✅ 恢复归档的目标
+   * 
+   * 将归档目标恢复为已完成状态
    */
-  public softDelete(): void {
-    if (this._props.deletedAt) return; // 幂等
+  public restore(): void {
+    if (!this._props.archivedAt) return; // 非归档状态无需恢复
 
-    this._props.deletedAt = new Date();
-    this._props.updatedAt = this._props.deletedAt;
-
-    this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
-      isSoftDelete: true,
-    });
+    this._props.archivedAt = null;
+    this._props.deletedAt = null;
+    this._props.status = GoalStatus.Completed; // 恢复为完成状态（归档前一定是已完成的）
+    this._props.updatedAt = new Date();
   }
 
   /**
-   * ✅ 恢复目标
+   * ✅ 检查是否可以永久删除
+   * 
+   * 只有已归档的目标才能被永久删除。
    */
-  public restore(): void {
-    this._props.deletedAt = null;
-    this._props.updatedAt = new Date();
+  public canBePermanentlyDeleted(): boolean {
+    return this._props.archivedAt !== null;
   }
 
   /**
@@ -1438,32 +1446,20 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   // ================= 9. Guard Clauses (守卫方法) =================
 
   /**
-   * 确保目标未被删除
-   * @throws {GoalDeletedError} 当目标已被软删除时
-   */
-  private ensureNotDeleted(): void {
-    if (this._props.deletedAt !== null) {
-      throw new GoalDeletedError(this.id);
-    }
-  }
-
-  /**
    * 确保目标未被归档
    * @throws {GoalArchivedError} 当目标已被归档时
    */
   private ensureNotArchived(): void {
-    if (this._props.status === GoalStatus.Archived) {
+    if (this._props.archivedAt !== null || this._props.status === GoalStatus.Archived) {
       throw new GoalArchivedError(this.id);
     }
   }
 
   /**
-   * 确保目标可以被修改（未删除且未归档）
-   * @throws {GoalDeletedError} 当目标已被软删除时
+   * 确保目标可以被修改（未归档）
    * @throws {GoalArchivedError} 当目标已被归档时
    */
   private ensureModifiable(): void {
-    this.ensureNotDeleted();
     this.ensureNotArchived();
   }
 
@@ -1517,16 +1513,12 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   /**
    * 验证父目标状态（用于创建子目标）
    * @throws {GoalArchivedError} 当父目标已归档时
-   * @throws {GoalDeletedError} 当父目标已删除时
    */
   public static validateParentGoal(parentGoal?: Goal): void {
     if (!parentGoal) return;
     
-    if (parentGoal.status === GoalStatus.Archived) {
+    if (parentGoal.status === GoalStatus.Archived || parentGoal.archivedAt !== null) {
       throw new GoalArchivedError(parentGoal.id);
-    }
-    if (parentGoal.deletedAt !== null) {
-      throw new GoalDeletedError(parentGoal.id);
     }
   }
 

@@ -14,6 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '../modules/reminder';
+import type { IdentityId, ReminderGroupId, ReminderTemplateId } from '@/primitives/ids';
 
 export function createMockReminderTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},
@@ -22,8 +23,8 @@ export function createMockReminderTemplate(
   const id = faker.string.uuid();
 
   return {
-    id,
-    identityId: faker.string.uuid(),
+    id: id as ReminderTemplateId,
+    identityId: faker.string.uuid() as IdentityId,
     name: faker.lorem.words({ min: 2, max: 4 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     type: faker.helpers.arrayElement(['OneTime', 'Recurring']),
@@ -128,35 +129,42 @@ export function createMockReminderGroup(
   const now = Date.now();
   const id = faker.string.uuid();
 
+  const totalTemplates = faker.number.int({ min: 0, max: 10 });
+  const activeTemplates = faker.number.int({ min: 0, max: totalTemplates });
+  const pausedTemplates = totalTemplates - activeTemplates;
+
   return {
-    id,
-    identityId: faker.string.uuid(),
+    id: id as ReminderGroupId,
+    identityId: faker.string.uuid() as IdentityId,
     name: faker.lorem.words({ min: 1, max: 3 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    controlMode: faker.helpers.arrayElement(['Manual', 'Auto', 'Scheduled']),
-    enabled: faker.datatype.boolean(),
-    templateIds: Array.from({ length: faker.number.int({ min: 1, max: 5 }) }, () =>
-      faker.string.uuid(),
-    ),
-    schedule: faker.datatype.boolean()
-      ? {
-          enabledDays: faker.helpers.arrayElements(
-            [0, 1, 2, 3, 4, 5, 6],
-            faker.number.int({ min: 1, max: 7 }),
-          ),
-          startTime: `${faker.number.int({ min: 6, max: 12 }).toString().padStart(2, '0')}:00`,
-          endTime: `${faker.number.int({ min: 18, max: 23 }).toString().padStart(2, '0')}:00`,
-        }
-      : null,
     color: faker.datatype.boolean() ? faker.color.rgb({ format: 'hex', casing: 'upper' }) : null,
     icon: faker.datatype.boolean() ? faker.helpers.arrayElement(['folder', 'tag', 'group']) : null,
-    sortOrder: faker.number.int({ min: 0, max: 100 }),
+    controlMode: faker.helpers.arrayElement(['Group', 'Individual']),
+    enabled: faker.datatype.boolean(),
+    status: faker.helpers.arrayElement(['Active', 'Paused']),
+    order: faker.number.int({ min: 0, max: 100 }),
+    stats: {
+      totalTemplates,
+      activeTemplates,
+      pausedTemplates,
+      selfEnabledTemplates: faker.number.int({ min: 0, max: totalTemplates }),
+      selfPausedTemplates: faker.number.int({ min: 0, max: Math.max(pausedTemplates, 0) }),
+      templateCountText: `${totalTemplates} 个提醒`,
+      activeStatusText: `${activeTemplates} 个活跃`,
+    },
     version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
     updatedAt: now,
     deletedAt: null,
+    displayName: faker.lorem.words({ min: 1, max: 3 }),
+    controlModeText: faker.helpers.arrayElement(['组控制', '个体控制']),
+    statusText: faker.helpers.arrayElement(['活跃', '暂停']),
+    templateCountText: `${totalTemplates} 个提醒`,
+    activeStatusText: `${activeTemplates} 个活跃`,
+    controlDescription: faker.helpers.arrayElement(['所有提醒统一启用', '提醒独立控制']),
     ...overrides,
-  } as ReminderGroupClientDTO;
+  };
 }
 
 export function createMockReminderGroupList(

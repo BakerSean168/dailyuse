@@ -206,14 +206,14 @@ describe('AuthIdentity', () => {
       expect(clientDto.hasOAuth).toBe(false);
     });
 
-    it('should produce correct PersistenceDTO', async () => {
+    it('should produce correct ServerDTO', async () => {
       const identity = await AuthIdentity.createWithEmailAndPassword({
         email: 'test@example.com',
         plainPassword: 'StrongP@ss1',
         hasher: mockHasher,
       });
 
-      const dto = identity.toPersistenceDTO();
+      const dto = identity.toServerDTO();
       expect(dto.identifiers).toHaveLength(1);
       expect(dto.oauthBindings).toHaveLength(0);
       expect(dto.credentials).toHaveLength(1);

@@ -14,21 +14,11 @@ import type {
   TaskFilters,
 } from '../../../domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaTaskTemplateMapper } from '../../mappers/prisma-task-template-mapper';
 
-/**
- * 全局 EventBus 适配器
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 export class TaskTemplatePrismaRepository
   extends AggregateRepositoryBase<TaskTemplate>

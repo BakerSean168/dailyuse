@@ -5,7 +5,7 @@
  * 语义上归入 Identifier 集合（用于"查找用户"），而非 Credential（用于"验证用户"）
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { DomainDate, TransferDate } from '@/primitives';
 import type { OAuthProvider } from '../value-objects/oauth-provider';
 
 // ============ OAuthBinding 接口 ============
@@ -34,13 +34,3 @@ export interface OAuthBindingServerDTO {
   lastUsedAt: TransferDate | null;
 }
 
-export interface OAuthBindingPersistenceDTO {
-  id: string;
-  provider: OAuthProvider;
-  providerSubjectId: string;
-  accessToken: string | null;
-  refreshToken: string | null;
-  expiresAt: PersistenceDate | null;
-  createdAt: PersistenceDate;
-  lastUsedAt: PersistenceDate | null;
-}

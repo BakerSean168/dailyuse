@@ -83,18 +83,15 @@ export type {
 
 export type {
   EmailIdentifierDTO,
-  EmailIdentifierPersistenceDTO,
 } from './email-identifier';
 
 export type {
   PhoneIdentifierDTO,
-  PhoneIdentifierPersistenceDTO,
 } from './phone-identifier';
 
 // ============ AuthIdentifier Union ============
 
-import type { EmailIdentifierDTO, EmailIdentifierPersistenceDTO } from './email-identifier';
-import type { PhoneIdentifierDTO, PhoneIdentifierPersistenceDTO } from './phone-identifier';
+import type { EmailIdentifierDTO } from './email-identifier';
+import type { PhoneIdentifierDTO } from './phone-identifier';
 
 export type AuthIdentifierDTO = EmailIdentifierDTO | PhoneIdentifierDTO;
-export type AuthIdentifierPersistenceDTO = EmailIdentifierPersistenceDTO | PhoneIdentifierPersistenceDTO;

@@ -7,21 +7,9 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Goal, KeyResult, GoalReview } from '@/domain-server';
+import { Goal } from '@/domain-server';
 import type { IGoalRepository } from '@/domain-server';
-import type {
-  GoalPersistenceDTO,
-  KeyResultPersistenceDTO,
-  GoalReviewPersistenceDTO,
-  KeyResultWeightSnapshotDTO,
-} from '@dailyuse/contracts/goal';
-
-// ============ Helper: Date → INTEGER (millis) ============
-
-function dateToInt(d: Date | null | undefined): number | null {
-  if (!d) return null;
-  return d instanceof Date ? d.getTime() : (d as number);
-}
+import { SqliteGoalMapper, dateToInt } from '../../mappers/sqlite/sqlite-goal-mapper';
 
 export class SqliteGoalRepository implements IGoalRepository {
   constructor(private db: Database.Database) {}
@@ -306,13 +294,6 @@ export class SqliteGoalRepository implements IGoalRepository {
     })();
   }
 
-  async softDelete(id: string): Promise<void> {
-    const now = Date.now();
-    this.db
-      .prepare(`UPDATE goals SET deleted_at = ?, updated_at = ? WHERE id = ?`)
-      .run(now, now, id);
-  }
-
   // ============ Utilities ============
 
   async exists(id: string): Promise<boolean> {
@@ -381,113 +362,44 @@ export class SqliteGoalRepository implements IGoalRepository {
   // ============ Private Helpers ============
 
   private rowToGoal(row: any, includeChildren: boolean): Goal {
-    const dto: GoalPersistenceDTO = {
-      id: row.id,
-      identityId: row.identity_id,
-      name: row.name,
-      description: row.description ?? null,
-      color: row.color ?? '#4A90D9',
-      feasibilityAnalysis: row.feasibility_analysis ?? null,
-      motivation: row.motivation ?? null,
-      status: row.status,
-      importance: row.importance ?? 'MEDIUM',
-      priority: row.priority ?? 0,
-      category: row.category ?? null,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      startDate: row.start_date ? new Date(row.start_date) : null,
-      targetDate: row.target_date ? new Date(row.target_date) : null,
-      completedAt: row.completed_at ? new Date(row.completed_at) : null,
-      archivedAt: row.archived_at ? new Date(row.archived_at) : null,
-      folderId: row.folder_id ?? null,
-      parentGoalId: row.parent_goal_id ?? null,
-      sortOrder: row.sort_order ?? 0,
-      reminderConfig: row.reminder_config
-        ? JSON.parse(row.reminder_config)
-        : null,
-      version: row.version ?? 1,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-      keyResults: null,
-      goalReviews: null,
-      weightSnapshots: null,
-    };
+    const children = includeChildren
+      ? {
+          keyResults: this.loadKeyResults(row.id),
+          goalReviews: this.loadGoalReviews(row.id),
+          weightSnapshots: this.loadWeightSnapshots(row.id),
+        }
+      : undefined;
 
-    if (includeChildren) {
-      dto.keyResults = this.loadKeyResults(row.id);
-      dto.goalReviews = this.loadGoalReviews(row.id);
-      dto.weightSnapshots = this.loadWeightSnapshots(row.id);
-    }
-
-    return Goal.fromPersistenceDTO(dto);
+    return SqliteGoalMapper.toDomain(row, children);
   }
 
-  private loadKeyResults(goalId: string): KeyResultPersistenceDTO[] {
+  private loadKeyResults(goalId: string) {
     const rows = this.db
       .prepare(
         `SELECT * FROM key_results WHERE goal_id = ? AND deleted_at IS NULL ORDER BY sort_order ASC`,
       )
       .all(goalId) as any[];
 
-    return rows.map((row) => ({
-      id: row.id,
-      goalId: row.goal_id,
-      title: row.title,
-      description: row.description ?? null,
-      progress: row.progress ?? '{}',
-      weight: row.weight,
-      sortOrder: row.sort_order,
-      version: row.version ?? 1,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-    }));
+    return rows.map(SqliteGoalMapper.mapKeyResultRow);
   }
 
-  private loadGoalReviews(goalId: string): GoalReviewPersistenceDTO[] {
+  private loadGoalReviews(goalId: string) {
     const rows = this.db
       .prepare(
         `SELECT * FROM goal_reviews WHERE goal_id = ? AND deleted_at IS NULL ORDER BY reviewed_at DESC`,
       )
       .all(goalId) as any[];
 
-    return rows.map((row) => ({
-      id: row.id,
-      goalId: row.goal_id,
-      type: row.type,
-      rating: row.rating,
-      summary: row.summary ?? '',
-      achievements: row.achievements ?? null,
-      challenges: row.challenges ?? null,
-      improvements: row.improvements ?? null,
-      keyResultSnapshots: row.key_result_snapshots ?? '[]',
-      reviewedAt: new Date(row.reviewed_at),
-      version: row.version ?? 1,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-    }));
+    return rows.map(SqliteGoalMapper.mapGoalReviewRow);
   }
 
-  private loadWeightSnapshots(goalId: string): KeyResultWeightSnapshotDTO[] {
+  private loadWeightSnapshots(goalId: string) {
     const rows = this.db
       .prepare(
         `SELECT * FROM weight_snapshots WHERE goal_id = ? ORDER BY snapshot_time DESC`,
       )
       .all(goalId) as any[];
 
-    return rows.map((row) => ({
-      id: row.id,
-      goalId: row.goal_id,
-      keyResultId: row.key_result_id,
-      oldWeight: row.old_weight,
-      newWeight: row.new_weight,
-      weightDelta: row.weight_delta,
-      snapshotTime: row.snapshot_time,
-      trigger: row.trigger,
-      reason: row.reason ?? null,
-      operatorId: row.operator_id,
-      createdAt: row.created_at,
-    }));
+    return rows.map(SqliteGoalMapper.mapWeightSnapshotRow);
   }
 }

@@ -18,21 +18,11 @@ import type {
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type { KeyResultPersistenceDTO } from '@dailyuse/contracts/goal';
-import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaGoalMapper, type PrismaGoalWithRelations } from '../../mappers/prisma-goal-mapper';
+import { PrismaGoalMapper, type PrismaGoalWithRelations } from '../../mappers/prisma/prisma-goal-mapper';
 
-/**
- * Global EventBus adapter
- */
-const eventBusAdapter: IEventBus = {
-  async publish(event) {
-    eventBus.send(event.eventType as any, event.payload);
-  },
-  async send(eventType, payload) {
-    eventBus.send(eventType as any, payload);
-  },
-};
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 // ============================================================
 // Prisma ↔ Domain Mappers (delegated to PrismaGoalMapper)
@@ -294,13 +284,6 @@ export class GoalPrismaRepository
 
   async delete(id: string): Promise<void> {
     await this.prisma.goal.delete({ where: { id } });
-  }
-
-  async softDelete(id: string): Promise<void> {
-    await this.prisma.goal.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
   }
 
   // ================= Utility Operations =================

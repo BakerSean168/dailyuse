@@ -6,13 +6,9 @@
 import type Database from 'better-sqlite3';
 import { FocusSession } from '@/domain-server';
 import type { IFocusSessionRepository } from '@/domain-server';
-import type { FocusSessionPersistenceDTO, FocusSessionStatus } from '@dailyuse/contracts/goal';
-
-// Helper: Date → INTEGER (millis)
-function dateToInt(d: Date | null | undefined): number | null {
-  if (!d) return null;
-  return d instanceof Date ? d.getTime() : (d as number);
-}
+import type { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import { SqliteFocusSessionMapper } from '../../mappers/sqlite/sqlite-focus-session-mapper';
+import { dateToInt } from '../../mappers/sqlite/sqlite-goal-mapper';
 
 // Column name mapping (domain field → SQL snake_case)
 const ORDER_BY_MAP: Record<string, string> = {
@@ -219,27 +215,6 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
   }
 
   private rowToFocusSession(row: any): FocusSession {
-    const dto: FocusSessionPersistenceDTO = {
-      id: row.id,
-      identityId: row.identity_id,
-      goalId: row.goal_id ?? null,
-      status: row.status,
-      durationMinutes: row.duration_minutes,
-      actualDurationMinutes: row.actual_duration_minutes ?? 0,
-      description: row.description ?? null,
-      startedAt: row.started_at ? new Date(row.started_at) : null,
-      pausedAt: row.paused_at ? new Date(row.paused_at) : null,
-      resumedAt: row.resumed_at ? new Date(row.resumed_at) : null,
-      completedAt: row.completed_at ? new Date(row.completed_at) : null,
-      cancelledAt: row.cancelled_at ? new Date(row.cancelled_at) : null,
-      pauseCount: row.pause_count ?? 0,
-      pausedDurationMinutes: row.paused_duration_minutes ?? 0,
-      version: row.version ?? 1,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-    };
-
-    return FocusSession.fromPersistenceDTO(dto);
+    return SqliteFocusSessionMapper.toDomain(row);
   }
 }
