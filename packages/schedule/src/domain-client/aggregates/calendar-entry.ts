@@ -1,9 +1,9 @@
-import type { CalendarEntryClient, CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 import { AggregateRoot } from '@dailyuse/utils';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-interface CalendarEntryState {
+export interface CalendarEntryState {
   id: ScheduleId;
   identityId: IdentityId;
   title: string;
@@ -20,7 +20,7 @@ interface CalendarEntryState {
   updatedAt: Date;
 }
 
-export class CalendarEntry extends AggregateRoot<ScheduleId> implements CalendarEntryClient {
+export class CalendarEntry extends AggregateRoot<ScheduleId> {
   private readonly _props: CalendarEntryState;
 
   private constructor(props: CalendarEntryState) {
@@ -72,23 +72,8 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> implements Calendar
     return this._props.attendees ? [...this._props.attendees] : null;
   }
 
-  public static fromDTO(dto: CalendarEntryClientDTO): CalendarEntry {
-    return new CalendarEntry({
-      id: ScheduleId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      title: dto.title,
-      description: dto.description ?? null,
-      startTime: new Date(dto.startTime),
-      endTime: new Date(dto.endTime),
-      duration: dto.duration,
-      hasConflict: dto.hasConflict,
-      conflictingEntries: dto.conflictingEntries ? [...dto.conflictingEntries] : null,
-      priority: dto.priority ?? null,
-      location: dto.location ?? null,
-      attendees: dto.attendees ? [...dto.attendees] : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: CalendarEntryState): CalendarEntry {
+    return new CalendarEntry(state);
   }
 
   public toDTO(): CalendarEntryClientDTO {

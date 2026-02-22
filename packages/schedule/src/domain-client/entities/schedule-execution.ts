@@ -3,15 +3,13 @@
  * 调度执行记录实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 ScheduleExecutionClient 接口
  * - Private constructor with props object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: ScheduleExecutionClientDTO): ScheduleExecution
+ * - Static load(state: ScheduleExecutionState): ScheduleExecution
  * - Instance toDTO(): ScheduleExecutionClientDTO
  */
 
 import type {
-  ScheduleExecutionClient,
   ScheduleExecutionClientDTO,
   ExecutionStatus,
 } from '@dailyuse/contracts/schedule';
@@ -20,7 +18,7 @@ import { ScheduleExecutionId } from '../../domain-shared/value-objects/schedule-
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 
 // 内部状态接口
-interface ScheduleExecutionState {
+export interface ScheduleExecutionState {
   id: ScheduleExecutionId;
   scheduleTaskId: ScheduleTaskId;
   executionTime: Date;
@@ -42,7 +40,7 @@ interface ScheduleExecutionState {
   resultSummary: string;
 }
 
-export class ScheduleExecution extends Entity<ScheduleExecutionId> implements ScheduleExecutionClient {
+export class ScheduleExecution extends Entity<ScheduleExecutionId> {
   private readonly _props: ScheduleExecutionState;
 
   private constructor(props: ScheduleExecutionState) {
@@ -150,28 +148,8 @@ export class ScheduleExecution extends Entity<ScheduleExecutionId> implements Sc
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: ScheduleExecutionClientDTO): ScheduleExecution {
-    return new ScheduleExecution({
-      id: ScheduleExecutionId.of(dto.id),
-      scheduleTaskId: ScheduleTaskId.of(dto.scheduleTaskId),
-      executionTime: new Date(dto.executionTime),
-      status: dto.status,
-      duration: dto.duration,
-      result: dto.result,
-      error: dto.error,
-      retryCount: dto.retryCount,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      executionTimeFormatted: dto.executionTimeFormatted,
-      statusDisplay: dto.statusDisplay,
-      statusColor: dto.statusColor,
-      durationFormatted: dto.durationFormatted,
-      hasError: dto.hasError,
-      hasResult: dto.hasResult,
-      resultSummary: dto.resultSummary,
-    });
+  public static load(state: ScheduleExecutionState): ScheduleExecution {
+    return new ScheduleExecution(state);
   }
 
   // ================= DTO Conversion =================
