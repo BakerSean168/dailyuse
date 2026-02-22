@@ -4,4 +4,6 @@
  */
 
 export { NotificationChannel } from './notification-channel';
+export type { NotificationChannelState } from './notification-channel';
 export { NotificationHistory } from './notification-history';
+export type { NotificationHistoryState } from './notification-history';

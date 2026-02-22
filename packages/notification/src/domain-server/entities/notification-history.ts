@@ -22,17 +22,6 @@ export interface NotificationHistoryServerDTO {
 }
 
 /**
- * NotificationHistory Persistence DTO
- */
-export interface NotificationHistoryPersistenceDTO {
-  id: INotificationHistoryId;
-  notificationId: NotificationId;
-  action: string;
-  details: string | null; // JSON string
-  createdAt: Date;
-}
-
-/**
  * NotificationHistory Server Interface
  */
 export interface NotificationHistoryServer {
@@ -43,11 +32,11 @@ export interface NotificationHistoryServer {
   readonly createdAt: Date;
 
   toServerDTO(): NotificationHistoryServerDTO;
-  toPersistenceDTO(): NotificationHistoryPersistenceDTO;
 }
 
 /** 内部状态接口 for NotificationHistory */
-interface NotificationHistoryState {
+export interface NotificationHistoryState {
+  id: INotificationHistoryId;
   notificationId: NotificationId;
   action: string;
   details: unknown | null;
@@ -57,30 +46,14 @@ interface NotificationHistoryState {
 /**
  * NotificationHistory 实体
  */
-export class NotificationHistory
-  extends Entity<INotificationHistoryId>
-  implements NotificationHistoryServer
-{
+export class NotificationHistory extends Entity<INotificationHistoryId> {
   // ===== 私有属性容器 =====
   private _props: NotificationHistoryState;
 
   // ===== 构造函数（私有） =====
-  private constructor(
-    id: INotificationHistoryId,
-    params: {
-      notificationId: NotificationId;
-      action: string;
-      details: unknown | null;
-      createdAt: Date;
-    },
-  ) {
-    super(id);
-    this._props = {
-      notificationId: params.notificationId,
-      action: params.action,
-      details: params.details,
-      createdAt: params.createdAt,
-    };
+  private constructor(state: NotificationHistoryState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -112,17 +85,11 @@ export class NotificationHistory
     };
   }
 
-  public toPersistenceDTO(): NotificationHistoryPersistenceDTO {
-    return {
-      id: String(this.id) as INotificationHistoryId,
-      notificationId: this._props.notificationId,
-      action: this._props.action,
-      details: this._props.details ? JSON.stringify(this._props.details) : null,
-      createdAt: this._props.createdAt,
-    };
-  }
-
   // ===== 静态工厂方法 =====
+
+  public static load(state: NotificationHistoryState): NotificationHistory {
+    return new NotificationHistory(state);
+  }
 
   public static create(params: {
     notificationId: NotificationId;
@@ -131,33 +98,12 @@ export class NotificationHistory
   }): NotificationHistory {
     const id = NotificationHistoryId.of(NotificationHistoryId.generate());
 
-    return new NotificationHistory(id, {
+    return new NotificationHistory({
+      id,
       notificationId: params.notificationId,
       action: params.action,
       details: params.details ?? null,
       createdAt: new Date(),
-    });
-  }
-
-  public static fromServerDTO(dto: NotificationHistoryServerDTO): NotificationHistory {
-    const id = NotificationHistoryId.of(dto.id);
-
-    return new NotificationHistory(id, {
-      notificationId: dto.notificationId,
-      action: dto.action,
-      details: dto.details,
-      createdAt: new Date(dto.createdAt),
-    });
-  }
-
-  public static fromPersistenceDTO(dto: NotificationHistoryPersistenceDTO): NotificationHistory {
-    const id = NotificationHistoryId.of(dto.id);
-
-    return new NotificationHistory(id, {
-      notificationId: dto.notificationId,
-      action: dto.action,
-      details: dto.details ? JSON.parse(dto.details) : null,
-      createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
     });
   }
 }

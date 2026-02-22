@@ -1,12 +1,9 @@
 /**
  * NotificationChannel 实体实现
- * 实现 NotificationChannelServer 接口
  */
 
 import type {
-  NotificationChannelServer,
   NotificationChannelServerDTO,
-  NotificationChannelPersistenceDTO,
   ChannelErrorDTO,
   ChannelResponseDTO,
   NotificationChannelType,
@@ -22,7 +19,8 @@ import {
 } from '../../domain-shared/value-objects';
 
 /** 内部状态接口 for NotificationChannel */
-interface NotificationChannelState {
+export interface NotificationChannelState {
+  id: NotificationChannelId;
   notificationId: NotificationId;
   channelType: NotificationChannelType;
   status: ChannelStatus;
@@ -39,42 +37,14 @@ interface NotificationChannelState {
  * NotificationChannel 实体
  * 管理通知在特定渠道的发送状态
  */
-export class NotificationChannel
-  extends Entity<NotificationChannelId>
-  implements NotificationChannelServer
-{
+export class NotificationChannel extends Entity<NotificationChannelId> {
   // ===== 私有属性容器 =====
   private _props: NotificationChannelState;
 
   // ===== 构造函数（私有） =====
-  private constructor(
-    id: NotificationChannelId,
-    params: {
-      notificationId: NotificationId;
-      channelType: NotificationChannelType;
-      status: ChannelStatus;
-      recipient?: string | null;
-      sendAttempts: number;
-      maxRetries: number;
-      error?: ChannelError | null;
-      response?: ChannelResponse | null;
-      sentAt?: Date | null;
-      failedAt?: Date | null;
-    },
-  ) {
-    super(id);
-    this._props = {
-      notificationId: params.notificationId,
-      channelType: params.channelType,
-      status: params.status,
-      recipient: params.recipient ?? null,
-      sendAttempts: params.sendAttempts,
-      maxRetries: params.maxRetries,
-      error: params.error ?? null,
-      response: params.response ?? null,
-      sentAt: params.sentAt ?? null,
-      failedAt: params.failedAt ?? null,
-    };
+  private constructor(state: NotificationChannelState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -210,24 +180,11 @@ export class NotificationChannel
     };
   }
 
-  public toPersistenceDTO(): NotificationChannelPersistenceDTO {
-    return {
-      id: String(this.id),
-      notificationId: this._props.notificationId,
-      channelType: this._props.channelType,
-      status: this._props.status,
-      recipient: this._props.recipient,
-      sendAttempts: this._props.sendAttempts,
-      maxRetries: this._props.maxRetries,
-      error: this._props.error ? JSON.stringify(this._props.error.toDTO()) : null,
-      response: this._props.response ? JSON.stringify(this._props.response.toDTO()) : null,
-      createdAt: new Date(),
-      sentAt: this._props.sentAt ?? null,
-      failedAt: this._props.failedAt ?? null,
-    };
-  }
-
   // ===== 静态工厂方法 =====
+
+  public static load(state: NotificationChannelState): NotificationChannel {
+    return new NotificationChannel(state);
+  }
 
   public static create(params: {
     notificationId: NotificationId;
@@ -237,49 +194,18 @@ export class NotificationChannel
   }): NotificationChannel {
     const id = NotificationChannelId.of(NotificationChannelId.generate());
 
-    return new NotificationChannel(id, {
+    return new NotificationChannel({
+      id,
       notificationId: params.notificationId,
       channelType: params.channelType,
       status: ChannelStatusType.Pending,
-      recipient: params.recipient,
+      recipient: params.recipient ?? null,
       sendAttempts: 0,
       maxRetries: params.maxRetries ?? 3,
-    });
-  }
-
-  public static fromServerDTO(dto: NotificationChannelServerDTO): NotificationChannel {
-    const id = NotificationChannelId.of(dto.id);
-    const notificationId = NotificationId.of(dto.notificationId);
-
-    return new NotificationChannel(id, {
-      notificationId,
-      channelType: dto.channelType,
-      status: dto.status,
-      recipient: dto.recipient,
-      sendAttempts: dto.sendAttempts,
-      maxRetries: dto.maxRetries,
-      error: dto.error ? ChannelError.fromDTO(dto.error) : null,
-      response: dto.response ? ChannelResponse.fromDTO(dto.response) : null,
-      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
-    });
-  }
-
-  public static fromPersistenceDTO(dto: NotificationChannelPersistenceDTO): NotificationChannel {
-    const id = NotificationChannelId.of(dto.id);
-    const notificationId = NotificationId.of(dto.notificationId);
-
-    return new NotificationChannel(id, {
-      notificationId,
-      channelType: dto.channelType,
-      status: dto.status,
-      recipient: dto.recipient,
-      sendAttempts: dto.sendAttempts,
-      maxRetries: dto.maxRetries,
-      error: dto.error ? ChannelError.fromDTO(JSON.parse(dto.error)) : null,
-      response: dto.response ? ChannelResponse.fromDTO(JSON.parse(dto.response)) : null,
-      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
+      error: null,
+      response: null,
+      sentAt: null,
+      failedAt: null,
     });
   }
 }
