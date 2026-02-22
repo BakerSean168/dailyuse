@@ -6,9 +6,10 @@
  * @since Story 9.3 (EPIC-SCHEDULE-001)
  */
 
-import type {  PrismaClient  } from '@dailyuse/database';
+import type { PrismaClient, Schedule as PrismaSchedule } from '@dailyuse/database';
 import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
+import { PrismaScheduleMapper } from '../../mappers/prisma-schedule-mapper';
 
 export class SchedulePrismaRepository implements IScheduleRepository {
   constructor(private prisma: PrismaClient) {}
@@ -16,52 +17,15 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Convert Prisma data to Domain Schedule entity
    */
-  private mapToEntity(data: any): CalendarEntry {
-    // Convert Prisma data to ScheduleServerDTO format first
-    return CalendarEntry.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      title: data.title,
-      description: data.description,
-      startTime: data.startTime.getTime(),
-      endTime: data.endTime.getTime(),
-      duration: data.duration,
-      hasConflict: data.hasConflict,
-      conflictingEntries: data.conflictingSchedules
-        ? JSON.parse(data.conflictingSchedules)
-        : null,
-      priority: data.priority,
-      location: data.location,
-      attendees: data.attendees ? JSON.parse(data.attendees) : null,
-      createdAt: data.createdAt.getTime(),
-      updatedAt: data.updatedAt.getTime(),
-    });
+  private mapToEntity(data: PrismaSchedule): CalendarEntry {
+    return PrismaScheduleMapper.toDomain(data);
   }
 
   /**
    * Convert Domain Schedule entity to Prisma data
    */
-  private mapToPrisma(schedule: CalendarEntry): any {
-    const dto = schedule.toPersistenceDTO();
-
-    return {
-      id: dto.id,
-      identityId: dto.identityId,
-      title: dto.title,
-      description: dto.description ?? null,
-      startTime: new Date(dto.startTime),
-      endTime: new Date(dto.endTime),
-      duration: dto.duration,
-      hasConflict: dto.hasConflict,
-      conflictingSchedules: dto.conflictingEntries && dto.conflictingEntries.length > 0
-        ? JSON.stringify(dto.conflictingEntries)
-        : null,
-      priority: dto.priority ?? null,
-      location: dto.location ?? null,
-      attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    };
+  private mapToPrisma(schedule: CalendarEntry) {
+    return PrismaScheduleMapper.toPersistence(schedule);
   }
 
   /**

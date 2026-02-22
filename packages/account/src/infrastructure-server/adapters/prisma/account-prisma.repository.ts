@@ -7,7 +7,7 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, Account as PrismaAccount } from '@dailyuse/database';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
 import type { AccountPersistenceDTO } from '@dailyuse/contracts/account';
@@ -158,11 +158,11 @@ export class PrismaAccountRepository
       client.account.count({ where }),
     ]);
 
-    const accounts = rows.map((row: any) => this.mapToDomain(row));
+    const accounts = rows.map((row: PrismaAccount) => this.mapToDomain(row));
     return { accounts, total };
   }
 
-  private mapToDomain(row: any): Account {
+  private mapToDomain(row: PrismaAccount): Account {
     const persistenceDTO: AccountPersistenceDTO = {
       id: row.id,
       status: row.status,

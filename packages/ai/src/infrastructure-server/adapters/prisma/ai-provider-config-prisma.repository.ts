@@ -5,16 +5,17 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient, AiProviderConfig as PrismaAiProviderConfig } from '@dailyuse/database';
 import type { IAIProviderConfigRepository } from '../../../domain-server';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 
 /**
  * AIProviderConfig Prisma Repository
  *
- * Skeleton implementation - to be completed when extracting from apps/api.
+ * Prisma implementation of IAIProviderConfigRepository.
  */
 export class AIProviderConfigPrismaRepository implements IAIProviderConfigRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     await this.prisma.aiProviderConfig.upsert({
@@ -67,7 +68,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
       orderBy: [{ priority: 'asc' }, { createdAt: 'asc' }],
     });
 
-    return rows.map((row: any) => this.toServerDTO(row));
+    return rows.map((row: PrismaAiProviderConfig) => this.toServerDTO(row));
   }
 
   async findDefaultByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
@@ -111,7 +112,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     });
   }
 
-  private toServerDTO(row: any): AIProviderConfigServerDTO {
+  private toServerDTO(row: PrismaAiProviderConfig): AIProviderConfigServerDTO {
     return {
       id: row.id,
       identityId: row.identityId,

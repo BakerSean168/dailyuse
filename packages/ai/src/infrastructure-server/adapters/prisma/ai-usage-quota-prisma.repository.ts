@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient, AiUsageQuota as PrismaAiUsageQuota } from '@dailyuse/database';
 import type { IAIUsageQuotaRepository } from '../../../domain-server';
 import type { AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
@@ -12,10 +13,10 @@ import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 /**
  * AIUsageQuota Prisma Repository
  *
- * Skeleton implementation - to be completed when extracting from apps/api.
+ * Prisma implementation of IAIUsageQuotaRepository.
  */
 export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(quota: AIUsageQuotaServerDTO): Promise<void> {
     await this.prisma.aiUsageQuota.upsert({
@@ -95,7 +96,7 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
     return count > 0;
   }
 
-  private toServerDTO(row: any): AIUsageQuotaServerDTO {
+  private toServerDTO(row: PrismaAiUsageQuota): AIUsageQuotaServerDTO {
     return {
       id: row.id,
       identityId: row.identityId,

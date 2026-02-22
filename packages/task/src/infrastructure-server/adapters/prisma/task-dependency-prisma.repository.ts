@@ -5,11 +5,12 @@
  * 聚合根：TaskDependency
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
 import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
 import { TaskDependency } from '../../../domain-server/aggregates/task-dependency';
+import { PrismaTaskDependencyMapper } from '../../mappers/prisma-task-dependency-mapper';
 
 export class TaskDependencyPrismaRepository implements ITaskDependencyRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -17,16 +18,8 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   /**
    * Prisma record  TaskDependencyServerDTO
    */
-  private mapToDTO(data: any): TaskDependencyServerDTO {
-    return {
-      id: data.id,
-      predecessorTaskId: data.predecessorTaskId,
-      successorTaskId: data.successorTaskId,
-      dependencyType: data.dependencyType as DependencyType,
-      lagDays: data.lagDays ?? undefined,
-      createdAt: data.createdAt.getTime(),
-      updatedAt: data.updatedAt.getTime(),
-    };
+  private mapToDTO(data: PrismaTaskDependency): TaskDependencyServerDTO {
+    return PrismaTaskDependencyMapper.toDTO(data);
   }
 
   async create(data: {

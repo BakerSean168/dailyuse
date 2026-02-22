@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
 import type { Resource } from '../../../domain-server/entities/resource';
 
@@ -14,7 +15,7 @@ import type { Resource } from '../../../domain-server/entities/resource';
  * Skeleton implementation - to be completed when extracting from apps/api.
  */
 export class ResourcePrismaRepository implements IResourceRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(resource: Resource): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');

@@ -1,44 +1,17 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
+import { PrismaEditorWorkspaceMapper } from '../../mappers/prisma-editor-workspace-mapper';
 
 export class EditorWorkspacePrismaRepository implements IEditorWorkspaceRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(data: any): EditorWorkspace {
-    return EditorWorkspace.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description,
-      project_path: data.projectPath,
-      project_type: data.projectType,
-      layout: JSON.stringify(data.layout),
-      settings: JSON.stringify(data.setting),
-      is_active: data.isActive,
-      last_active_session_id: null,
-      lastAccessedAt: data.accessedAt,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    });
+  private toDomain(data: PrismaEditorWorkspace): EditorWorkspace {
+    return PrismaEditorWorkspaceMapper.toDomain(data);
   }
 
   private toPrisma(workspace: EditorWorkspace) {
-    const dto = workspace.toPersistenceDTO();
-    return {
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      projectPath: dto.project_path,
-      projectType: dto.project_type,
-      layout: JSON.parse(dto.layout),
-      setting: JSON.parse(dto.settings),
-      isActive: dto.is_active,
-      accessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : new Date(),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    };
+    return PrismaEditorWorkspaceMapper.toPersistence(workspace);
   }
 
   async findById(id: string): Promise<EditorWorkspace | null> {
@@ -52,7 +25,7 @@ export class EditorWorkspacePrismaRepository implements IEditorWorkspaceReposito
     const data = await this.prisma.editorWorkspace.findMany({
       where: { identityId, deletedAt: null },
     });
-    return data.map((d: any) => this.toDomain(d));
+    return data.map((d: PrismaEditorWorkspace) => this.toDomain(d));
   }
 
   async findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null> {

@@ -7,7 +7,7 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 import type {
   ITaskTemplateRepository,
@@ -16,6 +16,7 @@ import type {
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaTaskTemplateMapper } from '../../mappers/prisma-task-template-mapper';
 
 /**
  * 全局 EventBus 适配器
@@ -40,91 +41,15 @@ export class TaskTemplatePrismaRepository
   /**
    * Prisma record  TaskTemplate 聚合根
    */
-  private mapToEntity(data: any): TaskTemplate {
-    return TaskTemplate.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description,
-      timeConfigType: data.timeConfigType,
-      timeConfigStartTime: data.timeConfigStartTime ?? null,
-      timeConfigEndTime: data.timeConfigEndTime ?? null,
-      timeConfigDurationMinutes: data.timeConfigDurationMinutes,
-      recurrenceRuleType: data.recurrenceRuleType,
-      recurrenceRuleInterval: data.recurrenceRuleInterval,
-      recurrenceRuleDaysOfWeek: data.recurrenceRuleDaysOfWeek,
-      recurrenceRuleDayOfMonth: data.recurrenceRuleDayOfMonth,
-      recurrenceRuleMonthOfYear: data.recurrenceRuleMonthOfYear,
-      recurrenceRuleEndDate: data.recurrenceRuleEndDate ?? null,
-      recurrenceRuleCount: data.recurrenceRuleCount,
-      reminderConfigEnabled: data.reminderConfigEnabled,
-      reminderConfigTimeOffsetMinutes: data.reminderConfigTimeOffsetMinutes,
-      reminderConfigUnit: data.reminderConfigUnit,
-      reminderConfigChannel: data.reminderConfigChannel,
-      lastGeneratedDate: data.lastGeneratedDate ?? null,
-      generateAheadDays: data.generateAheadDays,
-      importance: data.importance,
-      tags: data.tags,
-      color: data.color,
-      status: data.status,
-      goalBinding: data.goalBinding ? JSON.parse(data.goalBinding) : null,
-      parentTaskId: data.parentTaskId,
-      dependencyStatus: data.dependencyStatus,
-      isBlocked: data.isBlocked,
-      blockingReason: data.blockingReason,
-      folderId: data.folderId,
-      version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    });
+  private mapToEntity(data: PrismaTaskTemplate): TaskTemplate {
+    return PrismaTaskTemplateMapper.toDomain(data);
   }
 
   /**
    * TaskTemplate 聚合根  Prisma upsert data
    */
   private toWriteData(dto: ReturnType<TaskTemplate['toPersistenceDTO']>) {
-    return {
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      status: dto.status,
-      importance: dto.importance,
-      color: dto.color,
-      tags: dto.tags,
-      folderId: dto.folderId,
-      parentTaskId: dto.parentTaskId,
-      timeConfigType: dto.timeConfigType,
-      timeConfigStartTime: dto.timeConfigStartTime
-        ? new Date(dto.timeConfigStartTime as any)
-        : null,
-      timeConfigEndTime: dto.timeConfigEndTime
-        ? new Date(dto.timeConfigEndTime as any)
-        : null,
-      timeConfigDurationMinutes: dto.timeConfigDurationMinutes,
-      recurrenceRuleType: dto.recurrenceRuleType,
-      recurrenceRuleInterval: dto.recurrenceRuleInterval,
-      recurrenceRuleDaysOfWeek: dto.recurrenceRuleDaysOfWeek,
-      recurrenceRuleDayOfMonth: dto.recurrenceRuleDayOfMonth,
-      recurrenceRuleMonthOfYear: dto.recurrenceRuleMonthOfYear,
-      recurrenceRuleEndDate: dto.recurrenceRuleEndDate
-        ? new Date(dto.recurrenceRuleEndDate as any)
-        : null,
-      recurrenceRuleCount: dto.recurrenceRuleCount,
-      reminderConfigEnabled: dto.reminderConfigEnabled,
-      reminderConfigTimeOffsetMinutes: dto.reminderConfigTimeOffsetMinutes,
-      reminderConfigUnit: dto.reminderConfigUnit,
-      reminderConfigChannel: dto.reminderConfigChannel,
-      lastGeneratedDate: dto.lastGeneratedDate
-        ? new Date(dto.lastGeneratedDate as any)
-        : null,
-      generateAheadDays: dto.generateAheadDays,
-      goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
-      blockingReason: dto.blockingReason,
-      dependencyStatus: dto.dependencyStatus ?? 'NONE',
-      isBlocked: dto.isBlocked ?? false,
-      version: dto.version,
-    };
+    return PrismaTaskTemplateMapper.toPersistence(dto);
   }
 
   /**
@@ -165,7 +90,7 @@ export class TaskTemplatePrismaRepository
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByStatus(
@@ -176,7 +101,7 @@ export class TaskTemplatePrismaRepository
       where: { identityId, status, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
@@ -188,7 +113,7 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
@@ -196,7 +121,7 @@ export class TaskTemplatePrismaRepository
       where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
@@ -208,7 +133,7 @@ export class TaskTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
     return data
-      .filter((d: any) => {
+      .filter((d: PrismaTaskTemplate) => {
         try {
           const binding = JSON.parse(d.goalBinding || '{}');
           return binding.goalId === goalId;
@@ -216,7 +141,7 @@ export class TaskTemplatePrismaRepository
           return false;
         }
       })
-      .map((d: any) => this.mapToEntity(d));
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByTags(
@@ -228,7 +153,7 @@ export class TaskTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
     return data
-      .filter((d: any) => {
+      .filter((d: PrismaTaskTemplate) => {
         try {
           const rowTags = JSON.parse(d.tags || '[]');
           return tags.some((t) => rowTags.includes(t));
@@ -236,7 +161,7 @@ export class TaskTemplatePrismaRepository
           return false;
         }
       })
-      .map((d: any) => this.mapToEntity(d));
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {
@@ -251,7 +176,7 @@ export class TaskTemplatePrismaRepository
         ],
       },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async delete(id: string): Promise<void> {
@@ -288,7 +213,7 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findRecurringTasks(
@@ -307,7 +232,7 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findOverdueTasks(identityId: string): Promise<TaskTemplate[]> {
@@ -319,7 +244,7 @@ export class TaskTemplatePrismaRepository
       },
     });
     return data
-      .map((d: any) => this.mapToEntity(d))
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d))
       .filter((t) => t.isOverdue());
   }
 
@@ -331,7 +256,7 @@ export class TaskTemplatePrismaRepository
       },
     });
     return data
-      .filter((d: any) => {
+      .filter((d: PrismaTaskTemplate) => {
         try {
           const binding = JSON.parse(d.goalBinding || '{}');
           return binding.keyResultId === keyResultId;
@@ -339,7 +264,7 @@ export class TaskTemplatePrismaRepository
           return false;
         }
       })
-      .map((d: any) => this.mapToEntity(d));
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
@@ -347,7 +272,7 @@ export class TaskTemplatePrismaRepository
       where: { parentTaskId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findBlockedTasks(identityId: string): Promise<TaskTemplate[]> {
@@ -358,7 +283,7 @@ export class TaskTemplatePrismaRepository
         deletedAt: null,
       },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findSortedByPriority(
@@ -374,7 +299,7 @@ export class TaskTemplatePrismaRepository
       orderBy: { importance: 'asc' },
       take: limit,
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findUpcomingTasks(
@@ -389,7 +314,7 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findTodayTasks(identityId: string): Promise<TaskTemplate[]> {

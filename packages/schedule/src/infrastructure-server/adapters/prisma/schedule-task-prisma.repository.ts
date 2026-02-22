@@ -11,7 +11,7 @@
  * @implements {IScheduleTaskRepository}
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, ScheduleTask as PrismaScheduleTask, ScheduleExecution as PrismaScheduleExecution, Prisma } from '@dailyuse/database';
 import type { IScheduleTaskRepository } from '../../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
@@ -19,6 +19,8 @@ import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaScheduleTaskMapper, type PrismaScheduleTaskWithExecutions } from '../../mappers/prisma-schedule-task-mapper';
+import { PrismaScheduleExecutionMapper } from '../../mappers/prisma-schedule-execution-mapper';
 
 /**
  * Global EventBus adapter
@@ -57,122 +59,20 @@ export class ScheduleTaskPrismaRepository
     super(eventBusAdapter);
   }
 
-  // ===== 閺佺増宓佹潪顒佸床閺傝纭?=====
+  // ===== Mapping =====
 
   /**
-   * 娴?Prisma 濡€崇€锋潪顒佸床娑?ScheduleTask 閼辨艾鎮庨弽?
-   * 娴ｈ法鏁ら懕姘値閺嶅湱娈?fromPersistenceDTO 閺傝纭?
+   * Prisma → ScheduleTask aggregate root
    */
-  private toDomain(data: any): ScheduleTask {
-    // 閺嬪嫬缂?PersistenceDTO閿涘牊澧嶉張澶婄摟濞堢敻鍏橀弰顖涘楠炲啿瀵查惃鍕剁礆
-    const persistenceDTO: ScheduleTaskPersistenceDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description,
-      sourceModule: data.sourceModule,
-      sourceEntityId: data.sourceEntityId,
-      status: data.status,
-      enabled: data.enabled,
-      // ScheduleConfig 閹典礁閽╅崠鏍х摟濞?
-      cronExpression: data.cronExpression,
-      timezone: data.timezone,
-      startDate: data.startDate ?? null,
-      endDate: data.endDate ?? null,
-      maxExecutions: data.maxExecutions,
-      // ExecutionInfo 閹典礁閽╅崠鏍х摟濞?
-      nextRunAt: data.nextRunAt ?? null,
-      lastRunAt: data.lastRunAt ?? null,
-      executionCount: data.executionCount,
-      lastExecutionStatus: data.lastExecutionStatus,
-      lastExecutionDuration: data.lastExecutionDuration,
-      consecutiveFailures: data.consecutiveFailures,
-      // RetryPolicy 閹典礁閽╅崠鏍х摟濞?
-      maxRetries: data.maxRetries,
-      initialDelayMs: data.initialDelayMs,
-      maxDelayMs: data.maxDelayMs,
-      backoffMultiplier: data.backoffMultiplier,
-      retryableStatuses: data.retryableStatuses,
-      // TaskMetadata 閹典礁閽╅崠鏍х摟濞?
-      payload: data.payload,
-      tags: data.tags,
-      priority: data.priority,
-      timeout: data.timeout,
-      // 閺冨爼妫块幋?
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      version: data.version ?? 1,
-      deletedAt: data.deletedAt ?? null,
-    };
-
-    // 娴ｈ法鏁ら懕姘値閺嶅湱娈?fromPersistenceDTO 閺傝纭禖reate鐎圭偘绶?
-    const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
-
-    // 閹垹顦查幍褑顢慠ecord鐎涙劕鐤勬担?
-    if (data.executions && data.executions.length > 0) {
-      for (const execData of data.executions) {
-        const execution = ScheduleExecution.fromPersistenceDTO({
-          id: execData.id,
-          taskId: execData.taskId,
-          executionTime: execData.executionTime.getTime(),
-          status: execData.status,
-          duration: execData.duration ?? undefined,
-          result: execData.result ?? undefined,
-          error: execData.error ?? undefined,
-          retryCount: execData.retryCount,
-          createdAt: execData.createdAt.getTime(),
-        });
-        task.addExecution(execution);
-      }
-    }
-
-    return task;
+  private toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
+    return PrismaScheduleTaskMapper.toDomain(data);
   }
 
   /**
-   * 娴?ScheduleTask 閼辨艾鎮庨弽纭呮祮閹诡澀璐?Prisma 閹镐椒绠欓崠鏍ㄦ殶閹?
-   * 娴ｈ法鏁ら懕姘値閺嶅湱娈?toPersistenceDTO 閺傝纭?
+   * ScheduleTask aggregate → Prisma write data
    */
-  private toPrisma(task: ScheduleTask): any {
-    const dto = task.toPersistenceDTO();
-
-    return {
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      sourceModule: dto.sourceModule,
-      sourceEntityId: dto.sourceEntityId,
-      status: dto.status,
-      enabled: dto.enabled,
-      // ScheduleConfig 閹典礁閽╅崠鏍х摟濞?
-      cronExpression: dto.cronExpression,
-      timezone: dto.timezone,
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      endDate: dto.endDate ? new Date(dto.endDate) : null,
-      maxExecutions: dto.maxExecutions,
-      // ExecutionInfo 閹典礁閽╅崠鏍х摟濞?
-      nextRunAt: dto.nextRunAt ? new Date(dto.nextRunAt) : null,
-      lastRunAt: dto.lastRunAt ? new Date(dto.lastRunAt) : null,
-      executionCount: dto.executionCount,
-      lastExecutionStatus: dto.lastExecutionStatus,
-      lastExecutionDuration: dto.lastExecutionDuration,
-      consecutiveFailures: dto.consecutiveFailures,
-      // RetryPolicy 閹典礁閽╅崠鏍х摟濞?
-      maxRetries: dto.maxRetries ?? 3,
-      initialDelayMs: dto.initialDelayMs ?? 1000,
-      maxDelayMs: dto.maxDelayMs ?? 30000,
-      backoffMultiplier: dto.backoffMultiplier ?? 2,
-      retryableStatuses: dto.retryableStatuses ?? '[]',
-      // TaskMetadata 閹典礁閽╅崠鏍х摟濞?
-      payload: typeof dto.payload === 'string' ? dto.payload : JSON.stringify(dto.payload),
-      tags: dto.tags,
-      priority: dto.priority,
-      timeout: dto.timeout,
-      // 閺冨爼妫块幋?
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    };
+  private toPrisma(task: ScheduleTask) {
+    return PrismaScheduleTaskMapper.toPersistence(task);
   }
 
   // ===== 閸╃儤婀?CRUD =====
@@ -353,7 +253,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    const where: any = {};
+    const where: Prisma.ScheduleTaskWhereInput = {};
 
     if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
@@ -377,7 +277,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    const where: any = {};
+    const where: Prisma.ScheduleTaskWhereInput = {};
 
     if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;

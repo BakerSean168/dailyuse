@@ -23,7 +23,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    */
   async save(snapshot: KeyResultWeightSnapshot): Promise<void> {
     const data = PrismaWeightSnapshotMapper.toPrisma(snapshot);
-    await (this.prisma as any).keyResultWeightSnapshot.create({ data });
+    await this.prisma.keyResultWeightSnapshot.create({ data });
   }
 
   /**
@@ -31,7 +31,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    */
   async saveMany(snapshots: KeyResultWeightSnapshot[]): Promise<void> {
     const data = snapshots.map((s) => PrismaWeightSnapshotMapper.toPrisma(s));
-    await (this.prisma as any).keyResultWeightSnapshot.createMany({ data });
+    await this.prisma.keyResultWeightSnapshot.createMany({ data });
   }
 
   /**
@@ -45,13 +45,13 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
     const skip = (page - 1) * pageSize;
 
     const [snapshots, total] = await Promise.all([
-      (this.prisma as any).keyResultWeightSnapshot.findMany({
+      this.prisma.keyResultWeightSnapshot.findMany({
         where: { goalId },
         orderBy: { snapshotTime: 'desc' },
         skip,
         take: pageSize,
       }),
-      (this.prisma as any).keyResultWeightSnapshot.count({
+      this.prisma.keyResultWeightSnapshot.count({
         where: { goalId },
       }),
     ]);
@@ -73,13 +73,13 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
     const skip = (page - 1) * pageSize;
 
     const [snapshots, total] = await Promise.all([
-      (this.prisma as any).keyResultWeightSnapshot.findMany({
+      this.prisma.keyResultWeightSnapshot.findMany({
         where: { keyResultId },
         orderBy: { snapshotTime: 'desc' },
         skip,
         take: pageSize,
       }),
-      (this.prisma as any).keyResultWeightSnapshot.count({
+      this.prisma.keyResultWeightSnapshot.count({
         where: { keyResultId },
       }),
     ]);
@@ -104,7 +104,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
     const endDate = new Date(endTime);
 
     const [snapshots, total] = await Promise.all([
-      (this.prisma as any).keyResultWeightSnapshot.findMany({
+      this.prisma.keyResultWeightSnapshot.findMany({
         where: {
           snapshotTime: {
             gte: startDate,
@@ -115,7 +115,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
         skip,
         take: pageSize,
       }),
-      (this.prisma as any).keyResultWeightSnapshot.count({
+      this.prisma.keyResultWeightSnapshot.count({
         where: {
           snapshotTime: {
             gte: startDate,
@@ -135,7 +135,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * Find a single snapshot by ID
    */
   async findById(id: string): Promise<KeyResultWeightSnapshot | null> {
-    const prismaSnapshot = await (this.prisma as any).keyResultWeightSnapshot.findUnique({
+    const prismaSnapshot = await this.prisma.keyResultWeightSnapshot.findUnique({
       where: { id },
     });
 
@@ -146,7 +146,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * Delete a single snapshot
    */
   async delete(id: string): Promise<void> {
-    await (this.prisma as any).keyResultWeightSnapshot.delete({
+    await this.prisma.keyResultWeightSnapshot.delete({
       where: { id },
     });
   }
@@ -155,7 +155,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * Delete all snapshots for a goal
    */
   async deleteByGoal(goalId: string): Promise<void> {
-    await (this.prisma as any).keyResultWeightSnapshot.deleteMany({
+    await this.prisma.keyResultWeightSnapshot.deleteMany({
       where: { goalId },
     });
   }
@@ -164,7 +164,7 @@ export class PrismaWeightSnapshotRepository implements IWeightSnapshotRepository
    * Delete all snapshots for a key result
    */
   async deleteByKeyResult(keyResultId: string): Promise<void> {
-    await (this.prisma as any).keyResultWeightSnapshot.deleteMany({
+    await this.prisma.keyResultWeightSnapshot.deleteMany({
       where: { keyResultId },
     });
   }

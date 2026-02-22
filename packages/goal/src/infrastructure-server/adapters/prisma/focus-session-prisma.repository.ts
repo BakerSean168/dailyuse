@@ -1,8 +1,8 @@
-﻿import type { PrismaClient } from '@dailyuse/database';
+﻿import type { PrismaClient, FocusSession as PrismaFocusSession, Prisma } from '@dailyuse/database';
 import type { IFocusSessionRepository } from '@/domain-server';
 import { FocusSession } from '@/domain-server';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
-import type { FocusSessionPersistenceDTO } from '@dailyuse/contracts/goal';
+import { PrismaFocusSessionMapper } from '../../mappers/prisma-focus-session-mapper';
 
 /**
  * FocusSession Prisma Repository
@@ -16,28 +16,8 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   /**
    * Map Prisma row to domain entity
    */
-  private mapToEntity(data: any): FocusSession {
-    const dto: FocusSessionPersistenceDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      goalId: data.goalId ?? null,
-      status: data.status as FocusSessionStatus,
-      durationMinutes: data.durationMinutes,
-      actualDurationMinutes: data.actualDurationMinutes,
-      description: data.description,
-      startedAt: data.startedAt ?? null,
-      pausedAt: data.pausedAt ?? null,
-      resumedAt: data.resumedAt ?? null,
-      completedAt: data.completedAt ?? null,
-      cancelledAt: data.cancelledAt ?? null,
-      pauseCount: data.pauseCount,
-      pausedDurationMinutes: data.pausedDurationMinutes,
-      version: data.version ?? 1,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    };
-    return FocusSession.fromPersistenceDTO(dto);
+  private mapToEntity(data: PrismaFocusSession): FocusSession {
+    return PrismaFocusSessionMapper.toDomain(data);
   }
 
   /**
@@ -64,7 +44,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       deletedAt: dto.deletedAt ?? null,
     };
 
-    await (this.prisma as any).focusSession.upsert({
+    await this.prisma.focusSession.upsert({
       where: { id: dto.id as string },
       create: {
         id: dto.id as string,
@@ -80,7 +60,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
    * Find session by ID
    */
   async findById(id: string): Promise<FocusSession | null> {
-    const data = await (this.prisma as any).focusSession.findUnique({
+    const data = await this.prisma.focusSession.findUnique({
       where: { id },
     });
     return data ? this.mapToEntity(data) : null;
@@ -90,7 +70,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
    * Find active session for user (Active status)
    */
   async findActiveSession(identityId: string): Promise<FocusSession | null> {
-    const data = await (this.prisma as any).focusSession.findFirst({
+    const data = await this.prisma.focusSession.findFirst({
       where: {
         identityId,
         status: FocusSessionStatus.Active,
@@ -116,7 +96,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       orderDirection?: 'asc' | 'desc';
     },
   ): Promise<FocusSession[]> {
-    const where: any = { identityId, deletedAt: null };
+    const where: Prisma.FocusSessionWhereInput = { identityId, deletedAt: null };
 
     if (options?.goalId) {
       where.goalId = options.goalId;
@@ -129,14 +109,14 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
     const orderByField = options?.orderBy || 'createdAt';
     const orderDirection = options?.orderDirection || 'desc';
 
-    const data = await (this.prisma as any).focusSession.findMany({
+    const data = await this.prisma.focusSession.findMany({
       where,
       orderBy: { [orderByField]: orderDirection },
       skip: options?.offset,
       take: options?.limit,
     });
 
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaFocusSession) => this.mapToEntity(d));
   }
 
   /**
@@ -150,27 +130,27 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       offset?: number;
     },
   ): Promise<FocusSession[]> {
-    const where: any = { goalId, deletedAt: null };
+    const where: Prisma.FocusSessionWhereInput = { goalId, deletedAt: null };
 
     if (options?.status && options.status.length > 0) {
       where.status = { in: options.status };
     }
 
-    const data = await (this.prisma as any).focusSession.findMany({
+    const data = await this.prisma.focusSession.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       skip: options?.offset,
       take: options?.limit,
     });
 
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaFocusSession) => this.mapToEntity(d));
   }
 
   /**
    * Delete session
    */
   async delete(id: string): Promise<void> {
-    await (this.prisma as any).focusSession.delete({
+    await this.prisma.focusSession.delete({
       where: { id },
     });
   }
@@ -179,7 +159,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
    * Check if session exists
    */
   async exists(id: string): Promise<boolean> {
-    const count = await (this.prisma as any).focusSession.count({
+    const count = await this.prisma.focusSession.count({
       where: { id },
     });
     return count > 0;
@@ -196,22 +176,23 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       endDate?: number;
     },
   ): Promise<number> {
-    const where: any = { identityId };
+    const where: Prisma.FocusSessionWhereInput = { identityId };
 
     if (options?.status && options.status.length > 0) {
       where.status = { in: options.status };
     }
 
     if (options?.startDate || options?.endDate) {
-      where.createdAt = {} as any;
+      const createdAtFilter: Prisma.DateTimeFilter = {};
       if (options?.startDate) {
-        where.createdAt.gte = new Date(options.startDate);
+        createdAtFilter.gte = new Date(options.startDate);
       }
       if (options?.endDate) {
-        where.createdAt.lte = new Date(options.endDate);
+        createdAtFilter.lte = new Date(options.endDate);
       }
+      where.createdAt = createdAtFilter;
     }
 
-    return (this.prisma as any).focusSession.count({ where });
+    return this.prisma.focusSession.count({ where });
   }
 }
