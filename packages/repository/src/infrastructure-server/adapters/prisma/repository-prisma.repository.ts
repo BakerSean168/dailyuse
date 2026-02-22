@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
@@ -15,7 +16,7 @@ import type { RepositoryStatus } from '@dailyuse/contracts/repository';
  * Skeleton implementation - to be completed when extracting from apps/api.
  */
 export class RepositoryPrismaRepository implements IRepositoryRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(repository: Repository): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');

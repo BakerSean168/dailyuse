@@ -5,6 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 import type { Folder } from '../../../domain-server/entities/folder';
 
@@ -14,7 +15,7 @@ import type { Folder } from '../../../domain-server/entities/folder';
  * Skeleton implementation - to be completed when extracting from apps/api.
  */
 export class FolderPrismaRepository implements IFolderRepository {
-  constructor(private readonly prisma: any) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(folder: Folder): Promise<void> {
     throw new Error('Not implemented - extract from apps/api');

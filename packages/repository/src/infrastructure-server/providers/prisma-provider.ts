@@ -4,6 +4,7 @@
  * 涓?Prisma 鏁版嵁搴撴彁渚涜€呭垵濮嬪寲All鏈変粨鍌ㄥ疄鐜?
  */
 
+import type { PrismaClient } from '@dailyuse/database';
 import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
@@ -27,7 +28,7 @@ import type {
  * - 绠＄悊 Prisma 杩炴帴鐨勭敓鍛藉懆鏈?
  */
 export class PrismaProviderInitializer implements IProviderInitializer {
-  private prisma: any;
+  private prisma: PrismaClient | null = null;
 
   async initialize(context: IProviderInitContext): Promise<void> {
     const { config, container } = context;
