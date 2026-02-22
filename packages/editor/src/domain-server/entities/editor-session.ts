@@ -16,7 +16,6 @@
 import { Entity, generateUUID } from '@dailyuse/utils';
 import type {
   EditorSessionClientDTO,
-  EditorSessionPersistenceDTO,
   EditorSessionServerDTO,
   SessionLayoutServerDTO,
   TabViewStateServerDTO,
@@ -28,16 +27,16 @@ import type {
   IdentityId,
 } from '@dailyuse/contracts/primitives';
 import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/value-objects/editor-session-id';
-import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './editor-group';
 import { EditorTab } from './editor-tab';
 import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 /**
- * EditorSession 内部状态接口
+ * EditorSession 状态接口（domain types）
  */
-interface EditorSessionState {
+export interface EditorSessionState {
+  id: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   name: string;
@@ -45,6 +44,7 @@ interface EditorSessionState {
   layout: SessionLayout;
   isActive: boolean;
   activeGroupIndex: number;
+  groups: EditorGroup[];
   lastAccessedAt: number | null;
   createdAt: Date;
   updatedAt: Date;
@@ -52,37 +52,16 @@ interface EditorSessionState {
 
 export class EditorSession extends Entity<EditorSessionId> {
   // ===== 私有属性 =====
-  private _props: EditorSessionState;
+  private _props: Omit<EditorSessionState, 'id' | 'groups'>;
 
   // ===== 子实体集合 =====
   private _groups: EditorGroup[] = [];
 
-  private constructor(params: {
-    id: EditorSessionId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    layout: SessionLayout;
-    isActive: boolean;
-    activeGroupIndex: number;
-    lastAccessedAt: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._props = {
-      workspaceId: params.workspaceId,
-      identityId: params.identityId,
-      name: params.name,
-      description: params.description,
-      layout: params.layout,
-      isActive: params.isActive,
-      activeGroupIndex: params.activeGroupIndex,
-      lastAccessedAt: params.lastAccessedAt,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-    };
+  private constructor(state: EditorSessionState) {
+    super(state.id);
+    const { id: _id, groups, ...rest } = state;
+    this._props = rest;
+    this._groups = groups;
   }
 
   // ===== Getter 属性 =====
@@ -156,6 +135,13 @@ export class EditorSession extends Entity<EditorSessionId> {
   // ===== 工厂方法 =====
 
   /**
+   * 从状态恢复实体
+   */
+  public static load(state: EditorSessionState): EditorSession {
+    return new EditorSession(state);
+  }
+
+  /**
    * 创建新的 EditorSession
    */
   public static create(params: {
@@ -185,6 +171,7 @@ export class EditorSession extends Entity<EditorSessionId> {
       layout,
       isActive: false,
       activeGroupIndex: 0,
+      groups: [],
       lastAccessedAt: null,
       createdAt: now,
       updatedAt: now,
@@ -458,103 +445,4 @@ export class EditorSession extends Entity<EditorSessionId> {
     };
   }
 
-  /**
-   * 转换为 Persistence DTO (递归转换子实体)
-   */
-  public toPersistenceDTO(): EditorSessionPersistenceDTO {
-    return {
-      id: this.id,
-      workspace_id: this._props.workspaceId,
-      identityId: this._props.identityId,
-      name: this._props.name,
-      description: this._props.description,
-      groups: this._groups.map((group) => group.toPersistenceDTO()),
-      is_active: this._props.isActive,
-      active_group_index: this._props.activeGroupIndex,
-      layout: this._props.layout.toPersistenceDTO(),
-      lastAccessedAt: this._props.lastAccessedAt !== null ? new Date(this._props.lastAccessedAt) : null,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-    };
-  }
-
-  /**
-   * 从 Server DTO 创建实体 (递归重建子实体)
-   */
-  public static fromServerDTO(dto: EditorSessionServerDTO): EditorSession {
-    const session = new EditorSession({
-      id: dto.id,
-      workspaceId: dto.workspaceId,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      layout: SessionLayout.fromDTO(dto.layout),
-      isActive: dto.isActive,
-      activeGroupIndex: dto.activeGroupIndex,
-      lastAccessedAt: dto.lastAccessedAt,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-
-    // 递归重建子实体
-    session._groups = dto.groups.map((groupDto) =>
-      EditorGroup.fromServerDTO(groupDto),
-    );
-
-    return session;
-  }
-
-  /**
-   * 从 Client DTO 创建实体 (递归重建子实体)
-   */
-  public static fromClientDTO(dto: EditorSessionClientDTO): EditorSession {
-    const session = new EditorSession({
-      id: EditorSessionIdType.of(dto.id),
-      workspaceId: dto.workspaceId as EditorWorkspaceId,
-      identityId: IdentityIdType.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      layout: SessionLayout.fromDTO(dto.layout),
-      isActive: dto.isActive,
-      activeGroupIndex: dto.activeGroupIndex,
-      lastAccessedAt: dto.lastAccessedAt,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-
-    // 递归重建子实体
-    session._groups = dto.groups.map((groupDto) =>
-      EditorGroup.fromClientDTO(groupDto),
-    );
-
-    return session;
-  }
-
-  /**
-   * 从 Persistence DTO 创建实体 (递归重建子实体)
-   */
-  public static fromPersistenceDTO(
-    dto: EditorSessionPersistenceDTO,
-  ): EditorSession {
-    const session = new EditorSession({
-      id: dto.id,
-      workspaceId: dto.workspace_id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      layout: SessionLayout.fromPersistenceDTO(dto.layout),
-      isActive: dto.is_active,
-      activeGroupIndex: dto.active_group_index,
-      lastAccessedAt: dto.lastAccessedAt?.getTime() ?? null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    });
-
-    // 递归重建子实体
-    session._groups = (dto.groups || []).map((groupDto) =>
-      EditorGroup.fromPersistenceDTO(groupDto),
-    );
-
-    return session;
-  }
 }

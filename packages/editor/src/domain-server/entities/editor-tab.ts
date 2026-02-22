@@ -1,14 +1,11 @@
 /**
  * EditorTab 实体实现
- * 实现 EditorTabServer 接口
  */
 
 import { Entity, generateUUID } from '@dailyuse/utils';
 import { TabType } from '@dailyuse/contracts/editor';
 import type {
   EditorTabClientDTO,
-  EditorTabPersistenceDTO,
-  EditorTabServer,
   EditorTabServerDTO,
   TabViewStateServerDTO,
 } from '@dailyuse/contracts/editor';
@@ -22,9 +19,10 @@ import type {
 } from '@dailyuse/contracts/primitives';
 
 /**
- * EditorTab 内部状态接口
+ * EditorTab 状态接口（domain types）
  */
-interface EditorTabState {
+export interface EditorTabState {
+  id: EditorTabId;
   groupId: EditorGroupId;
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
@@ -44,14 +42,14 @@ interface EditorTabState {
 /**
  * EditorTab 实体
  */
-export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
+export class EditorTab extends Entity<EditorTabId> {
   // ===== 私有属性 =====
   private _props: EditorTabState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: EditorTabId, props: EditorTabState) {
-    super(id);
-    this._props = props;
+  private constructor(state: EditorTabState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -114,6 +112,13 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
   // ===== 工厂方法 =====
 
   /**
+   * 从状态恢复实体
+   */
+  public static load(state: EditorTabState): EditorTab {
+    return new EditorTab(state);
+  }
+
+  /**
    * 创建新的标签
    */
   public static create(params: {
@@ -139,7 +144,8 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
       ...params.viewState,
     };
 
-    return new EditorTab(id, {
+    return new EditorTab({
+      id,
       groupId: params.groupId,
       sessionId: params.sessionId,
       workspaceId: params.workspaceId,
@@ -154,72 +160,6 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
       lastAccessedAt: now,
       createdAt: now,
       updatedAt: now,
-    });
-  }
-
-  /**
-   * 从 ServerDTO 恢复
-   */
-  public static fromServerDTO(dto: EditorTabServerDTO): EditorTab {
-    return new EditorTab(dto.id, {
-      groupId: dto.groupId,
-      sessionId: dto.sessionId,
-      workspaceId: dto.workspaceId,
-      identityId: dto.identityId,
-      documentId: dto.documentId,
-      tabIndex: dto.tabIndex,
-      tabType: dto.tabType,
-      name: dto.name,
-      viewState: dto.viewState,
-      isPinned: dto.isPinned,
-      isDirty: dto.isDirty,
-      lastAccessedAt: dto.lastAccessedAt !== null ? new Date(dto.lastAccessedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  /**
-   * 从 ClientDTO 恢复
-   */
-  public static fromClientDTO(dto: EditorTabClientDTO): EditorTab {
-    return new EditorTab(dto.id as EditorTabId, {
-      groupId: dto.groupId as EditorGroupId,
-      sessionId: dto.sessionId as EditorSessionId,
-      workspaceId: dto.workspaceId as EditorWorkspaceId,
-      identityId: dto.identityId as IdentityId,
-      documentId: dto.documentId as DocumentId | null,
-      tabIndex: dto.tabIndex,
-      tabType: dto.tabType,
-      name: dto.name,
-      viewState: dto.viewState,
-      isPinned: dto.isPinned,
-      isDirty: dto.isDirty,
-      lastAccessedAt: dto.lastAccessedAt !== null ? new Date(dto.lastAccessedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  /**
-   * 从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: EditorTabPersistenceDTO): EditorTab {
-    return new EditorTab(dto.id, {
-      groupId: dto.group_id,
-      sessionId: dto.session_id,
-      workspaceId: dto.workspace_id,
-      identityId: dto.identityId,
-      documentId: dto.document_id,
-      tabIndex: dto.tab_index,
-      tabType: dto.tab_type,
-      name: dto.name,
-      viewState: JSON.parse(dto.view_state) as TabViewStateServerDTO,
-      isPinned: dto.is_pinned,
-      isDirty: dto.is_dirty,
-      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -343,26 +283,4 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabServer {
     };
   }
 
-  /**
-   * 转换为 PersistenceDTO
-   */
-  public toPersistenceDTO(): EditorTabPersistenceDTO {
-    return {
-      id: this.id,
-      group_id: this._props.groupId,
-      session_id: this._props.sessionId,
-      workspace_id: this._props.workspaceId,
-      identityId: this._props.identityId,
-      document_id: this._props.documentId,
-      tab_index: this._props.tabIndex,
-      tab_type: this._props.tabType,
-      name: this._props.name,
-      view_state: JSON.stringify(this._props.viewState),
-      is_pinned: this._props.isPinned,
-      is_dirty: this._props.isDirty,
-      lastAccessedAt: this._props.lastAccessedAt,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-    };
-  }
 }

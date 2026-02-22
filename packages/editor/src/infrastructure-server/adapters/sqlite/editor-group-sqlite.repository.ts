@@ -1,6 +1,5 @@
 /**
  * SQLite EditorGroup Repository Implementation
- * 缂栬緫鍣ㄥ垎缁勭殑 SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,18 +15,7 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     if (!row) return null;
 
-    return EditorGroup.fromPersistenceDTO({
-      id: row.id,
-      session_id: row.session_id,
-      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      group_index: row.group_index,
-      active_tab_index: row.active_tab_index ?? -1,
-      name: row.name ?? null,
-      tabs: [],
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToGroup(row);
   }
 
   async findBySessionId(sessionId: string): Promise<EditorGroup[]> {
@@ -36,20 +24,7 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
     );
     const rows = stmt.all(sessionId) as any[];
 
-    return rows.map((row) =>
-      EditorGroup.fromPersistenceDTO({
-        id: row.id,
-        session_id: row.session_id,
-        workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-        identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-        group_index: row.group_index,
-        active_tab_index: row.active_tab_index ?? -1,
-        name: row.name ?? null,
-        tabs: [],
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToGroup(row));
   }
 
   async findBySessionIdAndGroupIndex(sessionId: string, groupIndex: number): Promise<EditorGroup | null> {
@@ -60,22 +35,11 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     if (!row) return null;
 
-    return EditorGroup.fromPersistenceDTO({
-      id: row.id,
-      session_id: row.session_id,
-      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      group_index: row.group_index,
-      active_tab_index: row.active_tab_index ?? -1,
-      name: row.name ?? null,
-      tabs: [],
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToGroup(row);
   }
 
   async save(group: EditorGroup): Promise<void> {
-    const dto = group.toPersistenceDTO();
+    const dto = group.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_groups (
@@ -88,10 +52,10 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     stmt.run(
       dto.id,
-      dto.session_id,
-      dto.group_index,
-      dto.createdAt,
-      dto.updatedAt,
+      dto.sessionId,
+      dto.groupIndex,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
     );
   }
 
@@ -112,13 +76,13 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     const transaction = this.db.transaction((items: EditorGroup[]) => {
       for (const group of items) {
-        const dto = group.toPersistenceDTO();
+        const dto = group.toServerDTO();
         insertStmt.run(
           dto.id,
-          dto.session_id,
-          dto.group_index,
-          dto.createdAt,
-          dto.updatedAt,
+          dto.sessionId,
+          dto.groupIndex,
+          new Date(dto.createdAt),
+          new Date(dto.updatedAt),
         );
       }
     });
@@ -147,20 +111,19 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
     return result.maxIndex ?? -1;
   }
 
-  async findById(id: string): Promise<EditorGroup | null> {
-    return this.findById(id);
-  }
-
-  async findBySessionId(sessionId: string): Promise<EditorGroup[]> {
-    return this.findBySessionId(sessionId);
-  }
-
-  async findBySessionIdAndGroupIndex(sessionId: string, groupIndex: number): Promise<EditorGroup | null> {
-    return this.findBySessionIdAndGroupIndex(sessionId, groupIndex);
-  }
-
-  async deleteBySessionId(sessionId: string): Promise<void> {
-    await this.deleteBySessionId(sessionId);
+  private rowToGroup(row: any): EditorGroup {
+    return EditorGroup.load({
+      id: row.id,
+      sessionId: row.session_id,
+      workspaceId: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
+      groupIndex: row.group_index,
+      activeTabIndex: row.active_tab_index ?? -1,
+      name: row.name ?? null,
+      tabs: [],
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    } as any);
   }
 }
 

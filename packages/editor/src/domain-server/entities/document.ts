@@ -1,6 +1,5 @@
 /**
  * Document 实体实现
- * 实现 DocumentServer 接口
  */
 
 import type {
@@ -9,12 +8,9 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-  PersistenceDate,
 } from '@dailyuse/contracts/primitives';
 import type {
   DocumentClientDTO,
-  DocumentPersistenceDTO,
-  DocumentServer,
   DocumentServerDTO,
   DocumentMetadataServerDTO,
 } from '@dailyuse/contracts/editor';
@@ -26,9 +22,10 @@ import { Entity, generateUUID } from '@dailyuse/utils';
 import { DocumentMetadata } from '../../domain-shared/value-objects/document-metadata';
 
 /**
- * Document 内部状态接口
+ * Document 状态接口（domain types）
  */
-interface DocumentState {
+export interface DocumentState {
+  id: IDocumentId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   path: string;
@@ -47,14 +44,14 @@ interface DocumentState {
 /**
  * Document 实体
  */
-export class Document extends Entity<IDocumentId> implements DocumentServer {
+export class Document extends Entity<IDocumentId> {
   // ===== 私有属性 =====
   private _props: DocumentState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: IDocumentId, props: DocumentState) {
-    super(id);
-    this._props = props;
+  private constructor(state: DocumentState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -113,6 +110,13 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
   // ===== 静态工厂方法 =====
 
   /**
+   * 从状态恢复实体
+   */
+  public static load(state: DocumentState): Document {
+    return new Document(state);
+  }
+
+  /**
    * 创建新文档
    */
   public static create(params: {
@@ -128,7 +132,8 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
     const now = new Date();
     const language = params.language ?? Document.detectLanguage(params.name);
 
-    return new Document(id, {
+    return new Document({
+      id,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
       path: params.path,
@@ -144,50 +149,6 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
       lastModifiedAt: null,
       createdAt: now,
       updatedAt: now,
-    });
-  }
-
-  /**
-   * 从 ServerDTO 恢复
-   */
-  public static fromServerDTO(dto: DocumentServerDTO): Document {
-    const id = dto.id;
-    return new Document(id, {
-      workspaceId: dto.workspaceId,
-      identityId: dto.identityId,
-      path: dto.path,
-      name: dto.name,
-      language: dto.language,
-      content: dto.content,
-      contentHash: dto.contentHash,
-      metadata: DocumentMetadata.fromDTO(dto.metadata),
-      indexStatus: dto.indexStatus,
-      lastIndexedAt: dto.lastIndexedAt ? new Date(dto.lastIndexedAt) : null,
-      lastModifiedAt: dto.lastModifiedAt ? new Date(dto.lastModifiedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  /**
-   * 从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: DocumentPersistenceDTO): Document {
-    const id = dto.id;
-    return new Document(id, {
-      workspaceId: dto.workspace_id,
-      identityId: dto.identityId,
-      path: dto.path,
-      name: dto.name,
-      language: dto.language,
-      content: dto.content,
-      contentHash: dto.content_hash,
-      metadata: DocumentMetadata.fromDTO(JSON.parse(dto.metadata)),
-      indexStatus: dto.index_status,
-      lastIndexedAt: dto.last_indexed_at ? new Date(dto.last_indexed_at) : null,
-      lastModifiedAt: dto.last_modified_at ? new Date(dto.last_modified_at) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
     });
   }
 
@@ -326,25 +287,6 @@ export class Document extends Entity<IDocumentId> implements DocumentServer {
       formattedLastModified: this._props.lastModifiedAt?.toLocaleString() ?? null,
       formattedCreatedAt: this._props.createdAt.toLocaleString(),
       formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
-    };
-  }
-
-  public toPersistenceDTO(): DocumentPersistenceDTO {
-    return {
-      id: this.id,
-      workspace_id: this._props.workspaceId,
-      identityId: this._props.identityId,
-      path: this._props.path,
-      name: this._props.name,
-      language: this._props.language,
-      content: this._props.content,
-      content_hash: this._props.contentHash,
-      metadata: JSON.stringify(this._props.metadata.toServerDTO()),
-      index_status: this._props.indexStatus,
-      last_indexed_at: this._props.lastIndexedAt as PersistenceDate | null,
-      last_modified_at: this._props.lastModifiedAt as PersistenceDate | null,
-      createdAt: this._props.createdAt as PersistenceDate,
-      updatedAt: this._props.updatedAt as PersistenceDate,
     };
   }
 

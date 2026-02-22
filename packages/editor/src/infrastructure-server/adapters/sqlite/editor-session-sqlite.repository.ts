@@ -5,6 +5,7 @@
 
 import type Database from 'better-sqlite3';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
+import { SessionLayout } from '../../../domain-server/value-objects/SessionLayout';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
 
 export class SqliteEditorSessionRepository implements IEditorSessionRepository {
@@ -51,7 +52,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   }
 
   async save(session: EditorSession): Promise<void> {
-    const dto = session.toPersistenceDTO();
+    const dto = session.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_sessions (
@@ -65,11 +66,11 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     stmt.run(
       dto.id,
-      dto.workspace_id,
+      dto.workspaceId,
       dto.name,
-      dto.is_active ? 1 : 0,
-      dto.createdAt,
-      dto.updatedAt,
+      dto.isActive ? 1 : 0,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
     );
   }
 
@@ -91,14 +92,14 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     const transaction = this.db.transaction((items: EditorSession[]) => {
       for (const session of items) {
-        const dto = session.toPersistenceDTO();
+        const dto = session.toServerDTO();
         insertStmt.run(
           dto.id,
-          dto.workspace_id,
+          dto.workspaceId,
           dto.name,
-          dto.is_active ? 1 : 0,
-          dto.createdAt,
-          dto.updatedAt,
+          dto.isActive ? 1 : 0,
+          new Date(dto.createdAt),
+          new Date(dto.updatedAt),
         );
       }
     });
@@ -119,26 +120,6 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     return result.count;
   }
 
-  async findById(id: string): Promise<EditorSession | null> {
-    return this.findById(id);
-  }
-
-  async findByWorkspaceId(workspaceId: string): Promise<EditorSession[]> {
-    return this.findByWorkspaceId(workspaceId);
-  }
-
-  async findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null> {
-    return this.findByWorkspaceIdAndName(workspaceId, name);
-  }
-
-  async findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null> {
-    return this.findActiveByWorkspaceId(workspaceId);
-  }
-
-  async deleteByWorkspaceId(workspaceId: string): Promise<void> {
-    await this.deleteByWorkspaceId(workspaceId);
-  }
-
   private rowToSession(row: any): EditorSession {
     const layout = row.layout
       ? JSON.parse(row.layout)
@@ -148,20 +129,20 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
           active_group_index: row.active_group_index ?? 0,
         };
 
-    return EditorSession.fromPersistenceDTO({
+    return EditorSession.load({
       id: row.id,
-      workspace_id: row.workspace_id,
+      workspaceId: row.workspace_id,
       identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
       name: row.name,
       description: row.description ?? null,
       groups: [],
-      is_active: row.is_active === 1,
-      active_group_index: row.active_group_index ?? 0,
-      layout,
+      isActive: row.is_active === 1,
+      activeGroupIndex: row.active_group_index ?? 0,
+      layout: SessionLayout.fromDTO(layout),
       lastAccessedAt: row.lastAccessedAt ?? null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
-    });
+    } as any);
   }
 }
 

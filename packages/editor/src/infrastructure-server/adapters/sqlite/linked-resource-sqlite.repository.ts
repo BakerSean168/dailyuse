@@ -1,6 +1,5 @@
 /**
  * SQLite LinkedResource Repository Implementation
- * 閾炬帴Resource鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,17 +15,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
     if (!row) return null;
 
-    return LinkedResource.fromPersistenceDTO({
-      id: row.id,
-      source_document_id: row.source_document_id,
-      target_document_id: row.target_document_id,
-      source_type: row.source_type,
-      target_type: row.target_type,
-      is_valid: row.is_valid === 1,
-      last_verified_at: row.last_verified_at ? new Date(row.last_verified_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToResource(row);
   }
 
   async findBySourceDocumentId(sourceDocumentId: string): Promise<LinkedResource[]> {
@@ -97,7 +86,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
   }
 
   async save(resource: LinkedResource): Promise<void> {
-    const dto = resource.toPersistenceDTO();
+    const dto = resource.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO linked_resources (
@@ -112,14 +101,14 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
     stmt.run(
       dto.id,
-      dto.source_document_id,
-      dto.target_document_id,
-      dto.source_type,
-      dto.target_type,
-      dto.is_valid ? 1 : 0,
-      dto.last_verified_at ? dto.last_verified_at.getTime() : null,
-      dto.createdAt,
-      dto.updatedAt,
+      dto.sourceDocumentId,
+      dto.targetDocumentId,
+      dto.sourceType,
+      dto.targetType,
+      dto.isValid ? 1 : 0,
+      dto.lastValidatedAt ? new Date(dto.lastValidatedAt).getTime() : null,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
     );
   }
 
@@ -129,17 +118,24 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
   }
 
   private rowToResource(row: any): LinkedResource {
-    return LinkedResource.fromPersistenceDTO({
+    return LinkedResource.load({
       id: row.id,
-      source_document_id: row.source_document_id,
-      target_document_id: row.target_document_id,
-      source_type: row.source_type,
-      target_type: row.target_type,
-      is_valid: row.is_valid === 1,
-      last_verified_at: row.last_verified_at ? new Date(row.last_verified_at) : null,
+      workspaceId: row.workspace_id ?? '',
+      identityId: row.identityId ?? row.identity_id ?? '',
+      sourceDocumentId: row.source_document_id,
+      sourceType: row.source_type,
+      sourceLine: row.source_line ?? null,
+      sourceColumn: row.source_column ?? null,
+      targetPath: row.target_path ?? '',
+      targetType: row.target_type,
+      targetDocumentId: row.target_document_id,
+      targetAnchor: row.target_anchor ?? null,
+      isValid: row.is_valid === 1,
+      lastValidatedAt: row.last_verified_at ? new Date(row.last_verified_at) : null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
-    });
+    } as any);
   }
 }
+
 

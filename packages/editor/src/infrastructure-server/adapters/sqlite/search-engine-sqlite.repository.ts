@@ -1,6 +1,5 @@
 /**
  * SQLite SearchEngine Repository Implementation
- * 鎼滅储寮曟搸鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,15 +15,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     if (!row) return null;
 
-    return SearchEngine.fromPersistenceDTO({
-      id: row.id,
-      workspace_id: row.workspace_id,
-      index_size: row.index_size,
-      is_indexing: row.is_indexing === 1,
-      last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToSearchEngine(row);
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<SearchEngine | null> {
@@ -35,15 +26,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     if (!row) return null;
 
-    return SearchEngine.fromPersistenceDTO({
-      id: row.id,
-      workspace_id: row.workspace_id,
-      index_size: row.index_size,
-      is_indexing: row.is_indexing === 1,
-      last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToSearchEngine(row);
   }
 
   async findIndexing(): Promise<SearchEngine[]> {
@@ -52,17 +35,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     );
     const rows = stmt.all() as any[];
 
-    return rows.map((row) =>
-      SearchEngine.fromPersistenceDTO({
-        id: row.id,
-        workspace_id: row.workspace_id,
-        index_size: row.index_size,
-        is_indexing: row.is_indexing === 1,
-        last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToSearchEngine(row));
   }
 
   async findOutdated(threshold: number): Promise<SearchEngine[]> {
@@ -71,21 +44,11 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     );
     const rows = stmt.all(Date.now() - threshold) as any[];
 
-    return rows.map((row) =>
-      SearchEngine.fromPersistenceDTO({
-        id: row.id,
-        workspace_id: row.workspace_id,
-        index_size: row.index_size,
-        is_indexing: row.is_indexing === 1,
-        last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToSearchEngine(row));
   }
 
   async save(engine: SearchEngine): Promise<void> {
-    const dto = engine.toPersistenceDTO();
+    const dto = engine.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO search_engines (
@@ -101,12 +64,12 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     stmt.run(
       dto.id,
-      dto.workspace_id,
-      dto.index_size,
-      dto.is_indexing ? 1 : 0,
-      dto.last_indexed_at ? dto.last_indexed_at.getTime() : null,
-      dto.createdAt,
-      dto.updatedAt,
+      dto.workspaceId,
+      dto.indexedDocumentCount,
+      dto.isIndexing ? 1 : 0,
+      dto.lastIndexedAt ? new Date(dto.lastIndexedAt).getTime() : null,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
     );
   }
 
@@ -125,6 +88,24 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
       `SELECT 1 FROM search_engines WHERE workspace_id = ? LIMIT 1`
     );
     return stmt.get(workspaceId) !== undefined;
+  }
+
+  private rowToSearchEngine(row: any): SearchEngine {
+    return SearchEngine.load({
+      id: row.id,
+      workspaceId: row.workspace_id,
+      identityId: row.identityId ?? row.identity_id ?? '',
+      name: row.name ?? '',
+      description: row.description ?? null,
+      indexPath: row.index_path ?? '',
+      indexedDocumentCount: row.indexed_document_count ?? 0,
+      totalDocumentCount: row.total_document_count ?? 0,
+      lastIndexedAt: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
+      isIndexing: row.is_indexing === 1,
+      indexProgress: row.index_progress ?? null,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    } as any);
   }
 }
 

@@ -1,6 +1,5 @@
 /**
  * DocumentVersion 实体实现
- * 实现 DocumentVersionServer 接口
  */
 
 import { Entity, generateUUID } from '@dailyuse/utils';
@@ -9,8 +8,6 @@ import {
 } from '@dailyuse/contracts/editor';
 import type {
   DocumentVersionClientDTO,
-  DocumentVersionPersistenceDTO,
-  DocumentVersionServer,
   DocumentVersionServerDTO,
 } from '@dailyuse/contracts/editor';
 import type {
@@ -21,9 +18,10 @@ import type {
 } from '@dailyuse/contracts/primitives';
 
 /**
- * DocumentVersion 内部状态接口
+ * DocumentVersion 状态接口（domain types）
  */
-interface DocumentVersionState {
+export interface DocumentVersionState {
+  id: DocumentVersionId;
   documentId: DocumentId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
@@ -40,14 +38,14 @@ interface DocumentVersionState {
 /**
  * DocumentVersion 实体
  */
-export class DocumentVersion extends Entity<DocumentVersionId> implements DocumentVersionServer {
+export class DocumentVersion extends Entity<DocumentVersionId> {
   // ===== 私有属性 =====
   private _props: DocumentVersionState;
 
   // ===== 构造函数（私有） =====
-  private constructor(id: DocumentVersionId, props: DocumentVersionState) {
-    super(id);
-    this._props = props;
+  private constructor(state: DocumentVersionState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -98,6 +96,13 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
   // ===== 工厂方法 =====
 
   /**
+   * 从状态恢复实体
+   */
+  public static load(state: DocumentVersionState): DocumentVersion {
+    return new DocumentVersion(state);
+  }
+
+  /**
    * 创建新的文档版本
    */
   public static create(params: {
@@ -113,7 +118,8 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
     createdBy?: string | null;
   }): DocumentVersion {
     const id = generateUUID() as DocumentVersionId;
-    return new DocumentVersion(id, {
+    return new DocumentVersion({
+      id,
       documentId: params.documentId,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
@@ -156,44 +162,6 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
       changeDescription: params.changeDescription ?? null,
       previousVersionId,
       createdBy: params.createdBy ?? null,
-    });
-  }
-
-  /**
-   * 从 ServerDTO 恢复
-   */
-  public static fromServerDTO(dto: DocumentVersionServerDTO): DocumentVersion {
-    return new DocumentVersion(dto.id, {
-      documentId: dto.documentId,
-      workspaceId: dto.workspaceId,
-      identityId: dto.identityId,
-      versionNumber: dto.versionNumber,
-      changeType: dto.changeType,
-      contentHash: dto.contentHash,
-      contentDiff: dto.contentDiff,
-      changeDescription: dto.changeDescription,
-      previousVersionId: dto.previousVersionId,
-      createdBy: dto.createdBy,
-      createdAt: new Date(dto.createdAt),
-    });
-  }
-
-  /**
-   * 从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: DocumentVersionPersistenceDTO): DocumentVersion {
-    return new DocumentVersion(dto.id, {
-      documentId: dto.document_id,
-      workspaceId: dto.workspace_id,
-      identityId: dto.identityId,
-      versionNumber: dto.version_number,
-      changeType: dto.change_type,
-      contentHash: dto.content_hash,
-      contentDiff: dto.content_diff,
-      changeDescription: dto.change_description,
-      previousVersionId: dto.previous_version_id,
-      createdBy: dto.created_by,
-      createdAt: new Date(dto.createdAt),
     });
   }
 
@@ -270,23 +238,4 @@ export class DocumentVersion extends Entity<DocumentVersionId> implements Docume
     };
   }
 
-  /**
-   * 转换为 PersistenceDTO
-   */
-  public toPersistenceDTO(): DocumentVersionPersistenceDTO {
-    return {
-      id: this.id,
-      document_id: this._props.documentId,
-      workspace_id: this._props.workspaceId,
-      identityId: this._props.identityId,
-      version_number: this._props.versionNumber,
-      change_type: this._props.changeType,
-      content_hash: this._props.contentHash,
-      content_diff: this._props.contentDiff,
-      change_description: this._props.changeDescription,
-      previous_version_id: this._props.previousVersionId,
-      created_by: this._props.createdBy,
-      createdAt: this._props.createdAt,
-    };
-  }
 }
