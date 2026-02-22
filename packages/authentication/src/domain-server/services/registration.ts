@@ -14,42 +14,39 @@ export class UserAlreadyExistsError extends Error {
 
 /**
  * 注册领域服务
- * 职责：协调用户注册过程中的业务规则检查、对象创建和持久�?
+ * 职责：协调用户注册过程中的业务规则检查、对象创建和持久化
  */
 export class RegistrationService {
   
-  // 通过构造函数注入仓储接�?(依赖倒置原则)
+  // 通过构造函数注入仓储接口 (依赖倒置原则)
   constructor(
     private readonly identityRepo: IAuthIdentityRepository,
     private readonly passwordHasher: IPasswordHasher
   ) {}
 
   /**
-   * 核心业务：邮箱注�?
+   * 核心业务：邮箱注册
    * @param req 注册请求数据 (通常来自 Controller 解析后的 DTO)
-   * @returns 新创建的身份聚合�?
+   * @returns 新创建的身份聚合根
    */
   public async registerByEmail(req: RegisterByEmailReq): Promise<AuthIdentity> {
     const { email, password } = req;
 
-    // 1. 【校验】检查邮箱唯一�?(业务规则)
-    // 这是典型的领域服务职责：因为它需要查询跨聚合的状态，无法�?AuthIdentity 内部完成
+    // 1. 【校验】检查邮箱唯一性 (业务规则)
     const exists = await this.identityRepo.existsByEmail(email);
     if (exists) {
       throw new UserAlreadyExistsError(email);
     }
 
-    // 2. 【创建】调用聚合根的工厂方�?
-    // 注意：密码哈希逻辑通常封装�?AuthIdentity.create �?HashedPassword.create 内部
-    // 这里传入明文，聚合根内部会将其转换为 HashedPassword 值对�?
-    const identity = await AuthIdentity.createWithEmail({
+    // 2. 【创建】调用聚合根的工厂方法
+    // 使用新的 createWithEmailAndPassword，email 进入 identifiers，password 进入 credentials
+    const identity = await AuthIdentity.createWithEmailAndPassword({
       email,
-      plainPassword: password, // 内部会自�?Hash
+      plainPassword: password,
       hasher: this.passwordHasher
     });
 
-    // 3. 【持久化】保存到数据�?
-    // 领域事件会在仓储�?save 方法中被隐式处理和发�?
+    // 3. 【持久化】保存到数据库
     await this.identityRepo.save(identity);
 
     return identity;

@@ -36,11 +36,18 @@ export function createMockAuthResponse(
       failedLoginAttempts: 0,
       lastFailedAttempt: null,
       lockedUntil: null,
+      identifiers: [
+        {
+          type: 'EMAIL' as const,
+          value: faker.internet.email(),
+          isVerified: true,
+        },
+      ],
       credentials: [
         {
           id: faker.string.uuid() as any,
           type: 'PASSWORD' as const,
-          displayName: faker.internet.email(),
+          displayName: 'Password',
           lastUsedAt: now,
           isPrimary: true,
           version: 1,
@@ -50,6 +57,8 @@ export function createMockAuthResponse(
         },
       ],
       hasPassword: true,
+      hasEmail: true,
+      hasPhone: false,
       hasOAuth: false,
       version: 1,
       createdAt: now - faker.number.int({ min: 0, max: 365 * 24 * 60 * 60 * 1000 }),

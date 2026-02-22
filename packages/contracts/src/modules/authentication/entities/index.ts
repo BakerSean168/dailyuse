@@ -16,17 +16,3 @@ export type {
   PasswordCredentialServerDTO,
   PasswordCredentialPersistenceDTO,
 } from './password-credential-server';
-
-// ============ Entities - OAuthCredential ============
-export type {
-  OAuthCredentialServer,
-  OAuthCredentialServerDTO,
-  OAuthCredentialPersistenceDTO,
-} from './oauth-credential-server';
-
-// ============ Entities - PhoneCredential ============
-export type {
-  PhoneCredentialServer,
-  PhoneCredentialServerDTO,
-  PhoneCredentialPersistenceDTO,
-} from './phone-credential-server';

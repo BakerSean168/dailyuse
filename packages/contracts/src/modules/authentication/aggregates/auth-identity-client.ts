@@ -8,6 +8,7 @@
  */
 
 import type { AuthCredentialClient, AuthCredentialClientDTO } from '../entities/auth-credential-client';
+import type { AuthIdentifierDTO } from '../identifiers';
 import type { TransferDate, DomainDate, IdentityId } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects';
 
@@ -43,7 +44,12 @@ export interface AuthIdentityClient {
   lockedUntil: DomainDate | null;
 
   /**
-   * ✅ 脱敏的凭证列表 (仅显示 displayName, lastUsedAt)
+   * 标识符列表 (邮箱/手机号)
+   */
+  identifiers: AuthIdentifierDTO[];
+
+  /**
+   * 脱敏的凭证列表 (仅显示 displayName, lastUsedAt)
    */
   credentials: AuthCredentialClient[];
 
@@ -74,8 +80,11 @@ export interface AuthIdentityClientDTO {
   failedLoginAttempts: number;
   lastFailedAttempt: TransferDate | null;
   lockedUntil: TransferDate | null;
+  identifiers: AuthIdentifierDTO[];
   credentials: AuthCredentialClientDTO[];
   hasPassword: boolean;
+  hasEmail: boolean;
+  hasPhone: boolean;
   hasOAuth: boolean;
   version: number;
   createdAt: TransferDate;
