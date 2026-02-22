@@ -1,21 +1,22 @@
 /**
  * AIConversation Aggregate Root - Domain Client
- * AI对话聚合�?- 领域客户�?
+ * AI对话聚合根 - 领域客户端
+ *
+ * 【规范说明】
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: AIConversationState): AIConversation
+ * - Instance toDTO(): AIConversationClientDTO
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type {
-  AIConversationClient,
-  AIConversationClientDTO,
-} from '@dailyuse/contracts/ai';
+import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
-import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
 import { AiConversationId } from '../domain-shared/value-objects/ai-conversation-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { Message } from '../entities/message';
 
-// 内部状态接�?
-interface AIConversationState {
+export interface AIConversationState {
   id: AiConversationId;
   identityId: IdentityId;
   name: string;
@@ -29,7 +30,7 @@ interface AIConversationState {
   messages: Message[] | null;
 }
 
-export class AIConversation extends AggregateRoot<AiConversationId> implements AIConversationClient {
+export class AIConversation extends AggregateRoot<AiConversationId> {
   private _props: AIConversationState;
 
   private constructor(props: AIConversationState) {
@@ -39,7 +40,7 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
 
   // ===== Getters =====
 
-  public get identityId(): IIdentityId {
+  public get identityId(): IdentityId {
     return this._props.identityId;
   }
 
@@ -98,20 +99,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> implements A
     });
   }
 
-  public static fromDTO(dto: AIConversationClientDTO): AIConversation {
-    return new AIConversation({
-      id: AiConversationId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      status: dto.status,
-      messageCount: dto.messageCount,
-      lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      messages: dto.messages ? dto.messages.map((m) => Message.fromDTO(m)) : null,
-    });
+  public static load(state: AIConversationState): AIConversation {
+    return new AIConversation(state);
   }
 
   // ===== DTO Conversion =====
