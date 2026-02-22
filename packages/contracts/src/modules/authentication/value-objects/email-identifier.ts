@@ -4,12 +4,6 @@
  * 值对象：以邮箱地址值定义身份，不可变
  */
 
-import type { TransferDate, PersistenceDate } from '@/primitives';
-
-// ============ 标识符类型 ============
-
-export type IdentifierType = 'EMAIL' | 'PHONE';
-
 // ============ EmailIdentifier DTO ============
 
 export interface EmailIdentifierDTO {

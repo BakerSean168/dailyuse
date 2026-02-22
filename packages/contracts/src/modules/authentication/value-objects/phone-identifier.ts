@@ -4,7 +4,7 @@
  * 值对象：以手机号值定义身份，不可变
  */
 
-import type { PhoneNumberDTO, PhoneNumberPersistenceDTO } from '../value-objects/phone-number';
+import type { PhoneNumberDTO, PhoneNumberPersistenceDTO } from './phone-number';
 
 // ============ PhoneIdentifier DTO ============
 

@@ -108,8 +108,8 @@ export interface GoalServerDTO {
  * 数据库存储用
  */
 export interface GoalPersistenceDTO {
-  id: GoalId;
-  identityId: IdentityId;
+  id: string;
+  identityId: string;
   name: string;
   description: string | null;
   color: string;
@@ -128,8 +128,8 @@ export interface GoalPersistenceDTO {
   targetDate: PersistenceDate | null;
   completedAt: PersistenceDate | null;
   archivedAt: PersistenceDate | null;
-  folderId: GoalFolderId | null;
-  parentGoalId: GoalId | null;
+  folderId: string | null;
+  parentGoalId: string | null;
   sortOrder: number;
   reminderConfig: GoalReminderConfigPersistenceDTO | null; // JSON string
 

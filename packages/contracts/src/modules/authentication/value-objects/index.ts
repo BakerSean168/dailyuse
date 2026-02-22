@@ -1,5 +1,6 @@
 // ============ ID Types ============
 
+import type { IdentifierType } from './identifier-type';
 import type { OAuthProvider } from './oauth-provider';
 
 export type {
@@ -44,6 +45,9 @@ export {
   OAuthProvider,
 } from './oauth-provider';
 
+export {
+  IdentifierType,
+} from './identifier-type';
 // ============ Value Objects ============
 
 export type {
@@ -74,3 +78,23 @@ export type {
   DeviceInfoDTO,
   DeviceInfoPersistenceDTO,
 } from './device-info';
+
+// ============ Identifier Value Objects ============
+
+export type {
+  EmailIdentifierDTO,
+  EmailIdentifierPersistenceDTO,
+} from './email-identifier';
+
+export type {
+  PhoneIdentifierDTO,
+  PhoneIdentifierPersistenceDTO,
+} from './phone-identifier';
+
+// ============ AuthIdentifier Union ============
+
+import type { EmailIdentifierDTO, EmailIdentifierPersistenceDTO } from './email-identifier';
+import type { PhoneIdentifierDTO, PhoneIdentifierPersistenceDTO } from './phone-identifier';
+
+export type AuthIdentifierDTO = EmailIdentifierDTO | PhoneIdentifierDTO;
+export type AuthIdentifierPersistenceDTO = EmailIdentifierPersistenceDTO | PhoneIdentifierPersistenceDTO;

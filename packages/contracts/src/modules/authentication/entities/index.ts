@@ -16,3 +16,10 @@ export type {
   PasswordCredentialServerDTO,
   PasswordCredentialPersistenceDTO,
 } from './password-credential-server';
+
+// ============ Entities - OAuthBinding ============
+export type {
+  OAuthBindingServer,
+  OAuthBindingServerDTO,
+  OAuthBindingPersistenceDTO,
+} from './oauth-binding';

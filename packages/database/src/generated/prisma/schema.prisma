@@ -21,7 +21,8 @@ datasource db {
 // ==========================================
 
 model Account {
-  id               String    @id // same as AuthIdentity.id
+  id               String    @id
+  identityId       String    @unique @map("identity_id") // 关联 AuthIdentity
   status           String    @default("ACTIVE") // AccountStatus: ACTIVE | INACTIVE | SUSPENDED | DELETED
   // profile
   profile          Json
@@ -44,7 +45,7 @@ model Account {
   deletedAt        DateTime? @map("deleted_at")
 
   // 关联关系
-  identity AuthIdentity @relation(fields: [id], references: [id], onDelete: Cascade)
+  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // 关联的业务模块
   documents                       Document[]
@@ -89,6 +90,7 @@ model Account {
 
   @@index([emailAddress])
   @@index([phoneFullNumber])
+  @@index([identityId])
   @@map("accounts")
 }
 
@@ -260,7 +262,7 @@ model AppConfig {
 
 // ==========================================
 // Auth Module
-// 认证聚合根、标识符、绑定、凭证、会话
+// 认证聚合根、凭证、会话
 // ==========================================
 
 // 1. 使用枚举保持与领域层 Value Object 一致
@@ -273,6 +275,8 @@ enum AuthIdentityStatus {
 
 enum CredentialType {
   PASSWORD
+  OAUTH
+  PHONE
   MAGIC_LINK
   // PASSKEY // 未来扩展
 }
@@ -281,7 +285,7 @@ enum CredentialStatus {
   ACTIVE
   SUSPENDED
   EXPIRED
-  REVOKED // 如：用户重置了密码导致旧凭证失效
+  REVOKED // 如：用户解绑了 Google，或者重置了密码导致旧凭证失效
 }
 
 // ==========================================
@@ -303,62 +307,16 @@ model AuthIdentity {
   deletedAt DateTime? @map("deleted_at")
 
   // 关联
-  identifiers   AuthIdentifier[]
-  oauthBindings AuthOAuthBinding[]
-  credentials   AuthCredential[]
-  sessions      AuthSession[]
-  accounts      Account[]
+  credentials AuthCredential[]
+  sessions    AuthSession[]
+  accounts    Account[]
 
   @@map("auth_identities")
 }
 
 // ==========================================
-// 2. 标识符表 (AuthIdentifier)
-// 存储邮箱/手机号等值对象标识符
-// 解决"如何找到用户"
-// ==========================================
-model AuthIdentifier {
-  id         String   @id @default(uuid())
-  identityId String   @map("identity_id")
-  type       String // 'EMAIL' | 'PHONE'
-  value      String // 邮箱地址或手机号
-  isVerified Boolean  @default(false) @map("is_verified")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@unique([identityId, type, value])
-  @@index([type, value]) // findByEmail / findByPhone 的查询索引
-  @@map("auth_identifiers")
-}
-
-// ==========================================
-// 3. OAuth 绑定表 (AuthOAuthBinding)
-// Entity 形式的标识符，拥有独立 ID 和可变 Token 状态
-// 解决"通过第三方如何找到用户"
-// ==========================================
-model AuthOAuthBinding {
-  id                String    @id @default(uuid())
-  identityId        String    @map("identity_id")
-  provider          String // GOOGLE, GITHUB 等
-  providerSubjectId String    @map("provider_subject_id")
-  accessToken       String?   @map("access_token")
-  refreshToken      String?   @map("refresh_token")
-  expiresAt         DateTime? @map("expires_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  lastUsedAt        DateTime? @map("last_used_at")
-
-  identity AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerSubjectId])
-  @@index([identityId])
-  @@map("auth_oauth_bindings")
-}
-
-// ==========================================
-// 4. 凭证实体表 (AuthCredential)
-// 仅保留真正的凭证（密码）
-// 解决"如何验证用户"
+// 2. 凭证实体表 (AuthCredential)
+// 采用 "单表继承 (Single Table Inheritance)" 策略
 // ==========================================
 model AuthCredential {
   id String @id @default(uuid())
@@ -372,8 +330,19 @@ model AuthCredential {
   status CredentialStatus @default(ACTIVE)
 
   // [Type: PASSWORD]
+  identifier            String? // 邮箱 或 手机号 (用于快速查找)
   passwordHash          String?   @map("password_hash") // Argon2 hash
   passwordLastChangedAt DateTime? @map("password_last_changed_at") // 密码最后修改时间
+
+  // [Type: OAUTH]
+  provider          String? // GOOGLE, GITHUB (数据库存字符串，代码转枚举)
+  providerSubjectId String?   @map("provider_subject_id") // 第三方返回的 sub / openid
+  accessToken       String?   @map("access_token") // 视安全需求，可能需要加密存储
+  refreshToken      String?   @map("refresh_token") // 视安全需求，可能需要加密存储
+  oauthExpiresAt    DateTime? @map("oauth_expires_at") // Token 过期时间
+
+  // [Type: PHONE]
+  isVerified Boolean? @default(false) @map("is_verified")
 
   // 元数据
   version    Int       @default(1)
@@ -381,12 +350,14 @@ model AuthCredential {
   lastUsedAt DateTime? @map("last_used_at")
   deletedAt  DateTime? @map("deleted_at")
 
+  @@unique([identifier, type])
+  @@unique([provider, providerSubjectId])
   @@index([identityId, type])
   @@map("auth_credentials")
 }
 
 // ==========================================
-// 5. 会话聚合根表 (AuthSession)
+// 3. 会话聚合根表 (AuthSession)
 // ==========================================
 model AuthSession {
   id String @id @default(uuid())

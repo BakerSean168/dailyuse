@@ -1,6 +1,5 @@
 import type {
   ReminderEventMap,
-  ReminderGroupEventMap,
   ReminderTemplateServerDTO,
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
@@ -43,38 +42,38 @@ export type ReminderTemplateMovedPayload = ReminderTemplateUpdatedPayload & {
   newGroupId?: string | null;
 };
 
-export type ReminderGroupCreatedPayload = ReminderGroupEventMap['reminder:group-created'] & {
+export type ReminderGroupCreatedPayload = ReminderEventMap['reminder:group-create'] & {
   identityId?: string;
   groupId?: string;
   group?: ReminderGroupServerDTO;
 };
 
-export type ReminderGroupUpdatedPayload = ReminderGroupEventMap['reminder:group-updated'] & {
+export type ReminderGroupUpdatedPayload = ReminderEventMap['reminder:group-update'] & {
   identityId?: string;
   groupId?: string;
   group?: ReminderGroupServerDTO;
 };
 
-export type ReminderGroupEnabledPayload = ReminderGroupEventMap['reminder:group-enabled'] & {
+export type ReminderGroupEnabledPayload = ReminderEventMap['reminder:group-update'] & {
   identityId?: string;
   groupId?: string;
   group?: ReminderGroupServerDTO;
 };
 
-export type ReminderGroupPausedPayload = ReminderGroupEventMap['reminder:group-paused'] & {
+export type ReminderGroupPausedPayload = ReminderEventMap['reminder:group-update'] & {
   identityId?: string;
   groupId?: string;
   group?: ReminderGroupServerDTO;
 };
 
 export type ReminderGroupControlModeSwitchedPayload =
-  ReminderGroupEventMap['reminder:group-control-mode-switched'] & {
+  ReminderEventMap['reminder:group-update'] & {
     identityId?: string;
     groupId?: string;
     group?: ReminderGroupServerDTO;
   };
 
-export type ReminderGroupDeletedPayload = ReminderGroupEventMap['reminder:group-deleted'] & {
+export type ReminderGroupDeletedPayload = ReminderEventMap['reminder:group-delete'] & {
   identityId?: string;
   groupId?: string;
   group?: ReminderGroupServerDTO;

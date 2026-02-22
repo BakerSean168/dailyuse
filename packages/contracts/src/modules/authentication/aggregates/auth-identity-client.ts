@@ -8,7 +8,7 @@
  */
 
 import type { AuthCredentialClient, AuthCredentialClientDTO } from '../entities/auth-credential-client';
-import type { AuthIdentifierDTO } from '../identifiers';
+import type { AuthIdentifierDTO } from '../value-objects';
 import type { TransferDate, DomainDate, IdentityId } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects';
 

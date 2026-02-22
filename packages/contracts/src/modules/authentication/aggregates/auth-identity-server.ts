@@ -11,7 +11,8 @@
  */
 
 import type { AuthCredentialServer, AuthCredentialServerDTO } from '../entities/auth-credential-server';
-import type { AuthIdentifierDTO, AuthIdentifierPersistenceDTO, OAuthBindingServerDTO, OAuthBindingPersistenceDTO } from '../identifiers';
+import type { AuthIdentifierDTO, AuthIdentifierPersistenceDTO } from '../value-objects';
+import type { OAuthBindingServerDTO, OAuthBindingPersistenceDTO } from '../entities/oauth-binding';
 import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 import type { IdentityId } from '@/primitives';
