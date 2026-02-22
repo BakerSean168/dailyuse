@@ -19,3 +19,4 @@
  */
 
 export { Rule } from './rule';
+export type { RuleState } from './rule';

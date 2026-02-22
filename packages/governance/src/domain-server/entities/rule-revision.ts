@@ -37,8 +37,8 @@
  */
 
 import { Entity } from '@dailyuse/utils/domain';
-import type { RuleRevisionServer, RuleRevisionPersistenceDTO } from '../../contracts/entities/rule-revision-server';
 import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revision-client';
+import type { RuleRevisionServerDTO } from '../../contracts/entities/rule-revision-server';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
@@ -46,11 +46,10 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 // ================= Props Object（参数对象） =================
 
 /**
- * RuleRevision 内部 Props
- * 
- * 包含完整的审计信息
+ * RuleRevision entity state — used to hydrate from persistence via `RuleRevision.load()`.
+ * Uses domain types (value objects), not DTOs.
  */
-interface RuleRevisionProps {
+export interface RuleRevisionState {
   /** 修订记录 ID */
   id: RuleRevisionId;
   
@@ -90,7 +89,7 @@ interface RuleRevisionProps {
  * - 仅提供 readonly getters - 无任何 setters
  * - changedFields 至少包含 1 个字段
  */
-export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevisionServer {
+export class RuleRevision extends Entity<RuleRevisionId> {
   // ================= 私有 readonly 字段 =================
   // 所有字段不可变，保证审计记录完整性
   
@@ -106,7 +105,7 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
   // ================= 构造函数（私有） =================
   // 外部不能直接 new RuleRevision()，必须通过工厂方法创建
   
-  private constructor(props: RuleRevisionProps) {
+  private constructor(props: RuleRevisionState) {
     super(props.id);
     this._ruleId = props.ruleId;
     this._revisionNumber = props.revisionNumber;
@@ -139,7 +138,7 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
    *   changeType: 'Updated',
    * });
    */
-  static create(props: Omit<RuleRevisionProps, 'id' | 'createdAt'> & { id?: RuleRevisionId }): RuleRevision {
+  static create(props: Omit<RuleRevisionState, 'id' | 'createdAt'> & { id?: RuleRevisionId }): RuleRevision {
     if (props.changedFields.length === 0) {
       throw new Error('RuleRevision must have at least one changed field');
     }
@@ -158,10 +157,10 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
   }
 
   /**
-   * Restores RuleRevision from database (no validation)
+   * Restores RuleRevision from persisted state (no validation)
    */
-  static fromPersistence(props: RuleRevisionProps): RuleRevision {
-    return new RuleRevision(props);
+  static load(state: RuleRevisionState): RuleRevision {
+    return new RuleRevision(state);
   }
 
   // ============ NO UPDATE OR DELETE METHODS ============
@@ -183,7 +182,7 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
   /**
    * 转换为 Server DTO（用于内部服务通信）
    */
-  toServerDTO(): import('../../contracts/entities/rule-revision-server').RuleRevisionServerDTO {
+  toServerDTO(): RuleRevisionServerDTO {
     return {
       id: this.id,
       ruleId: this._ruleId,
@@ -214,20 +213,4 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
     };
   }
 
-  /**
-   * 转换为 Persistence DTO（用于数据库存储）
-   */
-  toPersistenceDTO(): RuleRevisionPersistenceDTO {
-    return {
-      id: this.id,
-      ruleId: this._ruleId,
-      revisionNumber: this._revisionNumber,
-      authorId: this._authorId,
-      changedFields: JSON.stringify(this._changedFields),
-      previousValues: JSON.stringify(this._previousValues),
-      newValues: JSON.stringify(this._newValues),
-      changeType: this._changeType,
-      createdAt: this._createdAt,
-    };
-  }
 }

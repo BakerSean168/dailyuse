@@ -43,7 +43,6 @@ import { RuleStatus } from '../../domain-shared/value-objects/rule-status';
 import { RuleSeverity } from '../../domain-shared/value-objects/rule-severity';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { RuleServer, RulePersistenceDTO } from '../../contracts/aggregates/rule-server';
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { GovernanceEventMap } from '../../contracts/protocol/governance-event-map';
@@ -110,11 +109,10 @@ export interface UpdateRuleProps {
 // ================= 内部状态（私有backing字段） =================
 
 /**
- * Rule 的内部 Props 结构
- * 
- * 仅用于内部状态管理，外部通过业务方法或 readonly getters 访问
+ * Rule aggregate state — used to hydrate from persistence via `Rule.load()`.
+ * Uses domain types (value objects), not DTOs.
  */
-interface RuleProps {
+export interface RuleState {
   id: RuleId;
   code: string;
   title: string;
@@ -143,7 +141,7 @@ interface RuleProps {
  * - 状态变更自动触发领域事件
  * - 使用值对象（RuleTag, CodeSnippet）封装验证逻辑
  */
-export class Rule extends AggregateRoot<RuleId> implements RuleServer {
+export class Rule extends AggregateRoot<RuleId> {
   // ================= 私有 backing 字段 =================
   // 遵循 DDD 原则：封装内部状态，仅通过 readonly getters 暴露
   
@@ -189,7 +187,7 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   // ================= 构造函数（私有） =================
   // 外部不能直接 new Rule()，必须通过工厂方法创建
   
-  private constructor(props: RuleProps) {
+  private constructor(props: RuleState) {
     super(props.id);
     this._code = props.code;
     this._title = props.title;
@@ -320,10 +318,10 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
   }
 
   /**
-   * Restores Rule from database (no validation, no events)
+   * Restores Rule from persisted state (no validation, no events)
    */
-  static fromPersistence(props: RuleProps): Rule {
-    return new Rule(props);
+  static load(state: RuleState): Rule {
+    return new Rule(state);
   }
 
   // ============ Lifecycle Methods ============
@@ -638,27 +636,5 @@ export class Rule extends AggregateRoot<RuleId> implements RuleServer {
     };
   }
 
-  /**
-   * 转换为 Persistence DTO（用于数据库存储）
-   */
-  toPersistenceDTO(): RulePersistenceDTO {
-    return {
-      id: this.id,
-      code: this._code,
-      title: this._title,
-      description: this._description,
-      severity: this._severity,
-      status: this._status,
-      deprecationReason: this._deprecationReason ?? null,
-      replacementRuleId: this._replacementRuleId ?? null,
-      liveReferenceLocation: this._liveReferenceLocation ?? null,
-      tags: JSON.stringify(this._tags.map(tag => tag.value)),
-      goodExamples: JSON.stringify(this.goodExamples.map(snippet => snippet.toPersistenceDTO())),
-      badExamples: JSON.stringify(this.badExamples.map(snippet => snippet.toPersistenceDTO())),
-      authorId: this._authorId,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-    };
- 
-  }
 }
+
