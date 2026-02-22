@@ -3,28 +3,20 @@
  * 调度任务聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 ScheduleTaskClient 接口
  * - Private constructor with props object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: ScheduleTaskClientDTO): ScheduleTask
+ * - Static load(state: ScheduleTaskState): ScheduleTask
  * - Instance toDTO(): ScheduleTaskClientDTO
  */
 
 import type {
-  ScheduleTaskClient,
   ScheduleTaskClientDTO,
-  ScheduleConfigClient,
   ScheduleConfigClientDTO,
-  ExecutionInfoClient,
   ExecutionInfoClientDTO,
-  RetryPolicyClient,
   RetryPolicyClientDTO,
-  TaskMetadataClient,
   TaskMetadataClientDTO,
   ScheduleTaskStatus,
   SourceModule,
-  ScheduleExecutionClient,
-  ScheduleExecutionClientDTO,
   Timezone,
   TaskPriority,
   ExecutionStatus,
@@ -39,7 +31,7 @@ import { ScheduleExecution } from '../entities/schedule-execution.js';
 /**
  * ScheduleConfig 值对象包装
  */
-class ScheduleConfigVO implements ScheduleConfigClient {
+export class ScheduleConfigVO {
   constructor(private readonly dto: ScheduleConfigClientDTO) {}
 
   get cronExpression(): string {
@@ -90,7 +82,7 @@ class ScheduleConfigVO implements ScheduleConfigClient {
 /**
  * ExecutionInfo 值对象包装
  */
-class ExecutionInfoVO implements ExecutionInfoClient {
+export class ExecutionInfoVO {
   constructor(private readonly dto: ExecutionInfoClientDTO) {}
 
   get nextRunAt(): Date | null {
@@ -141,7 +133,7 @@ class ExecutionInfoVO implements ExecutionInfoClient {
 /**
  * RetryPolicy 值对象包装
  */
-class RetryPolicyVO implements RetryPolicyClient {
+export class RetryPolicyVO {
   constructor(private readonly dto: RetryPolicyClientDTO) {}
 
   get enabled(): boolean {
@@ -188,7 +180,7 @@ class RetryPolicyVO implements RetryPolicyClient {
 /**
  * TaskMetadata 值对象包装
  */
-class TaskMetadataVO implements TaskMetadataClient {
+export class TaskMetadataVO {
   constructor(private readonly dto: TaskMetadataClientDTO) {}
 
   get payload(): Record<string, any> {
@@ -235,7 +227,7 @@ class TaskMetadataVO implements TaskMetadataClient {
 // ============ Aggregate Root ============
 
 // 内部状态接口
-interface ScheduleTaskState {
+export interface ScheduleTaskState {
   id: ScheduleTaskId;
   identityId: IdentityId;
   name: string;
@@ -244,10 +236,10 @@ interface ScheduleTaskState {
   sourceEntityId: string;
   status: ScheduleTaskStatus;
   enabled: boolean;
-  schedule: ScheduleConfigClient;
-  execution: ExecutionInfoClient;
-  retryPolicy: RetryPolicyClient;
-  metadata: TaskMetadataClient;
+  schedule: ScheduleConfigVO;
+  execution: ExecutionInfoVO;
+  retryPolicy: RetryPolicyVO;
+  metadata: TaskMetadataVO;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -264,7 +256,7 @@ interface ScheduleTaskState {
   executions: ScheduleExecution[] | null;
 }
 
-export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements ScheduleTaskClient {
+export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   private readonly _props: ScheduleTaskState;
 
   private constructor(props: ScheduleTaskState) {
@@ -302,19 +294,19 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   }
 
   // 值对象
-  get schedule(): ScheduleConfigClient {
+  get schedule(): ScheduleConfigVO {
     return this._props.schedule;
   }
 
-  get execution(): ExecutionInfoClient {
+  get execution(): ExecutionInfoVO {
     return this._props.execution;
   }
 
-  get retryPolicy(): RetryPolicyClient {
+  get retryPolicy(): RetryPolicyVO {
     return this._props.retryPolicy;
   }
 
-  get metadata(): TaskMetadataClient {
+  get metadata(): TaskMetadataVO {
     return this._props.metadata;
   }
 
@@ -373,7 +365,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   }
 
   // 子实体
-  get executions(): ScheduleExecutionClient[] | null {
+  get executions(): ScheduleExecution[] | null {
     return this._props.executions ? [...this._props.executions] : null;
   }
 
@@ -403,37 +395,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
-    return new ScheduleTask({
-      id: ScheduleTaskId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      sourceModule: dto.sourceModule,
-      sourceEntityId: dto.sourceEntityId,
-      status: dto.status,
-      enabled: dto.enabled,
-      schedule: new ScheduleConfigVO(dto.schedule),
-      execution: new ExecutionInfoVO(dto.execution),
-      retryPolicy: new RetryPolicyVO(dto.retryPolicy),
-      metadata: new TaskMetadataVO(dto.metadata),
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      statusDisplay: dto.statusDisplay,
-      statusColor: dto.statusColor,
-      sourceModuleDisplay: dto.sourceModuleDisplay,
-      enabledDisplay: dto.enabledDisplay,
-      nextRunAtFormatted: dto.nextRunAtFormatted,
-      lastRunAtFormatted: dto.lastRunAtFormatted,
-      executionSummary: dto.executionSummary,
-      healthStatus: dto.healthStatus,
-      isOverdue: dto.isOverdue,
-      executions: dto.executions
-        ? dto.executions.map((e) => ScheduleExecution.fromDTO(e))
-        : null,
-    });
+  public static load(state: ScheduleTaskState): ScheduleTask {
+    return new ScheduleTask(state);
   }
 
   // ================= DTO Conversion =================
@@ -447,10 +410,10 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
       sourceEntityId: this._props.sourceEntityId,
       status: this._props.status,
       enabled: this._props.enabled,
-      schedule: (this._props.schedule as ScheduleConfigVO).toDTO(),
-      execution: (this._props.execution as ExecutionInfoVO).toDTO(),
-      retryPolicy: (this._props.retryPolicy as RetryPolicyVO).toDTO(),
-      metadata: (this._props.metadata as TaskMetadataVO).toDTO(),
+      schedule: this._props.schedule.toDTO(),
+      execution: this._props.execution.toDTO(),
+      retryPolicy: this._props.retryPolicy.toDTO(),
+      metadata: this._props.metadata.toDTO(),
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
@@ -465,7 +428,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
       healthStatus: this._props.healthStatus,
       isOverdue: this._props.isOverdue,
       executions: this._props.executions
-        ? (this._props.executions as ScheduleExecution[]).map((e) => e.toDTO())
+        ? this._props.executions.map((e) => e.toDTO())
         : null,
     };
   }

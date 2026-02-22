@@ -7,8 +7,6 @@
  * - 是事务边界
  */
 import type {
-  RepositoryPersistenceDTO,
-  RepositoryServer,
   RepositoryServerDTO,
   RepositoryConfigDTO,
   RepositoryStatsDTO,
@@ -19,7 +17,6 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
 import { RepositoryConfig } from '../../domain-shared/value-objects/repository-config';
 import { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';
-import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 /**
@@ -34,8 +31,9 @@ export interface CreateRepositoryParams {
   config?: Partial<RepositoryConfigDTO>;
 }
 
-/** 内部状态接口 for Repository */
-interface RepositoryState {
+/** Domain state interface for Repository */
+export interface RepositoryState {
+  id: RepositoryId;
   identityId: IdentityId;
   name: string;
   type: RepositoryType;
@@ -50,46 +48,14 @@ interface RepositoryState {
   deletedAt: Date | null;
 }
 
-export class Repository
-  extends AggregateRoot<RepositoryId>
-  implements RepositoryServer
-{
+export class Repository extends AggregateRoot<RepositoryId> {
   // ===== 私有属性容器 =====
   private _props: RepositoryState;
 
   // ===== 私有构造函数 =====
-  private constructor(
-    id: RepositoryId,
-    params: {
-      identityId: IdentityId;
-      name: string;
-      type: RepositoryType;
-      path: string | null;
-      description: string | null;
-      config: RepositoryConfig;
-      stats: RepositoryStats;
-      status: RepositoryStatus;
-      createdAt: Date;
-      updatedAt: Date;
-      version: number;
-      deletedAt: Date | null;
-    },
-  ) {
-    super(id);
-    this._props = {
-      identityId: params.identityId,
-      name: params.name,
-      type: params.type,
-      path: params.path,
-      description: params.description,
-      config: params.config,
-      stats: params.stats,
-      status: params.status,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      version: params.version,
-      deletedAt: params.deletedAt,
-    };
+  private constructor(state: RepositoryState) {
+    super(state.id);
+    this._props = state;
   }
 
   // ===== Getters =====
@@ -256,24 +222,6 @@ export class Repository
     };
   }
 
-  public toPersistenceDTO(): RepositoryPersistenceDTO {
-    return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
-      name: this._props.name,
-      type: this._props.type,
-      path: this._props.path,
-      description: this._props.description,
-      config: JSON.stringify(this._props.config.toDTO()),
-      stats: JSON.stringify(this._props.stats.toDTO()),
-      status: this._props.status,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      version: this._props.version,
-      deletedAt: this._props.deletedAt,
-    };
-  }
-
   public toClientDTO(): import('@dailyuse/contracts/repository').RepositoryClientDTO {
     const isDeleted = this._props.status === RepositoryStatus.Deleted;
     const isArchived = this._props.status === RepositoryStatus.Archived;
@@ -338,7 +286,8 @@ export class Repository
         })
       : RepositoryConfig.createDefault();
 
-    return new Repository(id, {
+    return new Repository({
+      id,
       identityId: params.identityId,
       name: params.name,
       type: params.type,
@@ -354,41 +303,8 @@ export class Repository
     });
   }
 
-  public static fromServerDTO(dto: RepositoryServerDTO): Repository {
-    const id = RepositoryId.of(dto.id);
-
-    return new Repository(id, {
-      identityId: IdentityIdType.of(dto.identityId),
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      description: dto.description,
-      config: RepositoryConfig.fromDTO(dto.config),
-      stats: RepositoryStats.fromDTO(dto.stats),
-      status: dto.status,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: dto.version,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: RepositoryState): Repository {
+    return new Repository(state);
   }
 
-  public static fromPersistenceDTO(dto: RepositoryPersistenceDTO): Repository {
-    const id = RepositoryId.of(dto.id);
-
-    return new Repository(id, {
-      identityId: IdentityIdType.of(dto.identityId),
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      description: dto.description,
-      config: RepositoryConfig.fromDTO(JSON.parse(dto.config)),
-      stats: RepositoryStats.fromDTO(JSON.parse(dto.stats)),
-      status: dto.status,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: dto.version,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
 }

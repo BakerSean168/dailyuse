@@ -3,15 +3,13 @@
  * 提醒分组聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 ReminderGroupClient 接口
- * - Private constructor with props object
+ * - Private constructor with params object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: ReminderGroupClientDTO): ReminderGroup
+ * - Static load(state: ReminderGroupState): ReminderGroup
  * - Instance toDTO(): ReminderGroupClientDTO
  */
 
 import type {
-  ReminderGroupClient,
   ReminderGroupClientDTO,
   GroupStatsClientDTO,
   ControlMode,
@@ -21,8 +19,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { ReminderGroupId } from '../../domain-shared/value-objects/reminder-group-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface ReminderGroupState {
+export interface ReminderGroupState {
   id: ReminderGroupId;
   identityId: IdentityId;
   name: string;
@@ -46,7 +43,7 @@ interface ReminderGroupState {
   controlDescription: string;
 }
 
-export class ReminderGroup extends AggregateRoot<ReminderGroupId> implements ReminderGroupClient {
+export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
   private readonly _props: ReminderGroupState;
 
   private constructor(props: ReminderGroupState) {
@@ -142,30 +139,8 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> implements Rem
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: ReminderGroupClientDTO): ReminderGroup {
-    return new ReminderGroup({
-      id: ReminderGroupId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      color: dto.color,
-      icon: dto.icon,
-      controlMode: dto.controlMode,
-      enabled: dto.enabled,
-      status: dto.status,
-      order: dto.order,
-      stats: dto.stats,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      displayName: dto.displayName,
-      controlModeText: dto.controlModeText,
-      statusText: dto.statusText,
-      templateCountText: dto.templateCountText,
-      activeStatusText: dto.activeStatusText,
-      controlDescription: dto.controlDescription,
-    });
+  public static load(state: ReminderGroupState): ReminderGroup {
+    return new ReminderGroup(state);
   }
 
   // ================= DTO Conversion =================

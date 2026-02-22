@@ -1,7 +1,14 @@
 import type Database from 'better-sqlite3';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
-import type { AccountPersistenceDTO } from '@dailyuse/contracts/account';
+import type { AccountState } from '../../../domain-server';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
+import {
+  AccountProfile,
+  AccountSettings,
+  ContactEmail,
+  AccountStatus,
+} from '../../../domain-shared';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
 const logger = createLogger('SqliteAccountRepository');
@@ -23,8 +30,6 @@ export class SqliteAccountRepository implements IAccountRepository {
   constructor(private readonly db: Database.Database) {}
 
   async save(account: Account, _tx?: unknown): Promise<void> {
-    const dto = account.toPersistenceDTO();
-
     this.db.prepare(
       `
       INSERT INTO accounts (
@@ -60,7 +65,7 @@ export class SqliteAccountRepository implements IAccountRepository {
         status = excluded.status,
         updated_at = excluded.updated_at
       `,
-    ).run(this.toRowParams(dto));
+    ).run(this.toRowParams(account));
 
     const domainEvents = account.pullDomainEvents();
     for (const evt of domainEvents) {
@@ -138,7 +143,7 @@ export class SqliteAccountRepository implements IAccountRepository {
     };
   }
 
-  private toRowParams(dto: AccountPersistenceDTO): {
+  private toRowParams(account: Account): {
     id: string;
     username: string;
     email: string;
@@ -150,17 +155,19 @@ export class SqliteAccountRepository implements IAccountRepository {
     created_at: number;
     updated_at: number;
   } {
+    const profileDTO = account.profile.toPersistenceDTO();
+    const settingsDTO = account.settings.toPersistenceDTO();
     return {
-      id: dto.id,
-      username: this.buildUsername(dto),
-      email: dto.email.address,
-      display_name: dto.profile.realName ?? dto.profile.nickname,
-      avatar_url: dto.profile.avatarUrl,
-      locale: dto.settings.language,
-      timezone: dto.settings.timezone,
-      status: this.normalizeStatus(dto.status),
-      created_at: dto.createdAt.getTime(),
-      updated_at: dto.updatedAt.getTime(),
+      id: account.id.toString(),
+      username: this.buildUsername(account),
+      email: account.email.address,
+      display_name: profileDTO.realName ?? profileDTO.nickname,
+      avatar_url: profileDTO.avatarUrl,
+      locale: settingsDTO.language,
+      timezone: settingsDTO.timezone,
+      status: this.normalizeStatus(account.status.toString()),
+      created_at: account.createdAt.getTime(),
+      updated_at: account.updatedAt.getTime(),
     };
   }
 
@@ -168,29 +175,29 @@ export class SqliteAccountRepository implements IAccountRepository {
     const status = this.normalizeStatus(row.status);
     const email = row.email ?? `${row.id}@local.dailyuse`;
 
-    const dto: AccountPersistenceDTO = {
-      id: row.id,
-      status,
-      profile: {
+    const state: AccountState = {
+      id: IdentityId.of(row.id),
+      status: AccountStatus.of(status),
+      profile: AccountProfile.fromPersistenceDTO({
         nickname: row.username,
         realName: row.display_name,
         avatarUrl: row.avatar_url,
         bio: null,
         gender: 'PREFER_NOT_TO_SAY',
         birthday: null,
-      },
-      settings: {
+      }),
+      settings: AccountSettings.fromPersistenceDTO({
         theme: 'SYSTEM',
         language: (row.locale as any) || 'zh-CN',
         timezone: row.timezone || 'Asia/Shanghai',
         notificationEnabled: true,
-      },
-      email: {
+      }),
+      email: ContactEmail.fromPersistenceDTO({
         address: email,
         isVerified: false,
         verifiedAt: null,
         isPrimary: true,
-      },
+      }),
       phone: null,
       version: 1,
       createdAt: new Date(row.created_at),
@@ -198,21 +205,21 @@ export class SqliteAccountRepository implements IAccountRepository {
       deletedAt: null,
     };
 
-    return Account.fromPersistenceDTO(dto);
+    return Account.load(state);
   }
 
-  private buildUsername(dto: AccountPersistenceDTO): string {
-    const preferred = dto.profile.nickname?.trim();
+  private buildUsername(account: Account): string {
+    const preferred = account.profile.nickname?.trim();
     if (preferred && preferred.length >= 2) {
       return preferred.slice(0, 20);
     }
 
-    const fromEmail = dto.email.address.split('@')[0]?.trim();
+    const fromEmail = account.email.address.split('@')[0]?.trim();
     if (fromEmail && fromEmail.length >= 2) {
       return fromEmail.slice(0, 20);
     }
 
-    const fallback = `u_${dto.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 18)}`;
+    const fallback = `u_${account.id.toString().replace(/[^a-zA-Z0-9]/g, '').slice(0, 18)}`;
     return fallback.length >= 2 ? fallback : `u_${Date.now()}`;
   }
 

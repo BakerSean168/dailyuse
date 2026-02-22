@@ -5,14 +5,12 @@
 
 import { Entity } from '@dailyuse/utils';
 import type {
-  SettingEntryClient,
   SettingEntryClientDTO,
 } from '@dailyuse/contracts/setting';
 import { SettingCategory } from '@dailyuse/contracts/setting';
 import { SettingEntryId } from '@/domain-shared/value-objects/setting-entry-id';
 
-// 内部状态接口
-interface SettingEntryState {
+export interface SettingEntryState {
   id: SettingEntryId;
   key: string;
   value: unknown;
@@ -23,7 +21,7 @@ interface SettingEntryState {
   deletedAt: Date | null;
 }
 
-export class SettingEntry extends Entity<SettingEntryId> implements SettingEntryClient {
+export class SettingEntry extends Entity<SettingEntryId> {
   private readonly _props: SettingEntryState;
 
   private constructor(props: SettingEntryState) {
@@ -63,17 +61,8 @@ export class SettingEntry extends Entity<SettingEntryId> implements SettingEntry
 
   // ===== Factory Methods =====
 
-  public static fromDTO(dto: SettingEntryClientDTO): SettingEntry {
-    return new SettingEntry({
-      id: SettingEntryId.of(dto.id),
-      key: dto.key,
-      value: dto.value,
-      category: dto.category,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: SettingEntryState): SettingEntry {
+    return new SettingEntry(state);
   }
 
   // ===== DTO Conversion =====

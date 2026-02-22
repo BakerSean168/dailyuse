@@ -1,6 +1,5 @@
 /**
  * AuthSession 聚合根实�?
- * 实现 AuthSessionServer 接口
  * 
  * 核心职责:
  * 1. 管理用户会话生命周期
@@ -9,24 +8,21 @@
  */
 
 import type {
-  AuthSessionServer,
   AuthSessionServerDTO,
   DeviceInfo as IDeviceInfo,
   AuthEventMap,
+  AuthSessionClientDTO,
 } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 
 import {
   SessionStatus,
   DeviceInfo,
-AuthSessionId,
-
+  AuthSessionId,
 } from '../../domain-shared';
 
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '../services/token-provider.interface';
-
-import type { AuthSessionClientDTO } from '@dailyuse/contracts/authentication';
 
 // ================= 常量定义 =================
 
@@ -39,11 +35,24 @@ const DEFAULT_SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 /** 滑动窗口刷新阈值（毫秒�? 1 小时 */
 const SLIDING_WINDOW_THRESHOLD_MS = 60 * 60 * 1000;
 
+/** Domain state for AuthSession aggregate */
+export interface AuthSessionState {
+  id: AuthSessionId;
+  identityId: IdentityId;
+  deviceInfo: DeviceInfo;
+  refreshTokenHash: string | undefined;
+  status: typeof SessionStatus.ACTIVE;
+  createdAt: Date;
+  expiresAt: Date;
+  lastActiveAt: Date;
+  isRevoked: boolean;
+}
+
 /**
  * AuthSession 聚合�?
  * 管理用户的登录会�?
  */
-export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSessionServer {
+export class AuthSession extends AggregateRoot<AuthSessionId> {
 
   // ================= 1. 内部状�?(Backing Fields) =================
   private _identityId: IdentityId;
@@ -56,17 +65,17 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
   private _isRevoked: boolean;
 
   // ================= 2. 构造函�?(Private) =================
-  private constructor(props: AuthSessionServerDTO) {
-    super(props.id);
+  private constructor(state: AuthSessionState) {
+    super(state.id);
 
-    this._identityId = props.identityId;
-    this._deviceInfo = DeviceInfo.fromDTO(props.deviceInfo);
-    this._refreshTokenHash = props.refreshTokenHash;
-    this._status = SessionStatus.of(props.status);
-    this._createdAt = new Date(props.createdAt);
-    this._expiresAt = new Date(props.expiresAt);
-    this._lastActiveAt = new Date(props.lastActiveAt);
-    this._isRevoked = props.isRevoked;
+    this._identityId = state.identityId;
+    this._deviceInfo = state.deviceInfo;
+    this._refreshTokenHash = state.refreshTokenHash;
+    this._status = state.status;
+    this._createdAt = state.createdAt;
+    this._expiresAt = state.expiresAt;
+    this._lastActiveAt = state.lastActiveAt;
+    this._isRevoked = state.isRevoked;
   }
 
   // ================= 3. 公共属�?(Getters) =================
@@ -114,20 +123,21 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
     refreshTokenHash: string;
     expiresAt: number;
   }): AuthSession {
-    const now = Date.now();
+    const now = new Date();
 
-    const dto: AuthSessionServerDTO = {
+    const state: AuthSessionState = {
       id: params.id,
       identityId: params.identityId,
-      deviceInfo: params.deviceInfo,
+      deviceInfo: DeviceInfo.fromDTO(params.deviceInfo),
+      refreshTokenHash: params.refreshTokenHash,
       status: SessionStatus.ACTIVE,
       createdAt: now,
-      expiresAt: params.expiresAt,
+      expiresAt: new Date(params.expiresAt),
       lastActiveAt: now,
       isRevoked: false,
     };
 
-    const session = new AuthSession(dto);
+    const session = new AuthSession(state);
 
     session.addDomainEvent<AuthEventMap['auth:session-created']>('auth:session-created', {
       identityId: params.identityId,
@@ -161,10 +171,10 @@ export class AuthSession extends AggregateRoot<AuthSessionId> implements AuthSes
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复
+   * 🏭 恢复工厂：从领域状态恢复
    */
-  public static fromServerDTO(dto: AuthSessionServerDTO): AuthSession {
-    return new AuthSession(dto);
+  public static load(state: AuthSessionState): AuthSession {
+    return new AuthSession(state);
   }
 
   // ================= 5. 业务行为 (Business Actions) =================

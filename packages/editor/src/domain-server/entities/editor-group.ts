@@ -1,13 +1,10 @@
 /**
  * EditorGroup 实体实现
- * 实现 EditorGroupServer 接口
  * 作为 EditorSession 实体的子实体
  */
 
 import type {
   EditorGroupClientDTO,
-  EditorGroupPersistenceDTO,
-  EditorGroupServer,
   EditorGroupServerDTO,
   TabType,
   TabViewStateServerDTO,
@@ -21,21 +18,21 @@ import type {
 } from '@dailyuse/contracts/primitives';
 import { Entity, generateUUID } from '@dailyuse/utils';
 import { EditorGroupId as EditorGroupIdType } from '../../domain-shared/value-objects/editor-group-id';
-import { EditorSessionId as EditorSessionIdType } from '../../domain-shared/value-objects/editor-session-id';
-import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
 import { EditorTab } from './editor-tab';
 import { BusinessRuleViolationError } from '@dailyuse/utils';
 
 /**
- * EditorGroup 内部状态接口
+ * EditorGroup 状态接口（domain types）
  */
-interface EditorGroupState {
+export interface EditorGroupState {
+  id: EditorGroupId;
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   groupIndex: number;
   activeTabIndex: number;
   name: string | null;
+  tabs: EditorTab[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,38 +41,19 @@ interface EditorGroupState {
  * EditorGroup 实体
  * 作为 EditorSession 实体的子实体
  */
-export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupServer {
+export class EditorGroup extends Entity<EditorGroupId> {
   // ===== 私有属性 =====
-  private _props: EditorGroupState;
+  private _props: Omit<EditorGroupState, 'id' | 'tabs'>;
 
   // ===== 子实体 =====
   private _tabs: EditorTab[];
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    id: EditorGroupId;
-    sessionId: EditorSessionId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    groupIndex: number;
-    activeTabIndex: number;
-    name?: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    tabs?: EditorTab[];
-  }) {
-    super(params.id);
-    this._props = {
-      sessionId: params.sessionId,
-      workspaceId: params.workspaceId,
-      identityId: params.identityId,
-      groupIndex: params.groupIndex,
-      activeTabIndex: params.activeTabIndex,
-      name: params.name ?? null,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-    };
-    this._tabs = params.tabs ?? [];
+  private constructor(state: EditorGroupState) {
+    super(state.id);
+    const { id: _id, tabs, ...rest } = state;
+    this._props = rest;
+    this._tabs = tabs;
   }
 
   // ===== Getter 属性 =====
@@ -116,6 +94,14 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
   }
 
   // ===== 工厂方法 =====
+
+  /**
+   * 从状态恢复实体
+   */
+  public static load(state: EditorGroupState): EditorGroup {
+    return new EditorGroup(state);
+  }
+
   public static create(params: {
     sessionId: EditorSessionId;
     workspaceId: EditorWorkspaceId;
@@ -136,66 +122,6 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
       updatedAt: now,
       tabs: [],
     });
-  }
-
-  public static fromServerDTO(dto: EditorGroupServerDTO): EditorGroup {
-    const group = new EditorGroup({
-      id: dto.id,
-      sessionId: dto.sessionId,
-      workspaceId: dto.workspaceId,
-      identityId: dto.identityId,
-      groupIndex: dto.groupIndex,
-      activeTabIndex: dto.activeTabIndex,
-      name: dto.name,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      tabs: [],
-    });
-
-    // 递归重建子实体
-    group._tabs = dto.tabs?.map((tabDto) => EditorTab.fromServerDTO(tabDto)) ?? [];
-
-    return group;
-  }
-
-  public static fromClientDTO(dto: EditorGroupClientDTO): EditorGroup {
-    const group = new EditorGroup({
-      id: EditorGroupIdType.of(dto.id),
-      sessionId: EditorSessionIdType.of(dto.sessionId),
-      workspaceId: dto.workspaceId as EditorWorkspaceId,
-      identityId: IdentityIdType.of(dto.identityId),
-      groupIndex: dto.groupIndex,
-      activeTabIndex: dto.activeTabIndex,
-      name: dto.name,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      tabs: [],
-    });
-
-    // 递归重建子实体
-    group._tabs = dto.tabs?.map((tabDto) => EditorTab.fromClientDTO(tabDto)) ?? [];
-
-    return group;
-  }
-
-  public static fromPersistenceDTO(dto: EditorGroupPersistenceDTO): EditorGroup {
-    const group = new EditorGroup({
-      id: dto.id,
-      sessionId: dto.session_id,
-      workspaceId: dto.workspace_id,
-      identityId: dto.identityId,
-      groupIndex: dto.group_index,
-      activeTabIndex: dto.active_tab_index,
-      name: dto.name,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      tabs: [],
-    });
-
-    // 递归重建子实体
-    group._tabs = dto.tabs?.map((tabDto) => EditorTab.fromPersistenceDTO(tabDto)) ?? [];
-
-    return group;
   }
 
   // ===== 业务方法 =====
@@ -342,18 +268,4 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupSer
     };
   }
 
-  public toPersistenceDTO(): EditorGroupPersistenceDTO {
-    return {
-      id: this.id,
-      session_id: this._props.sessionId,
-      workspace_id: this._props.workspaceId,
-      identityId: this._props.identityId,
-      group_index: this._props.groupIndex,
-      active_tab_index: this._props.activeTabIndex,
-      name: this._props.name,
-      tabs: this._tabs.map((tab) => tab.toPersistenceDTO()),
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-    };
-  }
 }

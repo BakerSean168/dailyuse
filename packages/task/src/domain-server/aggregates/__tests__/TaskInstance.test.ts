@@ -2,10 +2,10 @@
  * TaskInstance 聚合根单元测试
  *
  * 测试覆盖：
- * - 工厂方法 (create, fromServerDTO, fromPersistenceDTO)
+ * - 工厂方法 (create, load)
  * - 状态转换 (start, complete, skip, markExpired)
  * - 业务判断 (canStart, canComplete, canSkip, isOverdue)
- * - DTO 转换 (toServerDTO, toClientDTO, toPersistenceDTO)
+ * - DTO 转换 (toServerDTO, toClientDTO)
  * - 边界条件和错误处理
  *
  * 目标覆盖率: 90%+
@@ -13,10 +13,14 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskInstance } from '../task-instance';
+import type { TaskInstanceState } from '../task-instance';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../../value-objects';
-import type { CompletionRecordServerDTO, SkipRecordServerDTO, TaskInstancePersistenceDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
-import { TimeType } from '@dailyuse/contracts/task';
+import type { CompletionRecordServerDTO, SkipRecordServerDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus, TimeType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskInstanceId } from '../../../domain-shared/value-objects/task-instance-id';
+import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
+import { IdentityId } from '@dailyuse/domain-shared';
 
 describe('TaskInstance Aggregate', () => {
   // ==================== 测试数据 ====================
@@ -103,16 +107,17 @@ describe('TaskInstance Aggregate', () => {
       });
     });
 
-    describe('fromServerDTO()', () => {
-      it('应该从 ServerDTO 正确恢复实例', () => {
+    describe('load()', () => {
+      it('应该从 State 正确恢复实例', () => {
         const now = Date.now();
-        const dto: TaskInstanceServerDTO = {
-          id: 'test-uuid',
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+        const state: TaskInstanceState = {
+          id: TaskInstanceId.of('test-uuid'),
+          templateId: TaskTemplateId.of(mockTemplateId),
+          identityId: IdentityId.of(mockAccountId),
           instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig().toServerDTO(),
-          status: 'PENDING',
+          timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
+          status: TaskInstanceStatus.Pending,
           completionRecord: null,
           skipRecord: null,
           actualStartTime: null,
@@ -120,45 +125,48 @@ describe('TaskInstance Aggregate', () => {
           note: null,
           createdAt: now,
           updatedAt: now,
+          version: 1,
+          deletedAt: null,
         };
 
-        const instance = TaskInstance.fromServerDTO(dto);
+        const instance = TaskInstance.load(state);
 
         expect(instance.id).toBe('test-uuid');
-        expect(instance.templateId).toBe(mockTemplateId);
-        expect(instance.status).toBe('PENDING');
+        expect(instance.templateId.toString()).toBe(mockTemplateId);
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
       });
 
       it('应该正确恢复包含 completionRecord 的实例', () => {
         const now = Date.now();
-        const completionRecordDTO: CompletionRecordServerDTO = {
+        const completionRecord = CompletionRecord.create({
           completedAt: now,
           actualDuration: 3600000,
           note: 'Test note',
           rating: 5,
-          taskId: 'test-uuid',
-          completionStatus: 'completed',
-        };
+        });
 
-        const dto: TaskInstanceServerDTO = {
-          id: 'test-uuid',
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+        const state: TaskInstanceState = {
+          id: TaskInstanceId.of('test-uuid'),
+          templateId: TaskTemplateId.of(mockTemplateId),
+          identityId: IdentityId.of(mockAccountId),
           instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig().toServerDTO(),
-          status: 'COMPLETED',
-          completionRecord: completionRecordDTO,
+          timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
+          status: TaskInstanceStatus.Completed,
+          completionRecord,
           skipRecord: null,
           actualStartTime: now - 3600000,
           actualEndTime: now,
           note: 'Test note',
           createdAt: now,
           updatedAt: now,
+          version: 1,
+          deletedAt: null,
         };
 
-        const instance = TaskInstance.fromServerDTO(dto);
+        const instance = TaskInstance.load(state);
 
-        expect(instance.status).toBe('COMPLETED');
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(instance.completionRecord).not.toBeNull();
         expect(instance.completionRecord?.completedAt).toBe(now);
         expect(instance.completionRecord?.rating).toBe(5);
@@ -166,60 +174,35 @@ describe('TaskInstance Aggregate', () => {
 
       it('应该正确恢复包含 skipRecord 的实例', () => {
         const now = Date.now();
-        const skipRecordDTO: SkipRecordServerDTO = {
+        const skipRecord = SkipRecord.create({
           skippedAt: now,
           reason: 'Too busy',
-        };
+        });
 
-        const dto: TaskInstanceServerDTO = {
-          id: 'test-uuid',
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+        const state: TaskInstanceState = {
+          id: TaskInstanceId.of('test-uuid'),
+          templateId: TaskTemplateId.of(mockTemplateId),
+          identityId: IdentityId.of(mockAccountId),
           instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig().toServerDTO(),
-          status: 'SKIPPED',
+          timeConfig: createTestTimeConfig(),
+          importance: ImportanceLevel.Important,
+          status: TaskInstanceStatus.Skipped,
           completionRecord: null,
-          skipRecord: skipRecordDTO,
+          skipRecord,
           actualStartTime: null,
           actualEndTime: null,
           note: 'Too busy',
           createdAt: now,
           updatedAt: now,
+          version: 1,
+          deletedAt: null,
         };
 
-        const instance = TaskInstance.fromServerDTO(dto);
+        const instance = TaskInstance.load(state);
 
-        expect(instance.status).toBe('SKIPPED');
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
         expect(instance.skipRecord).not.toBeNull();
         expect(instance.skipRecord?.reason).toBe('Too busy');
-      });
-    });
-
-    describe('fromPersistenceDTO()', () => {
-      it('应该从 PersistenceDTO 正确恢复实例', () => {
-        const now = Date.now();
-        const timeConfigDTO = createTestTimeConfig().toPersistenceDTO();
-
-        const dto: TaskInstancePersistenceDTO = {
-          id: 'test-uuid',
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
-          instanceDate: mockInstanceDate,
-          timeConfig: JSON.stringify(timeConfigDTO),
-          status: 'PENDING',
-          completionRecord: null,
-          skipRecord: null,
-          actualStartTime: null,
-          actualEndTime: null,
-          note: null,
-          createdAt: now,
-          updatedAt: now,
-        };
-
-        const instance = TaskInstance.fromPersistenceDTO(dto);
-
-        expect(instance.id).toBe('test-uuid');
-        expect(instance.status).toBe('PENDING');
       });
     });
   });
@@ -767,39 +750,6 @@ describe('TaskInstance Aggregate', () => {
         expect(dto.note).toBe('Test note');
       });
     });
-
-    describe('toPersistenceDTO()', () => {
-      it('应该正确转换为 PersistenceDTO', () => {
-        const dto = instance.toPersistenceDTO();
-
-        expect(dto.id).toBe(instance.id);
-        expect(dto.templateId).toBe(mockTemplateId);
-        expect(dto.identityId).toBe(mockAccountId);
-        expect(dto.status).toBe('PENDING');
-        expect(dto.importance).toBe(ImportanceLevel.Important);
-        expect(typeof dto.timeConfig).toBe('string');
-        expect(dto.completionRecord).toBeNull();
-        expect(dto.skipRecord).toBeNull();
-      });
-
-      it('应该序列化 completionRecord（如果存在）', () => {
-        instance.complete();
-        const dto = instance.toPersistenceDTO();
-
-        expect(dto.completionRecord).not.toBeNull();
-        expect(typeof dto.completionRecord).toBe('string');
-        expect(() => JSON.parse(dto.completionRecord as string)).not.toThrow();
-      });
-
-      it('应该序列化 skipRecord（如果存在）', () => {
-        instance.skip('Busy');
-        const dto = instance.toPersistenceDTO();
-
-        expect(dto.skipRecord).not.toBeNull();
-        expect(typeof dto.skipRecord).toBe('string');
-        expect(() => JSON.parse(dto.skipRecord as string)).not.toThrow();
-      });
-    });
   });
 
   // ==================== 状态转换测试 ====================
@@ -917,7 +867,7 @@ describe('TaskInstance Aggregate', () => {
       expect(instance.timeConfig.timeType).toBe('ALL_DAY');
     });
 
-    it('应该正确处理往返转换（ServerDTO）', () => {
+    it('应该正确处理往返转换（ServerDTO → load）', () => {
       const original = TaskInstance.create({
         templateId: mockTemplateId,
         identityId: mockAccountId,
@@ -929,30 +879,29 @@ describe('TaskInstance Aggregate', () => {
       original.complete(3600000, 'Test', 5);
 
       const dto = original.toServerDTO();
-      const restored = TaskInstance.fromServerDTO(dto);
-
-      expect(restored.id).toBe(original.id);
-      expect(restored.status).toBe(original.status);
-      expect(restored.completionRecord?.rating).toBe(5);
-    });
-
-    it('应该正确处理往返转换（PersistenceDTO）', () => {
-      const original = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
+      const restored = TaskInstance.load({
+        id: TaskInstanceId.of(dto.id),
+        templateId: TaskTemplateId.of(dto.templateId),
+        identityId: IdentityId.of(dto.identityId),
+        instanceDate: dto.instanceDate,
+        timeConfig: TaskTimeConfig.fromDTO(dto.timeConfig),
+        importance: dto.importance as ImportanceLevel,
+        priority: dto.priority,
+        status: dto.status as TaskInstanceStatus,
+        completionRecord: original.completionRecord,
+        skipRecord: null,
+        actualStartTime: dto.actualStartTime,
+        actualEndTime: dto.actualEndTime,
+        note: dto.comment,
+        createdAt: dto.createdAt,
+        updatedAt: dto.updatedAt,
+        version: dto.version,
+        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       });
 
-      original.skip('Busy');
-
-      const dto = original.toPersistenceDTO();
-      const restored = TaskInstance.fromPersistenceDTO(dto);
-
-      expect(restored.id).toBe(original.id);
+      expect(restored.id.toString()).toBe(original.id.toString());
       expect(restored.status).toBe(original.status);
-      expect(restored.skipRecord?.reason).toBe('Busy');
+      expect(restored.completionRecord?.rating).toBe(5);
     });
 
     it('应该处理没有 actualStartTime 的完成', () => {

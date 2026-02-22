@@ -3,4 +3,4 @@
  * Task 模块实体导出
  */
 
-export { Subtask } from './subtask.js';
+export { Subtask, type SubtaskState } from './subtask.js';

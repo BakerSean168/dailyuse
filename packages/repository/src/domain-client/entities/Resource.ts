@@ -3,19 +3,15 @@
  * 资源实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 ResourceClient 接口
  * - Private constructor with params object
  * - Private _field backing fields
  * - Public getters
- * - Static fromDTO(dto: ResourceClientDTO): Resource
+ * - Static load(state: ResourceState): Resource
  * - Instance toDTO(): ResourceClientDTO
  */
 
 import type {
-  ResourceClient,
   ResourceClientDTO,
-  ResourceMetadataDTO,
-  ResourceStatsDTO,
 } from '@dailyuse/contracts/repository';
 import type { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
 import type { RepositoryId as IRepositoryId, FolderId as IFolderId } from '@dailyuse/contracts/primitives';
@@ -26,8 +22,7 @@ import { ResourceStats } from '../../domain-shared/value-objects/resource-stats'
 import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
 import { FolderId } from '../../domain-shared/value-objects/folder-id';
 
-// 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）
-interface ResourceState {
+export interface ResourceState {
   id: ResourceId;
   repositoryId: RepositoryId;
   folderId: FolderId | null;
@@ -46,7 +41,7 @@ interface ResourceState {
   deletedAt: Date | null;
 }
 
-export class Resource extends Entity<ResourceId> implements ResourceClient {
+export class Resource extends Entity<ResourceId> {
   private readonly _props: ResourceState;
 
   private constructor(props: ResourceState) {
@@ -217,25 +212,8 @@ export class Resource extends Entity<ResourceId> implements ResourceClient {
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: ResourceClientDTO): Resource {
-    return new Resource({
-      id: ResourceId.of(dto.id),
-      repositoryId: RepositoryId.of(dto.repositoryId),
-      folderId: dto.folderId ? FolderId.of(dto.folderId) : null,
-      name: dto.name,
-      type: dto.type,
-      mimeType: dto.mimeType,
-      path: dto.path,
-      size: dto.size,
-      content: dto.content,
-      metadata: ResourceMetadata.fromDTO(dto.metadata),
-      stats: ResourceStats.fromDTO(dto.stats),
-      status: dto.status,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: ResourceState): Resource {
+    return new Resource(state);
   }
 
   // ================= DTO Conversion =================

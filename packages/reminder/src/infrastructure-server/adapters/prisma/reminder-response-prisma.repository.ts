@@ -22,7 +22,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
   }
 
   async save(response: ReminderResponse): Promise<void> {
-    const dto = response.toPersistenceDTO();
+    const dto = response.toServerDTO();
 
     await this.prisma.reminderResponse.upsert({
       where: { id: dto.id },
@@ -30,17 +30,17 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
         id: dto.id,
         templateId: dto.reminderTemplateId,
         action: dto.action,
-        responseTime: dto.responseTime
-          ? Math.floor(dto.responseTime.getTime() / 1000)
+        responseTime: dto.responseTime != null
+          ? Math.floor(dto.responseTime / 1000)
           : null,
-        timestamp: dto.timestamp,
+        timestamp: new Date(dto.timestamp),
       },
       update: {
         action: dto.action,
-        responseTime: dto.responseTime
-          ? Math.floor(dto.responseTime.getTime() / 1000)
+        responseTime: dto.responseTime != null
+          ? Math.floor(dto.responseTime / 1000)
           : null,
-        timestamp: dto.timestamp,
+        timestamp: new Date(dto.timestamp),
       },
     });
   }

@@ -6,7 +6,9 @@
 import type Database from 'better-sqlite3';
 import { GoalFolder } from '@/domain-server';
 import type { IGoalFolderRepository } from '@/domain-server';
-import type { GoalFolderPersistenceDTO } from '@dailyuse/contracts/goal';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { GoalFolderId } from '@/domain-shared';
+import type { FolderType } from '@dailyuse/contracts/goal';
 
 // Helper: Date → INTEGER (millis)
 function dateToInt(d: Date | null | undefined): number | null {
@@ -18,8 +20,6 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
   constructor(private db: Database.Database) {}
 
   async save(folder: GoalFolder): Promise<void> {
-    const dto = folder.toPersistenceDTO();
-
     this.db
       .prepare(
         `INSERT INTO goal_folders (
@@ -43,21 +43,21 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
         deleted_at = excluded.deleted_at`,
       )
       .run(
-        dto.id as string,
-        dto.identityId as string,
-        dto.name,
-        dto.description,
-        dto.icon,
-        dto.color,
-        dto.parentFolderId ? (dto.parentFolderId as string) : null,
-        dto.sortOrder,
-        dto.folderType,
-        dto.goalCount,
-        dto.completedGoalCount,
-        dto.version,
-        dateToInt(dto.createdAt),
-        dateToInt(dto.updatedAt),
-        dateToInt(dto.deletedAt),
+        folder.id as string,
+        folder.identityId as string,
+        folder.name,
+        folder.description,
+        folder.icon,
+        folder.color,
+        folder.parentFolderId ? (folder.parentFolderId as string) : null,
+        folder.sortOrder,
+        folder.folderType,
+        folder.goalCount,
+        folder.completedGoalCount,
+        folder.version,
+        dateToInt(folder.createdAt),
+        dateToInt(folder.updatedAt),
+        dateToInt(folder.deletedAt),
       );
   }
 
@@ -93,24 +93,23 @@ export class SqliteGoalFolderRepository implements IGoalFolderRepository {
   }
 
   private rowToGoalFolder(row: any): GoalFolder {
-    const dto: GoalFolderPersistenceDTO = {
-      id: row.id,
-      identityId: row.identity_id,
+    return GoalFolder.load({
+      id: GoalFolderId.of(row.id),
+      identityId: IdentityId.of(row.identity_id),
       name: row.name,
       description: row.description ?? null,
       icon: row.icon ?? null,
       color: row.color ?? null,
-      parentFolderId: row.parent_folder_id ?? null,
+      parentFolderId: row.parent_folder_id ? GoalFolderId.of(row.parent_folder_id) : null,
       sortOrder: row.sort_order ?? 0,
-      folderType: row.folder_type ?? null,
+      folderType: (row.folder_type as FolderType) ?? null,
+      isSystemFolder: false,
       goalCount: row.goal_count ?? 0,
       completedGoalCount: row.completed_goal_count ?? 0,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
       deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
       version: row.version ?? 1,
-    };
-
-    return GoalFolder.fromPersistenceDTO(dto);
+    });
   }
 }

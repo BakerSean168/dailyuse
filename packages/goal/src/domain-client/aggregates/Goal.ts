@@ -3,18 +3,15 @@
  * 目标聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 GoalClient 接口
  * - Private constructor with props object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: GoalClientDTO): Goal
+ * - Static load(state: GoalState): Goal
  * - Instance toDTO(): GoalClientDTO
  */
 
 import type {
-  GoalClient,
   GoalClientDTO,
   GoalReminderConfig,
-  GoalTimeRangeSummary,
 } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -23,8 +20,7 @@ import { GoalId, GoalFolderId } from '@/domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { KeyResult, GoalReview } from '../entities';
 
-// 内部状态接口
-interface GoalState {
+export interface GoalState {
   id: GoalId;
   identityId: IdentityId;
   name: string;
@@ -53,7 +49,7 @@ interface GoalState {
   reviews: GoalReview[] | null;
 }
 
-export class Goal extends AggregateRoot<GoalId> implements GoalClient {
+export class Goal extends AggregateRoot<GoalId> {
   private readonly _props: GoalState;
 
   private constructor(props: GoalState) {
@@ -167,35 +163,8 @@ export class Goal extends AggregateRoot<GoalId> implements GoalClient {
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: GoalClientDTO): Goal {
-    return new Goal({
-      id: GoalId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      color: dto.color,
-      feasibilityAnalysis: dto.feasibilityAnalysis,
-      motivation: dto.motivation,
-      status: dto.status,
-      importance: dto.importance,
-      priority: dto.priority ?? 0,
-      category: dto.category,
-      tags: dto.tags ?? [],
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
-      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-      archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
-      folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
-      parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
-      sortOrder: dto.sortOrder,
-      reminderConfig: dto.reminderConfig ?? null,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      keyResults: dto.keyResults?.map(kr => KeyResult.fromDTO(kr)) ?? null,
-      reviews: dto.reviews?.map(r => GoalReview.fromDTO(r)) ?? null,
-    });
+  public static load(state: GoalState): Goal {
+    return new Goal(state);
   }
 
   // ================= DTO Conversion =================

@@ -26,3 +26,4 @@
  */
 
 export { RuleRevision } from './rule-revision';
+export type { RuleRevisionState } from './rule-revision';

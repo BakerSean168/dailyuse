@@ -4,5 +4,6 @@
  */
 
 export { Message } from './message';
+export type { MessageState } from './message';
 export type { KnowledgeGenerationTask, KnowledgeGenerationTaskStatus } from './knowledge-generation-task';
 export { createKnowledgeGenerationTask, updateTaskProgress, completeTask, failTask } from './knowledge-generation-task';

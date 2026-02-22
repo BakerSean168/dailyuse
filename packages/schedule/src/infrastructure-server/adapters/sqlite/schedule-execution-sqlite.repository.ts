@@ -12,8 +12,6 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
   constructor(private db: Database.Database) {}
 
   async save(execution: ScheduleExecution): Promise<void> {
-    const dto = execution.toPersistenceDTO();
-
     const stmt = this.db.prepare(`
       INSERT INTO schedule_executions (
         id, task_id, execution_time, status, duration, result, error, retry_count, created_at
@@ -27,15 +25,15 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     `);
 
     stmt.run(
-      dto.id,
-      dto.taskId,
-      dto.executionTime,
-      dto.status,
-      dto.duration || null,
-      dto.result || null,
-      dto.error || null,
-      dto.retryCount,
-      dto.createdAt,
+      execution.id,
+      execution.taskId,
+      execution.executionTime,
+      execution.status,
+      execution.duration || null,
+      execution.result ? JSON.stringify(execution.result) : null,
+      execution.error || null,
+      execution.retryCount,
+      execution.createdAt.getTime(),
     );
   }
 
@@ -45,7 +43,7 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
 
     if (!row) return null;
 
-    return ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row));
+    return ScheduleExecution.load(this.rowToState(row));
   }
 
   async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
@@ -54,14 +52,14 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     );
     const rows = stmt.all(taskId) as any[];
 
-    return rows.map((row) => ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row)));
+    return rows.map((row) => ScheduleExecution.load(this.rowToState(row)));
   }
 
   async findByStatus(status: ExecutionStatus): Promise<ScheduleExecution[]> {
     const stmt = this.db.prepare(`SELECT * FROM schedule_executions WHERE status = ?`);
     const rows = stmt.all(status) as any[];
 
-    return rows.map((row) => ScheduleExecution.fromPersistenceDTO(this.rowToExecution(row)));
+    return rows.map((row) => ScheduleExecution.load(this.rowToState(row)));
   }
 
   async delete(id: string): Promise<void> {
@@ -74,17 +72,17 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     stmt.run(taskId);
   }
 
-  private rowToExecution(row: any) {
+  private rowToState(row: any) {
     return {
       id: row.id,
       taskId: row.task_id,
-      executionTime: row.execution_time,
+      executionTime: new Date(row.execution_time),
       status: row.status as ExecutionStatus,
       duration: row.duration || null,
-      result: row.result || null,
+      result: row.result ? JSON.parse(row.result) : null,
       error: row.error || null,
       retryCount: row.retry_count,
-      createdAt: row.created_at,
+      createdAt: new Date(row.created_at),
     };
   }
 }

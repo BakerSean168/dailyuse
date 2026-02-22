@@ -19,18 +19,16 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, DomainDate, TransferDate, PersistenceDate } from '@dailyuse/contracts/primitives';
+import type { GoalReviewId as IGoalReviewId, GoalId as IGoalId, DomainDate, TransferDate } from '@dailyuse/contracts/primitives';
 import type {
-  GoalReviewPersistenceDTO,
-  GoalReviewServer,
   GoalReviewServerDTO,
   KeyResultSnapshotDTO,
 } from '@dailyuse/contracts/goal';
 import { ReviewType } from '@dailyuse/contracts/goal';
-import { GoalReviewId, GoalId } from '../../domain-shared';
+import { GoalReviewId } from '../../domain-shared';
 
 // 内部状态接口
-interface GoalReviewState {
+export interface GoalReviewState {
   id: IGoalReviewId;
   goalId: IGoalId;
   type: ReviewType;
@@ -50,44 +48,12 @@ interface GoalReviewState {
 /**
  * GoalReview 实体
  */
-export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServer {
+export class GoalReview extends Entity<IGoalReviewId> {
   private _props: GoalReviewState;
 
-  private constructor(
-    id: IGoalReviewId,
-    params: {
-      goalId: IGoalId;
-      type: ReviewType;
-      rating: number;
-      summary: string;
-      achievements: string | null;
-      challenges: string | null;
-      improvements: string | null;
-      keyResultSnapshots: KeyResultSnapshotDTO[];
-      reviewedAt: Date;
-      version: number;
-      createdAt: Date;
-      updatedAt: Date;
-      deletedAt: Date | null;
-    }
-  ) {
-    super(id);
-    this._props = {
-      id,
-      goalId: params.goalId,
-      type: params.type,
-      rating: params.rating,
-      summary: params.summary,
-      achievements: params.achievements ?? null,
-      challenges: params.challenges ?? null,
-      improvements: params.improvements ?? null,
-      keyResultSnapshots: params.keyResultSnapshots ?? [],
-      reviewedAt: params.reviewedAt,
-      version: params.version ?? 1,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      deletedAt: params.deletedAt ?? null,
-    };
+  private constructor(state: GoalReviewState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ================= Getters =================
@@ -173,7 +139,8 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
     const id = params.id ?? GoalReviewId.of(GoalReviewId.generate());
     const now = new Date();
 
-    return new GoalReview(id, {
+    return new GoalReview({
+      id,
       goalId: params.goalId,
       type: params.type,
       rating: params.rating,
@@ -191,51 +158,10 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
   }
 
   /**
-   * 从 ServerDTO 恢复
+   * 从状态恢复
    */
-  public static fromServerDTO(dto: GoalReviewServerDTO): GoalReview {
-    const id = GoalReviewId.of(dto.id);
-    return new GoalReview(id, {
-      goalId: GoalId.of(dto.goalId),
-      type: dto.type,
-      rating: dto.rating,
-      summary: dto.summary,
-      achievements: dto.achievements ?? null,
-      challenges: dto.challenges ?? null,
-      improvements: dto.improvements ?? null,
-      keyResultSnapshots: dto.keyResultSnapshots ?? [],
-      reviewedAt: new Date(dto.reviewedAt),
-      version: dto.version ?? 1,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  /**
-   * 从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: GoalReviewPersistenceDTO): GoalReview {
-    const id = GoalReviewId.of(dto.id);
-    const snapshots = dto.keyResultSnapshots
-      ? (JSON.parse(dto.keyResultSnapshots) as KeyResultSnapshotDTO[])
-      : [];
-
-    return new GoalReview(id, {
-      goalId: GoalId.of(dto.goalId),
-      type: dto.type as ReviewType,
-      rating: dto.rating,
-      summary: dto.summary,
-      achievements: dto.achievements ?? null,
-      challenges: dto.challenges ?? null,
-      improvements: dto.improvements,
-      keyResultSnapshots: snapshots,
-      reviewedAt: dto.reviewedAt,
-      version: dto.version,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
-    });
+  public static load(state: GoalReviewState): GoalReview {
+    return new GoalReview(state);
   }
 
   // ================= Business Methods =================
@@ -369,28 +295,6 @@ export class GoalReview extends Entity<IGoalReviewId> implements GoalReviewServe
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-    };
-  }
-
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): GoalReviewPersistenceDTO {
-    return {
-      id: this.id,
-      goalId: this._props.goalId,
-      type: this._props.type,
-      rating: this._props.rating,
-      summary: this._props.summary,
-      achievements: this._props.achievements,
-      challenges: this._props.challenges,
-      improvements: this._props.improvements,
-      keyResultSnapshots: JSON.stringify(this._props.keyResultSnapshots),
-      reviewedAt: this._props.reviewedAt as PersistenceDate,
-      version: this._props.version,
-      createdAt: this._props.createdAt as PersistenceDate,
-      updatedAt: this._props.updatedAt as PersistenceDate,
-      deletedAt: this._props.deletedAt as PersistenceDate | null,
     };
   }
 }

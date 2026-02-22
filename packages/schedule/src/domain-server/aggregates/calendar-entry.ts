@@ -1,8 +1,6 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
   CalendarEntryClientDTO,
-  CalendarEntryPersistenceDTO,
-  CalendarEntryServer,
   CalendarEntryServerDTO,
   ConflictDetail,
   ConflictDetectionResult,
@@ -10,7 +8,9 @@ import type {
 } from '@dailyuse/contracts/schedule';
 import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
-interface CalendarEntryState {
+/** Domain state interface for the CalendarEntry aggregate */
+export interface CalendarEntryState {
+  id: ScheduleId;
   identityId: string;
   title: string;
   description: string | null;
@@ -26,45 +26,12 @@ interface CalendarEntryState {
   updatedAt: Date;
 }
 
-export class CalendarEntry extends AggregateRoot<ScheduleId> implements CalendarEntryServer {
+export class CalendarEntry extends AggregateRoot<ScheduleId> {
   private _props: CalendarEntryState;
 
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    title: string;
-    description?: string | null;
-    startTime: number;
-    endTime: number;
-    hasConflict?: boolean;
-    conflictingEntries?: string[] | null;
-    priority?: number | null;
-    location?: string | null;
-    attendees?: string[] | null;
-    createdAt?: number;
-    updatedAt?: number;
-  }) {
-    super(params.id ? ScheduleId.of(params.id) : ScheduleId.generate());
-
-    if (params.startTime >= params.endTime) {
-      throw new Error('CalendarEntry startTime must be before endTime');
-    }
-
-    this._props = {
-      identityId: params.identityId,
-      title: params.title,
-      description: params.description ?? null,
-      startTime: params.startTime,
-      endTime: params.endTime,
-      duration: this.calculateDuration(params.startTime, params.endTime),
-      hasConflict: params.hasConflict ?? false,
-      conflictingEntries: params.conflictingEntries ?? null,
-      priority: params.priority ?? null,
-      location: params.location ?? null,
-      attendees: params.attendees ?? null,
-      createdAt: new Date(params.createdAt ?? Date.now()),
-      updatedAt: new Date(params.updatedAt ?? Date.now()),
-    };
+  private constructor(state: CalendarEntryState) {
+    super(state.id);
+    this._props = state;
   }
 
   public get identityId(): string {
@@ -111,6 +78,14 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> implements Calendar
     return this._props.attendees ? [...this._props.attendees] : null;
   }
 
+  public get createdAt(): Date {
+    return this._props.createdAt;
+  }
+
+  public get updatedAt(): Date {
+    return this._props.updatedAt;
+  }
+
   public static create(params: {
     identityId: string;
     title: string;
@@ -121,43 +96,33 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> implements Calendar
     location?: string;
     attendees?: string[];
   }): CalendarEntry {
-    return new CalendarEntry(params);
-  }
+    if (params.startTime >= params.endTime) {
+      throw new Error('CalendarEntry startTime must be before endTime');
+    }
 
-  public static fromServerDTO(dto: CalendarEntryServerDTO): CalendarEntry {
+    const now = new Date();
+    const duration = Math.round((params.endTime - params.startTime) / 60000);
+
     return new CalendarEntry({
-      id: dto.id,
-      identityId: dto.identityId,
-      title: dto.title,
-      description: dto.description,
-      startTime: Number(dto.startTime),
-      endTime: Number(dto.endTime),
-      hasConflict: dto.hasConflict,
-      conflictingEntries: dto.conflictingEntries ? [...dto.conflictingEntries] : null,
-      priority: dto.priority,
-      location: dto.location,
-      attendees: dto.attendees ? [...dto.attendees] : null,
-      createdAt: Number(dto.createdAt),
-      updatedAt: Number(dto.updatedAt),
+      id: ScheduleId.generate(),
+      identityId: params.identityId,
+      title: params.title,
+      description: params.description ?? null,
+      startTime: params.startTime,
+      endTime: params.endTime,
+      duration,
+      hasConflict: false,
+      conflictingEntries: null,
+      priority: params.priority ?? null,
+      location: params.location ?? null,
+      attendees: params.attendees ? [...params.attendees] : null,
+      createdAt: now,
+      updatedAt: now,
     });
   }
 
-  public static fromPersistenceDTO(dto: CalendarEntryPersistenceDTO): CalendarEntry {
-    return new CalendarEntry({
-      id: dto.id,
-      identityId: dto.identityId,
-      title: dto.title,
-      description: dto.description,
-      startTime: Number(dto.startTime),
-      endTime: Number(dto.endTime),
-      hasConflict: dto.hasConflict,
-      conflictingEntries: dto.conflictingEntries ? JSON.parse(dto.conflictingEntries) : null,
-      priority: dto.priority,
-      location: dto.location,
-      attendees: dto.attendees ? JSON.parse(dto.attendees) : null,
-      createdAt: Number(dto.createdAt),
-      updatedAt: Number(dto.updatedAt),
-    });
+  public static load(state: CalendarEntryState): CalendarEntry {
+    return new CalendarEntry(state);
   }
 
   public detectConflicts(otherEntries: CalendarEntry[]): ConflictDetectionResult {
@@ -246,25 +211,6 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> implements Calendar
 
   public toServerDTO(): CalendarEntryServerDTO {
     return this.toClientDTO();
-  }
-
-  public toPersistenceDTO(): CalendarEntryPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      title: this._props.title,
-      description: this._props.description,
-      startTime: this._props.startTime,
-      endTime: this._props.endTime,
-      duration: this._props.duration,
-      hasConflict: this._props.hasConflict,
-      conflictingEntries: this._props.conflictingEntries ? JSON.stringify(this._props.conflictingEntries) : null,
-      priority: this._props.priority,
-      location: this._props.location,
-      attendees: this._props.attendees ? JSON.stringify(this._props.attendees) : null,
-      createdAt: this._props.createdAt.getTime(),
-      updatedAt: this._props.updatedAt.getTime(),
-    };
   }
 
   public markAsConflicting(conflictingIds: string[]): void {

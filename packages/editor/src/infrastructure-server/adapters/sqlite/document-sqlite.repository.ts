@@ -1,11 +1,12 @@
 /**
  * SQLite Document Repository Implementation
- * 鏂囨。鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
 import { Document } from '../../../domain-server/entities/document';
+import { DocumentMetadata } from '../../../domain-shared/value-objects/document-metadata';
 import type { IDocumentRepository, IndexStatus } from '../../../domain-server/repositories/IDocumentRepository';
+import { DocumentLanguage } from '@dailyuse/contracts/editor';
 
 export class SqliteDocumentRepository implements IDocumentRepository {
   constructor(private db: Database.Database) {}
@@ -16,17 +17,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
     if (!row) return null;
 
-    return Document.fromPersistenceDTO({
-      id: row.id,
-      workspace_id: row.workspace_id,
-      path: row.path,
-      content_hash: row.content_hash,
-      file_size: row.file_size,
-      index_status: row.index_status as IndexStatus,
-      last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToDocument(row);
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
@@ -46,17 +37,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
     if (!row) return null;
 
-    return Document.fromPersistenceDTO({
-      id: row.id,
-      workspace_id: row.workspace_id,
-      path: row.path,
-      content_hash: row.content_hash,
-      file_size: row.file_size,
-      index_status: row.index_status as IndexStatus,
-      last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToDocument(row);
   }
 
   async findByContentHash(contentHash: string): Promise<Document[]> {
@@ -96,7 +77,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
   }
 
   async save(document: Document): Promise<void> {
-    const dto = document.toPersistenceDTO();
+    const dto = document.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO documents (
@@ -113,14 +94,14 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
     stmt.run(
       dto.id,
-      dto.workspace_id,
+      dto.workspaceId,
       dto.path,
-      dto.content_hash,
-      dto.file_size,
-      dto.index_status,
-      dto.last_indexed_at ? dto.last_indexed_at.getTime() : null,
-      dto.createdAt,
-      dto.updatedAt,
+      dto.contentHash,
+      null,
+      dto.indexStatus,
+      dto.lastIndexedAt ? new Date(dto.lastIndexedAt).getTime() : null,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
     );
   }
 
@@ -130,17 +111,22 @@ export class SqliteDocumentRepository implements IDocumentRepository {
   }
 
   private rowToDocument(row: any): Document {
-    return Document.fromPersistenceDTO({
+    return Document.load({
       id: row.id,
-      workspace_id: row.workspace_id,
+      workspaceId: row.workspace_id,
+      identityId: row.identityId ?? row.identity_id ?? row.workspace_id,
       path: row.path,
-      content_hash: row.content_hash,
-      file_size: row.file_size,
-      index_status: row.index_status as IndexStatus,
-      last_indexed_at: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
+      name: row.name ?? row.path?.split('/').pop() ?? '',
+      language: row.language ?? DocumentLanguage.Other,
+      content: row.content ?? '',
+      contentHash: row.content_hash,
+      metadata: DocumentMetadata.createEmpty(),
+      indexStatus: row.index_status as IndexStatus,
+      lastIndexedAt: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
+      lastModifiedAt: row.last_modified_at ? new Date(row.last_modified_at) : null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
-    });
+    } as any);
   }
 }
 

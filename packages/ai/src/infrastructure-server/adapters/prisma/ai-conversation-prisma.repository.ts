@@ -8,8 +8,12 @@
 import type { PrismaClient, AiConversation as PrismaAiConversation, AiMessage as PrismaAiMessage } from '@dailyuse/database';
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
+import { Message } from '../../../domain-server/entities/message';
 import type { ConversationStatus } from '@dailyuse/contracts/ai';
-import type { AIConversationPersistenceDTO, MessagePersistenceDTO } from '@dailyuse/contracts/ai';
+import type { MessagePersistenceDTO } from '@dailyuse/contracts/ai';
+import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
+import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 type PrismaAiConversationWithMessages = PrismaAiConversation & {
   messages?: PrismaAiMessage[];
@@ -24,41 +28,41 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
   constructor(private readonly prisma: PrismaClient) {}
 
   async save(conversation: AIConversation): Promise<void> {
-    const data = conversation.toPersistenceDTO();
+    const dto = conversation.toServerDTO(true);
 
     await this.prisma.aiConversation.upsert({
-      where: { id: String(data.id) },
+      where: { id: String(dto.id) },
       create: {
-        id: String(data.id),
-        identityId: String(data.identityId),
-        name: data.name,
-        status: data.status,
-        messageCount: data.messageCount,
-        lastMessageAt: data.lastMessageAt,
-        version: data.version,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-        deletedAt: data.deletedAt,
+        id: String(dto.id),
+        identityId: String(dto.identityId),
+        name: dto.name,
+        status: dto.status,
+        messageCount: dto.messageCount,
+        lastMessageAt: dto.lastMessageAt != null ? new Date(dto.lastMessageAt) : null,
+        version: dto.version,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
+        deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
       },
       update: {
-        name: data.name,
-        status: data.status,
-        messageCount: data.messageCount,
-        lastMessageAt: data.lastMessageAt,
-        version: data.version,
-        updatedAt: data.updatedAt,
-        deletedAt: data.deletedAt,
+        name: dto.name,
+        status: dto.status,
+        messageCount: dto.messageCount,
+        lastMessageAt: dto.lastMessageAt != null ? new Date(dto.lastMessageAt) : null,
+        version: dto.version,
+        updatedAt: new Date(dto.updatedAt),
+        deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
       },
     });
 
-    if (data.messages) {
+    if (dto.messages) {
       await this.prisma.aiMessage.deleteMany({
-        where: { conversationId: String(data.id) },
+        where: { conversationId: String(dto.id) },
       });
 
-      if (data.messages.length > 0) {
+      if (dto.messages.length > 0) {
         await this.prisma.aiMessage.createMany({
-          data: data.messages.map((message: MessagePersistenceDTO) => ({
+          data: dto.messages.map((message) => ({
             id: String(message.id),
             conversationId: String(message.conversationId),
             role: message.role,
@@ -67,7 +71,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
               message.tokenCount != null
                 ? JSON.stringify({ totalTokens: message.tokenCount })
                 : null,
-            createdAt: message.createdAt,
+            createdAt: new Date(message.createdAt),
           })),
           skipDuplicates: true,
         });
@@ -85,7 +89,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       return null;
     }
 
-    return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, Boolean(options?.includeChildren)));
+    return this.toDomain(row, Boolean(options?.includeChildren));
   }
 
   async findByIdentityId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
@@ -96,7 +100,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     });
 
     return rows.map((row: PrismaAiConversationWithMessages) =>
-      AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, Boolean(options?.includeChildren))),
+      this.toDomain(row, Boolean(options?.includeChildren)),
     );
   }
 
@@ -112,7 +116,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     });
 
     return rows.map((row: PrismaAiConversationWithMessages) =>
-      AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, Boolean(options?.includeChildren))),
+      this.toDomain(row, Boolean(options?.includeChildren)),
     );
   }
 
@@ -124,7 +128,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       skip: offset ?? 0,
     });
 
-    return rows.map((row: PrismaAiConversationWithMessages) => AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, false)));
+    return rows.map((row: PrismaAiConversationWithMessages) => this.toDomain(row, false));
   }
 
   async delete(id: string): Promise<void> {
@@ -145,16 +149,16 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     return count > 0;
   }
 
-  private toPersistenceDTO(row: PrismaAiConversationWithMessages, includeMessages: boolean): AIConversationPersistenceDTO {
+  private toDomain(row: PrismaAiConversationWithMessages, includeMessages: boolean): AIConversation {
     const messages = includeMessages
-      ? (row.messages ?? []).map((message) => this.toMessagePersistenceDTO(message))
-      : null;
+      ? (row.messages ?? []).map((message) => this.toMessageDomain(message))
+      : [];
 
-    return {
-      id: row.id,
-      identityId: row.identityId,
+    return AIConversation.load({
+      id: AiConversationId.of(row.id),
+      identityId: IdentityId.of(row.identityId),
       name: row.name,
-      status: row.status,
+      status: row.status as ConversationStatus,
       messageCount: row.messageCount,
       lastMessageAt: row.lastMessageAt,
       version: row.version,
@@ -162,10 +166,10 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       updatedAt: row.updatedAt,
       deletedAt: row.deletedAt,
       messages,
-    };
+    });
   }
 
-  private toMessagePersistenceDTO(row: PrismaAiMessage): MessagePersistenceDTO {
+  private toMessageDomain(row: PrismaAiMessage): Message {
     let tokenCount: number | null = null;
 
     if (row.tokenUsage) {
@@ -183,13 +187,16 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
       }
     }
 
-    return {
-      id: row.id,
-      conversationId: row.conversationId,
-      role: row.role,
+    return Message.load({
+      id: AiMessageId.of(row.id),
+      conversationId: AiConversationId.of(row.conversationId),
+      role: row.role as any,
       content: row.content,
       tokenCount,
+      version: 1,
       createdAt: row.createdAt,
-    };
+      updatedAt: row.createdAt,
+      deletedAt: null,
+    });
   }
 }

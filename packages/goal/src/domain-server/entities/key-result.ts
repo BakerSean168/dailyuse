@@ -31,13 +31,11 @@
 import { Entity } from '@dailyuse/utils';
 import { KeyResultId } from '../../domain-shared';
 import type {
-  KeyResultPersistenceDTO,
-  KeyResultServer,
   KeyResultServerDTO,
 } from '@dailyuse/contracts/goal';
 
 // 内部状态接口
-interface KeyResultState {
+export interface KeyResultState {
   id: KeyResultId;
   title: string;
   description: string | null;
@@ -53,36 +51,14 @@ interface KeyResultState {
 /**
  * KeyResult 实体
  */
-export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
+export class KeyResult extends Entity<KeyResultId> {
   // ================= 1. 内部状态 (Single Props Object) =================
   private _props: KeyResultState;
 
   // ================= 2. 构造函数 (Private) =================
-  private constructor(params: {
-    id: KeyResultId;
-    title: string;
-    description: string | null;
-    progress: KeyResultServerDTO['progress'];
-    weight: number;
-    sortOrder: number;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
-    this._props = {
-      id: params.id,
-      title: params.title,
-      description: params.description ?? null,
-      progress: params.progress,
-      weight: params.weight,
-      sortOrder: params.sortOrder,
-      version: params.version ?? 1,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      deletedAt: params.deletedAt ?? null,
-    };
+  private constructor(state: KeyResultState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -125,6 +101,13 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
   // ================= 4. 工厂方法 (Factory Methods) =================
 
   /**
+   * 🏭 恢复工厂：从状态恢复实体
+   */
+  public static load(state: KeyResultState): KeyResult {
+    return new KeyResult(state);
+  }
+
+  /**
    * 🏭 业务工厂：创建新的关键结果
    * 
    * @param params.id 可选的 ID，支持前端生成。如果不提供则自动生成
@@ -156,54 +139,6 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
       createdAt: new Date(now),
       updatedAt: new Date(now),
       deletedAt: null,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从 ServerDTO 恢复
-   */
-  public static fromServerDTO(dto: KeyResultServerDTO): KeyResult {
-    return new KeyResult({
-      id: KeyResultId.of(dto.id),
-      title: dto.title,
-      description: dto.description ?? null,
-      progress: dto.progress,
-      weight: dto.weight,
-      sortOrder: dto.sortOrder,
-      version: dto.version ?? 1,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: KeyResultPersistenceDTO): KeyResult {
-    // 解析 JSON 字符串
-    const progressData = JSON.parse(dto.progress) as Record<string, any>;
-
-    const progress = {
-      valueType: progressData.valueType,
-      aggregationMethod: progressData.aggregationMethod,
-      initialValue: progressData.initialValue,
-      targetValue: progressData.targetValue,
-      currentValue: progressData.currentValue,
-      unit: progressData.unit,
-    };
-
-    return new KeyResult({
-      id: KeyResultId.of(dto.id),
-      title: dto.title,
-      description: dto.description ?? null,
-      progress,
-      weight: dto.weight,
-      sortOrder: dto.sortOrder,
-      version: dto.version ?? 1,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
     });
   }
 
@@ -380,31 +315,4 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultServer {
     };
   }
 
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(goalId: string): KeyResultPersistenceDTO {
-    const progressPersistence = {
-      initialValue: (this._props.progress as any).initialValue,
-      currentValue: this._props.progress.currentValue,
-      targetValue: this._props.progress.targetValue,
-      valueType: this._props.progress.valueType,
-      aggregationMethod: this._props.progress.aggregationMethod,
-      unit: this._props.progress.unit,
-    };
-
-    return {
-      id: this.id,
-      goalId,
-      title: this._props.title,
-      description: this._props.description,
-      progress: JSON.stringify(progressPersistence),
-      weight: this._props.weight,
-      sortOrder: this._props.sortOrder,
-      version: this._props.version,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt,
-    };
-  }
 }

@@ -7,6 +7,7 @@
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO, UpdateUserSettingReq } from '@dailyuse/contracts/setting';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { UpdateUserSetting } from './update-user-setting';
 
 /**
@@ -44,10 +45,12 @@ export class ImportSettings {
         setting = UserSetting.create({ identityId });
       }
 
-      const newSetting = UserSetting.fromServerDTO({
-        ...importedSettings,
-        identityId: identityId,
+      const newSetting = UserSetting.load({
         id: setting.id,
+        identityId: IdentityId.of(identityId),
+        entriesJson: importedSettings.entries ?? '[]',
+        createdAt: new Date(importedSettings.createdAt),
+        updatedAt: new Date(importedSettings.updatedAt),
       });
 
       await this.userSettingRepository.save(newSetting);

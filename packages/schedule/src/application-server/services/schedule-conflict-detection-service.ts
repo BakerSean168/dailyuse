@@ -1,6 +1,8 @@
 import type { IScheduleRepository } from '../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry as DomainCalendarEntry } from '../../domain-server/aggregates/calendar-entry';
+import type { CalendarEntryState } from '../../domain-server/aggregates/calendar-entry';
 import type { ConflictDetectionResult, CalendarEntryServerDTO } from '@dailyuse/contracts/schedule';
+import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
 export class ScheduleConflictDetectionService {
   constructor(private readonly scheduleRepository: IScheduleRepository) {}
@@ -23,7 +25,6 @@ export class ScheduleConflictDetectionService {
     }
 
     // Find other schedules overlapping this time window (exclude the current schedule)
-    // Repository returns domain Schedule aggregates
     const otherAggregates = await this.scheduleRepository.findByTimeRange(
       identityId,
       startTimestamp,
@@ -31,8 +32,24 @@ export class ScheduleConflictDetectionService {
       id,
     );
 
-    // Convert DTO to domain aggregate
-    const target = DomainCalendarEntry.fromServerDTO(scheduleDto);
+    // Reconstruct domain aggregate from DTO via load
+    const state: CalendarEntryState = {
+      id: ScheduleId.of(scheduleDto.id),
+      identityId: scheduleDto.identityId,
+      title: scheduleDto.title,
+      description: scheduleDto.description ?? null,
+      startTime: Number(scheduleDto.startTime),
+      endTime: Number(scheduleDto.endTime),
+      duration: scheduleDto.duration ?? Math.round((Number(scheduleDto.endTime) - Number(scheduleDto.startTime)) / 60000),
+      hasConflict: scheduleDto.hasConflict ?? false,
+      conflictingEntries: scheduleDto.conflictingEntries ? [...scheduleDto.conflictingEntries] : null,
+      priority: scheduleDto.priority ?? null,
+      location: scheduleDto.location ?? null,
+      attendees: scheduleDto.attendees ? [...scheduleDto.attendees] : null,
+      createdAt: new Date(scheduleDto.createdAt),
+      updatedAt: new Date(scheduleDto.updatedAt),
+    };
+    const target = DomainCalendarEntry.load(state);
 
     // Perform conflict detection using domain logic
     const result = target.detectConflicts(otherAggregates);

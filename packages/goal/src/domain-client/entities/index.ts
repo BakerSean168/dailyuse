@@ -3,6 +3,6 @@
  * Goal 模块实体导出
  */
 
-export { KeyResult } from './key-result.js';
-export { GoalReview } from './goal-review.js';
-export { GoalRecord } from './goal-record.js';
+export { KeyResult, type KeyResultState } from './key-result.js';
+export { GoalReview, type GoalReviewState } from './goal-review.js';
+export { GoalRecord, type GoalRecordState } from './goal-record.js';

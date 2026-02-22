@@ -3,15 +3,13 @@
  * 提醒历史实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 ReminderHistoryClient 接口
- * - Private constructor with props object
+ * - Private constructor with params object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: ReminderHistoryClientDTO): ReminderHistory
+ * - Static load(state: ReminderHistoryState): ReminderHistory
  * - Instance toDTO(): ReminderHistoryClientDTO
  */
 
 import type {
-  ReminderHistoryClient,
   ReminderHistoryClientDTO,
   TriggerResult,
   NotificationChannel,
@@ -20,8 +18,7 @@ import { Entity } from '@dailyuse/utils';
 import { ReminderInstanceId } from '../../domain-shared/value-objects/reminder-instance-id';
 import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 
-// 内部状态接口
-interface ReminderHistoryState {
+export interface ReminderHistoryState {
   id: ReminderInstanceId;
   templateId: ReminderTemplateId;
   triggeredAt: Date;
@@ -38,7 +35,7 @@ interface ReminderHistoryState {
   channelsText: string | null;
 }
 
-export class ReminderHistory extends Entity<ReminderInstanceId> implements ReminderHistoryClient {
+export class ReminderHistory extends Entity<ReminderInstanceId> {
   private readonly _props: ReminderHistoryState;
 
   private constructor(props: ReminderHistoryState) {
@@ -118,23 +115,8 @@ export class ReminderHistory extends Entity<ReminderInstanceId> implements Remin
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: ReminderHistoryClientDTO): ReminderHistory {
-    return new ReminderHistory({
-      id: ReminderInstanceId.of(dto.id),
-      templateId: ReminderTemplateId.of(dto.templateId),
-      triggeredAt: new Date(dto.triggeredAt),
-      result: dto.result,
-      error: dto.error,
-      notificationSent: dto.notificationSent,
-      notificationChannels: dto.notificationChannels,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      resultText: dto.resultText,
-      timeAgo: dto.timeAgo,
-      channelsText: dto.channelsText,
-    });
+  public static load(state: ReminderHistoryState): ReminderHistory {
+    return new ReminderHistory(state);
   }
 
   // ================= DTO Conversion =================

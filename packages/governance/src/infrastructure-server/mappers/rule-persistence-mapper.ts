@@ -60,7 +60,7 @@ export class RulePersistenceMapper {
     const codeSnippets = [...goodExamples, ...badExamples];
 
     // Restore Rule aggregate from persistence
-    return Rule.fromPersistence({
+    return Rule.load({
       id: prismaRule.id as RuleId,
       code: prismaRule.code,
       title: prismaRule.title,
@@ -84,23 +84,20 @@ export class RulePersistenceMapper {
    * Used when saving rules to database
    */
   static toPrisma(rule: Rule): Omit<PrismaRule, 'createdAt' | 'updatedAt'> {
-    const persistenceDTO = rule.toPersistenceDTO();
-
     return {
-      id: persistenceDTO.id,
-      code: persistenceDTO.code,
-      title: persistenceDTO.title,
-      description: persistenceDTO.description,
-      severity: persistenceDTO.severity,
-      status: persistenceDTO.status,
-      deprecationReason: persistenceDTO.deprecationReason,
-      replacementRuleId: persistenceDTO.replacementRuleId,
-      liveReferenceLocation: persistenceDTO.liveReferenceLocation,
-      tags: persistenceDTO.tags, // Already JSON string
-      goodExamples: persistenceDTO.goodExamples, // Already JSON string
-      badExamples: persistenceDTO.badExamples, // Already JSON string
-      authorId: persistenceDTO.authorId,
-      // createdAt and updatedAt handled by Prisma
+      id: rule.id,
+      code: rule.code,
+      title: rule.title,
+      description: rule.description,
+      severity: rule.severity,
+      status: rule.status,
+      deprecationReason: rule.deprecationReason,
+      replacementRuleId: rule.replacementRuleId,
+      liveReferenceLocation: rule.liveReferenceLocation,
+      tags: JSON.stringify(rule.tags.map(tag => tag.value)),
+      goodExamples: JSON.stringify(rule.goodExamples.map(snippet => snippet.toPersistenceDTO())),
+      badExamples: JSON.stringify(rule.badExamples.map(snippet => snippet.toPersistenceDTO())),
+      authorId: rule.authorId,
     };
   }
 

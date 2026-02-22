@@ -9,9 +9,16 @@ import type {
   ScheduleTask as PrismaScheduleTask,
   ScheduleExecution as PrismaScheduleExecution,
 } from '@dailyuse/database';
-import type { SourceModule, ScheduleTaskStatus, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
-import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
+import type { SourceModule, ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleTask } from '../../domain-server/aggregates/schedule-task';
+import type { ScheduleTaskState } from '../../domain-server/aggregates/schedule-task';
+import { ScheduleExecution } from '../../domain-server/entities/schedule-execution';
+import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
+import { ScheduleConfig } from '../../domain-server/value-objects/ScheduleConfig';
+import { ExecutionInfo } from '../../domain-server/value-objects/ExecutionInfo';
+import { RetryPolicy } from '../../domain-server/value-objects/RetryPolicy';
+import { TaskMetadata } from '../../domain-server/value-objects/TaskMetadata';
 
 /**
  * Prisma ScheduleTask with optional executions relation
@@ -25,8 +32,8 @@ export class PrismaScheduleTaskMapper {
    * Prisma record → ScheduleTask aggregate root (with optional executions)
    */
   static toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
-    const persistenceDTO: ScheduleTaskPersistenceDTO = {
-      id: data.id,
+    const state: ScheduleTaskState = {
+      id: ScheduleTaskId.of(data.id),
       identityId: data.identityId,
       name: data.name,
       description: data.description,
@@ -34,47 +41,55 @@ export class PrismaScheduleTaskMapper {
       sourceEntityId: data.sourceEntityId,
       status: data.status as ScheduleTaskStatus,
       enabled: data.enabled,
-      cronExpression: data.cronExpression,
-      timezone: data.timezone,
-      startDate: data.startDate ?? null,
-      endDate: data.endDate ?? null,
-      maxExecutions: data.maxExecutions,
-      nextRunAt: data.nextRunAt ?? null,
-      lastRunAt: data.lastRunAt ?? null,
-      executionCount: data.executionCount,
-      lastExecutionStatus: data.lastExecutionStatus,
-      lastExecutionDuration: data.lastExecutionDuration,
-      consecutiveFailures: data.consecutiveFailures,
-      maxRetries: data.maxRetries,
-      initialDelayMs: data.initialDelayMs,
-      maxDelayMs: data.maxDelayMs,
-      backoffMultiplier: data.backoffMultiplier,
-      retryableStatuses: data.retryableStatuses,
-      payload: data.payload,
-      tags: data.tags,
-      priority: data.priority,
-      timeout: data.timeout,
+      schedule: ScheduleConfig.fromPersistenceDTO({
+        cronExpression: data.cronExpression ?? null,
+        timezone: data.timezone,
+        startDate: data.startDate ?? null,
+        endDate: data.endDate ?? null,
+        maxExecutions: data.maxExecutions ?? null,
+      }),
+      execution: ExecutionInfo.fromPersistenceDTO({
+        nextRunAt: data.nextRunAt,
+        lastRunAt: data.lastRunAt,
+        executionCount: data.executionCount,
+        lastExecutionStatus: (data.lastExecutionStatus as ExecutionStatus) ?? null,
+        last_execution_duration: data.lastExecutionDuration ?? null,
+        consecutive_failures: data.consecutiveFailures ?? 0,
+      }),
+      retryPolicy: RetryPolicy.fromPersistenceDTO({
+        enabled: data.enabled,
+        maxRetries: data.maxRetries,
+        retry_delay: data.initialDelayMs ?? 0,
+        backoff_multiplier: data.backoffMultiplier ?? 1,
+        max_retry_delay: data.maxDelayMs ?? 0,
+      }),
+      metadata: TaskMetadata.fromPersistenceDTO({
+        payload: data.payload ?? {},
+        tags: data.tags ? (typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags) : [],
+        priority: data.priority,
+        timeout: data.timeout,
+      }),
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       version: data.version ?? 1,
       deletedAt: data.deletedAt ?? null,
     };
 
-    const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
+    const task = ScheduleTask.load(state);
 
     // Load child entities - executions
     if (data.executions && data.executions.length > 0) {
       for (const execData of data.executions) {
-        const execution = ScheduleExecution.fromPersistenceDTO({
+        const execution = ScheduleExecution.load({
           id: execData.id,
           taskId: execData.taskId,
-          executionTime: execData.executionTime.getTime(),
-          status: execData.status,
-          duration: execData.duration ?? undefined,
-          result: execData.result ?? undefined,
-          error: execData.error ?? undefined,
+          executionTime: execData.executionTime,
+          status: execData.status as ExecutionStatus,
+          duration: execData.duration ?? null,
+          result: execData.result ? (typeof execData.result === 'string' ? JSON.parse(execData.result as string) : execData.result as Record<string, any>) : null,
+          error: execData.error ?? null,
           retryCount: execData.retryCount,
-          createdAt: execData.createdAt.getTime(),
+          createdAt: execData.createdAt,
         });
         task.addExecution(execution);
       }
@@ -87,38 +102,41 @@ export class PrismaScheduleTaskMapper {
    * ScheduleTask aggregate → Prisma write data
    */
   static toPersistence(task: ScheduleTask) {
-    const dto = task.toPersistenceDTO();
+    const metadataDTO = task.metadata.toServerDTO();
+
     return {
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      sourceModule: dto.sourceModule,
-      sourceEntityId: dto.sourceEntityId,
-      status: dto.status,
-      enabled: dto.enabled,
-      cronExpression: dto.cronExpression,
-      timezone: dto.timezone,
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      endDate: dto.endDate ? new Date(dto.endDate) : null,
-      maxExecutions: dto.maxExecutions,
-      nextRunAt: dto.nextRunAt ? new Date(dto.nextRunAt) : null,
-      lastRunAt: dto.lastRunAt ? new Date(dto.lastRunAt) : null,
-      executionCount: dto.executionCount,
-      lastExecutionStatus: dto.lastExecutionStatus,
-      lastExecutionDuration: dto.lastExecutionDuration,
-      consecutiveFailures: dto.consecutiveFailures,
-      maxRetries: dto.maxRetries ?? 3,
-      initialDelayMs: dto.initialDelayMs ?? 1000,
-      maxDelayMs: dto.maxDelayMs ?? 30000,
-      backoffMultiplier: dto.backoffMultiplier ?? 2,
-      retryableStatuses: dto.retryableStatuses ?? '[]',
-      payload: typeof dto.payload === 'string' ? dto.payload : JSON.stringify(dto.payload),
-      tags: dto.tags,
-      priority: dto.priority,
-      timeout: dto.timeout,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      id: task.id,
+      identityId: task.identityId,
+      name: task.name,
+      description: task.description,
+      sourceModule: task.sourceModule,
+      sourceEntityId: task.sourceEntityId,
+      status: task.status,
+      enabled: task.enabled,
+      cronExpression: task.schedule.cronExpression,
+      timezone: task.schedule.timezone,
+      startDate: task.schedule.startDate !== null ? new Date(task.schedule.startDate) : null,
+      endDate: task.schedule.endDate !== null ? new Date(task.schedule.endDate) : null,
+      maxExecutions: task.schedule.maxExecutions,
+      nextRunAt: task.execution.nextRunAt !== null ? new Date(task.execution.nextRunAt) : null,
+      lastRunAt: task.execution.lastRunAt !== null ? new Date(task.execution.lastRunAt) : null,
+      executionCount: task.execution.executionCount,
+      lastExecutionStatus: task.execution.lastExecutionStatus
+        ? String(task.execution.lastExecutionStatus)
+        : null,
+      lastExecutionDuration: task.execution.lastExecutionDuration,
+      consecutiveFailures: task.execution.consecutiveFailures,
+      maxRetries: task.retryPolicy.maxRetries ?? 3,
+      initialDelayMs: task.retryPolicy.retryDelay ?? 1000,
+      maxDelayMs: task.retryPolicy.maxRetryDelay ?? 30000,
+      backoffMultiplier: task.retryPolicy.backoffMultiplier ?? 2,
+      retryableStatuses: '[]',
+      payload: typeof metadataDTO.payload === 'string' ? metadataDTO.payload : JSON.stringify(metadataDTO.payload),
+      tags: JSON.stringify(metadataDTO.tags),
+      priority: metadataDTO.priority,
+      timeout: metadataDTO.timeout,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
     };
   }
 }

@@ -4,10 +4,8 @@
  */
 
 import type {
-  ReminderResponseServer,
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
-  ReminderResponsePersistenceDTO,
   ReminderResponseAction,
 } from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
@@ -16,7 +14,7 @@ import { ReminderResponseId } from '../../domain-shared/value-objects/reminder-r
 /**
  * ReminderResponse 内部状态接口
  */
-interface ReminderResponseState {
+export interface ReminderResponseState {
   id: ReminderResponseId;
   reminderTemplateId: string;
   action: ReminderResponseAction;
@@ -33,27 +31,14 @@ interface ReminderResponseState {
  * - 记录用户对提醒的响应行为
  * - 用于计算提醒效果指标
  */
-export class ReminderResponse extends Entity<ReminderResponseId> implements ReminderResponseServer {
+export class ReminderResponse extends Entity<ReminderResponseId> {
   // ===== 私有字段 =====
   private _props: ReminderResponseState;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
-  private constructor(params: {
-    id?: string;
-    reminderTemplateId: string;
-    action: ReminderResponseAction;
-    responseTime?: number | null;
-    timestamp: number;
-  }) {
-    const id = params.id ? ReminderResponseId.of(params.id) : ReminderResponseId.generate();
-    super(id);
-    this._props = {
-      id,
-      reminderTemplateId: params.reminderTemplateId,
-      action: params.action,
-      responseTime: params.responseTime != null ? new Date(params.responseTime) : null,
-      timestamp: new Date(params.timestamp),
-    };
+  private constructor(state: ReminderResponseState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -77,6 +62,10 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
 
   // ===== 工厂方法 =====
 
+  public static load(state: ReminderResponseState): ReminderResponse {
+    return new ReminderResponse(state);
+  }
+
   /**
    * 创建新的 ReminderResponse 实体
    */
@@ -87,36 +76,11 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
     timestamp?: number;
   }): ReminderResponse {
     return new ReminderResponse({
+      id: ReminderResponseId.generate(),
       reminderTemplateId: params.reminderTemplateId,
       action: params.action,
-      responseTime: params.responseTime,
-      timestamp: params.timestamp ?? Date.now(),
-    });
-  }
-
-  /**
-   * 从 Server DTO 创建实体
-   */
-  public static fromServerDTO(dto: ReminderResponseServerDTO): ReminderResponse {
-    return new ReminderResponse({
-      id: dto.id,
-      reminderTemplateId: dto.reminderTemplateId,
-      action: dto.action,
-      responseTime: dto.responseTime,
-      timestamp: dto.timestamp,
-    });
-  }
-
-  /**
-   * 从 Persistence DTO 创建实体
-   */
-  public static fromPersistenceDTO(dto: ReminderResponsePersistenceDTO): ReminderResponse {
-    return new ReminderResponse({
-      id: dto.id,
-      reminderTemplateId: dto.reminderTemplateId,
-      action: dto.action,
-      responseTime: dto.responseTime?.getTime() ?? null,
-      timestamp: dto.timestamp.getTime(),
+      responseTime: params.responseTime != null ? new Date(params.responseTime) : null,
+      timestamp: new Date(params.timestamp ?? Date.now()),
     });
   }
 
@@ -246,16 +210,4 @@ export class ReminderResponse extends Entity<ReminderResponseId> implements Remi
     };
   }
 
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): ReminderResponsePersistenceDTO {
-    return {
-      id: this.id,
-      reminderTemplateId: this._props.reminderTemplateId,
-      action: this._props.action,
-      responseTime: this._props.responseTime,
-      timestamp: this._props.timestamp,
-    };
-  }
 }

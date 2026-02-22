@@ -1,16 +1,26 @@
 /**
  * UserReminderPreferences 聚合根实现
- * 实现 UserReminderPreferencesServer 接口
  */
 
 import type {
   TimeSlotDTO,
   UserReminderPreferencesClientDTO,
-  UserReminderPreferencesPersistenceDTO,
-  UserReminderPreferencesServer,
   UserReminderPreferencesServerDTO,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+
+/**
+ * UserReminderPreferences 内部状态接口
+ */
+export interface UserReminderPreferencesState {
+  id: string;
+  identityId: string;
+  bestTimeSlots: TimeSlotDTO[];
+  worstTimeSlots: TimeSlotDTO[];
+  globalSmartFrequency: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 /**
  * UserReminderPreferences 聚合根
@@ -23,7 +33,6 @@ import { AggregateRoot, generateUUID } from '@dailyuse/utils';
  */
 export class UserReminderPreferences
   extends AggregateRoot<string>
-  implements UserReminderPreferencesServer
 {
   // ===== 私有字段 =====
   private _identityId: string;
@@ -34,22 +43,14 @@ export class UserReminderPreferences
   private _updatedAt: Date;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    bestTimeSlots: TimeSlotDTO[];
-    worstTimeSlots: TimeSlotDTO[];
-    globalSmartFrequency: boolean;
-    createdAt: number;
-    updatedAt: number;
-  }) {
-    super(params.id || generateUUID());
-    this._identityId = params.identityId;
-    this._bestTimeSlots = [...params.bestTimeSlots];
-    this._worstTimeSlots = [...params.worstTimeSlots];
-    this._globalSmartFrequency = params.globalSmartFrequency;
-    this._createdAt = new Date(params.createdAt);
-    this._updatedAt = new Date(params.updatedAt);
+  private constructor(state: UserReminderPreferencesState) {
+    super(state.id);
+    this._identityId = state.identityId;
+    this._bestTimeSlots = [...state.bestTimeSlots];
+    this._worstTimeSlots = [...state.worstTimeSlots];
+    this._globalSmartFrequency = state.globalSmartFrequency;
+    this._createdAt = state.createdAt;
+    this._updatedAt = state.updatedAt;
   }
 
   // ===== Getter 属性 =====
@@ -81,6 +82,10 @@ export class UserReminderPreferences
 
   // ===== 工厂方法 =====
 
+  public static load(state: UserReminderPreferencesState): UserReminderPreferences {
+    return new UserReminderPreferences(state);
+  }
+
   /**
    * 创建新的 UserReminderPreferences 聚合根
    */
@@ -90,47 +95,16 @@ export class UserReminderPreferences
     worstTimeSlots?: TimeSlotDTO[];
     globalSmartFrequency?: boolean;
   }): UserReminderPreferences {
-    const now = Date.now();
+    const now = new Date();
 
     return new UserReminderPreferences({
+      id: generateUUID(),
       identityId: params.identityId,
       bestTimeSlots: params.bestTimeSlots ?? [],
       worstTimeSlots: params.worstTimeSlots ?? [],
       globalSmartFrequency: params.globalSmartFrequency ?? true,
       createdAt: now,
       updatedAt: now,
-    });
-  }
-
-  /**
-   * 从 Server DTO 创建聚合根
-   */
-  public static fromServerDTO(dto: UserReminderPreferencesServerDTO): UserReminderPreferences {
-    return new UserReminderPreferences({
-      id: dto.id,
-      identityId: dto.identityId,
-      bestTimeSlots: dto.bestTimeSlots,
-      worstTimeSlots: dto.worstTimeSlots,
-      globalSmartFrequency: dto.globalSmartFrequency,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    });
-  }
-
-  /**
-   * 从 Persistence DTO 创建聚合根
-   */
-  public static fromPersistenceDTO(
-    dto: UserReminderPreferencesPersistenceDTO,
-  ): UserReminderPreferences {
-    return new UserReminderPreferences({
-      id: dto.id,
-      identityId: dto.identityId,
-      bestTimeSlots: JSON.parse(dto.bestTimeSlots) as TimeSlotDTO[],
-      worstTimeSlots: JSON.parse(dto.worstTimeSlots) as TimeSlotDTO[],
-      globalSmartFrequency: dto.globalSmartFrequency,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
     });
   }
 
@@ -318,18 +292,4 @@ export class UserReminderPreferences
     };
   }
 
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): UserReminderPreferencesPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._identityId,
-      bestTimeSlots: JSON.stringify(this._bestTimeSlots),
-      worstTimeSlots: JSON.stringify(this._worstTimeSlots),
-      globalSmartFrequency: this._globalSmartFrequency,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-    };
-  }
 }

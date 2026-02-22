@@ -11,16 +11,27 @@
 import { Entity, generateUUID } from '@dailyuse/utils';
 import type {
   ScheduleExecutionClientDTO,
-  ScheduleExecutionPersistenceDTO,
-  ScheduleExecutionServer,
   ScheduleExecutionServerDTO,
 } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
+/** Domain state interface for the ScheduleExecution entity */
+export interface ScheduleExecutionState {
+  id: string;
+  taskId: string;
+  executionTime: Date;
+  status: ExecutionStatus;
+  duration: number | null;
+  result: Record<string, any> | null;
+  error: string | null;
+  retryCount: number;
+  createdAt: Date;
+}
+
 /**
  * ScheduleExecution 实体
  */
-export class ScheduleExecution extends Entity<string> implements ScheduleExecutionServer {
+export class ScheduleExecution extends Entity<string> {
   // ===== 私有字段 =====
   private _taskId: string;
   private _executionTime: Date;
@@ -32,26 +43,16 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
   private _createdAt: Date;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    id?: string;
-    taskId: string;
-    executionTime: number;
-    status: ExecutionStatus;
-    duration?: number | null;
-    result?: Record<string, any> | null;
-    error?: string | null;
-    retryCount?: number;
-    createdAt?: number;
-  }) {
-    super(params.id ?? generateUUID());
-    this._taskId = params.taskId;
-    this._executionTime = new Date(params.executionTime);
-    this._status = params.status;
-    this._duration = params.duration ?? null;
-    this._result = params.result ?? null;
-    this._error = params.error ?? null;
-    this._retryCount = params.retryCount ?? 0;
-    this._createdAt = new Date(params.createdAt ?? Date.now());
+  private constructor(state: ScheduleExecutionState) {
+    super(state.id);
+    this._taskId = state.taskId;
+    this._executionTime = state.executionTime;
+    this._status = state.status;
+    this._duration = state.duration;
+    this._result = state.result;
+    this._error = state.error;
+    this._retryCount = state.retryCount;
+    this._createdAt = state.createdAt;
   }
 
   // ===== Getter 属性 =====
@@ -228,23 +229,6 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
     return this.toServerDTO();
   }
 
-  /**
-   * 转换为持久化 DTO
-   */
-  public toPersistenceDTO(): ScheduleExecutionPersistenceDTO {
-    return {
-      id: this.id,
-      taskId: this._taskId,
-      executionTime: this._executionTime.getTime(),
-      status: this._status,
-      duration: this._duration,
-      result: this._result ? JSON.stringify(this._result) : null,
-      error: this._error,
-      retryCount: this._retryCount,
-      createdAt: this._createdAt,
-    };
-  }
-
   // ===== 私有辅助方法 =====
 
   private _getStatusText(): string {
@@ -304,51 +288,39 @@ export class ScheduleExecution extends Entity<string> implements ScheduleExecuti
     status?: ExecutionStatus;
   }): ScheduleExecution {
     return new ScheduleExecution({
+      id: generateUUID(),
       taskId: params.taskId,
-      executionTime: params.executionTime,
+      executionTime: new Date(params.executionTime),
       status: params.status ?? ExecutionStatus.Success,
-      createdAt: Date.now(),
+      duration: null,
+      result: null,
+      error: null,
+      retryCount: 0,
+      createdAt: new Date(),
     });
   }
 
   /**
-   * 从 Server DTO 创建实体
+   * 从已有状态加载实体（用于持久化重建）
    */
-  public static fromServerDTO(dto: ScheduleExecutionServerDTO): ScheduleExecution {
-    return new ScheduleExecution({
-      id: dto.id,
-      taskId: dto.taskId,
-      executionTime: dto.executionTime,
-      status: dto.status,
-      duration: dto.duration,
-      result: dto.result,
-      error: dto.error,
-      retryCount: dto.retryCount,
-      createdAt: dto.createdAt,
-    });
+  public static load(state: ScheduleExecutionState): ScheduleExecution {
+    return new ScheduleExecution(state);
   }
 
   /**
    * 从 DTO 创建实体 (兼容旧代码)
    */
   public static fromDTO(dto: any): ScheduleExecution {
-    return new ScheduleExecution(dto);
-  }
-
-  /**
-   * 从持久化 DTO 创建实体
-   */
-  public static fromPersistenceDTO(dto: any): ScheduleExecution {
     return new ScheduleExecution({
-      id: dto.id,
+      id: dto.id ?? generateUUID(),
       taskId: dto.taskId,
-      executionTime: dto.executionTime,
+      executionTime: new Date(dto.executionTime),
       status: dto.status,
-      duration: dto.duration,
-      result: dto.result ? JSON.parse(dto.result) : null,
-      error: dto.error,
-      retryCount: dto.retryCount,
-      createdAt: dto.createdAt,
+      duration: dto.duration ?? null,
+      result: dto.result ?? null,
+      error: dto.error ?? null,
+      retryCount: dto.retryCount ?? 0,
+      createdAt: new Date(dto.createdAt ?? Date.now()),
     });
   }
 }

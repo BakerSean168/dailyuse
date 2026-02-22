@@ -96,8 +96,9 @@ export interface FolderServer {
   toPersistenceDTO(): FolderPersistenceDTO;
 }
 
-/** 内部状态接口 for Folder */
-interface FolderState {
+/** Domain state interface for Folder */
+export interface FolderState {
+  id: ResourceId;
   repositoryId: string;
   parentId: string | null;
   name: string;
@@ -112,39 +113,14 @@ interface FolderState {
 
 const ILLEGAL_NAME_CHARS = /[\\/:*?"<>|\x00-\x1F]/;
 
-export class Folder extends Entity<ResourceId> implements FolderServer {
+export class Folder extends Entity<ResourceId> {
   // ===== 私有属性容器 =====
   private _props: FolderState;
 
   // ===== 私有构造函数 =====
-  private constructor(
-    id: ResourceId,
-    params: {
-      repositoryId: string;
-      parentId: string | null;
-      name: string;
-      path: string;
-      order: number;
-      isExpanded: boolean;
-      metadata: FolderMetadata;
-      createdAt: Date;
-      updatedAt: Date;
-      children?: Folder[] | null;
-    },
-  ) {
-    super(id);
-    this._props = {
-      repositoryId: params.repositoryId,
-      parentId: params.parentId,
-      name: params.name,
-      path: params.path,
-      order: params.order,
-      isExpanded: params.isExpanded,
-      metadata: params.metadata,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      children: params.children ?? null,
-    };
+  private constructor(state: FolderState) {
+    super(state.id);
+    this._props = state;
   }
 
   // ===== Getters =====
@@ -300,21 +276,6 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
     };
   }
 
-  toPersistenceDTO(): FolderPersistenceDTO {
-    return {
-      id: String(this.id),
-      repositoryId: this._props.repositoryId,
-      parentId: this._props.parentId,
-      name: this._props.name,
-      path: this._props.path,
-      order: this._props.order,
-      isExpanded: this._props.isExpanded,
-      metadata: JSON.stringify(this._props.metadata.toDTO()),
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-    };
-  }
-
   // ===== 静态工厂方法 =====
   static create(params: {
     repositoryId: string;
@@ -336,7 +297,8 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
     const now = new Date();
     const id = ResourceId.of(ResourceId.generate());
 
-    return new Folder(id, {
+    return new Folder({
+      id,
       repositoryId: params.repositoryId,
       parentId: params.parentId ?? null,
       name: params.name,
@@ -350,38 +312,7 @@ export class Folder extends Entity<ResourceId> implements FolderServer {
     });
   }
 
-  static fromServerDTO(dto: FolderServerDTO): Folder {
-    const children = dto.children ? dto.children.map((c) => Folder.fromServerDTO(c)) : null;
-    const id = ResourceId.of(dto.id);
-
-    return new Folder(id, {
-      repositoryId: dto.repositoryId,
-      parentId: dto.parentId,
-      name: dto.name,
-      path: dto.path,
-      order: dto.order,
-      isExpanded: dto.isExpanded,
-      metadata: FolderMetadata.fromDTO(dto.metadata),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      children,
-    });
-  }
-
-  static fromPersistenceDTO(dto: FolderPersistenceDTO): Folder {
-    const id = ResourceId.of(dto.id);
-
-    return new Folder(id, {
-      repositoryId: dto.repositoryId,
-      parentId: dto.parentId,
-      name: dto.name,
-      path: dto.path,
-      order: dto.order,
-      isExpanded: dto.isExpanded,
-      metadata: FolderMetadata.fromDTO(JSON.parse(dto.metadata)),
-      createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
-      updatedAt: dto.updatedAt instanceof Date ? dto.updatedAt : new Date(dto.updatedAt),
-      children: null,
-    });
+  static load(state: FolderState): Folder {
+    return new Folder(state);
   }
 }

@@ -27,5 +27,8 @@
  */
 
 export { Setting } from './setting';
+export type { SettingState } from './setting';
 export { AppConfig } from './app-config';
+export type { AppConfigState } from './app-config';
 export { UserSetting } from './user-setting';
+export type { UserSettingState } from './user-setting';

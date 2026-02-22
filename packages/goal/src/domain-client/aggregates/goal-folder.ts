@@ -3,16 +3,13 @@
  * 目标文件夹聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 GoalFolderClient 接口
  * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: GoalFolderClientDTO): GoalFolder
+ * - Public getters via this._props.xxx
+ * - Static load(state: GoalFolderState): GoalFolder
  * - Instance toDTO(): GoalFolderClientDTO
  */
 
 import type {
-  GoalFolderClient,
   GoalFolderClientDTO,
   FolderType,
 } from '@dailyuse/contracts/goal';
@@ -20,8 +17,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { GoalFolderId } from '@/domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
-// 内部状态接口
-interface GoalFolderState {
+export interface GoalFolderState {
   id: GoalFolderId;
   identityId: IdentityId;
   name: string;
@@ -40,7 +36,7 @@ interface GoalFolderState {
   deletedAt: Date | null;
 }
 
-export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolderClient {
+export class GoalFolder extends AggregateRoot<GoalFolderId> {
   // ================= 1. Props =================
   private readonly _props: GoalFolderState;
 
@@ -134,25 +130,8 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: GoalFolderClientDTO): GoalFolder {
-    return new GoalFolder({
-      id: GoalFolderId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      icon: dto.icon,
-      color: dto.color,
-      parentFolderId: dto.parentFolderId ? GoalFolderId.of(dto.parentFolderId) : null,
-      sortOrder: dto.sortOrder,
-      isSystemFolder: dto.isSystemFolder,
-      folderType: dto.folderType,
-      goalCount: dto.goalCount,
-      completedGoalCount: dto.completedGoalCount,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: GoalFolderState): GoalFolder {
+    return new GoalFolder(state);
   }
 
   // ================= 5. DTO Conversion =================

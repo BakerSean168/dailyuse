@@ -15,15 +15,14 @@ export class MemoryAccountRepository implements IAccountRepository {
   async findByUsername(username: string): Promise<Account | null> {
     return (
       Array.from(this.accounts.values()).find((account) => {
-        const dto = account.toPersistenceDTO();
-        return dto.profile.nickname === username;
+        return account.profile.nickname === username;
       }) ?? null
     );
   }
 
   async findByEmail(email: string): Promise<Account | null> {
     return (
-      Array.from(this.accounts.values()).find((account) => account.toPersistenceDTO().email.address === email) ??
+      Array.from(this.accounts.values()).find((account) => account.email.address === email) ??
       null
     );
   }
@@ -31,7 +30,7 @@ export class MemoryAccountRepository implements IAccountRepository {
   async findByPhone(phoneNumber: string): Promise<Account | null> {
     return (
       Array.from(this.accounts.values()).find((account) => {
-        const phone = account.toPersistenceDTO().phone;
+        const phone = account.phone;
         return phone?.number === phoneNumber || phone?.fullNumber === phoneNumber;
       }) ?? null
     );
@@ -61,7 +60,7 @@ export class MemoryAccountRepository implements IAccountRepository {
 
     const filtered = Array.from(this.accounts.values()).filter((account) => {
       if (!mappedStatus) return true;
-      return account.toPersistenceDTO().status === mappedStatus;
+      return String(account.status) === mappedStatus;
     });
 
     const page = options?.page ?? 1;

@@ -1,10 +1,10 @@
 /**
  * SQLite EditorTab Repository Implementation
- * 缂栬緫鍣ㄦ爣绛剧殑 SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
 import { EditorTab } from '../../../domain-server/entities/editor-tab';
+import { TabType } from '@dailyuse/contracts/editor';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
 
 export class SqliteEditorTabRepository implements IEditorTabRepository {
@@ -16,28 +16,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
     if (!row) return null;
 
-    return EditorTab.fromPersistenceDTO({
-      id: row.id,
-      group_id: row.group_id,
-      session_id: row.session_id,
-      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      document_id: row.document_id,
-      tab_index: row.tab_index,
-      tab_type: row.tab_type ?? row.tabType ?? 'Document',
-      name: row.name ?? 'Untitled',
-      view_state: row.view_state ?? JSON.stringify({
-        scrollTop: 0,
-        scrollLeft: 0,
-        cursorPosition: { line: 0, column: 0 },
-        selections: [],
-      }),
-      is_pinned: row.is_pinned === 1,
-      is_dirty: row.is_dirty === 1,
-      lastAccessedAt: row.lastAccessedAt ?? null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToTab(row);
   }
 
   async findByGroupId(groupId: string): Promise<EditorTab[]> {
@@ -97,7 +76,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
   }
 
   async save(tab: EditorTab): Promise<void> {
-    const dto = tab.toPersistenceDTO();
+    const dto = tab.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_tabs (
@@ -113,13 +92,13 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
     stmt.run(
       dto.id,
-      dto.group_id,
-      dto.document_id,
-      dto.tab_index,
-      dto.is_pinned ? 1 : 0,
-      dto.is_dirty ? 1 : 0,
-      dto.createdAt,
-      dto.updatedAt,
+      dto.groupId,
+      dto.documentId,
+      dto.tabIndex,
+      dto.isPinned ? 1 : 0,
+      dto.isDirty ? 1 : 0,
+      new Date(dto.createdAt),
+      new Date(dto.updatedAt),
     );
   }
 
@@ -143,16 +122,16 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
     const transaction = this.db.transaction((items: EditorTab[]) => {
       for (const tab of items) {
-        const dto = tab.toPersistenceDTO();
+        const dto = tab.toServerDTO();
         insertStmt.run(
           dto.id,
-          dto.group_id,
-          dto.document_id,
-          dto.tab_index,
-          dto.is_pinned ? 1 : 0,
-          dto.is_dirty ? 1 : 0,
-          dto.createdAt,
-          dto.updatedAt,
+          dto.groupId,
+          dto.documentId,
+          dto.tabIndex,
+          dto.isPinned ? 1 : 0,
+          dto.isDirty ? 1 : 0,
+          new Date(dto.createdAt),
+          new Date(dto.updatedAt),
         );
       }
     });
@@ -194,53 +173,28 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     return result.maxIndex ?? -1;
   }
 
-  async findById(id: string): Promise<EditorTab | null> {
-    return this.findById(id);
-  }
-
-  async findByGroupId(groupId: string): Promise<EditorTab[]> {
-    return this.findByGroupId(groupId);
-  }
-
-  async findByDocumentId(documentId: string): Promise<EditorTab[]> {
-    return this.findByDocumentId(documentId);
-  }
-
-  async findByGroupIdAndTabIndex(groupId: string, tabIndex: number): Promise<EditorTab | null> {
-    return this.findByGroupIdAndTabIndex(groupId, tabIndex);
-  }
-
-  async findPinnedByGroupId(groupId: string): Promise<EditorTab[]> {
-    return this.findPinnedByGroupId(groupId);
-  }
-
-  async findDirtyByGroupId(groupId: string): Promise<EditorTab[]> {
-    return this.findDirtyByGroupId(groupId);
-  }
-
   private rowToTab(row: any): EditorTab {
-    return EditorTab.fromPersistenceDTO({
+    const viewState = row.view_state
+      ? JSON.parse(row.view_state)
+      : { scrollTop: 0, scrollLeft: 0, cursorPosition: { line: 0, column: 0 }, selections: [] };
+
+    return EditorTab.load({
       id: row.id,
-      group_id: row.group_id,
-      session_id: row.session_id,
-      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      groupId: row.group_id,
+      sessionId: row.session_id,
+      workspaceId: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
       identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      document_id: row.document_id,
-      tab_index: row.tab_index,
-      tab_type: row.tab_type ?? row.tabType ?? 'Document',
+      documentId: row.document_id,
+      tabIndex: row.tab_index,
+      tabType: (row.tab_type ?? row.tabType ?? TabType.Document) as any,
       name: row.name ?? 'Untitled',
-      view_state: row.view_state ?? JSON.stringify({
-        scrollTop: 0,
-        scrollLeft: 0,
-        cursorPosition: { line: 0, column: 0 },
-        selections: [],
-      }),
-      is_pinned: row.is_pinned === 1,
-      is_dirty: row.is_dirty === 1,
-      lastAccessedAt: row.lastAccessedAt ?? null,
+      viewState,
+      isPinned: row.is_pinned === 1,
+      isDirty: row.is_dirty === 1,
+      lastAccessedAt: row.lastAccessedAt ? new Date(row.lastAccessedAt) : null,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
-    });
+    } as any);
   }
 }
 

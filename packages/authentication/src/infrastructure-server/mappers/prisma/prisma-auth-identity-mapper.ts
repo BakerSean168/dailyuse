@@ -19,9 +19,23 @@
 import type { AuthIdentityStatus } from '@dailyuse/database';
 import type {
   AuthIdentityServerDTO,
+  AuthIdentifierDTO,
+  OAuthBindingServerDTO,
+  AuthCredentialServerDTO,
+  PasswordCredentialServerDTO,
 } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../../../domain-server';
 import type { PrismaAuthIdentityWithRelations } from '../../types';
+
+import {
+  AuthIdentityStatus as AuthIdentityStatusVO,
+  CredentialType,
+  CredentialStatus,
+  HashedPassword,
+  OAuthProvider,
+} from '../../../domain-shared';
+import { EmailIdentifier, PhoneIdentifier } from '../../../domain-server/value-objects';
+import { OAuthBinding, PasswordCredential } from '../../../domain-server/entities';
 
 import { PrismaAuthIdentifierMapper } from './prisma-auth-identifier-mapper';
 import { PrismaAuthCredentialMapper } from './prisma-auth-credential-mapper';
@@ -60,11 +74,60 @@ export class PrismaAuthIdentityMapper {
   /**
    * Prisma row (with relations) → AuthIdentity 聚合根
    *
-   * 路径：DB Rows → ServerDTO → AuthIdentity.fromServerDTO()
+   * 路径：DB Rows → Domain Objects → AuthIdentity.load()
    */
   static toDomain(row: PrismaAuthIdentityWithRelations): AuthIdentity {
     const serverDTO = PrismaAuthIdentityMapper.toServerDTO(row);
-    return AuthIdentity.fromServerDTO(serverDTO);
+
+    // Convert DTO identifiers to domain value objects
+    const identifiers = (serverDTO.identifiers ?? []).map((dto: AuthIdentifierDTO) => {
+      if (dto.type === 'EMAIL') return EmailIdentifier.fromDTO(dto);
+      if (dto.type === 'PHONE') return PhoneIdentifier.fromDTO(dto);
+      throw new Error(`Unknown identifier type: ${(dto as any).type}`);
+    });
+
+    // Convert DTO oauth bindings to domain entities
+    const oauthBindings = (serverDTO.oauthBindings ?? []).map((dto: OAuthBindingServerDTO) => OAuthBinding.load({
+      id: dto.id,
+      provider: OAuthProvider.of(dto.provider),
+      providerSubjectId: dto.providerSubjectId,
+      accessToken: dto.accessToken ?? null,
+      refreshToken: dto.refreshToken ?? null,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      createdAt: new Date(dto.createdAt),
+      lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
+    }));
+
+    // Convert DTO credentials to domain entities
+    const credentials = serverDTO.credentials.map((cred: AuthCredentialServerDTO) => {
+      if (cred.type === CredentialType.PASSWORD) {
+        const p = cred as PasswordCredentialServerDTO;
+        return PasswordCredential.load({
+          id: p.id,
+          status: CredentialStatus.of(p.status),
+          hashedPassword: HashedPassword.fromDTO(p.hashedPassword),
+          passwordLastChangedAt: new Date(p.passwordLastChangedAt),
+          createdAt: new Date(p.createdAt),
+          lastUsedAt: p.lastUsedAt ? new Date(p.lastUsedAt) : null,
+        });
+      }
+      throw new Error(`Unknown credential type: ${cred.type}`);
+    });
+
+    return AuthIdentity.load({
+      id: serverDTO.id,
+      status: AuthIdentityStatusVO.of(serverDTO.status),
+      failedLoginAttempts: serverDTO.failedLoginAttempts,
+      lastFailedAttempt: serverDTO.lastFailedAttempt ? new Date(serverDTO.lastFailedAttempt) : null,
+      lockedUntil: serverDTO.lockedUntil ? new Date(serverDTO.lockedUntil) : null,
+      identifiers,
+      oauthBindings,
+      credentials,
+      version: serverDTO.version ?? 1,
+      createdAt: new Date(serverDTO.createdAt),
+      updatedAt: new Date(serverDTO.updatedAt),
+      deletedAt: serverDTO.deletedAt ? new Date(serverDTO.deletedAt) : null,
+    });
   }
 
   /**

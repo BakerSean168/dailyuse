@@ -7,6 +7,10 @@ import type Database from 'better-sqlite3';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 import type { ITaskTemplateRepository, TaskFilters } from '../../../domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
+import { TaskFolderId } from '../../../domain-shared/value-objects/task-folder-id';
+import { IdentityId } from '@dailyuse/domain-shared';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   constructor(private db: Database.Database) {}
@@ -53,39 +57,38 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     const deletedAt = this.toDate(row.deleted_at ?? row.deletedAt);
     const recurrencePattern = row.recurrence_pattern ?? row.recurrencePattern ?? null;
     const isRecurring = Number(row.is_recurring ?? row.isRecurring ?? 0) === 1 || Boolean(recurrencePattern);
+    const tags = row.tags ? JSON.parse(row.tags) : [];
 
-    return TaskTemplate.fromPersistenceDTO({
-      id: row.id,
-      identityId: row.identity_id ?? row.identityId,
-      name: row.name,
+    return TaskTemplate.load({
+      id: TaskTemplateId.of(row.id),
+      identityId: IdentityId.of(row.identity_id ?? row.identityId),
+      title: row.name,
       description: row.description ?? null,
-      timeConfigType: null,
-      timeConfigStartTime: null,
-      timeConfigEndTime: null,
-      timeConfigDurationMinutes: null,
-      recurrenceRuleType: isRecurring ? 'DAILY' : null,
-      recurrenceRuleInterval: null,
-      recurrenceRuleDaysOfWeek: null,
-      recurrenceRuleDayOfMonth: null,
-      recurrenceRuleMonthOfYear: null,
-      recurrenceRuleEndDate: null,
-      recurrenceRuleCount: null,
-      reminderConfigEnabled: null,
-      reminderConfigTimeOffsetMinutes: null,
-      reminderConfigUnit: null,
-      reminderConfigChannel: null,
+      taskType: isRecurring ? 'RECURRING' : 'ONE_TIME',
+      timeConfig: null,
+      recurrenceRule: null,
+      reminderConfig: null,
+      importance: (row.importance ?? 'moderate') as ImportanceLevel,
+      goalBinding: null,
+      goalId: null,
+      keyResultId: null,
+      checklist: [],
+      folderId: (row.folder_id ?? row.folderId) ? TaskFolderId.of(row.folder_id ?? row.folderId) : null,
+      tags,
+      color: row.color ?? null,
+      status: this.normalizeStatus(row.status) as TaskTemplateStatus,
       lastGeneratedDate: null,
       generateAheadDays: null,
-      importance: row.importance ?? 'moderate',
-      tags: row.tags ?? JSON.stringify([]),
-      color: row.color ?? null,
-      status: this.normalizeStatus(row.status),
-      goalBinding: null,
-      parentTaskId: row.parent_task_id ?? row.parentTaskId ?? null,
+      parentTaskId: (row.parent_task_id ?? row.parentTaskId) ? TaskTemplateId.of(row.parent_task_id ?? row.parentTaskId) : null,
       dependencyStatus: row.dependency_status ?? row.dependencyStatus ?? 'NONE',
       isBlocked: Boolean(row.is_blocked ?? row.isBlocked ?? false),
       blockingReason: row.blocking_reason ?? row.blockingReason ?? null,
-      folderId: row.folder_id ?? row.folderId ?? null,
+      startDate: null,
+      dueDate: null,
+      completedAt: null,
+      estimatedMinutes: null,
+      actualMinutes: null,
+      note: null,
       version: Number(row.version ?? 1),
       createdAt,
       updatedAt,
@@ -118,15 +121,15 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   async save(template: TaskTemplate): Promise<void> {
-    const dto = template.toPersistenceDTO();
-    const recurrencePattern = dto.recurrenceRuleType
+    const dto = template.toServerDTO();
+    const recurrencePattern = dto.recurrenceRule
       ? JSON.stringify({
-          type: dto.recurrenceRuleType,
-          interval: dto.recurrenceRuleInterval,
-          daysOfWeek: dto.recurrenceRuleDaysOfWeek,
+          type: dto.recurrenceRule.frequency,
+          interval: dto.recurrenceRule.interval,
+          daysOfWeek: dto.recurrenceRule.daysOfWeek,
         })
       : null;
-    const isRecurring = dto.recurrenceRuleType ? 1 : 0;
+    const isRecurring = dto.recurrenceRule ? 1 : 0;
 
     const stmt = this.db.prepare(`
       INSERT INTO task_templates (
@@ -154,17 +157,15 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       dto.name,
       dto.description || null,
       dto.status,
-      dto.tags,
+      typeof dto.tags === 'string' ? dto.tags : JSON.stringify(dto.tags),
       dto.goalBinding?.goalId ?? null,
       isRecurring,
       recurrencePattern,
-      dto.createdAt instanceof Date ? dto.createdAt.getTime() : new Date(dto.createdAt).getTime(),
-      dto.updatedAt instanceof Date ? dto.updatedAt.getTime() : new Date(dto.updatedAt).getTime(),
-      dto.deletedAt instanceof Date
-        ? dto.deletedAt.getTime()
-        : dto.deletedAt
-          ? new Date(dto.deletedAt).getTime()
-          : null,
+      typeof dto.createdAt === 'number' ? dto.createdAt : new Date(dto.createdAt).getTime(),
+      typeof dto.updatedAt === 'number' ? dto.updatedAt : new Date(dto.updatedAt).getTime(),
+      dto.deletedAt
+        ? (typeof dto.deletedAt === 'number' ? dto.deletedAt : new Date(dto.deletedAt).getTime())
+        : null,
     );
   }
 
@@ -237,8 +238,8 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     return rows
       .map((row) => this.mapRowToTemplate(row))
       .filter((template) => {
-        const templateTagsRaw = template.toPersistenceDTO().tags;
-        const templateTags = templateTagsRaw ? JSON.parse(templateTagsRaw) : [];
+        const templateTagsRaw = template.toServerDTO().tags;
+        const templateTags = typeof templateTagsRaw === 'string' ? JSON.parse(templateTagsRaw) : templateTagsRaw;
         return tags.some((tag) => Array.isArray(templateTags) && templateTags.includes(tag));
       });
   }
@@ -252,11 +253,11 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     return rows
       .map((row) => this.mapRowToTemplate(row))
       .filter((template) => {
-        const lastGeneratedDate = template.toPersistenceDTO().lastGeneratedDate;
+        const lastGeneratedDate = template.toServerDTO().lastGeneratedDate;
         if (!lastGeneratedDate) {
           return true;
         }
-        return lastGeneratedDate.getTime() < toDate;
+        return lastGeneratedDate < toDate;
       });
   }
 
@@ -329,7 +330,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
     return rows
       .map((row) => this.mapRowToTemplate(row))
-      .filter((template) => template.toPersistenceDTO().goalBinding?.keyResultId === keyResultId);
+      .filter((template) => template.toServerDTO().goalBinding?.keyResultId === keyResultId);
   }
 
   async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
@@ -368,11 +369,11 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     const end = now + daysAhead * 24 * 60 * 60 * 1000;
 
     return templates.filter((template) => {
-      const date = template.toPersistenceDTO().timeConfigStartTime;
-      if (!date) {
+      const timeConfig = template.toServerDTO().timeConfig;
+      const timestamp = timeConfig?.startDate;
+      if (!timestamp) {
         return false;
       }
-      const timestamp = date.getTime();
       return timestamp >= now && timestamp <= end;
     });
   }
@@ -412,12 +413,12 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
     const transaction = this.db.transaction((items: TaskTemplate[]) => {
       for (const template of items) {
-        const dto = template.toPersistenceDTO();
-        const recurrencePattern = dto.recurrenceRuleType
+        const dto = template.toServerDTO();
+        const recurrencePattern = dto.recurrenceRule
           ? JSON.stringify({
-              type: dto.recurrenceRuleType,
-              interval: dto.recurrenceRuleInterval,
-              daysOfWeek: dto.recurrenceRuleDaysOfWeek,
+              type: dto.recurrenceRule.frequency,
+              interval: dto.recurrenceRule.interval,
+              daysOfWeek: dto.recurrenceRule.daysOfWeek,
             })
           : null;
 
@@ -428,17 +429,15 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
           dto.name,
           dto.description || null,
           dto.status,
-          dto.tags,
+          typeof dto.tags === 'string' ? dto.tags : JSON.stringify(dto.tags),
           dto.goalBinding?.goalId ?? null,
-          dto.recurrenceRuleType ? 1 : 0,
+          dto.recurrenceRule ? 1 : 0,
           recurrencePattern,
-          dto.createdAt instanceof Date ? dto.createdAt.getTime() : new Date(dto.createdAt).getTime(),
-          dto.updatedAt instanceof Date ? dto.updatedAt.getTime() : new Date(dto.updatedAt).getTime(),
-          dto.deletedAt instanceof Date
-            ? dto.deletedAt.getTime()
-            : dto.deletedAt
-              ? new Date(dto.deletedAt).getTime()
-              : null,
+          typeof dto.createdAt === 'number' ? dto.createdAt : new Date(dto.createdAt).getTime(),
+          typeof dto.updatedAt === 'number' ? dto.updatedAt : new Date(dto.updatedAt).getTime(),
+          dto.deletedAt
+            ? (typeof dto.deletedAt === 'number' ? dto.deletedAt : new Date(dto.deletedAt).getTime())
+            : null,
         );
       }
     });

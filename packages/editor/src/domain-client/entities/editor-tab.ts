@@ -3,21 +3,18 @@
  * 编辑器标签页实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 EditorTabClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: EditorTabClientDTO): EditorTab
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: EditorTabState): EditorTab
  * - Instance toDTO(): EditorTabClientDTO
  */
 
 import type {
-  EditorTabClient,
   EditorTabClientDTO,
   TabViewStateClientDTO,
   TabType,
 } from '@dailyuse/contracts/editor';
-import type { DocumentId, DomainDate } from '@dailyuse/contracts/primitives';
+import type { DocumentId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorTabId } from '../../domain-shared/value-objects/editor-tab-id';
 import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
@@ -25,8 +22,7 @@ import { EditorSessionId } from '../../domain-shared/value-objects/editor-sessio
 import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface EditorTabState {
+export interface EditorTabState {
   id: EditorTabId;
   groupId: EditorGroupId;
   sessionId: EditorSessionId;
@@ -44,7 +40,7 @@ interface EditorTabState {
   updatedAt: Date;
 }
 
-export class EditorTab extends Entity<EditorTabId> implements EditorTabClient {
+export class EditorTab extends Entity<EditorTabId> {
   // ================= 1. Backing Field =================
   private readonly _props: EditorTabState;
 
@@ -99,37 +95,21 @@ export class EditorTab extends Entity<EditorTabId> implements EditorTabClient {
     return this._props.isDirty;
   }
 
-  get lastAccessedAt(): DomainDate | null {
+  get lastAccessedAt(): Date | null {
     return this._props.lastAccessedAt;
   }
 
-  get createdAt(): DomainDate {
+  get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  get updatedAt(): DomainDate {
+  get updatedAt(): Date {
     return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: EditorTabClientDTO): EditorTab {
-    return new EditorTab({
-      id: EditorTabId.of(dto.id),
-      groupId: EditorGroupId.of(dto.groupId),
-      sessionId: EditorSessionId.of(dto.sessionId),
-      workspaceId: EditorWorkspaceId.of(dto.workspaceId),
-      identityId: IdentityId.of(dto.identityId),
-      documentId: dto.documentId as DocumentId | null,
-      tabIndex: dto.tabIndex,
-      tabType: dto.tabType,
-      name: dto.name,
-      viewState: dto.viewState,
-      isPinned: dto.isPinned,
-      isDirty: dto.isDirty,
-      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: EditorTabState): EditorTab {
+    return new EditorTab(state);
   }
 
   // ================= 5. DTO Conversion =================

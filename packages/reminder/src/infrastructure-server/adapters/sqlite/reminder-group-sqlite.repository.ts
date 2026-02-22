@@ -5,13 +5,15 @@
 
 import type Database from 'better-sqlite3';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
+import { GroupStats } from '../../../domain-server/value-objects';
+import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
 import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
 
 export class SqliteReminderGroupRepository implements IReminderGroupRepository {
   constructor(private db: Database.Database) {}
 
   async save(group: ReminderGroup): Promise<void> {
-    const dto = group.toPersistenceDTO();
+    const dto = group.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_groups (
@@ -37,7 +39,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
       dto.enabled ? 1 : 0,
       dto.status,
       dto.order,
-      dto.stats,
+      JSON.stringify(dto.stats),
       dto.version,
       dto.createdAt,
       dto.updatedAt,
@@ -51,20 +53,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
 
     if (!row) return null;
 
-    return ReminderGroup.fromPersistenceDTO({
-      id: row.id,
-      identityId: row.identity_id,
-      name: row.name,
-      controlMode: row.control_mode,
-      enabled: row.is_enabled === 1,
-      status: row.status,
-      order: row.order,
-      stats: row.stats,
-      version: row.version ?? 1,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: row.deleted_at || undefined,
-    });
+    return this.rowToGroup(row);
   }
 
   async findByIdentityId(
@@ -87,22 +76,7 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
     const stmt = this.db.prepare(sql);
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) =>
-      ReminderGroup.fromPersistenceDTO({
-        id: row.id,
-        identityId: row.identity_id,
-        name: row.name,
-        controlMode: row.control_mode,
-        enabled: row.is_enabled === 1,
-        status: row.status,
-        order: row.order,
-        stats: row.stats,
-        version: row.version ?? 1,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        deletedAt: row.deleted_at || undefined,
-      })
-    );
+    return rows.map((row) => this.rowToGroup(row));
   }
 
   async delete(id: string): Promise<void> {
@@ -205,19 +179,27 @@ export class SqliteReminderGroupRepository implements IReminderGroupRepository {
   }
 
   private rowToGroup(row: any): ReminderGroup {
-    return ReminderGroup.fromPersistenceDTO({
+    const statsData = typeof row.stats === 'string' ? JSON.parse(row.stats) : row.stats;
+    const stats = statsData
+      ? GroupStats.fromDTO(statsData as GroupStatsServerDTO)
+      : GroupStats.createEmpty();
+
+    return ReminderGroup.load({
       id: row.id,
       identityId: row.identity_id,
       name: row.name,
-      controlMode: row.control_mode,
+      description: row.description ?? null,
+      controlMode: row.control_mode as ControlMode,
       enabled: row.is_enabled === 1,
-      status: row.status,
+      status: row.status as ReminderStatus,
       order: row.order,
-      stats: row.stats,
+      color: row.color ?? null,
+      icon: row.icon ?? null,
+      stats,
       version: row.version ?? 1,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: row.deleted_at || undefined,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at).getTime() : null,
     });
   }
 }

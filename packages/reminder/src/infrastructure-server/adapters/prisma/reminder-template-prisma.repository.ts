@@ -44,15 +44,14 @@ export class ReminderTemplatePrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(template: ReminderTemplate): Promise<void> {
-    const dto = template.toPersistenceDTO();
     const writeData = this.toWriteData(template);
 
     await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Upsert 鑱氬悎鏍?
       await tx.reminderTemplate.upsert({
-        where: { id: dto.id as string },
+        where: { id: template.id as string },
         create: {
-          id: dto.id as string,
+          id: template.id as string,
           ...writeData,
         },
         update: writeData,
@@ -62,7 +61,7 @@ export class ReminderTemplatePrismaRepository
       const historyList = template.getAllHistory();
       if (historyList.length > 0) {
         for (const history of historyList) {
-          const hDto = history.toPersistenceDTO();
+          const hDto = history.toServerDTO();
           await tx.reminderHistory.upsert({
             where: { id: hDto.id },
             create: {
@@ -72,13 +71,17 @@ export class ReminderTemplatePrismaRepository
               result: hDto.result,
               error: hDto.error,
               notificationSent: hDto.notificationSent,
-              notificationChannel: hDto.notificationChannels ?? null,
+              notificationChannel: hDto.notificationChannels
+                ? JSON.stringify(hDto.notificationChannels)
+                : null,
             },
             update: {
               result: hDto.result,
               error: hDto.error,
               notificationSent: hDto.notificationSent,
-              notificationChannel: hDto.notificationChannels ?? null,
+              notificationChannel: hDto.notificationChannels
+                ? JSON.stringify(hDto.notificationChannels)
+                : null,
             },
           });
         }

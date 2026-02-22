@@ -1,12 +1,9 @@
 /**
  * Account Aggregate Root - Domain Client
- * 账户聚合�?- 客户�?
+ * 账户聚合�?- 客户�?
  */
 
-import type {
-  AccountClient,
-  AccountClientDTO,
-} from '@dailyuse/contracts/account';
+import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import {
@@ -17,7 +14,7 @@ import {
   ContactPhone,
 } from '../../domain-shared';
 
-interface AccountState {
+export interface AccountState {
   id: IdentityId;
   profile: AccountProfile;
   email: ContactEmail;
@@ -30,7 +27,7 @@ interface AccountState {
   deletedAt: Date | null;
 }
 
-export class Account extends AggregateRoot<IdentityId> implements AccountClient {
+export class Account extends AggregateRoot<IdentityId> {
   private readonly _props: AccountState;
 
   private constructor(props: AccountState) {
@@ -48,19 +45,8 @@ export class Account extends AggregateRoot<IdentityId> implements AccountClient 
   get updatedAt(): Date { return this._props.updatedAt; }
   get deletedAt(): Date | null { return this._props.deletedAt; }
 
-  public static fromDTO(dto: AccountClientDTO): Account {
-    return new Account({
-      id: IdentityId.of(dto.id),
-      profile: AccountProfile.create(dto.profile),
-      email: ContactEmail.create(dto.email),
-      settings: AccountSettings.create(dto.settings),
-      status: AccountStatus.of(dto.status),
-      phone: dto.phone ? ContactPhone.create(dto.phone) : null,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: AccountState): Account {
+    return new Account(state);
   }
 
   public toDTO(): AccountClientDTO {

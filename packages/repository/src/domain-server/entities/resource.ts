@@ -3,8 +3,6 @@
  * 资源实体 - 服务端实现
  */
 import type {
-  ResourcePersistenceDTO,
-  ResourceServer,
   ResourceServerDTO,
   ResourceMetadataDTO,
   ResourceStatsDTO,
@@ -14,12 +12,12 @@ import type { ResourceId, RepositoryId, FolderId } from '@dailyuse/contracts/pri
 import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
 import { ResourceId as ResourceIdType } from '../../domain-shared/value-objects/resource-id';
-import { RepositoryId as RepositoryIdType } from '../../domain-shared/value-objects/repository-id';
 import { ResourceMetadata, ResourceStats } from '../value-objects';
 import { BusinessRuleViolationError } from '@dailyuse/utils';
 
-/** 内部状态接口 for Resource */
-interface ResourceState {
+/** Domain state interface for Resource */
+export interface ResourceState {
+  id: ResourceId;
   repositoryId: RepositoryId;
   folderId: FolderId | null;
   type: ResourceType;
@@ -41,53 +39,14 @@ interface ResourceState {
 
 const ILLEGAL_NAME_CHARS = /[\\/:*?"<>|\x00-\x1F]/;
 
-export class Resource extends Entity<ResourceId> implements ResourceServer {
+export class Resource extends Entity<ResourceId> {
   // ===== 私有属性容器 =====
   private _props: ResourceState;
 
   // ===== 构造函数（私有） =====
-  private constructor(
-    id: ResourceId,
-    params: {
-      repositoryId: RepositoryId;
-      folderId: FolderId | null;
-      type: ResourceType;
-      name: string;
-      path: string;
-      mimeType: string | null;
-      size: number | null;
-      content: string | null;
-      childrenCount: number | null;
-      metadata: ResourceMetadata;
-      stats: ResourceStats;
-      status: ResourceStatus;
-      createdAt: Date;
-      updatedAt: Date;
-      version: number;
-      deletedAt?: Date | null;
-      externalLinks?: ExternalLink[] | null;
-    },
-  ) {
-    super(id);
-    this._props = {
-      repositoryId: params.repositoryId,
-      folderId: params.folderId,
-      type: params.type,
-      name: params.name,
-      path: params.path,
-      mimeType: params.mimeType,
-      size: params.size,
-      content: params.content,
-      childrenCount: params.childrenCount,
-      metadata: params.metadata,
-      stats: params.stats,
-      status: params.status,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      version: params.version,
-      deletedAt: params.deletedAt ?? null,
-      externalLinks: params.externalLinks ?? null,
-    };
+  private constructor(state: ResourceState) {
+    super(state.id);
+    this._props = state;
   }
 
   // ===== Getters =====
@@ -381,27 +340,6 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     };
   }
 
-  public toPersistenceDTO(): ResourcePersistenceDTO {
-    return {
-      id: String(this.id),
-      repositoryId: String(this._props.repositoryId),
-      folderId: this._props.folderId ? String(this._props.folderId) : null,
-      name: this._props.name,
-      type: this._props.type,
-      path: this._props.path,
-      mimeType: this._props.mimeType,
-      size: this._props.size,
-      content: this._props.content,
-      metadata: JSON.stringify(this._props.metadata.toDTO()),
-      stats: JSON.stringify(this._props.stats.toDTO()),
-      status: this._props.status,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      version: this._props.version,
-      deletedAt: this._props.deletedAt,
-    };
-  }
-
   // ===== 静态工厂方法 =====
 
   public static create(params: {
@@ -424,7 +362,8 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     const id = ResourceIdType.of(ResourceIdType.generate());
     const now = new Date();
 
-    return new Resource(id, {
+    return new Resource({
+      id,
       repositoryId: params.repositoryId,
       folderId: params.folderId ?? null,
       type: params.type,
@@ -452,52 +391,8 @@ export class Resource extends Entity<ResourceId> implements ResourceServer {
     });
   }
 
-  public static fromServerDTO(dto: ResourceServerDTO): Resource {
-    const id = ResourceIdType.of(dto.id);
-
-    return new Resource(id, {
-      repositoryId: RepositoryIdType.of(dto.repositoryId),
-      folderId: dto.folderId ? dto.folderId as FolderId : null,
-      type: dto.type,
-      name: dto.name,
-      path: dto.path,
-      mimeType: dto.mimeType,
-      size: dto.size,
-      content: dto.content,
-      childrenCount: dto.childrenCount,
-      metadata: ResourceMetadata.fromDTO(dto.metadata),
-      stats: ResourceStats.fromDTO(dto.stats),
-      status: dto.status,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: dto.version,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      externalLinks: dto.externalLinks,
-    });
-  }
-
-  public static fromPersistenceDTO(dto: ResourcePersistenceDTO): Resource {
-    const id = ResourceIdType.of(dto.id);
-
-    return new Resource(id, {
-      repositoryId: RepositoryIdType.of(dto.repositoryId),
-      folderId: dto.folderId ? dto.folderId as FolderId : null,
-      type: dto.type,
-      name: dto.name,
-      path: dto.path,
-      mimeType: dto.mimeType,
-      size: dto.size,
-      content: dto.content,
-      childrenCount: null,
-      metadata: ResourceMetadata.fromDTO(JSON.parse(dto.metadata)),
-      stats: ResourceStats.fromDTO(JSON.parse(dto.stats)),
-      status: dto.status,
-      createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
-      updatedAt: dto.updatedAt instanceof Date ? dto.updatedAt : new Date(dto.updatedAt),
-      version: dto.version,
-      deletedAt: dto.deletedAt ? (dto.deletedAt instanceof Date ? dto.deletedAt : new Date(dto.deletedAt)) : null,
-      externalLinks: null,
-    });
+  public static load(state: ResourceState): Resource {
+    return new Resource(state);
   }
 
   private static assertValidName(name: string): void {

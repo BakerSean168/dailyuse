@@ -5,7 +5,8 @@
  */
 
 import { Goal } from '@/domain-server';
-import type { GoalClientDTO, GoalPersistenceDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, GoalPersistenceDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
+import { persistenceDtoToGoalState } from '@/infrastructure-server/mappers/goal-state-mapper';
 
 /**
  * Goal Mapper
@@ -22,14 +23,14 @@ export class GoalMapper {
    * 将持久化 DTO 转换为领域对象
    */
   static toDomain(dto: GoalPersistenceDTO): Goal {
-    return Goal.fromPersistenceDTO(dto);
+    return Goal.load(persistenceDtoToGoalState(dto));
   }
 
   /**
-   * 将领域对象转换为持久化 DTO
+   * 将领域对象转换为 Server DTO
    */
-  static toPersistence(goal: Goal): GoalPersistenceDTO {
-    return goal.toPersistenceDTO();
+  static toServerDTO(goal: Goal, includeChildren = true): GoalServerDTO {
+    return goal.toServerDTO(includeChildren);
   }
 
   /**

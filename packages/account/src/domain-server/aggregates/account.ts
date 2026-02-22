@@ -1,11 +1,9 @@
 /**
- * Account 聚合根实�?
+ * Account 聚合根实�?
  */
 
 import type {
   AccountClientDTO,
-  AccountPersistenceDTO,
-  AccountServer,
   AccountServerDTO,
 } from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
@@ -23,8 +21,8 @@ import {
 
 import type { AccountEventMap } from '@dailyuse/contracts/account';
 
-/** 内部状态接�?*/
-interface AccountState {
+/** Domain state interface for the Account aggregate */
+export interface AccountState {
   id: IdentityId;
   profile: AccountProfile;
   email: ContactEmail;
@@ -37,26 +35,13 @@ interface AccountState {
   updatedAt: Date;
 }
 
-export class Account extends AggregateRoot<IdentityId> implements AccountServer {
+export class Account extends AggregateRoot<IdentityId> {
 
   private _props: AccountState;
 
-  private constructor(props: AccountServerDTO) {
-    const id = IdentityId.of(props.id);
-    super(id);
-
-    this._props = {
-      id,
-      profile: AccountProfile.create(props.profile),
-      email: ContactEmail.create(props.email),
-      settings: AccountSettings.create(props.settings),
-      status: AccountStatus.of(props.status),
-      phone: props.phone ? ContactPhone.create(props.phone) : null,
-      version: props.version,
-      deletedAt: props.deletedAt ? new Date(props.deletedAt) : null,
-      createdAt: new Date(props.createdAt),
-      updatedAt: new Date(props.updatedAt),
-    };
+  private constructor(state: AccountState) {
+    super(state.id);
+    this._props = state;
   }
 
   // ================= Getters =================
@@ -77,25 +62,25 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     id: IdentityId;
     email: string;
   }): Account {
-    const now = Date.now();
-    const dto: AccountServerDTO = {
-      id: params.id.toString(),
+    const now = new Date();
+    const state: AccountState = {
+      id: params.id,
       status: AccountStatus.ACTIVE,
-      profile: AccountProfile.createDefault(params.email).toDTO(),
-      settings: AccountSettings.createDefault().toDTO(),
-      email: {
+      profile: AccountProfile.createDefault(params.email),
+      settings: AccountSettings.createDefault(),
+      email: ContactEmail.create({
         address: params.email,
         isVerified: false,
         verifiedAt: null,
         isPrimary: true,
-      },
+      }),
       phone: null,
       version: 1,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
     };
-    const account = new Account(dto);
+    const account = new Account(state);
 
     account.addDomainEvent<AccountEventMap['account:create']>('account:create', {
       identityId: params.id.toString(),
@@ -104,20 +89,8 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     return account;
   }
 
-  public static fromPersistenceDTO(dto: AccountPersistenceDTO): Account {
-    const serverDTO: AccountServerDTO = {
-      id: dto.id,
-      status: dto.status,
-      profile: AccountProfile.fromPersistenceDTO(dto.profile).toDTO(),
-      settings: AccountSettings.fromPersistenceDTO(dto.settings).toDTO(),
-      email: ContactEmail.fromPersistenceDTO(dto.email).toDTO(),
-      phone: dto.phone ? ContactPhone.fromPersistenceDTO(dto.phone).toDTO() : null,
-      version: dto.version,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
-      deletedAt: dto.deletedAt ? dto.deletedAt.getTime() : null,
-    };
-    return new Account(serverDTO);
+  public static load(state: AccountState): Account {
+    return new Account(state);
   }
 
   // ================= 业务行为 =================
@@ -142,7 +115,7 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     });
   }
 
-  // ================= 序列�?=================
+  // ================= 序列�?=================
 
   public toServerDTO(): AccountServerDTO {
     return {
@@ -174,18 +147,4 @@ export class Account extends AggregateRoot<IdentityId> implements AccountServer 
     };
   }
 
-  public toPersistenceDTO(): AccountPersistenceDTO {
-    return {
-      id: this.id,
-      status: this._props.status,
-      profile: this._props.profile.toPersistenceDTO(),
-      settings: this._props.settings.toPersistenceDTO(),
-      email: this._props.email.toPersistenceDTO(),
-      phone: this._props.phone ? this._props.phone.toPersistenceDTO() : null,
-      version: this._props.version,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt,
-    };
-  }
 }

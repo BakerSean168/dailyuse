@@ -4,9 +4,11 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Repository } from '../../../domain-server/aggregates/repository';
+import { Repository, type RepositoryState } from '../../../domain-server/aggregates/repository';
 import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
+import { RepositoryId } from '../../../domain-shared/value-objects/repository-id';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { RepositoryConfig } from '../../../domain-shared/value-objects/repository-config';
 import { RepositoryStats } from '../../../domain-shared/value-objects/repository-stats';
 
@@ -14,8 +16,6 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
   constructor(private db: Database.Database) {}
 
   async save(repository: Repository): Promise<void> {
-    const dto = repository.toPersistenceDTO();
-
     const stmt = this.db.prepare(`
       INSERT INTO repositories (
         id, identityId, name, description, type, status, config,
@@ -31,15 +31,15 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     `);
 
     stmt.run(
-      dto.id,
-      dto.identityId,
-      dto.name,
-      dto.description || null,
-      dto.type,
-      dto.status,
-      dto.config || null,
-      dto.createdAt,
-      dto.updatedAt,
+      String(repository.id),
+      String(repository.identityId),
+      repository.name,
+      repository.description || null,
+      repository.type,
+      repository.status,
+      JSON.stringify(repository.config),
+      repository.createdAt,
+      repository.updatedAt,
     );
   }
 
@@ -54,20 +54,20 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     const config = row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO());
     const stats = row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO());
 
-    return Repository.fromPersistenceDTO({
-      id: row.id,
-      identityId: row.identityId,
+    return Repository.load({
+      id: RepositoryId.of(row.id),
+      identityId: IdentityId.of(row.identityId),
       name: row.name,
       description: row.description,
       type: row.type,
       path: row.path ?? null,
       status: row.status,
-      config,
-      stats,
+      config: RepositoryConfig.fromDTO(JSON.parse(config)),
+      stats: RepositoryStats.fromDTO(JSON.parse(stats)),
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
       version: row.version ?? 1,
-      deletedAt: row.deletedAt ?? null,
+      deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
     });
   }
 
@@ -78,20 +78,20 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
-      Repository.fromPersistenceDTO({
-        id: row.id,
-        identityId: row.identityId,
+      Repository.load({
+        id: RepositoryId.of(row.id),
+        identityId: IdentityId.of(row.identityId),
         name: row.name,
         description: row.description,
         type: row.type,
         path: row.path ?? null,
         status: row.status,
-        config: row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()),
-        stats: row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()),
+        config: RepositoryConfig.fromDTO(JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()))),
+        stats: RepositoryStats.fromDTO(JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()))),
         createdAt: new Date(row.createdAt),
         updatedAt: new Date(row.updatedAt),
         version: row.version ?? 1,
-        deletedAt: row.deletedAt ?? null,
+        deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
       }),
     );
   }
@@ -110,20 +110,20 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) =>
-      Repository.fromPersistenceDTO({
-        id: row.id,
-        identityId: row.identityId,
+      Repository.load({
+        id: RepositoryId.of(row.id),
+        identityId: IdentityId.of(row.identityId),
         name: row.name,
         description: row.description,
         type: row.type,
         path: row.path ?? null,
         status: row.status,
-        config: row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()),
-        stats: row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()),
+        config: RepositoryConfig.fromDTO(JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()))),
+        stats: RepositoryStats.fromDTO(JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()))),
         createdAt: new Date(row.createdAt),
         updatedAt: new Date(row.updatedAt),
         version: row.version ?? 1,
-        deletedAt: row.deletedAt ?? null,
+        deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
       }),
     );
   }

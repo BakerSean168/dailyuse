@@ -4,7 +4,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Folder } from '../../../domain-server/entities/folder';
+import { Folder, type FolderState } from '../../../domain-server/entities/folder';
+import { ResourceId } from '../../../domain-shared/value-objects/resource-id';
 import { FolderMetadata } from '../../../domain-shared/value-objects/folder-metadata';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 
@@ -12,8 +13,6 @@ export class SqliteFolderRepository implements IFolderRepository {
   constructor(private db: Database.Database) {}
 
   async save(folder: Folder): Promise<void> {
-    const dto = folder.toPersistenceDTO();
-
     const stmt = this.db.prepare(`
       INSERT INTO folders (
         id, repository_id, parent_id, name, path, created_at, updated_at
@@ -25,13 +24,13 @@ export class SqliteFolderRepository implements IFolderRepository {
     `);
 
     stmt.run(
-      dto.id,
-      dto.repositoryId,
-      dto.parentId || null,
-      dto.name,
-      dto.path,
-      dto.createdAt,
-      dto.updatedAt,
+      String(folder.id),
+      folder.repositoryId,
+      folder.parentId || null,
+      folder.name,
+      folder.path,
+      folder.createdAt,
+      folder.updatedAt,
     );
   }
 
@@ -43,20 +42,7 @@ export class SqliteFolderRepository implements IFolderRepository {
 
     if (!row) return null;
 
-    const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
-
-    return Folder.fromPersistenceDTO({
-      id: row.id,
-      repositoryId: row.repository_id,
-      parentId: row.parent_id,
-      name: row.name,
-      path: row.path,
-      order: row.order ?? 0,
-      isExpanded: row.is_expanded ?? false,
-      metadata,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    });
+    return this.mapToDomain(row);
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
@@ -65,22 +51,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
-
-      return Folder.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        parentId: row.parent_id,
-        name: row.name,
-        path: row.path,
-        order: row.order ?? 0,
-        isExpanded: row.is_expanded ?? false,
-        metadata,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async findByParentId(parentId: string): Promise<Folder[]> {
@@ -89,22 +60,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(parentId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
-
-      return Folder.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        parentId: row.parent_id,
-        name: row.name,
-        path: row.path,
-        order: row.order ?? 0,
-        isExpanded: row.is_expanded ?? false,
-        metadata,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async findByAccountId(identityId: string): Promise<Folder[]> {
@@ -116,22 +72,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
-
-      return Folder.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        parentId: row.parent_id,
-        name: row.name,
-        path: row.path,
-        order: row.order ?? 0,
-        isExpanded: row.is_expanded ?? false,
-        metadata,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async existsByPath(repositoryId: string, path: string): Promise<boolean> {
@@ -152,22 +93,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
-
-      return Folder.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        parentId: row.parent_id,
-        name: row.name,
-        path: row.path,
-        order: row.order ?? 0,
-        isExpanded: row.is_expanded ?? false,
-        metadata,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async deleteByRepositoryId(repositoryId: string): Promise<void> {
@@ -180,6 +106,24 @@ export class SqliteFolderRepository implements IFolderRepository {
       `SELECT 1 FROM folders WHERE id = ? LIMIT 1`
     );
     return stmt.get(id) !== undefined;
+  }
+
+  private mapToDomain(row: any): Folder {
+    const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
+
+    return Folder.load({
+      id: ResourceId.of(row.id),
+      repositoryId: row.repository_id,
+      parentId: row.parent_id,
+      name: row.name,
+      path: row.path,
+      order: row.order ?? 0,
+      isExpanded: row.is_expanded ?? false,
+      metadata: FolderMetadata.fromDTO(JSON.parse(metadata)),
+      createdAt: row.created_at instanceof Date ? row.created_at : new Date(row.created_at),
+      updatedAt: row.updated_at instanceof Date ? row.updated_at : new Date(row.updated_at),
+      children: null,
+    });
   }
 }
 

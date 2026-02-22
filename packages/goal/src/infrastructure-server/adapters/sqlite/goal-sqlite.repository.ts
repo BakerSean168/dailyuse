@@ -17,7 +17,7 @@ export class SqliteGoalRepository implements IGoalRepository {
   // ============ Save (Cascade Transaction) ============
 
   async save(goal: Goal): Promise<void> {
-    const dto = goal.toPersistenceDTO();
+    const dto = goal.toServerDTO(true);
 
     const transaction = this.db.transaction(() => {
       // 1. Upsert Goal root
@@ -122,12 +122,13 @@ export class SqliteGoalRepository implements IGoalRepository {
         `);
 
         for (const kr of dto.keyResults) {
+          const progress = typeof kr.progress === 'string' ? kr.progress : JSON.stringify(kr.progress);
           krStmt.run(
             kr.id as string,
             dto.id as string,
             kr.title,
             kr.description,
-            kr.progress, // already JSON string from toPersistenceDTO
+            progress,
             kr.weight,
             kr.sortOrder,
             kr.version,
@@ -185,7 +186,9 @@ export class SqliteGoalRepository implements IGoalRepository {
             review.achievements,
             review.challenges,
             review.improvements,
-            review.keyResultSnapshots, // already JSON string
+            typeof review.keyResultSnapshots === 'string'
+              ? review.keyResultSnapshots
+              : JSON.stringify(review.keyResultSnapshots ?? []),
             dateToInt(review.reviewedAt),
             review.version,
             dateToInt(review.createdAt),

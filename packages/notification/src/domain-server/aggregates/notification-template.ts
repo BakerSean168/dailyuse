@@ -10,9 +10,6 @@ import { NotificationTemplateId as NotificationTemplateIdType } from '../../doma
 import {
   NotificationTemplateConfig,
   type NotificationTemplateConfigServerDTO,
-  type TemplateContent,
-  type EmailTemplateContent,
-  type PushTemplateContent,
 } from '../value-objects/NotificationTemplateConfig';
 
 const logger = createLogger('NotificationTemplate');
@@ -34,39 +31,6 @@ export interface NotificationTemplateServerDTO {
   isSystemTemplate: boolean;
   createdAt: number; // TransferDate
   updatedAt: number; // TransferDate
-}
-
-/**
- * NotificationTemplate Persistence DTO
- */
-export interface NotificationTemplatePersistenceDTO {
-  id: NotificationTemplateId;
-  name: string;
-  description: string | null;
-  type: NotificationType;
-  category: NotificationCategory;
-  isActive: boolean;
-  isSystemTemplate: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-
-  // Flattened template config for DB storage
-  templateTitle: string;
-  templateContent: string;
-  templateVariables?: string | null; // JSON string
-  templateLayout?: string | null;
-  templateStyle?: string | null;
-
-  // Email specific
-  templateEmailSubject?: string | null;
-  templateEmailHtmlBody?: string | null;
-  templateEmailTextBody?: string | null;
-
-  // Push specific
-  templatePushTitle?: string | null;
-  templatePushBody?: string | null;
-  templatePushIcon?: string | null;
-  templatePushSound?: string | null;
 }
 
 /**
@@ -92,90 +56,73 @@ export interface NotificationTemplateServer {
   renderPush(variables: Record<string, unknown>): { title: string; body: string };
   validateVariables(variables: Record<string, unknown>): { isValid: boolean; missingVariables: string[] };
   toServerDTO(): NotificationTemplateServerDTO;
-  toPersistenceDTO(): NotificationTemplatePersistenceDTO;
+}
+
+/**
+ * NotificationTemplate 内部状态接口
+ */
+export interface NotificationTemplateState {
+  id: NotificationTemplateId;
+  name: string;
+  description: string | null;
+  type: NotificationType;
+  category: NotificationCategory;
+  template: NotificationTemplateConfig;
+  isActive: boolean;
+  isSystemTemplate: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * NotificationTemplate 聚合根
  * 负责通知模板的创建、更新和管理
  */
-export class NotificationTemplate
-  extends AggregateRoot<NotificationTemplateId>
-  implements NotificationTemplateServer
-{
-  // ===== 私有字段 =====
-  private _name: string;
-  private _description: string | null;
-  private _type: NotificationType;
-  private _category: NotificationCategory;
-  private _template: NotificationTemplateConfig;
-  private _isActive: boolean;
-  private _isSystemTemplate: boolean;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+export class NotificationTemplate extends AggregateRoot<NotificationTemplateId> {
+  // ===== 私有状态 =====
+  private _props: NotificationTemplateState;
 
   // ===== 构造函数（私有） =====
-  private constructor(
-    id: NotificationTemplateId,
-    params: {
-      name: string;
-      description: string | null;
-      type: NotificationType;
-      category: NotificationCategory;
-      template: NotificationTemplateConfig;
-      isActive: boolean;
-      isSystemTemplate: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-    },
-  ) {
-    super(id);
-    this._name = params.name;
-    this._description = params.description;
-    this._type = params.type;
-    this._category = params.category;
-    this._template = params.template;
-    this._isActive = params.isActive;
-    this._isSystemTemplate = params.isSystemTemplate;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(state: NotificationTemplateState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   public get type(): NotificationType {
-    return this._type;
+    return this._props.type;
   }
 
   public get category(): NotificationCategory {
-    return this._category;
+    return this._props.category;
   }
 
   public get template(): NotificationTemplateConfigServerDTO {
-    return this._template.toContract();
+    return this._props.template.toContract();
   }
 
   public get isActive(): boolean {
-    return this._isActive;
+    return this._props.isActive;
   }
 
   public get isSystemTemplate(): boolean {
-    return this._isSystemTemplate;
+    return this._props.isSystemTemplate;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 业务方法 =====
@@ -184,9 +131,9 @@ export class NotificationTemplate
    * 激活模板
    */
   public activate(): void {
-    if (this._isActive) return;
-    this._isActive = true;
-    this._updatedAt = new Date();
+    if (this._props.isActive) return;
+    this._props.isActive = true;
+    this._props.updatedAt = new Date();
     logger.info('✅ [聚合根] 模板已激活', { id: String(this.id) });
   }
 
@@ -194,9 +141,9 @@ export class NotificationTemplate
    * 停用模板
    */
   public deactivate(): void {
-    if (!this._isActive) return;
-    this._isActive = false;
-    this._updatedAt = new Date();
+    if (!this._props.isActive) return;
+    this._props.isActive = false;
+    this._props.updatedAt = new Date();
     logger.info('✅ [聚合根] 模板已停用', { id: String(this.id) });
   }
 
@@ -204,10 +151,10 @@ export class NotificationTemplate
    * 更新模板配置
    */
   public updateTemplate(template: Partial<NotificationTemplateConfigServerDTO>): void {
-    const current = this._template.toContract();
+    const current = this._props.template.toContract();
     const updated = { ...current, ...template };
-    this._template = NotificationTemplateConfig.fromContract(updated);
-    this._updatedAt = new Date();
+    this._props.template = NotificationTemplateConfig.fromContract(updated);
+    this._props.updatedAt = new Date();
     logger.info('✅ [聚合根] 模板配置已更新', { id: String(this.id) });
   }
 
@@ -215,7 +162,7 @@ export class NotificationTemplate
    * 渲染模板
    */
   public render(variables: Record<string, unknown>): { title: string; content: string } {
-    return this._template.render(variables);
+    return this._props.template.render(variables);
   }
 
   /**
@@ -226,7 +173,7 @@ export class NotificationTemplate
     htmlBody: string;
     textBody?: string;
   } {
-    const emailTemplate = this._template.emailTemplate;
+    const emailTemplate = this._props.template.emailTemplate;
     if (!emailTemplate) {
       throw new Error('该模板未配置邮件模板');
     }
@@ -252,7 +199,7 @@ export class NotificationTemplate
    * 渲染推送模板
    */
   public renderPush(variables: Record<string, unknown>): { title: string; body: string } {
-    const pushTemplate = this._template.pushTemplate;
+    const pushTemplate = this._props.template.pushTemplate;
     if (!pushTemplate) {
       throw new Error('该模板未配置推送模板');
     }
@@ -277,7 +224,7 @@ export class NotificationTemplate
     isValid: boolean;
     missingVariables: string[];
   } {
-    return this._template.validateVariables(variables);
+    return this._props.template.validateVariables(variables);
   }
 
   // ===== 转换方法 =====
@@ -285,54 +232,23 @@ export class NotificationTemplate
   public toServerDTO(): NotificationTemplateServerDTO {
     return {
       id: String(this.id) as NotificationTemplateId,
-      name: this._name,
-      description: this._description,
-      type: this._type,
-      category: this._category,
-      template: this._template.toContract(),
-      isActive: this._isActive,
-      isSystemTemplate: this._isSystemTemplate,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-    };
-  }
-
-  public toPersistenceDTO(): NotificationTemplatePersistenceDTO {
-    const templateDTO = this._template.toContract();
-    return {
-      id: String(this.id) as NotificationTemplateId,
-      name: this._name,
-      description: this._description,
-      type: this._type,
-      category: this._category,
-      isActive: this._isActive,
-      isSystemTemplate: this._isSystemTemplate,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-
-      // Flattened template config
-      templateTitle: templateDTO.template.title,
-      templateContent: templateDTO.template.content,
-      templateVariables: templateDTO.template.variables
-        ? JSON.stringify(templateDTO.template.variables)
-        : null,
-      templateLayout: null,
-      templateStyle: null,
-
-      // Email specific
-      templateEmailSubject: templateDTO.emailTemplate?.subject ?? null,
-      templateEmailHtmlBody: templateDTO.emailTemplate?.htmlBody ?? null,
-      templateEmailTextBody: templateDTO.emailTemplate?.textBody ?? null,
-
-      // Push specific
-      templatePushTitle: templateDTO.pushTemplate?.title ?? null,
-      templatePushBody: templateDTO.pushTemplate?.body ?? null,
-      templatePushIcon: templateDTO.pushTemplate?.icon ?? null,
-      templatePushSound: templateDTO.pushTemplate?.sound ?? null,
+      name: this._props.name,
+      description: this._props.description,
+      type: this._props.type,
+      category: this._props.category,
+      template: this._props.template.toContract(),
+      isActive: this._props.isActive,
+      isSystemTemplate: this._props.isSystemTemplate,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 
   // ===== 静态工厂方法 =====
+
+  public static load(state: NotificationTemplateState): NotificationTemplate {
+    return new NotificationTemplate(state);
+  }
 
   public static create(params: {
     name: string;
@@ -351,7 +267,8 @@ export class NotificationTemplate
     const id = NotificationTemplateIdType.of(NotificationTemplateIdType.generate());
     const now = new Date();
 
-    const template = new NotificationTemplate(id, {
+    const template = new NotificationTemplate({
+      id,
       name: params.name,
       description: params.description ?? null,
       type: params.type,
@@ -365,74 +282,5 @@ export class NotificationTemplate
 
     logger.info('✅ [聚合根] NotificationTemplate 实例已创建', { id: String(id) });
     return template;
-  }
-
-  public static fromServerDTO(dto: NotificationTemplateServerDTO): NotificationTemplate {
-    const id = NotificationTemplateIdType.of(dto.id);
-
-    return new NotificationTemplate(id, {
-      name: dto.name,
-      description: dto.description,
-      type: dto.type,
-      category: dto.category,
-      template: NotificationTemplateConfig.fromContract(dto.template),
-      isActive: dto.isActive,
-      isSystemTemplate: dto.isSystemTemplate,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  public static fromPersistenceDTO(dto: NotificationTemplatePersistenceDTO): NotificationTemplate {
-    const id = NotificationTemplateIdType.of(dto.id);
-
-    const template: TemplateContent = {
-      title: dto.templateTitle,
-      content: dto.templateContent,
-      variables: dto.templateVariables ? JSON.parse(dto.templateVariables) : [],
-    };
-
-    const emailTemplate: EmailTemplateContent | null =
-      dto.templateEmailSubject && dto.templateEmailHtmlBody
-        ? {
-            subject: dto.templateEmailSubject,
-            htmlBody: dto.templateEmailHtmlBody,
-            textBody: dto.templateEmailTextBody,
-          }
-        : null;
-
-    const pushTemplate: PushTemplateContent | null =
-      dto.templatePushTitle && dto.templatePushBody
-        ? {
-            title: dto.templatePushTitle,
-            body: dto.templatePushBody,
-            icon: dto.templatePushIcon,
-            sound: dto.templatePushSound,
-          }
-        : null;
-
-    const templateConfigDTO: NotificationTemplateConfigServerDTO = {
-      template,
-      channels: {
-        inApp: true,
-        email: !!emailTemplate,
-        push: !!pushTemplate,
-        sms: false,
-      },
-      emailTemplate,
-      pushTemplate,
-    };
-
-    return new NotificationTemplate(id, {
-      name: dto.name,
-      description: dto.description,
-      type: dto.type,
-      category: dto.category,
-      template: NotificationTemplateConfig.fromContract(templateConfigDTO),
-      isActive: dto.isActive,
-      isSystemTemplate: dto.isSystemTemplate,
-      createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt),
-      updatedAt: dto.updatedAt instanceof Date ? dto.updatedAt : new Date(dto.updatedAt),
-    });
   }
 }

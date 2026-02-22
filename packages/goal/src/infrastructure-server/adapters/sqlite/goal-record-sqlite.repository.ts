@@ -6,19 +6,13 @@
 import type Database from 'better-sqlite3';
 import { GoalRecord } from '@/domain-server';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-server';
-import type { GoalRecordPersistenceDTO } from '@dailyuse/contracts/goal';
-
-// Helper: Date → INTEGER (millis)
-function dateToInt(d: Date | null | undefined): number | null {
-  if (!d) return null;
-  return d instanceof Date ? d.getTime() : (d as number);
-}
+import { GoalRecordId, KeyResultId } from '@/domain-shared';
 
 export class SqliteGoalRecordRepository implements IGoalRecordRepository {
   constructor(private db: Database.Database) {}
 
   async save(record: GoalRecord): Promise<void> {
-    const dto = record.toPersistenceDTO();
+    const dto = record.toServerDTO();
 
     this.db
       .prepare(
@@ -39,11 +33,11 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
         dto.keyResultId as string,
         dto.value,
         dto.note,
-        dateToInt(dto.recordedAt),
+        dto.recordedAt,
         dto.version,
-        dateToInt(dto.createdAt),
-        dateToInt(dto.updatedAt),
-        dateToInt(dto.deletedAt),
+        dto.createdAt,
+        dto.updatedAt,
+        dto.deletedAt,
       );
   }
 
@@ -182,9 +176,9 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
   }
 
   private rowToGoalRecord(row: any): GoalRecord {
-    const dto: GoalRecordPersistenceDTO = {
-      id: row.id,
-      keyResultId: row.key_result_id,
+    return GoalRecord.load({
+      id: GoalRecordId.of(row.id),
+      keyResultId: KeyResultId.of(row.key_result_id),
       value: row.value,
       note: row.note ?? null,
       recordedAt: new Date(row.recorded_at),
@@ -192,8 +186,6 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
       deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-    };
-
-    return GoalRecord.fromPersistenceDTO(dto);
+    });
   }
 }

@@ -3,23 +3,20 @@
  * 通知聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 NotificationClient 接口
  * - Private constructor with params object
  * - Private _field backing fields
  * - Public getters
- * - Static fromDTO(dto: NotificationClientDTO): Notification
+ * - Static load(state: NotificationState): Notification
  * - Instance toDTO(): NotificationClientDTO
  */
 
 import type {
-  NotificationClient,
   NotificationClientDTO,
   NotificationType,
   NotificationCategory,
   NotificationStatus,
 } from '@dailyuse/contracts/notification';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { IdentityId as IIdentityId, NotificationId as INotificationId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   NotificationId,
@@ -29,8 +26,7 @@ import {
 import { IdentityId } from '@dailyuse/domain-shared';
 import { NotificationChannel } from '../entities/notification-channel.js';
 
-// 内部状态接口
-interface NotificationState {
+export interface NotificationState {
   id: NotificationId;
   identityId: IdentityId;
   title: string;
@@ -49,7 +45,7 @@ interface NotificationState {
   notificationChannels: NotificationChannel[] | null;
 }
 
-export class Notification extends AggregateRoot<NotificationId> implements NotificationClient {
+export class Notification extends AggregateRoot<NotificationId> {
   // ================= 1. Props =================
   private readonly _props: NotificationState;
 
@@ -60,7 +56,7 @@ export class Notification extends AggregateRoot<NotificationId> implements Notif
   }
 
   // ================= 3. Getters =================
-  get identityId(): IIdentityId {
+  get identityId(): IdentityId {
     return this._props.identityId;
   }
 
@@ -155,25 +151,8 @@ export class Notification extends AggregateRoot<NotificationId> implements Notif
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: NotificationClientDTO): Notification {
-    return new Notification({
-      id: NotificationId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      title: dto.title,
-      content: dto.content,
-      type: dto.type,
-      category: dto.category,
-      importance: dto.importance,
-      status: dto.status,
-      readAt: dto.readAt ? new Date(dto.readAt) : null,
-      actions: dto.actions?.map(a => NotificationAction.fromDTO(a)) ?? null,
-      metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      notificationChannels: dto.notificationChannels?.map(c => NotificationChannel.fromDTO(c)) ?? null,
-    });
+  public static load(state: NotificationState): Notification {
+    return new Notification(state);
   }
 
   // ================= 5. DTO Conversion =================

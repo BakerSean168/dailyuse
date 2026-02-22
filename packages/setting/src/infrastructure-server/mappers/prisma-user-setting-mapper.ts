@@ -8,6 +8,8 @@
 
 import type { UserSetting as PrismaUserSetting } from '@dailyuse/database';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import { SettingId } from '@/domain-shared/value-objects/setting-id';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 export class PrismaUserSettingMapper {
   /**
@@ -30,10 +32,10 @@ export class PrismaUserSettingMapper {
       }
     }
 
-    return UserSetting.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      entries: JSON.stringify(entries),
+    return UserSetting.load({
+      id: SettingId.of(data.id),
+      identityId: IdentityId.of(data.identityId),
+      entriesJson: JSON.stringify(entries),
       version: data.version,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -43,24 +45,21 @@ export class PrismaUserSettingMapper {
 
   /**
    * Domain UserSetting → Prisma write data.
-   * Unpacks entries JSON into flat columns.
+   * Unpacks entries JSON from the server DTO into flat columns.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static toPersistence(setting: UserSetting): any {
-    const dto = setting.toPersistenceDTO();
+    const dto = setting.toServerDTO();
     const entries = JSON.parse(dto.entries);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const flatData: any = {
       id: dto.id,
       identityId: dto.identityId,
       version: dto.version,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      createdAt: setting.createdAt,
+      updatedAt: setting.updatedAt,
+      deletedAt: setting.deletedAt,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const entry of entries as any[]) {
       flatData[entry.key] = entry.value;
     }

@@ -1,12 +1,9 @@
 /**
  * SearchEngine 实体实现
- * 实现 SearchEngineServer 接口
  */
 
 import type {
   SearchEngineClientDTO,
-  SearchEnginePersistenceDTO,
-  SearchEngineServer,
   SearchEngineServerDTO,
 } from '@dailyuse/contracts/editor';
 import type {
@@ -18,104 +15,95 @@ import type {
 import { Entity, generateUUID } from '@dailyuse/utils';
 
 /**
+ * SearchEngine 状态接口（domain types）
+ */
+export interface SearchEngineState {
+  id: SearchEngineId;
+  workspaceId: EditorWorkspaceId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  indexPath: string;
+  indexedDocumentCount: number;
+  totalDocumentCount: number;
+  lastIndexedAt: Date | null;
+  isIndexing: boolean;
+  indexProgress: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * SearchEngine 实体
  */
-export class SearchEngine extends Entity<SearchEngineId> implements SearchEngineServer {
+export class SearchEngine extends Entity<SearchEngineId> {
   // ===== 私有字段 =====
-  private _workspaceId: EditorWorkspaceId;
-  private _identityId: IdentityId;
-  private _name: string;
-  private _description: string | null;
-  private _indexPath: string;
-  private _indexedDocumentCount: number;
-  private _totalDocumentCount: number;
-  private _lastIndexedAt: Date | null;
-  private _isIndexing: boolean;
-  private _indexProgress: number | null;
-  private _createdAt: Date;
-  private _updatedAt: Date;
+  private _props: SearchEngineState;
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    id: SearchEngineId;
-    workspaceId: EditorWorkspaceId;
-    identityId: IdentityId;
-    name: string;
-    description?: string | null;
-    indexPath: string;
-    indexedDocumentCount: number;
-    totalDocumentCount: number;
-    lastIndexedAt?: Date | null;
-    isIndexing: boolean;
-    indexProgress?: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    super(params.id);
-    this._workspaceId = params.workspaceId;
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description ?? null;
-    this._indexPath = params.indexPath;
-    this._indexedDocumentCount = params.indexedDocumentCount;
-    this._totalDocumentCount = params.totalDocumentCount;
-    this._lastIndexedAt = params.lastIndexedAt ?? null;
-    this._isIndexing = params.isIndexing;
-    this._indexProgress = params.indexProgress ?? null;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(state: SearchEngineState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
   public get workspaceId(): EditorWorkspaceId {
-    return this._workspaceId;
+    return this._props.workspaceId;
   }
 
   public get identityId(): IdentityId {
-    return this._identityId;
+    return this._props.identityId;
   }
 
   public get name(): string {
-    return this._name;
+    return this._props.name;
   }
 
   public get description(): string | null {
-    return this._description;
+    return this._props.description;
   }
 
   public get indexPath(): string {
-    return this._indexPath;
+    return this._props.indexPath;
   }
 
   public get indexedDocumentCount(): number {
-    return this._indexedDocumentCount;
+    return this._props.indexedDocumentCount;
   }
 
   public get totalDocumentCount(): number {
-    return this._totalDocumentCount;
+    return this._props.totalDocumentCount;
   }
 
   public get lastIndexedAt(): Date | null {
-    return this._lastIndexedAt;
+    return this._props.lastIndexedAt;
   }
 
   public get isIndexing(): boolean {
-    return this._isIndexing;
+    return this._props.isIndexing;
   }
 
   public get indexProgress(): number | null {
-    return this._indexProgress;
+    return this._props.indexProgress;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   // ===== 工厂方法 =====
+
+  /**
+   * 从状态恢复实体
+   */
+  public static load(state: SearchEngineState): SearchEngine {
+    return new SearchEngine(state);
+  }
+
   public static create(params: {
     workspaceId: EditorWorkspaceId;
     identityId: IdentityId;
@@ -141,153 +129,99 @@ export class SearchEngine extends Entity<SearchEngineId> implements SearchEngine
     });
   }
 
-  public static fromServerDTO(dto: SearchEngineServerDTO): SearchEngine {
-    return new SearchEngine({
-      id: dto.id,
-      workspaceId: dto.workspaceId,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      indexPath: dto.indexPath,
-      indexedDocumentCount: dto.indexedDocumentCount,
-      totalDocumentCount: dto.totalDocumentCount,
-      lastIndexedAt: dto.lastIndexedAt !== null ? new Date(dto.lastIndexedAt) : null,
-      isIndexing: dto.isIndexing,
-      indexProgress: dto.indexProgress,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  public static fromPersistenceDTO(dto: SearchEnginePersistenceDTO): SearchEngine {
-    return new SearchEngine({
-      id: dto.id,
-      workspaceId: dto.workspace_id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      indexPath: dto.index_path,
-      indexedDocumentCount: dto.indexed_document_count,
-      totalDocumentCount: dto.total_document_count,
-      lastIndexedAt: dto.last_indexed_at !== null ? new Date(dto.last_indexed_at) : null,
-      isIndexing: dto.is_indexing,
-      indexProgress: dto.index_progress,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
   // ===== 业务方法 =====
   public startIndexing(totalDocumentCount: number): void {
-    this._isIndexing = true;
-    this._indexProgress = 0;
-    this._totalDocumentCount = totalDocumentCount;
-    this._updatedAt = new Date();
+    this._props.isIndexing = true;
+    this._props.indexProgress = 0;
+    this._props.totalDocumentCount = totalDocumentCount;
+    this._props.updatedAt = new Date();
   }
 
   public updateIndexProgress(progress: number, indexedCount: number): void {
-    if (!this._isIndexing) return;
-    this._indexProgress = Math.min(100, Math.max(0, progress));
-    this._indexedDocumentCount = indexedCount;
-    this._updatedAt = new Date();
+    if (!this._props.isIndexing) return;
+    this._props.indexProgress = Math.min(100, Math.max(0, progress));
+    this._props.indexedDocumentCount = indexedCount;
+    this._props.updatedAt = new Date();
   }
 
   public finishIndexing(): void {
-    this._isIndexing = false;
-    this._indexProgress = 100;
-    this._lastIndexedAt = new Date();
-    this._updatedAt = new Date();
+    this._props.isIndexing = false;
+    this._props.indexProgress = 100;
+    this._props.lastIndexedAt = new Date();
+    this._props.updatedAt = new Date();
   }
 
   public cancelIndexing(): void {
-    this._isIndexing = false;
-    this._indexProgress = null;
-    this._updatedAt = new Date();
+    this._props.isIndexing = false;
+    this._props.indexProgress = null;
+    this._props.updatedAt = new Date();
   }
 
   public rename(name: string): void {
-    this._name = name;
-    this._updatedAt = new Date();
+    this._props.name = name;
+    this._props.updatedAt = new Date();
   }
 
   public updateDescription(description: string | null): void {
-    this._description = description;
-    this._updatedAt = new Date();
+    this._props.description = description;
+    this._props.updatedAt = new Date();
   }
 
   // ===== 计算属性 =====
   public get indexPercentage(): number {
-    return this._indexProgress ?? 0;
+    return this._props.indexProgress ?? 0;
   }
 
   public get hasIndexedDocuments(): boolean {
-    return this._indexedDocumentCount > 0;
+    return this._props.indexedDocumentCount > 0;
   }
 
   public get isFullyIndexed(): boolean {
-    return this._indexedDocumentCount === this._totalDocumentCount && this._totalDocumentCount > 0;
+    return this._props.indexedDocumentCount === this._props.totalDocumentCount && this._props.totalDocumentCount > 0;
   }
 
   public get lastIndexedAtFormatted(): string | null {
-    return this._lastIndexedAt?.toLocaleString() ?? null;
+    return this._props.lastIndexedAt?.toLocaleString() ?? null;
   }
 
   // ===== 序列化方法 =====
   public toServerDTO(): SearchEngineServerDTO {
     return {
       id: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      indexPath: this._indexPath,
-      indexedDocumentCount: this._indexedDocumentCount,
-      totalDocumentCount: this._totalDocumentCount,
-      lastIndexedAt: this._lastIndexedAt?.getTime() as TransferDate | null,
-      isIndexing: this._isIndexing,
-      indexProgress: this._indexProgress,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      indexPath: this._props.indexPath,
+      indexedDocumentCount: this._props.indexedDocumentCount,
+      totalDocumentCount: this._props.totalDocumentCount,
+      lastIndexedAt: this._props.lastIndexedAt?.getTime() as TransferDate | null,
+      isIndexing: this._props.isIndexing,
+      indexProgress: this._props.indexProgress,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
     };
   }
 
   public toClientDTO(): SearchEngineClientDTO {
     return {
       id: this.id,
-      workspaceId: this._workspaceId,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      indexPath: this._indexPath,
-      indexedDocumentCount: this._indexedDocumentCount,
-      totalDocumentCount: this._totalDocumentCount,
-      lastIndexedAt: this._lastIndexedAt?.getTime() as TransferDate | null,
-      isIndexing: this._isIndexing,
-      indexProgress: this._indexProgress,
-      createdAt: this._createdAt.getTime() as TransferDate,
-      updatedAt: this._updatedAt.getTime() as TransferDate,
+      workspaceId: this._props.workspaceId,
+      identityId: this._props.identityId,
+      name: this._props.name,
+      description: this._props.description,
+      indexPath: this._props.indexPath,
+      indexedDocumentCount: this._props.indexedDocumentCount,
+      totalDocumentCount: this._props.totalDocumentCount,
+      lastIndexedAt: this._props.lastIndexedAt?.getTime() as TransferDate | null,
+      isIndexing: this._props.isIndexing,
+      indexProgress: this._props.indexProgress,
+      createdAt: this._props.createdAt.getTime() as TransferDate,
+      updatedAt: this._props.updatedAt.getTime() as TransferDate,
       // UI 格式化字段
-      formattedLastIndexed: this._lastIndexedAt?.toLocaleString() ?? null,
-      formattedCreatedAt: this._createdAt.toLocaleString(),
-      formattedUpdatedAt: this._updatedAt.toLocaleString(),
-    };
-  }
-
-  public toPersistenceDTO(): SearchEnginePersistenceDTO {
-    return {
-      id: this.id,
-      workspace_id: this._workspaceId,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      index_path: this._indexPath,
-      indexed_document_count: this._indexedDocumentCount,
-      total_document_count: this._totalDocumentCount,
-      last_indexed_at: this._lastIndexedAt,
-      is_indexing: this._isIndexing,
-      index_progress: this._indexProgress,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
+      formattedLastIndexed: this._props.lastIndexedAt?.toLocaleString() ?? null,
+      formattedCreatedAt: this._props.createdAt.toLocaleString(),
+      formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
     };
   }
 }

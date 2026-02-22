@@ -23,5 +23,8 @@
  */
 
 export { Notification } from './notification';
+export type { NotificationState } from './notification';
 export { NotificationTemplate } from './notification-template';
+export type { NotificationTemplateState } from './notification-template';
 export { NotificationPreference } from './notification-preference';
+export type { NotificationPreferenceState } from './notification-preference';

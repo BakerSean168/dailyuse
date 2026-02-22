@@ -4,7 +4,10 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Resource } from '../../../domain-server/entities/resource';
+import type { FolderId } from '@dailyuse/contracts/primitives';
+import { Resource, type ResourceState } from '../../../domain-server/entities/resource';
+import { ResourceId } from '../../../domain-shared/value-objects/resource-id';
+import { RepositoryId } from '../../../domain-shared/value-objects/repository-id';
 import { ResourceMetadata } from '../../../domain-shared/value-objects/resource-metadata';
 import { ResourceStats } from '../../../domain-shared/value-objects/resource-stats';
 import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
@@ -13,8 +16,6 @@ export class SqliteResourceRepository implements IResourceRepository {
   constructor(private db: Database.Database) {}
 
   async save(resource: Resource): Promise<void> {
-    const dto = resource.toPersistenceDTO();
-
     const stmt = this.db.prepare(`
       INSERT INTO resources (
         id, repository_id, folder_id, name, type, path, size,
@@ -33,19 +34,19 @@ export class SqliteResourceRepository implements IResourceRepository {
     `);
 
     stmt.run(
-      dto.id,
-      dto.repositoryId,
-      dto.folderId || null,
-      dto.name,
-      dto.type,
-      dto.path,
-      dto.size || 0,
-      dto.content || null,
-      dto.metadata || null,
-      dto.stats || null,
-      dto.status,
-      dto.createdAt,
-      dto.updatedAt,
+      String(resource.id),
+      String(resource.repositoryId),
+      resource.folderId ? String(resource.folderId) : null,
+      resource.name,
+      resource.type,
+      resource.path,
+      resource.size || 0,
+      resource.content || null,
+      JSON.stringify(resource.metadata),
+      JSON.stringify(resource.stats),
+      resource.status,
+      resource.createdAt,
+      resource.updatedAt,
     );
   }
 
@@ -57,27 +58,7 @@ export class SqliteResourceRepository implements IResourceRepository {
 
     if (!row) return null;
 
-    const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
-    const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
-
-    return Resource.fromPersistenceDTO({
-      id: row.id,
-      repositoryId: row.repository_id,
-      folderId: row.folder_id,
-      name: row.name,
-      type: row.type,
-      path: row.path,
-      mimeType: row.mime_type ?? null,
-      size: row.size,
-      content: row.content,
-      metadata,
-      stats,
-      status: row.status,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      version: row.version ?? 1,
-      deletedAt: row.deleted_at ?? null,
-    });
+    return this.mapToDomain(row);
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
@@ -86,29 +67,7 @@ export class SqliteResourceRepository implements IResourceRepository {
     );
     const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
-      const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
-
-      return Resource.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        folderId: row.folder_id,
-        name: row.name,
-        type: row.type,
-        path: row.path,
-        mimeType: row.mime_type ?? null,
-        size: row.size,
-        content: row.content,
-        metadata,
-        stats,
-        status: row.status,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        version: row.version ?? 1,
-        deletedAt: row.deleted_at ?? null,
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async findByFolderId(folderId: string): Promise<Resource[]> {
@@ -117,29 +76,7 @@ export class SqliteResourceRepository implements IResourceRepository {
     );
     const rows = stmt.all(folderId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
-      const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
-
-      return Resource.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        folderId: row.folder_id,
-        name: row.name,
-        type: row.type,
-        path: row.path,
-        mimeType: row.mime_type ?? null,
-        size: row.size,
-        content: row.content,
-        metadata,
-        stats,
-        status: row.status,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        version: row.version ?? 1,
-        deletedAt: row.deleted_at ?? null,
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async findByIdentityId(identityId: string): Promise<Resource[]> {
@@ -151,29 +88,7 @@ export class SqliteResourceRepository implements IResourceRepository {
     );
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) => {
-      const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
-      const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
-
-      return Resource.fromPersistenceDTO({
-        id: row.id,
-        repositoryId: row.repository_id,
-        folderId: row.folder_id,
-        name: row.name,
-        type: row.type,
-        path: row.path,
-        mimeType: row.mime_type ?? null,
-        size: row.size,
-        content: row.content,
-        metadata,
-        stats,
-        status: row.status,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        version: row.version ?? 1,
-        deletedAt: row.deleted_at ?? null,
-      });
-    });
+    return rows.map((row) => this.mapToDomain(row));
   }
 
   async findByAccountId(identityId: string): Promise<Resource[]> {
@@ -190,6 +105,32 @@ export class SqliteResourceRepository implements IResourceRepository {
   async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM resources WHERE id = ?`);
     stmt.run(id);
+  }
+
+  private mapToDomain(row: any): Resource {
+    const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
+    const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
+
+    return Resource.load({
+      id: ResourceId.of(row.id),
+      repositoryId: RepositoryId.of(row.repository_id),
+      folderId: row.folder_id ? (row.folder_id as FolderId) : null,
+      type: row.type,
+      name: row.name,
+      path: row.path,
+      mimeType: row.mime_type ?? null,
+      size: row.size,
+      content: row.content,
+      childrenCount: null,
+      metadata: ResourceMetadata.fromDTO(JSON.parse(metadata)),
+      stats: ResourceStats.fromDTO(JSON.parse(stats)),
+      status: row.status,
+      createdAt: row.created_at instanceof Date ? row.created_at : new Date(row.created_at),
+      updatedAt: row.updated_at instanceof Date ? row.updated_at : new Date(row.updated_at),
+      version: row.version ?? 1,
+      deletedAt: row.deleted_at ? (row.deleted_at instanceof Date ? row.deleted_at : new Date(row.deleted_at)) : null,
+      externalLinks: null,
+    });
   }
 }
 

@@ -4,3 +4,4 @@
  */
 
 export { TaskTemplateHistory } from './task-template-history';
+export type { TaskTemplateHistoryState } from './task-template-history';

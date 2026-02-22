@@ -4,17 +4,23 @@
 
 import type Database from 'better-sqlite3';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
+import type { ScheduleTaskState } from '../../../domain-server/aggregates/schedule-task';
 import type {
   IScheduleTaskRepository,
   IScheduleTaskQueryOptions,
 } from '../../../domain-server/repositories/IScheduleTaskRepository';
-import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus, SourceModule, type ExecutionStatus } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskId } from '../../../domain-shared/value-objects/schedule-task-id';
+import { ScheduleConfig } from '../../../domain-server/value-objects/ScheduleConfig';
+import { ExecutionInfo } from '../../../domain-server/value-objects/ExecutionInfo';
+import { RetryPolicy } from '../../../domain-server/value-objects/RetryPolicy';
+import { TaskMetadata } from '../../../domain-server/value-objects/TaskMetadata';
 
 export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
   constructor(private db: Database.Database) {}
 
   async save(task: ScheduleTask): Promise<void> {
-    const dto = task.toPersistenceDTO();
+    const metadataDTO = task.metadata.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO schedule_tasks (
@@ -39,36 +45,36 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
     `);
 
     stmt.run(
-      dto.id,
-      dto.identityId,
-      dto.name,
-      dto.description,
-      dto.sourceModule,
-      dto.sourceEntityId,
-      dto.status,
-      dto.enabled ? 1 : 0,
-      dto.cronExpression,
-      dto.timezone,
-      dto.startDate,
-      dto.endDate,
-      dto.maxExecutions,
-      dto.nextRunAt,
-      dto.lastRunAt,
-      dto.executionCount,
-      dto.lastExecutionStatus,
-      dto.lastExecutionDuration,
-      dto.consecutiveFailures,
-      dto.maxRetries,
-      dto.initialDelayMs,
-      dto.maxDelayMs,
-      dto.backoffMultiplier,
-      dto.retryableStatuses,
-      dto.payload,
-      dto.tags,
-      dto.priority,
-      dto.timeout,
-      dto.createdAt,
-      dto.updatedAt,
+      task.id,
+      task.identityId,
+      task.name,
+      task.description,
+      task.sourceModule,
+      task.sourceEntityId,
+      task.status,
+      task.enabled ? 1 : 0,
+      task.schedule.cronExpression,
+      task.schedule.timezone,
+      task.schedule.startDate !== null ? new Date(task.schedule.startDate) : null,
+      task.schedule.endDate !== null ? new Date(task.schedule.endDate) : null,
+      task.schedule.maxExecutions,
+      task.execution.nextRunAt !== null ? new Date(task.execution.nextRunAt) : null,
+      task.execution.lastRunAt !== null ? new Date(task.execution.lastRunAt) : null,
+      task.execution.executionCount,
+      task.execution.lastExecutionStatus ? String(task.execution.lastExecutionStatus) : null,
+      task.execution.lastExecutionDuration,
+      task.execution.consecutiveFailures,
+      task.retryPolicy.maxRetries,
+      task.retryPolicy.retryDelay,
+      task.retryPolicy.maxRetryDelay,
+      task.retryPolicy.backoffMultiplier,
+      '[]',
+      typeof metadataDTO.payload === 'string' ? metadataDTO.payload : JSON.stringify(metadataDTO.payload),
+      JSON.stringify(metadataDTO.tags),
+      metadataDTO.priority,
+      metadataDTO.timeout,
+      task.createdAt,
+      task.updatedAt,
     );
   }
 
@@ -292,9 +298,8 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
 
   // Private helper method to convert database row to ScheduleTask
   private rowToTask(row: any): ScheduleTask {
-    // Convert snake_case row properties to camelCase DTO
-    return ScheduleTask.fromPersistenceDTO({
-      id: row.id,
+    const state: ScheduleTaskState = {
+      id: ScheduleTaskId.of(row.id),
       identityId: row.identity_id,
       name: row.name,
       description: row.description,
@@ -302,28 +307,39 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
       sourceEntityId: row.source_entity_id,
       status: row.status as ScheduleTaskStatus,
       enabled: row.enabled === 1,
-      cronExpression: row.cron_expression,
-      timezone: row.timezone,
-      startDate: row.start_date,
-      endDate: row.end_date,
-      maxExecutions: row.max_executions,
-      nextRunAt: row.next_run_at,
-      lastRunAt: row.last_run_at,
-      executionCount: row.execution_count,
-      lastExecutionStatus: row.last_execution_status,
-      lastExecutionDuration: row.last_execution_duration,
-      consecutiveFailures: row.consecutive_failures,
-      maxRetries: row.max_retries,
-      initialDelayMs: row.initial_delay_ms,
-      maxDelayMs: row.max_delay_ms,
-      backoffMultiplier: row.backoff_multiplier,
-      retryableStatuses: row.retryable_statuses,
-      payload: row.payload,
-      tags: row.tags,
-      priority: row.priority,
-      timeout: row.timeout,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    });
+      schedule: ScheduleConfig.fromPersistenceDTO({
+        cronExpression: row.cron_expression ?? null,
+        timezone: row.timezone,
+        startDate: row.start_date ?? null,
+        endDate: row.end_date ?? null,
+        maxExecutions: row.max_executions ?? null,
+      }),
+      execution: ExecutionInfo.fromPersistenceDTO({
+        nextRunAt: row.next_run_at,
+        lastRunAt: row.last_run_at,
+        executionCount: row.execution_count,
+        lastExecutionStatus: (row.last_execution_status as ExecutionStatus) ?? null,
+        last_execution_duration: row.last_execution_duration ?? null,
+        consecutive_failures: row.consecutive_failures ?? 0,
+      }),
+      retryPolicy: RetryPolicy.fromPersistenceDTO({
+        enabled: row.enabled === 1,
+        maxRetries: row.max_retries,
+        retry_delay: row.initial_delay_ms ?? 0,
+        backoff_multiplier: row.backoff_multiplier ?? 1,
+        max_retry_delay: row.max_delay_ms ?? 0,
+      }),
+      metadata: TaskMetadata.fromPersistenceDTO({
+        payload: row.payload ?? {},
+        tags: row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags) : [],
+        priority: row.priority,
+        timeout: row.timeout,
+      }),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      version: row.version ?? 1,
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
+    };
+    return ScheduleTask.load(state);
   }
 }

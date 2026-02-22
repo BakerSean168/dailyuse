@@ -4,3 +4,4 @@
  */
 
 export * from './rule-client-mapper';
+export * from './rule-dto-mapper';

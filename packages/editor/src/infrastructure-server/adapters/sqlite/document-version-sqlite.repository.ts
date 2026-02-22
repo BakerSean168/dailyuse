@@ -1,6 +1,5 @@
 /**
  * SQLite DocumentVersion Repository Implementation
- * 鏂囨。鐗堟湰鐨?SQLite Repository瀹炵幇
  */
 
 import type Database from 'better-sqlite3';
@@ -16,20 +15,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
     if (!row) return null;
 
-    return DocumentVersion.fromPersistenceDTO({
-      id: row.id,
-      document_id: row.document_id,
-      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      version_number: row.version_number,
-      change_type: row.change_type as VersionChangeType,
-      content_hash: row.content_hash ?? row.contentHash ?? '',
-      content_diff: row.content_diff ?? null,
-      change_description: row.change_description ?? null,
-      previous_version_id: row.previous_version_id ?? null,
-      created_by: row.created_by ?? null,
-      createdAt: new Date(row.createdAt),
-    });
+    return this.rowToVersion(row);
   }
 
   async findByDocumentId(documentId: string): Promise<DocumentVersion[]> {
@@ -89,7 +75,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
   }
 
   async save(version: DocumentVersion): Promise<void> {
-    const dto = version.toPersistenceDTO();
+    const dto = version.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO document_versions (
@@ -103,12 +89,12 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
     stmt.run(
       dto.id,
-      dto.document_id,
-      dto.version_number,
-      dto.change_type,
-      dto.content_hash,
-      dto.createdAt,
-      dto.createdAt,
+      dto.documentId,
+      dto.versionNumber,
+      dto.changeType,
+      dto.contentHash,
+      new Date(dto.createdAt),
+      new Date(dto.createdAt),
     );
   }
 
@@ -125,39 +111,20 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
   }
 
   private rowToVersion(row: any): DocumentVersion {
-    return DocumentVersion.fromPersistenceDTO({
+    return DocumentVersion.load({
       id: row.id,
-      document_id: row.document_id,
-      workspace_id: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
+      documentId: row.document_id,
+      workspaceId: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
       identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      version_number: row.version_number,
-      change_type: row.change_type as VersionChangeType,
-      content_hash: row.content_hash ?? row.contentHash ?? '',
-      content_diff: row.content_diff ?? null,
-      change_description: row.change_description ?? null,
-      previous_version_id: row.previous_version_id ?? null,
-      created_by: row.created_by ?? null,
+      versionNumber: row.version_number,
+      changeType: row.change_type as VersionChangeType,
+      contentHash: row.content_hash ?? row.contentHash ?? '',
+      contentDiff: row.content_diff ?? null,
+      changeDescription: row.change_description ?? null,
+      previousVersionId: row.previous_version_id ?? null,
+      createdBy: row.created_by ?? null,
       createdAt: new Date(row.createdAt),
-    });
-  }
-
-  async findById(id: string): Promise<DocumentVersion | null> {
-    return this.findById(id);
-  }
-
-  async findByDocumentId(documentId: string): Promise<DocumentVersion[]> {
-    return this.findByDocumentId(documentId);
-  }
-
-  async findLatestByDocumentId(documentId: string): Promise<DocumentVersion | null> {
-    return this.findLatestByDocumentId(documentId);
-  }
-
-  async findByDocumentIdAndVersionNumber(
-    documentId: string,
-    versionNumber: number,
-  ): Promise<DocumentVersion | null> {
-    return this.findByDocumentIdAndVersionNumber(documentId, versionNumber);
+    } as any);
   }
 }
 

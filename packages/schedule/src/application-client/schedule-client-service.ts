@@ -23,6 +23,7 @@ import type {
   ResolveConflictRequest,
   SourceModule,
   ScheduleTaskClientDTO,
+  ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
 import type {
@@ -31,7 +32,76 @@ import type {
   ScheduleStatisticsClientDTO,
   ModuleStatisticsClientDTO,
 } from '@/infrastructure-client/adapters/types';
-import { ScheduleTask } from '@/domain-client/aggregates/schedule-task';
+import {
+  ScheduleTask,
+  ScheduleConfigVO,
+  ExecutionInfoVO,
+  RetryPolicyVO,
+  TaskMetadataVO,
+} from '@/domain-client/aggregates/schedule-task';
+import { ScheduleExecution } from '@/domain-client/entities/schedule-execution';
+import { ScheduleTaskId } from '@/domain-shared/value-objects/schedule-task-id';
+import { ScheduleExecutionId } from '@/domain-shared/value-objects/schedule-execution-id';
+import { IdentityId } from '@dailyuse/domain-shared';
+
+// ===== DTO-to-State Mappers =====
+
+function scheduleExecutionFromDTO(dto: ScheduleExecutionClientDTO): ScheduleExecution {
+  return ScheduleExecution.load({
+    id: ScheduleExecutionId.of(dto.id),
+    scheduleTaskId: ScheduleTaskId.of(dto.scheduleTaskId),
+    executionTime: new Date(dto.executionTime),
+    status: dto.status,
+    duration: dto.duration,
+    result: dto.result,
+    error: dto.error,
+    retryCount: dto.retryCount,
+    version: dto.version,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    executionTimeFormatted: dto.executionTimeFormatted,
+    statusDisplay: dto.statusDisplay,
+    statusColor: dto.statusColor,
+    durationFormatted: dto.durationFormatted,
+    hasError: dto.hasError,
+    hasResult: dto.hasResult,
+    resultSummary: dto.resultSummary,
+  });
+}
+
+function scheduleTaskFromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
+  return ScheduleTask.load({
+    id: ScheduleTaskId.of(dto.id),
+    identityId: IdentityId.of(dto.identityId),
+    name: dto.name,
+    description: dto.description,
+    sourceModule: dto.sourceModule,
+    sourceEntityId: dto.sourceEntityId,
+    status: dto.status,
+    enabled: dto.enabled,
+    schedule: new ScheduleConfigVO(dto.schedule),
+    execution: new ExecutionInfoVO(dto.execution),
+    retryPolicy: new RetryPolicyVO(dto.retryPolicy),
+    metadata: new TaskMetadataVO(dto.metadata),
+    version: dto.version,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    statusDisplay: dto.statusDisplay,
+    statusColor: dto.statusColor,
+    sourceModuleDisplay: dto.sourceModuleDisplay,
+    enabledDisplay: dto.enabledDisplay,
+    nextRunAtFormatted: dto.nextRunAtFormatted,
+    lastRunAtFormatted: dto.lastRunAtFormatted,
+    executionSummary: dto.executionSummary,
+    healthStatus: dto.healthStatus,
+    isOverdue: dto.isOverdue,
+    executions: dto.executions
+      ? dto.executions.map((e) => scheduleExecutionFromDTO(e))
+      : null,
+  });
+}
 
 export class ScheduleClientService {
   constructor(
@@ -109,35 +179,35 @@ export class ScheduleClientService {
 
   async createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTask>> {
     const result = await this.taskApi.createTask(request);
-    return mapResult(result, (dto) => ScheduleTask.fromDTO(dto));
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
   async createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTask[]>> {
     const result = await this.taskApi.createTasksBatch(tasks);
-    return mapResult(result, (dtos) => dtos.map((dto) => ScheduleTask.fromDTO(dto)));
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
 
   async getTasks(): Promise<Result<{ tasks: ScheduleTask[]; total: number }>> {
     const result = await this.taskApi.getTasks();
     return mapResult(result, (data) => ({
-      tasks: data.tasks.map((dto) => ScheduleTask.fromDTO(dto)),
+      tasks: data.tasks.map((dto) => scheduleTaskFromDTO(dto)),
       total: data.total,
     }));
   }
 
   async getTaskById(taskId: string): Promise<Result<ScheduleTask>> {
     const result = await this.taskApi.getTaskById(taskId);
-    return mapResult(result, (dto) => ScheduleTask.fromDTO(dto));
+    return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
   async getDueTasks(params?: { beforeTime?: string; limit?: number }): Promise<Result<ScheduleTask[]>> {
     const result = await this.taskApi.getDueTasks(params);
-    return mapResult(result, (dtos) => dtos.map((dto) => ScheduleTask.fromDTO(dto)));
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
 
   async getTaskBySource(sourceModule: SourceModule, sourceEntityId: string): Promise<Result<ScheduleTask[]>> {
     const result = await this.taskApi.getTaskBySource(sourceModule, sourceEntityId);
-    return mapResult(result, (dtos) => dtos.map((dto) => ScheduleTask.fromDTO(dto)));
+    return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
 
   // ===== Schedule Task Status Management =====

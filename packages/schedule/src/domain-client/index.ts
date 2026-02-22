@@ -3,8 +3,9 @@
  * 调度模块 - 领域客户端
  *
  * 【规范说明】
- * - 实现 Client 接口
- * - 提供 fromDTO/toDTO 转换
+ * - Private constructor with props object
+ * - Static load(state: XxxState): Xxx
+ * - Instance toDTO(): XxxClientDTO
  * - 封装客户端业务逻辑
  */
 

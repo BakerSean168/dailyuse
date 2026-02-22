@@ -10,7 +10,6 @@
 
 import type {
   RuleClientDTO,
-  RuleClient,
 } from '@/contracts/aggregates/rule-client';
 import type { RuleStatus } from '@/contracts/value-objects/rule-status';
 import type { RuleSeverity } from '@/contracts/value-objects/rule-severity';
@@ -25,7 +24,7 @@ import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 /**
  * Rule 客户端内部状态
  */
-interface RuleState {
+export interface RuleState {
   id: RuleId;
   code: string;
   title: string;
@@ -52,7 +51,7 @@ interface RuleState {
  * - UI 辅助方法（状态格式化、标签过滤）
  * - 数据转换（toDTO�?
  */
-export class Rule extends AggregateRoot<RuleId> implements RuleClient {
+export class Rule extends AggregateRoot<RuleId> {
   private readonly _props: RuleState;
 
   // ================= 构造函�?(Private) =================
@@ -258,34 +257,16 @@ export class Rule extends AggregateRoot<RuleId> implements RuleClient {
   // ================= 工厂方法 (Factory Methods) =================
 
   /**
-   * �?Client DTO 创建 Rule 实例
+   * 从状态创建 Rule 实例
    * 
-   * @param dto - API 响应中的 RuleClientDTO
+   * @param state - Rule 内部状态
    * @returns Rule 实例
    * 
    * @example
-   * const rule = Rule.fromDTO(apiResponse.data);
+   * const rule = Rule.load(state);
    */
-  public static fromDTO(dto: RuleClientDTO): Rule {
-    return new Rule({
-      id: dto.id,
-      code: dto.code,
-      title: dto.title,
-      description: dto.description,
-      severity: dto.severity,
-      status: dto.status,
-      deprecationReason: dto.deprecationReason,
-      replacementRuleId: dto.replacementRuleId,
-      liveReferenceLocation: dto.liveReferenceLocation,
-      tags: dto.tags.map(t => RuleTag.fromDTO(t)),
-      codeSnippets: [
-        ...dto.goodExamples.map(e => CodeSnippet.fromDTO(e)),
-        ...dto.badExamples.map(e => CodeSnippet.fromDTO(e)),
-      ],
-      authorId: dto.authorId,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: RuleState): Rule {
+    return new Rule(state);
   }
 
   // ================= DTO 转换 =================

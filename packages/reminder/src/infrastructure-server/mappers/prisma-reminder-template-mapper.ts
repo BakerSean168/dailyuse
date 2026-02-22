@@ -9,9 +9,23 @@ import type {
   ReminderTemplate as PrismaReminderTemplate,
   ReminderHistory as PrismaReminderHistory,
 } from '@dailyuse/database';
-import type { ReminderType, ReminderStatus, TriggerResult } from '@dailyuse/contracts/reminder';
+import type { ReminderType, ReminderStatus, TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import { ReminderHistory } from '../../../domain-server/entities/reminder-history';
+import { ReminderTemplateId } from '../../../domain-shared/value-objects/reminder-template-id';
+import { ReminderHistoryId } from '../../../domain-shared/value-objects/reminder-history-id';
+import { IdentityId } from '@dailyuse/domain-shared';
+import {
+  TriggerConfig,
+  ActiveTimeConfig,
+  NotificationConfig,
+  RecurrenceConfig,
+  ActiveHoursConfig,
+  ReminderStats,
+  ResponseMetrics,
+  FrequencyAdjustment,
+} from '../../../domain-server/value-objects';
 
 /**
  * Prisma ReminderTemplate with optional history relation
@@ -25,74 +39,108 @@ export class PrismaReminderTemplateMapper {
    * Prisma record → ReminderTemplate aggregate root (with optional history)
    */
   static toDomain(data: PrismaReminderTemplate, historyRecords?: PrismaReminderHistory[]): ReminderTemplate {
-    const template = ReminderTemplate.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description ?? null,
-      type: data.type as ReminderType,
-      trigger: data.trigger,
-      recurrence: data.recurrence ?? null,
-      activeTime: data.activeTime,
-      activeHours: data.activeHours ?? null,
-      notificationConfig: data.notificationConfig,
-      selfEnabled: data.selfEnabled,
-      status: data.status as ReminderStatus,
-      groupId: data.reminderGroupId ?? null,
-      importanceLevel: data.importanceLevel,
-      tags: data.tags,
-      color: data.color ?? null,
-      icon: data.icon ?? null,
-      nextTriggerAt: data.nextTriggerAt ?? null,
-      stats: data.stats,
+    const trigger = TriggerConfig.fromDTO(JSON.parse(data.trigger));
+    const activeTime = ActiveTimeConfig.fromDTO(JSON.parse(data.activeTime));
+    const notificationConfig = NotificationConfig.fromDTO(JSON.parse(data.notificationConfig));
+    const recurrence = data.recurrence
+      ? RecurrenceConfig.fromDTO(JSON.parse(data.recurrence))
+      : null;
+    const activeHours = data.activeHours
+      ? ActiveHoursConfig.fromDTO(JSON.parse(data.activeHours))
+      : null;
+    const stats = ReminderStats.fromDTO(JSON.parse(data.stats));
+    const tags: string[] = JSON.parse(data.tags);
 
-      // Smart Frequency: Response Metrics
-      clickRate: data.clickRate ?? null,
-      ignoreRate: data.ignoreRate ?? null,
-      avgResponseTime: data.avgResponseTime ?? null,
-      snoozeCount: data.snoozeCount ?? 0,
-      effectivenessScore: data.effectivenessScore ?? null,
-      sampleSize: data.sampleSize ?? 0,
-      lastAnalysisTime: data.lastAnalysisTime ?? null,
+    // Smart Frequency: Reconstruct ResponseMetrics from flat fields
+    const responseMetrics =
+      data.clickRate !== null &&
+      data.clickRate !== undefined &&
+      data.ignoreRate !== null &&
+      data.ignoreRate !== undefined
+        ? ResponseMetrics.fromDTO({
+            clickRate: data.clickRate,
+            ignoreRate: data.ignoreRate,
+            avgResponseTime: data.avgResponseTime ?? 0,
+            snoozeCount: data.snoozeCount ?? 0,
+            effectivenessScore: data.effectivenessScore ?? 0,
+            sampleSize: data.sampleSize ?? 0,
+            lastAnalysisTime: data.lastAnalysisTime?.getTime() ?? Date.now(),
+          })
+        : null;
 
-      // Smart Frequency: Frequency Adjustment
-      originalInterval: data.originalInterval ?? null,
-      adjustedInterval: data.adjustedInterval ?? null,
-      adjustmentReason: data.adjustmentReason ?? null,
-      adjustmentTime: data.adjustmentTime ?? null,
-      isAutoAdjusted: data.isAutoAdjusted ?? false,
-      userConfirmed: data.userConfirmed ?? false,
-      smartFrequencyEnabled: data.smartFrequencyEnabled ?? true,
+    // Smart Frequency: Reconstruct FrequencyAdjustment from flat fields
+    const frequencyAdjustment =
+      data.originalInterval !== null &&
+      data.originalInterval !== undefined &&
+      data.adjustedInterval !== null &&
+      data.adjustedInterval !== undefined
+        ? FrequencyAdjustment.fromDTO({
+            originalInterval: data.originalInterval,
+            adjustedInterval: data.adjustedInterval,
+            adjustmentReason: data.adjustmentReason ?? '',
+            adjustmentTime: data.adjustmentTime?.getTime() ?? Date.now(),
+            isAutoAdjusted: data.isAutoAdjusted ?? false,
+            userConfirmed: data.userConfirmed ?? false,
+            rejectionReason: null,
+          })
+        : null;
 
-      version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    });
-
-    // Load child entities - history records
+    // Build history child entities
+    const history: ReminderHistory[] = [];
     if (historyRecords && historyRecords.length > 0) {
       for (const h of historyRecords) {
-        const history = PrismaReminderTemplateMapper.mapHistory(h);
-        template.addHistory(history);
+        history.push(PrismaReminderTemplateMapper.mapHistory(h));
       }
     }
 
-    return template;
+    return ReminderTemplate.load({
+      id: ReminderTemplateId.of(data.id),
+      identityId: IdentityId.of(data.identityId),
+      title: data.name,
+      description: data.description ?? null,
+      type: data.type as ReminderType,
+      trigger,
+      recurrence,
+      activeTime,
+      activeHours,
+      notificationConfig,
+      selfEnabled: data.selfEnabled,
+      status: data.status as ReminderStatus,
+      groupId: data.reminderGroupId ?? null,
+      effectiveEnabled: data.selfEnabled,
+      importanceLevel: data.importanceLevel as ImportanceLevel,
+      tags,
+      color: data.color ?? null,
+      icon: data.icon ?? null,
+      nextTriggerAt: data.nextTriggerAt?.getTime() ?? null,
+      stats,
+      responseMetrics,
+      frequencyAdjustment,
+      smartFrequencyEnabled: data.smartFrequencyEnabled ?? true,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      deletedAt: data.deletedAt?.getTime() ?? null,
+      version: data.version ?? 1,
+      history,
+    });
   }
 
   /**
    * Map a single Prisma ReminderHistory row to domain entity
    */
   static mapHistory(h: PrismaReminderHistory): ReminderHistory {
-    return ReminderHistory.fromPersistenceDTO({
-      id: h.id,
+    const notificationChannels = h.notificationChannel
+      ? (JSON.parse(h.notificationChannel) as NotificationChannel[])
+      : null;
+
+    return ReminderHistory.load({
+      id: ReminderHistoryId.of(h.id),
       templateId: h.templateId,
-      triggeredAt: h.triggeredAt.getTime(),
+      triggeredAt: h.triggeredAt,
       result: h.result as TriggerResult,
       error: h.error ?? null,
       notificationSent: h.notificationSent,
-      notificationChannels: h.notificationChannel ?? null,
+      notificationChannels,
       createdAt: h.createdAt,
     });
   }
@@ -101,47 +149,50 @@ export class PrismaReminderTemplateMapper {
    * ReminderTemplate aggregate → Prisma write data
    */
   static toPersistence(template: ReminderTemplate) {
-    const dto = template.toPersistenceDTO();
+    const dto = template.toServerDTO();
+    const responseMetrics = template.responseMetrics?.toDTO();
+    const frequencyAdjustment = template.frequencyAdjustment?.toDTO();
+
     return {
       identityId: dto.identityId as string,
       name: dto.name,
       description: dto.description,
       type: dto.type,
-      trigger: dto.trigger,
-      recurrence: dto.recurrence,
-      activeTime: dto.activeTime,
-      activeHours: dto.activeHours,
-      notificationConfig: dto.notificationConfig,
+      trigger: JSON.stringify(dto.trigger),
+      recurrence: dto.recurrence ? JSON.stringify(dto.recurrence) : null,
+      activeTime: JSON.stringify(dto.activeTime),
+      activeHours: dto.activeHours ? JSON.stringify(dto.activeHours) : null,
+      notificationConfig: JSON.stringify(dto.notificationConfig),
       selfEnabled: dto.selfEnabled,
       status: dto.status,
       reminderGroupId: dto.groupId,
       importanceLevel: dto.importanceLevel,
-      tags: dto.tags,
+      tags: JSON.stringify(dto.tags),
       color: dto.color,
       icon: dto.icon,
-      nextTriggerAt: dto.nextTriggerAt,
-      stats: dto.stats,
+      nextTriggerAt: dto.nextTriggerAt != null ? new Date(dto.nextTriggerAt) : null,
+      stats: JSON.stringify(dto.stats),
 
       // Smart Frequency: Response Metrics
-      clickRate: dto.clickRate ?? null,
-      ignoreRate: dto.ignoreRate ?? null,
-      avgResponseTime: dto.avgResponseTime ?? null,
-      snoozeCount: dto.snoozeCount ?? 0,
-      effectivenessScore: dto.effectivenessScore ?? null,
-      sampleSize: dto.sampleSize ?? 0,
-      lastAnalysisTime: dto.lastAnalysisTime ?? null,
+      clickRate: responseMetrics?.clickRate ?? null,
+      ignoreRate: responseMetrics?.ignoreRate ?? null,
+      avgResponseTime: responseMetrics?.avgResponseTime ?? null,
+      snoozeCount: responseMetrics?.snoozeCount ?? 0,
+      effectivenessScore: responseMetrics?.effectivenessScore ?? null,
+      sampleSize: responseMetrics?.sampleSize ?? 0,
+      lastAnalysisTime: responseMetrics?.lastAnalysisTime ? new Date(responseMetrics.lastAnalysisTime) : null,
 
       // Smart Frequency: Frequency Adjustment
-      originalInterval: dto.originalInterval ?? null,
-      adjustedInterval: dto.adjustedInterval ?? null,
-      adjustmentReason: dto.adjustmentReason ?? null,
-      adjustmentTime: dto.adjustmentTime ?? null,
-      isAutoAdjusted: dto.isAutoAdjusted ?? false,
-      userConfirmed: dto.userConfirmed ?? false,
-      smartFrequencyEnabled: dto.smartFrequencyEnabled ?? true,
+      originalInterval: frequencyAdjustment?.originalInterval ?? null,
+      adjustedInterval: frequencyAdjustment?.adjustedInterval ?? null,
+      adjustmentReason: frequencyAdjustment?.adjustmentReason ?? null,
+      adjustmentTime: frequencyAdjustment?.adjustmentTime ? new Date(frequencyAdjustment.adjustmentTime) : null,
+      isAutoAdjusted: frequencyAdjustment?.isAutoAdjusted ?? false,
+      userConfirmed: frequencyAdjustment?.userConfirmed ?? false,
+      smartFrequencyEnabled: template.smartFrequencyEnabled ?? true,
 
       version: dto.version,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
     };
   }
 }

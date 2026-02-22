@@ -1,6 +1,5 @@
 /**
  * GoalFolder 聚合根实现
- * 实现 GoalFolderServer 接口
  * 
  * 【规范说明：聚合根（Aggregate Root）】
  * 聚合根是 DDD 中的核心概念，代表一个业务边界：
@@ -31,13 +30,14 @@ import { GoalFolderId } from '../../domain-shared';
 import type {
   FolderType,
   GoalFolderClientDTO,
-  GoalFolderPersistenceDTO,
-  GoalFolderServer,
   GoalFolderServerDTO,
 } from '@dailyuse/contracts/goal';
 
-// 内部状态接口
-interface GoalFolderState {
+/**
+ * GoalFolder 内部状态接口
+ * 自包含的领域状态定义，不依赖外部 DTO 接口
+ */
+export interface GoalFolderState {
   id: GoalFolderId;
   identityId: IdentityId;
   name: string;
@@ -59,7 +59,7 @@ interface GoalFolderState {
 /**
  * GoalFolder 聚合根
  */
-export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolderServer {
+export class GoalFolder extends AggregateRoot<GoalFolderId> {
   // ================= 1. 内部状态 (Props) =================
   private _props: GoalFolderState;
 
@@ -71,43 +71,9 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
    * 
    * id 由 AggregateRoot 基类管理，是 public readonly
    */
-  private constructor(params: {
-    id: GoalFolderId;
-    identityId: IdentityId;
-    name: string;
-    description?: string | null;
-    icon?: string | null;
-    color?: string | null;
-    parentFolderId?: GoalFolderId | null;
-    sortOrder: number;
-    isSystemFolder: boolean;
-    folderType?: FolderType | null;
-    goalCount: number;
-    completedGoalCount: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt?: Date | null;
-    version?: number;
-  }) {
-    super(params.id);
-    this._props = {
-      id: params.id,
-      identityId: params.identityId,
-      name: params.name,
-      description: params.description ?? null,
-      icon: params.icon ?? null,
-      color: params.color ?? null,
-      parentFolderId: params.parentFolderId ?? null,
-      sortOrder: params.sortOrder,
-      isSystemFolder: params.isSystemFolder,
-      folderType: params.folderType ?? null,
-      goalCount: params.goalCount,
-      completedGoalCount: params.completedGoalCount,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      deletedAt: params.deletedAt ?? null,
-      version: params.version ?? 1,
-    };
+  private constructor(state: GoalFolderState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ================= 3. 公共属性 (Getters) =================
@@ -219,10 +185,10 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       id,
       identityId: params.identityId,
       name: params.name.trim(),
-      description: params.description?.trim() || null,
-      icon: params.icon || null,
-      color: params.color || null,
-      parentFolderId: params.parentFolderId || null,
+      description: params.description?.trim() ?? null,
+      icon: params.icon ?? null,
+      color: params.color ?? null,
+      parentFolderId: params.parentFolderId ?? null,
       sortOrder: params.sortOrder ?? 0,
       isSystemFolder: params.isSystemFolder ?? false,
       folderType: params.folderType ?? null,
@@ -230,6 +196,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
       completedGoalCount: 0,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
       version: 1,
     });
 
@@ -242,65 +209,11 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复聚合根
-   * 
-   * 【使用场景】
-   * - 从 API 响应/应用服务返回值恢复
-   * - 加载聚合根时使用
-   * 
-   * @param dto 文件夹 Server DTO
-   * @returns 恢复后的 GoalFolder 聚合根
+   * 🏭 恢复工厂：从领域状态恢复
+   * 用于从持久化层或其他来源重建聚合根
    */
-  public static fromServerDTO(dto: GoalFolderServerDTO): GoalFolder {
-    return new GoalFolder({
-      id: GoalFolderId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description ?? null,
-      icon: dto.icon ?? null,
-      color: dto.color ?? null,
-      parentFolderId: dto.parentFolderId ? GoalFolderId.of(dto.parentFolderId) : null,
-      sortOrder: dto.sortOrder,
-      isSystemFolder: dto.isSystemFolder,
-      folderType: dto.folderType ?? null,
-      goalCount: dto.goalCount,
-      completedGoalCount: dto.completedGoalCount,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      version: dto.version ?? 1,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从持久化 DTO 恢复聚合根
-   * 
-   * 【使用场景】
-   * - 从数据库查询结果恢复（ORM 返回的对象）
-   * - Repository 加载数据时使用
-   * 
-   * @param dto 文件夹 Persistence DTO（来自数据库）
-   * @returns 恢复后的 GoalFolder 聚合根
-   */
-  public static fromPersistenceDTO(dto: GoalFolderPersistenceDTO): GoalFolder {
-    return new GoalFolder({
-      id: GoalFolderId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description ?? null,
-      icon: dto.icon ?? null,
-      color: dto.color ?? null,
-      parentFolderId: dto.parentFolderId ? GoalFolderId.of(dto.parentFolderId) : null,
-      sortOrder: dto.sortOrder,
-      isSystemFolder: false, // PersistenceDTO 中没有此字段，使用默认值
-      folderType: dto.folderType ?? null,
-      goalCount: dto.goalCount,
-      completedGoalCount: dto.completedGoalCount,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
-      version: dto.version ?? 1,
-    });
+  public static load(state: GoalFolderState): GoalFolder {
+    return new GoalFolder(state);
   }
 
   // ================= 5. 业务行为 (Business Methods) =================
@@ -569,37 +482,4 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> implements GoalFolde
     };
   }
 
-  /**
-   * 转换为持久化 DTO
-   * 
-   * 【用途】
-   * - Repository 保存到数据库
-   * - ORM 对象映射
-   * 
-   * 【时间戳处理】
-   * - Persistence DTO 中时间戳使用 Date (PersistenceDate)
-   * 
-   * 【注意】
-   * - Persistence DTO 中没有 isSystemFolder 字段，不需要包含
-   * - 包含数据库版本号 version（由业务逻辑生成）
-   */
-  public toPersistenceDTO(): GoalFolderPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      name: this._props.name,
-      description: this._props.description,
-      icon: this._props.icon,
-      color: this._props.color,
-      parentFolderId: this._props.parentFolderId,
-      sortOrder: this._props.sortOrder,
-      folderType: this._props.folderType,
-      goalCount: this._props.goalCount,
-      completedGoalCount: this._props.completedGoalCount,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt ?? null,
-      version: 1, // 初始版本号，实际由 Repository 管理
-    };
-  }
 }

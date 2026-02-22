@@ -44,19 +44,17 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
    */
   async save(revision: RuleRevision): Promise<Result<void>> {
     try {
-      const dto = revision.toPersistenceDTO();
-
       await this.prisma.ruleRevision.create({
         data: {
-          id: dto.id,
-          ruleId: dto.ruleId,
-          revisionNumber: dto.revisionNumber,
-          authorId: dto.authorId,
-          changedFields: dto.changedFields,
-          previousValues: dto.previousValues,
-          newValues: dto.newValues,
-          changeType: dto.changeType,
-          createdAt: dto.createdAt,
+          id: revision.id,
+          ruleId: revision.ruleId,
+          revisionNumber: revision.revisionNumber,
+          authorId: revision.authorId,
+          changedFields: JSON.stringify([...revision.changedFields]),
+          previousValues: JSON.stringify(revision.previousValues),
+          newValues: JSON.stringify(revision.newValues),
+          changeType: revision.changeType,
+          createdAt: revision.createdAt,
         },
       });
 
@@ -77,7 +75,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
       });
 
       const revisions = prismaRevisions.map(pr =>
-        RuleRevision.fromPersistence({
+        RuleRevision.load({
           id: pr.id as RuleRevisionId,
           ruleId: pr.ruleId as RuleId,
           revisionNumber: pr.revisionNumber,
@@ -117,7 +115,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
         return ok(null);
       }
 
-      const revision = RuleRevision.fromPersistence({
+      const revision = RuleRevision.load({
         id: prismaRevision.id as RuleRevisionId,
         ruleId: prismaRevision.ruleId as RuleId,
         revisionNumber: prismaRevision.revisionNumber,

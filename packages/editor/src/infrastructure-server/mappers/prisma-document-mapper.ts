@@ -8,22 +8,24 @@
 import type { Document as PrismaDocument } from '@dailyuse/database';
 import { Document } from '../../../domain-server/entities/document';
 import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
+import { DocumentMetadata } from '../../../domain-shared/value-objects/document-metadata';
 
 export class PrismaDocumentMapper {
   /**
    * Prisma Document → Domain Document entity
    */
   static toDomain(data: PrismaDocument): Document {
-    const mappedIndexStatus = PrismaDocumentMapper.mapPrismaStatusToIndexStatus(data.status);    return Document.fromPersistenceDTO({
+    const mappedIndexStatus = PrismaDocumentMapper.mapPrismaStatusToIndexStatus(data.status);
+    return Document.load({
       id: data.id,
-      workspace_id: data.identityId,
+      workspaceId: data.identityId,
       identityId: data.identityId,
       path: data.folderPath,
       name: data.title,
       language: DocumentLanguage.Other,
       content: data.content,
-      content_hash: PrismaDocumentMapper.hashContent(data.content),
-      metadata: JSON.stringify({
+      contentHash: PrismaDocumentMapper.hashContent(data.content),
+      metadata: DocumentMetadata.fromDTO({
         tags: Array.isArray(data.tags) ? data.tags : [],
         category: null,
         wordCount: null,
@@ -33,47 +35,35 @@ export class PrismaDocumentMapper {
         language: null,
         customFields: null,
       }),
-      index_status: mappedIndexStatus,
-      last_indexed_at: data.lastVersionedAt,
-      last_modified_at: data.lastEditedAt,
+      indexStatus: mappedIndexStatus,
+      lastIndexedAt: data.lastVersionedAt,
+      lastModifiedAt: data.lastEditedAt,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-    });
+    } as any);
   }
 
   /**
    * Domain Document → Prisma write data
    */
   static toPersistence(document: Document) {
-    const dto = document.toPersistenceDTO();
+    const dto = document.toServerDTO();
     return {
       id: dto.id,
       identityId: dto.identityId,
       title: dto.name,
       content: dto.content,
       folderPath: dto.path,
-      tags: PrismaDocumentMapper.readMetadataTags(dto.metadata),
-      status: PrismaDocumentMapper.mapIndexStatusToPrismaStatus(dto.index_status),
+      tags: dto.metadata?.tags ?? [],
+      status: PrismaDocumentMapper.mapIndexStatusToPrismaStatus(dto.indexStatus),
       currentVersion: 0,
-      lastVersionedAt: dto.last_indexed_at,
-      lastEditedAt: dto.last_modified_at,
+      lastVersionedAt: dto.lastIndexedAt ? new Date(dto.lastIndexedAt) : null,
+      lastEditedAt: dto.lastModifiedAt ? new Date(dto.lastModifiedAt) : null,
       version: 1,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
       deletedAt: null,
     };
-  }
-
-  /**
-   * Read tags from metadata JSON string
-   */
-  static readMetadataTags(metadata: string): string[] {
-    try {
-      const parsed = JSON.parse(metadata);
-      return Array.isArray(parsed?.tags) ? parsed.tags : [];
-    } catch {
-      return [];
-    }
   }
 
   /**

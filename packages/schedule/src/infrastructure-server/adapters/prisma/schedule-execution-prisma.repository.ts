@@ -1,24 +1,14 @@
 import type { IScheduleExecutionRepository } from '../../../domain-server/repositories/IScheduleExecutionRepository';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
 import type { PrismaClient } from '@dailyuse/database';
+import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import { PrismaScheduleExecutionMapper } from '../../mappers/prisma-schedule-execution-mapper';
 
 export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepository {
   constructor(private prisma: PrismaClient) {}
 
   async save(execution: ScheduleExecution): Promise<void> {
-    const dto = execution.toPersistenceDTO();
-
-    const data = {
-      id: dto.id,
-      taskId: dto.taskId,
-      executionTime: new Date(dto.executionTime),
-      status: dto.status,
-      duration: dto.duration,
-      result: dto.result,
-      error: dto.error,
-      retryCount: dto.retryCount,
-      createdAt: new Date(dto.createdAt),
-    };
+    const data = PrismaScheduleExecutionMapper.toCreateInput(execution);
 
     await this.prisma.scheduleExecution.upsert({
       where: { id: data.id },
@@ -31,7 +21,7 @@ export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepo
     const data = await this.prisma.scheduleExecution.findUnique({
       where: { id },
     });
-    return data ? ScheduleExecution.fromPersistenceDTO(data) : null;
+    return data ? PrismaScheduleExecutionMapper.toDomain(data) : null;
   }
 
   async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
@@ -39,6 +29,6 @@ export class ScheduleExecutionPrismaRepository implements IScheduleExecutionRepo
       where: { taskId },
       orderBy: { executionTime: 'desc' },
     });
-    return data.map((d) => ScheduleExecution.fromPersistenceDTO(d));
+    return data.map((d) => PrismaScheduleExecutionMapper.toDomain(d));
   }
 }

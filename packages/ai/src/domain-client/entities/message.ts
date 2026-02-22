@@ -1,20 +1,21 @@
 /**
  * Message Entity - Domain Client
- * 消息实体 - 领域客户�?
+ * 消息实体 - 领域客户端
+ *
+ * 【规范说明】
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: MessageState): Message
+ * - Instance toDTO(): MessageClientDTO
  */
 
 import { Entity } from '@dailyuse/utils';
-import type {
-  MessageClient,
-  MessageClientDTO,
-} from '@dailyuse/contracts/ai';
+import type { MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
-import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
 import { AiMessageId } from '../../domain-shared/value-objects/ai-message-id';
 import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
 
-// 内部状态接�?
-interface MessageState {
+export interface MessageState {
   id: AiMessageId;
   conversationId: AiConversationId;
   role: MessageRole;
@@ -26,7 +27,7 @@ interface MessageState {
   deletedAt: Date | null;
 }
 
-export class Message extends Entity<AiMessageId> implements MessageClient {
+export class Message extends Entity<AiMessageId> {
   private readonly _props: MessageState;
 
   private constructor(props: MessageState) {
@@ -36,7 +37,7 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
 
   // ===== Getters =====
 
-  public get conversationId(): IAiConversationId {
+  public get conversationId(): AiConversationId {
     return this._props.conversationId;
   }
 
@@ -108,18 +109,8 @@ export class Message extends Entity<AiMessageId> implements MessageClient {
     });
   }
 
-  public static fromDTO(dto: MessageClientDTO): Message {
-    return new Message({
-      id: AiMessageId.of(dto.id),
-      conversationId: AiConversationId.of(dto.conversationId),
-      role: dto.role,
-      content: dto.content,
-      tokenCount: dto.tokenCount,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: MessageState): Message {
+    return new Message(state);
   }
 
   // ===== DTO Conversion =====

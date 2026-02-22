@@ -37,11 +37,15 @@ export * from './value-objects';
 // Aggregates
 export * from './aggregates/notification';
 export { NotificationPreference } from './aggregates/notification-preference';
+export type { NotificationPreferenceState } from './aggregates/notification-preference';
 export { NotificationTemplate } from './aggregates/notification-template';
+export type { NotificationTemplateState } from './aggregates/notification-template';
 
 // Entities
 export { NotificationChannel } from './entities/notification-channel';
+export type { NotificationChannelState } from './entities/notification-channel';
 export { NotificationHistory } from './entities/notification-history';
+export type { NotificationHistoryState } from './entities/notification-history';
 
 // Repositories
 export * from './repositories/NotificationRepository.interface';

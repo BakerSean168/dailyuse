@@ -2,7 +2,7 @@
  * Prisma AuthSession Mapper
  *
  * 双向映射：
- * - toDomain:  Prisma DB row → AuthSessionServerDTO → AuthSession 聚合根
+ * - toDomain:  Prisma DB row → AuthSessionState → AuthSession 聚合根
  * - toPersistence: AuthSession 聚合根 → Prisma write data (扁平行)
  *
  * 特殊映射说明：
@@ -10,16 +10,19 @@
  * - Prisma AuthSession 无 token 列，JWT 在运行时签发
  * - DeviceInfo 值对象拆分为多个 Prisma 独立列
  * - isRevoked 映射到 deletedAt（软删除模式）
- *
- * PersistenceDTO 已移除，mapper 直接在 DB Row ↔ ServerDTO 之间转换
  */
 
 import type {
-  AuthSessionServerDTO,
   DeviceInfo,
 } from '@dailyuse/contracts/authentication';
 import { AuthSession } from '../../../domain-server';
+import type { AuthSessionState } from '../../../domain-server';
 import type { PrismaAuthSessionRow } from '../../types';
+import {
+  SessionStatus,
+  DeviceInfo as DeviceInfoVO,
+} from '../../../domain-shared';
+import type { IdentityId } from '@dailyuse/domain-shared/shared';
 
 // ============ Write Data Type ============
 
@@ -51,21 +54,20 @@ export class PrismaAuthSessionMapper {
   /**
    * Prisma row → AuthSession 聚合根
    *
-   * 路径：DB Row → ServerDTO → AuthSession.fromServerDTO()
+   * 路径：DB Row → AuthSessionState → AuthSession.load()
    */
   static toDomain(row: PrismaAuthSessionRow): AuthSession {
-    return AuthSession.fromServerDTO(PrismaAuthSessionMapper.toServerDTO(row));
+    return AuthSession.load(PrismaAuthSessionMapper.toState(row));
   }
 
   /**
-   * Prisma row → AuthSessionServerDTO
+   * Prisma row → AuthSessionState
    *
    * 核心转换：
    * - 从多个独立列重组 DeviceInfo 值对象
    * - 从 deletedAt/expiresAt 推导 session status
-   * - Date → number (timestamp) 转换
    */
-  static toServerDTO(row: PrismaAuthSessionRow): AuthSessionServerDTO {
+  static toState(row: PrismaAuthSessionRow): AuthSessionState {
     const geoLocation = row.location as {
       country?: string | null;
       region?: string | null;
@@ -74,7 +76,7 @@ export class PrismaAuthSessionMapper {
     } | null;
 
     // Reconstruct DeviceInfo value object from individual Prisma columns
-    const deviceInfo: DeviceInfo = {
+    const deviceInfoDTO: DeviceInfo = {
       deviceId: row.deviceId,
       deviceFingerprint: row.deviceFingerprint,
       deviceType: row.deviceType,
@@ -100,24 +102,24 @@ export class PrismaAuthSessionMapper {
     // Derive session status from Prisma state (no status column in DB)
     const isRevoked = row.deletedAt != null;
     const isExpired = row.expiresAt.getTime() < Date.now();
-    let status: string;
+    let status: typeof SessionStatus.ACTIVE;
     if (isRevoked) {
-      status = 'REVOKED';
+      status = SessionStatus.REVOKED;
     } else if (isExpired) {
-      status = 'EXPIRED';
+      status = SessionStatus.EXPIRED;
     } else {
-      status = 'ACTIVE';
+      status = SessionStatus.ACTIVE;
     }
 
     return {
       id: row.id,
-      identityId: row.identityId,
-      deviceInfo,
+      identityId: row.identityId as IdentityId,
+      deviceInfo: DeviceInfoVO.fromDTO(deviceInfoDTO),
       refreshTokenHash: row.refreshTokenHash ?? undefined,
-      status: status as AuthSessionServerDTO['status'],
-      createdAt: row.createdAt.getTime(),
-      expiresAt: row.expiresAt.getTime(),
-      lastActiveAt: row.lastActiveAt.getTime(),
+      status,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
+      lastActiveAt: row.lastActiveAt,
       isRevoked,
     };
   }

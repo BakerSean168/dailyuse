@@ -3,21 +3,18 @@
  * 通知渠道实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 NotificationChannelClient 接口
  * - Private constructor with params object
  * - Private _field backing fields
  * - Public getters
- * - Static fromDTO(dto: NotificationChannelClientDTO): NotificationChannel
+ * - Static load(state: NotificationChannelState): NotificationChannel
  * - Instance toDTO(): NotificationChannelClientDTO
  */
 
 import type {
-  NotificationChannelClient,
   NotificationChannelClientDTO,
   NotificationChannelType,
   ChannelStatus,
 } from '@dailyuse/contracts/notification';
-import type { NotificationId as INotificationId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import {
   NotificationChannelId,
@@ -26,8 +23,7 @@ import {
   ChannelResponse,
 } from '../../domain-shared/value-objects';
 
-// 内部状态接口
-interface NotificationChannelState {
+export interface NotificationChannelState {
   id: NotificationChannelId;
   notificationId: NotificationId;
   channelType: NotificationChannelType;
@@ -45,7 +41,7 @@ interface NotificationChannelState {
   failedAt: Date | null;
 }
 
-export class NotificationChannel extends Entity<NotificationChannelId> implements NotificationChannelClient {
+export class NotificationChannel extends Entity<NotificationChannelId> {
   // ================= 1. Props =================
   private readonly _props: NotificationChannelState;
 
@@ -56,7 +52,7 @@ export class NotificationChannel extends Entity<NotificationChannelId> implement
   }
 
   // ================= 3. Getters =================
-  get notificationId(): INotificationId {
+  get notificationId(): NotificationId {
     return this._props.notificationId;
   }
 
@@ -138,24 +134,8 @@ export class NotificationChannel extends Entity<NotificationChannelId> implement
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: NotificationChannelClientDTO): NotificationChannel {
-    return new NotificationChannel({
-      id: NotificationChannelId.of(dto.id),
-      notificationId: NotificationId.of(dto.notificationId),
-      channelType: dto.channelType,
-      status: dto.status,
-      recipient: dto.recipient ?? null,
-      sendAttempts: dto.sendAttempts,
-      maxRetries: dto.maxRetries,
-      error: dto.error ? ChannelError.fromDTO(dto.error) : null,
-      response: dto.response ? ChannelResponse.fromDTO(dto.response) : null,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      sentAt: dto.sentAt ? new Date(dto.sentAt) : null,
-      failedAt: dto.failedAt ? new Date(dto.failedAt) : null,
-    });
+  public static load(state: NotificationChannelState): NotificationChannel {
+    return new NotificationChannel(state);
   }
 
   // ================= 5. DTO Conversion =================

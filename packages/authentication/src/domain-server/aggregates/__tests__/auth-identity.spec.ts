@@ -8,7 +8,17 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { AuthIdentity } from '../auth-identity';
+import type { AuthIdentityState } from '../auth-identity';
 import type { IPasswordHasher } from '../../../domain-shared';
+import {
+  AuthIdentityStatus,
+  CredentialType,
+  CredentialStatus,
+  HashedPassword,
+  OAuthProvider,
+} from '../../../domain-shared';
+import { EmailIdentifier, PhoneIdentifier } from '../../value-objects';
+import { OAuthBinding, PasswordCredential } from '../../entities';
 
 // Mock password hasher that returns a valid PHC-formatted argon2 hash
 const MOCK_HASH = '$argon2id$v=19$m=65536,t=3,p=4$bW9ja3NhbHQ$bW9ja2hhc2h2YWx1ZQ';
@@ -174,7 +184,7 @@ describe('AuthIdentity', () => {
   });
 
   describe('serialization', () => {
-    it('should round-trip through ServerDTO', async () => {
+    it('should round-trip through load', async () => {
       const original = await AuthIdentity.createWithEmailAndPassword({
         email: 'test@example.com',
         plainPassword: 'StrongP@ss1',
@@ -182,7 +192,49 @@ describe('AuthIdentity', () => {
       });
 
       const dto = original.toServerDTO();
-      const restored = AuthIdentity.fromServerDTO(dto);
+
+      // Reconstruct domain objects from DTO (same as mapper would do)
+      const identifiers = dto.identifiers.map(i => {
+        if (i.type === 'EMAIL') return EmailIdentifier.fromDTO(i);
+        if (i.type === 'PHONE') return PhoneIdentifier.fromDTO(i);
+        throw new Error(`Unknown identifier type`);
+      });
+      const oauthBindings = dto.oauthBindings.map(b => OAuthBinding.load({
+        id: b.id,
+        provider: OAuthProvider.of(b.provider),
+        providerSubjectId: b.providerSubjectId,
+        accessToken: b.accessToken ?? null,
+        refreshToken: b.refreshToken ?? null,
+        expiresAt: b.expiresAt ? new Date(b.expiresAt) : null,
+        createdAt: new Date(b.createdAt),
+        lastUsedAt: b.lastUsedAt ? new Date(b.lastUsedAt) : null,
+      }));
+      const credentials = dto.credentials.map(c => {
+        const p = c as any;
+        return PasswordCredential.load({
+          id: p.id,
+          status: CredentialStatus.of(p.status),
+          hashedPassword: HashedPassword.fromDTO(p.hashedPassword),
+          passwordLastChangedAt: new Date(p.passwordLastChangedAt),
+          createdAt: new Date(p.createdAt),
+          lastUsedAt: p.lastUsedAt ? new Date(p.lastUsedAt) : null,
+        });
+      });
+
+      const restored = AuthIdentity.load({
+        id: dto.id,
+        status: AuthIdentityStatus.of(dto.status),
+        failedLoginAttempts: dto.failedLoginAttempts,
+        lastFailedAttempt: dto.lastFailedAttempt ? new Date(dto.lastFailedAttempt) : null,
+        lockedUntil: dto.lockedUntil ? new Date(dto.lockedUntil) : null,
+        identifiers,
+        oauthBindings,
+        credentials,
+        version: dto.version ?? 1,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
+        deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+      });
 
       expect(restored.id).toBe(original.id);
       expect(restored.identifiers).toHaveLength(1);

@@ -9,14 +9,10 @@ import type {
   EditorSessionId,
   IdentityId,
   TransferDate,
-  PersistenceDate,
   DomainDate,
 } from '@dailyuse/contracts/primitives';
 import type {
-  EditorWorkspaceServer,
   EditorWorkspaceServerDTO,
-  EditorWorkspacePersistenceDTO,
-  EditorSessionServerDTO,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
 } from '@dailyuse/contracts/editor';
@@ -27,9 +23,29 @@ import { WorkspaceSettings } from '../../domain-shared/value-objects/workspace-s
 import { EditorSession } from '../entities/editor-session';
 
 /**
+ * EditorWorkspace 状态接口（domain types）
+ */
+export interface EditorWorkspaceState {
+  id: IEditorWorkspaceId;
+  identityId: IdentityId;
+  name: string;
+  description: string | null;
+  projectPath: string;
+  projectType: ProjectType;
+  layout: WorkspaceLayout;
+  settings: WorkspaceSettings;
+  isActive: boolean;
+  lastActiveSessionId: EditorSessionId | null;
+  lastAccessedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  sessions: EditorSession[];
+}
+
+/**
  * EditorWorkspace 聚合根
  */
-export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> implements EditorWorkspaceServer {
+export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> {
   private _identityId: IdentityId;
   private _name: string;
   private _description: string | null;
@@ -44,38 +60,21 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> implement
   private _updatedAt: Date;
   private _sessions: EditorSession[];
 
-  private constructor(
-    id: IEditorWorkspaceId,
-    params: {
-      identityId: IdentityId;
-      name: string;
-      description: string | null;
-      projectPath: string;
-      projectType: ProjectType;
-      layout: WorkspaceLayout;
-      settings: WorkspaceSettings;
-      isActive: boolean;
-      lastActiveSessionId: EditorSessionId | null;
-      lastAccessedAt: Date | null;
-      createdAt: Date;
-      updatedAt: Date;
-      sessions: EditorSession[];
-    }
-  ) {
-    super(id);
-    this._identityId = params.identityId;
-    this._name = params.name;
-    this._description = params.description;
-    this._projectPath = params.projectPath;
-    this._projectType = params.projectType;
-    this._layout = params.layout;
-    this._settings = params.settings;
-    this._isActive = params.isActive;
-    this._lastActiveSessionId = params.lastActiveSessionId;
-    this._lastAccessedAt = params.lastAccessedAt;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._sessions = params.sessions;
+  private constructor(state: EditorWorkspaceState) {
+    super(state.id);
+    this._identityId = state.identityId;
+    this._name = state.name;
+    this._description = state.description;
+    this._projectPath = state.projectPath;
+    this._projectType = state.projectType;
+    this._layout = state.layout;
+    this._settings = state.settings;
+    this._isActive = state.isActive;
+    this._lastActiveSessionId = state.lastActiveSessionId;
+    this._lastAccessedAt = state.lastAccessedAt;
+    this._createdAt = state.createdAt;
+    this._updatedAt = state.updatedAt;
+    this._sessions = state.sessions;
   }
 
   // ===== Getters =====
@@ -134,6 +133,13 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> implement
 
   // ===== Factory Methods =====
 
+  /**
+   * 从状态恢复聚合根
+   */
+  static load(state: EditorWorkspaceState): EditorWorkspace {
+    return new EditorWorkspace(state);
+  }
+
   static create(params: {
     identityId: IdentityId;
     name: string;
@@ -147,7 +153,8 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> implement
     const id = EditorWorkspaceId.of(EditorWorkspaceId.generate());
     const now = new Date();
 
-    const workspace = new EditorWorkspace(id, {
+    const workspace = new EditorWorkspace({
+      id,
       identityId: params.identityId,
       name: params.name,
       description: params.description ?? null,
@@ -174,52 +181,6 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> implement
     }
 
     return workspace;
-  }
-
-  static fromServerDTO(dto: EditorWorkspaceServerDTO): EditorWorkspace {
-    const id = EditorWorkspaceId.of(dto.id);
-    const sessions = dto.sessions?.map((s) => EditorSession.fromServerDTO(s)) ?? [];
-
-    return new EditorWorkspace(id, {
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      projectPath: dto.projectPath,
-      projectType: dto.projectType,
-      layout: WorkspaceLayout.fromDTO(dto.layout),
-      settings: WorkspaceSettings.fromDTO(dto.settings),
-      isActive: dto.isActive,
-      lastActiveSessionId: dto.lastActiveSessionId,
-      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      sessions,
-    });
-  }
-
-  static fromPersistenceDTO(
-    dto: EditorWorkspacePersistenceDTO,
-    sessions?: EditorSession[]
-  ): EditorWorkspace {
-    const id = EditorWorkspaceId.of(dto.id);
-    const layoutData = typeof dto.layout === 'string' ? JSON.parse(dto.layout) : dto.layout;
-    const settingsData = typeof dto.settings === 'string' ? JSON.parse(dto.settings) : dto.settings;
-
-    return new EditorWorkspace(id, {
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      projectPath: dto.project_path,
-      projectType: dto.project_type,
-      layout: WorkspaceLayout.fromDTO(layoutData),
-      settings: WorkspaceSettings.fromDTO(settingsData),
-      isActive: dto.is_active,
-      lastActiveSessionId: dto.last_active_session_id,
-      lastAccessedAt: dto.lastAccessedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      sessions: sessions ?? [],
-    });
   }
 
   // ===== Business Methods =====
@@ -318,21 +279,4 @@ export class EditorWorkspace extends AggregateRoot<IEditorWorkspaceId> implement
     };
   }
 
-  toPersistenceDTO(): EditorWorkspacePersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._identityId,
-      name: this._name,
-      description: this._description,
-      project_path: this._projectPath,
-      project_type: this._projectType,
-      layout: JSON.stringify(this._layout.toServerDTO()),
-      settings: JSON.stringify(this._settings.toServerDTO()),
-      is_active: this._isActive,
-      last_active_session_id: this._lastActiveSessionId,
-      lastAccessedAt: this._lastAccessedAt as PersistenceDate | null,
-      createdAt: this._createdAt as PersistenceDate,
-      updatedAt: this._updatedAt as PersistenceDate,
-    };
-  }
 }

@@ -8,13 +8,18 @@
 import type { ReminderGroup as PrismaReminderGroup } from '@dailyuse/database';
 import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
+import { GroupStats } from '../../../domain-server/value-objects';
 
 export class PrismaReminderGroupMapper {
   /**
    * Prisma record → ReminderGroup aggregate root
    */
   static toDomain(data: PrismaReminderGroup): ReminderGroup {
-    return ReminderGroup.fromPersistenceDTO({
+    const stats = data.stats
+      ? GroupStats.fromDTO(JSON.parse(data.stats) as GroupStatsServerDTO)
+      : GroupStats.createEmpty();
+
+    return ReminderGroup.load({
       id: data.id,
       identityId: data.identityId,
       name: data.name,
@@ -25,19 +30,11 @@ export class PrismaReminderGroupMapper {
       enabled: data.enabled,
       status: data.status as ReminderStatus,
       order: data.order,
-      stats: data.stats
-        ? (JSON.parse(data.stats) as GroupStatsServerDTO)
-        : {
-            totalTemplates: 0,
-            activeTemplates: 0,
-            pausedTemplates: 0,
-            selfEnabledTemplates: 0,
-            selfPausedTemplates: 0,
-          },
+      stats,
       version: data.version,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
+      deletedAt: data.deletedAt?.getTime() ?? null,
     });
   }
 
@@ -45,7 +42,7 @@ export class PrismaReminderGroupMapper {
    * ReminderGroup aggregate → Prisma write data
    */
   static toPersistence(group: ReminderGroup) {
-    const dto = group.toPersistenceDTO();
+    const dto = group.toServerDTO();
     return {
       identityId: dto.identityId,
       name: dto.name,
@@ -58,7 +55,7 @@ export class PrismaReminderGroupMapper {
       order: dto.order,
       stats: JSON.stringify(dto.stats),
       version: dto.version,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt) : null,
     };
   }
 

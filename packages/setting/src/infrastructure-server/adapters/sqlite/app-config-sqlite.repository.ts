@@ -5,13 +5,17 @@
 
 import type Database from 'better-sqlite3';
 import { AppConfig } from '@/domain-server/aggregates/app-config';
+import { createIdType } from '@dailyuse/utils';
+import type { AppConfigId as IAppConfigId } from '@dailyuse/contracts/primitives';
 import type { IAppConfigRepository } from '@/domain-server/repositories/IAppConfigRepository';
+
+const AppConfigId = createIdType<IAppConfigId>('AppConfigId');
 
 export class SqliteAppConfigRepository implements IAppConfigRepository {
   constructor(private db: Database.Database) {}
 
   async save(config: AppConfig): Promise<void> {
-    const dto = config.toPersistenceDTO();
+    const dto = config.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO app_configs (
@@ -31,15 +35,30 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     stmt.run(
       dto.id,
       dto.version,
-      dto.app,
-      dto.features,
-      dto.limits,
-      dto.api,
-      dto.security,
-      dto.notifications,
-      dto.createdAt,
-      dto.updatedAt,
+      JSON.stringify(dto.app),
+      JSON.stringify(dto.features),
+      JSON.stringify(dto.limits),
+      JSON.stringify(dto.api),
+      JSON.stringify(dto.security),
+      JSON.stringify(dto.notifications),
+      config.createdAt,
+      config.updatedAt,
     );
+  }
+
+  private rowToDomain(row: any): AppConfig {
+    return AppConfig.load({
+      id: AppConfigId.of(row.id),
+      version: row.version,
+      app: JSON.parse(row.app),
+      features: JSON.parse(row.features),
+      limits: JSON.parse(row.limits),
+      api: JSON.parse(row.api),
+      security: JSON.parse(row.security),
+      notifications: JSON.parse(row.notifications),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    });
   }
 
   async findById(id: string): Promise<AppConfig | null> {
@@ -48,18 +67,7 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
 
     if (!row) return null;
 
-    return AppConfig.fromPersistenceDTO({
-      id: row.id,
-      version: row.version,
-      app: row.app,
-      features: row.features,
-      limits: row.limits,
-      api: row.api,
-      security: row.security,
-      notifications: row.notifications,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToDomain(row);
   }
 
   async getCurrent(): Promise<AppConfig | null> {
@@ -67,18 +75,7 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     const row = stmt.get() as any;
     if (!row) return null;
 
-    return AppConfig.fromPersistenceDTO({
-      id: row.id,
-      version: row.version,
-      app: row.app,
-      features: row.features,
-      limits: row.limits,
-      api: row.api,
-      security: row.security,
-      notifications: row.notifications,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToDomain(row);
   }
 
   async findByVersion(version: string): Promise<AppConfig | null> {
@@ -86,38 +83,14 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     const row = stmt.get(version) as any;
     if (!row) return null;
 
-    return AppConfig.fromPersistenceDTO({
-      id: row.id,
-      version: row.version,
-      app: row.app,
-      features: row.features,
-      limits: row.limits,
-      api: row.api,
-      security: row.security,
-      notifications: row.notifications,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    });
+    return this.rowToDomain(row);
   }
 
   async findAllVersions(): Promise<AppConfig[]> {
     const stmt = this.db.prepare(`SELECT * FROM app_configs ORDER BY createdAt DESC`);
     const rows = stmt.all() as any[];
 
-    return rows.map((row) =>
-      AppConfig.fromPersistenceDTO({
-        id: row.id,
-        version: row.version,
-        app: row.app,
-        features: row.features,
-        limits: row.limits,
-        api: row.api,
-        security: row.security,
-        notifications: row.notifications,
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
-      })
-    );
+    return rows.map((row) => this.rowToDomain(row));
   }
 
   async delete(id: string): Promise<void> {
@@ -135,4 +108,3 @@ export class SqliteAppConfigRepository implements IAppConfigRepository {
     return stmt.get(version) !== undefined;
   }
 }
-

@@ -8,6 +8,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { GetRuleReq } from '@/contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+import { ruleFromDTO } from '../mappers/rule-dto-mapper';
 
 /**
  * Get Rule
@@ -51,6 +52,6 @@ export class GetRule {
   async execute(req: GetRuleReq): Promise<Result<Rule>> {
     const result = await this.apiClient.getRule(req);
     if (!result.ok) return result;
-    return { ok: true, data: Rule.fromDTO(result.data) };
+    return { ok: true, data: ruleFromDTO(result.data) };
   }
 }

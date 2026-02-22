@@ -177,13 +177,9 @@ export class ReminderDomainService {
     }
 
     // This logic should be on the aggregate
-    // template.moveToGroup(groupId);
-    const newTemplate = ReminderTemplate.fromServerDTO({
-      ...template.toServerDTO(),
-      groupId: groupId,
-    });
+    template.moveToGroup(groupId);
 
-    await this.reminderTemplateRepository.save(newTemplate);
+    await this.reminderTemplateRepository.save(template);
 
     // Update stats for both old and new groups
     if (oldGroupId) {
@@ -193,7 +189,7 @@ export class ReminderDomainService {
       await this.updateGroupStats(groupId);
     }
 
-    return newTemplate;
+    return template;
   }
 
   public async toggleGroupAndTemplates(id: string): Promise<ReminderGroup> {

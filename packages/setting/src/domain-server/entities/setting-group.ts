@@ -4,34 +4,12 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { SettingGroupId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
+import type { SettingGroupId, TransferDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingGroupId as SettingGroupIdType } from '@/domain-shared/value-objects/setting-group-id';
-import { SettingItem, type SettingItemServerDTO, type SettingItemClientDTO, type SettingItemPersistenceDTO } from './setting-item';
+import { SettingItem, type SettingItemServerDTO, type SettingItemClientDTO } from './setting-item';
 
 // ============ Local Type Definitions ============
 // TODO: Move these to @dailyuse/contracts/setting when finalizing API
-
-/** SettingGroup Server 接口 */
-export interface SettingGroupServer {
-  readonly id: SettingGroupId;
-  readonly name: string;
-  readonly description: string | null;
-  readonly icon: string | null;
-  readonly parentGroupId: SettingGroupId | null;
-  readonly path: string;
-  readonly level: number;
-  readonly sortOrder: number;
-  readonly settings: SettingItem[];
-  readonly isSystemGroup: boolean;
-  readonly isCollapsed: boolean;
-  readonly createdAt: DomainDate;
-  readonly updatedAt: DomainDate;
-  readonly deletedAt: DomainDate | null;
-  
-  toServerDTO(): SettingGroupServerDTO;
-  toClientDTO(): SettingGroupClientDTO;
-  toPersistenceDTO(): SettingGroupPersistenceDTO;
-}
 
 /** Server DTO */
 export interface SettingGroupServerDTO {
@@ -72,8 +50,8 @@ export interface SettingGroupClientDTO {
   hasChildren: boolean;
 }
 
-/** Persistence DTO */
-export interface SettingGroupPersistenceDTO {
+/** Domain state for SettingGroup */
+export interface SettingGroupState {
   id: SettingGroupId;
   name: string;
   description: string | null;
@@ -82,19 +60,19 @@ export interface SettingGroupPersistenceDTO {
   path: string;
   level: number;
   sortOrder: number;
-  settings: SettingItemPersistenceDTO[];
+  settings: SettingItem[];
   isSystemGroup: boolean;
   isCollapsed: boolean;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 /**
  * 设置分组实体
  * 表示设置的层级分组结构
  */
-export class SettingGroup extends Entity<SettingGroupId> implements SettingGroupServer {
+export class SettingGroup extends Entity<SettingGroupId> {
   private _name: string;
   private _description: string | null;
   private _icon: string | null;
@@ -109,38 +87,21 @@ export class SettingGroup extends Entity<SettingGroupId> implements SettingGroup
   private _updatedAt: Date;
   private _deletedAt: Date | null;
 
-  private constructor(
-    id: SettingGroupId,
-    params: {
-      name: string;
-      description: string | null;
-      icon: string | null;
-      parentGroupId: SettingGroupId | null;
-      path: string;
-      level: number;
-      sortOrder: number;
-      settings: SettingItem[];
-      isSystemGroup: boolean;
-      isCollapsed: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-      deletedAt: Date | null;
-    }
-  ) {
-    super(id);
-    this._name = params.name;
-    this._description = params.description;
-    this._icon = params.icon;
-    this._parentGroupId = params.parentGroupId;
-    this._path = params.path;
-    this._level = params.level;
-    this._sortOrder = params.sortOrder;
-    this._settings = params.settings;
-    this._isSystemGroup = params.isSystemGroup;
-    this._isCollapsed = params.isCollapsed;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
-    this._deletedAt = params.deletedAt;
+  private constructor(state: SettingGroupState) {
+    super(state.id);
+    this._name = state.name;
+    this._description = state.description;
+    this._icon = state.icon;
+    this._parentGroupId = state.parentGroupId;
+    this._path = state.path;
+    this._level = state.level;
+    this._sortOrder = state.sortOrder;
+    this._settings = state.settings;
+    this._isSystemGroup = state.isSystemGroup;
+    this._isCollapsed = state.isCollapsed;
+    this._createdAt = state.createdAt;
+    this._updatedAt = state.updatedAt;
+    this._deletedAt = state.deletedAt;
   }
 
   // ============ Getters ============
@@ -241,26 +202,14 @@ export class SettingGroup extends Entity<SettingGroupId> implements SettingGroup
     };
   }
 
-  public toPersistenceDTO(): SettingGroupPersistenceDTO {
-    return {
-      id: this.id,
-      name: this._name,
-      description: this._description,
-      icon: this._icon,
-      parentGroupId: this._parentGroupId,
-      path: this._path,
-      level: this._level,
-      sortOrder: this._sortOrder,
-      settings: this._settings.map(s => s.toPersistenceDTO()),
-      isSystemGroup: this._isSystemGroup,
-      isCollapsed: this._isCollapsed,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      deletedAt: this._deletedAt,
-    };
-  }
-
   // ============ 工厂方法 ============
+
+  /**
+   * Reconstruct from persisted state
+   */
+  public static load(state: SettingGroupState): SettingGroup {
+    return new SettingGroup(state);
+  }
 
   public static create(params: {
     name: string;
@@ -275,7 +224,8 @@ export class SettingGroup extends Entity<SettingGroupId> implements SettingGroup
   }): SettingGroup {
     const id = SettingGroupIdType.of(SettingGroupIdType.generate());
     const now = new Date();
-    return new SettingGroup(id, {
+    return new SettingGroup({
+      id,
       name: params.name,
       description: params.description ?? null,
       icon: params.icon ?? null,
@@ -289,44 +239,6 @@ export class SettingGroup extends Entity<SettingGroupId> implements SettingGroup
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
-    });
-  }
-
-  public static fromServerDTO(dto: SettingGroupServerDTO): SettingGroup {
-    const id = SettingGroupIdType.of(dto.id);
-    return new SettingGroup(id, {
-      name: dto.name,
-      description: dto.description,
-      icon: dto.icon,
-      parentGroupId: dto.parentGroupId,
-      path: dto.path,
-      level: dto.level,
-      sortOrder: dto.sortOrder,
-      settings: dto.settings.map(s => SettingItem.fromServerDTO(s)),
-      isSystemGroup: dto.isSystemGroup,
-      isCollapsed: dto.isCollapsed,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  public static fromPersistenceDTO(dto: SettingGroupPersistenceDTO): SettingGroup {
-    const id = SettingGroupIdType.of(dto.id);
-    return new SettingGroup(id, {
-      name: dto.name,
-      description: dto.description,
-      icon: dto.icon,
-      parentGroupId: dto.parentGroupId,
-      path: dto.path,
-      level: dto.level,
-      sortOrder: dto.sortOrder,
-      settings: dto.settings.map(s => SettingItem.fromPersistenceDTO(s)),
-      isSystemGroup: dto.isSystemGroup,
-      isCollapsed: dto.isCollapsed,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
     });
   }
 }

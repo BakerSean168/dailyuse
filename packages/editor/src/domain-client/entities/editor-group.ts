@@ -3,19 +3,15 @@
  * 编辑器分组实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 EditorGroupClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: EditorGroupClientDTO): EditorGroup
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: EditorGroupState): EditorGroup
  * - Instance toDTO(): EditorGroupClientDTO
  */
 
 import type {
-  EditorGroupClient,
   EditorGroupClientDTO,
 } from '@dailyuse/contracts/editor';
-import type { DomainDate } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorGroupId } from '../../domain-shared/value-objects/editor-group-id';
 import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
@@ -23,8 +19,7 @@ import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-work
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorTab } from './editor-tab';
 
-// 内部状态接口：使用 domain-shared 类类型
-interface EditorGroupState {
+export interface EditorGroupState {
   id: EditorGroupId;
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
@@ -37,7 +32,7 @@ interface EditorGroupState {
   updatedAt: Date;
 }
 
-export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupClient {
+export class EditorGroup extends Entity<EditorGroupId> {
   // ================= 1. Backing Field =================
   private readonly _props: EditorGroupState;
 
@@ -76,28 +71,17 @@ export class EditorGroup extends Entity<EditorGroupId> implements EditorGroupCli
     return [...this._props.tabs];
   }
 
-  get createdAt(): DomainDate {
+  get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  get updatedAt(): DomainDate {
+  get updatedAt(): Date {
     return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: EditorGroupClientDTO): EditorGroup {
-    return new EditorGroup({
-      id: EditorGroupId.of(dto.id),
-      sessionId: EditorSessionId.of(dto.sessionId),
-      workspaceId: EditorWorkspaceId.of(dto.workspaceId),
-      identityId: IdentityId.of(dto.identityId),
-      groupIndex: dto.groupIndex,
-      activeTabIndex: dto.activeTabIndex,
-      name: dto.name,
-      tabs: dto.tabs.map((t) => EditorTab.fromDTO(t)),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: EditorGroupState): EditorGroup {
+    return new EditorGroup(state);
   }
 
   // ================= 5. DTO Conversion =================

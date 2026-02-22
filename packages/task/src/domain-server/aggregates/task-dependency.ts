@@ -16,7 +16,7 @@ import {
 /**
  * Internal props interface for TaskDependency
  */
-interface TaskDependencyState {
+export interface TaskDependencyState {
   id: TaskDependencyId;
   predecessorTaskId: string;
   successorTaskId: string;
@@ -33,9 +33,9 @@ interface TaskDependencyState {
 export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   private _props: TaskDependencyState;
 
-  private constructor(id: TaskDependencyId, props: TaskDependencyState) {
-    super(id);
-    this._props = props;
+  private constructor(state: TaskDependencyState) {
+    super(state.id);
+    this._props = state;
   }
 
   // ============ Getters ============
@@ -85,7 +85,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
     const id = props.id ? TaskDependencyId.of(props.id) : TaskDependencyId.generate();
     const now = new Date();
 
-    return new TaskDependency(id, {
+    return new TaskDependency({
       id,
       predecessorTaskId: props.predecessorTaskId,
       successorTaskId: props.successorTaskId,
@@ -97,19 +97,10 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   }
 
   /**
-   * 从 DTO 还原
+   * 🏭 恢复工厂：从状态恢复聚合
    */
-  public static fromDTO(dto: TaskDependencyServerDTO): TaskDependency {
-    const id = TaskDependencyId.of(dto.id);
-    return new TaskDependency(id, {
-      id,
-      predecessorTaskId: dto.predecessorTaskId,
-      successorTaskId: dto.successorTaskId,
-      dependencyType: dto.dependencyType,
-      lagDays: dto.lagDays,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: TaskDependencyState): TaskDependency {
+    return new TaskDependency(state);
   }
 
   // ============ Business Methods ============
@@ -140,9 +131,9 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   // ============ Serialization ============
 
   /**
-   * 转换为 DTO
+   * 转换为 ServerDTO
    */
-  public toDTO(): TaskDependencyServerDTO {
+  public toServerDTO(): TaskDependencyServerDTO {
     return {
       id: this.id.toString(),
       predecessorTaskId: this._props.predecessorTaskId,

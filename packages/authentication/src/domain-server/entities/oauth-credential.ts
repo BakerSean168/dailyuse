@@ -1,28 +1,38 @@
 /**
  * OAuthCredential 实体实现
- * OAuth 凭证 - Server 端持�?Provider 信息�?Token
+ * OAuth 凭证 - Server 端持有 Provider 信息和 Token
  */
 
 import type {
-  OAuthCredentialServer,
   OAuthCredentialServerDTO,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 import {
-  CredentialType,
   CredentialStatus,
   OAuthProvider,
   type AuthCredentialId,
 } from '../../domain-shared';
 
+/** Domain state for OAuthCredential entity */
+export interface OAuthCredentialState {
+  id: AuthCredentialId;
+  status: typeof CredentialStatus.ACTIVE;
+  provider: OAuthProvider;
+  providerSubjectId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: Date | null;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+}
 
 /**
  * OAuth 凭证实体
  */
-export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCredentialServer {
+export class OAuthCredential extends Entity<AuthCredentialId> {
 
-  // ================= 1. 内部状�?=================
+  // ================= 1. 内部状态 =================
   private _status: typeof CredentialStatus.ACTIVE;
   private _provider: OAuthProvider;
   private _providerSubjectId: string;
@@ -35,22 +45,21 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
   // 只读类型标识
    public readonly type = 'OAUTH';
 
-  // ================= 2. 构造函�?=================
-  private constructor(props: OAuthCredentialServerDTO) {
-    super(props.id);
+  // ================= 2. 构造函数 =================
+  private constructor(state: OAuthCredentialState) {
+    super(state.id);
 
-    this._status = CredentialStatus.of(props.status);
-    // 强校验：如果 DTO �?provider 为空，说明数据有问题 (除非是旧数据迁移)
-    if (!props.provider) {
+    this._status = state.status;
+    if (!state.provider) {
        throw new Error("OAuth Credential must have a provider");
     }
-    this._provider = OAuthProvider.of(props.provider);
-    this._providerSubjectId = props.providerSubjectId;
-    this._accessToken = props.accessToken ?? null;
-    this._refreshToken = props.refreshToken ?? null;
-    this._expiresAt = props.expiresAt ? new Date(props.expiresAt) : null;
-    this._createdAt = new Date(props.createdAt);
-    this._lastUsedAt = props.lastUsedAt ? new Date(props.lastUsedAt) : null;
+    this._provider = state.provider;
+    this._providerSubjectId = state.providerSubjectId;
+    this._accessToken = state.accessToken;
+    this._refreshToken = state.refreshToken;
+    this._expiresAt = state.expiresAt;
+    this._createdAt = state.createdAt;
+    this._lastUsedAt = state.lastUsedAt;
   }
 
   // ================= 3. Getters =================
@@ -89,7 +98,7 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
   // ================= 4. 工厂方法 =================
 
   /**
-   * 🏭 业务工厂：创建新�?OAuth 凭证
+   * 🏭 业务工厂：创建新的 OAuth 凭证
    */
   public static create(params: {
     id: AuthCredentialId;
@@ -99,33 +108,31 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
     refreshToken?: string;
     expiresAt?: number;
   }): OAuthCredential {
-    const now = Date.now();
-    const dto: OAuthCredentialServerDTO = {
+    const now = new Date();
+    return new OAuthCredential({
       id: params.id,
-      type: 'OAUTH',
       status: CredentialStatus.ACTIVE,
       provider: params.provider,
       providerSubjectId: params.providerSubjectId,
       accessToken: params.accessToken ?? null,
       refreshToken: params.refreshToken ?? null,
-      expiresAt: params.expiresAt ?? null,
+      expiresAt: params.expiresAt ? new Date(params.expiresAt) : null,
       createdAt: now,
       lastUsedAt: null,
-    };
-    return new OAuthCredential(dto);
+    });
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复
+   * 🏭 恢复工厂：从持久化状态恢复
    */
-  public static fromServerDTO(dto: OAuthCredentialServerDTO): OAuthCredential {
-    return new OAuthCredential(dto);
+  public static load(state: OAuthCredentialState): OAuthCredential {
+    return new OAuthCredential(state);
   }
 
   // ================= 5. 业务行为 =================
 
   /**
-   * �?更新 Token
+   * 更新 Token
    */
   public updateTokens(params: {
     accessToken: string;
@@ -147,24 +154,24 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
   }
 
   /**
-   * �?记录使用时间
+   * 记录使用时间
    */
   public recordUsage(): void {
     this._lastUsedAt = new Date();
   }
 
   /**
-   * �?检�?Token 是否过期
+   * 检查 Token 是否过期
    */
   public isTokenExpired(): boolean {
     if (!this._expiresAt) {
-      return false; // 没有过期时间，认为不过期
+      return false;
     }
     return this._expiresAt.getTime() < Date.now();
   }
 
   /**
-   * �?暂停凭证
+   * 暂停凭证
    */
   public suspend(): void {
     if (CredentialStatus.isSuspended(this._status)) {
@@ -174,7 +181,7 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
   }
 
   /**
-   * �?恢复凭证
+   * 恢复凭证
    */
   public activate(): void {
     if (CredentialStatus.isActive(this._status)) {
@@ -187,7 +194,7 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
   }
 
   /**
-   * �?吊销凭证
+   * 吊销凭证
    */
   public revoke(): void {
     if (CredentialStatus.isRevoked(this._status)) {
@@ -199,10 +206,10 @@ export class OAuthCredential extends Entity<AuthCredentialId> implements OAuthCr
     this._refreshToken = null;
   }
 
-  // ================= 6. 序列�?=================
+  // ================= 6. 序列化 =================
 
   /**
-   * 转换�?Server DTO
+   * 转换为 Server DTO
    */
   public toServerDTO(): OAuthCredentialServerDTO {
     return {

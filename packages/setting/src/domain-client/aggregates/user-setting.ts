@@ -11,7 +11,6 @@ import type {
   IdentityId as IIdentityId,
 } from '@dailyuse/contracts/primitives';
 import type {
-  UserSettingClient,
   UserSettingClientDTO,
   SettingEntryClient,
   SettingEntryClientDTO,
@@ -20,8 +19,7 @@ import { SettingId } from '@/domain-shared/value-objects/setting-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { SettingEntry } from '../entities';
 
-// 内部状态接口：使用 domain-shared 类类型
-interface UserSettingState {
+export interface UserSettingState {
   id: SettingId;
   identityId: IdentityId;
   entries: Map<string, SettingEntry>;
@@ -31,7 +29,7 @@ interface UserSettingState {
   deletedAt: Date | null;
 }
 
-export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingClient {
+export class UserSetting extends AggregateRoot<ISettingId> {
   private readonly _props: UserSettingState;
 
   private constructor(props: UserSettingState) {
@@ -91,26 +89,8 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
 
   // ===== Factory Methods =====
 
-  public static fromDTO(dto: UserSettingClientDTO): UserSetting {
-    // Parse entries from JSON string
-    const entriesData: SettingEntryClientDTO[] = dto.entries
-      ? JSON.parse(dto.entries)
-      : [];
-
-    const entries = new Map<string, SettingEntry>();
-    for (const entryDTO of entriesData) {
-      entries.set(entryDTO.key, SettingEntry.fromDTO(entryDTO));
-    }
-
-    return new UserSetting({
-      id: SettingId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      entries,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: UserSettingState): UserSetting {
+    return new UserSetting(state);
   }
 
   // ===== DTO Conversion =====

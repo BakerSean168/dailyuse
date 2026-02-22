@@ -10,18 +10,28 @@
  */
 
 import type {
-  OAuthBindingServer,
   OAuthBindingServerDTO,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 import { OAuthProvider } from '../../domain-shared';
 
+/** Domain state for OAuthBinding entity */
+export interface OAuthBindingState {
+  id: string;
+  provider: OAuthProvider;
+  providerSubjectId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: Date | null;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+}
 
 /**
  * OAuth 绑定实体
  */
-export class OAuthBinding extends Entity<string> implements OAuthBindingServer {
+export class OAuthBinding extends Entity<string> {
 
   // ================= 1. 内部状态 =================
   private _provider: OAuthProvider;
@@ -33,19 +43,19 @@ export class OAuthBinding extends Entity<string> implements OAuthBindingServer {
   private _lastUsedAt: Date | null;
 
   // ================= 2. 构造函数 =================
-  private constructor(props: OAuthBindingServerDTO) {
-    super(props.id);
+  private constructor(state: OAuthBindingState) {
+    super(state.id);
 
-    if (!props.provider) {
+    if (!state.provider) {
        throw new Error("OAuthBinding must have a provider");
     }
-    this._provider = OAuthProvider.of(props.provider);
-    this._providerSubjectId = props.providerSubjectId;
-    this._accessToken = props.accessToken ?? null;
-    this._refreshToken = props.refreshToken ?? null;
-    this._expiresAt = props.expiresAt ? new Date(props.expiresAt) : null;
-    this._createdAt = new Date(props.createdAt);
-    this._lastUsedAt = props.lastUsedAt ? new Date(props.lastUsedAt) : null;
+    this._provider = state.provider;
+    this._providerSubjectId = state.providerSubjectId;
+    this._accessToken = state.accessToken;
+    this._refreshToken = state.refreshToken;
+    this._expiresAt = state.expiresAt;
+    this._createdAt = state.createdAt;
+    this._lastUsedAt = state.lastUsedAt;
   }
 
   // ================= 3. Getters =================
@@ -90,25 +100,23 @@ export class OAuthBinding extends Entity<string> implements OAuthBindingServer {
     refreshToken?: string;
     expiresAt?: number;
   }): OAuthBinding {
-    const now = Date.now();
-    const dto: OAuthBindingServerDTO = {
+    return new OAuthBinding({
       id: params.id,
       provider: params.provider,
       providerSubjectId: params.providerSubjectId,
       accessToken: params.accessToken ?? null,
       refreshToken: params.refreshToken ?? null,
-      expiresAt: params.expiresAt ?? null,
-      createdAt: now,
+      expiresAt: params.expiresAt ? new Date(params.expiresAt) : null,
+      createdAt: new Date(),
       lastUsedAt: null,
-    };
-    return new OAuthBinding(dto);
+    });
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复
+   * 🏭 恢复工厂：从持久化状态恢复
    */
-  public static fromServerDTO(dto: OAuthBindingServerDTO): OAuthBinding {
-    return new OAuthBinding(dto);
+  public static load(state: OAuthBindingState): OAuthBinding {
+    return new OAuthBinding(state);
   }
 
   // ================= 5. 业务行为 =================

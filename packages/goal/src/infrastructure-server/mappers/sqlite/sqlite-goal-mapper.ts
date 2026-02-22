@@ -12,6 +12,7 @@ import type {
   KeyResultWeightSnapshotDTO,
 } from '@dailyuse/contracts/goal';
 import { Goal } from '@/domain-server';
+import { persistenceDtoToGoalState } from '../goal-state-mapper';
 
 /**
  * SQLiteGoalMapper
@@ -34,7 +35,7 @@ export class SqliteGoalMapper {
     },
   ): Goal {
     const dto = SqliteGoalMapper.toPersistenceDTO(row, children);
-    return Goal.fromPersistenceDTO(dto);
+    return Goal.load(persistenceDtoToGoalState(dto));
   }
 
   /**

@@ -10,7 +10,15 @@
 import type { PrismaClient, Account as PrismaAccount } from '@dailyuse/database';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
-import type { AccountPersistenceDTO } from '@dailyuse/contracts/account';
+import type { AccountState } from '../../../domain-server';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
+import {
+  AccountProfile,
+  AccountSettings,
+  ContactEmail,
+  AccountStatus,
+  ContactPhone,
+} from '../../../domain-shared';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
@@ -30,43 +38,42 @@ export class PrismaAccountRepository
    */
   protected async persist(account: Account, tx?: unknown): Promise<void> {
     const client = (tx || this.prisma) as PrismaClient;
-    const raw = account.toPersistenceDTO();
 
     await (client as any).account.upsert({
-      where: { id: raw.id },
+      where: { id: account.id.toString() },
       update: {
-        status: raw.status,
-        emailAddress: raw.email.address,
-        emailIsVerified: raw.email.isVerified,
-        emailVerifiedAt: raw.email.verifiedAt,
-        emailIsPrimary: raw.email.isPrimary,
-        phoneCountryCode: raw.phone?.countryCode ?? null,
-        phoneNumber: raw.phone?.number ?? null,
-        phoneFullNumber: raw.phone?.fullNumber ?? null,
-        phoneIsVerified: raw.phone?.isVerified ?? null,
-        phoneVerifiedAt: raw.phone?.verifiedAt ?? null,
-        profile: raw.profile as any,
-        settings: raw.settings as any,
-        version: raw.version,
-        updatedAt: raw.updatedAt,
+        status: account.status.toString(),
+        emailAddress: account.email.address,
+        emailIsVerified: account.email.isVerified,
+        emailVerifiedAt: account.email.toPersistenceDTO().verifiedAt,
+        emailIsPrimary: account.email.isPrimary,
+        phoneCountryCode: account.phone?.countryCode ?? null,
+        phoneNumber: account.phone?.number ?? null,
+        phoneFullNumber: account.phone?.fullNumber ?? null,
+        phoneIsVerified: account.phone?.isVerified ?? null,
+        phoneVerifiedAt: account.phone?.toPersistenceDTO().verifiedAt ?? null,
+        profile: account.profile.toPersistenceDTO() as any,
+        settings: account.settings.toPersistenceDTO() as any,
+        version: account.version,
+        updatedAt: account.updatedAt,
       },
       create: {
-        id: raw.id,
-        status: raw.status,
-        emailAddress: raw.email.address,
-        emailIsVerified: raw.email.isVerified,
-        emailVerifiedAt: raw.email.verifiedAt,
-        emailIsPrimary: raw.email.isPrimary,
-        phoneCountryCode: raw.phone?.countryCode ?? null,
-        phoneNumber: raw.phone?.number ?? null,
-        phoneFullNumber: raw.phone?.fullNumber ?? null,
-        phoneIsVerified: raw.phone?.isVerified ?? null,
-        phoneVerifiedAt: raw.phone?.verifiedAt ?? null,
-        profile: raw.profile as any,
-        settings: raw.settings as any,
-        version: raw.version,
-        createdAt: raw.createdAt,
-        updatedAt: raw.updatedAt,
+        id: account.id.toString(),
+        status: account.status.toString(),
+        emailAddress: account.email.address,
+        emailIsVerified: account.email.isVerified,
+        emailVerifiedAt: account.email.toPersistenceDTO().verifiedAt,
+        emailIsPrimary: account.email.isPrimary,
+        phoneCountryCode: account.phone?.countryCode ?? null,
+        phoneNumber: account.phone?.number ?? null,
+        phoneFullNumber: account.phone?.fullNumber ?? null,
+        phoneIsVerified: account.phone?.isVerified ?? null,
+        phoneVerifiedAt: account.phone?.toPersistenceDTO().verifiedAt ?? null,
+        profile: account.profile.toPersistenceDTO() as any,
+        settings: account.settings.toPersistenceDTO() as any,
+        version: account.version,
+        createdAt: account.createdAt,
+        updatedAt: account.updatedAt,
       },
     });
   }
@@ -151,31 +158,31 @@ export class PrismaAccountRepository
   }
 
   private mapToDomain(row: PrismaAccount): Account {
-    const persistenceDTO: AccountPersistenceDTO = {
-      id: row.id,
-      status: row.status,
-      profile: row.profile,
-      settings: row.settings,
-      email: {
+    const state: AccountState = {
+      id: IdentityId.of(row.id),
+      status: AccountStatus.of(row.status),
+      profile: AccountProfile.fromPersistenceDTO(row.profile as any),
+      settings: AccountSettings.fromPersistenceDTO(row.settings as any),
+      email: ContactEmail.fromPersistenceDTO({
         address: row.emailAddress,
         isVerified: row.emailIsVerified,
         verifiedAt: row.emailVerifiedAt,
         isPrimary: row.emailIsPrimary,
-      },
+      }),
       phone: row.phoneNumber
-        ? {
-            fullNumber: row.phoneFullNumber,
-            countryCode: row.phoneCountryCode,
+        ? ContactPhone.fromPersistenceDTO({
+            fullNumber: row.phoneFullNumber as string,
+            countryCode: row.phoneCountryCode as string,
             number: row.phoneNumber,
-            isVerified: row.phoneIsVerified,
+            isVerified: row.phoneIsVerified as boolean,
             verifiedAt: row.phoneVerifiedAt,
-          }
+          })
         : null,
       version: row.version,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       deletedAt: row.deletedAt,
     };
-    return Account.fromPersistenceDTO(persistenceDTO);
+    return Account.load(state);
   }
 }
