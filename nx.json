@@ -72,7 +72,6 @@
       }
     }
   ],
-  "nxCloudId": "68ff36e3ab7cea91683fd4d7",
   "release": {
     "version": {
       "preVersionCommand": "pnpm dlx nx run-many -t build"
