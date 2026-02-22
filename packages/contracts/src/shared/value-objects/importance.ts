@@ -5,4 +5,4 @@ export const ImportanceLevel = {
   Minor: "Minor",
   Trivial: "Trivial",
 } as const;
-export type ImportanceLevel = keyof typeof ImportanceLevel;
+export type ImportanceLevel = (typeof ImportanceLevel)[keyof typeof ImportanceLevel];

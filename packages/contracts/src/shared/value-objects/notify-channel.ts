@@ -9,6 +9,6 @@ export const NotifyChannel = {
     Push: 'Push',
     Desktop: 'Desktop',
     InApp: 'InApp',
-}
+} as const;
 
-export type NotifyChannel = keyof typeof NotifyChannel;
+export type NotifyChannel = (typeof NotifyChannel)[keyof typeof NotifyChannel];

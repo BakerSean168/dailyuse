@@ -29,4 +29,4 @@ export const UrgencyLevel = {
    */
   None: 'None',
 } as const;
-export type UrgencyLevel = keyof typeof UrgencyLevel;
+export type UrgencyLevel = (typeof UrgencyLevel)[keyof typeof UrgencyLevel];
