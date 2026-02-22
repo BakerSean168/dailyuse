@@ -8,6 +8,15 @@
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 
+/**
+ * Safely convert a Date, number (timestamp), or string to a Date object.
+ * Returns null if the input is falsy.
+ */
+function toDate(value: Date | number | string | null | undefined): Date | null {
+  if (!value) return null;
+  return value instanceof Date ? value : new Date(value);
+}
+
 export class PrismaTaskTemplateMapper {
   /**
    * Prisma record → TaskTemplate aggregate root
@@ -67,33 +76,25 @@ export class PrismaTaskTemplateMapper {
       folderId: dto.folderId,
       parentTaskId: dto.parentTaskId,
       timeConfigType: dto.timeConfigType,
-      timeConfigStartTime: dto.timeConfigStartTime
-        ? new Date(dto.timeConfigStartTime as any)
-        : null,
-      timeConfigEndTime: dto.timeConfigEndTime
-        ? new Date(dto.timeConfigEndTime as any)
-        : null,
+      timeConfigStartTime: toDate(dto.timeConfigStartTime),
+      timeConfigEndTime: toDate(dto.timeConfigEndTime),
       timeConfigDurationMinutes: dto.timeConfigDurationMinutes,
       recurrenceRuleType: dto.recurrenceRuleType,
       recurrenceRuleInterval: dto.recurrenceRuleInterval,
       recurrenceRuleDaysOfWeek: dto.recurrenceRuleDaysOfWeek,
       recurrenceRuleDayOfMonth: dto.recurrenceRuleDayOfMonth,
       recurrenceRuleMonthOfYear: dto.recurrenceRuleMonthOfYear,
-      recurrenceRuleEndDate: dto.recurrenceRuleEndDate
-        ? new Date(dto.recurrenceRuleEndDate as any)
-        : null,
+      recurrenceRuleEndDate: toDate(dto.recurrenceRuleEndDate),
       recurrenceRuleCount: dto.recurrenceRuleCount,
       reminderConfigEnabled: dto.reminderConfigEnabled,
       reminderConfigTimeOffsetMinutes: dto.reminderConfigTimeOffsetMinutes,
       reminderConfigUnit: dto.reminderConfigUnit,
       reminderConfigChannel: dto.reminderConfigChannel,
-      lastGeneratedDate: dto.lastGeneratedDate
-        ? new Date(dto.lastGeneratedDate as any)
-        : null,
+      lastGeneratedDate: toDate(dto.lastGeneratedDate),
       generateAheadDays: dto.generateAheadDays,
       goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
-      dependencyStatus: dto.dependencyStatus,
-      isBlocked: dto.isBlocked,
+      dependencyStatus: dto.dependencyStatus ?? 'NONE',
+      isBlocked: dto.isBlocked ?? false,
       blockingReason: dto.blockingReason,
       version: dto.version,
       deletedAt: dto.deletedAt,

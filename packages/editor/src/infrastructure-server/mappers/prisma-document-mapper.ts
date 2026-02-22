@@ -8,15 +8,13 @@
 import type { Document as PrismaDocument } from '@dailyuse/database';
 import { Document } from '../../../domain-server/entities/document';
 import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
-import { createHash } from 'crypto';
 
 export class PrismaDocumentMapper {
   /**
    * Prisma Document → Domain Document entity
    */
   static toDomain(data: PrismaDocument): Document {
-    const mappedIndexStatus = PrismaDocumentMapper.mapPrismaStatusToIndexStatus(data.status);
-    return Document.fromPersistenceDTO({
+    const mappedIndexStatus = PrismaDocumentMapper.mapPrismaStatusToIndexStatus(data.status);    return Document.fromPersistenceDTO({
       id: data.id,
       workspace_id: data.identityId,
       identityId: data.identityId,
@@ -72,7 +70,7 @@ export class PrismaDocumentMapper {
   static readMetadataTags(metadata: string): string[] {
     try {
       const parsed = JSON.parse(metadata);
-      return Array.isArray(parsed.tags) ? parsed.tags : [];
+      return Array.isArray(parsed?.tags) ? parsed.tags : [];
     } catch {
       return [];
     }
@@ -82,38 +80,31 @@ export class PrismaDocumentMapper {
    * Map Prisma status → Domain IndexStatus
    */
   static mapPrismaStatusToIndexStatus(status: string): IndexStatus {
-    switch (status) {
-      case 'DRAFT':
-        return IndexStatus.Pending;
-      case 'PUBLISHED':
-        return IndexStatus.Indexed;
-      case 'ARCHIVED':
-        return IndexStatus.Stale;
-      default:
-        return IndexStatus.Pending;
-    }
+    if (status === 'PUBLISHED') return IndexStatus.Indexed;
+    if (status === 'ARCHIVED') return IndexStatus.Outdated;
+    return IndexStatus.NotIndexed;
   }
 
   /**
    * Map Domain IndexStatus → Prisma status string
    */
   static mapIndexStatusToPrismaStatus(indexStatus: IndexStatus): string {
-    switch (indexStatus) {
-      case IndexStatus.Indexed:
-        return 'PUBLISHED';
-      case IndexStatus.Stale:
-        return 'ARCHIVED';
-      case IndexStatus.Pending:
-      default:
-        return 'DRAFT';
-    }
+    if (indexStatus === IndexStatus.Indexed) return 'PUBLISHED';
+    if (indexStatus === IndexStatus.Outdated || indexStatus === IndexStatus.Failed) return 'ARCHIVED';
+    return 'DRAFT';
   }
 
   /**
-   * Hash content for change detection
+   * Hash content for change detection (simple bitwise hash)
    */
   static hashContent(content: string): string {
-    return createHash('sha256').update(content).digest('hex');
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return hash.toString(16);
   }
 
   /**

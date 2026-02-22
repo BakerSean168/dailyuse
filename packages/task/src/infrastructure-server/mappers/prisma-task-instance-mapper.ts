@@ -8,6 +8,15 @@
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 
+/**
+ * Safely convert a Date, number (timestamp), or string to a Date object.
+ * Returns null if the input is falsy.
+ */
+function toDate(value: Date | number | string | null | undefined): Date | null {
+  if (!value) return null;
+  return value instanceof Date ? value : new Date(value);
+}
+
 export class PrismaTaskInstanceMapper {
   /**
    * Prisma record → TaskInstance aggregate root
@@ -39,17 +48,13 @@ export class PrismaTaskInstanceMapper {
     return {
       templateId: dto.templateId,
       identityId: dto.identityId,
-      instanceDate: dto.instanceDate instanceof Date ? dto.instanceDate : new Date(dto.instanceDate as any),
+      instanceDate: toDate(dto.instanceDate) ?? new Date(),
       timeConfig: dto.timeConfig || '{}',
       importance: dto.importance || 'Moderate',
       priority: dto.priority ?? null,
       status: dto.status,
-      actualStartTime: dto.actualStartTime
-        ? (dto.actualStartTime instanceof Date ? dto.actualStartTime : new Date(dto.actualStartTime as any))
-        : null,
-      actualEndTime: dto.actualEndTime
-        ? (dto.actualEndTime instanceof Date ? dto.actualEndTime : new Date(dto.actualEndTime as any))
-        : null,
+      actualStartTime: toDate(dto.actualStartTime),
+      actualEndTime: toDate(dto.actualEndTime),
       comment: dto.comment ?? null,
       version: dto.version,
     };
