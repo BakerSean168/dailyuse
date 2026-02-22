@@ -13,7 +13,7 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, AuthSession as PrismaAuthSession } from '@dailyuse/database';
 import type { AuthSessionPersistenceDTO, DeviceInfo } from '@dailyuse/contracts/authentication';
 import type { IAuthSessionRepository } from '../../domain-server';
 import { AuthSession } from '../../domain-server';
@@ -108,7 +108,7 @@ export class PrismaAuthSessionRepository
       orderBy: { createdAt: 'desc' },
     });
 
-    return rows.map((row: any) => AuthSession.fromPersistenceDTO(this.mapRowToDTO(row)));
+    return rows.map((row: PrismaAuthSession) => AuthSession.fromPersistenceDTO(this.mapRowToDTO(row)));
   }
 
   async remove(session: AuthSession): Promise<void> {
@@ -141,7 +141,7 @@ export class PrismaAuthSessionRepository
    * Map a Prisma row to AuthSessionPersistenceDTO.
    * Reconstructs DeviceInfo from individual columns and derives status from DB state.
    */
-  private mapRowToDTO(row: any): AuthSessionPersistenceDTO {
+  private mapRowToDTO(row: PrismaAuthSession): AuthSessionPersistenceDTO {
     const geoLocation = row.location as {
       country?: string | null;
       region?: string | null;
