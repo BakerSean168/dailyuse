@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, Document as PrismaDocument } from '@dailyuse/database';
 import type { IDocumentRepository } from '../../../domain-server/repositories/IDocumentRepository';
 import { Document } from '../../../domain-server/entities/document';
 import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
@@ -6,7 +6,7 @@ import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
 export class DocumentPrismaRepository implements IDocumentRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(data: any): Document {
+  private toDomain(data: PrismaDocument): Document {
     const mappedIndexStatus = this.mapPrismaStatusToIndexStatus(data.status);
     return Document.fromPersistenceDTO({
       id: data.id,
@@ -106,7 +106,7 @@ export class DocumentPrismaRepository implements IDocumentRepository {
     const data = await this.prisma.document.findMany({
       where: { identityId, deletedAt: null },
     });
-    return data.map((d: any) => this.toDomain(d));
+    return data.map((d: PrismaDocument) => this.toDomain(d));
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
@@ -125,7 +125,7 @@ export class DocumentPrismaRepository implements IDocumentRepository {
       where: { deletedAt: null },
     });
     return data
-      .map((d: any) => this.toDomain(d))
+      .map((d: PrismaDocument) => this.toDomain(d))
       .filter((document) => document.contentHash === contentHash);
   }
 
@@ -147,7 +147,7 @@ export class DocumentPrismaRepository implements IDocumentRepository {
       orderBy: { updatedAt: 'desc' },
       take: limit,
     });
-    return data.map((d: any) => this.toDomain(d));
+    return data.map((d: PrismaDocument) => this.toDomain(d));
   }
 
   async delete(id: string): Promise<void> {
@@ -183,6 +183,6 @@ export class DocumentPrismaRepository implements IDocumentRepository {
       const data = await this.prisma.document.findMany({
           where: { identityId, folderPath, deletedAt: null }
       });
-      return data.map((d: any) => this.toDomain(d));
+      return data.map((d: PrismaDocument) => this.toDomain(d));
   }
 }

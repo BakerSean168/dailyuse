@@ -5,7 +5,7 @@
  * 聚合根：TaskFolder
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
 import type { ITaskFolderRepository } from '../../../domain-server/repositories/ITaskFolderRepository';
 import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
 
@@ -15,7 +15,7 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
   /**
    * Prisma record  TaskFolderServerDTO
    */
-  private mapToDTO(data: any): TaskFolderServerDTO {
+  private mapToDTO(data: PrismaTaskFolder): TaskFolderServerDTO {
     return {
       id: data.id,
       identityId: data.identityId,
@@ -66,7 +66,7 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
       where: { identityId, deletedAt: null },
       orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
     });
-    return data.map((item: any) => this.mapToDTO(item));
+    return data.map((item: PrismaTaskFolder) => this.mapToDTO(item));
   }
 
   async delete(id: string): Promise<void> {

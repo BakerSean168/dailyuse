@@ -5,7 +5,7 @@
  * 聚合根：TaskInstance
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
@@ -35,7 +35,7 @@ export class TaskInstancePrismaRepository
   /**
    * Prisma record  TaskInstance 聚合根
    */
-  private mapToEntity(data: any): TaskInstance {
+  private mapToEntity(data: PrismaTaskInstance): TaskInstance {
     return TaskInstance.fromPersistenceDTO({
       id: data.id,
       templateId: data.templateId,
@@ -125,7 +125,7 @@ export class TaskInstancePrismaRepository
       where: { templateId },
       orderBy: { instanceDate: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
   async findByIdentityId(identityId: string): Promise<TaskInstance[]> {
@@ -133,7 +133,7 @@ export class TaskInstancePrismaRepository
       where: { identityId },
       orderBy: { instanceDate: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
   async findByDateRange(
@@ -151,7 +151,7 @@ export class TaskInstancePrismaRepository
       },
       orderBy: { instanceDate: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
   async findByStatus(
@@ -162,7 +162,7 @@ export class TaskInstancePrismaRepository
       where: { identityId, status },
       orderBy: { instanceDate: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
   async findOverdueInstances(identityId: string): Promise<TaskInstance[]> {
@@ -175,7 +175,7 @@ export class TaskInstancePrismaRepository
       },
       orderBy: { instanceDate: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
   async delete(id: string): Promise<void> {
@@ -221,7 +221,7 @@ export class TaskInstancePrismaRepository
       },
       orderBy: { instanceDate: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
   async deleteFuturePendingInstances(

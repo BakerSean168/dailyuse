@@ -11,12 +11,25 @@
  * - GoalReview maps reviewType→type, content→summary, lessonsLearned→improvements
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type {
+  PrismaClient,
+  Prisma,
+  Goal as PrismaGoal,
+  KeyResult as PrismaKeyResult,
+  GoalReview as PrismaGoalReview,
+  KeyResultWeightSnapshot as PrismaKeyResultWeightSnapshot,
+} from '@dailyuse/database';
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
 import type { GoalPersistenceDTO, KeyResultPersistenceDTO, GoalReviewPersistenceDTO, KeyResultWeightSnapshotDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+
+type PrismaGoalWithRelations = PrismaGoal & {
+  keyResults?: PrismaKeyResult[];
+  reviews?: PrismaGoalReview[];
+  keyResultWeightSnapshots?: PrismaKeyResultWeightSnapshot[];
+};
 
 /**
  * Global EventBus adapter
@@ -37,7 +50,7 @@ const eventBusAdapter: IEventBus = {
 /**
  * Map a Prisma Goal result (with includes) to GoalPersistenceDTO
  */
-function mapPrismaToGoalDTO(row: any): GoalPersistenceDTO {
+function mapPrismaToGoalDTO(row: PrismaGoalWithRelations): GoalPersistenceDTO {
   return {
     id: row.id,
     identityId: row.identityId,
@@ -79,7 +92,7 @@ function mapPrismaToGoalDTO(row: any): GoalPersistenceDTO {
  * Map a Prisma KeyResult row to KeyResultPersistenceDTO
  * Prisma stores progress as individual columns; DTO stores as JSON string
  */
-function mapPrismaToKeyResultDTO(row: any): KeyResultPersistenceDTO {
+function mapPrismaToKeyResultDTO(row: PrismaKeyResult): KeyResultPersistenceDTO {
   const progress = JSON.stringify({
     initialValue: 0,
     currentValue: row.currentValue ?? 0,
@@ -107,7 +120,7 @@ function mapPrismaToKeyResultDTO(row: any): KeyResultPersistenceDTO {
 /**
  * Map a Prisma GoalReview row to GoalReviewPersistenceDTO
  */
-function mapPrismaToGoalReviewDTO(row: any): GoalReviewPersistenceDTO {
+function mapPrismaToGoalReviewDTO(row: PrismaGoalReview): GoalReviewPersistenceDTO {
   return {
     id: row.id,
     goalId: row.goalId,
@@ -129,7 +142,7 @@ function mapPrismaToGoalReviewDTO(row: any): GoalReviewPersistenceDTO {
 /**
  * Map a Prisma KeyResultWeightSnapshot row to DTO
  */
-function mapPrismaToWeightSnapshotDTO(row: any): KeyResultWeightSnapshotDTO {
+function mapPrismaToWeightSnapshotDTO(row: PrismaKeyResultWeightSnapshot): KeyResultWeightSnapshotDTO {
   return {
     id: row.id,
     goalId: row.goalId,
@@ -138,7 +151,7 @@ function mapPrismaToWeightSnapshotDTO(row: any): KeyResultWeightSnapshotDTO {
     newWeight: row.newWeight,
     weightDelta: row.weightDelta,
     snapshotTime: row.snapshotTime,
-    trigger: row.trigger as any,
+    trigger: row.trigger,
     reason: row.reason ?? null,
     operatorId: row.operatorId,
     createdAt: row.createdAt,
@@ -188,7 +201,7 @@ export class GoalPrismaRepository
     id: string,
     options?: { includeChildren?: boolean },
   ): Promise<Goal | null> {
-    const row = await (this.prisma as any).goal.findUnique({
+    const row = await this.prisma.goal.findUnique({
       where: { id },
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
     });
@@ -206,7 +219,7 @@ export class GoalPrismaRepository
       folderId?: string;
     },
   ): Promise<Goal[]> {
-    const rows = await (this.prisma as any).goal.findMany({
+    const rows = await this.prisma.goal.findMany({
       where: {
         identityId,
         deletedAt: null,
@@ -216,15 +229,15 @@ export class GoalPrismaRepository
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: any) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
+    return rows.map((row: PrismaGoalWithRelations) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
   }
 
   async findByFolderId(folderId: string): Promise<Goal[]> {
-    const rows = await (this.prisma as any).goal.findMany({
+    const rows = await this.prisma.goal.findMany({
       where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: any) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
+    return rows.map((row: PrismaGoalWithRelations) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
   }
 
   // ================= Write Operations =================
@@ -236,7 +249,7 @@ export class GoalPrismaRepository
     const dto = goal.toPersistenceDTO();
 
     // Run in a transaction for consistency
-    await (this.prisma as any).$transaction(async (tx: any) => {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Upsert the Goal root
       await tx.goal.upsert({
         where: { id: dto.id as string },
@@ -408,11 +421,11 @@ export class GoalPrismaRepository
   // ================= Delete Operations =================
 
   async delete(id: string): Promise<void> {
-    await (this.prisma as any).goal.delete({ where: { id } });
+    await this.prisma.goal.delete({ where: { id } });
   }
 
   async softDelete(id: string): Promise<void> {
-    await (this.prisma as any).goal.update({
+    await this.prisma.goal.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
@@ -421,19 +434,19 @@ export class GoalPrismaRepository
   // ================= Utility Operations =================
 
   async exists(id: string): Promise<boolean> {
-    const count = await (this.prisma as any).goal.count({ where: { id } });
+    const count = await this.prisma.goal.count({ where: { id } });
     return count > 0;
   }
 
   async batchUpdateStatus(ids: string[], status: string): Promise<void> {
-    await (this.prisma as any).goal.updateMany({
+    await this.prisma.goal.updateMany({
       where: { id: { in: ids } },
       data: { status, updatedAt: new Date() },
     });
   }
 
   async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
-    await (this.prisma as any).goal.updateMany({
+    await this.prisma.goal.updateMany({
       where: { id: { in: ids } },
       data: { folderId, updatedAt: new Date() },
     });
@@ -453,7 +466,7 @@ export class GoalPrismaRepository
       if (visited.has(currentId)) break; // Circular reference guard
       visited.add(currentId);
 
-      const parent: { parentGoalId: string | null } | null = await (this.prisma as any).goal.findUnique({
+      const parent: { parentGoalId: string | null } | null = await this.prisma.goal.findUnique({
         where: { id: currentId },
         select: { parentGoalId: true },
       });
@@ -463,11 +476,11 @@ export class GoalPrismaRepository
   }
 
   async findChildren(parentId: string): Promise<Goal[]> {
-    const rows = await (this.prisma as any).goal.findMany({
+    const rows = await this.prisma.goal.findMany({
       where: { parentGoalId: parentId, deletedAt: null },
       include: GOAL_INCLUDE_ALL,
       orderBy: { sortOrder: 'asc' },
     });
-    return rows.map((row: any) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
+    return rows.map((row: PrismaGoalWithRelations) => Goal.fromPersistenceDTO(mapPrismaToGoalDTO(row)));
   }
 }

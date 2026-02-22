@@ -5,7 +5,7 @@
  * 聚合根：TaskDependency
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
 import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
@@ -17,7 +17,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   /**
    * Prisma record  TaskDependencyServerDTO
    */
-  private mapToDTO(data: any): TaskDependencyServerDTO {
+  private mapToDTO(data: PrismaTaskDependency): TaskDependencyServerDTO {
     return {
       id: data.id,
       predecessorTaskId: data.predecessorTaskId,

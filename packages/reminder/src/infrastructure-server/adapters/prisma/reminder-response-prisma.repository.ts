@@ -5,7 +5,7 @@
  * 实体：ReminderResponse（属于 ReminderTemplate 聚合上下文）
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, ReminderResponse as PrismaReminderResponse, Prisma } from '@dailyuse/database';
 import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
@@ -16,7 +16,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
   /**
    * Prisma record → ReminderResponse 实体
    */
-  private mapToEntity(data: any): ReminderResponse {
+  private mapToEntity(data: PrismaReminderResponse): ReminderResponse {
     return ReminderResponse.fromPersistenceDTO({
       id: data.id,
       reminderTemplateId: data.templateId,
@@ -66,7 +66,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
       orderBy: { timestamp: 'desc' },
       take: limit,
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderResponse) => this.mapToEntity(d));
   }
 
   async getResponseStats(
@@ -81,7 +81,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     completed: number;
     avgResponseTime: number;
   }> {
-    const where: any = { templateId };
+    const where: Prisma.ReminderResponseWhereInput = { templateId };
     if (lookbackDays) {
       const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
       where.timestamp = { gte: cutoff };
@@ -151,7 +151,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     templateId: string,
     lookbackDays?: number,
   ): Promise<Record<ReminderResponseAction, number>> {
-    const where: any = { templateId };
+    const where: Prisma.ReminderResponseWhereInput = { templateId };
     if (lookbackDays) {
       const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
       where.timestamp = { gte: cutoff };

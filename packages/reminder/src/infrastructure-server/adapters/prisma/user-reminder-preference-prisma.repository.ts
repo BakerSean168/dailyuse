@@ -5,7 +5,7 @@
  * 鑱氬悎鏍癸細UserReminderPreferences
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
 import type { IUserReminderPreferenceRepository } from '../../../domain-server/repositories/IUserReminderPreferenceRepository';
 import { UserReminderPreferences } from '../../../domain-server/aggregates/user-reminder-preferences';
 
@@ -17,7 +17,7 @@ export class UserReminderPreferencePrismaRepository
   /**
    * Prisma record 鈫?UserReminderPreferences 鑱氬悎鏍?
    */
-  private mapToEntity(data: any): UserReminderPreferences {
+  private mapToEntity(data: PrismaUserReminderPreference): UserReminderPreferences {
     return UserReminderPreferences.fromPersistenceDTO({
       id: data.id,
       identityId: data.identityId,

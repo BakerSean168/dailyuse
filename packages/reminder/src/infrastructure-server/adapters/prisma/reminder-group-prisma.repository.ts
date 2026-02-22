@@ -5,7 +5,7 @@
  * 聚合根：ReminderGroup
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, ReminderGroup as PrismaReminderGroup, Prisma } from '@dailyuse/database';
 import type { IReminderGroupRepository } from '../../../domain-server/repositories/IReminderGroupRepository';
 import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
@@ -35,7 +35,7 @@ export class ReminderGroupPrismaRepository
   /**
    * Prisma record → ReminderGroup 聚合根
    */
-  private mapToEntity(data: any): ReminderGroup {
+  private mapToEntity(data: PrismaReminderGroup): ReminderGroup {
     return ReminderGroup.fromPersistenceDTO({
       id: data.id,
       identityId: data.identityId,
@@ -112,7 +112,7 @@ export class ReminderGroupPrismaRepository
     identityId: string,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]> {
-    const where: any = { identityId };
+    const where: Prisma.ReminderGroupWhereInput = { identityId };
     if (!options?.includeDeleted) {
       where.deletedAt = null;
     }
@@ -121,7 +121,7 @@ export class ReminderGroupPrismaRepository
       where,
       orderBy: { order: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
   async findByControlMode(
@@ -129,7 +129,7 @@ export class ReminderGroupPrismaRepository
     controlMode: ControlMode,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]> {
-    const where: any = { identityId, controlMode };
+    const where: Prisma.ReminderGroupWhereInput = { identityId, controlMode };
     if (!options?.includeDeleted) {
       where.deletedAt = null;
     }
@@ -138,11 +138,11 @@ export class ReminderGroupPrismaRepository
       where,
       orderBy: { order: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
   async findActive(identityId?: string): Promise<ReminderGroup[]> {
-    const where: any = {
+    const where: Prisma.ReminderGroupWhereInput = {
       enabled: true,
       status: 'Active',
       deletedAt: null,
@@ -155,7 +155,7 @@ export class ReminderGroupPrismaRepository
       where,
       orderBy: { order: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
   async findByIds(ids: string[]): Promise<ReminderGroup[]> {
@@ -165,7 +165,7 @@ export class ReminderGroupPrismaRepository
       where: { id: { in: ids } },
       orderBy: { order: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderGroup) => this.mapToEntity(d));
   }
 
   async findByName(
@@ -173,7 +173,7 @@ export class ReminderGroupPrismaRepository
     name: string,
     excludeId?: string,
   ): Promise<ReminderGroup | null> {
-    const where: any = {
+    const where: Prisma.ReminderGroupWhereInput = {
       identityId,
       name,
       deletedAt: null,
@@ -203,7 +203,7 @@ export class ReminderGroupPrismaRepository
     identityId: string,
     options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number> {
-    const where: any = { identityId };
+    const where: Prisma.ReminderGroupWhereInput = { identityId };
     if (options?.status) {
       where.status = options.status;
     }

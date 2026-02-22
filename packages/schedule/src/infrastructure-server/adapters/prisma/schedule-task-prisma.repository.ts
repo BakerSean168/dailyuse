@@ -11,7 +11,7 @@
  * @implements {IScheduleTaskRepository}
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, ScheduleTask as PrismaScheduleTask, ScheduleExecution as PrismaScheduleExecution, Prisma } from '@dailyuse/database';
 import type { IScheduleTaskRepository } from '../../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
 import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
@@ -45,6 +45,10 @@ interface IScheduleTaskQueryOptions {
   offset?: number;
 }
 
+type PrismaScheduleTaskWithExecutions = PrismaScheduleTask & {
+  executions?: PrismaScheduleExecution[];
+};
+
 /**
  * ScheduleTaskRepository
  * 鐎瑰本鏆ｉ惃?DDD Repository鐎圭偟骞囬敍灞炬￥娑撳瓨妞傞柅鍌炲帳娴狅絿鐖?
@@ -63,7 +67,7 @@ export class ScheduleTaskPrismaRepository
    * 娴?Prisma 濡€崇€锋潪顒佸床娑?ScheduleTask 閼辨艾鎮庨弽?
    * 娴ｈ法鏁ら懕姘値閺嶅湱娈?fromPersistenceDTO 閺傝纭?
    */
-  private toDomain(data: any): ScheduleTask {
+  private toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
     // 閺嬪嫬缂?PersistenceDTO閿涘牊澧嶉張澶婄摟濞堢敻鍏橀弰顖涘楠炲啿瀵查惃鍕剁礆
     const persistenceDTO: ScheduleTaskPersistenceDTO = {
       id: data.id,
@@ -353,7 +357,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
-    const where: any = {};
+    const where: Prisma.ScheduleTaskWhereInput = {};
 
     if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;
@@ -377,7 +381,7 @@ export class ScheduleTaskPrismaRepository
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {
-    const where: any = {};
+    const where: Prisma.ScheduleTaskWhereInput = {};
 
     if (options.identityId) where.identityId = options.identityId;
     if (options.sourceModule) where.sourceModule = options.sourceModule;

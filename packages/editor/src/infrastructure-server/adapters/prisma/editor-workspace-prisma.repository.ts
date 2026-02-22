@@ -1,11 +1,11 @@
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 
 export class EditorWorkspacePrismaRepository implements IEditorWorkspaceRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  private toDomain(data: any): EditorWorkspace {
+  private toDomain(data: PrismaEditorWorkspace): EditorWorkspace {
     return EditorWorkspace.fromPersistenceDTO({
       id: data.id,
       identityId: data.identityId,
@@ -52,7 +52,7 @@ export class EditorWorkspacePrismaRepository implements IEditorWorkspaceReposito
     const data = await this.prisma.editorWorkspace.findMany({
       where: { identityId, deletedAt: null },
     });
-    return data.map((d: any) => this.toDomain(d));
+    return data.map((d: PrismaEditorWorkspace) => this.toDomain(d));
   }
 
   async findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null> {

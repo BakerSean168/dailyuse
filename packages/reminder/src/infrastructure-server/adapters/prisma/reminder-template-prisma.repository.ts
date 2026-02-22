@@ -8,13 +8,17 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, ReminderTemplate as PrismaReminderTemplate, ReminderHistory as PrismaReminderHistory, Prisma } from '@dailyuse/database';
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import { ReminderHistory } from '../../../domain-server/entities/reminder-history';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+
+type PrismaReminderTemplateWithHistory = PrismaReminderTemplate & {
+  history?: PrismaReminderHistory[];
+};
 
 /**
  * 全局 EventBus 适配器
@@ -39,7 +43,7 @@ export class ReminderTemplatePrismaRepository
   /**
    * Prisma record 鈫?ReminderTemplate 鑱氬悎鏍?
    */
-  private mapToEntity(data: any, historyRecords?: any[]): ReminderTemplate {
+  private mapToEntity(data: PrismaReminderTemplate, historyRecords?: PrismaReminderHistory[]): ReminderTemplate {
     const template = ReminderTemplate.fromPersistenceDTO({
       id: data.id,
       identityId: data.identityId,
@@ -160,7 +164,7 @@ export class ReminderTemplatePrismaRepository
     const dto = template.toPersistenceDTO();
     const writeData = this.toWriteData(template);
 
-    await this.prisma.$transaction(async (tx: any) => {
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Upsert 鑱氬悎鏍?
       await tx.reminderTemplate.upsert({
         where: { id: dto.id as string },
@@ -208,14 +212,14 @@ export class ReminderTemplatePrismaRepository
       include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
     });
     if (!data) return null;
-    return this.mapToEntity(data, (data as any).history);
+    return this.mapToEntity(data, (data as PrismaReminderTemplateWithHistory).history);
   }
 
   async findByIdentityId(
     identityId: string,
     options?: { includeHistory?: boolean; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
-    const where: any = { identityId };
+    const where: Prisma.ReminderTemplateWhereInput = { identityId };
     if (!options?.includeDeleted) {
       where.deletedAt = null;
     }
@@ -225,14 +229,14 @@ export class ReminderTemplatePrismaRepository
       include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d, d.history));
+    return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
   async findByGroupId(
     groupId: string | null,
     options?: { includeHistory?: boolean; includeDeleted?: boolean },
   ): Promise<ReminderTemplate[]> {
-    const where: any = { reminderGroupId: groupId };
+    const where: Prisma.ReminderTemplateWhereInput = { reminderGroupId: groupId };
     if (!options?.includeDeleted) {
       where.deletedAt = null;
     }
@@ -242,11 +246,11 @@ export class ReminderTemplatePrismaRepository
       include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d, d.history));
+    return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
   async findActive(identityId?: string): Promise<ReminderTemplate[]> {
-    const where: any = {
+    const where: Prisma.ReminderTemplateWhereInput = {
       selfEnabled: true,
       status: 'Active',
       deletedAt: null,
@@ -259,14 +263,14 @@ export class ReminderTemplatePrismaRepository
       where,
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderTemplate) => this.mapToEntity(d));
   }
 
   async findByNextTriggerBefore(
     beforeTime: number,
     identityId?: string,
   ): Promise<ReminderTemplate[]> {
-    const where: any = {
+    const where: Prisma.ReminderTemplateWhereInput = {
       selfEnabled: true,
       status: 'Active',
       deletedAt: null,
@@ -280,7 +284,7 @@ export class ReminderTemplatePrismaRepository
       where,
       orderBy: { nextTriggerAt: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaReminderTemplate) => this.mapToEntity(d));
   }
 
   async findByIds(
@@ -293,7 +297,7 @@ export class ReminderTemplatePrismaRepository
       where: { id: { in: ids } },
       include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
     });
-    return data.map((d: any) => this.mapToEntity(d, d.history));
+    return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }
 
   async delete(id: string): Promise<void> {
@@ -314,7 +318,7 @@ export class ReminderTemplatePrismaRepository
     identityId: string,
     options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number> {
-    const where: any = { identityId };
+    const where: Prisma.ReminderTemplateWhereInput = { identityId };
     if (options?.status) {
       where.status = options.status;
     }

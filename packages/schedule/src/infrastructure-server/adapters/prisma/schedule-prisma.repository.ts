@@ -6,7 +6,7 @@
  * @since Story 9.3 (EPIC-SCHEDULE-001)
  */
 
-import type {  PrismaClient  } from '@dailyuse/database';
+import type { PrismaClient, Schedule as PrismaSchedule } from '@dailyuse/database';
 import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
 
@@ -16,7 +16,7 @@ export class SchedulePrismaRepository implements IScheduleRepository {
   /**
    * Convert Prisma data to Domain Schedule entity
    */
-  private mapToEntity(data: any): CalendarEntry {
+  private mapToEntity(data: PrismaSchedule): CalendarEntry {
     // Convert Prisma data to ScheduleServerDTO format first
     return CalendarEntry.fromPersistenceDTO({
       id: data.id,

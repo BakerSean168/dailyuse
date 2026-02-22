@@ -1,4 +1,4 @@
-﻿import type { PrismaClient } from '@dailyuse/database';
+﻿import type { PrismaClient, FocusMode as PrismaFocusMode } from '@dailyuse/database';
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
 import type { FocusModeDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
@@ -16,7 +16,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
    * Map Prisma row to domain value object.
    * Converts DateTime fields to timestamps for FocusModeDTO.
    */
-  private mapToValueObject(data: any): FocusMode {
+  private mapToValueObject(data: PrismaFocusMode): FocusMode {
     const dto: FocusModeDTO = {
       id: data.id,
       identityId: data.identityId,
@@ -40,7 +40,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
     const persistenceDto = focusMode.toPersistenceDTO();
     const fullDto = focusMode.toDTO();
 
-    await (this.prisma as any).focusMode.upsert({
+    await this.prisma.focusMode.upsert({
       where: { id: persistenceDto.id as string },
       create: {
         id: persistenceDto.id as string,
@@ -68,7 +68,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
    * Find focus mode by ID
    */
   async findById(id: string): Promise<FocusMode | null> {
-    const data = await (this.prisma as any).focusMode.findUnique({
+    const data = await this.prisma.focusMode.findUnique({
       where: { id },
     });
     return data ? this.mapToValueObject(data) : null;
@@ -78,7 +78,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
    * Find active focus mode for an identity
    */
   async findActiveByIdentityId(identityId: string): Promise<FocusMode | null> {
-    const data = await (this.prisma as any).focusMode.findFirst({
+    const data = await this.prisma.focusMode.findFirst({
       where: {
         identityId,
         isActive: true,
@@ -92,11 +92,11 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
    * Find all focus modes for an identity (including history)
    */
   async findByIdentityId(identityId: string): Promise<FocusMode[]> {
-    const data = await (this.prisma as any).focusMode.findMany({
+    const data = await this.prisma.focusMode.findMany({
       where: { identityId },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((item: any) => this.mapToValueObject(item));
+    return data.map((item: PrismaFocusMode) => this.mapToValueObject(item));
   }
 
   /**
@@ -105,7 +105,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
   async deactivateExpired(): Promise<number> {
     const now = new Date();
 
-    const result = await (this.prisma as any).focusMode.updateMany({
+    const result = await this.prisma.focusMode.updateMany({
       where: {
         isActive: true,
         endTime: { lt: now },
@@ -124,7 +124,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
    * Delete focus mode by ID
    */
   async delete(id: string): Promise<void> {
-    await (this.prisma as any).focusMode.delete({
+    await this.prisma.focusMode.delete({
       where: { id },
     });
   }

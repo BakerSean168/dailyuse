@@ -7,7 +7,7 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
+import type { PrismaClient, TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 import type {
   ITaskTemplateRepository,
@@ -40,7 +40,7 @@ export class TaskTemplatePrismaRepository
   /**
    * Prisma record  TaskTemplate 聚合根
    */
-  private mapToEntity(data: any): TaskTemplate {
+  private mapToEntity(data: PrismaTaskTemplate): TaskTemplate {
     return TaskTemplate.fromPersistenceDTO({
       id: data.id,
       identityId: data.identityId,
@@ -165,7 +165,7 @@ export class TaskTemplatePrismaRepository
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByStatus(
@@ -176,7 +176,7 @@ export class TaskTemplatePrismaRepository
       where: { identityId, status, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
@@ -188,7 +188,7 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
@@ -196,7 +196,7 @@ export class TaskTemplatePrismaRepository
       where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
@@ -208,7 +208,7 @@ export class TaskTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
     return data
-      .filter((d: any) => {
+      .filter((d: PrismaTaskTemplate) => {
         try {
           const binding = JSON.parse(d.goalBinding || '{}');
           return binding.goalId === goalId;
@@ -216,7 +216,7 @@ export class TaskTemplatePrismaRepository
           return false;
         }
       })
-      .map((d: any) => this.mapToEntity(d));
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findByTags(
@@ -228,7 +228,7 @@ export class TaskTemplatePrismaRepository
       orderBy: { createdAt: 'desc' },
     });
     return data
-      .filter((d: any) => {
+      .filter((d: PrismaTaskTemplate) => {
         try {
           const rowTags = JSON.parse(d.tags || '[]');
           return tags.some((t) => rowTags.includes(t));
@@ -236,7 +236,7 @@ export class TaskTemplatePrismaRepository
           return false;
         }
       })
-      .map((d: any) => this.mapToEntity(d));
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {
@@ -251,7 +251,7 @@ export class TaskTemplatePrismaRepository
         ],
       },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async delete(id: string): Promise<void> {
@@ -288,7 +288,7 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findRecurringTasks(
@@ -307,7 +307,7 @@ export class TaskTemplatePrismaRepository
       skip: filters?.offset,
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findOverdueTasks(identityId: string): Promise<TaskTemplate[]> {
@@ -319,7 +319,7 @@ export class TaskTemplatePrismaRepository
       },
     });
     return data
-      .map((d: any) => this.mapToEntity(d))
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d))
       .filter((t) => t.isOverdue());
   }
 
@@ -331,7 +331,7 @@ export class TaskTemplatePrismaRepository
       },
     });
     return data
-      .filter((d: any) => {
+      .filter((d: PrismaTaskTemplate) => {
         try {
           const binding = JSON.parse(d.goalBinding || '{}');
           return binding.keyResultId === keyResultId;
@@ -339,7 +339,7 @@ export class TaskTemplatePrismaRepository
           return false;
         }
       })
-      .map((d: any) => this.mapToEntity(d));
+      .map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
@@ -347,7 +347,7 @@ export class TaskTemplatePrismaRepository
       where: { parentTaskId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findBlockedTasks(identityId: string): Promise<TaskTemplate[]> {
@@ -358,7 +358,7 @@ export class TaskTemplatePrismaRepository
         deletedAt: null,
       },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findSortedByPriority(
@@ -374,7 +374,7 @@ export class TaskTemplatePrismaRepository
       orderBy: { importance: 'asc' },
       take: limit,
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findUpcomingTasks(
@@ -389,7 +389,7 @@ export class TaskTemplatePrismaRepository
       },
       orderBy: { createdAt: 'desc' },
     });
-    return data.map((d: any) => this.mapToEntity(d));
+    return data.map((d: PrismaTaskTemplate) => this.mapToEntity(d));
   }
 
   async findTodayTasks(identityId: string): Promise<TaskTemplate[]> {
