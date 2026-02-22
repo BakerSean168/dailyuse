@@ -24,5 +24,8 @@
  */
 
 export { ReminderTemplate } from './reminder-template';
+export type { ReminderTemplateState } from './reminder-template';
 export { ReminderGroup } from './reminder-group';
+export type { ReminderGroupState } from './reminder-group';
 export { UserReminderPreferences } from './user-reminder-preferences';
+export type { UserReminderPreferencesState } from './user-reminder-preferences';

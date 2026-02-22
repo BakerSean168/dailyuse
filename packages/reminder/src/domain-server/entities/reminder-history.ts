@@ -4,10 +4,8 @@
  */
 
 import type {
-  ReminderHistoryServer,
   ReminderHistoryServerDTO,
   ReminderHistoryClientDTO,
-  ReminderHistoryPersistenceDTO,
 } from '@dailyuse/contracts/reminder';
 import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
@@ -16,7 +14,7 @@ import { ReminderHistoryId } from '../../domain-shared/value-objects/reminder-hi
 /**
  * ReminderHistory 内部状态接口
  */
-interface ReminderHistoryState {
+export interface ReminderHistoryState {
   id: ReminderHistoryId;
   templateId: string;
   triggeredAt: Date;
@@ -35,35 +33,14 @@ interface ReminderHistoryState {
  * - 有生命周期
  * - 属于 ReminderTemplate 聚合根
  */
-export class ReminderHistory extends Entity<ReminderHistoryId> implements ReminderHistoryServer {
+export class ReminderHistory extends Entity<ReminderHistoryId> {
   // ===== 私有字段 =====
   private _props: ReminderHistoryState;
 
   // ===== 构造函数（私有，通过工厂方法创建） =====
-  private constructor(params: {
-    id?: string;
-    templateId: string;
-    triggeredAt: number;
-    result: TriggerResult;
-    error?: string | null;
-    notificationSent: boolean;
-    notificationChannels?: NotificationChannel[] | null;
-    createdAt: number;
-  }) {
-    const id = params.id ? ReminderHistoryId.of(params.id) : ReminderHistoryId.generate();
-    super(id);
-    this._props = {
-      id,
-      templateId: params.templateId,
-      triggeredAt: new Date(params.triggeredAt),
-      result: params.result,
-      error: params.error ?? null,
-      notificationSent: params.notificationSent,
-      notificationChannels: params.notificationChannels
-        ? [...params.notificationChannels]
-        : null,
-      createdAt: new Date(params.createdAt),
-    };
+  private constructor(state: ReminderHistoryState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
@@ -98,6 +75,11 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
   }
 
   // ===== 工厂方法 =====
+
+  public static load(state: ReminderHistoryState): ReminderHistory {
+    return new ReminderHistory(state);
+  }
+
   public static create(params: {
     templateId: string;
     triggeredAt?: number;
@@ -108,45 +90,16 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
   }): ReminderHistory {
     const now = Date.now();
     return new ReminderHistory({
+      id: ReminderHistoryId.generate(),
       templateId: params.templateId,
-      triggeredAt: params.triggeredAt ?? now,
+      triggeredAt: new Date(params.triggeredAt ?? now),
       result: params.result,
       error: params.error ?? null,
       notificationSent: params.notificationSent ?? false,
-      notificationChannels: params.notificationChannels ?? null,
-      createdAt: now,
-    });
-  }
-
-  public static fromServerDTO(dto: ReminderHistoryServerDTO): ReminderHistory {
-    return new ReminderHistory({
-      id: dto.id,
-      templateId: dto.templateId,
-      triggeredAt: dto.triggeredAt,
-      result: dto.result,
-      error: dto.error ?? null,
-      notificationSent: dto.notificationSent,
-      notificationChannels: dto.notificationChannels ?? null,
-      createdAt: dto.createdAt,
-    });
-  }
-
-  public static fromPersistenceDTO(
-    dto: ReminderHistoryPersistenceDTO,
-  ): ReminderHistory {
-    const notificationChannels = dto.notificationChannels
-      ? JSON.parse(dto.notificationChannels)
-      : null;
-
-    return new ReminderHistory({
-      id: dto.id,
-      templateId: dto.templateId,
-      triggeredAt: dto.triggeredAt,
-      result: dto.result,
-      error: dto.error ?? null,
-      notificationSent: dto.notificationSent,
-      notificationChannels,
-      createdAt: dto.createdAt.getTime(),
+      notificationChannels: params.notificationChannels
+        ? [...params.notificationChannels]
+        : null,
+      createdAt: new Date(now),
     });
   }
 
@@ -227,18 +180,4 @@ export class ReminderHistory extends Entity<ReminderHistoryId> implements Remind
     };
   }
 
-  public toPersistenceDTO(): ReminderHistoryPersistenceDTO {
-    return {
-      id: this.id,
-      templateId: this._props.templateId,
-      triggeredAt: this._props.triggeredAt.getTime(),
-      result: this._props.result,
-      error: this._props.error,
-      notificationSent: this._props.notificationSent,
-      notificationChannels: this._props.notificationChannels
-        ? JSON.stringify(this._props.notificationChannels)
-        : null,
-      createdAt: this._props.createdAt,
-    };
-  }
 }

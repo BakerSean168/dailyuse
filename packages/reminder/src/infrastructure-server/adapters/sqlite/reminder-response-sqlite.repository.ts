@@ -5,13 +5,15 @@
 
 import type Database from 'better-sqlite3';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
+import { ReminderResponseId } from '../../../domain-shared/value-objects/reminder-response-id';
+import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
 
 export class SqliteReminderResponseRepository implements IReminderResponseRepository {
   constructor(private db: Database.Database) {}
 
   async save(response: ReminderResponse): Promise<void> {
-    const dto = response.toPersistenceDTO();
+    const dto = response.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_responses (
@@ -39,13 +41,7 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
 
     if (!row) return null;
 
-    return ReminderResponse.fromPersistenceDTO({
-      id: row.id,
-      reminderTemplateId: row.reminder_template_id,
-      action: row.action,
-      responseTime: row.response_time || null,
-      timestamp: row.timestamp,
-    });
+    return this.rowToResponse(row);
   }
 
   async findByTemplateId(templateId: string, limit?: number): Promise<ReminderResponse[]> {
@@ -141,14 +137,12 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
   }
 
   private rowToResponse(row: any): ReminderResponse {
-    return ReminderResponse.fromPersistenceDTO({
-      id: row.id,
+    return ReminderResponse.load({
+      id: ReminderResponseId.of(row.id),
       reminderTemplateId: row.reminder_template_id,
-      action: row.action,
-      responseTime: row.response_time || null,
-      timestamp: row.timestamp,
+      action: row.action as ReminderResponseAction,
+      responseTime: row.response_time ? new Date(row.response_time) : null,
+      timestamp: new Date(row.timestamp),
     });
   }
 }
-
-

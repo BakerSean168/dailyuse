@@ -1,6 +1,5 @@
 /**
  * ReminderGroup 聚合根实现
- * 实现 ReminderGroupServer 接口
  */
 
 import {
@@ -10,8 +9,6 @@ import {
 import type {
   GroupStatsServer,
   ReminderGroupClientDTO,
-  ReminderGroupPersistenceDTO,
-  ReminderGroupServer,
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
@@ -20,7 +17,28 @@ import { GroupStats } from '../value-objects';
 // IdentityId branded type (从 contracts 内部定义)
 type IdentityId = string & { readonly __brand: 'IdentityId' };
 
-export class ReminderGroup extends AggregateRoot<string> implements ReminderGroupServer {
+/**
+ * ReminderGroup 内部状态接口
+ */
+export interface ReminderGroupState {
+  id: string;
+  identityId: string;
+  name: string;
+  description: string | null;
+  controlMode: ControlMode;
+  enabled: boolean;
+  status: ReminderStatus;
+  order: number;
+  color: string | null;
+  icon: string | null;
+  stats: GroupStats;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: number | null;
+  version: number;
+}
+
+export class ReminderGroup extends AggregateRoot<string> {
   private _identityId: IdentityId;
   private _name: string;
   private _description: string | null;
@@ -36,38 +54,22 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
   private _deletedAt: number | null;
   private _version: number;
 
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    name: string;
-    description?: string | null;
-    controlMode: ControlMode;
-    enabled: boolean;
-    status: ReminderStatus;
-    order: number;
-    color?: string | null;
-    icon?: string | null;
-    stats: GroupStats;
-    createdAt: number;
-    updatedAt: number;
-    deletedAt?: number | null;
-    version: number;
-  }) {
-    super(params.id || generateUUID());
-    this._identityId = params.identityId as IdentityId;
-    this._name = params.name;
-    this._description = params.description ?? null;
-    this._controlMode = params.controlMode;
-    this._enabled = params.enabled;
-    this._status = params.status;
-    this._order = params.order;
-    this._color = params.color ?? null;
-    this._icon = params.icon ?? null;
-    this._stats = params.stats;
-    this._createdAt = new Date(params.createdAt);
-    this._updatedAt = new Date(params.updatedAt);
-    this._deletedAt = params.deletedAt ?? null;
-    this._version = params.version;
+  private constructor(state: ReminderGroupState) {
+    super(state.id);
+    this._identityId = state.identityId as IdentityId;
+    this._name = state.name;
+    this._description = state.description;
+    this._controlMode = state.controlMode;
+    this._enabled = state.enabled;
+    this._status = state.status;
+    this._order = state.order;
+    this._color = state.color;
+    this._icon = state.icon;
+    this._stats = state.stats;
+    this._createdAt = state.createdAt;
+    this._updatedAt = state.updatedAt;
+    this._deletedAt = state.deletedAt;
+    this._version = state.version;
   }
 
   public get identityId(): IdentityId {
@@ -113,6 +115,10 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     return this._version;
   }
 
+  public static load(state: ReminderGroupState): ReminderGroup {
+    return new ReminderGroup(state);
+  }
+
   public static create(params: {
     identityId: string;
     name: string;
@@ -123,22 +129,23 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     order?: number;
   }): ReminderGroup {
     const newId = generateUUID();
-    const now = Date.now();
+    const now = new Date();
     const stats = GroupStats.createEmpty();
     const group = new ReminderGroup({
       id: newId,
       identityId: params.identityId,
       name: params.name,
-      description: params.description,
+      description: params.description ?? null,
       controlMode: params.controlMode || ControlMode.Individual,
       enabled: true,
       status: ReminderStatus.Active,
       order: params.order || 0,
-      color: params.color,
-      icon: params.icon,
+      color: params.color ?? null,
+      icon: params.icon ?? null,
       stats,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
       version: 1,
     });
     group.addDomainEvent('ReminderGroupCreated', {
@@ -146,48 +153,6 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
       group: group.toServerDTO(),
     });
     return group;
-  }
-
-  public static fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroup {
-    const stats = GroupStats.fromDTO(dto.stats);
-    return new ReminderGroup({
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      controlMode: dto.controlMode,
-      enabled: dto.enabled,
-      status: dto.status,
-      order: dto.order,
-      color: dto.color,
-      icon: dto.icon,
-      stats,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
-      version: dto.version,
-    });
-  }
-
-  public static fromPersistenceDTO(dto: ReminderGroupPersistenceDTO): ReminderGroup {
-    const stats = GroupStats.fromDTO(dto.stats);
-    return new ReminderGroup({
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      controlMode: dto.controlMode,
-      enabled: dto.enabled,
-      status: dto.status,
-      order: dto.order,
-      color: dto.color,
-      icon: dto.icon,
-      stats,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
-      deletedAt: dto.deletedAt?.getTime() ?? null,
-      version: dto.version,
-    });
   }
 
   public switchToGroupControl(): void {
@@ -375,23 +340,4 @@ export class ReminderGroup extends AggregateRoot<string> implements ReminderGrou
     };
   }
 
-  public toPersistenceDTO(): ReminderGroupPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this.identityId,
-      name: this.name,
-      description: this.description,
-      controlMode: this.controlMode,
-      enabled: this.enabled,
-      status: this.status,
-      order: this.order,
-      color: this.color,
-      icon: this.icon,
-      stats: this._stats.toServerDTO(),
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
-      version: this.version,
-    };
-  }
 }

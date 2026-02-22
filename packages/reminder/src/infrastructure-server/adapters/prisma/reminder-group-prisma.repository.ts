@@ -41,13 +41,12 @@ export class ReminderGroupPrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(group: ReminderGroup): Promise<void> {
-    const dto = group.toPersistenceDTO();
     const writeData = this.toWriteData(group);
 
     await this.prisma.reminderGroup.upsert({
-      where: { id: dto.id },
+      where: { id: group.id },
       create: {
-        id: dto.id,
+        id: group.id,
         ...writeData,
       },
       update: writeData,

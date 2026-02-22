@@ -7,14 +7,15 @@
 import type { ReminderResponse as PrismaReminderResponse } from '@dailyuse/database';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
+import { ReminderResponseId } from '../../../domain-shared/value-objects/reminder-response-id';
 
 export class PrismaReminderResponseMapper {
   /**
    * Prisma record → ReminderResponse entity
    */
   static toDomain(data: PrismaReminderResponse): ReminderResponse {
-    return ReminderResponse.fromPersistenceDTO({
-      id: data.id,
+    return ReminderResponse.load({
+      id: ReminderResponseId.of(data.id),
       reminderTemplateId: data.templateId,
       action: data.action as ReminderResponseAction,
       // responseTime is stored as seconds in DB; convert to JS Date (milliseconds)

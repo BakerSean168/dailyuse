@@ -23,20 +23,20 @@ export class UserReminderPreferencePrismaRepository
   }
 
   async save(preferences: UserReminderPreferences): Promise<void> {
-    const dto = preferences.toPersistenceDTO();
+    const dto = preferences.toServerDTO();
 
     await this.prisma.userReminderPreference.upsert({
       where: { identityId: dto.identityId },
       create: {
         id: dto.id,
         identityId: dto.identityId,
-        bestTimeSlots: dto.bestTimeSlots,
-        worstTimeSlots: dto.worstTimeSlots,
+        bestTimeSlots: JSON.stringify(dto.bestTimeSlots),
+        worstTimeSlots: JSON.stringify(dto.worstTimeSlots),
         globalSmartFrequency: dto.globalSmartFrequency,
       },
       update: {
-        bestTimeSlots: dto.bestTimeSlots,
-        worstTimeSlots: dto.worstTimeSlots,
+        bestTimeSlots: JSON.stringify(dto.bestTimeSlots),
+        worstTimeSlots: JSON.stringify(dto.worstTimeSlots),
         globalSmartFrequency: dto.globalSmartFrequency,
       },
     });

@@ -8,12 +8,24 @@ import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-tem
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderStatus, ReminderType } from '@dailyuse/contracts/reminder';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ReminderTemplateId } from '../../../domain-shared/value-objects/reminder-template-id';
+import { IdentityId } from '@dailyuse/domain-shared';
+import {
+  TriggerConfig,
+  ActiveTimeConfig,
+  NotificationConfig,
+  RecurrenceConfig,
+  ActiveHoursConfig,
+  ReminderStats,
+  ResponseMetrics,
+} from '../../../domain-server/value-objects';
 
 export class SqliteReminderTemplateRepository implements IReminderTemplateRepository {
   constructor(private db: Database.Database) {}
 
   async save(template: ReminderTemplate): Promise<void> {
-    const dto = template.toPersistenceDTO();
+    const dto = template.toServerDTO();
+    const responseMetrics = template.responseMetrics?.toDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO reminder_templates (
@@ -52,24 +64,24 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
       dto.name,
       dto.description || null,
       dto.type,
-      dto.trigger,
-      dto.recurrence || null,
-      dto.activeTime,
-      dto.activeHours || null,
-      dto.notificationConfig,
+      JSON.stringify(dto.trigger),
+      dto.recurrence ? JSON.stringify(dto.recurrence) : null,
+      JSON.stringify(dto.activeTime),
+      dto.activeHours ? JSON.stringify(dto.activeHours) : null,
+      JSON.stringify(dto.notificationConfig),
       dto.selfEnabled ? 1 : 0,
       dto.status,
       dto.groupId || null,
       dto.importanceLevel,
-      dto.tags,
+      JSON.stringify(dto.tags),
       dto.color || null,
       dto.icon || null,
       dto.nextTriggerAt || null,
-      dto.stats,
-      dto.clickRate || null,
-      dto.ignoreRate || null,
-      dto.avgResponseTime || null,
-      dto.snoozeCount || 0,
+      JSON.stringify(dto.stats),
+      responseMetrics?.clickRate ?? null,
+      responseMetrics?.ignoreRate ?? null,
+      responseMetrics?.avgResponseTime ?? null,
+      responseMetrics?.snoozeCount ?? 0,
       dto.createdAt,
       dto.updatedAt,
     );
@@ -211,33 +223,61 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
   }
 
   private rowToTemplate(row: any): ReminderTemplate {
-    return ReminderTemplate.fromPersistenceDTO({
-      id: row.id,
-      identityId: row.identity_id,
-      name: row.name,
-      description: row.description || undefined,
+    const trigger = TriggerConfig.fromDTO(typeof row.trigger === 'string' ? JSON.parse(row.trigger) : row.trigger);
+    const activeTime = ActiveTimeConfig.fromDTO(typeof row.active_time === 'string' ? JSON.parse(row.active_time) : row.active_time);
+    const notificationConfig = NotificationConfig.fromDTO(typeof row.notification_config === 'string' ? JSON.parse(row.notification_config) : row.notification_config);
+    const recurrence = row.recurrence
+      ? RecurrenceConfig.fromDTO(typeof row.recurrence === 'string' ? JSON.parse(row.recurrence) : row.recurrence)
+      : null;
+    const activeHours = row.active_hours
+      ? ActiveHoursConfig.fromDTO(typeof row.active_hours === 'string' ? JSON.parse(row.active_hours) : row.active_hours)
+      : null;
+    const stats = ReminderStats.fromDTO(typeof row.stats === 'string' ? JSON.parse(row.stats) : row.stats);
+    const tags: string[] = typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags ?? []);
+
+    // Smart Frequency: Reconstruct ResponseMetrics from flat fields
+    const responseMetrics =
+      row.click_rate != null && row.ignore_rate != null
+        ? ResponseMetrics.fromDTO({
+            clickRate: row.click_rate,
+            ignoreRate: row.ignore_rate,
+            avgResponseTime: row.avg_response_time ?? 0,
+            snoozeCount: row.snooze_count ?? 0,
+            effectivenessScore: row.effectiveness_score ?? 0,
+            sampleSize: row.sample_size ?? 0,
+            lastAnalysisTime: row.last_analysis_time ?? Date.now(),
+          })
+        : null;
+
+    return ReminderTemplate.load({
+      id: ReminderTemplateId.of(row.id),
+      identityId: IdentityId.of(row.identity_id),
+      title: row.name,
+      description: row.description ?? null,
       type: row.type as ReminderType,
-      trigger: row.trigger,
-      recurrence: row.recurrence || undefined,
-      activeTime: row.active_time,
-      activeHours: row.active_hours || undefined,
-      notificationConfig: row.notification_config,
+      trigger,
+      recurrence,
+      activeTime,
+      activeHours,
+      notificationConfig,
       selfEnabled: row.self_enabled === 1,
       status: row.status as ReminderStatus,
-      groupId: row.group_id || undefined,
+      groupId: row.group_id ?? null,
+      effectiveEnabled: row.self_enabled === 1,
       importanceLevel: row.importance_level as ImportanceLevel,
-      tags: row.tags,
-      color: row.color || undefined,
-      icon: row.icon || undefined,
-      nextTriggerAt: row.next_trigger_at || undefined,
-      stats: row.stats,
+      tags,
+      color: row.color ?? null,
+      icon: row.icon ?? null,
+      nextTriggerAt: row.next_trigger_at ?? null,
+      stats,
+      responseMetrics,
+      frequencyAdjustment: null,
+      smartFrequencyEnabled: row.smart_frequency_enabled ?? true,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+      deletedAt: row.deleted_at ? new Date(row.deleted_at).getTime() : null,
       version: row.version ?? 1,
-      clickRate: row.click_rate || undefined,
-      ignoreRate: row.ignore_rate || undefined,
-      avgResponseTime: row.avg_response_time || undefined,
-      snoozeCount: row.snooze_count || 0,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      history: [],
     });
   }
 }
