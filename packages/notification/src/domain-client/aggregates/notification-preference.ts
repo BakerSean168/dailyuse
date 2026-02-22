@@ -3,15 +3,13 @@
  * 通知偏好聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 NotificationPreferenceClient 接口
  * - Private constructor with props object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: NotificationPreferenceClientDTO): NotificationPreference
+ * - Static load(state: NotificationPreferenceState): NotificationPreference
  * - Instance toDTO(): NotificationPreferenceClientDTO
  */
 
 import type {
-  NotificationPreferenceClient,
   NotificationPreferenceClientDTO,
   NotificationChannelType,
 } from '@dailyuse/contracts/notification';
@@ -19,8 +17,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { NotificationPreferenceId } from '../../domain-shared/value-objects/notification-preference-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface NotificationPreferenceState {
+export interface NotificationPreferenceState {
   id: NotificationPreferenceId;
   identityId: IdentityId;
   settings: Record<string, NotificationChannelType[]>;
@@ -30,7 +27,7 @@ interface NotificationPreferenceState {
   deletedAt: Date | null;
 }
 
-export class NotificationPreference extends AggregateRoot<NotificationPreferenceId> implements NotificationPreferenceClient {
+export class NotificationPreference extends AggregateRoot<NotificationPreferenceId> {
   private readonly _props: NotificationPreferenceState;
 
   // ================= 2. Constructor (Private) =================
@@ -85,16 +82,8 @@ export class NotificationPreference extends AggregateRoot<NotificationPreference
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: NotificationPreferenceClientDTO): NotificationPreference {
-    return new NotificationPreference({
-      id: NotificationPreferenceId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      settings: dto.settings,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: NotificationPreferenceState): NotificationPreference {
+    return new NotificationPreference(state);
   }
 
   // ================= 5. DTO Conversion =================
