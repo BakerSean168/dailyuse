@@ -33,7 +33,7 @@ export class TaskInstancePrismaRepository
   /**
    * TaskInstance 聚合根  Prisma write data
    */
-  private toWriteData(dto: ReturnType<TaskInstance['toPersistenceDTO']>) {
+  private toWriteData(dto: ReturnType<TaskInstance['toServerDTO']>) {
     return PrismaTaskInstanceMapper.toPersistence(dto);
   }
 
@@ -41,7 +41,7 @@ export class TaskInstancePrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(instance: TaskInstance): Promise<void> {
-    const dto = instance.toPersistenceDTO();
+    const dto = instance.toServerDTO();
     const data = this.toWriteData(dto);
 
     await this.prisma.taskInstance.upsert({
@@ -49,7 +49,7 @@ export class TaskInstancePrismaRepository
       create: {
         id: dto.id,
         ...data,
-        createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt as any),
+        createdAt: new Date(dto.createdAt),
       },
       update: data,
     });
@@ -57,14 +57,14 @@ export class TaskInstancePrismaRepository
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
     const operations = instances.map((instance) => {
-      const dto = instance.toPersistenceDTO();
+      const dto = instance.toServerDTO();
       const data = this.toWriteData(dto);
       return this.prisma.taskInstance.upsert({
         where: { id: dto.id },
         create: {
           id: dto.id,
           ...data,
-          createdAt: dto.createdAt instanceof Date ? dto.createdAt : new Date(dto.createdAt as any),
+          createdAt: new Date(dto.createdAt),
         },
         update: data,
       });

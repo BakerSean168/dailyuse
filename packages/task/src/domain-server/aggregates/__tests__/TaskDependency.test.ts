@@ -2,10 +2,10 @@
  * TaskDependency 聚合根单元测试
  *
  * 测试覆盖：
- * - 工厂方法 (create, fromServerDTO, fromPersistenceDTO)
+ * - 工厂方法 (create, load)
  * - 业务方法 (updateDependencyType, updateLagDays)
  * - 查询方法 (involvesTasks, isPredecessorOf, isSuccessorOf)
- * - DTO 转换 (toServerDTO, toPersistenceDTO)
+ * - DTO 转换 (toServerDTO)
  * - 验证逻辑和边界条件
  *
  * 目标覆盖率: 90%+
@@ -13,8 +13,10 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskDependency } from '../task-dependency';
+import type { TaskDependencyState } from '../task-dependency';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { DependencyType } from '@dailyuse/contracts/task';
+import { TaskDependencyId } from '../../../domain-shared/value-objects/task-dependency-id';
 
 describe('TaskDependency Aggregate', () => {
   // ==================== 测试数据 ====================
@@ -104,11 +106,11 @@ describe('TaskDependency Aggregate', () => {
       });
     });
 
-    describe('fromServerDTO()', () => {
-      it('应该从 ServerDTO 正确恢复依赖', () => {
+    describe('load()', () => {
+      it('应该从 State 正确恢复依赖', () => {
         const now = new Date();
-        const dto: TaskDependencyServerDTO = {
-          id: 'test-uuid',
+        const state: TaskDependencyState = {
+          id: TaskDependencyId.of('test-uuid'),
           predecessorTaskId: mockPredecessorId,
           successorTaskId: mockSuccessorId,
           dependencyType: mockDependencyType,
@@ -117,34 +119,13 @@ describe('TaskDependency Aggregate', () => {
           updatedAt: now,
         };
 
-        const dependency = TaskDependency.fromServerDTO(dto);
+        const dependency = TaskDependency.load(state);
 
-        expect(dependency.id).toBe('test-uuid');
+        expect(dependency.id.toString()).toBe('test-uuid');
         expect(dependency.predecessorTaskId).toBe(mockPredecessorId);
         expect(dependency.successorTaskId).toBe(mockSuccessorId);
         expect(dependency.dependencyType).toBe(mockDependencyType);
         expect(dependency.lagDays).toBe(5);
-      });
-    });
-
-    describe('fromPersistenceDTO()', () => {
-      it('应该从 PersistenceDTO 正确恢复依赖', () => {
-        const now = Date.now();
-        const dto = {
-          id: 'test-uuid',
-          predecessorTaskId: mockPredecessorId,
-          successorTaskId: mockSuccessorId,
-          dependencyType: mockDependencyType as DependencyType,
-          lagDays: 3,
-          createdAt: now,
-          updatedAt: now,
-        };
-
-        const dependency = TaskDependency.fromPersistenceDTO(dto);
-
-        expect(dependency.id).toBe('test-uuid');
-        expect(dependency.predecessorTaskId).toBe(mockPredecessorId);
-        expect(dependency.lagDays).toBe(3);
       });
     });
   });
@@ -268,28 +249,17 @@ describe('TaskDependency Aggregate', () => {
       it('应该正确转换为 ServerDTO', () => {
         const dto = dependency.toServerDTO();
 
-        expect(dto.id).toBe(dependency.id);
+        expect(dto.id).toBe(dependency.id.toString());
         expect(dto.predecessorTaskId).toBe(mockPredecessorId);
         expect(dto.successorTaskId).toBe(mockSuccessorId);
         expect(dto.lagDays).toBe(3);
-      });
-    });
-
-    describe('toPersistenceDTO()', () => {
-      it('应该正确转换为 PersistenceDTO', () => {
-        const dto = dependency.toPersistenceDTO();
-
-        expect(dto.id).toBe(dependency.id);
-        expect(dto.predecessorTaskId).toBe(mockPredecessorId);
-        expect(typeof dto.createdAt).toBe('number');
-        expect(typeof dto.updatedAt).toBe('number');
       });
     });
   });
 
   // ==================== 往返转换测试 ====================
   describe('Round-trip Conversion', () => {
-    it('应该正确处理 ServerDTO 往返转换', () => {
+    it('应该正确处理 ServerDTO → load 往返转换', () => {
       const original = TaskDependency.create({
         predecessorTaskId: mockPredecessorId,
         successorTaskId: mockSuccessorId,
@@ -298,25 +268,18 @@ describe('TaskDependency Aggregate', () => {
       });
 
       const dto = original.toServerDTO();
-      const restored = TaskDependency.fromServerDTO(dto);
-
-      expect(restored.id).toBe(original.id);
-      expect(restored.predecessorTaskId).toBe(original.predecessorTaskId);
-      expect(restored.lagDays).toBe(original.lagDays);
-    });
-
-    it('应该正确处理 PersistenceDTO 往返转换', () => {
-      const original = TaskDependency.create({
-        predecessorTaskId: mockPredecessorId,
-        successorTaskId: mockSuccessorId,
-        dependencyType: 'FINISH_TO_FINISH',
-        lagDays: 10,
+      const restored = TaskDependency.load({
+        id: TaskDependencyId.of(dto.id),
+        predecessorTaskId: dto.predecessorTaskId,
+        successorTaskId: dto.successorTaskId,
+        dependencyType: dto.dependencyType,
+        lagDays: dto.lagDays,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
       });
 
-      const dto = original.toPersistenceDTO();
-      const restored = TaskDependency.fromPersistenceDTO(dto);
-
-      expect(restored.id).toBe(original.id);
+      expect(restored.id.toString()).toBe(original.id.toString());
+      expect(restored.predecessorTaskId).toBe(original.predecessorTaskId);
       expect(restored.lagDays).toBe(original.lagDays);
     });
   });

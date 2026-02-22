@@ -26,5 +26,8 @@
  */
 
 export { TaskInstance } from './task-instance';
+export type { TaskInstanceState } from './task-instance';
 export { TaskTemplate } from './task-template';
+export type { TaskTemplateState } from './task-template';
 export { TaskDependency } from './task-dependency';
+export type { TaskDependencyState } from './task-dependency';

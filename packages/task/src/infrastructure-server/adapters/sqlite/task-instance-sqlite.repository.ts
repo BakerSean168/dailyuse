@@ -8,6 +8,10 @@ import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskInstanceId } from '../../../domain-shared/value-objects/task-instance-id';
+import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { TaskTimeConfig } from '../../../domain-server/value-objects';
 
 export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
   constructor(private db: Database.Database) {}
@@ -41,39 +45,43 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
     const updatedAt = Number(row.updated_at ?? row.updatedAt ?? createdAt);
     const actualEndTime = row.actual_end_time ?? row.actualEndTime ?? row.completed_at ?? row.completedAt ?? null;
 
-    return TaskInstance.fromPersistenceDTO({
-      id: row.id,
-      templateId: row.template_id ?? row.templateId,
-      identityId: row.identity_id ?? row.identityId,
-      importance: row.importance ?? ImportanceLevel.Moderate,
-      priority: row.priority ?? undefined,
-      instanceDate: new Date(instanceDate),
-      timeConfig:
-        row.time_config ??
-        row.timeConfig ??
-        JSON.stringify({
+    const timeConfigRaw = row.time_config ?? row.timeConfig ?? null;
+    const timeConfig = timeConfigRaw
+      ? TaskTimeConfig.fromDTO(typeof timeConfigRaw === 'string' ? JSON.parse(timeConfigRaw) : timeConfigRaw)
+      : TaskTimeConfig.fromDTO({
           timeType: 'AllDay',
           startDate: instanceDate,
           timePoint: null,
           timeRange: null,
-        }),
+        });
+
+    return TaskInstance.load({
+      id: TaskInstanceId.of(row.id),
+      templateId: TaskTemplateId.of(row.template_id ?? row.templateId),
+      identityId: IdentityId.of(row.identity_id ?? row.identityId),
+      importance: (row.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
+      priority: row.priority ?? undefined,
+      instanceDate,
+      timeConfig,
       status: this.normalizeStatus(row.status),
+      completionRecord: null,
+      skipRecord: null,
       actualStartTime:
         row.actual_start_time ?? row.actualStartTime
-          ? new Date(Number(row.actual_start_time ?? row.actualStartTime))
+          ? Number(row.actual_start_time ?? row.actualStartTime)
           : null,
-      actualEndTime: actualEndTime ? new Date(Number(actualEndTime)) : null,
-      comment: row.comment ?? row.notes ?? null,
+      actualEndTime: actualEndTime ? Number(actualEndTime) : null,
+      note: row.comment ?? row.notes ?? null,
       version: Number(row.version ?? 1),
-      createdAt: new Date(createdAt),
-      updatedAt: new Date(updatedAt),
+      createdAt,
+      updatedAt,
       deletedAt:
         row.deleted_at ?? row.deletedAt ? new Date(Number(row.deleted_at ?? row.deletedAt)) : null,
     });
   }
 
   async save(instance: TaskInstance): Promise<void> {
-    const dto = instance.toPersistenceDTO();
+    const dto = instance.toServerDTO();
 
     const stmt = this.db.prepare(`
       INSERT INTO task_instances (
@@ -90,11 +98,11 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       dto.id,
       dto.identityId,
       dto.templateId,
-      dto.instanceDate.getTime(),
+      dto.instanceDate,
       dto.status,
-      dto.actualEndTime?.getTime() ?? null,
-      dto.createdAt.getTime(),
-      dto.updatedAt.getTime(),
+      dto.actualEndTime ?? null,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -112,16 +120,16 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
 
     const transaction = this.db.transaction((items: TaskInstance[]) => {
       for (const instance of items) {
-        const dto = instance.toPersistenceDTO();
+        const dto = instance.toServerDTO();
         insertStmt.run(
           dto.id,
           dto.identityId,
           dto.templateId,
-          dto.instanceDate.getTime(),
+          dto.instanceDate,
           dto.status,
-          dto.actualEndTime?.getTime() ?? null,
-          dto.createdAt.getTime(),
-          dto.updatedAt.getTime(),
+          dto.actualEndTime ?? null,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });

@@ -17,7 +17,7 @@
  * - 跳过记录（跳过原因、跳过时间）
  */
 
-import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO, TaskInstanceServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '@dailyuse/contracts/task';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { TaskInstanceId } from '../../domain-shared/value-objects/task-instance-id';
@@ -29,7 +29,8 @@ import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
 /**
  * Internal props interface for TaskInstance
  */
-interface TaskInstanceState {
+export interface TaskInstanceState {
+  id: TaskInstanceId;
   templateId: TaskTemplateId;
   identityId: IdentityId;
   instanceDate: number;
@@ -55,9 +56,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   private _props: TaskInstanceState;
 
   // ===== 2. 构造函数 (Private) =====
-  private constructor(id: TaskInstanceId, props: TaskInstanceState) {
-    super(id);
-    this._props = props;
+  private constructor(state: TaskInstanceState) {
+    super(state.id);
+    this._props = state;
   }
 
   // ===== 3. 公共属�?(Getters) =====
@@ -304,26 +305,6 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     };
   }
 
-  public toPersistenceDTO(): TaskInstancePersistenceDTO {
-    return {
-      id: this.id.toString(),
-      templateId: this._props.templateId.toString(),
-      identityId: this._props.identityId.toString(),
-      instanceDate: new Date(this._props.instanceDate),
-      timeConfig: JSON.stringify(this._props.timeConfig.toDTO()),
-      importance: this._props.importance,
-      priority: this._props.priority,
-      status: this._props.status,
-      actualStartTime: this._props.actualStartTime ? new Date(this._props.actualStartTime) : null,
-      actualEndTime: this._props.actualEndTime ? new Date(this._props.actualEndTime) : null,
-      comment: this._props.note,
-      createdAt: new Date(this._props.createdAt),
-      updatedAt: new Date(this._props.updatedAt),
-      version: this._props.version,
-      deletedAt: this._props.deletedAt,
-    };
-  }
-
   // ===== 4. 工厂方法 (Factories) =====
 
   /**
@@ -353,7 +334,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    const instance = new TaskInstance(TaskInstanceId.generate(), {
+    const instance = new TaskInstance({
+      id: TaskInstanceId.generate(),
       templateId: params.templateId,
       identityId: params.identityId,
       instanceDate: params.instanceDate,
@@ -375,51 +357,10 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   }
 
   /**
-   * 🏭 恢复工厂：从 ServerDTO 恢复
+   * 🏭 恢复工厂：从状态恢复聚合
    */
-  public static fromServerDTO(dto: TaskInstanceServerDTO): TaskInstance {
-    return new TaskInstance(TaskInstanceId.of(dto.id), {
-      templateId: TaskTemplateId.of(dto.templateId),
-      identityId: IdentityId.of(dto.identityId),
-      instanceDate: dto.instanceDate,
-      timeConfig: TaskTimeConfig.fromDTO(dto.timeConfig),
-      importance: dto.importance,
-      priority: dto.priority,
-      status: dto.status as TaskInstanceStatus,
-      completionRecord: null,
-      skipRecord: null,
-      actualStartTime: dto.actualStartTime,
-      actualEndTime: dto.actualEndTime,
-      note: dto.comment,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      version: dto.version,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: TaskInstancePersistenceDTO): TaskInstance {
-    return new TaskInstance(TaskInstanceId.of(dto.id), {
-      templateId: TaskTemplateId.of(dto.templateId),
-      identityId: IdentityId.of(dto.identityId),
-      instanceDate: dto.instanceDate.getTime(),
-      timeConfig: TaskTimeConfig.fromDTO(JSON.parse(dto.timeConfig)),
-      importance: dto.importance as ImportanceLevel,
-      priority: dto.priority,
-      status: dto.status as TaskInstanceStatus,
-      completionRecord: null,
-      skipRecord: null,
-      actualStartTime: dto.actualStartTime?.getTime() ?? null,
-      actualEndTime: dto.actualEndTime?.getTime() ?? null,
-      note: dto.comment,
-      createdAt: dto.createdAt.getTime(),
-      updatedAt: dto.updatedAt.getTime(),
-      version: dto.version,
-      deletedAt: dto.deletedAt ?? null,
-    });
+  public static load(state: TaskInstanceState): TaskInstance {
+    return new TaskInstance(state);
   }
 
   // ===== 辅助方法 =====

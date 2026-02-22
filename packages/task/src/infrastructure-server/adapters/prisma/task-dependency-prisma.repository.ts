@@ -34,7 +34,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
       dependencyType: data.dependencyType,
       lagDays: data.lagDays,
     });
-    const dto = entity.toDTO();
+    const dto = entity.toServerDTO();
 
     const dependency = await this.prisma.taskDependency.create({
       data: {
