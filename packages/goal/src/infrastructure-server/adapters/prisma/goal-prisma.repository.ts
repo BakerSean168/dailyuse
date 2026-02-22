@@ -17,10 +17,11 @@ import type {
 } from '@dailyuse/database';
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
-import type { KeyResultPersistenceDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultPersistenceDTO, GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from '../../mappers/prisma/prisma-goal-mapper';
+import { persistenceDtoToGoalState } from '../../mappers/goal-state-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -31,8 +32,8 @@ const eventBusAdapter = createEventBusAdapter(eventBus);
 /**
  * Parse KeyResultPersistenceDTO.progress JSON → Prisma columns
  */
-function parseKeyResultProgressForPrisma(kr: KeyResultPersistenceDTO) {
-  return PrismaGoalMapper.parseKeyResultProgress(kr);
+function parseKeyResultProgressForPrisma(kr: KeyResultPersistenceDTO | KeyResultServerDTO) {
+  return PrismaGoalMapper.parseKeyResultProgress(kr as KeyResultPersistenceDTO);
 }
 
 // Include preset for Prisma queries
@@ -70,7 +71,7 @@ export class GoalPrismaRepository
     if (!row) return null;
 
     const dto = PrismaGoalMapper.toDomainDTO(row);
-    return Goal.fromPersistenceDTO(dto);
+    return Goal.load(persistenceDtoToGoalState(dto));
   }
 
   async findByIdentityId(
@@ -91,7 +92,7 @@ export class GoalPrismaRepository
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) => Goal.fromPersistenceDTO(PrismaGoalMapper.toDomainDTO(row)));
+    return rows.map((row: PrismaGoalWithRelations) => Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))));
   }
 
   async findByFolderId(folderId: string): Promise<Goal[]> {
@@ -99,7 +100,7 @@ export class GoalPrismaRepository
       where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) => Goal.fromPersistenceDTO(PrismaGoalMapper.toDomainDTO(row)));
+    return rows.map((row: PrismaGoalWithRelations) => Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))));
   }
 
   // ================= Write Operations =================
@@ -108,7 +109,7 @@ export class GoalPrismaRepository
    * Protected persistence method - called by base class before event publishing
    */
   protected async persist(goal: Goal): Promise<void> {
-    const dto = goal.toPersistenceDTO();
+    const dto = goal.toServerDTO(true);
 
     // Run in a transaction for consistency
     await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -125,7 +126,7 @@ export class GoalPrismaRepository
           motivation: dto.motivation,
           status: dto.status,
           importance: dto.importance,
-          priority: dto.priority,
+          priority: dto.priority ?? 0,
           category: dto.category,
           tags: dto.tags,
           startDate: dto.startDate ? new Date(dto.startDate as any) : null,
@@ -147,7 +148,7 @@ export class GoalPrismaRepository
           motivation: dto.motivation,
           status: dto.status,
           importance: dto.importance,
-          priority: dto.priority,
+          priority: dto.priority ?? 0,
           category: dto.category,
           tags: dto.tags,
           startDate: dto.startDate ? new Date(dto.startDate as any) : null,
@@ -336,6 +337,6 @@ export class GoalPrismaRepository
       include: GOAL_INCLUDE_ALL,
       orderBy: { sortOrder: 'asc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) => Goal.fromPersistenceDTO(PrismaGoalMapper.toDomainDTO(row)));
+    return rows.map((row: PrismaGoalWithRelations) => Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))));
   }
 }

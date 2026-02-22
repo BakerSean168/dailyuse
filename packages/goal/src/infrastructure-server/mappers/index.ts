@@ -5,5 +5,6 @@
  * 按数据源分组：prisma/ 和 sqlite/
  */
 
+export * from './goal-state-mapper';
 export * from './prisma';
 export * from './sqlite';

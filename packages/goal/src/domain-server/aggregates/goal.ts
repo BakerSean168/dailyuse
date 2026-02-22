@@ -29,7 +29,7 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { GoalId, GoalFolderId, GoalReviewId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
+import { GoalId, GoalFolderId, KeyResultWeightSnapshotId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import {
   GoalStatus,
@@ -41,15 +41,9 @@ import type {
   GoalReminderConfigDTO,
 } from '@dailyuse/contracts/goal';
 import type {
-  GoalPersistenceDTO,
-  GoalReviewPersistenceDTO,
-  GoalReviewServerDTO,
-  GoalServer,
   GoalServerDTO,
-  KeyResultPersistenceDTO,
   KeyResultServerDTO,
   ProgressBreakdown,
-  KeyResultWeightSnapshotDTO,
   KeyResultSnapshotDTO,
   ReminderTrigger,
 } from '@dailyuse/contracts/goal';
@@ -81,19 +75,56 @@ const DEFAULT_DURATION = 30 * DAY_MS;
 
 /**
  * Goal 内部状态接口
- * 使用 GoalServer 作为基础，但覆盖子实体为实际的类类型
+ * 自包含的领域状态定义，不依赖外部 DTO 接口
  */
-interface GoalState extends Omit<GoalServer, 'keyResults' | 'goalReviews' | 'reminderConfig'> {
+export interface GoalState {
+  id: GoalId;
+  identityId: IdentityId;
+
+  // === Basic Info ===
+  name: string;
+  description: string | null;
+  color: string;
+  feasibilityAnalysis: string | null;
+  motivation: string | null;
+
+  // === Status & Metadata ===
+  status: GoalStatus;
+  importance: ImportanceLevel;
+  priority: number;
+  category: string | null;
+  tags: string[];
+
+  // === Dates ===
+  startDate: Date | null;
+  targetDate: Date | null;
+  completedAt: Date | null;
+  archivedAt: Date | null;
+
+  // === Relations ===
+  folderId: GoalFolderId | null;
+  parentGoalId: GoalId | null;
+
+  // === Config ===
+  sortOrder: number;
   reminderConfig: GoalReminderConfig | null;
+
+  // === Child Entities ===
   keyResults: KeyResult[];
   goalReviews: GoalReview[];
   weightSnapshots: KeyResultWeightSnapshot[];
+
+  // === Versioning ===
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 /**
  * Goal 聚合根
  */
-export class Goal extends AggregateRoot<GoalId> implements GoalServer {
+export class Goal extends AggregateRoot<GoalId> {
   // ================= 1. 内部状态 (Props Pattern) =================
   /**
    * 使用单一 _props 对象存储所有内部状态
@@ -107,35 +138,7 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
    * 构造函数必须为 private，防止外部直接 new Goal(...)
    * 确保所有实例都通过工厂方法创建，保证业务规则验证
    */
-  private constructor(params: {
-    id: GoalId;
-    identityId: IdentityId;
-    name: string;
-    description: string | null;
-    color: string;
-    feasibilityAnalysis: string | null;
-    motivation: string | null;
-    status: GoalStatus;
-    importance: ImportanceLevel;
-    priority: number;
-    category: string | null;
-    tags: string[];
-    startDate: Date | null;
-    targetDate: Date | null;
-    completedAt: Date | null;
-    archivedAt: Date | null;
-    folderId: GoalFolderId | null;
-    parentGoalId: GoalId | null;
-    sortOrder: number;
-    reminderConfig: GoalReminderConfig | null;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date | null;
-    keyResults: KeyResult[];
-    goalReviews: GoalReview[];
-    weightSnapshots: KeyResultWeightSnapshot[];
-  }) {
+  private constructor(params: GoalState) {
     super(params.id);
     
     this._props = {
@@ -424,121 +427,11 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复
+   * 🏭 恢复工厂：从领域状态恢复
+   * 用于从持久化层或其他来源重建聚合根
    */
-  public static fromServerDTO(dto: GoalServerDTO): Goal {
-    // Initialize child entities from DTO
-    const keyResults = (dto.keyResults || []).map((kr: KeyResultServerDTO) =>
-      KeyResult.load({
-        id: KeyResultId.of(kr.id),
-        title: kr.title,
-        description: kr.description ?? null,
-        progress: kr.progress,
-        weight: kr.weight,
-        sortOrder: kr.sortOrder,
-        version: kr.version ?? 1,
-        createdAt: new Date(kr.createdAt),
-        updatedAt: new Date(kr.updatedAt),
-        deletedAt: kr.deletedAt ? new Date(kr.deletedAt) : null,
-      }),
-    );
-    const goalReviews = (dto.goalReviews || []).map((r: GoalReviewServerDTO) =>
-      GoalReview.load({
-        id: GoalReviewId.of(r.id),
-        goalId: GoalId.of(r.goalId),
-        type: r.type,
-        rating: r.rating,
-        summary: r.summary,
-        achievements: r.achievements ?? null,
-        challenges: r.challenges ?? null,
-        improvements: r.improvements ?? null,
-        keyResultSnapshots: r.keyResultSnapshots ?? [],
-        reviewedAt: new Date(r.reviewedAt),
-        version: r.version ?? 1,
-        createdAt: new Date(r.createdAt),
-        updatedAt: new Date(r.updatedAt),
-        deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
-      }),
-    );
-    const weightSnapshots = (dto.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
-      KeyResultWeightSnapshot.fromDTO(ws),
-    );
-
-    return new Goal({
-      id: GoalId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description ?? null,
-      color: dto.color,
-      feasibilityAnalysis: dto.feasibilityAnalysis ?? null,
-      motivation: dto.motivation ?? null,
-      status: dto.status,
-      importance: dto.importance,
-      priority: dto.priority ?? 0,
-      category: dto.category ?? null,
-      tags: dto.tags ?? [],
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
-      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-      archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
-      folderId: dto.folderId ? GoalFolderId.of(dto.folderId) : null,
-      parentGoalId: dto.parentGoalId ? GoalId.of(dto.parentGoalId) : null,
-      sortOrder: dto.sortOrder,
-      reminderConfig: dto.reminderConfig ? GoalReminderConfig.fromDTO(dto.reminderConfig) : null,
-      version: dto.version ?? 1,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      keyResults,
-      goalReviews,
-      weightSnapshots,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从持久化 DTO 恢复
-   */
-  public static fromPersistenceDTO(dto: GoalPersistenceDTO): Goal {
-    const tags = typeof dto.tags === 'string' ? JSON.parse(dto.tags) : dto.tags;
-    const reminderConfig = dto.reminderConfig
-      ? GoalReminderConfig.fromPersistenceDTO(
-          typeof dto.reminderConfig === 'string'
-            ? JSON.parse(dto.reminderConfig)
-            : dto.reminderConfig,
-        )
-      : null;
-
-    const serverDTO: GoalServerDTO = {
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      color: dto.color,
-      feasibilityAnalysis: dto.feasibilityAnalysis,
-      motivation: dto.motivation,
-      status: dto.status as GoalStatus,
-      importance: dto.importance as ImportanceLevel,
-      category: dto.category,
-      tags: Array.isArray(tags) ? tags : [],
-      startDate: dto.startDate ? new Date(dto.startDate).getTime() : null,
-      targetDate: dto.targetDate ? new Date(dto.targetDate).getTime() : null,
-      completedAt: dto.completedAt ? new Date(dto.completedAt).getTime() : null,
-      archivedAt: dto.archivedAt ? new Date(dto.archivedAt).getTime() : null,
-      folderId: dto.folderId,
-      parentGoalId: dto.parentGoalId,
-      sortOrder: dto.sortOrder,
-      reminderConfig: reminderConfig?.toDTO() || null,
-      createdAt: new Date(dto.createdAt).getTime(),
-      updatedAt: new Date(dto.updatedAt).getTime(),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt).getTime() : null,
-      keyResults: null,
-      goalReviews: null,
-      weightSnapshots: null,
-      priority: dto.priority ?? 0,
-      version: dto.version ?? 1,
-    };
-
-    return Goal.fromServerDTO(serverDTO);
+  public static load(state: GoalState): Goal {
+    return new Goal(state);
   }
 
   // ================= 6. 业务行为 (Business Methods) =================
@@ -1427,87 +1320,6 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       reviews: includeChildren && this._props.goalReviews.length > 0
         ? this._props.goalReviews.map((r) => r.toClientDTO())
         : null,
-    };
-  }
-
-  /**
-   * 转换为持久化 DTO
-   */
-  public toPersistenceDTO(): GoalPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      name: this._props.name,
-      description: this._props.description,
-      color: this._props.color,
-      feasibilityAnalysis: this._props.feasibilityAnalysis,
-      motivation: this._props.motivation,
-      status: this._props.status,
-      importance: this._props.importance,
-      priority: this._props.priority,
-      category: this._props.category,
-      tags: [...this._props.tags],
-      startDate: this._props.startDate,
-      targetDate: this._props.targetDate,
-      completedAt: this._props.completedAt,
-      archivedAt: this._props.archivedAt,
-      folderId: this._props.folderId as GoalFolderId | null,
-      parentGoalId: this._props.parentGoalId,
-      sortOrder: this._props.sortOrder,
-      reminderConfig: this._props.reminderConfig?.toPersistenceDTO() ?? null,
-      keyResults: this._props.keyResults.length > 0
-        ? this._props.keyResults.map((kr): KeyResultPersistenceDTO => {
-            const serverDto = kr.toServerDTO();
-            return {
-              id: serverDto.id,
-              goalId: this.id,
-              title: serverDto.title,
-              description: serverDto.description,
-              progress: JSON.stringify({
-                initialValue: (serverDto.progress as any).initialValue,
-                currentValue: serverDto.progress.currentValue,
-                targetValue: serverDto.progress.targetValue,
-                valueType: serverDto.progress.valueType,
-                aggregationMethod: serverDto.progress.aggregationMethod,
-                unit: serverDto.progress.unit,
-              }),
-              weight: serverDto.weight,
-              sortOrder: serverDto.sortOrder,
-              version: serverDto.version,
-              createdAt: new Date(serverDto.createdAt),
-              updatedAt: new Date(serverDto.updatedAt),
-              deletedAt: serverDto.deletedAt ? new Date(serverDto.deletedAt) : null,
-            };
-          })
-        : null,
-      goalReviews: this._props.goalReviews.length > 0
-        ? this._props.goalReviews.map((r): GoalReviewPersistenceDTO => {
-            const serverDto = r.toServerDTO();
-            return {
-              id: serverDto.id,
-              goalId: serverDto.goalId,
-              type: serverDto.type,
-              rating: serverDto.rating,
-              summary: serverDto.summary,
-              achievements: serverDto.achievements,
-              challenges: serverDto.challenges,
-              improvements: serverDto.improvements,
-              keyResultSnapshots: JSON.stringify(serverDto.keyResultSnapshots),
-              reviewedAt: new Date(serverDto.reviewedAt),
-              version: serverDto.version,
-              createdAt: new Date(serverDto.createdAt),
-              updatedAt: new Date(serverDto.updatedAt),
-              deletedAt: serverDto.deletedAt ? new Date(serverDto.deletedAt) : null,
-            };
-          })
-        : null,
-      weightSnapshots: this._props.weightSnapshots.length > 0
-        ? this._props.weightSnapshots.map((ws) => ws.toDTO())
-        : null,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt,
-      version: 1,
     };
   }
 
