@@ -10,7 +10,7 @@
 
 import type { PrismaClient, ReminderTemplate as PrismaReminderTemplate, ReminderHistory as PrismaReminderHistory, Prisma } from '@dailyuse/database';
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
-import type { ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderStatus, ReminderType, TriggerResult } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import { ReminderHistory } from '../../../domain-server/entities/reminder-history';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
@@ -49,14 +49,14 @@ export class ReminderTemplatePrismaRepository
       identityId: data.identityId,
       name: data.name,
       description: data.description ?? null,
-      type: data.type,
+      type: data.type as ReminderType,
       trigger: data.trigger,
       recurrence: data.recurrence ?? null,
       activeTime: data.activeTime,
       activeHours: data.activeHours ?? null,
       notificationConfig: data.notificationConfig,
       selfEnabled: data.selfEnabled,
-      status: data.status,
+      status: data.status as ReminderStatus,
       groupId: data.reminderGroupId ?? null,
       importanceLevel: data.importanceLevel,
       tags: data.tags,
@@ -96,7 +96,7 @@ export class ReminderTemplatePrismaRepository
           id: h.id,
           templateId: h.templateId,
           triggeredAt: h.triggeredAt.getTime(),
-          result: h.result,
+          result: h.result as TriggerResult,
           error: h.error ?? null,
           notificationSent: h.notificationSent,
           notificationChannels: h.notificationChannel ?? null,

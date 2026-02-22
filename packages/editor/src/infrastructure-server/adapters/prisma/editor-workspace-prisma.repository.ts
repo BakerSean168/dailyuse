@@ -1,6 +1,7 @@
 import type { PrismaClient, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
+import type { ProjectType } from '@dailyuse/contracts/editor';
 
 export class EditorWorkspacePrismaRepository implements IEditorWorkspaceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -12,7 +13,7 @@ export class EditorWorkspacePrismaRepository implements IEditorWorkspaceReposito
       name: data.name,
       description: data.description,
       project_path: data.projectPath,
-      project_type: data.projectType,
+      project_type: data.projectType as ProjectType,
       layout: JSON.stringify(data.layout),
       settings: JSON.stringify(data.setting),
       is_active: data.isActive,

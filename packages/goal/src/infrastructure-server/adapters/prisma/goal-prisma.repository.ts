@@ -151,7 +151,7 @@ function mapPrismaToWeightSnapshotDTO(row: PrismaKeyResultWeightSnapshot): KeyRe
     newWeight: row.newWeight,
     weightDelta: row.weightDelta,
     snapshotTime: row.snapshotTime,
-    trigger: row.trigger,
+    trigger: row.trigger as KeyResultWeightSnapshotDTO['trigger'],
     reason: row.reason ?? null,
     operatorId: row.operatorId,
     createdAt: row.createdAt,

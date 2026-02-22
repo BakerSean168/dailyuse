@@ -295,7 +295,7 @@ export class PrismaAuthIdentityRepository
   /**
    * Convert identifier to flat row
    */
-  private identifierToRow(identifier: AuthIdentifierPersistenceDTO, identityId: string): Record<string, any> {
+  private identifierToRow(identifier: AuthIdentifierPersistenceDTO, identityId: string): Prisma.AuthIdentifierUncheckedCreateInput {
     return {
       identityId,
       type: identifier.type,
@@ -309,7 +309,7 @@ export class PrismaAuthIdentityRepository
   /**
    * Convert OAuth binding to flat row
    */
-  private oauthBindingToRow(binding: OAuthBindingPersistenceDTO, identityId: string): Record<string, any> {
+  private oauthBindingToRow(binding: OAuthBindingPersistenceDTO, identityId: string): Prisma.AuthOAuthBindingUncheckedCreateInput {
     return {
       id: binding.id,
       identityId,
@@ -326,8 +326,8 @@ export class PrismaAuthIdentityRepository
   /**
    * Convert a domain credential to a flat Prisma row object
    */
-  private credentialToRow(cred: AuthCredentialServer, identityId: string): Record<string, any> {
-    const row: Record<string, any> = {
+  private credentialToRow(cred: AuthCredentialServer, identityId: string): Prisma.AuthCredentialUncheckedCreateInput {
+    const row: Prisma.AuthCredentialUncheckedCreateInput = {
       id: cred.id,
       identityId,
       type: cred.type,

@@ -43,7 +43,7 @@ export class GoalFolderPrismaRepository
       color: data.color ?? null,
       parentFolderId: data.parentFolderId ?? null,
       sortOrder: data.sortOrder ?? 0,
-      folderType: data.folderType ?? null,
+      folderType: (data.folderType as GoalFolderPersistenceDTO['folderType']) ?? null,
       goalCount: data.goalCount ?? 0,
       completedGoalCount: data.completedGoalCount ?? 0,
       createdAt: data.createdAt,

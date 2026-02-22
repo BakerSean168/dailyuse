@@ -55,11 +55,15 @@ export class GoalRecordPrismaRepository
    */
   private buildQueryOptions(options?: GoalRecordQueryOptions) {
     const where: Prisma.GoalRecordWhereInput = {};
-    if (options?.startTime) {
-      where.recordedAt = { ...where.recordedAt, gte: options.startTime };
-    }
-    if (options?.endTime) {
-      where.recordedAt = { ...where.recordedAt, lte: options.endTime };
+    if (options?.startTime || options?.endTime) {
+      const recordedAtFilter: Record<string, unknown> = {};
+      if (options?.startTime) {
+        recordedAtFilter.gte = options.startTime;
+      }
+      if (options?.endTime) {
+        recordedAtFilter.lte = options.endTime;
+      }
+      where.recordedAt = recordedAtFilter;
     }
 
     const orderBy = { recordedAt: options?.orderBy ?? 'desc' };

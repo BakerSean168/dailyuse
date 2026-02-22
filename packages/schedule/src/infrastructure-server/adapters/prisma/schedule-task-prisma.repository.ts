@@ -74,9 +74,9 @@ export class ScheduleTaskPrismaRepository
       identityId: data.identityId,
       name: data.name,
       description: data.description,
-      sourceModule: data.sourceModule,
+      sourceModule: data.sourceModule as SourceModule,
       sourceEntityId: data.sourceEntityId,
-      status: data.status,
+      status: data.status as ScheduleTaskStatus,
       enabled: data.enabled,
       // ScheduleConfig 閹典礁閽╅崠鏍х摟濞?
       cronExpression: data.cronExpression,

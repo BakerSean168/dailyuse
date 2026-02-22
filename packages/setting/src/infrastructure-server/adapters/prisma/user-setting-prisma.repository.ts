@@ -14,13 +14,14 @@ export class UserSettingPrismaRepository implements IUserSettingRepository {
   private toDomain(data: PrismaUserSetting): UserSetting {
     const entries: any[] = [];
     const excludedKeys = ['id', 'identityId', 'version', 'createdAt', 'updatedAt', 'deletedAt'];
+    const record = data as unknown as Record<string, unknown>;
 
-    for (const key in data) {
-      if (!excludedKeys.includes(key) && data[key] !== null) {
+    for (const key in record) {
+      if (!excludedKeys.includes(key) && record[key] !== null) {
         entries.push({
           id: 'generated',
           key: key,
-          value: data[key],
+          value: record[key],
           updatedAt: data.updatedAt.getTime(),
         });
       }
