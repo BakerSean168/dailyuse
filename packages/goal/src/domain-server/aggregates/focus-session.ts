@@ -29,13 +29,11 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { FocusSessionId, GoalId } from '../../domain-shared';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
 import type {
-  FocusSessionPersistenceDTO,
-  FocusSessionServer,
   FocusSessionServerDTO,
 } from '@dailyuse/contracts/goal';
 
 // 内部状态接口
-interface FocusSessionState {
+export interface FocusSessionState {
   id: FocusSessionId;
   identityId: IdentityId;
   goalId: GoalId | null;
@@ -59,51 +57,32 @@ interface FocusSessionState {
 /**
  * FocusSession 聚合根
  */
-export class FocusSession extends AggregateRoot<FocusSessionId> implements FocusSessionServer {
+export class FocusSession extends AggregateRoot<FocusSessionId> {
   // ================= 1. 内部状态 (Props) =================
   private _props: FocusSessionState;
 
   // ================= 2. 构造函数 (Private) =================
-  private constructor(params: {
-    id: FocusSessionId;
-    identityId: IdentityId;
-    goalId: GoalId | null;
-    status: FocusSessionStatus;
-    durationMinutes: number;
-    actualDurationMinutes: number;
-    description: string | null;
-    startedAt: Date | null;
-    pausedAt: Date | null;
-    resumedAt: Date | null;
-    completedAt: Date | null;
-    cancelledAt: Date | null;
-    pauseCount: number;
-    pausedDurationMinutes: number;
-    createdAt: Date;
-    updatedAt: Date;
-    version: number;
-    deletedAt: Date | null;
-  }) {
-    super(params.id);
+  private constructor(state: FocusSessionState) {
+    super(state.id);
     this._props = {
-      id: params.id,
-      identityId: params.identityId,
-      goalId: params.goalId ?? null,
-      status: params.status,
-      durationMinutes: params.durationMinutes,
-      actualDurationMinutes: params.actualDurationMinutes,
-      description: params.description ?? null,
-      startedAt: params.startedAt ?? null,
-      pausedAt: params.pausedAt ?? null,
-      resumedAt: params.resumedAt ?? null,
-      completedAt: params.completedAt ?? null,
-      cancelledAt: params.cancelledAt ?? null,
-      pauseCount: params.pauseCount,
-      pausedDurationMinutes: params.pausedDurationMinutes,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      version: params.version ?? 1,
-      deletedAt: params.deletedAt ?? null,
+      id: state.id,
+      identityId: state.identityId,
+      goalId: state.goalId ?? null,
+      status: state.status,
+      durationMinutes: state.durationMinutes,
+      actualDurationMinutes: state.actualDurationMinutes,
+      description: state.description ?? null,
+      startedAt: state.startedAt ?? null,
+      pausedAt: state.pausedAt ?? null,
+      resumedAt: state.resumedAt ?? null,
+      completedAt: state.completedAt ?? null,
+      cancelledAt: state.cancelledAt ?? null,
+      pauseCount: state.pauseCount,
+      pausedDurationMinutes: state.pausedDurationMinutes,
+      createdAt: state.createdAt,
+      updatedAt: state.updatedAt,
+      version: state.version ?? 1,
+      deletedAt: state.deletedAt ?? null,
     };
   }
 
@@ -215,55 +194,10 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
   }
 
   /**
-   * 🏭 恢复工厂：从 ServerDTO 恢复
+   * 🏭 恢复工厂：从完整状态恢复实体
    */
-  public static fromServerDTO(dto: FocusSessionServerDTO): FocusSession {
-    return new FocusSession({
-      id: FocusSessionId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      goalId: dto.goalId ? GoalId.of(dto.goalId) : null,
-      status: dto.status,
-      durationMinutes: dto.durationMinutes,
-      actualDurationMinutes: dto.actualDurationMinutes,
-      description: dto.description ?? null,
-      startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
-      pausedAt: dto.pausedAt ? new Date(dto.pausedAt) : null,
-      resumedAt: dto.resumedAt ? new Date(dto.resumedAt) : null,
-      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-      cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : null,
-      pauseCount: dto.pauseCount,
-      pausedDurationMinutes: dto.pausedDurationMinutes,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: dto.version ?? 1,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  /**
-   * 🏭 恢复工厂：从 PersistenceDTO 恢复
-   */
-  public static fromPersistenceDTO(dto: FocusSessionPersistenceDTO): FocusSession {
-    return new FocusSession({
-      id: FocusSessionId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      goalId: dto.goalId ? GoalId.of(dto.goalId) : null,
-      status: dto.status as FocusSessionStatus,
-      durationMinutes: dto.durationMinutes,
-      actualDurationMinutes: dto.actualDurationMinutes,
-      description: dto.description ?? null,
-      startedAt: dto.startedAt ?? null,
-      pausedAt: dto.pausedAt ?? null,
-      resumedAt: dto.resumedAt ?? null,
-      completedAt: dto.completedAt ?? null,
-      cancelledAt: dto.cancelledAt ?? null,
-      pauseCount: dto.pauseCount,
-      pausedDurationMinutes: dto.pausedDurationMinutes,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      version: dto.version ?? 1,
-      deletedAt: dto.deletedAt ?? null,
-    });
+  public static load(state: FocusSessionState): FocusSession {
+    return new FocusSession(state);
   }
 
   // ================= 5. 业务行为 (Business Actions) =================
@@ -525,32 +459,6 @@ export class FocusSession extends AggregateRoot<FocusSessionId> implements Focus
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-    };
-  }
-
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): FocusSessionPersistenceDTO {
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      goalId: this._props.goalId,
-      status: this._props.status,
-      durationMinutes: this._props.durationMinutes,
-      actualDurationMinutes: this._props.actualDurationMinutes,
-      description: this._props.description,
-      startedAt: this._props.startedAt,
-      pausedAt: this._props.pausedAt,
-      resumedAt: this._props.resumedAt,
-      completedAt: this._props.completedAt,
-      cancelledAt: this._props.cancelledAt,
-      pauseCount: this._props.pauseCount,
-      pausedDurationMinutes: this._props.pausedDurationMinutes,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      version: this._props.version,
-      deletedAt: this._props.deletedAt,
     };
   }
 }

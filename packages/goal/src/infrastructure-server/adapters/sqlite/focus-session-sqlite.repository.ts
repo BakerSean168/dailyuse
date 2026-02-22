@@ -22,7 +22,7 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
   constructor(private db: Database.Database) {}
 
   async save(session: FocusSession): Promise<void> {
-    const dto = session.toPersistenceDTO();
+    const dto = session.toServerDTO();
 
     this.db
       .prepare(
@@ -55,17 +55,17 @@ export class SqliteFocusSessionRepository implements IFocusSessionRepository {
         dto.durationMinutes,
         dto.actualDurationMinutes,
         dto.description,
-        dateToInt(dto.startedAt),
-        dateToInt(dto.pausedAt),
-        dateToInt(dto.resumedAt),
-        dateToInt(dto.completedAt),
-        dateToInt(dto.cancelledAt),
+        dto.startedAt,
+        dto.pausedAt,
+        dto.resumedAt,
+        dto.completedAt,
+        dto.cancelledAt,
         dto.pauseCount,
         dto.pausedDurationMinutes,
         dto.version,
-        dateToInt(dto.createdAt),
-        dateToInt(dto.updatedAt),
-        dateToInt(dto.deletedAt),
+        dto.createdAt,
+        dto.updatedAt,
+        dto.deletedAt,
       );
   }
 

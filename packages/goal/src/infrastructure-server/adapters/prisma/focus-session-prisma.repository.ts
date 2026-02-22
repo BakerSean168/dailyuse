@@ -24,7 +24,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
    * Save domain entity to database (upsert)
    */
   async save(session: FocusSession): Promise<void> {
-    const dto = session.toPersistenceDTO();
+    const dto = session.toServerDTO();
 
     const updateData = {
       goalId: dto.goalId ? (dto.goalId as string) : null,
@@ -32,16 +32,16 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       durationMinutes: dto.durationMinutes,
       actualDurationMinutes: dto.actualDurationMinutes,
       description: dto.description,
-      startedAt: dto.startedAt,
-      pausedAt: dto.pausedAt,
-      resumedAt: dto.resumedAt,
-      completedAt: dto.completedAt,
-      cancelledAt: dto.cancelledAt,
+      startedAt: dto.startedAt ? new Date(dto.startedAt) : null,
+      pausedAt: dto.pausedAt ? new Date(dto.pausedAt) : null,
+      resumedAt: dto.resumedAt ? new Date(dto.resumedAt) : null,
+      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+      cancelledAt: dto.cancelledAt ? new Date(dto.cancelledAt) : null,
       pauseCount: dto.pauseCount,
       pausedDurationMinutes: dto.pausedDurationMinutes,
       version: dto.version,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt ?? null,
+      updatedAt: new Date(dto.updatedAt),
+      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     };
 
     await this.prisma.focusSession.upsert({
@@ -49,7 +49,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
       create: {
         id: dto.id as string,
         identityId: dto.identityId as string,
-        createdAt: dto.createdAt,
+        createdAt: new Date(dto.createdAt),
         ...updateData,
       },
       update: updateData,

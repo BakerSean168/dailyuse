@@ -5,8 +5,10 @@
  * SQLite 存储日期为 INTEGER（毫秒时间戳）
  */
 
-import type { FocusSessionPersistenceDTO } from '@dailyuse/contracts/goal';
 import { FocusSession } from '@/domain-server';
+import { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { FocusSessionId, GoalId } from '@/domain-shared';
 
 /**
  * SqliteFocusSessionMapper
@@ -18,19 +20,11 @@ export class SqliteFocusSessionMapper {
    * SQLite row → FocusSession 聚合根
    */
   static toDomain(row: any): FocusSession {
-    const dto = SqliteFocusSessionMapper.toPersistenceDTO(row);
-    return FocusSession.fromPersistenceDTO(dto);
-  }
-
-  /**
-   * SQLite row → FocusSessionPersistenceDTO
-   */
-  static toPersistenceDTO(row: any): FocusSessionPersistenceDTO {
-    return {
-      id: row.id,
-      identityId: row.identity_id,
-      goalId: row.goal_id ?? null,
-      status: row.status,
+    return FocusSession.load({
+      id: FocusSessionId.of(row.id),
+      identityId: IdentityId.of(row.identity_id),
+      goalId: row.goal_id ? GoalId.of(row.goal_id) : null,
+      status: row.status as FocusSessionStatus,
       durationMinutes: row.duration_minutes,
       actualDurationMinutes: row.actual_duration_minutes ?? 0,
       description: row.description ?? null,
@@ -45,7 +39,7 @@ export class SqliteFocusSessionMapper {
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
       deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-    };
+    });
   }
 
   /**

@@ -5,19 +5,20 @@
  */
 
 import type { FocusSession as PrismaFocusSession } from '@dailyuse/database';
-import type { FocusSessionPersistenceDTO } from '@dailyuse/contracts/goal';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
 import { FocusSession } from '@/domain-server';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { FocusSessionId, GoalId } from '@/domain-shared';
 
 export class PrismaFocusSessionMapper {
   /**
    * Prisma row → Domain FocusSession entity
    */
   static toDomain(data: PrismaFocusSession): FocusSession {
-    const dto: FocusSessionPersistenceDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      goalId: data.goalId ?? null,
+    return FocusSession.load({
+      id: FocusSessionId.of(data.id),
+      identityId: IdentityId.of(data.identityId),
+      goalId: data.goalId ? GoalId.of(data.goalId) : null,
       status: data.status as FocusSessionStatus,
       durationMinutes: data.durationMinutes,
       actualDurationMinutes: data.actualDurationMinutes,
@@ -33,8 +34,7 @@ export class PrismaFocusSessionMapper {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       deletedAt: data.deletedAt ?? null,
-    };
-    return FocusSession.fromPersistenceDTO(dto);
+    });
   }
 
   /**
