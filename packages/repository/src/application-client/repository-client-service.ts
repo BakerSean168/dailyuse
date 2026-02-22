@@ -27,7 +27,31 @@ import type {
   CreateRepositoryRequest,
   CreateFolderRequest,
 } from '@/infrastructure-client/adapters/types';
-import { Repository } from '@/domain-client/aggregates/repository';
+import { Repository } from '@/domain-client/aggregates/Repository';
+import { RepositoryId } from '@/domain-shared/value-objects/repository-id';
+import { RepositoryConfig } from '@/domain-shared/value-objects/repository-config';
+import { RepositoryStats } from '@/domain-shared/value-objects/repository-stats';
+import { IdentityId } from '@dailyuse/domain-shared';
+
+// ===== DTO-to-State Mapper =====
+
+function repositoryFromDTO(dto: RepositoryClientDTO): Repository {
+  return Repository.load({
+    id: RepositoryId.of(dto.id),
+    identityId: IdentityId.of(dto.identityId),
+    name: dto.name,
+    type: dto.type,
+    path: dto.path,
+    description: dto.description,
+    config: RepositoryConfig.fromDTO(dto.config),
+    stats: RepositoryStats.fromDTO(dto.stats),
+    status: dto.status,
+    version: dto.version,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+  });
+}
 
 export class RepositoryClientService {
   constructor(private readonly repositoryApi: IRepositoryApiClient) {}
@@ -36,17 +60,17 @@ export class RepositoryClientService {
 
   async createRepository(request: CreateRepositoryRequest): Promise<Result<Repository>> {
     const result = await this.repositoryApi.createRepository(request);
-    return mapResult(result, (dto) => Repository.fromDTO(dto));
+    return mapResult(result, (dto) => repositoryFromDTO(dto));
   }
 
   async getRepositories(): Promise<Result<Repository[]>> {
     const result = await this.repositoryApi.getRepositories();
-    return mapResult(result, (dtos) => dtos.map((dto) => Repository.fromDTO(dto)));
+    return mapResult(result, (dtos) => dtos.map((dto) => repositoryFromDTO(dto)));
   }
 
   async getRepositoryById(id: string): Promise<Result<Repository>> {
     const result = await this.repositoryApi.getRepositoryById(id);
-    return mapResult(result, (dto) => Repository.fromDTO(dto));
+    return mapResult(result, (dto) => repositoryFromDTO(dto));
   }
 
   async deleteRepository(id: string): Promise<Result<void>> {

@@ -9,7 +9,6 @@
  */
 
 import type {
-  RuleRevisionClient,
   RuleRevisionClientDTO,
 } from '@/contracts/entities/rule-revision-client';
 import { Entity } from '@dailyuse/utils';
@@ -21,7 +20,7 @@ import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-
 /**
  * RuleRevision 客户端内部状�?
  */
-interface RuleRevisionState {
+export interface RuleRevisionState {
   id: RuleRevisionId;
   ruleId: RuleId;
   revisionNumber: number;
@@ -43,7 +42,7 @@ interface RuleRevisionState {
  * - UI 辅助方法（变更摘要、字段对比）
  * - 数据转换（toDTO）
  */
-export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevisionClient {
+export class RuleRevision extends Entity<RuleRevisionId> {
   private readonly _props: RuleRevisionState;
 
   // ================= 构造函�?(Private) =================
@@ -232,26 +231,16 @@ export class RuleRevision extends Entity<RuleRevisionId> implements RuleRevision
   // ================= 工厂方法 (Factory Methods) =================
 
   /**
-   * �?Client DTO 创建 RuleRevision 实例
+   * 从状态创建 RuleRevision 实例
    * 
-   * @param dto - API 响应中的 RuleRevisionClientDTO
+   * @param state - RuleRevision 内部状态
    * @returns RuleRevision 实例
    * 
    * @example
-   * const revision = RuleRevision.fromDTO(apiResponse.data);
+   * const revision = RuleRevision.load(state);
    */
-  public static fromDTO(dto: RuleRevisionClientDTO): RuleRevision {
-    return new RuleRevision({
-      id: dto.id,
-      ruleId: dto.ruleId,
-      revisionNumber: dto.revisionNumber,
-      authorId: dto.authorId,
-      changedFields: [...dto.changedFields],
-      previousValues: { ...dto.previousValues },
-      newValues: { ...dto.newValues },
-      changeType: dto.changeType,
-      createdAt: new Date(dto.createdAt),
-    });
+  public static load(state: RuleRevisionState): RuleRevision {
+    return new RuleRevision(state);
   }
 
   // ================= DTO 转换 =================

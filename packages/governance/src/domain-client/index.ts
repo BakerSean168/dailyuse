@@ -22,8 +22,8 @@
  * import { Rule, RuleRevision } from '@dailyuse/governance/domain-client';
  * 
  * // 从 API 响应创建
- * const rule = Rule.fromDTO(response.data);
- * const revision = RuleRevision.fromDTO(historyDTO);
+ * const rule = Rule.load(state);
+ * const revision = RuleRevision.load(revisionState);
  * 
  * // 使用 UI 辅助方法
  * console.log(rule.displayStatus); // '生效中'

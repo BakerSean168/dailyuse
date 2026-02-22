@@ -3,19 +3,15 @@
  * 仓储聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 RepositoryClient 接口
  * - Private constructor with params object
  * - Private _field backing fields
  * - Public getters
- * - Static fromDTO(dto: RepositoryClientDTO): Repository
+ * - Static load(state: RepositoryState): Repository
  * - Instance toDTO(): RepositoryClientDTO
  */
 
 import type {
-  RepositoryClient,
   RepositoryClientDTO,
-  RepositoryConfigDTO,
-  RepositoryStatsDTO,
 } from '@dailyuse/contracts/repository';
 import type { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
@@ -24,8 +20,7 @@ import { RepositoryConfig } from '../../domain-shared/value-objects/repository-c
 import { RepositoryStats } from '../../domain-shared/value-objects/repository-stats';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口：使用 domain-shared 类类型（有 .toDTO() 等方法）
-interface RepositoryState {
+export interface RepositoryState {
   id: RepositoryId;
   identityId: IdentityId;
   name: string;
@@ -41,7 +36,7 @@ interface RepositoryState {
   deletedAt: Date | null;
 }
 
-export class Repository extends AggregateRoot<RepositoryId> implements RepositoryClient {
+export class Repository extends AggregateRoot<RepositoryId> {
   private readonly _props: RepositoryState;
 
   private constructor(props: RepositoryState) {
@@ -154,22 +149,8 @@ export class Repository extends AggregateRoot<RepositoryId> implements Repositor
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: RepositoryClientDTO): Repository {
-    return new Repository({
-      id: RepositoryId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      description: dto.description,
-      config: RepositoryConfig.fromDTO(dto.config),
-      stats: RepositoryStats.fromDTO(dto.stats),
-      status: dto.status,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: RepositoryState): Repository {
+    return new Repository(state);
   }
 
   // ================= DTO Conversion =================

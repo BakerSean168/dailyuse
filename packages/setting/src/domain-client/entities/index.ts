@@ -4,3 +4,4 @@
  */
 
 export { SettingEntry } from './setting-entry';
+export type { SettingEntryState } from './setting-entry';
