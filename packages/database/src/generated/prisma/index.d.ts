@@ -64,16 +64,6 @@ export type AppConfig = $Result.DefaultSelection<Prisma.$AppConfigPayload>
  */
 export type AuthIdentity = $Result.DefaultSelection<Prisma.$AuthIdentityPayload>
 /**
- * Model AuthIdentifier
- * 
- */
-export type AuthIdentifier = $Result.DefaultSelection<Prisma.$AuthIdentifierPayload>
-/**
- * Model AuthOAuthBinding
- * 
- */
-export type AuthOAuthBinding = $Result.DefaultSelection<Prisma.$AuthOAuthBindingPayload>
-/**
  * Model AuthCredential
  * 
  */
@@ -399,6 +389,8 @@ export type AuthIdentityStatus = (typeof AuthIdentityStatus)[keyof typeof AuthId
 
 export const CredentialType: {
   PASSWORD: 'PASSWORD',
+  OAUTH: 'OAUTH',
+  PHONE: 'PHONE',
   MAGIC_LINK: 'MAGIC_LINK'
 };
 
@@ -644,26 +636,6 @@ export class PrismaClient<
     * ```
     */
   get authIdentity(): Prisma.AuthIdentityDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.authIdentifier`: Exposes CRUD operations for the **AuthIdentifier** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more AuthIdentifiers
-    * const authIdentifiers = await prisma.authIdentifier.findMany()
-    * ```
-    */
-  get authIdentifier(): Prisma.AuthIdentifierDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.authOAuthBinding`: Exposes CRUD operations for the **AuthOAuthBinding** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more AuthOAuthBindings
-    * const authOAuthBindings = await prisma.authOAuthBinding.findMany()
-    * ```
-    */
-  get authOAuthBinding(): Prisma.AuthOAuthBindingDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.authCredential`: Exposes CRUD operations for the **AuthCredential** model.
@@ -1698,8 +1670,6 @@ export namespace Prisma {
     DashboardConfig: 'DashboardConfig',
     AppConfig: 'AppConfig',
     AuthIdentity: 'AuthIdentity',
-    AuthIdentifier: 'AuthIdentifier',
-    AuthOAuthBinding: 'AuthOAuthBinding',
     AuthCredential: 'AuthCredential',
     AuthSession: 'AuthSession',
     Document: 'Document',
@@ -1774,7 +1744,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "appConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "setting" | "settingGroup" | "settingItem" | "userSetting" | "syncProfile" | "syncSession" | "syncConflict" | "pendingChange" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
+      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "appConfig" | "authIdentity" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "setting" | "settingGroup" | "settingItem" | "userSetting" | "syncProfile" | "syncSession" | "syncConflict" | "pendingChange" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2515,154 +2485,6 @@ export namespace Prisma {
           count: {
             args: Prisma.AuthIdentityCountArgs<ExtArgs>
             result: $Utils.Optional<AuthIdentityCountAggregateOutputType> | number
-          }
-        }
-      }
-      AuthIdentifier: {
-        payload: Prisma.$AuthIdentifierPayload<ExtArgs>
-        fields: Prisma.AuthIdentifierFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.AuthIdentifierFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.AuthIdentifierFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>
-          }
-          findFirst: {
-            args: Prisma.AuthIdentifierFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.AuthIdentifierFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>
-          }
-          findMany: {
-            args: Prisma.AuthIdentifierFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>[]
-          }
-          create: {
-            args: Prisma.AuthIdentifierCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>
-          }
-          createMany: {
-            args: Prisma.AuthIdentifierCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.AuthIdentifierCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>[]
-          }
-          delete: {
-            args: Prisma.AuthIdentifierDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>
-          }
-          update: {
-            args: Prisma.AuthIdentifierUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>
-          }
-          deleteMany: {
-            args: Prisma.AuthIdentifierDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.AuthIdentifierUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.AuthIdentifierUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>[]
-          }
-          upsert: {
-            args: Prisma.AuthIdentifierUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthIdentifierPayload>
-          }
-          aggregate: {
-            args: Prisma.AuthIdentifierAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateAuthIdentifier>
-          }
-          groupBy: {
-            args: Prisma.AuthIdentifierGroupByArgs<ExtArgs>
-            result: $Utils.Optional<AuthIdentifierGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.AuthIdentifierCountArgs<ExtArgs>
-            result: $Utils.Optional<AuthIdentifierCountAggregateOutputType> | number
-          }
-        }
-      }
-      AuthOAuthBinding: {
-        payload: Prisma.$AuthOAuthBindingPayload<ExtArgs>
-        fields: Prisma.AuthOAuthBindingFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.AuthOAuthBindingFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.AuthOAuthBindingFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>
-          }
-          findFirst: {
-            args: Prisma.AuthOAuthBindingFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.AuthOAuthBindingFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>
-          }
-          findMany: {
-            args: Prisma.AuthOAuthBindingFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>[]
-          }
-          create: {
-            args: Prisma.AuthOAuthBindingCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>
-          }
-          createMany: {
-            args: Prisma.AuthOAuthBindingCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.AuthOAuthBindingCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>[]
-          }
-          delete: {
-            args: Prisma.AuthOAuthBindingDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>
-          }
-          update: {
-            args: Prisma.AuthOAuthBindingUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>
-          }
-          deleteMany: {
-            args: Prisma.AuthOAuthBindingDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.AuthOAuthBindingUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.AuthOAuthBindingUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>[]
-          }
-          upsert: {
-            args: Prisma.AuthOAuthBindingUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AuthOAuthBindingPayload>
-          }
-          aggregate: {
-            args: Prisma.AuthOAuthBindingAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateAuthOAuthBinding>
-          }
-          groupBy: {
-            args: Prisma.AuthOAuthBindingGroupByArgs<ExtArgs>
-            result: $Utils.Optional<AuthOAuthBindingGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.AuthOAuthBindingCountArgs<ExtArgs>
-            result: $Utils.Optional<AuthOAuthBindingCountAggregateOutputType> | number
           }
         }
       }
@@ -7150,8 +6972,6 @@ export namespace Prisma {
     dashboardConfig?: DashboardConfigOmit
     appConfig?: AppConfigOmit
     authIdentity?: AuthIdentityOmit
-    authIdentifier?: AuthIdentifierOmit
-    authOAuthBinding?: AuthOAuthBindingOmit
     authCredential?: AuthCredentialOmit
     authSession?: AuthSessionOmit
     document?: DocumentOmit
@@ -7614,16 +7434,12 @@ export namespace Prisma {
    */
 
   export type AuthIdentityCountOutputType = {
-    identifiers: number
-    oauthBindings: number
     credentials: number
     sessions: number
     accounts: number
   }
 
   export type AuthIdentityCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identifiers?: boolean | AuthIdentityCountOutputTypeCountIdentifiersArgs
-    oauthBindings?: boolean | AuthIdentityCountOutputTypeCountOauthBindingsArgs
     credentials?: boolean | AuthIdentityCountOutputTypeCountCredentialsArgs
     sessions?: boolean | AuthIdentityCountOutputTypeCountSessionsArgs
     accounts?: boolean | AuthIdentityCountOutputTypeCountAccountsArgs
@@ -7638,20 +7454,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the AuthIdentityCountOutputType
      */
     select?: AuthIdentityCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * AuthIdentityCountOutputType without action
-   */
-  export type AuthIdentityCountOutputTypeCountIdentifiersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AuthIdentifierWhereInput
-  }
-
-  /**
-   * AuthIdentityCountOutputType without action
-   */
-  export type AuthIdentityCountOutputTypeCountOauthBindingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AuthOAuthBindingWhereInput
   }
 
   /**
@@ -8520,6 +8322,7 @@ export namespace Prisma {
 
   export type AccountMinAggregateOutputType = {
     id: string | null
+    identityId: string | null
     status: string | null
     emailAddress: string | null
     emailIsVerified: boolean | null
@@ -8538,6 +8341,7 @@ export namespace Prisma {
 
   export type AccountMaxAggregateOutputType = {
     id: string | null
+    identityId: string | null
     status: string | null
     emailAddress: string | null
     emailIsVerified: boolean | null
@@ -8556,6 +8360,7 @@ export namespace Prisma {
 
   export type AccountCountAggregateOutputType = {
     id: number
+    identityId: number
     status: number
     profile: number
     settings: number
@@ -8586,6 +8391,7 @@ export namespace Prisma {
 
   export type AccountMinAggregateInputType = {
     id?: true
+    identityId?: true
     status?: true
     emailAddress?: true
     emailIsVerified?: true
@@ -8604,6 +8410,7 @@ export namespace Prisma {
 
   export type AccountMaxAggregateInputType = {
     id?: true
+    identityId?: true
     status?: true
     emailAddress?: true
     emailIsVerified?: true
@@ -8622,6 +8429,7 @@ export namespace Prisma {
 
   export type AccountCountAggregateInputType = {
     id?: true
+    identityId?: true
     status?: true
     profile?: true
     settings?: true
@@ -8729,6 +8537,7 @@ export namespace Prisma {
 
   export type AccountGroupByOutputType = {
     id: string
+    identityId: string
     status: string
     profile: JsonValue
     settings: JsonValue
@@ -8768,6 +8577,7 @@ export namespace Prisma {
 
   export type AccountSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8829,6 +8639,7 @@ export namespace Prisma {
 
   export type AccountSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8850,6 +8661,7 @@ export namespace Prisma {
 
   export type AccountSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8871,6 +8683,7 @@ export namespace Prisma {
 
   export type AccountSelectScalar = {
     id?: boolean
+    identityId?: boolean
     status?: boolean
     profile?: boolean
     settings?: boolean
@@ -8889,7 +8702,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "profile" | "settings" | "emailAddress" | "emailIsVerified" | "emailVerifiedAt" | "emailIsPrimary" | "phoneCountryCode" | "phoneNumber" | "phoneFullNumber" | "phoneIsVerified" | "phoneVerifiedAt" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "status" | "profile" | "settings" | "emailAddress" | "emailIsVerified" | "emailVerifiedAt" | "emailIsPrimary" | "phoneCountryCode" | "phoneNumber" | "phoneFullNumber" | "phoneIsVerified" | "phoneVerifiedAt" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
     documents?: boolean | Account$documentsArgs<ExtArgs>
@@ -8986,6 +8799,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      identityId: string
       status: string
       profile: Prisma.JsonValue
       settings: Prisma.JsonValue
@@ -9466,6 +9280,7 @@ export namespace Prisma {
    */
   interface AccountFieldRefs {
     readonly id: FieldRef<"Account", 'String'>
+    readonly identityId: FieldRef<"Account", 'String'>
     readonly status: FieldRef<"Account", 'String'>
     readonly profile: FieldRef<"Account", 'Json'>
     readonly settings: FieldRef<"Account", 'Json'>
@@ -20146,8 +19961,6 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
-    identifiers?: boolean | AuthIdentity$identifiersArgs<ExtArgs>
-    oauthBindings?: boolean | AuthIdentity$oauthBindingsArgs<ExtArgs>
     credentials?: boolean | AuthIdentity$credentialsArgs<ExtArgs>
     sessions?: boolean | AuthIdentity$sessionsArgs<ExtArgs>
     accounts?: boolean | AuthIdentity$accountsArgs<ExtArgs>
@@ -20192,8 +20005,6 @@ export namespace Prisma {
 
   export type AuthIdentityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "failedLoginAttempts" | "lastFailedAttempt" | "lockedUntil" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["authIdentity"]>
   export type AuthIdentityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identifiers?: boolean | AuthIdentity$identifiersArgs<ExtArgs>
-    oauthBindings?: boolean | AuthIdentity$oauthBindingsArgs<ExtArgs>
     credentials?: boolean | AuthIdentity$credentialsArgs<ExtArgs>
     sessions?: boolean | AuthIdentity$sessionsArgs<ExtArgs>
     accounts?: boolean | AuthIdentity$accountsArgs<ExtArgs>
@@ -20205,8 +20016,6 @@ export namespace Prisma {
   export type $AuthIdentityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AuthIdentity"
     objects: {
-      identifiers: Prisma.$AuthIdentifierPayload<ExtArgs>[]
-      oauthBindings: Prisma.$AuthOAuthBindingPayload<ExtArgs>[]
       credentials: Prisma.$AuthCredentialPayload<ExtArgs>[]
       sessions: Prisma.$AuthSessionPayload<ExtArgs>[]
       accounts: Prisma.$AccountPayload<ExtArgs>[]
@@ -20615,8 +20424,6 @@ export namespace Prisma {
    */
   export interface Prisma__AuthIdentityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    identifiers<T extends AuthIdentity$identifiersArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentity$identifiersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    oauthBindings<T extends AuthIdentity$oauthBindingsArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentity$oauthBindingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     credentials<T extends AuthIdentity$credentialsArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentity$credentialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthCredentialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends AuthIdentity$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentity$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     accounts<T extends AuthIdentity$accountsArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentity$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -21046,54 +20853,6 @@ export namespace Prisma {
   }
 
   /**
-   * AuthIdentity.identifiers
-   */
-  export type AuthIdentity$identifiersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    where?: AuthIdentifierWhereInput
-    orderBy?: AuthIdentifierOrderByWithRelationInput | AuthIdentifierOrderByWithRelationInput[]
-    cursor?: AuthIdentifierWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AuthIdentifierScalarFieldEnum | AuthIdentifierScalarFieldEnum[]
-  }
-
-  /**
-   * AuthIdentity.oauthBindings
-   */
-  export type AuthIdentity$oauthBindingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    where?: AuthOAuthBindingWhereInput
-    orderBy?: AuthOAuthBindingOrderByWithRelationInput | AuthOAuthBindingOrderByWithRelationInput[]
-    cursor?: AuthOAuthBindingWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AuthOAuthBindingScalarFieldEnum | AuthOAuthBindingScalarFieldEnum[]
-  }
-
-  /**
    * AuthIdentity.credentials
    */
   export type AuthIdentity$credentialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21185,2187 +20944,6 @@ export namespace Prisma {
 
 
   /**
-   * Model AuthIdentifier
-   */
-
-  export type AggregateAuthIdentifier = {
-    _count: AuthIdentifierCountAggregateOutputType | null
-    _min: AuthIdentifierMinAggregateOutputType | null
-    _max: AuthIdentifierMaxAggregateOutputType | null
-  }
-
-  export type AuthIdentifierMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    type: string | null
-    value: string | null
-    isVerified: boolean | null
-    createdAt: Date | null
-  }
-
-  export type AuthIdentifierMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    type: string | null
-    value: string | null
-    isVerified: boolean | null
-    createdAt: Date | null
-  }
-
-  export type AuthIdentifierCountAggregateOutputType = {
-    id: number
-    identityId: number
-    type: number
-    value: number
-    isVerified: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type AuthIdentifierMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    type?: true
-    value?: true
-    isVerified?: true
-    createdAt?: true
-  }
-
-  export type AuthIdentifierMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    type?: true
-    value?: true
-    isVerified?: true
-    createdAt?: true
-  }
-
-  export type AuthIdentifierCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    type?: true
-    value?: true
-    isVerified?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type AuthIdentifierAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AuthIdentifier to aggregate.
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthIdentifiers to fetch.
-     */
-    orderBy?: AuthIdentifierOrderByWithRelationInput | AuthIdentifierOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: AuthIdentifierWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthIdentifiers from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthIdentifiers.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned AuthIdentifiers
-    **/
-    _count?: true | AuthIdentifierCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: AuthIdentifierMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: AuthIdentifierMaxAggregateInputType
-  }
-
-  export type GetAuthIdentifierAggregateType<T extends AuthIdentifierAggregateArgs> = {
-        [P in keyof T & keyof AggregateAuthIdentifier]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAuthIdentifier[P]>
-      : GetScalarType<T[P], AggregateAuthIdentifier[P]>
-  }
-
-
-
-
-  export type AuthIdentifierGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AuthIdentifierWhereInput
-    orderBy?: AuthIdentifierOrderByWithAggregationInput | AuthIdentifierOrderByWithAggregationInput[]
-    by: AuthIdentifierScalarFieldEnum[] | AuthIdentifierScalarFieldEnum
-    having?: AuthIdentifierScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: AuthIdentifierCountAggregateInputType | true
-    _min?: AuthIdentifierMinAggregateInputType
-    _max?: AuthIdentifierMaxAggregateInputType
-  }
-
-  export type AuthIdentifierGroupByOutputType = {
-    id: string
-    identityId: string
-    type: string
-    value: string
-    isVerified: boolean
-    createdAt: Date
-    _count: AuthIdentifierCountAggregateOutputType | null
-    _min: AuthIdentifierMinAggregateOutputType | null
-    _max: AuthIdentifierMaxAggregateOutputType | null
-  }
-
-  type GetAuthIdentifierGroupByPayload<T extends AuthIdentifierGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<AuthIdentifierGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof AuthIdentifierGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], AuthIdentifierGroupByOutputType[P]>
-            : GetScalarType<T[P], AuthIdentifierGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type AuthIdentifierSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    type?: boolean
-    value?: boolean
-    isVerified?: boolean
-    createdAt?: boolean
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["authIdentifier"]>
-
-  export type AuthIdentifierSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    type?: boolean
-    value?: boolean
-    isVerified?: boolean
-    createdAt?: boolean
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["authIdentifier"]>
-
-  export type AuthIdentifierSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    type?: boolean
-    value?: boolean
-    isVerified?: boolean
-    createdAt?: boolean
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["authIdentifier"]>
-
-  export type AuthIdentifierSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    type?: boolean
-    value?: boolean
-    isVerified?: boolean
-    createdAt?: boolean
-  }
-
-  export type AuthIdentifierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "type" | "value" | "isVerified" | "createdAt", ExtArgs["result"]["authIdentifier"]>
-  export type AuthIdentifierInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }
-  export type AuthIdentifierIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }
-  export type AuthIdentifierIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }
-
-  export type $AuthIdentifierPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "AuthIdentifier"
-    objects: {
-      identity: Prisma.$AuthIdentityPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      type: string
-      value: string
-      isVerified: boolean
-      createdAt: Date
-    }, ExtArgs["result"]["authIdentifier"]>
-    composites: {}
-  }
-
-  type AuthIdentifierGetPayload<S extends boolean | null | undefined | AuthIdentifierDefaultArgs> = $Result.GetResult<Prisma.$AuthIdentifierPayload, S>
-
-  type AuthIdentifierCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<AuthIdentifierFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: AuthIdentifierCountAggregateInputType | true
-    }
-
-  export interface AuthIdentifierDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AuthIdentifier'], meta: { name: 'AuthIdentifier' } }
-    /**
-     * Find zero or one AuthIdentifier that matches the filter.
-     * @param {AuthIdentifierFindUniqueArgs} args - Arguments to find a AuthIdentifier
-     * @example
-     * // Get one AuthIdentifier
-     * const authIdentifier = await prisma.authIdentifier.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends AuthIdentifierFindUniqueArgs>(args: SelectSubset<T, AuthIdentifierFindUniqueArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one AuthIdentifier that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {AuthIdentifierFindUniqueOrThrowArgs} args - Arguments to find a AuthIdentifier
-     * @example
-     * // Get one AuthIdentifier
-     * const authIdentifier = await prisma.authIdentifier.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends AuthIdentifierFindUniqueOrThrowArgs>(args: SelectSubset<T, AuthIdentifierFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AuthIdentifier that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierFindFirstArgs} args - Arguments to find a AuthIdentifier
-     * @example
-     * // Get one AuthIdentifier
-     * const authIdentifier = await prisma.authIdentifier.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends AuthIdentifierFindFirstArgs>(args?: SelectSubset<T, AuthIdentifierFindFirstArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AuthIdentifier that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierFindFirstOrThrowArgs} args - Arguments to find a AuthIdentifier
-     * @example
-     * // Get one AuthIdentifier
-     * const authIdentifier = await prisma.authIdentifier.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends AuthIdentifierFindFirstOrThrowArgs>(args?: SelectSubset<T, AuthIdentifierFindFirstOrThrowArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more AuthIdentifiers that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all AuthIdentifiers
-     * const authIdentifiers = await prisma.authIdentifier.findMany()
-     * 
-     * // Get first 10 AuthIdentifiers
-     * const authIdentifiers = await prisma.authIdentifier.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const authIdentifierWithIdOnly = await prisma.authIdentifier.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends AuthIdentifierFindManyArgs>(args?: SelectSubset<T, AuthIdentifierFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a AuthIdentifier.
-     * @param {AuthIdentifierCreateArgs} args - Arguments to create a AuthIdentifier.
-     * @example
-     * // Create one AuthIdentifier
-     * const AuthIdentifier = await prisma.authIdentifier.create({
-     *   data: {
-     *     // ... data to create a AuthIdentifier
-     *   }
-     * })
-     * 
-     */
-    create<T extends AuthIdentifierCreateArgs>(args: SelectSubset<T, AuthIdentifierCreateArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many AuthIdentifiers.
-     * @param {AuthIdentifierCreateManyArgs} args - Arguments to create many AuthIdentifiers.
-     * @example
-     * // Create many AuthIdentifiers
-     * const authIdentifier = await prisma.authIdentifier.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends AuthIdentifierCreateManyArgs>(args?: SelectSubset<T, AuthIdentifierCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many AuthIdentifiers and returns the data saved in the database.
-     * @param {AuthIdentifierCreateManyAndReturnArgs} args - Arguments to create many AuthIdentifiers.
-     * @example
-     * // Create many AuthIdentifiers
-     * const authIdentifier = await prisma.authIdentifier.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many AuthIdentifiers and only return the `id`
-     * const authIdentifierWithIdOnly = await prisma.authIdentifier.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AuthIdentifierCreateManyAndReturnArgs>(args?: SelectSubset<T, AuthIdentifierCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a AuthIdentifier.
-     * @param {AuthIdentifierDeleteArgs} args - Arguments to delete one AuthIdentifier.
-     * @example
-     * // Delete one AuthIdentifier
-     * const AuthIdentifier = await prisma.authIdentifier.delete({
-     *   where: {
-     *     // ... filter to delete one AuthIdentifier
-     *   }
-     * })
-     * 
-     */
-    delete<T extends AuthIdentifierDeleteArgs>(args: SelectSubset<T, AuthIdentifierDeleteArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one AuthIdentifier.
-     * @param {AuthIdentifierUpdateArgs} args - Arguments to update one AuthIdentifier.
-     * @example
-     * // Update one AuthIdentifier
-     * const authIdentifier = await prisma.authIdentifier.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends AuthIdentifierUpdateArgs>(args: SelectSubset<T, AuthIdentifierUpdateArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more AuthIdentifiers.
-     * @param {AuthIdentifierDeleteManyArgs} args - Arguments to filter AuthIdentifiers to delete.
-     * @example
-     * // Delete a few AuthIdentifiers
-     * const { count } = await prisma.authIdentifier.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends AuthIdentifierDeleteManyArgs>(args?: SelectSubset<T, AuthIdentifierDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AuthIdentifiers.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many AuthIdentifiers
-     * const authIdentifier = await prisma.authIdentifier.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends AuthIdentifierUpdateManyArgs>(args: SelectSubset<T, AuthIdentifierUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AuthIdentifiers and returns the data updated in the database.
-     * @param {AuthIdentifierUpdateManyAndReturnArgs} args - Arguments to update many AuthIdentifiers.
-     * @example
-     * // Update many AuthIdentifiers
-     * const authIdentifier = await prisma.authIdentifier.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more AuthIdentifiers and only return the `id`
-     * const authIdentifierWithIdOnly = await prisma.authIdentifier.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AuthIdentifierUpdateManyAndReturnArgs>(args: SelectSubset<T, AuthIdentifierUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one AuthIdentifier.
-     * @param {AuthIdentifierUpsertArgs} args - Arguments to update or create a AuthIdentifier.
-     * @example
-     * // Update or create a AuthIdentifier
-     * const authIdentifier = await prisma.authIdentifier.upsert({
-     *   create: {
-     *     // ... data to create a AuthIdentifier
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the AuthIdentifier we want to update
-     *   }
-     * })
-     */
-    upsert<T extends AuthIdentifierUpsertArgs>(args: SelectSubset<T, AuthIdentifierUpsertArgs<ExtArgs>>): Prisma__AuthIdentifierClient<$Result.GetResult<Prisma.$AuthIdentifierPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of AuthIdentifiers.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierCountArgs} args - Arguments to filter AuthIdentifiers to count.
-     * @example
-     * // Count the number of AuthIdentifiers
-     * const count = await prisma.authIdentifier.count({
-     *   where: {
-     *     // ... the filter for the AuthIdentifiers we want to count
-     *   }
-     * })
-    **/
-    count<T extends AuthIdentifierCountArgs>(
-      args?: Subset<T, AuthIdentifierCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], AuthIdentifierCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a AuthIdentifier.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends AuthIdentifierAggregateArgs>(args: Subset<T, AuthIdentifierAggregateArgs>): Prisma.PrismaPromise<GetAuthIdentifierAggregateType<T>>
-
-    /**
-     * Group by AuthIdentifier.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthIdentifierGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends AuthIdentifierGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: AuthIdentifierGroupByArgs['orderBy'] }
-        : { orderBy?: AuthIdentifierGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, AuthIdentifierGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAuthIdentifierGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the AuthIdentifier model
-   */
-  readonly fields: AuthIdentifierFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for AuthIdentifier.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__AuthIdentifierClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    identity<T extends AuthIdentityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentityDefaultArgs<ExtArgs>>): Prisma__AuthIdentityClient<$Result.GetResult<Prisma.$AuthIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the AuthIdentifier model
-   */
-  interface AuthIdentifierFieldRefs {
-    readonly id: FieldRef<"AuthIdentifier", 'String'>
-    readonly identityId: FieldRef<"AuthIdentifier", 'String'>
-    readonly type: FieldRef<"AuthIdentifier", 'String'>
-    readonly value: FieldRef<"AuthIdentifier", 'String'>
-    readonly isVerified: FieldRef<"AuthIdentifier", 'Boolean'>
-    readonly createdAt: FieldRef<"AuthIdentifier", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * AuthIdentifier findUnique
-   */
-  export type AuthIdentifierFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthIdentifier to fetch.
-     */
-    where: AuthIdentifierWhereUniqueInput
-  }
-
-  /**
-   * AuthIdentifier findUniqueOrThrow
-   */
-  export type AuthIdentifierFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthIdentifier to fetch.
-     */
-    where: AuthIdentifierWhereUniqueInput
-  }
-
-  /**
-   * AuthIdentifier findFirst
-   */
-  export type AuthIdentifierFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthIdentifier to fetch.
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthIdentifiers to fetch.
-     */
-    orderBy?: AuthIdentifierOrderByWithRelationInput | AuthIdentifierOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AuthIdentifiers.
-     */
-    cursor?: AuthIdentifierWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthIdentifiers from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthIdentifiers.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AuthIdentifiers.
-     */
-    distinct?: AuthIdentifierScalarFieldEnum | AuthIdentifierScalarFieldEnum[]
-  }
-
-  /**
-   * AuthIdentifier findFirstOrThrow
-   */
-  export type AuthIdentifierFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthIdentifier to fetch.
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthIdentifiers to fetch.
-     */
-    orderBy?: AuthIdentifierOrderByWithRelationInput | AuthIdentifierOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AuthIdentifiers.
-     */
-    cursor?: AuthIdentifierWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthIdentifiers from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthIdentifiers.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AuthIdentifiers.
-     */
-    distinct?: AuthIdentifierScalarFieldEnum | AuthIdentifierScalarFieldEnum[]
-  }
-
-  /**
-   * AuthIdentifier findMany
-   */
-  export type AuthIdentifierFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthIdentifiers to fetch.
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthIdentifiers to fetch.
-     */
-    orderBy?: AuthIdentifierOrderByWithRelationInput | AuthIdentifierOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing AuthIdentifiers.
-     */
-    cursor?: AuthIdentifierWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthIdentifiers from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthIdentifiers.
-     */
-    skip?: number
-    distinct?: AuthIdentifierScalarFieldEnum | AuthIdentifierScalarFieldEnum[]
-  }
-
-  /**
-   * AuthIdentifier create
-   */
-  export type AuthIdentifierCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * The data needed to create a AuthIdentifier.
-     */
-    data: XOR<AuthIdentifierCreateInput, AuthIdentifierUncheckedCreateInput>
-  }
-
-  /**
-   * AuthIdentifier createMany
-   */
-  export type AuthIdentifierCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many AuthIdentifiers.
-     */
-    data: AuthIdentifierCreateManyInput | AuthIdentifierCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AuthIdentifier createManyAndReturn
-   */
-  export type AuthIdentifierCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * The data used to create many AuthIdentifiers.
-     */
-    data: AuthIdentifierCreateManyInput | AuthIdentifierCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * AuthIdentifier update
-   */
-  export type AuthIdentifierUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * The data needed to update a AuthIdentifier.
-     */
-    data: XOR<AuthIdentifierUpdateInput, AuthIdentifierUncheckedUpdateInput>
-    /**
-     * Choose, which AuthIdentifier to update.
-     */
-    where: AuthIdentifierWhereUniqueInput
-  }
-
-  /**
-   * AuthIdentifier updateMany
-   */
-  export type AuthIdentifierUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update AuthIdentifiers.
-     */
-    data: XOR<AuthIdentifierUpdateManyMutationInput, AuthIdentifierUncheckedUpdateManyInput>
-    /**
-     * Filter which AuthIdentifiers to update
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * Limit how many AuthIdentifiers to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * AuthIdentifier updateManyAndReturn
-   */
-  export type AuthIdentifierUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * The data used to update AuthIdentifiers.
-     */
-    data: XOR<AuthIdentifierUpdateManyMutationInput, AuthIdentifierUncheckedUpdateManyInput>
-    /**
-     * Filter which AuthIdentifiers to update
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * Limit how many AuthIdentifiers to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * AuthIdentifier upsert
-   */
-  export type AuthIdentifierUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * The filter to search for the AuthIdentifier to update in case it exists.
-     */
-    where: AuthIdentifierWhereUniqueInput
-    /**
-     * In case the AuthIdentifier found by the `where` argument doesn't exist, create a new AuthIdentifier with this data.
-     */
-    create: XOR<AuthIdentifierCreateInput, AuthIdentifierUncheckedCreateInput>
-    /**
-     * In case the AuthIdentifier was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<AuthIdentifierUpdateInput, AuthIdentifierUncheckedUpdateInput>
-  }
-
-  /**
-   * AuthIdentifier delete
-   */
-  export type AuthIdentifierDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-    /**
-     * Filter which AuthIdentifier to delete.
-     */
-    where: AuthIdentifierWhereUniqueInput
-  }
-
-  /**
-   * AuthIdentifier deleteMany
-   */
-  export type AuthIdentifierDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AuthIdentifiers to delete
-     */
-    where?: AuthIdentifierWhereInput
-    /**
-     * Limit how many AuthIdentifiers to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * AuthIdentifier without action
-   */
-  export type AuthIdentifierDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthIdentifier
-     */
-    select?: AuthIdentifierSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthIdentifier
-     */
-    omit?: AuthIdentifierOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthIdentifierInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model AuthOAuthBinding
-   */
-
-  export type AggregateAuthOAuthBinding = {
-    _count: AuthOAuthBindingCountAggregateOutputType | null
-    _min: AuthOAuthBindingMinAggregateOutputType | null
-    _max: AuthOAuthBindingMaxAggregateOutputType | null
-  }
-
-  export type AuthOAuthBindingMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    provider: string | null
-    providerSubjectId: string | null
-    accessToken: string | null
-    refreshToken: string | null
-    expiresAt: Date | null
-    createdAt: Date | null
-    lastUsedAt: Date | null
-  }
-
-  export type AuthOAuthBindingMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    provider: string | null
-    providerSubjectId: string | null
-    accessToken: string | null
-    refreshToken: string | null
-    expiresAt: Date | null
-    createdAt: Date | null
-    lastUsedAt: Date | null
-  }
-
-  export type AuthOAuthBindingCountAggregateOutputType = {
-    id: number
-    identityId: number
-    provider: number
-    providerSubjectId: number
-    accessToken: number
-    refreshToken: number
-    expiresAt: number
-    createdAt: number
-    lastUsedAt: number
-    _all: number
-  }
-
-
-  export type AuthOAuthBindingMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    provider?: true
-    providerSubjectId?: true
-    accessToken?: true
-    refreshToken?: true
-    expiresAt?: true
-    createdAt?: true
-    lastUsedAt?: true
-  }
-
-  export type AuthOAuthBindingMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    provider?: true
-    providerSubjectId?: true
-    accessToken?: true
-    refreshToken?: true
-    expiresAt?: true
-    createdAt?: true
-    lastUsedAt?: true
-  }
-
-  export type AuthOAuthBindingCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    provider?: true
-    providerSubjectId?: true
-    accessToken?: true
-    refreshToken?: true
-    expiresAt?: true
-    createdAt?: true
-    lastUsedAt?: true
-    _all?: true
-  }
-
-  export type AuthOAuthBindingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AuthOAuthBinding to aggregate.
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthOAuthBindings to fetch.
-     */
-    orderBy?: AuthOAuthBindingOrderByWithRelationInput | AuthOAuthBindingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: AuthOAuthBindingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthOAuthBindings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthOAuthBindings.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned AuthOAuthBindings
-    **/
-    _count?: true | AuthOAuthBindingCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: AuthOAuthBindingMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: AuthOAuthBindingMaxAggregateInputType
-  }
-
-  export type GetAuthOAuthBindingAggregateType<T extends AuthOAuthBindingAggregateArgs> = {
-        [P in keyof T & keyof AggregateAuthOAuthBinding]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAuthOAuthBinding[P]>
-      : GetScalarType<T[P], AggregateAuthOAuthBinding[P]>
-  }
-
-
-
-
-  export type AuthOAuthBindingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AuthOAuthBindingWhereInput
-    orderBy?: AuthOAuthBindingOrderByWithAggregationInput | AuthOAuthBindingOrderByWithAggregationInput[]
-    by: AuthOAuthBindingScalarFieldEnum[] | AuthOAuthBindingScalarFieldEnum
-    having?: AuthOAuthBindingScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: AuthOAuthBindingCountAggregateInputType | true
-    _min?: AuthOAuthBindingMinAggregateInputType
-    _max?: AuthOAuthBindingMaxAggregateInputType
-  }
-
-  export type AuthOAuthBindingGroupByOutputType = {
-    id: string
-    identityId: string
-    provider: string
-    providerSubjectId: string
-    accessToken: string | null
-    refreshToken: string | null
-    expiresAt: Date | null
-    createdAt: Date
-    lastUsedAt: Date | null
-    _count: AuthOAuthBindingCountAggregateOutputType | null
-    _min: AuthOAuthBindingMinAggregateOutputType | null
-    _max: AuthOAuthBindingMaxAggregateOutputType | null
-  }
-
-  type GetAuthOAuthBindingGroupByPayload<T extends AuthOAuthBindingGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<AuthOAuthBindingGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof AuthOAuthBindingGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], AuthOAuthBindingGroupByOutputType[P]>
-            : GetScalarType<T[P], AuthOAuthBindingGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type AuthOAuthBindingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    provider?: boolean
-    providerSubjectId?: boolean
-    accessToken?: boolean
-    refreshToken?: boolean
-    expiresAt?: boolean
-    createdAt?: boolean
-    lastUsedAt?: boolean
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["authOAuthBinding"]>
-
-  export type AuthOAuthBindingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    provider?: boolean
-    providerSubjectId?: boolean
-    accessToken?: boolean
-    refreshToken?: boolean
-    expiresAt?: boolean
-    createdAt?: boolean
-    lastUsedAt?: boolean
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["authOAuthBinding"]>
-
-  export type AuthOAuthBindingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    provider?: boolean
-    providerSubjectId?: boolean
-    accessToken?: boolean
-    refreshToken?: boolean
-    expiresAt?: boolean
-    createdAt?: boolean
-    lastUsedAt?: boolean
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["authOAuthBinding"]>
-
-  export type AuthOAuthBindingSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    provider?: boolean
-    providerSubjectId?: boolean
-    accessToken?: boolean
-    refreshToken?: boolean
-    expiresAt?: boolean
-    createdAt?: boolean
-    lastUsedAt?: boolean
-  }
-
-  export type AuthOAuthBindingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "provider" | "providerSubjectId" | "accessToken" | "refreshToken" | "expiresAt" | "createdAt" | "lastUsedAt", ExtArgs["result"]["authOAuthBinding"]>
-  export type AuthOAuthBindingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }
-  export type AuthOAuthBindingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }
-  export type AuthOAuthBindingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
-  }
-
-  export type $AuthOAuthBindingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "AuthOAuthBinding"
-    objects: {
-      identity: Prisma.$AuthIdentityPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      provider: string
-      providerSubjectId: string
-      accessToken: string | null
-      refreshToken: string | null
-      expiresAt: Date | null
-      createdAt: Date
-      lastUsedAt: Date | null
-    }, ExtArgs["result"]["authOAuthBinding"]>
-    composites: {}
-  }
-
-  type AuthOAuthBindingGetPayload<S extends boolean | null | undefined | AuthOAuthBindingDefaultArgs> = $Result.GetResult<Prisma.$AuthOAuthBindingPayload, S>
-
-  type AuthOAuthBindingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<AuthOAuthBindingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: AuthOAuthBindingCountAggregateInputType | true
-    }
-
-  export interface AuthOAuthBindingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AuthOAuthBinding'], meta: { name: 'AuthOAuthBinding' } }
-    /**
-     * Find zero or one AuthOAuthBinding that matches the filter.
-     * @param {AuthOAuthBindingFindUniqueArgs} args - Arguments to find a AuthOAuthBinding
-     * @example
-     * // Get one AuthOAuthBinding
-     * const authOAuthBinding = await prisma.authOAuthBinding.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends AuthOAuthBindingFindUniqueArgs>(args: SelectSubset<T, AuthOAuthBindingFindUniqueArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one AuthOAuthBinding that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {AuthOAuthBindingFindUniqueOrThrowArgs} args - Arguments to find a AuthOAuthBinding
-     * @example
-     * // Get one AuthOAuthBinding
-     * const authOAuthBinding = await prisma.authOAuthBinding.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends AuthOAuthBindingFindUniqueOrThrowArgs>(args: SelectSubset<T, AuthOAuthBindingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AuthOAuthBinding that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingFindFirstArgs} args - Arguments to find a AuthOAuthBinding
-     * @example
-     * // Get one AuthOAuthBinding
-     * const authOAuthBinding = await prisma.authOAuthBinding.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends AuthOAuthBindingFindFirstArgs>(args?: SelectSubset<T, AuthOAuthBindingFindFirstArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AuthOAuthBinding that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingFindFirstOrThrowArgs} args - Arguments to find a AuthOAuthBinding
-     * @example
-     * // Get one AuthOAuthBinding
-     * const authOAuthBinding = await prisma.authOAuthBinding.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends AuthOAuthBindingFindFirstOrThrowArgs>(args?: SelectSubset<T, AuthOAuthBindingFindFirstOrThrowArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more AuthOAuthBindings that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all AuthOAuthBindings
-     * const authOAuthBindings = await prisma.authOAuthBinding.findMany()
-     * 
-     * // Get first 10 AuthOAuthBindings
-     * const authOAuthBindings = await prisma.authOAuthBinding.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const authOAuthBindingWithIdOnly = await prisma.authOAuthBinding.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends AuthOAuthBindingFindManyArgs>(args?: SelectSubset<T, AuthOAuthBindingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a AuthOAuthBinding.
-     * @param {AuthOAuthBindingCreateArgs} args - Arguments to create a AuthOAuthBinding.
-     * @example
-     * // Create one AuthOAuthBinding
-     * const AuthOAuthBinding = await prisma.authOAuthBinding.create({
-     *   data: {
-     *     // ... data to create a AuthOAuthBinding
-     *   }
-     * })
-     * 
-     */
-    create<T extends AuthOAuthBindingCreateArgs>(args: SelectSubset<T, AuthOAuthBindingCreateArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many AuthOAuthBindings.
-     * @param {AuthOAuthBindingCreateManyArgs} args - Arguments to create many AuthOAuthBindings.
-     * @example
-     * // Create many AuthOAuthBindings
-     * const authOAuthBinding = await prisma.authOAuthBinding.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends AuthOAuthBindingCreateManyArgs>(args?: SelectSubset<T, AuthOAuthBindingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many AuthOAuthBindings and returns the data saved in the database.
-     * @param {AuthOAuthBindingCreateManyAndReturnArgs} args - Arguments to create many AuthOAuthBindings.
-     * @example
-     * // Create many AuthOAuthBindings
-     * const authOAuthBinding = await prisma.authOAuthBinding.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many AuthOAuthBindings and only return the `id`
-     * const authOAuthBindingWithIdOnly = await prisma.authOAuthBinding.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AuthOAuthBindingCreateManyAndReturnArgs>(args?: SelectSubset<T, AuthOAuthBindingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a AuthOAuthBinding.
-     * @param {AuthOAuthBindingDeleteArgs} args - Arguments to delete one AuthOAuthBinding.
-     * @example
-     * // Delete one AuthOAuthBinding
-     * const AuthOAuthBinding = await prisma.authOAuthBinding.delete({
-     *   where: {
-     *     // ... filter to delete one AuthOAuthBinding
-     *   }
-     * })
-     * 
-     */
-    delete<T extends AuthOAuthBindingDeleteArgs>(args: SelectSubset<T, AuthOAuthBindingDeleteArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one AuthOAuthBinding.
-     * @param {AuthOAuthBindingUpdateArgs} args - Arguments to update one AuthOAuthBinding.
-     * @example
-     * // Update one AuthOAuthBinding
-     * const authOAuthBinding = await prisma.authOAuthBinding.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends AuthOAuthBindingUpdateArgs>(args: SelectSubset<T, AuthOAuthBindingUpdateArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more AuthOAuthBindings.
-     * @param {AuthOAuthBindingDeleteManyArgs} args - Arguments to filter AuthOAuthBindings to delete.
-     * @example
-     * // Delete a few AuthOAuthBindings
-     * const { count } = await prisma.authOAuthBinding.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends AuthOAuthBindingDeleteManyArgs>(args?: SelectSubset<T, AuthOAuthBindingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AuthOAuthBindings.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many AuthOAuthBindings
-     * const authOAuthBinding = await prisma.authOAuthBinding.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends AuthOAuthBindingUpdateManyArgs>(args: SelectSubset<T, AuthOAuthBindingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AuthOAuthBindings and returns the data updated in the database.
-     * @param {AuthOAuthBindingUpdateManyAndReturnArgs} args - Arguments to update many AuthOAuthBindings.
-     * @example
-     * // Update many AuthOAuthBindings
-     * const authOAuthBinding = await prisma.authOAuthBinding.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more AuthOAuthBindings and only return the `id`
-     * const authOAuthBindingWithIdOnly = await prisma.authOAuthBinding.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AuthOAuthBindingUpdateManyAndReturnArgs>(args: SelectSubset<T, AuthOAuthBindingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one AuthOAuthBinding.
-     * @param {AuthOAuthBindingUpsertArgs} args - Arguments to update or create a AuthOAuthBinding.
-     * @example
-     * // Update or create a AuthOAuthBinding
-     * const authOAuthBinding = await prisma.authOAuthBinding.upsert({
-     *   create: {
-     *     // ... data to create a AuthOAuthBinding
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the AuthOAuthBinding we want to update
-     *   }
-     * })
-     */
-    upsert<T extends AuthOAuthBindingUpsertArgs>(args: SelectSubset<T, AuthOAuthBindingUpsertArgs<ExtArgs>>): Prisma__AuthOAuthBindingClient<$Result.GetResult<Prisma.$AuthOAuthBindingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of AuthOAuthBindings.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingCountArgs} args - Arguments to filter AuthOAuthBindings to count.
-     * @example
-     * // Count the number of AuthOAuthBindings
-     * const count = await prisma.authOAuthBinding.count({
-     *   where: {
-     *     // ... the filter for the AuthOAuthBindings we want to count
-     *   }
-     * })
-    **/
-    count<T extends AuthOAuthBindingCountArgs>(
-      args?: Subset<T, AuthOAuthBindingCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], AuthOAuthBindingCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a AuthOAuthBinding.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends AuthOAuthBindingAggregateArgs>(args: Subset<T, AuthOAuthBindingAggregateArgs>): Prisma.PrismaPromise<GetAuthOAuthBindingAggregateType<T>>
-
-    /**
-     * Group by AuthOAuthBinding.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AuthOAuthBindingGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends AuthOAuthBindingGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: AuthOAuthBindingGroupByArgs['orderBy'] }
-        : { orderBy?: AuthOAuthBindingGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, AuthOAuthBindingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAuthOAuthBindingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the AuthOAuthBinding model
-   */
-  readonly fields: AuthOAuthBindingFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for AuthOAuthBinding.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__AuthOAuthBindingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    identity<T extends AuthIdentityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AuthIdentityDefaultArgs<ExtArgs>>): Prisma__AuthIdentityClient<$Result.GetResult<Prisma.$AuthIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the AuthOAuthBinding model
-   */
-  interface AuthOAuthBindingFieldRefs {
-    readonly id: FieldRef<"AuthOAuthBinding", 'String'>
-    readonly identityId: FieldRef<"AuthOAuthBinding", 'String'>
-    readonly provider: FieldRef<"AuthOAuthBinding", 'String'>
-    readonly providerSubjectId: FieldRef<"AuthOAuthBinding", 'String'>
-    readonly accessToken: FieldRef<"AuthOAuthBinding", 'String'>
-    readonly refreshToken: FieldRef<"AuthOAuthBinding", 'String'>
-    readonly expiresAt: FieldRef<"AuthOAuthBinding", 'DateTime'>
-    readonly createdAt: FieldRef<"AuthOAuthBinding", 'DateTime'>
-    readonly lastUsedAt: FieldRef<"AuthOAuthBinding", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * AuthOAuthBinding findUnique
-   */
-  export type AuthOAuthBindingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthOAuthBinding to fetch.
-     */
-    where: AuthOAuthBindingWhereUniqueInput
-  }
-
-  /**
-   * AuthOAuthBinding findUniqueOrThrow
-   */
-  export type AuthOAuthBindingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthOAuthBinding to fetch.
-     */
-    where: AuthOAuthBindingWhereUniqueInput
-  }
-
-  /**
-   * AuthOAuthBinding findFirst
-   */
-  export type AuthOAuthBindingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthOAuthBinding to fetch.
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthOAuthBindings to fetch.
-     */
-    orderBy?: AuthOAuthBindingOrderByWithRelationInput | AuthOAuthBindingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AuthOAuthBindings.
-     */
-    cursor?: AuthOAuthBindingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthOAuthBindings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthOAuthBindings.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AuthOAuthBindings.
-     */
-    distinct?: AuthOAuthBindingScalarFieldEnum | AuthOAuthBindingScalarFieldEnum[]
-  }
-
-  /**
-   * AuthOAuthBinding findFirstOrThrow
-   */
-  export type AuthOAuthBindingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthOAuthBinding to fetch.
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthOAuthBindings to fetch.
-     */
-    orderBy?: AuthOAuthBindingOrderByWithRelationInput | AuthOAuthBindingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AuthOAuthBindings.
-     */
-    cursor?: AuthOAuthBindingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthOAuthBindings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthOAuthBindings.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AuthOAuthBindings.
-     */
-    distinct?: AuthOAuthBindingScalarFieldEnum | AuthOAuthBindingScalarFieldEnum[]
-  }
-
-  /**
-   * AuthOAuthBinding findMany
-   */
-  export type AuthOAuthBindingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * Filter, which AuthOAuthBindings to fetch.
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AuthOAuthBindings to fetch.
-     */
-    orderBy?: AuthOAuthBindingOrderByWithRelationInput | AuthOAuthBindingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing AuthOAuthBindings.
-     */
-    cursor?: AuthOAuthBindingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AuthOAuthBindings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AuthOAuthBindings.
-     */
-    skip?: number
-    distinct?: AuthOAuthBindingScalarFieldEnum | AuthOAuthBindingScalarFieldEnum[]
-  }
-
-  /**
-   * AuthOAuthBinding create
-   */
-  export type AuthOAuthBindingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * The data needed to create a AuthOAuthBinding.
-     */
-    data: XOR<AuthOAuthBindingCreateInput, AuthOAuthBindingUncheckedCreateInput>
-  }
-
-  /**
-   * AuthOAuthBinding createMany
-   */
-  export type AuthOAuthBindingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many AuthOAuthBindings.
-     */
-    data: AuthOAuthBindingCreateManyInput | AuthOAuthBindingCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AuthOAuthBinding createManyAndReturn
-   */
-  export type AuthOAuthBindingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * The data used to create many AuthOAuthBindings.
-     */
-    data: AuthOAuthBindingCreateManyInput | AuthOAuthBindingCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * AuthOAuthBinding update
-   */
-  export type AuthOAuthBindingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * The data needed to update a AuthOAuthBinding.
-     */
-    data: XOR<AuthOAuthBindingUpdateInput, AuthOAuthBindingUncheckedUpdateInput>
-    /**
-     * Choose, which AuthOAuthBinding to update.
-     */
-    where: AuthOAuthBindingWhereUniqueInput
-  }
-
-  /**
-   * AuthOAuthBinding updateMany
-   */
-  export type AuthOAuthBindingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update AuthOAuthBindings.
-     */
-    data: XOR<AuthOAuthBindingUpdateManyMutationInput, AuthOAuthBindingUncheckedUpdateManyInput>
-    /**
-     * Filter which AuthOAuthBindings to update
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * Limit how many AuthOAuthBindings to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * AuthOAuthBinding updateManyAndReturn
-   */
-  export type AuthOAuthBindingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * The data used to update AuthOAuthBindings.
-     */
-    data: XOR<AuthOAuthBindingUpdateManyMutationInput, AuthOAuthBindingUncheckedUpdateManyInput>
-    /**
-     * Filter which AuthOAuthBindings to update
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * Limit how many AuthOAuthBindings to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * AuthOAuthBinding upsert
-   */
-  export type AuthOAuthBindingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * The filter to search for the AuthOAuthBinding to update in case it exists.
-     */
-    where: AuthOAuthBindingWhereUniqueInput
-    /**
-     * In case the AuthOAuthBinding found by the `where` argument doesn't exist, create a new AuthOAuthBinding with this data.
-     */
-    create: XOR<AuthOAuthBindingCreateInput, AuthOAuthBindingUncheckedCreateInput>
-    /**
-     * In case the AuthOAuthBinding was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<AuthOAuthBindingUpdateInput, AuthOAuthBindingUncheckedUpdateInput>
-  }
-
-  /**
-   * AuthOAuthBinding delete
-   */
-  export type AuthOAuthBindingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-    /**
-     * Filter which AuthOAuthBinding to delete.
-     */
-    where: AuthOAuthBindingWhereUniqueInput
-  }
-
-  /**
-   * AuthOAuthBinding deleteMany
-   */
-  export type AuthOAuthBindingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AuthOAuthBindings to delete
-     */
-    where?: AuthOAuthBindingWhereInput
-    /**
-     * Limit how many AuthOAuthBindings to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * AuthOAuthBinding without action
-   */
-  export type AuthOAuthBindingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AuthOAuthBinding
-     */
-    select?: AuthOAuthBindingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AuthOAuthBinding
-     */
-    omit?: AuthOAuthBindingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AuthOAuthBindingInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model AuthCredential
    */
 
@@ -23390,8 +20968,15 @@ export namespace Prisma {
     identityId: string | null
     type: $Enums.CredentialType | null
     status: $Enums.CredentialStatus | null
+    identifier: string | null
     passwordHash: string | null
     passwordLastChangedAt: Date | null
+    provider: string | null
+    providerSubjectId: string | null
+    accessToken: string | null
+    refreshToken: string | null
+    oauthExpiresAt: Date | null
+    isVerified: boolean | null
     version: number | null
     createdAt: Date | null
     lastUsedAt: Date | null
@@ -23403,8 +20988,15 @@ export namespace Prisma {
     identityId: string | null
     type: $Enums.CredentialType | null
     status: $Enums.CredentialStatus | null
+    identifier: string | null
     passwordHash: string | null
     passwordLastChangedAt: Date | null
+    provider: string | null
+    providerSubjectId: string | null
+    accessToken: string | null
+    refreshToken: string | null
+    oauthExpiresAt: Date | null
+    isVerified: boolean | null
     version: number | null
     createdAt: Date | null
     lastUsedAt: Date | null
@@ -23416,8 +21008,15 @@ export namespace Prisma {
     identityId: number
     type: number
     status: number
+    identifier: number
     passwordHash: number
     passwordLastChangedAt: number
+    provider: number
+    providerSubjectId: number
+    accessToken: number
+    refreshToken: number
+    oauthExpiresAt: number
+    isVerified: number
     version: number
     createdAt: number
     lastUsedAt: number
@@ -23439,8 +21038,15 @@ export namespace Prisma {
     identityId?: true
     type?: true
     status?: true
+    identifier?: true
     passwordHash?: true
     passwordLastChangedAt?: true
+    provider?: true
+    providerSubjectId?: true
+    accessToken?: true
+    refreshToken?: true
+    oauthExpiresAt?: true
+    isVerified?: true
     version?: true
     createdAt?: true
     lastUsedAt?: true
@@ -23452,8 +21058,15 @@ export namespace Prisma {
     identityId?: true
     type?: true
     status?: true
+    identifier?: true
     passwordHash?: true
     passwordLastChangedAt?: true
+    provider?: true
+    providerSubjectId?: true
+    accessToken?: true
+    refreshToken?: true
+    oauthExpiresAt?: true
+    isVerified?: true
     version?: true
     createdAt?: true
     lastUsedAt?: true
@@ -23465,8 +21078,15 @@ export namespace Prisma {
     identityId?: true
     type?: true
     status?: true
+    identifier?: true
     passwordHash?: true
     passwordLastChangedAt?: true
+    provider?: true
+    providerSubjectId?: true
+    accessToken?: true
+    refreshToken?: true
+    oauthExpiresAt?: true
+    isVerified?: true
     version?: true
     createdAt?: true
     lastUsedAt?: true
@@ -23565,8 +21185,15 @@ export namespace Prisma {
     identityId: string
     type: $Enums.CredentialType
     status: $Enums.CredentialStatus
+    identifier: string | null
     passwordHash: string | null
     passwordLastChangedAt: Date | null
+    provider: string | null
+    providerSubjectId: string | null
+    accessToken: string | null
+    refreshToken: string | null
+    oauthExpiresAt: Date | null
+    isVerified: boolean | null
     version: number
     createdAt: Date
     lastUsedAt: Date | null
@@ -23597,8 +21224,15 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     status?: boolean
+    identifier?: boolean
     passwordHash?: boolean
     passwordLastChangedAt?: boolean
+    provider?: boolean
+    providerSubjectId?: boolean
+    accessToken?: boolean
+    refreshToken?: boolean
+    oauthExpiresAt?: boolean
+    isVerified?: boolean
     version?: boolean
     createdAt?: boolean
     lastUsedAt?: boolean
@@ -23611,8 +21245,15 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     status?: boolean
+    identifier?: boolean
     passwordHash?: boolean
     passwordLastChangedAt?: boolean
+    provider?: boolean
+    providerSubjectId?: boolean
+    accessToken?: boolean
+    refreshToken?: boolean
+    oauthExpiresAt?: boolean
+    isVerified?: boolean
     version?: boolean
     createdAt?: boolean
     lastUsedAt?: boolean
@@ -23625,8 +21266,15 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     status?: boolean
+    identifier?: boolean
     passwordHash?: boolean
     passwordLastChangedAt?: boolean
+    provider?: boolean
+    providerSubjectId?: boolean
+    accessToken?: boolean
+    refreshToken?: boolean
+    oauthExpiresAt?: boolean
+    isVerified?: boolean
     version?: boolean
     createdAt?: boolean
     lastUsedAt?: boolean
@@ -23639,15 +21287,22 @@ export namespace Prisma {
     identityId?: boolean
     type?: boolean
     status?: boolean
+    identifier?: boolean
     passwordHash?: boolean
     passwordLastChangedAt?: boolean
+    provider?: boolean
+    providerSubjectId?: boolean
+    accessToken?: boolean
+    refreshToken?: boolean
+    oauthExpiresAt?: boolean
+    isVerified?: boolean
     version?: boolean
     createdAt?: boolean
     lastUsedAt?: boolean
     deletedAt?: boolean
   }
 
-  export type AuthCredentialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "type" | "status" | "passwordHash" | "passwordLastChangedAt" | "version" | "createdAt" | "lastUsedAt" | "deletedAt", ExtArgs["result"]["authCredential"]>
+  export type AuthCredentialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "type" | "status" | "identifier" | "passwordHash" | "passwordLastChangedAt" | "provider" | "providerSubjectId" | "accessToken" | "refreshToken" | "oauthExpiresAt" | "isVerified" | "version" | "createdAt" | "lastUsedAt" | "deletedAt", ExtArgs["result"]["authCredential"]>
   export type AuthCredentialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     identity?: boolean | AuthIdentityDefaultArgs<ExtArgs>
   }
@@ -23668,8 +21323,15 @@ export namespace Prisma {
       identityId: string
       type: $Enums.CredentialType
       status: $Enums.CredentialStatus
+      identifier: string | null
       passwordHash: string | null
       passwordLastChangedAt: Date | null
+      provider: string | null
+      providerSubjectId: string | null
+      accessToken: string | null
+      refreshToken: string | null
+      oauthExpiresAt: Date | null
+      isVerified: boolean | null
       version: number
       createdAt: Date
       lastUsedAt: Date | null
@@ -24102,8 +21764,15 @@ export namespace Prisma {
     readonly identityId: FieldRef<"AuthCredential", 'String'>
     readonly type: FieldRef<"AuthCredential", 'CredentialType'>
     readonly status: FieldRef<"AuthCredential", 'CredentialStatus'>
+    readonly identifier: FieldRef<"AuthCredential", 'String'>
     readonly passwordHash: FieldRef<"AuthCredential", 'String'>
     readonly passwordLastChangedAt: FieldRef<"AuthCredential", 'DateTime'>
+    readonly provider: FieldRef<"AuthCredential", 'String'>
+    readonly providerSubjectId: FieldRef<"AuthCredential", 'String'>
+    readonly accessToken: FieldRef<"AuthCredential", 'String'>
+    readonly refreshToken: FieldRef<"AuthCredential", 'String'>
+    readonly oauthExpiresAt: FieldRef<"AuthCredential", 'DateTime'>
+    readonly isVerified: FieldRef<"AuthCredential", 'Boolean'>
     readonly version: FieldRef<"AuthCredential", 'Int'>
     readonly createdAt: FieldRef<"AuthCredential", 'DateTime'>
     readonly lastUsedAt: FieldRef<"AuthCredential", 'DateTime'>
@@ -97250,6 +94919,7 @@ export namespace Prisma {
 
   export const AccountScalarFieldEnum: {
     id: 'id',
+    identityId: 'identityId',
     status: 'status',
     profile: 'profile',
     settings: 'settings',
@@ -97415,40 +95085,20 @@ export namespace Prisma {
   export type AuthIdentityScalarFieldEnum = (typeof AuthIdentityScalarFieldEnum)[keyof typeof AuthIdentityScalarFieldEnum]
 
 
-  export const AuthIdentifierScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    type: 'type',
-    value: 'value',
-    isVerified: 'isVerified',
-    createdAt: 'createdAt'
-  };
-
-  export type AuthIdentifierScalarFieldEnum = (typeof AuthIdentifierScalarFieldEnum)[keyof typeof AuthIdentifierScalarFieldEnum]
-
-
-  export const AuthOAuthBindingScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    provider: 'provider',
-    providerSubjectId: 'providerSubjectId',
-    accessToken: 'accessToken',
-    refreshToken: 'refreshToken',
-    expiresAt: 'expiresAt',
-    createdAt: 'createdAt',
-    lastUsedAt: 'lastUsedAt'
-  };
-
-  export type AuthOAuthBindingScalarFieldEnum = (typeof AuthOAuthBindingScalarFieldEnum)[keyof typeof AuthOAuthBindingScalarFieldEnum]
-
-
   export const AuthCredentialScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
     type: 'type',
     status: 'status',
+    identifier: 'identifier',
     passwordHash: 'passwordHash',
     passwordLastChangedAt: 'passwordLastChangedAt',
+    provider: 'provider',
+    providerSubjectId: 'providerSubjectId',
+    accessToken: 'accessToken',
+    refreshToken: 'refreshToken',
+    oauthExpiresAt: 'oauthExpiresAt',
+    isVerified: 'isVerified',
     version: 'version',
     createdAt: 'createdAt',
     lastUsedAt: 'lastUsedAt',
@@ -98871,6 +96521,7 @@ export namespace Prisma {
     OR?: AccountWhereInput[]
     NOT?: AccountWhereInput | AccountWhereInput[]
     id?: StringFilter<"Account"> | string
+    identityId?: StringFilter<"Account"> | string
     status?: StringFilter<"Account"> | string
     profile?: JsonFilter<"Account">
     settings?: JsonFilter<"Account">
@@ -98931,6 +96582,7 @@ export namespace Prisma {
 
   export type AccountOrderByWithRelationInput = {
     id?: SortOrder
+    identityId?: SortOrder
     status?: SortOrder
     profile?: SortOrder
     settings?: SortOrder
@@ -98991,6 +96643,7 @@ export namespace Prisma {
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    identityId?: string
     emailAddress?: string
     AND?: AccountWhereInput | AccountWhereInput[]
     OR?: AccountWhereInput[]
@@ -99050,10 +96703,11 @@ export namespace Prisma {
     syncSessions?: SyncSessionListRelationFilter
     syncConflicts?: SyncConflictListRelationFilter
     pendingChanges?: PendingChangeListRelationFilter
-  }, "id" | "emailAddress">
+  }, "id" | "identityId" | "emailAddress">
 
   export type AccountOrderByWithAggregationInput = {
     id?: SortOrder
+    identityId?: SortOrder
     status?: SortOrder
     profile?: SortOrder
     settings?: SortOrder
@@ -99082,6 +96736,7 @@ export namespace Prisma {
     OR?: AccountScalarWhereWithAggregatesInput[]
     NOT?: AccountScalarWhereWithAggregatesInput | AccountScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Account"> | string
+    identityId?: StringWithAggregatesFilter<"Account"> | string
     status?: StringWithAggregatesFilter<"Account"> | string
     profile?: JsonWithAggregatesFilter<"Account">
     settings?: JsonWithAggregatesFilter<"Account">
@@ -99768,8 +97423,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AuthIdentity"> | Date | string
     updatedAt?: DateTimeFilter<"AuthIdentity"> | Date | string
     deletedAt?: DateTimeNullableFilter<"AuthIdentity"> | Date | string | null
-    identifiers?: AuthIdentifierListRelationFilter
-    oauthBindings?: AuthOAuthBindingListRelationFilter
     credentials?: AuthCredentialListRelationFilter
     sessions?: AuthSessionListRelationFilter
     accounts?: AccountListRelationFilter
@@ -99785,8 +97438,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
-    identifiers?: AuthIdentifierOrderByRelationAggregateInput
-    oauthBindings?: AuthOAuthBindingOrderByRelationAggregateInput
     credentials?: AuthCredentialOrderByRelationAggregateInput
     sessions?: AuthSessionOrderByRelationAggregateInput
     accounts?: AccountOrderByRelationAggregateInput
@@ -99805,8 +97456,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AuthIdentity"> | Date | string
     updatedAt?: DateTimeFilter<"AuthIdentity"> | Date | string
     deletedAt?: DateTimeNullableFilter<"AuthIdentity"> | Date | string | null
-    identifiers?: AuthIdentifierListRelationFilter
-    oauthBindings?: AuthOAuthBindingListRelationFilter
     credentials?: AuthCredentialListRelationFilter
     sessions?: AuthSessionListRelationFilter
     accounts?: AccountListRelationFilter
@@ -99844,143 +97493,6 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableWithAggregatesFilter<"AuthIdentity"> | Date | string | null
   }
 
-  export type AuthIdentifierWhereInput = {
-    AND?: AuthIdentifierWhereInput | AuthIdentifierWhereInput[]
-    OR?: AuthIdentifierWhereInput[]
-    NOT?: AuthIdentifierWhereInput | AuthIdentifierWhereInput[]
-    id?: StringFilter<"AuthIdentifier"> | string
-    identityId?: StringFilter<"AuthIdentifier"> | string
-    type?: StringFilter<"AuthIdentifier"> | string
-    value?: StringFilter<"AuthIdentifier"> | string
-    isVerified?: BoolFilter<"AuthIdentifier"> | boolean
-    createdAt?: DateTimeFilter<"AuthIdentifier"> | Date | string
-    identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-  }
-
-  export type AuthIdentifierOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    type?: SortOrder
-    value?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-    identity?: AuthIdentityOrderByWithRelationInput
-  }
-
-  export type AuthIdentifierWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    identityId_type_value?: AuthIdentifierIdentityIdTypeValueCompoundUniqueInput
-    AND?: AuthIdentifierWhereInput | AuthIdentifierWhereInput[]
-    OR?: AuthIdentifierWhereInput[]
-    NOT?: AuthIdentifierWhereInput | AuthIdentifierWhereInput[]
-    identityId?: StringFilter<"AuthIdentifier"> | string
-    type?: StringFilter<"AuthIdentifier"> | string
-    value?: StringFilter<"AuthIdentifier"> | string
-    isVerified?: BoolFilter<"AuthIdentifier"> | boolean
-    createdAt?: DateTimeFilter<"AuthIdentifier"> | Date | string
-    identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-  }, "id" | "identityId_type_value">
-
-  export type AuthIdentifierOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    type?: SortOrder
-    value?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-    _count?: AuthIdentifierCountOrderByAggregateInput
-    _max?: AuthIdentifierMaxOrderByAggregateInput
-    _min?: AuthIdentifierMinOrderByAggregateInput
-  }
-
-  export type AuthIdentifierScalarWhereWithAggregatesInput = {
-    AND?: AuthIdentifierScalarWhereWithAggregatesInput | AuthIdentifierScalarWhereWithAggregatesInput[]
-    OR?: AuthIdentifierScalarWhereWithAggregatesInput[]
-    NOT?: AuthIdentifierScalarWhereWithAggregatesInput | AuthIdentifierScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"AuthIdentifier"> | string
-    identityId?: StringWithAggregatesFilter<"AuthIdentifier"> | string
-    type?: StringWithAggregatesFilter<"AuthIdentifier"> | string
-    value?: StringWithAggregatesFilter<"AuthIdentifier"> | string
-    isVerified?: BoolWithAggregatesFilter<"AuthIdentifier"> | boolean
-    createdAt?: DateTimeWithAggregatesFilter<"AuthIdentifier"> | Date | string
-  }
-
-  export type AuthOAuthBindingWhereInput = {
-    AND?: AuthOAuthBindingWhereInput | AuthOAuthBindingWhereInput[]
-    OR?: AuthOAuthBindingWhereInput[]
-    NOT?: AuthOAuthBindingWhereInput | AuthOAuthBindingWhereInput[]
-    id?: StringFilter<"AuthOAuthBinding"> | string
-    identityId?: StringFilter<"AuthOAuthBinding"> | string
-    provider?: StringFilter<"AuthOAuthBinding"> | string
-    providerSubjectId?: StringFilter<"AuthOAuthBinding"> | string
-    accessToken?: StringNullableFilter<"AuthOAuthBinding"> | string | null
-    refreshToken?: StringNullableFilter<"AuthOAuthBinding"> | string | null
-    expiresAt?: DateTimeNullableFilter<"AuthOAuthBinding"> | Date | string | null
-    createdAt?: DateTimeFilter<"AuthOAuthBinding"> | Date | string
-    lastUsedAt?: DateTimeNullableFilter<"AuthOAuthBinding"> | Date | string | null
-    identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-  }
-
-  export type AuthOAuthBindingOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    provider?: SortOrder
-    providerSubjectId?: SortOrder
-    accessToken?: SortOrderInput | SortOrder
-    refreshToken?: SortOrderInput | SortOrder
-    expiresAt?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    lastUsedAt?: SortOrderInput | SortOrder
-    identity?: AuthIdentityOrderByWithRelationInput
-  }
-
-  export type AuthOAuthBindingWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    provider_providerSubjectId?: AuthOAuthBindingProviderProviderSubjectIdCompoundUniqueInput
-    AND?: AuthOAuthBindingWhereInput | AuthOAuthBindingWhereInput[]
-    OR?: AuthOAuthBindingWhereInput[]
-    NOT?: AuthOAuthBindingWhereInput | AuthOAuthBindingWhereInput[]
-    identityId?: StringFilter<"AuthOAuthBinding"> | string
-    provider?: StringFilter<"AuthOAuthBinding"> | string
-    providerSubjectId?: StringFilter<"AuthOAuthBinding"> | string
-    accessToken?: StringNullableFilter<"AuthOAuthBinding"> | string | null
-    refreshToken?: StringNullableFilter<"AuthOAuthBinding"> | string | null
-    expiresAt?: DateTimeNullableFilter<"AuthOAuthBinding"> | Date | string | null
-    createdAt?: DateTimeFilter<"AuthOAuthBinding"> | Date | string
-    lastUsedAt?: DateTimeNullableFilter<"AuthOAuthBinding"> | Date | string | null
-    identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-  }, "id" | "provider_providerSubjectId">
-
-  export type AuthOAuthBindingOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    provider?: SortOrder
-    providerSubjectId?: SortOrder
-    accessToken?: SortOrderInput | SortOrder
-    refreshToken?: SortOrderInput | SortOrder
-    expiresAt?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    lastUsedAt?: SortOrderInput | SortOrder
-    _count?: AuthOAuthBindingCountOrderByAggregateInput
-    _max?: AuthOAuthBindingMaxOrderByAggregateInput
-    _min?: AuthOAuthBindingMinOrderByAggregateInput
-  }
-
-  export type AuthOAuthBindingScalarWhereWithAggregatesInput = {
-    AND?: AuthOAuthBindingScalarWhereWithAggregatesInput | AuthOAuthBindingScalarWhereWithAggregatesInput[]
-    OR?: AuthOAuthBindingScalarWhereWithAggregatesInput[]
-    NOT?: AuthOAuthBindingScalarWhereWithAggregatesInput | AuthOAuthBindingScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"AuthOAuthBinding"> | string
-    identityId?: StringWithAggregatesFilter<"AuthOAuthBinding"> | string
-    provider?: StringWithAggregatesFilter<"AuthOAuthBinding"> | string
-    providerSubjectId?: StringWithAggregatesFilter<"AuthOAuthBinding"> | string
-    accessToken?: StringNullableWithAggregatesFilter<"AuthOAuthBinding"> | string | null
-    refreshToken?: StringNullableWithAggregatesFilter<"AuthOAuthBinding"> | string | null
-    expiresAt?: DateTimeNullableWithAggregatesFilter<"AuthOAuthBinding"> | Date | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"AuthOAuthBinding"> | Date | string
-    lastUsedAt?: DateTimeNullableWithAggregatesFilter<"AuthOAuthBinding"> | Date | string | null
-  }
-
   export type AuthCredentialWhereInput = {
     AND?: AuthCredentialWhereInput | AuthCredentialWhereInput[]
     OR?: AuthCredentialWhereInput[]
@@ -99989,8 +97501,15 @@ export namespace Prisma {
     identityId?: StringFilter<"AuthCredential"> | string
     type?: EnumCredentialTypeFilter<"AuthCredential"> | $Enums.CredentialType
     status?: EnumCredentialStatusFilter<"AuthCredential"> | $Enums.CredentialStatus
+    identifier?: StringNullableFilter<"AuthCredential"> | string | null
     passwordHash?: StringNullableFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
+    provider?: StringNullableFilter<"AuthCredential"> | string | null
+    providerSubjectId?: StringNullableFilter<"AuthCredential"> | string | null
+    accessToken?: StringNullableFilter<"AuthCredential"> | string | null
+    refreshToken?: StringNullableFilter<"AuthCredential"> | string | null
+    oauthExpiresAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
+    isVerified?: BoolNullableFilter<"AuthCredential"> | boolean | null
     version?: IntFilter<"AuthCredential"> | number
     createdAt?: DateTimeFilter<"AuthCredential"> | Date | string
     lastUsedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
@@ -100003,8 +97522,15 @@ export namespace Prisma {
     identityId?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    identifier?: SortOrderInput | SortOrder
     passwordHash?: SortOrderInput | SortOrder
     passwordLastChangedAt?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
+    providerSubjectId?: SortOrderInput | SortOrder
+    accessToken?: SortOrderInput | SortOrder
+    refreshToken?: SortOrderInput | SortOrder
+    oauthExpiresAt?: SortOrderInput | SortOrder
+    isVerified?: SortOrderInput | SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     lastUsedAt?: SortOrderInput | SortOrder
@@ -100014,28 +97540,44 @@ export namespace Prisma {
 
   export type AuthCredentialWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    identifier_type?: AuthCredentialIdentifierTypeCompoundUniqueInput
+    provider_providerSubjectId?: AuthCredentialProviderProviderSubjectIdCompoundUniqueInput
     AND?: AuthCredentialWhereInput | AuthCredentialWhereInput[]
     OR?: AuthCredentialWhereInput[]
     NOT?: AuthCredentialWhereInput | AuthCredentialWhereInput[]
     identityId?: StringFilter<"AuthCredential"> | string
     type?: EnumCredentialTypeFilter<"AuthCredential"> | $Enums.CredentialType
     status?: EnumCredentialStatusFilter<"AuthCredential"> | $Enums.CredentialStatus
+    identifier?: StringNullableFilter<"AuthCredential"> | string | null
     passwordHash?: StringNullableFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
+    provider?: StringNullableFilter<"AuthCredential"> | string | null
+    providerSubjectId?: StringNullableFilter<"AuthCredential"> | string | null
+    accessToken?: StringNullableFilter<"AuthCredential"> | string | null
+    refreshToken?: StringNullableFilter<"AuthCredential"> | string | null
+    oauthExpiresAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
+    isVerified?: BoolNullableFilter<"AuthCredential"> | boolean | null
     version?: IntFilter<"AuthCredential"> | number
     createdAt?: DateTimeFilter<"AuthCredential"> | Date | string
     lastUsedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
     identity?: XOR<AuthIdentityScalarRelationFilter, AuthIdentityWhereInput>
-  }, "id">
+  }, "id" | "identifier_type" | "provider_providerSubjectId">
 
   export type AuthCredentialOrderByWithAggregationInput = {
     id?: SortOrder
     identityId?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    identifier?: SortOrderInput | SortOrder
     passwordHash?: SortOrderInput | SortOrder
     passwordLastChangedAt?: SortOrderInput | SortOrder
+    provider?: SortOrderInput | SortOrder
+    providerSubjectId?: SortOrderInput | SortOrder
+    accessToken?: SortOrderInput | SortOrder
+    refreshToken?: SortOrderInput | SortOrder
+    oauthExpiresAt?: SortOrderInput | SortOrder
+    isVerified?: SortOrderInput | SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     lastUsedAt?: SortOrderInput | SortOrder
@@ -100055,8 +97597,15 @@ export namespace Prisma {
     identityId?: StringWithAggregatesFilter<"AuthCredential"> | string
     type?: EnumCredentialTypeWithAggregatesFilter<"AuthCredential"> | $Enums.CredentialType
     status?: EnumCredentialStatusWithAggregatesFilter<"AuthCredential"> | $Enums.CredentialStatus
+    identifier?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
     passwordHash?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableWithAggregatesFilter<"AuthCredential"> | Date | string | null
+    provider?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
+    providerSubjectId?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
+    accessToken?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
+    refreshToken?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
+    oauthExpiresAt?: DateTimeNullableWithAggregatesFilter<"AuthCredential"> | Date | string | null
+    isVerified?: BoolNullableWithAggregatesFilter<"AuthCredential"> | boolean | null
     version?: IntWithAggregatesFilter<"AuthCredential"> | number
     createdAt?: DateTimeWithAggregatesFilter<"AuthCredential"> | Date | string
     lastUsedAt?: DateTimeNullableWithAggregatesFilter<"AuthCredential"> | Date | string | null
@@ -106443,6 +103992,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -106503,6 +104053,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -106561,6 +104112,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -106621,6 +104173,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -106680,6 +104233,7 @@ export namespace Prisma {
 
   export type AccountCreateManyInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -106699,6 +104253,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -106719,6 +104274,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -107477,8 +105033,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingCreateNestedManyWithoutIdentityInput
     credentials?: AuthCredentialCreateNestedManyWithoutIdentityInput
     sessions?: AuthSessionCreateNestedManyWithoutIdentityInput
     accounts?: AccountCreateNestedManyWithoutIdentityInput
@@ -107494,8 +105048,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierUncheckedCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingUncheckedCreateNestedManyWithoutIdentityInput
     credentials?: AuthCredentialUncheckedCreateNestedManyWithoutIdentityInput
     sessions?: AuthSessionUncheckedCreateNestedManyWithoutIdentityInput
     accounts?: AccountUncheckedCreateNestedManyWithoutIdentityInput
@@ -107511,8 +105063,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUpdateManyWithoutIdentityNestedInput
     credentials?: AuthCredentialUpdateManyWithoutIdentityNestedInput
     sessions?: AuthSessionUpdateManyWithoutIdentityNestedInput
     accounts?: AccountUpdateManyWithoutIdentityNestedInput
@@ -107528,8 +105078,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUncheckedUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUncheckedUpdateManyWithoutIdentityNestedInput
     credentials?: AuthCredentialUncheckedUpdateManyWithoutIdentityNestedInput
     sessions?: AuthSessionUncheckedUpdateManyWithoutIdentityNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutIdentityNestedInput
@@ -107571,157 +105119,19 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type AuthIdentifierCreateInput = {
-    id?: string
-    type: string
-    value: string
-    isVerified?: boolean
-    createdAt?: Date | string
-    identity: AuthIdentityCreateNestedOneWithoutIdentifiersInput
-  }
-
-  export type AuthIdentifierUncheckedCreateInput = {
-    id?: string
-    identityId: string
-    type: string
-    value: string
-    isVerified?: boolean
-    createdAt?: Date | string
-  }
-
-  export type AuthIdentifierUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    identity?: AuthIdentityUpdateOneRequiredWithoutIdentifiersNestedInput
-  }
-
-  export type AuthIdentifierUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AuthIdentifierCreateManyInput = {
-    id?: string
-    identityId: string
-    type: string
-    value: string
-    isVerified?: boolean
-    createdAt?: Date | string
-  }
-
-  export type AuthIdentifierUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AuthIdentifierUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AuthOAuthBindingCreateInput = {
-    id?: string
-    provider: string
-    providerSubjectId: string
-    accessToken?: string | null
-    refreshToken?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string
-    lastUsedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutOauthBindingsInput
-  }
-
-  export type AuthOAuthBindingUncheckedCreateInput = {
-    id?: string
-    identityId: string
-    provider: string
-    providerSubjectId: string
-    accessToken?: string | null
-    refreshToken?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string
-    lastUsedAt?: Date | string | null
-  }
-
-  export type AuthOAuthBindingUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutOauthBindingsNestedInput
-  }
-
-  export type AuthOAuthBindingUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AuthOAuthBindingCreateManyInput = {
-    id?: string
-    identityId: string
-    provider: string
-    providerSubjectId: string
-    accessToken?: string | null
-    refreshToken?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string
-    lastUsedAt?: Date | string | null
-  }
-
-  export type AuthOAuthBindingUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AuthOAuthBindingUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type AuthCredentialCreateInput = {
     id?: string
     type: $Enums.CredentialType
     status?: $Enums.CredentialStatus
+    identifier?: string | null
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
+    provider?: string | null
+    providerSubjectId?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
+    oauthExpiresAt?: Date | string | null
+    isVerified?: boolean | null
     version?: number
     createdAt?: Date | string
     lastUsedAt?: Date | string | null
@@ -107734,8 +105144,15 @@ export namespace Prisma {
     identityId: string
     type: $Enums.CredentialType
     status?: $Enums.CredentialStatus
+    identifier?: string | null
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
+    provider?: string | null
+    providerSubjectId?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
+    oauthExpiresAt?: Date | string | null
+    isVerified?: boolean | null
     version?: number
     createdAt?: Date | string
     lastUsedAt?: Date | string | null
@@ -107746,8 +105163,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -107760,8 +105184,15 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -107773,8 +105204,15 @@ export namespace Prisma {
     identityId: string
     type: $Enums.CredentialType
     status?: $Enums.CredentialStatus
+    identifier?: string | null
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
+    provider?: string | null
+    providerSubjectId?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
+    oauthExpiresAt?: Date | string | null
+    isVerified?: boolean | null
     version?: number
     createdAt?: Date | string
     lastUsedAt?: Date | string | null
@@ -107785,8 +105223,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -107798,8 +105243,15 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -115659,6 +113111,7 @@ export namespace Prisma {
 
   export type AccountCountOrderByAggregateInput = {
     id?: SortOrder
+    identityId?: SortOrder
     status?: SortOrder
     profile?: SortOrder
     settings?: SortOrder
@@ -115683,6 +113136,7 @@ export namespace Prisma {
 
   export type AccountMaxOrderByAggregateInput = {
     id?: SortOrder
+    identityId?: SortOrder
     status?: SortOrder
     emailAddress?: SortOrder
     emailIsVerified?: SortOrder
@@ -115701,6 +113155,7 @@ export namespace Prisma {
 
   export type AccountMinOrderByAggregateInput = {
     id?: SortOrder
+    identityId?: SortOrder
     status?: SortOrder
     emailAddress?: SortOrder
     emailIsVerified?: SortOrder
@@ -116283,18 +113738,6 @@ export namespace Prisma {
     not?: NestedEnumAuthIdentityStatusFilter<$PrismaModel> | $Enums.AuthIdentityStatus
   }
 
-  export type AuthIdentifierListRelationFilter = {
-    every?: AuthIdentifierWhereInput
-    some?: AuthIdentifierWhereInput
-    none?: AuthIdentifierWhereInput
-  }
-
-  export type AuthOAuthBindingListRelationFilter = {
-    every?: AuthOAuthBindingWhereInput
-    some?: AuthOAuthBindingWhereInput
-    none?: AuthOAuthBindingWhereInput
-  }
-
   export type AuthCredentialListRelationFilter = {
     every?: AuthCredentialWhereInput
     some?: AuthCredentialWhereInput
@@ -116311,14 +113754,6 @@ export namespace Prisma {
     every?: AccountWhereInput
     some?: AccountWhereInput
     none?: AccountWhereInput
-  }
-
-  export type AuthIdentifierOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type AuthOAuthBindingOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type AuthCredentialOrderByRelationAggregateInput = {
@@ -116389,80 +113824,6 @@ export namespace Prisma {
     _max?: NestedEnumAuthIdentityStatusFilter<$PrismaModel>
   }
 
-  export type AuthIdentifierIdentityIdTypeValueCompoundUniqueInput = {
-    identityId: string
-    type: string
-    value: string
-  }
-
-  export type AuthIdentifierCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    type?: SortOrder
-    value?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type AuthIdentifierMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    type?: SortOrder
-    value?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type AuthIdentifierMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    type?: SortOrder
-    value?: SortOrder
-    isVerified?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type AuthOAuthBindingProviderProviderSubjectIdCompoundUniqueInput = {
-    provider: string
-    providerSubjectId: string
-  }
-
-  export type AuthOAuthBindingCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    provider?: SortOrder
-    providerSubjectId?: SortOrder
-    accessToken?: SortOrder
-    refreshToken?: SortOrder
-    expiresAt?: SortOrder
-    createdAt?: SortOrder
-    lastUsedAt?: SortOrder
-  }
-
-  export type AuthOAuthBindingMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    provider?: SortOrder
-    providerSubjectId?: SortOrder
-    accessToken?: SortOrder
-    refreshToken?: SortOrder
-    expiresAt?: SortOrder
-    createdAt?: SortOrder
-    lastUsedAt?: SortOrder
-  }
-
-  export type AuthOAuthBindingMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    provider?: SortOrder
-    providerSubjectId?: SortOrder
-    accessToken?: SortOrder
-    refreshToken?: SortOrder
-    expiresAt?: SortOrder
-    createdAt?: SortOrder
-    lastUsedAt?: SortOrder
-  }
-
   export type EnumCredentialTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.CredentialType | EnumCredentialTypeFieldRefInput<$PrismaModel>
     in?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
@@ -116477,13 +113838,30 @@ export namespace Prisma {
     not?: NestedEnumCredentialStatusFilter<$PrismaModel> | $Enums.CredentialStatus
   }
 
+  export type AuthCredentialIdentifierTypeCompoundUniqueInput = {
+    identifier: string
+    type: $Enums.CredentialType
+  }
+
+  export type AuthCredentialProviderProviderSubjectIdCompoundUniqueInput = {
+    provider: string
+    providerSubjectId: string
+  }
+
   export type AuthCredentialCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    identifier?: SortOrder
     passwordHash?: SortOrder
     passwordLastChangedAt?: SortOrder
+    provider?: SortOrder
+    providerSubjectId?: SortOrder
+    accessToken?: SortOrder
+    refreshToken?: SortOrder
+    oauthExpiresAt?: SortOrder
+    isVerified?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     lastUsedAt?: SortOrder
@@ -116499,8 +113877,15 @@ export namespace Prisma {
     identityId?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    identifier?: SortOrder
     passwordHash?: SortOrder
     passwordLastChangedAt?: SortOrder
+    provider?: SortOrder
+    providerSubjectId?: SortOrder
+    accessToken?: SortOrder
+    refreshToken?: SortOrder
+    oauthExpiresAt?: SortOrder
+    isVerified?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     lastUsedAt?: SortOrder
@@ -116512,8 +113897,15 @@ export namespace Prisma {
     identityId?: SortOrder
     type?: SortOrder
     status?: SortOrder
+    identifier?: SortOrder
     passwordHash?: SortOrder
     passwordLastChangedAt?: SortOrder
+    provider?: SortOrder
+    providerSubjectId?: SortOrder
+    accessToken?: SortOrder
+    refreshToken?: SortOrder
+    oauthExpiresAt?: SortOrder
+    isVerified?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     lastUsedAt?: SortOrder
@@ -122595,20 +119987,6 @@ export namespace Prisma {
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutDashboardConfigsInput, AccountUpdateWithoutDashboardConfigsInput>, AccountUncheckedUpdateWithoutDashboardConfigsInput>
   }
 
-  export type AuthIdentifierCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput> | AuthIdentifierCreateWithoutIdentityInput[] | AuthIdentifierUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthIdentifierCreateOrConnectWithoutIdentityInput | AuthIdentifierCreateOrConnectWithoutIdentityInput[]
-    createMany?: AuthIdentifierCreateManyIdentityInputEnvelope
-    connect?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-  }
-
-  export type AuthOAuthBindingCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<AuthOAuthBindingCreateWithoutIdentityInput, AuthOAuthBindingUncheckedCreateWithoutIdentityInput> | AuthOAuthBindingCreateWithoutIdentityInput[] | AuthOAuthBindingUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthOAuthBindingCreateOrConnectWithoutIdentityInput | AuthOAuthBindingCreateOrConnectWithoutIdentityInput[]
-    createMany?: AuthOAuthBindingCreateManyIdentityInputEnvelope
-    connect?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-  }
-
   export type AuthCredentialCreateNestedManyWithoutIdentityInput = {
     create?: XOR<AuthCredentialCreateWithoutIdentityInput, AuthCredentialUncheckedCreateWithoutIdentityInput> | AuthCredentialCreateWithoutIdentityInput[] | AuthCredentialUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AuthCredentialCreateOrConnectWithoutIdentityInput | AuthCredentialCreateOrConnectWithoutIdentityInput[]
@@ -122628,20 +120006,6 @@ export namespace Prisma {
     connectOrCreate?: AccountCreateOrConnectWithoutIdentityInput | AccountCreateOrConnectWithoutIdentityInput[]
     createMany?: AccountCreateManyIdentityInputEnvelope
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
-  }
-
-  export type AuthIdentifierUncheckedCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput> | AuthIdentifierCreateWithoutIdentityInput[] | AuthIdentifierUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthIdentifierCreateOrConnectWithoutIdentityInput | AuthIdentifierCreateOrConnectWithoutIdentityInput[]
-    createMany?: AuthIdentifierCreateManyIdentityInputEnvelope
-    connect?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-  }
-
-  export type AuthOAuthBindingUncheckedCreateNestedManyWithoutIdentityInput = {
-    create?: XOR<AuthOAuthBindingCreateWithoutIdentityInput, AuthOAuthBindingUncheckedCreateWithoutIdentityInput> | AuthOAuthBindingCreateWithoutIdentityInput[] | AuthOAuthBindingUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthOAuthBindingCreateOrConnectWithoutIdentityInput | AuthOAuthBindingCreateOrConnectWithoutIdentityInput[]
-    createMany?: AuthOAuthBindingCreateManyIdentityInputEnvelope
-    connect?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
   }
 
   export type AuthCredentialUncheckedCreateNestedManyWithoutIdentityInput = {
@@ -122667,34 +120031,6 @@ export namespace Prisma {
 
   export type EnumAuthIdentityStatusFieldUpdateOperationsInput = {
     set?: $Enums.AuthIdentityStatus
-  }
-
-  export type AuthIdentifierUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput> | AuthIdentifierCreateWithoutIdentityInput[] | AuthIdentifierUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthIdentifierCreateOrConnectWithoutIdentityInput | AuthIdentifierCreateOrConnectWithoutIdentityInput[]
-    upsert?: AuthIdentifierUpsertWithWhereUniqueWithoutIdentityInput | AuthIdentifierUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: AuthIdentifierCreateManyIdentityInputEnvelope
-    set?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    disconnect?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    delete?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    connect?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    update?: AuthIdentifierUpdateWithWhereUniqueWithoutIdentityInput | AuthIdentifierUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: AuthIdentifierUpdateManyWithWhereWithoutIdentityInput | AuthIdentifierUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: AuthIdentifierScalarWhereInput | AuthIdentifierScalarWhereInput[]
-  }
-
-  export type AuthOAuthBindingUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<AuthOAuthBindingCreateWithoutIdentityInput, AuthOAuthBindingUncheckedCreateWithoutIdentityInput> | AuthOAuthBindingCreateWithoutIdentityInput[] | AuthOAuthBindingUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthOAuthBindingCreateOrConnectWithoutIdentityInput | AuthOAuthBindingCreateOrConnectWithoutIdentityInput[]
-    upsert?: AuthOAuthBindingUpsertWithWhereUniqueWithoutIdentityInput | AuthOAuthBindingUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: AuthOAuthBindingCreateManyIdentityInputEnvelope
-    set?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    disconnect?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    delete?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    connect?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    update?: AuthOAuthBindingUpdateWithWhereUniqueWithoutIdentityInput | AuthOAuthBindingUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: AuthOAuthBindingUpdateManyWithWhereWithoutIdentityInput | AuthOAuthBindingUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: AuthOAuthBindingScalarWhereInput | AuthOAuthBindingScalarWhereInput[]
   }
 
   export type AuthCredentialUpdateManyWithoutIdentityNestedInput = {
@@ -122739,34 +120075,6 @@ export namespace Prisma {
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
   }
 
-  export type AuthIdentifierUncheckedUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput> | AuthIdentifierCreateWithoutIdentityInput[] | AuthIdentifierUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthIdentifierCreateOrConnectWithoutIdentityInput | AuthIdentifierCreateOrConnectWithoutIdentityInput[]
-    upsert?: AuthIdentifierUpsertWithWhereUniqueWithoutIdentityInput | AuthIdentifierUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: AuthIdentifierCreateManyIdentityInputEnvelope
-    set?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    disconnect?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    delete?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    connect?: AuthIdentifierWhereUniqueInput | AuthIdentifierWhereUniqueInput[]
-    update?: AuthIdentifierUpdateWithWhereUniqueWithoutIdentityInput | AuthIdentifierUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: AuthIdentifierUpdateManyWithWhereWithoutIdentityInput | AuthIdentifierUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: AuthIdentifierScalarWhereInput | AuthIdentifierScalarWhereInput[]
-  }
-
-  export type AuthOAuthBindingUncheckedUpdateManyWithoutIdentityNestedInput = {
-    create?: XOR<AuthOAuthBindingCreateWithoutIdentityInput, AuthOAuthBindingUncheckedCreateWithoutIdentityInput> | AuthOAuthBindingCreateWithoutIdentityInput[] | AuthOAuthBindingUncheckedCreateWithoutIdentityInput[]
-    connectOrCreate?: AuthOAuthBindingCreateOrConnectWithoutIdentityInput | AuthOAuthBindingCreateOrConnectWithoutIdentityInput[]
-    upsert?: AuthOAuthBindingUpsertWithWhereUniqueWithoutIdentityInput | AuthOAuthBindingUpsertWithWhereUniqueWithoutIdentityInput[]
-    createMany?: AuthOAuthBindingCreateManyIdentityInputEnvelope
-    set?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    disconnect?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    delete?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    connect?: AuthOAuthBindingWhereUniqueInput | AuthOAuthBindingWhereUniqueInput[]
-    update?: AuthOAuthBindingUpdateWithWhereUniqueWithoutIdentityInput | AuthOAuthBindingUpdateWithWhereUniqueWithoutIdentityInput[]
-    updateMany?: AuthOAuthBindingUpdateManyWithWhereWithoutIdentityInput | AuthOAuthBindingUpdateManyWithWhereWithoutIdentityInput[]
-    deleteMany?: AuthOAuthBindingScalarWhereInput | AuthOAuthBindingScalarWhereInput[]
-  }
-
   export type AuthCredentialUncheckedUpdateManyWithoutIdentityNestedInput = {
     create?: XOR<AuthCredentialCreateWithoutIdentityInput, AuthCredentialUncheckedCreateWithoutIdentityInput> | AuthCredentialCreateWithoutIdentityInput[] | AuthCredentialUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AuthCredentialCreateOrConnectWithoutIdentityInput | AuthCredentialCreateOrConnectWithoutIdentityInput[]
@@ -122807,34 +120115,6 @@ export namespace Prisma {
     update?: AccountUpdateWithWhereUniqueWithoutIdentityInput | AccountUpdateWithWhereUniqueWithoutIdentityInput[]
     updateMany?: AccountUpdateManyWithWhereWithoutIdentityInput | AccountUpdateManyWithWhereWithoutIdentityInput[]
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[]
-  }
-
-  export type AuthIdentityCreateNestedOneWithoutIdentifiersInput = {
-    create?: XOR<AuthIdentityCreateWithoutIdentifiersInput, AuthIdentityUncheckedCreateWithoutIdentifiersInput>
-    connectOrCreate?: AuthIdentityCreateOrConnectWithoutIdentifiersInput
-    connect?: AuthIdentityWhereUniqueInput
-  }
-
-  export type AuthIdentityUpdateOneRequiredWithoutIdentifiersNestedInput = {
-    create?: XOR<AuthIdentityCreateWithoutIdentifiersInput, AuthIdentityUncheckedCreateWithoutIdentifiersInput>
-    connectOrCreate?: AuthIdentityCreateOrConnectWithoutIdentifiersInput
-    upsert?: AuthIdentityUpsertWithoutIdentifiersInput
-    connect?: AuthIdentityWhereUniqueInput
-    update?: XOR<XOR<AuthIdentityUpdateToOneWithWhereWithoutIdentifiersInput, AuthIdentityUpdateWithoutIdentifiersInput>, AuthIdentityUncheckedUpdateWithoutIdentifiersInput>
-  }
-
-  export type AuthIdentityCreateNestedOneWithoutOauthBindingsInput = {
-    create?: XOR<AuthIdentityCreateWithoutOauthBindingsInput, AuthIdentityUncheckedCreateWithoutOauthBindingsInput>
-    connectOrCreate?: AuthIdentityCreateOrConnectWithoutOauthBindingsInput
-    connect?: AuthIdentityWhereUniqueInput
-  }
-
-  export type AuthIdentityUpdateOneRequiredWithoutOauthBindingsNestedInput = {
-    create?: XOR<AuthIdentityCreateWithoutOauthBindingsInput, AuthIdentityUncheckedCreateWithoutOauthBindingsInput>
-    connectOrCreate?: AuthIdentityCreateOrConnectWithoutOauthBindingsInput
-    upsert?: AuthIdentityUpsertWithoutOauthBindingsInput
-    connect?: AuthIdentityWhereUniqueInput
-    update?: XOR<XOR<AuthIdentityUpdateToOneWithWhereWithoutOauthBindingsInput, AuthIdentityUpdateWithoutOauthBindingsInput>, AuthIdentityUncheckedUpdateWithoutOauthBindingsInput>
   }
 
   export type AuthIdentityCreateNestedOneWithoutCredentialsInput = {
@@ -126241,8 +123521,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingCreateNestedManyWithoutIdentityInput
     credentials?: AuthCredentialCreateNestedManyWithoutIdentityInput
     sessions?: AuthSessionCreateNestedManyWithoutIdentityInput
   }
@@ -126257,8 +123535,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierUncheckedCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingUncheckedCreateNestedManyWithoutIdentityInput
     credentials?: AuthCredentialUncheckedCreateNestedManyWithoutIdentityInput
     sessions?: AuthSessionUncheckedCreateNestedManyWithoutIdentityInput
   }
@@ -128177,8 +125453,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUpdateManyWithoutIdentityNestedInput
     credentials?: AuthCredentialUpdateManyWithoutIdentityNestedInput
     sessions?: AuthSessionUpdateManyWithoutIdentityNestedInput
   }
@@ -128193,8 +125467,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUncheckedUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUncheckedUpdateManyWithoutIdentityNestedInput
     credentials?: AuthCredentialUncheckedUpdateManyWithoutIdentityNestedInput
     sessions?: AuthSessionUncheckedUpdateManyWithoutIdentityNestedInput
   }
@@ -129809,6 +127081,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiConversationsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -129868,6 +127141,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiConversationsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -129967,6 +127241,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiConversationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130026,6 +127301,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiConversationsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130179,6 +127455,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiGenerationTasksInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130238,6 +127515,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiGenerationTasksInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130311,6 +127589,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiGenerationTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130370,6 +127649,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiGenerationTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130427,6 +127707,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiUsageQuotasInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130486,6 +127767,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiUsageQuotasInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130559,6 +127841,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiUsageQuotasInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130618,6 +127901,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiUsageQuotasInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130675,6 +127959,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutAiProviderConfigsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130734,6 +128019,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutAiProviderConfigsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130807,6 +128093,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutAiProviderConfigsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130866,6 +128153,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutAiProviderConfigsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -130923,6 +128211,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutDashboardConfigsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -130982,6 +128271,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutDashboardConfigsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131055,6 +128345,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutDashboardConfigsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -131114,6 +128405,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutDashboardConfigsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -131170,70 +128462,19 @@ export namespace Prisma {
     pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
-  export type AuthIdentifierCreateWithoutIdentityInput = {
-    id?: string
-    type: string
-    value: string
-    isVerified?: boolean
-    createdAt?: Date | string
-  }
-
-  export type AuthIdentifierUncheckedCreateWithoutIdentityInput = {
-    id?: string
-    type: string
-    value: string
-    isVerified?: boolean
-    createdAt?: Date | string
-  }
-
-  export type AuthIdentifierCreateOrConnectWithoutIdentityInput = {
-    where: AuthIdentifierWhereUniqueInput
-    create: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type AuthIdentifierCreateManyIdentityInputEnvelope = {
-    data: AuthIdentifierCreateManyIdentityInput | AuthIdentifierCreateManyIdentityInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type AuthOAuthBindingCreateWithoutIdentityInput = {
-    id?: string
-    provider: string
-    providerSubjectId: string
-    accessToken?: string | null
-    refreshToken?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string
-    lastUsedAt?: Date | string | null
-  }
-
-  export type AuthOAuthBindingUncheckedCreateWithoutIdentityInput = {
-    id?: string
-    provider: string
-    providerSubjectId: string
-    accessToken?: string | null
-    refreshToken?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string
-    lastUsedAt?: Date | string | null
-  }
-
-  export type AuthOAuthBindingCreateOrConnectWithoutIdentityInput = {
-    where: AuthOAuthBindingWhereUniqueInput
-    create: XOR<AuthOAuthBindingCreateWithoutIdentityInput, AuthOAuthBindingUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type AuthOAuthBindingCreateManyIdentityInputEnvelope = {
-    data: AuthOAuthBindingCreateManyIdentityInput | AuthOAuthBindingCreateManyIdentityInput[]
-    skipDuplicates?: boolean
-  }
-
   export type AuthCredentialCreateWithoutIdentityInput = {
     id?: string
     type: $Enums.CredentialType
     status?: $Enums.CredentialStatus
+    identifier?: string | null
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
+    provider?: string | null
+    providerSubjectId?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
+    oauthExpiresAt?: Date | string | null
+    isVerified?: boolean | null
     version?: number
     createdAt?: Date | string
     lastUsedAt?: Date | string | null
@@ -131244,8 +128485,15 @@ export namespace Prisma {
     id?: string
     type: $Enums.CredentialType
     status?: $Enums.CredentialStatus
+    identifier?: string | null
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
+    provider?: string | null
+    providerSubjectId?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
+    oauthExpiresAt?: Date | string | null
+    isVerified?: boolean | null
     version?: number
     createdAt?: Date | string
     lastUsedAt?: Date | string | null
@@ -131309,6 +128557,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutIdentityInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131367,6 +128616,7 @@ export namespace Prisma {
   }
 
   export type AccountUncheckedCreateWithoutIdentityInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131434,65 +128684,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type AuthIdentifierUpsertWithWhereUniqueWithoutIdentityInput = {
-    where: AuthIdentifierWhereUniqueInput
-    update: XOR<AuthIdentifierUpdateWithoutIdentityInput, AuthIdentifierUncheckedUpdateWithoutIdentityInput>
-    create: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type AuthIdentifierUpdateWithWhereUniqueWithoutIdentityInput = {
-    where: AuthIdentifierWhereUniqueInput
-    data: XOR<AuthIdentifierUpdateWithoutIdentityInput, AuthIdentifierUncheckedUpdateWithoutIdentityInput>
-  }
-
-  export type AuthIdentifierUpdateManyWithWhereWithoutIdentityInput = {
-    where: AuthIdentifierScalarWhereInput
-    data: XOR<AuthIdentifierUpdateManyMutationInput, AuthIdentifierUncheckedUpdateManyWithoutIdentityInput>
-  }
-
-  export type AuthIdentifierScalarWhereInput = {
-    AND?: AuthIdentifierScalarWhereInput | AuthIdentifierScalarWhereInput[]
-    OR?: AuthIdentifierScalarWhereInput[]
-    NOT?: AuthIdentifierScalarWhereInput | AuthIdentifierScalarWhereInput[]
-    id?: StringFilter<"AuthIdentifier"> | string
-    identityId?: StringFilter<"AuthIdentifier"> | string
-    type?: StringFilter<"AuthIdentifier"> | string
-    value?: StringFilter<"AuthIdentifier"> | string
-    isVerified?: BoolFilter<"AuthIdentifier"> | boolean
-    createdAt?: DateTimeFilter<"AuthIdentifier"> | Date | string
-  }
-
-  export type AuthOAuthBindingUpsertWithWhereUniqueWithoutIdentityInput = {
-    where: AuthOAuthBindingWhereUniqueInput
-    update: XOR<AuthOAuthBindingUpdateWithoutIdentityInput, AuthOAuthBindingUncheckedUpdateWithoutIdentityInput>
-    create: XOR<AuthOAuthBindingCreateWithoutIdentityInput, AuthOAuthBindingUncheckedCreateWithoutIdentityInput>
-  }
-
-  export type AuthOAuthBindingUpdateWithWhereUniqueWithoutIdentityInput = {
-    where: AuthOAuthBindingWhereUniqueInput
-    data: XOR<AuthOAuthBindingUpdateWithoutIdentityInput, AuthOAuthBindingUncheckedUpdateWithoutIdentityInput>
-  }
-
-  export type AuthOAuthBindingUpdateManyWithWhereWithoutIdentityInput = {
-    where: AuthOAuthBindingScalarWhereInput
-    data: XOR<AuthOAuthBindingUpdateManyMutationInput, AuthOAuthBindingUncheckedUpdateManyWithoutIdentityInput>
-  }
-
-  export type AuthOAuthBindingScalarWhereInput = {
-    AND?: AuthOAuthBindingScalarWhereInput | AuthOAuthBindingScalarWhereInput[]
-    OR?: AuthOAuthBindingScalarWhereInput[]
-    NOT?: AuthOAuthBindingScalarWhereInput | AuthOAuthBindingScalarWhereInput[]
-    id?: StringFilter<"AuthOAuthBinding"> | string
-    identityId?: StringFilter<"AuthOAuthBinding"> | string
-    provider?: StringFilter<"AuthOAuthBinding"> | string
-    providerSubjectId?: StringFilter<"AuthOAuthBinding"> | string
-    accessToken?: StringNullableFilter<"AuthOAuthBinding"> | string | null
-    refreshToken?: StringNullableFilter<"AuthOAuthBinding"> | string | null
-    expiresAt?: DateTimeNullableFilter<"AuthOAuthBinding"> | Date | string | null
-    createdAt?: DateTimeFilter<"AuthOAuthBinding"> | Date | string
-    lastUsedAt?: DateTimeNullableFilter<"AuthOAuthBinding"> | Date | string | null
-  }
-
   export type AuthCredentialUpsertWithWhereUniqueWithoutIdentityInput = {
     where: AuthCredentialWhereUniqueInput
     update: XOR<AuthCredentialUpdateWithoutIdentityInput, AuthCredentialUncheckedUpdateWithoutIdentityInput>
@@ -131517,8 +128708,15 @@ export namespace Prisma {
     identityId?: StringFilter<"AuthCredential"> | string
     type?: EnumCredentialTypeFilter<"AuthCredential"> | $Enums.CredentialType
     status?: EnumCredentialStatusFilter<"AuthCredential"> | $Enums.CredentialStatus
+    identifier?: StringNullableFilter<"AuthCredential"> | string | null
     passwordHash?: StringNullableFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
+    provider?: StringNullableFilter<"AuthCredential"> | string | null
+    providerSubjectId?: StringNullableFilter<"AuthCredential"> | string | null
+    accessToken?: StringNullableFilter<"AuthCredential"> | string | null
+    refreshToken?: StringNullableFilter<"AuthCredential"> | string | null
+    oauthExpiresAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
+    isVerified?: BoolNullableFilter<"AuthCredential"> | boolean | null
     version?: IntFilter<"AuthCredential"> | number
     createdAt?: DateTimeFilter<"AuthCredential"> | Date | string
     lastUsedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
@@ -131584,6 +128782,7 @@ export namespace Prisma {
     OR?: AccountScalarWhereInput[]
     NOT?: AccountScalarWhereInput | AccountScalarWhereInput[]
     id?: StringFilter<"Account"> | string
+    identityId?: StringFilter<"Account"> | string
     status?: StringFilter<"Account"> | string
     profile?: JsonFilter<"Account">
     settings?: JsonFilter<"Account">
@@ -131602,166 +128801,6 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Account"> | Date | string | null
   }
 
-  export type AuthIdentityCreateWithoutIdentifiersInput = {
-    id?: string
-    status?: $Enums.AuthIdentityStatus
-    failedLoginAttempts?: number
-    lastFailedAttempt?: Date | string | null
-    lockedUntil?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    oauthBindings?: AuthOAuthBindingCreateNestedManyWithoutIdentityInput
-    credentials?: AuthCredentialCreateNestedManyWithoutIdentityInput
-    sessions?: AuthSessionCreateNestedManyWithoutIdentityInput
-    accounts?: AccountCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AuthIdentityUncheckedCreateWithoutIdentifiersInput = {
-    id?: string
-    status?: $Enums.AuthIdentityStatus
-    failedLoginAttempts?: number
-    lastFailedAttempt?: Date | string | null
-    lockedUntil?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    oauthBindings?: AuthOAuthBindingUncheckedCreateNestedManyWithoutIdentityInput
-    credentials?: AuthCredentialUncheckedCreateNestedManyWithoutIdentityInput
-    sessions?: AuthSessionUncheckedCreateNestedManyWithoutIdentityInput
-    accounts?: AccountUncheckedCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AuthIdentityCreateOrConnectWithoutIdentifiersInput = {
-    where: AuthIdentityWhereUniqueInput
-    create: XOR<AuthIdentityCreateWithoutIdentifiersInput, AuthIdentityUncheckedCreateWithoutIdentifiersInput>
-  }
-
-  export type AuthIdentityUpsertWithoutIdentifiersInput = {
-    update: XOR<AuthIdentityUpdateWithoutIdentifiersInput, AuthIdentityUncheckedUpdateWithoutIdentifiersInput>
-    create: XOR<AuthIdentityCreateWithoutIdentifiersInput, AuthIdentityUncheckedCreateWithoutIdentifiersInput>
-    where?: AuthIdentityWhereInput
-  }
-
-  export type AuthIdentityUpdateToOneWithWhereWithoutIdentifiersInput = {
-    where?: AuthIdentityWhereInput
-    data: XOR<AuthIdentityUpdateWithoutIdentifiersInput, AuthIdentityUncheckedUpdateWithoutIdentifiersInput>
-  }
-
-  export type AuthIdentityUpdateWithoutIdentifiersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
-    lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    oauthBindings?: AuthOAuthBindingUpdateManyWithoutIdentityNestedInput
-    credentials?: AuthCredentialUpdateManyWithoutIdentityNestedInput
-    sessions?: AuthSessionUpdateManyWithoutIdentityNestedInput
-    accounts?: AccountUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AuthIdentityUncheckedUpdateWithoutIdentifiersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
-    lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    oauthBindings?: AuthOAuthBindingUncheckedUpdateManyWithoutIdentityNestedInput
-    credentials?: AuthCredentialUncheckedUpdateManyWithoutIdentityNestedInput
-    sessions?: AuthSessionUncheckedUpdateManyWithoutIdentityNestedInput
-    accounts?: AccountUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AuthIdentityCreateWithoutOauthBindingsInput = {
-    id?: string
-    status?: $Enums.AuthIdentityStatus
-    failedLoginAttempts?: number
-    lastFailedAttempt?: Date | string | null
-    lockedUntil?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierCreateNestedManyWithoutIdentityInput
-    credentials?: AuthCredentialCreateNestedManyWithoutIdentityInput
-    sessions?: AuthSessionCreateNestedManyWithoutIdentityInput
-    accounts?: AccountCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AuthIdentityUncheckedCreateWithoutOauthBindingsInput = {
-    id?: string
-    status?: $Enums.AuthIdentityStatus
-    failedLoginAttempts?: number
-    lastFailedAttempt?: Date | string | null
-    lockedUntil?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierUncheckedCreateNestedManyWithoutIdentityInput
-    credentials?: AuthCredentialUncheckedCreateNestedManyWithoutIdentityInput
-    sessions?: AuthSessionUncheckedCreateNestedManyWithoutIdentityInput
-    accounts?: AccountUncheckedCreateNestedManyWithoutIdentityInput
-  }
-
-  export type AuthIdentityCreateOrConnectWithoutOauthBindingsInput = {
-    where: AuthIdentityWhereUniqueInput
-    create: XOR<AuthIdentityCreateWithoutOauthBindingsInput, AuthIdentityUncheckedCreateWithoutOauthBindingsInput>
-  }
-
-  export type AuthIdentityUpsertWithoutOauthBindingsInput = {
-    update: XOR<AuthIdentityUpdateWithoutOauthBindingsInput, AuthIdentityUncheckedUpdateWithoutOauthBindingsInput>
-    create: XOR<AuthIdentityCreateWithoutOauthBindingsInput, AuthIdentityUncheckedCreateWithoutOauthBindingsInput>
-    where?: AuthIdentityWhereInput
-  }
-
-  export type AuthIdentityUpdateToOneWithWhereWithoutOauthBindingsInput = {
-    where?: AuthIdentityWhereInput
-    data: XOR<AuthIdentityUpdateWithoutOauthBindingsInput, AuthIdentityUncheckedUpdateWithoutOauthBindingsInput>
-  }
-
-  export type AuthIdentityUpdateWithoutOauthBindingsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
-    lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUpdateManyWithoutIdentityNestedInput
-    credentials?: AuthCredentialUpdateManyWithoutIdentityNestedInput
-    sessions?: AuthSessionUpdateManyWithoutIdentityNestedInput
-    accounts?: AccountUpdateManyWithoutIdentityNestedInput
-  }
-
-  export type AuthIdentityUncheckedUpdateWithoutOauthBindingsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
-    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
-    lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUncheckedUpdateManyWithoutIdentityNestedInput
-    credentials?: AuthCredentialUncheckedUpdateManyWithoutIdentityNestedInput
-    sessions?: AuthSessionUncheckedUpdateManyWithoutIdentityNestedInput
-    accounts?: AccountUncheckedUpdateManyWithoutIdentityNestedInput
-  }
-
   export type AuthIdentityCreateWithoutCredentialsInput = {
     id?: string
     status?: $Enums.AuthIdentityStatus
@@ -131772,8 +128811,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingCreateNestedManyWithoutIdentityInput
     sessions?: AuthSessionCreateNestedManyWithoutIdentityInput
     accounts?: AccountCreateNestedManyWithoutIdentityInput
   }
@@ -131788,8 +128825,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierUncheckedCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingUncheckedCreateNestedManyWithoutIdentityInput
     sessions?: AuthSessionUncheckedCreateNestedManyWithoutIdentityInput
     accounts?: AccountUncheckedCreateNestedManyWithoutIdentityInput
   }
@@ -131820,8 +128855,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUpdateManyWithoutIdentityNestedInput
     sessions?: AuthSessionUpdateManyWithoutIdentityNestedInput
     accounts?: AccountUpdateManyWithoutIdentityNestedInput
   }
@@ -131836,8 +128869,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUncheckedUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUncheckedUpdateManyWithoutIdentityNestedInput
     sessions?: AuthSessionUncheckedUpdateManyWithoutIdentityNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutIdentityNestedInput
   }
@@ -131852,8 +128883,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingCreateNestedManyWithoutIdentityInput
     credentials?: AuthCredentialCreateNestedManyWithoutIdentityInput
     accounts?: AccountCreateNestedManyWithoutIdentityInput
   }
@@ -131868,8 +128897,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-    identifiers?: AuthIdentifierUncheckedCreateNestedManyWithoutIdentityInput
-    oauthBindings?: AuthOAuthBindingUncheckedCreateNestedManyWithoutIdentityInput
     credentials?: AuthCredentialUncheckedCreateNestedManyWithoutIdentityInput
     accounts?: AccountUncheckedCreateNestedManyWithoutIdentityInput
   }
@@ -131900,8 +128927,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUpdateManyWithoutIdentityNestedInput
     credentials?: AuthCredentialUpdateManyWithoutIdentityNestedInput
     accounts?: AccountUpdateManyWithoutIdentityNestedInput
   }
@@ -131916,13 +128941,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identifiers?: AuthIdentifierUncheckedUpdateManyWithoutIdentityNestedInput
-    oauthBindings?: AuthOAuthBindingUncheckedUpdateManyWithoutIdentityNestedInput
     credentials?: AuthCredentialUncheckedUpdateManyWithoutIdentityNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutIdentityNestedInput
   }
 
   export type AccountCreateWithoutDocumentsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -131982,6 +129006,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutDocumentsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -132161,6 +129186,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutDocumentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -132220,6 +129246,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutDocumentsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -132386,6 +129413,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutDocumentVersionsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -132445,6 +129473,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutDocumentVersionsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -132569,6 +129598,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutDocumentVersionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -132628,6 +129658,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutDocumentVersionsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -132913,6 +129944,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspacesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -132972,6 +130004,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspacesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133061,6 +130094,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspacesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133120,6 +130154,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspacesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133215,6 +130250,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspaceSessionsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133274,6 +130310,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133402,6 +130439,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspaceSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133461,6 +130499,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133609,6 +130648,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspaceSessionGroupsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133668,6 +130708,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionGroupsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -133788,6 +130829,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspaceSessionGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133847,6 +130889,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -133941,6 +130984,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutEditorWorkspaceSessionGroupTabsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134000,6 +131044,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionGroupTabsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134106,6 +131151,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutEditorWorkspaceSessionGroupTabsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134165,6 +131211,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionGroupTabsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134261,6 +131308,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutGoalsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134320,6 +131368,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutGoalsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -134751,6 +131800,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutGoalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -134810,6 +131860,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutGoalsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135128,6 +132179,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutGoalFoldersInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135187,6 +132239,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutGoalFoldersInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -135427,6 +132480,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutGoalFoldersInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -135486,6 +132540,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutGoalFoldersInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136345,6 +133400,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutFocusSessionsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136404,6 +133460,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutFocusSessionsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136544,6 +133601,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutFocusSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136603,6 +133661,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutFocusSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136733,6 +133792,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutFocusModesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136792,6 +133852,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutFocusModesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -136865,6 +133926,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutFocusModesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136924,6 +133986,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutFocusModesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -136981,6 +134044,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutGoalStatisticsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137040,6 +134104,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutGoalStatisticsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137113,6 +134178,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutGoalStatisticsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -137172,6 +134238,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutGoalStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -137438,6 +134505,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutNotificationsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137497,6 +134565,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutNotificationsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -137629,6 +134698,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -137688,6 +134758,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138069,6 +135140,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderTemplatesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138128,6 +135200,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderTemplatesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138316,6 +135389,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138375,6 +135449,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderTemplatesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138479,6 +135554,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderGroupsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138538,6 +135614,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderGroupsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138705,6 +135782,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138764,6 +135842,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -138837,6 +135916,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderInstancesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -138896,6 +135976,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderInstancesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139058,6 +136139,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderInstancesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139117,6 +136199,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderInstancesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139453,6 +136536,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutReminderStatisticsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139512,6 +136596,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutReminderStatisticsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139585,6 +136670,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutReminderStatisticsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139644,6 +136730,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutReminderStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -139885,6 +136972,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutUserReminderPreferencesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -139944,6 +137032,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutUserReminderPreferencesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140017,6 +137106,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutUserReminderPreferencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140076,6 +137166,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutUserReminderPreferencesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140133,6 +137224,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutRepositoriesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140192,6 +137284,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutRepositoriesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -140447,6 +137540,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutRepositoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -140506,6 +137600,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutRepositoriesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141619,6 +138714,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutRepositoryExplorersInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141678,6 +138774,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutRepositoryExplorersInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -141802,6 +138899,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutRepositoryExplorersInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141861,6 +138959,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutRepositoryExplorersInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -141975,6 +139074,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutRepositoryStatisticsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142034,6 +139134,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutRepositoryStatisticsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142107,6 +139208,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutRepositoryStatisticsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142166,6 +139268,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutRepositoryStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142223,6 +139326,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSchedulesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142282,6 +139386,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSchedulesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142355,6 +139460,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSchedulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142414,6 +139520,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSchedulesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142471,6 +139578,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutScheduleJobsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142530,6 +139638,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutScheduleJobsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142603,6 +139712,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutScheduleJobsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142662,6 +139772,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutScheduleJobsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142751,6 +139862,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutScheduleTasksInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142810,6 +139922,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutScheduleTasksInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -142914,6 +140027,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutScheduleTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -142973,6 +140087,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutScheduleTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143186,6 +140301,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutScheduleStatisticsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143245,6 +140361,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutScheduleStatisticsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143318,6 +140435,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutScheduleStatisticsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143377,6 +140495,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutScheduleStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143434,6 +140553,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSettings_Input = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143493,6 +140613,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSettings_Input = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -143605,6 +140726,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSettings_Input = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -143664,6 +140786,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSettings_Input = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144152,6 +141275,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutUserSettingsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144211,6 +141335,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutUserSettingsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144284,6 +141409,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutUserSettingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144343,6 +141469,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutUserSettingsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144400,6 +141527,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSyncProfilesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144459,6 +141587,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSyncProfilesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144588,6 +141717,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSyncProfilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144647,6 +141777,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSyncProfilesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -144720,6 +141851,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSyncSessionsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144779,6 +141911,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSyncSessionsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -144941,6 +142074,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSyncSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145000,6 +142134,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSyncSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145122,6 +142257,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutSyncConflictsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145181,6 +142317,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutSyncConflictsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145305,6 +142442,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutSyncConflictsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145364,6 +142502,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutSyncConflictsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145478,6 +142617,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutPendingChangesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145537,6 +142677,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutPendingChangesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145610,6 +142751,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutPendingChangesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145669,6 +142811,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutPendingChangesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -145726,6 +142869,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskFoldersInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145785,6 +142929,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskFoldersInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -145956,6 +143101,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskFoldersInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -146015,6 +143161,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskFoldersInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -146088,6 +143235,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskTemplatesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -146147,6 +143295,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskTemplatesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -146574,6 +143723,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskTemplatesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -146633,6 +143783,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskTemplatesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -146932,6 +144083,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskInstancesInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -146991,6 +144143,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskInstancesInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -147157,6 +144310,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskInstancesInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -147216,6 +144370,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskInstancesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -147948,6 +145103,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateWithoutTaskStatisticsInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -148007,6 +145163,7 @@ export namespace Prisma {
 
   export type AccountUncheckedCreateWithoutTaskStatisticsInput = {
     id: string
+    identityId: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -148080,6 +145237,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutTaskStatisticsInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -148139,6 +145297,7 @@ export namespace Prisma {
 
   export type AccountUncheckedUpdateWithoutTaskStatisticsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    identityId?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -150561,31 +147720,19 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type AuthIdentifierCreateManyIdentityInput = {
-    id?: string
-    type: string
-    value: string
-    isVerified?: boolean
-    createdAt?: Date | string
-  }
-
-  export type AuthOAuthBindingCreateManyIdentityInput = {
-    id?: string
-    provider: string
-    providerSubjectId: string
-    accessToken?: string | null
-    refreshToken?: string | null
-    expiresAt?: Date | string | null
-    createdAt?: Date | string
-    lastUsedAt?: Date | string | null
-  }
-
   export type AuthCredentialCreateManyIdentityInput = {
     id?: string
     type: $Enums.CredentialType
     status?: $Enums.CredentialStatus
+    identifier?: string | null
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
+    provider?: string | null
+    providerSubjectId?: string | null
+    accessToken?: string | null
+    refreshToken?: string | null
+    oauthExpiresAt?: Date | string | null
+    isVerified?: boolean | null
     version?: number
     createdAt?: Date | string
     lastUsedAt?: Date | string | null
@@ -150611,6 +147758,7 @@ export namespace Prisma {
   }
 
   export type AccountCreateManyIdentityInput = {
+    id: string
     status?: string
     profile: JsonNullValueInput | InputJsonValue
     settings: JsonNullValueInput | InputJsonValue
@@ -150629,69 +147777,19 @@ export namespace Prisma {
     deletedAt?: Date | string | null
   }
 
-  export type AuthIdentifierUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AuthIdentifierUncheckedUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AuthIdentifierUncheckedUpdateManyWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    isVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AuthOAuthBindingUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AuthOAuthBindingUncheckedUpdateWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type AuthOAuthBindingUncheckedUpdateManyWithoutIdentityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    provider?: StringFieldUpdateOperationsInput | string
-    providerSubjectId?: StringFieldUpdateOperationsInput | string
-    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
-    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type AuthCredentialUpdateWithoutIdentityInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -150702,8 +147800,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -150714,8 +147819,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
     status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    provider?: NullableStringFieldUpdateOperationsInput | string | null
+    providerSubjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accessToken?: NullableStringFieldUpdateOperationsInput | string | null
+    refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    oauthExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastUsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -150777,6 +147889,7 @@ export namespace Prisma {
   }
 
   export type AccountUpdateWithoutIdentityInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -150835,6 +147948,7 @@ export namespace Prisma {
   }
 
   export type AccountUncheckedUpdateWithoutIdentityInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue
@@ -150893,6 +148007,7 @@ export namespace Prisma {
   }
 
   export type AccountUncheckedUpdateManyWithoutIdentityInput = {
+    id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
     profile?: JsonNullValueInput | InputJsonValue
     settings?: JsonNullValueInput | InputJsonValue

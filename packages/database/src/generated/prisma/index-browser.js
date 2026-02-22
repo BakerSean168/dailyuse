@@ -122,6 +122,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.AccountScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   status: 'status',
   profile: 'profile',
   settings: 'settings',
@@ -257,34 +258,20 @@ exports.Prisma.AuthIdentityScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
-exports.Prisma.AuthIdentifierScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  type: 'type',
-  value: 'value',
-  isVerified: 'isVerified',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.AuthOAuthBindingScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  provider: 'provider',
-  providerSubjectId: 'providerSubjectId',
-  accessToken: 'accessToken',
-  refreshToken: 'refreshToken',
-  expiresAt: 'expiresAt',
-  createdAt: 'createdAt',
-  lastUsedAt: 'lastUsedAt'
-};
-
 exports.Prisma.AuthCredentialScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
   type: 'type',
   status: 'status',
+  identifier: 'identifier',
   passwordHash: 'passwordHash',
   passwordLastChangedAt: 'passwordLastChangedAt',
+  provider: 'provider',
+  providerSubjectId: 'providerSubjectId',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
+  oauthExpiresAt: 'oauthExpiresAt',
+  isVerified: 'isVerified',
   version: 'version',
   createdAt: 'createdAt',
   lastUsedAt: 'lastUsedAt',
@@ -1374,6 +1361,8 @@ exports.AuthIdentityStatus = exports.$Enums.AuthIdentityStatus = {
 
 exports.CredentialType = exports.$Enums.CredentialType = {
   PASSWORD: 'PASSWORD',
+  OAUTH: 'OAUTH',
+  PHONE: 'PHONE',
   MAGIC_LINK: 'MAGIC_LINK'
 };
 
@@ -1395,8 +1384,6 @@ exports.Prisma.ModelName = {
   DashboardConfig: 'DashboardConfig',
   AppConfig: 'AppConfig',
   AuthIdentity: 'AuthIdentity',
-  AuthIdentifier: 'AuthIdentifier',
-  AuthOAuthBinding: 'AuthOAuthBinding',
   AuthCredential: 'AuthCredential',
   AuthSession: 'AuthSession',
   Document: 'Document',
