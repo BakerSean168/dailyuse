@@ -29,7 +29,7 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { GoalId, GoalFolderId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
+import { GoalId, GoalFolderId, GoalReviewId, KeyResultWeightSnapshotId, KeyResultId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import {
   GoalStatus,
@@ -42,6 +42,7 @@ import type {
 } from '@dailyuse/contracts/goal';
 import type {
   GoalPersistenceDTO,
+  GoalReviewPersistenceDTO,
   GoalReviewServerDTO,
   GoalServer,
   GoalServerDTO,
@@ -442,7 +443,22 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
       }),
     );
     const goalReviews = (dto.goalReviews || []).map((r: GoalReviewServerDTO) =>
-      GoalReview.fromServerDTO(r),
+      GoalReview.load({
+        id: GoalReviewId.of(r.id),
+        goalId: GoalId.of(r.goalId),
+        type: r.type,
+        rating: r.rating,
+        summary: r.summary,
+        achievements: r.achievements ?? null,
+        challenges: r.challenges ?? null,
+        improvements: r.improvements ?? null,
+        keyResultSnapshots: r.keyResultSnapshots ?? [],
+        reviewedAt: new Date(r.reviewedAt),
+        version: r.version ?? 1,
+        createdAt: new Date(r.createdAt),
+        updatedAt: new Date(r.updatedAt),
+        deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
+      }),
     );
     const weightSnapshots = (dto.weightSnapshots || []).map((ws: KeyResultWeightSnapshotDTO) =>
       KeyResultWeightSnapshot.fromDTO(ws),
@@ -1465,7 +1481,25 @@ export class Goal extends AggregateRoot<GoalId> implements GoalServer {
           })
         : null,
       goalReviews: this._props.goalReviews.length > 0
-        ? this._props.goalReviews.map((r) => r.toPersistenceDTO())
+        ? this._props.goalReviews.map((r): GoalReviewPersistenceDTO => {
+            const serverDto = r.toServerDTO();
+            return {
+              id: serverDto.id,
+              goalId: serverDto.goalId,
+              type: serverDto.type,
+              rating: serverDto.rating,
+              summary: serverDto.summary,
+              achievements: serverDto.achievements,
+              challenges: serverDto.challenges,
+              improvements: serverDto.improvements,
+              keyResultSnapshots: JSON.stringify(serverDto.keyResultSnapshots),
+              reviewedAt: new Date(serverDto.reviewedAt),
+              version: serverDto.version,
+              createdAt: new Date(serverDto.createdAt),
+              updatedAt: new Date(serverDto.updatedAt),
+              deletedAt: serverDto.deletedAt ? new Date(serverDto.deletedAt) : null,
+            };
+          })
         : null,
       weightSnapshots: this._props.weightSnapshots.length > 0
         ? this._props.weightSnapshots.map((ws) => ws.toDTO())
