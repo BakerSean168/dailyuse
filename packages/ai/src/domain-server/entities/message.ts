@@ -1,8 +1,6 @@
 import { Entity } from '@dailyuse/utils';
 import type {
   MessageClientDTO,
-  MessagePersistenceDTO,
-  MessageServer,
   MessageServerDTO,
 } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
@@ -10,68 +8,56 @@ import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/
 import { AiMessageId } from '../../domain-shared/value-objects/ai-message-id';
 import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
 
-export class Message extends Entity<AiMessageId> implements MessageServer {
-  private _conversationId: IAiConversationId;
-  private _role: MessageRole;
-  private _content: string;
-  private _tokenCount: number | null;
-  private _version: number;
-  private _createdAt: Date;
-  private _updatedAt: Date;
-  private _deletedAt: Date | null;
+export interface MessageState {
+  id: AiMessageId;
+  conversationId: IAiConversationId;
+  role: MessageRole;
+  content: string;
+  tokenCount: number | null;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
 
-  private constructor(params: {
-    id?: string;
-    conversationId: string;
-    role: MessageRole;
-    content: string;
-    tokenCount?: number | null;
-    version?: number;
-    createdAt: Date;
-    updatedAt?: Date;
-    deletedAt?: Date | null;
-  }) {
-    super((params.id ?? AiMessageId.generate()) as AiMessageId);
-    this._conversationId = AiConversationId.of(params.conversationId);
-    this._role = params.role;
-    this._content = params.content;
-    this._tokenCount = params.tokenCount ?? null;
-    this._version = params.version ?? 1;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt ?? params.createdAt;
-    this._deletedAt = params.deletedAt ?? null;
+export class Message extends Entity<AiMessageId> {
+  private _props: MessageState;
+
+  private constructor(state: MessageState) {
+    super(state.id);
+    this._props = { ...state };
   }
 
   public get conversationId(): IAiConversationId {
-    return this._conversationId;
+    return this._props.conversationId;
   }
 
   public get role(): MessageRole {
-    return this._role;
+    return this._props.role;
   }
 
   public get content(): string {
-    return this._content;
+    return this._props.content;
   }
 
   public get tokenCount(): number | null {
-    return this._tokenCount;
+    return this._props.tokenCount;
   }
 
   public get createdAt(): Date {
-    return this._createdAt;
+    return this._props.createdAt;
   }
 
   public get updatedAt(): Date {
-    return this._updatedAt;
+    return this._props.updatedAt;
   }
 
   public get deletedAt(): Date | null {
-    return this._deletedAt;
+    return this._props.deletedAt;
   }
 
   public get version(): number {
-    return this._version;
+    return this._props.version;
   }
 
   public static create(params: {
@@ -82,10 +68,11 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
   }): Message {
     const now = new Date();
     return new Message({
-      conversationId: params.conversationId,
+      id: AiMessageId.generate(),
+      conversationId: AiConversationId.of(params.conversationId),
       role: params.role,
       content: params.content,
-      tokenCount: params.tokenCount,
+      tokenCount: params.tokenCount ?? null,
       version: 1,
       createdAt: now,
       updatedAt: now,
@@ -93,71 +80,36 @@ export class Message extends Entity<AiMessageId> implements MessageServer {
     });
   }
 
-  public static fromServerDTO(dto: MessageServerDTO): Message {
-    return new Message({
-      id: dto.id,
-      conversationId: dto.conversationId,
-      role: dto.role,
-      content: dto.content,
-      tokenCount: dto.tokenCount,
-      version: (dto as any).version ?? 1,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: (dto as any).updatedAt ? new Date((dto as any).updatedAt) : new Date(dto.createdAt),
-      deletedAt: (dto as any).deletedAt ? new Date((dto as any).deletedAt) : null,
-    });
-  }
-
-  public static fromPersistenceDTO(dto: MessagePersistenceDTO): Message {
-    return new Message({
-      id: dto.id,
-      conversationId: dto.conversationId,
-      role: dto.role,
-      content: dto.content,
-      tokenCount: dto.tokenCount,
-      version: (dto as any).version ?? 1,
-      createdAt: dto.createdAt,
-      updatedAt: (dto as any).updatedAt ?? dto.createdAt,
-      deletedAt: (dto as any).deletedAt ?? null,
-    });
+  public static load(state: MessageState): Message {
+    return new Message(state);
   }
 
   public toServerDTO(): MessageServerDTO {
     return {
       id: this.id,
-      conversationId: this._conversationId,
-      role: this._role,
-      content: this._content,
-      tokenCount: this._tokenCount,
-      createdAt: this._createdAt.getTime(),
+      conversationId: this._props.conversationId,
+      role: this._props.role,
+      content: this._props.content,
+      tokenCount: this._props.tokenCount,
+      createdAt: this._props.createdAt.getTime(),
     };
   }
 
   public toClientDTO(): MessageClientDTO {
     return {
       id: String(this.id),
-      conversationId: String(this._conversationId),
-      role: this._role,
-      content: this._content,
-      tokenCount: this._tokenCount,
-      version: this._version,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
-      deletedAt: this._deletedAt?.getTime() ?? null,
-      isUser: this._role === MessageRole.User,
-      isAssistant: this._role === MessageRole.Assistant,
-      isSystem: this._role === MessageRole.System,
-      formattedTime: new Date(this._createdAt).toLocaleString(),
-    };
-  }
-
-  public toPersistenceDTO(): MessagePersistenceDTO {
-    return {
-      id: this.id,
-      conversationId: this._conversationId,
-      role: this._role,
-      content: this._content,
-      tokenCount: this._tokenCount,
-      createdAt: this._createdAt,
+      conversationId: String(this._props.conversationId),
+      role: this._props.role,
+      content: this._props.content,
+      tokenCount: this._props.tokenCount,
+      version: this._props.version,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
+      deletedAt: this._props.deletedAt?.getTime() ?? null,
+      isUser: this._props.role === MessageRole.User,
+      isAssistant: this._props.role === MessageRole.Assistant,
+      isSystem: this._props.role === MessageRole.System,
+      formattedTime: new Date(this._props.createdAt).toLocaleString(),
     };
   }
 }

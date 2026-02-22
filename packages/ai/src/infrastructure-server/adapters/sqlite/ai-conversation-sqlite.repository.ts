@@ -1,18 +1,21 @@
 /**
  * SQLite AIConversation Repository Implementation
- * AI 瀵硅瘽鐨?SQLite Repository瀹炵�?
  */
 
 import type Database from 'better-sqlite3';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
+import { Message } from '../../../domain-server/entities/message';
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server/repositories/IAIConversationRepository';
-import type { AIConversationPersistenceDTO, MessagePersistenceDTO, ConversationStatus } from '@dailyuse/contracts/ai';
+import type { ConversationStatus } from '@dailyuse/contracts/ai';
+import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
+import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 export class SqliteAIConversationRepository implements IAIConversationRepository {
   constructor(private db: Database.Database) {}
 
   async save(conversation: AIConversation): Promise<void> {
-    const data = conversation.toPersistenceDTO();
+    const dto = conversation.toServerDTO(true);
 
     const stmt = this.db.prepare(`
       INSERT INTO ai_conversations (
@@ -30,29 +33,29 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     `);
 
     stmt.run(
-      String(data.id),
-      String(data.identityId),
-      data.name,
-      data.status,
-      data.messageCount,
-      data.lastMessageAt ? data.lastMessageAt.getTime() : null,
-      data.version,
-      data.createdAt.getTime(),
-      data.updatedAt.getTime(),
-      data.deletedAt ? data.deletedAt.getTime() : null,
+      String(dto.id),
+      String(dto.identityId),
+      dto.name,
+      dto.status,
+      dto.messageCount,
+      dto.lastMessageAt,
+      dto.version,
+      dto.createdAt,
+      dto.updatedAt,
+      dto.deletedAt,
     );
 
-    if (data.messages) {
-      this.db.prepare(`DELETE FROM ai_messages WHERE conversation_id = ?`).run(String(data.id));
+    if (dto.messages) {
+      this.db.prepare(`DELETE FROM ai_messages WHERE conversation_id = ?`).run(String(dto.id));
 
-      if (data.messages.length > 0) {
+      if (dto.messages.length > 0) {
         const insertMessage = this.db.prepare(`
           INSERT INTO ai_messages (
             id, conversation_id, role, content, token_usage, created_at
           ) VALUES (?, ?, ?, ?, ?, ?)
         `);
 
-        const transaction = this.db.transaction((messages: MessagePersistenceDTO[]) => {
+        const transaction = this.db.transaction((messages: NonNullable<typeof dto.messages>) => {
           for (const message of messages) {
             insertMessage.run(
               String(message.id),
@@ -60,12 +63,12 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
               message.role,
               message.content,
               message.tokenCount != null ? JSON.stringify({ totalTokens: message.tokenCount }) : null,
-              message.createdAt.getTime(),
+              message.createdAt,
             );
           }
         });
 
-        transaction(data.messages);
+        transaction(dto.messages);
       }
     }
   }
@@ -83,8 +86,8 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
       return null;
     }
 
-    const messages = options?.includeChildren ? this.loadMessages(row.id) : null;
-    return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, messages));
+    const messages = options?.includeChildren ? this.loadMessages(row.id) : [];
+    return this.toDomain(row, messages);
   }
 
   async findByIdentityId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
@@ -97,8 +100,8 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
       .all(identityId) as any[];
 
     return rows.map((row) => {
-      const messages = options?.includeChildren ? this.loadMessages(row.id) : null;
-      return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, messages));
+      const messages = options?.includeChildren ? this.loadMessages(row.id) : [];
+      return this.toDomain(row, messages);
     });
   }
 
@@ -116,8 +119,8 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
       .all(identityId, status) as any[];
 
     return rows.map((row) => {
-      const messages = options?.includeChildren ? this.loadMessages(row.id) : null;
-      return AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, messages));
+      const messages = options?.includeChildren ? this.loadMessages(row.id) : [];
+      return this.toDomain(row, messages);
     });
   }
 
@@ -141,7 +144,7 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
       `)
       .all(identityId, Math.max(1, limit), Math.max(0, offset ?? 0)) as any[];
 
-    return rows.map((row) => AIConversation.fromPersistenceDTO(this.toPersistenceDTO(row, null)));
+    return rows.map((row) => this.toDomain(row, []));
   }
 
   async exists(id: string): Promise<boolean> {
@@ -152,7 +155,7 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     return row !== undefined;
   }
 
-  private loadMessages(conversationId: string): MessagePersistenceDTO[] {
+  private loadMessages(conversationId: string): Message[] {
     const rows = this.db
       .prepare(`
         SELECT * FROM ai_messages
@@ -172,21 +175,24 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
         }
       }
 
-      return {
-        id: row.id,
-        conversationId: row.conversation_id,
+      return Message.load({
+        id: AiMessageId.of(row.id),
+        conversationId: AiConversationId.of(row.conversation_id),
         role: row.role,
         content: row.content,
         tokenCount,
+        version: 1,
         createdAt: new Date(row.created_at),
-      };
+        updatedAt: new Date(row.created_at),
+        deletedAt: null,
+      });
     });
   }
 
-  private toPersistenceDTO(row: any, messages: MessagePersistenceDTO[] | null): AIConversationPersistenceDTO {
-    return {
-      id: row.id,
-      identityId: row.identity_id,
+  private toDomain(row: any, messages: Message[]): AIConversation {
+    return AIConversation.load({
+      id: AiConversationId.of(row.id),
+      identityId: IdentityId.of(row.identity_id),
       name: row.name,
       status: row.status,
       messageCount: row.message_count ?? 0,
@@ -196,7 +202,6 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
       updatedAt: new Date(row.updated_at),
       deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
       messages,
-    };
+    });
   }
 }
-

@@ -8,6 +8,8 @@
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 import type { IAIUsageQuotaRepository } from '../repositories/IAIUsageQuotaRepository';
 import { AIUsageQuota } from '../aggregates/ai-usage-quota';
+import { AiUsageQuotaId } from '../../domain-shared/value-objects/ai-usage-quota-id';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 
 export class QuotaExceededError extends Error {
@@ -160,7 +162,17 @@ export class QuotaEnforcementService {
       return quota;
     }
 
-    return AIUsageQuota.fromServerDTO(quotaDTO);
+    return AIUsageQuota.load({
+      id: AiUsageQuotaId.of(quotaDTO.id),
+      identityId: IdentityId.of(quotaDTO.identityId),
+      quotaLimit: quotaDTO.quotaLimit,
+      currentUsage: quotaDTO.currentUsage,
+      resetPeriod: quotaDTO.resetPeriod,
+      lastResetAt: new Date(quotaDTO.lastResetAt),
+      nextResetAt: new Date(quotaDTO.nextResetAt),
+      createdAt: new Date(quotaDTO.createdAt),
+      updatedAt: new Date(quotaDTO.updatedAt),
+    });
   }
 
   /**
