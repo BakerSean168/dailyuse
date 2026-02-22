@@ -1,19 +1,17 @@
 /**
  * PasswordCredential 实体实现
- * 密码凭证 - Server 端持有哈希�?
+ * 密码凭证 - Server 端持有哈希值
  * 
- * �?Server 可以看到哈希值和盐�?
- * �?绝对不能序列化给 Client �?
+ * Server 可以看到哈希值和盐值
+ * 绝对不能序列化给 Client
  */
 
 import type {
-  PasswordCredentialServer,
   PasswordCredentialServerDTO,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 import {
-  CredentialType,
   CredentialStatus,
   HashedPassword,
   type AuthCredentialId,
@@ -21,12 +19,22 @@ import {
 
 import type { IPasswordHasher } from '../../domain-shared';
 
+/** Domain state for PasswordCredential entity */
+export interface PasswordCredentialState {
+  id: AuthCredentialId;
+  status: typeof CredentialStatus.ACTIVE;
+  hashedPassword: HashedPassword;
+  passwordLastChangedAt: Date;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+}
+
 /**
  * 密码凭证实体
  */
-export class PasswordCredential extends Entity<AuthCredentialId> implements PasswordCredentialServer {
+export class PasswordCredential extends Entity<AuthCredentialId> {
 
-  // ================= 1. 内部状�?=================
+  // ================= 1. 内部状态 =================
   private _status: typeof CredentialStatus.ACTIVE;
   private _hashedPassword: HashedPassword;
   private _passwordLastChangedAt: Date;
@@ -36,15 +44,15 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   // 只读类型标识
   public readonly type = 'PASSWORD';
 
-  // ================= 2. 构造函�?=================
-  private constructor(props: PasswordCredentialServerDTO) {
-    super(props.id);
+  // ================= 2. 构造函数 =================
+  private constructor(state: PasswordCredentialState) {
+    super(state.id);
 
-    this._status = CredentialStatus.of(props.status);
-    this._hashedPassword = HashedPassword.fromDTO(props.hashedPassword);
-    this._passwordLastChangedAt = new Date(props.passwordLastChangedAt);
-    this._createdAt = new Date(props.createdAt);
-    this._lastUsedAt = props.lastUsedAt ? new Date(props.lastUsedAt) : null;
+    this._status = state.status;
+    this._hashedPassword = state.hashedPassword;
+    this._passwordLastChangedAt = state.passwordLastChangedAt;
+    this._createdAt = state.createdAt;
+    this._lastUsedAt = state.lastUsedAt;
   }
 
   // ================= 3. Getters =================
@@ -71,43 +79,41 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   // ================= 4. 工厂方法 =================
 
   /**
-   * 🏭 业务工厂：创建新的密码凭�?
+   * 🏭 业务工厂：创建新的密码凭证
    */
   public static create(params: {
     id: AuthCredentialId;
     hashedPassword: HashedPassword;
   }): PasswordCredential {
-    const now = Date.now();
-    const dto: PasswordCredentialServerDTO = {
+    const now = new Date();
+    return new PasswordCredential({
       id: params.id,
-      type: 'PASSWORD',
       status: CredentialStatus.ACTIVE,
-      hashedPassword: params.hashedPassword.toDTO(),
+      hashedPassword: params.hashedPassword,
       passwordLastChangedAt: now,
       createdAt: now,
       lastUsedAt: null,
-    };
-    return new PasswordCredential(dto);
+    });
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复
+   * 🏭 恢复工厂：从持久化状态恢复
    */
-  public static fromServerDTO(dto: PasswordCredentialServerDTO): PasswordCredential {
-    return new PasswordCredential(dto);
+  public static load(state: PasswordCredentialState): PasswordCredential {
+    return new PasswordCredential(state);
   }
 
   // ================= 5. 业务行为 =================
 
   /**
-   * �?比较明文密码是否匹配
+   * 比较明文密码是否匹配
    */
   public compare(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
     return hasher.compare(plainPassword, this._hashedPassword.hash);
   }
 
   /**
-   * �?更新密码
+   * 更新密码
    */
   public updatePassword(newHashedPassword: HashedPassword): void {
     if (!CredentialStatus.isActive(this._status)) {
@@ -119,14 +125,14 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?记录使用时间
+   * 记录使用时间
    */
   public recordUsage(): void {
     this._lastUsedAt = new Date();
   }
 
   /**
-   * �?暂停凭证
+   * 暂停凭证
    */
   public suspend(): void {
     if (CredentialStatus.isSuspended(this._status)) {
@@ -137,7 +143,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?恢复凭证
+   * 恢复凭证
    */
   public activate(): void {
     if (CredentialStatus.isActive(this._status)) {
@@ -152,7 +158,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?吊销凭证
+   * 吊销凭证
    */
   public revoke(): void {
     if (CredentialStatus.isRevoked(this._status)) {
@@ -163,24 +169,24 @@ export class PasswordCredential extends Entity<AuthCredentialId> implements Pass
   }
 
   /**
-   * �?检查密码是否需要更新（超过指定天数�?
+   * 检查密码是否需要更新（超过指定天数）
    */
   public needsPasswordChange(maxAgeDays: number = 90): boolean {
     return this._hashedPassword.needsReset(maxAgeDays);
   }
 
   /**
-   * �?获取密码上次更新距今的天�?
+   * 获取密码上次更新距今的天数
    */
   public getPasswordAgeDays(): number {
     const dayMs = 24 * 60 * 60 * 1000;
     return Math.floor((Date.now() - this._passwordLastChangedAt.getTime()) / dayMs);
   }
 
-  // ================= 6. 序列�?=================
+  // ================= 6. 序列化 =================
 
   /**
-   * 转换�?Server DTO
+   * 转换为 Server DTO
    */
   public toServerDTO(): PasswordCredentialServerDTO {
     return {

@@ -87,12 +87,29 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
     });
 
     // 恢复 OAuth 绑定集合
-    this._oauthBindings = (props.oauthBindings ?? []).map(dto => OAuthBinding.fromServerDTO(dto));
+    this._oauthBindings = (props.oauthBindings ?? []).map(dto => OAuthBinding.load({
+      id: dto.id,
+      provider: OAuthProvider.of(dto.provider),
+      providerSubjectId: dto.providerSubjectId,
+      accessToken: dto.accessToken ?? null,
+      refreshToken: dto.refreshToken ?? null,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      createdAt: new Date(dto.createdAt),
+      lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
+    }));
 
     // 恢复凭证集合（仅 PasswordCredential）
     this._credentials = props.credentials.map(cred => {
       if (cred.type === CredentialType.PASSWORD) {
-        return PasswordCredential.fromServerDTO(cred as PasswordCredentialServerDTO);
+        const p = cred as PasswordCredentialServerDTO;
+        return PasswordCredential.load({
+          id: p.id,
+          status: CredentialStatus.of(p.status),
+          hashedPassword: HashedPassword.fromDTO(p.hashedPassword),
+          passwordLastChangedAt: new Date(p.passwordLastChangedAt),
+          createdAt: new Date(p.createdAt),
+          lastUsedAt: p.lastUsedAt ? new Date(p.lastUsedAt) : null,
+        });
       }
       throw new Error(`Unknown credential type: ${cred.type}`);
     });
@@ -544,9 +561,6 @@ export class AuthIdentity extends AggregateRoot<IdentityId> implements AuthIdent
       credentials: this._credentials.map(cred => {
         if (cred instanceof PasswordCredential) {
           return cred.toServerDTO();
-        }
-        if (cred.type === CredentialType.PASSWORD) {
-          return PasswordCredential.fromServerDTO(cred as PasswordCredentialServerDTO).toServerDTO();
         }
         throw new Error(`Unknown credential type: ${cred.type}`);
       }),

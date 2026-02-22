@@ -1,27 +1,35 @@
 /**
  * PhoneCredential 实体实现
- * 手机凭证 - 支持短信验证码登�?
+ * 手机凭证 - 支持短信验证码登录
  */
 
 import type {
-  PhoneCredentialServer,
   PhoneCredentialServerDTO,
 } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 import {
-  CredentialType,
   CredentialStatus,
   PhoneNumber,
   type AuthCredentialId,
 } from '../../domain-shared';
 
+/** Domain state for PhoneCredential entity */
+export interface PhoneCredentialState {
+  id: AuthCredentialId;
+  status: typeof CredentialStatus.ACTIVE;
+  phoneNumber: PhoneNumber;
+  isVerified: boolean;
+  createdAt: Date;
+  lastUsedAt: Date | null;
+}
+
 /**
  * 手机凭证实体
  */
-export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCredentialServer {
+export class PhoneCredential extends Entity<AuthCredentialId> {
 
-  // ================= 1. 内部状�?=================
+  // ================= 1. 内部状态 =================
   private _status: typeof CredentialStatus.ACTIVE;
   private _phoneNumber: PhoneNumber;
   private _isVerified: boolean;
@@ -31,15 +39,15 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
   // 只读类型标识
   public readonly type = 'PHONE';
 
-  // ================= 2. 构造函�?=================
-  private constructor(props: PhoneCredentialServerDTO) {
-    super(props.id);
+  // ================= 2. 构造函数 =================
+  private constructor(state: PhoneCredentialState) {
+    super(state.id);
 
-    this._status = CredentialStatus.of(props.status);
-    this._phoneNumber = PhoneNumber.fromDTO(props.phoneNumber);
-    this._isVerified = props.isVerified;
-    this._createdAt = new Date(props.createdAt);
-    this._lastUsedAt = props.lastUsedAt ? new Date(props.lastUsedAt) : null;
+    this._status = state.status;
+    this._phoneNumber = state.phoneNumber;
+    this._isVerified = state.isVerified;
+    this._createdAt = state.createdAt;
+    this._lastUsedAt = state.lastUsedAt;
   }
 
   // ================= 3. Getters =================
@@ -66,37 +74,35 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
   // ================= 4. 工厂方法 =================
 
   /**
-   * 🏭 业务工厂：创建新的手机凭�?
+   * 🏭 业务工厂：创建新的手机凭证
    */
   public static create(params: {
     id: AuthCredentialId;
     phoneNumber: PhoneNumber;
     isVerified?: boolean;
   }): PhoneCredential {
-    const now = Date.now();
-    const dto: PhoneCredentialServerDTO = {
+    const now = new Date();
+    return new PhoneCredential({
       id: params.id,
-      type: 'PHONE',
       status: CredentialStatus.ACTIVE,
-      phoneNumber: params.phoneNumber.toDTO(),
+      phoneNumber: params.phoneNumber,
       isVerified: params.isVerified ?? false,
       createdAt: now,
       lastUsedAt: null,
-    };
-    return new PhoneCredential(dto);
+    });
   }
 
   /**
-   * 🏭 恢复工厂：从 Server DTO 恢复
+   * 🏭 恢复工厂：从持久化状态恢复
    */
-  public static fromServerDTO(dto: PhoneCredentialServerDTO): PhoneCredential {
-    return new PhoneCredential(dto);
+  public static load(state: PhoneCredentialState): PhoneCredential {
+    return new PhoneCredential(state);
   }
 
   // ================= 5. 业务行为 =================
 
   /**
-   * �?标记为已验证
+   * 标记为已验证
    */
   public verify(): void {
     if (this._isVerified) {
@@ -107,7 +113,7 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
   }
 
   /**
-   * �?更新手机号码
+   * 更新手机号码
    */
   public updatePhoneNumber(newPhoneNumber: PhoneNumber): void {
     if (!CredentialStatus.isActive(this._status)) {
@@ -115,18 +121,18 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
     }
 
     this._phoneNumber = newPhoneNumber;
-    this._isVerified = false; // 更换号码后需要重新验�?
+    this._isVerified = false; // 更换号码后需要重新验证
   }
 
   /**
-   * �?记录使用时间
+   * 记录使用时间
    */
   public recordUsage(): void {
     this._lastUsedAt = new Date();
   }
 
   /**
-   * �?暂停凭证
+   * 暂停凭证
    */
   public suspend(): void {
     if (CredentialStatus.isSuspended(this._status)) {
@@ -136,7 +142,7 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
   }
 
   /**
-   * �?恢复凭证
+   * 恢复凭证
    */
   public activate(): void {
     if (CredentialStatus.isActive(this._status)) {
@@ -149,7 +155,7 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
   }
 
   /**
-   * �?吊销凭证
+   * 吊销凭证
    */
   public revoke(): void {
     if (CredentialStatus.isRevoked(this._status)) {
@@ -159,16 +165,16 @@ export class PhoneCredential extends Entity<AuthCredentialId> implements PhoneCr
   }
 
   /**
-   * �?获取脱敏的手机号（用于显示）
+   * 获取脱敏的手机号（用于显示）
    */
   public getMaskedPhoneNumber(): string {
     return this._phoneNumber.getMaskedNumber();
   }
 
-  // ================= 6. 序列�?=================
+  // ================= 6. 序列化 =================
 
   /**
-   * 转换�?Server DTO
+   * 转换为 Server DTO
    */
   public toServerDTO(): PhoneCredentialServerDTO {
     return {

@@ -110,7 +110,16 @@ describe('OAuthBinding', () => {
       });
 
       const dto = binding.toServerDTO();
-      const restored = OAuthBinding.fromServerDTO(dto);
+      const restored = OAuthBinding.load({
+        id: dto.id,
+        provider: OAuthProvider.of(dto.provider),
+        providerSubjectId: dto.providerSubjectId,
+        accessToken: dto.accessToken,
+        refreshToken: dto.refreshToken,
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+        createdAt: new Date(dto.createdAt),
+        lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
+      });
       expect(restored.id).toBe(binding.id);
       expect(restored.provider).toBe(binding.provider);
       expect(restored.providerSubjectId).toBe(binding.providerSubjectId);
