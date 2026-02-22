@@ -4,10 +4,9 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type { SettingId, SettingGroupId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
+import type { SettingId, SettingGroupId, SettingEntryId, TransferDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingScope, SettingValueType, type ValidationRuleDTO, type UIConfigDTO, type SyncConfigDTO } from '@dailyuse/contracts/setting';
 import { SettingId as SettingIdType } from '@/domain-shared/value-objects/setting-id';
-import { SettingGroupId as SettingGroupIdType } from '@/domain-shared/value-objects/setting-group-id';
 import { ValidationRule } from '@/domain-shared/value-objects/validation-rule';
 import { UIConfig } from '@/domain-shared/value-objects/ui-config';
 import { SyncConfig } from '@/domain-shared/value-objects/sync-config';
@@ -15,34 +14,6 @@ import { SettingHistory, type OperatorType } from '../entities/setting-history';
 
 // ============ Local Type Definitions ============
 // TODO: Move these to @dailyuse/contracts/setting when finalizing API
-
-/** Setting Server 接口 */
-export interface SettingServer {
-  readonly id: SettingId;
-  readonly key: string;
-  readonly name: string;
-  readonly description: string | null;
-  readonly valueType: SettingValueType;
-  readonly value: unknown;
-  readonly defaultValue: unknown;
-  readonly scope: SettingScope;
-  readonly accountId: string | null;
-  readonly deviceId: string | null;
-  readonly groupId: SettingGroupId | null;
-  readonly validation: ValidationRule | null;
-  readonly ui: UIConfig | null;
-  readonly isEncrypted: boolean;
-  readonly isReadOnly: boolean;
-  readonly isSystemSetting: boolean;
-  readonly syncConfig: SyncConfig | null;
-  readonly createdAt: DomainDate;
-  readonly updatedAt: DomainDate;
-  readonly deletedAt: DomainDate | null;
-
-  toServerDTO(): SettingServerDTO;
-  toClientDTO(): SettingClientDTO;
-  toPersistenceDTO(): SettingPersistenceDTO;
-}
 
 /** Server DTO - 用于 Server 和 Client 传输 */
 export interface SettingServerDTO {
@@ -75,32 +46,9 @@ export interface SettingClientDTO extends SettingServerDTO {
   canEdit: boolean;
 }
 
-/** Persistence DTO - 用于数据库存储 */
-export interface SettingPersistenceDTO {
+/** Domain state for Setting */
+export interface SettingState {
   id: SettingId;
-  key: string;
-  name: string;
-  description: string | null;
-  valueType: SettingValueType;
-  value: string; // JSON serialized
-  defaultValue: string; // JSON serialized
-  scope: SettingScope;
-  accountId: string | null;
-  deviceId: string | null;
-  groupId: string | null;
-  validation: string | null; // JSON serialized
-  ui: string | null; // JSON serialized
-  isEncrypted: boolean;
-  isReadOnly: boolean;
-  isSystemSetting: boolean;
-  syncConfig: string | null; // JSON serialized
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-  deletedAt: PersistenceDate | null;
-}
-
-/** 内部状态接口 for Setting */
-interface SettingState {
   key: string;
   name: string;
   description: string | null;
@@ -126,57 +74,33 @@ interface SettingState {
 /**
  * Setting 聚合根
  */
-export class Setting extends AggregateRoot<SettingId> implements SettingServer {
+export class Setting extends AggregateRoot<SettingId> {
   // ===== 私有属性容器 =====
-  private _props: SettingState;
+  private _props: Omit<SettingState, 'id'>;
 
-  private constructor(
-    id: SettingId,
-    params: {
-      key: string;
-      name: string;
-      description: string | null;
-      valueType: SettingValueType;
-      value: unknown;
-      defaultValue: unknown;
-      scope: SettingScope;
-      accountId: string | null;
-      deviceId: string | null;
-      groupId: SettingGroupId | null;
-      validation: ValidationRule | null;
-      ui: UIConfig | null;
-      isEncrypted: boolean;
-      isReadOnly: boolean;
-      isSystemSetting: boolean;
-      syncConfig: SyncConfig | null;
-      history: SettingHistory[];
-      createdAt: Date;
-      updatedAt: Date;
-      deletedAt: Date | null;
-    }
-  ) {
-    super(id);
+  private constructor(state: SettingState) {
+    super(state.id);
     this._props = {
-      key: params.key,
-      name: params.name,
-      description: params.description,
-      valueType: params.valueType,
-      value: params.value,
-      defaultValue: params.defaultValue,
-      scope: params.scope,
-      accountId: params.accountId,
-      deviceId: params.deviceId,
-      groupId: params.groupId,
-      validation: params.validation,
-      ui: params.ui,
-      isEncrypted: params.isEncrypted,
-      isReadOnly: params.isReadOnly,
-      isSystemSetting: params.isSystemSetting,
-      syncConfig: params.syncConfig,
-      history: params.history,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      deletedAt: params.deletedAt,
+      key: state.key,
+      name: state.name,
+      description: state.description,
+      valueType: state.valueType,
+      value: state.value,
+      defaultValue: state.defaultValue,
+      scope: state.scope,
+      accountId: state.accountId,
+      deviceId: state.deviceId,
+      groupId: state.groupId,
+      validation: state.validation,
+      ui: state.ui,
+      isEncrypted: state.isEncrypted,
+      isReadOnly: state.isReadOnly,
+      isSystemSetting: state.isSystemSetting,
+      syncConfig: state.syncConfig,
+      history: state.history,
+      createdAt: state.createdAt,
+      updatedAt: state.updatedAt,
+      deletedAt: state.deletedAt,
     };
   }
 
@@ -330,32 +254,14 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
     };
   }
 
-  public toPersistenceDTO(): SettingPersistenceDTO {
-    return {
-      id: this.id,
-      key: this._props.key,
-      name: this._props.name,
-      description: this._props.description,
-      valueType: this._props.valueType,
-      value: JSON.stringify(this._props.value),
-      defaultValue: JSON.stringify(this._props.defaultValue),
-      scope: this._props.scope,
-      accountId: this._props.accountId,
-      deviceId: this._props.deviceId,
-      groupId: this._props.groupId,
-      validation: this._props.validation ? JSON.stringify(this._props.validation.toDTO()) : null,
-      ui: this._props.ui ? JSON.stringify(this._props.ui.toDTO()) : null,
-      isEncrypted: this._props.isEncrypted,
-      isReadOnly: this._props.isReadOnly,
-      isSystemSetting: this._props.isSystemSetting,
-      syncConfig: this._props.syncConfig ? JSON.stringify(this._props.syncConfig.toDTO()) : null,
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      deletedAt: this._props.deletedAt,
-    };
-  }
-
   // ============ 工厂方法 ============
+
+  /**
+   * Reconstruct from persisted state
+   */
+  public static load(state: SettingState): Setting {
+    return new Setting(state);
+  }
 
   public static create(params: {
     key: string;
@@ -377,7 +283,8 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
   }): Setting {
     const id = SettingIdType.of(SettingIdType.generate());
     const now = new Date();
-    return new Setting(id, {
+    return new Setting({
+      id,
       key: params.key,
       name: params.name,
       description: params.description ?? null,
@@ -398,58 +305,6 @@ export class Setting extends AggregateRoot<SettingId> implements SettingServer {
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
-    });
-  }
-
-  public static fromServerDTO(dto: SettingServerDTO): Setting {
-    const id = SettingIdType.of(dto.id);
-    return new Setting(id, {
-      key: dto.key,
-      name: dto.name,
-      description: dto.description,
-      valueType: dto.valueType,
-      value: dto.value,
-      defaultValue: dto.defaultValue,
-      scope: dto.scope,
-      accountId: dto.accountId,
-      deviceId: dto.deviceId,
-      groupId: dto.groupId ? SettingGroupIdType.of(dto.groupId) : null,
-      validation: dto.validation ? ValidationRule.fromDTO(dto.validation) : null,
-      ui: dto.ui ? UIConfig.fromDTO(dto.ui) : null,
-      isEncrypted: dto.isEncrypted,
-      isReadOnly: dto.isReadOnly,
-      isSystemSetting: dto.isSystemSetting,
-      syncConfig: dto.syncConfig ? SyncConfig.fromDTO(dto.syncConfig) : null,
-      history: [],
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  public static fromPersistenceDTO(dto: SettingPersistenceDTO): Setting {
-    const id = SettingIdType.of(dto.id);
-    return new Setting(id, {
-      key: dto.key,
-      name: dto.name,
-      description: dto.description,
-      valueType: dto.valueType,
-      value: JSON.parse(dto.value),
-      defaultValue: JSON.parse(dto.defaultValue),
-      scope: dto.scope,
-      accountId: dto.accountId,
-      deviceId: dto.deviceId,
-      groupId: dto.groupId ? SettingGroupIdType.of(dto.groupId) : null,
-      validation: dto.validation ? ValidationRule.fromDTO(JSON.parse(dto.validation)) : null,
-      ui: dto.ui ? UIConfig.fromDTO(JSON.parse(dto.ui)) : null,
-      isEncrypted: dto.isEncrypted,
-      isReadOnly: dto.isReadOnly,
-      isSystemSetting: dto.isSystemSetting,
-      syncConfig: dto.syncConfig ? SyncConfig.fromDTO(JSON.parse(dto.syncConfig)) : null,
-      history: [],
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
     });
   }
 }

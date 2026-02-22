@@ -4,9 +4,8 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { SettingHistoryId, SettingEntryId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
+import type { SettingHistoryId, SettingEntryId, TransferDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingHistoryId as SettingHistoryIdType } from '@/domain-shared/value-objects/setting-history-id';
-import { SettingEntryId as SettingEntryIdType } from '@/domain-shared/value-objects/setting-entry-id';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
@@ -15,22 +14,6 @@ import { zhCN } from 'date-fns/locale';
 
 /** 操作者类型 */
 export type OperatorType = 'USER' | 'SYSTEM' | 'API';
-
-/** SettingHistory Server 接口 */
-export interface SettingHistoryServer {
-  readonly id: SettingHistoryId;
-  readonly settingEntryId: SettingEntryId;
-  readonly settingKey: string;
-  readonly oldValue: unknown;
-  readonly newValue: unknown;
-  readonly operatorId: string | null;
-  readonly operatorType: OperatorType;
-  readonly createdAt: DomainDate;
-  
-  toServerDTO(): SettingHistoryServerDTO;
-  toClientDTO(): SettingHistoryClientDTO;
-  toPersistenceDTO(): SettingHistoryPersistenceDTO;
-}
 
 /** Server DTO - 用于 Server 和 Client 传输 */
 export interface SettingHistoryServerDTO {
@@ -50,23 +33,23 @@ export interface SettingHistoryClientDTO extends SettingHistoryServerDTO {
   changeText: string;
 }
 
-/** Persistence DTO - 用于数据库存储 */
-export interface SettingHistoryPersistenceDTO {
+/** Domain state for SettingHistory */
+export interface SettingHistoryState {
   id: SettingHistoryId;
   settingEntryId: SettingEntryId;
   settingKey: string;
-  oldValue: string; // JSON serialized
-  newValue: string; // JSON serialized
+  oldValue: unknown;
+  newValue: unknown;
   operatorId: string | null;
   operatorType: OperatorType;
-  createdAt: PersistenceDate;
+  createdAt: Date;
 }
 
 /**
  * SettingHistory 实体
  * 设置变更历史记录
  */
-export class SettingHistory extends Entity<SettingHistoryId> implements SettingHistoryServer {
+export class SettingHistory extends Entity<SettingHistoryId> {
   public readonly settingEntryId: SettingEntryId;
   public readonly settingKey: string;
   public readonly oldValue: unknown;
@@ -75,26 +58,15 @@ export class SettingHistory extends Entity<SettingHistoryId> implements SettingH
   public readonly operatorType: OperatorType;
   public readonly createdAt: DomainDate;
 
-  private constructor(
-    id: SettingHistoryId,
-    params: {
-      settingEntryId: SettingEntryId;
-      settingKey: string;
-      oldValue: unknown;
-      newValue: unknown;
-      operatorId: string | null;
-      operatorType: OperatorType;
-      createdAt: Date;
-    }
-  ) {
-    super(id);
-    this.settingEntryId = params.settingEntryId;
-    this.settingKey = params.settingKey;
-    this.oldValue = params.oldValue;
-    this.newValue = params.newValue;
-    this.operatorId = params.operatorId;
-    this.operatorType = params.operatorType;
-    this.createdAt = params.createdAt;
+  private constructor(state: SettingHistoryState) {
+    super(state.id);
+    this.settingEntryId = state.settingEntryId;
+    this.settingKey = state.settingKey;
+    this.oldValue = state.oldValue;
+    this.newValue = state.newValue;
+    this.operatorId = state.operatorId;
+    this.operatorType = state.operatorType;
+    this.createdAt = state.createdAt;
   }
 
   // ============ Helper Methods for Client DTO ============
@@ -120,6 +92,15 @@ export class SettingHistory extends Entity<SettingHistoryId> implements SettingH
     return `从 "${oldStr}" 变更为 "${newStr}"`;
   }
 
+  // ============ Factory Methods ============
+
+  /**
+   * Reconstruct from persisted state
+   */
+  public static load(state: SettingHistoryState): SettingHistory {
+    return new SettingHistory(state);
+  }
+
   /**
    * 创建新的 SettingHistory
    */
@@ -140,7 +121,8 @@ export class SettingHistory extends Entity<SettingHistoryId> implements SettingH
 
     const id = SettingHistoryIdType.of(SettingHistoryIdType.generate());
 
-    return new SettingHistory(id, {
+    return new SettingHistory({
+      id,
       settingEntryId: params.settingEntryId,
       settingKey: params.settingKey,
       oldValue: params.oldValue,
@@ -151,37 +133,7 @@ export class SettingHistory extends Entity<SettingHistoryId> implements SettingH
     });
   }
 
-  /**
-   * 从 ServerDTO 重建
-   */
-  public static fromServerDTO(dto: SettingHistoryServerDTO): SettingHistory {
-    const id = SettingHistoryIdType.of(dto.id);
-    return new SettingHistory(id, {
-      settingEntryId: dto.settingEntryId,
-      settingKey: dto.settingKey,
-      oldValue: dto.oldValue,
-      newValue: dto.newValue,
-      operatorId: dto.operatorId,
-      operatorType: dto.operatorType,
-      createdAt: new Date(dto.createdAt),
-    });
-  }
-
-  /**
-   * 从 PersistenceDTO 重建
-   */
-  public static fromPersistenceDTO(dto: SettingHistoryPersistenceDTO): SettingHistory {
-    const id = SettingHistoryIdType.of(dto.id);
-    return new SettingHistory(id, {
-      settingEntryId: dto.settingEntryId,
-      settingKey: dto.settingKey,
-      oldValue: JSON.parse(dto.oldValue),
-      newValue: JSON.parse(dto.newValue),
-      operatorId: dto.operatorId,
-      operatorType: dto.operatorType,
-      createdAt: dto.createdAt,
-    });
-  }
+  // ============ DTO Conversion ============
 
   /**
    * 转换为 ServerDTO
@@ -205,22 +157,6 @@ export class SettingHistory extends Entity<SettingHistoryId> implements SettingH
       // Computed properties
       timeAgo: this.getTimeAgo(),
       changeText: this.getChangeText(),
-    };
-  }
-
-  /**
-   * 转换为 PersistenceDTO
-   */
-  public toPersistenceDTO(): SettingHistoryPersistenceDTO {
-    return {
-      id: this.id,
-      settingEntryId: this.settingEntryId,
-      settingKey: this.settingKey,
-      oldValue: JSON.stringify(this.oldValue),
-      newValue: JSON.stringify(this.newValue),
-      operatorId: this.operatorId,
-      operatorType: this.operatorType,
-      createdAt: this.createdAt,
     };
   }
 }

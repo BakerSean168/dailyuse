@@ -8,15 +8,12 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
   TransferDate,
-  PersistenceDate,
   DomainDate,
   SettingId as ISettingId,
   IdentityId,
 } from '@dailyuse/contracts/primitives';
 import type {
-  UserSettingServer,
   UserSettingServerDTO,
-  UserSettingPersistenceDTO,
   SettingEntryServer,
   SettingEntryServerDTO,
 } from '@dailyuse/contracts/setting';
@@ -84,8 +81,9 @@ class SettingEntry implements SettingEntryServer {
 
 // ============ UserSetting Aggregate ============
 
-/** 内部状态接口 for UserSetting */
-interface UserSettingState {
+/** Domain state for UserSetting */
+export interface UserSettingState {
+  id: ISettingId;
   identityId: IdentityId;
   entries: Map<string, SettingEntry>;
   version: number;
@@ -97,29 +95,19 @@ interface UserSettingState {
 /**
  * 用户设置聚合根
  */
-export class UserSetting extends AggregateRoot<ISettingId> implements UserSettingServer {
+export class UserSetting extends AggregateRoot<ISettingId> {
   // ===== 私有属性容器 =====
-  private _props: UserSettingState;
+  private _props: Omit<UserSettingState, 'id'>;
 
-  private constructor(
-    id: ISettingId,
-    params: {
-      identityId: IdentityId;
-      entries?: Map<string, SettingEntry>;
-      version?: number;
-      createdAt?: DomainDate;
-      updatedAt?: DomainDate;
-      deletedAt?: DomainDate | null;
-    }
-  ) {
-    super(id);
+  private constructor(state: UserSettingState) {
+    super(state.id);
     this._props = {
-      identityId: params.identityId,
-      entries: params.entries ?? new Map(),
-      version: params.version ?? 1,
-      createdAt: params.createdAt ?? new Date(),
-      updatedAt: params.updatedAt ?? new Date(),
-      deletedAt: params.deletedAt ?? null,
+      identityId: state.identityId,
+      entries: state.entries,
+      version: state.version,
+      createdAt: state.createdAt,
+      updatedAt: state.updatedAt,
+      deletedAt: state.deletedAt,
     };
   }
 
@@ -250,74 +238,26 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
     };
   }
 
-  toPersistenceDTO(): UserSettingPersistenceDTO {
-    const entriesArray: SettingEntryServerDTO[] = [];
-    for (const entry of this._props.entries.values()) {
-      entriesArray.push(entry.toDTO());
-    }
-
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      entries: JSON.stringify(entriesArray),
-      version: this._props.version,
-      createdAt: this._props.createdAt as PersistenceDate,
-      updatedAt: this._props.updatedAt as PersistenceDate,
-      deletedAt: this._props.deletedAt as PersistenceDate | null,
-    };
-  }
-
   // ========== 静态工厂方法 ==========
 
-  static create(params: { identityId: IdentityId | string; initialEntries?: Record<string, unknown> }): UserSetting {
-    const id = SettingId.of(SettingId.generate());
-    const identityId = typeof params.identityId === 'string'
-      ? IdentityIdType.of(params.identityId)
-      : params.identityId;
-    const setting = new UserSetting(id, {
-      identityId,
-    });
-
-    if (params.initialEntries) {
-      setting.setValues(params.initialEntries);
-    }
-
-    return setting;
-  }
-
-  static fromServerDTO(dto: UserSettingServerDTO): UserSetting {
-    const id = SettingId.of(dto.id);
-
+  /**
+   * Reconstruct from persisted state – accepts a serialised entries string
+   * that is parsed into domain SettingEntry instances.
+   */
+  static load(state: {
+    id: ISettingId;
+    identityId: IdentityId;
+    entriesJson: string;
+    version?: number;
+    createdAt: DomainDate;
+    updatedAt: DomainDate;
+    deletedAt?: DomainDate | null;
+  }): UserSetting {
     const entries = new Map<string, SettingEntry>();
-    if (dto.entries) {
+    if (state.entriesJson) {
       try {
-        const parsed = JSON.parse(dto.entries) as SettingEntryServerDTO[];
+        const parsed = JSON.parse(state.entriesJson) as SettingEntryServerDTO[];
         for (const entryDTO of parsed) {
-          const entry = SettingEntry.fromDTO(entryDTO);
-          entries.set(entry.key, entry);
-        }
-      } catch {
-        // Invalid entries JSON, use empty map
-      }
-    }
-
-    return new UserSetting(id, {
-      identityId: IdentityIdType.of(dto.identityId),
-      entries,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  static fromPersistenceDTO(dto: UserSettingPersistenceDTO): UserSetting {
-    const id = SettingId.of(dto.id);
-
-    const entries = new Map<string, SettingEntry>();
-    if (dto.entries) {
-      try {
-        const parsed = JSON.parse(dto.entries) as SettingEntryServerDTO[];
-        for (const entryDTO of parsed) {
-          // Handle both Date and number for updatedAt (persistence vs server DTO)
           const updatedAtValue = entryDTO.updatedAt;
           const updatedAtNum = typeof updatedAtValue === 'number'
             ? updatedAtValue
@@ -333,11 +273,36 @@ export class UserSetting extends AggregateRoot<ISettingId> implements UserSettin
       }
     }
 
-    return new UserSetting(id, {
-      identityId: IdentityIdType.of(dto.identityId),
+    return new UserSetting({
+      id: state.id,
+      identityId: state.identityId,
       entries,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      version: state.version ?? 1,
+      createdAt: state.createdAt,
+      updatedAt: state.updatedAt,
+      deletedAt: state.deletedAt ?? null,
     });
+  }
+
+  static create(params: { identityId: IdentityId | string; initialEntries?: Record<string, unknown> }): UserSetting {
+    const id = SettingId.of(SettingId.generate());
+    const identityId = typeof params.identityId === 'string'
+      ? IdentityIdType.of(params.identityId)
+      : params.identityId;
+    const setting = new UserSetting({
+      id,
+      identityId,
+      entries: new Map(),
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    });
+
+    if (params.initialEntries) {
+      setting.setValues(params.initialEntries);
+    }
+
+    return setting;
   }
 }

@@ -4,36 +4,13 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { SettingEntryId, SettingGroupId, TransferDate, PersistenceDate, DomainDate } from '@dailyuse/contracts/primitives';
+import type { SettingEntryId, SettingGroupId, TransferDate, DomainDate } from '@dailyuse/contracts/primitives';
 import { SettingValueType, type UIConfigDTO } from '@dailyuse/contracts/setting';
 import { SettingEntryId as SettingEntryIdType } from '@/domain-shared/value-objects/setting-entry-id';
-import { SettingGroupId as SettingGroupIdType } from '@/domain-shared/value-objects/setting-group-id';
 import { UIConfig } from '@/domain-shared/value-objects/ui-config';
 
 // ============ Local Type Definitions ============
 // TODO: Move these to @dailyuse/contracts/setting when finalizing API
-
-/** SettingItem Server 接口 */
-export interface SettingItemServer {
-  readonly id: SettingEntryId;
-  readonly groupId: SettingGroupId;
-  readonly key: string;
-  readonly name: string;
-  readonly description: string | null;
-  readonly value: unknown;
-  readonly defaultValue: unknown;
-  readonly valueType: SettingValueType;
-  readonly ui: UIConfig;
-  readonly sortOrder: number;
-  readonly isReadOnly: boolean;
-  readonly isVisible: boolean;
-  readonly createdAt: DomainDate;
-  readonly updatedAt: DomainDate;
-  
-  toServerDTO(): SettingItemServerDTO;
-  toClientDTO(): SettingItemClientDTO;
-  toPersistenceDTO(): SettingItemPersistenceDTO;
-}
 
 /** Server DTO - 用于 Server 和 Client 传输 */
 export interface SettingItemServerDTO {
@@ -60,29 +37,29 @@ export interface SettingItemClientDTO extends SettingItemServerDTO {
   canEdit: boolean;
 }
 
-/** Persistence DTO - 用于数据库存储 */
-export interface SettingItemPersistenceDTO {
+/** Domain state for SettingItem */
+export interface SettingItemState {
   id: SettingEntryId;
   groupId: SettingGroupId;
   key: string;
   name: string;
   description: string | null;
-  value: string; // JSON serialized
-  defaultValue: string; // JSON serialized
+  value: unknown;
+  defaultValue: unknown;
   valueType: SettingValueType;
-  ui: string; // JSON serialized
+  ui: UIConfig;
   sortOrder: number;
   isReadOnly: boolean;
   isVisible: boolean;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * 设置项实体
  * 表示设置组中的一个配置项
  */
-export class SettingItem extends Entity<SettingEntryId> implements SettingItemServer {
+export class SettingItem extends Entity<SettingEntryId> {
   private _groupId: SettingGroupId;
   private _key: string;
   private _name: string;
@@ -97,38 +74,21 @@ export class SettingItem extends Entity<SettingEntryId> implements SettingItemSe
   private _createdAt: Date;
   private _updatedAt: Date;
 
-  private constructor(
-    id: SettingEntryId,
-    params: {
-      groupId: SettingGroupId;
-      key: string;
-      name: string;
-      description: string | null;
-      value: unknown;
-      defaultValue: unknown;
-      valueType: SettingValueType;
-      ui: UIConfig;
-      sortOrder: number;
-      isReadOnly: boolean;
-      isVisible: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-    }
-  ) {
-    super(id);
-    this._groupId = params.groupId;
-    this._key = params.key;
-    this._name = params.name;
-    this._description = params.description;
-    this._value = params.value;
-    this._defaultValue = params.defaultValue;
-    this._valueType = params.valueType;
-    this._ui = params.ui;
-    this._sortOrder = params.sortOrder;
-    this._isReadOnly = params.isReadOnly;
-    this._isVisible = params.isVisible;
-    this._createdAt = params.createdAt;
-    this._updatedAt = params.updatedAt;
+  private constructor(state: SettingItemState) {
+    super(state.id);
+    this._groupId = state.groupId;
+    this._key = state.key;
+    this._name = state.name;
+    this._description = state.description;
+    this._value = state.value;
+    this._defaultValue = state.defaultValue;
+    this._valueType = state.valueType;
+    this._ui = state.ui;
+    this._sortOrder = state.sortOrder;
+    this._isReadOnly = state.isReadOnly;
+    this._isVisible = state.isVisible;
+    this._createdAt = state.createdAt;
+    this._updatedAt = state.updatedAt;
   }
 
   // ============ Getters ============
@@ -279,29 +239,14 @@ export class SettingItem extends Entity<SettingEntryId> implements SettingItemSe
     };
   }
 
-  /**
-   * 转换为 PersistenceDTO
-   */
-  public toPersistenceDTO(): SettingItemPersistenceDTO {
-    return {
-      id: this.id,
-      groupId: this._groupId,
-      key: this._key,
-      name: this._name,
-      description: this._description,
-      value: JSON.stringify(this._value),
-      defaultValue: JSON.stringify(this._defaultValue),
-      valueType: this._valueType,
-      ui: JSON.stringify(this._ui.toDTO()),
-      sortOrder: this._sortOrder,
-      isReadOnly: this._isReadOnly,
-      isVisible: this._isVisible,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-    };
-  }
-
   // ============ 工厂方法 ============
+
+  /**
+   * Reconstruct from persisted state
+   */
+  public static load(state: SettingItemState): SettingItem {
+    return new SettingItem(state);
+  }
 
   /**
    * 创建新的设置项
@@ -321,7 +266,8 @@ export class SettingItem extends Entity<SettingEntryId> implements SettingItemSe
   }): SettingItem {
     const id = SettingEntryIdType.of(SettingEntryIdType.generate());
     const now = new Date();
-    return new SettingItem(id, {
+    return new SettingItem({
+      id,
       groupId: params.groupId,
       key: params.key,
       name: params.name,
@@ -335,50 +281,6 @@ export class SettingItem extends Entity<SettingEntryId> implements SettingItemSe
       isVisible: params.isVisible ?? true,
       createdAt: now,
       updatedAt: now,
-    });
-  }
-
-  /**
-   * 从 ServerDTO 重建
-   */
-  public static fromServerDTO(dto: SettingItemServerDTO): SettingItem {
-    const id = SettingEntryIdType.of(dto.id);
-    return new SettingItem(id, {
-      groupId: dto.groupId,
-      key: dto.key,
-      name: dto.name,
-      description: dto.description,
-      value: dto.value,
-      defaultValue: dto.defaultValue,
-      valueType: dto.valueType,
-      ui: UIConfig.fromDTO(dto.ui),
-      sortOrder: dto.sortOrder,
-      isReadOnly: dto.isReadOnly,
-      isVisible: dto.isVisible,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  /**
-   * 从 PersistenceDTO 重建
-   */
-  public static fromPersistenceDTO(dto: SettingItemPersistenceDTO): SettingItem {
-    const id = SettingEntryIdType.of(dto.id);
-    return new SettingItem(id, {
-      groupId: dto.groupId,
-      key: dto.key,
-      name: dto.name,
-      description: dto.description,
-      value: JSON.parse(dto.value),
-      defaultValue: JSON.parse(dto.defaultValue),
-      valueType: dto.valueType,
-      ui: UIConfig.fromDTO(JSON.parse(dto.ui)),
-      sortOrder: dto.sortOrder,
-      isReadOnly: dto.isReadOnly,
-      isVisible: dto.isVisible,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
     });
   }
 }

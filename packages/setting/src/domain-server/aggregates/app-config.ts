@@ -8,7 +8,6 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
   TransferDate,
-  PersistenceDate,
   DomainDate,
   AppConfigId as IAppConfigId,
 } from '@dailyuse/contracts/primitives';
@@ -29,8 +28,22 @@ export const AppEnvironment = {
 
 export type AppEnvironment = (typeof AppEnvironment)[keyof typeof AppEnvironment];
 
-export interface AppConfigServer {
-  id: AppConfigId;
+export interface AppConfigServerDTO {
+  id: string;
+  version: string;
+  app: AppConfigState['app'];
+  features: AppConfigState['features'];
+  limits: AppConfigState['limits'];
+  api: AppConfigState['api'];
+  security: AppConfigState['security'];
+  notifications: AppConfigState['notifications'];
+  createdAt: TransferDate;
+  updatedAt: TransferDate;
+}
+
+/** Domain state for AppConfig */
+export interface AppConfigState {
+  id: IAppConfigId;
   version: string;
   app: {
     name: string;
@@ -92,79 +105,27 @@ export interface AppConfigServer {
   updatedAt: DomainDate;
 }
 
-export interface AppConfigServerDTO {
-  id: string;
-  version: string;
-  app: AppConfigServer['app'];
-  features: AppConfigServer['features'];
-  limits: AppConfigServer['limits'];
-  api: AppConfigServer['api'];
-  security: AppConfigServer['security'];
-  notifications: AppConfigServer['notifications'];
-  createdAt: TransferDate;
-  updatedAt: TransferDate;
-}
-
-export interface AppConfigPersistenceDTO {
-  id: string;
-  version: string;
-  app: string; // JSON stringified
-  features: string; // JSON stringified
-  limits: string; // JSON stringified
-  api: string; // JSON stringified
-  security: string; // JSON stringified
-  notifications: string; // JSON stringified
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
-}
-
 // ============ AppConfig Aggregate ============
-
-/** 内部状态接口 for AppConfig */
-interface AppConfigState {
-  version: string;
-  app: AppConfigServer['app'];
-  features: AppConfigServer['features'];
-  limits: AppConfigServer['limits'];
-  api: AppConfigServer['api'];
-  security: AppConfigServer['security'];
-  notifications: AppConfigServer['notifications'];
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-}
 
 /**
  * 应用配置聚合根服务端实现
  */
-export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigServer {
+export class AppConfig extends AggregateRoot<IAppConfigId> {
   // ===== 私有属性容器 =====
-  private _props: AppConfigState;
+  private _props: Omit<AppConfigState, 'id'>;
 
-  private constructor(
-    id: IAppConfigId,
-    params: {
-      version: string;
-      app: AppConfigServer['app'];
-      features: AppConfigServer['features'];
-      limits: AppConfigServer['limits'];
-      api: AppConfigServer['api'];
-      security: AppConfigServer['security'];
-      notifications: AppConfigServer['notifications'];
-      createdAt?: DomainDate;
-      updatedAt?: DomainDate;
-    }
-  ) {
-    super(id);
+  private constructor(state: AppConfigState) {
+    super(state.id);
     this._props = {
-      version: params.version,
-      app: params.app,
-      features: params.features,
-      limits: params.limits,
-      api: params.api,
-      security: params.security,
-      notifications: params.notifications,
-      createdAt: params.createdAt ?? new Date(),
-      updatedAt: params.updatedAt ?? new Date(),
+      version: state.version,
+      app: state.app,
+      features: state.features,
+      limits: state.limits,
+      api: state.api,
+      security: state.security,
+      notifications: state.notifications,
+      createdAt: state.createdAt,
+      updatedAt: state.updatedAt,
     };
   }
 
@@ -174,27 +135,27 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
     return this._props.version;
   }
 
-  get app(): AppConfigServer['app'] {
+  get app(): AppConfigState['app'] {
     return { ...this._props.app };
   }
 
-  get features(): AppConfigServer['features'] {
+  get features(): AppConfigState['features'] {
     return { ...this._props.features };
   }
 
-  get limits(): AppConfigServer['limits'] {
+  get limits(): AppConfigState['limits'] {
     return { ...this._props.limits };
   }
 
-  get api(): AppConfigServer['api'] {
+  get api(): AppConfigState['api'] {
     return { ...this._props.api };
   }
 
-  get security(): AppConfigServer['security'] {
+  get security(): AppConfigState['security'] {
     return { ...this._props.security };
   }
 
-  get notifications(): AppConfigServer['notifications'] {
+  get notifications(): AppConfigState['notifications'] {
     return {
       ...this._props.notifications,
       channels: { ...this._props.notifications.channels },
@@ -212,45 +173,45 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
 
   // ========== 功能管理 ==========
 
-  enableFeature(feature: keyof AppConfigServer['features']): void {
+  enableFeature(feature: keyof AppConfigState['features']): void {
     this._props.features[feature] = true;
     this._props.updatedAt = new Date();
   }
 
-  disableFeature(feature: keyof AppConfigServer['features']): void {
+  disableFeature(feature: keyof AppConfigState['features']): void {
     this._props.features[feature] = false;
     this._props.updatedAt = new Date();
   }
 
-  isFeatureEnabled(feature: keyof AppConfigServer['features']): boolean {
+  isFeatureEnabled(feature: keyof AppConfigState['features']): boolean {
     return this._props.features[feature] ?? false;
   }
 
   // ========== 限制检查 ==========
 
-  checkLimit(limitType: keyof AppConfigServer['limits'], currentValue: number): boolean {
+  checkLimit(limitType: keyof AppConfigState['limits'], currentValue: number): boolean {
     const limit = this._props.limits[limitType];
     return currentValue < limit;
   }
 
   // ========== 配置更新 ==========
 
-  updateAppInfo(info: Partial<AppConfigServer['app']>): void {
+  updateAppInfo(info: Partial<AppConfigState['app']>): void {
     this._props.app = { ...this._props.app, ...info };
     this._props.updatedAt = new Date();
   }
 
-  updateLimits(limits: Partial<AppConfigServer['limits']>): void {
+  updateLimits(limits: Partial<AppConfigState['limits']>): void {
     this._props.limits = { ...this._props.limits, ...limits };
     this._props.updatedAt = new Date();
   }
 
-  updateApiConfig(config: Partial<AppConfigServer['api']>): void {
+  updateApiConfig(config: Partial<AppConfigState['api']>): void {
     this._props.api = { ...this._props.api, ...config };
     this._props.updatedAt = new Date();
   }
 
-  updateSecurityConfig(config: Partial<AppConfigServer['security']>): void {
+  updateSecurityConfig(config: Partial<AppConfigState['security']>): void {
     this._props.security = { ...this._props.security, ...config };
     this._props.updatedAt = new Date();
   }
@@ -272,35 +233,27 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
     };
   }
 
-  toPersistenceDTO(): AppConfigPersistenceDTO {
-    return {
-      id: this.id,
-      version: this._props.version,
-      app: JSON.stringify(this._props.app),
-      features: JSON.stringify(this._props.features),
-      limits: JSON.stringify(this._props.limits),
-      api: JSON.stringify(this._props.api),
-      security: JSON.stringify(this._props.security),
-      notifications: JSON.stringify(this._props.notifications),
-      createdAt: this._props.createdAt as PersistenceDate,
-      updatedAt: this._props.updatedAt as PersistenceDate,
-    };
-  }
-
   // ========== 静态工厂方法 ==========
 
-  static create(params?: Partial<Omit<AppConfigServer, 'id' | 'createdAt' | 'updatedAt'>>): AppConfig {
+  /**
+   * Reconstruct from persisted state
+   */
+  static load(state: AppConfigState): AppConfig {
+    return new AppConfig(state);
+  }
+
+  static create(params?: Partial<Omit<AppConfigState, 'id' | 'createdAt' | 'updatedAt'>>): AppConfig {
     const id = AppConfigId.of(AppConfigId.generate());
 
     // 默认配置
-    const defaultApp: AppConfigServer['app'] = {
+    const defaultApp: AppConfigState['app'] = {
       name: 'DailyUse',
       version: '1.0.0',
       buildNumber: '1',
       environment: AppEnvironment.Development,
     };
 
-    const defaultFeatures: AppConfigServer['features'] = {
+    const defaultFeatures: AppConfigState['features'] = {
       goals: true,
       tasks: true,
       schedules: true,
@@ -311,7 +264,7 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
       analytics: false,
     };
 
-    const defaultLimits: AppConfigServer['limits'] = {
+    const defaultLimits: AppConfigState['limits'] = {
       maxAccountsPerDevice: 5,
       maxGoalsPerAccount: 100,
       maxTasksPerAccount: 1000,
@@ -322,14 +275,14 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
       maxStorageSize: 5 * 1024 * 1024 * 1024, // 5GB
     };
 
-    const defaultApi: AppConfigServer['api'] = {
+    const defaultApi: AppConfigState['api'] = {
       baseUrl: 'http://localhost:3000',
       timeout: 30000,
       retryCount: 3,
       retryDelay: 1000,
     };
 
-    const defaultSecurity: AppConfigServer['security'] = {
+    const defaultSecurity: AppConfigState['security'] = {
       sessionTimeout: 3600000, // 1 hour
       maxLoginAttempts: 5,
       lockoutDuration: 900000, // 15 minutes
@@ -341,7 +294,7 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
       twoFactorEnabled: false,
     };
 
-    const defaultNotifications: AppConfigServer['notifications'] = {
+    const defaultNotifications: AppConfigState['notifications'] = {
       enabled: true,
       channels: {
         inApp: true,
@@ -355,12 +308,13 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
       },
     };
 
-    const app: AppConfigServer['app'] = {
+    const app: AppConfigState['app'] = {
       ...defaultApp,
       ...params?.app,
     };
 
-    return new AppConfig(id, {
+    return new AppConfig({
+      id,
       version: params?.version ?? '1.0.0',
       app,
       features: { ...defaultFeatures, ...params?.features },
@@ -379,36 +333,8 @@ export class AppConfig extends AggregateRoot<IAppConfigId> implements AppConfigS
           ...params?.notifications?.rateLimit,
         },
       },
-    });
-  }
-
-  static fromServerDTO(dto: AppConfigServerDTO): AppConfig {
-    const id = AppConfigId.of(dto.id);
-    return new AppConfig(id, {
-      version: dto.version,
-      app: dto.app,
-      features: dto.features,
-      limits: dto.limits,
-      api: dto.api,
-      security: dto.security,
-      notifications: dto.notifications,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
-  }
-
-  static fromPersistenceDTO(dto: AppConfigPersistenceDTO): AppConfig {
-    const id = AppConfigId.of(dto.id);
-    return new AppConfig(id, {
-      version: dto.version,
-      app: JSON.parse(dto.app),
-      features: JSON.parse(dto.features),
-      limits: JSON.parse(dto.limits),
-      api: JSON.parse(dto.api),
-      security: JSON.parse(dto.security),
-      notifications: JSON.parse(dto.notifications),
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 }

@@ -40,13 +40,19 @@
 
 // ============ 实体 ============
 export { SettingHistory } from './entities/setting-history';
+export type { SettingHistoryState } from './entities/setting-history';
 export { SettingItem } from './entities/setting-item';
+export type { SettingItemState } from './entities/setting-item';
 export { SettingGroup } from './entities/setting-group';
+export type { SettingGroupState } from './entities/setting-group';
 
 // ============ 聚合根 ============
 export { Setting } from './aggregates/setting';
+export type { SettingState } from './aggregates/setting';
 export { AppConfig } from './aggregates/app-config';
+export type { AppConfigState } from './aggregates/app-config';
 export { UserSetting } from './aggregates/user-setting';
+export type { UserSettingState } from './aggregates/user-setting';
 
 // ============ 仓储接口 ============
 export type { ISettingRepository } from './repositories/ISettingRepository';
