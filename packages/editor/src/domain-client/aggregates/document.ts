@@ -3,29 +3,25 @@
  * 文档实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 DocumentClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: DocumentClientDTO): Document
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: DocumentState): Document
  * - Instance toDTO(): DocumentClientDTO
  */
 
 import type {
-  DocumentClient,
   DocumentClientDTO,
   DocumentMetadataClientDTO,
   DocumentLanguage,
   IndexStatus,
 } from '@dailyuse/contracts/editor';
-import type { DocumentId as IDocumentId, DomainDate } from '@dailyuse/contracts/primitives';
+import type { DocumentId as IDocumentId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { DocumentId } from '../../domain-shared/value-objects/document-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface DocumentState {
+export interface DocumentState {
   id: DocumentId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
@@ -42,7 +38,7 @@ interface DocumentState {
   updatedAt: Date;
 }
 
-export class Document extends Entity<IDocumentId> implements DocumentClient {
+export class Document extends Entity<IDocumentId> {
   // ================= 1. Backing Field =================
   private readonly _props: DocumentState;
 
@@ -89,40 +85,25 @@ export class Document extends Entity<IDocumentId> implements DocumentClient {
     return this._props.indexStatus;
   }
 
-  get lastIndexedAt(): DomainDate | null {
+  get lastIndexedAt(): Date | null {
     return this._props.lastIndexedAt;
   }
 
-  get lastModifiedAt(): DomainDate | null {
+  get lastModifiedAt(): Date | null {
     return this._props.lastModifiedAt;
   }
 
-  get createdAt(): DomainDate {
+  get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  get updatedAt(): DomainDate {
+  get updatedAt(): Date {
     return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: DocumentClientDTO): Document {
-    return new Document({
-      id: DocumentId.of(dto.id),
-      workspaceId: EditorWorkspaceId.of(dto.workspaceId),
-      identityId: IdentityId.of(dto.identityId),
-      path: dto.path,
-      name: dto.name,
-      language: dto.language,
-      content: dto.content,
-      contentHash: dto.contentHash,
-      metadata: dto.metadata,
-      indexStatus: dto.indexStatus,
-      lastIndexedAt: dto.lastIndexedAt ? new Date(dto.lastIndexedAt) : null,
-      lastModifiedAt: dto.lastModifiedAt ? new Date(dto.lastModifiedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: DocumentState): Document {
+    return new Document(state);
   }
 
   // ================= 5. DTO Conversion =================

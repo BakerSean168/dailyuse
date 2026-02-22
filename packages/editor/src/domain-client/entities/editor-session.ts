@@ -7,27 +7,24 @@
  * 包含子实体: EditorGroup[]
  *
  * 【规范说明】
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: EditorSessionClientDTO): EditorSession
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: EditorSessionState): EditorSession
  * - Instance toDTO(): EditorSessionClientDTO
  */
 
 import type {
-  EditorSessionClient,
   EditorSessionClientDTO,
   SessionLayoutClient,
 } from '@dailyuse/contracts/editor';
-import type { EditorSessionId as IEditorSessionId, DomainDate } from '@dailyuse/contracts/primitives';
+import type { EditorSessionId as IEditorSessionId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { EditorWorkspaceId } from '../../domain-shared/value-objects/editor-workspace-id';
 import { EditorSessionId } from '../../domain-shared/value-objects/editor-session-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { EditorGroup } from './editor-group';
 
-// 内部状态接口：使用 domain-shared 类类型
-interface EditorSessionState {
+export interface EditorSessionState {
   id: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
@@ -42,7 +39,7 @@ interface EditorSessionState {
   updatedAt: Date;
 }
 
-export class EditorSession extends Entity<IEditorSessionId> implements EditorSessionClient {
+export class EditorSession extends Entity<IEditorSessionId> {
   // ================= 1. Backing Field =================
   private readonly _props: EditorSessionState;
 
@@ -89,34 +86,21 @@ export class EditorSession extends Entity<IEditorSessionId> implements EditorSes
     return this._props.groups.length;
   }
 
-  get lastAccessedAt(): DomainDate | null {
+  get lastAccessedAt(): Date | null {
     return this._props.lastAccessedAt;
   }
 
-  get createdAt(): DomainDate {
+  get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  get updatedAt(): DomainDate {
+  get updatedAt(): Date {
     return this._props.updatedAt;
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: EditorSessionClientDTO): EditorSession {
-    return new EditorSession({
-      id: EditorSessionId.of(dto.id),
-      workspaceId: EditorWorkspaceId.of(dto.workspaceId),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      groups: dto.groups.map((g) => EditorGroup.fromDTO(g)),
-      isActive: dto.isActive,
-      activeGroupIndex: dto.activeGroupIndex,
-      layout: dto.layout,
-      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-    });
+  public static load(state: EditorSessionState): EditorSession {
+    return new EditorSession(state);
   }
 
   // ================= 5. DTO Conversion =================
