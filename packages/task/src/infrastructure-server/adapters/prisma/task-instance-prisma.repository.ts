@@ -11,6 +11,7 @@ import type { ITaskInstanceRepository } from '../../../domain-server/repositorie
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaTaskInstanceMapper } from '../../mappers/prisma-task-instance-mapper';
 
 /**
  * Global EventBus adapter
@@ -36,46 +37,14 @@ export class TaskInstancePrismaRepository
    * Prisma record  TaskInstance 聚合根
    */
   private mapToEntity(data: PrismaTaskInstance): TaskInstance {
-    return TaskInstance.fromPersistenceDTO({
-      id: data.id,
-      templateId: data.templateId,
-      identityId: data.identityId,
-      instanceDate: data.instanceDate,
-      timeConfig: data.timeConfig || '{}',
-      importance: data.importance || 'Moderate',
-      priority: data.priority ?? undefined,
-      status: data.status,
-      actualStartTime: data.actualStartTime ?? null,
-      actualEndTime: data.actualEndTime ?? null,
-      comment: data.comment ?? null,
-      version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    });
+    return PrismaTaskInstanceMapper.toDomain(data);
   }
 
   /**
    * TaskInstance 聚合根  Prisma write data
    */
   private toWriteData(dto: ReturnType<TaskInstance['toPersistenceDTO']>) {
-    return {
-      templateId: dto.templateId,
-      identityId: dto.identityId,
-      instanceDate: dto.instanceDate instanceof Date ? dto.instanceDate : new Date(dto.instanceDate as any),
-      timeConfig: dto.timeConfig || '{}',
-      importance: dto.importance || 'Moderate',
-      priority: dto.priority ?? null,
-      status: dto.status,
-      actualStartTime: dto.actualStartTime
-        ? (dto.actualStartTime instanceof Date ? dto.actualStartTime : new Date(dto.actualStartTime as any))
-        : null,
-      actualEndTime: dto.actualEndTime
-        ? (dto.actualEndTime instanceof Date ? dto.actualEndTime : new Date(dto.actualEndTime as any))
-        : null,
-      comment: dto.comment ?? null,
-      version: dto.version,
-    };
+    return PrismaTaskInstanceMapper.toPersistence(dto);
   }
 
   /**

@@ -8,6 +8,7 @@
 import type { PrismaClient, TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
 import type { ITaskFolderRepository } from '../../../domain-server/repositories/ITaskFolderRepository';
 import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
+import { PrismaTaskFolderMapper } from '../../mappers/prisma-task-folder-mapper';
 
 export class TaskFolderPrismaRepository implements ITaskFolderRepository {
   constructor(private prisma: PrismaClient) {}
@@ -16,20 +17,7 @@ export class TaskFolderPrismaRepository implements ITaskFolderRepository {
    * Prisma record  TaskFolderServerDTO
    */
   private mapToDTO(data: PrismaTaskFolder): TaskFolderServerDTO {
-    return {
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      color: data.color ?? null,
-      icon: data.icon ?? null,
-      order: data.order,
-      version: data.version,
-      createdAt: data.createdAt instanceof Date ? data.createdAt.getTime() : data.createdAt,
-      updatedAt: data.updatedAt instanceof Date ? data.updatedAt.getTime() : data.updatedAt,
-      deletedAt: data.deletedAt
-        ? (data.deletedAt instanceof Date ? data.deletedAt.getTime() : data.deletedAt)
-        : null,
-    };
+    return PrismaTaskFolderMapper.toDTO(data);
   }
 
   async save(folder: TaskFolderServerDTO): Promise<void> {

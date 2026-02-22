@@ -1,9 +1,9 @@
 ﻿import type { PrismaClient, GoalFolder as PrismaGoalFolder } from '@dailyuse/database';
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
-import type { GoalFolderPersistenceDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaGoalFolderMapper } from '../../mappers/prisma-goal-folder-mapper';
 
 /**
  * Global EventBus adapter
@@ -34,24 +34,7 @@ export class GoalFolderPrismaRepository
    * Map Prisma row to domain entity
    */
   private mapToEntity(data: PrismaGoalFolder): GoalFolder {
-    const dto: GoalFolderPersistenceDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description ?? null,
-      icon: data.icon ?? null,
-      color: data.color ?? null,
-      parentFolderId: data.parentFolderId ?? null,
-      sortOrder: data.sortOrder ?? 0,
-      folderType: (data.folderType as GoalFolderPersistenceDTO['folderType']) ?? null,
-      goalCount: data.goalCount ?? 0,
-      completedGoalCount: data.completedGoalCount ?? 0,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-      version: data.version ?? 1,
-    };
-    return GoalFolder.fromPersistenceDTO(dto);
+    return PrismaGoalFolderMapper.toDomain(data);
   }
 
   /**

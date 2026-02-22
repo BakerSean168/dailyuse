@@ -16,6 +16,7 @@ import type {
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaTaskTemplateMapper } from '../../mappers/prisma-task-template-mapper';
 
 /**
  * 全局 EventBus 适配器
@@ -41,90 +42,14 @@ export class TaskTemplatePrismaRepository
    * Prisma record  TaskTemplate 聚合根
    */
   private mapToEntity(data: PrismaTaskTemplate): TaskTemplate {
-    return TaskTemplate.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description,
-      timeConfigType: data.timeConfigType,
-      timeConfigStartTime: data.timeConfigStartTime ?? null,
-      timeConfigEndTime: data.timeConfigEndTime ?? null,
-      timeConfigDurationMinutes: data.timeConfigDurationMinutes,
-      recurrenceRuleType: data.recurrenceRuleType,
-      recurrenceRuleInterval: data.recurrenceRuleInterval,
-      recurrenceRuleDaysOfWeek: data.recurrenceRuleDaysOfWeek,
-      recurrenceRuleDayOfMonth: data.recurrenceRuleDayOfMonth,
-      recurrenceRuleMonthOfYear: data.recurrenceRuleMonthOfYear,
-      recurrenceRuleEndDate: data.recurrenceRuleEndDate ?? null,
-      recurrenceRuleCount: data.recurrenceRuleCount,
-      reminderConfigEnabled: data.reminderConfigEnabled,
-      reminderConfigTimeOffsetMinutes: data.reminderConfigTimeOffsetMinutes,
-      reminderConfigUnit: data.reminderConfigUnit,
-      reminderConfigChannel: data.reminderConfigChannel,
-      lastGeneratedDate: data.lastGeneratedDate ?? null,
-      generateAheadDays: data.generateAheadDays,
-      importance: data.importance,
-      tags: data.tags,
-      color: data.color,
-      status: data.status,
-      goalBinding: data.goalBinding ? JSON.parse(data.goalBinding) : null,
-      parentTaskId: data.parentTaskId,
-      dependencyStatus: data.dependencyStatus,
-      isBlocked: data.isBlocked,
-      blockingReason: data.blockingReason,
-      folderId: data.folderId,
-      version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    });
+    return PrismaTaskTemplateMapper.toDomain(data);
   }
 
   /**
    * TaskTemplate 聚合根  Prisma upsert data
    */
   private toWriteData(dto: ReturnType<TaskTemplate['toPersistenceDTO']>) {
-    return {
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      status: dto.status,
-      importance: dto.importance,
-      color: dto.color,
-      tags: dto.tags,
-      folderId: dto.folderId,
-      parentTaskId: dto.parentTaskId,
-      timeConfigType: dto.timeConfigType,
-      timeConfigStartTime: dto.timeConfigStartTime
-        ? new Date(dto.timeConfigStartTime as any)
-        : null,
-      timeConfigEndTime: dto.timeConfigEndTime
-        ? new Date(dto.timeConfigEndTime as any)
-        : null,
-      timeConfigDurationMinutes: dto.timeConfigDurationMinutes,
-      recurrenceRuleType: dto.recurrenceRuleType,
-      recurrenceRuleInterval: dto.recurrenceRuleInterval,
-      recurrenceRuleDaysOfWeek: dto.recurrenceRuleDaysOfWeek,
-      recurrenceRuleDayOfMonth: dto.recurrenceRuleDayOfMonth,
-      recurrenceRuleMonthOfYear: dto.recurrenceRuleMonthOfYear,
-      recurrenceRuleEndDate: dto.recurrenceRuleEndDate
-        ? new Date(dto.recurrenceRuleEndDate as any)
-        : null,
-      recurrenceRuleCount: dto.recurrenceRuleCount,
-      reminderConfigEnabled: dto.reminderConfigEnabled,
-      reminderConfigTimeOffsetMinutes: dto.reminderConfigTimeOffsetMinutes,
-      reminderConfigUnit: dto.reminderConfigUnit,
-      reminderConfigChannel: dto.reminderConfigChannel,
-      lastGeneratedDate: dto.lastGeneratedDate
-        ? new Date(dto.lastGeneratedDate as any)
-        : null,
-      generateAheadDays: dto.generateAheadDays,
-      goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
-      blockingReason: dto.blockingReason,
-      dependencyStatus: dto.dependencyStatus ?? 'NONE',
-      isBlocked: dto.isBlocked ?? false,
-      version: dto.version,
-    };
+    return PrismaTaskTemplateMapper.toPersistence(dto);
   }
 
   /**

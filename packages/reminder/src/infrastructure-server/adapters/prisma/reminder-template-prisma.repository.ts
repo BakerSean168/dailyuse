@@ -10,15 +10,11 @@
 
 import type { PrismaClient, ReminderTemplate as PrismaReminderTemplate, ReminderHistory as PrismaReminderHistory, Prisma } from '@dailyuse/database';
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
-import type { ReminderStatus, ReminderType, TriggerResult } from '@dailyuse/contracts/reminder';
+import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
-import { ReminderHistory } from '../../../domain-server/entities/reminder-history';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-
-type PrismaReminderTemplateWithHistory = PrismaReminderTemplate & {
-  history?: PrismaReminderHistory[];
-};
+import { PrismaReminderTemplateMapper, type PrismaReminderTemplateWithHistory } from '../../mappers/prisma-reminder-template-mapper';
 
 /**
  * 全局 EventBus 适配器
@@ -44,117 +40,14 @@ export class ReminderTemplatePrismaRepository
    * Prisma record 鈫?ReminderTemplate 鑱氬悎鏍?
    */
   private mapToEntity(data: PrismaReminderTemplate, historyRecords?: PrismaReminderHistory[]): ReminderTemplate {
-    const template = ReminderTemplate.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      name: data.name,
-      description: data.description ?? null,
-      type: data.type as ReminderType,
-      trigger: data.trigger,
-      recurrence: data.recurrence ?? null,
-      activeTime: data.activeTime,
-      activeHours: data.activeHours ?? null,
-      notificationConfig: data.notificationConfig,
-      selfEnabled: data.selfEnabled,
-      status: data.status as ReminderStatus,
-      groupId: data.reminderGroupId ?? null,
-      importanceLevel: data.importanceLevel,
-      tags: data.tags,
-      color: data.color ?? null,
-      icon: data.icon ?? null,
-      nextTriggerAt: data.nextTriggerAt ?? null,
-      stats: data.stats,
-
-      // Smart Frequency: Response Metrics
-      clickRate: data.clickRate ?? null,
-      ignoreRate: data.ignoreRate ?? null,
-      avgResponseTime: data.avgResponseTime ?? null,
-      snoozeCount: data.snoozeCount ?? 0,
-      effectivenessScore: data.effectivenessScore ?? null,
-      sampleSize: data.sampleSize ?? 0,
-      lastAnalysisTime: data.lastAnalysisTime ?? null,
-
-      // Smart Frequency: Frequency Adjustment
-      originalInterval: data.originalInterval ?? null,
-      adjustedInterval: data.adjustedInterval ?? null,
-      adjustmentReason: data.adjustmentReason ?? null,
-      adjustmentTime: data.adjustmentTime ?? null,
-      isAutoAdjusted: data.isAutoAdjusted ?? false,
-      userConfirmed: data.userConfirmed ?? false,
-      smartFrequencyEnabled: data.smartFrequencyEnabled ?? true,
-
-      version: data.version,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    });
-
-    // 鍔犺浇瀛愬疄浣?- 鍘嗗彶璁板綍
-    if (historyRecords && historyRecords.length > 0) {
-      for (const h of historyRecords) {
-        const history = ReminderHistory.fromPersistenceDTO({
-          id: h.id,
-          templateId: h.templateId,
-          triggeredAt: h.triggeredAt.getTime(),
-          result: h.result as TriggerResult,
-          error: h.error ?? null,
-          notificationSent: h.notificationSent,
-          notificationChannels: h.notificationChannel ?? null,
-          createdAt: h.createdAt,
-        });
-        template.addHistory(history);
-      }
-    }
-
-    return template;
+    return PrismaReminderTemplateMapper.toDomain(data, historyRecords);
   }
 
   /**
    * ReminderTemplate 鑱氬悎鏍?鈫?Prisma write data
    */
   private toWriteData(template: ReminderTemplate) {
-    const dto = template.toPersistenceDTO();
-    return {
-      identityId: dto.identityId as string,
-      name: dto.name,
-      description: dto.description,
-      type: dto.type,
-      trigger: dto.trigger,
-      recurrence: dto.recurrence,
-      activeTime: dto.activeTime,
-      activeHours: dto.activeHours,
-      notificationConfig: dto.notificationConfig,
-      selfEnabled: dto.selfEnabled,
-      status: dto.status,
-      reminderGroupId: dto.groupId,
-      importanceLevel: dto.importanceLevel,
-      tags: dto.tags,
-      color: dto.color,
-      icon: dto.icon,
-      nextTriggerAt: dto.nextTriggerAt,
-      stats: dto.stats,
-
-      // Smart Frequency: Response Metrics
-      clickRate: dto.clickRate ?? null,
-      ignoreRate: dto.ignoreRate ?? null,
-      avgResponseTime: dto.avgResponseTime ?? null,
-      snoozeCount: dto.snoozeCount ?? 0,
-      effectivenessScore: dto.effectivenessScore ?? null,
-      sampleSize: dto.sampleSize ?? 0,
-      lastAnalysisTime: dto.lastAnalysisTime ?? null,
-
-      // Smart Frequency: Frequency Adjustment
-      originalInterval: dto.originalInterval ?? null,
-      adjustedInterval: dto.adjustedInterval ?? null,
-      adjustmentReason: dto.adjustmentReason ?? null,
-      adjustmentTime: dto.adjustmentTime ?? null,
-      isAutoAdjusted: dto.isAutoAdjusted ?? false,
-      userConfirmed: dto.userConfirmed ?? false,
-      smartFrequencyEnabled: dto.smartFrequencyEnabled ?? true,
-
-      version: dto.version,
-      deletedAt: dto.deletedAt,
-    };
+    return PrismaReminderTemplateMapper.toPersistence(template);
   }
 
   /**

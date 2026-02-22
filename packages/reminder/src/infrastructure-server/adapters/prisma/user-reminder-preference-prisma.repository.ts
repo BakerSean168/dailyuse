@@ -8,6 +8,7 @@
 import type { PrismaClient, UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
 import type { IUserReminderPreferenceRepository } from '../../../domain-server/repositories/IUserReminderPreferenceRepository';
 import { UserReminderPreferences } from '../../../domain-server/aggregates/user-reminder-preferences';
+import { PrismaUserReminderPreferenceMapper } from '../../mappers/prisma-user-reminder-preference-mapper';
 
 export class UserReminderPreferencePrismaRepository
   implements IUserReminderPreferenceRepository
@@ -15,18 +16,10 @@ export class UserReminderPreferencePrismaRepository
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
-   * Prisma record 鈫?UserReminderPreferences 鑱氬悎鏍?
+   * Prisma record → UserReminderPreferences aggregate root
    */
   private mapToEntity(data: PrismaUserReminderPreference): UserReminderPreferences {
-    return UserReminderPreferences.fromPersistenceDTO({
-      id: data.id,
-      identityId: data.identityId,
-      bestTimeSlots: data.bestTimeSlots ?? '[]',
-      worstTimeSlots: data.worstTimeSlots ?? '[]',
-      globalSmartFrequency: data.globalSmartFrequency,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    });
+    return PrismaUserReminderPreferenceMapper.toDomain(data);
   }
 
   async save(preferences: UserReminderPreferences): Promise<void> {

@@ -8,9 +8,9 @@
 import type { PrismaClient, GoalRecord as PrismaGoalRecord, Prisma } from '@dailyuse/database';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-server';
 import { GoalRecord } from '@/domain-server';
-import type { GoalRecordPersistenceDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
+import { PrismaGoalRecordMapper } from '../../mappers/prisma-goal-record-mapper';
 
 /**
  * Global EventBus adapter
@@ -36,18 +36,7 @@ export class GoalRecordPrismaRepository
    * Map Prisma row to domain aggregate
    */
   private mapToEntity(data: PrismaGoalRecord): GoalRecord {
-    const dto: GoalRecordPersistenceDTO = {
-      id: data.id,
-      keyResultId: data.keyResultId,
-      value: data.value,
-      note: data.note ?? null,
-      recordedAt: data.recordedAt,
-      version: data.version ?? 1,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    };
-    return GoalRecord.fromPersistenceDTO(dto);
+    return PrismaGoalRecordMapper.toDomain(data);
   }
 
   /**

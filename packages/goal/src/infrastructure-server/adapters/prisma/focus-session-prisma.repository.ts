@@ -2,7 +2,7 @@
 import type { IFocusSessionRepository } from '@/domain-server';
 import { FocusSession } from '@/domain-server';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
-import type { FocusSessionPersistenceDTO } from '@dailyuse/contracts/goal';
+import { PrismaFocusSessionMapper } from '../../mappers/prisma-focus-session-mapper';
 
 /**
  * FocusSession Prisma Repository
@@ -17,27 +17,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
    * Map Prisma row to domain entity
    */
   private mapToEntity(data: PrismaFocusSession): FocusSession {
-    const dto: FocusSessionPersistenceDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      goalId: data.goalId ?? null,
-      status: data.status as FocusSessionStatus,
-      durationMinutes: data.durationMinutes,
-      actualDurationMinutes: data.actualDurationMinutes,
-      description: data.description,
-      startedAt: data.startedAt ?? null,
-      pausedAt: data.pausedAt ?? null,
-      resumedAt: data.resumedAt ?? null,
-      completedAt: data.completedAt ?? null,
-      cancelledAt: data.cancelledAt ?? null,
-      pauseCount: data.pauseCount,
-      pausedDurationMinutes: data.pausedDurationMinutes,
-      version: data.version ?? 1,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      deletedAt: data.deletedAt ?? null,
-    };
-    return FocusSession.fromPersistenceDTO(dto);
+    return PrismaFocusSessionMapper.toDomain(data);
   }
 
   /**

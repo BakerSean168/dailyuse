@@ -1,0 +1,31 @@
+/**
+ * Prisma ReminderResponse Mapper
+ *
+ * Maps between ReminderResponse domain entity and Prisma model.
+ */
+
+import type { ReminderResponse as PrismaReminderResponse } from '@dailyuse/database';
+import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
+import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
+
+export class PrismaReminderResponseMapper {
+  /**
+   * Prisma record → ReminderResponse entity
+   */
+  static toDomain(data: PrismaReminderResponse): ReminderResponse {
+    return ReminderResponse.fromPersistenceDTO({
+      id: data.id,
+      reminderTemplateId: data.templateId,
+      action: data.action as ReminderResponseAction,
+      responseTime: data.responseTime != null ? new Date(data.responseTime * 1000) : null,
+      timestamp: data.timestamp,
+    });
+  }
+
+  /**
+   * Batch conversion: Prisma → Domain
+   */
+  static toDomainList(rows: PrismaReminderResponse[]): ReminderResponse[] {
+    return rows.map((row) => PrismaReminderResponseMapper.toDomain(row));
+  }
+}

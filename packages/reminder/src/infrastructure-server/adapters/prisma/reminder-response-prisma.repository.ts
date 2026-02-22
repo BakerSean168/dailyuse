@@ -9,6 +9,7 @@ import type { PrismaClient, ReminderResponse as PrismaReminderResponse, Prisma }
 import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
+import { PrismaReminderResponseMapper } from '../../mappers/prisma-reminder-response-mapper';
 
 export class ReminderResponsePrismaRepository implements IReminderResponseRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -17,13 +18,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
    * Prisma record → ReminderResponse 实体
    */
   private mapToEntity(data: PrismaReminderResponse): ReminderResponse {
-    return ReminderResponse.fromPersistenceDTO({
-      id: data.id,
-      reminderTemplateId: data.templateId,
-      action: data.action as ReminderResponseAction,
-      responseTime: data.responseTime != null ? new Date(data.responseTime * 1000) : null,
-      timestamp: data.timestamp,
-    });
+    return PrismaReminderResponseMapper.toDomain(data);
   }
 
   async save(response: ReminderResponse): Promise<void> {

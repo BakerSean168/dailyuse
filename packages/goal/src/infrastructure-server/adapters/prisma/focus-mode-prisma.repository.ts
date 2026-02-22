@@ -1,7 +1,7 @@
 ﻿import type { PrismaClient, FocusMode as PrismaFocusMode } from '@dailyuse/database';
 import type { IFocusModeRepository } from '@/domain-server';
 import { FocusMode } from '@/domain-server';
-import type { FocusModeDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import { PrismaFocusModeMapper } from '../../mappers/prisma-focus-mode-mapper';
 
 /**
  * FocusMode Prisma Repository
@@ -17,19 +17,7 @@ export class FocusModePrismaRepository implements IFocusModeRepository {
    * Converts DateTime fields to timestamps for FocusModeDTO.
    */
   private mapToValueObject(data: PrismaFocusMode): FocusMode {
-    const dto: FocusModeDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      focusedGoalIds: data.focusedGoalIds ?? [],
-      startTime: (data.startTime as Date).getTime(),
-      endTime: (data.endTime as Date).getTime(),
-      hiddenGoalsMode: data.hiddenGoalsMode as HiddenGoalsMode,
-      isActive: data.isActive,
-      actualEndTime: data.actualEndTime ? (data.actualEndTime as Date).getTime() : null,
-      createdAt: (data.createdAt as Date).getTime(),
-      updatedAt: (data.updatedAt as Date).getTime(),
-    };
-    return FocusMode.fromDTO(dto);
+    return PrismaFocusModeMapper.toDomain(data);
   }
 
   /**
