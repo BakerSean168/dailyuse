@@ -3,24 +3,20 @@
  * 关键成果实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 KeyResultClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: KeyResultClientDTO): KeyResult
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: KeyResultState): KeyResult
  * - Instance toDTO(): KeyResultClientDTO
  */
 
 import type {
-  KeyResultClient,
   KeyResultClientDTO,
   KeyResultProgress,
 } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultId } from '@/domain-shared';
 
-// 内部状态接口
-interface KeyResultState {
+export interface KeyResultState {
   id: KeyResultId;
   title: string;
   description: string | null;
@@ -33,7 +29,7 @@ interface KeyResultState {
   deletedAt: Date | null;
 }
 
-export class KeyResult extends Entity<KeyResultId> implements KeyResultClient {
+export class KeyResult extends Entity<KeyResultId> {
   // ================= 1. Props =================
   private readonly _props: KeyResultState;
 
@@ -92,19 +88,8 @@ export class KeyResult extends Entity<KeyResultId> implements KeyResultClient {
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: KeyResultClientDTO): KeyResult {
-    return new KeyResult({
-      id: KeyResultId.of(dto.id),
-      title: dto.title,
-      description: dto.description,
-      progress: dto.progress,
-      weight: dto.weight,
-      order: dto.order,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: KeyResultState): KeyResult {
+    return new KeyResult(state);
   }
 
   // ================= 5. DTO Conversion =================

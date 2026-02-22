@@ -3,16 +3,13 @@
  * 目标复盘实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 GoalReviewClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: GoalReviewClientDTO): GoalReview
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: GoalReviewState): GoalReview
  * - Instance toDTO(): GoalReviewClientDTO
  */
 
 import type {
-  GoalReviewClient,
   GoalReviewClientDTO,
   KeyResultSnapshot,
   ReviewType,
@@ -20,8 +17,7 @@ import type {
 import { Entity } from '@dailyuse/utils';
 import { GoalReviewId, GoalId } from '@/domain-shared';
 
-// 内部状态接口
-interface GoalReviewState {
+export interface GoalReviewState {
   id: GoalReviewId;
   goalId: GoalId;
   type: ReviewType;
@@ -38,7 +34,7 @@ interface GoalReviewState {
   deletedAt: Date | null;
 }
 
-export class GoalReview extends Entity<GoalReviewId> implements GoalReviewClient {
+export class GoalReview extends Entity<GoalReviewId> {
   // ================= 1. Props =================
   private readonly _props: GoalReviewState;
 
@@ -107,23 +103,8 @@ export class GoalReview extends Entity<GoalReviewId> implements GoalReviewClient
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: GoalReviewClientDTO): GoalReview {
-    return new GoalReview({
-      id: GoalReviewId.of(dto.id),
-      goalId: GoalId.of(dto.goalId),
-      type: dto.type,
-      rating: dto.rating,
-      summary: dto.summary,
-      achievements: dto.achievements,
-      challenges: dto.challenges,
-      improvements: dto.improvements,
-      keyResultSnapshots: dto.keyResultSnapshots ?? [],
-      version: dto.version,
-      reviewedAt: new Date(dto.reviewedAt),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: GoalReviewState): GoalReview {
+    return new GoalReview(state);
   }
 
   // ================= 5. DTO Conversion =================

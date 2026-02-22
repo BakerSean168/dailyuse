@@ -3,23 +3,19 @@
  * 目标记录实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 GoalRecordClient 接口
- * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: GoalRecordClientDTO): GoalRecord
+ * - Private constructor with props object
+ * - Public getters via this._props.xxx
+ * - Static load(state: GoalRecordState): GoalRecord
  * - Instance toDTO(): GoalRecordClientDTO
  */
 
 import type {
-  GoalRecordClient,
   GoalRecordClientDTO,
 } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 import { GoalRecordId, KeyResultId, GoalId } from '@/domain-shared';
 
-// 内部状态接口
-interface GoalRecordState {
+export interface GoalRecordState {
   id: GoalRecordId;
   keyResultId: KeyResultId;
   goalId: GoalId;
@@ -32,7 +28,7 @@ interface GoalRecordState {
   deletedAt: Date | null;
 }
 
-export class GoalRecord extends Entity<GoalRecordId> implements GoalRecordClient {
+export class GoalRecord extends Entity<GoalRecordId> {
   // ================= 1. Props =================
   private readonly _props: GoalRecordState;
 
@@ -85,19 +81,8 @@ export class GoalRecord extends Entity<GoalRecordId> implements GoalRecordClient
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: GoalRecordClientDTO): GoalRecord {
-    return new GoalRecord({
-      id: GoalRecordId.of(dto.id),
-      keyResultId: KeyResultId.of(dto.keyResultId),
-      goalId: GoalId.of(dto.goalId),
-      value: dto.value,
-      valueAfter: dto.valueAfter,
-      comment: dto.comment,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: GoalRecordState): GoalRecord {
+    return new GoalRecord(state);
   }
 
   // ================= 5. DTO Conversion =================
