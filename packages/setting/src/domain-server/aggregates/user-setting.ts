@@ -14,7 +14,6 @@ import type {
 } from '@dailyuse/contracts/primitives';
 import type {
   UserSettingServerDTO,
-  SettingEntryServer,
   SettingEntryServerDTO,
 } from '@dailyuse/contracts/setting';
 import { SettingId } from '@/domain-shared/value-objects/setting-id';
@@ -29,7 +28,7 @@ interface SettingEntryParams {
   updatedAt?: DomainDate;
 }
 
-class SettingEntry implements SettingEntryServer {
+class SettingEntry {
   public readonly id: SettingEntryId;
   public readonly key: string;
   private _value: unknown;
