@@ -1,4 +1,4 @@
-import type { TaskFolderId, IdentityId,  TransferDate, PersistenceDate } from '@/primitives';
+import type { TaskFolderId, IdentityId, TransferDate, PersistenceDate } from '@/primitives';
 
 export interface TaskFolderServerDTO {
 
