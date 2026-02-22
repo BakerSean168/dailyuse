@@ -3,24 +3,20 @@
  * 任务文件夹聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 TaskFolderClient 接口
  * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: TaskFolderClientDTO): TaskFolder
+ * - Public getters via this._props.xxx
+ * - Static load(state: TaskFolderState): TaskFolder
  * - Instance toDTO(): TaskFolderClientDTO
  */
 
 import type {
-  TaskFolderClient,
   TaskFolderClientDTO,
 } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface TaskFolderState {
+export interface TaskFolderState {
   id: TaskFolderId;
   identityId: IdentityId;
   name: string;
@@ -33,7 +29,7 @@ interface TaskFolderState {
   deletedAt: Date | null;
 }
 
-export class TaskFolder extends AggregateRoot<TaskFolderId> implements TaskFolderClient {
+export class TaskFolder extends AggregateRoot<TaskFolderId> {
   // ================= 1. Props =================
   private readonly _props: TaskFolderState;
 
@@ -94,19 +90,8 @@ export class TaskFolder extends AggregateRoot<TaskFolderId> implements TaskFolde
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: TaskFolderClientDTO): TaskFolder {
-    return new TaskFolder({
-      id: TaskFolderId.of(dto.id as string),
-      identityId: IdentityId.of(dto.identityId as string),
-      name: dto.name,
-      color: dto.color,
-      icon: dto.icon,
-      order: dto.order,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: TaskFolderState): TaskFolder {
+    return new TaskFolder(state);
   }
 
   // ================= 5. DTO Conversion =================

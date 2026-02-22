@@ -3,16 +3,13 @@
  * 任务模板聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 TaskTemplateClient 接口
  * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: TaskTemplateClientDTO): TaskTemplate
+ * - Public getters via this._props.xxx
+ * - Static load(state: TaskTemplateState): TaskTemplate
  * - Instance toDTO(): TaskTemplateClientDTO
  */
 
 import type {
-  TaskTemplateClient,
   TaskTemplateClientDTO,
   TaskTimeConfig,
   TaskTimeConfigDTO,
@@ -30,8 +27,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface TaskTemplateState {
+export interface TaskTemplateState {
   id: TaskTemplateId;
   identityId: IdentityId;
   name: string;
@@ -70,7 +66,7 @@ interface TaskTemplateState {
   instances?: any[];
 }
 
-export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskTemplateClient {
+export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   // ================= 1. Props =================
   private readonly _props: TaskTemplateState;
 
@@ -236,72 +232,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> implements TaskT
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
-    return new TaskTemplate({
-      id: TaskTemplateId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      timeConfig: TaskTemplate.parseTimeConfig(dto.timeConfig),
-      recurrenceRule: dto.recurrenceRule ? TaskTemplate.parseRecurrenceRule(dto.recurrenceRule) : null,
-      reminderConfig: dto.reminderConfig as TaskReminderConfig | null,
-      importance: dto.importance,
-      priority: dto.priority,
-      goalBinding: dto.goalBinding ? TaskTemplate.parseGoalBinding(dto.goalBinding) : null,
-      folderId: dto.folderId ? (dto.folderId as GoalFolderId) : null,
-      tags: dto.tags ?? [],
-      color: dto.color,
-      status: dto.status,
-      lastGeneratedDate: dto.lastGeneratedDate ? new Date(dto.lastGeneratedDate) : null,
-      generateAheadDays: dto.generateAheadDays,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      parentTaskId: dto.parentTaskId ? TaskTemplateId.of(dto.parentTaskId) : null,
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
-      completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
-      estimatedMinutes: dto.estimatedMinutes,
-      actualMinutes: dto.actualMinutes,
-      comment: dto.comment,
-      dependencyStatus: dto.dependencyStatus,
-      isBlocked: dto.isBlocked,
-      blockingReason: dto.blockingReason,
-      instanceCount: dto.instanceCount,
-      completedInstanceCount: dto.completedInstanceCount,
-      pendingInstanceCount: dto.pendingInstanceCount,
-      completionRate: dto.completionRate,
-      history: dto.history,
-      instances: dto.instances,
-    });
-  }
-
-  private static parseTimeConfig(dto: TaskTimeConfigDTO): TaskTimeConfig {
-    return {
-      timeType: dto.timeType,
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      timePoint: dto.timePoint,
-      timeRange: dto.timeRange,
-    };
-  }
-
-  private static parseRecurrenceRule(dto: RecurrenceRuleDTO): RecurrenceRule {
-    return {
-      frequency: dto.frequency,
-      interval: dto.interval,
-      daysOfWeek: dto.daysOfWeek,
-      endDate: dto.endDate ? new Date(dto.endDate) : null,
-      occurrences: dto.occurrences,
-    };
-  }
-
-  private static parseGoalBinding(dto: TaskGoalBindingDTO): TaskGoalBinding {
-    return {
-      goalId: dto.goalId as unknown as TaskGoalBinding['goalId'],
-      keyResultId: dto.keyResultId as unknown as TaskGoalBinding['keyResultId'],
-      goalRecordValue: dto.goalRecordValue,
-    };
+  public static load(state: TaskTemplateState): TaskTemplate {
+    return new TaskTemplate(state);
   }
 
   // ================= 5. DTO Conversion =================

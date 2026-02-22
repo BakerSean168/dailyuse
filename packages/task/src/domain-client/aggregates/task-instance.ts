@@ -3,16 +3,13 @@
  * 任务实例聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 TaskInstanceClient 接口
  * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: TaskInstanceClientDTO): TaskInstance
+ * - Public getters via this._props.xxx
+ * - Static load(state: TaskInstanceState): TaskInstance
  * - Instance toDTO(): TaskInstanceClientDTO
  */
 
 import type {
-  TaskInstanceClient,
   TaskInstanceClientDTO,
   TaskTimeConfig,
   TaskTimeConfigDTO,
@@ -24,8 +21,7 @@ import { TaskInstanceId } from '../../domain-shared/value-objects/task-instance-
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-// 内部状态接口
-interface TaskInstanceState {
+export interface TaskInstanceState {
   id: TaskInstanceId;
   templateId: TaskTemplateId;
   identityId: IdentityId;
@@ -43,7 +39,7 @@ interface TaskInstanceState {
   deletedAt: Date | null;
 }
 
-export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskInstanceClient {
+export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   // ================= 1. Props =================
   private readonly _props: TaskInstanceState;
 
@@ -124,33 +120,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> implements TaskI
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: TaskInstanceClientDTO): TaskInstance {
-    return new TaskInstance({
-      id: TaskInstanceId.of(dto.id),
-      templateId: TaskTemplateId.of(dto.templateId),
-      identityId: IdentityId.of(dto.identityId),
-      instanceDate: new Date(dto.instanceDate),
-      timeConfig: TaskInstance.parseTimeConfig(dto.timeConfig),
-      importance: dto.importance,
-      priority: dto.priority,
-      status: dto.status,
-      actualStartTime: dto.actualStartTime ? new Date(dto.actualStartTime) : null,
-      actualEndTime: dto.actualEndTime ? new Date(dto.actualEndTime) : null,
-      comment: dto.comment,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
-  }
-
-  private static parseTimeConfig(dto: TaskTimeConfigDTO): TaskTimeConfig {
-    return {
-      timeType: dto.timeType,
-      startDate: dto.startDate ? new Date(dto.startDate) : null,
-      timePoint: dto.timePoint,
-      timeRange: dto.timeRange,
-    };
+  public static load(state: TaskInstanceState): TaskInstance {
+    return new TaskInstance(state);
   }
 
   // ================= 5. DTO Conversion =================

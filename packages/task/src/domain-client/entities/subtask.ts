@@ -3,24 +3,20 @@
  * 子任务实体 - 领域客户端
  *
  * 【规范说明】
- * - 实现 SubtaskClient 接口
  * - Private constructor with params object
- * - Private _field backing fields
- * - Public getters
- * - Static fromDTO(dto: SubtaskClientDTO): Subtask
+ * - Public getters via this._props.xxx
+ * - Static load(state: SubtaskState): Subtask
  * - Instance toDTO(): SubtaskClientDTO
  */
 
 import type {
-  SubtaskClient,
   SubtaskClientDTO,
 } from '@dailyuse/contracts/task';
 import type { SubtaskId as ISubtaskId } from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { SubtaskId } from '../../domain-shared/value-objects/subtask-id';
 
-// 内部状态接口
-interface SubtaskState {
+export interface SubtaskState {
   id: SubtaskId;
   name: string;
   isCompleted: boolean;
@@ -31,7 +27,7 @@ interface SubtaskState {
   deletedAt: Date | null;
 }
 
-export class Subtask extends Entity<ISubtaskId> implements SubtaskClient {
+export class Subtask extends Entity<ISubtaskId> {
   // ================= 1. Props =================
   private readonly _props: SubtaskState;
 
@@ -76,17 +72,8 @@ export class Subtask extends Entity<ISubtaskId> implements SubtaskClient {
   }
 
   // ================= 4. Factory Methods =================
-  public static fromDTO(dto: SubtaskClientDTO): Subtask {
-    return new Subtask({
-      id: SubtaskId.of(dto.id),
-      name: dto.name,
-      isCompleted: dto.isCompleted,
-      order: dto.order,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+  public static load(state: SubtaskState): Subtask {
+    return new Subtask(state);
   }
 
   // ================= 5. DTO Conversion =================
