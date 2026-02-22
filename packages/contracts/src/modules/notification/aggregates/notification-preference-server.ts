@@ -14,28 +14,6 @@ import type {
 
 import type { IdentityId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
 
-// ============ 实体接口 ============
-
-/**
- * 管理用户的通知配置
- * 例如：Task 模块的消息，我希望 [桌面弹窗 + 邮件]
- * System 模块的消息，我只需要 [桌面弹窗]
- */
-export interface NotificationPreferenceServer {
-  // ===== 基础属性 =====
-  id: string;
-  identityId: IdentityId;
-
-  // Key: 模块名; Value: 开启的渠道列表
-  settings: Map<string, NotificationChannelType[]>;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**
@@ -63,4 +41,3 @@ export interface NotificationPreferencePersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-

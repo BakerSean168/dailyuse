@@ -48,39 +48,3 @@ export interface EditorGroupPersistenceDTO {
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
 }
-
-/**
- * Editor Group Entity - Server Interface
- * 编辑器分组实�?- 服务端接�?
- */
-export interface EditorGroupServer {
-  // ===== 基础属�?=====
-  readonly id: EditorGroupId;
-  readonly sessionId: EditorSessionId;
-  readonly workspaceId: EditorWorkspaceId;
-  readonly identityId: IdentityId;
-  readonly groupIndex: number;
-  readonly activeTabIndex: number;
-  readonly name: string | null;
-  readonly createdAt: DomainDate;
-  readonly updatedAt: DomainDate;
-
-  // ===== 业务方法 =====
-
-  /**
-   * 设置活动标签
-   */
-
-  /**
-   * 重命名分�?
-   */
-
-  /**
-   * 更新分组索引（用于重新排序）
-   */
-
-  /**
-   * 验证标签索引是否有效（需要配合标签列表使用）
-   */
-
-}

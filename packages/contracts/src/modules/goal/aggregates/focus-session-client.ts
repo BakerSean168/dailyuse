@@ -42,35 +42,3 @@ export interface FocusSessionClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 }
-
-/**
- * FocusSession Client Interface
- * 客户端接口
- */
-export interface FocusSessionClient {
-  // ===== 属性 =====
-  id: FocusSessionId;
-  identityId: IdentityId;
-  goalId: GoalId | null;
-  status: FocusSessionStatus;
-  durationMinutes: number;
-  actualDurationMinutes: number;
-  description: string | null;
-
-  startedAt: DomainDate | null;
-  pausedAt: DomainDate | null;
-  resumedAt: DomainDate | null;
-  completedAt: DomainDate | null;
-  cancelledAt: DomainDate | null;
-
-  pauseCount: number;
-  pausedDurationMinutes: number;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-
-}

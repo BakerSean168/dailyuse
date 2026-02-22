@@ -9,7 +9,7 @@ import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentServerDTO } from './document-server';
 
 // 从值对象导入类型
-import type { DocumentMetadataClient, DocumentMetadataClientDTO } from '../value-objects';
+import type { DocumentMetadataClientDTO } from '../value-objects';
 
 /**
  * Document Client DTO
@@ -36,69 +36,4 @@ export interface DocumentClientDTO {
   formattedLastModified: string | null;
   formattedCreatedAt: string;
   formattedUpdatedAt: string;
-}
-
-/**
- * Document Entity - Client Interface
- * 文档实体 - 客户端接�?
- */
-export interface DocumentClient {
-  // ===== 基础属�?=====
-  readonly id: DocumentId;
-  readonly workspaceId: EditorWorkspaceId;
-  readonly identityId: IdentityId;
-  readonly path: string;
-  readonly name: string;
-  readonly language: DocumentLanguage;
-  readonly content: string;
-  readonly contentHash: string;
-  readonly metadata: DocumentMetadataClient;
-  readonly indexStatus: IndexStatus;
-  readonly lastIndexedAt: DomainDate | null;
-  readonly lastModifiedAt: DomainDate | null;
-  readonly createdAt: DomainDate;
-  readonly updatedAt: DomainDate;
-
-  // ===== UI 辅助方法 =====
-
-  /**
-   * 获取文件扩展�?
-   */
-
-  /**
-   * 获取语言标签
-   */
-
-  /**
-   * 获取索引状态颜�?
-   */
-
-  /**
-   * 获取索引状态标�?
-   */
-
-  /**
-   * 是否�?Markdown 文档
-   */
-
-  /**
-   * 是否需要重新索�?
-   */
-
-  /**
-   * 获取格式化的最后索引时�?
-   */
-
-  /**
-   * 获取格式化的最后修改时�?
-   */
-
-  /**
-   * 获取内容预览（前 N 个字符）
-   */
-
-  /**
-   * 获取文件大小（字节数�?
-   */
-
 }

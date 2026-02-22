@@ -36,31 +36,3 @@ export interface AIGenerationTaskClientDTO {
   formattedCreatedAt: string;
   formattedCompletedAt: string | null;
 }
-
-// ============ 实体接口 ============
-
-export interface AIGenerationTaskClient {
-  id: AiGenerationTaskId;
-  identityId: IdentityId;
-  type: GenerationTaskType;
-  status: TaskStatus;
-  input: GenerationInputClientDTO;
-  result: GenerationResultClientDTO | null;
-  error: string | null;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-  completedAt: DomainDate | null;
-
-  isPending: boolean;
-  isProcessing: boolean;
-  isCompleted: boolean;
-  isFailed: boolean;
-  statusText: string;
-  typeText: string;
-  durationMs: number | null;
-  formattedCreatedAt: string;
-  formattedCompletedAt: string | null;
-
-}

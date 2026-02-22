@@ -45,16 +45,3 @@ export interface ReminderResponsePersistenceDTO {
   responseTime?: Date | null;
   timestamp: Date;
 }
-
-// ============ 实体接口 ============
-
-/**
- * Reminder Response 实体接口
- */
-export interface ReminderResponseServer {
-  id: string;
-  reminderTemplateId: string;
-  action: ReminderResponseAction;
-  responseTime?: Date | null;
-  timestamp: Date;
-}

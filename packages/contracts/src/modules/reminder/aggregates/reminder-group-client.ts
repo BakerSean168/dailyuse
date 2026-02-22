@@ -44,45 +44,6 @@ export interface ReminderGroupClientDTO {
   controlDescription: string; // "所有提醒统一启用" | "提醒独立控制"
 }
 
-// ============ 实体接口 ============
-
-/**
- * Reminder Group 聚合?- Client 接口
- */
-export interface ReminderGroupClient {
-  // 基础属?
-  id: ReminderGroupId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  color: string | null;
-  icon: string | null;
-  controlMode: ControlMode;
-  enabled: boolean;
-  status: ReminderStatus;
-  order: number;
-  stats: GroupStatsClientDTO;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // UI 扩展
-  displayName: string;
-  controlModeText: string;
-  statusText: string;
-  templateCountText: string;
-  activeStatusText: string;
-  controlDescription: string;
-
-  // ===== UI 业务方法 =====
-
-  // 格式化展?
-
-  // 操作判断
-
-}
-
 /**
  * Reminder Group Client 静态工厂方法接?
  */

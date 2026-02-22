@@ -13,38 +13,6 @@ import type {
   ExternalLink
 } from '../value-objects';
 
-
-// ============ 实体接口 ============
-
-/**
- * Resource 实体 - Server 接口（实例方法）
- */
-export interface ResourceServer {
-  id: ResourceId;
-  repositoryId: RepositoryId;
-  folderId: FolderId | null;
-  type: ResourceType;
-
-  name: string;
-  path: string;
-  
-  // file
-  mimeType: string | null;
-  size: number | null;
-  content: string | null;
-
-  // folder
-  childrenCount: number | null;
-
-  metadata: ResourceMetadata;
-  stats: ResourceStats;
-  status: ResourceStatus;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  version: number;
-}
-
-
 // ============ DTO 定义 ============
 
 /**

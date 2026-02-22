@@ -25,33 +25,6 @@ import type {
   CompletionRecordDTO,
 } from '../value-objects';
 
-
-// ============ 聚合根接口 ============
-
-export interface TaskInstanceServer {
-  id: TaskInstanceId;
-  templateId: TaskTemplateId;
-  identityId: IdentityId;
-  
-  importance: ImportanceLevel;
-  priority?: number;
-
-  status: TaskInstanceStatus;
-  actualStartTime: DomainDate | null;
-  actualEndTime: DomainDate | null;
-
-  instanceDate: DomainDate;
-  timeConfig: TaskTimeConfig;
-  
-  comment: string | null;
-  
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**
@@ -107,5 +80,3 @@ export interface TaskInstancePersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-
-

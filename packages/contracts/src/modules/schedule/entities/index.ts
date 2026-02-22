@@ -7,10 +7,8 @@
 export type {
   ScheduleExecutionServerDTO,
   ScheduleExecutionPersistenceDTO,
-  ScheduleExecutionServer,
 } from './schedule-execution-server';
 
 export type {
   ScheduleExecutionClientDTO,
-  ScheduleExecutionClient,
 } from './schedule-execution-client';

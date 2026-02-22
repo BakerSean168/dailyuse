@@ -43,17 +43,3 @@ export interface GoalRecordPersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-
-// ============ 实体接口 ============
-
-export interface GoalRecordServer {
-  id: GoalRecordId;
-  keyResultId: KeyResultId;
-  value: number;  // 本次记录的值（独立值）
-  note: string | null;
-  recordedAt: DomainDate;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

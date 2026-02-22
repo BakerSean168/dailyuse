@@ -47,20 +47,3 @@ export interface GoalReviewPersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-
-export interface GoalReviewServer {
-  id: GoalReviewId;
-  goalId: GoalId;
-  type: ReviewType;
-  rating: number;
-  summary: string;
-  achievements: string | null;
-  challenges: string | null;
-  improvements: string | null;
-  keyResultSnapshots: KeyResultSnapshotDTO[];
-  reviewedAt: DomainDate;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

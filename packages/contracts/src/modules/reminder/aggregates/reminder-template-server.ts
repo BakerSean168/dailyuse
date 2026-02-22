@@ -6,7 +6,6 @@
 import type { DomainDate, IdentityId, ReminderTemplateId } from '@/primitives';
 import { ImportanceLevel } from '@/shared/value-objects/importance';
 import type {
-  ReminderHistoryServer,
   ReminderHistoryServerDTO,
 } from '../entities/reminder-history-server';
 
@@ -27,48 +26,6 @@ import type {
   ReminderStatsServer,
   ReminderStatsServerDTO,
 } from '../value-objects';
-
-
-// ============ 实体接口 ============
-
-/**
- * Reminder Template 聚合根 - Server 接口（实例方法）
- */
-export interface ReminderTemplateServer {
-  // 基础属性
-  id: ReminderTemplateId;
-  identityId: IdentityId;
-  title: string;
-  description?: string | null;
-  type: ReminderType;
-  trigger: TriggerConfigServer;
-  recurrence?: RecurrenceConfigServer | null;
-  activeTime: ActiveTimeConfigServer;
-  activeHours?: ActiveHoursConfigServer | null;
-  notificationConfig: NotificationConfigServer;
-  selfEnabled: boolean;
-  status: ReminderStatus;
-  groupId?: string | null;
-  importanceLevel: ImportanceLevel;
-  tags: string[];
-  color?: string | null;
-  icon?: string | null;
-  nextTriggerAt?: number | null;
-  stats: ReminderStatsServer;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt?: DomainDate | null;
-
-  // ===== 子实体集合（聚合根统一管理） =====
-
-  /**
-   * 提醒历史列表（懒加载，可选）
-   */
-  history?: ReminderHistoryServer[] | null;
-}
 
 // ============ DTO 定义 ============
 
@@ -152,4 +109,3 @@ export interface ReminderTemplatePersistenceDTO {
   updatedAt: DomainDate;
   deletedAt?: DomainDate | null;
 }
-

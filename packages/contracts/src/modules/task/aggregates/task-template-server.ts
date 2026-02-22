@@ -121,31 +121,3 @@ export interface TaskTemplatePersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-
-// ============ 聚合根接�?============
-
-export interface TaskTemplateServer {
-  id: TaskTemplateId;
-  identityId: IdentityId;
-
-  name: string;
-  description: string | null;
-  timeConfig: TaskTimeConfig | null; // null for ONE_TIME tasks
-  recurrenceRule: RecurrenceRule | null;
-  reminderConfig: TaskReminderConfig | null;
-  importance: ImportanceLevel;
-
-  goalBinding: TaskGoalBinding | null;
-  checklist: ChecklistItemDefinition[];
-
-  folderId: TaskFolderId | null;
-  tags: string[];
-  color: string | null;
-  status: TaskTemplateStatus;
-  lastGeneratedDate: DomainDate | null;
-  generateAheadDays: number | null; // null for ONE_TIME tasks
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

@@ -33,17 +33,3 @@ export interface MessagePersistenceDTO {
   tokenCount: number | null;
   createdAt: PersistenceDate;
 }
-
-// ============ 实体接口 ============
-
-/**
- * Message 实体 - Server 接口
- */
-export interface MessageServer {
-  id: AiMessageId;
-  conversationId: AiConversationId;
-  role: MessageRole;
-  content: string;
-  tokenCount: number | null;
-  createdAt: DomainDate;
-}

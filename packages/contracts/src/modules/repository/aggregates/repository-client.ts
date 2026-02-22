@@ -12,28 +12,6 @@ import type {
   RepositoryStatsDTO,
 } from '../value-objects';
 
-
-// ============ 实体接口 ============
-
-/**
- * Repository aggregate - Client interface
- */
-export interface RepositoryClient {
-  id: RepositoryId;
-  identityId: IdentityId;
-  name: string;
-  type: RepositoryType;
-  path: string | null;
-  description: string | null;
-  config: RepositoryConfig;
-  stats: RepositoryStats;
-  status: RepositoryStatus;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**

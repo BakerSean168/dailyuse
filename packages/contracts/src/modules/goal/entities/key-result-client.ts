@@ -17,16 +17,3 @@ export interface KeyResultClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 }
-
-export interface KeyResultClient {
-  id: KeyResultId;
-  title: string;
-  description: string | null;
-  progress: KeyResultProgress;
-  weight: number; // 权重 (0-100)
-  order: number;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

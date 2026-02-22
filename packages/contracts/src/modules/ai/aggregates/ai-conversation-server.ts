@@ -5,7 +5,7 @@
 
 import type { AiConversationId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
 import type { ConversationStatus } from '../value-objects/conversation-status';
-import type { MessageServer, MessageServerDTO, MessagePersistenceDTO } from '../entities/message-server';
+import type { MessageServerDTO, MessagePersistenceDTO } from '../entities/message-server';
 
 // ============ DTO 定义 ============
 
@@ -103,26 +103,4 @@ export interface AIConversationDeletedEvent {
     conversationId: AiConversationId;
     deletedAt: DomainDate;
   };
-}
-
-// ============ 聚合根接口 ============
-
-/**
- * AIConversation 聚合根 - Server 接口
- */
-export interface AIConversationServer {
-  // 基础属性
-  id: AiConversationId;
-  identityId: IdentityId;
-  name: string;
-  status: ConversationStatus;
-  messageCount: number;
-  lastMessageAt: DomainDate | null;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // 子实体集合
-  messages: MessageServer[];
 }

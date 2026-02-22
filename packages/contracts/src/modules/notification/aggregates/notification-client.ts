@@ -16,50 +16,9 @@ import type {
 } from '../value-objects';
 import type { ImportanceLevel } from '../../../shared/index';
 import type {
-  NotificationChannelClient,
   NotificationChannelClientDTO,
 } from '../entities/notification-channel-client';
 import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferDate } from '@/primitives';
-
-// ============ 实体接口 ============
-
-/**
- * Notification 聚合根 - Client 接口
- */
-export interface NotificationClient {
-  // ===== 基础属性 =====
-  id: NotificationId;
-  identityId: IdentityId;
-
-  title: string;
-  content: string;
-  type: NotificationType;
-
-  category: NotificationCategory;
-  importance: ImportanceLevel;
-
-  status: NotificationStatus;
-  readAt?: DomainDate | null;
-
-  // ===== 操作配置 =====
-  actions?: NotificationAction[] | null;
-
-  // ===== 元数据 =====
-  metadata?: NotificationMetadata | null;
-
-  // ===== 同步字段 =====
-  version: number;
-  deletedAt: DomainDate | null;
-
-  // ===== 时间戳 =====
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-
-  /**
-   * 渠道列表（懒加载，可选）
-   */
-  notificationChannels?: NotificationChannelClient[] | null;
-}
 
 // ============ DTO 定义 ============
 

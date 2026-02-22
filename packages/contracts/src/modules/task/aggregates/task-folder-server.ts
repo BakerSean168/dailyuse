@@ -1,19 +1,4 @@
-import type { TaskFolderId, IdentityId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
-
-
-export interface TaskFolderServer {
-
-  id: TaskFolderId;
-  identityId: IdentityId;
-  name: string;
-  color: string | null;
-  icon: string | null;
-  order: number;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
+import type { TaskFolderId, IdentityId,  TransferDate, PersistenceDate } from '@/primitives';
 
 export interface TaskFolderServerDTO {
 

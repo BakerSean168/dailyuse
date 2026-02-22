@@ -16,10 +16,8 @@ export type {
   EditorWorkspaceUpdatedEvent,
   EditorWorkspaceDeletedEvent,
   EditorWorkspaceActivatedEvent,
-  EditorWorkspaceServer,
 } from './editor-workspace-server';
 
 export type {
   EditorWorkspaceClientDTO,
-  EditorWorkspaceClient,
 } from './editor-workspace-client';

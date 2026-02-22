@@ -8,7 +8,6 @@ import type { ScheduleTaskStatus } from '../value-objects/schedule-task-status';
 import type { SourceModule } from '../value-objects/source-module';
 
 import type {
-  ScheduleExecutionClient,
   ScheduleExecutionClientDTO,
 } from '../entities/schedule-execution-client';
 
@@ -68,49 +67,4 @@ export interface ScheduleTaskClientDTO {
 
   // ===== 子实?DTO =====
   executions: ScheduleExecutionClientDTO[] | null;
-}
-
-// ============ 实体接口 ============
-
-/**
- * ScheduleTask 聚合?- Client 接口
- */
-export interface ScheduleTaskClient {
-  // 基础属?
-  id: ScheduleTaskId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  sourceModule: SourceModule;
-  sourceEntityId: string;
-  status: ScheduleTaskStatus;
-  enabled: boolean;
-
-  // 值对象（Client 版本?
-  schedule: ScheduleConfigClient;
-  execution: ExecutionInfoClient;
-  retryPolicy: RetryPolicyClient;
-  metadata: TaskMetadataClient;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // UI 辅助属?
-  statusDisplay: string;
-  statusColor: string;
-  sourceModuleDisplay: string;
-  enabledDisplay: string;
-  nextRunAtFormatted: string;
-  lastRunAtFormatted: string;
-  executionSummary: string;
-  healthStatus: string;
-  isOverdue: boolean;
-
-  // ===== 子实体集?=====
-  executions: ScheduleExecutionClient[] | null;
-
-
 }

@@ -38,82 +38,6 @@ export interface ScheduleExecutionPersistenceDTO {
   createdAt: Date;
 }
 
-// ============ 实体接口 ============
-
-/**
- * ScheduleExecution 实体 - Server 接口
- */
-export interface ScheduleExecutionServer {
-  // 基础属性
-  id: string;
-  taskId: string;
-  executionTime: number;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: Record<string, any> | null;
-  error: string | null;
-  retryCount: number;
-
-  // 时间戳 (统一使用 number epoch ms)
-  createdAt: Date;
-
-  // ===== 业务方法 =====
-
-  /**
-   * 标记执行成功
-   */
-
-  /**
-   * 标记执行失败
-   */
-
-  /**
-   * 标记执行超时
-   */
-
-  /**
-   * 标记执行跳过
-   */
-
-  /**
-   * 增加重试次数
-   */
-
-  /**
-   * 设置执行结果
-   */
-
-  /**
-   * 设置错误信息
-   */
-
-  /**
-   * 检查是否成功
-   */
-
-  /**
-   * 检查是否失败
-   */
-
-  /**
-   * 检查是否超时
-   */
-
-  /**
-   * 检查是否跳过
-   */
-
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO
-   */
-
-  /**
-   * 转换为 Persistence DTO (数据库)
-   */
-}
-
 /**
  * ScheduleExecution 静态工厂方法接口
  */
@@ -125,7 +49,7 @@ export interface ScheduleExecutionServerStatic {
     taskId: string;
     executionTime: number;
     status?: ExecutionStatus;
-  }): ScheduleExecutionServer;
+  }): ScheduleExecutionServerDTO;
 
   /**
    * 从 Server DTO 创建实体

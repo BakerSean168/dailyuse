@@ -5,7 +5,7 @@
 
 import type { AiConversationId, IdentityId, TransferDate, DomainDate } from '@/primitives';
 import type { ConversationStatus } from '../value-objects/conversation-status';
-import type { MessageClient, MessageClientDTO } from '../entities/message-client';
+import type { MessageClientDTO } from '../entities/message-client';
 
 // ============ DTO 定义 ============
 
@@ -27,26 +27,4 @@ export interface AIConversationClientDTO {
 
   // 子实体 DTO
   messages: MessageClientDTO[] | null;
-}
-
-// ============ 聚合根接口 ============
-
-/**
- * AIConversation 聚合根 - Client 接口
- */
-export interface AIConversationClient {
-  // 基础属性
-  id: AiConversationId;
-  identityId: IdentityId;
-  name: string;
-  status: ConversationStatus;
-  messageCount: number;
-  lastMessageAt: DomainDate | null;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // 子实体
-  messages: MessageClient[] | null;
 }

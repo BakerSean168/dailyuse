@@ -7,12 +7,10 @@
 export type {
   GoalServerDTO,
   GoalPersistenceDTO,
-  GoalServer,
 } from './goal-server';
 
 export type {
   GoalClientDTO,
-  GoalClient,
   GoalTimeRangeSummary,
 } from './goal-client';
 
@@ -20,28 +18,23 @@ export type {
 export type {
   GoalFolderServerDTO,
   GoalFolderPersistenceDTO,
-  GoalFolderServer,
 } from './goal-folder-server';
 
 export type {
   GoalFolderClientDTO,
-  GoalFolderClient,
 } from './goal-folder-client';
 
 // FocusSession 聚合根
 export type {
   FocusSessionServerDTO,
   FocusSessionPersistenceDTO,
-  FocusSessionServer,
 } from './focus-session-server';
 
 export type {
   FocusSessionClientDTO,
-  FocusSessionClient,
 } from './focus-session-client';
 
 // GoalRecord 实体
 export type {
   GoalRecordClientDTO,
-  GoalRecordClient,
 } from './goal-record-client';

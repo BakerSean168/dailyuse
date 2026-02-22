@@ -22,20 +22,3 @@ export interface GoalReviewClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 }
-
-export interface GoalReviewClient {
-  id: GoalReviewId;
-  goalId: GoalId;
-  type: ReviewType;
-  rating: number;
-  summary: string;
-  achievements: string | null;
-  challenges: string | null;
-  improvements: string | null;
-  keyResultSnapshots: KeyResultSnapshot[];
-  version: number;
-  reviewedAt: DomainDate;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

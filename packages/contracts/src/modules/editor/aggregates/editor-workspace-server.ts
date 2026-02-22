@@ -133,25 +133,3 @@ export interface EditorWorkspaceActivatedEvent {
     identityId: IdentityId;
   };
 }
-
-// ============ 聚合根接�?============
-
-/**
- * Editor Workspace Server Interface (聚合根)
- */
-export interface EditorWorkspaceServer {
-  // ===== 基础属性 =====
-  id: EditorWorkspaceId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  projectPath: string;
-  projectType: ProjectType;
-  layout: WorkspaceLayoutServerDTO;
-  settings: WorkspaceSettingsServerDTO;
-  isActive: boolean;
-  lastActiveSessionId: EditorSessionId | null;
-  lastAccessedAt: DomainDate | null;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-}

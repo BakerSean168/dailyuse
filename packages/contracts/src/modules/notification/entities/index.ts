@@ -5,13 +5,11 @@
 
 // ===== NotificationChannel Server =====
 export type {
-  NotificationChannelServer,
   NotificationChannelServerDTO,
   NotificationChannelPersistenceDTO,
 } from './notification-channel-server';
 
 // ===== NotificationChannel Client =====
 export type {
-  NotificationChannelClient,
   NotificationChannelClientDTO,
 } from './notification-channel-client';

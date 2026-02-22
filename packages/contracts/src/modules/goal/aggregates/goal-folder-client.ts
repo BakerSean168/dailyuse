@@ -36,28 +36,3 @@ export interface GoalFolderClientDTO {
   completionRate: number; // 0-100
   activeGoalCount: number; // goalCount - completedGoalCount
 }
-
-// ============ 实体接口 ============
-
-/**
- * GoalFolder 聚合根 - Client 接口
- */
-export interface GoalFolderClient {
-  id: GoalFolderId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  parentFolderId: GoalFolderId | null;
-  sortOrder: number;
-  isSystemFolder: boolean;
-  folderType: FolderType | null;
-  goalCount: number;
-  completedGoalCount: number;
-
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
