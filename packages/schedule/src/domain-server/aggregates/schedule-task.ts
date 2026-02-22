@@ -12,8 +12,6 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import type {
   ScheduleTaskClientDTO,
-  ScheduleTaskPersistenceDTO,
-  ScheduleTaskServer,
   ScheduleTaskServerDTO,
 } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
@@ -25,9 +23,10 @@ import { TaskMetadata } from '../value-objects/TaskMetadata';
 import { ScheduleExecution } from '../entities/schedule-execution';
 
 /**
- * ScheduleTask 内部状态接口 for simplified aggregate pattern
+ * Domain state interface for the ScheduleTask aggregate
  */
-interface ScheduleTaskState {
+export interface ScheduleTaskState {
+  id: ScheduleTaskId;
   identityId: string;
   name: string;
   description: string | null;
@@ -48,7 +47,7 @@ interface ScheduleTaskState {
 /**
  * ScheduleTask 聚合根
  */
-export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements ScheduleTaskServer {
+export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   // ===== 私有字段 =====
   private _props: ScheduleTaskState;
 
@@ -56,42 +55,9 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   private _executions: ScheduleExecution[];
 
   // ===== 构造函数（私有） =====
-  private constructor(params: {
-    id?: string;
-    identityId: string;
-    name: string;
-    description?: string | null;
-    sourceModule: SourceModule;
-    sourceEntityId: string;
-    status: ScheduleTaskStatus;
-    enabled: boolean;
-    schedule: ScheduleConfig;
-    execution: ExecutionInfo;
-    retryPolicy: RetryPolicy;
-    metadata: TaskMetadata;
-    createdAt: Date;
-    updatedAt: Date;
-    version: number;
-    deletedAt: Date | null;
-  }) {
-    super(params.id ? ScheduleTaskId.of(params.id) : ScheduleTaskId.generate());
-    this._props = {
-      identityId: params.identityId,
-      name: params.name,
-      description: params.description ?? null,
-      sourceModule: params.sourceModule,
-      sourceEntityId: params.sourceEntityId,
-      status: params.status,
-      enabled: params.enabled,
-      schedule: params.schedule,
-      execution: params.execution,
-      retryPolicy: params.retryPolicy,
-      metadata: params.metadata,
-      createdAt: params.createdAt,
-      updatedAt: params.updatedAt,
-      version: params.version,
-      deletedAt: params.deletedAt,
-    };
+  private constructor(state: ScheduleTaskState) {
+    super(state.id);
+    this._props = state;
     this._executions = [];
   }
 
@@ -812,59 +778,6 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     };
   }
 
-  /**
-   * 转换为持久化 DTO（全部使用 camelCase）
-   */
-  public toPersistenceDTO(): ScheduleTaskPersistenceDTO {
-    const scheduleDTO = this._props.schedule.toServerDTO();
-    const executionDTO = this._props.execution.toServerDTO();
-    const retryPolicyDTO = this._props.retryPolicy.toServerDTO();
-    const metadataDTO = this._props.metadata.toServerDTO();
-
-    return {
-      id: this.id,
-      identityId: this._props.identityId,
-      name: this._props.name,
-      description: this._props.description,
-      sourceModule: this._props.sourceModule,
-      sourceEntityId: this._props.sourceEntityId,
-      status: this._props.status,
-      enabled: this._props.enabled,
-      // ScheduleConfig (flattened)
-      cronExpression: this._props.schedule.cronExpression,
-      timezone: this._props.schedule.timezone,
-      startDate: this._props.schedule.startDate !== null ? new Date(this._props.schedule.startDate) : null,
-      endDate: this._props.schedule.endDate !== null ? new Date(this._props.schedule.endDate) : null,
-      maxExecutions: this._props.schedule.maxExecutions,
-      // ExecutionInfo (flattened)
-      nextRunAt: this._props.execution.nextRunAt !== null ? new Date(this._props.execution.nextRunAt) : null,
-      lastRunAt: this._props.execution.lastRunAt !== null ? new Date(this._props.execution.lastRunAt) : null,
-      executionCount: this._props.execution.executionCount,
-      lastExecutionStatus: this._props.execution.lastExecutionStatus
-        ? String(this._props.execution.lastExecutionStatus)
-        : null,
-      lastExecutionDuration: this._props.execution.lastExecutionDuration,
-      consecutiveFailures: this._props.execution.consecutiveFailures,
-      // RetryPolicy (flattened)
-      maxRetries: this._props.retryPolicy.maxRetries,
-      initialDelayMs: this._props.retryPolicy.retryDelay,
-      maxDelayMs: this._props.retryPolicy.maxRetryDelay,
-      backoffMultiplier: this._props.retryPolicy.backoffMultiplier,
-      retryableStatuses: '[]',
-      // TaskMetadata (flattened)
-      payload: metadataDTO.payload,
-      tags: JSON.stringify(metadataDTO.tags),
-      priority: metadataDTO.priority,
-      timeout: metadataDTO.timeout,
-      // Timestamps
-      createdAt: this._props.createdAt,
-      updatedAt: this._props.updatedAt,
-      // Sync fields
-      version: this._props.version,
-      deletedAt: this._props.deletedAt,
-    };
-  }
-
   // ===== 静态工厂方法 =====
 
   /**
@@ -881,12 +794,13 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     retryPolicy?: RetryPolicy;
   }): ScheduleTask {
     const now = new Date();
-    const nextRunAt = now.getTime(); // Use current time as default
+    const nextRunAt = now.getTime();
 
-    const task = new ScheduleTask({
+    const state: ScheduleTaskState = {
+      id: ScheduleTaskId.generate(),
       identityId: params.identityId,
       name: params.name,
-      description: params.description,
+      description: params.description ?? null,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
       status: ScheduleTaskStatus.Active,
@@ -906,7 +820,9 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
       updatedAt: now,
       version: 1,
       deletedAt: null,
-    });
+    };
+
+    const task = new ScheduleTask(state);
 
     // 发布创建事件
     task.addDomainEvent('schedule.task.created', {
@@ -922,52 +838,21 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
   }
 
   /**
-   * �?Server DTO 创建
+   * 从已有状态加载聚合根（用于持久化重建）
    */
-  public static fromServerDTO(dto: ScheduleTaskServerDTO): ScheduleTask {
-    const task = new ScheduleTask({
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      sourceModule: dto.sourceModule,
-      sourceEntityId: dto.sourceEntityId,
-      status: dto.status,
-      enabled: dto.enabled,
-      schedule: ScheduleConfig.fromDTO(dto.schedule),
-      execution: ExecutionInfo.fromDTO(dto.execution),
-      retryPolicy: RetryPolicy.fromDTO(dto.retryPolicy),
-      metadata: TaskMetadata.fromDTO(dto.metadata),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: (dto as any).version ?? 1,
-      deletedAt: (dto as any).deletedAt ? new Date((dto as any).deletedAt) : null,
-    });
-
-    if (dto.executions) {
-      dto.executions.forEach((execDTO) => {
-        task.addExecution(ScheduleExecution.fromServerDTO(execDTO));
-      });
-    }
-
-    return task;
+  public static load(state: ScheduleTaskState): ScheduleTask {
+    return new ScheduleTask(state);
   }
 
   /**
-   * �?DTO 创建 (兼容旧代�?
+   * 从 DTO 创建 (兼容旧代码)
    */
   public static fromDTO(dto: any): ScheduleTask {
-    // 尝试判断�?ServerDTO 还是�?DTO
-    if (dto.schedule && typeof dto.schedule.startDate === 'string') {
-      return this.fromServerDTO(dto);
-    }
-
-    // 从 DTO 处理
-    const task = new ScheduleTask({
-      id: dto.id,
+    const state: ScheduleTaskState = {
+      id: dto.id ? ScheduleTaskId.of(dto.id) : ScheduleTaskId.generate(),
       identityId: dto.identityId,
       name: dto.name,
-      description: dto.description,
+      description: dto.description ?? null,
       sourceModule: dto.sourceModule,
       sourceEntityId: dto.sourceEntityId,
       status: dto.status,
@@ -980,7 +865,9 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
       updatedAt: new Date(dto.updatedAt),
       version: dto.version ?? 1,
       deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
+    };
+
+    const task = new ScheduleTask(state);
 
     if (dto.executions) {
       dto.executions.forEach((execDTO: any) => {
@@ -989,53 +876,5 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> implements Sched
     }
 
     return task;
-  }
-
-  /**
-   * 从持久化 DTO 创建
-   */
-  public static fromPersistenceDTO(dto: any): ScheduleTask {
-    return new ScheduleTask({
-      id: dto.id,
-      identityId: dto.identityId,
-      name: dto.name,
-      description: dto.description,
-      sourceModule: dto.sourceModule,
-      sourceEntityId: dto.sourceEntityId,
-      status: dto.status,
-      enabled: dto.enabled,
-      schedule: ScheduleConfig.fromPersistenceDTO({
-        cronExpression: dto.cronExpression ?? null,
-        timezone: dto.timezone,
-        startDate: dto.startDate ?? null,
-        endDate: dto.endDate ?? null,
-        maxExecutions: dto.maxExecutions ?? null,
-      }),
-      execution: ExecutionInfo.fromPersistenceDTO({
-        nextRunAt: dto.nextRunAt,
-        lastRunAt: dto.lastRunAt,
-        executionCount: dto.executionCount,
-        lastExecutionStatus: (dto.lastExecutionStatus as ExecutionStatus) ?? null,
-        last_execution_duration: dto.lastExecutionDuration ?? dto.last_execution_duration ?? null,
-        consecutive_failures: dto.consecutiveFailures ?? dto.consecutive_failures ?? 0,
-      }),
-      retryPolicy: RetryPolicy.fromPersistenceDTO({
-        enabled: dto.enabled,
-        maxRetries: dto.maxRetries,
-        retry_delay: dto.initialDelayMs ?? dto.retry_delay ?? 0,
-        backoff_multiplier: dto.backoffMultiplier ?? dto.backoff_multiplier ?? 1,
-        max_retry_delay: dto.maxDelayMs ?? dto.max_retry_delay ?? 0,
-      }),
-      metadata: TaskMetadata.fromPersistenceDTO({
-        payload: dto.payload ?? {},
-        tags: dto.tags ? (typeof dto.tags === 'string' ? JSON.parse(dto.tags) : dto.tags) : [],
-        priority: dto.priority,
-        timeout: dto.timeout,
-      }),
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      version: dto.version ?? 1,
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    });
   }
 }

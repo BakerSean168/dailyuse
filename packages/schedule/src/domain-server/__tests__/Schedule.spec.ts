@@ -63,7 +63,7 @@ describe('Schedule Aggregate', () => {
           startTime: hour(15),
           endTime: hour(14), // endTime before startTime
         });
-      }).toThrow('Schedule startTime must be before endTime');
+      }).toThrow('CalendarEntry startTime must be before endTime');
     });
 
     it('should throw error if startTime === endTime', () => {
@@ -74,7 +74,7 @@ describe('Schedule Aggregate', () => {
           startTime: hour(14),
           endTime: hour(14), // Same time
         });
-      }).toThrow('Schedule startTime must be before endTime');
+      }).toThrow('CalendarEntry startTime must be before endTime');
     });
 
     it('should calculate duration correctly', () => {
@@ -89,10 +89,11 @@ describe('Schedule Aggregate', () => {
     });
   });
 
-  describe('fromServerDTO()', () => {
-    it('should create schedule from ServerDTO', () => {
+  describe('load()', () => {
+    it('should load schedule from state', () => {
+      const { ScheduleId } = require('../../domain-shared/value-objects/schedule-id');
       const dto = {
-        id: 'sched-456',
+        id: ScheduleId.of('sched-456'),
         identityId: 'acc-789',
         title: 'Client Meeting',
         description: 'Discuss project',
@@ -100,21 +101,21 @@ describe('Schedule Aggregate', () => {
         endTime: hour(11),
         duration: 60,
         hasConflict: true,
-        conflictingSchedules: ['sched-111', 'sched-222'],
+        conflictingEntries: ['sched-111', 'sched-222'],
         priority: 4,
         location: 'Zoom',
         attendees: ['client@example.com'],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      const schedule = Schedule.fromServerDTO(dto);
+      const schedule = Schedule.load(dto);
 
       expect(schedule.id).toBe('sched-456');
       expect(schedule.identityId).toBe('acc-789');
       expect(schedule.title).toBe('Client Meeting');
       expect(schedule.hasConflict).toBe(true);
-      expect(schedule.conflictingSchedules).toEqual(['sched-111', 'sched-222']);
+      expect(schedule.conflictingEntries).toEqual(['sched-111', 'sched-222']);
     });
   });
 

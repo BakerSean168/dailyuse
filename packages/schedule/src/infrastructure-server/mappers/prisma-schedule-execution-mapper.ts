@@ -1,10 +1,6 @@
 /**
  * Prisma Schedule Execution Mapper
- * 璐熻矗 Prisma 妯″瀷涓?ScheduleExecution 瀹炰綋涔嬮棿鐨勬暟鎹浆鎹?
- *
- * 鑱岃矗锛?
- * - 灏?Prisma scheduleExecution 妯″瀷杞崲涓?ScheduleExecution 瀹炰綋
- * - 灏?ScheduleExecution 瀹炰綋杞崲涓?Prisma 鎸佷箙鍖栨暟鎹?
+ * 负责 Prisma 模型与 ScheduleExecution 实体之间的数据转换
  */
 
 import type { ScheduleExecution as PrismaScheduleExecution } from '@dailyuse/database';
@@ -13,59 +9,56 @@ import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * PrismaScheduleExecutionMapper
- * 澶勭悊 ScheduleExecution 瀹炰綋涓?Prisma 妯″瀷鐨勮浆鎹?
+ * 处理 ScheduleExecution 实体与 Prisma 模型的转换
  */
 export class PrismaScheduleExecutionMapper {
   /**
-   * 浠?Prisma 妯″瀷杞崲涓?ScheduleExecution 瀹炰綋
+   * 从 Prisma 模型转换为 ScheduleExecution 实体
    */
   public static toDomain(data: PrismaScheduleExecution): ScheduleExecution {
-    return ScheduleExecution.fromPersistenceDTO({
+    return ScheduleExecution.load({
       id: data.id,
       taskId: data.taskId,
-      executionTime: data.executionTime.getTime(),
+      executionTime: data.executionTime,
       status: data.status as ExecutionStatus,
-      duration: data.duration ?? undefined,
-      result: data.result ?? undefined,
-      error: data.error ?? undefined,
+      duration: data.duration ?? null,
+      result: data.result ? (typeof data.result === 'string' ? JSON.parse(data.result as string) : data.result as Record<string, any>) : null,
+      error: data.error ?? null,
       retryCount: data.retryCount,
-      createdAt: data.createdAt.getTime(),
+      createdAt: data.createdAt,
     });
   }
 
   /**
-   * 灏?ScheduleExecution 瀹炰綋杞崲涓?Prisma 鎸佷箙鍖栨暟鎹?
+   * 将 ScheduleExecution 实体转换为 Prisma 持久化数据
    */
   public static toPersistence(execution: ScheduleExecution): Omit<PrismaScheduleExecution, 'createdAt'> {
-    const dto = execution.toPersistenceDTO();
-
     return {
-      id: dto.id,
-      taskId: dto.taskId,
-      executionTime: new Date(dto.executionTime),
-      status: dto.status,
-      duration: dto.duration ?? null,
-      result: dto.result ?? null,
-      error: dto.error ?? null,
-      retryCount: dto.retryCount ?? 0,
+      id: execution.id,
+      taskId: execution.taskId,
+      executionTime: new Date(execution.executionTime),
+      status: execution.status,
+      duration: execution.duration ?? null,
+      result: execution.result ? JSON.stringify(execution.result) : null,
+      error: execution.error ?? null,
+      retryCount: execution.retryCount ?? 0,
     };
   }
 
   /**
-   * 杞崲涓?Prisma create 杈撳叆鏁版嵁锛堝寘AndcreatedAt锛?
+   * 转换为 Prisma create 输入数据（包含 createdAt）
    */
   public static toCreateInput(execution: ScheduleExecution): any {
     const persistence = this.toPersistence(execution);
-    const dto = execution.toPersistenceDTO();
 
     return {
       ...persistence,
-      createdAt: new Date(dto.createdAt),
+      createdAt: execution.createdAt,
     };
   }
 
   /**
-   * 杞崲涓?Prisma update 杈撳叆鏁版嵁
+   * 转换为 Prisma update 输入数据
    */
   public static toUpdateInput(execution: ScheduleExecution): any {
     return this.toPersistence(execution);

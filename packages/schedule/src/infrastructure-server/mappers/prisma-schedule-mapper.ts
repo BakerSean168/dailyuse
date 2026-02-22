@@ -6,15 +6,17 @@
  */
 
 import type { Schedule as PrismaSchedule } from '@dailyuse/database';
-import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
+import { CalendarEntry } from '../../domain-server/aggregates/calendar-entry';
+import type { CalendarEntryState } from '../../domain-server/aggregates/calendar-entry';
+import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
 export class PrismaScheduleMapper {
   /**
    * Prisma Schedule → Domain CalendarEntry aggregate
    */
   static toDomain(data: PrismaSchedule): CalendarEntry {
-    return CalendarEntry.fromPersistenceDTO({
-      id: data.id,
+    const state: CalendarEntryState = {
+      id: ScheduleId.of(data.id),
       identityId: data.identityId,
       title: data.title,
       description: data.description,
@@ -28,33 +30,33 @@ export class PrismaScheduleMapper {
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : null,
-      createdAt: data.createdAt.getTime(),
-      updatedAt: data.updatedAt.getTime(),
-    });
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+    return CalendarEntry.load(state);
   }
 
   /**
    * Domain CalendarEntry → Prisma write data
    */
   static toPersistence(schedule: CalendarEntry) {
-    const dto = schedule.toPersistenceDTO();
     return {
-      id: dto.id,
-      identityId: dto.identityId,
-      title: dto.title,
-      description: dto.description ?? null,
-      startTime: new Date(dto.startTime),
-      endTime: new Date(dto.endTime),
-      duration: dto.duration,
-      hasConflict: dto.hasConflict,
-      conflictingSchedules: dto.conflictingEntries && dto.conflictingEntries.length > 0
-        ? JSON.stringify(dto.conflictingEntries)
+      id: schedule.id,
+      identityId: schedule.identityId,
+      title: schedule.title,
+      description: schedule.description ?? null,
+      startTime: new Date(schedule.startTime),
+      endTime: new Date(schedule.endTime),
+      duration: schedule.duration,
+      hasConflict: schedule.hasConflict,
+      conflictingSchedules: schedule.conflictingEntries && schedule.conflictingEntries.length > 0
+        ? JSON.stringify(schedule.conflictingEntries)
         : null,
-      priority: dto.priority ?? null,
-      location: dto.location ?? null,
-      attendees: dto.attendees ? JSON.stringify(dto.attendees) : null,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
+      priority: schedule.priority ?? null,
+      location: schedule.location ?? null,
+      attendees: schedule.attendees ? JSON.stringify(schedule.attendees) : null,
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt,
     };
   }
 

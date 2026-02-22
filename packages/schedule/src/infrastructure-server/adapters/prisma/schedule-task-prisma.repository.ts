@@ -14,9 +14,8 @@
 import type { PrismaClient, ScheduleTask as PrismaScheduleTask, ScheduleExecution as PrismaScheduleExecution, Prisma } from '@dailyuse/database';
 import type { IScheduleTaskRepository } from '../../../domain-server/repositories/IScheduleTaskRepository';
 import { ScheduleTask } from '../../../domain-server/aggregates/schedule-task';
-import { ScheduleExecution } from '../../../domain-server/entities/schedule-execution';
+import type { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
-import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaScheduleTaskMapper, type PrismaScheduleTaskWithExecutions } from '../../mappers/prisma-schedule-task-mapper';
@@ -79,29 +78,20 @@ export class ScheduleTaskPrismaRepository
       update: data,
     });
 
-    // Save閹笛嗩攽Record閿涘牆顩ч弸婊勬箒閿?
+    // Save execution records
     const executions = task.executions;
     if (executions && executions.length > 0) {
       for (const execution of executions) {
-        const execDto = execution.toPersistenceDTO();
+        const execData = PrismaScheduleExecutionMapper.toCreateInput(execution);
         await this.prisma.scheduleExecution.upsert({
-          where: { id: execDto.id },
-          create: {
-            id: execDto.id,
-            taskId: execDto.taskId,
-            executionTime: new Date(execDto.executionTime),
-            status: execDto.status,
-            duration: execDto.duration ?? null,
-            result: execDto.result ?? null,
-            error: execDto.error ?? null,
-            retryCount: execDto.retryCount ?? 0,
-          },
+          where: { id: execData.id },
+          create: execData,
           update: {
-            status: execDto.status,
-            duration: execDto.duration ?? null,
-            result: execDto.result ?? null,
-            error: execDto.error ?? null,
-            retryCount: execDto.retryCount ?? 0,
+            status: execData.status,
+            duration: execData.duration ?? null,
+            result: execData.result ?? null,
+            error: execData.error ?? null,
+            retryCount: execData.retryCount ?? 0,
           },
         });
       }
