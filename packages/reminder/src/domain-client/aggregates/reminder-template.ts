@@ -3,15 +3,13 @@
  * 提醒模板聚合根 - 领域客户端
  *
  * 【规范说明】
- * - 实现 ReminderTemplateClient 接口
- * - Private constructor with props object
+ * - Private constructor with params object
  * - Public getters via this._props.xxx
- * - Static fromDTO(dto: ReminderTemplateClientDTO): ReminderTemplate
+ * - Static load(state: ReminderTemplateState): ReminderTemplate
  * - Instance toDTO(): ReminderTemplateClientDTO
  */
 
 import type {
-  ReminderTemplateClient,
   ReminderTemplateClientDTO,
   TriggerConfigClientDTO,
   TriggerConfigClient,
@@ -25,8 +23,6 @@ import type {
   NotificationConfigClient,
   ReminderStatsClientDTO,
   ReminderStatsClient,
-  ReminderHistoryClientDTO,
-  ReminderHistoryClient,
   ReminderType,
   ReminderStatus,
 } from '@dailyuse/contracts/reminder';
@@ -37,8 +33,7 @@ import { ReminderGroupId } from '../../domain-shared/value-objects/reminder-grou
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ReminderHistory } from '../entities/reminder-history.js';
 
-// 内部状态接口
-interface ReminderTemplateState {
+export interface ReminderTemplateState {
   id: ReminderTemplateId;
   identityId: IdentityId;
   name: string;
@@ -77,7 +72,7 @@ interface ReminderTemplateState {
   controlledByGroup: boolean;
 }
 
-export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implements ReminderTemplateClient {
+export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   private readonly _props: ReminderTemplateState;
 
   private constructor(props: ReminderTemplateState) {
@@ -178,7 +173,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
     return this._props.deletedAt;
   }
 
-  get history(): ReminderHistoryClient[] | null {
+  get history(): ReminderHistory[] | null {
     return this._props.history ? [...this._props.history] : null;
   }
 
@@ -233,45 +228,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> implemen
   }
 
   // ================= Factory Methods =================
-  public static fromDTO(dto: ReminderTemplateClientDTO): ReminderTemplate {
-    return new ReminderTemplate({
-      id: ReminderTemplateId.of(dto.id),
-      identityId: IdentityId.of(dto.identityId),
-      name: dto.name,
-      description: dto.description,
-      type: dto.type,
-      trigger: dto.trigger as TriggerConfigClient,
-      recurrence: dto.recurrence as RecurrenceConfigClient | null,
-      activeTime: dto.activeTime as ActiveTimeConfigClient,
-      activeHours: dto.activeHours as ActiveHoursConfigClient | null,
-      notificationConfig: dto.notificationConfig as NotificationConfigClient,
-      selfEnabled: dto.selfEnabled,
-      status: dto.status,
-      effectiveEnabled: dto.effectiveEnabled,
-      groupId: dto.groupId ? ReminderGroupId.of(dto.groupId) : null,
-      importanceLevel: dto.importanceLevel,
-      tags: dto.tags ?? [],
-      color: dto.color,
-      icon: dto.icon,
-      nextTriggerAt: dto.nextTriggerAt ? new Date(dto.nextTriggerAt) : null,
-      stats: dto.stats as ReminderStatsClient,
-      version: dto.version,
-      createdAt: new Date(dto.createdAt),
-      updatedAt: new Date(dto.updatedAt),
-      deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-      history: dto.history ? dto.history.map(h => ReminderHistory.fromDTO(h)) : null,
-      displayTitle: dto.displayTitle,
-      typeText: dto.typeText,
-      triggerText: dto.triggerText,
-      recurrenceText: dto.recurrenceText,
-      statusText: dto.statusText,
-      importanceText: dto.importanceText,
-      nextTriggerText: dto.nextTriggerText,
-      isActive: dto.isActive,
-      isPaused: dto.isPaused,
-      lastTriggeredText: dto.lastTriggeredText,
-      controlledByGroup: dto.controlledByGroup,
-    });
+  public static load(state: ReminderTemplateState): ReminderTemplate {
+    return new ReminderTemplate(state);
   }
 
   // ================= DTO Conversion =================
