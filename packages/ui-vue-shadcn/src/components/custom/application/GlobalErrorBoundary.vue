@@ -11,6 +11,9 @@
  *   </GlobalErrorBoundary>
  */
 import { ref, onErrorCaptured } from 'vue';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('GlobalErrorBoundary');
 
 const hasError = ref(false);
 const errorMessage = ref('');
@@ -21,8 +24,15 @@ onErrorCaptured((err: Error) => {
   errorMessage.value = err.message || '发生了未知错误';
   errorStack.value = err.stack || '';
 
-  // TODO: 如果接入了 Sentry / 错误监控，可以在这里上报
-  console.error('[GlobalErrorBoundary]', err);
+  // 使用统一日志系统记录错误
+  logger.error('Captured global error', err);
+
+  // 如果接入了 Sentry，进行上报
+  // @ts-ignore - Sentry 可能是通过 CDN 或外部脚本全局注入的
+  if (globalThis.Sentry) {
+    // @ts-ignore
+    globalThis.Sentry.captureException(err);
+  }
 
   // 返回 false 阻止错误继续向上传播
   return false;
