@@ -46,9 +46,15 @@
     "./infrastructure-client": {
       "types": "./dist/infrastructure-client/index.d.ts",
       "import": "./dist/infrastructure-client/index.js"
+    },
+    "./electron-entry": {
+      "types": "./dist/electron-entry/index.d.ts",
+      "import": "./dist/electron-entry/index.js"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "seed": "tsx src/infrastructure-server/seed/seed-data.ts"
+  },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",

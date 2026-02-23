@@ -35,6 +35,7 @@ import {
   DeleteRuleUseCase,
   GetRuleUseCase,
   ListRulesUseCase,
+  SearchRulesUseCase,
   GetRuleRevisionsUseCase,
 } from '../application-server';
 import { GovernanceContainer } from './di/governance-container';
@@ -55,6 +56,7 @@ export class GovernanceModule {
   public readonly deleteRule: DeleteRuleUseCase;
   public readonly getRule: GetRuleUseCase;
   public readonly listRules: ListRulesUseCase;
+  public readonly searchRules: SearchRulesUseCase;
   public readonly getRevisions: GetRuleRevisionsUseCase;
 
   constructor(repositories: GovernanceModuleRepositories) {
@@ -68,11 +70,12 @@ export class GovernanceModule {
     this.revisionRepository = container.getRevisionRepository();
 
     // 实例化全部 Use Case（命令 + 查询）
-    this.createRule = new CreateRuleUseCase(this.ruleRepository);
-    this.updateRule = new UpdateRuleUseCase(this.ruleRepository);
+    this.createRule = new CreateRuleUseCase(this.ruleRepository, this.revisionRepository);
+    this.updateRule = new UpdateRuleUseCase(this.ruleRepository, this.revisionRepository);
     this.deleteRule = new DeleteRuleUseCase(this.ruleRepository);
     this.getRule = new GetRuleUseCase(this.ruleRepository);
     this.listRules = new ListRulesUseCase(this.ruleRepository);
+    this.searchRules = new SearchRulesUseCase(this.ruleRepository);
     this.getRevisions = new GetRuleRevisionsUseCase(this.revisionRepository);
   }
 }

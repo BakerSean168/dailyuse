@@ -22,6 +22,7 @@ const navItems = [
   { path: '/schedule', label: '日程', icon: '📅' },
   { path: '/reminders', label: '提醒', icon: '🔔' },
   { path: '/repository', label: '知识库', icon: '📚' },
+  { path: '/governance', label: '治理规则', icon: '🛡️' },
   { path: '/editor', label: '编辑器', icon: '📝' },
   { path: '/ai', label: 'AI 助手', icon: '🤖' },
   { path: '/account', label: '账户', icon: '👤' },

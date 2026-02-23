@@ -17,7 +17,13 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
-import type { CreateRuleReq, UpdateRuleReq } from '@/contracts/api/rules';
+import type {
+  CreateRuleReq,
+  ListRulesQuery,
+  SearchRulesQuery,
+  UpdateRuleReq,
+} from '@/contracts/api/rules';
+import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
 
 export interface FetchRulesOptions {
   status?: string | string[];
@@ -39,62 +45,95 @@ export interface SearchRulesOptions {
  * Framework-agnostic service for client-side rule operations
  */
 export class RuleClientService {
-  private baseUrl: string;
+  constructor(private readonly apiClient: IRuleApiClient) {}
 
-  constructor(baseUrl: string = '/api/rules') {
-    this.baseUrl = baseUrl;
+  private toStatus(value?: string | string[]): ListRulesQuery['status'] {
+    const status = Array.isArray(value) ? value[0] : value;
+    if (status === 'Draft' || status === 'Active' || status === 'Deprecated') {
+      return status;
+    }
+    return undefined;
+  }
+
+  private toSeverity(value?: string | string[]): ListRulesQuery['severity'] {
+    const severity = Array.isArray(value) ? value[0] : value;
+    if (severity === 'Mandatory' || severity === 'Recommended') {
+      return severity;
+    }
+    return undefined;
   }
 
   /**
    * Fetches all rules with optional filters
    */
   async fetchRules(options?: FetchRulesOptions): Promise<Result<RuleClientDTO[]>> {
-    // TODO: Implement API call when API layer is ready
-    // For now, return empty result
-    return ok([]);
+    const query: ListRulesQuery = {
+      status: this.toStatus(options?.status),
+      severity: this.toSeverity(options?.severity),
+      tags: options?.tags,
+      page: options?.offset !== undefined && options?.limit
+        ? Math.floor(options.offset / options.limit) + 1
+        : 1,
+      pageSize: options?.limit ?? 20,
+    };
+
+    const result = await this.apiClient.listRules(query);
+    if (!result.ok) return result;
+    return ok(result.data.items);
   }
 
   /**
    * Fetches single rule by ID
    */
   async fetchRuleById(id: string): Promise<Result<RuleClientDTO | null>> {
-    // TODO: Implement API call
-    return ok(null);
+    const result = await this.apiClient.getRule({ id });
+    if (!result.ok) return result;
+    return ok(result.data);
   }
 
   /**
    * Searches rules by keyword
    */
   async searchRules(options: SearchRulesOptions): Promise<Result<RuleClientDTO[]>> {
-    // TODO: Implement API call
-    return ok([]);
+    const query: SearchRulesQuery = {
+      query: options.query,
+      status: this.toStatus(options.status),
+      page: 1,
+      pageSize: options.limit ?? 20,
+    };
+
+    const result = await this.apiClient.searchRules(query);
+    if (!result.ok) return result;
+    return ok(result.data.items);
   }
 
   /**
    * Creates new rule (Tech Lead/Architect only)
    */
   async createRule(data: CreateRuleReq): Promise<Result<{ ruleId: string }>> {
-    // TODO: Implement API call
-    void data;
-    return error('NOT_IMPLEMENTED', 'Not implemented');
+    const result = await this.apiClient.createRule(data);
+    if (!result.ok) return result;
+    return ok({ ruleId: result.data.id });
   }
 
   /**
    * Updates existing rule (Tech Lead/Architect only)
    */
   async updateRule(id: string, data: UpdateRuleReq): Promise<Result<void>> {
-    // TODO: Implement API call
-    void id;
-    void data;
-    return error('NOT_IMPLEMENTED', 'Not implemented');
+    const result = await this.apiClient.updateRule(id, data);
+    if (!result.ok) return result;
+    return ok(undefined);
   }
 
   /**
    * Deletes rule (Tech Lead/Architect only)
    */
   async deleteRule(id: string): Promise<Result<void>> {
-    // TODO: Implement API call
-    void id;
-    return error('NOT_IMPLEMENTED', 'Not implemented');
+    const result = await this.apiClient.deleteRule({ id });
+    if (!result.ok) return result;
+    if (!result.data.success) {
+      return error('DELETE_FAILED', 'Rule delete operation failed');
+    }
+    return ok(undefined);
   }
 }

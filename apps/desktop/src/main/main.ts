@@ -32,6 +32,7 @@ import { RepositoryElectronModule } from '@dailyuse/repository/electron-entry';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { AuthenticationElectronModule } from '@dailyuse/authentication/electron-entry';
+import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
 
 /** Kept as module-level for graceful shutdown access. */
 let bootstrapper: ElectronBootstrapper | null = null;
@@ -61,6 +62,7 @@ async function initializeApp(): Promise<void> {
     .register(ScheduleElectronModule)
     .register(ReminderElectronModule)
     .register(AIElectronModule)
+    .register(GovernanceElectronModule)
     // Repository must precede Editor (cross-module dep)
     .register(RepositoryElectronModule)
     .register(createEditorElectronModule({

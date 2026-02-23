@@ -6,8 +6,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { settingApplicationService } from '@dailyuse/setting/application-client';
-import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
-import type { UpdateAppearanceInput, UpdateLocaleInput } from '@dailyuse/setting/application-client';
+import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 
 export interface AppSettingsState {
   userSettings: UserSettingClientDTO | null;
@@ -18,11 +17,10 @@ export interface AppSettingsState {
 
 export interface UseAppSettingsReturn extends AppSettingsState {
   loadSettings: () => Promise<void>;
-  updateAppearance: (input: UpdateAppearanceInput) => Promise<void>;
-  updateLocale: (input: UpdateLocaleInput) => Promise<void>;
-  resetSettings: () => Promise<void>;
+  patchCategory: (category: PreferenceCategory, patch: Record<string, unknown>) => Promise<void>;
+  resetSettings: () => Promise<UserSettingClientDTO>;
   exportSettings: () => Promise<string>;
-  importSettings: (data: string) => Promise<void>;
+  importSettings: (data: string) => Promise<UserSettingClientDTO>;
 }
 
 /**
@@ -58,12 +56,12 @@ export function useAppSettings(): UseAppSettingsReturn {
   }, []);
 
   /**
-   * 更新外观设置
+   * 按分类更新设置
    */
-  const updateAppearance = useCallback(async (input: UpdateAppearanceInput) => {
+  const patchCategory = useCallback(async (category: PreferenceCategory, patch: Record<string, unknown>) => {
     setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
-      const userSettings = await settingApplicationService.updateAppearance(input);
+      const userSettings = await settingApplicationService.patchCategory(category, patch);
       setState((prev) => ({
         ...prev,
         userSettings,
@@ -73,28 +71,7 @@ export function useAppSettings(): UseAppSettingsReturn {
       setState((prev) => ({
         ...prev,
         saving: false,
-        error: error instanceof Error ? error.message : '更新外观设置失败',
-      }));
-    }
-  }, []);
-
-  /**
-   * 更新语言设置
-   */
-  const updateLocale = useCallback(async (input: UpdateLocaleInput) => {
-    setState((prev) => ({ ...prev, saving: true, error: null }));
-    try {
-      const userSettings = await settingApplicationService.updateLocale(input);
-      setState((prev) => ({
-        ...prev,
-        userSettings,
-        saving: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        saving: false,
-        error: error instanceof Error ? error.message : '更新语言设置失败',
+        error: error instanceof Error ? error.message : '更新设置失败',
       }));
     }
   }, []);
@@ -102,7 +79,7 @@ export function useAppSettings(): UseAppSettingsReturn {
   /**
    * 重置设置
    */
-  const resetSettings = useCallback(async () => {
+  const resetSettings = useCallback(async (): Promise<UserSettingClientDTO> => {
     setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
       const userSettings = await settingApplicationService.resetUserSettings();
@@ -111,12 +88,14 @@ export function useAppSettings(): UseAppSettingsReturn {
         userSettings,
         saving: false,
       }));
+      return userSettings;
     } catch (error) {
       setState((prev) => ({
         ...prev,
         saving: false,
         error: error instanceof Error ? error.message : '重置设置失败',
       }));
+      throw error;
     }
   }, []);
 
@@ -138,7 +117,7 @@ export function useAppSettings(): UseAppSettingsReturn {
   /**
    * 导入设置
    */
-  const importSettings = useCallback(async (data: string) => {
+  const importSettings = useCallback(async (data: string): Promise<UserSettingClientDTO> => {
     setState((prev) => ({ ...prev, saving: true, error: null }));
     try {
       const userSettings = await settingApplicationService.importSettings(data);
@@ -147,12 +126,14 @@ export function useAppSettings(): UseAppSettingsReturn {
         userSettings,
         saving: false,
       }));
+      return userSettings;
     } catch (error) {
       setState((prev) => ({
         ...prev,
         saving: false,
         error: error instanceof Error ? error.message : '导入设置失败',
       }));
+      throw error;
     }
   }, []);
 
@@ -164,8 +145,7 @@ export function useAppSettings(): UseAppSettingsReturn {
   return {
     ...state,
     loadSettings,
-    updateAppearance,
-    updateLocale,
+    patchCategory,
     resetSettings,
     exportSettings,
     importSettings,

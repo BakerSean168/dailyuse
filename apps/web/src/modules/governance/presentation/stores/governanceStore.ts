@@ -160,6 +160,33 @@ export const useGovernanceStore = defineStore('governance', {
       this.revisions = revisions;
     },
 
+    async fetchRevisions(ruleId: string): Promise<RuleRevisionClientDTO[]> {
+      this.setLoading(true);
+      this.setError(null);
+
+      try {
+        const { httpClient } = await import('@/shared/http');
+        const response = await httpClient.get<{
+          items?: RuleRevisionClientDTO[];
+          data?: RuleRevisionClientDTO[];
+        }>(`/governance/rules/${ruleId}/revisions`);
+
+        const revisions =
+          (Array.isArray(response.items) ? response.items : undefined) ??
+          (Array.isArray(response.data) ? response.data : []);
+
+        this.setRevisions(revisions);
+        return revisions;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '加载修订历史失败';
+        this.setError(message);
+        this.setRevisions([]);
+        return [];
+      } finally {
+        this.setLoading(false);
+      }
+    },
+
     // ===== 过滤 =====
 
     setFilterStatus(status: RuleStatus | null) {

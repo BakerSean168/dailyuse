@@ -6,3 +6,4 @@
 export * from './get-rule.use-case';
 export * from './get-rule-revisions.use-case';
 export * from './list-rules.use-case';
+export * from './search-rules.use-case';

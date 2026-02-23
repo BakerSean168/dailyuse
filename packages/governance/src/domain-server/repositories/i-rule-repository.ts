@@ -9,6 +9,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { Rule } from '../aggregates/rule';
+import type { RuleRevision } from '../entities/rule-revision';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import type { RuleStatus } from '../../contracts/value-objects/rule-status';
 
@@ -29,6 +30,11 @@ export interface IRuleRepository {
    * Saves rule (insert or update)
    */
   save(rule: Rule): Promise<Result<void>>;
+
+  /**
+   * Saves rule and revision atomically in a single transaction
+   */
+  saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>>;
 
   /**
    * Finds rule by ID

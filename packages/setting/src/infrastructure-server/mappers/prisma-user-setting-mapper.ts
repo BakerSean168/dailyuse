@@ -16,7 +16,7 @@ export class PrismaUserSettingMapper {
    * Prisma → Domain
    */
   static toDomain(data: PrismaUserSetting): UserSetting {
-    const preferences = UserPreferencesSchema.parse(data.preferences ?? {});
+    const preferences = UserPreferencesSchema.parse((data as { preferences: unknown }).preferences);
 
     const state: UserSettingState = {
       id: SettingId.of(data.id),

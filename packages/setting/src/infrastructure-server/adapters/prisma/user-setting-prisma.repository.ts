@@ -5,8 +5,11 @@
  */
 
 import type { PrismaClient, UserSetting as PrismaUserSetting } from '@dailyuse/database';
+import type { IDomainEvent } from '@dailyuse/contracts/shared';
+import type { SettingEventMap } from '@dailyuse/contracts/setting';
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import { eventBus } from '@dailyuse/utils';
 import { PrismaUserSettingMapper } from '../../mappers/prisma-user-setting-mapper';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {
@@ -28,6 +31,8 @@ export class UserSettingPrismaRepository implements IUserSettingRepository {
       create: data,
       update: data,
     });
+
+    this.publishDomainEvents(setting.pullDomainEvents());
   }
 
   async findByIdentityId(identityId: string): Promise<UserSetting | null> {
@@ -41,5 +46,14 @@ export class UserSettingPrismaRepository implements IUserSettingRepository {
     await this.prisma.userSetting.delete({
       where: { identityId },
     });
+  }
+
+  private publishDomainEvents(events: ReadonlyArray<IDomainEvent>): void {
+    for (const event of events) {
+      eventBus.send(
+        event.eventType as keyof SettingEventMap,
+        event.payload as SettingEventMap[keyof SettingEventMap],
+      );
+    }
   }
 }

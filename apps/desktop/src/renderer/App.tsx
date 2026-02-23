@@ -54,6 +54,14 @@ const AccountView = lazy(() =>
   import('./views/account').then((m) => ({ default: m.default }))
 );
 
+const RuleListView = lazy(() =>
+  import('./views/RuleListView').then((m) => ({ default: m.RuleListView }))
+);
+
+const RuleDetailView = lazy(() =>
+  import('./views/RuleDetailView').then((m) => ({ default: m.RuleDetailView }))
+);
+
 // Login View (standalone, frameless window)
 const LoginView = lazy(() =>
   import('./views/login').then((m) => ({ default: m.LoginView }))
@@ -177,6 +185,22 @@ export function App() {
             element={
               <Suspense fallback={<RouteLoadingSkeleton />}>
                 <AccountView />
+              </Suspense>
+            }
+          />
+          <Route
+            path="governance"
+            element={
+              <Suspense fallback={<RouteLoadingSkeleton />}>
+                <RuleListView />
+              </Suspense>
+            }
+          />
+          <Route
+            path="governance/:id"
+            element={
+              <Suspense fallback={<RouteLoadingSkeleton />}>
+                <RuleDetailView />
               </Suspense>
             }
           />

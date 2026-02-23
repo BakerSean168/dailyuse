@@ -1,0 +1,292 @@
+import { randomUUID } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { prisma } from '@dailyuse/database';
+import { Language } from '../../contracts/value-objects/language';
+import { RuleSeverity } from '../../contracts/value-objects/rule-severity';
+import { RuleStatus } from '../../contracts/value-objects/rule-status';
+import { SnippetType } from '../../contracts/value-objects/snippet-type';
+
+interface SeedCodeSnippet {
+  language: string;
+  content: string;
+  type: string;
+  caption: string | null;
+}
+
+interface SeedRule {
+  code: string;
+  title: string;
+  description: string;
+  severity: string;
+  status: string;
+  tags: string[];
+  liveReferenceLocation: string;
+  goodExamples: SeedCodeSnippet[];
+  badExamples: SeedCodeSnippet[];
+}
+
+const makeSnippet = (
+  language: string,
+  type: string,
+  content: string,
+  caption: string,
+): SeedCodeSnippet => ({
+  language,
+  type,
+  content,
+  caption,
+});
+
+export const GOVERNANCE_SEED_RULES: SeedRule[] = [
+  {
+    code: 'DDD-001',
+    title: 'Entity Props Pattern',
+    description: 'Entities MUST encapsulate constructor arguments inside a dedicated Props object to keep signatures stable and explicit.',
+    severity: RuleSeverity.Mandatory,
+    status: RuleStatus.Active,
+    tags: ['ddd', 'entity', 'architecture', 'consistency'],
+    liveReferenceLocation: 'packages/governance/src/domain-server/aggregates/rule.ts',
+    goodExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.GoodExample,
+        `interface RuleProps {
+  code: string;
+  title: string;
+}
+
+class Rule {
+  private constructor(private readonly props: RuleProps) {}
+}
+`,
+        'Entity constructor receives a single props object.',
+      ),
+    ],
+    badExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.BadExample,
+        `class Rule {
+  constructor(
+    private readonly code: string,
+    private readonly title: string,
+    private readonly description: string,
+    private readonly severity: string,
+  ) {}
+}
+`,
+        'Long positional constructor arguments are fragile and error-prone.',
+      ),
+    ],
+  },
+  {
+    code: 'DDD-002',
+    title: 'No Logic in DTOs',
+    description: 'DTOs MUST remain pure data contracts. Validation and business rules belong to Value Objects, Entities, and Use Cases.',
+    severity: RuleSeverity.Mandatory,
+    status: RuleStatus.Active,
+    tags: ['ddd', 'dto', 'contracts', 'separation-of-concerns'],
+    liveReferenceLocation: 'packages/governance/src/contracts/aggregates/rule-server.ts',
+    goodExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.GoodExample,
+        `export interface CreateRuleReq {
+  code: string;
+  title: string;
+  description: string;
+}
+`,
+        'DTO remains a pure shape declaration.',
+      ),
+    ],
+    badExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.BadExample,
+        `export class CreateRuleReq {
+  constructor(public code: string) {}
+
+  normalizeCode(): string {
+    return this.code.trim().toUpperCase();
+  }
+}
+`,
+        'Behavior in DTOs creates hidden domain logic in the wrong layer.',
+      ),
+    ],
+  },
+  {
+    code: 'DDD-003',
+    title: 'Layer Isolation',
+    description: 'Domain and application layers MUST not directly depend on infrastructure details such as Prisma clients or HTTP adapters.',
+    severity: RuleSeverity.Mandatory,
+    status: RuleStatus.Active,
+    tags: ['ddd', 'layering', 'infrastructure', 'dependency-inversion'],
+    liveReferenceLocation: 'packages/governance/src/domain-server/repositories/i-rule-repository.ts',
+    goodExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.GoodExample,
+        `export interface IRuleRepository {
+  findByCode(code: string): Promise<Rule | null>;
+}
+
+class SearchRulesUseCase {
+  constructor(private readonly repo: IRuleRepository) {}
+}
+`,
+        'Use case depends on abstraction, not infrastructure.',
+      ),
+    ],
+    badExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.BadExample,
+        `import { prisma } from '@dailyuse/database';
+
+class SearchRulesUseCase {
+  async execute(code: string) {
+    return prisma.rule.findUnique({ where: { code } });
+  }
+}
+`,
+        'Application layer is tightly coupled to persistence implementation.',
+      ),
+    ],
+  },
+  {
+    code: 'DDD-004',
+    title: 'Value Object Collections',
+    description: 'Collections in aggregates MUST use Value Objects for normalization and invariants instead of passing primitive strings directly.',
+    severity: RuleSeverity.Recommended,
+    status: RuleStatus.Active,
+    tags: ['ddd', 'value-object', 'collection', 'invariants'],
+    liveReferenceLocation: 'packages/governance/src/domain-shared/value-objects/rule-tag.ts',
+    goodExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.GoodExample,
+        `class Rule {
+  private tags = new Set<RuleTag>();
+
+  addTag(raw: string) {
+    this.tags.add(RuleTag.create(raw));
+  }
+}
+`,
+        'RuleTag enforces normalization for every collection entry.',
+      ),
+    ],
+    badExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.BadExample,
+        `class Rule {
+  private tags: string[] = [];
+
+  addTag(raw: string) {
+    this.tags.push(raw);
+  }
+}
+`,
+        'Primitive collection bypasses normalization and duplicate checks.',
+      ),
+    ],
+  },
+  {
+    code: 'DDD-005',
+    title: 'Factory Method Pattern',
+    description: 'Aggregates MUST expose static factory methods and hide constructors to guarantee invariant validation at creation time.',
+    severity: RuleSeverity.Recommended,
+    status: RuleStatus.Active,
+    tags: ['ddd', 'factory-method', 'aggregate', 'invariants'],
+    liveReferenceLocation: 'packages/governance/src/domain-server/entities/rule-revision.ts',
+    goodExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.GoodExample,
+        `class RuleRevision {
+  private constructor(private readonly props: RuleRevisionProps) {}
+
+  static create(props: RuleRevisionProps): RuleRevision {
+    return new RuleRevision(props);
+  }
+}
+`,
+        'Factory method centralizes creation and validation flow.',
+      ),
+    ],
+    badExamples: [
+      makeSnippet(
+        Language.TypeScript,
+        SnippetType.BadExample,
+        `class RuleRevision {
+  constructor(public readonly props: RuleRevisionProps) {}
+}
+`,
+        'Public constructor allows bypassing validation and lifecycle controls.',
+      ),
+    ],
+  },
+];
+
+const toPersistenceSnippets = (snippets: SeedCodeSnippet[]): string => JSON.stringify(
+  snippets.map((snippet) => ({
+    id: randomUUID(),
+    language: snippet.language,
+    content: snippet.content,
+    type: snippet.type,
+    caption: snippet.caption,
+  })),
+);
+
+export async function seedGovernanceRules(authorId = 'governance-seed'): Promise<number> {
+  for (const rule of GOVERNANCE_SEED_RULES) {
+    await prisma.rule.upsert({
+      where: { code: rule.code },
+      create: {
+        code: rule.code,
+        title: rule.title,
+        description: rule.description,
+        severity: rule.severity,
+        status: rule.status,
+        tags: JSON.stringify(rule.tags),
+        goodExamples: toPersistenceSnippets(rule.goodExamples),
+        badExamples: toPersistenceSnippets(rule.badExamples),
+        authorId,
+        liveReferenceLocation: rule.liveReferenceLocation,
+      },
+      update: {
+        title: rule.title,
+        description: rule.description,
+        severity: rule.severity,
+        status: rule.status,
+        tags: JSON.stringify(rule.tags),
+        goodExamples: toPersistenceSnippets(rule.goodExamples),
+        badExamples: toPersistenceSnippets(rule.badExamples),
+        authorId,
+        liveReferenceLocation: rule.liveReferenceLocation,
+      },
+    });
+  }
+
+  return GOVERNANCE_SEED_RULES.length;
+}
+
+const shouldRunAsScript = process.argv[1] !== undefined
+  && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (shouldRunAsScript) {
+  seedGovernanceRules()
+    .then((count) => {
+      console.log(`[governance:seed] Seeded ${count} governance rules`);
+    })
+    .catch((err) => {
+      console.error('[governance:seed] Failed to seed governance rules:', err);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

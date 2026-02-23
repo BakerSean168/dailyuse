@@ -27,6 +27,7 @@ import {
   CreateRuleSchema,
   UpdateRuleSchema,
   ListRulesQuerySchema,
+  SearchRulesQuerySchema,
   GetRuleRevisionsQuerySchema,
 } from '../contracts';
 import { GovernanceController } from '../controllers/governance.controller';
@@ -188,6 +189,37 @@ export function registerGovernanceCrudRoutes(
     },
     [auth],
     (req) => controller.getRuleByCode(req.params!.code),
+  );
+
+  // GET /:id/revisions — 获取修订历史 (must be before /:id)
+  r.route(
+    {
+      method: 'get',
+      path: '/search',
+      summary: '搜索规则',
+      request: { query: SearchRulesQuerySchema },
+      responses: {
+        200: successResponse(
+          z.object({
+            items: z.array(RuleResponseSchema),
+            total: z.number(),
+            page: z.number(),
+            pageSize: z.number(),
+            searchTime: z.number(),
+          }),
+          '搜索成功',
+        ),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.searchRules({
+      query: parseString(req.query?.query) ?? parseString(req.query?.q) ?? '',
+      status: parseString(req.query?.status),
+      severity: parseString(req.query?.severity),
+      tags: parseStringArray(req.query?.tags),
+      page: parseNumber(req.query?.page),
+      pageSize: parseNumber(req.query?.pageSize),
+    }, ctx),
   );
 
   // GET /:id/revisions — 获取修订历史 (must be before /:id)

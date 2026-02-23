@@ -30,9 +30,8 @@ import {
 
 import { ThemeSettings } from '../components/ThemeSettings';
 import { GeneralSettings } from '../components/GeneralSettings';
-import { useSettingStore } from '../stores/settingStore';
+import { toAppSettings, useSettingStore } from '../stores/settingStore';
 import { useAppSettings } from '../hooks/useAppSettings';
-import type { AppSettings } from '../stores/settingStore';
 
 // 简单的消息提示函数
 const showMessage = (title: string, _description?: string) => {
@@ -47,8 +46,8 @@ const themeToContractFormat = (theme: 'light' | 'dark' | 'system'): 'LIGHT' | 'D
 };
 
 export function SettingsView() {
-  const { settings, setSettings, setSetting, resetToDefault } = useSettingStore();
-  const { updateAppearance } = useAppSettings();
+  const { settings, setSettings, setSetting } = useSettingStore();
+  const { patchCategory, resetSettings, exportSettings, importSettings } = useAppSettings();
 
   const [activeTab, setActiveTab] = useState('general');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -58,9 +57,12 @@ export function SettingsView() {
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      // 保存外观设置到后�?(language 属于 updateLocale)
-      await updateAppearance({
+      await patchCategory('appearance', {
         theme: themeToContractFormat(settings.theme),
+        accentColor: settings.accentColor,
+      });
+      await patchCategory('locale', {
+        language: settings.language,
       });
       showMessage('设置已保', '您的设置已成功保');
     } catch {
@@ -68,27 +70,39 @@ export function SettingsView() {
     } finally {
       setSaving(false);
     }
-  }, [updateAppearance, settings.theme]);
+  }, [patchCategory, settings.theme, settings.accentColor, settings.language]);
 
   // Reset settings
-  const handleReset = useCallback(() => {
-    resetToDefault();
-    setShowResetConfirm(false);
-    showMessage('设置已重', '所有设置已恢复为默认');
-  }, [resetToDefault]);
+  const handleReset = useCallback(async () => {
+    setSaving(true);
+    try {
+      const userSettings = await resetSettings();
+      setSettings(toAppSettings(userSettings.preferences));
+      setShowResetConfirm(false);
+      showMessage('设置已重', '所有设置已恢复为默认');
+    } catch {
+      showMessage('重置失败', '重置设置时发生错误');
+    } finally {
+      setSaving(false);
+    }
+  }, [resetSettings, setSettings]);
 
   // Export settings
-  const handleExport = useCallback(() => {
-    const data = JSON.stringify(settings, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dailyuse-settings-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showMessage('导出成功', '设置已导出为 JSON 文件');
-  }, [settings]);
+  const handleExport = useCallback(async () => {
+    try {
+      const data = await exportSettings();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dailyuse-settings-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showMessage('导出成功', '设置已导出为 JSON 文件');
+    } catch {
+      showMessage('导出失败', '导出设置时发生错误');
+    }
+  }, [exportSettings]);
 
   // Import settings
   const handleImport = useCallback(() => {
@@ -100,16 +114,19 @@ export function SettingsView() {
       if (!file) return;
 
       try {
+        setSaving(true);
         const text = await file.text();
-        const imported = JSON.parse(text) as Partial<AppSettings>;
-        setSettings(imported);
+        const userSettings = await importSettings(text);
+        setSettings(toAppSettings(userSettings.preferences));
         showMessage('导入成功', '设置已从文件导入');
       } catch {
         showMessage('导入失败', '文件格式无效');
+      } finally {
+        setSaving(false);
       }
     };
     input.click();
-  }, [setSettings]);
+  }, [importSettings, setSettings]);
 
   // Handler shortcuts
   const handleShortcutChange = useCallback(

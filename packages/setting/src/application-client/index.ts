@@ -6,8 +6,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 import type { ISettingApiClient } from '../infrastructure-client/adapters/types';
 
-export type { UpdateAppearanceInput, UpdateLocaleInput } from './types';
-
 /**
  * Setting Client Service — Facade over ISettingApiClient
  */
@@ -24,14 +22,6 @@ export class SettingClientService {
     const result = await this.apiClient.patchCategory(category, patch);
     if (!result.ok) throw new Error(result.error?.message ?? 'Failed to patch settings');
     return result.data;
-  }
-
-  async updateAppearance(input: Record<string, unknown>): Promise<UserSettingClientDTO> {
-    return this.patchCategory('appearance', input);
-  }
-
-  async updateLocale(input: Record<string, unknown>): Promise<UserSettingClientDTO> {
-    return this.patchCategory('locale', input);
   }
 
   async resetUserSettings(category?: string): Promise<UserSettingClientDTO> {

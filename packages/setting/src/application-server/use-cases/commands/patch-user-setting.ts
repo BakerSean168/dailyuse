@@ -28,8 +28,3 @@ export class PatchUserSetting {
     return setting.toClientDTO();
   }
 }
-
-/**
- * @deprecated Use PatchUserSetting instead
- */
-export const UpdateUserSetting = PatchUserSetting;

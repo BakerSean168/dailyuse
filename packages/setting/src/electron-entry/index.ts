@@ -27,8 +27,7 @@ export const SettingElectronModule: IElectronModule = {
   name: 'Setting',
 
   register(ctx: IElectronModuleContext): void {
-    // TODO: Desktop 迁移到 Prisma 后去掉 as any
-    const mod = new SettingModule('prisma', ctx.db as any);
+    const mod = new SettingModule('sqlite', ctx.db);
 
     const resolveIdentityId = (payload: unknown): string => {
       if (typeof payload === 'string') return payload;

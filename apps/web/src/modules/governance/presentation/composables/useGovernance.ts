@@ -161,15 +161,10 @@ export function useGovernance() {
 
   /**
    * 加载修订历史
-   * 注：IRuleApiClient 暂不含 getRevisions，保持降级使用 fetch
    */
   async function fetchRevisions(ruleId: string): Promise<void> {
     try {
-      // IRuleApiClient 尚未暴露 getRevisions
-      // 暂时使用 httpClient 直接请求
-      const { httpClient } = await import('@/shared/http');
-      const revisions = await httpClient.get<any>(`/governance/rules/${ruleId}/revisions`);
-      store.setRevisions(revisions);
+      await store.fetchRevisions(ruleId);
     } catch (err) {
       handleError(err, '加载修订历史失败');
     }

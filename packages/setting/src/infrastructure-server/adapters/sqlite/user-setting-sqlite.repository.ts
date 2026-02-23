@@ -6,11 +6,13 @@
  */
 
 import type Database from 'better-sqlite3';
+import type { IDomainEvent } from '@dailyuse/contracts/shared';
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting, type UserSettingState } from '@/domain-server/aggregates/user-setting';
 import { SettingId } from '@/domain-shared/value-objects/setting-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { UserPreferencesSchema } from '@dailyuse/contracts/setting';
+import { UserPreferencesSchema, type SettingEventMap } from '@dailyuse/contracts/setting';
+import { eventBus } from '@dailyuse/utils';
 
 interface UserSettingRow {
   id: string;
@@ -39,6 +41,8 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
       JSON.stringify(setting.toPreferences()),
       setting.version,
     );
+
+    this.publishDomainEvents(setting.pullDomainEvents());
   }
 
   async findByIdentityId(identityId: string): Promise<UserSetting | null> {
@@ -64,5 +68,14 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
 
   async delete(identityId: string): Promise<void> {
     this.db.prepare('DELETE FROM user_settings WHERE identity_id = ?').run(identityId);
+  }
+
+  private publishDomainEvents(events: ReadonlyArray<IDomainEvent>): void {
+    for (const event of events) {
+      eventBus.send(
+        event.eventType as keyof SettingEventMap,
+        event.payload as SettingEventMap[keyof SettingEventMap],
+      );
+    }
   }
 }

@@ -4,7 +4,9 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
+import type Database from 'better-sqlite3';
 import { UserSettingPrismaRepository } from '../adapters/prisma/index';
+import { SqliteUserSettingRepository } from '../adapters/sqlite/index';
 
 export class SettingRepositoryFactory {
   /**
@@ -13,6 +15,15 @@ export class SettingRepositoryFactory {
   static createPrismaRepositories(prisma: PrismaClient) {
     return {
       userSettingRepository: new UserSettingPrismaRepository(prisma),
+    };
+  }
+
+  /**
+   * Create repositories using SQLite (for desktop/local-first)
+   */
+  static createSqliteRepositories(sqlite: Database.Database) {
+    return {
+      userSettingRepository: new SqliteUserSettingRepository(sqlite),
     };
   }
 
@@ -26,6 +37,11 @@ export class SettingRepositoryFactory {
     if (dataSource === 'prisma') {
       return this.createPrismaRepositories(client as PrismaClient);
     }
-    throw new Error(`Unsupported data source: ${dataSource}`);
+
+    if (dataSource === 'sqlite') {
+      return this.createSqliteRepositories(client as Database.Database);
+    }
+
+    throw new Error(`Unsupported data source: ${String(dataSource)}`);
   }
 }

@@ -23,6 +23,13 @@
 
         <div class="flex items-center gap-2">
           <router-link
+            :to="{ name: 'governance-history', params: { id: currentRule.id } }"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm hover:bg-muted transition-colors"
+          >
+            <History :size="14" />
+            历史
+          </router-link>
+          <router-link
             :to="{ name: 'governance-editor-edit', params: { id: currentRule.id } }"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm hover:bg-muted transition-colors"
           >
@@ -240,6 +247,7 @@ import {
   History,
 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
+import { usePerformanceMonitor } from '../../composables/use-performance-monitor';
 import { RuleStatusBadge, CodeSnippetView } from '@dailyuse/ui-vue-shadcn';
 
 const props = defineProps<{
@@ -258,15 +266,18 @@ const {
   fetchRevisions,
   deleteRule,
 } = useGovernance();
+const { trackDetail } = usePerformanceMonitor();
 
 const showDeleteDialog = ref(false);
 const showRevisions = ref(false);
 
 async function loadRule(id: string) {
-  await fetchRule(id);
-  if (currentRule.value) {
-    await fetchRevisions(id);
-  }
+  await trackDetail(async () => {
+    await fetchRule(id);
+    if (currentRule.value) {
+      await fetchRevisions(id);
+    }
+  });
 }
 
 function confirmDelete() {

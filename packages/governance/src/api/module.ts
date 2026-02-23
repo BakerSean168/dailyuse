@@ -79,6 +79,8 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
         governanceModule.getRule.execute(req),
       listRules: (query) =>
         governanceModule.listRules.execute(query),
+      searchRules: (query, filters, cx) =>
+        governanceModule.searchRules.execute(query, filters, cx),
       getRevisions: (query) =>
         governanceModule.getRevisions.execute(query),
     };

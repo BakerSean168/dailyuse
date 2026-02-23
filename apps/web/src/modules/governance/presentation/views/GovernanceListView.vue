@@ -148,10 +148,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Plus, Shield } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
+import { usePerformanceMonitor } from '../../composables/use-performance-monitor';
 import type { RuleClientDTO, RuleStatus, RuleSeverity } from '../../types';
 import { RuleCard, SearchBar, TagFilterChips } from '@dailyuse/ui-vue-shadcn';
 
@@ -172,11 +173,13 @@ const {
   clearFilters,
   setPage,
 } = useGovernance();
+const { trackSearch } = usePerformanceMonitor();
 
 const searchQuery = ref('');
 const selectedStatus = ref('');
 const selectedSeverity = ref('');
 const currentPage = ref(1);
+const keyboardIndex = ref(-1);
 
 const statusOptions = [
   { label: '全部', value: '' },
@@ -196,7 +199,7 @@ const totalPages = computed(() =>
 );
 
 function onSearch(query: string) {
-  searchRules(query);
+  void trackSearch(() => searchRules(query));
 }
 
 function onStatusFilter(value: string) {
@@ -211,7 +214,45 @@ function goToDetail(rule: RuleClientDTO) {
   router.push({ name: 'governance-detail', params: { id: rule.id } });
 }
 
+function onKeyboardNavigate(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null;
+  if (
+    target
+    && (
+      target.tagName === 'INPUT'
+      || target.tagName === 'TEXTAREA'
+      || target.isContentEditable
+    )
+  ) {
+    return;
+  }
+
+  if (event.key !== 'j' && event.key !== 'k') {
+    return;
+  }
+
+  if (rules.value.length === 0) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const direction = event.key === 'j' ? 1 : -1;
+  const startIndex = keyboardIndex.value < 0
+    ? (direction > 0 ? 0 : rules.value.length - 1)
+    : keyboardIndex.value;
+
+  const nextIndex = (startIndex + direction + rules.value.length) % rules.value.length;
+  keyboardIndex.value = nextIndex;
+  goToDetail(rules.value[nextIndex]);
+}
+
 onMounted(() => {
+  window.addEventListener('keydown', onKeyboardNavigate);
   fetchRules();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyboardNavigate);
 });
 </script>

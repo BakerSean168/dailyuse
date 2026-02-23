@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { UserSettingClientDTO } from '../aggregates';
-import { CATEGORY_SCHEMAS, UserPreferencesSchema } from '../preferences/schemas';
+import { CATEGORY_SCHEMAS } from '../preferences/schemas';
 import type { PreferenceCategory } from '../preferences/defaults';
 
 const identityIdSchema = z.string().min(1);
@@ -27,12 +27,6 @@ export const PatchUserSettingSchema = z.object({
 });
 export type PatchUserSettingReq = z.infer<typeof PatchUserSettingSchema>;
 export type PatchUserSettingRes = UserSettingClientDTO;
-
-// ─── Composite Update Schema (backward compat) ───────────
-
-export const UpdateUserSettingSchema = UserPreferencesSchema.partial();
-export type UpdateUserSettingReq = z.infer<typeof UpdateUserSettingSchema>;
-export type UpdateUserSettingRes = UserSettingClientDTO;
 
 export const ResetUserSettingSchema = z.object({
   identityId: identityIdSchema.optional(),

@@ -82,6 +82,7 @@ updated: 2025-01-22T00:00:00
 - [�?智能提醒](./modules/reminder/README.md)
 - [🤖 AI 智能助手](./modules/ai/README.md)
 - [📚 知识库](./modules/repository/README.md)
+- [🏛 治理规则](./modules/governance/user-guide.md)
 
 </td>
 <td width="33%">

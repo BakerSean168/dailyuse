@@ -14,6 +14,7 @@
 import type { Prisma, PrismaClient } from '@dailyuse/database';
 import type { IRuleRepository, RuleFilter } from '../../../domain-server/repositories/i-rule-repository';
 import type { Rule } from '../../../domain-server/aggregates/rule';
+import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -57,6 +58,49 @@ export class RulePrismaRepository implements IRuleRepository {
       return ok(undefined);
     } catch (err) {
       return error('DATABASE_ERROR', `Failed to save rule: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  /**
+   * Saves rule and revision atomically (single transaction)
+   */
+  async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>> {
+    try {
+      const prismaData = RulePersistenceMapper.toPrisma(rule);
+
+      await this.prisma.$transaction(async (tx) => {
+        await tx.rule.upsert({
+          where: { id: rule.id },
+          create: {
+            ...prismaData,
+            id: rule.id,
+            createdAt: rule.createdAt,
+            updatedAt: rule.updatedAt,
+          },
+          update: {
+            ...prismaData,
+            updatedAt: rule.updatedAt,
+          },
+        });
+
+        await tx.ruleRevision.create({
+          data: {
+            id: revision.id,
+            ruleId: revision.ruleId,
+            revisionNumber: revision.revisionNumber,
+            authorId: revision.authorId,
+            changedFields: JSON.stringify([...revision.changedFields]),
+            previousValues: JSON.stringify(revision.previousValues),
+            newValues: JSON.stringify(revision.newValues),
+            changeType: revision.changeType,
+            createdAt: revision.createdAt,
+          },
+        });
+      });
+
+      return ok(undefined);
+    } catch (err) {
+      return error('DATABASE_ERROR', `Failed to save rule with revision: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
@@ -162,14 +206,27 @@ export class RulePrismaRepository implements IRuleRepository {
    */
   async search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>> {
     try {
+      const keyword = query.trim();
+      if (keyword.length === 0) {
+        return ok([]);
+      }
+
+      const keywordConditions: Prisma.RuleWhereInput[] = [
+        { code: { contains: keyword } },
+        { title: { contains: keyword } },
+        { description: { contains: keyword } },
+      ];
+
       const where: Prisma.RuleWhereInput = {
-        OR: [
-          { code: { contains: query } },
-          { title: { contains: query } },
-          { description: { contains: query } },
-          { tags: { contains: query } },
-        ],
+        OR: keywordConditions,
       };
+
+      if (filter?.tags && filter.tags.length > 0) {
+        const tagConditions: Prisma.RuleWhereInput[] = filter.tags.map((tag) => ({
+          tags: { contains: `"${tag}"` },
+        }));
+        where.OR = [...keywordConditions, ...tagConditions];
+      }
 
       // Apply additional filters
       if (filter?.status) {

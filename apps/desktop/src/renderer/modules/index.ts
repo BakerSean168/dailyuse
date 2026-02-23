@@ -137,9 +137,6 @@ export {
 // Setting Module
 // ============================================================
 export {
-  // Application Service
-  SettingApplicationService,
-  settingApplicationService,
   // Hooks
   useAppSettings,
   // Types

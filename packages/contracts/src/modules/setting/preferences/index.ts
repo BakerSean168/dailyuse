@@ -20,7 +20,6 @@ export type {
 
 export {
   getDefaultPreferences,
-  createDefaultPreferences,
   PREFERENCE_CATEGORIES,
   type PreferenceCategory,
 } from './defaults';

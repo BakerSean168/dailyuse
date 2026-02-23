@@ -22,8 +22,3 @@ export type PreferenceCategory = keyof UserSettingPreferences;
 export function getDefaultPreferences(): UserSettingPreferences {
   return UserPreferencesSchema.parse({});
 }
-
-/**
- * @deprecated Use getDefaultPreferences() instead
- */
-export const createDefaultPreferences = getDefaultPreferences;

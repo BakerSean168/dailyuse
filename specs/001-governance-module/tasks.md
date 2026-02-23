@@ -270,26 +270,26 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Tests for User Story 3 (OPTIONAL) ⚠️
 
-- [ ] T118 [P] [US3] Unit test for SearchRulesUseCase relevance scoring in packages/governance/src/application-server/use-cases/queries/__tests__/search-rules.use-case.spec.ts
+- [X] T118 [P] [US3] Unit test for SearchRulesUseCase relevance scoring in packages/governance/src/application-server/use-cases/queries/__tests__/search-rules.use-case.spec.ts
 - [ ] T119 [P] [US3] Contract test for GET /api/governance/rules/search endpoint in packages/governance/src/__tests__/governance-search.routes.spec.ts
 
 ### Implementation for User Story 3 Server
 
 **Application Layer - CQRS Query** (packages/governance/src/application-server/use-cases/queries/)
 
-- [ ] T120 [US3] Create SearchRulesUseCase class with execute(query, filters, cx) method in packages/governance/src/application-server/use-cases/queries/search-rules.use-case.ts
-- [ ] T121 [US3] Add relevance scoring logic (title exact > partial > code > description > tags) with status weighting (Active > Draft > Deprecated) in packages/governance/src/application-server/use-cases/queries/search-rules.use-case.ts
-- [ ] T122 [P] [US3] Export SearchRulesUseCase from packages/governance/src/application-server/use-cases/queries/index.ts and packages/governance/src/application-server/index.ts
+- [x] T120 [US3] Create SearchRulesUseCase class with execute(query, filters, cx) method in packages/governance/src/application-server/use-cases/queries/search-rules.use-case.ts
+- [x] T121 [US3] Add relevance scoring logic (title exact > partial > code > description > tags) with status weighting (Active > Draft > Deprecated) in packages/governance/src/application-server/use-cases/queries/search-rules.use-case.ts
+- [x] T122 [P] [US3] Export SearchRulesUseCase from packages/governance/src/application-server/use-cases/queries/index.ts and packages/governance/src/application-server/index.ts
 
 **Infrastructure Layer - Repository** (packages/governance/src/infrastructure-server/adapters/prisma/)
 
-- [ ] T123 [US3] Implement RulePrismaRepository.search() with Prisma keyword matching (contains on title/code/description) in packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts
+- [x] T123 [US3] Implement RulePrismaRepository.search() with Prisma keyword matching (contains on title/code/description) in packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts
 
 **Controller & API Wiring** (packages/governance/src/)
 
-- [ ] T124 [US3] Add searchRules method to GovernanceUseCases interface and GovernanceController in packages/governance/src/controllers/governance.controller.ts
-- [ ] T125 [US3] Instantiate SearchRulesUseCase in GovernanceModule composition root in packages/governance/src/infrastructure-server/governance.module.ts
-- [ ] T126 [US3] Wire searchRules handler in GovernanceApiModule and register GET /search route via RouteRegistrar in packages/governance/src/api/module.ts and packages/governance/src/api/routes.ts
+- [x] T124 [US3] Add searchRules method to GovernanceUseCases interface and GovernanceController in packages/governance/src/controllers/governance.controller.ts
+- [x] T125 [US3] Instantiate SearchRulesUseCase in GovernanceModule composition root in packages/governance/src/infrastructure-server/governance.module.ts
+- [x] T126 [US3] Wire searchRules handler in GovernanceApiModule and register GET /search route via RouteRegistrar in packages/governance/src/api/module.ts and packages/governance/src/api/routes.ts
 
 ### Already Completed (Web UI - Search) ✅
 
@@ -318,23 +318,23 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Implementation for User Story 4 RBAC Verification
 
-- [ ] T134 [US4] Verify requireRole middleware enforces TechLead/Architect on POST/PUT/PATCH/DELETE routes in packages/governance/src/api/routes.ts
-- [ ] T135 [US4] Verify all GET routes (list, get, by-code, revisions, search) allow any authenticated user in packages/governance/src/api/routes.ts
+- [x] T134 [US4] Verify requireRole middleware enforces TechLead/Architect on POST/PUT/PATCH/DELETE routes in packages/governance/src/api/routes.ts
+- [x] T135 [US4] Verify all GET routes (list, get, by-code, revisions, search) allow any authenticated user in packages/governance/src/api/routes.ts
 
 ### Implementation for User Story 4 Revision Integration
 
-- [ ] T136 [US4] Verify RuleRevision records created on Rule.create() in CreateRuleUseCase in packages/governance/src/application-server/use-cases/commands/create-rule.use-case.ts
-- [ ] T137 [US4] Verify RuleRevision records created on Rule.update() in UpdateRuleUseCase in packages/governance/src/application-server/use-cases/commands/update-rule.use-case.ts
-- [ ] T138 [US4] Verify revision save flow in RulePrismaRepository uses Prisma transaction for atomic Rule+Revision persistence in packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts
+- [x] T136 [US4] Verify RuleRevision records created on Rule.create() in CreateRuleUseCase in packages/governance/src/application-server/use-cases/commands/create-rule.use-case.ts
+- [x] T137 [US4] Verify RuleRevision records created on Rule.update() in UpdateRuleUseCase in packages/governance/src/application-server/use-cases/commands/update-rule.use-case.ts
+- [x] T138 [US4] Verify revision save flow in RulePrismaRepository uses Prisma transaction for atomic Rule+Revision persistence in packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts
 
 ### Implementation for User Story 4 Web UI
 
 **Web UI - Audit Trail** (apps/web/src/modules/governance/)
 
-- [ ] T139 [P] [US4] Add governanceStore.fetchRevisions(ruleId) action in apps/web/src/modules/governance/stores/governance-store.ts
-- [ ] T140 [US4] Implement RevisionHistoryView component with timeline in apps/web/src/modules/governance/views/RevisionHistoryView.vue
-- [ ] T141 [US4] Add RevisionCard component showing author/timestamp/changed fields/diff in apps/web/src/modules/governance/components/RevisionCard.vue
-- [ ] T142 [US4] Wire RevisionHistoryView to router at /governance/:id/history in apps/web/src/router/governance-routes.ts
+- [x] T139 [P] [US4] Add governanceStore.fetchRevisions(ruleId) action in apps/web/src/modules/governance/stores/governance-store.ts
+- [x] T140 [US4] Implement RevisionHistoryView component with timeline in apps/web/src/modules/governance/views/RevisionHistoryView.vue
+- [x] T141 [US4] Add RevisionCard component showing author/timestamp/changed fields/diff in apps/web/src/modules/governance/components/RevisionCard.vue
+- [x] T142 [US4] Wire RevisionHistoryView to router at /governance/:id/history in apps/web/src/router/governance-routes.ts
 
 **Checkpoint**: User Story 4 complete - RBAC enforced, audit trail visible
 
@@ -346,13 +346,13 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 > **NOTE**: Research revealed: (1) `src/domain/` is a pre-refactoring duplicate of `domain-server/` + `domain-shared/`, (2) `RuleClientService` methods are all TODO stubs, (3) two test files use outdated schema shapes, (4) pre-existing typecheck errors in routes.ts and controller.
 
-- [ ] T143 [P] Remove legacy domain/ directory (duplicates domain-server/ and domain-shared/) in packages/governance/src/domain/
-- [ ] T144 Remove domain/ re-export from packages/governance/src/index.ts barrel export
-- [ ] T145 Wire RuleClientService methods to delegate to IRuleApiClient port (replace all TODO stubs returning error/empty) in packages/governance/src/application-client/services/rule-client-service.ts
-- [ ] T146 [P] Fix or remove outdated contract test file (uses old schema shape with `examples: { good, bad }`) in packages/governance/src/contracts/api/__tests__/rule-crud.dto.test.ts
-- [ ] T147 [P] Fix or remove outdated legacy domain Rule.create test in packages/governance/src/domain/aggregates/__tests__/rule.test.ts
-- [ ] T148 [P] Fix pre-existing typecheck errors (unknown type assignments, number|undefined→number) in packages/governance/src/api/routes.ts
-- [ ] T149 Fix pre-existing typecheck error (duplicate ruleId property) in packages/governance/src/controllers/governance.controller.ts
+- [x] T143 [P] Remove legacy domain/ directory (duplicates domain-server/ and domain-shared/) in packages/governance/src/domain/
+- [x] T144 Remove domain/ re-export from packages/governance/src/index.ts barrel export
+- [x] T145 Wire RuleClientService methods to delegate to IRuleApiClient port (replace all TODO stubs returning error/empty) in packages/governance/src/application-client/services/rule-client-service.ts
+- [x] T146 [P] Fix or remove outdated contract test file (uses old schema shape with `examples: { good, bad }`) in packages/governance/src/contracts/api/__tests__/rule-crud.dto.test.ts
+- [x] T147 [P] Fix or remove outdated legacy domain Rule.create test in packages/governance/src/domain/aggregates/__tests__/rule.test.ts
+- [x] T148 [P] Fix pre-existing typecheck errors (unknown type assignments, number|undefined→number) in packages/governance/src/api/routes.ts
+- [x] T149 Fix pre-existing typecheck error (duplicate ruleId property) in packages/governance/src/controllers/governance.controller.ts
 
 **Checkpoint**: Codebase clean — no legacy duplication, all client services wired, tests aligned with current schemas
 
@@ -368,13 +368,13 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Implementation for Desktop UI
 
-- [ ] T150 Create GovernanceElectronModule entry point (mirror AuthenticationElectronModule pattern) in packages/governance/src/electron-entry/index.ts
-- [ ] T151 [P] Create Zustand governanceStore in apps/desktop/src/renderer/stores/governance-store.ts
-- [ ] T152 [P] Implement RuleListView component (React) in apps/desktop/src/renderer/views/RuleListView.tsx
-- [ ] T153 [P] Implement RuleDetailView component (React) in apps/desktop/src/renderer/views/RuleDetailView.tsx
-- [ ] T154 [P] Add RuleCard component with shadcn/ui in apps/desktop/src/renderer/components/RuleCard.tsx
-- [ ] T155 [P] Add CodeSnippetView component with syntax highlighting in apps/desktop/src/renderer/components/CodeSnippetView.tsx
-- [ ] T156 Wire desktop views to Electron router in apps/desktop/src/renderer/router.tsx
+- [x] T150 Create GovernanceElectronModule entry point (mirror AuthenticationElectronModule pattern) in packages/governance/src/electron-entry/index.ts
+- [x] T151 [P] Create Zustand governanceStore in apps/desktop/src/renderer/stores/governance-store.ts
+- [x] T152 [P] Implement RuleListView component (React) in apps/desktop/src/renderer/views/RuleListView.tsx
+- [x] T153 [P] Implement RuleDetailView component (React) in apps/desktop/src/renderer/views/RuleDetailView.tsx
+- [x] T154 [P] Add RuleCard component with shadcn/ui in apps/desktop/src/renderer/components/RuleCard.tsx
+- [x] T155 [P] Add CodeSnippetView component with syntax highlighting in apps/desktop/src/renderer/components/CodeSnippetView.tsx
+- [x] T156 Wire desktop views to Electron router in apps/desktop/src/renderer/router.tsx
 
 **Checkpoint**: Desktop UI complete (optional)
 
@@ -386,26 +386,26 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Seed Data
 
-- [ ] T157 [P] Create 5 seed rules (Entity Props Pattern, No Logic in DTOs, Layer Isolation, Value Object Collections, Factory Method Pattern) in packages/governance/src/infrastructure-server/seed/seed-data.ts
-- [ ] T158 [P] Implement seed script execution entry point in packages/governance/package.json scripts
+- [x] T157 [P] Create 5 seed rules (Entity Props Pattern, No Logic in DTOs, Layer Isolation, Value Object Collections, Factory Method Pattern) in packages/governance/src/infrastructure-server/seed/seed-data.ts
+- [x] T158 [P] Implement seed script execution entry point in packages/governance/package.json scripts
 
 ### Quality & Compliance
 
-- [ ] T159 Run dogfooding compliance checklist from quickstart.md against governance source code
-- [ ] T160 [P] Add API error handling for duplicate codes, invalid transitions in packages/governance/src/controllers/governance.controller.ts
-- [ ] T161 [P] Implement governance initialization event handlers (replace stub log messages) in packages/governance/src/api/initialization.ts
-- [ ] T162 Code cleanup: Remove unused imports, fix linting issues across packages/governance/src/
-- [ ] T163 Security review: Validate RBAC middleware coverage, check for injection risks in search query handling
+- [x] T159 Run dogfooding compliance checklist from quickstart.md against governance source code
+- [x] T160 [P] Add API error handling for duplicate codes, invalid transitions in packages/governance/src/controllers/governance.controller.ts
+- [x] T161 [P] Implement governance initialization event handlers (replace stub log messages) in packages/governance/src/api/initialization.ts
+- [x] T162 Code cleanup: Remove unused imports, fix linting issues across packages/governance/src/
+- [x] T163 Security review: Validate RBAC middleware coverage, check for injection risks in search query handling
 
 ### Documentation
 
-- [ ] T164 [P] Update main documentation index in docs/README.md to reference governance module
-- [ ] T165 [P] Create governance module user guide in docs/modules/governance/user-guide.md
+- [x] T164 [P] Update main documentation index in docs/README.md to reference governance module
+- [x] T165 [P] Create governance module user guide in docs/modules/governance/user-guide.md
 
 ### UX Enhancement
 
-- [ ] T166 [P] Add performance monitoring for search (<200ms) and detail view (<500ms) in apps/web/src/modules/governance/composables/use-performance-monitor.ts
-- [ ] T167 [P] Add keyboard shortcuts (j/k for navigation) in apps/web/src/modules/governance/views/GovernanceListView.vue
+- [x] T166 [P] Add performance monitoring for search (<200ms) and detail view (<500ms) in apps/web/src/modules/governance/composables/use-performance-monitor.ts
+- [x] T167 [P] Add keyboard shortcuts (j/k for navigation) in apps/web/src/modules/governance/views/GovernanceListView.vue
 
 ---
 

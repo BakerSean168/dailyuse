@@ -18,6 +18,7 @@ import {
   DeleteRuleSchema,
   GetRuleSchema,
   ListRulesQuerySchema,
+  SearchRulesQuerySchema,
   GetRuleRevisionsQuerySchema,
 } from '../contracts';
 import { formatZodErrors } from '@dailyuse/utils/result';
@@ -33,6 +34,8 @@ import type {
   GetRuleRevisionsRes,
   ListRulesQuery,
   ListRulesRes,
+  SearchRulesQuery,
+  SearchRulesRes,
   UpdateRuleReq,
   UpdateRuleRes,
 } from '../contracts';
@@ -45,11 +48,48 @@ export interface GovernanceUseCases {
   deleteRule: (req: DeleteRuleReq, cx: ExecutionContext) => Promise<Result<DeleteRuleRes>>;
   getRule: (req: GetRuleReq) => Promise<Result<GetRuleRes>>;
   listRules: (query: ListRulesQuery) => Promise<Result<ListRulesRes>>;
+  searchRules: (
+    query: string,
+    filters: Omit<SearchRulesQuery, 'query'>,
+    cx?: ExecutionContext,
+  ) => Promise<Result<SearchRulesRes>>;
   getRevisions: (query: GetRuleRevisionsQuery) => Promise<Result<GetRuleRevisionsRes>>;
 }
 
 export class GovernanceController {
   constructor(private readonly useCases: GovernanceUseCases) {}
+
+  private normalizeRuleMutationError<T>(result: Result<T>): Result<T> {
+    if (result.ok) {
+      return result;
+    }
+
+    const message = result.error.message ?? '';
+
+    if (result.error.code === 'CONFLICT' && /code|duplicate|exists/i.test(message)) {
+      return fail({
+        code: 'DUPLICATE_CODE',
+        message: '规则编码重复，请使用唯一 code',
+        details: result.error.details,
+      });
+    }
+
+    if (
+      (result.error.code === 'BUSINESS_ERROR' || result.error.code === 'VALIDATION_ERROR')
+      && /transition|cannot transition|deprecat|reactivat|draft|active|status/i.test(message)
+    ) {
+      return fail({
+        code: 'INVALID_TRANSITION',
+        message: '规则状态流转不合法',
+        details: {
+          cause: message,
+          ...(result.error.details ? { meta: result.error.details } : {}),
+        },
+      });
+    }
+
+    return result;
+  }
 
   /** Convert standard Context to Governance ExecutionContext */
   private toExecutionContext(ctx: Context): ExecutionContext {
@@ -65,7 +105,9 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createRule(parsed.data, this.toExecutionContext(ctx));
+    return this.normalizeRuleMutationError(
+      await this.useCases.createRule(parsed.data, this.toExecutionContext(ctx)),
+    );
   }
 
   async updateRule(id: string, input: UpdateRuleReq, ctx: Context): Promise<Result<UpdateRuleRes>> {
@@ -77,7 +119,9 @@ export class GovernanceController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateRule(id, parsed.data, this.toExecutionContext(ctx));
+    return this.normalizeRuleMutationError(
+      await this.useCases.updateRule(id, parsed.data, this.toExecutionContext(ctx)),
+    );
   }
 
   async deleteRule(id: string, ctx: Context): Promise<Result<DeleteRuleRes>> {
@@ -126,6 +170,21 @@ export class GovernanceController {
       });
     }
     return this.useCases.listRules(parsed.data);
+  }
+
+  async searchRules(query: SearchRulesQuery, ctx?: Context): Promise<Result<SearchRulesRes>> {
+    const parsed = SearchRulesQuerySchema.safeParse(query);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    const { query: keyword, ...filters } = parsed.data;
+    const executionContext = ctx ? this.toExecutionContext(ctx) : undefined;
+    return this.useCases.searchRules(keyword, filters, executionContext);
   }
 
   async getRevisions(ruleId: string, query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {

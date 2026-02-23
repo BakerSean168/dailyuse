@@ -9,6 +9,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { getDefaultPreferences, type UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 // ============ Types ============
 // 本地扁平化设置类型（用于 UI 组件）
@@ -52,23 +53,7 @@ export interface SettingStateActions {
 
 type SettingStore = SettingState & SettingStateActions;
 
-const defaultSettings: AppSettings = {
-  language: 'zh-CN',
-  autoStart: false,
-  minimizeToTray: true,
-  theme: 'system',
-  accentColor: '#3b82f6',
-  enableNotifications: true,
-  notificationSound: true,
-  autoSync: true,
-  syncInterval: 5,
-  shortcuts: {
-    'newGoal': 'Ctrl+Shift+G',
-    'newTask': 'Ctrl+Shift+T',
-    'newReminder': 'Ctrl+Shift+R',
-    'search': 'Ctrl+K',
-  },
-};
+const defaultSettings: AppSettings = toAppSettings(getDefaultPreferences());
 
 const initialState: SettingState = {
   settings: defaultSettings,
@@ -104,3 +89,25 @@ export const useSettingStore = create<SettingStore>()(
 
 export const useSettings = () => useSettingStore((state) => state.settings);
 export const useTheme = () => useSettingStore((state) => state.settings.theme);
+
+export function toAppSettings(preferences: UserSettingPreferences): AppSettings {
+  return {
+    language: preferences.locale.language === 'en-US' ? 'en-US' : 'zh-CN',
+    autoStart: false,
+    minimizeToTray: true,
+    theme: toThemeMode(preferences.appearance.theme),
+    accentColor: preferences.appearance.accentColor,
+    enableNotifications: preferences.notification.push,
+    notificationSound: preferences.notification.sound,
+    autoSync: true,
+    syncInterval: 5,
+    shortcuts: preferences.shortcuts.custom,
+  };
+}
+
+function toThemeMode(theme: string): AppSettings['theme'] {
+  if (theme === 'light' || theme === 'dark') {
+    return theme;
+  }
+  return 'system';
+}

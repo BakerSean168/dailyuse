@@ -54,6 +54,16 @@ export const governanceRoutes: RouteRecordRaw[] = [
         },
         props: true,
       },
+      {
+        path: ':id/history',
+        name: 'governance-history',
+        component: () => import('../views/RevisionHistoryView.vue'),
+        meta: {
+          title: '修订历史',
+          requiresAuth: true,
+        },
+        props: true,
+      },
     ],
   },
 ];

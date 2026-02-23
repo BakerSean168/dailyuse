@@ -4,7 +4,9 @@
  */
 
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
+import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import { Rule } from '@/domain-server/aggregates/rule';
+import { RuleRevision } from '@/domain-server/entities/rule-revision';
 import { RuleSeverity } from '@/domain-shared/value-objects/rule-severity';
 import { Language } from '@/domain-shared/value-objects/language';
 import type { Language as RuleLanguage } from '@/domain-shared/value-objects/language';
@@ -29,7 +31,10 @@ export interface ExecutionContext {
  * Dependencies injected via constructor (standard dependency injection)
  */
 export class CreateRuleUseCase {
-  constructor(private readonly ruleRepository: IRuleRepository) {}
+  constructor(
+    private readonly ruleRepository: IRuleRepository,
+    private readonly revisionRepository: IRuleRevisionRepository,
+  ) {}
 
   /**
    * Execute: Creates new rule in Draft status
@@ -106,8 +111,43 @@ export class CreateRuleUseCase {
 
     const rule = ruleResult.data;
 
-    // Persist to repository
-    const saveResult = await this.ruleRepository.save(rule);
+    const revisionCountResult = await this.revisionRepository.countByRuleId(rule.id);
+    if (!revisionCountResult.ok) {
+      return error(revisionCountResult.error.code, revisionCountResult.error.message, revisionCountResult.error.details);
+    }
+
+    const revision = RuleRevision.create({
+      ruleId: rule.id,
+      revisionNumber: revisionCountResult.data + 1,
+      authorId: cx.identityId,
+      changedFields: [
+        'code',
+        'title',
+        'description',
+        'severity',
+        'status',
+        'tags',
+        'goodExamples',
+        'badExamples',
+        'liveReferenceLocation',
+      ],
+      previousValues: {},
+      newValues: {
+        code: rule.code,
+        title: rule.title,
+        description: rule.description,
+        severity: rule.severity,
+        status: rule.status,
+        tags: rule.tags.map((tag) => tag.toDTO()),
+        goodExamples: rule.goodExamples.map((example) => example.toDTO()),
+        badExamples: rule.badExamples.map((example) => example.toDTO()),
+        liveReferenceLocation: rule.liveReferenceLocation,
+      },
+      changeType: 'Created',
+    });
+
+    // Persist rule + revision atomically
+    const saveResult = await this.ruleRepository.saveWithRevision(rule, revision);
     if (!saveResult.ok) {
       return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
     }
