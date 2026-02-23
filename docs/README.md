@@ -136,6 +136,7 @@ docs/
 �?  └── configuration/      # 配置参�?
 ├── examples/               # 💡 示例代码（可运行�?
 ├── contributing/           # 🤝 贡献指南
+├── governance/             # 🏛 Governance 活文档（模式索引与模式笔记）
 ├── concepts/               # 💭 概念文档（DDD、事件驱动）
 ├── packages/               # 📦 包文档（共享包说明）
 ├── ops/                    # 🔧 运维文档（Docker、部署）
