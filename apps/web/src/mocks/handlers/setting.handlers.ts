@@ -6,10 +6,7 @@
  */
 
 import { http, HttpResponse } from 'msw';
-import {
-  createMockUserSetting,
-  createMockAppConfig,
-} from '@dailyuse/contracts/mocks';
+import { createMockUserSetting } from '@dailyuse/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const BASE = `${API_BASE}/settings`;
@@ -28,18 +25,16 @@ export const settingHandlers = [
     });
   }),
 
-  // PUT /api/v1/settings — update user settings (category-based)
-  http.put(BASE, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+  // PATCH /api/v1/settings/:category — patch a category
+  http.patch(`${BASE}/:category`, async ({ params, request }) => {
+    const category = params.category as string;
+    const patch = (await request.json()) as Record<string, unknown>;
 
-    // Merge category-level partial updates into mock
-    for (const category of ['appearance', 'locale', 'workflow', 'privacy', 'notification', 'editor', 'shortcuts', 'experimental', 'ui'] as const) {
-      if (body[category] && typeof body[category] === 'object') {
-        (mockUserSetting as any)[category] = {
-          ...(mockUserSetting as any)[category],
-          ...(body[category] as Record<string, unknown>),
-        };
-      }
+    if (mockUserSetting.preferences && (mockUserSetting.preferences as any)[category]) {
+      (mockUserSetting.preferences as any)[category] = {
+        ...(mockUserSetting.preferences as any)[category],
+        ...patch,
+      };
     }
     mockUserSetting = { ...mockUserSetting, updatedAt: Date.now() };
 
@@ -71,17 +66,6 @@ export const settingHandlers = [
       code: 200,
       message: 'Success',
       data: createMockUserSetting(),
-      timestamp: Date.now(),
-    });
-  }),
-
-  // GET /api/v1/settings/app-config — get app config
-  http.get(`${BASE}/app-config`, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: createMockAppConfig(),
       timestamp: Date.now(),
     });
   }),

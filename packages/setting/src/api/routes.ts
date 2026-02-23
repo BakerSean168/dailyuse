@@ -1,11 +1,9 @@
 /**
  * Setting API Routes — Unified Route + OpenAPI Registration
  *
- * 路由定义与 OpenAPI 文档在同一处注册，消除"双重记账"问题。
- *
  * Routes:
  *   GET    /              — 获取用户设置
- *   PUT    /              — 更新用户设置 (UpdateUserSettingSchema)
+ *   PATCH  /:category     — 按分类更新用户设置 (PatchUserSettingSchema)
  *   POST   /reset         — 重置用户设置 (ResetUserSettingSchema)
  *   POST   /export        — 导出设置 (ExportSettingsSchema)
  *   POST   /import        — 导入设置 (ImportSettingsSchema)
@@ -22,7 +20,7 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import {
-  UpdateUserSettingSchema,
+  PatchUserSettingSchema,
   ResetUserSettingSchema,
   ExportSettingsSchema,
   ImportSettingsSchema,
@@ -69,20 +67,23 @@ export function registerSettingRoutes(
     (_req, ctx) => controller.getUserSetting(ctx),
   );
 
-  // PUT / — 更新用户设置
+  // PATCH /:category — 按分类更新用户设置
   r.route(
     {
-      method: 'put',
-      path: '/',
-      summary: '更新用户设置',
-      request: { body: { content: { 'application/json': { schema: UpdateUserSettingSchema } } } },
+      method: 'patch',
+      path: '/:category',
+      summary: '按分类更新用户设置',
+      request: { body: { content: { 'application/json': { schema: z.record(z.string(), z.unknown()) } } } },
       responses: {
         200: successResponse(UserSettingResponseSchema, '更新成功'),
         400: errorResponse('参数错误'),
       },
     },
     [auth],
-    (req, ctx) => controller.updateUserSetting(req.body, ctx),
+    (req, ctx) => controller.patchUserSetting(
+      { category: req.params.category as string, patch: req.body },
+      ctx,
+    ),
   );
 
   // POST /reset — 重置用户设置

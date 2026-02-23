@@ -6,8 +6,6 @@
 
 // IDs
 export { SettingId } from '../../domain-shared/value-objects/setting-id';
-export { SettingEntryId } from '../../domain-shared/value-objects/setting-entry-id';
-export { SettingGroupId } from '../../domain-shared/value-objects/setting-group-id';
 
 // Enum-like Value Objects
 export { SettingValueType } from '../../domain-shared/value-objects/setting-value-type';

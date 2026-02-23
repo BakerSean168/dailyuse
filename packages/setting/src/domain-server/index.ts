@@ -31,7 +31,6 @@ export {
   UnknownSettingKeyError,
   UnknownSettingCategoryError,
   SettingValidationError,
-  UserSettingDeletedError,
 } from './errors';
 
 // ============ 仓储接口 ============
