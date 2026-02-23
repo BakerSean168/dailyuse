@@ -9,13 +9,17 @@ import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
 import type {
   GeneratedGoalDraft,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerateGoalResultDTO,
+  GenerateKeyResultsResultDTO,
   KeyResultPreview,
   GoalCategory,
   AIUsageQuotaServerDTO,
 } from '@dailyuse/contracts/ai';
+
+// Aliases for compatibility
+type GenerateGoalResponse = GenerateGoalResultDTO;
+type GenerateGoalWithKRsResponse = GenerateGoalResultDTO;
+type GenerateKeyResultsResponse = GenerateKeyResultsResultDTO;
 
 const logger = createLogger('GoalGenerationApplicationService');
 

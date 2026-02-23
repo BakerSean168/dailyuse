@@ -1,11 +1,11 @@
 /**
  * Send Message Service
  *
- * 发送消息应用服�?
+ * 发送消息应用服?
  */
 
-import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import { Message } from '../../domain-server/entities/message';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import { Message } from '../../../domain-server/entities/message';
 import type { SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
@@ -35,7 +35,7 @@ export class SendMessage {
       content: input.content,
     });
 
-    // 3. 添加消息到对�?
+    // 3. 添加消息到对?
     conversation.addMessage(message);
 
     // 4. 保存

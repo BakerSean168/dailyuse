@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AIGenerationTask Prisma Repository
  *
  * Prisma implementation of IAIGenerationTaskRepository.
@@ -7,7 +7,8 @@
 
 import type { PrismaClient, AiGenerationTask as PrismaAiGenerationTask } from '@dailyuse/database';
 import type { IAIGenerationTaskRepository } from '../../../domain-server';
-import type { AIGenerationTaskServerDTO, TaskStatus, GenerationTaskType } from '@dailyuse/contracts/ai';
+import type { AIGenerationTaskServerDTO } from '@dailyuse/contracts/ai';
+import { TaskStatus, GenerationTaskType } from '@dailyuse/contracts/ai';
 import { AIProvider, AIModel } from '@dailyuse/contracts/ai';
 
 /**
@@ -150,8 +151,8 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       id: row.id,
       identityId: row.identityId,
       conversationId: inputMeta.conversationId ?? null,
-      type: row.taskType,
-      status: row.status,
+      type: row.taskType as GenerationTaskType,
+      status: row.status as TaskStatus,
       provider: inputMeta.provider ?? AIProvider.OpenAI,
       model: inputMeta.model ?? AIModel.Gpt4Turbo,
       input: inputData,
