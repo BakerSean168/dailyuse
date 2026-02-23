@@ -32,13 +32,13 @@ export const useUserSettingStore = defineStore('user-setting', {
   getters: {
     /** 获取指定分类的偏好设置 */
     getCategory: (state) => <K extends PreferenceCategory>(category: K): UserSettingPreferences[K] | undefined =>
-      state.userSetting?.[category],
+      state.userSetting?.preferences?.[category],
 
     /** 按 dot-notation key 获取值 (e.g., 'appearance.theme') */
     getValue: (state) => (key: string): unknown => {
-      if (!state.userSetting) return undefined;
+      if (!state.userSetting?.preferences) return undefined;
       const [category, field] = key.split('.', 2);
-      const cat = state.userSetting[category as PreferenceCategory];
+      const cat = state.userSetting.preferences[category as PreferenceCategory];
       return cat ? (cat as Record<string, unknown>)[field] : undefined;
     },
   },
