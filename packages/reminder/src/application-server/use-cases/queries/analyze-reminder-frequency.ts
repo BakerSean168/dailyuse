@@ -6,6 +6,7 @@
 
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
 import type { IReminderResponseRepository } from '@/domain-server/repositories/IReminderResponseRepository';
+import type { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
 import { ResponseMetrics } from '@/domain-server/value-objects';
 
 /**
@@ -79,14 +80,24 @@ export class AnalyzeReminderFrequency {
       throw new Error(`Template ${templateId} not found`);
     }
 
+    return this.analyzeTemplate(template, lookbackDays);
+  }
+
+  /**
+   * 分析单个提醒模板的效果 (内部实现)
+   */
+  private async analyzeTemplate(
+    template: ReminderTemplate,
+    lookbackDays: number,
+  ): Promise<ResponseMetrics | null> {
     // 2. 查询响应记录
     const lookbackMs = lookbackDays * 24 * 60 * 60 * 1000;
-    const cutoffTime = BigInt(Date.now() - lookbackMs);
+    // const cutoffTime = BigInt(Date.now() - lookbackMs);
 
     // TODO: 需要运行 Prisma migration 后才能使用 reminderResponse
     // const records = await this.prisma.reminderResponse.findMany({
     //   where: {
-    //     templateId: templateId,
+    //     templateId: template.id,
     //     timestamp: { gte: cutoffTime },
     //   },
     // });
@@ -114,7 +125,7 @@ export class AnalyzeReminderFrequency {
     let totalEffectivenessScore = 0;
 
     for (const template of templates) {
-      const metrics = await this.execute(template.id, lookbackDays);
+      const metrics = await this.analyzeTemplate(template, lookbackDays);
       if (metrics) {
         const report = this.generateEffectivenessReport(template.id, metrics);
         reports.push(report);
