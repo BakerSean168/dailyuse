@@ -13,7 +13,7 @@ export interface ValidationRuleDTO {
   min: number | null;
   max: number | null;
   pattern: string | null;
-  enum: any[] | null;
+  enum: unknown[] | null;
   custom: string | null;
 }
 
@@ -25,7 +25,7 @@ export interface ValidationRuleClientDTO {
   min: number | null;
   max: number | null;
   pattern: string | null;
-  enum: any[] | null;
+  enum: unknown[] | null;
   custom: string | null;
 }
 
@@ -51,7 +51,7 @@ export interface ValidationRule {
   min: number | null;
   max: number | null;
   pattern: string | null;
-  enum: any[] | null;
+  enum: unknown[] | null;
   custom: string | null;
 }
 
@@ -63,7 +63,7 @@ export interface ValidationRuleClient {
   min: number | null;
   max: number | null;
   pattern: string | null;
-  enum: any[] | null;
+  enum: unknown[] | null;
   custom: string | null;
 }
 

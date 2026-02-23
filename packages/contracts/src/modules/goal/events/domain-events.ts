@@ -49,7 +49,7 @@ export interface GoalAggregateRefreshEvent {
     keyResultId?: string;
     goalRecordId?: string;
     reviewId?: string;
-    changeData?: any;
+    changeData?: unknown;
   };
 }
 

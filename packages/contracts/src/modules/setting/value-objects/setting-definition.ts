@@ -3,7 +3,7 @@ import type { SettingCategory } from './setting-category';
 import type { SettingValueType } from './setting-value-type';
 import type { UIInputType } from './ui-input-type';
 
-export interface SettingDefinition<T = any> {
+export interface SettingDefinition<T = unknown> {
   key: string;
   name: string;
   description?: string;
@@ -25,7 +25,7 @@ export interface SettingDefinition<T = any> {
 export interface SettingDefinitionDTO {
   key: string;
   category: SettingCategory;
-  defaultValue: any;
+  defaultValue: unknown;
   isSyncable: boolean;
   description?: string;
 }

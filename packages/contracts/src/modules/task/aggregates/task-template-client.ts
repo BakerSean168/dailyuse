@@ -46,8 +46,8 @@ export interface TaskTemplateClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-  history?: any[];
-  instances?: any[];
+  history?: unknown[];
+  instances?: unknown[];
 
   parentTaskId: string | null;
   startDate: TransferDate | null;

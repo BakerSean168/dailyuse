@@ -13,8 +13,8 @@ export interface InitializationTask {
   dependencies?: string[]; // 依赖的任务名
   parallel?: boolean; // 同 priority 下是否允许并行（默认 false）
   timeoutMs?: number; // 可选超时（毫秒）
-  initialize: (context?: any) => Promise<void>;
-  cleanup?: (context?: any) => Promise<void>;
+  initialize: (context?: unknown) => Promise<void>;
+  cleanup?: (context?: unknown) => Promise<void>;
 }
 
 export class InitializationManager {
@@ -59,7 +59,7 @@ export class InitializationManager {
   /**
    * 执行指定阶段的所有任务（按 priority 升序）
    */
-  async executePhase(phase: InitializationPhase, context?: any): Promise<void> {
+  async executePhase(phase: InitializationPhase, context?: unknown): Promise<void> {
     console.log(`[init] executePhase start: ${phase}`);
 
     const phaseTasks = Array.from(this.tasks.values())
@@ -99,7 +99,7 @@ export class InitializationManager {
    */
   private async executeTaskWithDependencies(
     task: InitializationTask,
-    context?: any,
+    context?: unknown,
     path: Set<string> = new Set(),
   ): Promise<void> {
     if (this.completedTasks.has(task.name)) return;
@@ -133,7 +133,7 @@ export class InitializationManager {
   /**
    * 执行单个任务（支持 timeout）
    */
-  private async executeTask(task: InitializationTask, context?: any): Promise<void> {
+  private async executeTask(task: InitializationTask, context?: unknown): Promise<void> {
     if (this.completedTasks.has(task.name)) return;
 
     this.runningTasks.add(task.name);
@@ -166,7 +166,7 @@ export class InitializationManager {
    * 清理指定阶段的任务（按 priority 逆序）
    * 清理遇错不会中止其它清理
    */
-  async cleanupPhase(phase: InitializationPhase, context?: any): Promise<void> {
+  async cleanupPhase(phase: InitializationPhase, context?: unknown): Promise<void> {
     console.log(`[init] cleanupPhase start: ${phase}`);
     const phaseTasks = Array.from(this.tasks.values())
       .filter((t) => t.phase === phase && typeof t.cleanup === 'function')

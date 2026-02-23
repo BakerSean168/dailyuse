@@ -133,7 +133,7 @@ export interface UpdateScheduleConfigRequest {
  * 更新任务元数据请求
  */
 export interface UpdateTaskMetadataRequest {
-  readonly payload?: Record<string, any>;
+  readonly payload?: Record<string, unknown>;
   readonly tags?: string[];
   readonly priority?: TaskPriority;
   readonly timeout?: number | null;

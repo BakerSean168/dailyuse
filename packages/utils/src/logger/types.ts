@@ -23,7 +23,7 @@ export type LogLevelString = 'error' | 'warn' | 'info' | 'http' | 'debug';
  * 日志元数据
  */
 export interface LogMetadata {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -44,7 +44,7 @@ export interface LogEntry {
   error?: {
     message: string;
     stack?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -85,19 +85,19 @@ export interface ILogger {
   readonly context: string;
 
   /** DEBUG 级别日志 */
-  debug(message: string, ...meta: any[]): void;
+  debug(message: string, ...meta: unknown[]): void;
 
   /** INFO 级别日志 */
-  info(message: string, ...meta: any[]): void;
+  info(message: string, ...meta: unknown[]): void;
 
   /** HTTP 级别日志 */
-  http(message: string, ...meta: any[]): void;
+  http(message: string, ...meta: unknown[]): void;
 
   /** WARN 级别日志 */
-  warn(message: string, ...meta: any[]): void;
+  warn(message: string, ...meta: unknown[]): void;
 
   /** ERROR 级别日志 */
-  error(message: string, error?: Error | any, ...meta: any[]): void;
+  error(message: string, error?: unknown, ...meta: unknown[]): void;
 
   /** 创建子 Logger */
   child(subContext: string): ILogger;

@@ -12,7 +12,7 @@ import type { TaskPriority } from './task-priority';
  */
 export interface ITaskMetadataServer {
   /** 业务数据（JSON�?*/
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 
   /** 标签列表 */
   tags: string[];
@@ -41,7 +41,7 @@ export interface ITaskMetadataServer {
  */
 export interface ITaskMetadataClient {
   /** 业务数据 */
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 
   /** 标签列表 */
   tags: string[];
@@ -79,7 +79,7 @@ export interface ITaskMetadataClient {
  * Task Metadata Server DTO
  */
 export interface TaskMetadataServerDTO {
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   tags: string[];
   priority: TaskPriority;
   timeout: number | null;
@@ -89,7 +89,7 @@ export interface TaskMetadataServerDTO {
  * Task Metadata Client DTO
  */
 export interface TaskMetadataClientDTO {
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   tags: string[];
   priority: TaskPriority;
   timeout: number | null;

@@ -11,7 +11,7 @@
 export interface ChannelError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 // ============ DTO 定义 ============
@@ -22,7 +22,7 @@ export interface ChannelError {
 export interface ChannelErrorDTO {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 /**

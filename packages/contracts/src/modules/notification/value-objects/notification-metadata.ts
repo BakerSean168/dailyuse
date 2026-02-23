@@ -14,7 +14,7 @@ export interface NotificationMetadata {
   color: string | null;
   sound: string | null;
   badge: number | null;
-  data?: any; // 自定义数据
+  data?: unknown;
 
 }
 
@@ -30,7 +30,7 @@ export interface NotificationMetadataDTO {
   color: string | null;
   sound: string | null;
   badge: number | null;
-  data?: any;
+  data?: unknown;
 }
 
 /**

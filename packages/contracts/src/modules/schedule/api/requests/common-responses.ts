@@ -11,7 +11,7 @@
 export interface ScheduleOperationSuccessResponseDTO {
   readonly ok: boolean;
   readonly message: string;
-  readonly data?: any;
+  readonly data?: unknown;
 }
 
 /**
@@ -21,5 +21,5 @@ export interface ScheduleErrorResponseDTO {
   readonly ok: false;
   readonly error: string;
   readonly code?: string;
-  readonly details?: any;
+  readonly details?: unknown;
 }

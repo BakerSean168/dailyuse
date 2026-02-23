@@ -17,7 +17,7 @@ export interface ScheduleExecutionServerDTO {
   executionTime: number; // epoch ms
   status: ExecutionStatus;
   duration: number | null; // 执行时长（毫秒）
-  result: Record<string, any> | null; // 执行结果（JSON）
+  result: Record<string, unknown> | null; // 执行结果（JSON）
   error: string | null; // 错误信息
   retryCount: number; // 重试次数
   createdAt: number; // epoch ms

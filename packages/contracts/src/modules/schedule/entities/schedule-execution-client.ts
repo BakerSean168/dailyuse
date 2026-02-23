@@ -18,7 +18,7 @@ export interface ScheduleExecutionClientDTO {
   executionTime: TransferDate;
   status: ExecutionStatus;
   duration: number | null;
-  result: Record<string, any> | null;
+  result: Record<string, unknown> | null;
   error: string | null;
   retryCount: number;
   version: number;
