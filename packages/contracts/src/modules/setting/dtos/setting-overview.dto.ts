@@ -1,7 +1,6 @@
-import type { UserSettingClientDTO, AppConfigClientDTO } from '../aggregates';
+import type { UserSettingClientDTO } from '../aggregates';
 
 export interface SettingOverviewDTO {
   readonly userSetting: UserSettingClientDTO;
-  readonly appConfig: AppConfigClientDTO;
   readonly lastSyncedAt: number | null;
 }
