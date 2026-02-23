@@ -8,16 +8,10 @@ import type { IUserSettingRepository } from '@/domain-server/repositories/IUserS
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
-/**
- * Get User Setting
- */
 export class GetUserSetting {
 
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
-  /**
-   * 执行用例
-   */
   async execute(identityId: string): Promise<UserSettingClientDTO> {
     let setting = await this.userSettingRepository.findByIdentityId(identityId);
 

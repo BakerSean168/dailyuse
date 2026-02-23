@@ -1,22 +1,15 @@
 /**
  * Get Default Settings
  *
- * 获取默认设置
+ * 获取默认设置值（不涉及持久化）
  */
 
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
-/**
- * Get Default Settings
- */
 export class GetDefaultSettings {
-
-  /**
-   * 执行用例
-   */
   execute(): UserSettingClientDTO {
-    const defaultSetting = UserSetting.create({ identityId: 'temp-id' });
+    const defaultSetting = UserSetting.create({ identityId: 'defaults' });
     return defaultSetting.toClientDTO();
   }
 }

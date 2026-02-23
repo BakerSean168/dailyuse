@@ -4,14 +4,14 @@
  */
 
 import type Database from 'better-sqlite3';
-import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
-import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
+import { TaskInstance } from '@/domain-server/aggregates/task-instance';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskInstanceId } from '../../../domain-shared/value-objects/task-instance-id';
-import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
+import { TaskInstanceId } from '@/domain-shared/value-objects/task-instance-id';
+import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskTimeConfig } from '../../../domain-server/value-objects';
+import { TaskTimeConfig } from '@/domain-server/value-objects';
 
 export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
   constructor(private db: Database.Database) {}

@@ -1,7 +1,7 @@
 /**
  * Update User Setting
  *
- * 更新用户设置
+ * 更新用户设置 — 支持按分类部分更新
  */
 
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
@@ -11,16 +11,10 @@ import type {
   UpdateUserSettingReq,
 } from '@dailyuse/contracts/setting';
 
-/**
- * Update User Setting
- */
 export class UpdateUserSetting {
 
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
-  /**
-   * 执行用例
-   */
   async execute(identityId: string, updates: Omit<UpdateUserSettingReq, 'id'>): Promise<UserSettingClientDTO> {
     let setting = await this.userSettingRepository.findByIdentityId(identityId);
 
@@ -28,23 +22,40 @@ export class UpdateUserSetting {
       setting = UserSetting.create({ identityId });
     }
 
+    // 按分类应用部分更新
     if (updates.appearance) {
-      setting.setValue('appearance', updates.appearance);
+      setting.updateAppearance(updates.appearance);
     }
     if (updates.locale) {
-      setting.setValue('locale', updates.locale);
+      setting.updateLocale(updates.locale);
     }
     if (updates.workflow) {
-      setting.setValue('workflow', updates.workflow);
+      setting.updateWorkflow(updates.workflow);
     }
     if (updates.privacy) {
-      setting.setValue('privacy', updates.privacy);
+      setting.updatePrivacy(updates.privacy);
+    }
+    if (updates.notification) {
+      setting.updateNotification(updates.notification);
+    }
+    if (updates.editor) {
+      setting.updateEditor(updates.editor);
+    }
+    if (updates.shortcuts) {
+      setting.updateShortcuts(updates.shortcuts);
     }
     if (updates.experimental) {
-      setting.setValue('experimental', updates.experimental);
+      setting.updateExperimental(updates.experimental);
     }
+    if (updates.ui) {
+      setting.updateUI(updates.ui);
+    }
+
+    // 支持通用 entries（逐项 set）
     if (updates.entries) {
-      setting.setValues(updates.entries);
+      for (const [key, value] of Object.entries(updates.entries)) {
+        setting.set(key, value);
+      }
     }
 
     await this.userSettingRepository.save(setting);

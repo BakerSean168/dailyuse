@@ -1,4 +1,4 @@
-import type { PrismaClient, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
+import { Prisma, type PrismaClient, type EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { PrismaEditorWorkspaceMapper } from '../../mappers/prisma-editor-workspace-mapper';
@@ -44,10 +44,11 @@ export class EditorWorkspacePrismaRepository implements IEditorWorkspaceReposito
 
   async save(workspace: EditorWorkspace): Promise<void> {
     const data = this.toPrisma(workspace);
+    const { id: _id, createdAt: _createdAt, ...updateData } = data;
     await this.prisma.editorWorkspace.upsert({
       where: { id: data.id },
       create: data,
-      update: data,
+      update: updateData as Prisma.EditorWorkspaceUncheckedUpdateInput,
     });
   }
 

@@ -7,8 +7,8 @@
 
 import type { ReminderGroup as PrismaReminderGroup } from '@dailyuse/database';
 import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '@dailyuse/contracts/reminder';
-import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
-import { GroupStats } from '../../../domain-server/value-objects';
+import { ReminderGroup } from '@/domain-server/aggregates/reminder-group';
+import { GroupStats } from '@/domain-server/value-objects';
 
 export class PrismaReminderGroupMapper {
   /**

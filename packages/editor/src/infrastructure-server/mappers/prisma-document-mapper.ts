@@ -6,9 +6,9 @@
  */
 
 import type { Document as PrismaDocument } from '@dailyuse/database';
-import { Document } from '../../../domain-server/entities/document';
+import { Document } from '@/domain-server/entities/document';
 import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
-import { DocumentMetadata } from '../../../domain-shared/value-objects/document-metadata';
+import { DocumentMetadata } from '@/domain-shared/value-objects/document-metadata';
 
 export class PrismaDocumentMapper {
   /**

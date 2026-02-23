@@ -6,10 +6,10 @@
  */
 
 import type { PrismaClient, TaskDependency as PrismaTaskDependency } from '@dailyuse/database';
-import type { ITaskDependencyRepository } from '../../../domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
-import { TaskDependency } from '../../../domain-server/aggregates/task-dependency';
+import { TaskDependency } from '@/domain-server/aggregates/task-dependency';
 import { PrismaTaskDependencyMapper } from '../../mappers/prisma-task-dependency-mapper';
 
 export class TaskDependencyPrismaRepository implements ITaskDependencyRepository {

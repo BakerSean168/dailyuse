@@ -4,11 +4,11 @@
  */
 
 import type Database from 'better-sqlite3';
-import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
-import type { ITaskTemplateRepository, TaskFilters } from '../../../domain-server/repositories/ITaskTemplateRepository';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
-import { TaskFolderId } from '../../../domain-shared/value-objects/task-folder-id';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
+import type { ITaskTemplateRepository, TaskFilters } from '@/domain-server/repositories/ITaskTemplateRepository';
+import { TaskTemplateStatus } from '@/domain-shared/value-objects/task-template-status';
+import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
+import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 

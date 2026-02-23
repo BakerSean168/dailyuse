@@ -7,7 +7,7 @@
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient, AuthSession as PrismaAuthSession } from '@dailyuse/database';
+import type { PrismaClient, AuthSession as PrismaAuthSession, Prisma } from '@dailyuse/database';
 import type { IAuthSessionRepository } from '../../../domain-server';
 import { AuthSession } from '../../../domain-server';
 import { createLogger } from '@dailyuse/utils';
@@ -50,7 +50,7 @@ export class PrismaAuthSessionRepository
           os: data.os,
           browser: data.browser,
           ipAddress: data.ipAddress,
-          location: data.location,
+          location: data.location as Prisma.InputJsonValue | undefined,
           version: data.version,
           createdAt: data.createdAt,
           expiresAt: data.expiresAt,
@@ -63,7 +63,7 @@ export class PrismaAuthSessionRepository
           os: data.os,
           browser: data.browser,
           ipAddress: data.ipAddress,
-          location: data.location,
+          location: data.location as Prisma.InputJsonValue | undefined,
           expiresAt: data.expiresAt,
           lastActiveAt: data.lastActiveAt,
           deletedAt: data.deletedAt,

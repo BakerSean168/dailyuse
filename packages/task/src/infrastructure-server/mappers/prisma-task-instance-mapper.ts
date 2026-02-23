@@ -6,13 +6,13 @@
  */
 
 import type { TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
-import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
+import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 import type { TaskInstanceServerDTO } from '@dailyuse/contracts/task';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import { TaskInstanceId } from '../../../domain-shared/value-objects/task-instance-id';
-import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
+import { TaskInstanceId } from '@/domain-shared/value-objects/task-instance-id';
+import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskTimeConfig } from '../../../domain-server/value-objects';
+import { TaskTimeConfig } from '@/domain-server/value-objects';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 /**

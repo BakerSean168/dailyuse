@@ -5,7 +5,7 @@
  * Shared by Prisma and SQLite mappers.
  */
 
-import type { GoalPersistenceDTO } from '@dailyuse/contracts/goal';
+import type { GoalPersistenceDTO, ReviewType } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -58,7 +58,7 @@ export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
     return GoalReview.load({
       id: GoalReviewId.of(r.id),
       goalId: GoalId.of(r.goalId),
-      type: r.type,
+      type: r.type as ReviewType,
       rating: r.rating,
       summary: r.summary,
       achievements: r.achievements ?? null,

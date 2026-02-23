@@ -24,6 +24,7 @@ import type {
   AuthCredentialServerDTO,
   PasswordCredentialServerDTO,
 } from '@dailyuse/contracts/authentication';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { AuthIdentity } from '../../../domain-server';
 import type { PrismaAuthIdentityWithRelations } from '../../types';
 
@@ -33,6 +34,7 @@ import {
   CredentialStatus,
   HashedPassword,
   OAuthProvider,
+  
 } from '../../../domain-shared';
 import { EmailIdentifier, PhoneIdentifier } from '../../../domain-server/value-objects';
 import { OAuthBinding, PasswordCredential } from '../../../domain-server/entities';
@@ -138,7 +140,7 @@ export class PrismaAuthIdentityMapper {
    */
   static toServerDTO(row: PrismaAuthIdentityWithRelations): AuthIdentityServerDTO {
     return {
-      id: row.id,
+      id: IdentityId.of(row.id),
       status: row.status,
       failedLoginAttempts: row.failedLoginAttempts,
       lastFailedAttempt: row.lastFailedAttempt?.getTime() ?? null,

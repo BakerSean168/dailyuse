@@ -27,7 +27,7 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 export interface SettingUseCases {
   getUserSetting(ctx: Context): Promise<Result<unknown>>;
   updateUserSetting(data: UpdateUserSettingReq, ctx: Context): Promise<Result<unknown>>;
-  resetUserSetting(ctx: Context): Promise<Result<unknown>>;
+  resetUserSetting(ctx: Context, category?: string): Promise<Result<unknown>>;
   exportSettings(ctx: Context): Promise<Result<unknown>>;
   importSettings(data: ImportSettingsReq, ctx: Context): Promise<Result<unknown>>;
   getDefaultSettings(): Result<unknown>;
@@ -61,7 +61,7 @@ export class SettingController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.resetUserSetting(ctx);
+    return this.useCases.resetUserSetting(ctx, parsed.data.category);
   }
 
   async exportSettings(input: ExportSettingsReq, ctx: Context): Promise<Result<unknown>> {

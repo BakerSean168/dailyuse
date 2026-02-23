@@ -5,12 +5,12 @@
  * Handles JSON serialization for layout/settings and Date conversions.
  */
 
-import type { EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
+import { Prisma, type EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { ProjectType } from '@dailyuse/contracts/editor';
-import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
-import { EditorWorkspaceId } from '../../../domain-shared';
-import { WorkspaceLayout } from '../../../domain-shared/value-objects/workspace-layout';
-import { WorkspaceSettings } from '../../../domain-shared/value-objects/workspace-settings';
+import { EditorWorkspace } from '@/domain-server/aggregates/editor-workspace';
+import { EditorWorkspaceId } from '@/domain-shared';
+import { WorkspaceLayout } from '@/domain-shared/value-objects/workspace-layout';
+import { WorkspaceSettings } from '@/domain-shared/value-objects/workspace-settings';
 
 export class PrismaEditorWorkspaceMapper {
   /**
@@ -41,7 +41,7 @@ export class PrismaEditorWorkspaceMapper {
   /**
    * Domain EditorWorkspace → Prisma write data
    */
-  static toPersistence(workspace: EditorWorkspace) {
+  static toPersistence(workspace: EditorWorkspace): Prisma.EditorWorkspaceUncheckedCreateInput {
     const dto = workspace.toServerDTO();
     return {
       id: dto.id,
@@ -50,8 +50,8 @@ export class PrismaEditorWorkspaceMapper {
       description: dto.description,
       projectPath: dto.projectPath,
       projectType: dto.projectType,
-      layout: dto.layout,
-      setting: dto.settings,
+      layout: JSON.parse(JSON.stringify(dto.layout)) as Prisma.InputJsonValue,
+      setting: JSON.parse(JSON.stringify(dto.settings)) as Prisma.InputJsonValue,
       isActive: dto.isActive,
       accessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : new Date(),
       createdAt: new Date(dto.createdAt),

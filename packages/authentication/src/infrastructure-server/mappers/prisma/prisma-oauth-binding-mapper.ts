@@ -9,7 +9,7 @@
  */
 
 import type { Prisma } from '@dailyuse/database';
-import type { OAuthBindingServerDTO } from '@dailyuse/contracts/authentication';
+import type { OAuthBindingServerDTO, OAuthProvider } from '@dailyuse/contracts/authentication';
 import type { PrismaAuthOAuthBindingRow } from '../../types';
 
 export class PrismaOAuthBindingMapper {
@@ -21,7 +21,7 @@ export class PrismaOAuthBindingMapper {
   static toDomainDTO(row: PrismaAuthOAuthBindingRow): OAuthBindingServerDTO {
     return {
       id: row.id,
-      provider: row.provider,
+      provider: row.provider as OAuthProvider,
       providerSubjectId: row.providerSubjectId,
       accessToken: row.accessToken ?? null,
       refreshToken: row.refreshToken ?? null,

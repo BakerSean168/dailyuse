@@ -6,7 +6,7 @@
 
 import type { UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
 import type { TimeSlotDTO } from '@dailyuse/contracts/reminder';
-import { UserReminderPreferences } from '../../../domain-server/aggregates/user-reminder-preferences';
+import { UserReminderPreferences } from '@/domain-server/aggregates/user-reminder-preferences';
 
 export class PrismaUserReminderPreferenceMapper {
   /**

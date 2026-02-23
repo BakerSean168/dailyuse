@@ -8,11 +8,11 @@
  */
 
 import type { PrismaClient, TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
-import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import type {
   ITaskTemplateRepository,
   TaskFilters,
-} from '../../../domain-server/repositories/ITaskTemplateRepository';
+} from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';

@@ -27,7 +27,8 @@ export const SettingElectronModule: IElectronModule = {
   name: 'Setting',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new SettingModule('sqlite', ctx.db);
+    // TODO: Desktop 迁移到 Prisma 后去掉 as any
+    const mod = new SettingModule('prisma', ctx.db as any);
 
     const resolveIdentityId = (payload: unknown): string => {
       if (typeof payload === 'string') return payload;
@@ -49,7 +50,11 @@ export const SettingElectronModule: IElectronModule = {
         ?? (section ? { [section]: payload } : payload);
       return mod.updateUserSetting.execute(identityId, updates as any);
     });
-    ipcMain.handle(Ch.RESET, (_, params) => mod.resetUserSetting.execute(resolveIdentityId(params)));
+    ipcMain.handle(Ch.RESET, (_, params) => {
+      const payload = (params && typeof params === 'object' ? params : {}) as Record<string, unknown>;
+      const category = typeof payload.category === 'string' ? payload.category : undefined;
+      return mod.resetUserSetting.execute(resolveIdentityId(params), category);
+    });
     ipcMain.handle(Ch.IMPORT, (_, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
       return mod.importSettings.execute(

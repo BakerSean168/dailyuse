@@ -9,7 +9,6 @@ import { http, HttpResponse } from 'msw';
 import {
   createMockUserSetting,
   createMockAppConfig,
-  createMockAppConfigList,
 } from '@dailyuse/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -18,8 +17,8 @@ const BASE = `${API_BASE}/settings`;
 let mockUserSetting = createMockUserSetting();
 
 export const settingHandlers = [
-  // GET /api/v1/settings/user — get user settings
-  http.get(`${BASE}/user`, () => {
+  // GET /api/v1/settings — get user settings
+  http.get(BASE, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
@@ -29,50 +28,60 @@ export const settingHandlers = [
     });
   }),
 
-  // PUT /api/v1/settings/user — update user settings
-  http.put(`${BASE}/user`, async ({ request }) => {
+  // PUT /api/v1/settings — update user settings (category-based)
+  http.put(BASE, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
 
-    if (body.entries && typeof body.entries === 'string') {
-      mockUserSetting = {
-        ...mockUserSetting,
-        entries: body.entries,
-        updatedAt: Date.now(),
-      };
+    // Merge category-level partial updates into mock
+    for (const category of ['appearance', 'locale', 'workflow', 'privacy', 'notification', 'editor', 'shortcuts', 'experimental', 'ui'] as const) {
+      if (body[category] && typeof body[category] === 'object') {
+        (mockUserSetting as any)[category] = {
+          ...(mockUserSetting as any)[category],
+          ...(body[category] as Record<string, unknown>),
+        };
+      }
     }
+    mockUserSetting = { ...mockUserSetting, updatedAt: Date.now() };
 
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Updated',
       data: mockUserSetting,
+      timestamp: Date.now(),
+    });
+  }),
+
+  // POST /api/v1/settings/reset — reset user settings
+  http.post(`${BASE}/reset`, () => {
+    mockUserSetting = createMockUserSetting();
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Reset',
+      data: mockUserSetting,
+      timestamp: Date.now(),
+    });
+  }),
+
+  // GET /api/v1/settings/defaults — get default settings
+  http.get(`${BASE}/defaults`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: createMockUserSetting(),
       timestamp: Date.now(),
     });
   }),
 
   // GET /api/v1/settings/app-config — get app config
   http.get(`${BASE}/app-config`, () => {
-    const configs = createMockAppConfigList(10);
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: configs,
-      timestamp: Date.now(),
-    });
-  }),
-
-  // PUT /api/v1/settings/app-config/:key — update app config
-  http.put(`${BASE}/app-config/:key`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Updated',
-      data: createMockAppConfig({
-        key: params.key as string,
-        value: body.value,
-      }),
+      data: createMockAppConfig(),
       timestamp: Date.now(),
     });
   }),

@@ -2,12 +2,14 @@
  * useUserSetting - 设置模块主 composable
  *
  * 通过 inject 获取 SettingClientService，所有方法返回 Result<T>。
+ * 使用新的分类偏好模型（appearance, locale, workflow 等）。
  */
 
 import { computed, inject } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { SETTING_SERVICE_KEY } from '@/shared/di';
 import { resultHttpClient } from '@/shared/http';
+import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 const BASE = '/settings';
 
@@ -15,19 +17,25 @@ export function useUserSetting() {
   const service = inject(SETTING_SERVICE_KEY)!;
   const store = useUserSettingStore();
 
-  const entries = computed(() => store.entries);
-  const defaults = computed(() => store.defaults);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const userSetting = computed(() => store.userSetting);
+  const defaults = computed(() => store.defaults);
 
   function handleError(message: string): void {
     store.setError(message);
     console.error(message);
   }
 
-  function getEntry(key: string): unknown { return store.entries[key]; }
-  function hasEntry(key: string): boolean { return key in store.entries; }
+  /** 获取指定分类设置 */
+  function getCategory<K extends PreferenceCategory>(category: K): UserSettingPreferences[K] | undefined {
+    return store.userSetting?.[category];
+  }
+
+  /** 按 dot-notation key 获取值 (e.g., 'appearance.theme') */
+  function getValue(key: string): unknown {
+    return store.getValue(key);
+  }
 
   async function loadSettings() {
     store.setLoading(true); store.setError(null);
@@ -42,25 +50,27 @@ export function useUserSetting() {
 
   async function loadDefaults() {
     const result = await resultHttpClient.get<Record<string, unknown>>(`${BASE}/defaults`);
-    if (result.ok) { store.setDefaults(result.data); }
+    if (result.ok) { store.setDefaults(result.data as any); }
     else { handleError(result.error.message || '加载默认设置失败'); }
   }
 
-  async function updateEntry(key: string, value: unknown) {
+  /** 按分类更新设置 (e.g., updateCategory('appearance', { theme: 'dark' })) */
+  async function updateCategory<K extends PreferenceCategory>(
+    category: K,
+    partial: Partial<UserSettingPreferences[K]>,
+  ) {
     store.setError(null);
-    const result = await resultHttpClient.put<unknown>(`${BASE}/entries/${key}`, { value });
-    if (result.ok) { store.setEntry(key, value); }
-    else { handleError(result.error.message || '更新设置失败'); }
+    const result = await resultHttpClient.put<unknown>(BASE, { [category]: partial });
+    if (result.ok) {
+      // Refresh full setting from server response
+      const refreshed = await service.getUserSettings();
+      if (refreshed.ok) { store.setUserSetting(refreshed.data); }
+    } else {
+      handleError(result.error.message || '更新设置失败');
+    }
   }
 
-  async function batchUpdate(items: Array<{ key: string; value: unknown }>) {
-    store.setError(null);
-    const result = await resultHttpClient.put<unknown>(`${BASE}/entries/batch`, { entries: items });
-    if (result.ok) { items.forEach(({ key, value }) => store.setEntry(key, value)); }
-    else { handleError(result.error.message || '批量更新设置失败'); }
-  }
-
-  async function resetToDefaults() {
+  async function resetToDefaults(category?: PreferenceCategory) {
     store.setError(null);
     const result = await service.resetUserSettings();
     if (result.ok) { store.setUserSetting(result.data); }
@@ -82,10 +92,10 @@ export function useUserSetting() {
   }
 
   return {
-    entries, defaults, isLoading, error, userSetting,
-    getEntry, hasEntry,
+    userSetting, defaults, isLoading, error,
+    getCategory, getValue,
     loadSettings, loadDefaults,
-    updateEntry, batchUpdate, resetToDefaults,
+    updateCategory, resetToDefaults,
     exportSettings, importSettings,
   };
 }

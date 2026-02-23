@@ -11,10 +11,10 @@ import type {
 } from '@dailyuse/database';
 import type { ReminderType, ReminderStatus, TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
-import { ReminderHistory } from '../../../domain-server/entities/reminder-history';
-import { ReminderTemplateId } from '../../../domain-shared/value-objects/reminder-template-id';
-import { ReminderHistoryId } from '../../../domain-shared/value-objects/reminder-history-id';
+import { ReminderTemplate } from '@/domain-server/aggregates/reminder-template';
+import { ReminderHistory } from '@/domain-server/entities/reminder-history';
+import { ReminderTemplateId } from '@/domain-shared/value-objects/reminder-template-id';
+import { ReminderHistoryId } from '@/domain-shared/value-objects/reminder-history-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import {
   TriggerConfig,
@@ -25,7 +25,7 @@ import {
   ReminderStats,
   ResponseMetrics,
   FrequencyAdjustment,
-} from '../../../domain-server/value-objects';
+} from '@/domain-server/value-objects';
 
 /**
  * Prisma ReminderTemplate with optional history relation

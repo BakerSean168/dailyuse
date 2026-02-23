@@ -6,8 +6,8 @@
  */
 
 import type { PrismaClient, TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
-import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
-import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
+import { TaskInstance } from '@/domain-server/aggregates/task-instance';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';

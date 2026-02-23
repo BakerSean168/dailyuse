@@ -1211,6 +1211,12 @@ export class Goal extends AggregateRoot<GoalId> {
 
   // ================= 7. 业务规则检查 (Business Rules) =================
 
+  private ensureNotDeleted(): void {
+    if (this._props.deletedAt !== null) {
+      throw new GoalDeletedError();
+    }
+  }
+
   /**
    * 📊 是否已过期
    */

@@ -6,8 +6,8 @@
 
 import type { ReminderResponse as PrismaReminderResponse } from '@dailyuse/database';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
-import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
-import { ReminderResponseId } from '../../../domain-shared/value-objects/reminder-response-id';
+import { ReminderResponse } from '@/domain-server/entities/reminder-response';
+import { ReminderResponseId } from '@/domain-shared/value-objects/reminder-response-id';
 
 export class PrismaReminderResponseMapper {
   /**

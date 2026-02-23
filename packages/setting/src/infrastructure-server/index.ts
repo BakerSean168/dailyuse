@@ -12,21 +12,14 @@ export { SettingContainer } from './di/setting-container';
 export { SettingRepositoryFactory } from './di';
 
 // Ports (Interfaces)
-export { type IAppConfigRepository, type ISettingRepository, type IUserSettingRepository } from '../domain-server';
+export { type IUserSettingRepository } from '../domain-server';
 
 // Prisma Adapters
-export {
-  AppConfigPrismaRepository,
-  SettingPrismaRepository,
-  UserSettingPrismaRepository,
-} from './adapters/prisma';
+export { UserSettingPrismaRepository } from './adapters/prisma';
 
-// SQLite Adapters
-export {
-  SqliteAppConfigRepository,
-  SqliteSettingRepository,
-  SqliteUserSettingRepository,
-} from './adapters/sqlite';
+// Mapper
+export { PrismaUserSettingMapper } from './mappers/prisma-user-setting-mapper';
+
 
 // SQLite schema
 export { SETTING_MODULE_SCHEMA } from './adapters/sqlite/schema';

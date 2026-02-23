@@ -1,67 +1,47 @@
 /**
  * Import Settings
  *
- * 导入用户设置
+ * 导入用户设置 — 支持合并或覆盖模式
  */
 
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
-import type { UserSettingClientDTO, UpdateUserSettingReq } from '@dailyuse/contracts/setting';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { UpdateUserSetting } from './update-user-setting';
+import type { UserSettingClientDTO, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
-/**
- * Import Settings
- */
 export class ImportSettings {
 
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
-  /**
-   * 执行用例
-   */
   async execute(
     identityId: string,
-    data: Record<string, any>,
-    options?: { merge?: boolean; validate?: boolean },
+    data: Record<string, unknown>,
+    options?: { merge?: boolean },
   ): Promise<UserSettingClientDTO> {
-    const { merge = false, validate = true } = options || {};
+    const { merge = false } = options ?? {};
+    this.validateImportData(data);
 
-    if (validate) {
-      this.validateImportData(data);
+    const importedPreferences = data.settings as Partial<UserSettingPreferences>;
+
+    let setting = await this.userSettingRepository.findByIdentityId(identityId);
+
+    if (!setting) {
+      setting = UserSetting.create({ identityId });
     }
-
-    const importedSettings = data.settings;
 
     if (merge) {
-      return await new UpdateUserSetting(this.userSettingRepository).execute(
-        identityId,
-        importedSettings as Omit<UpdateUserSettingReq, 'id'>,
-      );
+      // 合并模式：只覆盖提供的分类/字段
+      setting.importPreferences(importedPreferences);
     } else {
-      let setting = await this.userSettingRepository.findByIdentityId(identityId);
-
-      if (!setting) {
-        setting = UserSetting.create({ identityId });
-      }
-
-      const newSetting = UserSetting.load({
-        id: setting.id,
-        identityId: IdentityId.of(identityId),
-        entriesJson: importedSettings.entries ?? '[]',
-        createdAt: new Date(importedSettings.createdAt),
-        updatedAt: new Date(importedSettings.updatedAt),
-      });
-
-      await this.userSettingRepository.save(newSetting);
-      return newSetting.toClientDTO();
+      // 覆盖模式：先重置，再导入
+      setting.resetAll();
+      setting.importPreferences(importedPreferences);
     }
+
+    await this.userSettingRepository.save(setting);
+    return setting.toClientDTO();
   }
 
-  /**
-   * 验证导入数据的格式
-   */
-  private validateImportData(data: Record<string, any>): void {
+  private validateImportData(data: Record<string, unknown>): void {
     if (!data.settings) {
       throw new Error('Invalid import data: missing settings field');
     }
@@ -70,18 +50,9 @@ export class ImportSettings {
       throw new Error('Invalid import data: missing version field');
     }
 
-    const supportedVersions = ['1.0.0'];
-    if (!supportedVersions.includes(data.version)) {
+    const supportedVersions = ['1.0.0', '2.0.0'];
+    if (!supportedVersions.includes(data.version as string)) {
       throw new Error(`Unsupported settings version: ${data.version}`);
-    }
-
-    const settings = data.settings;
-    const requiredFields = ['appearance', 'locale', 'workflow', 'privacy'];
-
-    for (const field of requiredFields) {
-      if (!settings[field]) {
-        throw new Error(`Invalid import data: missing ${field} settings`);
-      }
     }
   }
 }

@@ -6,7 +6,7 @@
 import type Database from 'better-sqlite3';
 import type {
   ITaskDependencyRepository,
-} from '../../../domain-server/repositories/ITaskDependencyRepository';
+} from '@/domain-server/repositories/ITaskDependencyRepository';
 import type {
   CreateTaskDependencyRequest,
   TaskDependencyServerDTO,

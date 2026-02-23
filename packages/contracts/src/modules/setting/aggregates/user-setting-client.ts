@@ -1,22 +1,21 @@
 /**
  * UserSetting Aggregate Root - Client Interface
- * 用户设置聚合?- 客户端接?
+ * 用户设置聚合根 - 客户端接口
  */
 
 import type { SettingId, IdentityId, TransferDate } from '@/primitives';
-import type { UserSettingServerDTO } from './user-setting-server';
+import type { UserSettingPreferences } from '../preferences';
 
 // ============ DTO 定义 ============
 
 /**
- * UserSetting Client DTO
+ * UserSetting Client DTO — 发送给客户端的用户设置
+ *
+ * 与 ServerDTO 结构一致，使用 typed preferences。
  */
-export interface UserSettingClientDTO {
+export interface UserSettingClientDTO extends UserSettingPreferences {
   id: SettingId;
   identityId: IdentityId;
-
-  entries: string; // JSON stringified entries
-  
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

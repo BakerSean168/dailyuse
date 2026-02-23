@@ -6,20 +6,20 @@
  */
 
 import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
-import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
+import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
-import { TaskFolderId } from '../../../domain-shared/value-objects/task-folder-id';
+import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
+import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { TaskTemplateStatus } from '../../../domain-shared/value-objects/task-template-status';
+import { TaskTemplateStatus } from '@/domain-shared/value-objects/task-template-status';
 import {
   TaskTimeConfig,
   RecurrenceRule,
   TaskReminderConfig,
   TaskGoalBinding,
-} from '../../../domain-server/value-objects';
+} from '@/domain-server/value-objects';
 
 /**
  * Safely convert a Date, number (timestamp), or string to a Date object.

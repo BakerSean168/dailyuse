@@ -1,4 +1,4 @@
-export * from './user-setting-server';
-export * from './user-setting-client';
-export * from './app-config-server';
-export * from './app-config-client';
+export type { UserSettingServerDTO, UserSettingLegacyDTO } from './user-setting-server';
+export type { UserSettingClientDTO } from './user-setting-client';
+export type { AppConfigClientDTO } from './app-config-client';
+

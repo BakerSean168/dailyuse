@@ -16,3 +16,7 @@ export type {
 export type {
   OAuthBindingServerDTO,
 } from './oauth-binding';
+
+export type {
+  OAuthCredentialServerDTO,
+} from './oauth-credential-server';

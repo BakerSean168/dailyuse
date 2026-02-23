@@ -2,16 +2,19 @@
  * User Setting Store - Pinia 状态管理
  * 纯状态容器 — API 调用由 composables 执行。
  *
+ * 使用新的分类偏好模型:
+ *   setting.appearance.theme, setting.locale.language 等
+ *
  * 注意: 同时导出为 useSettingStore 以保持向后兼容。
  */
 
 import { defineStore } from 'pinia';
-import type { UserSettingClientDTO, SettingEntryClientDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
+import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 export interface SettingState {
   userSetting: UserSettingClientDTO | null;
-  entries: Record<string, unknown>;
-  defaults: Record<string, unknown>;
+  defaults: UserSettingClientDTO | null;
   isLoading: boolean;
   error: string | null;
   isInitialized: boolean;
@@ -20,31 +23,31 @@ export interface SettingState {
 export const useUserSettingStore = defineStore('user-setting', {
   state: (): SettingState => ({
     userSetting: null,
-    entries: {},
-    defaults: {},
+    defaults: null,
     isLoading: false,
     error: null,
     isInitialized: false,
   }),
 
   getters: {
-    getEntry: (state) => (key: string) => state.entries[key],
-    hasEntry: (state) => (key: string) => key in state.entries,
+    /** 获取指定分类的偏好设置 */
+    getCategory: (state) => <K extends PreferenceCategory>(category: K): UserSettingPreferences[K] | undefined =>
+      state.userSetting?.[category],
+
+    /** 按 dot-notation key 获取值 (e.g., 'appearance.theme') */
+    getValue: (state) => (key: string): unknown => {
+      if (!state.userSetting) return undefined;
+      const [category, field] = key.split('.', 2);
+      const cat = state.userSetting[category as PreferenceCategory];
+      return cat ? (cat as Record<string, unknown>)[field] : undefined;
+    },
   },
 
   actions: {
     setUserSetting(setting: UserSettingClientDTO | null) {
       this.userSetting = setting;
-      if (setting?.entries) {
-        try {
-          this.entries = typeof setting.entries === 'string'
-            ? JSON.parse(setting.entries)
-            : setting.entries;
-        } catch { this.entries = {}; }
-      }
     },
-    setEntry(key: string, value: unknown) { this.entries[key] = value; },
-    setDefaults(defaults: Record<string, unknown>) { this.defaults = defaults; },
+    setDefaults(defaults: UserSettingClientDTO | null) { this.defaults = defaults; },
 
     async loadSettings() {
       // Stub — composable fills this via API
@@ -61,7 +64,7 @@ export const useUserSettingStore = defineStore('user-setting', {
   },
 
   persist: {
-    pick: ['entries'] as string[],
+    pick: ['userSetting'] as string[],
   },
 });
 

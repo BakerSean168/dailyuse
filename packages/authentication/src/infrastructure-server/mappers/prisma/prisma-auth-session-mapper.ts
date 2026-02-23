@@ -14,6 +14,8 @@
 
 import type {
   DeviceInfo,
+  DeviceType as IDeviceType,
+  AuthSessionId,
 } from '@dailyuse/contracts/authentication';
 import { AuthSession } from '../../../domain-server';
 import type { AuthSessionState } from '../../../domain-server';
@@ -79,7 +81,7 @@ export class PrismaAuthSessionMapper {
     const deviceInfoDTO: DeviceInfo = {
       deviceId: row.deviceId,
       deviceFingerprint: row.deviceFingerprint,
-      deviceType: row.deviceType,
+      deviceType: row.deviceType as IDeviceType,
       deviceName: row.deviceName ?? null,
       os: row.os ?? null,
       osVersion: null,
@@ -112,7 +114,7 @@ export class PrismaAuthSessionMapper {
     }
 
     return {
-      id: row.id,
+      id: row.id as AuthSessionId,
       identityId: row.identityId as IdentityId,
       deviceInfo: DeviceInfoVO.fromDTO(deviceInfoDTO),
       refreshTokenHash: row.refreshTokenHash ?? undefined,

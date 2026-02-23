@@ -6,7 +6,7 @@
  */
 
 import type { PrismaClient, TaskFolder as PrismaTaskFolder } from '@dailyuse/database';
-import type { ITaskFolderRepository } from '../../../domain-server/repositories/ITaskFolderRepository';
+import type { ITaskFolderRepository } from '@/domain-server/repositories/ITaskFolderRepository';
 import type { TaskFolderServerDTO } from '@dailyuse/contracts/task';
 import { PrismaTaskFolderMapper } from '../../mappers/prisma-task-folder-mapper';
 

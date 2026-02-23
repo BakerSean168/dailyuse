@@ -1,28 +1,17 @@
 ﻿import type { UserSetting } from '../aggregates/user-setting';
 
-export interface UserSettingQueryOptions {
-  category?: string;
-  limit?: number;
-  offset?: number;
-}
-
 /**
- * UserSetting 浠撳偍鎺ュ彛
- * 瀹氫箟鎸佷箙鍖栨搷浣?
+ * IUserSettingRepository — 用户设置仓储接口
+ *
+ * 定义持久化操作，实现由 infrastructure 层提供。
  */
 export interface IUserSettingRepository {
-  /**
-   * 鏍规嵁璐︽埛UUID鏌ユ壘鐢ㄦ埛璁剧疆
-   */
+  /** 根据 identityId 查找用户设置 */
   findByIdentityId(identityId: string): Promise<UserSetting | null>;
 
-  /**
-   * 淇濆瓨鐢ㄦ埛璁剧疆
-   */
+  /** 保存用户设置（创建或更新） */
   save(setting: UserSetting): Promise<void>;
 
-  /**
-   * 鍒犻櫎鐢ㄦ埛璁剧疆
-   */
+  /** 删除用户设置 */
   delete(identityId: string): Promise<void>;
 }
