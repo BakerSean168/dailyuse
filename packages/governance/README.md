@@ -1,76 +1,112 @@
-# @dailyuse/example-sample
+# @dailyuse/governance
 
-´úÂëÑùÀı°ü - Í¨¹ı **´ı°ìÊÂÏî£¨Todo£©** ÒµÎñ³¡¾°Õ¹Ê¾ÏîÄ¿´úÂë¹æ·¶
+æ²»ç†æ¨¡å—ï¼ˆæ´»æ–‡æ¡£ï¼‰ â€” é€šè¿‡ **æ¶æ„è§„åˆ™ç®¡ç†** ä¸šåŠ¡åœºæ™¯å±•ç¤ºé¡¹ç›®å…¨éƒ¨ç¼–ç èŒƒå¼
 
-## ÒµÎñ³¡¾°
+## ä¸šåŠ¡åœºæ™¯
 
-Ò»¸ö¼òµ¥µÄ´ı°ìÊÂÏî¹ÜÀíÏµÍ³£º
+ä¸€ä¸ªå®Œæ•´çš„æ¶æ„è§„åˆ™ç”Ÿå‘½å‘¨æœŸç®¡ç†ç³»ç»Ÿï¼š
 
-- ´´½¨¡¢±à¼­¡¢É¾³ı´ı°ìÊÂÏî
-- ×´Ì¬Á÷×ª£º´ı´¦Àí  ½øĞĞÖĞ  ÒÑÍê³É/ÒÑÈ¡Ïû
-- ÓÅÏÈ¼¶¹ÜÀí£ºµÍ¡¢ÖĞ¡¢¸ß
+- è§„åˆ™çš„åˆ›å»ºã€ç¼–è¾‘ã€åˆ é™¤ä¸çŠ¶æ€æµè½¬
+- çŠ¶æ€æœºï¼šDraft â†’ Active â†’ Deprecated / é‡æ–°æ¿€æ´»
+- ä¸¥é‡çº§åˆ«ï¼šMandatoryï¼ˆå¼ºåˆ¶ï¼‰ã€Recommendedï¼ˆæ¨èï¼‰
+- æ ‡ç­¾ä¸ä»£ç ç¤ºä¾‹ï¼ˆGood / Bad Exampleï¼‰ç®¡ç†
 
-## ·Ö²ã¼Ü¹¹
+## åˆ†å±‚æ¶æ„
 
-    contracts (ÆõÔ¼²ã)
-    - ÀàĞÍ¶¨Òå£¨interface/type£©
-    - DTO£¨Client/Server/Persistence£©
-    - ÁìÓòÊÂ¼ş
-    - API Schema (Zod)
+```
+contracts (å¥‘çº¦å±‚)
+- ç±»å‹å®šä¹‰ï¼ˆinterface / typeï¼‰
+- DTOï¼ˆClient / Server / Persistenceï¼‰
+- é¢†åŸŸäº‹ä»¶
+- API Schema (Zod)
 
-    domain-shared (¹²ÏíÁìÓò²ã)
-    - Öµ¶ÔÏó¹¤³§£¨ID Éú³É¡¢ÑéÖ¤£©
-    - ×´Ì¬»úÂß¼­
-    - Ç°ºó¶Ë¿É¹²ÏíµÄÒµÎñ¹æÔò
+domain-shared (å…±äº«é¢†åŸŸå±‚)
+- å€¼å¯¹è±¡å·¥å‚ï¼ˆID ç”Ÿæˆã€éªŒè¯ï¼‰
+- çŠ¶æ€æœºé€»è¾‘
+- å‰åç«¯å¯å…±äº«çš„ä¸šåŠ¡å¸¸é‡
 
-    domain-server (·şÎñ¶ËÁìÓò²ã)
-    - ¾ÛºÏ¸ù£¨Todo£©
-    - ²Ö´¢½Ó¿Ú£¨ITodoRepository£©
-    - ÁìÓò·şÎñ£¨TodoDomainService£©
+domain-server (æœåŠ¡ç«¯é¢†åŸŸå±‚)
+- èšåˆæ ¹ï¼ˆRuleï¼‰
+- ä»“å‚¨æ¥å£ï¼ˆIRuleRepositoryï¼‰
+- é¢†åŸŸæœåŠ¡ï¼ˆRuleDomainServiceï¼‰
 
-## Ê¹ÓÃÊ¾Àı
+application-server (åº”ç”¨å±‚)
+- Use Casesï¼ˆCommands + Queriesï¼‰
+- æ‰§è¡Œä¸Šä¸‹æ–‡ï¼ˆExecutionContextï¼‰
 
-    // 1. µ¼ÈëÆõÔ¼²ãÀàĞÍ
-    import type { TodoServerDTO, TodoStatus } from '@dailyuse/example-sample/contracts';
+infrastructure-server (åŸºç¡€è®¾æ–½å±‚)
+- Prisma ä»“å‚¨å®ç°
+- DI å®¹å™¨ï¼ˆGovernanceContainerï¼‰
+- æ¨¡å—ç»„åˆæ ¹ï¼ˆGovernanceModuleï¼‰
+```
 
-    // 2. µ¼ÈëÖµ¶ÔÏó¹¤³§
-    import { TodoIdFactory, TodoStatusLogic } from '@dailyuse/example-sample/domain-shared';
+## ä½¿ç”¨ç¤ºä¾‹
 
-    // 3. µ¼Èë¾ÛºÏ¸ù
-    import { Todo, ITodoRepository } from '@dailyuse/example-sample/domain-server';
+```typescript
+// 1. å¯¼å…¥å¥‘çº¦å±‚ç±»å‹
+import type { RuleClientDTO, RuleStatus } from '@dailyuse/governance/contracts';
 
-    // ´´½¨ Todo
-    const todo = Todo.create({
-      userId: UserIdFactory.generate(),
-      title: 'Ñ§Ï° DDD',
-      priority: TodoPriority.High,
-    });
+// 2. ä½¿ç”¨å€¼å¯¹è±¡å·¥å‚
+import { RuleTag, RuleStatus } from '@dailyuse/governance/domain-shared';
 
-    // ×´Ì¬Á÷×ª
-    todo.start();      // ´ı´¦Àí  ½øĞĞÖĞ
-    todo.complete();   // ½øĞĞÖĞ  ÒÑÍê³É
+// 3. ä½¿ç”¨èšåˆæ ¹
+import { Rule, IRuleRepository } from '@dailyuse/governance/domain-server';
 
-## ºËĞÄ¹æ·¶Õ¹Ê¾
+// åˆ›å»ºè§„åˆ™
+const result = Rule.create({
+  code: 'DDD-001',
+  title: 'èšåˆæ ¹å¿…é¡»ä½¿ç”¨ç§æœ‰æ„é€ å‡½æ•°',
+  description: 'æ‰€æœ‰èšåˆæ ¹å¿…é¡»é€šè¿‡å·¥å‚æ–¹æ³•åˆ›å»º...',
+  severity: RuleSeverity.Mandatory,
+  tags: ['ddd', 'aggregate-root'],
+  goodExamples: [{ language: 'TypeScript', content: '// ...' }],
+  badExamples: [{ language: 'TypeScript', content: '// ...' }],
+  authorId: userId,
+});
 
-| ¹æ·¶ | ËµÃ÷ | Î»ÖÃ |
+// çŠ¶æ€æµè½¬
+rule.activate();    // Draft â†’ Active
+rule.deprecate(reason); // Active â†’ Deprecated
+```
+
+## æ ¸å¿ƒè§„èŒƒå±•ç¤º
+
+| è§„èŒƒ | è¯´æ˜ | ä½ç½® |
 |------|------|------|
-| Branded Types | ·ÀÖ¹ ID »ìÏı | contracts/index.ts |
-| Const Object Ã¶¾Ù | Ìæ´ú TypeScript enum | contracts/index.ts |
-| DTO ·Ö²ã | Client/Server/Persistence | contracts/index.ts |
-| Ê±¼ä·À¸¯²ã | TransferDate/DomainDate/PersistenceDate | contracts/index.ts |
-| ³äÑªÄ£ĞÍ | ¾ÛºÏ¸ù°üº¬ÒµÎñÂß¼­ | domain-server/index.ts |
-| ¹¤³§·½·¨ | create() / fromPersistence() | domain-server/index.ts |
-| ÁìÓòÊÂ¼ş | ×´Ì¬±ä¸üÊ±·¢³öÊÂ¼ş | domain-server/index.ts |
-| ²Ö´¢Ä£Ê½ | ÒÀÀµµ¹ÖÃÔ­Ôò | domain-server/index.ts |
-| ×´Ì¬»ú | ×´Ì¬×ª»»¹æÔò·â×° | domain-shared/index.ts |
+| Branded Types | é˜²æ­¢ ID æ··ç”¨ | `domain-shared/value-objects/rule-id.ts` |
+| Const Object æšä¸¾ | æ›¿ä»£ TypeScript enum | `domain-shared/value-objects/rule-status.ts` |
+| DTO åˆ†å±‚ | Client / Server / Persistence | `contracts/aggregates/` |
+| æ—¶é—´é˜²è…å±‚ | TransferDate / DomainDate / PersistenceDate | `contracts/aggregates/` |
+| å¯Œè¡€æ¨¡å‹ | èšåˆæ ¹å†…èšä¸šåŠ¡é€»è¾‘ | `domain-server/aggregates/rule.ts` |
+| å·¥å‚æ–¹æ³•æ¨¡å¼ | `create()` / `load()` | `domain-server/aggregates/rule.ts` |
+| é¢†åŸŸäº‹ä»¶ | çŠ¶æ€å˜æ›´æ—¶å‘å¸ƒäº‹ä»¶ | `domain-server/aggregates/rule.ts` |
+| ä»“å‚¨æ¨¡å¼ | ä¾èµ–å€’ç½®åŸåˆ™ | `domain-server/repositories/` |
+| çŠ¶æ€æœº | çŠ¶æ€è½¬æ¢è§„åˆ™å°è£… | `domain-shared/value-objects/rule-status.ts` |
+| Result æ¨¡å¼ | ä¸šåŠ¡æ–¹æ³•è¿”å› Result | å…¨éƒ¨é¢†åŸŸæ–¹æ³• |
+| ç»„åˆæ ¹ | ä¾èµ–æ³¨å…¥å…¥å£ | `infrastructure-server/governance.module.ts` |
 
-## ÎÄ¼ş½á¹¹
+## æ–‡ä»¶ç»“æ„
 
-    src/
-     contracts/          # ÆõÔ¼²ã
-        index.ts        # ÀàĞÍ¶¨Òå¡¢DTO¡¢ÊÂ¼ş¡¢API Schema
-     domain-shared/      # ¹²ÏíÁìÓò²ã
-        index.ts        # ID ¹¤³§¡¢×´Ì¬»úÂß¼­
-     domain-server/      # ·şÎñ¶ËÁìÓò²ã
-        index.ts        # ¾ÛºÏ¸ù¡¢²Ö´¢½Ó¿Ú¡¢ÁìÓò·şÎñ
-     index.ts            # ¸ùµ¼³ö
+```
+src/
+â”œâ”€â”€ contracts/              # å¥‘çº¦å±‚ â€” ç±»å‹å®šä¹‰ã€DTOã€äº‹ä»¶ã€API Schema
+â”œâ”€â”€ domain-shared/          # å…±äº«é¢†åŸŸ â€” ID å·¥å‚ã€çŠ¶æ€æœºé€»è¾‘ã€å€¼å¯¹è±¡
+â”œâ”€â”€ domain-server/          # æœåŠ¡ç«¯é¢†åŸŸ â€” èšåˆæ ¹ã€ä»“å‚¨æ¥å£ã€é¢†åŸŸæœåŠ¡
+â”œâ”€â”€ application-server/     # åº”ç”¨å±‚ â€” Use Cases (Commands + Queries)
+â”œâ”€â”€ infrastructure-server/  # åŸºç¡€è®¾æ–½ â€” Prisma ä»“å‚¨ã€DI å®¹å™¨ã€ç»„åˆæ ¹
+â”œâ”€â”€ controllers/            # æ§åˆ¶å™¨ â€” è¾“å…¥æ ¡éªŒã€ç¼–æ’
+â”œâ”€â”€ application-client/     # å®¢æˆ·ç«¯åº”ç”¨å±‚ â€” å®¢æˆ·ç«¯æœåŠ¡
+â”œâ”€â”€ domain-client/          # å®¢æˆ·ç«¯é¢†åŸŸ â€” è§†å›¾æ¨¡å‹
+â”œâ”€â”€ infrastructure-client/  # å®¢æˆ·ç«¯åŸºç¡€è®¾æ–½ â€” HTTP/IPC é€‚é…å™¨
+â”œâ”€â”€ api/                    # API æ¨¡å— â€” è·¯ç”±ã€å¯åŠ¨
+â””â”€â”€ index.ts                # ä¸»å…¥å£ â€” ç»Ÿä¸€å¯¼å‡º
+```
+
+## æ´»æ–‡æ¡£å®šä½
+
+> **è¿™ä¸ªæ¨¡å—å³æ˜¯ä»£ç ï¼Œä¹Ÿæ˜¯æ–‡æ¡£ã€‚**
+>
+> governance ä¸­çš„æ¯ä¸ªæ–‡ä»¶éƒ½åŒ…å«è¯¦ç»†çš„ JSDoc æ³¨é‡Šï¼Œè§£é‡Š DDD æ¨¡å¼å’Œè®¾è®¡å†³ç­–ã€‚
+> æ–°æ¨¡å—å¼€å‘æ—¶ï¼Œå¯ä»¥ç›´æ¥å‚è€ƒæœ¬æ¨¡å—çš„å®ç°æ¨¡å¼ã€‚
+>
+> ğŸ“– å‚è§ [docs/governance/INDEX.md](../../docs/governance/INDEX.md) è·å–å®Œæ•´çš„æ¨¡å¼ç´¢å¼•ã€‚
