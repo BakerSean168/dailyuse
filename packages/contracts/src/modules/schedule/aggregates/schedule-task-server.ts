@@ -5,7 +5,6 @@
 
 import type { ScheduleTaskClientDTO } from './schedule-task-client';
 import type {
-  ScheduleExecutionServer,
   ScheduleExecutionServerDTO,
 } from '../entities/schedule-execution-server';
 import type {
@@ -244,116 +243,6 @@ export type ScheduleTaskDomainEvent =
   | ScheduleTaskExecutedEvent
   | ScheduleTaskScheduleUpdatedEvent;
 
-// ============ 实体接口 ============
-
-/**
- * ScheduleTask 聚合根 - Server 接口（实例方法）
- */
-export interface ScheduleTaskServer {
-  // 基础属性
-  id: string;
-  identityId: string;
-  name: string;
-  description: string | null;
-  sourceModule: SourceModule;
-  sourceEntityId: string;
-  status: ScheduleTaskStatus;
-  enabled: boolean;
-
-  // 值对象
-  schedule: ScheduleConfigServer;
-  execution: ExecutionInfoServer;
-  retryPolicy: RetryPolicyServer;
-  metadata: TaskMetadataServer;
-
-  // 同步字段
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-
-  // ===== 子实体集合（聚合根统一管理） =====
-
-  /**
-   * 执行记录列表（懒加载，可选）
-   * 通过聚合根统一访问和管理子实体
-   */
-  executions?: ScheduleExecutionServer[] | null;
-
-  // ===== 工厂方法（创建子实体 - 实例方法） =====
-
-  /**
-   * 创建子实体：ScheduleExecution（通过聚合根创建）
-   * @param params 执行记录创建参数
-   * @returns 新的 ScheduleExecution 实例
-   */
-  createExecution(params: {
-    executionTime: number;
-    status?: ExecutionStatus;
-  }): ScheduleExecutionServer;
-
-  // ===== 子实体管理方法 =====
-
-  /**
-   * 添加执行记录到聚合根
-   */
-
-  /**
-   * 通过 UUID 获取执行记录
-   */
-
-  /**
-   * 获取所有执行记录
-   */
-
-  /**
-   * 获取最近的执行记录
-   */
-
-  /**
-   * 获取失败的执行记录
-   */
-
-  // ===== 业务方法 =====
-
-  // 生命周期管理
-
-  // 调度配置管理
-
-  // 执行信息管理
-  recordExecution(
-    status: ExecutionStatus,
-    duration: number,
-    result?: Record<string, any>,
-    error?: string,
-  ): ScheduleExecutionServer;
-
-  // 重试策略管理
-
-  // 元数据管理
-
-  // 启用/禁用
-
-  // 状态检查
-
-  // ===== 转换方法 (To) =====
-
-  /**
-   * 转换为 Server DTO（递归转换子实体）
-   * @param includeChildren 是否包含子实体（默认 false）
-   */
-
-  /**
-   * 转换为 Client DTO
-   * @param includeChildren 是否包含子实体（默认 false）
-   */
-
-  /**
-   * 转换为 Persistence DTO (数据库)
-   * 注意：子实体在数据库中是独立表，不包含在 Persistence DTO 中
-   */
-}
-
 /**
  * ScheduleTask 静态工厂方法接口
  * 注意：TypeScript 接口不能包含静态方法，这些方法应该在类上实现
@@ -373,7 +262,7 @@ export interface ScheduleTaskServerStatic {
     description?: string;
     metadata?: Partial<TaskMetadataServerDTO>;
     retryPolicy?: Partial<RetryPolicyServerDTO>;
-  }): ScheduleTaskServer;
+  }): ScheduleTaskServerDTO;
 
   /**
    * 从 Server DTO 创建实体（递归创建子实体）

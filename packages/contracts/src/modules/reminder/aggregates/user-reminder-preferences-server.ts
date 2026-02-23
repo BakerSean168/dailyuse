@@ -59,18 +59,3 @@ export interface UserReminderPreferencesPersistenceDTO {
   createdAt: Date;
   updatedAt: Date;
 }
-
-// ============ 实体接口 ============
-
-/**
- * User Reminder Preferences 聚合根接口
- */
-export interface UserReminderPreferencesServer {
-  id: string;
-  identityId: string;
-  bestTimeSlots: TimeSlotDTO[];
-  worstTimeSlots: TimeSlotDTO[];
-  globalSmartFrequency: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}

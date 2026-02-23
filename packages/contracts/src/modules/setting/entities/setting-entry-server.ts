@@ -10,17 +10,6 @@
  */
 import type { TransferDate, DomainDate, PersistenceDate, SettingEntryId } from '@/primitives';
 
-
-/**
- * 设置聚合根的领域接口
- */
-export interface SettingEntryServer {
-  id: SettingEntryId;
-  key: string;
-  value: any;
-  updatedAt: DomainDate;
-}
-
 export interface SettingEntryServerDTO {
   id: string;
   key: string;

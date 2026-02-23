@@ -8,31 +8,6 @@ import type { NotificationChannelType, ChannelStatus } from '../value-objects';
 import type { ChannelErrorDTO, ChannelResponseDTO } from '../value-objects';
 import type { DomainDate, TransferDate } from '@/primitives';
 
-
-// ============ 实体接口 ============
-
-/**
- * NotificationChannel 实体 - Server 接口
- */
-export interface NotificationChannelServer {
-  // 基础属性
-  id: NotificationChannelId;
-  notificationId: NotificationId;
-
-  channelType: NotificationChannelType;
-  status: ChannelStatus;
-  recipient?: string | null;
-  sendAttempts: number;
-  maxRetries: number;
-
-  // 错误和响应信息
-  error?: ChannelErrorDTO | null;
-  response?: ChannelResponseDTO | null;
-
-  sentAt?: DomainDate | null;
-  failedAt?: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**
@@ -70,4 +45,3 @@ export interface NotificationChannelPersistenceDTO {
   sentAt?: PersistenceDate | null;
   failedAt?: PersistenceDate | null;
 }
-

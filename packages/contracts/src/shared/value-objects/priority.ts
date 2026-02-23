@@ -43,5 +43,5 @@ export const PriorityLevel = {
    */
   None: 'None',
 } as const;
-export type PriorityLevel = keyof typeof PriorityLevel;
+export type PriorityLevel = (typeof PriorityLevel)[keyof typeof PriorityLevel];
 

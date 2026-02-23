@@ -3,35 +3,8 @@
  * 提醒分组聚合根 - 服务端接口
  */
 
-import type { ControlMode, ReminderStatus, GroupStatsServer, GroupStatsServerDTO } from '../value-objects';
+import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '../value-objects';
 import type { DomainDate, IdentityId, PersistenceDate, TransferDate } from '@/primitives';
-
-
-// ============ 实体接口 ============
-
-/**
- * Reminder Group 聚合根 - Server 接口（实例方法）
- */
-export interface ReminderGroupServer {
-  // 基础属性
-  id: string;
-  identityId: IdentityId;
-  name: string;
-  description?: string | null;
-  color?: string | null;
-  icon?: string | null;
-  controlMode: ControlMode;
-  enabled: boolean;
-  status: ReminderStatus;
-  order: number;
-  stats: GroupStatsServer;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt?: DomainDate | null;
-}
 
 export interface ReminderGroupServerDTO {
   // 基础属性

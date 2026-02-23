@@ -135,29 +135,3 @@ export interface AIGenerationTaskRetriedEvent {
     retriedAt: DomainDate;
   };
 }
-
-// ============ 聚合根接口 ============
-
-/**
- * AIGenerationTask 聚合根 - Server 接口
- */
-export interface AIGenerationTaskServer {
-  // 基础属性
-  id: AiGenerationTaskId;
-  identityId: IdentityId;
-  conversationId: AiConversationId | null;
-  type: GenerationTaskType;
-  status: TaskStatus;
-  provider: AIProvider;
-  model: AIModel;
-  input: GenerationInputServerDTO;
-  result: GenerationResultServerDTO | null;
-  tokenUsage: TokenUsageServerDTO | null;
-  errorMessage: string | null;
-  retryCount: number;
-  maxRetries: number;
-  processingStartedAt: DomainDate | null;
-  processingCompletedAt: DomainDate | null;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-}

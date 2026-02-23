@@ -3,6 +3,6 @@ export const GenderType = {
   FEMALE: 'FEMALE',
   OTHER: 'OTHER',
   PREFER_NOT_TO_SAY: 'PREFER_NOT_TO_SAY',
-}
+} as const;
 
-export type GenderType = keyof typeof GenderType;
+export type GenderType = (typeof GenderType)[keyof typeof GenderType];

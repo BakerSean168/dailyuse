@@ -5,53 +5,9 @@
 import type { DomainDate, TransferDate, GoalId, IdentityId, GoalFolderId } from '@/primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
-import type { KeyResultClient, KeyResultClientDTO } from '../entities/key-result-client';
-import type { GoalReviewClient, GoalReviewClientDTO } from '../entities/goal-review-client';
+import type { KeyResultClientDTO } from '../entities/key-result-client';
+import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { GoalReminderConfig, GoalReminderConfigDTO } from '../value-objects';
-
-// ============ Domain Shape ============
-
-/**
- * Goal aggregate - Client Domain Shape
- */
-export interface GoalClient {
-  id: GoalId;
-  identityId: IdentityId;
-
-  name: string;
-  description: string | null;
-  color: string | null;
-
-  feasibilityAnalysis: string | null;
-  motivation: string | null;
-
-  status: GoalStatus;
-  importance: ImportanceLevel;
-  /** 动态优先级分数 */
-  priority: number;
-  category: string | null;
-  tags: string[];
-
-  startDate: DomainDate | null;
-  targetDate: DomainDate | null;
-  completedAt: DomainDate | null;
-  archivedAt: DomainDate | null;
-
-  folderId: GoalFolderId | null;
-  parentGoalId: GoalId | null;
-
-  sortOrder: number;
-  
-
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-  version: number;
-
-  keyResults: KeyResultClient[] | null;
-  reviews: GoalReviewClient[] | null;
-  reminderConfig: GoalReminderConfig | null;
-}
 
 // ============ Transfer DTO (传输�? ============
 

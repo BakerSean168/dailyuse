@@ -3,8 +3,5 @@
  */
 
 export type {
-  CalendarEntryClient as ScheduleJobClient,
   CalendarEntryClientDTO as ScheduleJobClientDTO,
 } from './calendar-entry-client';
-
-

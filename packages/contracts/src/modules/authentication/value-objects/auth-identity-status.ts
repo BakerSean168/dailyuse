@@ -7,4 +7,4 @@ export const AuthIdentityStatus = {
   DISABLED: 'DISABLED', // 管理员禁用
   UNVERIFIED: 'UNVERIFIED' // 待验证
 } as const;
-export type AuthIdentityStatus = keyof typeof AuthIdentityStatus;
+export type AuthIdentityStatus = (typeof AuthIdentityStatus)[keyof typeof AuthIdentityStatus];

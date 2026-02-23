@@ -118,21 +118,3 @@ export interface AIUsageQuotaLimitUpdatedEvent {
     updatedAt: DomainDate;
   };
 }
-
-// ============ 聚合根接口 ============
-
-/**
- * AIUsageQuota 聚合根 - Server 接口
- */
-export interface AIUsageQuotaServer {
-  // 基础属性
-  id: AiUsageQuotaId;
-  identityId: IdentityId;
-  quotaLimit: number;
-  currentUsage: number;
-  resetPeriod: QuotaResetPeriod;
-  lastResetAt: DomainDate;
-  nextResetAt: DomainDate;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-}

@@ -13,24 +13,6 @@ import type { ContactPhone, ContactPhoneDTO } from '../value-objects/contact-pho
 import type { DomainDate } from '@/primitives';
 import type { TransferDate } from '@/primitives';
 
-// ============ 实体接口 ============
-
-export interface AccountClient {
-  id: IdentityId;
-
-  status: AccountStatus;
-
-  profile: AccountProfile;
-  settings: AccountSettings;
-  email: ContactEmail;
-  phone: ContactPhone | null;
-
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**

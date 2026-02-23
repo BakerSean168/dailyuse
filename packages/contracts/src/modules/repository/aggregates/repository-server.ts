@@ -18,31 +18,6 @@ import type {
   RepositoryStatsDTO,
 } from '../value-objects';
 
-// ============ 实体接口 ============
-
-/**
- * Repository 聚合根 - Server 接口（实例方法）
- * @path 应该是仓库的物理存储路径，desktop 端可用，web 端为空
- */
-export interface RepositoryServer {
-  // 基础属性
-  id: RepositoryId;
-  identityId: IdentityId;
-  name: string;
-  type: RepositoryType;
-  path: string | null;
-  description: string | null;
-  config: RepositoryConfig;
-  stats: RepositoryStats;
-  status: RepositoryStatus;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**
@@ -85,5 +60,3 @@ export interface RepositoryPersistenceDTO {
   
   // 注意：子实体（folders）在数据库中是独立表，通过外键关联
 }
-
-

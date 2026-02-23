@@ -30,29 +30,3 @@ export interface ResourceBookmarkClientDTO {
   displayName: string; // 显示名称（aliasName 或资源原名）
   isOwner: boolean; // 是否是当前用户的书签
 }
-
-// ============ 实体接口 ============
-
-/**
- * Resource Bookmark 实体 - Client 接口（实例方法）
- */
-export interface ResourceBookmarkClient {
-  // 基础属性
-  id: string;
-  resourceId: ResourceId;
-  identityId: IdentityId;
-  
-  aliasName: string | null;
-  icon: string | null;
-  color: string | null;
-  
-  sortOrder: number;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-
-  // UI 计算属性
-  displayName: string;
-  isOwner: boolean;
-}

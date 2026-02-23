@@ -7,4 +7,4 @@ export const  CredentialStatus = {
   EXPIRED: 'EXPIRED',
   REVOKED: 'REVOKED',
 } as const;
-export type CredentialStatus = keyof typeof CredentialStatus;
+export type CredentialStatus = (typeof CredentialStatus)[keyof typeof CredentialStatus];

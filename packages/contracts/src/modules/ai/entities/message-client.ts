@@ -29,20 +29,3 @@ export interface MessageClientDTO {
   isSystem: boolean;
   formattedTime: string;
 }
-
-// ============ 实体接口 ============
-
-/**
- * Message 实体 - Client 接口
- */
-export interface MessageClient {
-  id: AiMessageId;
-  conversationId: AiConversationId;
-  role: MessageRole;
-  content: string;
-  tokenCount: number | null;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

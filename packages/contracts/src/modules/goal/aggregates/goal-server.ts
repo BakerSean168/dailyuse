@@ -8,58 +8,14 @@
 import type { DomainDate, TransferDate, PersistenceDate, GoalId, IdentityId, GoalFolderId } from '@/primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
-import type { KeyResultServer, KeyResultServerDTO, KeyResultPersistenceDTO } from '../entities/key-result-server';
-import type { GoalReviewServer, GoalReviewServerDTO, GoalReviewPersistenceDTO } from '../entities/goal-review-server';
+import type { KeyResultServerDTO, KeyResultPersistenceDTO } from '../entities/key-result-server';
+import type { GoalReviewServerDTO, GoalReviewPersistenceDTO } from '../entities/goal-review-server';
 import type {
   GoalReminderConfig,
   GoalReminderConfigDTO,
   GoalReminderConfigPersistenceDTO,
 } from '../value-objects';
 import type { KeyResultWeightSnapshotDTO } from '../value-objects/key-result-weight-snapshot';
-
-// ============ Domain Shape (领域�? ============
-
-/**
- * Goal 聚合�?- Domain Shape
- * �?domain-server 中的 Class 实现�?
- */
-export interface GoalServer {
-  id: GoalId;
-  identityId: IdentityId;
-
-  // === 基础信息 ===
-  name: string;
-  description: string | null;
-  color: string;
-
-  feasibilityAnalysis: string | null;
-  motivation: string | null;
-
-  // === 状态与元数�?===
-  status: GoalStatus;
-  importance: ImportanceLevel;  /** 动态优先级分数（持久化属性） */
-  priority: number;  category: string | null;
-  tags: string[];
-
-  keyResults: KeyResultServer[] | null;
-  goalReviews: GoalReviewServer[] | null;
-
-  startDate: DomainDate | null;
-  targetDate: DomainDate | null;
-  completedAt: DomainDate | null;
-  archivedAt: DomainDate | null;
-
-  folderId: GoalFolderId | null;
-  parentGoalId: GoalId | null;
-
-  sortOrder: number;
-  reminderConfig: GoalReminderConfig | null;
-
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
 
 // ============ Transfer DTO (传输�? ============
 

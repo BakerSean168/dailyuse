@@ -3,4 +3,4 @@ export const CredentialType = {
   MAGIC_LINK: 'MAGIC_LINK',
   OAUTH: 'OAUTH',
 } as const;
-export type CredentialType = keyof typeof CredentialType;
+export type CredentialType = (typeof CredentialType)[keyof typeof CredentialType];

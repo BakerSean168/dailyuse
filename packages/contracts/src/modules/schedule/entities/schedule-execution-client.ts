@@ -36,59 +36,6 @@ export interface ScheduleExecutionClientDTO {
   resultSummary: string;
 }
 
-// ============ 实体接口 ============
-
-/**
- * ScheduleExecution 实体 - Client 接口
- */
-export interface ScheduleExecutionClient {
-  // 基础属?
-  id: ScheduleExecutionId;
-  scheduleTaskId: ScheduleTaskId;
-  executionTime: DomainDate;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: Record<string, any> | null;
-  error: string | null;
-  retryCount: number;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // UI 辅助属?
-  executionTimeFormatted: string;
-  statusDisplay: string;
-  statusColor: string;
-  durationFormatted: string;
-  hasError: boolean;
-  hasResult: boolean;
-  resultSummary: string;
-
-  // ===== 业务方法 =====
-
-  /**
-   * 检查是否成?
-   */
-
-  /**
-   * 检查是否失?
-   */
-
-  /**
-   * 检查是否超?
-   */
-
-  /**
-   * 检查是否跳?
-   */
-
-  /**
-   * 检查是否正在重?
-   */
-
-}
-
 /**
  * ScheduleExecution 静态工厂方法接?
  */

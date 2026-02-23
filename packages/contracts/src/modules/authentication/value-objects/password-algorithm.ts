@@ -6,4 +6,4 @@ export const PasswordAlgorithm = {
   ARGON2: 'ARGON2',
   SCRYPT: 'SCRYPT',
 } as const;
-export type PasswordAlgorithm = keyof typeof PasswordAlgorithm;
+export type PasswordAlgorithm = (typeof PasswordAlgorithm)[keyof typeof PasswordAlgorithm];

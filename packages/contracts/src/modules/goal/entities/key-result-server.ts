@@ -40,16 +40,3 @@ export interface KeyResultPersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-
-export interface KeyResultServer {
-  id: KeyResultId;
-  title: string;
-  description: string | null;
-  progress: KeyResultProgressDTO;
-  weight: number; // 权重 (0-100)
-  sortOrder: number;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

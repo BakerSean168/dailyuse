@@ -66,32 +66,3 @@ export interface FocusSessionPersistenceDTO {
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }
-
-/**
- * FocusSession Server Interface
- * 服务端接口
- */
-export interface FocusSessionServer {
-  // ===== 属性 =====
-  id: FocusSessionId;
-  identityId: IdentityId;
-  goalId: GoalId | null;
-  status: FocusSessionStatus;
-  durationMinutes: number;
-  actualDurationMinutes: number;
-  description: string | null;
-
-  startedAt: DomainDate | null;
-  pausedAt: DomainDate | null;
-  resumedAt: DomainDate | null;
-  completedAt: DomainDate | null;
-  cancelledAt: DomainDate | null;
-
-  pauseCount: number;
-  pausedDurationMinutes: number;
-
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

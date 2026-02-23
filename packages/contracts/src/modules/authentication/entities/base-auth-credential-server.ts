@@ -1,41 +1,15 @@
 /**
- * AuthCredential Entity - Server Interface
+ * AuthCredential Entity - Server DTO
  *
- * Base interface for authentication credentials
+ * Base DTO interface for authentication credentials.
+ * Base entity interface has been moved to domain model internal definition.
  */
 
 import type { CredentialStatus } from '../value-objects/credential-status';
 import { CredentialType, type AuthCredentialId } from '../value-objects';
-import type { DomainDate, TransferDate } from '@/primitives';
+import type { TransferDate } from '@/primitives';
 
-// ============ Base Credential Interface ============
-
-export interface BaseAuthCredentialServer {
-  /**
-   * Credential ID
-   */
-  id: AuthCredentialId;
-
-  /**
-   * Credential type
-   */
-  type: CredentialType;
-
-  /**
-   * Credential status
-   */
-  status: CredentialStatus;
-
-  /**
-   * Created at timestamp
-   */
-  createdAt: DomainDate;
-
-  /**
-   * Last used at timestamp (null if never used)
-   */
-  lastUsedAt: DomainDate | null;
-}
+// ============ Base Credential DTO ============
 
 export interface BaseAuthCredentialServerDTO {
   id: AuthCredentialId;
@@ -44,5 +18,3 @@ export interface BaseAuthCredentialServerDTO {
   createdAt: TransferDate;
   lastUsedAt: TransferDate | null;
 }
-
-

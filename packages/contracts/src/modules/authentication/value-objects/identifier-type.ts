@@ -2,4 +2,4 @@ export const IdentifierType = {
   EMAIL: 'EMAIL',
   PHONE: 'PHONE',
 } as const;
-export type IdentifierType = keyof typeof IdentifierType;
+export type IdentifierType = (typeof IdentifierType)[keyof typeof IdentifierType];

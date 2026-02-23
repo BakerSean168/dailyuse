@@ -9,21 +9,6 @@
 
 import type { ScheduleId, IdentityId, DomainDate, TransferDate } from '@/primitives';
 
-export interface CalendarEntryClient {
-  id: ScheduleId;
-  identityId: IdentityId;
-  title: string;
-  description: string | null;
-  startTime: DomainDate;
-  endTime: DomainDate;
-  duration: number;
-  hasConflict: boolean;
-  conflictingEntries: string[] | null;
-  priority: number | null;
-  location: string | null;
-  attendees: string[] | null;
-}
-
 export interface CalendarEntryClientDTO {
   id: string;
   identityId: string;

@@ -1,94 +1,17 @@
 /**
- * AuthIdentity Aggregate Root - Server Interface
- * 认证身份聚合根 - 服务端接口
+ * AuthIdentity Aggregate Root - Server DTO
+ * 认证身份聚合根 - 服务端 DTO
  *
- * 核心职责:
- * 1. 管理标识符集合 (邮箱、手机号等 VO)
- * 2. 管理 OAuth 绑定集合 (Entity 形式的标识符)
- * 3. 管理凭证集合 (仅密码凭证)
- * 4. 协调生命周期 (添加、删除、更新)
- * 5. 实施业务规则 (至少保留一个登录途径、登录失败锁定等)
+ * Server 端聚合根接口已移至领域模型内部定义 (AuthIdentityState)
+ * 此处仅保留 DTO 定义用于跨层数据传输
  */
 
-import type { AuthCredentialServer, AuthCredentialServerDTO } from '../entities/auth-credential-server';
+import type { AuthCredentialServerDTO } from '../entities/auth-credential-server';
 import type { AuthIdentifierDTO } from '../value-objects';
-import type { OAuthBindingServerDTO, OAuthBindingServer } from '../entities/oauth-binding';
-import type { DomainDate, TransferDate } from '@/primitives';
+import type { OAuthBindingServerDTO } from '../entities/oauth-binding';
+import type { TransferDate } from '@/primitives';
 import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
 import type { IdentityId } from '@/primitives';
-
-
-// ============ 聚合根接口 ============
-
-/**
- * Server 端身份聚合根
- * 持有完整的标识符、绑定、凭证和敏感信息
- */
-export interface AuthIdentityServer {
-  /**
-   * 身份 ID (强类型)
-   */
-  id: IdentityId;
-
-  /**
-   * 身份状态
-   */
-  status: AuthIdentityStatus;
-
-  /**
-   * 登录失败计数
-   */
-  failedLoginAttempts: number;
-
-  /**
-   * 最后失败尝试时间
-   */
-  lastFailedAttempt: DomainDate | null;
-
-  /**
-   * 锁定直到此时间 (null 表示未锁定)
-   */
-  lockedUntil: DomainDate | null;
-
-  /**
-   * 标识符集合 (邮箱/手机号 VO)
-   * 解决"如何找到用户"
-   */
-  identifiers: AuthIdentifierDTO[];
-
-  /**
-   * OAuth 绑定集合 (Entity 形式的标识符)
-   * 解决"通过第三方如何找到用户"
-   */
-  oauthBindings: OAuthBindingServer[];
-
-  /**
-   * 凭证列表 (仅 PasswordCredential)
-   * 解决"如何验证用户"
-   * 业务规则: 至少保留一个登录途径
-   */
-  credentials: AuthCredentialServer[];
-
-  /**
-   * 创建时间
-   */
-  createdAt: DomainDate;
-
-  /**
-   * 更新时间
-   */
-  updatedAt: DomainDate;
-
-  /**
-   * 同步版本号
-   */
-  version: number;
-
-  /**
-   * 软删除时间
-   */
-  deletedAt: DomainDate | null;
-}
 
 // ============ DTO 定义 ============
 
@@ -110,5 +33,3 @@ export interface AuthIdentityServerDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 }
-
-

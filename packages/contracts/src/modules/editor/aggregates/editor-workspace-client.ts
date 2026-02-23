@@ -8,15 +8,13 @@ import type { ProjectType } from '../value-objects/project-type';
 
 // 从值对象导入类�?
 import type {
-  WorkspaceLayoutClient,
   WorkspaceLayoutClientDTO,
-  WorkspaceSettingsClient,
   WorkspaceSettingsClientDTO,
 } from '../value-objects';
 import type { EditorWorkspaceServerDTO } from './editor-workspace-server';
 
 // 从实体导入类型
-import type { EditorSessionClient, EditorSessionClientDTO } from '../entities/editor-session-client';
+import type { EditorSessionClientDTO } from '../entities/editor-session-client';
 
 // ============ DTO 定义 ============
 
@@ -50,75 +48,4 @@ export interface EditorWorkspaceClientDTO {
   formattedLastAccessed: string | null; // "2 小时�?
   formattedCreatedAt: string; // "2024-10-10"
   formattedUpdatedAt: string; // "刚刚"
-}
-
-// ============ 聚合根接�?============
-
-/**
- * Editor Workspace Client Interface (聚合�?
- */
-export interface EditorWorkspaceClient {
-  // ===== 基础属性 =====
-  id: EditorWorkspaceId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  projectPath: string;
-  projectType: ProjectType;
-  layout: WorkspaceLayoutClient;
-  settings: WorkspaceSettingsClient;
-
-  // ===== 子实体集合 =====
-  sessions: EditorSessionClient[];
-
-  // ===== 状态 =====
-  isActive: boolean;
-  lastActiveSessionId: EditorSessionId | null;
-
-  // ===== 时间戳 =====
-  lastAccessedAt: DomainDate | null;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-
-  // ===== UI 辅助方法 =====
-
-  /**
-   * 获取显示名称
-   */
-
-  /**
-   * 获取项目类型标签
-   */
-
-  /**
-   * 获取状态颜�?
-   */
-
-  /**
-   * 是否可以激�?
-   */
-
-  /**
-   * 格式化最后访问时�?
-   */
-
-  // ===== DTO 转换方法 =====
-
-  /**
-   * 转换�?Client DTO
-   */
-
-  /**
-   * 转换�?Server DTO
-   */
-
-  /**
-   * �?Server DTO 创建实例（静态工厂方法）
-   */
-  // static fromServerDTO(dto: EditorWorkspaceServerDTO): EditorWorkspaceClient;
-
-  /**
-   * �?Client DTO 创建实例（静态工厂方法）
-   */
-  // static fromClientDTO(dto: EditorWorkspaceClientDTO): EditorWorkspaceClient;
 }

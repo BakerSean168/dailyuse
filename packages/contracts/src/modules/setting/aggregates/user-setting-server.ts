@@ -3,27 +3,9 @@
  * 用户设置聚合�?- 服务端接�?
  */
 
-import type { SettingId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
-import type { SettingEntryServer } from '../entities';
-
-
-// ============ aggregate interface============
-
-export interface UserSettingServer {
-  id: SettingId;
-  identityId: IdentityId;
-  entries: Map<string, SettingEntryServer>;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
-
+import type { SettingId, IdentityId, TransferDate, PersistenceDate } from '@/primitives';
 
 // ============ DTO 定义 ============
-
-
 
 /**
  * UserSetting Server DTO

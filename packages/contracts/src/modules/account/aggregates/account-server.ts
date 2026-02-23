@@ -12,25 +12,6 @@ import type { ContactPhone, ContactPhoneDTO, ContactPhonePersistenceDTO } from '
 
 import type { DomainDate, PersistenceDate, TransferDate } from '@/primitives';
 
-// ============ 实体接口 ============
-
-export interface AccountServer {
-  id: IdentityId;
-
-  status: AccountStatus;
-
-  profile: AccountProfile;
-  settings: AccountSettings;
-  email: ContactEmail;
-  phone: ContactPhone | null;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 // ============ DTO 定义 ============
 
 /**

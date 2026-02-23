@@ -6,12 +6,10 @@
 export type {
   ReminderHistoryServerDTO,
   ReminderHistoryPersistenceDTO,
-  ReminderHistoryServer,
 } from './reminder-history-server';
 
 export type {
   ReminderHistoryClientDTO,
-  ReminderHistoryClient,
 } from './reminder-history-client';
 
 export type {
@@ -19,5 +17,4 @@ export type {
   ReminderResponseServerDTO,
   ReminderResponseClientDTO,
   ReminderResponsePersistenceDTO,
-  ReminderResponseServer,
 } from './reminder-response-server';

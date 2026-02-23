@@ -7,34 +7,6 @@ import type { AiProviderConfigId, IdentityId, PersistenceDate, TransferDate, Dom
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 import type { AIModelInfo } from './ai-provider-config-client';
 
-
-export interface AIProviderConfigServer  {
-
-  id: AiProviderConfigId;
-  identityId: IdentityId;
-
-  name: string;
-
-  providerType: AIProviderType;
-
-  baseUrl: string;
-
-  apiKey: string;
-
-  defaultModel: string | null;
-
-  availableModels: AIModelInfo[];
-
-  isActive: boolean;
-  isDefault: boolean;
-  priority: number;
-
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}
-
 export interface AIProviderConfigPersistenceDTO {
   id: string;
   identityId: string;

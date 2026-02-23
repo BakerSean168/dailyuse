@@ -42,27 +42,3 @@ export interface TaskInstanceClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 }
-
-export interface TaskInstanceClient {
-  id: TaskInstanceId;
-  templateId: TaskTemplateId;
-  identityId: IdentityId;
-
-  instanceDate: DomainDate;
-  timeConfig: TaskTimeConfig;
-
-  importance?: ImportanceLevel;
-  priority?: number;
-
-  status: TaskInstanceStatus;
-  actualStartTime: DomainDate | null;
-  actualEndTime: DomainDate | null;
-  
-  comment: string | null;
-
-  // 同步字段
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-}

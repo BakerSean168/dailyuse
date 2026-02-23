@@ -52,34 +52,3 @@ export interface GoalFolderPersistenceDTO {
   deletedAt: PersistenceDate | null;
   version: number;
 }
-
-// 事件定义已移至 protocol/goal-event-map.ts
-
-// ============ 实体接口 ============
-
-/**
- * GoalFolder 聚合根 - Server 接口（实例方法）
- */
-export interface GoalFolderServer {
-  // 基础属性
-  id: GoalFolderId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  parentFolderId: GoalFolderId | null;
-  sortOrder: number;
-  isSystemFolder: boolean;
-  folderType: FolderType | null;
-  goalCount: number;
-  completedGoalCount: number;
-
-  // 时间戳
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // 版本控制
-  version: number;
-}

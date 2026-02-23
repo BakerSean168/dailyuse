@@ -37,54 +37,6 @@ export interface ReminderHistoryClientDTO {
   channelsText: string | null; // "应用�?+ 推�?
 }
 
-// ============ 实体接口 ============
-
-/**
- * Reminder History 实体 - Client 接口
- */
-export interface ReminderHistoryClient {
-  // 基础属�?
-  id: ReminderInstanceId;
-  templateId: ReminderTemplateId;
-  triggeredAt: DomainDate;
-  result: TriggerResult;
-  error: string | null;
-  notificationSent: boolean;
-  notificationChannels: NotificationChannel[] | null;
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  // UI 扩展
-  resultText: string;
-  timeAgo: string;
-  channelsText: string | null;
-
-  // ===== UI 业务方法 =====
-
-  /**
-   * 获取结果徽章
-   */
-
-  /**
-   * 获取显示文本
-   */
-
-  /**
-   * 是否成功
-   */
-
-  /**
-   * 是否失败
-   */
-
-  /**
-   * 是否跳过
-   */
-
-}
-
 /**
  * Reminder History Client 静态工厂方法接�?
  */

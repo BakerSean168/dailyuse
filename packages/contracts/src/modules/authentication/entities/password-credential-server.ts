@@ -1,21 +1,15 @@
-import type { BaseAuthCredentialServer, BaseAuthCredentialServerDTO } from './base-auth-credential-server';
+import type { BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 import type { HashedPassword } from '../value-objects/hashed-password';
-import type { DomainDate, TransferDate } from '@/primitives';
+import type { TransferDate } from '@/primitives';
 
 /**
- * 密码凭证 (Server 端持有哈希值)
- * ✅ Server 可以看到哈希值和盐值
- * ❌ 绝对不能序列化给 Client 端
+ * 密码凭证 DTO (Server 端持有哈希值)
+ * 
+ * Server 端实体接口已移至领域模型内部定义 (PasswordCredentialState)
+ * 此处仅保留 DTO 定义
  */
-export interface PasswordCredentialServer extends BaseAuthCredentialServer {
-  type: 'PASSWORD';
-  hashedPassword: HashedPassword;
-  passwordLastChangedAt: DomainDate;
-}
-
 export interface PasswordCredentialServerDTO extends BaseAuthCredentialServerDTO {
   type: 'PASSWORD';
   hashedPassword: HashedPassword;
   passwordLastChangedAt: TransferDate;
 }
-

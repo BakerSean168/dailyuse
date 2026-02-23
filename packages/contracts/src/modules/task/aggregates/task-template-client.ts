@@ -64,39 +64,3 @@ export interface TaskTemplateClientDTO {
   pendingInstanceCount: number;
   completionRate: number;
 }
-
-export interface TaskTemplateClient {
-  id: TaskTemplateId;
-  identityId: IdentityId;
-  name: string;
-  description: string | null;
-
-  timeConfig: TaskTimeConfig;
-  recurrenceRule: RecurrenceRule | null;
-  reminderConfig: TaskReminderConfig | null;
-  importance: ImportanceLevel;
-
-  priority?: number;
-
-  goalBinding: TaskGoalBinding | null;
-
-  folderId: GoalFolderId | null;
-  tags: string[];
-  color: string | null;
-  status: TaskTemplateStatus;
-  lastGeneratedDate: DomainDate | null;
-  generateAheadDays: number | null; // null for ONE_TIME tasks
-  version: number;
-  createdAt: DomainDate;
-  updatedAt: DomainDate;
-  deletedAt: DomainDate | null;
-
-  parentTaskId: TaskTemplateId | null;
-  startDate: DomainDate | null;
-  dueDate: DomainDate | null;
-  completedAt: DomainDate | null;
-  estimatedMinutes: number | null;
-  actualMinutes: number | null;
-  comment: string | null;
-  blockingReason: string | null;
-}
