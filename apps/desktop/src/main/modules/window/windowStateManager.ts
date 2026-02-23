@@ -148,7 +148,7 @@ export class WindowStateManager {
     }
 
     this.stateChangeTimer = setTimeout(() => {
-      this.updateState();
+      this.updateState().catch(() => {});
     }, 100);
   };
 
@@ -158,10 +158,10 @@ export class WindowStateManager {
    * Ensures state is saved immediately before the window closes.
    */
   private closeHandler = (): void => {
-    this.updateState();
+    this.updateState().catch(() => {});
   };
 
-  private updateState(): void {
+  private async updateState(): Promise<void> {
     if (!this.winRef) return;
 
     try {
@@ -178,7 +178,7 @@ export class WindowStateManager {
         this.state.height = windowBounds.height;
       }
 
-      this.saveState();
+      await this.saveState();
     } catch (err) {
       // Window might be destroyed
     }
@@ -186,11 +186,11 @@ export class WindowStateManager {
 
   /**
    * @method saveState
-   * @description Saves the current state to disk.
+   * @description Saves the current state to disk asynchronously.
    */
-  private saveState(): void {
+  private async saveState(): Promise<void> {
     try {
-      fs.writeFileSync(this.configPath, JSON.stringify(this.state));
+      await fs.promises.writeFile(this.configPath, JSON.stringify(this.state));
     } catch (err) {
       // Ignore write errors
     }
