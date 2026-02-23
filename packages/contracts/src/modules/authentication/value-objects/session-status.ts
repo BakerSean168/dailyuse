@@ -8,4 +8,4 @@ export const SessionStatus = {
   REVOKED: 'REVOKED'    // 被撤销 (踢下线/登出/改密强制下线)
 } as const;
 
-export type SessionStatus = typeof SessionStatus[keyof typeof SessionStatus];
+export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];

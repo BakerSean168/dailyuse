@@ -10,4 +10,4 @@ export const DeviceType = {
 
 // 2. 提取类型 (自动生成联合类型)
 // 结果等同于: 'DESKTOP' | 'MOBILE' | 'TABLET' ...
-export type DeviceType = typeof DeviceType[keyof typeof DeviceType];
+export type DeviceType = (typeof DeviceType)[keyof typeof DeviceType];

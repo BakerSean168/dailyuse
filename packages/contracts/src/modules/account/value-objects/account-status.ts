@@ -4,4 +4,4 @@ export const AccountStatus = {
   DEACTIVATED: 'DEACTIVATED',
 } as const;
 
-export type AccountStatus = typeof AccountStatus[keyof typeof AccountStatus];
+export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus];

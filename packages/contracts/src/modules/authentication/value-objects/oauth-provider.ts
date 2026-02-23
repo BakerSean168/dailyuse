@@ -7,4 +7,4 @@ export const OAuthProvider = {
     WEIBO: 'WEIBO'
 } as const;
 
-export type OAuthProvider = typeof OAuthProvider[keyof typeof OAuthProvider];
+export type OAuthProvider = (typeof OAuthProvider)[keyof typeof OAuthProvider];
