@@ -53,7 +53,6 @@ model Account {
   scheduleJobs                    ScheduleJob[]
   scheduleTasks                   ScheduleTask[]
   scheduleStatistics              ScheduleStatistic?
-  settings_                       Setting[]
   taskFolders                     TaskFolder[]
   taskTemplates                   TaskTemplate[]
   taskInstances                   TaskInstance[]

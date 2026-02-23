@@ -1,186 +1,37 @@
 import { apiClient } from '@/shared/api/instances';
 import type {
   UserSettingClientDTO,
-  UpdateUserSettingReq,
-  CreateUserSettingReq,
-  UpdateAppearanceReq,
-  UpdateLocaleReq,
-  UpdateWorkflowReq,
-  UpdatePrivacyReq,
-  UpdateExperimentalReq,
+  PreferenceCategory,
 } from '@dailyuse/contracts/setting';
 
 /**
- * UserSetting API 客户端
- * 负责与后端 /api/v1/user-settings 通信
+ * UserSetting API 客户端 — Aligned with PATCH /:category API
  */
 export class UserSettingApiClient {
-  private readonly baseUrl = '/user-settings';
+  private readonly baseUrl = '/settings';
 
-  // ===== UserSetting CRUD =====
+  async getUserSettings(): Promise<UserSettingClientDTO> {
+    return apiClient.get(this.baseUrl);
+  }
 
-  /**
-   * 创建用户设置
-   */
-  async createUserSetting(
-    request: CreateUserSettingReq,
+  async patchCategory(
+    category: PreferenceCategory,
+    patch: Record<string, unknown>,
   ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.post(this.baseUrl, request);
-    return data;
+    return apiClient.patch(`${this.baseUrl}/${category}`, patch);
   }
 
-  /**
-   * 根据UUID获取用户设置
-   */
-  async getUserSettingById(id: string): Promise<UserSettingClientDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/${id}`);
-    return data;
+  async resetUserSettings(category?: string): Promise<UserSettingClientDTO> {
+    return apiClient.post(`${this.baseUrl}/reset`, { category });
   }
 
-  /**
-   * 根据账户 ID获取用户设置
-   */
-  async getUserSettingByAccount(
-    identityId: string,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/account/${identityId}`);
-    return data;
+  async exportSettings(): Promise<string> {
+    return apiClient.post(`${this.baseUrl}/export`);
   }
 
-  /**
-   * 获取或创建用户设置（不存在时自动创建）
-   */
-  async getOrCreateUserSetting(
-    identityId: string,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/get-or-create`, { identityId });
-    return data;
-  }
-
-  /**
-   * 完整更新用户设置
-   */
-  async updateUserSetting(
-    id: string,
-    request: UpdateUserSettingReq,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.put(`${this.baseUrl}/${id}`, request);
-    return data;
-  }
-
-  /**
-   * 删除用户设置
-   */
-  async deleteUserSetting(id: string): Promise<void> {
-    await apiClient.delete(`${this.baseUrl}/${id}`);
-  }
-
-  // ===== Partial Updates =====
-
-  /**
-   * 更新外观设置
-   */
-  async updateAppearance(
-    id: string,
-    appearance: UpdateAppearanceReq,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/appearance`, { appearance });
-    return data;
-  }
-
-  /**
-   * 更新本地化设置
-   */
-  async updateLocale(
-    id: string,
-    locale: UpdateLocaleReq,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/locale`, { locale });
-    return data;
-  }
-
-  /**
-   * 更新工作流设置
-   */
-  async updateWorkflow(
-    id: string,
-    workflow: UpdateWorkflowReq,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/workflow`, { workflow });
-    return data;
-  }
-
-  /**
-   * 更新隐私设置
-   */
-  async updatePrivacy(
-    id: string,
-    privacy: UpdatePrivacyReq,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/privacy`, { privacy });
-    return data;
-  }
-
-  /**
-   * 更新实验性功能设置
-   */
-  async updateExperimental(
-    id: string,
-    experimental: UpdateExperimentalReq,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/experimental`, { experimental });
-    return data;
-  }
-
-  // ===== Quick Actions =====
-
-  /**
-   * 快速切换主题
-   */
-  async updateTheme(id: string, theme: string): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/theme`, { theme });
-    return data;
-  }
-
-  /**
-   * 快速切换语言
-   */
-  async updateLanguage(
-    id: string,
-    language: string,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/language`, { language });
-    return data;
-  }
-
-  // ===== Shortcut Management =====
-
-  /**
-   * 更新单个快捷键
-   */
-  async updateShortcut(
-    id: string,
-    action: string,
-    shortcut: string,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.patch(`${this.baseUrl}/${id}/shortcuts/${action}`, {
-      shortcut,
-    });
-    return data;
-  }
-
-  /**
-   * 删除单个快捷键
-   */
-  async deleteShortcut(
-    id: string,
-    action: string,
-  ): Promise<UserSettingClientDTO> {
-    const data = await apiClient.delete(`${this.baseUrl}/${id}/shortcuts/${action}`);
-    return data;
+  async importSettings(data: string): Promise<UserSettingClientDTO> {
+    return apiClient.post(`${this.baseUrl}/import`, { data });
   }
 }
 
-// 导出单例实例
 export const userSettingApiClient = new UserSettingApiClient();
-

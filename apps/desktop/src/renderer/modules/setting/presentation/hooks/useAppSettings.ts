@@ -1,17 +1,16 @@
 /**
  * useAppSettings Hook
  *
- * 应用设置管理 Hook
+ * 应用设置管理 Hook — Aligned with patchCategory API
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { settingApplicationService } from '@dailyuse/setting/application-client';
-import type { UserSettingClientDTO, AppConfigClientDTO } from '@dailyuse/contracts/setting';
+import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 import type { UpdateAppearanceInput, UpdateLocaleInput } from '@dailyuse/setting/application-client';
 
 export interface AppSettingsState {
   userSettings: UserSettingClientDTO | null;
-  appConfig: AppConfigClientDTO | null;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -19,7 +18,6 @@ export interface AppSettingsState {
 
 export interface UseAppSettingsReturn extends AppSettingsState {
   loadSettings: () => Promise<void>;
-  loadAppConfig: () => Promise<void>;
   updateAppearance: (input: UpdateAppearanceInput) => Promise<void>;
   updateLocale: (input: UpdateLocaleInput) => Promise<void>;
   resetSettings: () => Promise<void>;
@@ -33,7 +31,6 @@ export interface UseAppSettingsReturn extends AppSettingsState {
 export function useAppSettings(): UseAppSettingsReturn {
   const [state, setState] = useState<AppSettingsState>({
     userSettings: null,
-    appConfig: null,
     loading: false,
     saving: false,
     error: null,
@@ -56,27 +53,6 @@ export function useAppSettings(): UseAppSettingsReturn {
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : '加载设置失败',
-      }));
-    }
-  }, []);
-
-  /**
-   * 加载应用配置
-   */
-  const loadAppConfig = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const appConfig = await settingApplicationService.getAppConfig();
-      setState((prev) => ({
-        ...prev,
-        appConfig,
-        loading: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : '加载应用配置失败',
       }));
     }
   }, []);
@@ -183,13 +159,11 @@ export function useAppSettings(): UseAppSettingsReturn {
   // 初始加载
   useEffect(() => {
     loadSettings();
-    loadAppConfig();
-  }, [loadSettings, loadAppConfig]);
+  }, [loadSettings]);
 
   return {
     ...state,
     loadSettings,
-    loadAppConfig,
     updateAppearance,
     updateLocale,
     resetSettings,

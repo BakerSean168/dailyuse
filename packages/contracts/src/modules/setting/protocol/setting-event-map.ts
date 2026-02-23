@@ -1,13 +1,13 @@
 import type {
-  UserSettingUpdatedEvent,
+  UserSettingCreatedEvent,
+  UserSettingPatchedEvent,
   UserSettingResetEvent,
   SettingImportedEvent,
-  AppConfigUpdatedEvent,
 } from '../domain/events';
 
 export type SettingEventMap = {
-  'setting:UserSettingUpdated': UserSettingUpdatedEvent;
+  'setting:UserSettingCreated': UserSettingCreatedEvent;
+  'setting:UserSettingPatched': UserSettingPatchedEvent;
   'setting:UserSettingReset': UserSettingResetEvent;
   'setting:SettingImported': SettingImportedEvent;
-  'setting:AppConfigUpdated': AppConfigUpdatedEvent;
 };

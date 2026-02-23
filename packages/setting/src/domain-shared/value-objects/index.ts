@@ -5,9 +5,6 @@
 
 // IDs
 export { SettingId } from './setting-id';
-export { SettingEntryId } from './setting-entry-id';
-export { SettingGroupId } from './setting-group-id';
-export { SettingHistoryId } from './setting-history-id';
 
 // Enum-like Value Objects
 export { SettingValueType } from './setting-value-type';

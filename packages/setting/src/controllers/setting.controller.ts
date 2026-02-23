@@ -9,13 +9,13 @@ import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
-  UpdateUserSettingSchema,
+  PatchUserSettingSchema,
   ResetUserSettingSchema,
   ExportSettingsSchema,
   ImportSettingsSchema,
 } from '@dailyuse/contracts/setting';
 import type {
-  UpdateUserSettingReq,
+  PatchUserSettingReq,
   ResetUserSettingReq,
   ExportSettingsReq,
   ImportSettingsReq,
@@ -26,7 +26,7 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 
 export interface SettingUseCases {
   getUserSetting(ctx: Context): Promise<Result<unknown>>;
-  updateUserSetting(data: UpdateUserSettingReq, ctx: Context): Promise<Result<unknown>>;
+  patchUserSetting(data: PatchUserSettingReq, ctx: Context): Promise<Result<unknown>>;
   resetUserSetting(ctx: Context, category?: string): Promise<Result<unknown>>;
   exportSettings(ctx: Context): Promise<Result<unknown>>;
   importSettings(data: ImportSettingsReq, ctx: Context): Promise<Result<unknown>>;
@@ -40,8 +40,8 @@ export class SettingController {
     return this.useCases.getUserSetting(ctx);
   }
 
-  async updateUserSetting(input: UpdateUserSettingReq, ctx: Context): Promise<Result<unknown>> {
-    const parsed = UpdateUserSettingSchema.safeParse(input);
+  async patchUserSetting(input: PatchUserSettingReq, ctx: Context): Promise<Result<unknown>> {
+    const parsed = PatchUserSettingSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -49,7 +49,7 @@ export class SettingController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateUserSetting(parsed.data, ctx);
+    return this.useCases.patchUserSetting(parsed.data, ctx);
   }
 
   async resetUserSetting(input: ResetUserSettingReq, ctx: Context): Promise<Result<unknown>> {

@@ -15,7 +15,7 @@ const logger = createLogger('SettingElectron');
 const Ch = {
   GET_ALL: 'setting:all',
   GET: 'setting:get',
-  UPDATE: 'setting:update',
+  PATCH: 'setting:patch',
   RESET: 'setting:reset',
   IMPORT: 'setting:import',
   EXPORT: 'setting:export',
@@ -41,14 +41,12 @@ export const SettingElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.GET_ALL, (_, params) => mod.getUserSetting.execute(resolveIdentityId(params)));
     ipcMain.handle(Ch.GET, (_, params) => mod.getUserSetting.execute(resolveIdentityId(params)));
-    ipcMain.handle(Ch.UPDATE, (_, dto) => {
-      const identityId = resolveIdentityId(dto);
+    ipcMain.handle(Ch.PATCH, (_, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
-      const section = typeof payload.section === 'string' ? payload.section : undefined;
-      const updates = (payload.updates as Record<string, unknown> | undefined)
-        ?? (payload.settings as Record<string, unknown> | undefined)
-        ?? (section ? { [section]: payload } : payload);
-      return mod.updateUserSetting.execute(identityId, updates as any);
+      const identityId = resolveIdentityId(dto);
+      const category = payload.category as string;
+      const patch = (payload.patch as Record<string, unknown>) ?? {};
+      return mod.patchUserSetting.execute(identityId, category as any, patch);
     });
     ipcMain.handle(Ch.RESET, (_, params) => {
       const payload = (params && typeof params === 'object' ? params : {}) as Record<string, unknown>;
