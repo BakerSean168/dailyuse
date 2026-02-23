@@ -4,12 +4,20 @@
  */
 
 // ============ DTO 定义 ============
+export const RepositorySearchEngine = {
+  Postgres: 'postgres',
+  Meilisearch: 'meilisearch',
+  Elasticsearch: 'elasticsearch',
+} as const;
+
+export type RepositorySearchEngine =
+  (typeof RepositorySearchEngine)[keyof typeof RepositorySearchEngine];
 
 /**
  * Repository Config DTO (Server)
  */
 export interface RepositoryConfigDTO {
-  searchEngine: 'postgres' | 'meilisearch' | 'elasticsearch';
+  searchEngine: RepositorySearchEngine;
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;
@@ -21,7 +29,7 @@ export interface RepositoryConfigDTO {
  * 包含 UI 计算字段
  */
 export interface RepositoryConfigClientDTO {
-  searchEngine: 'postgres' | 'meilisearch' | 'elasticsearch';
+  searchEngine: RepositorySearchEngine;
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;
@@ -39,7 +47,7 @@ export interface RepositoryConfigClientDTO {
  * Repository Config 值对象接口
  */
 export interface RepositoryConfig {
-  searchEngine: 'postgres' | 'meilisearch' | 'elasticsearch';
+  searchEngine: RepositorySearchEngine;
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;
@@ -50,7 +58,7 @@ export interface RepositoryConfig {
  * 包含 UI 计算属性
  */
 export interface RepositoryConfigClient {
-  searchEngine: 'postgres' | 'meilisearch' | 'elasticsearch';
+  searchEngine: RepositorySearchEngine;
   enableGit: boolean;
   autoSync?: boolean;
   syncInterval?: number;

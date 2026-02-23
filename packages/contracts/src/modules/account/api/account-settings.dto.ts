@@ -7,8 +7,8 @@ export type GetAccountSettingsReq = void;
 export type GetAccountSettingsRes = AccountSettingsDTO;
 
 export const UpdateAccountSettingsSchema = z.object({
-  theme: z.nativeEnum(ThemeType).optional(),
-  language: z.nativeEnum(LanguageCode).optional(),
+  theme: z.enum(ThemeType).optional(),
+  language: z.enum(LanguageCode).optional(),
   timezone: z.string().optional(),
   notificationEnabled: z.boolean().optional(),
 });

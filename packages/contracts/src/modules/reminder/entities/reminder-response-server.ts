@@ -6,7 +6,16 @@
 /**
  * 响应行为类型
  */
-export type ReminderResponseAction = 'CLICKED' | 'IGNORED' | 'SNOOZED' | 'DISMISSED' | 'COMPLETED';
+export const ReminderResponseAction = {
+  Clicked: 'CLICKED',
+  Ignored: 'IGNORED',
+  Snoozed: 'SNOOZED',
+  Dismissed: 'DISMISSED',
+  Completed: 'COMPLETED',
+} as const;
+
+export type ReminderResponseAction =
+  (typeof ReminderResponseAction)[keyof typeof ReminderResponseAction];
 
 // ============ DTO 定义 ============
 

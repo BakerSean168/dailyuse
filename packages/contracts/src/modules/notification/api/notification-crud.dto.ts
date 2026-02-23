@@ -25,17 +25,17 @@ export const CreateNotificationSchema = z.object({
   identityId: brandedId<IdentityId>(),
   title: z.string().min(1).max(200),
   content: z.string().min(1),
-  type: z.nativeEnum(NotificationType),
-  category: z.nativeEnum(NotificationCategory),
+  type: z.enum(NotificationType),
+  category: z.enum(NotificationCategory),
   importance: z.string().optional(),
   urgency: z.string().optional(),
-  relatedEntityType: z.nativeEnum(RelatedEntityType).optional(),
+  relatedEntityType: z.enum(RelatedEntityType).optional(),
   relatedEntityId: z.string().uuid().optional(),
   actions: z.array(z.any().openapi({ type: 'object' })).optional(),
   metadata: z.record(z.string(), openApiJsonValue).optional(),
   expiresAt: z.number().int().optional(),
   sendImmediately: z.boolean().default(false).optional(),
-  channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
+  channels: z.array(z.enum(NotificationChannelType)).optional(),
 });
 
 export type CreateNotificationReq = z.infer<typeof CreateNotificationSchema>;
@@ -48,7 +48,7 @@ export type CreateNotificationRes = NotificationServerDTO;
 export const UpdateNotificationSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).optional(),
-  status: z.nativeEnum(NotificationStatus).optional(),
+  status: z.enum(NotificationStatus).optional(),
   metadata: z.record(z.string(), openApiJsonValue).optional(),
   expiresAt: z.number().int().optional(),
 });

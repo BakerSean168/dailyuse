@@ -10,7 +10,7 @@ export const UpdateAccountSchema = z.object({
   avatar: z.string().url().optional().nullable(),
   bio: z.string().max(500).optional().nullable(),
   timezone: z.string().optional(),
-  language: z.nativeEnum(LanguageCode).optional(),
+  language: z.enum(LanguageCode).optional(),
 });
 
 export type UpdateAccountReq = z.infer<typeof UpdateAccountSchema>;

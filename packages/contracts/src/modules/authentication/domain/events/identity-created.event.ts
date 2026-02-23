@@ -1,5 +1,13 @@
 import type { IdentityId } from '@/primitives';
 
+export const IdentityCreateMethod = {
+  Email: 'EMAIL',
+  Oauth: 'OAUTH',
+  Phone: 'PHONE',
+} as const;
+
+export type IdentityCreateMethod = (typeof IdentityCreateMethod)[keyof typeof IdentityCreateMethod];
+
 /**
  * Identity Created Event
  * 
@@ -11,7 +19,7 @@ export interface IdentityCreatedEvent {
   identityId: IdentityId;
   
   /** Creation method: EMAIL, OAUTH, PHONE */
-  createMethod: 'EMAIL' | 'OAUTH' | 'PHONE';
+  createMethod: IdentityCreateMethod;
   
   /** Email address (for EMAIL creation) */
   email?: string;

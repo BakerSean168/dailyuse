@@ -7,7 +7,17 @@
 /**
  * 搜索模式
  */
-export type SearchMode = 'all' | 'file' | 'tag' | 'line' | 'section' | 'path' | 'property';
+export const SearchMode = {
+  All: 'all',
+  File: 'file',
+  Tag: 'tag',
+  Line: 'line',
+  Section: 'section',
+  Path: 'path',
+  Property: 'property',
+} as const;
+
+export type SearchMode = (typeof SearchMode)[keyof typeof SearchMode];
 
 /**
  * 搜索请求
@@ -38,7 +48,16 @@ export interface SearchMatch {
 /**
  * 匹配类型
  */
-export type MatchType = 'filename' | 'tag' | 'content' | 'section' | 'path' | 'property';
+export const MatchType = {
+  Filename: 'filename',
+  Tag: 'tag',
+  Content: 'content',
+  Section: 'section',
+  Path: 'path',
+  Property: 'property',
+} as const;
+
+export type MatchType = (typeof MatchType)[keyof typeof MatchType];
 
 /**
  * 搜索结果项

@@ -27,7 +27,7 @@ export const CreateTaskTemplateSchema = z.object({
   timeConfig: TaskTimeConfigSchema,
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   reminderConfig: TaskReminderConfigSchema.optional().nullable(),
-  importance: z.nativeEnum(ImportanceLevel),
+  importance: z.enum(ImportanceLevel),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).default([]).optional(),
   color: z.string().optional().nullable(),

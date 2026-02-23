@@ -5,6 +5,15 @@
 
 import type { ExecutionStatus } from './execution-status';
 
+export const ExecutionHealthStatus = {
+  Healthy: 'healthy',
+  Warning: 'warning',
+  Critical: 'critical',
+} as const;
+
+export type ExecutionHealthStatus =
+  (typeof ExecutionHealthStatus)[keyof typeof ExecutionHealthStatus];
+
 // ============ 接口定义 ============
 
 /**
@@ -87,7 +96,7 @@ export interface IExecutionInfoClient {
   executionCountFormatted: string; // "已执�?100 �?
 
   /** 健康状�?*/
-  healthStatus: 'healthy' | 'warning' | 'critical'; // 基于连续失败次数
+  healthStatus: ExecutionHealthStatus; // 基于连续失败次数
 
   // 值对象方�?
 
@@ -121,7 +130,7 @@ export interface ExecutionInfoClientDTO {
   lastRunAtFormatted: string | null;
   lastExecutionDurationFormatted: string | null;
   executionCountFormatted: string;
-  healthStatus: 'healthy' | 'warning' | 'critical';
+  healthStatus: ExecutionHealthStatus;
 }
 
 /**

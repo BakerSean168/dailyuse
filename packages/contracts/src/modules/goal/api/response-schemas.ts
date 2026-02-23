@@ -29,8 +29,8 @@ import type { KeyResultClientDTO } from '../entities/key-result-client';
  * KeyResultProgress DTO Schema (嵌入式)
  */
 export const KeyResultProgressDTOSchema = z.object({
-  valueType: z.nativeEnum(KeyResultValueType),
-  aggregationMethod: z.nativeEnum(KeyResultCalculationMethod),
+  valueType: z.enum(KeyResultValueType),
+  aggregationMethod: z.enum(KeyResultCalculationMethod),
   initialValue: z.number(),
   targetValue: z.number(),
   currentValue: z.number(),
@@ -70,7 +70,7 @@ export const KeyResultSnapshotDTOSchema = z.object({
 export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.object({
   id: brandedId<GoalReviewId>(),
   goalId: brandedId<GoalId>(),
-  type: z.nativeEnum(ReviewType),
+  type: z.enum(ReviewType),
   rating: z.number(),
   summary: z.string(),
   achievements: z.string().nullable(),
@@ -88,7 +88,7 @@ export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.objec
  * Reminder Trigger Schema (嵌入式)
  */
 const ReminderTriggerSchema = z.object({
-  type: z.nativeEnum(ReminderTriggerType),
+  type: z.enum(ReminderTriggerType),
   value: z.number(),
   enabled: z.boolean(),
 });
@@ -118,8 +118,8 @@ export const GoalClientDTOSchema: z.ZodType<GoalClientDTO> = z.object({
   color: z.string().nullable(),
   feasibilityAnalysis: z.string().nullable(),
   motivation: z.string().nullable(),
-  status: z.nativeEnum(GoalStatus),
-  importance: z.nativeEnum(ImportanceLevel),
+  status: z.enum(GoalStatus),
+  importance: z.enum(ImportanceLevel),
   priority: z.number(),
   category: z.string().nullable(),
   tags: z.array(z.string()),
@@ -152,7 +152,7 @@ export const GoalFolderClientDTOSchema: z.ZodType<GoalFolderClientDTO> = z.objec
   parentFolderId: brandedId<GoalFolderId>().nullable(),
   sortOrder: z.number(),
   isSystemFolder: z.boolean(),
-  folderType: z.nativeEnum(FolderType).nullable(),
+  folderType: z.enum(FolderType).nullable(),
   goalCount: z.number(),
   completedGoalCount: z.number(),
   version: z.number(),
@@ -172,7 +172,7 @@ export const FocusSessionClientDTOSchema = z.object({
   id: brandedId<FocusSessionId>(),
   identityId: brandedId<IdentityId>(),
   goalId: brandedId<GoalId>().nullable(),
-  status: z.nativeEnum(FocusSessionStatus),
+  status: z.enum(FocusSessionStatus),
   durationMinutes: z.number(),
   actualDurationMinutes: z.number(),
   description: z.string().nullable(),

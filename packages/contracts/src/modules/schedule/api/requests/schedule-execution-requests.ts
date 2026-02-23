@@ -13,7 +13,7 @@ import { ExecutionStatus } from '../../value-objects/execution-status';
 
 export const ScheduleExecutionQueryParamsSchema = z.object({
   taskId: brandedId<ScheduleTaskId>().optional(),
-  status: z.nativeEnum(ExecutionStatus).optional(),
+  status: z.enum(ExecutionStatus).optional(),
   startTime: z.number().positive().optional(),
   endTime: z.number().positive().optional(),
   page: z.number().min(1).optional(),
