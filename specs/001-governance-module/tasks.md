@@ -141,9 +141,9 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Tests for User Story 2 Application (OPTIONAL) ⚠️
 
-- [ ] T055 [P] [US2] Integration test for RuleApplicationService.createRule in packages/governance/src/application/__tests__/rule-application-service.spec.ts
-- [ ] T056 [P] [US2] Integration test for RuleApplicationService.updateRule in packages/governance/src/application/__tests__/rule-application-service.spec.ts
-- [ ] T057 [P] [US2] Integration test for PrismaRuleRepository with in-memory SQLite in packages/governance/src/infrastructure/__tests__/prisma-rule-repository.spec.ts
+- [ ] T055 [P] [US2] Integration test for CreateRuleUseCase in packages/governance/src/application-server/use-cases/commands/__tests__/create-rule.use-case.spec.ts
+- [ ] T056 [P] [US2] Integration test for UpdateRuleUseCase in packages/governance/src/application-server/use-cases/commands/__tests__/update-rule.use-case.spec.ts
+- [ ] T057 [P] [US2] Integration test for RulePrismaRepository in packages/governance/src/infrastructure-server/adapters/prisma/__tests__/rule-prisma.repository.spec.ts
 
 ### Implementation for User Story 2 Application
 
@@ -260,40 +260,38 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ---
 
-## Phase 8: User Story 3 - Keyword Search (Priority: P3)
+## Phase 8: User Story 3 - Keyword Search Backend (Priority: P3)
 
-**Goal**: Enable experienced developers to quickly find rules by keyword with relevance-scored results
+**Goal**: Wire server-side search infrastructure to enable the already-built client search UI
 
-**Independent Test**: Keyword search returns results ordered by relevance (title match > code > description > tags) with status weighting
+**Independent Test**: `GET /api/governance/rules/search?q=collection` returns relevance-scored results; client SearchBar displays matching rules ordered by relevance
+
+> **NOTE**: Contracts (`SearchRulesQuerySchema`/`SearchRulesQuery`/`SearchRulesRes`) already exist in `contracts/api/rules.ts`. `IRuleRepository.search()` interface already defined. Client adapters (`RuleHttpAdapter.searchRules()`, `RuleIpcAdapter.searchRules()`) and Web UI (T127-T131) already implemented. Only server-side use case, repository impl, controller, and route wiring remain.
 
 ### Tests for User Story 3 (OPTIONAL) ⚠️
 
-- [ ] T118 [P] [US3] Unit test for relevance scoring algorithm in packages/governance/src/application/__tests__/rule-search-application-service.spec.ts
-- [ ] T119 [P] [US3] Contract test for GET /api/rules/search endpoint in apps/api/src/modules/governance/__tests__/governance-search.routes.spec.ts
+- [ ] T118 [P] [US3] Unit test for SearchRulesUseCase relevance scoring in packages/governance/src/application-server/use-cases/queries/__tests__/search-rules.use-case.spec.ts
+- [ ] T119 [P] [US3] Contract test for GET /api/governance/rules/search endpoint in packages/governance/src/__tests__/governance-search.routes.spec.ts
 
-### Implementation for User Story 3 Application
+### Implementation for User Story 3 Server
 
-**Application Layer - Search** (packages/governance/src/application/)
+**Application Layer - CQRS Query** (packages/governance/src/application-server/use-cases/queries/)
 
-- [ ] T120 [P] [US3] Create SearchRulesReq and SearchRulesRes types in packages/governance/src/application/dtos/search-rules.dto.ts
-- [ ] T121 [US3] Implement RuleSearchApplicationService with relevance scoring in packages/governance/src/application/services/rule-search-application-service.ts
-- [ ] T122 [US3] Add relevance scoring logic (title exact > partial > code > description > tags) in packages/governance/src/application/services/rule-search-application-service.ts
-- [ ] T123 [US3] Add status weighting (Active > Draft > Deprecated) to search results in packages/governance/src/application/services/rule-search-application-service.ts
+- [ ] T120 [US3] Create SearchRulesUseCase class with execute(query, filters, cx) method in packages/governance/src/application-server/use-cases/queries/search-rules.use-case.ts
+- [ ] T121 [US3] Add relevance scoring logic (title exact > partial > code > description > tags) with status weighting (Active > Draft > Deprecated) in packages/governance/src/application-server/use-cases/queries/search-rules.use-case.ts
+- [ ] T122 [P] [US3] Export SearchRulesUseCase from packages/governance/src/application-server/use-cases/queries/index.ts and packages/governance/src/application-server/index.ts
 
-### Implementation for User Story 3 Infrastructure
+**Infrastructure Layer - Repository** (packages/governance/src/infrastructure-server/adapters/prisma/)
 
-- [ ] T124 [US3] Add PrismaRuleRepository.search() method with keyword matching in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [ ] T123 [US3] Implement RulePrismaRepository.search() with Prisma keyword matching (contains on title/code/description) in packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts
 
-### Implementation for User Story 3 API
+**Controller & API Wiring** (packages/governance/src/)
 
-**API Layer - Search** (apps/api/src/modules/governance/)
+- [ ] T124 [US3] Add searchRules method to GovernanceUseCases interface and GovernanceController in packages/governance/src/controllers/governance.controller.ts
+- [ ] T125 [US3] Instantiate SearchRulesUseCase in GovernanceModule composition root in packages/governance/src/infrastructure-server/governance.module.ts
+- [ ] T126 [US3] Wire searchRules handler in GovernanceApiModule and register GET /search route via RouteRegistrar in packages/governance/src/api/module.ts and packages/governance/src/api/routes.ts
 
-- [ ] T125 [P] [US3] Create Zod SearchRulesQuerySchema in apps/api/src/modules/governance/schemas/search-rules.schema.ts
-- [ ] T126 [US3] Implement GET /api/rules/search route in apps/api/src/modules/governance/routes/governance-search.routes.ts
-
-### Implementation for User Story 3 Web UI
-
-**Web UI - Search** (apps/web/src/modules/governance/)
+### Already Completed (Web UI - Search) ✅
 
 - [x] T127 [P] [US3] Add governanceStore.searchRules action in apps/web/src/modules/governance/stores/governance-store.ts
 - [x] T128 [US3] Add SearchBar component with debounce (300ms) in apps/web/src/modules/governance/components/SearchBar.vue
@@ -301,82 +299,113 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 - [x] T130 [US3] Wire SearchBar to GovernanceListView in apps/web/src/modules/governance/views/GovernanceListView.vue
 - [x] T131 [US3] Add keyboard shortcut (/) for search focus in apps/web/src/modules/governance/views/GovernanceListView.vue
 
-**Checkpoint**: User Story 3 complete - Keyword search functional with relevance scoring
+**Checkpoint**: User Story 3 complete - Keyword search functional end-to-end with relevance scoring
 
 ---
 
 ## Phase 9: User Story 4 - RBAC & Audit (Priority: P4)
 
-**Goal**: Enforce role-based access control and display immutable audit trails for governance
+**Goal**: Verify role-based access control enforcement and implement revision history UI
 
-**Independent Test**: Engineers can read but not publish; Tech Leads can publish; revision history displays all changes
+**Independent Test**: Engineers can read but not publish; Tech Leads can publish; revision history displays all changes with author/timestamp/diff
+
+> **NOTE**: RBAC middleware (T010-T011) already configured. Routes already use `requireRole`/`auth` middleware. `GetRuleRevisionsUseCase` already exists. `RuleRevision` entity and `IRuleRevisionRepository` already implemented. Only verification, integration tightening, and web UI remain.
 
 ### Tests for User Story 4 (OPTIONAL) ⚠️
 
-- [ ] T132 [P] [US4] Contract test for RBAC enforcement on POST /api/rules in apps/api/src/modules/governance/__tests__/rbac-enforcement.spec.ts
-- [ ] T133 [P] [US4] Integration test for revision history retrieval in packages/governance/src/application/__tests__/rule-revision-application-service.spec.ts
+- [ ] T132 [P] [US4] Integration test for RBAC enforcement across all governance routes in packages/governance/src/__tests__/rbac-enforcement.spec.ts
+- [ ] T133 [P] [US4] Integration test for RuleRevision auto-creation on create/update flow in packages/governance/src/__tests__/rule-revision-integration.spec.ts
 
-### Implementation for User Story 4 RBAC
+### Implementation for User Story 4 RBAC Verification
 
-**API Layer - RBAC** (apps/api/src/middleware/)
+- [ ] T134 [US4] Verify requireRole middleware enforces TechLead/Architect on POST/PUT/PATCH/DELETE routes in packages/governance/src/api/routes.ts
+- [ ] T135 [US4] Verify all GET routes (list, get, by-code, revisions, search) allow any authenticated user in packages/governance/src/api/routes.ts
 
-- [ ] T134 [US4] Verify requireRole middleware enforces Tech Lead/Architect on create/update in apps/api/src/middleware/rbac.ts
-- [ ] T135 [US4] Verify authenticateUser middleware allows all users on read endpoints in apps/api/src/middleware/auth.ts
+### Implementation for User Story 4 Revision Integration
 
-### Implementation for User Story 4 Revision History
-
-**Application Layer - Audit**
-
-- [ ] T136 [US4] Verify RuleRevision records created on Rule.create() in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T137 [US4] Verify RuleRevision records created on Rule.update() in packages/governance/src/domain-server/aggregates/rule.ts
-- [ ] T138 [US4] Add integration between Rule and RuleRevision in save flow in packages/governance/src/infrastructure/repositories/prisma-rule-repository.ts
+- [ ] T136 [US4] Verify RuleRevision records created on Rule.create() in CreateRuleUseCase in packages/governance/src/application-server/use-cases/commands/create-rule.use-case.ts
+- [ ] T137 [US4] Verify RuleRevision records created on Rule.update() in UpdateRuleUseCase in packages/governance/src/application-server/use-cases/commands/update-rule.use-case.ts
+- [ ] T138 [US4] Verify revision save flow in RulePrismaRepository uses Prisma transaction for atomic Rule+Revision persistence in packages/governance/src/infrastructure-server/adapters/prisma/rule-prisma.repository.ts
 
 ### Implementation for User Story 4 Web UI
 
 **Web UI - Audit Trail** (apps/web/src/modules/governance/)
 
-- [ ] T139 [P] [US4] Add governanceStore.fetchRevisions action in apps/web/src/modules/governance/stores/governance-store.ts
+- [ ] T139 [P] [US4] Add governanceStore.fetchRevisions(ruleId) action in apps/web/src/modules/governance/stores/governance-store.ts
 - [ ] T140 [US4] Implement RevisionHistoryView component with timeline in apps/web/src/modules/governance/views/RevisionHistoryView.vue
-- [ ] T141 [US4] Add RevisionCard component showing author/timestamp/changes in apps/web/src/modules/governance/components/RevisionCard.vue
-- [ ] T142 [US4] Wire RevisionHistoryView to router in apps/web/src/router/governance-routes.ts
+- [ ] T141 [US4] Add RevisionCard component showing author/timestamp/changed fields/diff in apps/web/src/modules/governance/components/RevisionCard.vue
+- [ ] T142 [US4] Wire RevisionHistoryView to router at /governance/:id/history in apps/web/src/router/governance-routes.ts
 
 **Checkpoint**: User Story 4 complete - RBAC enforced, audit trail visible
 
 ---
 
-## Phase 10: Desktop UI (Optional - Post-MVP)
+## Phase 10: Legacy Cleanup & Client Service Wiring
 
-**Goal**: Provide desktop app support for offline rule browsing (React in Electron renderer)
+**Purpose**: Remove legacy code duplication, wire stubbed services, fix outdated tests and pre-existing errors
+
+> **NOTE**: Research revealed: (1) `src/domain/` is a pre-refactoring duplicate of `domain-server/` + `domain-shared/`, (2) `RuleClientService` methods are all TODO stubs, (3) two test files use outdated schema shapes, (4) pre-existing typecheck errors in routes.ts and controller.
+
+- [ ] T143 [P] Remove legacy domain/ directory (duplicates domain-server/ and domain-shared/) in packages/governance/src/domain/
+- [ ] T144 Remove domain/ re-export from packages/governance/src/index.ts barrel export
+- [ ] T145 Wire RuleClientService methods to delegate to IRuleApiClient port (replace all TODO stubs returning error/empty) in packages/governance/src/application-client/services/rule-client-service.ts
+- [ ] T146 [P] Fix or remove outdated contract test file (uses old schema shape with `examples: { good, bad }`) in packages/governance/src/contracts/api/__tests__/rule-crud.dto.test.ts
+- [ ] T147 [P] Fix or remove outdated legacy domain Rule.create test in packages/governance/src/domain/aggregates/__tests__/rule.test.ts
+- [ ] T148 [P] Fix pre-existing typecheck errors (unknown type assignments, number|undefined→number) in packages/governance/src/api/routes.ts
+- [ ] T149 Fix pre-existing typecheck error (duplicate ruleId property) in packages/governance/src/controllers/governance.controller.ts
+
+**Checkpoint**: Codebase clean — no legacy duplication, all client services wired, tests aligned with current schemas
+
+---
+
+## Phase 11: Desktop UI & Electron Entry (Optional - Post-MVP)
+
+**Goal**: Desktop app support for offline rule browsing via Electron renderer (React + shadcn/ui)
 
 **Independent Test**: Desktop app can list, filter, and view rules with same functionality as web
 
-### Implementation for Desktop UI (Optional)
+> **NOTE**: Authentication module provides reference patterns: `electron-entry/index.ts` for module entry, IPC adapter already exists at `infrastructure-client/adapters/ipc/rule-ipc.adapter.ts`.
 
-- [ ] T143 [P] Create Zustand governanceStore in apps/desktop/src/renderer/stores/governance-store.ts
-- [ ] T144 [P] Implement RuleListView component (React) in apps/desktop/src/renderer/views/RuleListView.tsx
-- [ ] T145 [P] Implement RuleDetailView component (React) in apps/desktop/src/renderer/views/RuleDetailView.tsx
-- [ ] T146 [P] Add RuleCard component with shadcn/ui in apps/desktop/src/renderer/components/RuleCard.tsx
-- [ ] T147 [P] Add CodeSnippetView component with syntax highlighting in apps/desktop/src/renderer/components/CodeSnippetView.tsx
-- [ ] T148 Wire desktop views to Electron router in apps/desktop/src/renderer/router.tsx
+### Implementation for Desktop UI
+
+- [ ] T150 Create GovernanceElectronModule entry point (mirror AuthenticationElectronModule pattern) in packages/governance/src/electron-entry/index.ts
+- [ ] T151 [P] Create Zustand governanceStore in apps/desktop/src/renderer/stores/governance-store.ts
+- [ ] T152 [P] Implement RuleListView component (React) in apps/desktop/src/renderer/views/RuleListView.tsx
+- [ ] T153 [P] Implement RuleDetailView component (React) in apps/desktop/src/renderer/views/RuleDetailView.tsx
+- [ ] T154 [P] Add RuleCard component with shadcn/ui in apps/desktop/src/renderer/components/RuleCard.tsx
+- [ ] T155 [P] Add CodeSnippetView component with syntax highlighting in apps/desktop/src/renderer/components/CodeSnippetView.tsx
+- [ ] T156 Wire desktop views to Electron router in apps/desktop/src/renderer/router.tsx
 
 **Checkpoint**: Desktop UI complete (optional)
 
 ---
 
-## Phase 11: Polish & Cross-Cutting Concerns
+## Phase 12: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T149 [P] Create 5 seed rules (Entity Props Pattern, No Logic in DTOs, Layer Isolation, Value Object Collections, Factory Method Pattern) in packages/governance/src/infrastructure/seed-data.ts
-- [ ] T150 [P] Implement seed script execution in packages/governance/package.json scripts
-- [ ] T151 Run dogfooding compliance checklist from quickstart.md against governance source code
-- [ ] T152 [P] Add API error handling for duplicate codes, invalid transitions in apps/api/src/modules/governance/routes/governance-crud.routes.ts
-- [ ] T153 [P] Add performance monitoring for search (<200ms) and detail view (<500ms) in apps/web/src/modules/governance/composables/use-performance-monitor.ts
-- [ ] T154 [P] Update main documentation index in docs/README.md to reference governance module
-- [ ] T155 [P] Create governance module user guide in docs/modules/governance/user-guide.md
-- [ ] T156 Code cleanup: Remove unused imports, fix linting issues across governance package
-- [ ] T157 Security review: Validate RBAC middleware, check for SQL injection risks in search
-- [ ] T158 [P] Add keyboard shortcuts (j/k for navigation) in apps/web/src/modules/governance/views/GovernanceListView.vue
+### Seed Data
+
+- [ ] T157 [P] Create 5 seed rules (Entity Props Pattern, No Logic in DTOs, Layer Isolation, Value Object Collections, Factory Method Pattern) in packages/governance/src/infrastructure-server/seed/seed-data.ts
+- [ ] T158 [P] Implement seed script execution entry point in packages/governance/package.json scripts
+
+### Quality & Compliance
+
+- [ ] T159 Run dogfooding compliance checklist from quickstart.md against governance source code
+- [ ] T160 [P] Add API error handling for duplicate codes, invalid transitions in packages/governance/src/controllers/governance.controller.ts
+- [ ] T161 [P] Implement governance initialization event handlers (replace stub log messages) in packages/governance/src/api/initialization.ts
+- [ ] T162 Code cleanup: Remove unused imports, fix linting issues across packages/governance/src/
+- [ ] T163 Security review: Validate RBAC middleware coverage, check for injection risks in search query handling
+
+### Documentation
+
+- [ ] T164 [P] Update main documentation index in docs/README.md to reference governance module
+- [ ] T165 [P] Create governance module user guide in docs/modules/governance/user-guide.md
+
+### UX Enhancement
+
+- [ ] T166 [P] Add performance monitoring for search (<200ms) and detail view (<500ms) in apps/web/src/modules/governance/composables/use-performance-monitor.ts
+- [ ] T167 [P] Add keyboard shortcuts (j/k for navigation) in apps/web/src/modules/governance/views/GovernanceListView.vue
 
 ---
 
@@ -384,98 +413,56 @@ All paths relative to repository root: `d:\home\projects\dailyuse`
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies - can start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **US5 Package Restructuring (Phase 3)**: Depends on Foundational completion - BLOCKS all feature implementation
-- **US2 Foundation Domain (Phase 4)**: Depends on US5 completion - BLOCKS all other user stories (provides Rule entity)
-- **US2 Application/Infra (Phase 5)**: Depends on Phase 4 (domain layer)
-- **US2 API/Editor (Phase 6)**: Depends on Phase 5 (application services)
-- **US1 Discovery UI (Phase 7)**: Depends on Phase 4 (domain) and Phase 6 (API) - Can run parallel with US3/US4 if staffed
-- **US3 Search (Phase 8)**: Depends on Phase 4 (domain) and Phase 5 (repository) - Can run parallel with US1/US4
-- **US4 RBAC/Audit (Phase 9)**: Depends on Phase 6 (API layer) - Can run parallel with US1/US3
-- **Desktop UI (Phase 10)**: Depends on Phase 6 (API layer) - Fully independent, can run anytime after API complete
-- **Polish (Phase 11)**: Depends on all desired user stories being complete
+- **Setup (Phase 1)**: ✅ Complete
+- **Foundational (Phase 2)**: ✅ Complete
+- **US5 Package Restructuring (Phase 3)**: ✅ Complete
+- **US2 Foundation Domain (Phase 4)**: ✅ Complete
+- **US2 Application/Infra (Phase 5)**: ✅ Complete
+- **US2 API/Editor (Phase 6)**: ✅ Complete
+- **US1 Discovery UI (Phase 7)**: ✅ Complete
+- **US3 Search Backend (Phase 8)**: Depends on Phase 5 (use case pattern + repository) — contracts & client adapters already done
+- **US4 RBAC/Audit (Phase 9)**: Depends on Phase 6 (routes, controller) — Can run parallel with US3
+- **Legacy Cleanup (Phase 10)**: Independent — Can run parallel with US3/US4, no feature dependencies
+- **Desktop UI (Phase 11)**: Depends on Phase 6 (API layer) + infrastructure-client adapters
+- **Polish (Phase 12)**: Depends on Phase 8-9 completion for full coverage
 
-### User Story Dependencies
+### Remaining User Story Dependencies
 
-- **US5 (Package Restructuring)**: No dependencies - Prerequisite for ALL features
-- **US2 (Rule Management)**: Depends on US5 - Provides foundation for US1/US3/US4
-- **US1 (Pattern Discovery)**: Depends on US2 domain + API - Independent of US3/US4
-- **US3 (Search)**: Depends on US2 foundation - Independent of US1/US4
-- **US4 (RBAC/Audit)**: Depends on US2 API - Independent of US1/US3
+- **US3 (Search)**: Only missing server-side wiring (7 tasks) → Independent of US4
+- **US4 (RBAC/Audit)**: Mostly verification + web UI (7 tasks) → Independent of US3
+- **Legacy Cleanup**: Zero feature dependencies → Can start immediately
 
-### Critical Path (MVP)
+### Critical Path (Remaining Work)
 
-For minimum viable product delivering core value (30-second pattern discovery):
+For completing all remaining features:
 
-1. Setup → Foundational → US5 (Package) → US2 Domain → US2 App/Infra → US2 API → US1 Discovery UI
+1. **US3 Backend (Phase 8)** + **US4 Verification (Phase 9)** + **Legacy Cleanup (Phase 10)** — all three can run in parallel
+2. **Desktop UI (Phase 11)** — after Phase 8-9 complete
+3. **Polish (Phase 12)** — after all features complete
 
-**Estimated Critical Path**: ~18-24 hours of implementation time
+### Parallel Opportunities (Remaining Work)
 
-### Within Each User Story
+**Across Phases (all can start immediately in parallel)**:
+- **Stream A**: US3 Search Backend (T120-T126) — 7 tasks
+- **Stream B**: US4 RBAC + Audit UI (T134-T142) — 9 tasks
+- **Stream C**: Legacy Cleanup (T143-T149) — 7 tasks
 
-- Tests (if included) MUST be written and FAIL before implementation
-- Contracts before domain-shared before domain-server
-- Value objects before aggregates
-- Aggregates before entities
-- Domain before application
-- Application before infrastructure
-- Infrastructure before API
-- API before UI
-- Core implementation before integration
-- Story complete before moving to next priority
+**Within US3 (Phase 8)**:
+- T120-T121 (use case) must complete before T125 (module wiring)
+- T122 (export) and T123 (repository impl) can run parallel with T120-T121
+- T124 (controller), T125 (module), T126 (API wiring) are sequential after T120
 
-### Parallel Opportunities
+**Within US4 (Phase 9)**:
+- T134-T135 (RBAC verification) can run parallel with T136-T138 (revision verification)
+- T139-T142 (web UI) can run parallel with verification tasks
 
-**Within Setup/Foundational (Phases 1-2)**:
+**Within Phase 10 (Legacy Cleanup)**:
+- T143 + T146 + T147 + T148 can all run parallel (different files)
+- T144 depends on T143 (remove domain/ first, then update barrel)
+- T145 is independent (client service wiring)
+
+**Within Phase 12 (Polish)**:
 - All tasks marked [P] can run simultaneously
-
-**Within US5 (Phase 3 - Package Restructuring)**:
-- T018, T019, T020 (import updates in apps) can run parallel after T017
-
-**Within US2 Domain (Phase 4)**:
-- All contracts (T030-T036) can run parallel
-- All value objects (T037-T041) can run parallel after contracts
-- All tests (T024-T029) can run parallel
-
-**Within US2 Application (Phase 5)**:
-- All DTOs (T058-T062) can run parallel
-- T068, T069 (RevisionService, Mapper) can run parallel with main service
-- T080 (PersistenceMapper) can run parallel with repository methods
-
-**Within US2 API (Phase 6)**:
-- T084, T085 (Zod schemas) can run parallel
-- T091 (revisions route) can run parallel with main CRUD routes
-- All web UI components (T097-T102) can be split across developers
-
-**Across User Stories (after US2 API complete)**:
-- **US1 (Discovery)**, **US3 (Search)**, **US4 (RBAC)** can ALL proceed in parallel with separate teams:
-  - Team A: US1 Discovery UI (Phase 7)
-  - Team B: US3 Search implementation (Phase 8)
-  - Team C: US4 RBAC enforcement (Phase 9)
-
-**Within Polish (Phase 11)**:
-- All tasks marked [P] (T149, T150, T152-T158) can run simultaneously
-
----
-
-## Parallel Example: After US2 API Complete
-
-```bash
-# Team A: Implements US1 Discovery UI
-git checkout -b feat/us1-discovery-ui
-# Work on T105-T117 (GovernanceListView, GovernanceDetailView, components)
-
-# Team B: Implements US3 Search
-git checkout -b feat/us3-search
-# Work on T120-T131 (RuleSearchApplicationService, search routes, SearchBar)
-
-# Team C: Implements US4 RBAC/Audit
-git checkout -b feat/us4-rbac-audit
-# Work on T134-T142 (RBAC verification, RevisionHistoryView)
-
-# All teams merge independently when complete
-```
 
 ---
 
@@ -485,34 +472,32 @@ git checkout -b feat/us4-rbac-audit
 
 For fastest time-to-value delivering core success criteria (SC-001: 30-second discovery, SC-002: 5-minute scaffolding):
 
-**Include**:
-- Phase 1: Setup
-- Phase 2: Foundational
-- Phase 3: US5 Package Restructuring
-- Phase 4-6: US2 Rule Management (full CRUD)
+**Already Complete** ✅:
+- Phase 1-3: Setup, Foundation, Package Restructuring
+- Phase 4-6: US2 Rule Management (full CRUD + API + Editor UI)
 - Phase 7: US1 Pattern Discovery UI
-- Phase 11: Seed rules (T149-T150)
+
+**Remaining for MVP**:
+- Phase 10: Legacy Cleanup (T143-T149) — quality hygiene
+- Phase 12: Seed rules (T157-T158) — enables SC-007
 
 **Defer to Post-MVP**:
-- US3 Search (manual tag filtering sufficient initially)
-- US4 RBAC/Audit (can use basic auth initially)
-- Desktop UI (web-first approach)
+- US3 Search Backend (Phase 8) — web UI done, manual tag filtering sufficient initially
+- US4 Full RBAC + Audit UI (Phase 9) — basic auth middleware already in place
+- Desktop UI (Phase 11) — web-first approach
 
-**Rationale**: US5 + US2 + US1 + Seed content enables the core value loop: Engineers browse rules by tag → find canonical patterns → copy Good Examples → ship compliant code. This achieves SC-001, SC-002, SC-005, SC-007 with minimum scope.
+### Incremental Delivery Strategy (Remaining Work)
 
-### Incremental Delivery Strategy
-
-1. **Week 1**: Phases 1-3 (Setup, Foundation, Package Rename) → Governance package exists
-2. **Week 2**: Phase 4 (US2 Domain) → Business rules enforced
-3. **Week 3**: Phases 5-6 (US2 App/API/Editor) → Tech Leads can create rules
-4. **Week 4**: Phase 7 (US1 Discovery UI) + Seed content → Engineers can browse and discover
-5. **Post-MVP**: Add US3 (Search), US4 (RBAC), Desktop as needed
+1. **Immediate**: Phase 10 (Legacy Cleanup) — remove tech debt before adding features
+2. **Next**: Phase 8 (US3 Backend) — unlocks end-to-end search
+3. **Then**: Phase 9 (US4 RBAC/Audit UI) — strengthens governance
+4. **Optional**: Phase 11 (Desktop) + Phase 12 (Polish)
 
 ### Dogfooding Validation
 
 Before merging to main, verify ALL 12 patterns from constitution check:
 
-1. Props Object Pattern - Rule aggregate constructor ✓
+1. Props Object Pattern - Rule aggregate `_props: RuleState` ✓
 2. Private constructors + factory methods - All domain objects ✓
 3. Private backing fields + readonly getters - Entity properties ✓
 4. Const object enums - RuleStatus, RuleSeverity ✓
@@ -522,18 +507,25 @@ Before merging to main, verify ALL 12 patterns from constitution check:
 8. Domain events - Rule.addDomainEvent() ✓
 9. Repository interface + DI token - IRuleRepository ✓
 10. Protocol → API → DTOs layering - governance-rpc-map.ts imports api.ts ✓
-11. Zod schemas - CreateRuleSchema, UpdateRuleSchema ✓
+11. Zod schemas - CreateRuleSchema, UpdateRuleSchema, SearchRulesQuerySchema ✓
 12. Result pattern - All domain methods return Result<T> ✓
 
 Run checklist from [quickstart.md](quickstart.md) section "Dogfooding Compliance Checklist" before final review.
 
 ---
 
-**Total Tasks**: 158 tasks (73 core implementation, 28 OPTIONAL tests, 57 supporting tasks)
+**Total Tasks**: 167 tasks (102 completed, 65 remaining)
 
-**Estimated Effort**: 
-- MVP (US5 + US2 + US1): ~80 tasks, 18-24 hours
-- Full Implementation (all user stories): ~130 tasks, 30-40 hours
-- With comprehensive testing: ~158 tasks, 40-50 hours
+**Remaining Breakdown**:
+- Optional unit/integration tests: 12 tasks (T024-T029, T055-T057, T103-T104, T118-T119, T132-T133)
+- US3 Search Backend: 7 tasks (T120-T126)
+- US4 RBAC/Audit: 9 tasks (T134-T142)
+- Legacy Cleanup: 7 tasks (T143-T149)
+- Desktop UI (optional): 7 tasks (T150-T156)
+- Polish: 11 tasks (T157-T167)
 
-**Command to proceed**: Begin with Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US5 Package Restructuring)
+**Estimated Remaining Effort**:
+- MVP completion (cleanup + seed): ~4-6 hours
+- US3 Search Backend: ~3-4 hours
+- US4 RBAC/Audit: ~4-6 hours
+- Full remaining: ~20-28 hours
