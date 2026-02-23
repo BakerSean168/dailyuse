@@ -8,11 +8,10 @@
  */
 
 // ============ Client Aggregate (前端/外部消费者) ============
-export type { RuleClient, RuleClientDTO } from './rule-client';
+export type { RuleClientDTO } from './rule-client';
 
 // ============ Server Aggregate (后端/内部通信) ============
 export type {
-  RuleServer,
   RuleServerDTO,
   RulePersistenceDTO,
 } from './rule-server';

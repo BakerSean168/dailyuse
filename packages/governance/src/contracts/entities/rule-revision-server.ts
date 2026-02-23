@@ -11,39 +11,6 @@
 import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
 import type { RuleRevisionId, RuleId } from '../primitives/ids';
 
-// ============ Domain Shape ============
-
-/**
- * Server 端规则修订记录
- * 
- * 包含完整的审计信息，用于：
- * - 追踪规则变更历史
- * - 支持变更回滚
- * - 审计合规要求
- */
-export interface RuleRevisionServer {
-  id: RuleRevisionId;
-  ruleId: RuleId;
-  revisionNumber: number;
-  authorId: IdentityId;
-  changedFields: readonly string[];
-  previousValues: Record<string, unknown>;
-  newValues: Record<string, unknown>;
-  changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
-  createdAt: Date;
-
-  // ================= 实体操作方法 =================
-  /**
-   * 转换为 Client DTO
-   */
-  toClientDTO(): import('./rule-revision-client').RuleRevisionClientDTO;
-
-  /**
-   * 转换为 Persistence DTO
-   */
-  toPersistenceDTO(): RuleRevisionPersistenceDTO;
-}
-
 // ============ Transfer DTO (传输层) ============
 
 /**

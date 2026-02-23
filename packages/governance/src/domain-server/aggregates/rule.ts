@@ -13,7 +13,7 @@
  * 本聚合根作为 Governance 模块的样例，展示了以下 DDD 最佳实践：
  * ✅ Props Object 模式：CreateRuleProps, UpdateRuleProps
  * ✅ 私有构造函数 + 工厂方法：Rule.create()
- * ✅ 私有backing字段 + readonly getters：_code, _title, etc.
+ * ✅ 私有状态对象 + readonly getters：_props: RuleState
  * ✅ 状态机强制：RuleStatus.canTransitionTo()
  * ✅ 领域事件发布：rule:created, rule:updated, rule:deprecated, etc.
  * ✅ Result<T> 模式：所有业务方法返回 Result
@@ -142,66 +142,18 @@ export interface RuleState {
  * - 使用值对象（RuleTag, CodeSnippet）封装验证逻辑
  */
 export class Rule extends AggregateRoot<RuleId> {
-  // ================= 私有 backing 字段 =================
-  // 遵循 DDD 原则：封装内部状态，仅通过 readonly getters 暴露
-  
-  /** 规则编码（不可变） */
-  private _code: string;
-  
-  /** 规则标题 */
-  private _title: string;
-  
-  /** 规则描述 */
-  private _description: string;
-  
-  /** 严重程度 */
-  private _severity: RuleSeverity;
-  
-  /** 规则状态（受状态机约束）*/
-  private _status: RuleStatus;
-  
-  /** 废弃原因（仅当状态为 Deprecated 时有值） */
-  private _deprecationReason?: string;
-  
-  /** 替代规则 ID（仅当状态为 Deprecated 时有值） */
-  private _replacementRuleId?: RuleId;
-  
-  /** 实际应用位置 */
-  private _liveReferenceLocation?: string;
-  
-  /** 标签列表（值对象数组） */
-  private _tags: RuleTag[];
-  
-  /** 代码示例列表（值对象数组） */
-  private _codeSnippets: CodeSnippet[];
-  
-  /** 创建人 ID（不可变） */
-  private readonly _authorId: IdentityId;
-  
-  /** 创建时间（不可变） */
-  private readonly _createdAt: Date;
-  
-  /** 更新时间（每次修改自动更新） */
-  private _updatedAt: Date;
+  private _props: RuleState;
 
   // ================= 构造函数（私有） =================
   // 外部不能直接 new Rule()，必须通过工厂方法创建
   
-  private constructor(props: RuleState) {
-    super(props.id);
-    this._code = props.code;
-    this._title = props.title;
-    this._description = props.description;
-    this._severity = props.severity;
-    this._status = props.status;
-    this._deprecationReason = props.deprecationReason;
-    this._replacementRuleId = props.replacementRuleId;
-    this._liveReferenceLocation = props.liveReferenceLocation;
-    this._tags = props.tags;
-    this._codeSnippets = props.codeSnippets;
-    this._authorId = props.authorId;
-   this._createdAt = props.createdAt;
-    this._updatedAt = props.updatedAt;
+  private constructor(state: RuleState) {
+    super(state.id);
+    this._props = {
+      ...state,
+      tags: [...state.tags],
+      codeSnippets: [...state.codeSnippets],
+    };
   }
 
   // ================= 工厂方法（Factory Methods） =================
@@ -307,11 +259,11 @@ export class Rule extends AggregateRoot<RuleId> {
 
     // Emit domain event
     rule.addDomainEvent<GovernanceEventMap['governance:rule-created']>('governance:rule-created', {
-      code: rule._code,
-      title: rule._title,
-      severity: rule._severity,
-      tags: rule._tags.map(tag => tag.value),
-      authorId: rule._authorId,
+      code: rule._props.code,
+      title: rule._props.title,
+      severity: rule._props.severity,
+      tags: rule._props.tags.map(tag => tag.value),
+      authorId: rule._props.authorId,
     });
 
     return ok(rule);
@@ -331,22 +283,22 @@ export class Rule extends AggregateRoot<RuleId> {
    */
   activate(): Result<void> {
     const transitionResult = RuleStatus.canTransitionTo(
-      this._status,
+      this._props.status,
       RuleStatus.Active,
-      { severity: this._severity }
+      { severity: this._props.severity }
     );
 
     if (!transitionResult.ok) {
       return error(transitionResult.error.code, transitionResult.error.message, transitionResult.error.details);
     }
 
-    const oldStatus = this._status;
-    this._status = RuleStatus.Active;
-    this._updatedAt = new Date();
+    const oldStatus = this._props.status;
+    this._props.status = RuleStatus.Active;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GovernanceEventMap['governance:rule-status-changed']>('governance:rule-status-changed', {
       ruleId: this.id,
-      code: this._code,
+      code: this._props.code,
       previousStatus: oldStatus,
       newStatus: RuleStatus.Active,
     });
@@ -359,9 +311,9 @@ export class Rule extends AggregateRoot<RuleId> {
    */
   deprecate(reason: string, replacementRuleId?: RuleId): Result<void> {
     const transitionResult = RuleStatus.canTransitionTo(
-      this._status,
+      this._props.status,
       RuleStatus.Deprecated,
-      { severity: this._severity }
+      { severity: this._props.severity }
     );
 
     if (!transitionResult.ok) {
@@ -376,14 +328,14 @@ export class Rule extends AggregateRoot<RuleId> {
       return error('VALIDATION_ERROR', 'Deprecation reason must be 10-500 characters');
     }
 
-    this._status = RuleStatus.Deprecated;
-    this._deprecationReason = reason;
-    this._replacementRuleId = replacementRuleId;
-    this._updatedAt = new Date();
+    this._props.status = RuleStatus.Deprecated;
+    this._props.deprecationReason = reason;
+    this._props.replacementRuleId = replacementRuleId;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GovernanceEventMap['governance:rule-deprecated']>('governance:rule-deprecated', {
       ruleId: this.id,
-      code: this._code,
+      code: this._props.code,
       reason,
       replacementRuleId,
     });
@@ -396,24 +348,24 @@ export class Rule extends AggregateRoot<RuleId> {
    */
   reactivate(): Result<void> {
     const transitionResult = RuleStatus.canTransitionTo(
-      this._status,
+      this._props.status,
       RuleStatus.Active,
-      { severity: this._severity }
+      { severity: this._props.severity }
     );
 
     if (!transitionResult.ok) {
       return error(transitionResult.error.code, transitionResult.error.message, transitionResult.error.details);
     }
 
-    this._status = RuleStatus.Active;
-    this._deprecationReason = undefined;
-    this._replacementRuleId = undefined;
-    this._updatedAt = new Date();
+    this._props.status = RuleStatus.Active;
+    this._props.deprecationReason = undefined;
+    this._props.replacementRuleId = undefined;
+    this._props.updatedAt = new Date();
 
     this.addDomainEvent<GovernanceEventMap['governance:rule-reactivated']>('governance:rule-reactivated', {
       ruleId: this.id,
-      code: this._code,
-      title: this._title,
+      code: this._props.code,
+      title: this._props.title,
     });
 
     return ok(undefined);
@@ -433,7 +385,7 @@ export class Rule extends AggregateRoot<RuleId> {
       if (props.title.length < 3 || props.title.length > 100) {
         return error('VALIDATION_ERROR', 'Title must be 3-100 characters');
       }
-      this._title = props.title;
+      this._props.title = props.title;
       changedFields.push('title');
     }
 
@@ -441,7 +393,7 @@ export class Rule extends AggregateRoot<RuleId> {
       if (props.description.length < 10 || props.description.length > 5000) {
         return error('VALIDATION_ERROR', 'Description must be 10-5000 characters');
       }
-      this._description = props.description;
+      this._props.description = props.description;
       changedFields.push('description');
     }
 
@@ -462,17 +414,17 @@ export class Rule extends AggregateRoot<RuleId> {
         }
       }
 
-      this._tags = nextTags;
+      this._props.tags = nextTags;
       changedFields.push('tags');
     }
 
     if (props.liveReferenceLocation !== undefined) {
-      this._liveReferenceLocation = props.liveReferenceLocation;
+      this._props.liveReferenceLocation = props.liveReferenceLocation;
       changedFields.push('liveReferenceLocation');
     }
 
     if (changedFields.length > 0) {
-      this._updatedAt = new Date();
+      this._props.updatedAt = new Date();
 
       const eventPayload: GovernanceEventMap['governance:rule-updated'] = {
         ruleId: this.id,
@@ -480,11 +432,11 @@ export class Rule extends AggregateRoot<RuleId> {
       };
       
       if (props.title) {
-        eventPayload.title = this._title;
+        eventPayload.title = this._props.title;
       }
       
       if (props.tags) {
-        eventPayload.tags = this._tags.map(tag => tag.value);
+        eventPayload.tags = this._props.tags.map(tag => tag.value);
       }
 
       this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>('governance:rule-updated', eventPayload);
@@ -499,12 +451,12 @@ export class Rule extends AggregateRoot<RuleId> {
    * Validates: Cannot directly deprecate MANDATORY rule
    */
   changeSeverity(newSeverity: RuleSeverity): Result<void> {
-    if (this._severity === newSeverity) {
+    if (this._props.severity === newSeverity) {
       return ok(undefined); // No change needed
     }
 
-    this._severity = newSeverity;
-    this._updatedAt = new Date();
+    this._props.severity = newSeverity;
+    this._props.updatedAt = new Date();
 
     return ok(undefined);
   }
@@ -521,13 +473,13 @@ export class Rule extends AggregateRoot<RuleId> {
     const tag = tagResult.data;
     
     // Check for duplicates
-    const exists = this._tags.some(t => t.equals(tag));
+    const exists = this._props.tags.some(t => t.equals(tag));
     if (exists) {
       return ok(undefined); // Silently ignore duplicate
     }
 
-    this._tags.push(tag);
-    this._updatedAt = new Date();
+    this._props.tags.push(tag);
+    this._props.updatedAt = new Date();
 
     return ok(undefined);
   }
@@ -541,13 +493,13 @@ export class Rule extends AggregateRoot<RuleId> {
       return error(tagResult.error.code, tagResult.error.message, tagResult.error.details);
     }
 
-    if (this._tags.length <= 1) {
+    if (this._props.tags.length <= 1) {
       return error('BUSINESS_ERROR', 'Cannot remove last tag - at least one tag is required');
     }
 
     const tag = tagResult.data;
-    this._tags = this._tags.filter(t => !t.equals(tag));
-    this._updatedAt = new Date();
+    this._props.tags = this._props.tags.filter(t => !t.equals(tag));
+    this._props.updatedAt = new Date();
 
     return ok(undefined);
   }
@@ -556,8 +508,8 @@ export class Rule extends AggregateRoot<RuleId> {
    * Adds code snippet (Good or Bad example)
    */
   addCodeSnippet(snippet: CodeSnippet): Result<void> {
-    this._codeSnippets.push(snippet);
-    this._updatedAt = new Date();
+    this._props.codeSnippets.push(snippet);
+    this._props.updatedAt = new Date();
     return ok(undefined);
   }
 
@@ -565,13 +517,13 @@ export class Rule extends AggregateRoot<RuleId> {
    * Removes code snippet (validates min 1 Good + 1 Bad remain)
    */
   removeCodeSnippet(snippetId: string): Result<void> {
-    const snippet = this._codeSnippets.find(s => s.id === snippetId);
+    const snippet = this._props.codeSnippets.find(s => s.id === snippetId);
     if (!snippet) {
       return error('NOT_FOUND', 'Code snippet not found');
     }
 
     // Count Good and Bad examples after removal
-    const remaining = this._codeSnippets.filter(s => s.id !== snippetId);
+    const remaining = this._props.codeSnippets.filter(s => s.id !== snippetId);
     const goodCount = remaining.filter(s => s.type === 'GoodExample').length;
     const badCount = remaining.filter(s => s.type === 'BadExample').length;
 
@@ -583,33 +535,33 @@ export class Rule extends AggregateRoot<RuleId> {
       return error('BUSINESS_ERROR', 'Cannot remove last Bad Example - at least one is required');
     }
 
-    this._codeSnippets = remaining;
-    this._updatedAt = new Date();
+    this._props.codeSnippets = remaining;
+    this._props.updatedAt = new Date();
 
     return ok(undefined);
   }
 
   // ============ Readonly Getters ============
 
-  get code(): string { return this._code; }
-  get title(): string { return this._title; }
-  get description(): string { return this._description; }
-  get severity(): RuleSeverity { return this._severity; }
-  get status(): RuleStatus { return this._status; }
-  get deprecationReason(): string | null { return this._deprecationReason ?? null; }
-  get replacementRuleId(): RuleId | null { return this._replacementRuleId ?? null; }
-  get liveReferenceLocation(): string | null { return this._liveReferenceLocation ?? null; }
-  get tags(): RuleTag[] { return this._tags; }
-  get codeSnippets(): ReadonlyArray<CodeSnippet> { return this._codeSnippets; }
+  get code(): string { return this._props.code; }
+  get title(): string { return this._props.title; }
+  get description(): string { return this._props.description; }
+  get severity(): RuleSeverity { return this._props.severity; }
+  get status(): RuleStatus { return this._props.status; }
+  get deprecationReason(): string | null { return this._props.deprecationReason ?? null; }
+  get replacementRuleId(): RuleId | null { return this._props.replacementRuleId ?? null; }
+  get liveReferenceLocation(): string | null { return this._props.liveReferenceLocation ?? null; }
+  get tags(): RuleTag[] { return this._props.tags; }
+  get codeSnippets(): ReadonlyArray<CodeSnippet> { return this._props.codeSnippets; }
   get goodExamples(): CodeSnippet[] { 
-    return this._codeSnippets.filter(snippet => snippet.isGoodExample); 
+    return this._props.codeSnippets.filter(snippet => snippet.isGoodExample); 
   }
   get badExamples(): CodeSnippet[] { 
-    return this._codeSnippets.filter(snippet => snippet.isBadExample); 
+    return this._props.codeSnippets.filter(snippet => snippet.isBadExample); 
   }
-  get authorId(): IdentityId { return this._authorId; }
-  get createdAt(): Date { return this._createdAt; }
-  get updatedAt(): Date { return this._updatedAt; }
+  get authorId(): IdentityId { return this._props.authorId; }
+  get createdAt(): Date { return this._props.createdAt; }
+  get updatedAt(): Date { return this._props.updatedAt; }
 
   // ================= 序列化方法 =================
 
@@ -619,20 +571,20 @@ export class Rule extends AggregateRoot<RuleId> {
   toClientDTO(): RuleClientDTO {
     return {
       id: this.id,
-      code: this._code,
-      title: this._title,
-      description: this._description,
-      severity: this._severity,
-      status: this._status,
-      deprecationReason: this._deprecationReason ?? null,
-      replacementRuleId: this._replacementRuleId ?? null,
-      liveReferenceLocation: this._liveReferenceLocation ?? null,
-      tags: this._tags.map(tag => tag.toDTO()),
+      code: this._props.code,
+      title: this._props.title,
+      description: this._props.description,
+      severity: this._props.severity,
+      status: this._props.status,
+      deprecationReason: this._props.deprecationReason ?? null,
+      replacementRuleId: this._props.replacementRuleId ?? null,
+      liveReferenceLocation: this._props.liveReferenceLocation ?? null,
+      tags: this._props.tags.map(tag => tag.toDTO()),
       goodExamples: this.goodExamples.map(snippet => snippet.toDTO()),
       badExamples: this.badExamples.map(snippet => snippet.toDTO()),
-      authorId: this._authorId,
-      createdAt: this._createdAt.getTime(),
-      updatedAt: this._updatedAt.getTime(),
+      authorId: this._props.authorId,
+      createdAt: this._props.createdAt.getTime(),
+      updatedAt: this._props.updatedAt.getTime(),
     };
   }
 

@@ -14,7 +14,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type {
-  CodeSnippet as ICodeSnippet,
   CodeSnippetDTO,
   CodeSnippetPersistenceDTO,
 } from '../../contracts/value-objects/code-snippet';
@@ -47,7 +46,7 @@ interface CodeSnippetProps {
  * - type: 片段类型（GoodExample/BadExample）
  * - caption: 标题说明（可选，最大 200 字符）
  */
-export class CodeSnippet extends ValueObject<CodeSnippetProps> implements ICodeSnippet {
+export class CodeSnippet extends ValueObject<CodeSnippetProps> {
   private constructor(props: CodeSnippetProps) {
     super(props);
   }

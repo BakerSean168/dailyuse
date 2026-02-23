@@ -16,12 +16,10 @@
 
 // ============ RuleRevision Entity (Client/Server 分离) ============
 export type {
-  RuleRevisionClient,
   RuleRevisionClientDTO,
 } from './rule-revision-client';
 
 export type {
-  RuleRevisionServer,
   RuleRevisionServerDTO,
   RuleRevisionPersistenceDTO,
 } from './rule-revision-server';

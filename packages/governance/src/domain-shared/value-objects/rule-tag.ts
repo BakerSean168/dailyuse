@@ -13,7 +13,6 @@ import { ValueObject } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type {
-  RuleTag as IRuleTag,
   RuleTagDTO,
   RuleTagPersistenceDTO,
 } from '../../contracts/value-objects/rule-tag';
@@ -32,7 +31,7 @@ interface RuleTagProps {
  * 包含：
  * - value: 标签值（自动规范化为 lowercase-kebab-case）
  */
-export class RuleTag extends ValueObject<RuleTagProps> implements IRuleTag {
+export class RuleTag extends ValueObject<RuleTagProps> {
   private constructor(props: RuleTagProps) {
     super(props);
   }

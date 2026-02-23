@@ -7,7 +7,7 @@ export { RuleStatus} from './rule-status';
 export { RuleSeverity } from './rule-severity';
 export { Language } from './language';
 export { SnippetType} from './snippet-type';
-export type { CodeSnippet, CodeSnippetDTO, CodeSnippetPersistenceDTO } from './code-snippet';
-export type { RuleTag, RuleTagDTO, RuleTagPersistenceDTO } from './rule-tag';
+export type { CodeSnippetDTO, CodeSnippetPersistenceDTO } from './code-snippet';
+export type { RuleTagDTO, RuleTagPersistenceDTO } from './rule-tag';
 
 

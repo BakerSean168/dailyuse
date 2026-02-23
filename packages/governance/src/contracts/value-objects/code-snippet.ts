@@ -3,24 +3,9 @@
  * 代码片段值对象
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '@dailyuse/contracts/primitives';
 import type { CodeSnippetId } from '../primitives/ids';
 import type { Language } from './language';
 import type { SnippetType } from './snippet-type';
-
-// ============ Domain Shape ============
-
-/**
- * CodeSnippet Value Object
- * 代码示例片段
- */
-export interface CodeSnippet {
-  id: CodeSnippetId;
-  language: Language;
-  content: string; // Max 10KB
-  type: SnippetType;
-  caption: string | null; // Max 200 chars
-}
 
 // ============ Transfer DTO (传输层) ============
 

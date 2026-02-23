@@ -90,32 +90,20 @@ export interface RuleRevisionState {
  * - changedFields 至少包含 1 个字段
  */
 export class RuleRevision extends Entity<RuleRevisionId> {
-  // ================= 私有 readonly 字段 =================
-  // 所有字段不可变，保证审计记录完整性
-  
-  private readonly _ruleId: RuleId;
-  private readonly _revisionNumber: number;
-  private readonly _authorId: IdentityId;
-  private readonly _changedFields: string[];
-  private readonly _previousValues: Record<string, unknown>;
-  private readonly _newValues: Record<string, unknown>;
-  private readonly _changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
-  private readonly _createdAt: Date;
+  private readonly _props: RuleRevisionState;
 
   // ================= 构造函数（私有） =================
   // 外部不能直接 new RuleRevision()，必须通过工厂方法创建
   
-  private constructor(props: RuleRevisionState) {
-    super(props.id);
-    this._ruleId = props.ruleId;
-    this._revisionNumber = props.revisionNumber;
-    this._authorId = props.authorId;
+  private constructor(state: RuleRevisionState) {
+    super(state.id);
     // 防御性复制：确保外部修改不影响内部状态
-    this._changedFields = [...props.changedFields];
-    this._previousValues = { ...props.previousValues };
-    this._newValues = { ...props.newValues };
-    this._changeType = props.changeType;
-    this._createdAt = props.createdAt;
+    this._props = {
+      ...state,
+      changedFields: [...state.changedFields],
+      previousValues: { ...state.previousValues },
+      newValues: { ...state.newValues },
+    };
   }
 
   // ================= 工厂方法（Factory Methods） =================
@@ -168,14 +156,14 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   // ============ Readonly Getters ============
 
-  get ruleId(): RuleId { return this._ruleId; }
-  get revisionNumber(): number { return this._revisionNumber; }
-  get authorId(): IdentityId { return this._authorId; }
-  get changedFields(): readonly string[] { return this._changedFields; }
-  get previousValues(): Readonly<Record<string, unknown>> { return this._previousValues; }
-  get newValues(): Readonly<Record<string, unknown>> { return this._newValues; }
-  get changeType(): 'Created' | 'Updated' | 'Deprecated' | 'Reactivated' { return this._changeType; }
-  get createdAt(): Date { return this._createdAt; }
+  get ruleId(): RuleId { return this._props.ruleId; }
+  get revisionNumber(): number { return this._props.revisionNumber; }
+  get authorId(): IdentityId { return this._props.authorId; }
+  get changedFields(): readonly string[] { return this._props.changedFields; }
+  get previousValues(): Readonly<Record<string, unknown>> { return this._props.previousValues; }
+  get newValues(): Readonly<Record<string, unknown>> { return this._props.newValues; }
+  get changeType(): 'Created' | 'Updated' | 'Deprecated' | 'Reactivated' { return this._props.changeType; }
+  get createdAt(): Date { return this._props.createdAt; }
 
   // ================= 序列化方法 =================
 
@@ -185,14 +173,14 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   toServerDTO(): RuleRevisionServerDTO {
     return {
       id: this.id,
-      ruleId: this._ruleId,
-      revisionNumber: this._revisionNumber,
-      authorId: this._authorId,
-      changedFields: [...this._changedFields],
-      previousValues: { ...this._previousValues },
-      newValues: { ...this._newValues },
-      changeType: this._changeType,
-      createdAt: this._createdAt.getTime(),
+      ruleId: this._props.ruleId,
+      revisionNumber: this._props.revisionNumber,
+      authorId: this._props.authorId,
+      changedFields: [...this._props.changedFields],
+      previousValues: { ...this._props.previousValues },
+      newValues: { ...this._props.newValues },
+      changeType: this._props.changeType,
+      createdAt: this._props.createdAt.getTime(),
     };
   }
 
@@ -202,14 +190,14 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   toClientDTO(): RuleRevisionClientDTO {
     return {
       id: this.id,
-      ruleId: this._ruleId,
-      revisionNumber: this._revisionNumber,
-      authorId: this._authorId,
-      changedFields: [...this._changedFields],
-      previousValues: { ...this._previousValues },
-      newValues: { ...this._newValues },
-      changeType: this._changeType,
-      createdAt: this._createdAt.getTime(),
+      ruleId: this._props.ruleId,
+      revisionNumber: this._props.revisionNumber,
+      authorId: this._props.authorId,
+      changedFields: [...this._props.changedFields],
+      previousValues: { ...this._props.previousValues },
+      newValues: { ...this._props.newValues },
+      changeType: this._props.changeType,
+      createdAt: this._props.createdAt.getTime(),
     };
   }
 
