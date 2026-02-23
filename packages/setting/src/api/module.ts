@@ -48,8 +48,8 @@ export const SettingApiModule: SettingApiModuleDef = {
     const handlers: SettingUseCases = {
       getUserSetting: async (ctx) =>
         ok(await settingModule.getUserSetting.execute(ctx.identityId)),
-      updateUserSetting: async (data, ctx) =>
-        ok(await settingModule.updateUserSetting.execute(ctx.identityId, data)),
+      patchUserSetting: async (data, ctx) =>
+        ok(await settingModule.patchUserSetting.execute(ctx.identityId, data.category as any, data.patch)),
       resetUserSetting: async (ctx, category) =>
         ok(await settingModule.resetUserSetting.execute(ctx.identityId, category)),
       exportSettings: async (ctx) =>

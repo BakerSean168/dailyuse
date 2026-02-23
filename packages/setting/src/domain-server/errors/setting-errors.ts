@@ -46,15 +46,3 @@ export class SettingValidationError extends DomainError {
   }
 }
 
-/**
- * 用户设置已删除，不可修改
- */
-export class UserSettingDeletedError extends DomainError {
-  constructor(identityId: string) {
-    super(
-      'user_setting_deleted',
-      `用户设置已被删除，无法操作`,
-      { identityId },
-    );
-  }
-}

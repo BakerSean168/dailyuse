@@ -9,7 +9,7 @@ import type { IUserSettingRepository } from '../domain-server/repositories/IUser
 
 import {
   GetUserSetting,
-  UpdateUserSetting,
+  PatchUserSetting,
   ResetUserSetting,
   ExportSettings,
   ImportSettings,
@@ -21,7 +21,7 @@ import { SettingContainer } from './di/setting-container';
 export class SettingModule {
   public readonly userSettingRepository: IUserSettingRepository;
   public readonly getUserSetting: GetUserSetting;
-  public readonly updateUserSetting: UpdateUserSetting;
+  public readonly patchUserSetting: PatchUserSetting;
   public readonly resetUserSetting: ResetUserSetting;
   public readonly exportSettings: ExportSettings;
   public readonly importSettings: ImportSettings;
@@ -43,7 +43,7 @@ export class SettingModule {
 
     // 3. Wire Use Cases
     this.getUserSetting = new GetUserSetting(this.userSettingRepository);
-    this.updateUserSetting = new UpdateUserSetting(this.userSettingRepository);
+    this.patchUserSetting = new PatchUserSetting(this.userSettingRepository);
     this.resetUserSetting = new ResetUserSetting(this.userSettingRepository);
     this.exportSettings = new ExportSettings(this.userSettingRepository);
     this.importSettings = new ImportSettings(this.userSettingRepository);
