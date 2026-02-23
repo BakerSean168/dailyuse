@@ -1313,6 +1313,79 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
   // ===== 工厂方法 =====
 
+  private static buildTemplate(
+    commonParams: {
+      identityId: IdentityId;
+      title: string;
+      description?: string;
+      importance?: ImportanceLevel;
+      folderId?: TaskFolderId;
+      tags?: string[];
+      color?: string;
+      generateAheadDays?: number;
+    },
+    specificState: Partial<TaskTemplateState>,
+  ): TaskTemplate {
+    if (!commonParams.identityId) {
+      throw new InvalidTaskTemplateStateError('Identity ID is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'buildTemplate',
+      });
+    }
+    if (!commonParams.title || commonParams.title.trim().length === 0) {
+      throw new InvalidTaskTemplateStateError('Title is required', {
+        templateId: '',
+        currentStatus: 'N/A',
+        attemptedAction: 'buildTemplate',
+      });
+    }
+
+    const now = new Date();
+
+    const state: TaskTemplateState = {
+      id: TaskTemplateId.generate(),
+      identityId: commonParams.identityId,
+      title: commonParams.title.trim(),
+      description: commonParams.description || null,
+      importance: (commonParams.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
+      tags: commonParams.tags ?? [],
+      color: commonParams.color || null,
+      status: TaskTemplateStatus.Active,
+      folderId: commonParams.folderId || null,
+      generateAheadDays: commonParams.generateAheadDays ?? null,
+
+      // Defaults
+      taskType: TaskType.ONE_TIME, // Placeholder, will be overridden by specificState
+      goalId: null,
+      keyResultId: null,
+      goalBinding: null,
+      checklist: [],
+      parentTaskId: null,
+      timeConfig: null,
+      recurrenceRule: null,
+      reminderConfig: null,
+      lastGeneratedDate: null,
+      startDate: null,
+      dueDate: null,
+      completedAt: null,
+      estimatedMinutes: null,
+      actualMinutes: null,
+      note: null,
+      dependencyStatus: 'NONE',
+      isBlocked: false,
+      blockingReason: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+
+      ...specificState,
+    };
+
+    return new TaskTemplate(state);
+  }
+
   /**
    * 创建一次性任务（便捷工厂方法）
    */
@@ -1332,57 +1405,18 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     tags?: string[];
     color?: string;
   }): TaskTemplate {
-    if (!params.identityId) {
-      throw new InvalidTaskTemplateStateError('Identity ID is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createOneTimeTask',
-      });
-    }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new InvalidTaskTemplateStateError('Title is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createOneTimeTask',
-      });
-    }
     TaskTemplate.assertValidDateRange(params.startDate ?? null, params.dueDate ?? null);
 
-    const now = new Date();
-    const template = new TaskTemplate({
-      id: TaskTemplateId.generate(),
-      identityId: params.identityId,
-      title: params.title.trim(),
-      description: params.description || null,
+    const template = TaskTemplate.buildTemplate(params, {
       taskType: TaskType.ONE_TIME,
-      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      tags: params.tags ?? [],
-      color: params.color || null,
-      status: TaskTemplateStatus.Active,
-      folderId: params.folderId || null,
-      goalId: params.goalId || null,
-      keyResultId: params.keyResultId || null,
-      goalBinding: null,
-      checklist: [],
-      parentTaskId: params.parentTaskId || null,
-      timeConfig: null,
-      recurrenceRule: null,
-      reminderConfig: null,
-      lastGeneratedDate: null,
-      generateAheadDays: null,
       startDate: params.startDate || null,
       dueDate: params.dueDate || null,
-      completedAt: null,
       estimatedMinutes: params.estimatedMinutes || null,
-      actualMinutes: null,
       note: params.note || null,
+      goalId: params.goalId || null,
+      keyResultId: params.keyResultId || null,
+      parentTaskId: params.parentTaskId || null,
       dependencyStatus: 'Pending',
-      isBlocked: false,
-      blockingReason: null,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-      version: 1,
     });
 
     template.addHistory('created', { taskType: 'ONE_TIME' });
@@ -1405,55 +1439,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     color?: string;
     generateAheadDays?: number;
   }): TaskTemplate {
-    if (!params.identityId) {
-      throw new InvalidTaskTemplateStateError('Identity ID is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createRecurringTask',
-      });
-    }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new InvalidTaskTemplateStateError('Title is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'createRecurringTask',
-      });
-    }
-    const now = new Date();
-    const template = new TaskTemplate({
-      id: TaskTemplateId.generate(),
-      identityId: params.identityId,
-      title: params.title.trim(),
-      description: params.description || null,
+    const template = TaskTemplate.buildTemplate(params, {
       taskType: TaskType.RECURRING,
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig || null,
-      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      goalBinding: null,
-      folderId: params.folderId || null,
-      goalId: null,
-      keyResultId: null,
-      checklist: [],
-      parentTaskId: null,
-      lastGeneratedDate: null,
-      startDate: null,
-      dueDate: null,
-      completedAt: null,
-      estimatedMinutes: null,
-      actualMinutes: null,
-      note: null,
-      dependencyStatus: 'NONE',
-      isBlocked: false,
-      blockingReason: null,
-      tags: params.tags ?? [],
-      color: params.color || null,
-      status: TaskTemplateStatus.Active,
       generateAheadDays: params.generateAheadDays ?? 30,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-      version: 1,
     });
 
     template.addHistory('created', { taskType: 'RECURRING' });
@@ -1477,20 +1468,6 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     color?: string;
     generateAheadDays?: number;
   }): TaskTemplate {
-    if (!params.identityId) {
-      throw new InvalidTaskTemplateStateError('Identity ID is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'create',
-      });
-    }
-    if (!params.title || params.title.trim().length === 0) {
-      throw new InvalidTaskTemplateStateError('Title is required', {
-        templateId: '',
-        currentStatus: 'N/A',
-        attemptedAction: 'create',
-      });
-    }
     if (!params.timeConfig) {
       throw new InvalidTaskTemplateStateError('Time configuration is required', {
         templateId: '',
@@ -1506,50 +1483,21 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       });
     }
 
-    const now = new Date();
-    const template = new TaskTemplate({
-      id: TaskTemplateId.generate(),
-      identityId: params.identityId,
-      title: params.title.trim(),
-      description: params.description ?? null,
+    const template = TaskTemplate.buildTemplate(params, {
       taskType: params.taskType,
       timeConfig: params.timeConfig,
       recurrenceRule: params.recurrenceRule ?? null,
       reminderConfig: params.reminderConfig ?? null,
-      importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      goalBinding: null,
-      folderId: params.folderId ?? null,
-      goalId: null,
-      keyResultId: null,
-      checklist: [],
-      parentTaskId: null,
-      lastGeneratedDate: null,
-      startDate: null,
-      dueDate: null,
-      completedAt: null,
-      estimatedMinutes: null,
-      actualMinutes: null,
-      note: null,
-      dependencyStatus: 'NONE',
-      isBlocked: false,
-      blockingReason: null,
-      tags: params.tags ?? [],
-      color: params.color ?? null,
-      status: TaskTemplateStatus.Active,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
       generateAheadDays: params.generateAheadDays ?? 30,
-      version: 1,
     });
 
     template.addHistory('created');
-    
+
     template.addDomainEvent<TaskEventMap['task:create']>('task:create', {
       templateId: template.id,
       goalId: null,
     });
-    
+
     return template;
   }
 
