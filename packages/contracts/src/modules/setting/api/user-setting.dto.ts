@@ -19,11 +19,11 @@ export type CreateUserSettingRes = UserSettingClientDTO;
 
 // ─── Category-level Patch Schema ──────────────────────────
 
-const categoryNames = Object.keys(CATEGORY_SCHEMAS) as [PreferenceCategory, ...PreferenceCategory[]];
+const categoryNames = Object.keys(CATEGORY_SCHEMAS) as [string, ...string[]];
 
 export const PatchUserSettingSchema = z.object({
   category: z.enum(categoryNames),
-  patch: z.record(z.unknown()),
+  patch: z.record(z.string(), z.unknown()),
 });
 export type PatchUserSettingReq = z.infer<typeof PatchUserSettingSchema>;
 export type PatchUserSettingRes = UserSettingClientDTO;

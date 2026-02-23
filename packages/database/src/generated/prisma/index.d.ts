@@ -54,11 +54,6 @@ export type KnowledgeGenerationTask = $Result.DefaultSelection<Prisma.$Knowledge
  */
 export type DashboardConfig = $Result.DefaultSelection<Prisma.$DashboardConfigPayload>
 /**
- * Model AppConfig
- * 
- */
-export type AppConfig = $Result.DefaultSelection<Prisma.$AppConfigPayload>
-/**
  * Model AuthIdentity
  * 
  */
@@ -309,21 +304,6 @@ export type ScheduleExecution = $Result.DefaultSelection<Prisma.$ScheduleExecuti
  * 
  */
 export type ScheduleStatistic = $Result.DefaultSelection<Prisma.$ScheduleStatisticPayload>
-/**
- * Model Setting
- * 
- */
-export type Setting = $Result.DefaultSelection<Prisma.$SettingPayload>
-/**
- * Model SettingGroup
- * 
- */
-export type SettingGroup = $Result.DefaultSelection<Prisma.$SettingGroupPayload>
-/**
- * Model SettingItem
- * 
- */
-export type SettingItem = $Result.DefaultSelection<Prisma.$SettingItemPayload>
 /**
  * Model UserSetting
  * 
@@ -624,16 +604,6 @@ export class PrismaClient<
     * ```
     */
   get dashboardConfig(): Prisma.DashboardConfigDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.appConfig`: Exposes CRUD operations for the **AppConfig** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more AppConfigs
-    * const appConfigs = await prisma.appConfig.findMany()
-    * ```
-    */
-  get appConfig(): Prisma.AppConfigDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.authIdentity`: Exposes CRUD operations for the **AuthIdentity** model.
@@ -1114,36 +1084,6 @@ export class PrismaClient<
     * ```
     */
   get scheduleStatistic(): Prisma.ScheduleStatisticDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.setting`: Exposes CRUD operations for the **Setting** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Settings
-    * const settings = await prisma.setting.findMany()
-    * ```
-    */
-  get setting(): Prisma.SettingDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.settingGroup`: Exposes CRUD operations for the **SettingGroup** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SettingGroups
-    * const settingGroups = await prisma.settingGroup.findMany()
-    * ```
-    */
-  get settingGroup(): Prisma.SettingGroupDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.settingItem`: Exposes CRUD operations for the **SettingItem** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SettingItems
-    * const settingItems = await prisma.settingItem.findMany()
-    * ```
-    */
-  get settingItem(): Prisma.SettingItemDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.userSetting`: Exposes CRUD operations for the **UserSetting** model.
@@ -1696,7 +1636,6 @@ export namespace Prisma {
     AiProviderConfig: 'AiProviderConfig',
     KnowledgeGenerationTask: 'KnowledgeGenerationTask',
     DashboardConfig: 'DashboardConfig',
-    AppConfig: 'AppConfig',
     AuthIdentity: 'AuthIdentity',
     AuthIdentifier: 'AuthIdentifier',
     AuthOAuthBinding: 'AuthOAuthBinding',
@@ -1745,9 +1684,6 @@ export namespace Prisma {
     ScheduleTask: 'ScheduleTask',
     ScheduleExecution: 'ScheduleExecution',
     ScheduleStatistic: 'ScheduleStatistic',
-    Setting: 'Setting',
-    SettingGroup: 'SettingGroup',
-    SettingItem: 'SettingItem',
     UserSetting: 'UserSetting',
     SyncProfile: 'SyncProfile',
     SyncSession: 'SyncSession',
@@ -1774,7 +1710,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "appConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "setting" | "settingGroup" | "settingItem" | "userSetting" | "syncProfile" | "syncSession" | "syncConflict" | "pendingChange" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
+      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "syncProfile" | "syncSession" | "syncConflict" | "pendingChange" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2367,80 +2303,6 @@ export namespace Prisma {
           count: {
             args: Prisma.DashboardConfigCountArgs<ExtArgs>
             result: $Utils.Optional<DashboardConfigCountAggregateOutputType> | number
-          }
-        }
-      }
-      AppConfig: {
-        payload: Prisma.$AppConfigPayload<ExtArgs>
-        fields: Prisma.AppConfigFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.AppConfigFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.AppConfigFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>
-          }
-          findFirst: {
-            args: Prisma.AppConfigFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.AppConfigFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>
-          }
-          findMany: {
-            args: Prisma.AppConfigFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>[]
-          }
-          create: {
-            args: Prisma.AppConfigCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>
-          }
-          createMany: {
-            args: Prisma.AppConfigCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.AppConfigCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>[]
-          }
-          delete: {
-            args: Prisma.AppConfigDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>
-          }
-          update: {
-            args: Prisma.AppConfigUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>
-          }
-          deleteMany: {
-            args: Prisma.AppConfigDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.AppConfigUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.AppConfigUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>[]
-          }
-          upsert: {
-            args: Prisma.AppConfigUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AppConfigPayload>
-          }
-          aggregate: {
-            args: Prisma.AppConfigAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateAppConfig>
-          }
-          groupBy: {
-            args: Prisma.AppConfigGroupByArgs<ExtArgs>
-            result: $Utils.Optional<AppConfigGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.AppConfigCountArgs<ExtArgs>
-            result: $Utils.Optional<AppConfigCountAggregateOutputType> | number
           }
         }
       }
@@ -5996,228 +5858,6 @@ export namespace Prisma {
           }
         }
       }
-      Setting: {
-        payload: Prisma.$SettingPayload<ExtArgs>
-        fields: Prisma.SettingFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SettingFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SettingFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>
-          }
-          findFirst: {
-            args: Prisma.SettingFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SettingFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>
-          }
-          findMany: {
-            args: Prisma.SettingFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>[]
-          }
-          create: {
-            args: Prisma.SettingCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>
-          }
-          createMany: {
-            args: Prisma.SettingCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SettingCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>[]
-          }
-          delete: {
-            args: Prisma.SettingDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>
-          }
-          update: {
-            args: Prisma.SettingUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>
-          }
-          deleteMany: {
-            args: Prisma.SettingDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SettingUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SettingUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>[]
-          }
-          upsert: {
-            args: Prisma.SettingUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingPayload>
-          }
-          aggregate: {
-            args: Prisma.SettingAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSetting>
-          }
-          groupBy: {
-            args: Prisma.SettingGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SettingGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SettingCountArgs<ExtArgs>
-            result: $Utils.Optional<SettingCountAggregateOutputType> | number
-          }
-        }
-      }
-      SettingGroup: {
-        payload: Prisma.$SettingGroupPayload<ExtArgs>
-        fields: Prisma.SettingGroupFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SettingGroupFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SettingGroupFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>
-          }
-          findFirst: {
-            args: Prisma.SettingGroupFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SettingGroupFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>
-          }
-          findMany: {
-            args: Prisma.SettingGroupFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>[]
-          }
-          create: {
-            args: Prisma.SettingGroupCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>
-          }
-          createMany: {
-            args: Prisma.SettingGroupCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SettingGroupCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>[]
-          }
-          delete: {
-            args: Prisma.SettingGroupDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>
-          }
-          update: {
-            args: Prisma.SettingGroupUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>
-          }
-          deleteMany: {
-            args: Prisma.SettingGroupDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SettingGroupUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SettingGroupUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>[]
-          }
-          upsert: {
-            args: Prisma.SettingGroupUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingGroupPayload>
-          }
-          aggregate: {
-            args: Prisma.SettingGroupAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSettingGroup>
-          }
-          groupBy: {
-            args: Prisma.SettingGroupGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SettingGroupGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SettingGroupCountArgs<ExtArgs>
-            result: $Utils.Optional<SettingGroupCountAggregateOutputType> | number
-          }
-        }
-      }
-      SettingItem: {
-        payload: Prisma.$SettingItemPayload<ExtArgs>
-        fields: Prisma.SettingItemFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SettingItemFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SettingItemFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>
-          }
-          findFirst: {
-            args: Prisma.SettingItemFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SettingItemFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>
-          }
-          findMany: {
-            args: Prisma.SettingItemFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>[]
-          }
-          create: {
-            args: Prisma.SettingItemCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>
-          }
-          createMany: {
-            args: Prisma.SettingItemCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SettingItemCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>[]
-          }
-          delete: {
-            args: Prisma.SettingItemDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>
-          }
-          update: {
-            args: Prisma.SettingItemUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>
-          }
-          deleteMany: {
-            args: Prisma.SettingItemDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SettingItemUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SettingItemUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>[]
-          }
-          upsert: {
-            args: Prisma.SettingItemUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SettingItemPayload>
-          }
-          aggregate: {
-            args: Prisma.SettingItemAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSettingItem>
-          }
-          groupBy: {
-            args: Prisma.SettingItemGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SettingItemGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SettingItemCountArgs<ExtArgs>
-            result: $Utils.Optional<SettingItemCountAggregateOutputType> | number
-          }
-        }
-      }
       UserSetting: {
         payload: Prisma.$UserSettingPayload<ExtArgs>
         fields: Prisma.UserSettingFieldRefs
@@ -7148,7 +6788,6 @@ export namespace Prisma {
     aiProviderConfig?: AiProviderConfigOmit
     knowledgeGenerationTask?: KnowledgeGenerationTaskOmit
     dashboardConfig?: DashboardConfigOmit
-    appConfig?: AppConfigOmit
     authIdentity?: AuthIdentityOmit
     authIdentifier?: AuthIdentifierOmit
     authOAuthBinding?: AuthOAuthBindingOmit
@@ -7197,9 +6836,6 @@ export namespace Prisma {
     scheduleTask?: ScheduleTaskOmit
     scheduleExecution?: ScheduleExecutionOmit
     scheduleStatistic?: ScheduleStatisticOmit
-    setting?: SettingOmit
-    settingGroup?: SettingGroupOmit
-    settingItem?: SettingItemOmit
     userSetting?: UserSettingOmit
     syncProfile?: SyncProfileOmit
     syncSession?: SyncSessionOmit
@@ -7309,7 +6945,6 @@ export namespace Prisma {
     schedules: number
     scheduleJobs: number
     scheduleTasks: number
-    settings_: number
     taskFolders: number
     taskTemplates: number
     taskInstances: number
@@ -7342,7 +6977,6 @@ export namespace Prisma {
     schedules?: boolean | AccountCountOutputTypeCountSchedulesArgs
     scheduleJobs?: boolean | AccountCountOutputTypeCountScheduleJobsArgs
     scheduleTasks?: boolean | AccountCountOutputTypeCountScheduleTasksArgs
-    settings_?: boolean | AccountCountOutputTypeCountSettings_Args
     taskFolders?: boolean | AccountCountOutputTypeCountTaskFoldersArgs
     taskTemplates?: boolean | AccountCountOutputTypeCountTaskTemplatesArgs
     taskInstances?: boolean | AccountCountOutputTypeCountTaskInstancesArgs
@@ -7491,13 +7125,6 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountScheduleTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ScheduleTaskWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountSettings_Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingWhereInput
   }
 
   /**
@@ -8286,55 +7913,6 @@ export namespace Prisma {
 
 
   /**
-   * Count Type SettingGroupCountOutputType
-   */
-
-  export type SettingGroupCountOutputType = {
-    children: number
-    items: number
-    settings: number
-  }
-
-  export type SettingGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    children?: boolean | SettingGroupCountOutputTypeCountChildrenArgs
-    items?: boolean | SettingGroupCountOutputTypeCountItemsArgs
-    settings?: boolean | SettingGroupCountOutputTypeCountSettingsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * SettingGroupCountOutputType without action
-   */
-  export type SettingGroupCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroupCountOutputType
-     */
-    select?: SettingGroupCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * SettingGroupCountOutputType without action
-   */
-  export type SettingGroupCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingGroupWhereInput
-  }
-
-  /**
-   * SettingGroupCountOutputType without action
-   */
-  export type SettingGroupCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingItemWhereInput
-  }
-
-  /**
-   * SettingGroupCountOutputType without action
-   */
-  export type SettingGroupCountOutputTypeCountSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingWhereInput
-  }
-
-
-  /**
    * Count Type SyncProfileCountOutputType
    */
 
@@ -8808,7 +8386,6 @@ export namespace Prisma {
     scheduleJobs?: boolean | Account$scheduleJobsArgs<ExtArgs>
     scheduleTasks?: boolean | Account$scheduleTasksArgs<ExtArgs>
     scheduleStatistics?: boolean | Account$scheduleStatisticsArgs<ExtArgs>
-    settings_?: boolean | Account$settings_Args<ExtArgs>
     taskFolders?: boolean | Account$taskFoldersArgs<ExtArgs>
     taskTemplates?: boolean | Account$taskTemplatesArgs<ExtArgs>
     taskInstances?: boolean | Account$taskInstancesArgs<ExtArgs>
@@ -8915,7 +8492,6 @@ export namespace Prisma {
     scheduleJobs?: boolean | Account$scheduleJobsArgs<ExtArgs>
     scheduleTasks?: boolean | Account$scheduleTasksArgs<ExtArgs>
     scheduleStatistics?: boolean | Account$scheduleStatisticsArgs<ExtArgs>
-    settings_?: boolean | Account$settings_Args<ExtArgs>
     taskFolders?: boolean | Account$taskFoldersArgs<ExtArgs>
     taskTemplates?: boolean | Account$taskTemplatesArgs<ExtArgs>
     taskInstances?: boolean | Account$taskInstancesArgs<ExtArgs>
@@ -8967,7 +8543,6 @@ export namespace Prisma {
       scheduleJobs: Prisma.$ScheduleJobPayload<ExtArgs>[]
       scheduleTasks: Prisma.$ScheduleTaskPayload<ExtArgs>[]
       scheduleStatistics: Prisma.$ScheduleStatisticPayload<ExtArgs> | null
-      settings_: Prisma.$SettingPayload<ExtArgs>[]
       taskFolders: Prisma.$TaskFolderPayload<ExtArgs>[]
       taskTemplates: Prisma.$TaskTemplatePayload<ExtArgs>[]
       taskInstances: Prisma.$TaskInstancePayload<ExtArgs>[]
@@ -9420,7 +8995,6 @@ export namespace Prisma {
     scheduleJobs<T extends Account$scheduleJobsArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleJobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleTasks<T extends Account$scheduleTasksArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleStatistics<T extends Account$scheduleStatisticsArgs<ExtArgs> = {}>(args?: Subset<T, Account$scheduleStatisticsArgs<ExtArgs>>): Prisma__ScheduleStatisticClient<$Result.GetResult<Prisma.$ScheduleStatisticPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    settings_<T extends Account$settings_Args<ExtArgs> = {}>(args?: Subset<T, Account$settings_Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taskFolders<T extends Account$taskFoldersArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskFoldersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taskTemplates<T extends Account$taskTemplatesArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     taskInstances<T extends Account$taskInstancesArgs<ExtArgs> = {}>(args?: Subset<T, Account$taskInstancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskInstancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -10402,30 +9976,6 @@ export namespace Prisma {
      */
     include?: ScheduleStatisticInclude<ExtArgs> | null
     where?: ScheduleStatisticWhereInput
-  }
-
-  /**
-   * Account.settings_
-   */
-  export type Account$settings_Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    where?: SettingWhereInput
-    orderBy?: SettingOrderByWithRelationInput | SettingOrderByWithRelationInput[]
-    cursor?: SettingWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SettingScalarFieldEnum | SettingScalarFieldEnum[]
   }
 
   /**
@@ -18888,1027 +18438,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DashboardConfigInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model AppConfig
-   */
-
-  export type AggregateAppConfig = {
-    _count: AppConfigCountAggregateOutputType | null
-    _min: AppConfigMinAggregateOutputType | null
-    _max: AppConfigMaxAggregateOutputType | null
-  }
-
-  export type AppConfigMinAggregateOutputType = {
-    id: string | null
-    version: string | null
-    config: string | null
-    description: string | null
-    isCurrent: boolean | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type AppConfigMaxAggregateOutputType = {
-    id: string | null
-    version: string | null
-    config: string | null
-    description: string | null
-    isCurrent: boolean | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type AppConfigCountAggregateOutputType = {
-    id: number
-    version: number
-    config: number
-    description: number
-    isCurrent: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type AppConfigMinAggregateInputType = {
-    id?: true
-    version?: true
-    config?: true
-    description?: true
-    isCurrent?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type AppConfigMaxAggregateInputType = {
-    id?: true
-    version?: true
-    config?: true
-    description?: true
-    isCurrent?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type AppConfigCountAggregateInputType = {
-    id?: true
-    version?: true
-    config?: true
-    description?: true
-    isCurrent?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type AppConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AppConfig to aggregate.
-     */
-    where?: AppConfigWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AppConfigs to fetch.
-     */
-    orderBy?: AppConfigOrderByWithRelationInput | AppConfigOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: AppConfigWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AppConfigs from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AppConfigs.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned AppConfigs
-    **/
-    _count?: true | AppConfigCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: AppConfigMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: AppConfigMaxAggregateInputType
-  }
-
-  export type GetAppConfigAggregateType<T extends AppConfigAggregateArgs> = {
-        [P in keyof T & keyof AggregateAppConfig]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAppConfig[P]>
-      : GetScalarType<T[P], AggregateAppConfig[P]>
-  }
-
-
-
-
-  export type AppConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AppConfigWhereInput
-    orderBy?: AppConfigOrderByWithAggregationInput | AppConfigOrderByWithAggregationInput[]
-    by: AppConfigScalarFieldEnum[] | AppConfigScalarFieldEnum
-    having?: AppConfigScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: AppConfigCountAggregateInputType | true
-    _min?: AppConfigMinAggregateInputType
-    _max?: AppConfigMaxAggregateInputType
-  }
-
-  export type AppConfigGroupByOutputType = {
-    id: string
-    version: string
-    config: string
-    description: string | null
-    isCurrent: boolean
-    createdAt: Date
-    updatedAt: Date
-    _count: AppConfigCountAggregateOutputType | null
-    _min: AppConfigMinAggregateOutputType | null
-    _max: AppConfigMaxAggregateOutputType | null
-  }
-
-  type GetAppConfigGroupByPayload<T extends AppConfigGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<AppConfigGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof AppConfigGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], AppConfigGroupByOutputType[P]>
-            : GetScalarType<T[P], AppConfigGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type AppConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    version?: boolean
-    config?: boolean
-    description?: boolean
-    isCurrent?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["appConfig"]>
-
-  export type AppConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    version?: boolean
-    config?: boolean
-    description?: boolean
-    isCurrent?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["appConfig"]>
-
-  export type AppConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    version?: boolean
-    config?: boolean
-    description?: boolean
-    isCurrent?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["appConfig"]>
-
-  export type AppConfigSelectScalar = {
-    id?: boolean
-    version?: boolean
-    config?: boolean
-    description?: boolean
-    isCurrent?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type AppConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "version" | "config" | "description" | "isCurrent" | "createdAt" | "updatedAt", ExtArgs["result"]["appConfig"]>
-
-  export type $AppConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "AppConfig"
-    objects: {}
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      version: string
-      config: string
-      description: string | null
-      isCurrent: boolean
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["appConfig"]>
-    composites: {}
-  }
-
-  type AppConfigGetPayload<S extends boolean | null | undefined | AppConfigDefaultArgs> = $Result.GetResult<Prisma.$AppConfigPayload, S>
-
-  type AppConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<AppConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: AppConfigCountAggregateInputType | true
-    }
-
-  export interface AppConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AppConfig'], meta: { name: 'AppConfig' } }
-    /**
-     * Find zero or one AppConfig that matches the filter.
-     * @param {AppConfigFindUniqueArgs} args - Arguments to find a AppConfig
-     * @example
-     * // Get one AppConfig
-     * const appConfig = await prisma.appConfig.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends AppConfigFindUniqueArgs>(args: SelectSubset<T, AppConfigFindUniqueArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one AppConfig that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {AppConfigFindUniqueOrThrowArgs} args - Arguments to find a AppConfig
-     * @example
-     * // Get one AppConfig
-     * const appConfig = await prisma.appConfig.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends AppConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, AppConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AppConfig that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigFindFirstArgs} args - Arguments to find a AppConfig
-     * @example
-     * // Get one AppConfig
-     * const appConfig = await prisma.appConfig.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends AppConfigFindFirstArgs>(args?: SelectSubset<T, AppConfigFindFirstArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first AppConfig that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigFindFirstOrThrowArgs} args - Arguments to find a AppConfig
-     * @example
-     * // Get one AppConfig
-     * const appConfig = await prisma.appConfig.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends AppConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, AppConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more AppConfigs that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all AppConfigs
-     * const appConfigs = await prisma.appConfig.findMany()
-     * 
-     * // Get first 10 AppConfigs
-     * const appConfigs = await prisma.appConfig.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const appConfigWithIdOnly = await prisma.appConfig.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends AppConfigFindManyArgs>(args?: SelectSubset<T, AppConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a AppConfig.
-     * @param {AppConfigCreateArgs} args - Arguments to create a AppConfig.
-     * @example
-     * // Create one AppConfig
-     * const AppConfig = await prisma.appConfig.create({
-     *   data: {
-     *     // ... data to create a AppConfig
-     *   }
-     * })
-     * 
-     */
-    create<T extends AppConfigCreateArgs>(args: SelectSubset<T, AppConfigCreateArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many AppConfigs.
-     * @param {AppConfigCreateManyArgs} args - Arguments to create many AppConfigs.
-     * @example
-     * // Create many AppConfigs
-     * const appConfig = await prisma.appConfig.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends AppConfigCreateManyArgs>(args?: SelectSubset<T, AppConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many AppConfigs and returns the data saved in the database.
-     * @param {AppConfigCreateManyAndReturnArgs} args - Arguments to create many AppConfigs.
-     * @example
-     * // Create many AppConfigs
-     * const appConfig = await prisma.appConfig.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many AppConfigs and only return the `id`
-     * const appConfigWithIdOnly = await prisma.appConfig.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AppConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, AppConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a AppConfig.
-     * @param {AppConfigDeleteArgs} args - Arguments to delete one AppConfig.
-     * @example
-     * // Delete one AppConfig
-     * const AppConfig = await prisma.appConfig.delete({
-     *   where: {
-     *     // ... filter to delete one AppConfig
-     *   }
-     * })
-     * 
-     */
-    delete<T extends AppConfigDeleteArgs>(args: SelectSubset<T, AppConfigDeleteArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one AppConfig.
-     * @param {AppConfigUpdateArgs} args - Arguments to update one AppConfig.
-     * @example
-     * // Update one AppConfig
-     * const appConfig = await prisma.appConfig.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends AppConfigUpdateArgs>(args: SelectSubset<T, AppConfigUpdateArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more AppConfigs.
-     * @param {AppConfigDeleteManyArgs} args - Arguments to filter AppConfigs to delete.
-     * @example
-     * // Delete a few AppConfigs
-     * const { count } = await prisma.appConfig.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends AppConfigDeleteManyArgs>(args?: SelectSubset<T, AppConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AppConfigs.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many AppConfigs
-     * const appConfig = await prisma.appConfig.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends AppConfigUpdateManyArgs>(args: SelectSubset<T, AppConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more AppConfigs and returns the data updated in the database.
-     * @param {AppConfigUpdateManyAndReturnArgs} args - Arguments to update many AppConfigs.
-     * @example
-     * // Update many AppConfigs
-     * const appConfig = await prisma.appConfig.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more AppConfigs and only return the `id`
-     * const appConfigWithIdOnly = await prisma.appConfig.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AppConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, AppConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one AppConfig.
-     * @param {AppConfigUpsertArgs} args - Arguments to update or create a AppConfig.
-     * @example
-     * // Update or create a AppConfig
-     * const appConfig = await prisma.appConfig.upsert({
-     *   create: {
-     *     // ... data to create a AppConfig
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the AppConfig we want to update
-     *   }
-     * })
-     */
-    upsert<T extends AppConfigUpsertArgs>(args: SelectSubset<T, AppConfigUpsertArgs<ExtArgs>>): Prisma__AppConfigClient<$Result.GetResult<Prisma.$AppConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of AppConfigs.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigCountArgs} args - Arguments to filter AppConfigs to count.
-     * @example
-     * // Count the number of AppConfigs
-     * const count = await prisma.appConfig.count({
-     *   where: {
-     *     // ... the filter for the AppConfigs we want to count
-     *   }
-     * })
-    **/
-    count<T extends AppConfigCountArgs>(
-      args?: Subset<T, AppConfigCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], AppConfigCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a AppConfig.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends AppConfigAggregateArgs>(args: Subset<T, AppConfigAggregateArgs>): Prisma.PrismaPromise<GetAppConfigAggregateType<T>>
-
-    /**
-     * Group by AppConfig.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AppConfigGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends AppConfigGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: AppConfigGroupByArgs['orderBy'] }
-        : { orderBy?: AppConfigGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, AppConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAppConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the AppConfig model
-   */
-  readonly fields: AppConfigFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for AppConfig.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__AppConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the AppConfig model
-   */
-  interface AppConfigFieldRefs {
-    readonly id: FieldRef<"AppConfig", 'String'>
-    readonly version: FieldRef<"AppConfig", 'String'>
-    readonly config: FieldRef<"AppConfig", 'String'>
-    readonly description: FieldRef<"AppConfig", 'String'>
-    readonly isCurrent: FieldRef<"AppConfig", 'Boolean'>
-    readonly createdAt: FieldRef<"AppConfig", 'DateTime'>
-    readonly updatedAt: FieldRef<"AppConfig", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * AppConfig findUnique
-   */
-  export type AppConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * Filter, which AppConfig to fetch.
-     */
-    where: AppConfigWhereUniqueInput
-  }
-
-  /**
-   * AppConfig findUniqueOrThrow
-   */
-  export type AppConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * Filter, which AppConfig to fetch.
-     */
-    where: AppConfigWhereUniqueInput
-  }
-
-  /**
-   * AppConfig findFirst
-   */
-  export type AppConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * Filter, which AppConfig to fetch.
-     */
-    where?: AppConfigWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AppConfigs to fetch.
-     */
-    orderBy?: AppConfigOrderByWithRelationInput | AppConfigOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AppConfigs.
-     */
-    cursor?: AppConfigWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AppConfigs from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AppConfigs.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AppConfigs.
-     */
-    distinct?: AppConfigScalarFieldEnum | AppConfigScalarFieldEnum[]
-  }
-
-  /**
-   * AppConfig findFirstOrThrow
-   */
-  export type AppConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * Filter, which AppConfig to fetch.
-     */
-    where?: AppConfigWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AppConfigs to fetch.
-     */
-    orderBy?: AppConfigOrderByWithRelationInput | AppConfigOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for AppConfigs.
-     */
-    cursor?: AppConfigWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AppConfigs from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AppConfigs.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of AppConfigs.
-     */
-    distinct?: AppConfigScalarFieldEnum | AppConfigScalarFieldEnum[]
-  }
-
-  /**
-   * AppConfig findMany
-   */
-  export type AppConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * Filter, which AppConfigs to fetch.
-     */
-    where?: AppConfigWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of AppConfigs to fetch.
-     */
-    orderBy?: AppConfigOrderByWithRelationInput | AppConfigOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing AppConfigs.
-     */
-    cursor?: AppConfigWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` AppConfigs from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` AppConfigs.
-     */
-    skip?: number
-    distinct?: AppConfigScalarFieldEnum | AppConfigScalarFieldEnum[]
-  }
-
-  /**
-   * AppConfig create
-   */
-  export type AppConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * The data needed to create a AppConfig.
-     */
-    data: XOR<AppConfigCreateInput, AppConfigUncheckedCreateInput>
-  }
-
-  /**
-   * AppConfig createMany
-   */
-  export type AppConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many AppConfigs.
-     */
-    data: AppConfigCreateManyInput | AppConfigCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AppConfig createManyAndReturn
-   */
-  export type AppConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * The data used to create many AppConfigs.
-     */
-    data: AppConfigCreateManyInput | AppConfigCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AppConfig update
-   */
-  export type AppConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * The data needed to update a AppConfig.
-     */
-    data: XOR<AppConfigUpdateInput, AppConfigUncheckedUpdateInput>
-    /**
-     * Choose, which AppConfig to update.
-     */
-    where: AppConfigWhereUniqueInput
-  }
-
-  /**
-   * AppConfig updateMany
-   */
-  export type AppConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update AppConfigs.
-     */
-    data: XOR<AppConfigUpdateManyMutationInput, AppConfigUncheckedUpdateManyInput>
-    /**
-     * Filter which AppConfigs to update
-     */
-    where?: AppConfigWhereInput
-    /**
-     * Limit how many AppConfigs to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * AppConfig updateManyAndReturn
-   */
-  export type AppConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * The data used to update AppConfigs.
-     */
-    data: XOR<AppConfigUpdateManyMutationInput, AppConfigUncheckedUpdateManyInput>
-    /**
-     * Filter which AppConfigs to update
-     */
-    where?: AppConfigWhereInput
-    /**
-     * Limit how many AppConfigs to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * AppConfig upsert
-   */
-  export type AppConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * The filter to search for the AppConfig to update in case it exists.
-     */
-    where: AppConfigWhereUniqueInput
-    /**
-     * In case the AppConfig found by the `where` argument doesn't exist, create a new AppConfig with this data.
-     */
-    create: XOR<AppConfigCreateInput, AppConfigUncheckedCreateInput>
-    /**
-     * In case the AppConfig was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<AppConfigUpdateInput, AppConfigUncheckedUpdateInput>
-  }
-
-  /**
-   * AppConfig delete
-   */
-  export type AppConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
-    /**
-     * Filter which AppConfig to delete.
-     */
-    where: AppConfigWhereUniqueInput
-  }
-
-  /**
-   * AppConfig deleteMany
-   */
-  export type AppConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which AppConfigs to delete
-     */
-    where?: AppConfigWhereInput
-    /**
-     * Limit how many AppConfigs to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * AppConfig without action
-   */
-  export type AppConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AppConfig
-     */
-    select?: AppConfigSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AppConfig
-     */
-    omit?: AppConfigOmit<ExtArgs> | null
   }
 
 
@@ -78771,3818 +77300,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Setting
-   */
-
-  export type AggregateSetting = {
-    _count: SettingCountAggregateOutputType | null
-    _avg: SettingAvgAggregateOutputType | null
-    _sum: SettingSumAggregateOutputType | null
-    _min: SettingMinAggregateOutputType | null
-    _max: SettingMaxAggregateOutputType | null
-  }
-
-  export type SettingAvgAggregateOutputType = {
-    version: number | null
-  }
-
-  export type SettingSumAggregateOutputType = {
-    version: number | null
-  }
-
-  export type SettingMinAggregateOutputType = {
-    id: string | null
-    key: string | null
-    name: string | null
-    description: string | null
-    valueType: string | null
-    value: string | null
-    defaultValue: string | null
-    scope: string | null
-    identityId: string | null
-    deviceId: string | null
-    groupId: string | null
-    validation: string | null
-    ui: string | null
-    isEncrypted: boolean | null
-    isReadOnly: boolean | null
-    isSystemSetting: boolean | null
-    syncConfig: string | null
-    historyData: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type SettingMaxAggregateOutputType = {
-    id: string | null
-    key: string | null
-    name: string | null
-    description: string | null
-    valueType: string | null
-    value: string | null
-    defaultValue: string | null
-    scope: string | null
-    identityId: string | null
-    deviceId: string | null
-    groupId: string | null
-    validation: string | null
-    ui: string | null
-    isEncrypted: boolean | null
-    isReadOnly: boolean | null
-    isSystemSetting: boolean | null
-    syncConfig: string | null
-    historyData: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type SettingCountAggregateOutputType = {
-    id: number
-    key: number
-    name: number
-    description: number
-    valueType: number
-    value: number
-    defaultValue: number
-    scope: number
-    identityId: number
-    deviceId: number
-    groupId: number
-    validation: number
-    ui: number
-    isEncrypted: number
-    isReadOnly: number
-    isSystemSetting: number
-    syncConfig: number
-    historyData: number
-    version: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type SettingAvgAggregateInputType = {
-    version?: true
-  }
-
-  export type SettingSumAggregateInputType = {
-    version?: true
-  }
-
-  export type SettingMinAggregateInputType = {
-    id?: true
-    key?: true
-    name?: true
-    description?: true
-    valueType?: true
-    value?: true
-    defaultValue?: true
-    scope?: true
-    identityId?: true
-    deviceId?: true
-    groupId?: true
-    validation?: true
-    ui?: true
-    isEncrypted?: true
-    isReadOnly?: true
-    isSystemSetting?: true
-    syncConfig?: true
-    historyData?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type SettingMaxAggregateInputType = {
-    id?: true
-    key?: true
-    name?: true
-    description?: true
-    valueType?: true
-    value?: true
-    defaultValue?: true
-    scope?: true
-    identityId?: true
-    deviceId?: true
-    groupId?: true
-    validation?: true
-    ui?: true
-    isEncrypted?: true
-    isReadOnly?: true
-    isSystemSetting?: true
-    syncConfig?: true
-    historyData?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type SettingCountAggregateInputType = {
-    id?: true
-    key?: true
-    name?: true
-    description?: true
-    valueType?: true
-    value?: true
-    defaultValue?: true
-    scope?: true
-    identityId?: true
-    deviceId?: true
-    groupId?: true
-    validation?: true
-    ui?: true
-    isEncrypted?: true
-    isReadOnly?: true
-    isSystemSetting?: true
-    syncConfig?: true
-    historyData?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type SettingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Setting to aggregate.
-     */
-    where?: SettingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Settings to fetch.
-     */
-    orderBy?: SettingOrderByWithRelationInput | SettingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SettingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Settings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Settings.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Settings
-    **/
-    _count?: true | SettingCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SettingAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SettingSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SettingMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SettingMaxAggregateInputType
-  }
-
-  export type GetSettingAggregateType<T extends SettingAggregateArgs> = {
-        [P in keyof T & keyof AggregateSetting]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSetting[P]>
-      : GetScalarType<T[P], AggregateSetting[P]>
-  }
-
-
-
-
-  export type SettingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingWhereInput
-    orderBy?: SettingOrderByWithAggregationInput | SettingOrderByWithAggregationInput[]
-    by: SettingScalarFieldEnum[] | SettingScalarFieldEnum
-    having?: SettingScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SettingCountAggregateInputType | true
-    _avg?: SettingAvgAggregateInputType
-    _sum?: SettingSumAggregateInputType
-    _min?: SettingMinAggregateInputType
-    _max?: SettingMaxAggregateInputType
-  }
-
-  export type SettingGroupByOutputType = {
-    id: string
-    key: string
-    name: string
-    description: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    identityId: string | null
-    deviceId: string | null
-    groupId: string | null
-    validation: string | null
-    ui: string | null
-    isEncrypted: boolean
-    isReadOnly: boolean
-    isSystemSetting: boolean
-    syncConfig: string | null
-    historyData: string
-    version: number
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: SettingCountAggregateOutputType | null
-    _avg: SettingAvgAggregateOutputType | null
-    _sum: SettingSumAggregateOutputType | null
-    _min: SettingMinAggregateOutputType | null
-    _max: SettingMaxAggregateOutputType | null
-  }
-
-  type GetSettingGroupByPayload<T extends SettingGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SettingGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SettingGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SettingGroupByOutputType[P]>
-            : GetScalarType<T[P], SettingGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SettingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    valueType?: boolean
-    value?: boolean
-    defaultValue?: boolean
-    scope?: boolean
-    identityId?: boolean
-    deviceId?: boolean
-    groupId?: boolean
-    validation?: boolean
-    ui?: boolean
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: boolean
-    historyData?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | Setting$accountArgs<ExtArgs>
-    group?: boolean | Setting$groupArgs<ExtArgs>
-  }, ExtArgs["result"]["setting"]>
-
-  export type SettingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    valueType?: boolean
-    value?: boolean
-    defaultValue?: boolean
-    scope?: boolean
-    identityId?: boolean
-    deviceId?: boolean
-    groupId?: boolean
-    validation?: boolean
-    ui?: boolean
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: boolean
-    historyData?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | Setting$accountArgs<ExtArgs>
-    group?: boolean | Setting$groupArgs<ExtArgs>
-  }, ExtArgs["result"]["setting"]>
-
-  export type SettingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    valueType?: boolean
-    value?: boolean
-    defaultValue?: boolean
-    scope?: boolean
-    identityId?: boolean
-    deviceId?: boolean
-    groupId?: boolean
-    validation?: boolean
-    ui?: boolean
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: boolean
-    historyData?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    account?: boolean | Setting$accountArgs<ExtArgs>
-    group?: boolean | Setting$groupArgs<ExtArgs>
-  }, ExtArgs["result"]["setting"]>
-
-  export type SettingSelectScalar = {
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    valueType?: boolean
-    value?: boolean
-    defaultValue?: boolean
-    scope?: boolean
-    identityId?: boolean
-    deviceId?: boolean
-    groupId?: boolean
-    validation?: boolean
-    ui?: boolean
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: boolean
-    historyData?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type SettingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "key" | "name" | "description" | "valueType" | "value" | "defaultValue" | "scope" | "identityId" | "deviceId" | "groupId" | "validation" | "ui" | "isEncrypted" | "isReadOnly" | "isSystemSetting" | "syncConfig" | "historyData" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["setting"]>
-  export type SettingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | Setting$accountArgs<ExtArgs>
-    group?: boolean | Setting$groupArgs<ExtArgs>
-  }
-  export type SettingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | Setting$accountArgs<ExtArgs>
-    group?: boolean | Setting$groupArgs<ExtArgs>
-  }
-  export type SettingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | Setting$accountArgs<ExtArgs>
-    group?: boolean | Setting$groupArgs<ExtArgs>
-  }
-
-  export type $SettingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Setting"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs> | null
-      group: Prisma.$SettingGroupPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      key: string
-      name: string
-      description: string | null
-      valueType: string
-      value: string
-      defaultValue: string
-      scope: string
-      identityId: string | null
-      deviceId: string | null
-      groupId: string | null
-      validation: string | null
-      ui: string | null
-      isEncrypted: boolean
-      isReadOnly: boolean
-      isSystemSetting: boolean
-      syncConfig: string | null
-      historyData: string
-      version: number
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["setting"]>
-    composites: {}
-  }
-
-  type SettingGetPayload<S extends boolean | null | undefined | SettingDefaultArgs> = $Result.GetResult<Prisma.$SettingPayload, S>
-
-  type SettingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SettingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SettingCountAggregateInputType | true
-    }
-
-  export interface SettingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Setting'], meta: { name: 'Setting' } }
-    /**
-     * Find zero or one Setting that matches the filter.
-     * @param {SettingFindUniqueArgs} args - Arguments to find a Setting
-     * @example
-     * // Get one Setting
-     * const setting = await prisma.setting.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SettingFindUniqueArgs>(args: SelectSubset<T, SettingFindUniqueArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Setting that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SettingFindUniqueOrThrowArgs} args - Arguments to find a Setting
-     * @example
-     * // Get one Setting
-     * const setting = await prisma.setting.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SettingFindUniqueOrThrowArgs>(args: SelectSubset<T, SettingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Setting that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingFindFirstArgs} args - Arguments to find a Setting
-     * @example
-     * // Get one Setting
-     * const setting = await prisma.setting.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SettingFindFirstArgs>(args?: SelectSubset<T, SettingFindFirstArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Setting that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingFindFirstOrThrowArgs} args - Arguments to find a Setting
-     * @example
-     * // Get one Setting
-     * const setting = await prisma.setting.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SettingFindFirstOrThrowArgs>(args?: SelectSubset<T, SettingFindFirstOrThrowArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Settings that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Settings
-     * const settings = await prisma.setting.findMany()
-     * 
-     * // Get first 10 Settings
-     * const settings = await prisma.setting.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const settingWithIdOnly = await prisma.setting.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SettingFindManyArgs>(args?: SelectSubset<T, SettingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Setting.
-     * @param {SettingCreateArgs} args - Arguments to create a Setting.
-     * @example
-     * // Create one Setting
-     * const Setting = await prisma.setting.create({
-     *   data: {
-     *     // ... data to create a Setting
-     *   }
-     * })
-     * 
-     */
-    create<T extends SettingCreateArgs>(args: SelectSubset<T, SettingCreateArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Settings.
-     * @param {SettingCreateManyArgs} args - Arguments to create many Settings.
-     * @example
-     * // Create many Settings
-     * const setting = await prisma.setting.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SettingCreateManyArgs>(args?: SelectSubset<T, SettingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Settings and returns the data saved in the database.
-     * @param {SettingCreateManyAndReturnArgs} args - Arguments to create many Settings.
-     * @example
-     * // Create many Settings
-     * const setting = await prisma.setting.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Settings and only return the `id`
-     * const settingWithIdOnly = await prisma.setting.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SettingCreateManyAndReturnArgs>(args?: SelectSubset<T, SettingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Setting.
-     * @param {SettingDeleteArgs} args - Arguments to delete one Setting.
-     * @example
-     * // Delete one Setting
-     * const Setting = await prisma.setting.delete({
-     *   where: {
-     *     // ... filter to delete one Setting
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SettingDeleteArgs>(args: SelectSubset<T, SettingDeleteArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Setting.
-     * @param {SettingUpdateArgs} args - Arguments to update one Setting.
-     * @example
-     * // Update one Setting
-     * const setting = await prisma.setting.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SettingUpdateArgs>(args: SelectSubset<T, SettingUpdateArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Settings.
-     * @param {SettingDeleteManyArgs} args - Arguments to filter Settings to delete.
-     * @example
-     * // Delete a few Settings
-     * const { count } = await prisma.setting.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SettingDeleteManyArgs>(args?: SelectSubset<T, SettingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Settings.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Settings
-     * const setting = await prisma.setting.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SettingUpdateManyArgs>(args: SelectSubset<T, SettingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Settings and returns the data updated in the database.
-     * @param {SettingUpdateManyAndReturnArgs} args - Arguments to update many Settings.
-     * @example
-     * // Update many Settings
-     * const setting = await prisma.setting.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Settings and only return the `id`
-     * const settingWithIdOnly = await prisma.setting.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SettingUpdateManyAndReturnArgs>(args: SelectSubset<T, SettingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Setting.
-     * @param {SettingUpsertArgs} args - Arguments to update or create a Setting.
-     * @example
-     * // Update or create a Setting
-     * const setting = await prisma.setting.upsert({
-     *   create: {
-     *     // ... data to create a Setting
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Setting we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SettingUpsertArgs>(args: SelectSubset<T, SettingUpsertArgs<ExtArgs>>): Prisma__SettingClient<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Settings.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingCountArgs} args - Arguments to filter Settings to count.
-     * @example
-     * // Count the number of Settings
-     * const count = await prisma.setting.count({
-     *   where: {
-     *     // ... the filter for the Settings we want to count
-     *   }
-     * })
-    **/
-    count<T extends SettingCountArgs>(
-      args?: Subset<T, SettingCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SettingCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Setting.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SettingAggregateArgs>(args: Subset<T, SettingAggregateArgs>): Prisma.PrismaPromise<GetSettingAggregateType<T>>
-
-    /**
-     * Group by Setting.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SettingGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SettingGroupByArgs['orderBy'] }
-        : { orderBy?: SettingGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SettingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSettingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Setting model
-   */
-  readonly fields: SettingFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Setting.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SettingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends Setting$accountArgs<ExtArgs> = {}>(args?: Subset<T, Setting$accountArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    group<T extends Setting$groupArgs<ExtArgs> = {}>(args?: Subset<T, Setting$groupArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Setting model
-   */
-  interface SettingFieldRefs {
-    readonly id: FieldRef<"Setting", 'String'>
-    readonly key: FieldRef<"Setting", 'String'>
-    readonly name: FieldRef<"Setting", 'String'>
-    readonly description: FieldRef<"Setting", 'String'>
-    readonly valueType: FieldRef<"Setting", 'String'>
-    readonly value: FieldRef<"Setting", 'String'>
-    readonly defaultValue: FieldRef<"Setting", 'String'>
-    readonly scope: FieldRef<"Setting", 'String'>
-    readonly identityId: FieldRef<"Setting", 'String'>
-    readonly deviceId: FieldRef<"Setting", 'String'>
-    readonly groupId: FieldRef<"Setting", 'String'>
-    readonly validation: FieldRef<"Setting", 'String'>
-    readonly ui: FieldRef<"Setting", 'String'>
-    readonly isEncrypted: FieldRef<"Setting", 'Boolean'>
-    readonly isReadOnly: FieldRef<"Setting", 'Boolean'>
-    readonly isSystemSetting: FieldRef<"Setting", 'Boolean'>
-    readonly syncConfig: FieldRef<"Setting", 'String'>
-    readonly historyData: FieldRef<"Setting", 'String'>
-    readonly version: FieldRef<"Setting", 'Int'>
-    readonly createdAt: FieldRef<"Setting", 'DateTime'>
-    readonly updatedAt: FieldRef<"Setting", 'DateTime'>
-    readonly deletedAt: FieldRef<"Setting", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Setting findUnique
-   */
-  export type SettingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * Filter, which Setting to fetch.
-     */
-    where: SettingWhereUniqueInput
-  }
-
-  /**
-   * Setting findUniqueOrThrow
-   */
-  export type SettingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * Filter, which Setting to fetch.
-     */
-    where: SettingWhereUniqueInput
-  }
-
-  /**
-   * Setting findFirst
-   */
-  export type SettingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * Filter, which Setting to fetch.
-     */
-    where?: SettingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Settings to fetch.
-     */
-    orderBy?: SettingOrderByWithRelationInput | SettingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Settings.
-     */
-    cursor?: SettingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Settings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Settings.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Settings.
-     */
-    distinct?: SettingScalarFieldEnum | SettingScalarFieldEnum[]
-  }
-
-  /**
-   * Setting findFirstOrThrow
-   */
-  export type SettingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * Filter, which Setting to fetch.
-     */
-    where?: SettingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Settings to fetch.
-     */
-    orderBy?: SettingOrderByWithRelationInput | SettingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Settings.
-     */
-    cursor?: SettingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Settings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Settings.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Settings.
-     */
-    distinct?: SettingScalarFieldEnum | SettingScalarFieldEnum[]
-  }
-
-  /**
-   * Setting findMany
-   */
-  export type SettingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * Filter, which Settings to fetch.
-     */
-    where?: SettingWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Settings to fetch.
-     */
-    orderBy?: SettingOrderByWithRelationInput | SettingOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Settings.
-     */
-    cursor?: SettingWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Settings from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Settings.
-     */
-    skip?: number
-    distinct?: SettingScalarFieldEnum | SettingScalarFieldEnum[]
-  }
-
-  /**
-   * Setting create
-   */
-  export type SettingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Setting.
-     */
-    data: XOR<SettingCreateInput, SettingUncheckedCreateInput>
-  }
-
-  /**
-   * Setting createMany
-   */
-  export type SettingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Settings.
-     */
-    data: SettingCreateManyInput | SettingCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Setting createManyAndReturn
-   */
-  export type SettingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * The data used to create many Settings.
-     */
-    data: SettingCreateManyInput | SettingCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Setting update
-   */
-  export type SettingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Setting.
-     */
-    data: XOR<SettingUpdateInput, SettingUncheckedUpdateInput>
-    /**
-     * Choose, which Setting to update.
-     */
-    where: SettingWhereUniqueInput
-  }
-
-  /**
-   * Setting updateMany
-   */
-  export type SettingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Settings.
-     */
-    data: XOR<SettingUpdateManyMutationInput, SettingUncheckedUpdateManyInput>
-    /**
-     * Filter which Settings to update
-     */
-    where?: SettingWhereInput
-    /**
-     * Limit how many Settings to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Setting updateManyAndReturn
-   */
-  export type SettingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * The data used to update Settings.
-     */
-    data: XOR<SettingUpdateManyMutationInput, SettingUncheckedUpdateManyInput>
-    /**
-     * Filter which Settings to update
-     */
-    where?: SettingWhereInput
-    /**
-     * Limit how many Settings to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Setting upsert
-   */
-  export type SettingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Setting to update in case it exists.
-     */
-    where: SettingWhereUniqueInput
-    /**
-     * In case the Setting found by the `where` argument doesn't exist, create a new Setting with this data.
-     */
-    create: XOR<SettingCreateInput, SettingUncheckedCreateInput>
-    /**
-     * In case the Setting was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SettingUpdateInput, SettingUncheckedUpdateInput>
-  }
-
-  /**
-   * Setting delete
-   */
-  export type SettingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    /**
-     * Filter which Setting to delete.
-     */
-    where: SettingWhereUniqueInput
-  }
-
-  /**
-   * Setting deleteMany
-   */
-  export type SettingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Settings to delete
-     */
-    where?: SettingWhereInput
-    /**
-     * Limit how many Settings to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Setting.account
-   */
-  export type Setting$accountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Account
-     */
-    select?: AccountSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Account
-     */
-    omit?: AccountOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AccountInclude<ExtArgs> | null
-    where?: AccountWhereInput
-  }
-
-  /**
-   * Setting.group
-   */
-  export type Setting$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    where?: SettingGroupWhereInput
-  }
-
-  /**
-   * Setting without action
-   */
-  export type SettingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model SettingGroup
-   */
-
-  export type AggregateSettingGroup = {
-    _count: SettingGroupCountAggregateOutputType | null
-    _avg: SettingGroupAvgAggregateOutputType | null
-    _sum: SettingGroupSumAggregateOutputType | null
-    _min: SettingGroupMinAggregateOutputType | null
-    _max: SettingGroupMaxAggregateOutputType | null
-  }
-
-  export type SettingGroupAvgAggregateOutputType = {
-    order: number | null
-    version: number | null
-  }
-
-  export type SettingGroupSumAggregateOutputType = {
-    order: number | null
-    version: number | null
-  }
-
-  export type SettingGroupMinAggregateOutputType = {
-    id: string | null
-    key: string | null
-    name: string | null
-    description: string | null
-    parentId: string | null
-    order: number | null
-    icon: string | null
-    isCollapsed: boolean | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type SettingGroupMaxAggregateOutputType = {
-    id: string | null
-    key: string | null
-    name: string | null
-    description: string | null
-    parentId: string | null
-    order: number | null
-    icon: string | null
-    isCollapsed: boolean | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type SettingGroupCountAggregateOutputType = {
-    id: number
-    key: number
-    name: number
-    description: number
-    parentId: number
-    order: number
-    icon: number
-    isCollapsed: number
-    version: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type SettingGroupAvgAggregateInputType = {
-    order?: true
-    version?: true
-  }
-
-  export type SettingGroupSumAggregateInputType = {
-    order?: true
-    version?: true
-  }
-
-  export type SettingGroupMinAggregateInputType = {
-    id?: true
-    key?: true
-    name?: true
-    description?: true
-    parentId?: true
-    order?: true
-    icon?: true
-    isCollapsed?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type SettingGroupMaxAggregateInputType = {
-    id?: true
-    key?: true
-    name?: true
-    description?: true
-    parentId?: true
-    order?: true
-    icon?: true
-    isCollapsed?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type SettingGroupCountAggregateInputType = {
-    id?: true
-    key?: true
-    name?: true
-    description?: true
-    parentId?: true
-    order?: true
-    icon?: true
-    isCollapsed?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type SettingGroupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SettingGroup to aggregate.
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingGroups to fetch.
-     */
-    orderBy?: SettingGroupOrderByWithRelationInput | SettingGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SettingGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingGroups.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned SettingGroups
-    **/
-    _count?: true | SettingGroupCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SettingGroupAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SettingGroupSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SettingGroupMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SettingGroupMaxAggregateInputType
-  }
-
-  export type GetSettingGroupAggregateType<T extends SettingGroupAggregateArgs> = {
-        [P in keyof T & keyof AggregateSettingGroup]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSettingGroup[P]>
-      : GetScalarType<T[P], AggregateSettingGroup[P]>
-  }
-
-
-
-
-  export type SettingGroupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingGroupWhereInput
-    orderBy?: SettingGroupOrderByWithAggregationInput | SettingGroupOrderByWithAggregationInput[]
-    by: SettingGroupScalarFieldEnum[] | SettingGroupScalarFieldEnum
-    having?: SettingGroupScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SettingGroupCountAggregateInputType | true
-    _avg?: SettingGroupAvgAggregateInputType
-    _sum?: SettingGroupSumAggregateInputType
-    _min?: SettingGroupMinAggregateInputType
-    _max?: SettingGroupMaxAggregateInputType
-  }
-
-  export type SettingGroupGroupByOutputType = {
-    id: string
-    key: string
-    name: string
-    description: string | null
-    parentId: string | null
-    order: number
-    icon: string | null
-    isCollapsed: boolean
-    version: number
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: SettingGroupCountAggregateOutputType | null
-    _avg: SettingGroupAvgAggregateOutputType | null
-    _sum: SettingGroupSumAggregateOutputType | null
-    _min: SettingGroupMinAggregateOutputType | null
-    _max: SettingGroupMaxAggregateOutputType | null
-  }
-
-  type GetSettingGroupGroupByPayload<T extends SettingGroupGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SettingGroupGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SettingGroupGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SettingGroupGroupByOutputType[P]>
-            : GetScalarType<T[P], SettingGroupGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SettingGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    parentId?: boolean
-    order?: boolean
-    icon?: boolean
-    isCollapsed?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    parent?: boolean | SettingGroup$parentArgs<ExtArgs>
-    children?: boolean | SettingGroup$childrenArgs<ExtArgs>
-    items?: boolean | SettingGroup$itemsArgs<ExtArgs>
-    settings?: boolean | SettingGroup$settingsArgs<ExtArgs>
-    _count?: boolean | SettingGroupCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["settingGroup"]>
-
-  export type SettingGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    parentId?: boolean
-    order?: boolean
-    icon?: boolean
-    isCollapsed?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    parent?: boolean | SettingGroup$parentArgs<ExtArgs>
-  }, ExtArgs["result"]["settingGroup"]>
-
-  export type SettingGroupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    parentId?: boolean
-    order?: boolean
-    icon?: boolean
-    isCollapsed?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    parent?: boolean | SettingGroup$parentArgs<ExtArgs>
-  }, ExtArgs["result"]["settingGroup"]>
-
-  export type SettingGroupSelectScalar = {
-    id?: boolean
-    key?: boolean
-    name?: boolean
-    description?: boolean
-    parentId?: boolean
-    order?: boolean
-    icon?: boolean
-    isCollapsed?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type SettingGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "key" | "name" | "description" | "parentId" | "order" | "icon" | "isCollapsed" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["settingGroup"]>
-  export type SettingGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    parent?: boolean | SettingGroup$parentArgs<ExtArgs>
-    children?: boolean | SettingGroup$childrenArgs<ExtArgs>
-    items?: boolean | SettingGroup$itemsArgs<ExtArgs>
-    settings?: boolean | SettingGroup$settingsArgs<ExtArgs>
-    _count?: boolean | SettingGroupCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type SettingGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    parent?: boolean | SettingGroup$parentArgs<ExtArgs>
-  }
-  export type SettingGroupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    parent?: boolean | SettingGroup$parentArgs<ExtArgs>
-  }
-
-  export type $SettingGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SettingGroup"
-    objects: {
-      parent: Prisma.$SettingGroupPayload<ExtArgs> | null
-      children: Prisma.$SettingGroupPayload<ExtArgs>[]
-      items: Prisma.$SettingItemPayload<ExtArgs>[]
-      settings: Prisma.$SettingPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      key: string
-      name: string
-      description: string | null
-      parentId: string | null
-      order: number
-      icon: string | null
-      isCollapsed: boolean
-      version: number
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["settingGroup"]>
-    composites: {}
-  }
-
-  type SettingGroupGetPayload<S extends boolean | null | undefined | SettingGroupDefaultArgs> = $Result.GetResult<Prisma.$SettingGroupPayload, S>
-
-  type SettingGroupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SettingGroupFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SettingGroupCountAggregateInputType | true
-    }
-
-  export interface SettingGroupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SettingGroup'], meta: { name: 'SettingGroup' } }
-    /**
-     * Find zero or one SettingGroup that matches the filter.
-     * @param {SettingGroupFindUniqueArgs} args - Arguments to find a SettingGroup
-     * @example
-     * // Get one SettingGroup
-     * const settingGroup = await prisma.settingGroup.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SettingGroupFindUniqueArgs>(args: SelectSubset<T, SettingGroupFindUniqueArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one SettingGroup that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SettingGroupFindUniqueOrThrowArgs} args - Arguments to find a SettingGroup
-     * @example
-     * // Get one SettingGroup
-     * const settingGroup = await prisma.settingGroup.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SettingGroupFindUniqueOrThrowArgs>(args: SelectSubset<T, SettingGroupFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SettingGroup that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupFindFirstArgs} args - Arguments to find a SettingGroup
-     * @example
-     * // Get one SettingGroup
-     * const settingGroup = await prisma.settingGroup.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SettingGroupFindFirstArgs>(args?: SelectSubset<T, SettingGroupFindFirstArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SettingGroup that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupFindFirstOrThrowArgs} args - Arguments to find a SettingGroup
-     * @example
-     * // Get one SettingGroup
-     * const settingGroup = await prisma.settingGroup.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SettingGroupFindFirstOrThrowArgs>(args?: SelectSubset<T, SettingGroupFindFirstOrThrowArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more SettingGroups that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all SettingGroups
-     * const settingGroups = await prisma.settingGroup.findMany()
-     * 
-     * // Get first 10 SettingGroups
-     * const settingGroups = await prisma.settingGroup.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const settingGroupWithIdOnly = await prisma.settingGroup.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SettingGroupFindManyArgs>(args?: SelectSubset<T, SettingGroupFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a SettingGroup.
-     * @param {SettingGroupCreateArgs} args - Arguments to create a SettingGroup.
-     * @example
-     * // Create one SettingGroup
-     * const SettingGroup = await prisma.settingGroup.create({
-     *   data: {
-     *     // ... data to create a SettingGroup
-     *   }
-     * })
-     * 
-     */
-    create<T extends SettingGroupCreateArgs>(args: SelectSubset<T, SettingGroupCreateArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many SettingGroups.
-     * @param {SettingGroupCreateManyArgs} args - Arguments to create many SettingGroups.
-     * @example
-     * // Create many SettingGroups
-     * const settingGroup = await prisma.settingGroup.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SettingGroupCreateManyArgs>(args?: SelectSubset<T, SettingGroupCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many SettingGroups and returns the data saved in the database.
-     * @param {SettingGroupCreateManyAndReturnArgs} args - Arguments to create many SettingGroups.
-     * @example
-     * // Create many SettingGroups
-     * const settingGroup = await prisma.settingGroup.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many SettingGroups and only return the `id`
-     * const settingGroupWithIdOnly = await prisma.settingGroup.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SettingGroupCreateManyAndReturnArgs>(args?: SelectSubset<T, SettingGroupCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a SettingGroup.
-     * @param {SettingGroupDeleteArgs} args - Arguments to delete one SettingGroup.
-     * @example
-     * // Delete one SettingGroup
-     * const SettingGroup = await prisma.settingGroup.delete({
-     *   where: {
-     *     // ... filter to delete one SettingGroup
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SettingGroupDeleteArgs>(args: SelectSubset<T, SettingGroupDeleteArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one SettingGroup.
-     * @param {SettingGroupUpdateArgs} args - Arguments to update one SettingGroup.
-     * @example
-     * // Update one SettingGroup
-     * const settingGroup = await prisma.settingGroup.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SettingGroupUpdateArgs>(args: SelectSubset<T, SettingGroupUpdateArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more SettingGroups.
-     * @param {SettingGroupDeleteManyArgs} args - Arguments to filter SettingGroups to delete.
-     * @example
-     * // Delete a few SettingGroups
-     * const { count } = await prisma.settingGroup.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SettingGroupDeleteManyArgs>(args?: SelectSubset<T, SettingGroupDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SettingGroups.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many SettingGroups
-     * const settingGroup = await prisma.settingGroup.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SettingGroupUpdateManyArgs>(args: SelectSubset<T, SettingGroupUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SettingGroups and returns the data updated in the database.
-     * @param {SettingGroupUpdateManyAndReturnArgs} args - Arguments to update many SettingGroups.
-     * @example
-     * // Update many SettingGroups
-     * const settingGroup = await prisma.settingGroup.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more SettingGroups and only return the `id`
-     * const settingGroupWithIdOnly = await prisma.settingGroup.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SettingGroupUpdateManyAndReturnArgs>(args: SelectSubset<T, SettingGroupUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one SettingGroup.
-     * @param {SettingGroupUpsertArgs} args - Arguments to update or create a SettingGroup.
-     * @example
-     * // Update or create a SettingGroup
-     * const settingGroup = await prisma.settingGroup.upsert({
-     *   create: {
-     *     // ... data to create a SettingGroup
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the SettingGroup we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SettingGroupUpsertArgs>(args: SelectSubset<T, SettingGroupUpsertArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of SettingGroups.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupCountArgs} args - Arguments to filter SettingGroups to count.
-     * @example
-     * // Count the number of SettingGroups
-     * const count = await prisma.settingGroup.count({
-     *   where: {
-     *     // ... the filter for the SettingGroups we want to count
-     *   }
-     * })
-    **/
-    count<T extends SettingGroupCountArgs>(
-      args?: Subset<T, SettingGroupCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SettingGroupCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a SettingGroup.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SettingGroupAggregateArgs>(args: Subset<T, SettingGroupAggregateArgs>): Prisma.PrismaPromise<GetSettingGroupAggregateType<T>>
-
-    /**
-     * Group by SettingGroup.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingGroupGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SettingGroupGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SettingGroupGroupByArgs['orderBy'] }
-        : { orderBy?: SettingGroupGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SettingGroupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSettingGroupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the SettingGroup model
-   */
-  readonly fields: SettingGroupFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for SettingGroup.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SettingGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    parent<T extends SettingGroup$parentArgs<ExtArgs> = {}>(args?: Subset<T, SettingGroup$parentArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    children<T extends SettingGroup$childrenArgs<ExtArgs> = {}>(args?: Subset<T, SettingGroup$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    items<T extends SettingGroup$itemsArgs<ExtArgs> = {}>(args?: Subset<T, SettingGroup$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    settings<T extends SettingGroup$settingsArgs<ExtArgs> = {}>(args?: Subset<T, SettingGroup$settingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the SettingGroup model
-   */
-  interface SettingGroupFieldRefs {
-    readonly id: FieldRef<"SettingGroup", 'String'>
-    readonly key: FieldRef<"SettingGroup", 'String'>
-    readonly name: FieldRef<"SettingGroup", 'String'>
-    readonly description: FieldRef<"SettingGroup", 'String'>
-    readonly parentId: FieldRef<"SettingGroup", 'String'>
-    readonly order: FieldRef<"SettingGroup", 'Int'>
-    readonly icon: FieldRef<"SettingGroup", 'String'>
-    readonly isCollapsed: FieldRef<"SettingGroup", 'Boolean'>
-    readonly version: FieldRef<"SettingGroup", 'Int'>
-    readonly createdAt: FieldRef<"SettingGroup", 'DateTime'>
-    readonly updatedAt: FieldRef<"SettingGroup", 'DateTime'>
-    readonly deletedAt: FieldRef<"SettingGroup", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * SettingGroup findUnique
-   */
-  export type SettingGroupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingGroup to fetch.
-     */
-    where: SettingGroupWhereUniqueInput
-  }
-
-  /**
-   * SettingGroup findUniqueOrThrow
-   */
-  export type SettingGroupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingGroup to fetch.
-     */
-    where: SettingGroupWhereUniqueInput
-  }
-
-  /**
-   * SettingGroup findFirst
-   */
-  export type SettingGroupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingGroup to fetch.
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingGroups to fetch.
-     */
-    orderBy?: SettingGroupOrderByWithRelationInput | SettingGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SettingGroups.
-     */
-    cursor?: SettingGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingGroups.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SettingGroups.
-     */
-    distinct?: SettingGroupScalarFieldEnum | SettingGroupScalarFieldEnum[]
-  }
-
-  /**
-   * SettingGroup findFirstOrThrow
-   */
-  export type SettingGroupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingGroup to fetch.
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingGroups to fetch.
-     */
-    orderBy?: SettingGroupOrderByWithRelationInput | SettingGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SettingGroups.
-     */
-    cursor?: SettingGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingGroups.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SettingGroups.
-     */
-    distinct?: SettingGroupScalarFieldEnum | SettingGroupScalarFieldEnum[]
-  }
-
-  /**
-   * SettingGroup findMany
-   */
-  export type SettingGroupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingGroups to fetch.
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingGroups to fetch.
-     */
-    orderBy?: SettingGroupOrderByWithRelationInput | SettingGroupOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing SettingGroups.
-     */
-    cursor?: SettingGroupWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingGroups from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingGroups.
-     */
-    skip?: number
-    distinct?: SettingGroupScalarFieldEnum | SettingGroupScalarFieldEnum[]
-  }
-
-  /**
-   * SettingGroup create
-   */
-  export type SettingGroupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * The data needed to create a SettingGroup.
-     */
-    data: XOR<SettingGroupCreateInput, SettingGroupUncheckedCreateInput>
-  }
-
-  /**
-   * SettingGroup createMany
-   */
-  export type SettingGroupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many SettingGroups.
-     */
-    data: SettingGroupCreateManyInput | SettingGroupCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * SettingGroup createManyAndReturn
-   */
-  export type SettingGroupCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * The data used to create many SettingGroups.
-     */
-    data: SettingGroupCreateManyInput | SettingGroupCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SettingGroup update
-   */
-  export type SettingGroupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * The data needed to update a SettingGroup.
-     */
-    data: XOR<SettingGroupUpdateInput, SettingGroupUncheckedUpdateInput>
-    /**
-     * Choose, which SettingGroup to update.
-     */
-    where: SettingGroupWhereUniqueInput
-  }
-
-  /**
-   * SettingGroup updateMany
-   */
-  export type SettingGroupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update SettingGroups.
-     */
-    data: XOR<SettingGroupUpdateManyMutationInput, SettingGroupUncheckedUpdateManyInput>
-    /**
-     * Filter which SettingGroups to update
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * Limit how many SettingGroups to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * SettingGroup updateManyAndReturn
-   */
-  export type SettingGroupUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * The data used to update SettingGroups.
-     */
-    data: XOR<SettingGroupUpdateManyMutationInput, SettingGroupUncheckedUpdateManyInput>
-    /**
-     * Filter which SettingGroups to update
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * Limit how many SettingGroups to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SettingGroup upsert
-   */
-  export type SettingGroupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * The filter to search for the SettingGroup to update in case it exists.
-     */
-    where: SettingGroupWhereUniqueInput
-    /**
-     * In case the SettingGroup found by the `where` argument doesn't exist, create a new SettingGroup with this data.
-     */
-    create: XOR<SettingGroupCreateInput, SettingGroupUncheckedCreateInput>
-    /**
-     * In case the SettingGroup was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SettingGroupUpdateInput, SettingGroupUncheckedUpdateInput>
-  }
-
-  /**
-   * SettingGroup delete
-   */
-  export type SettingGroupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    /**
-     * Filter which SettingGroup to delete.
-     */
-    where: SettingGroupWhereUniqueInput
-  }
-
-  /**
-   * SettingGroup deleteMany
-   */
-  export type SettingGroupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SettingGroups to delete
-     */
-    where?: SettingGroupWhereInput
-    /**
-     * Limit how many SettingGroups to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SettingGroup.parent
-   */
-  export type SettingGroup$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    where?: SettingGroupWhereInput
-  }
-
-  /**
-   * SettingGroup.children
-   */
-  export type SettingGroup$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-    where?: SettingGroupWhereInput
-    orderBy?: SettingGroupOrderByWithRelationInput | SettingGroupOrderByWithRelationInput[]
-    cursor?: SettingGroupWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SettingGroupScalarFieldEnum | SettingGroupScalarFieldEnum[]
-  }
-
-  /**
-   * SettingGroup.items
-   */
-  export type SettingGroup$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    where?: SettingItemWhereInput
-    orderBy?: SettingItemOrderByWithRelationInput | SettingItemOrderByWithRelationInput[]
-    cursor?: SettingItemWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SettingItemScalarFieldEnum | SettingItemScalarFieldEnum[]
-  }
-
-  /**
-   * SettingGroup.settings
-   */
-  export type SettingGroup$settingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Setting
-     */
-    select?: SettingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Setting
-     */
-    omit?: SettingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingInclude<ExtArgs> | null
-    where?: SettingWhereInput
-    orderBy?: SettingOrderByWithRelationInput | SettingOrderByWithRelationInput[]
-    cursor?: SettingWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SettingScalarFieldEnum | SettingScalarFieldEnum[]
-  }
-
-  /**
-   * SettingGroup without action
-   */
-  export type SettingGroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingGroup
-     */
-    select?: SettingGroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingGroup
-     */
-    omit?: SettingGroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingGroupInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model SettingItem
-   */
-
-  export type AggregateSettingItem = {
-    _count: SettingItemCountAggregateOutputType | null
-    _avg: SettingItemAvgAggregateOutputType | null
-    _sum: SettingItemSumAggregateOutputType | null
-    _min: SettingItemMinAggregateOutputType | null
-    _max: SettingItemMaxAggregateOutputType | null
-  }
-
-  export type SettingItemAvgAggregateOutputType = {
-    order: number | null
-    version: number | null
-  }
-
-  export type SettingItemSumAggregateOutputType = {
-    order: number | null
-    version: number | null
-  }
-
-  export type SettingItemMinAggregateOutputType = {
-    id: string | null
-    groupId: string | null
-    settingKey: string | null
-    order: number | null
-    isVisible: boolean | null
-    customLabel: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type SettingItemMaxAggregateOutputType = {
-    id: string | null
-    groupId: string | null
-    settingKey: string | null
-    order: number | null
-    isVisible: boolean | null
-    customLabel: string | null
-    version: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    deletedAt: Date | null
-  }
-
-  export type SettingItemCountAggregateOutputType = {
-    id: number
-    groupId: number
-    settingKey: number
-    order: number
-    isVisible: number
-    customLabel: number
-    version: number
-    createdAt: number
-    updatedAt: number
-    deletedAt: number
-    _all: number
-  }
-
-
-  export type SettingItemAvgAggregateInputType = {
-    order?: true
-    version?: true
-  }
-
-  export type SettingItemSumAggregateInputType = {
-    order?: true
-    version?: true
-  }
-
-  export type SettingItemMinAggregateInputType = {
-    id?: true
-    groupId?: true
-    settingKey?: true
-    order?: true
-    isVisible?: true
-    customLabel?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type SettingItemMaxAggregateInputType = {
-    id?: true
-    groupId?: true
-    settingKey?: true
-    order?: true
-    isVisible?: true
-    customLabel?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-  }
-
-  export type SettingItemCountAggregateInputType = {
-    id?: true
-    groupId?: true
-    settingKey?: true
-    order?: true
-    isVisible?: true
-    customLabel?: true
-    version?: true
-    createdAt?: true
-    updatedAt?: true
-    deletedAt?: true
-    _all?: true
-  }
-
-  export type SettingItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SettingItem to aggregate.
-     */
-    where?: SettingItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingItems to fetch.
-     */
-    orderBy?: SettingItemOrderByWithRelationInput | SettingItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SettingItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned SettingItems
-    **/
-    _count?: true | SettingItemCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SettingItemAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SettingItemSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SettingItemMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SettingItemMaxAggregateInputType
-  }
-
-  export type GetSettingItemAggregateType<T extends SettingItemAggregateArgs> = {
-        [P in keyof T & keyof AggregateSettingItem]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSettingItem[P]>
-      : GetScalarType<T[P], AggregateSettingItem[P]>
-  }
-
-
-
-
-  export type SettingItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SettingItemWhereInput
-    orderBy?: SettingItemOrderByWithAggregationInput | SettingItemOrderByWithAggregationInput[]
-    by: SettingItemScalarFieldEnum[] | SettingItemScalarFieldEnum
-    having?: SettingItemScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SettingItemCountAggregateInputType | true
-    _avg?: SettingItemAvgAggregateInputType
-    _sum?: SettingItemSumAggregateInputType
-    _min?: SettingItemMinAggregateInputType
-    _max?: SettingItemMaxAggregateInputType
-  }
-
-  export type SettingItemGroupByOutputType = {
-    id: string
-    groupId: string
-    settingKey: string
-    order: number
-    isVisible: boolean
-    customLabel: string | null
-    version: number
-    createdAt: Date
-    updatedAt: Date
-    deletedAt: Date | null
-    _count: SettingItemCountAggregateOutputType | null
-    _avg: SettingItemAvgAggregateOutputType | null
-    _sum: SettingItemSumAggregateOutputType | null
-    _min: SettingItemMinAggregateOutputType | null
-    _max: SettingItemMaxAggregateOutputType | null
-  }
-
-  type GetSettingItemGroupByPayload<T extends SettingItemGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SettingItemGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SettingItemGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SettingItemGroupByOutputType[P]>
-            : GetScalarType<T[P], SettingItemGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SettingItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    groupId?: boolean
-    settingKey?: boolean
-    order?: boolean
-    isVisible?: boolean
-    customLabel?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    group?: boolean | SettingGroupDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["settingItem"]>
-
-  export type SettingItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    groupId?: boolean
-    settingKey?: boolean
-    order?: boolean
-    isVisible?: boolean
-    customLabel?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    group?: boolean | SettingGroupDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["settingItem"]>
-
-  export type SettingItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    groupId?: boolean
-    settingKey?: boolean
-    order?: boolean
-    isVisible?: boolean
-    customLabel?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-    group?: boolean | SettingGroupDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["settingItem"]>
-
-  export type SettingItemSelectScalar = {
-    id?: boolean
-    groupId?: boolean
-    settingKey?: boolean
-    order?: boolean
-    isVisible?: boolean
-    customLabel?: boolean
-    version?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    deletedAt?: boolean
-  }
-
-  export type SettingItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupId" | "settingKey" | "order" | "isVisible" | "customLabel" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["settingItem"]>
-  export type SettingItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | SettingGroupDefaultArgs<ExtArgs>
-  }
-  export type SettingItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | SettingGroupDefaultArgs<ExtArgs>
-  }
-  export type SettingItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | SettingGroupDefaultArgs<ExtArgs>
-  }
-
-  export type $SettingItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SettingItem"
-    objects: {
-      group: Prisma.$SettingGroupPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      groupId: string
-      settingKey: string
-      order: number
-      isVisible: boolean
-      customLabel: string | null
-      version: number
-      createdAt: Date
-      updatedAt: Date
-      deletedAt: Date | null
-    }, ExtArgs["result"]["settingItem"]>
-    composites: {}
-  }
-
-  type SettingItemGetPayload<S extends boolean | null | undefined | SettingItemDefaultArgs> = $Result.GetResult<Prisma.$SettingItemPayload, S>
-
-  type SettingItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SettingItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SettingItemCountAggregateInputType | true
-    }
-
-  export interface SettingItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SettingItem'], meta: { name: 'SettingItem' } }
-    /**
-     * Find zero or one SettingItem that matches the filter.
-     * @param {SettingItemFindUniqueArgs} args - Arguments to find a SettingItem
-     * @example
-     * // Get one SettingItem
-     * const settingItem = await prisma.settingItem.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SettingItemFindUniqueArgs>(args: SelectSubset<T, SettingItemFindUniqueArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one SettingItem that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SettingItemFindUniqueOrThrowArgs} args - Arguments to find a SettingItem
-     * @example
-     * // Get one SettingItem
-     * const settingItem = await prisma.settingItem.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SettingItemFindUniqueOrThrowArgs>(args: SelectSubset<T, SettingItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SettingItem that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemFindFirstArgs} args - Arguments to find a SettingItem
-     * @example
-     * // Get one SettingItem
-     * const settingItem = await prisma.settingItem.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SettingItemFindFirstArgs>(args?: SelectSubset<T, SettingItemFindFirstArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SettingItem that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemFindFirstOrThrowArgs} args - Arguments to find a SettingItem
-     * @example
-     * // Get one SettingItem
-     * const settingItem = await prisma.settingItem.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SettingItemFindFirstOrThrowArgs>(args?: SelectSubset<T, SettingItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more SettingItems that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all SettingItems
-     * const settingItems = await prisma.settingItem.findMany()
-     * 
-     * // Get first 10 SettingItems
-     * const settingItems = await prisma.settingItem.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const settingItemWithIdOnly = await prisma.settingItem.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SettingItemFindManyArgs>(args?: SelectSubset<T, SettingItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a SettingItem.
-     * @param {SettingItemCreateArgs} args - Arguments to create a SettingItem.
-     * @example
-     * // Create one SettingItem
-     * const SettingItem = await prisma.settingItem.create({
-     *   data: {
-     *     // ... data to create a SettingItem
-     *   }
-     * })
-     * 
-     */
-    create<T extends SettingItemCreateArgs>(args: SelectSubset<T, SettingItemCreateArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many SettingItems.
-     * @param {SettingItemCreateManyArgs} args - Arguments to create many SettingItems.
-     * @example
-     * // Create many SettingItems
-     * const settingItem = await prisma.settingItem.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SettingItemCreateManyArgs>(args?: SelectSubset<T, SettingItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many SettingItems and returns the data saved in the database.
-     * @param {SettingItemCreateManyAndReturnArgs} args - Arguments to create many SettingItems.
-     * @example
-     * // Create many SettingItems
-     * const settingItem = await prisma.settingItem.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many SettingItems and only return the `id`
-     * const settingItemWithIdOnly = await prisma.settingItem.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SettingItemCreateManyAndReturnArgs>(args?: SelectSubset<T, SettingItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a SettingItem.
-     * @param {SettingItemDeleteArgs} args - Arguments to delete one SettingItem.
-     * @example
-     * // Delete one SettingItem
-     * const SettingItem = await prisma.settingItem.delete({
-     *   where: {
-     *     // ... filter to delete one SettingItem
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SettingItemDeleteArgs>(args: SelectSubset<T, SettingItemDeleteArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one SettingItem.
-     * @param {SettingItemUpdateArgs} args - Arguments to update one SettingItem.
-     * @example
-     * // Update one SettingItem
-     * const settingItem = await prisma.settingItem.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SettingItemUpdateArgs>(args: SelectSubset<T, SettingItemUpdateArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more SettingItems.
-     * @param {SettingItemDeleteManyArgs} args - Arguments to filter SettingItems to delete.
-     * @example
-     * // Delete a few SettingItems
-     * const { count } = await prisma.settingItem.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SettingItemDeleteManyArgs>(args?: SelectSubset<T, SettingItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SettingItems.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many SettingItems
-     * const settingItem = await prisma.settingItem.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SettingItemUpdateManyArgs>(args: SelectSubset<T, SettingItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SettingItems and returns the data updated in the database.
-     * @param {SettingItemUpdateManyAndReturnArgs} args - Arguments to update many SettingItems.
-     * @example
-     * // Update many SettingItems
-     * const settingItem = await prisma.settingItem.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more SettingItems and only return the `id`
-     * const settingItemWithIdOnly = await prisma.settingItem.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SettingItemUpdateManyAndReturnArgs>(args: SelectSubset<T, SettingItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one SettingItem.
-     * @param {SettingItemUpsertArgs} args - Arguments to update or create a SettingItem.
-     * @example
-     * // Update or create a SettingItem
-     * const settingItem = await prisma.settingItem.upsert({
-     *   create: {
-     *     // ... data to create a SettingItem
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the SettingItem we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SettingItemUpsertArgs>(args: SelectSubset<T, SettingItemUpsertArgs<ExtArgs>>): Prisma__SettingItemClient<$Result.GetResult<Prisma.$SettingItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of SettingItems.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemCountArgs} args - Arguments to filter SettingItems to count.
-     * @example
-     * // Count the number of SettingItems
-     * const count = await prisma.settingItem.count({
-     *   where: {
-     *     // ... the filter for the SettingItems we want to count
-     *   }
-     * })
-    **/
-    count<T extends SettingItemCountArgs>(
-      args?: Subset<T, SettingItemCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SettingItemCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a SettingItem.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SettingItemAggregateArgs>(args: Subset<T, SettingItemAggregateArgs>): Prisma.PrismaPromise<GetSettingItemAggregateType<T>>
-
-    /**
-     * Group by SettingItem.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SettingItemGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SettingItemGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SettingItemGroupByArgs['orderBy'] }
-        : { orderBy?: SettingItemGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SettingItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSettingItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the SettingItem model
-   */
-  readonly fields: SettingItemFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for SettingItem.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SettingItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    group<T extends SettingGroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SettingGroupDefaultArgs<ExtArgs>>): Prisma__SettingGroupClient<$Result.GetResult<Prisma.$SettingGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the SettingItem model
-   */
-  interface SettingItemFieldRefs {
-    readonly id: FieldRef<"SettingItem", 'String'>
-    readonly groupId: FieldRef<"SettingItem", 'String'>
-    readonly settingKey: FieldRef<"SettingItem", 'String'>
-    readonly order: FieldRef<"SettingItem", 'Int'>
-    readonly isVisible: FieldRef<"SettingItem", 'Boolean'>
-    readonly customLabel: FieldRef<"SettingItem", 'String'>
-    readonly version: FieldRef<"SettingItem", 'Int'>
-    readonly createdAt: FieldRef<"SettingItem", 'DateTime'>
-    readonly updatedAt: FieldRef<"SettingItem", 'DateTime'>
-    readonly deletedAt: FieldRef<"SettingItem", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * SettingItem findUnique
-   */
-  export type SettingItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingItem to fetch.
-     */
-    where: SettingItemWhereUniqueInput
-  }
-
-  /**
-   * SettingItem findUniqueOrThrow
-   */
-  export type SettingItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingItem to fetch.
-     */
-    where: SettingItemWhereUniqueInput
-  }
-
-  /**
-   * SettingItem findFirst
-   */
-  export type SettingItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingItem to fetch.
-     */
-    where?: SettingItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingItems to fetch.
-     */
-    orderBy?: SettingItemOrderByWithRelationInput | SettingItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SettingItems.
-     */
-    cursor?: SettingItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SettingItems.
-     */
-    distinct?: SettingItemScalarFieldEnum | SettingItemScalarFieldEnum[]
-  }
-
-  /**
-   * SettingItem findFirstOrThrow
-   */
-  export type SettingItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingItem to fetch.
-     */
-    where?: SettingItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingItems to fetch.
-     */
-    orderBy?: SettingItemOrderByWithRelationInput | SettingItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SettingItems.
-     */
-    cursor?: SettingItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingItems.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SettingItems.
-     */
-    distinct?: SettingItemScalarFieldEnum | SettingItemScalarFieldEnum[]
-  }
-
-  /**
-   * SettingItem findMany
-   */
-  export type SettingItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * Filter, which SettingItems to fetch.
-     */
-    where?: SettingItemWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SettingItems to fetch.
-     */
-    orderBy?: SettingItemOrderByWithRelationInput | SettingItemOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing SettingItems.
-     */
-    cursor?: SettingItemWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SettingItems from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SettingItems.
-     */
-    skip?: number
-    distinct?: SettingItemScalarFieldEnum | SettingItemScalarFieldEnum[]
-  }
-
-  /**
-   * SettingItem create
-   */
-  export type SettingItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * The data needed to create a SettingItem.
-     */
-    data: XOR<SettingItemCreateInput, SettingItemUncheckedCreateInput>
-  }
-
-  /**
-   * SettingItem createMany
-   */
-  export type SettingItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many SettingItems.
-     */
-    data: SettingItemCreateManyInput | SettingItemCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * SettingItem createManyAndReturn
-   */
-  export type SettingItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * The data used to create many SettingItems.
-     */
-    data: SettingItemCreateManyInput | SettingItemCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SettingItem update
-   */
-  export type SettingItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * The data needed to update a SettingItem.
-     */
-    data: XOR<SettingItemUpdateInput, SettingItemUncheckedUpdateInput>
-    /**
-     * Choose, which SettingItem to update.
-     */
-    where: SettingItemWhereUniqueInput
-  }
-
-  /**
-   * SettingItem updateMany
-   */
-  export type SettingItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update SettingItems.
-     */
-    data: XOR<SettingItemUpdateManyMutationInput, SettingItemUncheckedUpdateManyInput>
-    /**
-     * Filter which SettingItems to update
-     */
-    where?: SettingItemWhereInput
-    /**
-     * Limit how many SettingItems to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * SettingItem updateManyAndReturn
-   */
-  export type SettingItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * The data used to update SettingItems.
-     */
-    data: XOR<SettingItemUpdateManyMutationInput, SettingItemUncheckedUpdateManyInput>
-    /**
-     * Filter which SettingItems to update
-     */
-    where?: SettingItemWhereInput
-    /**
-     * Limit how many SettingItems to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SettingItem upsert
-   */
-  export type SettingItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * The filter to search for the SettingItem to update in case it exists.
-     */
-    where: SettingItemWhereUniqueInput
-    /**
-     * In case the SettingItem found by the `where` argument doesn't exist, create a new SettingItem with this data.
-     */
-    create: XOR<SettingItemCreateInput, SettingItemUncheckedCreateInput>
-    /**
-     * In case the SettingItem was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SettingItemUpdateInput, SettingItemUncheckedUpdateInput>
-  }
-
-  /**
-   * SettingItem delete
-   */
-  export type SettingItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-    /**
-     * Filter which SettingItem to delete.
-     */
-    where: SettingItemWhereUniqueInput
-  }
-
-  /**
-   * SettingItem deleteMany
-   */
-  export type SettingItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SettingItems to delete
-     */
-    where?: SettingItemWhereInput
-    /**
-     * Limit how many SettingItems to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SettingItem without action
-   */
-  export type SettingItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SettingItem
-     */
-    select?: SettingItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SettingItem
-     */
-    omit?: SettingItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SettingItemInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model UserSetting
    */
 
@@ -82596,18 +77313,10 @@ export namespace Prisma {
 
   export type UserSettingAvgAggregateOutputType = {
     version: number | null
-    localeWeekStartsOn: number | null
-    workflowAutoSaveInterval: number | null
-    editorFontSize: number | null
-    editorTabSize: number | null
   }
 
   export type UserSettingSumAggregateOutputType = {
     version: number | null
-    localeWeekStartsOn: number | null
-    workflowAutoSaveInterval: number | null
-    editorFontSize: number | null
-    editorTabSize: number | null
   }
 
   export type UserSettingMinAggregateOutputType = {
@@ -82616,45 +77325,6 @@ export namespace Prisma {
     version: number | null
     createdAt: Date | null
     updatedAt: Date | null
-    deletedAt: Date | null
-    appearanceAccentColor: string | null
-    appearanceCompactMode: boolean | null
-    appearanceFontFamily: string | null
-    appearanceFontSize: string | null
-    appearanceTheme: string | null
-    experimentalEnabled: boolean | null
-    experimentalFeatures: string | null
-    localeCurrency: string | null
-    localeDateFormat: string | null
-    localeLanguage: string | null
-    localeTimeFormat: string | null
-    localeTimezone: string | null
-    localeWeekStartsOn: number | null
-    privacyAllowSearchByEmail: boolean | null
-    privacyAllowSearchByPhone: boolean | null
-    privacyProfileVisibility: string | null
-    privacyShareUsageData: boolean | null
-    privacyShowOnlineStatus: boolean | null
-    shortcutsCustom: string | null
-    shortcutsEnabled: boolean | null
-    workflowAutoSave: boolean | null
-    workflowAutoSaveInterval: number | null
-    workflowConfirmBeforeDelete: boolean | null
-    workflowDefaultGoalView: string | null
-    workflowDefaultScheduleView: string | null
-    workflowDefaultTaskView: string | null
-    notificationEmail: boolean | null
-    notificationPush: boolean | null
-    notificationInApp: boolean | null
-    notificationSound: boolean | null
-    editorTheme: string | null
-    editorFontSize: number | null
-    editorTabSize: number | null
-    editorWordWrap: boolean | null
-    editorLineNumbers: boolean | null
-    editorMinimap: boolean | null
-    startPage: string | null
-    sidebarCollapsed: boolean | null
   }
 
   export type UserSettingMaxAggregateOutputType = {
@@ -82663,110 +77333,25 @@ export namespace Prisma {
     version: number | null
     createdAt: Date | null
     updatedAt: Date | null
-    deletedAt: Date | null
-    appearanceAccentColor: string | null
-    appearanceCompactMode: boolean | null
-    appearanceFontFamily: string | null
-    appearanceFontSize: string | null
-    appearanceTheme: string | null
-    experimentalEnabled: boolean | null
-    experimentalFeatures: string | null
-    localeCurrency: string | null
-    localeDateFormat: string | null
-    localeLanguage: string | null
-    localeTimeFormat: string | null
-    localeTimezone: string | null
-    localeWeekStartsOn: number | null
-    privacyAllowSearchByEmail: boolean | null
-    privacyAllowSearchByPhone: boolean | null
-    privacyProfileVisibility: string | null
-    privacyShareUsageData: boolean | null
-    privacyShowOnlineStatus: boolean | null
-    shortcutsCustom: string | null
-    shortcutsEnabled: boolean | null
-    workflowAutoSave: boolean | null
-    workflowAutoSaveInterval: number | null
-    workflowConfirmBeforeDelete: boolean | null
-    workflowDefaultGoalView: string | null
-    workflowDefaultScheduleView: string | null
-    workflowDefaultTaskView: string | null
-    notificationEmail: boolean | null
-    notificationPush: boolean | null
-    notificationInApp: boolean | null
-    notificationSound: boolean | null
-    editorTheme: string | null
-    editorFontSize: number | null
-    editorTabSize: number | null
-    editorWordWrap: boolean | null
-    editorLineNumbers: boolean | null
-    editorMinimap: boolean | null
-    startPage: string | null
-    sidebarCollapsed: boolean | null
   }
 
   export type UserSettingCountAggregateOutputType = {
     id: number
     identityId: number
+    preferences: number
     version: number
     createdAt: number
     updatedAt: number
-    deletedAt: number
-    appearanceAccentColor: number
-    appearanceCompactMode: number
-    appearanceFontFamily: number
-    appearanceFontSize: number
-    appearanceTheme: number
-    experimentalEnabled: number
-    experimentalFeatures: number
-    localeCurrency: number
-    localeDateFormat: number
-    localeLanguage: number
-    localeTimeFormat: number
-    localeTimezone: number
-    localeWeekStartsOn: number
-    privacyAllowSearchByEmail: number
-    privacyAllowSearchByPhone: number
-    privacyProfileVisibility: number
-    privacyShareUsageData: number
-    privacyShowOnlineStatus: number
-    shortcutsCustom: number
-    shortcutsEnabled: number
-    workflowAutoSave: number
-    workflowAutoSaveInterval: number
-    workflowConfirmBeforeDelete: number
-    workflowDefaultGoalView: number
-    workflowDefaultScheduleView: number
-    workflowDefaultTaskView: number
-    notificationEmail: number
-    notificationPush: number
-    notificationInApp: number
-    notificationSound: number
-    editorTheme: number
-    editorFontSize: number
-    editorTabSize: number
-    editorWordWrap: number
-    editorLineNumbers: number
-    editorMinimap: number
-    startPage: number
-    sidebarCollapsed: number
     _all: number
   }
 
 
   export type UserSettingAvgAggregateInputType = {
     version?: true
-    localeWeekStartsOn?: true
-    workflowAutoSaveInterval?: true
-    editorFontSize?: true
-    editorTabSize?: true
   }
 
   export type UserSettingSumAggregateInputType = {
     version?: true
-    localeWeekStartsOn?: true
-    workflowAutoSaveInterval?: true
-    editorFontSize?: true
-    editorTabSize?: true
   }
 
   export type UserSettingMinAggregateInputType = {
@@ -82775,45 +77360,6 @@ export namespace Prisma {
     version?: true
     createdAt?: true
     updatedAt?: true
-    deletedAt?: true
-    appearanceAccentColor?: true
-    appearanceCompactMode?: true
-    appearanceFontFamily?: true
-    appearanceFontSize?: true
-    appearanceTheme?: true
-    experimentalEnabled?: true
-    experimentalFeatures?: true
-    localeCurrency?: true
-    localeDateFormat?: true
-    localeLanguage?: true
-    localeTimeFormat?: true
-    localeTimezone?: true
-    localeWeekStartsOn?: true
-    privacyAllowSearchByEmail?: true
-    privacyAllowSearchByPhone?: true
-    privacyProfileVisibility?: true
-    privacyShareUsageData?: true
-    privacyShowOnlineStatus?: true
-    shortcutsCustom?: true
-    shortcutsEnabled?: true
-    workflowAutoSave?: true
-    workflowAutoSaveInterval?: true
-    workflowConfirmBeforeDelete?: true
-    workflowDefaultGoalView?: true
-    workflowDefaultScheduleView?: true
-    workflowDefaultTaskView?: true
-    notificationEmail?: true
-    notificationPush?: true
-    notificationInApp?: true
-    notificationSound?: true
-    editorTheme?: true
-    editorFontSize?: true
-    editorTabSize?: true
-    editorWordWrap?: true
-    editorLineNumbers?: true
-    editorMinimap?: true
-    startPage?: true
-    sidebarCollapsed?: true
   }
 
   export type UserSettingMaxAggregateInputType = {
@@ -82822,92 +77368,15 @@ export namespace Prisma {
     version?: true
     createdAt?: true
     updatedAt?: true
-    deletedAt?: true
-    appearanceAccentColor?: true
-    appearanceCompactMode?: true
-    appearanceFontFamily?: true
-    appearanceFontSize?: true
-    appearanceTheme?: true
-    experimentalEnabled?: true
-    experimentalFeatures?: true
-    localeCurrency?: true
-    localeDateFormat?: true
-    localeLanguage?: true
-    localeTimeFormat?: true
-    localeTimezone?: true
-    localeWeekStartsOn?: true
-    privacyAllowSearchByEmail?: true
-    privacyAllowSearchByPhone?: true
-    privacyProfileVisibility?: true
-    privacyShareUsageData?: true
-    privacyShowOnlineStatus?: true
-    shortcutsCustom?: true
-    shortcutsEnabled?: true
-    workflowAutoSave?: true
-    workflowAutoSaveInterval?: true
-    workflowConfirmBeforeDelete?: true
-    workflowDefaultGoalView?: true
-    workflowDefaultScheduleView?: true
-    workflowDefaultTaskView?: true
-    notificationEmail?: true
-    notificationPush?: true
-    notificationInApp?: true
-    notificationSound?: true
-    editorTheme?: true
-    editorFontSize?: true
-    editorTabSize?: true
-    editorWordWrap?: true
-    editorLineNumbers?: true
-    editorMinimap?: true
-    startPage?: true
-    sidebarCollapsed?: true
   }
 
   export type UserSettingCountAggregateInputType = {
     id?: true
     identityId?: true
+    preferences?: true
     version?: true
     createdAt?: true
     updatedAt?: true
-    deletedAt?: true
-    appearanceAccentColor?: true
-    appearanceCompactMode?: true
-    appearanceFontFamily?: true
-    appearanceFontSize?: true
-    appearanceTheme?: true
-    experimentalEnabled?: true
-    experimentalFeatures?: true
-    localeCurrency?: true
-    localeDateFormat?: true
-    localeLanguage?: true
-    localeTimeFormat?: true
-    localeTimezone?: true
-    localeWeekStartsOn?: true
-    privacyAllowSearchByEmail?: true
-    privacyAllowSearchByPhone?: true
-    privacyProfileVisibility?: true
-    privacyShareUsageData?: true
-    privacyShowOnlineStatus?: true
-    shortcutsCustom?: true
-    shortcutsEnabled?: true
-    workflowAutoSave?: true
-    workflowAutoSaveInterval?: true
-    workflowConfirmBeforeDelete?: true
-    workflowDefaultGoalView?: true
-    workflowDefaultScheduleView?: true
-    workflowDefaultTaskView?: true
-    notificationEmail?: true
-    notificationPush?: true
-    notificationInApp?: true
-    notificationSound?: true
-    editorTheme?: true
-    editorFontSize?: true
-    editorTabSize?: true
-    editorWordWrap?: true
-    editorLineNumbers?: true
-    editorMinimap?: true
-    startPage?: true
-    sidebarCollapsed?: true
     _all?: true
   }
 
@@ -83000,48 +77469,10 @@ export namespace Prisma {
   export type UserSettingGroupByOutputType = {
     id: string
     identityId: string
+    preferences: JsonValue
     version: number
     createdAt: Date
     updatedAt: Date
-    deletedAt: Date | null
-    appearanceAccentColor: string
-    appearanceCompactMode: boolean
-    appearanceFontFamily: string | null
-    appearanceFontSize: string
-    appearanceTheme: string
-    experimentalEnabled: boolean
-    experimentalFeatures: string
-    localeCurrency: string
-    localeDateFormat: string
-    localeLanguage: string
-    localeTimeFormat: string
-    localeTimezone: string
-    localeWeekStartsOn: number
-    privacyAllowSearchByEmail: boolean
-    privacyAllowSearchByPhone: boolean
-    privacyProfileVisibility: string
-    privacyShareUsageData: boolean
-    privacyShowOnlineStatus: boolean
-    shortcutsCustom: string
-    shortcutsEnabled: boolean
-    workflowAutoSave: boolean
-    workflowAutoSaveInterval: number
-    workflowConfirmBeforeDelete: boolean
-    workflowDefaultGoalView: string
-    workflowDefaultScheduleView: string
-    workflowDefaultTaskView: string
-    notificationEmail: boolean
-    notificationPush: boolean
-    notificationInApp: boolean
-    notificationSound: boolean
-    editorTheme: string
-    editorFontSize: number
-    editorTabSize: number
-    editorWordWrap: boolean
-    editorLineNumbers: boolean
-    editorMinimap: boolean
-    startPage: string
-    sidebarCollapsed: boolean
     _count: UserSettingCountAggregateOutputType | null
     _avg: UserSettingAvgAggregateOutputType | null
     _sum: UserSettingSumAggregateOutputType | null
@@ -83066,195 +77497,43 @@ export namespace Prisma {
   export type UserSettingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     identityId?: boolean
+    preferences?: boolean
     version?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    deletedAt?: boolean
-    appearanceAccentColor?: boolean
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: boolean
-    appearanceFontSize?: boolean
-    appearanceTheme?: boolean
-    experimentalEnabled?: boolean
-    experimentalFeatures?: boolean
-    localeCurrency?: boolean
-    localeDateFormat?: boolean
-    localeLanguage?: boolean
-    localeTimeFormat?: boolean
-    localeTimezone?: boolean
-    localeWeekStartsOn?: boolean
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: boolean
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: boolean
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: boolean
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: boolean
-    workflowDefaultScheduleView?: boolean
-    workflowDefaultTaskView?: boolean
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: boolean
-    editorFontSize?: boolean
-    editorTabSize?: boolean
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: boolean
-    sidebarCollapsed?: boolean
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userSetting"]>
 
   export type UserSettingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     identityId?: boolean
+    preferences?: boolean
     version?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    deletedAt?: boolean
-    appearanceAccentColor?: boolean
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: boolean
-    appearanceFontSize?: boolean
-    appearanceTheme?: boolean
-    experimentalEnabled?: boolean
-    experimentalFeatures?: boolean
-    localeCurrency?: boolean
-    localeDateFormat?: boolean
-    localeLanguage?: boolean
-    localeTimeFormat?: boolean
-    localeTimezone?: boolean
-    localeWeekStartsOn?: boolean
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: boolean
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: boolean
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: boolean
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: boolean
-    workflowDefaultScheduleView?: boolean
-    workflowDefaultTaskView?: boolean
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: boolean
-    editorFontSize?: boolean
-    editorTabSize?: boolean
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: boolean
-    sidebarCollapsed?: boolean
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userSetting"]>
 
   export type UserSettingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     identityId?: boolean
+    preferences?: boolean
     version?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    deletedAt?: boolean
-    appearanceAccentColor?: boolean
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: boolean
-    appearanceFontSize?: boolean
-    appearanceTheme?: boolean
-    experimentalEnabled?: boolean
-    experimentalFeatures?: boolean
-    localeCurrency?: boolean
-    localeDateFormat?: boolean
-    localeLanguage?: boolean
-    localeTimeFormat?: boolean
-    localeTimezone?: boolean
-    localeWeekStartsOn?: boolean
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: boolean
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: boolean
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: boolean
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: boolean
-    workflowDefaultScheduleView?: boolean
-    workflowDefaultTaskView?: boolean
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: boolean
-    editorFontSize?: boolean
-    editorTabSize?: boolean
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: boolean
-    sidebarCollapsed?: boolean
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userSetting"]>
 
   export type UserSettingSelectScalar = {
     id?: boolean
     identityId?: boolean
+    preferences?: boolean
     version?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    deletedAt?: boolean
-    appearanceAccentColor?: boolean
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: boolean
-    appearanceFontSize?: boolean
-    appearanceTheme?: boolean
-    experimentalEnabled?: boolean
-    experimentalFeatures?: boolean
-    localeCurrency?: boolean
-    localeDateFormat?: boolean
-    localeLanguage?: boolean
-    localeTimeFormat?: boolean
-    localeTimezone?: boolean
-    localeWeekStartsOn?: boolean
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: boolean
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: boolean
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: boolean
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: boolean
-    workflowDefaultScheduleView?: boolean
-    workflowDefaultTaskView?: boolean
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: boolean
-    editorFontSize?: boolean
-    editorTabSize?: boolean
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: boolean
-    sidebarCollapsed?: boolean
   }
 
-  export type UserSettingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "version" | "createdAt" | "updatedAt" | "deletedAt" | "appearanceAccentColor" | "appearanceCompactMode" | "appearanceFontFamily" | "appearanceFontSize" | "appearanceTheme" | "experimentalEnabled" | "experimentalFeatures" | "localeCurrency" | "localeDateFormat" | "localeLanguage" | "localeTimeFormat" | "localeTimezone" | "localeWeekStartsOn" | "privacyAllowSearchByEmail" | "privacyAllowSearchByPhone" | "privacyProfileVisibility" | "privacyShareUsageData" | "privacyShowOnlineStatus" | "shortcutsCustom" | "shortcutsEnabled" | "workflowAutoSave" | "workflowAutoSaveInterval" | "workflowConfirmBeforeDelete" | "workflowDefaultGoalView" | "workflowDefaultScheduleView" | "workflowDefaultTaskView" | "notificationEmail" | "notificationPush" | "notificationInApp" | "notificationSound" | "editorTheme" | "editorFontSize" | "editorTabSize" | "editorWordWrap" | "editorLineNumbers" | "editorMinimap" | "startPage" | "sidebarCollapsed", ExtArgs["result"]["userSetting"]>
+  export type UserSettingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "preferences" | "version" | "createdAt" | "updatedAt", ExtArgs["result"]["userSetting"]>
   export type UserSettingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }
@@ -83273,48 +77552,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       identityId: string
+      preferences: Prisma.JsonValue
       version: number
       createdAt: Date
       updatedAt: Date
-      deletedAt: Date | null
-      appearanceAccentColor: string
-      appearanceCompactMode: boolean
-      appearanceFontFamily: string | null
-      appearanceFontSize: string
-      appearanceTheme: string
-      experimentalEnabled: boolean
-      experimentalFeatures: string
-      localeCurrency: string
-      localeDateFormat: string
-      localeLanguage: string
-      localeTimeFormat: string
-      localeTimezone: string
-      localeWeekStartsOn: number
-      privacyAllowSearchByEmail: boolean
-      privacyAllowSearchByPhone: boolean
-      privacyProfileVisibility: string
-      privacyShareUsageData: boolean
-      privacyShowOnlineStatus: boolean
-      shortcutsCustom: string
-      shortcutsEnabled: boolean
-      workflowAutoSave: boolean
-      workflowAutoSaveInterval: number
-      workflowConfirmBeforeDelete: boolean
-      workflowDefaultGoalView: string
-      workflowDefaultScheduleView: string
-      workflowDefaultTaskView: string
-      notificationEmail: boolean
-      notificationPush: boolean
-      notificationInApp: boolean
-      notificationSound: boolean
-      editorTheme: string
-      editorFontSize: number
-      editorTabSize: number
-      editorWordWrap: boolean
-      editorLineNumbers: boolean
-      editorMinimap: boolean
-      startPage: string
-      sidebarCollapsed: boolean
     }, ExtArgs["result"]["userSetting"]>
     composites: {}
   }
@@ -83741,48 +77982,10 @@ export namespace Prisma {
   interface UserSettingFieldRefs {
     readonly id: FieldRef<"UserSetting", 'String'>
     readonly identityId: FieldRef<"UserSetting", 'String'>
+    readonly preferences: FieldRef<"UserSetting", 'Json'>
     readonly version: FieldRef<"UserSetting", 'Int'>
     readonly createdAt: FieldRef<"UserSetting", 'DateTime'>
     readonly updatedAt: FieldRef<"UserSetting", 'DateTime'>
-    readonly deletedAt: FieldRef<"UserSetting", 'DateTime'>
-    readonly appearanceAccentColor: FieldRef<"UserSetting", 'String'>
-    readonly appearanceCompactMode: FieldRef<"UserSetting", 'Boolean'>
-    readonly appearanceFontFamily: FieldRef<"UserSetting", 'String'>
-    readonly appearanceFontSize: FieldRef<"UserSetting", 'String'>
-    readonly appearanceTheme: FieldRef<"UserSetting", 'String'>
-    readonly experimentalEnabled: FieldRef<"UserSetting", 'Boolean'>
-    readonly experimentalFeatures: FieldRef<"UserSetting", 'String'>
-    readonly localeCurrency: FieldRef<"UserSetting", 'String'>
-    readonly localeDateFormat: FieldRef<"UserSetting", 'String'>
-    readonly localeLanguage: FieldRef<"UserSetting", 'String'>
-    readonly localeTimeFormat: FieldRef<"UserSetting", 'String'>
-    readonly localeTimezone: FieldRef<"UserSetting", 'String'>
-    readonly localeWeekStartsOn: FieldRef<"UserSetting", 'Int'>
-    readonly privacyAllowSearchByEmail: FieldRef<"UserSetting", 'Boolean'>
-    readonly privacyAllowSearchByPhone: FieldRef<"UserSetting", 'Boolean'>
-    readonly privacyProfileVisibility: FieldRef<"UserSetting", 'String'>
-    readonly privacyShareUsageData: FieldRef<"UserSetting", 'Boolean'>
-    readonly privacyShowOnlineStatus: FieldRef<"UserSetting", 'Boolean'>
-    readonly shortcutsCustom: FieldRef<"UserSetting", 'String'>
-    readonly shortcutsEnabled: FieldRef<"UserSetting", 'Boolean'>
-    readonly workflowAutoSave: FieldRef<"UserSetting", 'Boolean'>
-    readonly workflowAutoSaveInterval: FieldRef<"UserSetting", 'Int'>
-    readonly workflowConfirmBeforeDelete: FieldRef<"UserSetting", 'Boolean'>
-    readonly workflowDefaultGoalView: FieldRef<"UserSetting", 'String'>
-    readonly workflowDefaultScheduleView: FieldRef<"UserSetting", 'String'>
-    readonly workflowDefaultTaskView: FieldRef<"UserSetting", 'String'>
-    readonly notificationEmail: FieldRef<"UserSetting", 'Boolean'>
-    readonly notificationPush: FieldRef<"UserSetting", 'Boolean'>
-    readonly notificationInApp: FieldRef<"UserSetting", 'Boolean'>
-    readonly notificationSound: FieldRef<"UserSetting", 'Boolean'>
-    readonly editorTheme: FieldRef<"UserSetting", 'String'>
-    readonly editorFontSize: FieldRef<"UserSetting", 'Int'>
-    readonly editorTabSize: FieldRef<"UserSetting", 'Int'>
-    readonly editorWordWrap: FieldRef<"UserSetting", 'Boolean'>
-    readonly editorLineNumbers: FieldRef<"UserSetting", 'Boolean'>
-    readonly editorMinimap: FieldRef<"UserSetting", 'Boolean'>
-    readonly startPage: FieldRef<"UserSetting", 'String'>
-    readonly sidebarCollapsed: FieldRef<"UserSetting", 'Boolean'>
   }
     
 
@@ -97387,19 +91590,6 @@ export namespace Prisma {
   export type DashboardConfigScalarFieldEnum = (typeof DashboardConfigScalarFieldEnum)[keyof typeof DashboardConfigScalarFieldEnum]
 
 
-  export const AppConfigScalarFieldEnum: {
-    id: 'id',
-    version: 'version',
-    config: 'config',
-    description: 'description',
-    isCurrent: 'isCurrent',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type AppConfigScalarFieldEnum = (typeof AppConfigScalarFieldEnum)[keyof typeof AppConfigScalarFieldEnum]
-
-
   export const AuthIdentityScalarFieldEnum: {
     id: 'id',
     status: 'status',
@@ -98331,113 +92521,13 @@ export namespace Prisma {
   export type ScheduleStatisticScalarFieldEnum = (typeof ScheduleStatisticScalarFieldEnum)[keyof typeof ScheduleStatisticScalarFieldEnum]
 
 
-  export const SettingScalarFieldEnum: {
-    id: 'id',
-    key: 'key',
-    name: 'name',
-    description: 'description',
-    valueType: 'valueType',
-    value: 'value',
-    defaultValue: 'defaultValue',
-    scope: 'scope',
-    identityId: 'identityId',
-    deviceId: 'deviceId',
-    groupId: 'groupId',
-    validation: 'validation',
-    ui: 'ui',
-    isEncrypted: 'isEncrypted',
-    isReadOnly: 'isReadOnly',
-    isSystemSetting: 'isSystemSetting',
-    syncConfig: 'syncConfig',
-    historyData: 'historyData',
-    version: 'version',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type SettingScalarFieldEnum = (typeof SettingScalarFieldEnum)[keyof typeof SettingScalarFieldEnum]
-
-
-  export const SettingGroupScalarFieldEnum: {
-    id: 'id',
-    key: 'key',
-    name: 'name',
-    description: 'description',
-    parentId: 'parentId',
-    order: 'order',
-    icon: 'icon',
-    isCollapsed: 'isCollapsed',
-    version: 'version',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type SettingGroupScalarFieldEnum = (typeof SettingGroupScalarFieldEnum)[keyof typeof SettingGroupScalarFieldEnum]
-
-
-  export const SettingItemScalarFieldEnum: {
-    id: 'id',
-    groupId: 'groupId',
-    settingKey: 'settingKey',
-    order: 'order',
-    isVisible: 'isVisible',
-    customLabel: 'customLabel',
-    version: 'version',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt'
-  };
-
-  export type SettingItemScalarFieldEnum = (typeof SettingItemScalarFieldEnum)[keyof typeof SettingItemScalarFieldEnum]
-
-
   export const UserSettingScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
+    preferences: 'preferences',
     version: 'version',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    deletedAt: 'deletedAt',
-    appearanceAccentColor: 'appearanceAccentColor',
-    appearanceCompactMode: 'appearanceCompactMode',
-    appearanceFontFamily: 'appearanceFontFamily',
-    appearanceFontSize: 'appearanceFontSize',
-    appearanceTheme: 'appearanceTheme',
-    experimentalEnabled: 'experimentalEnabled',
-    experimentalFeatures: 'experimentalFeatures',
-    localeCurrency: 'localeCurrency',
-    localeDateFormat: 'localeDateFormat',
-    localeLanguage: 'localeLanguage',
-    localeTimeFormat: 'localeTimeFormat',
-    localeTimezone: 'localeTimezone',
-    localeWeekStartsOn: 'localeWeekStartsOn',
-    privacyAllowSearchByEmail: 'privacyAllowSearchByEmail',
-    privacyAllowSearchByPhone: 'privacyAllowSearchByPhone',
-    privacyProfileVisibility: 'privacyProfileVisibility',
-    privacyShareUsageData: 'privacyShareUsageData',
-    privacyShowOnlineStatus: 'privacyShowOnlineStatus',
-    shortcutsCustom: 'shortcutsCustom',
-    shortcutsEnabled: 'shortcutsEnabled',
-    workflowAutoSave: 'workflowAutoSave',
-    workflowAutoSaveInterval: 'workflowAutoSaveInterval',
-    workflowConfirmBeforeDelete: 'workflowConfirmBeforeDelete',
-    workflowDefaultGoalView: 'workflowDefaultGoalView',
-    workflowDefaultScheduleView: 'workflowDefaultScheduleView',
-    workflowDefaultTaskView: 'workflowDefaultTaskView',
-    notificationEmail: 'notificationEmail',
-    notificationPush: 'notificationPush',
-    notificationInApp: 'notificationInApp',
-    notificationSound: 'notificationSound',
-    editorTheme: 'editorTheme',
-    editorFontSize: 'editorFontSize',
-    editorTabSize: 'editorTabSize',
-    editorWordWrap: 'editorWordWrap',
-    editorLineNumbers: 'editorLineNumbers',
-    editorMinimap: 'editorMinimap',
-    startPage: 'startPage',
-    sidebarCollapsed: 'sidebarCollapsed'
+    updatedAt: 'updatedAt'
   };
 
   export type UserSettingScalarFieldEnum = (typeof UserSettingScalarFieldEnum)[keyof typeof UserSettingScalarFieldEnum]
@@ -98911,7 +93001,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobListRelationFilter
     scheduleTasks?: ScheduleTaskListRelationFilter
     scheduleStatistics?: XOR<ScheduleStatisticNullableScalarRelationFilter, ScheduleStatisticWhereInput> | null
-    settings_?: SettingListRelationFilter
     taskFolders?: TaskFolderListRelationFilter
     taskTemplates?: TaskTemplateListRelationFilter
     taskInstances?: TaskInstanceListRelationFilter
@@ -98971,7 +93060,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobOrderByRelationAggregateInput
     scheduleTasks?: ScheduleTaskOrderByRelationAggregateInput
     scheduleStatistics?: ScheduleStatisticOrderByWithRelationInput
-    settings_?: SettingOrderByRelationAggregateInput
     taskFolders?: TaskFolderOrderByRelationAggregateInput
     taskTemplates?: TaskTemplateOrderByRelationAggregateInput
     taskInstances?: TaskInstanceOrderByRelationAggregateInput
@@ -99034,7 +93122,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobListRelationFilter
     scheduleTasks?: ScheduleTaskListRelationFilter
     scheduleStatistics?: XOR<ScheduleStatisticNullableScalarRelationFilter, ScheduleStatisticWhereInput> | null
-    settings_?: SettingListRelationFilter
     taskFolders?: TaskFolderListRelationFilter
     taskTemplates?: TaskTemplateListRelationFilter
     taskInstances?: TaskInstanceListRelationFilter
@@ -99691,68 +93778,6 @@ export namespace Prisma {
     widgetConfig?: JsonWithAggregatesFilter<"DashboardConfig">
     createdAt?: DateTimeWithAggregatesFilter<"DashboardConfig"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DashboardConfig"> | Date | string
-  }
-
-  export type AppConfigWhereInput = {
-    AND?: AppConfigWhereInput | AppConfigWhereInput[]
-    OR?: AppConfigWhereInput[]
-    NOT?: AppConfigWhereInput | AppConfigWhereInput[]
-    id?: StringFilter<"AppConfig"> | string
-    version?: StringFilter<"AppConfig"> | string
-    config?: StringFilter<"AppConfig"> | string
-    description?: StringNullableFilter<"AppConfig"> | string | null
-    isCurrent?: BoolFilter<"AppConfig"> | boolean
-    createdAt?: DateTimeFilter<"AppConfig"> | Date | string
-    updatedAt?: DateTimeFilter<"AppConfig"> | Date | string
-  }
-
-  export type AppConfigOrderByWithRelationInput = {
-    id?: SortOrder
-    version?: SortOrder
-    config?: SortOrder
-    description?: SortOrderInput | SortOrder
-    isCurrent?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type AppConfigWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    version?: string
-    AND?: AppConfigWhereInput | AppConfigWhereInput[]
-    OR?: AppConfigWhereInput[]
-    NOT?: AppConfigWhereInput | AppConfigWhereInput[]
-    config?: StringFilter<"AppConfig"> | string
-    description?: StringNullableFilter<"AppConfig"> | string | null
-    isCurrent?: BoolFilter<"AppConfig"> | boolean
-    createdAt?: DateTimeFilter<"AppConfig"> | Date | string
-    updatedAt?: DateTimeFilter<"AppConfig"> | Date | string
-  }, "id" | "version">
-
-  export type AppConfigOrderByWithAggregationInput = {
-    id?: SortOrder
-    version?: SortOrder
-    config?: SortOrder
-    description?: SortOrderInput | SortOrder
-    isCurrent?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: AppConfigCountOrderByAggregateInput
-    _max?: AppConfigMaxOrderByAggregateInput
-    _min?: AppConfigMinOrderByAggregateInput
-  }
-
-  export type AppConfigScalarWhereWithAggregatesInput = {
-    AND?: AppConfigScalarWhereWithAggregatesInput | AppConfigScalarWhereWithAggregatesInput[]
-    OR?: AppConfigScalarWhereWithAggregatesInput[]
-    NOT?: AppConfigScalarWhereWithAggregatesInput | AppConfigScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"AppConfig"> | string
-    version?: StringWithAggregatesFilter<"AppConfig"> | string
-    config?: StringWithAggregatesFilter<"AppConfig"> | string
-    description?: StringNullableWithAggregatesFilter<"AppConfig"> | string | null
-    isCurrent?: BoolWithAggregatesFilter<"AppConfig"> | boolean
-    createdAt?: DateTimeWithAggregatesFilter<"AppConfig"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"AppConfig"> | Date | string
   }
 
   export type AuthIdentityWhereInput = {
@@ -104629,432 +98654,26 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ScheduleStatistic"> | Date | string
   }
 
-  export type SettingWhereInput = {
-    AND?: SettingWhereInput | SettingWhereInput[]
-    OR?: SettingWhereInput[]
-    NOT?: SettingWhereInput | SettingWhereInput[]
-    id?: StringFilter<"Setting"> | string
-    key?: StringFilter<"Setting"> | string
-    name?: StringFilter<"Setting"> | string
-    description?: StringNullableFilter<"Setting"> | string | null
-    valueType?: StringFilter<"Setting"> | string
-    value?: StringFilter<"Setting"> | string
-    defaultValue?: StringFilter<"Setting"> | string
-    scope?: StringFilter<"Setting"> | string
-    identityId?: StringNullableFilter<"Setting"> | string | null
-    deviceId?: StringNullableFilter<"Setting"> | string | null
-    groupId?: StringNullableFilter<"Setting"> | string | null
-    validation?: StringNullableFilter<"Setting"> | string | null
-    ui?: StringNullableFilter<"Setting"> | string | null
-    isEncrypted?: BoolFilter<"Setting"> | boolean
-    isReadOnly?: BoolFilter<"Setting"> | boolean
-    isSystemSetting?: BoolFilter<"Setting"> | boolean
-    syncConfig?: StringNullableFilter<"Setting"> | string | null
-    historyData?: StringFilter<"Setting"> | string
-    version?: IntFilter<"Setting"> | number
-    createdAt?: DateTimeFilter<"Setting"> | Date | string
-    updatedAt?: DateTimeFilter<"Setting"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Setting"> | Date | string | null
-    account?: XOR<AccountNullableScalarRelationFilter, AccountWhereInput> | null
-    group?: XOR<SettingGroupNullableScalarRelationFilter, SettingGroupWhereInput> | null
-  }
-
-  export type SettingOrderByWithRelationInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrderInput | SortOrder
-    valueType?: SortOrder
-    value?: SortOrder
-    defaultValue?: SortOrder
-    scope?: SortOrder
-    identityId?: SortOrderInput | SortOrder
-    deviceId?: SortOrderInput | SortOrder
-    groupId?: SortOrderInput | SortOrder
-    validation?: SortOrderInput | SortOrder
-    ui?: SortOrderInput | SortOrder
-    isEncrypted?: SortOrder
-    isReadOnly?: SortOrder
-    isSystemSetting?: SortOrder
-    syncConfig?: SortOrderInput | SortOrder
-    historyData?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    account?: AccountOrderByWithRelationInput
-    group?: SettingGroupOrderByWithRelationInput
-  }
-
-  export type SettingWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    key_scope_identityId_deviceId?: SettingKeyScopeIdentityIdDeviceIdCompoundUniqueInput
-    AND?: SettingWhereInput | SettingWhereInput[]
-    OR?: SettingWhereInput[]
-    NOT?: SettingWhereInput | SettingWhereInput[]
-    key?: StringFilter<"Setting"> | string
-    name?: StringFilter<"Setting"> | string
-    description?: StringNullableFilter<"Setting"> | string | null
-    valueType?: StringFilter<"Setting"> | string
-    value?: StringFilter<"Setting"> | string
-    defaultValue?: StringFilter<"Setting"> | string
-    scope?: StringFilter<"Setting"> | string
-    identityId?: StringNullableFilter<"Setting"> | string | null
-    deviceId?: StringNullableFilter<"Setting"> | string | null
-    groupId?: StringNullableFilter<"Setting"> | string | null
-    validation?: StringNullableFilter<"Setting"> | string | null
-    ui?: StringNullableFilter<"Setting"> | string | null
-    isEncrypted?: BoolFilter<"Setting"> | boolean
-    isReadOnly?: BoolFilter<"Setting"> | boolean
-    isSystemSetting?: BoolFilter<"Setting"> | boolean
-    syncConfig?: StringNullableFilter<"Setting"> | string | null
-    historyData?: StringFilter<"Setting"> | string
-    version?: IntFilter<"Setting"> | number
-    createdAt?: DateTimeFilter<"Setting"> | Date | string
-    updatedAt?: DateTimeFilter<"Setting"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Setting"> | Date | string | null
-    account?: XOR<AccountNullableScalarRelationFilter, AccountWhereInput> | null
-    group?: XOR<SettingGroupNullableScalarRelationFilter, SettingGroupWhereInput> | null
-  }, "id" | "key_scope_identityId_deviceId">
-
-  export type SettingOrderByWithAggregationInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrderInput | SortOrder
-    valueType?: SortOrder
-    value?: SortOrder
-    defaultValue?: SortOrder
-    scope?: SortOrder
-    identityId?: SortOrderInput | SortOrder
-    deviceId?: SortOrderInput | SortOrder
-    groupId?: SortOrderInput | SortOrder
-    validation?: SortOrderInput | SortOrder
-    ui?: SortOrderInput | SortOrder
-    isEncrypted?: SortOrder
-    isReadOnly?: SortOrder
-    isSystemSetting?: SortOrder
-    syncConfig?: SortOrderInput | SortOrder
-    historyData?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: SettingCountOrderByAggregateInput
-    _avg?: SettingAvgOrderByAggregateInput
-    _max?: SettingMaxOrderByAggregateInput
-    _min?: SettingMinOrderByAggregateInput
-    _sum?: SettingSumOrderByAggregateInput
-  }
-
-  export type SettingScalarWhereWithAggregatesInput = {
-    AND?: SettingScalarWhereWithAggregatesInput | SettingScalarWhereWithAggregatesInput[]
-    OR?: SettingScalarWhereWithAggregatesInput[]
-    NOT?: SettingScalarWhereWithAggregatesInput | SettingScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Setting"> | string
-    key?: StringWithAggregatesFilter<"Setting"> | string
-    name?: StringWithAggregatesFilter<"Setting"> | string
-    description?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    valueType?: StringWithAggregatesFilter<"Setting"> | string
-    value?: StringWithAggregatesFilter<"Setting"> | string
-    defaultValue?: StringWithAggregatesFilter<"Setting"> | string
-    scope?: StringWithAggregatesFilter<"Setting"> | string
-    identityId?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    deviceId?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    groupId?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    validation?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    ui?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    isEncrypted?: BoolWithAggregatesFilter<"Setting"> | boolean
-    isReadOnly?: BoolWithAggregatesFilter<"Setting"> | boolean
-    isSystemSetting?: BoolWithAggregatesFilter<"Setting"> | boolean
-    syncConfig?: StringNullableWithAggregatesFilter<"Setting"> | string | null
-    historyData?: StringWithAggregatesFilter<"Setting"> | string
-    version?: IntWithAggregatesFilter<"Setting"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"Setting"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Setting"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"Setting"> | Date | string | null
-  }
-
-  export type SettingGroupWhereInput = {
-    AND?: SettingGroupWhereInput | SettingGroupWhereInput[]
-    OR?: SettingGroupWhereInput[]
-    NOT?: SettingGroupWhereInput | SettingGroupWhereInput[]
-    id?: StringFilter<"SettingGroup"> | string
-    key?: StringFilter<"SettingGroup"> | string
-    name?: StringFilter<"SettingGroup"> | string
-    description?: StringNullableFilter<"SettingGroup"> | string | null
-    parentId?: StringNullableFilter<"SettingGroup"> | string | null
-    order?: IntFilter<"SettingGroup"> | number
-    icon?: StringNullableFilter<"SettingGroup"> | string | null
-    isCollapsed?: BoolFilter<"SettingGroup"> | boolean
-    version?: IntFilter<"SettingGroup"> | number
-    createdAt?: DateTimeFilter<"SettingGroup"> | Date | string
-    updatedAt?: DateTimeFilter<"SettingGroup"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"SettingGroup"> | Date | string | null
-    parent?: XOR<SettingGroupNullableScalarRelationFilter, SettingGroupWhereInput> | null
-    children?: SettingGroupListRelationFilter
-    items?: SettingItemListRelationFilter
-    settings?: SettingListRelationFilter
-  }
-
-  export type SettingGroupOrderByWithRelationInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrderInput | SortOrder
-    parentId?: SortOrderInput | SortOrder
-    order?: SortOrder
-    icon?: SortOrderInput | SortOrder
-    isCollapsed?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    parent?: SettingGroupOrderByWithRelationInput
-    children?: SettingGroupOrderByRelationAggregateInput
-    items?: SettingItemOrderByRelationAggregateInput
-    settings?: SettingOrderByRelationAggregateInput
-  }
-
-  export type SettingGroupWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    key?: string
-    AND?: SettingGroupWhereInput | SettingGroupWhereInput[]
-    OR?: SettingGroupWhereInput[]
-    NOT?: SettingGroupWhereInput | SettingGroupWhereInput[]
-    name?: StringFilter<"SettingGroup"> | string
-    description?: StringNullableFilter<"SettingGroup"> | string | null
-    parentId?: StringNullableFilter<"SettingGroup"> | string | null
-    order?: IntFilter<"SettingGroup"> | number
-    icon?: StringNullableFilter<"SettingGroup"> | string | null
-    isCollapsed?: BoolFilter<"SettingGroup"> | boolean
-    version?: IntFilter<"SettingGroup"> | number
-    createdAt?: DateTimeFilter<"SettingGroup"> | Date | string
-    updatedAt?: DateTimeFilter<"SettingGroup"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"SettingGroup"> | Date | string | null
-    parent?: XOR<SettingGroupNullableScalarRelationFilter, SettingGroupWhereInput> | null
-    children?: SettingGroupListRelationFilter
-    items?: SettingItemListRelationFilter
-    settings?: SettingListRelationFilter
-  }, "id" | "key">
-
-  export type SettingGroupOrderByWithAggregationInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrderInput | SortOrder
-    parentId?: SortOrderInput | SortOrder
-    order?: SortOrder
-    icon?: SortOrderInput | SortOrder
-    isCollapsed?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: SettingGroupCountOrderByAggregateInput
-    _avg?: SettingGroupAvgOrderByAggregateInput
-    _max?: SettingGroupMaxOrderByAggregateInput
-    _min?: SettingGroupMinOrderByAggregateInput
-    _sum?: SettingGroupSumOrderByAggregateInput
-  }
-
-  export type SettingGroupScalarWhereWithAggregatesInput = {
-    AND?: SettingGroupScalarWhereWithAggregatesInput | SettingGroupScalarWhereWithAggregatesInput[]
-    OR?: SettingGroupScalarWhereWithAggregatesInput[]
-    NOT?: SettingGroupScalarWhereWithAggregatesInput | SettingGroupScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"SettingGroup"> | string
-    key?: StringWithAggregatesFilter<"SettingGroup"> | string
-    name?: StringWithAggregatesFilter<"SettingGroup"> | string
-    description?: StringNullableWithAggregatesFilter<"SettingGroup"> | string | null
-    parentId?: StringNullableWithAggregatesFilter<"SettingGroup"> | string | null
-    order?: IntWithAggregatesFilter<"SettingGroup"> | number
-    icon?: StringNullableWithAggregatesFilter<"SettingGroup"> | string | null
-    isCollapsed?: BoolWithAggregatesFilter<"SettingGroup"> | boolean
-    version?: IntWithAggregatesFilter<"SettingGroup"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"SettingGroup"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"SettingGroup"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"SettingGroup"> | Date | string | null
-  }
-
-  export type SettingItemWhereInput = {
-    AND?: SettingItemWhereInput | SettingItemWhereInput[]
-    OR?: SettingItemWhereInput[]
-    NOT?: SettingItemWhereInput | SettingItemWhereInput[]
-    id?: StringFilter<"SettingItem"> | string
-    groupId?: StringFilter<"SettingItem"> | string
-    settingKey?: StringFilter<"SettingItem"> | string
-    order?: IntFilter<"SettingItem"> | number
-    isVisible?: BoolFilter<"SettingItem"> | boolean
-    customLabel?: StringNullableFilter<"SettingItem"> | string | null
-    version?: IntFilter<"SettingItem"> | number
-    createdAt?: DateTimeFilter<"SettingItem"> | Date | string
-    updatedAt?: DateTimeFilter<"SettingItem"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"SettingItem"> | Date | string | null
-    group?: XOR<SettingGroupScalarRelationFilter, SettingGroupWhereInput>
-  }
-
-  export type SettingItemOrderByWithRelationInput = {
-    id?: SortOrder
-    groupId?: SortOrder
-    settingKey?: SortOrder
-    order?: SortOrder
-    isVisible?: SortOrder
-    customLabel?: SortOrderInput | SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    group?: SettingGroupOrderByWithRelationInput
-  }
-
-  export type SettingItemWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    groupId_settingKey?: SettingItemGroupIdSettingKeyCompoundUniqueInput
-    AND?: SettingItemWhereInput | SettingItemWhereInput[]
-    OR?: SettingItemWhereInput[]
-    NOT?: SettingItemWhereInput | SettingItemWhereInput[]
-    groupId?: StringFilter<"SettingItem"> | string
-    settingKey?: StringFilter<"SettingItem"> | string
-    order?: IntFilter<"SettingItem"> | number
-    isVisible?: BoolFilter<"SettingItem"> | boolean
-    customLabel?: StringNullableFilter<"SettingItem"> | string | null
-    version?: IntFilter<"SettingItem"> | number
-    createdAt?: DateTimeFilter<"SettingItem"> | Date | string
-    updatedAt?: DateTimeFilter<"SettingItem"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"SettingItem"> | Date | string | null
-    group?: XOR<SettingGroupScalarRelationFilter, SettingGroupWhereInput>
-  }, "id" | "groupId_settingKey">
-
-  export type SettingItemOrderByWithAggregationInput = {
-    id?: SortOrder
-    groupId?: SortOrder
-    settingKey?: SortOrder
-    order?: SortOrder
-    isVisible?: SortOrder
-    customLabel?: SortOrderInput | SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    _count?: SettingItemCountOrderByAggregateInput
-    _avg?: SettingItemAvgOrderByAggregateInput
-    _max?: SettingItemMaxOrderByAggregateInput
-    _min?: SettingItemMinOrderByAggregateInput
-    _sum?: SettingItemSumOrderByAggregateInput
-  }
-
-  export type SettingItemScalarWhereWithAggregatesInput = {
-    AND?: SettingItemScalarWhereWithAggregatesInput | SettingItemScalarWhereWithAggregatesInput[]
-    OR?: SettingItemScalarWhereWithAggregatesInput[]
-    NOT?: SettingItemScalarWhereWithAggregatesInput | SettingItemScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"SettingItem"> | string
-    groupId?: StringWithAggregatesFilter<"SettingItem"> | string
-    settingKey?: StringWithAggregatesFilter<"SettingItem"> | string
-    order?: IntWithAggregatesFilter<"SettingItem"> | number
-    isVisible?: BoolWithAggregatesFilter<"SettingItem"> | boolean
-    customLabel?: StringNullableWithAggregatesFilter<"SettingItem"> | string | null
-    version?: IntWithAggregatesFilter<"SettingItem"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"SettingItem"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"SettingItem"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"SettingItem"> | Date | string | null
-  }
-
   export type UserSettingWhereInput = {
     AND?: UserSettingWhereInput | UserSettingWhereInput[]
     OR?: UserSettingWhereInput[]
     NOT?: UserSettingWhereInput | UserSettingWhereInput[]
     id?: StringFilter<"UserSetting"> | string
     identityId?: StringFilter<"UserSetting"> | string
+    preferences?: JsonFilter<"UserSetting">
     version?: IntFilter<"UserSetting"> | number
     createdAt?: DateTimeFilter<"UserSetting"> | Date | string
     updatedAt?: DateTimeFilter<"UserSetting"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"UserSetting"> | Date | string | null
-    appearanceAccentColor?: StringFilter<"UserSetting"> | string
-    appearanceCompactMode?: BoolFilter<"UserSetting"> | boolean
-    appearanceFontFamily?: StringNullableFilter<"UserSetting"> | string | null
-    appearanceFontSize?: StringFilter<"UserSetting"> | string
-    appearanceTheme?: StringFilter<"UserSetting"> | string
-    experimentalEnabled?: BoolFilter<"UserSetting"> | boolean
-    experimentalFeatures?: StringFilter<"UserSetting"> | string
-    localeCurrency?: StringFilter<"UserSetting"> | string
-    localeDateFormat?: StringFilter<"UserSetting"> | string
-    localeLanguage?: StringFilter<"UserSetting"> | string
-    localeTimeFormat?: StringFilter<"UserSetting"> | string
-    localeTimezone?: StringFilter<"UserSetting"> | string
-    localeWeekStartsOn?: IntFilter<"UserSetting"> | number
-    privacyAllowSearchByEmail?: BoolFilter<"UserSetting"> | boolean
-    privacyAllowSearchByPhone?: BoolFilter<"UserSetting"> | boolean
-    privacyProfileVisibility?: StringFilter<"UserSetting"> | string
-    privacyShareUsageData?: BoolFilter<"UserSetting"> | boolean
-    privacyShowOnlineStatus?: BoolFilter<"UserSetting"> | boolean
-    shortcutsCustom?: StringFilter<"UserSetting"> | string
-    shortcutsEnabled?: BoolFilter<"UserSetting"> | boolean
-    workflowAutoSave?: BoolFilter<"UserSetting"> | boolean
-    workflowAutoSaveInterval?: IntFilter<"UserSetting"> | number
-    workflowConfirmBeforeDelete?: BoolFilter<"UserSetting"> | boolean
-    workflowDefaultGoalView?: StringFilter<"UserSetting"> | string
-    workflowDefaultScheduleView?: StringFilter<"UserSetting"> | string
-    workflowDefaultTaskView?: StringFilter<"UserSetting"> | string
-    notificationEmail?: BoolFilter<"UserSetting"> | boolean
-    notificationPush?: BoolFilter<"UserSetting"> | boolean
-    notificationInApp?: BoolFilter<"UserSetting"> | boolean
-    notificationSound?: BoolFilter<"UserSetting"> | boolean
-    editorTheme?: StringFilter<"UserSetting"> | string
-    editorFontSize?: IntFilter<"UserSetting"> | number
-    editorTabSize?: IntFilter<"UserSetting"> | number
-    editorWordWrap?: BoolFilter<"UserSetting"> | boolean
-    editorLineNumbers?: BoolFilter<"UserSetting"> | boolean
-    editorMinimap?: BoolFilter<"UserSetting"> | boolean
-    startPage?: StringFilter<"UserSetting"> | string
-    sidebarCollapsed?: BoolFilter<"UserSetting"> | boolean
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
   }
 
   export type UserSettingOrderByWithRelationInput = {
     id?: SortOrder
     identityId?: SortOrder
+    preferences?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    appearanceAccentColor?: SortOrder
-    appearanceCompactMode?: SortOrder
-    appearanceFontFamily?: SortOrderInput | SortOrder
-    appearanceFontSize?: SortOrder
-    appearanceTheme?: SortOrder
-    experimentalEnabled?: SortOrder
-    experimentalFeatures?: SortOrder
-    localeCurrency?: SortOrder
-    localeDateFormat?: SortOrder
-    localeLanguage?: SortOrder
-    localeTimeFormat?: SortOrder
-    localeTimezone?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    privacyAllowSearchByEmail?: SortOrder
-    privacyAllowSearchByPhone?: SortOrder
-    privacyProfileVisibility?: SortOrder
-    privacyShareUsageData?: SortOrder
-    privacyShowOnlineStatus?: SortOrder
-    shortcutsCustom?: SortOrder
-    shortcutsEnabled?: SortOrder
-    workflowAutoSave?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    workflowConfirmBeforeDelete?: SortOrder
-    workflowDefaultGoalView?: SortOrder
-    workflowDefaultScheduleView?: SortOrder
-    workflowDefaultTaskView?: SortOrder
-    notificationEmail?: SortOrder
-    notificationPush?: SortOrder
-    notificationInApp?: SortOrder
-    notificationSound?: SortOrder
-    editorTheme?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
-    editorWordWrap?: SortOrder
-    editorLineNumbers?: SortOrder
-    editorMinimap?: SortOrder
-    startPage?: SortOrder
-    sidebarCollapsed?: SortOrder
     account?: AccountOrderByWithRelationInput
   }
 
@@ -105064,96 +98683,20 @@ export namespace Prisma {
     AND?: UserSettingWhereInput | UserSettingWhereInput[]
     OR?: UserSettingWhereInput[]
     NOT?: UserSettingWhereInput | UserSettingWhereInput[]
+    preferences?: JsonFilter<"UserSetting">
     version?: IntFilter<"UserSetting"> | number
     createdAt?: DateTimeFilter<"UserSetting"> | Date | string
     updatedAt?: DateTimeFilter<"UserSetting"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"UserSetting"> | Date | string | null
-    appearanceAccentColor?: StringFilter<"UserSetting"> | string
-    appearanceCompactMode?: BoolFilter<"UserSetting"> | boolean
-    appearanceFontFamily?: StringNullableFilter<"UserSetting"> | string | null
-    appearanceFontSize?: StringFilter<"UserSetting"> | string
-    appearanceTheme?: StringFilter<"UserSetting"> | string
-    experimentalEnabled?: BoolFilter<"UserSetting"> | boolean
-    experimentalFeatures?: StringFilter<"UserSetting"> | string
-    localeCurrency?: StringFilter<"UserSetting"> | string
-    localeDateFormat?: StringFilter<"UserSetting"> | string
-    localeLanguage?: StringFilter<"UserSetting"> | string
-    localeTimeFormat?: StringFilter<"UserSetting"> | string
-    localeTimezone?: StringFilter<"UserSetting"> | string
-    localeWeekStartsOn?: IntFilter<"UserSetting"> | number
-    privacyAllowSearchByEmail?: BoolFilter<"UserSetting"> | boolean
-    privacyAllowSearchByPhone?: BoolFilter<"UserSetting"> | boolean
-    privacyProfileVisibility?: StringFilter<"UserSetting"> | string
-    privacyShareUsageData?: BoolFilter<"UserSetting"> | boolean
-    privacyShowOnlineStatus?: BoolFilter<"UserSetting"> | boolean
-    shortcutsCustom?: StringFilter<"UserSetting"> | string
-    shortcutsEnabled?: BoolFilter<"UserSetting"> | boolean
-    workflowAutoSave?: BoolFilter<"UserSetting"> | boolean
-    workflowAutoSaveInterval?: IntFilter<"UserSetting"> | number
-    workflowConfirmBeforeDelete?: BoolFilter<"UserSetting"> | boolean
-    workflowDefaultGoalView?: StringFilter<"UserSetting"> | string
-    workflowDefaultScheduleView?: StringFilter<"UserSetting"> | string
-    workflowDefaultTaskView?: StringFilter<"UserSetting"> | string
-    notificationEmail?: BoolFilter<"UserSetting"> | boolean
-    notificationPush?: BoolFilter<"UserSetting"> | boolean
-    notificationInApp?: BoolFilter<"UserSetting"> | boolean
-    notificationSound?: BoolFilter<"UserSetting"> | boolean
-    editorTheme?: StringFilter<"UserSetting"> | string
-    editorFontSize?: IntFilter<"UserSetting"> | number
-    editorTabSize?: IntFilter<"UserSetting"> | number
-    editorWordWrap?: BoolFilter<"UserSetting"> | boolean
-    editorLineNumbers?: BoolFilter<"UserSetting"> | boolean
-    editorMinimap?: BoolFilter<"UserSetting"> | boolean
-    startPage?: StringFilter<"UserSetting"> | string
-    sidebarCollapsed?: BoolFilter<"UserSetting"> | boolean
     account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
   }, "id" | "identityId">
 
   export type UserSettingOrderByWithAggregationInput = {
     id?: SortOrder
     identityId?: SortOrder
+    preferences?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    deletedAt?: SortOrderInput | SortOrder
-    appearanceAccentColor?: SortOrder
-    appearanceCompactMode?: SortOrder
-    appearanceFontFamily?: SortOrderInput | SortOrder
-    appearanceFontSize?: SortOrder
-    appearanceTheme?: SortOrder
-    experimentalEnabled?: SortOrder
-    experimentalFeatures?: SortOrder
-    localeCurrency?: SortOrder
-    localeDateFormat?: SortOrder
-    localeLanguage?: SortOrder
-    localeTimeFormat?: SortOrder
-    localeTimezone?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    privacyAllowSearchByEmail?: SortOrder
-    privacyAllowSearchByPhone?: SortOrder
-    privacyProfileVisibility?: SortOrder
-    privacyShareUsageData?: SortOrder
-    privacyShowOnlineStatus?: SortOrder
-    shortcutsCustom?: SortOrder
-    shortcutsEnabled?: SortOrder
-    workflowAutoSave?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    workflowConfirmBeforeDelete?: SortOrder
-    workflowDefaultGoalView?: SortOrder
-    workflowDefaultScheduleView?: SortOrder
-    workflowDefaultTaskView?: SortOrder
-    notificationEmail?: SortOrder
-    notificationPush?: SortOrder
-    notificationInApp?: SortOrder
-    notificationSound?: SortOrder
-    editorTheme?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
-    editorWordWrap?: SortOrder
-    editorLineNumbers?: SortOrder
-    editorMinimap?: SortOrder
-    startPage?: SortOrder
-    sidebarCollapsed?: SortOrder
     _count?: UserSettingCountOrderByAggregateInput
     _avg?: UserSettingAvgOrderByAggregateInput
     _max?: UserSettingMaxOrderByAggregateInput
@@ -105167,48 +98710,10 @@ export namespace Prisma {
     NOT?: UserSettingScalarWhereWithAggregatesInput | UserSettingScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"UserSetting"> | string
     identityId?: StringWithAggregatesFilter<"UserSetting"> | string
+    preferences?: JsonWithAggregatesFilter<"UserSetting">
     version?: IntWithAggregatesFilter<"UserSetting"> | number
     createdAt?: DateTimeWithAggregatesFilter<"UserSetting"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserSetting"> | Date | string
-    deletedAt?: DateTimeNullableWithAggregatesFilter<"UserSetting"> | Date | string | null
-    appearanceAccentColor?: StringWithAggregatesFilter<"UserSetting"> | string
-    appearanceCompactMode?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    appearanceFontFamily?: StringNullableWithAggregatesFilter<"UserSetting"> | string | null
-    appearanceFontSize?: StringWithAggregatesFilter<"UserSetting"> | string
-    appearanceTheme?: StringWithAggregatesFilter<"UserSetting"> | string
-    experimentalEnabled?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    experimentalFeatures?: StringWithAggregatesFilter<"UserSetting"> | string
-    localeCurrency?: StringWithAggregatesFilter<"UserSetting"> | string
-    localeDateFormat?: StringWithAggregatesFilter<"UserSetting"> | string
-    localeLanguage?: StringWithAggregatesFilter<"UserSetting"> | string
-    localeTimeFormat?: StringWithAggregatesFilter<"UserSetting"> | string
-    localeTimezone?: StringWithAggregatesFilter<"UserSetting"> | string
-    localeWeekStartsOn?: IntWithAggregatesFilter<"UserSetting"> | number
-    privacyAllowSearchByEmail?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    privacyAllowSearchByPhone?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    privacyProfileVisibility?: StringWithAggregatesFilter<"UserSetting"> | string
-    privacyShareUsageData?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    privacyShowOnlineStatus?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    shortcutsCustom?: StringWithAggregatesFilter<"UserSetting"> | string
-    shortcutsEnabled?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    workflowAutoSave?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    workflowAutoSaveInterval?: IntWithAggregatesFilter<"UserSetting"> | number
-    workflowConfirmBeforeDelete?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    workflowDefaultGoalView?: StringWithAggregatesFilter<"UserSetting"> | string
-    workflowDefaultScheduleView?: StringWithAggregatesFilter<"UserSetting"> | string
-    workflowDefaultTaskView?: StringWithAggregatesFilter<"UserSetting"> | string
-    notificationEmail?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    notificationPush?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    notificationInApp?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    notificationSound?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    editorTheme?: StringWithAggregatesFilter<"UserSetting"> | string
-    editorFontSize?: IntWithAggregatesFilter<"UserSetting"> | number
-    editorTabSize?: IntWithAggregatesFilter<"UserSetting"> | number
-    editorWordWrap?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    editorLineNumbers?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    editorMinimap?: BoolWithAggregatesFilter<"UserSetting"> | boolean
-    startPage?: StringWithAggregatesFilter<"UserSetting"> | string
-    sidebarCollapsed?: BoolWithAggregatesFilter<"UserSetting"> | boolean
   }
 
   export type SyncProfileWhereInput = {
@@ -106483,7 +99988,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -106542,7 +100046,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -106601,7 +100104,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -106660,7 +100162,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -107393,76 +100894,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     identityId?: StringFieldUpdateOperationsInput | string
     widgetConfig?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AppConfigCreateInput = {
-    id: string
-    version: string
-    config: string
-    description?: string | null
-    isCurrent?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type AppConfigUncheckedCreateInput = {
-    id: string
-    version: string
-    config: string
-    description?: string | null
-    isCurrent?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type AppConfigUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    version?: StringFieldUpdateOperationsInput | string
-    config?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isCurrent?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AppConfigUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    version?: StringFieldUpdateOperationsInput | string
-    config?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isCurrent?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AppConfigCreateManyInput = {
-    id: string
-    version: string
-    config: string
-    description?: string | null
-    isCurrent?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type AppConfigUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    version?: StringFieldUpdateOperationsInput | string
-    config?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isCurrent?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type AppConfigUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    version?: StringFieldUpdateOperationsInput | string
-    config?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -113055,711 +106486,66 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SettingCreateInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    deviceId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account?: AccountCreateNestedOneWithoutSettings_Input
-    group?: SettingGroupCreateNestedOneWithoutSettingsInput
-  }
-
-  export type SettingUncheckedCreateInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    identityId?: string | null
-    deviceId?: string | null
-    groupId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneWithoutSettings_NestedInput
-    group?: SettingGroupUpdateOneWithoutSettingsNestedInput
-  }
-
-  export type SettingUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    identityId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingCreateManyInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    identityId?: string | null
-    deviceId?: string | null
-    groupId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    identityId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingGroupCreateInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    parent?: SettingGroupCreateNestedOneWithoutChildrenInput
-    children?: SettingGroupCreateNestedManyWithoutParentInput
-    items?: SettingItemCreateNestedManyWithoutGroupInput
-    settings?: SettingCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupUncheckedCreateInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    parentId?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    children?: SettingGroupUncheckedCreateNestedManyWithoutParentInput
-    items?: SettingItemUncheckedCreateNestedManyWithoutGroupInput
-    settings?: SettingUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    parent?: SettingGroupUpdateOneWithoutChildrenNestedInput
-    children?: SettingGroupUpdateManyWithoutParentNestedInput
-    items?: SettingItemUpdateManyWithoutGroupNestedInput
-    settings?: SettingUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    children?: SettingGroupUncheckedUpdateManyWithoutParentNestedInput
-    items?: SettingItemUncheckedUpdateManyWithoutGroupNestedInput
-    settings?: SettingUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupCreateManyInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    parentId?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingGroupUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingGroupUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingItemCreateInput = {
-    id: string
-    settingKey: string
-    order?: number
-    isVisible?: boolean
-    customLabel?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    group: SettingGroupCreateNestedOneWithoutItemsInput
-  }
-
-  export type SettingItemUncheckedCreateInput = {
-    id: string
-    groupId: string
-    settingKey: string
-    order?: number
-    isVisible?: boolean
-    customLabel?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingItemUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    group?: SettingGroupUpdateOneRequiredWithoutItemsNestedInput
-  }
-
-  export type SettingItemUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    groupId?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingItemCreateManyInput = {
-    id: string
-    groupId: string
-    settingKey: string
-    order?: number
-    isVisible?: boolean
-    customLabel?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingItemUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingItemUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    groupId?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type UserSettingCreateInput = {
-    id: string
+    id?: string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    appearanceAccentColor?: string
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: string | null
-    appearanceFontSize?: string
-    appearanceTheme?: string
-    experimentalEnabled?: boolean
-    experimentalFeatures?: string
-    localeCurrency?: string
-    localeDateFormat?: string
-    localeLanguage?: string
-    localeTimeFormat?: string
-    localeTimezone?: string
-    localeWeekStartsOn?: number
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: string
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: string
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: number
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: string
-    workflowDefaultScheduleView?: string
-    workflowDefaultTaskView?: string
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: string
-    editorFontSize?: number
-    editorTabSize?: number
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: string
-    sidebarCollapsed?: boolean
     account: AccountCreateNestedOneWithoutUserSettingsInput
   }
 
   export type UserSettingUncheckedCreateInput = {
-    id: string
+    id?: string
     identityId: string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    appearanceAccentColor?: string
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: string | null
-    appearanceFontSize?: string
-    appearanceTheme?: string
-    experimentalEnabled?: boolean
-    experimentalFeatures?: string
-    localeCurrency?: string
-    localeDateFormat?: string
-    localeLanguage?: string
-    localeTimeFormat?: string
-    localeTimezone?: string
-    localeWeekStartsOn?: number
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: string
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: string
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: number
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: string
-    workflowDefaultScheduleView?: string
-    workflowDefaultTaskView?: string
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: string
-    editorFontSize?: number
-    editorTabSize?: number
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: string
-    sidebarCollapsed?: boolean
   }
 
   export type UserSettingUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    appearanceAccentColor?: StringFieldUpdateOperationsInput | string
-    appearanceCompactMode?: BoolFieldUpdateOperationsInput | boolean
-    appearanceFontFamily?: NullableStringFieldUpdateOperationsInput | string | null
-    appearanceFontSize?: StringFieldUpdateOperationsInput | string
-    appearanceTheme?: StringFieldUpdateOperationsInput | string
-    experimentalEnabled?: BoolFieldUpdateOperationsInput | boolean
-    experimentalFeatures?: StringFieldUpdateOperationsInput | string
-    localeCurrency?: StringFieldUpdateOperationsInput | string
-    localeDateFormat?: StringFieldUpdateOperationsInput | string
-    localeLanguage?: StringFieldUpdateOperationsInput | string
-    localeTimeFormat?: StringFieldUpdateOperationsInput | string
-    localeTimezone?: StringFieldUpdateOperationsInput | string
-    localeWeekStartsOn?: IntFieldUpdateOperationsInput | number
-    privacyAllowSearchByEmail?: BoolFieldUpdateOperationsInput | boolean
-    privacyAllowSearchByPhone?: BoolFieldUpdateOperationsInput | boolean
-    privacyProfileVisibility?: StringFieldUpdateOperationsInput | string
-    privacyShareUsageData?: BoolFieldUpdateOperationsInput | boolean
-    privacyShowOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    shortcutsCustom?: StringFieldUpdateOperationsInput | string
-    shortcutsEnabled?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSave?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSaveInterval?: IntFieldUpdateOperationsInput | number
-    workflowConfirmBeforeDelete?: BoolFieldUpdateOperationsInput | boolean
-    workflowDefaultGoalView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultScheduleView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultTaskView?: StringFieldUpdateOperationsInput | string
-    notificationEmail?: BoolFieldUpdateOperationsInput | boolean
-    notificationPush?: BoolFieldUpdateOperationsInput | boolean
-    notificationInApp?: BoolFieldUpdateOperationsInput | boolean
-    notificationSound?: BoolFieldUpdateOperationsInput | boolean
-    editorTheme?: StringFieldUpdateOperationsInput | string
-    editorFontSize?: IntFieldUpdateOperationsInput | number
-    editorTabSize?: IntFieldUpdateOperationsInput | number
-    editorWordWrap?: BoolFieldUpdateOperationsInput | boolean
-    editorLineNumbers?: BoolFieldUpdateOperationsInput | boolean
-    editorMinimap?: BoolFieldUpdateOperationsInput | boolean
-    startPage?: StringFieldUpdateOperationsInput | string
-    sidebarCollapsed?: BoolFieldUpdateOperationsInput | boolean
     account?: AccountUpdateOneRequiredWithoutUserSettingsNestedInput
   }
 
   export type UserSettingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    appearanceAccentColor?: StringFieldUpdateOperationsInput | string
-    appearanceCompactMode?: BoolFieldUpdateOperationsInput | boolean
-    appearanceFontFamily?: NullableStringFieldUpdateOperationsInput | string | null
-    appearanceFontSize?: StringFieldUpdateOperationsInput | string
-    appearanceTheme?: StringFieldUpdateOperationsInput | string
-    experimentalEnabled?: BoolFieldUpdateOperationsInput | boolean
-    experimentalFeatures?: StringFieldUpdateOperationsInput | string
-    localeCurrency?: StringFieldUpdateOperationsInput | string
-    localeDateFormat?: StringFieldUpdateOperationsInput | string
-    localeLanguage?: StringFieldUpdateOperationsInput | string
-    localeTimeFormat?: StringFieldUpdateOperationsInput | string
-    localeTimezone?: StringFieldUpdateOperationsInput | string
-    localeWeekStartsOn?: IntFieldUpdateOperationsInput | number
-    privacyAllowSearchByEmail?: BoolFieldUpdateOperationsInput | boolean
-    privacyAllowSearchByPhone?: BoolFieldUpdateOperationsInput | boolean
-    privacyProfileVisibility?: StringFieldUpdateOperationsInput | string
-    privacyShareUsageData?: BoolFieldUpdateOperationsInput | boolean
-    privacyShowOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    shortcutsCustom?: StringFieldUpdateOperationsInput | string
-    shortcutsEnabled?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSave?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSaveInterval?: IntFieldUpdateOperationsInput | number
-    workflowConfirmBeforeDelete?: BoolFieldUpdateOperationsInput | boolean
-    workflowDefaultGoalView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultScheduleView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultTaskView?: StringFieldUpdateOperationsInput | string
-    notificationEmail?: BoolFieldUpdateOperationsInput | boolean
-    notificationPush?: BoolFieldUpdateOperationsInput | boolean
-    notificationInApp?: BoolFieldUpdateOperationsInput | boolean
-    notificationSound?: BoolFieldUpdateOperationsInput | boolean
-    editorTheme?: StringFieldUpdateOperationsInput | string
-    editorFontSize?: IntFieldUpdateOperationsInput | number
-    editorTabSize?: IntFieldUpdateOperationsInput | number
-    editorWordWrap?: BoolFieldUpdateOperationsInput | boolean
-    editorLineNumbers?: BoolFieldUpdateOperationsInput | boolean
-    editorMinimap?: BoolFieldUpdateOperationsInput | boolean
-    startPage?: StringFieldUpdateOperationsInput | string
-    sidebarCollapsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserSettingCreateManyInput = {
-    id: string
+    id?: string
     identityId: string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    appearanceAccentColor?: string
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: string | null
-    appearanceFontSize?: string
-    appearanceTheme?: string
-    experimentalEnabled?: boolean
-    experimentalFeatures?: string
-    localeCurrency?: string
-    localeDateFormat?: string
-    localeLanguage?: string
-    localeTimeFormat?: string
-    localeTimezone?: string
-    localeWeekStartsOn?: number
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: string
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: string
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: number
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: string
-    workflowDefaultScheduleView?: string
-    workflowDefaultTaskView?: string
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: string
-    editorFontSize?: number
-    editorTabSize?: number
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: string
-    sidebarCollapsed?: boolean
   }
 
   export type UserSettingUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    appearanceAccentColor?: StringFieldUpdateOperationsInput | string
-    appearanceCompactMode?: BoolFieldUpdateOperationsInput | boolean
-    appearanceFontFamily?: NullableStringFieldUpdateOperationsInput | string | null
-    appearanceFontSize?: StringFieldUpdateOperationsInput | string
-    appearanceTheme?: StringFieldUpdateOperationsInput | string
-    experimentalEnabled?: BoolFieldUpdateOperationsInput | boolean
-    experimentalFeatures?: StringFieldUpdateOperationsInput | string
-    localeCurrency?: StringFieldUpdateOperationsInput | string
-    localeDateFormat?: StringFieldUpdateOperationsInput | string
-    localeLanguage?: StringFieldUpdateOperationsInput | string
-    localeTimeFormat?: StringFieldUpdateOperationsInput | string
-    localeTimezone?: StringFieldUpdateOperationsInput | string
-    localeWeekStartsOn?: IntFieldUpdateOperationsInput | number
-    privacyAllowSearchByEmail?: BoolFieldUpdateOperationsInput | boolean
-    privacyAllowSearchByPhone?: BoolFieldUpdateOperationsInput | boolean
-    privacyProfileVisibility?: StringFieldUpdateOperationsInput | string
-    privacyShareUsageData?: BoolFieldUpdateOperationsInput | boolean
-    privacyShowOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    shortcutsCustom?: StringFieldUpdateOperationsInput | string
-    shortcutsEnabled?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSave?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSaveInterval?: IntFieldUpdateOperationsInput | number
-    workflowConfirmBeforeDelete?: BoolFieldUpdateOperationsInput | boolean
-    workflowDefaultGoalView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultScheduleView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultTaskView?: StringFieldUpdateOperationsInput | string
-    notificationEmail?: BoolFieldUpdateOperationsInput | boolean
-    notificationPush?: BoolFieldUpdateOperationsInput | boolean
-    notificationInApp?: BoolFieldUpdateOperationsInput | boolean
-    notificationSound?: BoolFieldUpdateOperationsInput | boolean
-    editorTheme?: StringFieldUpdateOperationsInput | string
-    editorFontSize?: IntFieldUpdateOperationsInput | number
-    editorTabSize?: IntFieldUpdateOperationsInput | number
-    editorWordWrap?: BoolFieldUpdateOperationsInput | boolean
-    editorLineNumbers?: BoolFieldUpdateOperationsInput | boolean
-    editorMinimap?: BoolFieldUpdateOperationsInput | boolean
-    startPage?: StringFieldUpdateOperationsInput | string
-    sidebarCollapsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserSettingUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    appearanceAccentColor?: StringFieldUpdateOperationsInput | string
-    appearanceCompactMode?: BoolFieldUpdateOperationsInput | boolean
-    appearanceFontFamily?: NullableStringFieldUpdateOperationsInput | string | null
-    appearanceFontSize?: StringFieldUpdateOperationsInput | string
-    appearanceTheme?: StringFieldUpdateOperationsInput | string
-    experimentalEnabled?: BoolFieldUpdateOperationsInput | boolean
-    experimentalFeatures?: StringFieldUpdateOperationsInput | string
-    localeCurrency?: StringFieldUpdateOperationsInput | string
-    localeDateFormat?: StringFieldUpdateOperationsInput | string
-    localeLanguage?: StringFieldUpdateOperationsInput | string
-    localeTimeFormat?: StringFieldUpdateOperationsInput | string
-    localeTimezone?: StringFieldUpdateOperationsInput | string
-    localeWeekStartsOn?: IntFieldUpdateOperationsInput | number
-    privacyAllowSearchByEmail?: BoolFieldUpdateOperationsInput | boolean
-    privacyAllowSearchByPhone?: BoolFieldUpdateOperationsInput | boolean
-    privacyProfileVisibility?: StringFieldUpdateOperationsInput | string
-    privacyShareUsageData?: BoolFieldUpdateOperationsInput | boolean
-    privacyShowOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    shortcutsCustom?: StringFieldUpdateOperationsInput | string
-    shortcutsEnabled?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSave?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSaveInterval?: IntFieldUpdateOperationsInput | number
-    workflowConfirmBeforeDelete?: BoolFieldUpdateOperationsInput | boolean
-    workflowDefaultGoalView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultScheduleView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultTaskView?: StringFieldUpdateOperationsInput | string
-    notificationEmail?: BoolFieldUpdateOperationsInput | boolean
-    notificationPush?: BoolFieldUpdateOperationsInput | boolean
-    notificationInApp?: BoolFieldUpdateOperationsInput | boolean
-    notificationSound?: BoolFieldUpdateOperationsInput | boolean
-    editorTheme?: StringFieldUpdateOperationsInput | string
-    editorFontSize?: IntFieldUpdateOperationsInput | number
-    editorTabSize?: IntFieldUpdateOperationsInput | number
-    editorWordWrap?: BoolFieldUpdateOperationsInput | boolean
-    editorLineNumbers?: BoolFieldUpdateOperationsInput | boolean
-    editorMinimap?: BoolFieldUpdateOperationsInput | boolean
-    startPage?: StringFieldUpdateOperationsInput | string
-    sidebarCollapsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type SyncProfileCreateInput = {
@@ -115440,12 +108226,6 @@ export namespace Prisma {
     isNot?: ScheduleStatisticWhereInput | null
   }
 
-  export type SettingListRelationFilter = {
-    every?: SettingWhereInput
-    some?: SettingWhereInput
-    none?: SettingWhereInput
-  }
-
   export type TaskFolderListRelationFilter = {
     every?: TaskFolderWhereInput
     some?: TaskFolderWhereInput
@@ -115606,10 +108386,6 @@ export namespace Prisma {
   }
 
   export type ScheduleTaskOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SettingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -116244,36 +109020,6 @@ export namespace Prisma {
 
   export type DashboardConfigSumOrderByAggregateInput = {
     id?: SortOrder
-  }
-
-  export type AppConfigCountOrderByAggregateInput = {
-    id?: SortOrder
-    version?: SortOrder
-    config?: SortOrder
-    description?: SortOrder
-    isCurrent?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type AppConfigMaxOrderByAggregateInput = {
-    id?: SortOrder
-    version?: SortOrder
-    config?: SortOrder
-    description?: SortOrder
-    isCurrent?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type AppConfigMinOrderByAggregateInput = {
-    id?: SortOrder
-    version?: SortOrder
-    config?: SortOrder
-    description?: SortOrder
-    isCurrent?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
   }
 
   export type EnumAuthIdentityStatusFilter<$PrismaModel = never> = {
@@ -119564,293 +112310,17 @@ export namespace Prisma {
     maxExecutionDuration?: SortOrder
   }
 
-  export type AccountNullableScalarRelationFilter = {
-    is?: AccountWhereInput | null
-    isNot?: AccountWhereInput | null
-  }
-
-  export type SettingGroupNullableScalarRelationFilter = {
-    is?: SettingGroupWhereInput | null
-    isNot?: SettingGroupWhereInput | null
-  }
-
-  export type SettingKeyScopeIdentityIdDeviceIdCompoundUniqueInput = {
-    key: string
-    scope: string
-    identityId: string
-    deviceId: string
-  }
-
-  export type SettingCountOrderByAggregateInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    valueType?: SortOrder
-    value?: SortOrder
-    defaultValue?: SortOrder
-    scope?: SortOrder
-    identityId?: SortOrder
-    deviceId?: SortOrder
-    groupId?: SortOrder
-    validation?: SortOrder
-    ui?: SortOrder
-    isEncrypted?: SortOrder
-    isReadOnly?: SortOrder
-    isSystemSetting?: SortOrder
-    syncConfig?: SortOrder
-    historyData?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingAvgOrderByAggregateInput = {
-    version?: SortOrder
-  }
-
-  export type SettingMaxOrderByAggregateInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    valueType?: SortOrder
-    value?: SortOrder
-    defaultValue?: SortOrder
-    scope?: SortOrder
-    identityId?: SortOrder
-    deviceId?: SortOrder
-    groupId?: SortOrder
-    validation?: SortOrder
-    ui?: SortOrder
-    isEncrypted?: SortOrder
-    isReadOnly?: SortOrder
-    isSystemSetting?: SortOrder
-    syncConfig?: SortOrder
-    historyData?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingMinOrderByAggregateInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    valueType?: SortOrder
-    value?: SortOrder
-    defaultValue?: SortOrder
-    scope?: SortOrder
-    identityId?: SortOrder
-    deviceId?: SortOrder
-    groupId?: SortOrder
-    validation?: SortOrder
-    ui?: SortOrder
-    isEncrypted?: SortOrder
-    isReadOnly?: SortOrder
-    isSystemSetting?: SortOrder
-    syncConfig?: SortOrder
-    historyData?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingSumOrderByAggregateInput = {
-    version?: SortOrder
-  }
-
-  export type SettingGroupListRelationFilter = {
-    every?: SettingGroupWhereInput
-    some?: SettingGroupWhereInput
-    none?: SettingGroupWhereInput
-  }
-
-  export type SettingItemListRelationFilter = {
-    every?: SettingItemWhereInput
-    some?: SettingItemWhereInput
-    none?: SettingItemWhereInput
-  }
-
-  export type SettingGroupOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SettingItemOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SettingGroupCountOrderByAggregateInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    parentId?: SortOrder
-    order?: SortOrder
-    icon?: SortOrder
-    isCollapsed?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingGroupAvgOrderByAggregateInput = {
-    order?: SortOrder
-    version?: SortOrder
-  }
-
-  export type SettingGroupMaxOrderByAggregateInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    parentId?: SortOrder
-    order?: SortOrder
-    icon?: SortOrder
-    isCollapsed?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingGroupMinOrderByAggregateInput = {
-    id?: SortOrder
-    key?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    parentId?: SortOrder
-    order?: SortOrder
-    icon?: SortOrder
-    isCollapsed?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingGroupSumOrderByAggregateInput = {
-    order?: SortOrder
-    version?: SortOrder
-  }
-
-  export type SettingGroupScalarRelationFilter = {
-    is?: SettingGroupWhereInput
-    isNot?: SettingGroupWhereInput
-  }
-
-  export type SettingItemGroupIdSettingKeyCompoundUniqueInput = {
-    groupId: string
-    settingKey: string
-  }
-
-  export type SettingItemCountOrderByAggregateInput = {
-    id?: SortOrder
-    groupId?: SortOrder
-    settingKey?: SortOrder
-    order?: SortOrder
-    isVisible?: SortOrder
-    customLabel?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingItemAvgOrderByAggregateInput = {
-    order?: SortOrder
-    version?: SortOrder
-  }
-
-  export type SettingItemMaxOrderByAggregateInput = {
-    id?: SortOrder
-    groupId?: SortOrder
-    settingKey?: SortOrder
-    order?: SortOrder
-    isVisible?: SortOrder
-    customLabel?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingItemMinOrderByAggregateInput = {
-    id?: SortOrder
-    groupId?: SortOrder
-    settingKey?: SortOrder
-    order?: SortOrder
-    isVisible?: SortOrder
-    customLabel?: SortOrder
-    version?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    deletedAt?: SortOrder
-  }
-
-  export type SettingItemSumOrderByAggregateInput = {
-    order?: SortOrder
-    version?: SortOrder
-  }
-
   export type UserSettingCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
+    preferences?: SortOrder
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    deletedAt?: SortOrder
-    appearanceAccentColor?: SortOrder
-    appearanceCompactMode?: SortOrder
-    appearanceFontFamily?: SortOrder
-    appearanceFontSize?: SortOrder
-    appearanceTheme?: SortOrder
-    experimentalEnabled?: SortOrder
-    experimentalFeatures?: SortOrder
-    localeCurrency?: SortOrder
-    localeDateFormat?: SortOrder
-    localeLanguage?: SortOrder
-    localeTimeFormat?: SortOrder
-    localeTimezone?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    privacyAllowSearchByEmail?: SortOrder
-    privacyAllowSearchByPhone?: SortOrder
-    privacyProfileVisibility?: SortOrder
-    privacyShareUsageData?: SortOrder
-    privacyShowOnlineStatus?: SortOrder
-    shortcutsCustom?: SortOrder
-    shortcutsEnabled?: SortOrder
-    workflowAutoSave?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    workflowConfirmBeforeDelete?: SortOrder
-    workflowDefaultGoalView?: SortOrder
-    workflowDefaultScheduleView?: SortOrder
-    workflowDefaultTaskView?: SortOrder
-    notificationEmail?: SortOrder
-    notificationPush?: SortOrder
-    notificationInApp?: SortOrder
-    notificationSound?: SortOrder
-    editorTheme?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
-    editorWordWrap?: SortOrder
-    editorLineNumbers?: SortOrder
-    editorMinimap?: SortOrder
-    startPage?: SortOrder
-    sidebarCollapsed?: SortOrder
   }
 
   export type UserSettingAvgOrderByAggregateInput = {
     version?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
   }
 
   export type UserSettingMaxOrderByAggregateInput = {
@@ -119859,45 +112329,6 @@ export namespace Prisma {
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    deletedAt?: SortOrder
-    appearanceAccentColor?: SortOrder
-    appearanceCompactMode?: SortOrder
-    appearanceFontFamily?: SortOrder
-    appearanceFontSize?: SortOrder
-    appearanceTheme?: SortOrder
-    experimentalEnabled?: SortOrder
-    experimentalFeatures?: SortOrder
-    localeCurrency?: SortOrder
-    localeDateFormat?: SortOrder
-    localeLanguage?: SortOrder
-    localeTimeFormat?: SortOrder
-    localeTimezone?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    privacyAllowSearchByEmail?: SortOrder
-    privacyAllowSearchByPhone?: SortOrder
-    privacyProfileVisibility?: SortOrder
-    privacyShareUsageData?: SortOrder
-    privacyShowOnlineStatus?: SortOrder
-    shortcutsCustom?: SortOrder
-    shortcutsEnabled?: SortOrder
-    workflowAutoSave?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    workflowConfirmBeforeDelete?: SortOrder
-    workflowDefaultGoalView?: SortOrder
-    workflowDefaultScheduleView?: SortOrder
-    workflowDefaultTaskView?: SortOrder
-    notificationEmail?: SortOrder
-    notificationPush?: SortOrder
-    notificationInApp?: SortOrder
-    notificationSound?: SortOrder
-    editorTheme?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
-    editorWordWrap?: SortOrder
-    editorLineNumbers?: SortOrder
-    editorMinimap?: SortOrder
-    startPage?: SortOrder
-    sidebarCollapsed?: SortOrder
   }
 
   export type UserSettingMinOrderByAggregateInput = {
@@ -119906,53 +112337,10 @@ export namespace Prisma {
     version?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    deletedAt?: SortOrder
-    appearanceAccentColor?: SortOrder
-    appearanceCompactMode?: SortOrder
-    appearanceFontFamily?: SortOrder
-    appearanceFontSize?: SortOrder
-    appearanceTheme?: SortOrder
-    experimentalEnabled?: SortOrder
-    experimentalFeatures?: SortOrder
-    localeCurrency?: SortOrder
-    localeDateFormat?: SortOrder
-    localeLanguage?: SortOrder
-    localeTimeFormat?: SortOrder
-    localeTimezone?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    privacyAllowSearchByEmail?: SortOrder
-    privacyAllowSearchByPhone?: SortOrder
-    privacyProfileVisibility?: SortOrder
-    privacyShareUsageData?: SortOrder
-    privacyShowOnlineStatus?: SortOrder
-    shortcutsCustom?: SortOrder
-    shortcutsEnabled?: SortOrder
-    workflowAutoSave?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    workflowConfirmBeforeDelete?: SortOrder
-    workflowDefaultGoalView?: SortOrder
-    workflowDefaultScheduleView?: SortOrder
-    workflowDefaultTaskView?: SortOrder
-    notificationEmail?: SortOrder
-    notificationPush?: SortOrder
-    notificationInApp?: SortOrder
-    notificationSound?: SortOrder
-    editorTheme?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
-    editorWordWrap?: SortOrder
-    editorLineNumbers?: SortOrder
-    editorMinimap?: SortOrder
-    startPage?: SortOrder
-    sidebarCollapsed?: SortOrder
   }
 
   export type UserSettingSumOrderByAggregateInput = {
     version?: SortOrder
-    localeWeekStartsOn?: SortOrder
-    workflowAutoSaveInterval?: SortOrder
-    editorFontSize?: SortOrder
-    editorTabSize?: SortOrder
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -121020,13 +113408,6 @@ export namespace Prisma {
     connect?: ScheduleStatisticWhereUniqueInput
   }
 
-  export type SettingCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SettingCreateWithoutAccountInput, SettingUncheckedCreateWithoutAccountInput> | SettingCreateWithoutAccountInput[] | SettingUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutAccountInput | SettingCreateOrConnectWithoutAccountInput[]
-    createMany?: SettingCreateManyAccountInputEnvelope
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-  }
-
   export type TaskFolderCreateNestedManyWithoutAccountInput = {
     create?: XOR<TaskFolderCreateWithoutAccountInput, TaskFolderUncheckedCreateWithoutAccountInput> | TaskFolderCreateWithoutAccountInput[] | TaskFolderUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: TaskFolderCreateOrConnectWithoutAccountInput | TaskFolderCreateOrConnectWithoutAccountInput[]
@@ -121282,13 +113663,6 @@ export namespace Prisma {
     create?: XOR<ScheduleStatisticCreateWithoutAccountInput, ScheduleStatisticUncheckedCreateWithoutAccountInput>
     connectOrCreate?: ScheduleStatisticCreateOrConnectWithoutAccountInput
     connect?: ScheduleStatisticWhereUniqueInput
-  }
-
-  export type SettingUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SettingCreateWithoutAccountInput, SettingUncheckedCreateWithoutAccountInput> | SettingCreateWithoutAccountInput[] | SettingUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutAccountInput | SettingCreateOrConnectWithoutAccountInput[]
-    createMany?: SettingCreateManyAccountInputEnvelope
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
   }
 
   export type TaskFolderUncheckedCreateNestedManyWithoutAccountInput = {
@@ -121732,20 +114106,6 @@ export namespace Prisma {
     delete?: ScheduleStatisticWhereInput | boolean
     connect?: ScheduleStatisticWhereUniqueInput
     update?: XOR<XOR<ScheduleStatisticUpdateToOneWithWhereWithoutAccountInput, ScheduleStatisticUpdateWithoutAccountInput>, ScheduleStatisticUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SettingUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SettingCreateWithoutAccountInput, SettingUncheckedCreateWithoutAccountInput> | SettingCreateWithoutAccountInput[] | SettingUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutAccountInput | SettingCreateOrConnectWithoutAccountInput[]
-    upsert?: SettingUpsertWithWhereUniqueWithoutAccountInput | SettingUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SettingCreateManyAccountInputEnvelope
-    set?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    disconnect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    delete?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    update?: SettingUpdateWithWhereUniqueWithoutAccountInput | SettingUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SettingUpdateManyWithWhereWithoutAccountInput | SettingUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SettingScalarWhereInput | SettingScalarWhereInput[]
   }
 
   export type TaskFolderUpdateManyWithoutAccountNestedInput = {
@@ -122242,20 +114602,6 @@ export namespace Prisma {
     delete?: ScheduleStatisticWhereInput | boolean
     connect?: ScheduleStatisticWhereUniqueInput
     update?: XOR<XOR<ScheduleStatisticUpdateToOneWithWhereWithoutAccountInput, ScheduleStatisticUpdateWithoutAccountInput>, ScheduleStatisticUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SettingUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SettingCreateWithoutAccountInput, SettingUncheckedCreateWithoutAccountInput> | SettingCreateWithoutAccountInput[] | SettingUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutAccountInput | SettingCreateOrConnectWithoutAccountInput[]
-    upsert?: SettingUpsertWithWhereUniqueWithoutAccountInput | SettingUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SettingCreateManyAccountInputEnvelope
-    set?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    disconnect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    delete?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    update?: SettingUpdateWithWhereUniqueWithoutAccountInput | SettingUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SettingUpdateManyWithWhereWithoutAccountInput | SettingUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SettingScalarWhereInput | SettingScalarWhereInput[]
   }
 
   export type TaskFolderUncheckedUpdateManyWithoutAccountNestedInput = {
@@ -125010,194 +117356,6 @@ export namespace Prisma {
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutScheduleStatisticsInput, AccountUpdateWithoutScheduleStatisticsInput>, AccountUncheckedUpdateWithoutScheduleStatisticsInput>
   }
 
-  export type AccountCreateNestedOneWithoutSettings_Input = {
-    create?: XOR<AccountCreateWithoutSettings_Input, AccountUncheckedCreateWithoutSettings_Input>
-    connectOrCreate?: AccountCreateOrConnectWithoutSettings_Input
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type SettingGroupCreateNestedOneWithoutSettingsInput = {
-    create?: XOR<SettingGroupCreateWithoutSettingsInput, SettingGroupUncheckedCreateWithoutSettingsInput>
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutSettingsInput
-    connect?: SettingGroupWhereUniqueInput
-  }
-
-  export type AccountUpdateOneWithoutSettings_NestedInput = {
-    create?: XOR<AccountCreateWithoutSettings_Input, AccountUncheckedCreateWithoutSettings_Input>
-    connectOrCreate?: AccountCreateOrConnectWithoutSettings_Input
-    upsert?: AccountUpsertWithoutSettings_Input
-    disconnect?: AccountWhereInput | boolean
-    delete?: AccountWhereInput | boolean
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutSettings_Input, AccountUpdateWithoutSettings_Input>, AccountUncheckedUpdateWithoutSettings_Input>
-  }
-
-  export type SettingGroupUpdateOneWithoutSettingsNestedInput = {
-    create?: XOR<SettingGroupCreateWithoutSettingsInput, SettingGroupUncheckedCreateWithoutSettingsInput>
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutSettingsInput
-    upsert?: SettingGroupUpsertWithoutSettingsInput
-    disconnect?: SettingGroupWhereInput | boolean
-    delete?: SettingGroupWhereInput | boolean
-    connect?: SettingGroupWhereUniqueInput
-    update?: XOR<XOR<SettingGroupUpdateToOneWithWhereWithoutSettingsInput, SettingGroupUpdateWithoutSettingsInput>, SettingGroupUncheckedUpdateWithoutSettingsInput>
-  }
-
-  export type SettingGroupCreateNestedOneWithoutChildrenInput = {
-    create?: XOR<SettingGroupCreateWithoutChildrenInput, SettingGroupUncheckedCreateWithoutChildrenInput>
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutChildrenInput
-    connect?: SettingGroupWhereUniqueInput
-  }
-
-  export type SettingGroupCreateNestedManyWithoutParentInput = {
-    create?: XOR<SettingGroupCreateWithoutParentInput, SettingGroupUncheckedCreateWithoutParentInput> | SettingGroupCreateWithoutParentInput[] | SettingGroupUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutParentInput | SettingGroupCreateOrConnectWithoutParentInput[]
-    createMany?: SettingGroupCreateManyParentInputEnvelope
-    connect?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-  }
-
-  export type SettingItemCreateNestedManyWithoutGroupInput = {
-    create?: XOR<SettingItemCreateWithoutGroupInput, SettingItemUncheckedCreateWithoutGroupInput> | SettingItemCreateWithoutGroupInput[] | SettingItemUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingItemCreateOrConnectWithoutGroupInput | SettingItemCreateOrConnectWithoutGroupInput[]
-    createMany?: SettingItemCreateManyGroupInputEnvelope
-    connect?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-  }
-
-  export type SettingCreateNestedManyWithoutGroupInput = {
-    create?: XOR<SettingCreateWithoutGroupInput, SettingUncheckedCreateWithoutGroupInput> | SettingCreateWithoutGroupInput[] | SettingUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutGroupInput | SettingCreateOrConnectWithoutGroupInput[]
-    createMany?: SettingCreateManyGroupInputEnvelope
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-  }
-
-  export type SettingGroupUncheckedCreateNestedManyWithoutParentInput = {
-    create?: XOR<SettingGroupCreateWithoutParentInput, SettingGroupUncheckedCreateWithoutParentInput> | SettingGroupCreateWithoutParentInput[] | SettingGroupUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutParentInput | SettingGroupCreateOrConnectWithoutParentInput[]
-    createMany?: SettingGroupCreateManyParentInputEnvelope
-    connect?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-  }
-
-  export type SettingItemUncheckedCreateNestedManyWithoutGroupInput = {
-    create?: XOR<SettingItemCreateWithoutGroupInput, SettingItemUncheckedCreateWithoutGroupInput> | SettingItemCreateWithoutGroupInput[] | SettingItemUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingItemCreateOrConnectWithoutGroupInput | SettingItemCreateOrConnectWithoutGroupInput[]
-    createMany?: SettingItemCreateManyGroupInputEnvelope
-    connect?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-  }
-
-  export type SettingUncheckedCreateNestedManyWithoutGroupInput = {
-    create?: XOR<SettingCreateWithoutGroupInput, SettingUncheckedCreateWithoutGroupInput> | SettingCreateWithoutGroupInput[] | SettingUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutGroupInput | SettingCreateOrConnectWithoutGroupInput[]
-    createMany?: SettingCreateManyGroupInputEnvelope
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-  }
-
-  export type SettingGroupUpdateOneWithoutChildrenNestedInput = {
-    create?: XOR<SettingGroupCreateWithoutChildrenInput, SettingGroupUncheckedCreateWithoutChildrenInput>
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutChildrenInput
-    upsert?: SettingGroupUpsertWithoutChildrenInput
-    disconnect?: SettingGroupWhereInput | boolean
-    delete?: SettingGroupWhereInput | boolean
-    connect?: SettingGroupWhereUniqueInput
-    update?: XOR<XOR<SettingGroupUpdateToOneWithWhereWithoutChildrenInput, SettingGroupUpdateWithoutChildrenInput>, SettingGroupUncheckedUpdateWithoutChildrenInput>
-  }
-
-  export type SettingGroupUpdateManyWithoutParentNestedInput = {
-    create?: XOR<SettingGroupCreateWithoutParentInput, SettingGroupUncheckedCreateWithoutParentInput> | SettingGroupCreateWithoutParentInput[] | SettingGroupUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutParentInput | SettingGroupCreateOrConnectWithoutParentInput[]
-    upsert?: SettingGroupUpsertWithWhereUniqueWithoutParentInput | SettingGroupUpsertWithWhereUniqueWithoutParentInput[]
-    createMany?: SettingGroupCreateManyParentInputEnvelope
-    set?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    disconnect?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    delete?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    connect?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    update?: SettingGroupUpdateWithWhereUniqueWithoutParentInput | SettingGroupUpdateWithWhereUniqueWithoutParentInput[]
-    updateMany?: SettingGroupUpdateManyWithWhereWithoutParentInput | SettingGroupUpdateManyWithWhereWithoutParentInput[]
-    deleteMany?: SettingGroupScalarWhereInput | SettingGroupScalarWhereInput[]
-  }
-
-  export type SettingItemUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<SettingItemCreateWithoutGroupInput, SettingItemUncheckedCreateWithoutGroupInput> | SettingItemCreateWithoutGroupInput[] | SettingItemUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingItemCreateOrConnectWithoutGroupInput | SettingItemCreateOrConnectWithoutGroupInput[]
-    upsert?: SettingItemUpsertWithWhereUniqueWithoutGroupInput | SettingItemUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: SettingItemCreateManyGroupInputEnvelope
-    set?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    disconnect?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    delete?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    connect?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    update?: SettingItemUpdateWithWhereUniqueWithoutGroupInput | SettingItemUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: SettingItemUpdateManyWithWhereWithoutGroupInput | SettingItemUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: SettingItemScalarWhereInput | SettingItemScalarWhereInput[]
-  }
-
-  export type SettingUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<SettingCreateWithoutGroupInput, SettingUncheckedCreateWithoutGroupInput> | SettingCreateWithoutGroupInput[] | SettingUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutGroupInput | SettingCreateOrConnectWithoutGroupInput[]
-    upsert?: SettingUpsertWithWhereUniqueWithoutGroupInput | SettingUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: SettingCreateManyGroupInputEnvelope
-    set?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    disconnect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    delete?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    update?: SettingUpdateWithWhereUniqueWithoutGroupInput | SettingUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: SettingUpdateManyWithWhereWithoutGroupInput | SettingUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: SettingScalarWhereInput | SettingScalarWhereInput[]
-  }
-
-  export type SettingGroupUncheckedUpdateManyWithoutParentNestedInput = {
-    create?: XOR<SettingGroupCreateWithoutParentInput, SettingGroupUncheckedCreateWithoutParentInput> | SettingGroupCreateWithoutParentInput[] | SettingGroupUncheckedCreateWithoutParentInput[]
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutParentInput | SettingGroupCreateOrConnectWithoutParentInput[]
-    upsert?: SettingGroupUpsertWithWhereUniqueWithoutParentInput | SettingGroupUpsertWithWhereUniqueWithoutParentInput[]
-    createMany?: SettingGroupCreateManyParentInputEnvelope
-    set?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    disconnect?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    delete?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    connect?: SettingGroupWhereUniqueInput | SettingGroupWhereUniqueInput[]
-    update?: SettingGroupUpdateWithWhereUniqueWithoutParentInput | SettingGroupUpdateWithWhereUniqueWithoutParentInput[]
-    updateMany?: SettingGroupUpdateManyWithWhereWithoutParentInput | SettingGroupUpdateManyWithWhereWithoutParentInput[]
-    deleteMany?: SettingGroupScalarWhereInput | SettingGroupScalarWhereInput[]
-  }
-
-  export type SettingItemUncheckedUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<SettingItemCreateWithoutGroupInput, SettingItemUncheckedCreateWithoutGroupInput> | SettingItemCreateWithoutGroupInput[] | SettingItemUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingItemCreateOrConnectWithoutGroupInput | SettingItemCreateOrConnectWithoutGroupInput[]
-    upsert?: SettingItemUpsertWithWhereUniqueWithoutGroupInput | SettingItemUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: SettingItemCreateManyGroupInputEnvelope
-    set?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    disconnect?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    delete?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    connect?: SettingItemWhereUniqueInput | SettingItemWhereUniqueInput[]
-    update?: SettingItemUpdateWithWhereUniqueWithoutGroupInput | SettingItemUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: SettingItemUpdateManyWithWhereWithoutGroupInput | SettingItemUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: SettingItemScalarWhereInput | SettingItemScalarWhereInput[]
-  }
-
-  export type SettingUncheckedUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<SettingCreateWithoutGroupInput, SettingUncheckedCreateWithoutGroupInput> | SettingCreateWithoutGroupInput[] | SettingUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: SettingCreateOrConnectWithoutGroupInput | SettingCreateOrConnectWithoutGroupInput[]
-    upsert?: SettingUpsertWithWhereUniqueWithoutGroupInput | SettingUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: SettingCreateManyGroupInputEnvelope
-    set?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    disconnect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    delete?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    connect?: SettingWhereUniqueInput | SettingWhereUniqueInput[]
-    update?: SettingUpdateWithWhereUniqueWithoutGroupInput | SettingUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: SettingUpdateManyWithWhereWithoutGroupInput | SettingUpdateManyWithWhereWithoutGroupInput[]
-    deleteMany?: SettingScalarWhereInput | SettingScalarWhereInput[]
-  }
-
-  export type SettingGroupCreateNestedOneWithoutItemsInput = {
-    create?: XOR<SettingGroupCreateWithoutItemsInput, SettingGroupUncheckedCreateWithoutItemsInput>
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutItemsInput
-    connect?: SettingGroupWhereUniqueInput
-  }
-
-  export type SettingGroupUpdateOneRequiredWithoutItemsNestedInput = {
-    create?: XOR<SettingGroupCreateWithoutItemsInput, SettingGroupUncheckedCreateWithoutItemsInput>
-    connectOrCreate?: SettingGroupCreateOrConnectWithoutItemsInput
-    upsert?: SettingGroupUpsertWithoutItemsInput
-    connect?: SettingGroupWhereUniqueInput
-    update?: XOR<XOR<SettingGroupUpdateToOneWithWhereWithoutItemsInput, SettingGroupUpdateWithoutItemsInput>, SettingGroupUncheckedUpdateWithoutItemsInput>
-  }
-
   export type AccountCreateNestedOneWithoutUserSettingsInput = {
     create?: XOR<AccountCreateWithoutUserSettingsInput, AccountUncheckedCreateWithoutUserSettingsInput>
     connectOrCreate?: AccountCreateOrConnectWithoutUserSettingsInput
@@ -127325,64 +119483,6 @@ export namespace Prisma {
     create: XOR<ScheduleStatisticCreateWithoutAccountInput, ScheduleStatisticUncheckedCreateWithoutAccountInput>
   }
 
-  export type SettingCreateWithoutAccountInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    deviceId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    group?: SettingGroupCreateNestedOneWithoutSettingsInput
-  }
-
-  export type SettingUncheckedCreateWithoutAccountInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    deviceId?: string | null
-    groupId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingCreateOrConnectWithoutAccountInput = {
-    where: SettingWhereUniqueInput
-    create: XOR<SettingCreateWithoutAccountInput, SettingUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SettingCreateManyAccountInputEnvelope = {
-    data: SettingCreateManyAccountInput | SettingCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
   export type TaskFolderCreateWithoutAccountInput = {
     id: string
     name: string
@@ -127637,95 +119737,19 @@ export namespace Prisma {
   }
 
   export type UserSettingCreateWithoutAccountInput = {
-    id: string
+    id?: string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    appearanceAccentColor?: string
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: string | null
-    appearanceFontSize?: string
-    appearanceTheme?: string
-    experimentalEnabled?: boolean
-    experimentalFeatures?: string
-    localeCurrency?: string
-    localeDateFormat?: string
-    localeLanguage?: string
-    localeTimeFormat?: string
-    localeTimezone?: string
-    localeWeekStartsOn?: number
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: string
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: string
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: number
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: string
-    workflowDefaultScheduleView?: string
-    workflowDefaultTaskView?: string
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: string
-    editorFontSize?: number
-    editorTabSize?: number
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: string
-    sidebarCollapsed?: boolean
   }
 
   export type UserSettingUncheckedCreateWithoutAccountInput = {
-    id: string
+    id?: string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    appearanceAccentColor?: string
-    appearanceCompactMode?: boolean
-    appearanceFontFamily?: string | null
-    appearanceFontSize?: string
-    appearanceTheme?: string
-    experimentalEnabled?: boolean
-    experimentalFeatures?: string
-    localeCurrency?: string
-    localeDateFormat?: string
-    localeLanguage?: string
-    localeTimeFormat?: string
-    localeTimezone?: string
-    localeWeekStartsOn?: number
-    privacyAllowSearchByEmail?: boolean
-    privacyAllowSearchByPhone?: boolean
-    privacyProfileVisibility?: string
-    privacyShareUsageData?: boolean
-    privacyShowOnlineStatus?: boolean
-    shortcutsCustom?: string
-    shortcutsEnabled?: boolean
-    workflowAutoSave?: boolean
-    workflowAutoSaveInterval?: number
-    workflowConfirmBeforeDelete?: boolean
-    workflowDefaultGoalView?: string
-    workflowDefaultScheduleView?: string
-    workflowDefaultTaskView?: string
-    notificationEmail?: boolean
-    notificationPush?: boolean
-    notificationInApp?: boolean
-    notificationSound?: boolean
-    editorTheme?: string
-    editorFontSize?: number
-    editorTabSize?: number
-    editorWordWrap?: boolean
-    editorLineNumbers?: boolean
-    editorMinimap?: boolean
-    startPage?: string
-    sidebarCollapsed?: boolean
   }
 
   export type UserSettingCreateOrConnectWithoutAccountInput = {
@@ -129089,50 +121113,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SettingUpsertWithWhereUniqueWithoutAccountInput = {
-    where: SettingWhereUniqueInput
-    update: XOR<SettingUpdateWithoutAccountInput, SettingUncheckedUpdateWithoutAccountInput>
-    create: XOR<SettingCreateWithoutAccountInput, SettingUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SettingUpdateWithWhereUniqueWithoutAccountInput = {
-    where: SettingWhereUniqueInput
-    data: XOR<SettingUpdateWithoutAccountInput, SettingUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SettingUpdateManyWithWhereWithoutAccountInput = {
-    where: SettingScalarWhereInput
-    data: XOR<SettingUpdateManyMutationInput, SettingUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type SettingScalarWhereInput = {
-    AND?: SettingScalarWhereInput | SettingScalarWhereInput[]
-    OR?: SettingScalarWhereInput[]
-    NOT?: SettingScalarWhereInput | SettingScalarWhereInput[]
-    id?: StringFilter<"Setting"> | string
-    key?: StringFilter<"Setting"> | string
-    name?: StringFilter<"Setting"> | string
-    description?: StringNullableFilter<"Setting"> | string | null
-    valueType?: StringFilter<"Setting"> | string
-    value?: StringFilter<"Setting"> | string
-    defaultValue?: StringFilter<"Setting"> | string
-    scope?: StringFilter<"Setting"> | string
-    identityId?: StringNullableFilter<"Setting"> | string | null
-    deviceId?: StringNullableFilter<"Setting"> | string | null
-    groupId?: StringNullableFilter<"Setting"> | string | null
-    validation?: StringNullableFilter<"Setting"> | string | null
-    ui?: StringNullableFilter<"Setting"> | string | null
-    isEncrypted?: BoolFilter<"Setting"> | boolean
-    isReadOnly?: BoolFilter<"Setting"> | boolean
-    isSystemSetting?: BoolFilter<"Setting"> | boolean
-    syncConfig?: StringNullableFilter<"Setting"> | string | null
-    historyData?: StringFilter<"Setting"> | string
-    version?: IntFilter<"Setting"> | number
-    createdAt?: DateTimeFilter<"Setting"> | Date | string
-    updatedAt?: DateTimeFilter<"Setting"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"Setting"> | Date | string | null
-  }
-
   export type TaskFolderUpsertWithWhereUniqueWithoutAccountInput = {
     where: TaskFolderWhereUniqueInput
     update: XOR<TaskFolderUpdateWithoutAccountInput, TaskFolderUncheckedUpdateWithoutAccountInput>
@@ -129355,94 +121335,18 @@ export namespace Prisma {
 
   export type UserSettingUpdateWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    appearanceAccentColor?: StringFieldUpdateOperationsInput | string
-    appearanceCompactMode?: BoolFieldUpdateOperationsInput | boolean
-    appearanceFontFamily?: NullableStringFieldUpdateOperationsInput | string | null
-    appearanceFontSize?: StringFieldUpdateOperationsInput | string
-    appearanceTheme?: StringFieldUpdateOperationsInput | string
-    experimentalEnabled?: BoolFieldUpdateOperationsInput | boolean
-    experimentalFeatures?: StringFieldUpdateOperationsInput | string
-    localeCurrency?: StringFieldUpdateOperationsInput | string
-    localeDateFormat?: StringFieldUpdateOperationsInput | string
-    localeLanguage?: StringFieldUpdateOperationsInput | string
-    localeTimeFormat?: StringFieldUpdateOperationsInput | string
-    localeTimezone?: StringFieldUpdateOperationsInput | string
-    localeWeekStartsOn?: IntFieldUpdateOperationsInput | number
-    privacyAllowSearchByEmail?: BoolFieldUpdateOperationsInput | boolean
-    privacyAllowSearchByPhone?: BoolFieldUpdateOperationsInput | boolean
-    privacyProfileVisibility?: StringFieldUpdateOperationsInput | string
-    privacyShareUsageData?: BoolFieldUpdateOperationsInput | boolean
-    privacyShowOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    shortcutsCustom?: StringFieldUpdateOperationsInput | string
-    shortcutsEnabled?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSave?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSaveInterval?: IntFieldUpdateOperationsInput | number
-    workflowConfirmBeforeDelete?: BoolFieldUpdateOperationsInput | boolean
-    workflowDefaultGoalView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultScheduleView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultTaskView?: StringFieldUpdateOperationsInput | string
-    notificationEmail?: BoolFieldUpdateOperationsInput | boolean
-    notificationPush?: BoolFieldUpdateOperationsInput | boolean
-    notificationInApp?: BoolFieldUpdateOperationsInput | boolean
-    notificationSound?: BoolFieldUpdateOperationsInput | boolean
-    editorTheme?: StringFieldUpdateOperationsInput | string
-    editorFontSize?: IntFieldUpdateOperationsInput | number
-    editorTabSize?: IntFieldUpdateOperationsInput | number
-    editorWordWrap?: BoolFieldUpdateOperationsInput | boolean
-    editorLineNumbers?: BoolFieldUpdateOperationsInput | boolean
-    editorMinimap?: BoolFieldUpdateOperationsInput | boolean
-    startPage?: StringFieldUpdateOperationsInput | string
-    sidebarCollapsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserSettingUncheckedUpdateWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
+    preferences?: JsonNullValueInput | InputJsonValue
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    appearanceAccentColor?: StringFieldUpdateOperationsInput | string
-    appearanceCompactMode?: BoolFieldUpdateOperationsInput | boolean
-    appearanceFontFamily?: NullableStringFieldUpdateOperationsInput | string | null
-    appearanceFontSize?: StringFieldUpdateOperationsInput | string
-    appearanceTheme?: StringFieldUpdateOperationsInput | string
-    experimentalEnabled?: BoolFieldUpdateOperationsInput | boolean
-    experimentalFeatures?: StringFieldUpdateOperationsInput | string
-    localeCurrency?: StringFieldUpdateOperationsInput | string
-    localeDateFormat?: StringFieldUpdateOperationsInput | string
-    localeLanguage?: StringFieldUpdateOperationsInput | string
-    localeTimeFormat?: StringFieldUpdateOperationsInput | string
-    localeTimezone?: StringFieldUpdateOperationsInput | string
-    localeWeekStartsOn?: IntFieldUpdateOperationsInput | number
-    privacyAllowSearchByEmail?: BoolFieldUpdateOperationsInput | boolean
-    privacyAllowSearchByPhone?: BoolFieldUpdateOperationsInput | boolean
-    privacyProfileVisibility?: StringFieldUpdateOperationsInput | string
-    privacyShareUsageData?: BoolFieldUpdateOperationsInput | boolean
-    privacyShowOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    shortcutsCustom?: StringFieldUpdateOperationsInput | string
-    shortcutsEnabled?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSave?: BoolFieldUpdateOperationsInput | boolean
-    workflowAutoSaveInterval?: IntFieldUpdateOperationsInput | number
-    workflowConfirmBeforeDelete?: BoolFieldUpdateOperationsInput | boolean
-    workflowDefaultGoalView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultScheduleView?: StringFieldUpdateOperationsInput | string
-    workflowDefaultTaskView?: StringFieldUpdateOperationsInput | string
-    notificationEmail?: BoolFieldUpdateOperationsInput | boolean
-    notificationPush?: BoolFieldUpdateOperationsInput | boolean
-    notificationInApp?: BoolFieldUpdateOperationsInput | boolean
-    notificationSound?: BoolFieldUpdateOperationsInput | boolean
-    editorTheme?: StringFieldUpdateOperationsInput | string
-    editorFontSize?: IntFieldUpdateOperationsInput | number
-    editorTabSize?: IntFieldUpdateOperationsInput | number
-    editorWordWrap?: BoolFieldUpdateOperationsInput | boolean
-    editorLineNumbers?: BoolFieldUpdateOperationsInput | boolean
-    editorMinimap?: BoolFieldUpdateOperationsInput | boolean
-    startPage?: StringFieldUpdateOperationsInput | string
-    sidebarCollapsed?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type NotificationUpsertWithWhereUniqueWithoutAccountInput = {
@@ -129849,7 +121753,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -129907,7 +121810,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -130007,7 +121909,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -130065,7 +121966,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -130219,7 +122119,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -130277,7 +122176,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -130351,7 +122249,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -130409,7 +122306,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -130467,7 +122363,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -130525,7 +122420,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -130599,7 +122493,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -130657,7 +122550,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -130715,7 +122607,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -130773,7 +122664,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -130847,7 +122737,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -130905,7 +122794,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -130963,7 +122851,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -131021,7 +122908,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -131095,7 +122981,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -131153,7 +123038,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -131348,7 +123232,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -131406,7 +123289,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -131962,7 +123844,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -132020,7 +123901,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -132200,7 +124080,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -132258,7 +124137,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -132425,7 +124303,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -132483,7 +124360,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -132608,7 +124484,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -132666,7 +124541,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -132952,7 +124826,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -133010,7 +124883,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -133100,7 +124972,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -133158,7 +125029,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -133254,7 +125124,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -133312,7 +125181,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -133441,7 +125309,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -133499,7 +125366,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -133648,7 +125514,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -133706,7 +125571,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -133827,7 +125691,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -133885,7 +125748,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -133980,7 +125842,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -134038,7 +125899,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -134145,7 +126005,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -134203,7 +126062,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -134300,7 +126158,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -134358,7 +126215,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -134790,7 +126646,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -134848,7 +126703,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -135167,7 +127021,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -135225,7 +127078,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -135466,7 +127318,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -135524,7 +127375,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -136384,7 +128234,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -136442,7 +128291,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -136583,7 +128431,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -136641,7 +128488,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -136772,7 +128618,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -136830,7 +128675,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -136904,7 +128748,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -136962,7 +128805,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -137020,7 +128862,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -137078,7 +128919,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -137152,7 +128992,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -137210,7 +129049,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -137478,7 +129316,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -137536,7 +129373,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -137669,7 +129505,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -137727,7 +129562,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -138108,7 +129942,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -138166,7 +129999,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -138355,7 +130187,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -138413,7 +130244,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -138518,7 +130348,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -138576,7 +130405,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -138744,7 +130572,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -138802,7 +130629,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -138876,7 +130702,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -138934,7 +130759,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -139097,7 +130921,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -139155,7 +130978,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -139492,7 +131314,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -139550,7 +131371,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -139624,7 +131444,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -139682,7 +131501,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -139924,7 +131742,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -139982,7 +131799,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -140056,7 +131872,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -140114,7 +131929,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -140172,7 +131986,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -140230,7 +132043,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -140486,7 +132298,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -140544,7 +132355,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -141658,7 +133468,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -141716,7 +133525,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -141841,7 +133649,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -141899,7 +133706,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -142014,7 +133820,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -142072,7 +133877,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -142146,7 +133950,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -142204,7 +134007,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -142262,7 +134064,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -142320,7 +134121,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -142394,7 +134194,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -142452,7 +134251,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -142510,7 +134308,6 @@ export namespace Prisma {
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -142568,7 +134365,6 @@ export namespace Prisma {
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -142642,7 +134438,6 @@ export namespace Prisma {
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -142700,7 +134495,6 @@ export namespace Prisma {
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -142790,7 +134584,6 @@ export namespace Prisma {
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -142848,7 +134641,6 @@ export namespace Prisma {
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -142953,7 +134745,6 @@ export namespace Prisma {
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -143011,7 +134802,6 @@ export namespace Prisma {
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -143225,7 +135015,6 @@ export namespace Prisma {
     schedules?: ScheduleCreateNestedManyWithoutAccountInput
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -143283,7 +135072,6 @@ export namespace Prisma {
     schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -143357,7 +135145,6 @@ export namespace Prisma {
     schedules?: ScheduleUpdateManyWithoutAccountNestedInput
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -143415,7 +135202,6 @@ export namespace Prisma {
     schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -143431,724 +135217,6 @@ export namespace Prisma {
     syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
     syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
     pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountCreateWithoutSettings_Input = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutSettings_Input = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutSettings_Input = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutSettings_Input, AccountUncheckedCreateWithoutSettings_Input>
-  }
-
-  export type SettingGroupCreateWithoutSettingsInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    parent?: SettingGroupCreateNestedOneWithoutChildrenInput
-    children?: SettingGroupCreateNestedManyWithoutParentInput
-    items?: SettingItemCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupUncheckedCreateWithoutSettingsInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    parentId?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    children?: SettingGroupUncheckedCreateNestedManyWithoutParentInput
-    items?: SettingItemUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupCreateOrConnectWithoutSettingsInput = {
-    where: SettingGroupWhereUniqueInput
-    create: XOR<SettingGroupCreateWithoutSettingsInput, SettingGroupUncheckedCreateWithoutSettingsInput>
-  }
-
-  export type AccountUpsertWithoutSettings_Input = {
-    update: XOR<AccountUpdateWithoutSettings_Input, AccountUncheckedUpdateWithoutSettings_Input>
-    create: XOR<AccountCreateWithoutSettings_Input, AccountUncheckedCreateWithoutSettings_Input>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutSettings_Input = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutSettings_Input, AccountUncheckedUpdateWithoutSettings_Input>
-  }
-
-  export type AccountUpdateWithoutSettings_Input = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutSettings_Input = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type SettingGroupUpsertWithoutSettingsInput = {
-    update: XOR<SettingGroupUpdateWithoutSettingsInput, SettingGroupUncheckedUpdateWithoutSettingsInput>
-    create: XOR<SettingGroupCreateWithoutSettingsInput, SettingGroupUncheckedCreateWithoutSettingsInput>
-    where?: SettingGroupWhereInput
-  }
-
-  export type SettingGroupUpdateToOneWithWhereWithoutSettingsInput = {
-    where?: SettingGroupWhereInput
-    data: XOR<SettingGroupUpdateWithoutSettingsInput, SettingGroupUncheckedUpdateWithoutSettingsInput>
-  }
-
-  export type SettingGroupUpdateWithoutSettingsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    parent?: SettingGroupUpdateOneWithoutChildrenNestedInput
-    children?: SettingGroupUpdateManyWithoutParentNestedInput
-    items?: SettingItemUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUncheckedUpdateWithoutSettingsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    children?: SettingGroupUncheckedUpdateManyWithoutParentNestedInput
-    items?: SettingItemUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupCreateWithoutChildrenInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    parent?: SettingGroupCreateNestedOneWithoutChildrenInput
-    items?: SettingItemCreateNestedManyWithoutGroupInput
-    settings?: SettingCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupUncheckedCreateWithoutChildrenInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    parentId?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    items?: SettingItemUncheckedCreateNestedManyWithoutGroupInput
-    settings?: SettingUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupCreateOrConnectWithoutChildrenInput = {
-    where: SettingGroupWhereUniqueInput
-    create: XOR<SettingGroupCreateWithoutChildrenInput, SettingGroupUncheckedCreateWithoutChildrenInput>
-  }
-
-  export type SettingGroupCreateWithoutParentInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    children?: SettingGroupCreateNestedManyWithoutParentInput
-    items?: SettingItemCreateNestedManyWithoutGroupInput
-    settings?: SettingCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupUncheckedCreateWithoutParentInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    children?: SettingGroupUncheckedCreateNestedManyWithoutParentInput
-    items?: SettingItemUncheckedCreateNestedManyWithoutGroupInput
-    settings?: SettingUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupCreateOrConnectWithoutParentInput = {
-    where: SettingGroupWhereUniqueInput
-    create: XOR<SettingGroupCreateWithoutParentInput, SettingGroupUncheckedCreateWithoutParentInput>
-  }
-
-  export type SettingGroupCreateManyParentInputEnvelope = {
-    data: SettingGroupCreateManyParentInput | SettingGroupCreateManyParentInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SettingItemCreateWithoutGroupInput = {
-    id: string
-    settingKey: string
-    order?: number
-    isVisible?: boolean
-    customLabel?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingItemUncheckedCreateWithoutGroupInput = {
-    id: string
-    settingKey: string
-    order?: number
-    isVisible?: boolean
-    customLabel?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingItemCreateOrConnectWithoutGroupInput = {
-    where: SettingItemWhereUniqueInput
-    create: XOR<SettingItemCreateWithoutGroupInput, SettingItemUncheckedCreateWithoutGroupInput>
-  }
-
-  export type SettingItemCreateManyGroupInputEnvelope = {
-    data: SettingItemCreateManyGroupInput | SettingItemCreateManyGroupInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SettingCreateWithoutGroupInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    deviceId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    account?: AccountCreateNestedOneWithoutSettings_Input
-  }
-
-  export type SettingUncheckedCreateWithoutGroupInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    identityId?: string | null
-    deviceId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingCreateOrConnectWithoutGroupInput = {
-    where: SettingWhereUniqueInput
-    create: XOR<SettingCreateWithoutGroupInput, SettingUncheckedCreateWithoutGroupInput>
-  }
-
-  export type SettingCreateManyGroupInputEnvelope = {
-    data: SettingCreateManyGroupInput | SettingCreateManyGroupInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SettingGroupUpsertWithoutChildrenInput = {
-    update: XOR<SettingGroupUpdateWithoutChildrenInput, SettingGroupUncheckedUpdateWithoutChildrenInput>
-    create: XOR<SettingGroupCreateWithoutChildrenInput, SettingGroupUncheckedCreateWithoutChildrenInput>
-    where?: SettingGroupWhereInput
-  }
-
-  export type SettingGroupUpdateToOneWithWhereWithoutChildrenInput = {
-    where?: SettingGroupWhereInput
-    data: XOR<SettingGroupUpdateWithoutChildrenInput, SettingGroupUncheckedUpdateWithoutChildrenInput>
-  }
-
-  export type SettingGroupUpdateWithoutChildrenInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    parent?: SettingGroupUpdateOneWithoutChildrenNestedInput
-    items?: SettingItemUpdateManyWithoutGroupNestedInput
-    settings?: SettingUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUncheckedUpdateWithoutChildrenInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    items?: SettingItemUncheckedUpdateManyWithoutGroupNestedInput
-    settings?: SettingUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUpsertWithWhereUniqueWithoutParentInput = {
-    where: SettingGroupWhereUniqueInput
-    update: XOR<SettingGroupUpdateWithoutParentInput, SettingGroupUncheckedUpdateWithoutParentInput>
-    create: XOR<SettingGroupCreateWithoutParentInput, SettingGroupUncheckedCreateWithoutParentInput>
-  }
-
-  export type SettingGroupUpdateWithWhereUniqueWithoutParentInput = {
-    where: SettingGroupWhereUniqueInput
-    data: XOR<SettingGroupUpdateWithoutParentInput, SettingGroupUncheckedUpdateWithoutParentInput>
-  }
-
-  export type SettingGroupUpdateManyWithWhereWithoutParentInput = {
-    where: SettingGroupScalarWhereInput
-    data: XOR<SettingGroupUpdateManyMutationInput, SettingGroupUncheckedUpdateManyWithoutParentInput>
-  }
-
-  export type SettingGroupScalarWhereInput = {
-    AND?: SettingGroupScalarWhereInput | SettingGroupScalarWhereInput[]
-    OR?: SettingGroupScalarWhereInput[]
-    NOT?: SettingGroupScalarWhereInput | SettingGroupScalarWhereInput[]
-    id?: StringFilter<"SettingGroup"> | string
-    key?: StringFilter<"SettingGroup"> | string
-    name?: StringFilter<"SettingGroup"> | string
-    description?: StringNullableFilter<"SettingGroup"> | string | null
-    parentId?: StringNullableFilter<"SettingGroup"> | string | null
-    order?: IntFilter<"SettingGroup"> | number
-    icon?: StringNullableFilter<"SettingGroup"> | string | null
-    isCollapsed?: BoolFilter<"SettingGroup"> | boolean
-    version?: IntFilter<"SettingGroup"> | number
-    createdAt?: DateTimeFilter<"SettingGroup"> | Date | string
-    updatedAt?: DateTimeFilter<"SettingGroup"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"SettingGroup"> | Date | string | null
-  }
-
-  export type SettingItemUpsertWithWhereUniqueWithoutGroupInput = {
-    where: SettingItemWhereUniqueInput
-    update: XOR<SettingItemUpdateWithoutGroupInput, SettingItemUncheckedUpdateWithoutGroupInput>
-    create: XOR<SettingItemCreateWithoutGroupInput, SettingItemUncheckedCreateWithoutGroupInput>
-  }
-
-  export type SettingItemUpdateWithWhereUniqueWithoutGroupInput = {
-    where: SettingItemWhereUniqueInput
-    data: XOR<SettingItemUpdateWithoutGroupInput, SettingItemUncheckedUpdateWithoutGroupInput>
-  }
-
-  export type SettingItemUpdateManyWithWhereWithoutGroupInput = {
-    where: SettingItemScalarWhereInput
-    data: XOR<SettingItemUpdateManyMutationInput, SettingItemUncheckedUpdateManyWithoutGroupInput>
-  }
-
-  export type SettingItemScalarWhereInput = {
-    AND?: SettingItemScalarWhereInput | SettingItemScalarWhereInput[]
-    OR?: SettingItemScalarWhereInput[]
-    NOT?: SettingItemScalarWhereInput | SettingItemScalarWhereInput[]
-    id?: StringFilter<"SettingItem"> | string
-    groupId?: StringFilter<"SettingItem"> | string
-    settingKey?: StringFilter<"SettingItem"> | string
-    order?: IntFilter<"SettingItem"> | number
-    isVisible?: BoolFilter<"SettingItem"> | boolean
-    customLabel?: StringNullableFilter<"SettingItem"> | string | null
-    version?: IntFilter<"SettingItem"> | number
-    createdAt?: DateTimeFilter<"SettingItem"> | Date | string
-    updatedAt?: DateTimeFilter<"SettingItem"> | Date | string
-    deletedAt?: DateTimeNullableFilter<"SettingItem"> | Date | string | null
-  }
-
-  export type SettingUpsertWithWhereUniqueWithoutGroupInput = {
-    where: SettingWhereUniqueInput
-    update: XOR<SettingUpdateWithoutGroupInput, SettingUncheckedUpdateWithoutGroupInput>
-    create: XOR<SettingCreateWithoutGroupInput, SettingUncheckedCreateWithoutGroupInput>
-  }
-
-  export type SettingUpdateWithWhereUniqueWithoutGroupInput = {
-    where: SettingWhereUniqueInput
-    data: XOR<SettingUpdateWithoutGroupInput, SettingUncheckedUpdateWithoutGroupInput>
-  }
-
-  export type SettingUpdateManyWithWhereWithoutGroupInput = {
-    where: SettingScalarWhereInput
-    data: XOR<SettingUpdateManyMutationInput, SettingUncheckedUpdateManyWithoutGroupInput>
-  }
-
-  export type SettingGroupCreateWithoutItemsInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    parent?: SettingGroupCreateNestedOneWithoutChildrenInput
-    children?: SettingGroupCreateNestedManyWithoutParentInput
-    settings?: SettingCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupUncheckedCreateWithoutItemsInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    parentId?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    children?: SettingGroupUncheckedCreateNestedManyWithoutParentInput
-    settings?: SettingUncheckedCreateNestedManyWithoutGroupInput
-  }
-
-  export type SettingGroupCreateOrConnectWithoutItemsInput = {
-    where: SettingGroupWhereUniqueInput
-    create: XOR<SettingGroupCreateWithoutItemsInput, SettingGroupUncheckedCreateWithoutItemsInput>
-  }
-
-  export type SettingGroupUpsertWithoutItemsInput = {
-    update: XOR<SettingGroupUpdateWithoutItemsInput, SettingGroupUncheckedUpdateWithoutItemsInput>
-    create: XOR<SettingGroupCreateWithoutItemsInput, SettingGroupUncheckedCreateWithoutItemsInput>
-    where?: SettingGroupWhereInput
-  }
-
-  export type SettingGroupUpdateToOneWithWhereWithoutItemsInput = {
-    where?: SettingGroupWhereInput
-    data: XOR<SettingGroupUpdateWithoutItemsInput, SettingGroupUncheckedUpdateWithoutItemsInput>
-  }
-
-  export type SettingGroupUpdateWithoutItemsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    parent?: SettingGroupUpdateOneWithoutChildrenNestedInput
-    children?: SettingGroupUpdateManyWithoutParentNestedInput
-    settings?: SettingUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUncheckedUpdateWithoutItemsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    children?: SettingGroupUncheckedUpdateManyWithoutParentNestedInput
-    settings?: SettingUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type AccountCreateWithoutUserSettingsInput = {
@@ -144192,7 +135260,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -144250,7 +135317,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -144324,7 +135390,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -144382,7 +135447,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -144440,7 +135504,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -144498,7 +135561,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -144628,7 +135690,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -144686,7 +135747,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -144760,7 +135820,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -144818,7 +135877,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -144981,7 +136039,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -145039,7 +136096,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -145162,7 +136218,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -145220,7 +136275,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -145345,7 +136399,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -145403,7 +136456,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -145518,7 +136570,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -145576,7 +136627,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -145650,7 +136700,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -145708,7 +136757,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -145766,7 +136814,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
     taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
@@ -145824,7 +136871,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
     taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
@@ -145996,7 +137042,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
     taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
@@ -146054,7 +137099,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
     taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
@@ -146128,7 +137172,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
     taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
@@ -146186,7 +137229,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
     taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
@@ -146614,7 +137656,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
     taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
@@ -146672,7 +137713,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
     taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
@@ -146972,7 +138012,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
@@ -147030,7 +138069,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
@@ -147197,7 +138235,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
@@ -147255,7 +138292,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
@@ -147988,7 +139024,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    settings_?: SettingCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
@@ -148046,7 +139081,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
     scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
     scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    settings_?: SettingUncheckedCreateNestedManyWithoutAccountInput
     taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
     taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
     taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
@@ -148120,7 +139154,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -148178,7 +139211,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -148522,30 +139554,6 @@ export namespace Prisma {
     tags?: string
     priority: string
     timeout?: number | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingCreateManyAccountInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    deviceId?: string | null
-    groupId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
     version?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -149805,78 +140813,6 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type SettingUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    group?: SettingGroupUpdateOneWithoutSettingsNestedInput
-  }
-
-  export type SettingUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type TaskFolderUpdateWithoutAccountInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -150816,7 +141752,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
@@ -150874,7 +141809,6 @@ export namespace Prisma {
     scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
     scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
     scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    settings_?: SettingUncheckedUpdateManyWithoutAccountNestedInput
     taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
     taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
     taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
@@ -152821,212 +143755,6 @@ export namespace Prisma {
     error?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SettingGroupCreateManyParentInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    order?: number
-    icon?: string | null
-    isCollapsed?: boolean
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingItemCreateManyGroupInput = {
-    id: string
-    settingKey: string
-    order?: number
-    isVisible?: boolean
-    customLabel?: string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingCreateManyGroupInput = {
-    id: string
-    key: string
-    name: string
-    description?: string | null
-    valueType: string
-    value: string
-    defaultValue: string
-    scope: string
-    identityId?: string | null
-    deviceId?: string | null
-    validation?: string | null
-    ui?: string | null
-    isEncrypted?: boolean
-    isReadOnly?: boolean
-    isSystemSetting?: boolean
-    syncConfig?: string | null
-    historyData?: string
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-  }
-
-  export type SettingGroupUpdateWithoutParentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    children?: SettingGroupUpdateManyWithoutParentNestedInput
-    items?: SettingItemUpdateManyWithoutGroupNestedInput
-    settings?: SettingUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUncheckedUpdateWithoutParentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    children?: SettingGroupUncheckedUpdateManyWithoutParentNestedInput
-    items?: SettingItemUncheckedUpdateManyWithoutGroupNestedInput
-    settings?: SettingUncheckedUpdateManyWithoutGroupNestedInput
-  }
-
-  export type SettingGroupUncheckedUpdateManyWithoutParentInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    order?: IntFieldUpdateOperationsInput | number
-    icon?: NullableStringFieldUpdateOperationsInput | string | null
-    isCollapsed?: BoolFieldUpdateOperationsInput | boolean
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingItemUpdateWithoutGroupInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingItemUncheckedUpdateWithoutGroupInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingItemUncheckedUpdateManyWithoutGroupInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    settingKey?: StringFieldUpdateOperationsInput | string
-    order?: IntFieldUpdateOperationsInput | number
-    isVisible?: BoolFieldUpdateOperationsInput | boolean
-    customLabel?: NullableStringFieldUpdateOperationsInput | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingUpdateWithoutGroupInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    account?: AccountUpdateOneWithoutSettings_NestedInput
-  }
-
-  export type SettingUncheckedUpdateWithoutGroupInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    identityId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type SettingUncheckedUpdateManyWithoutGroupInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    valueType?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    defaultValue?: StringFieldUpdateOperationsInput | string
-    scope?: StringFieldUpdateOperationsInput | string
-    identityId?: NullableStringFieldUpdateOperationsInput | string | null
-    deviceId?: NullableStringFieldUpdateOperationsInput | string | null
-    validation?: NullableStringFieldUpdateOperationsInput | string | null
-    ui?: NullableStringFieldUpdateOperationsInput | string | null
-    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
-    isReadOnly?: BoolFieldUpdateOperationsInput | boolean
-    isSystemSetting?: BoolFieldUpdateOperationsInput | boolean
-    syncConfig?: NullableStringFieldUpdateOperationsInput | string | null
-    historyData?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SyncSessionCreateManyProfileInput = {

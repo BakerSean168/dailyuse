@@ -235,16 +235,6 @@ exports.Prisma.DashboardConfigScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.AppConfigScalarFieldEnum = {
-  id: 'id',
-  version: 'version',
-  config: 'config',
-  description: 'description',
-  isCurrent: 'isCurrent',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.AuthIdentityScalarFieldEnum = {
   id: 'id',
   status: 'status',
@@ -1032,104 +1022,13 @@ exports.Prisma.ScheduleStatisticScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.SettingScalarFieldEnum = {
-  id: 'id',
-  key: 'key',
-  name: 'name',
-  description: 'description',
-  valueType: 'valueType',
-  value: 'value',
-  defaultValue: 'defaultValue',
-  scope: 'scope',
-  identityId: 'identityId',
-  deviceId: 'deviceId',
-  groupId: 'groupId',
-  validation: 'validation',
-  ui: 'ui',
-  isEncrypted: 'isEncrypted',
-  isReadOnly: 'isReadOnly',
-  isSystemSetting: 'isSystemSetting',
-  syncConfig: 'syncConfig',
-  historyData: 'historyData',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.SettingGroupScalarFieldEnum = {
-  id: 'id',
-  key: 'key',
-  name: 'name',
-  description: 'description',
-  parentId: 'parentId',
-  order: 'order',
-  icon: 'icon',
-  isCollapsed: 'isCollapsed',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.SettingItemScalarFieldEnum = {
-  id: 'id',
-  groupId: 'groupId',
-  settingKey: 'settingKey',
-  order: 'order',
-  isVisible: 'isVisible',
-  customLabel: 'customLabel',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
 exports.Prisma.UserSettingScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
+  preferences: 'preferences',
   version: 'version',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt',
-  appearanceAccentColor: 'appearanceAccentColor',
-  appearanceCompactMode: 'appearanceCompactMode',
-  appearanceFontFamily: 'appearanceFontFamily',
-  appearanceFontSize: 'appearanceFontSize',
-  appearanceTheme: 'appearanceTheme',
-  experimentalEnabled: 'experimentalEnabled',
-  experimentalFeatures: 'experimentalFeatures',
-  localeCurrency: 'localeCurrency',
-  localeDateFormat: 'localeDateFormat',
-  localeLanguage: 'localeLanguage',
-  localeTimeFormat: 'localeTimeFormat',
-  localeTimezone: 'localeTimezone',
-  localeWeekStartsOn: 'localeWeekStartsOn',
-  privacyAllowSearchByEmail: 'privacyAllowSearchByEmail',
-  privacyAllowSearchByPhone: 'privacyAllowSearchByPhone',
-  privacyProfileVisibility: 'privacyProfileVisibility',
-  privacyShareUsageData: 'privacyShareUsageData',
-  privacyShowOnlineStatus: 'privacyShowOnlineStatus',
-  shortcutsCustom: 'shortcutsCustom',
-  shortcutsEnabled: 'shortcutsEnabled',
-  workflowAutoSave: 'workflowAutoSave',
-  workflowAutoSaveInterval: 'workflowAutoSaveInterval',
-  workflowConfirmBeforeDelete: 'workflowConfirmBeforeDelete',
-  workflowDefaultGoalView: 'workflowDefaultGoalView',
-  workflowDefaultScheduleView: 'workflowDefaultScheduleView',
-  workflowDefaultTaskView: 'workflowDefaultTaskView',
-  notificationEmail: 'notificationEmail',
-  notificationPush: 'notificationPush',
-  notificationInApp: 'notificationInApp',
-  notificationSound: 'notificationSound',
-  editorTheme: 'editorTheme',
-  editorFontSize: 'editorFontSize',
-  editorTabSize: 'editorTabSize',
-  editorWordWrap: 'editorWordWrap',
-  editorLineNumbers: 'editorLineNumbers',
-  editorMinimap: 'editorMinimap',
-  startPage: 'startPage',
-  sidebarCollapsed: 'sidebarCollapsed'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SyncProfileScalarFieldEnum = {
@@ -1393,7 +1292,6 @@ exports.Prisma.ModelName = {
   AiProviderConfig: 'AiProviderConfig',
   KnowledgeGenerationTask: 'KnowledgeGenerationTask',
   DashboardConfig: 'DashboardConfig',
-  AppConfig: 'AppConfig',
   AuthIdentity: 'AuthIdentity',
   AuthIdentifier: 'AuthIdentifier',
   AuthOAuthBinding: 'AuthOAuthBinding',
@@ -1442,9 +1340,6 @@ exports.Prisma.ModelName = {
   ScheduleTask: 'ScheduleTask',
   ScheduleExecution: 'ScheduleExecution',
   ScheduleStatistic: 'ScheduleStatistic',
-  Setting: 'Setting',
-  SettingGroup: 'SettingGroup',
-  SettingItem: 'SettingItem',
   UserSetting: 'UserSetting',
   SyncProfile: 'SyncProfile',
   SyncSession: 'SyncSession',

@@ -73,7 +73,7 @@ export function registerSettingRoutes(
       method: 'patch',
       path: '/:category',
       summary: '按分类更新用户设置',
-      request: { body: { content: { 'application/json': { schema: z.record(z.unknown()) } } } },
+      request: { body: { content: { 'application/json': { schema: z.record(z.string(), z.unknown()) } } } },
       responses: {
         200: successResponse(UserSettingResponseSchema, '更新成功'),
         400: errorResponse('参数错误'),

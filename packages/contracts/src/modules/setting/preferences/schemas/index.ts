@@ -18,15 +18,15 @@ import { ExperimentalSchema } from './experimental.schema';
 import { UISchema } from './ui.schema';
 
 export const UserPreferencesSchema = z.object({
-  appearance: AppearanceSchema.default({}),
-  locale: LocaleSchema.default({}),
-  workflow: WorkflowSchema.default({}),
-  privacy: PrivacySchema.default({}),
-  notification: NotificationSchema.default({}),
-  editor: EditorSchema.default({}),
-  shortcuts: ShortcutsSchema.default({}),
-  experimental: ExperimentalSchema.default({}),
-  ui: UISchema.default({}),
+  appearance: AppearanceSchema.default(() => AppearanceSchema.parse({})),
+  locale: LocaleSchema.default(() => LocaleSchema.parse({})),
+  workflow: WorkflowSchema.default(() => WorkflowSchema.parse({})),
+  privacy: PrivacySchema.default(() => PrivacySchema.parse({})),
+  notification: NotificationSchema.default(() => NotificationSchema.parse({})),
+  editor: EditorSchema.default(() => EditorSchema.parse({})),
+  shortcuts: ShortcutsSchema.default(() => ShortcutsSchema.parse({})),
+  experimental: ExperimentalSchema.default(() => ExperimentalSchema.parse({})),
+  ui: UISchema.default(() => UISchema.parse({})),
 });
 
 /** Map of category name → category Zod schema */
