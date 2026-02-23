@@ -114,6 +114,7 @@
   },
   "devDependencies": {
     "@nx/eslint": "22.2.0",
+    "@nx/eslint-plugin": "22.2.0",
     "@nx/js": "22.2.0",
     "@nx/storybook": "22.2.0",
     "@nx/vite": "22.2.0",

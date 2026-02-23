@@ -5,7 +5,8 @@
   "projectType": "library",
   "tags": [
     "scope:reminder",
-    "type:lib"
+    "type:lib",
+    "layer:domain"
   ],
   "targets": {
     "build": {

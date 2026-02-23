@@ -6,6 +6,8 @@ import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 // @ts-ignore
 import pluginReactHooks from 'eslint-plugin-react-hooks';
+// @ts-ignore
+import nxPlugin from '@nx/eslint-plugin';
 
 export default tseslint.config([
   {
@@ -66,6 +68,42 @@ export default tseslint.config([
       'vue/no-v-text-v-html-on-component': 'warn',
       'vue/no-use-v-if-with-v-for': 'warn',
       'vue/no-unused-vars': 'warn',
+    },
+  },
+  // ============ Module Boundary Enforcement ============
+  // Dependency direction: shared ← infra ← domain ← ui
+  {
+    plugins: { '@nx': nxPlugin },
+    rules: {
+      '@nx/enforce-module-boundaries': [
+        'error',
+        {
+          enforceBuildableLibDependency: true,
+          allow: [],
+          depConstraints: [
+            {
+              // shared: pure primitives, cannot depend on anything else
+              sourceTag: 'layer:shared',
+              onlyDependOnLibsWithTags: ['layer:shared'],
+            },
+            {
+              // infra: technical plumbing, depends on shared only
+              sourceTag: 'layer:infra',
+              onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra'],
+            },
+            {
+              // domain: business logic, depends on shared + infra (for repos/db)
+              sourceTag: 'layer:domain',
+              onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:domain'],
+            },
+            {
+              // ui: presentation, can consume all layers
+              sourceTag: 'layer:ui',
+              onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:domain', 'layer:ui'],
+            },
+          ],
+        },
+      ],
     },
   },
 ], storybook.configs["flat/recommended"], storybook.configs["flat/recommended"]);

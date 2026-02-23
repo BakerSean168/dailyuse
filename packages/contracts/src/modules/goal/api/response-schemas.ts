@@ -70,7 +70,7 @@ export const KeyResultSnapshotDTOSchema = z.object({
 export const GoalReviewClientDTOSchema: z.ZodType<GoalReviewClientDTO> = z.object({
   id: brandedId<GoalReviewId>(),
   goalId: brandedId<GoalId>(),
-  type: z.nativeEnum(ReviewType),
+  type: z.enum(ReviewType),
   rating: z.number(),
   summary: z.string(),
   achievements: z.string().nullable(),

@@ -3,6 +3,6 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/assets/src",
   "projectType": "library",
-  "tags": ["scope:shared", "type:lib", "type:assets"],
+  "tags": ["scope:shared", "type:lib", "type:assets", "layer:shared"],
   "targets": {}
 }
