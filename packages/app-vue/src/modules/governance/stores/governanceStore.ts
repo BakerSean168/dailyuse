@@ -106,7 +106,7 @@ export const useGovernanceStore = defineStore('governance', {
       return {
         status: state.filter.status ?? undefined,
         severity: state.filter.severity ?? undefined,
-        tags: state.filter.tags.length > 0 ? this.filter.tags : undefined,
+        tags: state.filter.tags.length > 0 ? state.filter.tags : undefined,
         page: state.pagination.page,
         pageSize: state.pagination.pageSize,
       };
