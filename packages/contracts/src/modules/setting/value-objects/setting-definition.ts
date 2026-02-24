@@ -11,7 +11,7 @@ export const SettingScope = {
 
 export type SettingScope = (typeof SettingScope)[keyof typeof SettingScope];
 
-export interface SettingDefinition<T = any> {
+export interface SettingDefinition<T = unknown> {
   key: string;
   name: string;
   description?: string;
@@ -33,7 +33,7 @@ export interface SettingDefinition<T = any> {
 export interface SettingDefinitionDTO {
   key: string;
   category: SettingCategory;
-  defaultValue: any;
+  defaultValue: unknown;
   isSyncable: boolean;
   description?: string;
 }

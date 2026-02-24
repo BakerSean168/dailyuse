@@ -32,7 +32,7 @@ export interface TreeNode {
     tags?: string[];
     created?: Date;
     updated?: Date;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

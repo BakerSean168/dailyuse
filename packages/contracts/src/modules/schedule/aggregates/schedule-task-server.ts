@@ -88,7 +88,7 @@ export interface ScheduleTaskPersistenceDTO {
   retryableStatuses: string; // JSON array string
 
   // ========== TaskMetadata 值对象（展开字段）==========
-  payload: any | null; // JSON (复杂数据保留)
+  payload: unknown; // JSON (复杂数据保留)
   tags: string; // JSON array string
   priority: string;
   timeout: number | null;
@@ -211,7 +211,7 @@ export interface ScheduleTaskExecutedEvent {
     sourceEntityId: string;
     status: ExecutionStatus;
     duration: number;
-    payload: Record<string, any>; // 传递给业务模块的数据
+    payload: Record<string, unknown>; // 传递给业务模块的数据
   };
 }
 

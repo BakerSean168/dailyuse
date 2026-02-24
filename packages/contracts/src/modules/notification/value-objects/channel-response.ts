@@ -11,7 +11,7 @@
 export interface ChannelResponse {
   messageId: string | null;
   statusCode: number | null;
-  data?: any;
+  data?: unknown;
 }
 
 // ============ DTO 定义 ============
@@ -22,7 +22,7 @@ export interface ChannelResponse {
 export interface ChannelResponseDTO {
   messageId: string | null;
   statusCode: number | null;
-  data?: any;
+  data?: unknown;
 }
 
 /**

@@ -10,6 +10,7 @@ import type {
   LogEntry,
   LogLevelString,
   LogLevel,
+  LogMetadata,
 } from './types';
 import { LogLevel as LogLevelEnum } from './types';
 
@@ -47,35 +48,35 @@ export class Logger implements ILogger {
   /**
    * DEBUG 级别日志
    */
-  debug(message: string, ...meta: any[]): void {
+  debug(message: string, ...meta: unknown[]): void {
     this.log('debug', message, undefined, ...meta);
   }
 
   /**
    * INFO 级别日志
    */
-  info(message: string, ...meta: any[]): void {
+  info(message: string, ...meta: unknown[]): void {
     this.log('info', message, undefined, ...meta);
   }
 
   /**
    * HTTP 级别日志
    */
-  http(message: string, ...meta: any[]): void {
+  http(message: string, ...meta: unknown[]): void {
     this.log('http', message, undefined, ...meta);
   }
 
   /**
    * WARN 级别日志
    */
-  warn(message: string, ...meta: any[]): void {
+  warn(message: string, ...meta: unknown[]): void {
     this.log('warn', message, undefined, ...meta);
   }
 
   /**
    * ERROR 级别日志
    */
-  error(message: string, error?: Error | any, ...meta: any[]): void {
+  error(message: string, error?: unknown, ...meta: unknown[]): void {
     this.log('error', message, error, ...meta);
   }
 
@@ -93,7 +94,7 @@ export class Logger implements ILogger {
   /**
    * 核心日志方法
    */
-  private log(level: LogLevelString, message: string, error?: Error | any, ...meta: any[]): void {
+  private log(level: LogLevelString, message: string, error?: unknown, ...meta: unknown[]): void {
     if (!this.enabled) {
       return;
     }
@@ -127,7 +128,12 @@ export class Logger implements ILogger {
           name: error.name,
         };
       } else {
-        entry.error = error;
+        const isObject = typeof error === 'object' && error !== null;
+        const errorObj = isObject ? (error as Record<string, unknown>) : {};
+        entry.error = {
+          message: isObject && 'message' in errorObj ? String(errorObj.message) : String(error),
+          ...errorObj,
+        };
       }
     }
 
@@ -153,12 +159,12 @@ export class Logger implements ILogger {
   /**
    * 合并元数据
    */
-  private mergeMetadata(meta: any[]): any {
-    if (meta.length === 1 && typeof meta[0] === 'object') {
-      return meta[0];
+  private mergeMetadata(meta: unknown[]): LogMetadata {
+    if (meta.length === 1 && typeof meta[0] === 'object' && meta[0] !== null) {
+      return meta[0] as LogMetadata;
     }
 
-    return meta.reduce((acc, item, index) => {
+    return meta.reduce<LogMetadata>((acc, item, index) => {
       acc[`arg${index}`] = item;
       return acc;
     }, {});

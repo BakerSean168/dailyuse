@@ -24,7 +24,7 @@ export abstract class DomainError extends Error {
    * 错误上下文信息（用于调试和日志记录）
    * @example { tag: 'invalid-tag', maxLength: 50 }
    */
-  public readonly context?: Record<string, any>;
+  public readonly context?: Record<string, unknown>;
 
   /**
    * HTTP 状态码（用于 API 响应）
@@ -57,7 +57,7 @@ export abstract class DomainError extends Error {
   constructor(
     code: string,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     httpStatus: number = 400,
     options?: {
       operationId?: string;
@@ -87,7 +87,7 @@ export abstract class DomainError extends Error {
     code: string;
     message: string;
     timestamp: number;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
     operationId?: string;
     step?: string;
   } {
@@ -148,7 +148,7 @@ export abstract class DomainError extends Error {
         message: current.message,
         stack: current.stack,
       });
-      current = (current as any).originalError;
+      current = (current as Error & { originalError?: Error }).originalError;
     }
 
     return chain;
@@ -171,7 +171,7 @@ export abstract class DomainError extends Error {
  * ```
  */
 export class BusinessRuleViolationError extends DomainError {
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super('BUSINESS_ERROR', message, context, 400);
   }
 }
@@ -246,7 +246,7 @@ export class ForbiddenError extends DomainError {
  * ```
  */
 export class ConflictError extends DomainError {
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super('CONFLICT', message, context, 409);
   }
 }
@@ -261,7 +261,7 @@ export class ConflictError extends DomainError {
  * ```
  */
 export class InternalServerError extends DomainError {
-  constructor(message: string = 'Internal server error', context?: Record<string, any>) {
+  constructor(message: string = 'Internal server error', context?: Record<string, unknown>) {
     super('INTERNAL_ERROR', message, context, 500);
   }
 }
@@ -286,7 +286,7 @@ export function extractErrorInfo(error: unknown): {
   code: string;
   message: string;
   httpStatus: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 } {
   if (isDomainError(error)) {
     return {

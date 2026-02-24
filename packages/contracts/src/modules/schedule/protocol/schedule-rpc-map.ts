@@ -20,17 +20,17 @@ export type ScheduleRpcMap = {
   'schedule:resolve-conflict': [{ resolution: string; newStartTime?: number; newEndTime?: number; newDuration?: number }, CalendarEntryClientDTO];
   
   // === Schedule Task Operations ===
-  'schedule-task:create': [any, ScheduleTaskClientDTO];
-  'schedule-task:update': [any, ScheduleTaskClientDTO];
+  'schedule-task:create': [unknown, ScheduleTaskClientDTO];
+  'schedule-task:update': [unknown, ScheduleTaskClientDTO];
   'schedule-task:delete': [{ taskId: string }, ScheduleOperationSuccessResponseDTO];
-  'schedule-task:query': [ScheduleTaskQueryParamsDTO, any];
+  'schedule-task:query': [ScheduleTaskQueryParamsDTO, unknown];
   'schedule-task:enable': [{ taskId: string }, ScheduleTaskClientDTO];
   'schedule-task:disable': [{ taskId: string }, ScheduleTaskClientDTO];
-  'schedule-task:update-config': [any, ScheduleTaskClientDTO];
-  'schedule-task:update-metadata': [any, ScheduleTaskClientDTO];
+  'schedule-task:update-config': [unknown, ScheduleTaskClientDTO];
+  'schedule-task:update-metadata': [unknown, ScheduleTaskClientDTO];
   
   // === Schedule Execution Records ===
   'schedule-execution:query': [ScheduleExecutionQueryParamsDTO, { items: ScheduleExecutionClientDTO[]; total: number; page: number; limit: number }];
-  'schedule-execution:get-stats': [{ taskId: string }, any];
+  'schedule-execution:get-stats': [{ taskId: string }, unknown];
 };
 

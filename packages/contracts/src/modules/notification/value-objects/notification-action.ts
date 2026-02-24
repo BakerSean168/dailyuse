@@ -14,7 +14,7 @@ export interface NotificationAction {
   id: string;
   label: string;
   type: NotificationActionType;
-  payload?: any;
+  payload?: unknown;
 }
 
 // ============ DTO 定义 ============
@@ -26,7 +26,7 @@ export interface NotificationActionDTO {
   id: string;
   label: string;
   type: NotificationActionType;
-  payload?: any;
+  payload?: unknown;
 }
 
 /**

@@ -27,7 +27,7 @@ export class HttpTransport implements LogTransport {
   private headers: Record<string, string>;
   
   private buffer: LogEntry[] = [];
-  private timer: any = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(options: HttpTransportOptions) {
     this.level = options.level ?? 3; // INFO

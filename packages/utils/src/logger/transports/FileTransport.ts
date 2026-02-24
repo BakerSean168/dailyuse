@@ -19,7 +19,7 @@ export class FileTransport implements LogTransport {
   level: LogLevel;
   private filename: string;
   private json: boolean;
-  private fs: any;
+  private fs: typeof import('fs') | null = null;
   private isNode: boolean;
 
   constructor(options: FileTransportOptions) {
@@ -77,7 +77,7 @@ export class FileTransport implements LogTransport {
       }
 
       // 异步追加到文件
-      this.fs.appendFile(this.filename, logLine, (err: any) => {
+      this.fs.appendFile(this.filename, logLine, (err: NodeJS.ErrnoException | null) => {
         if (err) {
           console.error('[FileTransport] Failed to write log:', err);
         }

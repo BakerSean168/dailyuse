@@ -13,19 +13,37 @@ export interface EnvironmentConfig {
   logLevel: 'debug' | 'info' | 'warn' | 'error' | 'silent';
 }
 
+/** 跨平台环境变量访问类型 */
+type GlobalWithEnv = typeof globalThis & {
+  import?: { meta?: { env?: Record<string, string | boolean> } };
+  process?: { env?: Record<string, string> };
+};
+
+function getEnv(): Record<string, string | boolean | undefined> {
+  return (globalThis as GlobalWithEnv).import?.meta?.env
+    ?? (globalThis as GlobalWithEnv).process?.env
+    ?? {};
+}
+
 /**
  * 获取当前环境配置
  */
 export function getEnvironmentConfig(): EnvironmentConfig {
-  // 安全地访问环境变量，在构建时避免 TypeScript 错误
-  const env = (globalThis as any).import?.meta?.env || (globalThis as any).process?.env || {};
+  const env = getEnv();
+
+  const validLogLevels: EnvironmentConfig['logLevel'][] = ['debug', 'info', 'warn', 'error', 'silent'];
+  const rawLogLevel = env.VITE_LOG_LEVEL;
+  const logLevel: EnvironmentConfig['logLevel'] =
+    typeof rawLogLevel === 'string' && (validLogLevels as string[]).includes(rawLogLevel)
+      ? (rawLogLevel as EnvironmentConfig['logLevel'])
+      : 'info';
 
   const config: EnvironmentConfig = {
-    apiBaseUrl: env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
-    uploadBaseUrl: env.VITE_UPLOAD_BASE_URL || 'http://localhost:3000/api/v1/upload',
+    apiBaseUrl: (env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:3000/api/v1',
+    uploadBaseUrl: (env.VITE_UPLOAD_BASE_URL as string | undefined) || 'http://localhost:3000/api/v1/upload',
     timeout: Number(env.VITE_API_TIMEOUT) || 10000,
     enableMock: env.VITE_ENABLE_MOCK === 'true',
-    logLevel: env.VITE_LOG_LEVEL || 'info',
+    logLevel,
   };
 
   return config;
@@ -44,22 +62,22 @@ export function createAuthHeader(token: string): Record<string, string> {
  * 检查是否为开发环境
  */
 export function isDevelopment(): boolean {
-  const env = (globalThis as any).import?.meta?.env || (globalThis as any).process?.env || {};
-  return env.DEV || env.NODE_ENV === 'development';
+  const env = getEnv();
+  return env.DEV === true || env.DEV === 'true' || env.NODE_ENV === 'development';
 }
 
 /**
  * 检查是否为生产环境
  */
 export function isProduction(): boolean {
-  const env = (globalThis as any).import?.meta?.env || (globalThis as any).process?.env || {};
-  return env.PROD || env.NODE_ENV === 'production';
+  const env = getEnv();
+  return env.PROD === true || env.PROD === 'true' || env.NODE_ENV === 'production';
 }
 
 /**
  * 安全地解析JSON
  */
-export function safeParseJSON<T = any>(jsonString: string, fallback: T): T {
+export function safeParseJSON<T = unknown>(jsonString: string, fallback: T): T {
   try {
     return JSON.parse(jsonString);
   } catch {
@@ -104,7 +122,7 @@ export function generateRequestId(): string {
 /**
  * 创建查询字符串
  */
-export function createQueryString(params: Record<string, any>): string {
+export function createQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -137,29 +155,35 @@ export function exponentialBackoff(attempt: number, baseDelay: number = 1000): n
 /**
  * 检查是否为网络错误
  */
-export function isNetworkError(error: any): boolean {
+export function isNetworkError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const err = error as Record<string, unknown>;
   return (
-    !error.response ||
-    error.code === 'NETWORK_ERROR' ||
-    error.code === 'ECONNABORTED' ||
-    error.message === 'Network Error'
+    !err['response'] ||
+    err['code'] === 'NETWORK_ERROR' ||
+    err['code'] === 'ECONNABORTED' ||
+    err['message'] === 'Network Error'
   );
 }
 
 /**
  * 检查是否应该重试
  */
-export function shouldRetry(error: any, attempt: number, maxAttempts: number): boolean {
+export function shouldRetry(error: unknown, attempt: number, maxAttempts: number): boolean {
   if (attempt >= maxAttempts) return false;
 
   // 网络错误重试
   if (isNetworkError(error)) return true;
 
+  if (typeof error !== 'object' || error === null) return false;
+  const err = error as Record<string, unknown>;
+  const response = err['response'] as Record<string, unknown> | undefined;
+
   // 5xx服务器错误重试
-  if (error.response?.status >= 500) return true;
+  if (typeof response?.['status'] === 'number' && response['status'] >= 500) return true;
 
   // 429 限流错误重试
-  if (error.response?.status === 429) return true;
+  if (response?.['status'] === 429) return true;
 
   return false;
 }
@@ -167,17 +191,17 @@ export function shouldRetry(error: any, attempt: number, maxAttempts: number): b
 /**
  * 创建缓存键
  */
-export function createCacheKey(method: string, url: string, params?: any): string {
+export function createCacheKey(method: string, url: string, params?: Record<string, unknown>): string {
   const baseKey = `${method.toUpperCase()}:${url}`;
 
   if (!params) return baseKey;
 
   const sortedParams = Object.keys(params)
     .sort()
-    .reduce((result, key) => {
+    .reduce<Record<string, unknown>>((result, key) => {
       result[key] = params[key];
       return result;
-    }, {} as any);
+    }, {});
 
   return `${baseKey}:${JSON.stringify(sortedParams)}`;
 }
@@ -210,17 +234,17 @@ export function cleanExpiredCache<T>(
  */
 export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') return obj;
-  if (obj instanceof Date) return new Date(obj.getTime()) as any;
-  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as any;
+  if (obj instanceof Date) return new Date(obj.getTime()) as unknown as T;
+  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as unknown as T;
 
   if (typeof obj === 'object') {
-    const clonedObj = {} as any;
+    const clonedObj = {} as Record<string, unknown>;
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        clonedObj[key] = deepClone(obj[key]);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        clonedObj[key] = deepClone((obj as Record<string, unknown>)[key]);
       }
     }
-    return clonedObj;
+    return clonedObj as unknown as T;
   }
 
   return obj;

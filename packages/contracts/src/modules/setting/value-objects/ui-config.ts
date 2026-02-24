@@ -26,7 +26,7 @@ export interface UIConfigDTO {
   order: number;
   visible: boolean;
   disabled: boolean;
-  options: Array<{ label: string; value: any }> | null;
+  options: Array<{ label: string; value: unknown }> | null;
   min: number | null;
   max: number | null;
   step: number | null;
@@ -44,7 +44,7 @@ export interface UIConfigClientDTO {
   order: number;
   visible: boolean;
   disabled: boolean;
-  options: Array<{ label: string; value: any }> | null;
+  options: Array<{ label: string; value: unknown }> | null;
   min: number | null;
   max: number | null;
   step: number | null;
@@ -91,7 +91,7 @@ export interface UIConfig {
   order: number;
   visible: boolean;
   disabled: boolean;
-  options: Array<{ label: string; value: any }> | null;
+  options: Array<{ label: string; value: unknown }> | null;
   min: number | null;
   max: number | null;
   step: number | null;
@@ -109,7 +109,7 @@ export interface UIConfigClient {
   order: number;
   visible: boolean;
   disabled: boolean;
-  options: Array<{ label: string; value: any }> | null;
+  options: Array<{ label: string; value: unknown }> | null;
   min: number | null;
   max: number | null;
   step: number | null;

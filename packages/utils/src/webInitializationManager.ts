@@ -19,7 +19,7 @@ import { InitializationManager, InitializationPhase, type InitializationTask } f
 export type ModuleLoader = () => Promise<{ 
   registerInitializationTasks?: () => void;
   register?: () => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }>;
 
 /**
@@ -413,14 +413,14 @@ export class WebInitializationManager {
   /**
    * 执行初始化阶段（在加载模块后）
    */
-  async executePhase(phase: InitializationPhase, context?: any): Promise<void> {
+  async executePhase(phase: InitializationPhase, context?: unknown): Promise<void> {
     return this.baseManager.executePhase(phase, context);
   }
 
   /**
    * 清理初始化阶段
    */
-  async cleanupPhase(phase: InitializationPhase, context?: any): Promise<void> {
+  async cleanupPhase(phase: InitializationPhase, context?: unknown): Promise<void> {
     return this.baseManager.cleanupPhase(phase, context);
   }
 

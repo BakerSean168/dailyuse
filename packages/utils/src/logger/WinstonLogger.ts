@@ -70,23 +70,23 @@ export class WinstonLogger implements ILogger {
     });
   }
 
-  debug(message: string, ...meta: any[]): void {
+  debug(message: string, ...meta: unknown[]): void {
     this.logger.debug(message, ...meta);
   }
 
-  info(message: string, ...meta: any[]): void {
+  info(message: string, ...meta: unknown[]): void {
     this.logger.info(message, ...meta);
   }
 
-  http(message: string, ...meta: any[]): void {
+  http(message: string, ...meta: unknown[]): void {
     this.logger.http(message, ...meta);
   }
 
-  warn(message: string, ...meta: any[]): void {
+  warn(message: string, ...meta: unknown[]): void {
     this.logger.warn(message, ...meta);
   }
 
-  error(message: string, error?: Error | any, ...meta: any[]): void {
+  error(message: string, error?: unknown, ...meta: unknown[]): void {
     if (error instanceof Error) {
       this.logger.error(message, { ...meta, error: { message: error.message, stack: error.stack, name: error.name } });
     } else {
