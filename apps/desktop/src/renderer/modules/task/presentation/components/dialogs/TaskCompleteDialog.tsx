@@ -433,7 +433,7 @@ export function TaskCompleteDialog({
                 type="number"
                 value={duration || ''}
                 onChange={(e) => setDuration(e.target.value ? Number(e.target.value) : null)}
-                placeholder="记录实际花费的时"
+                placeholder="记录实际花费的时间"
                 min={0}
                 step={5}
                 className="flex-1"

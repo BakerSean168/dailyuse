@@ -17,3 +17,6 @@ export * from './protocol';
 
 // ============ API ============
 export * from './api';
+
+// ============ DTOs ============
+export * from './dtos';

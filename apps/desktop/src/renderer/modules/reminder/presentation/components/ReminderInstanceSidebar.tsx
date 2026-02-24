@@ -115,7 +115,7 @@ function formatGroupDate(dateString: string): string {
     return '明天';
   }
   
-  return format(date, 'M月d'EEEE', { locale: zhCN });
+  return format(date, 'M月d日 EEEE', { locale: zhCN });
 }
 
 function isOverdue(dateInput: string | Date): boolean {

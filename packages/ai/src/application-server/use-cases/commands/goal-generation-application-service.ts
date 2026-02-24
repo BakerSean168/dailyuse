@@ -9,9 +9,8 @@ import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
 import type {
   GeneratedGoalDraft,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerateGoalsRes,
+  GenerateKeyResultsResultDTO,
   KeyResultPreview,
   GoalCategory,
   AIUsageQuotaServerDTO,
@@ -72,7 +71,7 @@ export class GoalGenerationApplicationService {
    */
   async generateGoal(
     params: GenerateGoalParams,
-  ): Promise<GenerateGoalResponse | GenerateGoalWithKRsResponse> {
+  ): Promise<GenerateGoalsRes> {
     const { identityId, idea, includeKeyResults, keyResultCount } = params;
 
     logger.info('Generating goal from idea', {
@@ -92,16 +91,16 @@ export class GoalGenerationApplicationService {
       suggestedEndDate: Date.now() + 30 * 24 * 60 * 60 * 1000,
     };
 
-    const baseResponse: GenerateGoalResponse = {
+    const baseResponse: GenerateGoalsRes = {
       goal: goalDraft,
       tokenUsage: {
         promptTokens: 10,
         completionTokens: 20,
         totalTokens: 30,
       },
-      generatedAt: Date.now(),
-      providerUsed: 'default',
-      modelUsed: 'default',
+      // generatedAt: Date.now(), // Not in DTO
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
 
     // If key results requested, add them
@@ -109,7 +108,7 @@ export class GoalGenerationApplicationService {
       return {
         ...baseResponse,
         keyResults: [] as KeyResultPreview[],
-      } as GenerateGoalWithKRsResponse;
+      };
     }
 
     return baseResponse;
@@ -120,7 +119,7 @@ export class GoalGenerationApplicationService {
    */
   async generateGoalWithKRs(
     params: GenerateGoalParams,
-  ): Promise<GenerateGoalWithKRsResponse> {
+  ): Promise<GenerateGoalsRes> {
     const { identityId, idea } = params;
 
     logger.info('Generating goal with key results', {
@@ -146,16 +145,15 @@ export class GoalGenerationApplicationService {
         completionTokens: 25,
         totalTokens: 40,
       },
-      generatedAt: Date.now(),
-      providerUsed: 'default',
-      modelUsed: 'default',
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
   }
 
   /**
    * Generate key results
    */
-  async generateKeyResults(params: GenerateKeyResultsParams): Promise<GenerateKeyResultsResponse> {
+  async generateKeyResults(params: GenerateKeyResultsParams): Promise<GenerateKeyResultsResultDTO> {
     const { identityId, goalTitle } = params;
 
     logger.info('Generating key results', {
@@ -170,7 +168,8 @@ export class GoalGenerationApplicationService {
         completionTokens: 20,
         totalTokens: 30,
       },
-      generatedAt: Date.now(),
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
   }
 }

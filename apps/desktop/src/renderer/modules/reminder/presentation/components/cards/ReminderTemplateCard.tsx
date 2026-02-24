@@ -81,7 +81,7 @@ function formatDate(dateValue?: string | number | Date): string {
     : typeof dateValue === 'string' 
       ? new Date(dateValue) 
       : dateValue;
-  return format(date, 'yyyy年MM月dd'HH:mm', { locale: zhCN });
+  return format(date, 'yyyy年MM月dd日 HH:mm', { locale: zhCN });
 }
 
 function getStatusInfo(template: ReminderTemplateClientDTO) {

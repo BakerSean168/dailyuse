@@ -167,7 +167,7 @@ export function GoalRecordDialog({
             <Label htmlFor="note">备注说明</Label>
             <Textarea
               id="note"
-              placeholder="添加关于此次记录的详细说".."
+              placeholder="添加关于此次记录的详细说明..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}

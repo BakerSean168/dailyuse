@@ -70,9 +70,9 @@ const initialFormData: FormData = {
 
 const priorityOptions = [
   { label: '最高(1)', value: '1' },
-  { label: ''(2)', value: '2' },
-  { label: ''(3)', value: '3' },
-  { label: ''(4)', value: '4' },
+  { label: '高(2)', value: '2' },
+  { label: '中(3)', value: '3' },
+  { label: '低(4)', value: '4' },
   { label: '最低(5)', value: '5' },
 ];
 
@@ -125,9 +125,9 @@ export function CreateScheduleDialog({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = '请输入标';
+      newErrors.title = '请输入标题';
     } else if (formData.title.length > 200) {
-      newErrors.title = '标题最'00个字';
+      newErrors.title = '标题最多200个字';
     }
 
     if (!formData.startDate) {

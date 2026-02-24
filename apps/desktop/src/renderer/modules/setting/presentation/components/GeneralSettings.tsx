@@ -109,16 +109,16 @@ export function GeneralSettings({
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>开机自</Label>
-              <p className="text-sm text-muted-foreground">系统启动时自动运行应</p>
+              <Label>开机自启</Label>
+              <p className="text-sm text-muted-foreground">系统启动时自动运行应用</p>
             </div>
             <Switch checked={autoStart} onCheckedChange={onAutoStartChange} />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>最小化到托</Label>
-              <p className="text-sm text-muted-foreground">关闭窗口时最小化到系统托</p>
+              <Label>最小化到托盘</Label>
+              <p className="text-sm text-muted-foreground">关闭窗口时最小化到系统托盘</p>
             </div>
             <Switch checked={minimizeToTray} onCheckedChange={onMinimizeToTrayChange} />
           </div>
@@ -181,7 +181,7 @@ export function GeneralSettings({
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>同步间隔</Label>
-              <p className="text-sm text-muted-foreground">自动同步的时间间隔（分钟</p>
+              <p className="text-sm text-muted-foreground">自动同步的时间间隔（分钟）</p>
             </div>
             <Select
               value={String(syncInterval)}
@@ -221,7 +221,7 @@ export function GeneralSettings({
                 <Input
                   value={shortcuts[key] || ''}
                   onChange={(e) => onShortcutChange(key, e.target.value)}
-                  placeholder="按下快捷".."
+                  placeholder="按下快捷键..."
                   className="w-40 text-center font-mono text-sm"
                   readOnly
                   onKeyDown={(e) => {

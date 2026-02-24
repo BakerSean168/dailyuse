@@ -36,6 +36,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  cn,
 } from '@dailyuse/ui-react-shadcn';
 
 // Components
@@ -229,7 +230,7 @@ export function KeyResultDetailView({
               </p>
             )}
             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <span>所属目标<</span>
+              <span>所属目标:</span>
               <Badge variant="outline" style={{ borderColor: goalColor, color: goalColor }}>
                 {goal.title}
               </Badge>

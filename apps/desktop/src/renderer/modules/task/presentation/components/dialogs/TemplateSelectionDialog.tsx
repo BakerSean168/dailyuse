@@ -81,7 +81,7 @@ const getRecurrenceLabel = (rule?: { frequency?: string; interval?: number }): s
   const typeLabel = typeMap[rule.frequency] || rule.frequency;
   
   if (interval === 1) return typeLabel;
-  return ``{interval}${typeLabel.slice(1)}`;
+  return `${interval}${typeLabel.slice(1)}`;
 };
 
 // ===================== 组件 =====================
@@ -204,7 +204,7 @@ export function TemplateSelectionDialog({
                             </p>
                           )}
 
-                          {/* 元信�?*/}
+                          {/* 元信息 */}
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                             {template.recurrenceRule && (
                               <div className="flex items-center gap-1">
@@ -216,7 +216,7 @@ export function TemplateSelectionDialog({
                             {template.goalBinding && (
                               <div className="flex items-center gap-1">
                                 <Target className="h-3 w-3" />
-                                <span>已关联目</span>
+                                <span>已关联目标</span>
                               </div>
                             )}
                           </div>
@@ -252,7 +252,7 @@ export function TemplateSelectionDialog({
           </Button>
           <Button onClick={handleSelect} disabled={!selectedTemplate}>
             <Check className="h-4 w-4 mr-2" />
-            选择此模�?
+            选择此模板
           </Button>
         </DialogFooter>
       </DialogContent>

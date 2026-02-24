@@ -146,7 +146,7 @@ export function TaskInstanceCard({
           <Clock className="h-3.5 w-3.5" />
           <span>
             {instance.isCompleted
-              ? `完成`${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
+              ? `完成于 ${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
               : getTimeLabel()}
           </span>
         </div>

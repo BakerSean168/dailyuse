@@ -43,7 +43,7 @@ interface ScheduleEventListProps {
 
 function formatDateTime(date: Date | number): string {
   const d = typeof date === 'number' ? new Date(date) : date;
-  return format(d, 'M月d'HH:mm', { locale: zhCN });
+  return format(d, 'M月d日 HH:mm', { locale: zhCN });
 }
 
 function getPriorityColor(priority?: number | null): string {

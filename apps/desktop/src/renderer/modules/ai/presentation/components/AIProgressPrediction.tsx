@@ -95,7 +95,7 @@ interface AIProgressPredictionProps {
 // Risk level configurations
 const riskConfig = {
   low: {
-    label: '低风',
+    label: '低风险',
     color: 'bg-green-100 text-green-700',
     icon: CheckCircle2,
     iconColor: 'text-green-500',
@@ -107,7 +107,7 @@ const riskConfig = {
     iconColor: 'text-yellow-500',
   },
   high: {
-    label: '高风',
+    label: '高风险',
     color: 'bg-red-100 text-red-700',
     icon: AlertTriangle,
     iconColor: 'text-red-500',
@@ -179,11 +179,11 @@ async function generatePrediction(
     const recommendations: string[] = [];
     if (riskLevel === 'high') {
       recommendations.push('建议增加每日投入时间');
-      recommendations.push('考虑缩减目标范围或延长截止日');
-      recommendations.push('识别并消除主要阻碍因');
+      recommendations.push('考虑缩减目标范围或延长截止日期');
+      recommendations.push('识别并消除主要阻碍因素');
     } else if (riskLevel === 'medium') {
-      recommendations.push('保持当前进度，稍微加');
-      recommendations.push('确保关键里程碑按时完');
+      recommendations.push('保持当前进度，稍微加油');
+      recommendations.push('确保关键里程碑按时完成');
     } else {
       recommendations.push('保持当前良好势头');
       if (trend === 'improving') {
@@ -219,10 +219,10 @@ async function generatePrediction(
     insights.push(`${summary.behindSchedule} 个目标需要立即关注，存在延期风险`);
   }
   if (summary.onTrack === predictions.length) {
-    insights.push('🎉 所有目标都在正轨上，继续保'');
+    insights.push('🎉 所有目标都在正轨上，继续保持');
   }
   const avgVelocity = predictions.reduce((sum, p) => sum + p.velocity, 0) / predictions.length;
-  insights.push(`平均日进` ${avgVelocity.toFixed(1)}%�?{avgVelocity > 3 ? '效率较高' : '建议提升效率'}`);
+  insights.push(`平均日进度 ${avgVelocity.toFixed(1)}% ${avgVelocity > 3 ? '效率较高' : '建议提升效率'}`);
 
   return {
     predictions,
@@ -286,8 +286,8 @@ function PredictionCard({ prediction, onViewGoal }: PredictionCardProps) {
           <Progress value={prediction.currentProgress} className="h-2" />
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">预测进度 (截止�?</span>
-            <span className={cn('font-medium', prediction.predictedProgress < 100 && 'text-yellow-600')}>
+            <span className="text-muted-foreground">预测进度 (截止时)</span>
+            <span className={cn('font-medium', prediction.predictedProgress < 100 ? 'text-yellow-600' : '')}>
               {prediction.predictedProgress}%
             </span>
           </div>
@@ -324,7 +324,7 @@ function PredictionCard({ prediction, onViewGoal }: PredictionCardProps) {
             <p className="text-xs font-medium mb-1">AI 建议:</p>
             {prediction.recommendations.slice(0, 2).map((rec, i) => (
               <p key={i} className="text-xs text-muted-foreground">
-                �?{rec}
+                • {rec}
               </p>
             ))}
           </div>
@@ -378,7 +378,7 @@ export function AIProgressPrediction({
           ) : (
             <Zap className="h-4 w-4" />
           )}
-          <span className="ml-2">{prediction ? '刷新预测' : '开始分'}</span>
+          <span className="ml-2">{prediction ? '刷新预测' : '开始分析'}</span>
         </Button>
       </div>
 
@@ -474,7 +474,7 @@ export function AIProgressPrediction({
 
           {/* Footer */}
           <p className="text-xs text-muted-foreground text-center">
-            预测生成�?{format(prediction.generatedAt, 'HH:mm:ss', { locale: zhCN })}
+            预测生成于 {format(prediction.generatedAt, 'HH:mm:ss', { locale: zhCN })}
             ，基于历史数据和 AI 分析
           </p>
         </>

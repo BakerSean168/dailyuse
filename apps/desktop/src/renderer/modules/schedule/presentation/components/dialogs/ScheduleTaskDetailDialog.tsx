@@ -214,7 +214,7 @@ export function ScheduleTaskDetailDialog({
                   <CardContent className="space-y-3">
                     <div>
                       <p className="text-xs text-muted-foreground">执行次数</p>
-                      <p className="font-medium">{task.execution.executionCount} �?/p>
+                      <p className="font-medium">{task.execution.executionCount} 次</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">下次执行</p>

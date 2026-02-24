@@ -48,13 +48,13 @@ function formatSuggestion(suggestion: ConflictSuggestion): string {
 
   switch (suggestion.type) {
     case 'move_earlier':
-      return `提前`${startTime}-${endTime}`;
+      return `提前 ${startTime}-${endTime}`;
     case 'move_later':
-      return `延后`${startTime}-${endTime}`;
+      return `延后 ${startTime}-${endTime}`;
     case 'shorten':
-      return `缩短`${startTime}-${endTime}`;
+      return `缩短 ${startTime}-${endTime}`;
     default:
-      return `调整`${startTime}-${endTime}`;
+      return `调整 ${startTime}-${endTime}`;
   }
 }
 

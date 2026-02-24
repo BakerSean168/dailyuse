@@ -199,7 +199,7 @@ export function StatisticsWidget({
       {/* 底部总结 */}
       <div className="pt-3 border-t flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          日均完成 <span className="font-semibold text-foreground">{stats.avgTasks}</span> 个任<
+          日均完成 <span className="font-semibold text-foreground">{stats.avgTasks}</span> 个任务
         </div>
         <Badge variant="secondary" className="flex items-center gap-1">
           <TrendIcon className={cn("h-3 w-3", trendInfo.color)} />

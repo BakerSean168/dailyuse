@@ -217,7 +217,7 @@ export function TemplateMoveDialog({
               onCheckedChange={handleMoveToRootChange}
             />
             <Label htmlFor="moveToRoot" className="text-sm cursor-pointer">
-              移出所有分组（移动到根目录�?
+              移出所有分组（移动到根目录）
             </Label>
           </div>
 

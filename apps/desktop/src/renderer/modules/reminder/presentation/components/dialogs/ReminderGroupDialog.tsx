@@ -326,7 +326,7 @@ export function ReminderGroupDialog({
                 id="description"
                 value={formState.description}
                 onChange={(e) => updateField('description', e.target.value)}
-                placeholder="描述该分组的用".."
+                placeholder="描述该分组的用途..."
                 rows={3}
                 maxLength={200}
               />
