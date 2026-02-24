@@ -265,11 +265,11 @@ export class ReminderTemplateControlService {
     const templates = await this.templateRepository.findByGroupId(groupId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
-    const enabledTemplateIds = statusResults
-      .filter((r) => r.isEffectivelyEnabled)
-      .map((r) => r.templateId);
+    const enabledTemplateIdSet = new Set(
+      statusResults.filter((r) => r.isEffectivelyEnabled).map((r) => r.templateId),
+    );
 
-    return templates.filter((t) => enabledTemplateIds.includes(t.id));
+    return templates.filter((t) => enabledTemplateIdSet.has(t.id));
   }
 
   /**
@@ -279,10 +279,10 @@ export class ReminderTemplateControlService {
     const templates = await this.templateRepository.findByIdentityId(identityId);
     const statusResults = await this.calculateEffectiveStatusBatch(templates);
 
-    const enabledTemplateIds = statusResults
-      .filter((r) => r.isEffectivelyEnabled)
-      .map((r) => r.templateId);
+    const enabledTemplateIdSet = new Set(
+      statusResults.filter((r) => r.isEffectivelyEnabled).map((r) => r.templateId),
+    );
 
-    return templates.filter((t: ReminderTemplate) => enabledTemplateIds.includes(t.id));
+    return templates.filter((t: ReminderTemplate) => enabledTemplateIdSet.has(t.id));
   }
 }
