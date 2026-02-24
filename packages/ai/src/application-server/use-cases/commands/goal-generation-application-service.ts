@@ -106,6 +106,8 @@ export class GoalGenerationApplicationService {
       generatedAt: Date.now(),
       providerUsed: 'default',
       modelUsed: 'default',
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
 
     // If key results requested, add them
@@ -153,6 +155,8 @@ export class GoalGenerationApplicationService {
       generatedAt: Date.now(),
       providerUsed: 'default',
       modelUsed: 'default',
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
   }
 
@@ -175,6 +179,8 @@ export class GoalGenerationApplicationService {
         totalTokens: 30,
       },
       generatedAt: Date.now(),
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
   }
 }
