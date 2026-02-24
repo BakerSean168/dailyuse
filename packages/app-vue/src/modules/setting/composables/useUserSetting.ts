@@ -10,8 +10,6 @@ import { useUserSettingStore } from '../stores/userSettingStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
-const BASE = '/settings';
-
 export function useUserSetting() {
   const service = inject(SETTING_SERVICE_KEY);
   if (!service) {
