@@ -18,7 +18,6 @@ import {
 } from '../infrastructure-server';
 import { GovernanceController } from '../controllers/governance.controller';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
-import { ok } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
