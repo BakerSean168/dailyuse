@@ -13,7 +13,8 @@ import type { CreateRepositoryRequest } from '@dailyuse/repository/infrastructur
 import type { Repository } from '@dailyuse/repository/domain-client';
 
 export function useRepository() {
-  const service = inject(REPOSITORY_SERVICE_KEY)!;
+  const service = inject(REPOSITORY_SERVICE_KEY);
+  if (!service) throw new Error('REPOSITORY_SERVICE_KEY not provided');
   const store = useRepositoryStore();
   const savingId = ref<string | null>(null);
 
