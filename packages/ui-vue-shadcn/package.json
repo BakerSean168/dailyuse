@@ -21,6 +21,7 @@
     "@codemirror/state": "6.5.4",
     "@codemirror/view": "6.39.14",
     "@dailyuse/ui-core": "workspace:*",
+    "@dailyuse/utils": "workspace:*",
     "@internationalized/date": "^3.11.0",
     "@radix-icons/vue": "1.0.0",
     "@unovis/ts": "1.6.4",
