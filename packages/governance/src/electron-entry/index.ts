@@ -74,7 +74,7 @@ export const GovernanceElectronModule: IElectronModule = {
     const electronContext: Context = { identityId: 'desktop-user', deviceId: 'electron-app' };
 
     ipcMain.handle(Ch.LIST, (_event, query?: ListRulesQuery) =>
-      controller.listRules(query ?? {}),
+      controller.listRules({ page: 1, pageSize: 20, ...query }),
     );
 
     ipcMain.handle(Ch.GET, (_event, req: { id?: string; code?: string }) =>

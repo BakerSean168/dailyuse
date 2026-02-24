@@ -33,7 +33,25 @@
 export * from '@dailyuse/contracts/goal';
 
 // ================= Domain Layer =================
-export * from './domain-server';
+// Aggregates
+export { Goal, GoalFolder, FocusSession, GoalRecord } from './domain-server';
+export type { GoalState, GoalFolderState, GoalRecordState } from './domain-server';
+// Entities
+export { GoalReview, KeyResult } from './domain-server';
+export type { GoalReviewState, KeyResultState } from './domain-server';
+// Repositories (type-only exports - no conflict with contracts)
+export type {
+  IGoalRepository,
+  IGoalFolderRepository,
+  IGoalRecordRepository,
+  IFocusModeRepository,
+  IFocusSessionRepository,
+  IWeightSnapshotRepository,
+  GoalRecordQueryOptions,
+  SnapshotQueryResult,
+} from './domain-server';
+// Domain Services
+export { FocusSessionPolicy, GoalPolicy, GoalProgressCalculator } from './domain-server';
 
 // ================= Application Layer =================
 export * from './application-server';
