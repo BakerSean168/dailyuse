@@ -1,6 +1,9 @@
 /**
- * DI Container - 依赖注入容器基础设施
- * TODO: 完善 DI 容器实现
+ * DI Container - Generic dependency injection utilities
+ *
+ * Note: The Goal module uses GoalContainer (infrastructure-server/di/goal-container.ts)
+ * as its concrete DI container. This file provides generic base classes
+ * that can be used for extension or testing purposes.
  */
 
 /**

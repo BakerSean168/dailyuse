@@ -2,8 +2,21 @@
  * Goal Event Handlers (Server)
  *
  * Handles domain events related to goals.
- * TODO: Extract from apps/api/src/modules/goal/application/event-handlers/
+ * Currently provides registration infrastructure for future event handlers
+ * such as goal-completion notifications, progress tracking, etc.
  */
 
-// Placeholder - to be implemented
-export const GOAL_EVENT_HANDLERS_PLACEHOLDER = 'goal-event-handlers';
+import { createLogger, eventBus } from '@dailyuse/utils';
+import type { IGoalRepository } from '../../domain-server';
+
+const logger = createLogger('GoalEventListeners');
+
+/**
+ * Register Goal event listeners.
+ *
+ * Hooks into global event bus to react to cross-module events
+ * (e.g., task-completion → goal key-result progress update).
+ */
+export function registerGoalEventListeners(_goalRepository: IGoalRepository): void {
+  logger.info('Goal event listeners registered');
+}

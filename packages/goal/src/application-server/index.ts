@@ -44,7 +44,7 @@ export { GoalMapper, type GoalPersistenceDTO } from './mappers';
 // ============================================================
 // Event Handlers
 // ============================================================
-export { GOAL_EVENT_HANDLERS_PLACEHOLDER } from './event-handlers';
+export { registerGoalEventListeners } from './event-handlers';
 
 // ============================================================
 // Errors

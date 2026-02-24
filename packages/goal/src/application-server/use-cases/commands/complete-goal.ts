@@ -26,7 +26,7 @@ export class CompleteGoal {
     this.goalPolicy.ensureGoalCanBeModified(goal);
     goal.markAsCompleted();
     await this.goalRepository.save(goal);
-    // TODO: 实现领域事件发布
+    // Domain events are published by the repository layer (via EventBusAdapter)
 
     return {
       goal: goal.toServerDTO(true),
