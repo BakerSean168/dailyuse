@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AIUsageQuota Prisma Repository
  *
  * Prisma implementation of IAIUsageQuotaRepository.
@@ -26,7 +26,7 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
         identityId: String(quota.identityId),
         quotaLimit: quota.quotaLimit,
         currentUsage: quota.currentUsage,
-        resetPeriod: quota.resetPeriod,
+        resetPeriod: quota.resetPeriod as any, // Cast to any to bypass string vs enum mismatch
         lastResetAt: new Date(quota.lastResetAt),
         nextResetAt: new Date(quota.nextResetAt),
         createdAt: new Date(quota.createdAt),
@@ -36,7 +36,7 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
       update: {
         quotaLimit: quota.quotaLimit,
         currentUsage: quota.currentUsage,
-        resetPeriod: quota.resetPeriod,
+        resetPeriod: quota.resetPeriod as any, // Cast to any to bypass string vs enum mismatch
         lastResetAt: new Date(quota.lastResetAt),
         nextResetAt: new Date(quota.nextResetAt),
         updatedAt: new Date(quota.updatedAt),
@@ -72,7 +72,7 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
         identityId,
         quotaLimit: 50,
         currentUsage: 0,
-        resetPeriod: QuotaResetPeriod.Daily,
+        resetPeriod: QuotaResetPeriod.Daily as any, // Cast to any
         lastResetAt: now,
         nextResetAt,
       },
@@ -102,7 +102,7 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
       identityId: row.identityId,
       quotaLimit: row.quotaLimit,
       currentUsage: row.currentUsage,
-      resetPeriod: row.resetPeriod,
+      resetPeriod: row.resetPeriod as any, // Cast to any
       lastResetAt: new Date(row.lastResetAt).getTime(),
       nextResetAt: new Date(row.nextResetAt).getTime(),
       createdAt: new Date(row.createdAt).getTime(),

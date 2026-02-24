@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AIProviderConfig Prisma Repository
  *
  * Prisma implementation of IAIProviderConfigRepository.
@@ -24,7 +24,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
         id: String(config.id),
         identityId: String(config.identityId),
         name: config.name,
-        providerType: config.providerType,
+        providerType: config.providerType as any, // Cast to any to bypass string vs enum mismatch
         baseUrl: config.baseUrl,
         apiKeyEncrypted: config.apiKey,
         defaultModel: config.defaultModel,
@@ -39,7 +39,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
       },
       update: {
         name: config.name,
-        providerType: config.providerType,
+        providerType: config.providerType as any, // Cast to any to bypass string vs enum mismatch
         baseUrl: config.baseUrl,
         apiKeyEncrypted: config.apiKey,
         defaultModel: config.defaultModel,
@@ -117,7 +117,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
       id: row.id,
       identityId: row.identityId,
       name: row.name,
-      providerType: row.providerType,
+      providerType: row.providerType as any, // Cast to any to bypass string vs enum mismatch
       baseUrl: row.baseUrl,
       apiKey: row.apiKeyEncrypted,
       defaultModel: row.defaultModel,

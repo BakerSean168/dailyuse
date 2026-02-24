@@ -4,9 +4,8 @@
  * 获取配额应用服务
  */
 
-import type { IAIUsageQuotaRepository } from '../../domain-server/repositories/IAIUsageQuotaRepository';
+import type { IAIUsageQuotaRepository } from '../../../domain-server/repositories/IAIUsageQuotaRepository';
 import type { GetQuotaRes } from '@dailyuse/contracts/ai';
-import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
@@ -16,34 +15,37 @@ export class GetQuota {
   constructor(private readonly quotaRepository: IAIUsageQuotaRepository) {}
 
   async execute(identityId: string): Promise<GetQuotaRes> {
-    const quota = await this.quotaRepository.findByIdentityId(identityId);
+    let quota = await this.quotaRepository.findByIdentityId(identityId);
 
     if (!quota) {
-      // 返回默认配额
-      const now = Date.now();
-      const nextReset = now + 30 * 24 * 60 * 60 * 1000;
-      return {
-        id: '',
-        identityId,
-        quotaLimit: 1000,
-        currentUsage: 0,
-        resetPeriod: QuotaResetPeriod.Monthly,
-        lastResetAt: now,
-        nextResetAt: nextReset,
-        version: 1,
-        createdAt: now,
-        updatedAt: now,
-        deletedAt: null,
-        remainingQuota: 1000,
-        usagePercentage: 0,
-        isExceeded: false,
-        formattedResetPeriod: 'Monthly',
-      };
+      // 默认创建配额
+      quota = await this.quotaRepository.createDefaultQuota(identityId);
     }
 
-    // 如果 quota 有 toClientDTO 方法则使用，否则直接返回
-    return typeof (quota as any).toClientDTO === 'function'
-        ? (quota as any).toClientDTO()
-        : (quota as any);
+    // Convert ServerDTO to ClientDTO/Res
+    // Assuming GetQuotaRes is compatible with what we return or needs mapping
+    // Based on error: Type 'AIUsageQuotaServerDTO' is missing properties from type 'AIUsageQuotaClientDTO'
+    // And 'daysUntilReset' does not exist in type 'AIUsageQuotaClientDTO'
+
+    // const now = Date.now();
+
+    return {
+      id: String(quota.id),
+      identityId: String(quota.identityId),
+      quotaLimit: quota.quotaLimit,
+      currentUsage: quota.currentUsage,
+      resetPeriod: quota.resetPeriod,
+      lastResetAt: quota.lastResetAt,
+      nextResetAt: quota.nextResetAt,
+      version: 1, // Default version
+      createdAt: quota.createdAt,
+      updatedAt: quota.updatedAt,
+      deletedAt: null,
+      remainingQuota: Math.max(0, quota.quotaLimit - quota.currentUsage),
+      usagePercentage: quota.quotaLimit > 0 ? (quota.currentUsage / quota.quotaLimit) * 100 : 0,
+      isExceeded: quota.currentUsage >= quota.quotaLimit,
+      // daysUntilReset: Math.ceil((quota.nextResetAt - now) / (1000 * 60 * 60 * 24)), // Removed as it is not in DTO
+      formattedResetPeriod: quota.resetPeriod, // Mapping formattedResetPeriod
+    };
   }
 }

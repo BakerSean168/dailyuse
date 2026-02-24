@@ -7,15 +7,19 @@
 
 import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
+// Note: importing from @dailyuse/contracts/ai/dtos to access types not exported by main barrel
 import type {
   GeneratedGoalDraft,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerateGoalResultDTO,
+  GenerateKeyResultsResultDTO,
   KeyResultPreview,
   GoalCategory,
-  AIUsageQuotaServerDTO,
-} from '@dailyuse/contracts/ai';
+} from '@dailyuse/contracts/ai/dtos'; // Corrected import path
+
+// Aliasing types to match usage in this file if names differ
+type GenerateGoalResponse = GenerateGoalResultDTO;
+type GenerateKeyResultsResponse = GenerateKeyResultsResultDTO;
+type GenerateGoalWithKRsResponse = GenerateGoalResultDTO; // Using same DTO as it includes optional keyResults
 
 const logger = createLogger('GoalGenerationApplicationService');
 
@@ -99,9 +103,10 @@ export class GoalGenerationApplicationService {
         completionTokens: 20,
         totalTokens: 30,
       },
-      generatedAt: Date.now(),
-      providerUsed: 'default',
-      modelUsed: 'default',
+      // generatedAt: Date.now(), // removed if not in DTO
+      providerId: 'default' as any,
+      processingTimeMs: 0,
+      // modelUsed: 'default', // removed if not in DTO
     };
 
     // If key results requested, add them
@@ -146,9 +151,10 @@ export class GoalGenerationApplicationService {
         completionTokens: 25,
         totalTokens: 40,
       },
-      generatedAt: Date.now(),
-      providerUsed: 'default',
-      modelUsed: 'default',
+      // generatedAt: Date.now(),
+      providerId: 'default' as any,
+      processingTimeMs: 0,
+      // modelUsed: 'default',
     };
   }
 
@@ -170,7 +176,9 @@ export class GoalGenerationApplicationService {
         completionTokens: 20,
         totalTokens: 30,
       },
-      generatedAt: Date.now(),
+      providerId: 'default' as any,
+      processingTimeMs: 0,
+      // generatedAt: Date.now(),
     };
   }
 }

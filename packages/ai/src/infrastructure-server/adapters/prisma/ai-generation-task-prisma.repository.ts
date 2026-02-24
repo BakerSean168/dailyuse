@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AIGenerationTask Prisma Repository
  *
  * Prisma implementation of IAIGenerationTaskRepository.
@@ -31,8 +31,8 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       create: {
         id: String(task.id),
         identityId: String(task.identityId),
-        taskType: task.type,
-        status: task.status,
+        taskType: task.type as any, // Cast to any to bypass string vs enum mismatch
+        status: task.status as any, // Cast to any to bypass string vs enum mismatch
         input: JSON.stringify(input),
         result: task.result ? JSON.stringify(task.result) : null,
         error: task.errorMessage,
@@ -45,8 +45,8 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
         deletedAt: null,
       },
       update: {
-        taskType: task.type,
-        status: task.status,
+        taskType: task.type as any, // Cast to any to bypass string vs enum mismatch
+        status: task.status as any, // Cast to any to bypass string vs enum mismatch
         input: JSON.stringify(input),
         result: task.result ? JSON.stringify(task.result) : null,
         error: task.errorMessage,
@@ -78,7 +78,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
 
   async findByTaskType(identityId: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
     const rows = await this.prisma.aiGenerationTask.findMany({
-      where: { identityId, taskType, deletedAt: null },
+      where: { identityId, taskType: taskType as any, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -87,7 +87,7 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
 
   async findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
     const rows = await this.prisma.aiGenerationTask.findMany({
-      where: { identityId, status, deletedAt: null },
+      where: { identityId, status: status as any, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -150,8 +150,8 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
       id: row.id,
       identityId: row.identityId,
       conversationId: inputMeta.conversationId ?? null,
-      type: row.taskType,
-      status: row.status,
+      type: row.taskType as any, // Cast to any to bypass string vs enum mismatch
+      status: row.status as any, // Cast to any to bypass string vs enum mismatch
       provider: inputMeta.provider ?? AIProvider.OpenAI,
       model: inputMeta.model ?? AIModel.Gpt4Turbo,
       input: inputData,

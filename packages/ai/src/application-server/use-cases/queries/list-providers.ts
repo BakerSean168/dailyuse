@@ -1,11 +1,11 @@
 /**
  * List Providers Service
  *
- * 获取 AI Provider 列表应用服务
+ * 列出 AI 提供商应用服务
  */
 
-import type { IAIProviderConfigRepository } from '../../domain-server/repositories/IAIProviderConfigRepository';
-import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
+import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
@@ -14,11 +14,7 @@ import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
 export class ListProviders {
   constructor(private readonly providerRepository: IAIProviderConfigRepository) {}
 
-  async execute(identityId: string): Promise<{ providers: AIProviderConfigClientDTO[] }> {
-    const providers = await this.providerRepository.findByIdentityId(identityId);
-
-    return {
-      providers: providers.map((p: any) => (typeof p.toClientDTO === 'function' ? p.toClientDTO() : p)),
-    };
+  async execute(identityId: string): Promise<AIProviderConfigServerDTO[]> {
+    return this.providerRepository.findByIdentityId(identityId);
   }
 }
