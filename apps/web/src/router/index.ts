@@ -1,7 +1,7 @@
 /**
  * Web App Router - 路由按需注册
  *
- * 仅注册 authentication、account、governance 三个模块路由。
+ * 仅注册 authentication、account、governance、goal 四个模块路由。
  * 其他模块路由后续按需添加。
  *
  * 设计原则：
@@ -19,6 +19,7 @@ import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
 import { accountRoutes } from '@/modules/account/presentation/router';
 import { governanceRoutes } from '@/modules/governance/presentation/router';
+import { goalRoutes } from '@/modules/goal/presentation/router';
 
 // ============ 应用级路由 ============
 
@@ -52,6 +53,7 @@ const appRoutes: RouteRecordRaw[] = [
       // 注入模块路由 (扁平展开到主布局下)
       ...accountRoutes.flatMap((r) => (r.children ? [{ ...r, component: undefined }] : [r])),
       ...governanceRoutes.flatMap((r) => (r.children ? [{ ...r, component: undefined }] : [r])),
+      ...goalRoutes.flatMap((r) => (r.children ? [{ ...r, component: undefined }] : [r])),
     ],
   },
 
