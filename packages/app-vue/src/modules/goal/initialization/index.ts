@@ -1,6 +1,6 @@
 /**
  * Goal 模块初始化任务
- * 
+ *
  * 注册 Goal 模块的初始化任务到应用启动流程
  */
 
@@ -17,12 +17,12 @@ import { useGoalStore } from '../stores/goalStore';
 export function registerGoalInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
-  // 🎨 立即注册 Dashboard Widgets（不等待初始化阶段）
-  console.log('🎨 [Goal] 注册 Goal Widgets（立即执行）...');
-  import('../widgets/registerGoalWidgets').then(({ registerGoalWidgets }) => {
-    registerGoalWidgets();
-    console.log('✅ [Goal] Goal Widgets 注册完成');
-  });
+  // TODO: Re-enable when dashboard module is migrated to app-vue
+  // Widget registration requires @/modules/dashboard infrastructure and @dailyuse/contracts/dashboard
+  // which are not yet available in the shared app-vue package.
+  // import('../widgets/registerGoalWidgets').then(({ registerGoalWidgets }) => {
+  //   registerGoalWidgets();
+  // });
 
   // Goal 模块基础初始化任务
   const goalModuleInitTask: InitializationTask = {

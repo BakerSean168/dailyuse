@@ -10,7 +10,7 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useAuthenticationStore } from '../presentation/stores/authenticationStore';
+import { useAuthenticationStore } from '@dailyuse/app-vue';
 import { authService } from '@/shared/di';
 
 /**
@@ -42,14 +42,14 @@ export function registerAuthenticationInitializationTasks(): void {
         console.log('⚠️ [AuthModule] Token 已过期，尝试刷新');
         const refreshToken = authStore.refreshToken;
         if (refreshToken) {
-            const result = await authService.refreshToken({ refreshToken });
-            if (result.ok) {
-              authStore.handleAuthResponse(result.data);
-              console.log('✅ [AuthModule] Token 刷新成功');
-            } else {
-              console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', result.error);
-              authStore.reset();
-            }
+          const result = await authService.refreshToken({ refreshToken });
+          if (result.ok) {
+            authStore.handleAuthResponse(result.data);
+            console.log('✅ [AuthModule] Token 刷新成功');
+          } else {
+            console.warn('❌ [AuthModule] Token 刷新失败，清除认证状态:', result.error);
+            authStore.reset();
+          }
         } else {
           console.log('⚠️ [AuthModule] 无 Refresh Token，清除认证状态');
           authStore.reset();
@@ -90,7 +90,7 @@ export function registerAuthenticationInitializationTasks(): void {
         // 加载完整的语言包（包含所有业务模块的翻译）
         try {
           const { loadFullLanguageMessages } = await import('@/shared/i18n');
-          const currentLocale = localStorage.getItem('locale') as 'zh-CN' | 'en-US' || 'zh-CN';
+          const currentLocale = (localStorage.getItem('locale') as 'zh-CN' | 'en-US') || 'zh-CN';
           await loadFullLanguageMessages(currentLocale);
         } catch (error) {
           console.warn('⚠️ [AuthModule] 加载完整语言包失败:', error);

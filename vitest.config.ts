@@ -137,7 +137,15 @@ export default defineConfig({
           setupFiles: ['./src/test/setup.ts'],
           include: ['src/**/*.{test,spec}.{js,ts}'],
           // Exclude integration tests that require PostgreSQL
-          exclude: ['node_modules', 'dist', '.git', '.cache', 'src/test/setup.ts', 'prisma/**/*', 'src/**/*.integration.{test,spec}.{js,ts}'],
+          exclude: [
+            'node_modules',
+            'dist',
+            '.git',
+            '.cache',
+            'src/test/setup.ts',
+            'prisma/**/*',
+            'src/**/*.integration.{test,spec}.{js,ts}',
+          ],
           testTimeout: 30000,
           // API tests use single fork to avoid database conflicts
           pool: 'forks',
@@ -168,7 +176,6 @@ export default defineConfig({
             '@dailyuse/domain-client': path.resolve(__dirname, './packages/domain-client/src'),
             '@dailyuse/contracts': path.resolve(__dirname, './packages/contracts/src'),
             '@dailyuse/utils': path.resolve(__dirname, './packages/utils/src'),
-            '@dailyuse/ui-vuetify': path.resolve(__dirname, './packages/ui-vuetify/src'),
           },
         },
         plugins: [vue()],

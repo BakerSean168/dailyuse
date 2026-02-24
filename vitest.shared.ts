@@ -48,7 +48,6 @@ export function createSharedConfig(options: SharedConfigOptions) {
     '@dailyuse/contracts': path.resolve(projectRoot, '../../packages/contracts/src'),
     '@dailyuse/domain-server': path.resolve(projectRoot, '../../packages/domain-server/src'),
     '@dailyuse/domain-client': path.resolve(projectRoot, '../../packages/domain-client/src'),
-    '@dailyuse/ui-vuetify': path.resolve(projectRoot, '../../packages/ui-vuetify/src'),
     '@dailyuse/utils': path.resolve(projectRoot, '../../packages/utils/src'),
     ...aliases,
   };

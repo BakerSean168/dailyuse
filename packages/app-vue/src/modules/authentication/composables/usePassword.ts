@@ -4,7 +4,7 @@
  * 通过 DI 注入的 AuthClientService 与后端交互。
  * Service 返回 Result<T>，Composable 负责 Result 解包 + UI 状态。
  *
- * @module authentication/presentation/composables
+ * @module authentication/composables
  */
 
 import { ref, inject } from 'vue';
@@ -15,11 +15,13 @@ import type {
   ResetPasswordReq,
 } from '@dailyuse/contracts/authentication';
 import { useAuthenticationStore } from '../stores/authenticationStore';
-import { AUTH_SERVICE_KEY, authService as fallbackService } from '@/shared/di';
+import { AUTH_SERVICE_KEY } from '../../../di/keys';
 
 export function usePassword() {
   const store = useAuthenticationStore();
-  const service = inject(AUTH_SERVICE_KEY, fallbackService);
+  const service = inject(AUTH_SERVICE_KEY);
+  if (!service) throw new Error('AUTH_SERVICE_KEY not provided');
+
   const isLoading = ref(false);
 
   // ========== 修改密码 ==========

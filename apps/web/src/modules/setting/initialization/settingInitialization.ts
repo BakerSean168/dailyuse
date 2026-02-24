@@ -4,7 +4,7 @@ import {
   InitializationManager,
 } from '@dailyuse/utils';
 import { useUserSettingStore } from '../presentation/stores/userSettingStore';
-import { useAuthenticationStore } from '../../authentication/presentation/stores/authenticationStore';
+import { useAuthenticationStore } from '@dailyuse/app-vue';
 
 /**
  * 注册设置模块初始化任务
@@ -27,7 +27,7 @@ export function registerSettingInitializationTasks(): void {
       }
 
       console.log('📥 [Setting] 开始加载用户设置...');
-      
+
       try {
         // 加载用户设置
         await settingStore.loadSettings();

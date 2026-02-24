@@ -1,11 +1,14 @@
 import { createWebHistory } from 'vue-router';
-import { useAuthenticationStore } from '@/modules/authentication/presentation/stores/authenticationStore';
-import { accountRoutes, createAppRouter, goalRoutes } from '@dailyuse/app-vue';
+import {
+  accountRoutes,
+  createAppRouter,
+  goalRoutes,
+  useAuthenticationStore,
+} from '@dailyuse/app-vue';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 import { governanceRoutes } from '@/modules/governance/presentation/router';
 const router = createAppRouter({
   history: createWebHistory(),
-  authView: () => import('@/modules/authentication/presentation/views/AuthView.vue'),
   isAuthenticated: () => useAuthenticationStore().isAuthenticated,
   additionalRoutes: [...accountRoutes, ...governanceRoutes, ...goalRoutes],
 });

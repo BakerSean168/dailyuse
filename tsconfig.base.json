@@ -29,11 +29,11 @@
       "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
       "@dailyuse/contracts/*": ["packages/contracts/src/*/index.ts"],
       "@dailyuse/assets": ["packages/assets/src/index.ts"],
-      
+
       // ✅ 领域层包（分层架构）
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/*": ["packages/domain-shared/src/*/index.ts"],
-      
+
       // ✅ 业务模块包
       "@dailyuse/governance": ["packages/governance/src/index.ts"],
       "@dailyuse/governance/*": ["packages/governance/src/*/index.ts"],
@@ -59,26 +59,23 @@
       "@dailyuse/setting/*": ["packages/setting/src/*/index.ts"],
       "@dailyuse/ai": ["packages/ai/src/index.ts"],
       "@dailyuse/ai/*": ["packages/ai/src/*/index.ts"],
-      
+
       // ✅ 客户端工具包
       "@dailyuse/http-client": ["packages/http-client/src/index.ts"],
       "@dailyuse/ipc-client": ["packages/ipc-client/src/index.ts"],
       "@dailyuse/sync-client": ["packages/sync-client/src/index.ts"],
-      
+
       // ✅ UI 组件包
       "@dailyuse/ui-core": ["packages/ui-core/src/index.ts"],
-      "@dailyuse/ui-react": ["packages/ui-react/src/index.ts"],
-      "@dailyuse/ui-react-shadcn": ["packages/ui-react-shadcn/src/index.ts"],
       "@dailyuse/app-vue": ["packages/app-vue/src/index.ts"],
       "@dailyuse/ui-vue-shadcn": ["packages/ui-vue-shadcn/src/index.ts"],
-      "@dailyuse/ui-vuetify": ["packages/ui-vuetify/src/index.ts"],
-      
+
       // ✅ 调度服务包
       "@dailyuse/scheduler-server": ["packages/scheduler-server/src/index.ts"],
-      
+
       // ✅ 测试工具
       "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"],
-      
+
       // ✅ API 内部路径
       "@api/shared": ["apps/api/src/shared/index.ts"]
     }

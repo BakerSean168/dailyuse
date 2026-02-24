@@ -2,13 +2,12 @@
  * useGovernance - 治理模块主 composable
  *
  * 通过 DI 注入的 IRuleApiClient 与后端交互。
- * API Client 负责 HTTP 调用，Composable 负责 Store 更新 + 消息提示。
+ * API Client 返回 Result<T>，Composable 负责 Result 解包 + Store 更新 + 消息提示。
  *
  * @module governance/presentation/composables
  */
 
 import { computed, ref, inject } from 'vue';
-import { HttpClientError } from '@dailyuse/http-client';
 import { useGovernanceStore } from '../stores/governanceStore';
 import { RULE_API_CLIENT_KEY, ruleApiClient as fallbackClient } from '@/shared/di';
 import type {
@@ -48,15 +47,14 @@ export function useGovernance() {
   async function fetchRules(): Promise<void> {
     store.setLoading(true);
     store.setError(null);
-    try {
-      const query = store.currentListQuery;
-      const res = await apiClient.listRules(query as any);
-      store.setRules(res.items as unknown as RuleClientDTO[], res.total);
-    } catch (err) {
-      handleError(err, '加载规则列表失败');
-    } finally {
-      store.setLoading(false);
+    const query = store.currentListQuery;
+    const result = await apiClient.listRules(query);
+    if (result.ok) {
+      store.setRules(result.data.items, result.data.total);
+    } else {
+      store.setError(result.error.message || '加载规则列表失败');
     }
+    store.setLoading(false);
   }
 
   /**
@@ -65,16 +63,14 @@ export function useGovernance() {
   async function fetchRule(id: string): Promise<RuleClientDTO | null> {
     store.setLoading(true);
     store.setError(null);
-    try {
-      const rule = await apiClient.getRule({ id } as any);
-      store.setCurrentRule(rule as unknown as RuleClientDTO);
-      return rule as unknown as RuleClientDTO;
-    } catch (err) {
-      handleError(err, '加载规则失败');
-      return null;
-    } finally {
-      store.setLoading(false);
+    const result = await apiClient.getRule({ id });
+    store.setLoading(false);
+    if (result.ok) {
+      store.setCurrentRule(result.data);
+      return result.data;
     }
+    store.setError(result.error.message || '加载规则失败');
+    return null;
   }
 
   /**
@@ -83,16 +79,14 @@ export function useGovernance() {
   async function createRule(req: CreateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = 'new';
     store.setError(null);
-    try {
-      const rule = await apiClient.createRule(req as any);
-      store.addRule(rule as unknown as RuleClientDTO);
-      return rule as unknown as RuleClientDTO;
-    } catch (err) {
-      handleError(err, '创建规则失败');
-      return null;
-    } finally {
-      savingId.value = null;
+    const result = await apiClient.createRule(req);
+    savingId.value = null;
+    if (result.ok) {
+      store.addRule(result.data);
+      return result.data;
     }
+    store.setError(result.error.message || '创建规则失败');
+    return null;
   }
 
   /**
@@ -101,16 +95,14 @@ export function useGovernance() {
   async function updateRule(id: string, req: UpdateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = id;
     store.setError(null);
-    try {
-      const rule = await apiClient.updateRule(id, req as any);
-      store.updateRule(rule as unknown as RuleClientDTO);
-      return rule as unknown as RuleClientDTO;
-    } catch (err) {
-      handleError(err, '更新规则失败');
-      return null;
-    } finally {
-      savingId.value = null;
+    const result = await apiClient.updateRule(id, req);
+    savingId.value = null;
+    if (result.ok) {
+      store.updateRule(result.data);
+      return result.data;
     }
+    store.setError(result.error.message || '更新规则失败');
+    return null;
   }
 
   /**
@@ -119,16 +111,14 @@ export function useGovernance() {
   async function deleteRule(id: string): Promise<boolean> {
     savingId.value = id;
     store.setError(null);
-    try {
-      await apiClient.deleteRule({ id } as any);
+    const result = await apiClient.deleteRule({ id });
+    savingId.value = null;
+    if (result.ok) {
       store.removeRule(id);
       return true;
-    } catch (err) {
-      handleError(err, '删除规则失败');
-      return false;
-    } finally {
-      savingId.value = null;
     }
+    store.setError(result.error.message || '删除规则失败');
+    return false;
   }
 
   /**
@@ -136,38 +126,33 @@ export function useGovernance() {
    */
   async function searchRules(query: string): Promise<void> {
     store.setSearchQuery(query);
+    if (!query.trim()) {
+      await fetchRules();
+      return;
+    }
     store.setLoading(true);
     store.setError(null);
-    try {
-      if (!query.trim()) {
-        await fetchRules();
-        return;
-      }
-      const res = await apiClient.searchRules({
-        query,
-        status: store.filter.status ?? undefined,
-        tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
-        severity: store.filter.severity ?? undefined,
-        page: store.pagination.page,
-        pageSize: store.pagination.pageSize,
-      } as any);
-      store.setRules(res.items as unknown as RuleClientDTO[], res.total);
-    } catch (err) {
-      handleError(err, '搜索规则失败');
-    } finally {
-      store.setLoading(false);
+    const result = await apiClient.searchRules({
+      query,
+      status: store.filter.status ?? undefined,
+      tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
+      severity: store.filter.severity ?? undefined,
+      page: store.pagination.page,
+      pageSize: store.pagination.pageSize,
+    });
+    if (result.ok) {
+      store.setRules(result.data.items, result.data.total);
+    } else {
+      store.setError(result.error.message || '搜索规则失败');
     }
+    store.setLoading(false);
   }
 
   /**
    * 加载修订历史
    */
   async function fetchRevisions(ruleId: string): Promise<void> {
-    try {
-      await store.fetchRevisions(ruleId);
-    } catch (err) {
-      handleError(err, '加载修订历史失败');
-    }
+    await store.fetchRevisions(ruleId);
   }
 
   // ============ Filters ============
@@ -195,19 +180,6 @@ export function useGovernance() {
   function setPage(page: number): void {
     store.setPage(page);
     fetchRules();
-  }
-
-  // ============ Error Handling ============
-
-  function handleError(err: unknown, fallbackMessage: string): void {
-    if (err instanceof HttpClientError) {
-      store.setError(err.message);
-    } else if (err instanceof Error) {
-      store.setError(err.message);
-    } else {
-      store.setError(fallbackMessage);
-    }
-    console.error(fallbackMessage, err);
   }
 
   // ============ Return ============

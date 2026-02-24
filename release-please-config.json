@@ -52,21 +52,9 @@
       "release-type": "node",
       "package-name": "@dailyuse/ui-core"
     },
-    "packages/ui-react": {
-      "release-type": "node",
-      "package-name": "@dailyuse/ui-react"
-    },
-    "packages/ui-react-shadcn": {
-      "release-type": "node",
-      "package-name": "@dailyuse/ui-react-shadcn"
-    },
     "packages/ui-vue-shadcn": {
       "release-type": "node",
       "package-name": "@dailyuse/ui-vue-shadcn"
-    },
-    "packages/ui-vuetify": {
-      "release-type": "node",
-      "package-name": "@dailyuse/ui-vuetify"
     },
     "packages/utils": {
       "release-type": "node",

@@ -70,8 +70,7 @@ export const useGovernanceStore = defineStore('governance', {
 
   getters: {
     /** 根据 ID 查找规则 */
-    getRuleById: (state) => (id: string) =>
-      state.rules.find((rule) => rule.id === id),
+    getRuleById: (state) => (id: string) => state.rules.find((rule) => rule.id === id),
 
     /** 根据状态过滤规则 */
     getRulesByStatus: (state) => (status: RuleStatus) =>
@@ -93,8 +92,7 @@ export const useGovernanceStore = defineStore('governance', {
     },
 
     /** 活跃规则数量 */
-    activeRuleCount: (state): number =>
-      state.rules.filter((r) => r.status === 'Active').length,
+    activeRuleCount: (state): number => state.rules.filter((r) => r.status === 'Active').length,
 
     /** 当前是否有过滤条件 */
     hasActiveFilter: (state): boolean =>
@@ -164,27 +162,23 @@ export const useGovernanceStore = defineStore('governance', {
       this.setLoading(true);
       this.setError(null);
 
-      try {
-        const { httpClient } = await import('@/shared/http');
-        const response = await httpClient.get<{
-          items?: RuleRevisionClientDTO[];
-          data?: RuleRevisionClientDTO[];
-        }>(`/governance/rules/${ruleId}/revisions`);
+      const { resultHttpClient } = await import('@/shared/http');
+      const result = await resultHttpClient.get<{
+        items: RuleRevisionClientDTO[];
+        total: number;
+      }>(`/governance/rules/${ruleId}/revisions`);
 
-        const revisions =
-          (Array.isArray(response.items) ? response.items : undefined) ??
-          (Array.isArray(response.data) ? response.data : []);
-
+      if (result.ok) {
+        const revisions = result.data.items ?? [];
         this.setRevisions(revisions);
-        return revisions;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : '加载修订历史失败';
-        this.setError(message);
-        this.setRevisions([]);
-        return [];
-      } finally {
         this.setLoading(false);
+        return revisions;
       }
+
+      this.setError(result.error.message || '加载修订历史失败');
+      this.setRevisions([]);
+      this.setLoading(false);
+      return [];
     },
 
     // ===== 过滤 =====

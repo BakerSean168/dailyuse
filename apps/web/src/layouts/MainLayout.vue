@@ -7,7 +7,7 @@
  */
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthenticationStore } from '@/modules/authentication/presentation/stores/authenticationStore';
+import { useAuthenticationStore } from '@dailyuse/app-vue';
 import {
   LayoutDashboard,
   Shield,
@@ -28,9 +28,7 @@ const navItems = [
   { path: '/governance', icon: Shield, title: '治理规则', name: 'governance' },
 ];
 
-const bottomItems = [
-  { path: '/account/center', icon: User, title: '个人中心', name: 'account' },
-];
+const bottomItems = [{ path: '/account/center', icon: User, title: '个人中心', name: 'account' }];
 
 const isActive = (path: string) => {
   if (path === '/') return route.path === '/';
@@ -52,7 +50,9 @@ const handleLogout = () => {
 <template>
   <div class="flex h-screen overflow-hidden">
     <!-- 侧边栏 -->
-    <aside class="w-[60px] flex flex-col items-center bg-sidebar border-r border-sidebar-border shrink-0">
+    <aside
+      class="w-[60px] flex flex-col items-center bg-sidebar border-r border-sidebar-border shrink-0"
+    >
       <!-- Logo -->
       <button
         class="w-11 h-11 my-2 flex items-center justify-center rounded-lg hover:bg-sidebar-accent transition-colors"

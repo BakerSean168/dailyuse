@@ -21,6 +21,7 @@ import {
   RULE_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
+  TASK_SERVICE_KEY,
 } from '@dailyuse/app-vue';
 export {
   ACCOUNT_SERVICE_KEY,
@@ -32,6 +33,7 @@ export {
   RULE_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
+  TASK_SERVICE_KEY,
 } from '@dailyuse/app-vue';
 
 // ── Package-level Services & Factories ──
@@ -62,7 +64,6 @@ import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 import { resultHttpClient } from '@/shared/http';
 
 export const RULE_API_CLIENT_KEY: InjectionKey<IRuleApiClient> = RULE_SERVICE_KEY;
-export const TASK_SERVICE_KEY: InjectionKey<TaskClientService> = Symbol('TaskClientService');
 
 // ============================================================================
 // Service Instances — All modules use resultHttpClient (IResultHttpClient)
@@ -97,7 +98,7 @@ const repositoryService = new RepositoryClientService(repositoryAdapters.reposit
 
 // ── Schedule ──
 const scheduleAdapters = createScheduleHttpAdapters(resultHttpClient);
-const scheduleService = new ScheduleClientService(scheduleAdapters.task, scheduleAdapters.event);
+const scheduleService = new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task);
 
 // ── Setting ──
 const settingAdapters = createSettingHttpAdapters(resultHttpClient);
