@@ -5,3 +5,4 @@ export * from './shared/utils/result-helpers';
 export * from './modules/account';
 export * from './modules/authentication';
 export * from './modules/goal';
+export * from './modules/governance';
