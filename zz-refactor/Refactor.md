@@ -255,6 +255,18 @@ apps/api ──→ 各领域包 application-server + infrastructure-server + api
 apps/desktop/main ──→ 各领域包 electron-entry
 ```
 ## 六、执行计划（分阶段）
+
+> **详细方案文档**: 每个阶段的详细实施方案已独立文档化，包含具体的文件清单、代码示例、验证步骤和检查清单。
+>
+> | 阶段 | 详细文档 | 预估工时 |
+> |------|---------|---------|
+> | Phase 0 | [Phase-0-Cleanup.md](./Phase-0-Cleanup.md) | 1-2 天 |
+> | Phase 1 | [Phase-1-AppVue-Skeleton.md](./Phase-1-AppVue-Skeleton.md) | 2-3 天 |
+> | Phase 2 | [Phase-2-Module-Migration.md](./Phase-2-Module-Migration.md) | 5-8 天 |
+> | Phase 3 | [Phase-3-Web-Slimdown.md](./Phase-3-Web-Slimdown.md) | 1-2 天 |
+> | Phase 4 | [Phase-4-Desktop-Renderer-Rewrite.md](./Phase-4-Desktop-Renderer-Rewrite.md) | 3-5 天 |
+> | Phase 5 | [Phase-5-Finalization.md](./Phase-5-Finalization.md) | 1-2 天 |
+
 ### Phase 0: 清理 (1-2 天)
 1. 删除 `packages/ui-react/`、`packages/ui-react-shadcn/`、`packages/ui-vuetify/`
 2. 删除 web 中的遗留文件（旧 MainLayout、Vuetify Sidebar 等）
