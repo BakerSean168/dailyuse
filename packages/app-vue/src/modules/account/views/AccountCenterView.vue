@@ -112,15 +112,15 @@ const handleAvatarClick = () => {
             <!-- Form Fields -->
             <div class="grid gap-4 md:grid-cols-2">
               <div class="space-y-2">
-                <Label htmlFor="nickname">Display Name</Label>
+                <Label for="nickname">Display Name</Label>
                 <Input id="nickname" v-model="profile.nickname" :disabled="!isEditing" />
               </div>
               <div class="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label for="email">Email</Label>
                 <Input id="email" v-model="profile.email" disabled />
               </div>
               <div class="space-y-2 md:col-span-2">
-                <Label htmlFor="bio">Bio</Label>
+                <Label for="bio">Bio</Label>
                 <Input id="bio" v-model="profile.bio" :disabled="!isEditing" placeholder="Tell us a little about yourself" />
               </div>
             </div>
