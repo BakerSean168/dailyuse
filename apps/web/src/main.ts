@@ -32,10 +32,8 @@ async function startApp() {
       // Let unmatched requests pass through to the real server (or proxy)
       onUnhandledRequest: 'bypass',
     });
-    console.log('[MSW] Mock Service Worker started');
   }
-  
-  console.log('MSW env', import.meta.env.DEV, import.meta.env.VITE_ENABLE_MOCK_API)
+
   const app = createApp(App);
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);
@@ -47,7 +45,6 @@ async function startApp() {
   app.use(installModuleServices);
 
   app.mount('#app');
-  console.log('[Web] Application started');
 }
 
 startApp();

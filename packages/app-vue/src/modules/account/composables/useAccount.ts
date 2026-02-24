@@ -10,23 +10,14 @@
 import { computed, inject } from 'vue';
 import { toast } from 'vue-sonner';
 import type {
-  AccountClientDTO,
   UpdateAccountReq,
   CheckAvailabilityReq,
   CloseAccountReq,
   UpdateAccountSettingsReq,
 } from '@dailyuse/contracts/account';
+import type { IAccountApiClient } from '../../../di/types';
 import { useAccountStore } from '../stores/accountStore';
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
-
-type AccountResult<T> = { ok: true; data: T } | { ok: false; error: { message?: string } };
-
-type AccountService = {
-  getMyProfile: () => Promise<AccountResult<{ toDTO: () => AccountClientDTO }>>;
-  updateMyProfile: (req: UpdateAccountReq) => Promise<AccountResult<{ toDTO: () => AccountClientDTO }>>;
-  checkAvailability: (req: CheckAvailabilityReq) => Promise<AccountResult<{ available: boolean }>>;
-  closeAccount: (req: CloseAccountReq) => Promise<AccountResult<unknown>>;
-};
 
 export function useAccount() {
   const accountStore = useAccountStore();
@@ -35,7 +26,7 @@ export function useAccount() {
   if (!service) {
     throw new Error('ACCOUNT_SERVICE_KEY is not provided');
   }
-  const accountService = service as unknown as AccountService;
+  const accountService: IAccountApiClient = service;
 
   // ========== Computed State ==========
   const currentAccount = computed(() => accountStore.currentAccount);

@@ -50,6 +50,15 @@ export default defineConfig(({ mode, command }) => {
       alias: {
         // 仅项目内部别名
         '@': path.resolve(__dirname, './src'),
+        '@dailyuse/app-vue': path.resolve(__dirname, '../../packages/app-vue/src/index.ts'),
+        '@dailyuse/authentication/application-client': path.resolve(
+          __dirname,
+          '../../packages/authentication/src/application-client/index.ts',
+        ),
+        '@dailyuse/authentication/infrastructure-client': path.resolve(
+          __dirname,
+          '../../packages/authentication/src/infrastructure-client/index.ts',
+        ),
         // 注意：所有 @dailyuse/* 包通过 node_modules 解析到各包的 dist 目录
         // 不再使用指向源码的别名，这样可以：
         // 1. 保持包边界清晰

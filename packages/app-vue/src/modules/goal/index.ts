@@ -19,10 +19,7 @@ export type { GoalState, GoalStoreType } from './stores/goalStore';
 export { goalRoutes } from './router';
 
 // ===== Widgets =====
-export { registerGoalWidgets } from './widgets/registerGoalWidgets';
+// export { registerGoalWidgets } from './widgets/registerGoalWidgets';
 
 // ===== Initialization =====
 export { registerGoalInitializationTasks } from './initialization';
-
-// ===== Components =====
-export * from './components';

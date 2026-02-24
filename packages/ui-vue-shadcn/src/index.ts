@@ -137,9 +137,6 @@ export * from './components/ui/tooltip';
 // Application-level Global Components
 export * from './components/custom/application';
 
-// Account Components
-export * from './components/custom/account';
-
 // Authentication Components
 export * from './components/custom/authentication';
 
@@ -151,9 +148,6 @@ export * from './components/custom/task';
 
 // Schedule Components
 export * from './components/custom/schedule';
-
-// Goal Components
-export * from './components/custom/goal';
 
 // Repository Components
 export * from './components/custom/repository';

@@ -11,6 +11,28 @@
  */
 
 import type { App, InjectionKey } from 'vue';
+import {
+  ACCOUNT_SERVICE_KEY,
+  AUTH_SERVICE_KEY,
+  GOAL_SERVICE_KEY,
+  NOTIFICATION_SERVICE_KEY,
+  REMINDER_SERVICE_KEY,
+  REPOSITORY_SERVICE_KEY,
+  RULE_SERVICE_KEY,
+  SCHEDULE_SERVICE_KEY,
+  SETTING_SERVICE_KEY,
+} from '@dailyuse/app-vue';
+export {
+  ACCOUNT_SERVICE_KEY,
+  AUTH_SERVICE_KEY,
+  GOAL_SERVICE_KEY,
+  NOTIFICATION_SERVICE_KEY,
+  REMINDER_SERVICE_KEY,
+  REPOSITORY_SERVICE_KEY,
+  RULE_SERVICE_KEY,
+  SCHEDULE_SERVICE_KEY,
+  SETTING_SERVICE_KEY,
+} from '@dailyuse/app-vue';
 
 // ── Package-level Services & Factories ──
 // Use explicit subpath imports to avoid bundling server-side code (Node.js-only
@@ -39,19 +61,7 @@ import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 // ── Web App HTTP Client ──
 import { resultHttpClient } from '@/shared/http';
 
-// ============================================================================
-// Injection Keys
-// ============================================================================
-
-export const ACCOUNT_SERVICE_KEY: InjectionKey<AccountClientService> = Symbol('AccountClientService');
-export const AUTH_SERVICE_KEY: InjectionKey<AuthClientService> = Symbol('AuthClientService');
-export const RULE_API_CLIENT_KEY: InjectionKey<IRuleApiClient> = Symbol('IRuleApiClient');
-export const GOAL_SERVICE_KEY: InjectionKey<GoalClientService> = Symbol('GoalClientService');
-export const NOTIFICATION_SERVICE_KEY: InjectionKey<NotificationClientService> = Symbol('NotificationClientService');
-export const REMINDER_SERVICE_KEY: InjectionKey<ReminderClientService> = Symbol('ReminderClientService');
-export const REPOSITORY_SERVICE_KEY: InjectionKey<RepositoryClientService> = Symbol('RepositoryClientService');
-export const SCHEDULE_SERVICE_KEY: InjectionKey<ScheduleClientService> = Symbol('ScheduleClientService');
-export const SETTING_SERVICE_KEY: InjectionKey<SettingClientService> = Symbol('SettingClientService');
+export const RULE_API_CLIENT_KEY: InjectionKey<IRuleApiClient> = RULE_SERVICE_KEY;
 export const TASK_SERVICE_KEY: InjectionKey<TaskClientService> = Symbol('TaskClientService');
 
 // ============================================================================
