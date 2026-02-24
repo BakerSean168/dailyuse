@@ -1,0 +1,71 @@
+<script setup lang="ts">
+import { computed, inject } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  BOTTOM_NAVIGATION_KEY,
+  LOGOUT_HANDLER_KEY,
+  MAIN_NAVIGATION_KEY,
+} from '../di/keys';
+
+const router = useRouter();
+const route = useRoute();
+
+const mainNavigation = computed(
+  () => inject(MAIN_NAVIGATION_KEY) ?? [{ path: '/', title: '首页' }, { path: '/dashboard', title: '仪表盘' }],
+);
+const bottomNavigation = computed(() => inject(BOTTOM_NAVIGATION_KEY) ?? []);
+const logout = inject(LOGOUT_HANDLER_KEY);
+
+const isActive = (path: string) => (path === '/' ? route.path === '/' : route.path.startsWith(path));
+const navigateTo = (path: string) => {
+  if (route.path !== path) {
+    router.push(path);
+  }
+};
+</script>
+
+<template>
+  <div class="flex h-screen overflow-hidden">
+    <aside class="w-44 flex flex-col bg-sidebar border-r border-sidebar-border shrink-0 p-3 gap-2">
+      <button class="text-left font-bold px-2 py-2 rounded hover:bg-sidebar-accent" @click="navigateTo('/')">
+        DailyUse
+      </button>
+
+      <nav class="flex-1 space-y-1">
+        <button
+          v-for="item in mainNavigation"
+          :key="item.path"
+          class="w-full text-left px-2 py-2 rounded transition-colors"
+          :class="isActive(item.path) ? 'bg-sidebar-accent text-sidebar-primary' : 'hover:bg-sidebar-accent text-sidebar-foreground'"
+          @click="navigateTo(item.path)"
+        >
+          {{ item.title }}
+        </button>
+      </nav>
+
+      <div class="space-y-1">
+        <button
+          v-for="item in bottomNavigation"
+          :key="item.path"
+          class="w-full text-left px-2 py-2 rounded transition-colors"
+          :class="isActive(item.path) ? 'bg-sidebar-accent text-sidebar-primary' : 'hover:bg-sidebar-accent text-sidebar-foreground'"
+          @click="navigateTo(item.path)"
+        >
+          {{ item.title }}
+        </button>
+
+        <button
+          v-if="logout"
+          class="w-full text-left px-2 py-2 rounded transition-colors hover:bg-sidebar-accent hover:text-destructive"
+          @click="logout"
+        >
+          退出登录
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto">
+      <router-view />
+    </main>
+  </div>
+</template>
