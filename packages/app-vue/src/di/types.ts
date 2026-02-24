@@ -8,19 +8,19 @@ import type {
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { message?: string } };
 
-type GenericClientService = Record<string, (...args: unknown[]) => Promise<unknown>>;
+type GenericApiClient = Record<string, (...args: unknown[]) => Promise<unknown>>;
 
-export type ITaskTemplateApiClient = GenericClientService;
-export type ITaskInstanceApiClient = GenericClientService;
-export type ITaskDependencyApiClient = GenericClientService;
-export type IGoalApiClient = GenericClientService;
-export type IScheduleTaskApiClient = GenericClientService;
-export type IReminderApiClient = GenericClientService;
-export type IRepositoryApiClient = GenericClientService;
-export type IAuthApiClient = GenericClientService;
-export type INotificationApiClient = GenericClientService;
-export type ISettingApiClient = GenericClientService;
-export type IRuleApiClient = GenericClientService;
+export type ITaskTemplateApiClient = GenericApiClient;
+export type ITaskInstanceApiClient = GenericApiClient;
+export type ITaskDependencyApiClient = GenericApiClient;
+export type IGoalApiClient = GenericApiClient;
+export type IScheduleTaskApiClient = GenericApiClient;
+export type IReminderApiClient = GenericApiClient;
+export type IRepositoryApiClient = GenericApiClient;
+export type IAuthApiClient = GenericApiClient;
+export type INotificationApiClient = GenericApiClient;
+export type ISettingApiClient = GenericApiClient;
+export type IRuleApiClient = GenericApiClient;
 
 export interface IAccountApiClient {
   getMyProfile: () => Promise<Result<{ toDTO: () => AccountClientDTO }>>;
