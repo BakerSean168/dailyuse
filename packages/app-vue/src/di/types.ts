@@ -1,40 +1,32 @@
 import type { Component } from 'vue';
+import type {
+  AccountClientDTO,
+  UpdateAccountReq,
+  CheckAvailabilityReq,
+  CloseAccountReq,
+} from '@dailyuse/contracts/account';
 
-export interface ITaskTemplateApiClient {
-  [key: string]: unknown;
-}
-export interface ITaskInstanceApiClient {
-  [key: string]: unknown;
-}
-export interface ITaskDependencyApiClient {
-  [key: string]: unknown;
-}
-export interface IGoalApiClient {
-  [key: string]: unknown;
-}
-export interface IScheduleTaskApiClient {
-  [key: string]: unknown;
-}
-export interface IReminderApiClient {
-  [key: string]: unknown;
-}
-export interface IRepositoryApiClient {
-  [key: string]: unknown;
-}
+type Result<T> = { ok: true; data: T } | { ok: false; error: { message?: string } };
+
+type GenericClientService = Record<string, (...args: unknown[]) => Promise<unknown>>;
+
+export type ITaskTemplateApiClient = GenericClientService;
+export type ITaskInstanceApiClient = GenericClientService;
+export type ITaskDependencyApiClient = GenericClientService;
+export type IGoalApiClient = GenericClientService;
+export type IScheduleTaskApiClient = GenericClientService;
+export type IReminderApiClient = GenericClientService;
+export type IRepositoryApiClient = GenericClientService;
+export type IAuthApiClient = GenericClientService;
+export type INotificationApiClient = GenericClientService;
+export type ISettingApiClient = GenericClientService;
+export type IRuleApiClient = GenericClientService;
+
 export interface IAccountApiClient {
-  [key: string]: unknown;
-}
-export interface IAuthApiClient {
-  [key: string]: unknown;
-}
-export interface INotificationApiClient {
-  [key: string]: unknown;
-}
-export interface ISettingApiClient {
-  [key: string]: unknown;
-}
-export interface IRuleApiClient {
-  [key: string]: unknown;
+  getMyProfile: () => Promise<Result<{ toDTO: () => AccountClientDTO }>>;
+  updateMyProfile: (req: UpdateAccountReq) => Promise<Result<{ toDTO: () => AccountClientDTO }>>;
+  checkAvailability: (req: CheckAvailabilityReq) => Promise<Result<{ available: boolean }>>;
+  closeAccount: (req: CloseAccountReq) => Promise<Result<unknown>>;
 }
 
 export interface NavigationItem {

@@ -12,16 +12,17 @@ export function createAppRouter(options?: {
   history?: RouterHistory;
   isAuthenticated?: () => boolean;
   loginRoute?: string;
+  authView?: RouteRecordRaw['component'];
   additionalRoutes?: RouteRecordRaw[];
 }) {
-  const { history = createWebHistory(), isAuthenticated, loginRoute, additionalRoutes = [] } =
+  const { history = createWebHistory(), isAuthenticated, loginRoute, authView, additionalRoutes = [] } =
     options ?? {};
 
   const routes: RouteRecordRaw[] = [
     {
       path: '/auth',
       name: 'auth',
-      component: () => import('../views/AuthView.vue'),
+      component: authView ?? (() => import('../views/AuthView.vue')),
       meta: { requiresAuth: false, layout: 'auth' },
     },
     {
