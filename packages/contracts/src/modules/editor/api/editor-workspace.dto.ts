@@ -11,7 +11,7 @@ export const CreateEditorWorkspaceSchema = z.object({
   name: z.string().min(1).max(200).describe('工作区名称'),
   description: z.string().max(2000).optional().nullable().describe('工作区描述'),
   projectPath: z.string().min(1).max(500).describe('项目路径'),
-  projectType: z.nativeEnum(ProjectType).describe('项目类型'),
+  projectType: z.enum(ProjectType).describe('项目类型'),
   layout: z.record(z.string(), openApiJsonValue).optional().nullable().describe('工作区布局配置'),
   settings: z.record(z.string(), openApiJsonValue).optional().nullable().describe('工作区设置'),
 });

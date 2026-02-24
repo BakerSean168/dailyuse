@@ -21,7 +21,7 @@ export const CreateReminderGroupSchema = z.object({
   description: z.string().max(500).optional(),
   color: z.string().optional(),
   icon: z.string().optional(),
-  controlMode: z.nativeEnum(ControlMode).optional(),
+  controlMode: z.enum(ControlMode).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -36,7 +36,7 @@ export const UpdateReminderGroupSchema = z.object({
   description: z.string().max(500).optional(),
   color: z.string().optional(),
   icon: z.string().optional(),
-  controlMode: z.nativeEnum(ControlMode).optional(),
+  controlMode: z.enum(ControlMode).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -47,7 +47,7 @@ export type UpdateReminderGroupRes = ReminderGroupClientDTO;
  * 切换分组控制模式 Schema
  */
 export const SwitchGroupControlModeSchema = z.object({
-  mode: z.nativeEnum(ControlMode),
+  mode: z.enum(ControlMode),
 });
 
 export type SwitchGroupControlModeReq = z.infer<typeof SwitchGroupControlModeSchema>;

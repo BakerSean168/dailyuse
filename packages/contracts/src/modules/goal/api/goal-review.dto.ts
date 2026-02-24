@@ -19,7 +19,7 @@ export const CreateGoalReviewSchema = z.object({
   goalId: z.string().uuid('目标 UUID 无效'),
   title: z.string().min(1, '复盘标题不能为空').max(256),
   content: z.string().min(1, '复盘内容不能为空').max(10000),
-  reviewType: z.nativeEnum(ReviewType),
+  reviewType: z.enum(ReviewType),
   rating: z.number().int().min(1).max(5).optional(),
   achievements: z.string().max(2000).optional(),
   challenges: z.string().max(2000).optional(),

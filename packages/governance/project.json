@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/governance/src",
   "projectType": "library",
-  "tags": ["scope:governance", "type:lib"],
+  "tags": ["scope:governance", "type:lib", "layer:domain"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",

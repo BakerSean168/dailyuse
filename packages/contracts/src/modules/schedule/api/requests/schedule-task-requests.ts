@@ -13,11 +13,31 @@ import { ScheduleTaskStatus } from '../../value-objects/schedule-task-status';
 import { TaskPriority } from '../../value-objects/task-priority';
 import { Timezone } from '../../value-objects/timezone';
 
+export const ScheduleTaskSortBy = {
+  CreatedAt: 'createdAt',
+  UpdatedAt: 'updatedAt',
+  NextRunAt: 'nextRunAt',
+  Name: 'name',
+} as const;
+
+export type ScheduleTaskSortBy = (typeof ScheduleTaskSortBy)[keyof typeof ScheduleTaskSortBy];
+
+export const BatchScheduleTaskOperation = {
+  Pause: 'pause',
+  Resume: 'resume',
+  Cancel: 'cancel',
+  Enable: 'enable',
+  Disable: 'disable',
+} as const;
+
+export type BatchScheduleTaskOperation =
+  (typeof BatchScheduleTaskOperation)[keyof typeof BatchScheduleTaskOperation];
+
 // ============ Zod Schemas ============
 
 const ScheduleConfigSchema = z.object({
   cronExpression: z.string().min(1),
-  timezone: z.nativeEnum(Timezone),
+  timezone: z.enum(Timezone),
   startDate: z.number().nullable().optional(),
   endDate: z.number().nullable().optional(),
   maxExecutions: z.number().min(1).nullable().optional(),
@@ -33,13 +53,13 @@ const RetryPolicySchema = z.object({
 const TaskMetadataSchema = z.object({
   payload: z.record(z.string(), z.any().openapi({ type: 'object' })).optional(),
   tags: z.array(z.string()).optional(),
-  priority: z.nativeEnum(TaskPriority).optional(),
+  priority: z.enum(TaskPriority).optional(),
   timeout: z.number().min(1000).nullable().optional(),
 });
 
 export const CreateScheduleTaskRequestSchema = z.object({
   name: z.string().min(1).max(200),
-  sourceModule: z.nativeEnum(SourceModule),
+  sourceModule: z.enum(SourceModule),
   sourceEntityId: z.string().uuid(),
   schedule: ScheduleConfigSchema,
   description: z.string().max(2000).optional(),
@@ -59,7 +79,7 @@ export const UpdateScheduleTaskRequestSchema = z.object({
 
 export const UpdateScheduleConfigRequestSchema = z.object({
   cronExpression: z.string().min(1).optional(),
-  timezone: z.nativeEnum(Timezone).optional(),
+  timezone: z.enum(Timezone).optional(),
   startDate: z.number().nullable().optional(),
   endDate: z.number().nullable().optional(),
   maxExecutions: z.number().min(1).nullable().optional(),
@@ -68,25 +88,25 @@ export const UpdateScheduleConfigRequestSchema = z.object({
 export const UpdateTaskMetadataRequestSchema = z.object({
   payload: z.record(z.string(), z.any().openapi({ type: 'object' })).optional(),
   tags: z.array(z.string()).optional(),
-  priority: z.nativeEnum(TaskPriority).optional(),
+  priority: z.enum(TaskPriority).optional(),
   timeout: z.number().min(1000).nullable().optional(),
 });
 
 export const ScheduleTaskQueryParamsSchema = z.object({
-  sourceModule: z.nativeEnum(SourceModule).optional(),
+  sourceModule: z.enum(SourceModule).optional(),
   sourceEntityId: z.string().uuid().optional(),
-  status: z.nativeEnum(ScheduleTaskStatus).optional(),
+  status: z.enum(ScheduleTaskStatus).optional(),
   enabled: z.boolean().optional(),
   search: z.string().optional(),
   page: z.number().min(1).optional(),
   limit: z.number().min(1).max(100).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'nextRunAt', 'name']).optional(),
+  sortBy: z.enum(ScheduleTaskSortBy).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
 
 export const BatchScheduleTaskOperationRequestSchema = z.object({
   taskIds: z.array(brandedId<ScheduleTaskId>()).min(1),
-  operation: z.enum(['pause', 'resume', 'cancel', 'enable', 'disable']),
+  operation: z.enum(BatchScheduleTaskOperation),
   reason: z.string().max(500).optional(),
 });
 
@@ -150,7 +170,7 @@ export interface ScheduleTaskQueryParamsDTO {
   readonly search?: string;
   readonly page?: number;
   readonly limit?: number;
-  readonly sortBy?: 'createdAt' | 'updatedAt' | 'nextRunAt' | 'name';
+  readonly sortBy?: ScheduleTaskSortBy;
   readonly sortOrder?: 'asc' | 'desc';
 }
 
@@ -159,7 +179,7 @@ export interface ScheduleTaskQueryParamsDTO {
  */
 export interface BatchScheduleTaskOperationRequest {
   readonly taskIds: readonly ScheduleTaskId[];
-  readonly operation: 'pause' | 'resume' | 'cancel' | 'enable' | 'disable';
+  readonly operation: BatchScheduleTaskOperation;
   readonly reason?: string;
 }
 

@@ -5,6 +5,8 @@
 
 **Tests**: Tests are included as OPTIONAL tasks. Only implement if explicitly requested or following TDD approach.
 
+**Execution Note (2026-02-23)**: Optional test tasks are intentionally deferred in this implementation pass per instruction to prioritize functional and cleanup tasks.
+
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`

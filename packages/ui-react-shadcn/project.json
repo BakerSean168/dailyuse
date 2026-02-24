@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/ui-react-shadcn/src",
-  "tags": ["scope:ui", "type:shadcn", "type:react"],
+  "tags": ["scope:ui", "type:shadcn", "type:react", "layer:ui"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",

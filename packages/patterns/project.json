@@ -4,7 +4,8 @@
   "sourceRoot": "packages/patterns/src",
   "projectType": "library",
   "tags": [
-    "scope:patterns"
+    "scope:patterns",
+    "layer:shared"
   ],
   "targets": {
     "build": {

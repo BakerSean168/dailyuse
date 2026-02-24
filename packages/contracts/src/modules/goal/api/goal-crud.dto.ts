@@ -24,7 +24,7 @@ export const CreateGoalSchema = z.object({
   color: z.string().regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式').optional(),
   feasibilityAnalysis: z.string().max(2000).optional(),
   motivation: z.string().max(2000).optional(),
-  importance: z.nativeEnum(ImportanceLevel),
+  importance: z.enum(ImportanceLevel),
   category: z.string().max(100).optional(),
   tags: z.array(z.string().max(50)).optional(),
   startDate: z.number().int().optional(),
@@ -49,7 +49,7 @@ export const UpdateGoalSchema = z.object({
   color: z.string().regex(/^#[0-9A-F]{6}$/i).nullable().optional(),
   feasibilityAnalysis: z.string().max(2000).nullable().optional(),
   motivation: z.string().max(2000).nullable().optional(),
-  importance: z.nativeEnum(ImportanceLevel).optional(),
+  importance: z.enum(ImportanceLevel).optional(),
   category: z.string().max(100).nullable().optional(),
   tags: z.array(z.string().max(50)).nullable().optional(),
   startDate: z.number().int().nullable().optional(),
@@ -86,8 +86,8 @@ export type DeleteGoalRes = GoalClientDTO;
  */
 export const QueryGoalsSchema = z.object({
   identityId: brandedId<IdentityId>(),
-  status: z.array(z.nativeEnum(GoalStatus)).optional(),
-  importance: z.array(z.nativeEnum(ImportanceLevel)).optional(),
+  status: z.array(z.enum(GoalStatus)).optional(),
+  importance: z.array(z.enum(ImportanceLevel)).optional(),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   folderId: brandedId<GoalFolderId>().optional(),
@@ -126,7 +126,7 @@ export type GetGoalAggregateReq = void;
  */
 export const BatchUpdateGoalStatusSchema = z.object({
   goalIds: z.array(brandedId<GoalId>()).min(1, '至少需要选择一个目标'),
-  status: z.nativeEnum(GoalStatus),
+  status: z.enum(GoalStatus),
 });
 
 export type BatchUpdateGoalStatusReq = z.infer<typeof BatchUpdateGoalStatusSchema>;

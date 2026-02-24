@@ -4,12 +4,19 @@
  */
 
 // ============ 接口定义 ============
+export const SessionSplitType = {
+  Horizontal: 'horizontal',
+  Vertical: 'vertical',
+  Grid: 'grid',
+} as const;
+
+export type SessionSplitType = (typeof SessionSplitType)[keyof typeof SessionSplitType];
 
 /**
  * 会话布局 - Server 接口
  */
 export interface ISessionLayoutServer {
-  splitType: 'horizontal' | 'vertical' | 'grid';
+  splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 
@@ -30,7 +37,7 @@ export interface ISessionLayoutServer {
  * 会话布局 - Client 接口
  */
 export interface ISessionLayoutClient {
-  splitType: 'horizontal' | 'vertical' | 'grid';
+  splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 
@@ -45,7 +52,7 @@ export interface ISessionLayoutClient {
  * Session Layout Server DTO
  */
 export interface SessionLayoutServerDTO {
-  splitType: 'horizontal' | 'vertical' | 'grid';
+  splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 }
@@ -54,7 +61,7 @@ export interface SessionLayoutServerDTO {
  * Session Layout Client DTO
  */
 export interface SessionLayoutClientDTO {
-  splitType: 'horizontal' | 'vertical' | 'grid';
+  splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 }
@@ -63,7 +70,7 @@ export interface SessionLayoutClientDTO {
  * Session Layout Persistence DTO
  */
 export interface SessionLayoutPersistenceDTO {
-  split_type: 'horizontal' | 'vertical' | 'grid';
+  split_type: SessionSplitType;
   group_count: number;
   active_group_index: number;
 }

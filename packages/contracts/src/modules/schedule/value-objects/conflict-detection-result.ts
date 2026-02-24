@@ -11,6 +11,23 @@
 /**
  * Result of conflict detection analysis
  */
+export const ConflictSeverity = {
+  Minor: 'minor',
+  Moderate: 'moderate',
+  Severe: 'severe',
+} as const;
+
+export type ConflictSeverity = (typeof ConflictSeverity)[keyof typeof ConflictSeverity];
+
+export const ConflictSuggestionType = {
+  MoveEarlier: 'move_earlier',
+  MoveLater: 'move_later',
+  Shorten: 'shorten',
+} as const;
+
+export type ConflictSuggestionType =
+  (typeof ConflictSuggestionType)[keyof typeof ConflictSuggestionType];
+
 export interface ConflictDetectionResult {
   /**
    * Whether any conflicts were detected
@@ -61,7 +78,7 @@ export interface ConflictDetail {
    * Severity of the conflict based on overlap duration
    * @future Story TBD - Will integrate with ConflictSeverity enum
    */
-  readonly severity?: 'minor' | 'moderate' | 'severe';
+  readonly severity?: ConflictSeverity;
 }
 
 /**
@@ -74,7 +91,7 @@ export interface ConflictSuggestion {
    * - move_later: Move schedule to after conflicting schedules
    * - shorten: Reduce duration to fit in available gaps
    */
-  readonly type: 'move_earlier' | 'move_later' | 'shorten';
+  readonly type: ConflictSuggestionType;
 
   /**
    * Suggested new start time (Unix timestamp in milliseconds)

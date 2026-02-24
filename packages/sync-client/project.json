@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/sync-client",
   "projectType": "library",
-  "tags": ["scope:shared", "type:api-client"],
+  "tags": ["scope:shared", "type:api-client", "layer:infra"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
