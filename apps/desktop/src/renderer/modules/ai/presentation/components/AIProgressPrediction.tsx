@@ -219,10 +219,10 @@ async function generatePrediction(
     insights.push(`${summary.behindSchedule} 个目标需要立即关注，存在延期风险`);
   }
   if (summary.onTrack === predictions.length) {
-    insights.push('🎉 所有目标都在正轨上，继续保'');
+    insights.push('🎉 所有目标都在正轨上，继续保持');
   }
   const avgVelocity = predictions.reduce((sum, p) => sum + p.velocity, 0) / predictions.length;
-  insights.push(`平均日进` ${avgVelocity.toFixed(1)}%�?{avgVelocity > 3 ? '效率较高' : '建议提升效率'}`);
+  insights.push(`平均日进展 ${avgVelocity.toFixed(1)}% ${avgVelocity > 3 ? '效率较高' : '建议提升效率'}`);
 
   return {
     predictions,

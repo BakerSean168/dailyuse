@@ -5,9 +5,9 @@
  * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实�?
  */
 
-import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import { AIConversation as AIConversationServer } from '../../domain-server/aggregates/ai-conversation';
-import { Message as MessageServer } from '../../domain-server/entities/message';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
+import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { AIConversationClientDTO, MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';

@@ -131,11 +131,11 @@ const getInputLabel = (method?: AggregationMethod, hasGoalBinding?: boolean): st
 
 const getInputHint = (method?: AggregationMethod): string => {
   const hintMap: Record<AggregationMethod, string> = {
-    [AggregationMethod.Sum]: '例如：跑'5 公里，输'5',
+    [AggregationMethod.Sum]: '例如：跑了 5 公里，输入 5',
     [AggregationMethod.Max]: '例如：考试分数 85 分，输入 85',
-    [AggregationMethod.Average]: '例如：每日学'2 小时，输'2',
-    [AggregationMethod.Min]: '输入本次的最小',
-    [AggregationMethod.Last]: '输入最新的',
+    [AggregationMethod.Average]: '例如：每日学习 2 小时，输入 2',
+    [AggregationMethod.Min]: '输入本次的最小值',
+    [AggregationMethod.Last]: '输入最新值',
   };
   return method ? hintMap[method] || '请输入本次完成的数量' : '请输入本次完成的数量';
 };
@@ -417,7 +417,7 @@ export function TaskCompleteDialog({
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="记录本次完成的情".."
+              placeholder="记录本次完成的情况..."
               rows={3}
             />
           </div>

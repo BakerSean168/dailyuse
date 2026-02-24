@@ -70,9 +70,9 @@ const initialFormData: FormData = {
 
 const priorityOptions = [
   { label: '最高(1)', value: '1' },
-  { label: ''(2)', value: '2' },
-  { label: ''(3)', value: '3' },
-  { label: ''(4)', value: '4' },
+  { label: '高(2)', value: '2' },
+  { label: '中(3)', value: '3' },
+  { label: '低(4)', value: '4' },
   { label: '最低(5)', value: '5' },
 ];
 

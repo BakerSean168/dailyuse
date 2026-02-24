@@ -328,10 +328,10 @@ export function TaskManagementView({
         {selectedTemplates.size > 0 && (
           <div className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
             <span className="text-sm">
-              已选择 <strong>{selectedTemplates.size}</strong> 个模<
+              已选择 <strong>{selectedTemplates.size}</strong> 个模板
             </span>
             <Button variant="outline" size="sm" onClick={toggleSelectAll}>
-              {selectedTemplates.size === filteredTemplates.length ? '取消全' : '全'}
+              {selectedTemplates.size === filteredTemplates.length ? '取消全选' : '全选'}
             </Button>
             <Button
               variant="destructive"

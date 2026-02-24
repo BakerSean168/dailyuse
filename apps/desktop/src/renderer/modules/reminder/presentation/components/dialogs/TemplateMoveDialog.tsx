@@ -243,7 +243,7 @@ export function TemplateMoveDialog({
                   </div>
                   <div className="flex items-center gap-2">
                     <Folder className="h-4 w-4 text-muted-foreground" />
-                    <span>包含模板: {getGroupTemplateCount?.(selectedGroup.id) || 0} �?/span>
+                    <span>包含模板: {getGroupTemplateCount?.(selectedGroup.id) || 0} 个</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-muted-foreground" />

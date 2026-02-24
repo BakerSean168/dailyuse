@@ -81,7 +81,7 @@ function formatDate(dateValue?: string | number | Date): string {
     : typeof dateValue === 'string' 
       ? new Date(dateValue) 
       : dateValue;
-  return format(date, 'yyyy年MM月dd'HH:mm', { locale: zhCN });
+  return format(date, 'yyyy年MM月dd日 HH:mm', { locale: zhCN });
 }
 
 function getStatusInfo(template: ReminderTemplateClientDTO) {
@@ -89,7 +89,7 @@ function getStatusInfo(template: ReminderTemplateClientDTO) {
     return {
       color: 'secondary' as const,
       icon: PauseCircle,
-      text: '已暂',
+      text: '已暂停',
     };
   }
   // 可以根据 nextTriggerTime 等字段判断更多状�?

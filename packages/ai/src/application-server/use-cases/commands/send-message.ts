@@ -4,8 +4,8 @@
  * 发送消息应用服�?
  */
 
-import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import { Message } from '../../domain-server/entities/message';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import { Message } from '../../../domain-server/entities/message';
 import type { SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';

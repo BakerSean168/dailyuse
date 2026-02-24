@@ -7,14 +7,14 @@
 
 import type {
   IAIConversationRepository,
-} from '../../domain-server/repositories/IAIConversationRepository';
+} from '../../../domain-server/repositories/IAIConversationRepository';
 import type {
   IAIAdapter,
   AIGenerationRequest,
   AIStreamChunk,
-} from '../../domain-server/interfaces/adapter-types';
-import { AIConversation as AIConversationServer } from '../../domain-server/aggregates/ai-conversation';
-import { Message as MessageServer } from '../../domain-server/entities/message';
+} from '../../../domain-server/interfaces/adapter-types';
+import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
+import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole, GenerationTaskType } from '@dailyuse/contracts/ai';
 import { createLogger, eventBus } from '@dailyuse/utils';

@@ -4,8 +4,8 @@
  * 创建 AI 对话应用服务
  */
 
-import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import { AIConversation } from '../../domain-server/aggregates/ai-conversation';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import type { CreateConversationReq, CreateConversationRes } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';

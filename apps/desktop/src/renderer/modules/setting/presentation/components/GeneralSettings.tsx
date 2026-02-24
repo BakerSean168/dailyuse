@@ -221,7 +221,7 @@ export function GeneralSettings({
                 <Input
                   value={shortcuts[key] || ''}
                   onChange={(e) => onShortcutChange(key, e.target.value)}
-                  placeholder="按下快捷".."
+                  placeholder="按下快捷键..."
                   className="w-40 text-center font-mono text-sm"
                   readOnly
                   onKeyDown={(e) => {

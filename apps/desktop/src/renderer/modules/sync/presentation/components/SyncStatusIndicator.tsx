@@ -95,10 +95,10 @@ export function SyncStatusIndicator({
       parts.push(`上次同步: ${date.toLocaleString()}`);
     }
     if (status.pendingChangesCount && status.pendingChangesCount > 0) {
-      parts.push(`待同` ${status.pendingChangesCount} 项`);
+      parts.push(`待同步 ${status.pendingChangesCount} 项`);
     }
     if (status.state?.statusDescription) {
-      parts.push(`状` ${status.state.statusDescription}`);
+      parts.push(`状态: ${status.state.statusDescription}`);
     }
     return parts.join('\n');
   };

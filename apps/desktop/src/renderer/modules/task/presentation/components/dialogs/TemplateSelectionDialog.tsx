@@ -81,7 +81,7 @@ const getRecurrenceLabel = (rule?: { frequency?: string; interval?: number }): s
   const typeLabel = typeMap[rule.frequency] || rule.frequency;
   
   if (interval === 1) return typeLabel;
-  return ``{interval}${typeLabel.slice(1)}`;
+  return `每 ${interval} ${typeLabel.slice(1)}`;
 };
 
 // ===================== 组件 =====================

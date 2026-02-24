@@ -220,7 +220,7 @@ export function KeyResultDetailView({
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-xl font-bold truncate">{keyResult.title}</h1>
               {isCompleted && (
-                <Badge className="bg-green-100 text-green-800">已完</Badge>
+                <Badge className="bg-green-100 text-green-800">已完成</Badge>
               )}
             </div>
             {keyResult.description && (
@@ -229,7 +229,7 @@ export function KeyResultDetailView({
               </p>
             )}
             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <span>所属目标<</span>
+              <span>所属目标</span>
               <Badge variant="outline" style={{ borderColor: goalColor, color: goalColor }}>
                 {goal.title}
               </Badge>

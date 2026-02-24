@@ -162,8 +162,8 @@ export function TaskInfoCard({ template, onClick }: TaskInfoCardProps) {
             </div>
             <Progress value={completionRate} className="h-2" />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>已完成 {template.completedInstanceCount} �?/span>
-              <span><{template.instanceCount} �?/span>
+              <span>已完成 {template.completedInstanceCount} 个</span>
+              <span>共 {template.instanceCount} 个</span>
             </div>
           </div>
         )}

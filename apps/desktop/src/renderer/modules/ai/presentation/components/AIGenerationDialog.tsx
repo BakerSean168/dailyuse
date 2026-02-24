@@ -53,21 +53,21 @@ const generationTypes: {
     label: '目标规划',
     icon: Target,
     description: '根据描述生成 SMART 目标和里程碑',
-    placeholder: '例如: 我想在三个月内提高英语口语水平，目前是初级水'..',
+    placeholder: '例如: 我想在三个月内提高英语口语水平，目前是初级水平...',
   },
   {
     value: 'task',
     label: '任务分解',
     icon: ListTodo,
-    description: '将复杂任务分解为可执行的子任',
-    placeholder: '例如: 我需要完成一个产品发布，包括开发、测试、上'..',
+    description: '将复杂任务分解为可执行的子任务',
+    placeholder: '例如: 我需要完成一个产品发布，包括开发、测试、上线等...',
   },
   {
     value: 'schedule',
     label: '日程安排',
     icon: Calendar,
-    description: '根据事项生成合理的时间安',
-    placeholder: '例如: 明天我需要完成报告、开两个会议、健'..',
+    description: '根据事项生成合理的时间安排',
+    placeholder: '例如: 明天我需要完成报告、开两个会议、健身等...',
   },
   {
     value: 'summary',
@@ -260,7 +260,7 @@ export function AIGenerationDialog({
                   </div>
                 ) : (
                   <div className="text-muted-foreground text-center py-8">
-                    点击"生成"按钮开"
+                    点击"生成"按钮开始
                   </div>
                 )}
               </ScrollArea>
@@ -274,14 +274,14 @@ export function AIGenerationDialog({
           </Button>
           {result && onApply && (
             <Button variant="secondary" onClick={handleApply}>
-              应用到当�?
+              应用到当前
             </Button>
           )}
           <Button onClick={handleGenerate} disabled={loading || !prompt.trim()}>
             {loading ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                生成�?..
+                生成中...
               </>
             ) : (
               <>

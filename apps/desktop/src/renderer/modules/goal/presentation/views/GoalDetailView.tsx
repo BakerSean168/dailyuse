@@ -373,7 +373,7 @@ export function GoalDetailView({ goalId, onBack, onGoalUpdated }: GoalDetailView
           )}
           <div className="flex items-center gap-1">
             <Target className="h-4 w-4" />
-            <span>{goal.keyResultCount} 个关键结�?/span>
+            <span>{goal.keyResultCount} 个关键结果</span>
           </div>
         </div>
       </div>

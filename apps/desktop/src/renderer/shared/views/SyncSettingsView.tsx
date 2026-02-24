@@ -391,7 +391,7 @@ export const SyncSettingsView: React.FC<{ onAddProvider?: () => void }> = ({
     },
     {
       id: 'nutstore',
-      name: '坚果云 (Nutstore),
+      name: '坚果云 (Nutstore)',
       icon: <Cloud className="w-8 h-8" />,
       connected: false,
       status: 'disconnected',

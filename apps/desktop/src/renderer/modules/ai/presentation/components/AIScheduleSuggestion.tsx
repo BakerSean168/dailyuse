@@ -346,10 +346,10 @@ export function AIScheduleSuggestion({
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <span className="text-sm">
-                待安�? <strong>{tasks.length}</strong> 个任<
+                待安排 <strong>{tasks.length}</strong> 个任务
               </span>
               <span className="text-sm text-muted-foreground">
-                总时�? {Math.round(tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0) / 60)} 小时
+                总时长 {Math.round(tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0) / 60)} 小时
               </span>
             </div>
           </CardContent>
