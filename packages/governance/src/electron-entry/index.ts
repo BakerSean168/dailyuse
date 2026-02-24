@@ -74,12 +74,14 @@ export const GovernanceElectronModule: IElectronModule = {
     const electronContext: Context = { identityId: 'desktop-user', deviceId: 'electron-app' };
 
     ipcMain.handle(Ch.LIST, (_event, query?: ListRulesQuery) =>
-      controller.listRules({ page: 1, pageSize: 20, ...query }),
+      controller.listRules({ page: query?.page ?? 1, pageSize: query?.pageSize ?? 20, ...query }),
     );
 
-    ipcMain.handle(Ch.GET, (_event, req: { id?: string; code?: string }) =>
-      controller.getRuleById(req.id ?? req.code ?? ''),
-    );
+    ipcMain.handle(Ch.GET, (_event, req: { id?: string; code?: string }) => {
+      if (req.id) return controller.getRuleById(req.id);
+      if (req.code) return controller.getRuleByCode(req.code);
+      return Promise.reject(new Error('Either id or code is required'));
+    });
 
     ipcMain.handle(Ch.SEARCH, (_event, query: SearchRulesQuery) =>
       controller.searchRules(query, electronContext),

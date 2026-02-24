@@ -48,9 +48,15 @@ export const AuthenticationElectronModule: IElectronModule = {
     const identityRepository = new SqliteAuthIdentityRepository(db);
     const sessionRepository = new SqliteAuthSessionRepository(db);
     const passwordHasher = new Argon2Hasher();
+
+    const accessSecret = process.env.JWT_ACCESS_SECRET || 'desktop-access-secret-key';
+    const refreshSecret = process.env.JWT_REFRESH_SECRET || 'desktop-refresh-secret-key';
+    if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+      logger.warn('JWT secrets not configured via environment variables — using defaults (development only)');
+    }
     const tokenProvider = new JwtTokenProvider(
-      process.env.JWT_ACCESS_SECRET || 'desktop-access-secret-key',
-      process.env.JWT_REFRESH_SECRET || 'desktop-refresh-secret-key',
+      accessSecret,
+      refreshSecret,
       15 * 60 * 1000,        // 15 minutes access token
       7 * 24 * 60 * 60 * 1000, // 7 days refresh token
     );
