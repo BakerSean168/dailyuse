@@ -9,13 +9,17 @@ import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
 import type {
   GeneratedGoalDraft,
-  GenerateGoalResponse,
-  GenerateGoalWithKRsResponse,
-  GenerateKeyResultsResponse,
+  GenerateGoalResultDTO,
+  GenerateKeyResultsResultDTO,
   KeyResultPreview,
   GoalCategory,
   AIUsageQuotaServerDTO,
 } from '@dailyuse/contracts/ai';
+
+// Aliases for compatibility
+type GenerateGoalResponse = GenerateGoalResultDTO;
+type GenerateGoalWithKRsResponse = GenerateGoalResultDTO;
+type GenerateKeyResultsResponse = GenerateKeyResultsResultDTO;
 
 const logger = createLogger('GoalGenerationApplicationService');
 
@@ -102,6 +106,8 @@ export class GoalGenerationApplicationService {
       generatedAt: Date.now(),
       providerUsed: 'default',
       modelUsed: 'default',
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
 
     // If key results requested, add them
@@ -149,6 +155,8 @@ export class GoalGenerationApplicationService {
       generatedAt: Date.now(),
       providerUsed: 'default',
       modelUsed: 'default',
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
   }
 
@@ -171,6 +179,8 @@ export class GoalGenerationApplicationService {
         totalTokens: 30,
       },
       generatedAt: Date.now(),
+      providerId: 'default' as any,
+      processingTimeMs: 0,
     };
   }
 }

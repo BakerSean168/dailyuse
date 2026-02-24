@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AIProviderConfig Prisma Repository
  *
  * Prisma implementation of IAIProviderConfigRepository.
@@ -8,6 +8,7 @@
 import type { PrismaClient, AiProviderConfig as PrismaAiProviderConfig } from '@dailyuse/database';
 import type { IAIProviderConfigRepository } from '../../../domain-server';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { AIProviderType } from '@dailyuse/contracts/ai';
 
 /**
  * AIProviderConfig Prisma Repository
@@ -117,7 +118,7 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
       id: row.id,
       identityId: row.identityId,
       name: row.name,
-      providerType: row.providerType,
+      providerType: row.providerType as AIProviderType,
       baseUrl: row.baseUrl,
       apiKey: row.apiKeyEncrypted,
       defaultModel: row.defaultModel,

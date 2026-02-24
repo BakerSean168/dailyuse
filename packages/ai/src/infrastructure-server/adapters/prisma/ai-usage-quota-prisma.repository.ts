@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AIUsageQuota Prisma Repository
  *
  * Prisma implementation of IAIUsageQuotaRepository.
@@ -102,7 +102,7 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
       identityId: row.identityId,
       quotaLimit: row.quotaLimit,
       currentUsage: row.currentUsage,
-      resetPeriod: row.resetPeriod,
+      resetPeriod: row.resetPeriod as QuotaResetPeriod,
       lastResetAt: new Date(row.lastResetAt).getTime(),
       nextResetAt: new Date(row.nextResetAt).getTime(),
       createdAt: new Date(row.createdAt).getTime(),

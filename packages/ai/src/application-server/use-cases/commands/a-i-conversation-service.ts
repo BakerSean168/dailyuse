@@ -1,13 +1,13 @@
 /**
  * AI Conversation Service
  *
- * AI 对话应用服务 - 协调对话�?CRUD 操作和状态管�?
- * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实�?
+ * AI 对话应用服务 - 协调对话?CRUD 操作和状态管?
+ * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实?
  */
 
-import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
-import { AIConversation as AIConversationServer } from '../../domain-server/aggregates/ai-conversation';
-import { Message as MessageServer } from '../../domain-server/entities/message';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
+import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { AIConversationClientDTO, MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
@@ -21,17 +21,17 @@ export class AIConversationService {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
   /**
-   * 创建新对�?
+   * 创建新对?
    */
   async createConversation(identityId: string, title?: string): Promise<AIConversationClientDTO> {
     try {
-      // 创建聚合�?
+      // 创建聚合?
       const conversation = AIConversationServer.create({
         identityId,
         name: title ?? 'New Chat',
       });
 
-      // 持久�?- 传递聚合根
+      // 持久?- 传递聚合根
       await this.conversationRepository.save(conversation);
 
       logger.info('Conversation created', {
@@ -88,7 +88,7 @@ export class AIConversationService {
     };
   }> {
     try {
-      // 获取所有对话（接口中无findRecent方法�?
+      // 获取所有对话（接口中无findRecent方法?
       const allConversations = await this.conversationRepository.findByIdentityId(identityId);
       const total = allConversations.length;
 
@@ -96,7 +96,7 @@ export class AIConversationService {
       const offset = (page - 1) * limit;
       const paginatedConversations = allConversations.slice(offset, offset + limit);
 
-      // 转换�?ClientDTO
+      // 转换?ClientDTO
       const conversations = paginatedConversations.map((conversation) =>
         conversation.toClientDTO(),
       );
@@ -124,17 +124,17 @@ export class AIConversationService {
   }
 
   /**
-   * 删除对话（软删除�?
+   * 删除对话（软删除?
    */
   async deleteConversation(conversationId: string): Promise<void> {
     try {
-      // 检查对话是否存在（接口中无exists方法�?
+      // 检查对话是否存在（接口中无exists方法?
       const conversation = await this.conversationRepository.findById(conversationId);
       if (!conversation) {
         throw new Error('Conversation not found');
       }
 
-      // 软删�?
+      // 软删?
       await this.conversationRepository.delete(conversationId);
 
       logger.info('Conversation deleted', { id: conversationId });
@@ -145,7 +145,7 @@ export class AIConversationService {
   }
 
   /**
-   * 添加消息到对�?
+   * 添加消息到对?
    */
   async addMessage(
     conversationId: string,
@@ -154,7 +154,7 @@ export class AIConversationService {
     tokenCount?: number,
   ): Promise<MessageClientDTO> {
     try {
-      // 获取对话聚合�?
+      // 获取对话聚合?
       const conversation = await this.conversationRepository.findById(conversationId, {
         includeChildren: true,
       });
@@ -170,10 +170,10 @@ export class AIConversationService {
         tokenCount,
       });
 
-      // 通过聚合根添加消�?
+      // 通过聚合根添加消?
       conversation.addMessage(message);
 
-      // 持久�?- 传递聚合根
+      // 持久?- 传递聚合根
       await this.conversationRepository.save(conversation);
 
       logger.info('Message added to conversation', {
@@ -197,10 +197,10 @@ export class AIConversationService {
     status: ConversationStatus,
   ): Promise<AIConversationClientDTO[]> {
     try {
-      // 获取所有对话（接口中无findByStatus方法�?
+      // 获取所有对话（接口中无findByStatus方法?
       const allConversations = await this.conversationRepository.findByIdentityId(identityId);
 
-      // 手动过滤状�?
+      // 手动过滤状?
       const filteredConversations = allConversations.filter((conv) => {
         const dto = conv.toServerDTO();
         return dto.status === status;
@@ -222,7 +222,7 @@ export class AIConversationService {
   }
 
   /**
-   * 更新对话状�?
+   * 更新对话状?
    */
   async updateConversationStatus(
     conversationId: string,
