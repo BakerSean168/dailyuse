@@ -6,8 +6,48 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
+import { Prisma } from '@dailyuse/database';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
-import type { Folder } from '../../../domain-server/entities/folder';
+import { Folder, type FolderState } from '../../../domain-server/entities/folder';
+import { ResourceId } from '../../../domain-shared/value-objects/resource-id';
+import { FolderMetadata } from '../../../domain-shared/value-objects/folder-metadata';
+import type { FolderMetadataDTO } from '@dailyuse/contracts/repository';
+
+function parseMetadata(value: unknown): FolderMetadata {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return FolderMetadata.createDefault();
+  }
+  return FolderMetadata.fromDTO(value as FolderMetadataDTO);
+}
+
+function mapToDomain(data: {
+  id: string;
+  repositoryId: string;
+  parentId: string | null;
+  name: string;
+  path: string;
+  order: number;
+  isExpanded: boolean;
+  metadata: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+}): Folder {
+  const state: FolderState = {
+    id: ResourceId.of(data.id),
+    repositoryId: data.repositoryId,
+    parentId: data.parentId,
+    name: data.name,
+    path: data.path,
+    order: data.order,
+    isExpanded: data.isExpanded,
+    metadata: parseMetadata(data.metadata),
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+    children: null,
+  };
+
+  return Folder.load(state);
+}
 
 /**
  * Folder Prisma Repository
@@ -18,34 +58,74 @@ export class FolderPrismaRepository implements IFolderRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async save(folder: Folder): Promise<void> {
-    throw new Error('Not implemented - extract from apps/api');
+    const dto = folder.toServerDTO();
+
+    await this.prisma.folder.upsert({
+      where: { id: dto.id },
+      create: {
+        id: dto.id,
+        repositoryId: dto.repositoryId,
+        parentId: dto.parentId,
+        name: dto.name,
+        path: dto.path,
+        order: dto.order,
+        isExpanded: dto.isExpanded,
+        metadata: JSON.parse(JSON.stringify(dto.metadata)) as Prisma.InputJsonValue,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
+      },
+      update: {
+        repositoryId: dto.repositoryId,
+        parentId: dto.parentId,
+        name: dto.name,
+        path: dto.path,
+        order: dto.order,
+        isExpanded: dto.isExpanded,
+        metadata: JSON.parse(JSON.stringify(dto.metadata)) as Prisma.InputJsonValue,
+        updatedAt: new Date(dto.updatedAt),
+      },
+    });
   }
 
   async findById(id: string): Promise<Folder | null> {
-    throw new Error('Not implemented - extract from apps/api');
+    const data = await this.prisma.folder.findUnique({ where: { id } });
+    return data ? mapToDomain(data) : null;
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
-    throw new Error('Not implemented - extract from apps/api');
+    const rows = await this.prisma.folder.findMany({
+      where: { repositoryId },
+      orderBy: { path: 'asc' },
+    });
+    return rows.map(mapToDomain);
   }
 
   async findByParentId(parentId: string): Promise<Folder[]> {
-    throw new Error('Not implemented - extract from apps/api');
+    const rows = await this.prisma.folder.findMany({
+      where: { parentId },
+      orderBy: { name: 'asc' },
+    });
+    return rows.map(mapToDomain);
   }
 
   async findRootFolders(repositoryId: string): Promise<Folder[]> {
-    throw new Error('Not implemented - extract from apps/api');
+    const rows = await this.prisma.folder.findMany({
+      where: { repositoryId, parentId: null },
+      orderBy: { name: 'asc' },
+    });
+    return rows.map(mapToDomain);
   }
 
   async delete(id: string): Promise<void> {
-    throw new Error('Not implemented - extract from apps/api');
+    await this.prisma.folder.delete({ where: { id } });
   }
 
   async deleteByRepositoryId(repositoryId: string): Promise<void> {
-    throw new Error('Not implemented - extract from apps/api');
+    await this.prisma.folder.deleteMany({ where: { repositoryId } });
   }
 
   async exists(id: string): Promise<boolean> {
-    throw new Error('Not implemented - extract from apps/api');
+    const count = await this.prisma.folder.count({ where: { id } });
+    return count > 0;
   }
 }

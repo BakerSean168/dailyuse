@@ -58,17 +58,4 @@ CREATE TABLE IF NOT EXISTS schedule_executions (
 
 CREATE INDEX IF NOT EXISTS idx_schedule_executions_task_id ON schedule_executions(task_id);
 CREATE INDEX IF NOT EXISTS idx_schedule_executions_executed_at ON schedule_executions(executed_at);
-
--- Schedule Statistics Table
-CREATE TABLE IF NOT EXISTS schedule_statistics (
-  id TEXT PRIMARY KEY,
-  identity_id TEXT NOT NULL UNIQUE,
-  total_schedules INTEGER DEFAULT 0,
-  total_tasks INTEGER DEFAULT 0,
-  completed_tasks INTEGER DEFAULT 0,
-  pending_tasks INTEGER DEFAULT 0,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
-);
 `;

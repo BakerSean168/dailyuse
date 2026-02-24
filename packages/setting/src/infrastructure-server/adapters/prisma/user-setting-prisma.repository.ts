@@ -10,7 +10,7 @@ import type { SettingEventMap } from '@dailyuse/contracts/setting';
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
 import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaUserSettingMapper } from '../../mappers/prisma-user-setting-mapper';
+import { PrismaUserSettingMapper } from './mappers';
 
 export class UserSettingPrismaRepository implements IUserSettingRepository {
   constructor(private readonly prisma: PrismaClient) {}

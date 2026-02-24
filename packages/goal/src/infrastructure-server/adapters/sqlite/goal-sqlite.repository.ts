@@ -1,15 +1,15 @@
 /**
  * SQLite Goal Repository Implementation
- * 目标的 SQLite 仓储实现
+ * 目标�?SQLite 仓储实现
  *
- * 使用 better-sqlite3 同步 API，外层 async 包装以满足接口
- * 事务内级联保存 Goal 聚合（KeyResult, GoalReview, WeightSnapshot）
+ * 使用 better-sqlite3 同步 API，外�?async 包装以满足接�?
+ * 事务内级联保�?Goal 聚合（KeyResult, GoalReview, WeightSnapshot�?
  */
 
 import type Database from 'better-sqlite3';
 import { Goal } from '@/domain-server';
 import type { IGoalRepository } from '@/domain-server';
-import { SqliteGoalMapper, dateToInt } from '../../mappers/sqlite/sqlite-goal-mapper';
+import { SqliteGoalMapper, dateToInt } from './mappers/sqlite-goal-mapper';
 
 export class SqliteGoalRepository implements IGoalRepository {
   constructor(private db: Database.Database) {}

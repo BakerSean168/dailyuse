@@ -35,12 +35,6 @@ export const TaskChannels = {
   INSTANCE_SKIP: 'task:instance:skip',
   INSTANCE_POSTPONE: 'task:instance:postpone',
   
-  // Statistics
-  STATISTICS_GET: 'task:statistics:get',
-  STATISTICS_DAILY: 'task:statistics:daily',
-  STATISTICS_WEEKLY: 'task:statistics:weekly',
-  STATISTICS_MONTHLY: 'task:statistics:monthly',
-  
   // Folder
   FOLDER_LIST: 'task:folder:list',
   FOLDER_CREATE: 'task:folder:create',
@@ -69,9 +63,6 @@ export const GoalChannels = {
   FOLDER_CREATE: 'goal:folder:create',
   FOLDER_UPDATE: 'goal:folder:update',
   FOLDER_DELETE: 'goal:folder:delete',
-  
-  // Statistics
-  STATISTICS_GET: 'goal:statistics:get',
   
   // Focus (专注功能)
   FOCUS_START: 'goal:focus:start',
@@ -104,8 +95,6 @@ export const ScheduleChannels = {
   RECURRING_UPDATE: 'schedule:recurring:update',
   RECURRING_DELETE: 'schedule:recurring:delete',
   
-  // Statistics
-  STATISTICS_GET: 'schedule:statistics:get',
 } as const;
 
 // ============ Reminder Module Channels ============
@@ -125,9 +114,6 @@ export const ReminderChannels = {
   
   // Linked Entity (legacy API compatibility)
   LIST_BY_LINKED_ENTITY: 'reminder:list-by-linked-entity',
-  
-  // Statistics (legacy API compatibility)
-  STATISTICS_GET: 'reminder:statistics:get',
   
   // Template CRUD
   TEMPLATE_LIST: 'reminder:template:list',
@@ -315,9 +301,6 @@ export const NotificationChannels = {
   DELETE: 'notification:delete',
   CLEAR_ALL: 'notification:clear-all',
   GET_UNREAD_COUNT: 'notification:unread-count',
-  
-  // Statistics
-  STATISTICS_GET: 'notification:statistics:get',
   
   // Batch Operations
   SEND_BATCH: 'notification:send-batch',

@@ -39,20 +39,6 @@ export interface IIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
 }
 
-// ============ Task Statistics DTO ============
-// 合约包暂未定义，临时本地声明
-
-export interface TaskStatisticsServerDTO {
-  identityId: string;
-  totalTemplates: number;
-  totalInstances: number;
-  completedToday: number;
-  completedThisWeek: number;
-  completionRate: number;
-  efficiencyTrend: 'UP' | 'DOWN' | 'STABLE';
-  updatedAt: string;
-}
-
 // ============ Task Template API Client ============
 
 export interface ITaskTemplateApiClient {
@@ -109,18 +95,4 @@ export interface ITaskDependencyApiClient {
   validateDependency(request: ValidateDependencyRequest): Promise<Result<ValidateDependencyResponse>>;
   deleteDependency(id: string): Promise<Result<void>>;
   updateDependency(id: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
-}
-
-// ============ Task Statistics API Client ============
-
-export interface ITaskStatisticsApiClient {
-  getTaskStatistics(identityId: string, forceRecalculate?: boolean): Promise<Result<TaskStatisticsServerDTO>>;
-  recalculateTaskStatistics(identityId: string, force?: boolean): Promise<Result<TaskStatisticsServerDTO>>;
-  deleteTaskStatistics(identityId: string): Promise<Result<void>>;
-  updateTemplateStats(identityId: string): Promise<Result<void>>;
-  updateInstanceStats(identityId: string): Promise<Result<void>>;
-  updateCompletionStats(identityId: string): Promise<Result<void>>;
-  getTodayCompletionRate(identityId: string): Promise<Result<number>>;
-  getWeekCompletionRate(identityId: string): Promise<Result<number>>;
-  getEfficiencyTrend(identityId: string): Promise<Result<'UP' | 'DOWN' | 'STABLE'>>;
 }

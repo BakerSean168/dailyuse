@@ -2,7 +2,7 @@ import type { PrismaClient, Document as PrismaDocument } from '@dailyuse/databas
 import type { IDocumentRepository } from '../../../domain-server/repositories/IDocumentRepository';
 import { Document } from '../../../domain-server/entities/document';
 import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
-import { PrismaDocumentMapper } from '../../mappers/prisma-document-mapper';
+import { PrismaDocumentMapper } from './mappers/prisma-document-mapper';
 
 export class DocumentPrismaRepository implements IDocumentRepository {
   constructor(private readonly prisma: PrismaClient) {}

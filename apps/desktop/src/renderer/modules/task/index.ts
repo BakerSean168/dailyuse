@@ -13,11 +13,8 @@ export { TaskApplicationService, taskApplicationService } from '@dailyuse/task/a
 export {
   useTaskTemplate,
   useTaskInstance,
-  useTaskStatistics,
   type UseTaskTemplateReturn,
   type UseTaskInstanceReturn,
-  type TaskStatisticsState,
-  type UseTaskStatisticsReturn,
 } from './presentation/hooks';
 
 // ===== Initialization =====

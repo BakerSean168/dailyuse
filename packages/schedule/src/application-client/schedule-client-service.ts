@@ -29,8 +29,6 @@ import type {
 import type {
   IScheduleEventApiClient,
   IScheduleTaskApiClient,
-  ScheduleStatisticsClientDTO,
-  ModuleStatisticsClientDTO,
 } from '@/infrastructure-client/adapters/types';
 import {
   ScheduleTask,
@@ -241,31 +239,5 @@ export class ScheduleClientService {
     metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] },
   ): Promise<Result<void>> {
     return this.taskApi.updateTaskMetadata(taskId, metadata);
-  }
-
-  // ===== Schedule Statistics =====
-
-  async getStatistics(): Promise<Result<ScheduleStatisticsClientDTO>> {
-    return this.taskApi.getStatistics();
-  }
-
-  async getModuleStatistics(module: SourceModule): Promise<Result<ModuleStatisticsClientDTO>> {
-    return this.taskApi.getModuleStatistics(module);
-  }
-
-  async getAllModuleStatistics(): Promise<Result<Record<SourceModule, ModuleStatisticsClientDTO>>> {
-    return this.taskApi.getAllModuleStatistics();
-  }
-
-  async recalculateStatistics(): Promise<Result<ScheduleStatisticsClientDTO>> {
-    return this.taskApi.recalculateStatistics();
-  }
-
-  async resetStatistics(): Promise<Result<void>> {
-    return this.taskApi.resetStatistics();
-  }
-
-  async deleteStatistics(): Promise<Result<void>> {
-    return this.taskApi.deleteStatistics();
   }
 }

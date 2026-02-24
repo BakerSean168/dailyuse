@@ -48,7 +48,6 @@ const Ch = {
   FOLDER_CREATE: 'goal:folder:create',
   FOLDER_UPDATE: 'goal:folder:update',
   FOLDER_DELETE: 'goal:folder:delete',
-  STATISTICS_GET: 'goal:statistics:get',
 } as const;
 
 const channels = Object.values(Ch);
@@ -86,13 +85,6 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => goalModule.createGoalFolder.execute(dto.identityId, dto));
     ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => goalModule.updateGoalFolder.execute(dto.id, dto.identityId, dto));
     ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) => goalModule.deleteGoalFolder.execute(dto.id, dto.identityId));
-
-    // Statistics: recalculate progress for a given goal
-    ipcMain.handle(Ch.STATISTICS_GET, async (_, params) => {
-      const goal = await goalModule.goalRepository.findById(params.goalId);
-      if (!goal) return null;
-      return goalModule.goalProgressCalculator.recalculateGoalProgress(goal, params.options);
-    });
 
     logger.info('Goal module registered');
   },

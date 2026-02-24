@@ -29,10 +29,6 @@ export class NotificationApplicationService {
   async getUnreadCount(_identityId: string): Promise<number> {
     return 0;
   }
-
-  async getStatistics(_params?: unknown): Promise<Record<string, unknown>> {
-    return {};
-  }
 }
 
 export class NotificationTemplateApplicationService {

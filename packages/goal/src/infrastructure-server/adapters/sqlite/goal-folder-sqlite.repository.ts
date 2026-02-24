@@ -10,7 +10,7 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalFolderId } from '@/domain-shared';
 import type { FolderType } from '@dailyuse/contracts/goal';
 
-// Helper: Date â†’ INTEGER (millis)
+// Helper: Date â†?INTEGER (millis)
 function dateToInt(d: Date | null | undefined): number | null {
   if (!d) return null;
   return d instanceof Date ? d.getTime() : (d as number);

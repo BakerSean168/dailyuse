@@ -10,7 +10,7 @@ import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITa
 import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { DependencyType } from '@dailyuse/contracts/task';
 import { TaskDependency } from '@/domain-server/aggregates/task-dependency';
-import { PrismaTaskDependencyMapper } from '../../mappers/prisma-task-dependency-mapper';
+import { PrismaTaskDependencyMapper } from './mappers/prisma-task-dependency-mapper';
 
 export class TaskDependencyPrismaRepository implements ITaskDependencyRepository {
   constructor(private readonly prisma: PrismaClient) {}

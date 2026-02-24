@@ -23,8 +23,6 @@ import type {
   ActiveTimeConfigServerDTO,
   ActiveHoursConfigServer,
   ActiveHoursConfigServerDTO,
-  ReminderStatsServer,
-  ReminderStatsServerDTO,
 } from '../value-objects';
 
 // ============ DTO 定义 ============
@@ -51,7 +49,6 @@ export interface ReminderTemplateServerDTO {
   color?: string | null;
   icon?: string | null;
   nextTriggerAt?: number | null; // epoch ms
-  stats: ReminderStatsServerDTO;
   version: number;
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
@@ -83,8 +80,7 @@ export interface ReminderTemplatePersistenceDTO {
   color?: string | null;
   icon?: string | null;
   nextTriggerAt?: Date | null;
-  stats: string; // JSON string
-  
+
   // Smart Frequency: Response Metrics（扁平化字段）
   clickRate?: number | null;
   ignoreRate?: number | null;

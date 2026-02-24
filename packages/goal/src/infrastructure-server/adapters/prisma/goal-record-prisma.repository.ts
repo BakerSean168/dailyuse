@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GoalRecord Prisma Repository
  *
  * Implements IGoalRecordRepository using Prisma.
@@ -10,7 +10,7 @@ import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-ser
 import { GoalRecord } from '@/domain-server';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaGoalRecordMapper } from '../../mappers/prisma/prisma-goal-record-mapper';
+import { PrismaGoalRecordMapper } from './mappers/prisma-goal-record-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

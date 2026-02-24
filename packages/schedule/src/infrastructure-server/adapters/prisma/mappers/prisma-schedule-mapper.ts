@@ -1,0 +1,69 @@
+/**
+ * Prisma Schedule (CalendarEntry) Mapper
+ *
+ * Maps between CalendarEntry domain aggregate and Prisma Schedule model.
+ * Handles timestamp/Date conversions and JSON serialization.
+ */
+
+import type { Schedule as PrismaSchedule } from '@dailyuse/database';
+import { CalendarEntry } from '../../../../domain-server/aggregates/calendar-entry';
+import type { CalendarEntryState } from '../../../../domain-server/aggregates/calendar-entry';
+import { ScheduleId } from '../../../../domain-shared/value-objects/schedule-id';
+
+export class PrismaScheduleMapper {
+  /**
+   * Prisma Schedule â†?Domain CalendarEntry aggregate
+   */
+  static toDomain(data: PrismaSchedule): CalendarEntry {
+    const state: CalendarEntryState = {
+      id: ScheduleId.of(data.id),
+      identityId: data.identityId,
+      title: data.title,
+      description: data.description,
+      startTime: data.startTime.getTime(),
+      endTime: data.endTime.getTime(),
+      duration: data.duration,
+      hasConflict: data.hasConflict,
+      conflictingEntries: data.conflictingSchedules
+        ? JSON.parse(data.conflictingSchedules)
+        : null,
+      priority: data.priority,
+      location: data.location,
+      attendees: data.attendees ? JSON.parse(data.attendees) : null,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+    return CalendarEntry.load(state);
+  }
+
+  /**
+   * Domain CalendarEntry â†?Prisma write data
+   */
+  static toPersistence(schedule: CalendarEntry) {
+    return {
+      id: schedule.id,
+      identityId: schedule.identityId,
+      title: schedule.title,
+      description: schedule.description ?? null,
+      startTime: new Date(schedule.startTime),
+      endTime: new Date(schedule.endTime),
+      duration: schedule.duration,
+      hasConflict: schedule.hasConflict,
+      conflictingSchedules: schedule.conflictingEntries && schedule.conflictingEntries.length > 0
+        ? JSON.stringify(schedule.conflictingEntries)
+        : null,
+      priority: schedule.priority ?? null,
+      location: schedule.location ?? null,
+      attendees: schedule.attendees ? JSON.stringify(schedule.attendees) : null,
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt,
+    };
+  }
+
+  /**
+   * Batch conversion: Prisma â†?Domain
+   */
+  static toDomainList(rows: PrismaSchedule[]): CalendarEntry[] {
+    return rows.map((row) => PrismaScheduleMapper.toDomain(row));
+  }
+}

@@ -9,7 +9,6 @@ export type {
   ITaskTemplateApiClient,
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
-  ITaskStatisticsApiClient,
   IIpcClient,
 } from './adapters/types';
 

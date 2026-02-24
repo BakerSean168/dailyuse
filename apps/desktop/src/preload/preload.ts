@@ -71,9 +71,6 @@ const ALLOWED_CHANNELS = [
   'goal:focus:stop',
   'goal:focus:status',
   'goal:focus:history',
-  'goal:focus:statistics',
-  // Goal → Statistics (electron-entry: 1 handler)
-  'goal:statistics:get',
 
   // ═══════════ Task (electron-entry: 14 handlers) ═══════════
   // Task → Template
@@ -109,8 +106,6 @@ const ALLOWED_CHANNELS = [
   'task:dependency:validate',
   'task:dependency:delete',
   'task:dependency:update',
-  // Task → Statistics (electron-entry: 1 handler)
-  'task:statistics:get',
 
   // ═══════════ Schedule (electron-entry: 9 handlers) ═══════════
   // Schedule CRUD (flat — matches electron-entry)
@@ -146,13 +141,6 @@ const ALLOWED_CHANNELS = [
   'schedule:task:complete',
   'schedule:task:delete-batch',
   'schedule:task:update-metadata',
-  // Schedule → Statistics (adapter-only, electron-entry TODO)
-  'schedule:statistics:get',
-  'schedule:statistics:get-module',
-  'schedule:statistics:get-all-modules',
-  'schedule:statistics:recalculate',
-  'schedule:statistics:reset',
-  'schedule:statistics:delete',
 
   // ═══════════ Reminder (electron-entry: 9 handlers) ═══════════
   // Reminder → Template
@@ -178,8 +166,6 @@ const ALLOWED_CHANNELS = [
   'reminder:group:get-by-user',
   'reminder:group:toggle-status',
   'reminder:group:toggle-control-mode',
-  // Reminder → Statistics
-  'reminder:statistics:get',
 
   // ═══════════ Account (electron-entry: stub) ═══════════
   'account:list',
@@ -249,8 +235,6 @@ const ALLOWED_CHANNELS = [
   'notification:unread-count',
   'notification:settings:get',
   'notification:settings:update',
-  'notification:statistics:get',
-
   // ═══════════ Dashboard (adapter-only) ═══════════
   'dashboard:get-all',
   'dashboard:get-overview',

@@ -14,7 +14,6 @@ import type {
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatsClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -143,12 +142,6 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.post(`${this.groupsUrl}/${id}/toggle-control-mode`, {});
-  }
-
-  // ===== 统计 =====
-
-  async getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>> {
-    return this.httpClient.get(`/reminders/statistics/${identityId}`);
   }
 }
 

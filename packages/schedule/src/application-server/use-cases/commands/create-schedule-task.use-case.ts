@@ -13,7 +13,6 @@
  */
 
 import type { IScheduleTaskRepository } from '@/domain-server/repositories/IScheduleTaskRepository';
-import type { IScheduleStatisticsRepository } from '@/domain-server/repositories/IScheduleStatisticsRepository';
 import { ScheduleTask } from '@/domain-server/aggregates/schedule-task';
 import { ScheduleConfig } from '@/domain-server/value-objects/ScheduleConfig';
 import { RetryPolicy } from '@/domain-server/value-objects/RetryPolicy';
@@ -53,7 +52,6 @@ export interface CreateScheduleTaskReq {
 export class CreateScheduleTaskUseCase {
   constructor(
     private readonly scheduleTaskRepository: IScheduleTaskRepository,
-    private readonly _scheduleStatisticsRepository: IScheduleStatisticsRepository,
   ) {}
 
   async execute(req: CreateScheduleTaskReq): Promise<ScheduleTaskClientDTO> {

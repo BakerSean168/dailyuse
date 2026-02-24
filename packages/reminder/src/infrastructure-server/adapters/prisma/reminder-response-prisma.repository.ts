@@ -9,7 +9,7 @@ import type { PrismaClient, ReminderResponse as PrismaReminderResponse, Prisma }
 import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
-import { PrismaReminderResponseMapper } from '../../mappers/prisma-reminder-response-mapper';
+import { PrismaReminderResponseMapper } from './mappers/prisma-reminder-response-mapper';
 
 export class ReminderResponsePrismaRepository implements IReminderResponseRepository {
   constructor(private readonly prisma: PrismaClient) {}

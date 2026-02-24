@@ -18,6 +18,7 @@ export { UserReminderPreferencePrismaRepository } from './adapters/prisma/user-r
 export { SqliteReminderGroupRepository } from './adapters/sqlite/reminder-group-sqlite.repository';
 export { SqliteReminderResponseRepository } from './adapters/sqlite/reminder-response-sqlite.repository';
 export { SqliteReminderTemplateRepository } from './adapters/sqlite/reminder-template-sqlite.repository';
+export { UserReminderPreferenceSqliteRepository } from './adapters/sqlite/user-reminder-preference-sqlite.repository';
 
 // SQLite schema
 export { REMINDER_MODULE_SCHEMA } from './adapters/sqlite/schema';

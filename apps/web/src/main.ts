@@ -34,7 +34,8 @@ async function startApp() {
     });
     console.log('[MSW] Mock Service Worker started');
   }
-
+  
+  console.log('MSW env', import.meta.env.DEV, import.meta.env.VITE_ENABLE_MOCK_API)
   const app = createApp(App);
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);

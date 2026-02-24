@@ -355,14 +355,6 @@ export class RepositoryApiClient {
   }
 
   /**
-   * 获取仓库统计信息
-   */
-  async getRepositoryStatistics(repositoryId: string): Promise<{ stats: any }> {
-    const data = await apiClient.get(`${this.baseUrl}/${repositoryId}/statistics`);
-    return data;
-  }
-
-  /**
    * 获取标签云
    */
   async getTagCloud(repositoryId?: string): Promise<TagCloudResponseDTO> {

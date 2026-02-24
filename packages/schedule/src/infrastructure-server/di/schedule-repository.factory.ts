@@ -9,14 +9,12 @@ import type Database from 'better-sqlite3';
 import {
   SchedulePrismaRepository,
   ScheduleExecutionPrismaRepository,
-  ScheduleStatisticsPrismaRepository,
   ScheduleTaskPrismaRepository,
 } from '../adapters/prisma';
 
 import {
   SqliteScheduleRepository,
   SqliteScheduleExecutionRepository,
-  SqliteScheduleStatisticsRepository,
   SqliteScheduleTaskRepository,
 } from '../adapters/sqlite';
 
@@ -33,7 +31,6 @@ export class ScheduleRepositoryFactory {
     return {
       scheduleRepository: new SchedulePrismaRepository(prisma),
       scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(prisma),
-      scheduleStatisticsRepository: new ScheduleStatisticsPrismaRepository(prisma),
       scheduleTaskRepository: new ScheduleTaskPrismaRepository(prisma),
     };
   }
@@ -45,7 +42,6 @@ export class ScheduleRepositoryFactory {
     return {
       scheduleRepository: new SqliteScheduleRepository(db),
       scheduleExecutionRepository: new SqliteScheduleExecutionRepository(db),
-      scheduleStatisticsRepository: new SqliteScheduleStatisticsRepository(db),
       scheduleTaskRepository: new SqliteScheduleTaskRepository(db),
     };
   }

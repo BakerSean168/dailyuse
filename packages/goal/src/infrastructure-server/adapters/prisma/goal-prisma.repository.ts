@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  *
  * Mapping:
- * - Domain Goal â†” GoalPersistenceDTO â†” Prisma result
+ * - Domain Goal â†?GoalPersistenceDTO â†?Prisma result
  * - KeyResult progress is stored as individual columns in Prisma,
  *   but as a JSON string in the domain DTO
  * - GoalReview maps reviewTypeâ†’type, contentâ†’summary, lessonsLearnedâ†’improvements
@@ -20,17 +20,17 @@ import { Goal } from '@/domain-server';
 import type { KeyResultPersistenceDTO, GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaGoalMapper, type PrismaGoalWithRelations } from '../../mappers/prisma/prisma-goal-mapper';
-import { persistenceDtoToGoalState } from '../../mappers/goal-state-mapper';
+import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
+import { persistenceDtoToGoalState } from './mappers/goal-state-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
 // ============================================================
-// Prisma â†” Domain Mappers (delegated to PrismaGoalMapper)
+// Prisma â†?Domain Mappers (delegated to PrismaGoalMapper)
 // ============================================================
 
 /**
- * Parse KeyResultPersistenceDTO.progress JSON â†’ Prisma columns
+ * Parse KeyResultPersistenceDTO.progress JSON â†?Prisma columns
  */
 function parseKeyResultProgressForPrisma(kr: KeyResultPersistenceDTO | KeyResultServerDTO) {
   return PrismaGoalMapper.parseKeyResultProgress(kr as KeyResultPersistenceDTO);
@@ -253,7 +253,7 @@ export class GoalPrismaRepository
         }
       }
 
-      // 4. Sync Weight Snapshots (insert-only â€” snapshots are immutable)
+      // 4. Sync Weight Snapshots (insert-only â€?snapshots are immutable)
       if (dto.weightSnapshots && dto.weightSnapshots.length > 0) {
         for (const ws of dto.weightSnapshots) {
           // Check if snapshot already exists (idempotent)

@@ -37,8 +37,6 @@ import type {
   ITaskTemplateApiClient,
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
-  ITaskStatisticsApiClient,
-  TaskStatisticsServerDTO,
 } from '@/infrastructure-client/adapters/types';
 import { TaskTemplate } from '@/domain-client/aggregates/task-template';
 import { TaskInstance } from '@/domain-client/aggregates/task-instance';
@@ -141,7 +139,6 @@ export class TaskClientService {
     private readonly templateApi: ITaskTemplateApiClient,
     private readonly instanceApi: ITaskInstanceApiClient,
     private readonly dependencyApi: ITaskDependencyApiClient,
-    private readonly statisticsApi: ITaskStatisticsApiClient,
   ) {}
 
   // ===== Task Template Operations =====
@@ -296,43 +293,5 @@ export class TaskClientService {
 
   async deleteDependency(id: string): Promise<Result<void>> {
     return this.dependencyApi.deleteDependency(id);
-  }
-
-  // ===== Task Statistics Operations =====
-
-  async getStatistics(identityId: string, forceRecalculate?: boolean): Promise<Result<TaskStatisticsServerDTO>> {
-    return this.statisticsApi.getTaskStatistics(identityId, forceRecalculate);
-  }
-
-  async recalculateStatistics(identityId: string, force?: boolean): Promise<Result<TaskStatisticsServerDTO>> {
-    return this.statisticsApi.recalculateTaskStatistics(identityId, force);
-  }
-
-  async deleteStatistics(identityId: string): Promise<Result<void>> {
-    return this.statisticsApi.deleteTaskStatistics(identityId);
-  }
-
-  async updateTemplateStats(identityId: string): Promise<Result<void>> {
-    return this.statisticsApi.updateTemplateStats(identityId);
-  }
-
-  async updateInstanceStats(identityId: string): Promise<Result<void>> {
-    return this.statisticsApi.updateInstanceStats(identityId);
-  }
-
-  async updateCompletionStats(identityId: string): Promise<Result<void>> {
-    return this.statisticsApi.updateCompletionStats(identityId);
-  }
-
-  async getTodayCompletionRate(identityId: string): Promise<Result<number>> {
-    return this.statisticsApi.getTodayCompletionRate(identityId);
-  }
-
-  async getWeekCompletionRate(identityId: string): Promise<Result<number>> {
-    return this.statisticsApi.getWeekCompletionRate(identityId);
-  }
-
-  async getEfficiencyTrend(identityId: string): Promise<Result<'UP' | 'DOWN' | 'STABLE'>> {
-    return this.statisticsApi.getEfficiencyTrend(identityId);
   }
 }

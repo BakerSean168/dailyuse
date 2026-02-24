@@ -1,8 +1,8 @@
 /**
  * SQLite FocusMode Repository Implementation
- * 专注模式的 SQLite 仓储实现
+ * 专注模式�?SQLite 仓储实现
  *
- * FocusMode 是一个值对象，有关联表 focus_mode_goals 存储关联的 Goal IDs
+ * FocusMode 是一个值对象，有关联表 focus_mode_goals 存储关联�?Goal IDs
  */
 
 import type Database from 'better-sqlite3';

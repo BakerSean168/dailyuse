@@ -17,9 +17,8 @@ export { type IUserSettingRepository } from '../domain-server';
 // Prisma Adapters
 export { UserSettingPrismaRepository } from './adapters/prisma';
 
-// Mapper
-export { PrismaUserSettingMapper } from './mappers/prisma-user-setting-mapper';
-
+// SQLite Adapters
+export { SqliteUserSettingRepository } from './adapters/sqlite';
 
 // SQLite schema
 export { SETTING_MODULE_SCHEMA } from './adapters/sqlite/schema';

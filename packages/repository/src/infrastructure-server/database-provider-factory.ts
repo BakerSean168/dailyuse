@@ -15,7 +15,6 @@ import type { RepositoryContainer } from './di/repository-container-v2';
 import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
-import type { IRepositoryStatisticsRepository } from '../domain-server/repositories/IRepositoryStatisticsRepository';
 
 /**
  * 鏀寔鐨勬暟鎹簱鎻愪緵鑰呯被鍨?

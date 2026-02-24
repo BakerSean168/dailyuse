@@ -9,7 +9,7 @@
 import type { PrismaClient, Schedule as PrismaSchedule } from '@dailyuse/database';
 import type { IScheduleRepository } from '../../../domain-server/repositories/IScheduleRepository';
 import { CalendarEntry } from '../../../domain-server/aggregates/calendar-entry';
-import { PrismaScheduleMapper } from '../../mappers/prisma-schedule-mapper';
+import { PrismaScheduleMapper } from './mappers/prisma-schedule-mapper';
 
 export class SchedulePrismaRepository implements IScheduleRepository {
   constructor(private prisma: PrismaClient) {}

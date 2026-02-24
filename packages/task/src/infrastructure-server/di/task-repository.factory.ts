@@ -19,6 +19,7 @@ import { TaskFolderPrismaRepository } from '../adapters/prisma/task-folder-prism
 import { SqliteTaskTemplateRepository } from '../adapters/sqlite/task-template-sqlite.repository';
 import { SqliteTaskInstanceRepository } from '../adapters/sqlite/task-instance-sqlite.repository';
 import { SqliteTaskDependencyRepository } from '../adapters/sqlite/task-dependency-sqlite.repository';
+import { SqliteTaskFolderRepository } from '../adapters/sqlite/task-folder-sqlite.repository';
 
 export class TaskRepositoryFactory {
   static createTaskTemplateRepository(
@@ -63,9 +64,10 @@ export class TaskRepositoryFactory {
   ): ITaskFolderRepository {
     if (dataSourceType === 'prisma') {
       return new TaskFolderPrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      return new SqliteTaskFolderRepository(dbConnection as Database);
     }
-    // TODO: SQLite folder adapter not yet implemented
-    throw new Error(`TaskFolder SQLite adapter not implemented. Use Prisma.`);
+    throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
   /**
@@ -79,9 +81,7 @@ export class TaskRepositoryFactory {
       taskTemplateRepository: this.createTaskTemplateRepository(dataSourceType, dbConnection),
       taskInstanceRepository: this.createTaskInstanceRepository(dataSourceType, dbConnection),
       taskDependencyRepository: this.createTaskDependencyRepository(dataSourceType, dbConnection),
-      ...(dataSourceType === 'prisma'
-        ? { taskFolderRepository: this.createTaskFolderRepository(dataSourceType, dbConnection) }
-        : {}),
+      taskFolderRepository: this.createTaskFolderRepository(dataSourceType, dbConnection),
     };
   }
 }

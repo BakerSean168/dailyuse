@@ -31,9 +31,6 @@ import type {
   ActiveHoursConfigServerDTO,
   ActiveHoursConfigClientDTO,
   ActiveHoursConfigClient,
-  ReminderStatsServerDTO,
-  ReminderStatsClientDTO,
-  ReminderStatsClient,
 } from '../value-objects';
 import type { ReminderHistoryClientDTO } from '../entities/reminder-history-client';
 
@@ -62,7 +59,6 @@ export interface ReminderTemplateClientDTO {
   color: string | null;
   icon: string | null;
   nextTriggerAt: TransferDate | null;
-  stats: ReminderStatsClientDTO;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

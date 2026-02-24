@@ -43,8 +43,12 @@ export * from './application-client';
 export {
   PrismaAuthIdentityRepository,
   PrismaAuthSessionRepository,
+  SqliteAuthIdentityRepository,
+  SqliteAuthSessionRepository,
+  AUTHENTICATION_MODULE_SCHEMA,
   Argon2Hasher,
   AuthenticationContainer,
+  AuthenticationRepositoryFactory,
   AuthenticationModule,
 } from './infrastructure-server';
 export * from './infrastructure-client';

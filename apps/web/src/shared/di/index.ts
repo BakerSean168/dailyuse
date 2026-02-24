@@ -99,7 +99,6 @@ const taskService = new TaskClientService(
   taskAdapters.template,
   taskAdapters.instance,
   taskAdapters.dependency,
-  taskAdapters.statistics,
 );
 
 // ============================================================================

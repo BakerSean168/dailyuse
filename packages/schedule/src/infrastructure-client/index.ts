@@ -9,8 +9,6 @@ export type {
   IScheduleTaskApiClient,
   IScheduleEventApiClient,
   IIpcClient,
-  ScheduleStatisticsClientDTO,
-  ModuleStatisticsClientDTO,
 } from './adapters/types';
 
 // HTTP Adapters

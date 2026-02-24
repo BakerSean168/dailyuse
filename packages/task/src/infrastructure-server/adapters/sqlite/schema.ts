@@ -49,6 +49,24 @@ CREATE INDEX IF NOT EXISTS idx_task_templates_account_id ON task_templates(ident
 CREATE INDEX IF NOT EXISTS idx_task_templates_status ON task_templates(status);
 CREATE INDEX IF NOT EXISTS idx_task_templates_folder_id ON task_templates(folder_id);
 
+-- Task Folders Table
+CREATE TABLE IF NOT EXISTS task_folders (
+  id TEXT PRIMARY KEY,
+  identity_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  color TEXT,
+  icon TEXT,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  version INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER,
+  FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_task_folders_account_id ON task_folders(identity_id);
+CREATE INDEX IF NOT EXISTS idx_task_folders_order ON task_folders(order_index);
+
 -- Task Dependencies Table
 CREATE TABLE IF NOT EXISTS task_dependencies (
   id TEXT PRIMARY KEY,
@@ -68,17 +86,4 @@ CREATE TABLE IF NOT EXISTS task_dependencies (
 CREATE INDEX IF NOT EXISTS idx_task_dependencies_account_id ON task_dependencies(identity_id);
 CREATE INDEX IF NOT EXISTS idx_task_dependencies_predecessor ON task_dependencies(predecessor_id);
 CREATE INDEX IF NOT EXISTS idx_task_dependencies_successor ON task_dependencies(successor_id);
-
--- Task Statistics Table
-CREATE TABLE IF NOT EXISTS task_statistics (
-  id TEXT PRIMARY KEY,
-  identity_id TEXT NOT NULL UNIQUE,
-  total_tasks INTEGER DEFAULT 0,
-  completed_tasks INTEGER DEFAULT 0,
-  pending_tasks INTEGER DEFAULT 0,
-  overdue_tasks INTEGER DEFAULT 0,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
-);
 `;

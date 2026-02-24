@@ -21,8 +21,6 @@ import type {
   ActiveHoursConfigClient,
   NotificationConfigClientDTO,
   NotificationConfigClient,
-  ReminderStatsClientDTO,
-  ReminderStatsClient,
   ReminderType,
   ReminderStatus,
 } from '@dailyuse/contracts/reminder';
@@ -53,7 +51,6 @@ export interface ReminderTemplateState {
   color: string | null;
   icon: string | null;
   nextTriggerAt: Date | null;
-  stats: ReminderStatsClient;
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -153,10 +150,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     return this._props.nextTriggerAt;
   }
 
-  get stats(): ReminderStatsClient {
-    return this._props.stats;
-  }
-
   get version(): number {
     return this._props.version;
   }
@@ -254,7 +247,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       color: this._props.color,
       icon: this._props.icon,
       nextTriggerAt: this._props.nextTriggerAt?.getTime() ?? null,
-      stats: this._props.stats as ReminderStatsClientDTO,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),

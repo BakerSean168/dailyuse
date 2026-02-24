@@ -8,9 +8,11 @@
 export { TaskInstancePrismaRepository } from './adapters/prisma/task-instance-prisma.repository';
 export { TaskTemplatePrismaRepository } from './adapters/prisma/task-template-prisma.repository';
 export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependency-prisma.repository';
+export { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
 export { SqliteTaskInstanceRepository } from './adapters/sqlite/task-instance-sqlite.repository';
 export { SqliteTaskTemplateRepository } from './adapters/sqlite/task-template-sqlite.repository';
 export { SqliteTaskDependencyRepository } from './adapters/sqlite/task-dependency-sqlite.repository';
+export { SqliteTaskFolderRepository } from './adapters/sqlite/task-folder-sqlite.repository';
 
 // DI Module
 export { TaskModule } from './task.module';

@@ -41,7 +41,6 @@ import type {
   GetFocusHistoryReq,
   GetFocusStatusRes,
   GetFocusHistoryRes,
-  GetFocusStatisticsRes,
 } from '@dailyuse/contracts/goal';
 import type {
   IGoalApiClient,
@@ -466,9 +465,5 @@ export class GoalClientService {
     }
 
     return api.getHistory(params as GetFocusHistoryReq);
-  }
-
-  async getFocusStatistics(goalId?: string): Promise<Result<GetFocusStatisticsRes>> {
-    return this.requireFocusApi().getStatistics(goalId);
   }
 }

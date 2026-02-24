@@ -34,24 +34,6 @@ export interface IIpcClient {
   invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
 }
 
-// ============ Schedule Statistics DTOs ============
-// 合约包暂未定义，临时本地声明
-
-export interface ScheduleStatisticsClientDTO {
-  totalTasks: number;
-  activeTasks: number;
-  completedTasks: number;
-  cancelledTasks: number;
-  pausedTasks: number;
-}
-
-export interface ModuleStatisticsClientDTO {
-  module: SourceModule;
-  totalTasks: number;
-  activeTasks: number;
-  completedTasks: number;
-}
-
 // ============ Port Interfaces ============
 
 /**
@@ -122,12 +104,4 @@ export interface IScheduleTaskApiClient {
     taskId: string,
     metadata: { payload?: unknown; tagsToAdd?: string[]; tagsToRemove?: string[] },
   ): Promise<Result<void>>;
-
-  // ===== Schedule Statistics =====
-  getStatistics(): Promise<Result<ScheduleStatisticsClientDTO>>;
-  getModuleStatistics(module: SourceModule): Promise<Result<ModuleStatisticsClientDTO>>;
-  getAllModuleStatistics(): Promise<Result<Record<SourceModule, ModuleStatisticsClientDTO>>>;
-  recalculateStatistics(): Promise<Result<ScheduleStatisticsClientDTO>>;
-  resetStatistics(): Promise<Result<void>>;
-  deleteStatistics(): Promise<Result<void>>;
 }

@@ -8,26 +8,13 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import { WidgetSize, type WidgetConfig, type WidgetType } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Goal 模块的所有 Widgets
  */
 export function registerGoalWidgets(): void {
   console.log('[Goal] Registering Goal widgets...');
-
-  // Goal 统计 Widget
-  widgetRegistry.registerWidget({
-    id: 'goal-stats',
-    name: '目标统计',
-    description: '展示目标总览统计数据',
-    component: defineAsyncComponent(() => import('./GoalStatsWidget.vue')),
-    defaultVisible: true,
-    defaultOrder: 1,
-    defaultSize: WidgetSize.MEDIUM,
-    icon: 'i-heroicons-flag',
-    category: 'goal',
-  });
 
   // Goal 时间线 Widget
   widgetRegistry.registerWidget({

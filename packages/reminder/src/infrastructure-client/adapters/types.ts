@@ -12,7 +12,6 @@ import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatsClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -77,7 +76,4 @@ export interface IReminderApiClient {
   deleteReminderGroup(id: string): Promise<Result<void>>;
   toggleReminderGroupStatus(id: string): Promise<Result<ReminderGroupClientDTO>>;
   toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>>;
-
-  // ===== 统计 =====
-  getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>>;
 }

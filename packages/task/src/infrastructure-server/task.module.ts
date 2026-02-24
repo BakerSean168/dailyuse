@@ -79,11 +79,10 @@ export class TaskModule {
       dataSourceType,
       dbConnection,
     );
-
-    const taskFolderRepository =
-      dataSourceType === 'prisma'
-        ? TaskRepositoryFactory.createTaskFolderRepository(dataSourceType, dbConnection)
-        : undefined;
+    const taskFolderRepository = TaskRepositoryFactory.createTaskFolderRepository(
+      dataSourceType,
+      dbConnection,
+    );
 
     // 2. Register repositories in DI container
     const container = TaskContainer.getInstance();
@@ -91,9 +90,7 @@ export class TaskModule {
     container.setTaskTemplateRepository(taskTemplateRepository);
     container.setTaskInstanceRepository(taskInstanceRepository);
     container.setTaskDependencyRepository(taskDependencyRepository);
-    if (taskFolderRepository) {
-      container.setTaskFolderRepository(taskFolderRepository);
-    }
+    container.setTaskFolderRepository(taskFolderRepository);
 
     this.taskTemplateRepository = container.getTaskTemplateRepository();
     this.taskInstanceRepository = container.getTaskInstanceRepository();

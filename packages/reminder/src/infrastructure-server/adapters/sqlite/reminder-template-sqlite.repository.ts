@@ -16,7 +16,6 @@ import {
   NotificationConfig,
   RecurrenceConfig,
   ActiveHoursConfig,
-  ReminderStats,
   ResponseMetrics,
 } from '../../../domain-server/value-objects';
 
@@ -77,7 +76,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
       dto.color || null,
       dto.icon || null,
       dto.nextTriggerAt || null,
-      JSON.stringify(dto.stats),
+      '{}',
       responseMetrics?.clickRate ?? null,
       responseMetrics?.ignoreRate ?? null,
       responseMetrics?.avgResponseTime ?? null,
@@ -232,7 +231,6 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     const activeHours = row.active_hours
       ? ActiveHoursConfig.fromDTO(typeof row.active_hours === 'string' ? JSON.parse(row.active_hours) : row.active_hours)
       : null;
-    const stats = ReminderStats.fromDTO(typeof row.stats === 'string' ? JSON.parse(row.stats) : row.stats);
     const tags: string[] = typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags ?? []);
 
     // Smart Frequency: Reconstruct ResponseMetrics from flat fields
@@ -269,7 +267,6 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
       color: row.color ?? null,
       icon: row.icon ?? null,
       nextTriggerAt: row.next_trigger_at ?? null,
-      stats,
       responseMetrics,
       frequencyAdjustment: null,
       smartFrequencyEnabled: row.smart_frequency_enabled ?? true,

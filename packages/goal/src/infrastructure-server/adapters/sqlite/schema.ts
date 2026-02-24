@@ -1,16 +1,16 @@
 /**
  * SQLite Database Schema - Goal Module
- * 目标模块数据库架构
+ * 目标模块数据库架�?
  *
- * 列名使用 snake_case，与 SQLite 约定一致
- * 时间戳使用 INTEGER（毫秒级 epoch）
- * 布尔值使用 INTEGER（0/1）
+ * 列名使用 snake_case，与 SQLite 约定一�?
+ * 时间戳使�?INTEGER（毫秒级 epoch�?
+ * 布尔值使�?INTEGER�?/1�?
  * JSON 数据使用 TEXT
  */
 
 export const GOAL_MODULE_SCHEMA = `
 -- ============================================================
--- Goals Table (聚合根)
+-- Goals Table (聚合�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goals (
   id TEXT PRIMARY KEY,
@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_goals_folder_id ON goals(folder_id);
 CREATE INDEX IF NOT EXISTS idx_goals_parent_goal_id ON goals(parent_goal_id);
 
 -- ============================================================
--- Key Results Table (实体，属于 Goal 聚合)
+-- Key Results Table (实体，属�?Goal 聚合)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS key_results (
   id TEXT PRIMARY KEY,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS key_results (
 CREATE INDEX IF NOT EXISTS idx_key_results_goal_id ON key_results(goal_id);
 
 -- ============================================================
--- Goal Reviews Table (实体，属于 Goal 聚合)
+-- Goal Reviews Table (实体，属�?Goal 聚合)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_reviews (
   id TEXT PRIMARY KEY,
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS goal_reviews (
 CREATE INDEX IF NOT EXISTS idx_goal_reviews_goal_id ON goal_reviews(goal_id);
 
 -- ============================================================
--- Goal Records Table (进度记录，属于 KeyResult)
+-- Goal Records Table (进度记录，属�?KeyResult)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_records (
   id TEXT PRIMARY KEY,
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS goal_statistics (
 );
 
 -- ============================================================
--- Goal Folders Table (聚合根)
+-- Goal Folders Table (聚合�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_folders (
   id TEXT PRIMARY KEY,
@@ -157,7 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_goal_folders_identity_id ON goal_folders(identity
 CREATE INDEX IF NOT EXISTS idx_goal_folders_parent_folder_id ON goal_folders(parent_folder_id);
 
 -- ============================================================
--- Focus Sessions Table (聚合根)
+-- Focus Sessions Table (聚合�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS focus_sessions (
   id TEXT PRIMARY KEY,
@@ -186,7 +186,7 @@ CREATE INDEX IF NOT EXISTS idx_focus_sessions_goal_id ON focus_sessions(goal_id)
 CREATE INDEX IF NOT EXISTS idx_focus_sessions_status ON focus_sessions(status);
 
 -- ============================================================
--- Focus Modes Table (值对象)
+-- Focus Modes Table (值对�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS focus_modes (
   id TEXT PRIMARY KEY,
@@ -216,7 +216,7 @@ CREATE TABLE IF NOT EXISTS focus_mode_goals (
 );
 
 -- ============================================================
--- Weight Snapshots Table (值对象)
+-- Weight Snapshots Table (值对�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS weight_snapshots (
   id TEXT PRIMARY KEY,

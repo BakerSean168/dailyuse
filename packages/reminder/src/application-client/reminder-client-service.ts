@@ -16,7 +16,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatsClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -113,11 +112,5 @@ export class ReminderClientService {
 
   async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
     return this.reminderApi.toggleReminderGroupControlMode(id);
-  }
-
-  // ===== 统计 =====
-
-  async getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>> {
-    return this.reminderApi.getReminderStatistics(identityId);
   }
 }

@@ -9,8 +9,6 @@ import { tryCatch } from '@dailyuse/contracts/result';
 import type {
   IIpcClient,
   IScheduleTaskApiClient,
-  ScheduleStatisticsClientDTO,
-  ModuleStatisticsClientDTO,
 } from '../types';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
@@ -37,13 +35,6 @@ const SCHEDULE_TASK_CHANNELS = {
   DELETE_TASK: 'schedule:task:delete',
   DELETE_TASKS_BATCH: 'schedule:task:delete-batch',
   UPDATE_METADATA: 'schedule:task:update-metadata',
-  // Statistics
-  GET_STATISTICS: 'schedule:statistics:get',
-  GET_MODULE_STATISTICS: 'schedule:statistics:get-module',
-  GET_ALL_MODULE_STATISTICS: 'schedule:statistics:get-all-modules',
-  RECALCULATE_STATISTICS: 'schedule:statistics:recalculate',
-  RESET_STATISTICS: 'schedule:statistics:reset',
-  DELETE_STATISTICS: 'schedule:statistics:delete',
 } as const;
 
 export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
@@ -116,32 +107,6 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
     },
   ): Promise<Result<void>> {
     return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.UPDATE_METADATA, taskId, metadata));
-  }
-
-  // ===== Schedule Statistics =====
-
-  async getStatistics(): Promise<Result<ScheduleStatisticsClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_STATISTICS));
-  }
-
-  async getModuleStatistics(module: SourceModule): Promise<Result<ModuleStatisticsClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_MODULE_STATISTICS, module));
-  }
-
-  async getAllModuleStatistics(): Promise<Result<Record<SourceModule, ModuleStatisticsClientDTO>>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_ALL_MODULE_STATISTICS));
-  }
-
-  async recalculateStatistics(): Promise<Result<ScheduleStatisticsClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.RECALCULATE_STATISTICS));
-  }
-
-  async resetStatistics(): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.RESET_STATISTICS));
-  }
-
-  async deleteStatistics(): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_STATISTICS));
   }
 }
 

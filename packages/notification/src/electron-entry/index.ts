@@ -23,7 +23,6 @@ const Ch = {
   GET_UNREAD_COUNT: 'notification:unread-count',
   SETTINGS_GET: 'notification:settings:get',
   SETTINGS_UPDATE: 'notification:settings:update',
-  STATISTICS_GET: 'notification:statistics:get',
 } as const;
 
 const channels = Object.values(Ch);
@@ -47,7 +46,6 @@ export const NotificationElectronModule: IElectronModule = {
     ipcMain.handle(Ch.GET_UNREAD_COUNT, (_, identityId) => svc.getUnreadCount(identityId));
     ipcMain.handle(Ch.SETTINGS_GET, (_, identityId) => mod.notificationChannelService.getPreferences(identityId));
     ipcMain.handle(Ch.SETTINGS_UPDATE, (_, dto) => mod.notificationChannelService.updatePreferences(dto));
-    ipcMain.handle(Ch.STATISTICS_GET, (_, params) => svc.getStatistics(params));
 
     logger.info('Notification module registered');
   },

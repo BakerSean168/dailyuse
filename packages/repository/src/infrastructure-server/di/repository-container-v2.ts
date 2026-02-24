@@ -1,7 +1,6 @@
 import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
-import type { IRepositoryStatisticsRepository } from '../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 /**
  * Repository 妯″潡渚濊禆娉ㄥ叆瀹瑰櫒
@@ -24,7 +23,6 @@ export class RepositoryContainer {
   private repositoryRepository?: IRepositoryRepository;
   private resourceRepository?: IResourceRepository;
   private folderRepository?: IFolderRepository;
-  private repositoryStatisticsRepository?: IRepositoryStatisticsRepository;
 
   private constructor() {}
 
@@ -114,29 +112,6 @@ export class RepositoryContainer {
     return this.folderRepository;
   }
 
-  // ===== Repository Statistics Repository =====
-
-  /**
-   * 娉ㄥ唽 RepositoryStatistics Repository瀹炵幇
-   */
-  registerRepositoryStatisticsRepository(repository: IRepositoryStatisticsRepository): this {
-    this.repositoryStatisticsRepository = repository;
-    return this;
-  }
-
-  /**
-   * Get RepositoryStatistics Repository瀹炰緥
-   */
-  getRepositoryStatisticsRepository(): IRepositoryStatisticsRepository {
-    if (!this.repositoryStatisticsRepository) {
-      throw new Error(
-        'Repository statistics repository not initialized. ' +
-          'Please initialize the database provider using DatabaseProviderFactory.initializeProvider()',
-      );
-    }
-    return this.repositoryStatisticsRepository;
-  }
-
   // ===== 鍒悕鏂规硶锛堝吋瀹规€э級 =====
 
   /**
@@ -155,7 +130,6 @@ export class RepositoryContainer {
     this.repositoryRepository = undefined;
     this.resourceRepository = undefined;
     this.folderRepository = undefined;
-    this.repositoryStatisticsRepository = undefined;
   }
 
   /**
@@ -165,8 +139,7 @@ export class RepositoryContainer {
     return !!(
       this.repositoryRepository &&
       this.resourceRepository &&
-      this.folderRepository &&
-      this.repositoryStatisticsRepository
+      this.folderRepository
     );
   }
 
@@ -177,8 +150,7 @@ export class RepositoryContainer {
     return !!(
       this.repositoryRepository ||
       this.resourceRepository ||
-      this.folderRepository ||
-      this.repositoryStatisticsRepository
+      this.folderRepository
     );
   }
 }

@@ -1,8 +1,8 @@
-﻿import type { PrismaClient, FocusSession as PrismaFocusSession, Prisma } from '@dailyuse/database';
+import type { PrismaClient, FocusSession as PrismaFocusSession, Prisma } from '@dailyuse/database';
 import type { IFocusSessionRepository } from '@/domain-server';
 import { FocusSession } from '@/domain-server';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
-import { PrismaFocusSessionMapper } from '../../mappers/prisma/prisma-focus-session-mapper';
+import { PrismaFocusSessionMapper } from './mappers/prisma-focus-session-mapper';
 
 /**
  * FocusSession Prisma Repository

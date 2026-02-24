@@ -22,7 +22,6 @@ const Ch = {
   COMPLETE: 'schedule:complete',
   CANCEL: 'schedule:cancel',
   RESCHEDULE: 'schedule:reschedule',
-  STATISTICS_GET: 'schedule:statistics:get',
 } as const;
 
 const channels = Object.values(Ch);
@@ -42,8 +41,6 @@ export const ScheduleElectronModule: IElectronModule = {
     ipcMain.handle(Ch.COMPLETE, (_, id) => mod.triggerScheduleTask.execute(id));
     ipcMain.handle(Ch.CANCEL, (_, id) => mod.pauseScheduleTask.execute(id));
     ipcMain.handle(Ch.RESCHEDULE, (_, dto) => mod.resumeScheduleTask.execute(dto));
-    // TODO: implement when ScheduleStatisticsApplicationService has methods
-    // ipcMain.handle(Ch.STATISTICS_GET, (_, params) => mod.scheduleStatisticsService.getStatistics(params));
 
     logger.info('Schedule module registered');
   },

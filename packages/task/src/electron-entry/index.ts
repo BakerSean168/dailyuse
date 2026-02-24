@@ -31,7 +31,6 @@ const Ch = {
   INSTANCE_DELETE: 'task:instance:delete',
   INSTANCE_COMPLETE: 'task:instance:complete',
   INSTANCE_SKIP: 'task:instance:skip',
-  STATISTICS_GET: 'task:statistics:get',
 } as const;
 
 const channels = Object.values(Ch);
@@ -68,10 +67,6 @@ export const TaskElectronModule: IElectronModule = {
     ipcMain.handle(Ch.INSTANCE_DELETE, (_, id) => taskModule.deleteTaskInstance.execute(id));
     ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, dto) => taskModule.completeTaskInstance.execute(dto));
     ipcMain.handle(Ch.INSTANCE_SKIP, (_, dto) => taskModule.skipTaskInstance.execute(dto));
-
-    ipcMain.handle(Ch.STATISTICS_GET, (_, params) =>
-      taskModule.getTaskInstancesByDateRange.execute(params.identityId, params.startDate, params.endDate),
-    );
 
     logger.info('Task module registered');
   },

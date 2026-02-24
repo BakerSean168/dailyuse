@@ -25,7 +25,7 @@ export class ReminderModule {
   public readonly reminderTemplateRepository: IReminderTemplateRepository;
   public readonly reminderGroupRepository: IReminderGroupRepository;
   public readonly reminderResponseRepository: IReminderResponseRepository;
-  public readonly userReminderPreferenceRepository?: IUserReminderPreferenceRepository;
+  public readonly userReminderPreferenceRepository: IUserReminderPreferenceRepository;
 
   constructor(
     dataSourceType: 'prisma' | 'sqlite',
@@ -46,21 +46,17 @@ export class ReminderModule {
     );
 
     const userReminderPreferenceRepository =
-      dataSourceType === 'prisma'
-        ? ReminderRepositoryFactory.createUserReminderPreferenceRepository(
-            dataSourceType,
-            dbConnection,
-          )
-        : undefined;
+      ReminderRepositoryFactory.createUserReminderPreferenceRepository(
+        dataSourceType,
+        dbConnection,
+      );
 
     const container = ReminderContainer.getInstance();
     container.reset();
     container.setReminderTemplateRepository(reminderTemplateRepository);
     container.setReminderGroupRepository(reminderGroupRepository);
     container.setReminderResponseRepository(reminderResponseRepository);
-    if (userReminderPreferenceRepository) {
-      container.setUserReminderPreferenceRepository(userReminderPreferenceRepository);
-    }
+    container.setUserReminderPreferenceRepository(userReminderPreferenceRepository);
 
     this.reminderTemplateRepository = container.getReminderTemplateRepository();
     this.reminderGroupRepository = container.getReminderGroupRepository();

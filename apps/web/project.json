@@ -9,14 +9,17 @@
       "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "web:build",
-        "mode": "development"
+        "mode": "development",
+        
       },
       "configurations": {
         "local": {
-          "mode": "development"
+          "mode": "development",
+          "envFile": ".env.development.local"
         },
         "staging": {
-          "mode": "staging"
+          "mode": "staging",
+          "envFile": ".env.staging"
         }
       }
     },
@@ -29,10 +32,12 @@
       },
       "configurations": {
         "staging": {
-          "mode": "staging"
+          "mode": "staging",
+          "envFile": ".env.staging"
         },
         "production": {
-          "mode": "production"
+          "mode": "production",
+          "envFile": ".env.production"
         }
       }
     },

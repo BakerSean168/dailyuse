@@ -16,7 +16,7 @@ import type {
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaTaskTemplateMapper } from '../../mappers/prisma-task-template-mapper';
+import { PrismaTaskTemplateMapper } from './mappers/prisma-task-template-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

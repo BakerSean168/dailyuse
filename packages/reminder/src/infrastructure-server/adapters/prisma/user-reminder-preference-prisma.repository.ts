@@ -8,7 +8,7 @@
 import type { PrismaClient, UserReminderPreference as PrismaUserReminderPreference } from '@dailyuse/database';
 import type { IUserReminderPreferenceRepository } from '../../../domain-server/repositories/IUserReminderPreferenceRepository';
 import { UserReminderPreferences } from '../../../domain-server/aggregates/user-reminder-preferences';
-import { PrismaUserReminderPreferenceMapper } from '../../mappers/prisma-user-reminder-preference-mapper';
+import { PrismaUserReminderPreferenceMapper } from './mappers/prisma-user-reminder-preference-mapper';
 
 export class UserReminderPreferencePrismaRepository
   implements IUserReminderPreferenceRepository

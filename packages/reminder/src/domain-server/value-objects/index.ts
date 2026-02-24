@@ -33,7 +33,6 @@ export {
   TriggerConfig,
   ActiveTimeConfig,
   ActiveHoursConfig,
-  ReminderStats,
   GroupStats,
   ResponseMetrics,
   FrequencyAdjustment,

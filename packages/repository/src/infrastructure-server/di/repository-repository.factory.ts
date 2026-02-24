@@ -9,20 +9,17 @@ import type Database from 'better-sqlite3';
 import type { IRepositoryRepository } from '../../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../../domain-server/repositories/IFolderRepository';
-import type { IRepositoryStatisticsRepository } from '../../domain-server/repositories/IRepositoryStatisticsRepository';
 
 import {
   RepositoryPrismaRepository,
   ResourcePrismaRepository,
   FolderPrismaRepository,
-  RepositoryStatisticsPrismaRepository,
 } from '../adapters/prisma';
 
 import {
   SqliteRepositoryRepository,
   SqliteResourceRepository,
   SqliteFolderRepository,
-  SqliteRepositoryStatisticsRepository,
 } from '../adapters/sqlite';
 
 type BetterSQLiteDB = Database.Database;
@@ -39,7 +36,6 @@ export class RepositoryRepositoryFactory {
       repositoryRepository: new RepositoryPrismaRepository(prisma),
       resourceRepository: new ResourcePrismaRepository(prisma),
       folderRepository: new FolderPrismaRepository(prisma),
-      statisticsRepository: new RepositoryStatisticsPrismaRepository(prisma),
     };
   }
 
@@ -51,7 +47,6 @@ export class RepositoryRepositoryFactory {
       repositoryRepository: new SqliteRepositoryRepository(db),
       resourceRepository: new SqliteResourceRepository(db),
       folderRepository: new SqliteFolderRepository(db),
-      statisticsRepository: new SqliteRepositoryStatisticsRepository(db),
     };
   }
 

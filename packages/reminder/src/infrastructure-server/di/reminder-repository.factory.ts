@@ -19,6 +19,7 @@ import { UserReminderPreferencePrismaRepository } from '../adapters/prisma/user-
 import { SqliteReminderTemplateRepository } from '../adapters/sqlite/reminder-template-sqlite.repository';
 import { SqliteReminderGroupRepository } from '../adapters/sqlite/reminder-group-sqlite.repository';
 import { SqliteReminderResponseRepository } from '../adapters/sqlite/reminder-response-sqlite.repository';
+import { UserReminderPreferenceSqliteRepository } from '../adapters/sqlite/user-reminder-preference-sqlite.repository';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -68,9 +69,10 @@ export class ReminderRepositoryFactory {
   ): IUserReminderPreferenceRepository {
     if (dataSourceType === 'prisma') {
       return new UserReminderPreferencePrismaRepository(dbConnection as PrismaClient);
+    } else if (dataSourceType === 'sqlite') {
+      return new UserReminderPreferenceSqliteRepository(dbConnection as BetterSQLiteDB);
     }
-    // TODO: SQLite user preference adapter not yet implemented
-    throw new Error(`UserReminderPreference SQLite adapter not implemented. Use Prisma.`);
+    throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
   /**
@@ -84,9 +86,7 @@ export class ReminderRepositoryFactory {
       reminderTemplateRepository: this.createReminderTemplateRepository(dataSourceType, dbConnection),
       reminderGroupRepository: this.createReminderGroupRepository(dataSourceType, dbConnection),
       reminderResponseRepository: this.createReminderResponseRepository(dataSourceType, dbConnection),
-      ...(dataSourceType === 'prisma'
-        ? { userReminderPreferenceRepository: this.createUserReminderPreferenceRepository(dataSourceType, dbConnection) }
-        : {}),
+      userReminderPreferenceRepository: this.createUserReminderPreferenceRepository(dataSourceType, dbConnection),
     };
   }
 }

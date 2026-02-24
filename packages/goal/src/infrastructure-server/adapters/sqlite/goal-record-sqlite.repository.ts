@@ -1,6 +1,6 @@
 /**
  * SQLite GoalRecord Repository Implementation
- * 目标进度记录的 SQLite 仓储实现
+ * 目标进度记录�?SQLite 仓储实现
  */
 
 import type Database from 'better-sqlite3';

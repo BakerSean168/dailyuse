@@ -12,8 +12,9 @@
 export { RulePrismaRepository } from './adapters/prisma/rule-prisma.repository';
 export { RuleRevisionPrismaRepository } from './adapters/prisma/rule-revision-prisma.repository';
 
-// ============ Mappers ============
-export * from './mappers';
+// ============ Adapters - SQLite ============
+export { RuleSqliteRepository, RuleRevisionSqliteRepository } from './adapters/sqlite';
+export { GOVERNANCE_MODULE_SCHEMA } from './adapters/sqlite';
 
 // ============ Composition Root ============
 export { GovernanceModule, type GovernanceModuleRepositories } from './governance.module';

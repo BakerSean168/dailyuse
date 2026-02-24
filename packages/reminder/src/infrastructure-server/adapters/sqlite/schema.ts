@@ -53,4 +53,18 @@ CREATE TABLE IF NOT EXISTS reminder_templates (
 CREATE INDEX IF NOT EXISTS idx_reminder_templates_account_id ON reminder_templates(identity_id);
 CREATE INDEX IF NOT EXISTS idx_reminder_templates_group_id ON reminder_templates(group_id);
 CREATE INDEX IF NOT EXISTS idx_reminder_templates_status ON reminder_templates(status);
+
+-- User Reminder Preferences Table
+CREATE TABLE IF NOT EXISTS user_reminder_preferences (
+  id TEXT PRIMARY KEY,
+  identity_id TEXT NOT NULL UNIQUE,
+  best_time_slots TEXT NOT NULL DEFAULT '[]',
+  worst_time_slots TEXT NOT NULL DEFAULT '[]',
+  global_smart_frequency INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_reminder_preferences_identity_id ON user_reminder_preferences(identity_id);
 `;

@@ -4,7 +4,8 @@
 
 import type Database from 'better-sqlite3';
 import { DocumentVersion } from '../../../domain-server/entities/document-version';
-import type { IDocumentVersionRepository, VersionChangeType } from '../../../domain-server/repositories/IDocumentVersionRepository';
+import type { IDocumentVersionRepository } from '../../../domain-server/repositories/IDocumentVersionRepository';
+import type { VersionChangeType } from '@dailyuse/contracts/editor';
 
 export class SqliteDocumentVersionRepository implements IDocumentVersionRepository {
   constructor(private db: Database.Database) {}
@@ -101,6 +102,53 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
   async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM document_versions WHERE id = ?`);
     stmt.run(id);
+  }
+
+  async saveBatch(versions: DocumentVersion[]): Promise<void> {
+    const insert = this.db.prepare(`
+      INSERT INTO document_versions (
+        id, document_id, version_number, change_type, content,
+        createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        content = excluded.content,
+        updatedAt = excluded.updatedAt
+    `);
+    const trx = this.db.transaction(() => {
+      for (const version of versions) {
+        const dto = version.toServerDTO();
+        insert.run(
+          dto.id,
+          dto.documentId,
+          dto.versionNumber,
+          dto.changeType,
+          dto.contentHash,
+          new Date(dto.createdAt),
+          new Date(dto.createdAt),
+        );
+      }
+    });
+    trx();
+  }
+
+  async deleteByDocumentId(documentId: string): Promise<void> {
+    this.db.prepare(`DELETE FROM document_versions WHERE document_id = ?`).run(documentId);
+  }
+
+  async countByDocumentId(documentId: string): Promise<number> {
+    const row = this.db
+      .prepare(`SELECT COUNT(*) as cnt FROM document_versions WHERE document_id = ?`)
+      .get(documentId) as { cnt: number };
+    return row.cnt;
+  }
+
+  async getLatestVersionNumber(documentId: string): Promise<number> {
+    const row = this.db
+      .prepare(
+        `SELECT COALESCE(MAX(version_number), 0) as max_ver FROM document_versions WHERE document_id = ?`,
+      )
+      .get(documentId) as { max_ver: number };
+    return row.max_ver;
   }
 
   async deleteOlderThan(documentId: string, beforeTime: number): Promise<void> {

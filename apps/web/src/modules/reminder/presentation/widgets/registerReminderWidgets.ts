@@ -6,28 +6,11 @@
  * - 由 ReminderInitializationManager 在模块初始化时调用
  */
 
-import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
-import { defineAsyncComponent } from 'vue';
-import { WidgetSize, type WidgetConfig, type WidgetType } from '@dailyuse/contracts/dashboard';
-
 /**
  * 注册 Reminder 模块的所有 Widgets
  */
 export function registerReminderWidgets(): void {
   console.log('[Reminder] Registering Reminder widgets...');
-
-  // Reminder 统计 Widget
-  widgetRegistry.registerWidget({
-    id: 'reminder-stats',
-    name: '提醒统计',
-    description: '展示提醒总览统计数据',
-    component: defineAsyncComponent(() => import('./ReminderStatsWidget.vue')),
-    defaultVisible: true,
-    defaultOrder: 3,
-    defaultSize: WidgetSize.SMALL,
-    icon: 'i-heroicons-bell',
-    category: 'reminder',
-  });
 
   console.log('[Reminder] Reminder widgets registered successfully');
 }

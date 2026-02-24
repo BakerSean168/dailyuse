@@ -8,8 +8,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   IScheduleTaskApiClient,
-  ScheduleStatisticsClientDTO,
-  ModuleStatisticsClientDTO,
 } from '../types';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
@@ -96,32 +94,6 @@ export class ScheduleTaskHttpAdapter implements IScheduleTaskApiClient {
     },
   ): Promise<Result<void>> {
     return this.httpClient.patch(`${this.baseUrl}/tasks/${taskId}/metadata`, metadata);
-  }
-
-  // ===== Schedule Statistics =====
-
-  async getStatistics(): Promise<Result<ScheduleStatisticsClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/statistics`);
-  }
-
-  async getModuleStatistics(module: SourceModule): Promise<Result<ModuleStatisticsClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/statistics/module/${module}`);
-  }
-
-  async getAllModuleStatistics(): Promise<Result<Record<SourceModule, ModuleStatisticsClientDTO>>> {
-    return this.httpClient.get(`${this.baseUrl}/statistics/modules`);
-  }
-
-  async recalculateStatistics(): Promise<Result<ScheduleStatisticsClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/statistics/recalculate`);
-  }
-
-  async resetStatistics(): Promise<Result<void>> {
-    return this.httpClient.post(`${this.baseUrl}/statistics/reset`);
-  }
-
-  async deleteStatistics(): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/statistics`);
   }
 }
 

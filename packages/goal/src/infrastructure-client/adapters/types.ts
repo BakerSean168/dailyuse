@@ -37,7 +37,6 @@ import type {
   GetFocusHistoryReq,
   GetFocusStatusRes,
   GetFocusHistoryRes,
-  GetFocusStatisticsRes,
 } from '@dailyuse/contracts/goal';
 
 // ============ Transport Client Interfaces ============
@@ -202,7 +201,6 @@ export interface IGoalFocusApiClient {
   // Status & History
   getStatus(): Promise<Result<GetFocusStatusRes>>;
   getHistory(request: GetFocusHistoryReq): Promise<Result<GetFocusHistoryRes>>;
-  getStatistics(goalId?: string): Promise<Result<GetFocusStatisticsRes>>;
 
   // Convenience
   isActive(): Promise<Result<boolean>>;

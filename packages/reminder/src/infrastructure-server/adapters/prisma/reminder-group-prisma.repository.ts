@@ -11,7 +11,7 @@ import type { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '../../../domain-server/aggregates/reminder-group';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaReminderGroupMapper } from '../../mappers/prisma-reminder-group-mapper';
+import { PrismaReminderGroupMapper } from './mappers/prisma-reminder-group-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

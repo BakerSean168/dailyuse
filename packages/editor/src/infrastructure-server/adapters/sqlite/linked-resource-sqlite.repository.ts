@@ -4,7 +4,8 @@
 
 import type Database from 'better-sqlite3';
 import { LinkedResource } from '../../../domain-server/entities/linked-resource';
-import type { ILinkedResourceRepository, LinkedSourceType, LinkedTargetType } from '../../../domain-server/repositories/ILinkedResourceRepository';
+import type { ILinkedResourceRepository } from '../../../domain-server/repositories/ILinkedResourceRepository';
+import type { LinkedSourceType, LinkedTargetType } from '@dailyuse/contracts/editor';
 
 export class SqliteLinkedResourceRepository implements ILinkedResourceRepository {
   constructor(private db: Database.Database) {}
@@ -72,15 +73,13 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     return rows.map((row) => this.rowToResource(row));
   }
 
-  async findNeedVerification(workspaceId: string, threshold: number): Promise<LinkedResource[]> {
+  async findNeedingValidation(threshold: number): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT lr.* FROM linked_resources lr
-       WHERE lr.last_verified_at IS NULL OR lr.last_verified_at < ?
-       AND lr.source_document_id IN (
-         SELECT id FROM documents WHERE workspace_id = ?
-       ) ORDER BY lr.last_verified_at ASC`
+      `SELECT * FROM linked_resources
+       WHERE last_verified_at IS NULL OR last_verified_at < ?
+       ORDER BY last_verified_at ASC`
     );
-    const rows = stmt.all(Date.now() - threshold, workspaceId) as any[];
+    const rows = stmt.all(Date.now() - threshold) as any[];
 
     return rows.map((row) => this.rowToResource(row));
   }
@@ -115,6 +114,63 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
   async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM linked_resources WHERE id = ?`);
     stmt.run(id);
+  }
+
+  async saveBatch(resources: LinkedResource[]): Promise<void> {
+    const insert = this.db.prepare(`
+      INSERT INTO linked_resources (
+        id, source_document_id, target_document_id, source_type,
+        target_type, is_valid, last_verified_at, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        is_valid = excluded.is_valid,
+        last_verified_at = excluded.last_verified_at,
+        updatedAt = excluded.updatedAt
+    `);
+    const trx = this.db.transaction(() => {
+      for (const resource of resources) {
+        const dto = resource.toServerDTO();
+        insert.run(
+          dto.id,
+          dto.sourceDocumentId,
+          dto.targetDocumentId,
+          dto.sourceType,
+          dto.targetType,
+          dto.isValid ? 1 : 0,
+          dto.lastValidatedAt ? new Date(dto.lastValidatedAt).getTime() : null,
+          new Date(dto.createdAt),
+          new Date(dto.updatedAt),
+        );
+      }
+    });
+    trx();
+  }
+
+  async deleteBySourceDocumentId(sourceDocumentId: string): Promise<void> {
+    this.db.prepare(`DELETE FROM linked_resources WHERE source_document_id = ?`).run(sourceDocumentId);
+  }
+
+  async deleteByTargetDocumentId(targetDocumentId: string): Promise<void> {
+    this.db.prepare(`DELETE FROM linked_resources WHERE target_document_id = ?`).run(targetDocumentId);
+  }
+
+  async countBySourceDocumentId(sourceDocumentId: string): Promise<number> {
+    const row = this.db
+      .prepare(`SELECT COUNT(*) as cnt FROM linked_resources WHERE source_document_id = ?`)
+      .get(sourceDocumentId) as { cnt: number };
+    return row.cnt;
+  }
+
+  async countInvalid(workspaceId: string): Promise<number> {
+    const row = this.db
+      .prepare(
+        `SELECT COUNT(*) as cnt FROM linked_resources
+         WHERE is_valid = 0 AND source_document_id IN (
+           SELECT id FROM documents WHERE workspace_id = ?
+         )`,
+      )
+      .get(workspaceId) as { cnt: number };
+    return row.cnt;
   }
 
   private rowToResource(row: any): LinkedResource {

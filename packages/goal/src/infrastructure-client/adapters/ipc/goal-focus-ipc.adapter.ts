@@ -14,7 +14,6 @@ import type {
   GetFocusHistoryReq,
   GetFocusStatusRes,
   GetFocusHistoryRes,
-  GetFocusStatisticsRes,
 } from '@dailyuse/contracts/goal';
 
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
@@ -54,12 +53,6 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     request: GetFocusHistoryReq,
   ): Promise<Result<GetFocusHistoryRes>> {
     return this.ipcClient.invoke(`${this.channel}:history`, request);
-  }
-
-  async getStatistics(
-    goalId?: string,
-  ): Promise<Result<GetFocusStatisticsRes>> {
-    return this.ipcClient.invoke(`${this.channel}:statistics`, { goalId });
   }
 
   // ===== Convenience Methods =====

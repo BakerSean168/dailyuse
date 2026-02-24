@@ -380,7 +380,7 @@ export class ScheduleEventPublisher {
       }
     });
 
-    // ============ 监听 ScheduleTask 自身事件（用于统计） ============
+    // ============ 监听 ScheduleTask 自身事件 ============
 
     /**
      * 监听调度任务创建事件
@@ -394,7 +394,6 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // TODO: 更新统计数据（待 ScheduleStatisticsApplicationService 实现事件驱动更新）
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule.task.created for ${event.aggregateId}`,
         );
@@ -415,7 +414,6 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // TODO: 更新统计数据
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule.task.execution_succeeded for ${event.aggregateId}`,
         );
@@ -439,7 +437,6 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // TODO: 更新统计数据
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule.task.execution_failed for ${event.aggregateId}`,
         );
@@ -463,7 +460,6 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // TODO: 更新统计数据
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule.task.completed for ${event.aggregateId}`,
         );

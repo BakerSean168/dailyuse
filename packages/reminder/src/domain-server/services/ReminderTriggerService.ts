@@ -14,9 +14,7 @@
  */
 
 import type { ReminderTemplate } from '../aggregates/reminder-template';
-// import type { ReminderStatistics } from '../aggregates/ReminderStatistics'; // Deleted
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
-// import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository'; // Deleted
 import { RecurrenceType, TriggerResult, TriggerType } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateControlService } from './ReminderTemplateControlService';
 
@@ -58,7 +56,6 @@ export interface ITriggerReminderResult {
 export class ReminderTriggerService {
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
-    // private readonly statisticsRepository: IReminderStatisticsRepository, // Deleted
     private readonly controlService: ReminderTemplateControlService,
   ) {}
 
@@ -102,9 +99,6 @@ export class ReminderTriggerService {
     // 保存模板（包括历史记录）
     await this.templateRepository.save(template);
 
-    // 更新统计数据 - Commented out as ReminderStatistics is deleted
-    // await this.updateStatistics(template.identityId, TriggerResult.Success);
-
     return {
       ok: true,
       result: TriggerResult.Success,
@@ -131,7 +125,6 @@ export class ReminderTriggerService {
     template.addHistory(history);
 
     await this.templateRepository.save(template);
-    // await this.updateStatistics(template.identityId, TriggerResult.Failed); // Commented out - ReminderStatistics deleted
   }
 
   /**
@@ -150,7 +143,6 @@ export class ReminderTriggerService {
     template.addHistory(history);
 
     await this.templateRepository.save(template);
-    // await this.updateStatistics(template.identityId, TriggerResult.Skipped); // Commented out - ReminderStatistics deleted
   }
 
   /**
@@ -223,15 +215,4 @@ export class ReminderTriggerService {
 
     return effectivelyEnabled;
   }
-
-  // /**
-  //  * 更新统计数据
-  //  * Commented out - ReminderStatistics and IReminderStatisticsRepository have been deleted
-  //  */
-  // private async updateStatistics(identityId: string, result: TriggerResult): Promise<void> {
-  //   const statistics = await this.statisticsRepository.findOrCreate(identityId);
-  //   // 这里只是简单更新，实际的统计计算由 ReminderStatistics 聚合根的 calculate() 方法完成
-  //   // 在实际使用时，应该定期调用 statistics.calculate() 来重新计算完整统计
-  //   await this.statisticsRepository.save(statistics);
-  // }
 }

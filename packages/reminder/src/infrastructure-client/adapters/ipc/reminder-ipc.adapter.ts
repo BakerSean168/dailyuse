@@ -15,7 +15,6 @@ import type {
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
-  ReminderStatsClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -49,8 +48,6 @@ const REMINDER_CHANNELS = {
   DELETE_GROUP: 'reminder:group:delete',
   TOGGLE_GROUP_STATUS: 'reminder:group:toggle-status',
   TOGGLE_GROUP_CONTROL_MODE: 'reminder:group:toggle-control-mode',
-  // Statistics
-  GET_STATISTICS: 'reminder:statistics:get',
 } as const;
 
 export class ReminderIpcAdapter implements IReminderApiClient {
@@ -161,12 +158,6 @@ export class ReminderIpcAdapter implements IReminderApiClient {
 
   async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.TOGGLE_GROUP_CONTROL_MODE, id));
-  }
-
-  // ===== 统计 =====
-
-  async getReminderStatistics(identityId: string): Promise<Result<ReminderStatsClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(REMINDER_CHANNELS.GET_STATISTICS, identityId));
   }
 }
 

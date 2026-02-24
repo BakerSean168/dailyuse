@@ -18,7 +18,8 @@ import type { RuleRevision } from '../../../domain-server/entities/rule-revision
 import { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { RulePersistenceMapper } from '../../mappers/rule-persistence-mapper';
+import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
+import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
 
 /**
  * Prisma Rule Repository
@@ -39,7 +40,7 @@ export class RulePrismaRepository implements IRuleRepository {
    */
   async save(rule: Rule): Promise<Result<void>> {
     try {
-      const prismaData = RulePersistenceMapper.toPrisma(rule);
+      const prismaData = RulePrismaMapper.toPersistence(rule);
 
       await this.prisma.rule.upsert({
         where: { id: rule.id },
@@ -66,7 +67,9 @@ export class RulePrismaRepository implements IRuleRepository {
    */
   async saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>> {
     try {
-      const prismaData = RulePersistenceMapper.toPrisma(rule);
+      const prismaData = RulePrismaMapper.toPersistence(rule);
+
+      const revisionData = RuleRevisionPrismaMapper.toPersistence(revision);
 
       await this.prisma.$transaction(async (tx) => {
         await tx.rule.upsert({
@@ -83,19 +86,7 @@ export class RulePrismaRepository implements IRuleRepository {
           },
         });
 
-        await tx.ruleRevision.create({
-          data: {
-            id: revision.id,
-            ruleId: revision.ruleId,
-            revisionNumber: revision.revisionNumber,
-            authorId: revision.authorId,
-            changedFields: JSON.stringify([...revision.changedFields]),
-            previousValues: JSON.stringify(revision.previousValues),
-            newValues: JSON.stringify(revision.newValues),
-            changeType: revision.changeType,
-            createdAt: revision.createdAt,
-          },
-        });
+        await tx.ruleRevision.create({ data: revisionData });
       });
 
       return ok(undefined);
@@ -117,7 +108,7 @@ export class RulePrismaRepository implements IRuleRepository {
         return ok(null);
       }
 
-      const rule = RulePersistenceMapper.toDomain(prismaRule);
+      const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
       return error('DATABASE_ERROR', `Failed to find rule by ID: ${err instanceof Error ? err.message : String(err)}`);
@@ -137,7 +128,7 @@ export class RulePrismaRepository implements IRuleRepository {
         return ok(null);
       }
 
-      const rule = RulePersistenceMapper.toDomain(prismaRule);
+      const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
       return error('DATABASE_ERROR', `Failed to find rule by code: ${err instanceof Error ? err.message : String(err)}`);
@@ -186,7 +177,7 @@ export class RulePrismaRepository implements IRuleRepository {
         orderBy: { updatedAt: 'desc' },
       });
 
-      const rules = RulePersistenceMapper.toDomainMany(prismaRules);
+      const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
       return error('DATABASE_ERROR', `Failed to find rules: ${err instanceof Error ? err.message : String(err)}`);
@@ -246,7 +237,7 @@ export class RulePrismaRepository implements IRuleRepository {
         orderBy: { updatedAt: 'desc' },
       });
 
-      const rules = RulePersistenceMapper.toDomainMany(prismaRules);
+      const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
       return error('DATABASE_ERROR', `Failed to search rules: ${err instanceof Error ? err.message : String(err)}`);

@@ -8,7 +8,6 @@ export * from './delete-repository';
 export * from './delete-resource';
 export * from './move-folder';
 export * from './rename-folder';
-export * from './repository-statistics-application-service';
 export * from './repository-sync-application-service';
 export * from './update-repository-config';
 export * from './update-repository-stats';

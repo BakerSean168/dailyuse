@@ -5,7 +5,8 @@
 import type Database from 'better-sqlite3';
 import { Document } from '../../../domain-server/entities/document';
 import { DocumentMetadata } from '../../../domain-shared/value-objects/document-metadata';
-import type { IDocumentRepository, IndexStatus } from '../../../domain-server/repositories/IDocumentRepository';
+import type { IDocumentRepository } from '../../../domain-server/repositories/IDocumentRepository';
+import type { IndexStatus } from '@dailyuse/contracts/editor';
 import { DocumentLanguage } from '@dailyuse/contracts/editor';
 
 export class SqliteDocumentRepository implements IDocumentRepository {
@@ -108,6 +109,58 @@ export class SqliteDocumentRepository implements IDocumentRepository {
   async delete(id: string): Promise<void> {
     const stmt = this.db.prepare(`DELETE FROM documents WHERE id = ?`);
     stmt.run(id);
+  }
+
+  async saveBatch(documents: Document[]): Promise<void> {
+    const insert = this.db.prepare(`
+      INSERT INTO documents (
+        id, workspace_id, path, content_hash, file_size, index_status,
+        last_indexed_at, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        content_hash = excluded.content_hash,
+        file_size = excluded.file_size,
+        index_status = excluded.index_status,
+        last_indexed_at = excluded.last_indexed_at,
+        updatedAt = excluded.updatedAt
+    `);
+    const trx = this.db.transaction(() => {
+      for (const document of documents) {
+        const dto = document.toServerDTO();
+        insert.run(
+          dto.id,
+          dto.workspaceId,
+          dto.path,
+          dto.contentHash,
+          null,
+          dto.indexStatus,
+          dto.lastIndexedAt ? new Date(dto.lastIndexedAt).getTime() : null,
+          new Date(dto.createdAt),
+          new Date(dto.updatedAt),
+        );
+      }
+    });
+    trx();
+  }
+
+  async deleteByWorkspaceId(workspaceId: string): Promise<void> {
+    this.db.prepare(`DELETE FROM documents WHERE workspace_id = ?`).run(workspaceId);
+  }
+
+  async countByWorkspaceId(workspaceId: string): Promise<number> {
+    const row = this.db
+      .prepare(`SELECT COUNT(*) as cnt FROM documents WHERE workspace_id = ?`)
+      .get(workspaceId) as { cnt: number };
+    return row.cnt;
+  }
+
+  async countDocumentsNeedingIndex(workspaceId: string): Promise<number> {
+    const row = this.db
+      .prepare(
+        `SELECT COUNT(*) as cnt FROM documents WHERE workspace_id = ? AND index_status IN ('OUTDATED', 'FAILED')`,
+      )
+      .get(workspaceId) as { cnt: number };
+    return row.cnt;
   }
 
   private rowToDocument(row: any): Document {

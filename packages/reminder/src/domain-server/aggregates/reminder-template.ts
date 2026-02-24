@@ -12,7 +12,6 @@ import type {
   NotificationConfigServerDTO,
   RecurrenceConfigServer,
   RecurrenceConfigServerDTO,
-  ReminderStatsServer,
   ReminderTemplateClientDTO,
   ReminderTemplateServerDTO,
   ResponseMetricsDTO,
@@ -36,7 +35,6 @@ import {
   TriggerConfig,
   ActiveTimeConfig,
   ActiveHoursConfig,
-  ReminderStats,
   ResponseMetrics,
   FrequencyAdjustment,
 } from '../value-objects';
@@ -66,7 +64,6 @@ export interface ReminderTemplateState {
   color: string | null;
   icon: string | null;
   nextTriggerAt: number | null;
-  stats: ReminderStats;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: number | null;
@@ -151,9 +148,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   public get nextTriggerAt(): number | null {
     return this._props.nextTriggerAt;
   }
-  public get stats(): ReminderStatsServer {
-    return this._props.stats;
-  }
   public get createdAt(): Date {
     return this._props.createdAt;
   }
@@ -226,9 +220,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       ? ActiveHoursConfig.fromDTO(params.activeHours)
       : null;
 
-    // 创建空统计
-    const stats = ReminderStats.createEmpty();
-
     const template = new ReminderTemplate({
       id,
       identityId: params.identityId,
@@ -249,7 +240,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       color: params.color ?? null,
       icon: params.icon ?? null,
       nextTriggerAt: null,
-      stats,
       createdAt: new Date(now),
       updatedAt: new Date(now),
       deletedAt: null,
@@ -564,12 +554,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       result: TriggerResult.Success,
     });
 
-    // 更新统计
-    this._props.stats = this._props.stats.with({
-      totalTriggers: this._props.stats.totalTriggers + 1,
-      lastTriggeredAt: now,
-    });
-
     // 计算下次触发时间
     this._props.nextTriggerAt = this.calculateNextTrigger();
     this._props.updatedAt = new Date(now);
@@ -801,7 +785,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       color: this._props.color,
       icon: this._props.icon,
       nextTriggerAt: this._props.nextTriggerAt,
-      stats: this._props.stats.toServerDTO(),
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt,
@@ -882,13 +865,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       hasVibrationEnabled: notificationServerDTO.vibration !== null,
     };
 
-    // Build stats client DTO manually
-    const statsServerDTO = this._props.stats.toServerDTO();
-    const statsClientDTO = {
-      ...statsServerDTO,
-      totalTriggersText: this._props.stats.totalTriggersText,
-      lastTriggeredText: this._props.stats.lastTriggeredText,
-    };
+    const lastTriggeredAt =
+      this._props.history.length > 0
+        ? this._props.history[this._props.history.length - 1]?.triggeredAt ?? null
+        : null;
 
     const clientDTO: ReminderTemplateClientDTO = {
       id: this.id,
@@ -910,7 +890,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       color: this._props.color,
       icon: this._props.icon,
       nextTriggerAt: this._props.nextTriggerAt,
-      stats: statsClientDTO,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
@@ -929,7 +908,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       nextTriggerText: formatRelativeTime(this._props.nextTriggerAt),
       isActive: this._props.status === ReminderStatus.Active,
       isPaused: this._props.status === ReminderStatus.Paused,
-      lastTriggeredText: formatRelativeTime(this._props.stats.lastTriggeredAt),
+      lastTriggeredText: formatRelativeTime(lastTriggeredAt),
       controlledByGroup: controlledByGroup,
     };
 

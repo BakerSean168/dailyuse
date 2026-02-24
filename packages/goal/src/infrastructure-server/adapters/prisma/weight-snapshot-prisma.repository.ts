@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Prisma Weight Snapshot Repository
  *
  * Implements IWeightSnapshotRepository using Prisma.
@@ -8,7 +8,7 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { IWeightSnapshotRepository, SnapshotQueryResult } from '@/domain-server';
 import { KeyResultWeightSnapshot } from '@/domain-server';
-import { PrismaWeightSnapshotMapper } from '../../mappers/prisma/prisma-weight-snapshot-mapper';
+import { PrismaWeightSnapshotMapper } from './mappers/prisma-weight-snapshot-mapper';
 
 /**
  * Prisma Weight Snapshot Repository

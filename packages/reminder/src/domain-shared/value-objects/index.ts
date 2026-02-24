@@ -28,7 +28,6 @@ export { ReminderNotificationConfig } from './reminder-notification-config';
 export { TriggerConfig } from './trigger-config';
 export { ActiveTimeConfig } from './active-time-config';
 export { ActiveHoursConfig } from './active-hours-config';
-export { ReminderStats } from './reminder-stats';
 export { GroupStats } from './group-stats';
 export { ResponseMetrics } from './response-metrics';
 export { FrequencyAdjustment } from './frequency-adjustment';

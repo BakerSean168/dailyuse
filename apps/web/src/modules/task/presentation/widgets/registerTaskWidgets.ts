@@ -8,7 +8,6 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import type { WidgetConfig, WidgetType } from '@dailyuse/contracts/dashboard';
 import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
@@ -16,19 +15,6 @@ import { WidgetSize } from '@dailyuse/contracts/dashboard';
  */
 export function registerTaskWidgets(): void {
   console.log('[Task] Registering Task widgets...');
-
-  // Task 统计 Widget
-  widgetRegistry.registerWidget({
-    id: 'task-stats',
-    name: '任务统计',
-    description: '展示任务总览统计数据',
-    component: defineAsyncComponent(() => import('./TaskStatsWidget.vue')),
-    defaultVisible: true,
-    defaultOrder: 2,
-    defaultSize: WidgetSize.MEDIUM,
-    icon: 'i-heroicons-check-circle',
-    category: 'task',
-  });
 
   // 今日任务 Widget
   widgetRegistry.registerWidget({

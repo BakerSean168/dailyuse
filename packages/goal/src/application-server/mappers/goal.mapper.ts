@@ -6,7 +6,7 @@
 
 import { Goal } from '@/domain-server';
 import type { GoalClientDTO, GoalPersistenceDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
-import { persistenceDtoToGoalState } from '@/infrastructure-server/mappers/goal-state-mapper';
+import { persistenceDtoToGoalState } from '@/infrastructure-server/adapters/prisma/mappers/goal-state-mapper';
 
 /**
  * Goal Mapper

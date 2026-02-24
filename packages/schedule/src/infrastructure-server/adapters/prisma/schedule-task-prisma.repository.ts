@@ -4,9 +4,9 @@
  *
  * 閼卞矁鐭楅敍?
  * - 鐎圭偟骞?IScheduleTaskRepository 閹恒儱褰?
- * - 娴ｈ法鏁?toPersistenceDTO/fromPersistenceDTO 鏉╂稖顢戦弫鐗堝祦鏉烆剚宕?
- * - 婢跺嫮鎮?ScheduleExecution 鐎涙劕鐤勬担鎾舵畱缁狙嗕粓閹垮秳缍?
- * - 閹绘劒绶电€瑰本鏆ｉ惃鍕叀鐠囥垹鎷伴幐浣风畽閸栨牕濮涢懗?
+ * - 娴ｈ法鏁?toPersistenceDTO/fromPersistenceDTO 鏉╂稖顢戦弫鐗堝祦鏉烆剚�?
+ * - 婢跺嫮鎮?ScheduleExecution 鐎涙劕鐤勬担鎾舵畱缁狙嗕粓閹垮秳�?
+ * - 閹绘劒绶电€瑰本鏆ｉ惃鍕叀鐠囥垹鎷伴幐浣风畽閸栨牕濮涢�?
  *
  * @implements {IScheduleTaskRepository}
  */
@@ -18,13 +18,13 @@ import type { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaScheduleTaskMapper, type PrismaScheduleTaskWithExecutions } from '../../mappers/prisma-schedule-task-mapper';
-import { PrismaScheduleExecutionMapper } from '../../mappers/prisma-schedule-execution-mapper';
+import { PrismaScheduleTaskMapper, type PrismaScheduleTaskWithExecutions } from './mappers/prisma-schedule-task-mapper';
+import { PrismaScheduleExecutionMapper } from './mappers/prisma-schedule-execution-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
- * ScheduleTask 閺屻儴顕楅柅澶愩€?
+ * ScheduleTask 閺屻儴顕楅柅澶愩�?
  */
 interface IScheduleTaskQueryOptions {
   identityId?: string;
@@ -51,14 +51,14 @@ export class ScheduleTaskPrismaRepository
   // ===== Mapping =====
 
   /**
-   * Prisma → ScheduleTask aggregate root
+   * Prisma �?ScheduleTask aggregate root
    */
   private toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
     return PrismaScheduleTaskMapper.toDomain(data);
   }
 
   /**
-   * ScheduleTask aggregate → Prisma write data
+   * ScheduleTask aggregate �?Prisma write data
    */
   private toPrisma(task: ScheduleTask) {
     return PrismaScheduleTaskMapper.toPersistence(task);
@@ -104,7 +104,7 @@ export class ScheduleTaskPrismaRepository
       include: {
         executions: {
           orderBy: { createdAt: 'desc' },
-          take: 10, // 閺堚偓鏉?10 閺夆剝澧界悰宀冾唶瑜?
+          take: 10, // 閺堚偓鏉?10 閺夆剝澧界悰宀冾唶�?
         },
       },
     });
@@ -118,7 +118,7 @@ export class ScheduleTaskPrismaRepository
     });
   }
 
-  // ===== 閺屻儴顕楅弬瑙勭《 =====
+  // ===== 閺屻儴顕楅弬瑙勭�?=====
 
   async findByIdentityId(identityId: string): Promise<ScheduleTask[]> {
     const tasks = await this.prisma.scheduleTask.findMany({
@@ -208,17 +208,17 @@ export class ScheduleTaskPrismaRepository
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
-    // 閴?娴兼ê瀵茬€瑰本鍨氶敍浣哄箛閸?nextRunAt 閺勵垳瀚粩瀣摟濞堢绱濋崣顖欎簰閻╁瓨甯撮悽?SQL 閺屻儴顕?
+    // �?娴兼ê瀵茬€瑰本鍨氶敍浣哄箛閸?nextRunAt 閺勵垳瀚粩瀣摟濞堢绱濋崣顖欎簰閻╁瓨甯撮悽?SQL 閺屻儴顕?
     const tasks = await this.prisma.scheduleTask.findMany({
       where: {
         enabled: true,
         status: ScheduleTaskStatus.Active,
         nextRunAt: {
-          lte: beforeTime, // 鐚?閻╁瓨甯?SQL 閺屻儴顕楅敍?
+          lte: beforeTime, // �?閻╁瓨甯?SQL 閺屻儴顕楅敍?
         },
       },
       orderBy: {
-        nextRunAt: 'asc', // 閹稿澧界悰灞炬闂傚瓨甯撴惔?
+        nextRunAt: 'asc', // 閹稿澧界悰灞炬闂傚瓨甯撴�?
       },
       take: limit,
       include: {
@@ -268,7 +268,7 @@ export class ScheduleTaskPrismaRepository
     return this.prisma.scheduleTask.count({ where });
   }
 
-  // ===== 閹靛綊鍣洪幙宥勭稊 =====
+  // ===== 閹靛綊鍣洪幙宥勭�?=====
 
   async saveBatch(tasks: ScheduleTask[]): Promise<void> {
     for (const task of tasks) {
@@ -286,7 +286,7 @@ export class ScheduleTaskPrismaRepository
     });
   }
 
-  // ===== 娴滃濮熼弨顖涘瘮 =====
+  // ===== 娴滃濮熼弨顖涘�?=====
 
   async withTransaction<T>(fn: (repo: IScheduleTaskRepository) => Promise<T>): Promise<T> {
     return this.prisma.$transaction(async (tx) => {

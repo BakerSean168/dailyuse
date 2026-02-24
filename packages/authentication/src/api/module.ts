@@ -12,7 +12,9 @@
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import { ok, fail } from '@dailyuse/contracts/result';
-import { AuthenticationContainer, AuthenticationModule } from '../infrastructure-server';
+import { eventBus } from '@dailyuse/utils';
+import { createEventBusAdapter } from '@dailyuse/patterns';
+import { AuthenticationContainer, AuthenticationRepositoryFactory, AuthenticationModule } from '../infrastructure-server';
 import { UserAlreadyExistsError } from '../domain-server/services/registration';
 // Commented out temporarily:
 // import {
@@ -62,7 +64,15 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root �?create container with shared database client
-    const container = new AuthenticationContainer(db as PrismaClient);
+    const container = AuthenticationContainer.getInstance();
+    const eventBusAdapter = createEventBusAdapter(eventBus);
+    const { identityRepository, sessionRepository } = AuthenticationRepositoryFactory.createAllRepositories(
+      'prisma',
+      db as PrismaClient,
+      eventBusAdapter,
+    );
+    container.setIdentityRepository(identityRepository);
+    container.setSessionRepository(sessionRepository);
     const identityRepo = container.getIdentityRepository();
     const sessionRepo = container.getSessionRepository();
     const passwordHasher = container.getPasswordHasher();

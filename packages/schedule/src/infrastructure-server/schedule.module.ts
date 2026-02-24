@@ -3,7 +3,6 @@ import type Database from 'better-sqlite3';
 import type {
   IScheduleExecutionRepository,
   IScheduleRepository,
-  IScheduleStatisticsRepository,
   IScheduleTaskRepository,
 } from '@/domain-server';
 
@@ -19,7 +18,6 @@ import {
   TriggerScheduleTaskUseCase,
   UpdateScheduleTaskUseCase,
 } from '@/application-server/use-cases';
-import { ScheduleStatisticsApplicationService } from '@/application-server/services/schedule-statistics-application-service';
 import { ScheduleEventApplicationService } from '@/application-server/services/schedule-event-application-service';
 import { ScheduleEventPublisher } from '@/application-server/use-cases/schedule-event-publisher';
 import { ScheduleRepositoryFactory } from '@/infrastructure-server/di';
@@ -30,7 +28,6 @@ type BetterSQLiteDB = Database.Database;
 export class ScheduleModule {
   public readonly scheduleRepository: IScheduleRepository;
   public readonly scheduleExecutionRepository: IScheduleExecutionRepository;
-  public readonly scheduleStatisticsRepository: IScheduleStatisticsRepository;
   public readonly scheduleTaskRepository: IScheduleTaskRepository;
 
   public readonly createScheduleTask: CreateScheduleTaskUseCase;
@@ -43,7 +40,6 @@ export class ScheduleModule {
   public readonly listScheduleTasksByAccount: ListScheduleTasksByAccountUseCase;
   public readonly listScheduleTasksBySource: ListScheduleTasksBySourceUseCase;
   public readonly listScheduleTasksByStatus: ListScheduleTasksByStatusUseCase;
-  public readonly scheduleStatisticsService: ScheduleStatisticsApplicationService;
   public readonly scheduleEventService: ScheduleEventApplicationService;
 
   constructor(
@@ -56,18 +52,15 @@ export class ScheduleModule {
     container.reset();
     container.setScheduleRepository(repositories.scheduleRepository);
     container.setScheduleExecutionRepository(repositories.scheduleExecutionRepository);
-    container.setScheduleStatisticsRepository(repositories.scheduleStatisticsRepository);
     container.setScheduleTaskRepository(repositories.scheduleTaskRepository);
 
     this.scheduleRepository = container.getScheduleRepository();
     this.scheduleExecutionRepository = container.getScheduleExecutionRepository();
-    this.scheduleStatisticsRepository = container.getScheduleStatisticsRepository();
     this.scheduleTaskRepository = container.getScheduleTaskRepository();
 
     // 2. Initialize Services
     this.createScheduleTask = new CreateScheduleTaskUseCase(
       this.scheduleTaskRepository,
-      this.scheduleStatisticsRepository,
     );
     this.updateScheduleTask = new UpdateScheduleTaskUseCase(this.scheduleTaskRepository);
     this.deleteScheduleTask = new DeleteScheduleTaskUseCase(this.scheduleTaskRepository);
@@ -78,11 +71,6 @@ export class ScheduleModule {
     this.listScheduleTasksByAccount = new ListScheduleTasksByAccountUseCase(this.scheduleTaskRepository);
     this.listScheduleTasksBySource = new ListScheduleTasksBySourceUseCase(this.scheduleTaskRepository);
     this.listScheduleTasksByStatus = new ListScheduleTasksByStatusUseCase(this.scheduleTaskRepository);
-
-    this.scheduleStatisticsService = new ScheduleStatisticsApplicationService(
-      this.scheduleStatisticsRepository,
-      this.scheduleTaskRepository,
-    );
 
     this.scheduleEventService = new ScheduleEventApplicationService(
       this.scheduleRepository,

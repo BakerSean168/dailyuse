@@ -12,3 +12,18 @@ export {
   EditorWorkspacePrismaRepository,
   DocumentPrismaRepository,
 } from './adapters/prisma';
+
+// SQLite Adapters
+export {
+  SqliteDocumentRepository,
+  SqliteDocumentVersionRepository,
+  SqliteEditorWorkspaceRepository,
+  SqliteEditorGroupRepository,
+  SqliteEditorTabRepository,
+  SqliteEditorSessionRepository,
+  SqliteLinkedResourceRepository,
+  SqliteSearchEngineRepository,
+} from './adapters/sqlite';
+
+// SQLite Schema
+export { EDITOR_MODULE_SCHEMA } from './adapters/sqlite/schema';

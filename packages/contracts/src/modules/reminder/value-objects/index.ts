@@ -74,16 +74,6 @@ export type {
 } from './active-hours-config';
 
 export type {
-  IReminderStatsServer,
-  IReminderStatsClient,
-  ReminderStatsServerDTO,
-  ReminderStatsClientDTO,
-  ReminderStatsPersistenceDTO,
-  ReminderStatsServer,
-  ReminderStatsClient,
-} from './reminder-stats';
-
-export type {
   IGroupStatsServer,
   IGroupStatsClient,
   GroupStatsServerDTO,

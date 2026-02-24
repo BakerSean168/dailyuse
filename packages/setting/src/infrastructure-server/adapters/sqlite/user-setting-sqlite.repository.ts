@@ -8,25 +8,17 @@
 import type Database from 'better-sqlite3';
 import type { IDomainEvent } from '@dailyuse/contracts/shared';
 import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
-import { UserSetting, type UserSettingState } from '@/domain-server/aggregates/user-setting';
-import { SettingId } from '@/domain-shared/value-objects/setting-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { UserPreferencesSchema, type SettingEventMap } from '@dailyuse/contracts/setting';
+import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import type { SettingEventMap } from '@dailyuse/contracts/setting';
 import { eventBus } from '@dailyuse/utils';
-
-interface UserSettingRow {
-  id: string;
-  identity_id: string;
-  preferences: string;
-  version: number;
-  created_at: string;
-  updated_at: string;
-}
+import { SqliteUserSettingMapper, type SqliteUserSettingRow } from './mappers';
 
 export class SqliteUserSettingRepository implements IUserSettingRepository {
   constructor(private readonly db: Database.Database) {}
 
   async save(setting: UserSetting): Promise<void> {
+    const data = SqliteUserSettingMapper.toPersistence(setting);
+
     const stmt = this.db.prepare(`
       INSERT INTO user_settings (id, identity_id, preferences, version, created_at, updated_at)
       VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
@@ -36,10 +28,10 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
         updated_at = datetime('now')
     `);
     stmt.run(
-      setting.id,
-      setting.identityId,
-      JSON.stringify(setting.toPreferences()),
-      setting.version,
+      data.id,
+      data.identityId,
+      data.preferences,
+      data.version,
     );
 
     this.publishDomainEvents(setting.pullDomainEvents());
@@ -48,22 +40,11 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
   async findByIdentityId(identityId: string): Promise<UserSetting | null> {
     const row = this.db.prepare(
       'SELECT * FROM user_settings WHERE identity_id = ?',
-    ).get(identityId) as UserSettingRow | undefined;
+    ).get(identityId) as SqliteUserSettingRow | undefined;
 
     if (!row) return null;
 
-    const preferences = UserPreferencesSchema.parse(JSON.parse(row.preferences));
-
-    const state: UserSettingState = {
-      id: SettingId.of(row.id),
-      identityId: IdentityId.of(row.identity_id),
-      preferences,
-      version: row.version,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    };
-
-    return UserSetting.load(state);
+    return SqliteUserSettingMapper.toDomain(row);
   }
 
   async delete(identityId: string): Promise<void> {

@@ -2,39 +2,49 @@
  * Authentication Dependency Injection Container
  *
  * Manages repository instances for the Authentication module.
- * Uses constructor-injected PrismaClient from @dailyuse/database.
+ * Supports both Prisma and SQLite data sources via AuthenticationRepositoryFactory.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '../../domain-server';
 import type { IPasswordHasher } from '../../domain-shared';
-import { PrismaAuthIdentityRepository, PrismaAuthSessionRepository } from '../adapters/prisma';
 import { Argon2Hasher } from '../encryptors/argon2-hasher';
-import { eventBus } from '@dailyuse/utils';
-import { createEventBusAdapter } from '@dailyuse/patterns';
-
-const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * Authentication 依赖注入容器
+ *
+ * Repositories are registered externally (via factory or manual setter)
+ * so that the container itself is driver-agnostic.
  */
 export class AuthenticationContainer {
+  private static instance: AuthenticationContainer;
+
   private identityRepository: IAuthIdentityRepository | null = null;
   private sessionRepository: IAuthSessionRepository | null = null;
   private passwordHasher: IPasswordHasher | null = null;
 
-  constructor(private readonly prisma: PrismaClient) {}
+  private constructor() {}
+
+  static getInstance(): AuthenticationContainer {
+    if (!AuthenticationContainer.instance) {
+      AuthenticationContainer.instance = new AuthenticationContainer();
+    }
+    return AuthenticationContainer.instance;
+  }
 
   getIdentityRepository(): IAuthIdentityRepository {
     if (!this.identityRepository) {
-      this.identityRepository = new PrismaAuthIdentityRepository(this.prisma, eventBusAdapter);
+      throw new Error(
+        'AuthenticationContainer: identityRepository not registered. Call setIdentityRepository() or use AuthenticationRepositoryFactory first.',
+      );
     }
     return this.identityRepository;
   }
 
   getSessionRepository(): IAuthSessionRepository {
     if (!this.sessionRepository) {
-      this.sessionRepository = new PrismaAuthSessionRepository(this.prisma, eventBusAdapter);
+      throw new Error(
+        'AuthenticationContainer: sessionRepository not registered. Call setSessionRepository() or use AuthenticationRepositoryFactory first.',
+      );
     }
     return this.sessionRepository;
   }
@@ -46,7 +56,6 @@ export class AuthenticationContainer {
     return this.passwordHasher;
   }
 
-  // For testing purposes
   setIdentityRepository(repository: IAuthIdentityRepository): void {
     this.identityRepository = repository;
   }

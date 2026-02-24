@@ -90,6 +90,13 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     return stmt.get(workspaceId) !== undefined;
   }
 
+  async countIndexing(): Promise<number> {
+    const row = this.db
+      .prepare(`SELECT COUNT(*) as cnt FROM search_engines WHERE is_indexing = 1`)
+      .get() as { cnt: number };
+    return row.cnt;
+  }
+
   private rowToSearchEngine(row: any): SearchEngine {
     return SearchEngine.load({
       id: row.id,

@@ -19,9 +19,6 @@
  * 【TaskDependencyPolicy】
  * - 依赖规则校验：循环依赖检测等
  *
- * 【TaskStatisticsCalculator】
- * - 依赖统计计算：依赖深度、阻塞状态等
- * 
  * 【calculateTaskPriority】
  * - 优先级计算：根据多个条件加算优先级
  */
@@ -29,5 +26,4 @@
 export { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
 export { TaskExpirationService } from './TaskExpirationService';
 export { TaskDependencyPolicy } from './task-dependency-policy';
-export { TaskStatisticsCalculator } from './task-statistics-calculator';
 export { calculateTaskPriority } from './priority-calculator.service';

@@ -11,7 +11,7 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaTaskInstanceMapper } from '../../mappers/prisma-task-instance-mapper';
+import { PrismaTaskInstanceMapper } from './mappers/prisma-task-instance-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 

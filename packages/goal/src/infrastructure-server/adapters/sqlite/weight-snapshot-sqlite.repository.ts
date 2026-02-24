@@ -1,6 +1,6 @@
 /**
  * SQLite Weight Snapshot Repository Implementation
- * 权重快照的 SQLite 仓储实现
+ * 权重快照�?SQLite 仓储实现
  */
 
 import type Database from 'better-sqlite3';

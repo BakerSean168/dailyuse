@@ -9,6 +9,19 @@ export default defineConfig(({ mode, command }) => {
   const workspaceRoot = path.resolve(__dirname, '../..');
   const env = loadEnv(mode, workspaceRoot, '');
   
+  // 👉 新增这段打印代码
+  console.log('================ 环境变量加载结果 ================');
+  console.log(`[Vite Config] 当前 Mode: ${mode}`);
+  console.log(`[Vite Config] 寻找 .env 的目录: ${workspaceRoot}`);
+  console.log('[Vite Config] 读取到的所有环境变量:');
+  // console.log(env); // 直接打印整个对象
+  // 如果内容太多，也可以只打印你关心的部分：
+  // console.log('[Vite Config] API_URL:', env.API_URL);
+  // console.log('[Vite Config] PROXY_TARGET_URL:', env.PROXY_TARGET_URL);
+  console.log('[Vite Config] Mock:', env.VITE_ENABLE_MOCK_API);
+  console.log('[Vite Config] Test Env:', env.VITE_TEST_ENV);
+  console.log('==================================================');
+
   // 开发模式判断：serve 命令或非 production mode
   const isDev = command === 'serve' || mode !== 'production';
 

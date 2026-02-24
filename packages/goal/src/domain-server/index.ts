@@ -10,7 +10,7 @@
  * - 实体（Entities）：GoalRecord, GoalReview, KeyResult
  * - 值对象（Value Objects）：从 @dailyuse/domain-shared 导出
  * - 仓储接口（Repositories）：IGoalRepository, IGoalFolderRepository 等
- * - 领域服务（Domain Services）：FocusSessionPolicy, FocusSessionStatisticsCalculator 等
+ * - 领域服务（Domain Services）：FocusSessionPolicy, GoalPolicy, GoalProgressCalculator 等
  * 
  * 【业务特性】
  * - OKR 管理：目标和关键结果的创建、跟踪、评估
@@ -52,7 +52,6 @@ export type {
 // 领域服务（只保留真正的领域服务）
 export {
   FocusSessionPolicy,
-  FocusSessionStatisticsCalculator,
   GoalPolicy,
   GoalProgressCalculator,
 } from './services';

@@ -2,7 +2,7 @@
  * PrismaAuthSessionRepository
  *
  * Prisma implementation of IAuthSessionRepository.
- * 映射逻辑委托给 PrismaAuthSessionMapper。
+ * 映射逻辑委托�?PrismaAuthSessionMapper�?
  *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
@@ -12,7 +12,7 @@ import type { IAuthSessionRepository } from '../../../domain-server';
 import { AuthSession } from '../../../domain-server';
 import { createLogger } from '@dailyuse/utils';
 import { AggregateRepositoryBase, type IEventBus } from '@dailyuse/patterns';
-import { PrismaAuthSessionMapper } from '../../mappers/prisma';
+import { PrismaAuthSessionMapper } from './mappers';
 import type { PrismaAuthSessionRow } from '../../types';
 
 const logger = createLogger('PrismaAuthSessionRepository');

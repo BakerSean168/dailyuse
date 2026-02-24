@@ -8,10 +8,10 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type { IRuleRevisionRepository } from '../../../domain-server/repositories/i-rule-revision-repository';
 import { RuleRevision } from '../../../domain-server/entities/rule-revision';
-import { RuleId, RuleRevisionId } from '../../../domain-shared/value-objects';
+import { RuleId } from '../../../domain-shared/value-objects';
 import type { Result } from '@dailyuse/contracts/result';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { ok, error } from '@dailyuse/contracts/result';
+import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
 
 /**
  * Prisma RuleRevision Repository
@@ -20,20 +20,6 @@ import { ok, error } from '@dailyuse/contracts/result';
  */
 export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
   private readonly prisma: PrismaClient;
-
-  private parseStringArray(value: string | null): string[] {
-    if (!value) return [];
-    const parsed: unknown = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is string => typeof item === 'string');
-  }
-
-  private parseRecord(value: string | null): Record<string, unknown> {
-    if (!value) return {};
-    const parsed: unknown = JSON.parse(value);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return parsed as Record<string, unknown>;
-  }
 
   constructor(prismaClient: PrismaClient) {
     this.prisma = prismaClient;
@@ -45,17 +31,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
   async save(revision: RuleRevision): Promise<Result<void>> {
     try {
       await this.prisma.ruleRevision.create({
-        data: {
-          id: revision.id,
-          ruleId: revision.ruleId,
-          revisionNumber: revision.revisionNumber,
-          authorId: revision.authorId,
-          changedFields: JSON.stringify([...revision.changedFields]),
-          previousValues: JSON.stringify(revision.previousValues),
-          newValues: JSON.stringify(revision.newValues),
-          changeType: revision.changeType,
-          createdAt: revision.createdAt,
-        },
+        data: RuleRevisionPrismaMapper.toPersistence(revision),
       });
 
       return ok(undefined);
@@ -74,19 +50,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
         orderBy: { revisionNumber: 'asc' },
       });
 
-      const revisions = prismaRevisions.map(pr =>
-        RuleRevision.load({
-          id: pr.id as RuleRevisionId,
-          ruleId: pr.ruleId as RuleId,
-          revisionNumber: pr.revisionNumber,
-          authorId: pr.authorId as IdentityId,
-          changedFields: this.parseStringArray(pr.changedFields),
-          previousValues: this.parseRecord(pr.previousValues),
-          newValues: this.parseRecord(pr.newValues),
-          changeType: pr.changeType as 'Created' | 'Updated' | 'Deprecated' | 'Reactivated',
-          createdAt: pr.createdAt,
-        })
-      );
+      const revisions = RuleRevisionPrismaMapper.toDomainMany(prismaRevisions);
 
       return ok(revisions);
     } catch (err) {
@@ -115,17 +79,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
         return ok(null);
       }
 
-      const revision = RuleRevision.load({
-        id: prismaRevision.id as RuleRevisionId,
-        ruleId: prismaRevision.ruleId as RuleId,
-        revisionNumber: prismaRevision.revisionNumber,
-        authorId: prismaRevision.authorId as IdentityId,
-        changedFields: this.parseStringArray(prismaRevision.changedFields),
-        previousValues: this.parseRecord(prismaRevision.previousValues),
-        newValues: this.parseRecord(prismaRevision.newValues),
-        changeType: prismaRevision.changeType as 'Created' | 'Updated' | 'Deprecated' | 'Reactivated',
-        createdAt: prismaRevision.createdAt,
-      });
+      const revision = RuleRevisionPrismaMapper.toDomain(prismaRevision);
 
       return ok(revision);
     } catch (err) {
