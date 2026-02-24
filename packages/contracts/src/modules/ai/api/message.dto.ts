@@ -11,6 +11,14 @@ import type { AiConversationId, AiProviderConfigId } from '@/primitives';
 import type { MessageClientDTO } from '../entities/message-client';
 import { MessageRole } from '../value-objects/message-role';
 
+export const ChatStreamChunkType = {
+  Content: 'content',
+  Error: 'error',
+  Done: 'done',
+} as const;
+
+export type ChatStreamChunkType = (typeof ChatStreamChunkType)[keyof typeof ChatStreamChunkType];
+
 // ============================================================================
 // Send Message
 // ============================================================================
@@ -18,7 +26,7 @@ import { MessageRole } from '../value-objects/message-role';
 export const SendMessageSchema = z.object({
   conversationId: brandedId<AiConversationId>(),
   content: z.string().min(1),
-  role: z.nativeEnum(MessageRole).default('User').optional(),
+  role: z.enum(MessageRole).default('User').optional(),
 });
 
 export type SendMessageReq = z.infer<typeof SendMessageSchema>;
@@ -60,7 +68,7 @@ export type ChatStreamReq = z.infer<typeof ChatStreamSchema>;
  */
 export interface ChatStreamChunk {
   /** Chunk type */
-  type: 'content' | 'error' | 'done';
+  type: ChatStreamChunkType;
   /** Content fragment */
   content?: string;
   /** Error message if type is 'error' */

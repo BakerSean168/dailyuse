@@ -22,11 +22,11 @@ import {
 
 export const NotificationQuerySchema = z.object({
   identityId: brandedId<IdentityId>().optional(),
-  type: z.nativeEnum(NotificationType).optional(),
-  category: z.nativeEnum(NotificationCategory).optional(),
-  status: z.nativeEnum(NotificationStatus).optional(),
+  type: z.enum(NotificationType).optional(),
+  category: z.enum(NotificationCategory).optional(),
+  status: z.enum(NotificationStatus).optional(),
   isRead: z.boolean().optional(),
-  relatedEntityType: z.nativeEnum(RelatedEntityType).optional(),
+  relatedEntityType: z.enum(RelatedEntityType).optional(),
   relatedEntityId: z.string().uuid().optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),

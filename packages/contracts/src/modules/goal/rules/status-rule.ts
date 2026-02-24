@@ -8,17 +8,38 @@ import type { GoalStatus } from '../value-objects/goal-status';
 /**
  * 规则条件类型
  */
-export type RuleConditionType = 'all' | 'any';
+export const RuleConditionType = {
+  All: 'all',
+  Any: 'any',
+} as const;
+
+export type RuleConditionType = (typeof RuleConditionType)[keyof typeof RuleConditionType];
 
 /**
  * 指标类型
  */
-export type RuleMetric = 'progress' | 'deadline' | 'weight' | 'kr_count';
+export const RuleMetric = {
+  Progress: 'progress',
+  Deadline: 'deadline',
+  Weight: 'weight',
+  KrCount: 'kr_count',
+} as const;
+
+export type RuleMetric = (typeof RuleMetric)[keyof typeof RuleMetric];
 
 /**
  * 操作符
  */
-export type RuleOperator = '>' | '<' | '=' | '>=' | '<=' | '!=';
+export const RuleOperator = {
+  GreaterThan: '>',
+  LessThan: '<',
+  Equal: '=',
+  GreaterThanOrEqual: '>=',
+  LessThanOrEqual: '<=',
+  NotEqual: '!=',
+} as const;
+
+export type RuleOperator = (typeof RuleOperator)[keyof typeof RuleOperator];
 
 /**
  * 单个规则条件
@@ -42,7 +63,7 @@ export interface RuleCondition {
   /**
    * 可选：应用范围（all KRs, any KR, specific KR）
    */
-  scope?: 'all' | 'any' | string; // string 为 KR UUID
+  scope?: RuleConditionType | string; // string 为 KR UUID
 }
 
 /**

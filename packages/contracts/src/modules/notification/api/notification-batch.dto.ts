@@ -32,7 +32,7 @@ export type DeleteNotificationsBatchRes = BatchOperationResultDTO;
 export const CleanupOldNotificationsSchema = z.object({
   identityId: brandedId<IdentityId>(),
   beforeDays: z.number().int().min(1),
-  category: z.nativeEnum(NotificationCategory).optional(),
+  category: z.enum(NotificationCategory).optional(),
 });
 
 export type CleanupOldNotificationsReq = z.infer<typeof CleanupOldNotificationsSchema>;

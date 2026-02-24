@@ -85,7 +85,7 @@ export type ExecuteNotificationActionRes = NotificationServerDTO;
  */
 export const SendNotificationSchema = z.object({
   notificationId: brandedId<NotificationId>(),
-  channels: z.array(z.nativeEnum(NotificationChannelType)).optional(),
+  channels: z.array(z.enum(NotificationChannelType)).optional(),
 });
 
 export type SendNotificationReq = z.infer<typeof SendNotificationSchema>;

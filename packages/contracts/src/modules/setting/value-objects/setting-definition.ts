@@ -3,6 +3,14 @@ import type { SettingCategory } from './setting-category';
 import type { SettingValueType } from './setting-value-type';
 import type { UIInputType } from './ui-input-type';
 
+export const SettingScope = {
+  User: 'USER',
+  Device: 'DEVICE',
+  System: 'SYSTEM',
+} as const;
+
+export type SettingScope = (typeof SettingScope)[keyof typeof SettingScope];
+
 export interface SettingDefinition<T = any> {
   key: string;
   name: string;
@@ -19,7 +27,7 @@ export interface SettingDefinition<T = any> {
   isSyncable: boolean; // 是否同步到云端
   isReadOnly?: boolean; // 是否只读
   isEncrypted?: boolean; // 是否加密存储
-  scope: 'USER' | 'DEVICE' | 'SYSTEM'; // 作用域
+  scope: SettingScope; // 作用域
 }
 
 export interface SettingDefinitionDTO {
