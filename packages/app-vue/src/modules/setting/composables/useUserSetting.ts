@@ -31,7 +31,7 @@ export function useUserSetting() {
 
   /** 获取指定分类设置 */
   function getCategory<K extends PreferenceCategory>(category: K): UserSettingPreferences[K] | undefined {
-    return store.userSetting?.[category];
+    return store.userSetting?.preferences?.[category];
   }
 
   /** 按 dot-notation key 获取值 (e.g., 'appearance.theme') */
