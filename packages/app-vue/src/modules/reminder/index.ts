@@ -11,8 +11,5 @@ export type { ReminderStoreType } from './stores/reminderStore';
 // Composables
 export { useReminder } from './composables/useReminder';
 
-// Utils
-export * from './utils/upcomingReminderCalculator';
-
 // Routes
 export { reminderRoutes } from './router';
