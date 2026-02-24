@@ -1562,6 +1562,9 @@ importers:
       '@dailyuse/ui-core':
         specifier: workspace:*
         version: link:../ui-core
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@internationalized/date':
         specifier: ^3.11.0
         version: 3.11.0
