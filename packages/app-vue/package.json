@@ -13,7 +13,11 @@
   },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/ui-vue-shadcn": "workspace:*",
+    "lucide-vue-next": "^0.542.0",
+    "pinia": "^3.0.3",
     "vue": "^3.4.0",
+    "vue-sonner": "^2.0.8",
     "vue-router": "^4.0.0"
   },
   "peerDependencies": {
