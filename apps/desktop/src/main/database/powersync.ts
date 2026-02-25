@@ -25,7 +25,7 @@ import type {
   PowerSyncCredentials,
   CrudTransaction,
 } from '@powersync/common';
-import { app } from 'electron';
+import { app, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 
@@ -198,4 +198,79 @@ export async function disconnectPowerSync(): Promise<void> {
  */
 export function getPowerSyncDatabase(): PowerSyncDatabase | null {
   return powerSyncDb;
+}
+
+// ──────────────────────────────────────────────
+// IPC Handlers for Renderer-side PowerSync
+// ──────────────────────────────────────────────
+// The renderer runs @powersync/web (wa-sqlite) and needs:
+//   1. PowerSync credentials (RS256 JWT + endpoint) — fetched by main
+//      process because it owns the HS256 access token via TokenManager.
+//   2. CRUD upload proxy — main process forwards ops to the API because
+//      the renderer has no direct API URL config.
+
+/**
+ * Registers IPC handlers that the renderer's PowerSync connector invokes.
+ * Call this once during app initialisation (before any window is created).
+ */
+export function registerPowerSyncIpcHandlers(): void {
+  const apiBaseUrl = getApiBaseUrl();
+
+  // ── Fetch credentials ──
+  ipcMain.handle('powersync:fetch-credentials', async () => {
+    const tokenManager = getTokenManager();
+    const accessToken = await tokenManager.getAccessToken();
+
+    if (!accessToken) {
+      throw new Error('[PowerSync] No valid access token — user is not authenticated');
+    }
+
+    const response = await fetch(`${apiBaseUrl}/powersync/token`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`[PowerSync] Failed to fetch credentials: ${response.status} ${body}`);
+    }
+
+    const data = (await response.json()) as { token: string; expiresAt: string };
+
+    return {
+      endpoint: getPowerSyncServiceUrl(),
+      token: data.token,
+      expiresAt: data.expiresAt,
+    };
+  });
+
+  // ── CRUD upload proxy ──
+  ipcMain.handle(
+    'powersync:upload-crud',
+    async (_, operations: Array<{ table: string; op: string; id: string; data: unknown }>) => {
+      const tokenManager = getTokenManager();
+      const accessToken = await tokenManager.getAccessToken();
+
+      if (!accessToken) {
+        throw new Error('[PowerSync] No valid access token — cannot upload data');
+      }
+
+      const response = await fetch(`${apiBaseUrl}/powersync/crud`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ operations }),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        throw new Error(`[PowerSync] CRUD upload failed: ${response.status} ${body}`);
+      }
+    },
+  );
 }

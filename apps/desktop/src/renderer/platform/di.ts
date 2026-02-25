@@ -56,6 +56,8 @@ import { RepositoryClientService } from '@dailyuse/repository/application-client
 import { NotificationClientService } from '@dailyuse/notification/application-client';
 import { SettingClientService } from '@dailyuse/setting/application-client';
 
+import { disconnectDesktopPowerSync } from './powersync';
+
 /**
  * Vue plugin that instantiates all domain services with IPC transport
  * and provides them to the app's inject() context.
@@ -110,7 +112,9 @@ export function installIpcServices(app: App): void {
   // ── UI / Navigation ──
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
-  app.provide(LOGOUT_HANDLER_KEY, () => {
+  app.provide(LOGOUT_HANDLER_KEY, async () => {
+    // Disconnect PowerSync before clearing auth state
+    await disconnectDesktopPowerSync();
     const authStore = useAuthenticationStore();
     authStore.reset();
     // Desktop: transition to login window via IPC

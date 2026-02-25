@@ -23,7 +23,6 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
-import { disconnectPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
 import { getTokenManager } from '../modules/authentication/infrastructure';
@@ -198,8 +197,9 @@ async function handleBeforeQuit(): Promise<void> {
   // Stop scheduled tasks
   stopMemoryCleanup();
 
-  // Disconnect PowerSync before closing database
-  await disconnectPowerSync();
+  // Note: PowerSync sync database now runs in the renderer process
+  // (@powersync/web). It disconnects automatically when the renderer
+  // window closes or on explicit logout. No main-process cleanup needed.
 
   // Cleanup desktop feature resources
   await cleanupDesktopFeatures();

@@ -362,6 +362,10 @@ const ALLOWED_CHANNELS = [
   'dev:memory:snapshots',
   'dev:memory:force-gc',
 
+  // ═══════════ PowerSync (renderer-side sync) ═══════════
+  'powersync:fetch-credentials',
+  'powersync:upload-crud',
+
   // ═══════════ Window Management ═══════════
   'window:transition-to-main',
   'window:transition-to-login',

@@ -14,12 +14,11 @@
  */
 
 import { initializeDatabase, startMemoryCleanup } from './database';
-import { connectPowerSync, disconnectPowerSync } from './database/powersync';
+import { registerPowerSyncIpcHandlers } from './database/powersync';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
 import { ElectronBootstrapper } from './bootstrap';
-import { getTokenManager } from './modules/authentication/infrastructure';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@dailyuse/goal/electron-entry';
@@ -87,19 +86,12 @@ async function initializeApp(): Promise<void> {
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
 
-  // 5. PowerSync — connect if user is already authenticated
-  try {
-    const tokenManager = getTokenManager();
-    const accessToken = await tokenManager.getAccessToken();
-    if (accessToken) {
-      await connectPowerSync();
-      console.log('[App] PowerSync connected');
-    } else {
-      console.log('[App] Skipping PowerSync — no valid session');
-    }
-  } catch (error) {
-    console.warn('[App] PowerSync connection deferred:', error);
-  }
+  // 5. PowerSync — register IPC handlers for renderer-side @powersync/web.
+  //    The renderer owns the sync database (wa-sqlite/WASM); the main process
+  //    only proxies credential fetching and CRUD uploads via IPC because it
+  //    owns the HS256 access token (TokenManager + safeStorage).
+  registerPowerSyncIpcHandlers();
+  console.log('[App] PowerSync IPC handlers registered');
 
   const initTime = performance.now() - startTime;
   console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);
