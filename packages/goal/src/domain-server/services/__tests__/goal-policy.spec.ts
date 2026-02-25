@@ -55,7 +55,8 @@ describe('GoalPolicy', () => {
 
     it('归档目标应抛出异常', () => {
       const goal = createTestGoal();
-      goal.archive();
+      goal.markAsCompleted(); // 先完成
+      goal.archive();         // 再归档
 
       expect(() => policy.ensureGoalCanBeModified(goal)).toThrow();
     });
@@ -80,7 +81,8 @@ describe('GoalPolicy', () => {
 
     it('归档的父目标应抛出异常', () => {
       const parent = createTestGoal('Archived Parent');
-      parent.archive();
+      parent.markAsCompleted(); // 先完成
+      parent.archive();         // 再归档
 
       expect(() => policy.ensureParentGoalValid(parent)).toThrow();
     });

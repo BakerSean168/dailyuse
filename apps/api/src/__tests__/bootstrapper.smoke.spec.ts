@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import type { Express } from 'express';
 import request from 'supertest';
-import { ApiBootstrapper } from '../../bootstrap';
+import { ApiBootstrapper } from '../bootstrap';
 
 describe('API Bootstrapper Smoke Tests', () => {
   let app: Express;
