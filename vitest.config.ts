@@ -2,6 +2,66 @@
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
+import type { Plugin } from 'vite';
+
+// Contracts sub-paths that live directly under src/ (not under src/modules/)
+const contractsTopLevel = ['result', 'shared', 'primitives', 'electron', 'mocks', 'response'];
+
+/**
+ * Create alias entries for @dailyuse/contracts sub-path imports.
+ * Handles both top-level (result, shared) and module-level (goal, task) sub-paths.
+ */
+function createContractsAliases(rootDir: string) {
+  const contractsSrc = path.resolve(rootDir, './packages/contracts/src');
+  return [
+    // Top-level sub-paths: @dailyuse/contracts/result → src/result
+    ...contractsTopLevel.map((name) => ({
+      find: new RegExp(`^@dailyuse/contracts/${name}$`),
+      replacement: path.resolve(contractsSrc, name),
+    })),
+    // Module sub-paths: @dailyuse/contracts/goal → src/modules/goal
+    { find: /^@dailyuse\/contracts\/(.*)/, replacement: path.resolve(contractsSrc, 'modules/$1') },
+    // Base import: @dailyuse/contracts → src
+    { find: /^@dailyuse\/contracts$/, replacement: contractsSrc },
+  ];
+}
+
+/**
+ * Create common alias entries for domain packages.
+ */
+function createDomainAliases(rootDir: string, extras: Array<{ find: string | RegExp; replacement: string }> = []) {
+  return [
+    ...createContractsAliases(rootDir),
+    { find: /^@dailyuse\/domain-shared\/(.*)/, replacement: path.resolve(rootDir, './packages/domain-shared/src/$1') },
+    { find: /^@dailyuse\/domain-shared$/, replacement: path.resolve(rootDir, './packages/domain-shared/src') },
+    { find: /^@dailyuse\/utils\/(.*)/, replacement: path.resolve(rootDir, './packages/utils/src/$1') },
+    { find: /^@dailyuse\/utils$/, replacement: path.resolve(rootDir, './packages/utils/src') },
+    { find: '@dailyuse/database', replacement: path.resolve(rootDir, './packages/database/src') },
+    ...extras,
+  ];
+}
+
+/**
+ * Vite plugin: resolve @/ alias based on which package the importing file belongs to.
+ * This is needed because multiple packages use @/ to mean their own src/ directory.
+ */
+function perPackageAtAlias(packageMappings: Record<string, string>): Plugin {
+  return {
+    name: 'per-package-at-alias',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (!source.startsWith('@/') || !importer) return null;
+
+      for (const [pkgDir, srcDir] of Object.entries(packageMappings)) {
+        if (importer.includes(pkgDir)) {
+          const resolved = path.resolve(srcDir, source.slice(2));
+          return this.resolve(resolved, importer, { skipSelf: true });
+        }
+      }
+      return null;
+    },
+  };
+}
 
 /**
  * Vitest Configuration for DailyUse Monorepo
@@ -114,6 +174,89 @@ export default defineConfig({
           environment: 'node',
           include: ['src/**/*.{test,spec}.{js,ts}'],
           exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+
+      // ===================
+      // Domain Package Projects
+      // ===================
+      {
+        extends: true,
+        plugins: [perPackageAtAlias({
+          'packages/goal': path.resolve(__dirname, './packages/goal/src'),
+          'packages/contracts': path.resolve(__dirname, './packages/contracts/src'),
+          'packages/domain-shared': path.resolve(__dirname, './packages/domain-shared/src'),
+        })],
+        resolve: {
+          alias: createDomainAliases(__dirname),
+        },
+        test: {
+          name: 'goal',
+          root: './packages/goal',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+          testTimeout: 10000,
+          pool: 'forks',
+          poolOptions: {
+            forks: {
+              singleFork: false,
+            },
+          },
+        },
+      },
+      {
+        extends: true,
+        plugins: [perPackageAtAlias({
+          'packages/task': path.resolve(__dirname, './packages/task/src'),
+          'packages/goal': path.resolve(__dirname, './packages/goal/src'),
+          'packages/contracts': path.resolve(__dirname, './packages/contracts/src'),
+          'packages/domain-shared': path.resolve(__dirname, './packages/domain-shared/src'),
+        })],
+        resolve: {
+          alias: createDomainAliases(__dirname, [
+            { find: /^@dailyuse\/goal\/(.*)/, replacement: path.resolve(__dirname, './packages/goal/src/$1') },
+            { find: /^@dailyuse\/goal$/, replacement: path.resolve(__dirname, './packages/goal/src') },
+          ]),
+        },
+        test: {
+          name: 'task',
+          root: './packages/task',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+          testTimeout: 10000,
+          pool: 'forks',
+          poolOptions: {
+            forks: {
+              singleFork: false,
+            },
+          },
+        },
+      },
+      {
+        extends: true,
+        plugins: [perPackageAtAlias({
+          'packages/authentication': path.resolve(__dirname, './packages/authentication/src'),
+          'packages/contracts': path.resolve(__dirname, './packages/contracts/src'),
+          'packages/domain-shared': path.resolve(__dirname, './packages/domain-shared/src'),
+        })],
+        resolve: {
+          alias: createDomainAliases(__dirname),
+        },
+        test: {
+          name: 'authentication',
+          root: './packages/authentication',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+          testTimeout: 10000,
+          pool: 'forks',
+          poolOptions: {
+            forks: {
+              singleFork: false,
+            },
+          },
         },
       },
 
