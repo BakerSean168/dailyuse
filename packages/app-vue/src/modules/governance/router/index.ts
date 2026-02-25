@@ -1,0 +1,69 @@
+/**
+ * Governance module routes
+ */
+
+import type { RouteRecordRaw } from 'vue-router';
+
+export const governanceRoutes: RouteRecordRaw[] = [
+  {
+    path: '/governance',
+    name: 'governance',
+    meta: {
+      title: '治理规则',
+      showInNav: true,
+      icon: 'mdi-shield-check',
+      order: 8,
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: '',
+        name: 'governance-list',
+        component: () => import('../views/GovernanceListView.vue'),
+        meta: {
+          title: '治理规则',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'new',
+        name: 'governance-editor',
+        component: () => import('../views/RuleEditorView.vue'),
+        meta: {
+          title: '新建规则',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: ':id/edit',
+        name: 'governance-editor-edit',
+        component: () => import('../views/RuleEditorView.vue'),
+        meta: {
+          title: '编辑规则',
+          requiresAuth: true,
+        },
+        props: true,
+      },
+      {
+        path: ':id',
+        name: 'governance-detail',
+        component: () => import('../views/GovernanceDetailView.vue'),
+        meta: {
+          title: '治理规则详情',
+          requiresAuth: true,
+        },
+        props: true,
+      },
+      {
+        path: ':id/history',
+        name: 'governance-history',
+        component: () => import('../views/RevisionHistoryView.vue'),
+        meta: {
+          title: '修订历史',
+          requiresAuth: true,
+        },
+        props: true,
+      },
+    ],
+  },
+];

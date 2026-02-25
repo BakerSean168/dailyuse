@@ -8,6 +8,17 @@ import { createAuthGuard } from './guards';
 
 import MainLayout from '../layouts/MainLayout.vue';
 
+// Module routes
+import { accountRoutes } from '../modules/account/router';
+import { goalRoutes } from '../modules/goal/router';
+import { governanceRoutes } from '../modules/governance/router';
+import { taskRoutes } from '../modules/task/router';
+import { scheduleRoutes } from '../modules/schedule/router';
+import { reminderRoutes } from '../modules/reminder/router';
+import { repositoryRoutes } from '../modules/repository/router';
+import { notificationRoutes } from '../modules/notification/router';
+import { settingRoutes } from '../modules/setting/router';
+
 export function createAppRouter(options?: {
   history?: RouterHistory;
   isAuthenticated?: () => boolean;
@@ -42,6 +53,17 @@ export function createAppRouter(options?: {
           component: () => import('../views/DashboardView.vue'),
           meta: { title: '仪表盘' },
         },
+        // Module routes
+        ...accountRoutes,
+        ...goalRoutes,
+        ...governanceRoutes,
+        ...taskRoutes,
+        ...scheduleRoutes,
+        ...reminderRoutes,
+        ...repositoryRoutes,
+        ...notificationRoutes,
+        ...settingRoutes,
+        // Host-provided additional routes
         ...additionalRoutes,
       ],
     },

@@ -25,7 +25,8 @@ import type {
 
 export function useGoal() {
   const store = useGoalStore();
-  const service = inject(GOAL_SERVICE_KEY)!;
+  const service = inject(GOAL_SERVICE_KEY);
+  if (!service) throw new Error('GOAL_SERVICE_KEY not provided');
   const savingId = ref<string | null>(null);
 
   const goals = computed(() => store.goals);
