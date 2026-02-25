@@ -5,16 +5,16 @@
  * 对 service 尚未覆盖的端点，标注 TODO 待迁移。
  */
 
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { RepositoryClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { CreateRepositoryRequest } from '@dailyuse/repository/infrastructure-client';
 import type { Repository } from '@dailyuse/repository/domain-client';
 
 export function useRepository() {
-  const service = inject(REPOSITORY_SERVICE_KEY);
-  if (!service) throw new Error('REPOSITORY_SERVICE_KEY not provided');
+  const service = useStrictInject(REPOSITORY_SERVICE_KEY, 'RepositoryService');
   const store = useRepositoryStore();
   const savingId = ref<string | null>(null);
 
@@ -34,7 +34,8 @@ export function useRepository() {
 
   // ── Repositories ──
   async function fetchRepositories(_query?: Record<string, unknown>) {
-    store.setLoading(true); store.setError(null);
+    store.setLoading(true);
+    store.setError(null);
     try {
       const result = await service.getRepositories();
       if (result.ok) {
@@ -42,11 +43,14 @@ export function useRepository() {
       } else {
         handleError(result.error.message || '加载仓库列表失败');
       }
-    } finally { store.setLoading(false); }
+    } finally {
+      store.setLoading(false);
+    }
   }
 
   async function fetchRepository(id: string) {
-    store.setLoading(true); store.setError(null);
+    store.setLoading(true);
+    store.setError(null);
     try {
       const result = await service.getRepositoryById(id);
       if (result.ok) {
@@ -57,11 +61,14 @@ export function useRepository() {
         handleError(result.error.message || '加载仓库失败');
         return null;
       }
-    } finally { store.setLoading(false); }
+    } finally {
+      store.setLoading(false);
+    }
   }
 
   async function createRepository(data: Record<string, unknown>) {
-    savingId.value = 'new'; store.setError(null);
+    savingId.value = 'new';
+    store.setError(null);
     try {
       const result = await service.createRepository(data as unknown as CreateRepositoryRequest);
       if (result.ok) {
@@ -72,18 +79,26 @@ export function useRepository() {
         handleError(result.error.message || '创建仓库失败');
         return null;
       }
-    } finally { savingId.value = null; }
+    } finally {
+      savingId.value = null;
+    }
   }
 
   // TODO: Migrate to service call when RepositoryClientService supports updateRepository
-  async function updateRepository(_id: string, _data: Record<string, unknown>): Promise<RepositoryClientDTO | null> {
+  async function updateRepository(
+    _id: string,
+    _data: Record<string, unknown>,
+  ): Promise<RepositoryClientDTO | null> {
     store.setError('updateRepository not yet migrated to service layer');
-    console.warn('[useRepository] updateRepository: TODO — migrate from resultHttpClient to service');
+    console.warn(
+      '[useRepository] updateRepository: TODO — migrate from resultHttpClient to service',
+    );
     return null;
   }
 
   async function deleteRepository(id: string) {
-    savingId.value = id; store.setError(null);
+    savingId.value = id;
+    store.setError(null);
     try {
       const result = await service.deleteRepository(id);
       if (result.ok) {
@@ -93,7 +108,9 @@ export function useRepository() {
         handleError(result.error.message || '删除仓库失败');
         return false;
       }
-    } finally { savingId.value = null; }
+    } finally {
+      savingId.value = null;
+    }
   }
 
   // ── Resources ──
@@ -104,14 +121,18 @@ export function useRepository() {
   }
 
   // TODO: Migrate to service call when RepositoryClientService supports createResource
-  async function createResource(_repoId: string, _data: Record<string, unknown>): Promise<ResourceClientDTO | null> {
+  async function createResource(
+    _repoId: string,
+    _data: Record<string, unknown>,
+  ): Promise<ResourceClientDTO | null> {
     store.setError('createResource not yet migrated to service layer');
     console.warn('[useRepository] createResource: TODO — migrate from resultHttpClient to service');
     return null;
   }
 
   async function deleteResource(repoId: string, resourceId: string) {
-    savingId.value = resourceId; store.setError(null);
+    savingId.value = resourceId;
+    store.setError(null);
     try {
       const result = await service.deleteResource(resourceId);
       if (result.ok) {
@@ -121,15 +142,33 @@ export function useRepository() {
         handleError(result.error.message || '删除资源失败');
         return false;
       }
-    } finally { savingId.value = null; }
+    } finally {
+      savingId.value = null;
+    }
   }
 
-  function setPage(p: number) { store.setPage(p); fetchRepositories(); }
+  function setPage(p: number) {
+    store.setPage(p);
+    fetchRepositories();
+  }
 
   return {
-    repositories, resources, currentRepository, currentResource,
-    isLoading, isSaving, error, pagination,
-    fetchRepositories, fetchRepository, createRepository, updateRepository, deleteRepository,
-    fetchResources, createResource, deleteResource, setPage,
+    repositories,
+    resources,
+    currentRepository,
+    currentResource,
+    isLoading,
+    isSaving,
+    error,
+    pagination,
+    fetchRepositories,
+    fetchRepository,
+    createRepository,
+    updateRepository,
+    deleteRepository,
+    fetchResources,
+    createResource,
+    deleteResource,
+    setPage,
   };
 }

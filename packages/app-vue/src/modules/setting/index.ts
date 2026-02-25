@@ -13,3 +13,6 @@ export { useUserSetting, useUserSettingData } from './composables';
 
 // Routes
 export { settingRoutes } from './router';
+
+// Components
+export * from './components';

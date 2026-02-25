@@ -58,8 +58,9 @@ export function registerGoalInitializationTasks(): void {
     name: 'goal-user-data-sync',
     phase: InitializationPhase.USER_LOGIN,
     priority: 15,
-    initialize: async (context?: { identityId?: string }) => {
-      console.log(`🔄 [Goal] 同步用户 Goal 数据: ${context?.identityId || 'unknown'}`);
+    initialize: async (context?: unknown) => {
+      const ctx = context as { identityId?: string } | undefined;
+      console.log(`🔄 [Goal] 同步用户 Goal 数据: ${ctx?.identityId || 'unknown'}`);
 
       try {
         // 用户登录后，Goal 数据将通过 composables 按需加载

@@ -3,7 +3,7 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useRepositoryStore } from '../presentation/stores/repositoryStore';
+import { useRepositoryStore } from '@dailyuse/app-vue';
 
 const repositorySyncStatusTask: InitializationTask = {
   name: 'repository-sync-status',

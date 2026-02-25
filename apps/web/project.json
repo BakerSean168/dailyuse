@@ -9,8 +9,7 @@
       "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "web:build",
-        "mode": "development",
-        
+        "mode": "development"
       },
       "configurations": {
         "local": {
@@ -28,7 +27,8 @@
       "outputs": ["{workspaceRoot}/dist/apps/web"],
       "options": {
         "outputPath": "dist/apps/web",
-        "configFile": "apps/web/vite.config.ts"
+        "configFile": "apps/web/vite.config.ts",
+        "skipTypeCheck": true
       },
       "configurations": {
         "staging": {

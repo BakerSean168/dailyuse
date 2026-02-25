@@ -13,9 +13,6 @@
     // 输出目录：编译后的文件
     "outDir": "./dist",
 
-    // 源码根目录：限制编译范围
-    "rootDir": "./src",
-
     // 生成输出文件
     "noEmit": true,
 
@@ -54,14 +51,18 @@
     // 本地路径别名配置
     // ============================================================
 
-    // 路径别名：仅用于项目内部导入
+    // 路径别名
     "paths": {
       // 项目内部别名：@/ 指向 src 目录
-      "@/*": ["./src/*"]
-      // 跨包引用通过 package.json 的 exports 字段解析
-      // TypeScript 使用 moduleResolution: "Bundler" 会自动解析到各包的 dist 目录
-      // 例如：import { ... } from '@dailyuse/contracts'
-      // 解析到 packages/contracts/dist/index.d.ts
+      "@/*": ["./src/*"],
+
+      // ✅ UI 层包：直接指向 source，因为 web 深度集成其 Vue 组件/composables
+      "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
+      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/src/index.ts"]
+
+      // 其他 @dailyuse/* 包通过 package.json exports → dist 解析。
+      // DI 类型使用 PublicInterface<T> 工具类型消除了 source-vs-dist
+      // 的 private property 名义类型冲突。
     }
   },
 
@@ -73,8 +74,15 @@
   "include": ["src/**/*", "env.d.ts"],
 
   // 排除的文件
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "**/*.bench.ts", "src/benchmarks/**/*",
-  "src/modules/ai/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/*.bench.ts",
+    "src/benchmarks/**/*",
+    "src/modules/ai/**/*"
+  ]
 
   // 取消 TS Project References；前端类型由各包的 tsup d.ts 提供
 }

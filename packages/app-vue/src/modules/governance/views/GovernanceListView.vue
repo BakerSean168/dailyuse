@@ -4,9 +4,7 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold">治理规则</h1>
-        <p class="text-sm text-muted-foreground mt-1">
-          浏览和管理团队编码标准与最佳实践
-        </p>
+        <p class="text-sm text-muted-foreground mt-1">浏览和管理团队编码标准与最佳实践</p>
       </div>
 
       <router-link
@@ -34,7 +32,10 @@
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-background text-muted-foreground hover:bg-muted',
             ]"
-            @click="selectedStatus = opt.value; onStatusFilter(opt.value)"
+            @click="
+              selectedStatus = opt.value;
+              onStatusFilter(opt.value);
+            "
           >
             {{ opt.label }}
           </button>
@@ -51,7 +52,10 @@
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-background text-muted-foreground hover:bg-muted',
             ]"
-            @click="selectedSeverity = opt.value; onSeverityFilter(opt.value)"
+            @click="
+              selectedSeverity = opt.value;
+              onSeverityFilter(opt.value);
+            "
           >
             {{ opt.label }}
           </button>
@@ -84,21 +88,13 @@
     </div>
 
     <!-- Error -->
-    <div
-      v-if="error"
-      class="p-4 rounded-md bg-destructive/10 text-destructive text-sm mb-4"
-    >
+    <div v-if="error" class="p-4 rounded-md bg-destructive/10 text-destructive text-sm mb-4">
       {{ error }}
     </div>
 
     <!-- Rules list -->
     <div v-if="rules.length > 0" class="flex flex-col gap-2">
-      <RuleCard
-        v-for="rule in rules"
-        :key="rule.id"
-        :rule="rule"
-        @click="goToDetail"
-      />
+      <RuleCard v-for="rule in rules" :key="rule.id" :rule="rule" @click="goToDetail" />
     </div>
 
     <!-- Empty state -->
@@ -129,17 +125,21 @@
       <button
         :disabled="currentPage <= 1"
         class="px-3 py-1.5 rounded-md border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
-        @click="currentPage--; setPage(currentPage)"
+        @click="
+          currentPage--;
+          setPage(currentPage);
+        "
       >
         上一页
       </button>
-      <span class="text-sm text-muted-foreground">
-        {{ currentPage }} / {{ totalPages }}
-      </span>
+      <span class="text-sm text-muted-foreground"> {{ currentPage }} / {{ totalPages }} </span>
       <button
         :disabled="currentPage >= totalPages"
         class="px-3 py-1.5 rounded-md border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted transition-colors"
-        @click="currentPage++; setPage(currentPage)"
+        @click="
+          currentPage++;
+          setPage(currentPage);
+        "
       >
         下一页
       </button>
@@ -154,7 +154,7 @@ import { Plus, Shield } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/use-performance-monitor';
 import type { RuleClientDTO, RuleStatus, RuleSeverity } from '../types';
-import { RuleCard, SearchBar, TagFilterChips } from '@dailyuse/ui-vue-shadcn';
+import { RuleCard, SearchBar, TagFilterChips } from '../components';
 
 const router = useRouter();
 const {
@@ -194,9 +194,7 @@ const severityOptions = [
   { label: '推荐', value: 'Recommended' },
 ];
 
-const totalPages = computed(() =>
-  Math.ceil(pagination.value.total / pagination.value.pageSize),
-);
+const totalPages = computed(() => Math.ceil(pagination.value.total / pagination.value.pageSize));
 
 function onSearch(query: string) {
   void trackSearch(() => searchRules(query));
@@ -217,12 +215,8 @@ function goToDetail(rule: RuleClientDTO) {
 function onKeyboardNavigate(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null;
   if (
-    target
-    && (
-      target.tagName === 'INPUT'
-      || target.tagName === 'TEXTAREA'
-      || target.isContentEditable
-    )
+    target &&
+    (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
   ) {
     return;
   }
@@ -238,9 +232,8 @@ function onKeyboardNavigate(event: KeyboardEvent) {
   event.preventDefault();
 
   const direction = event.key === 'j' ? 1 : -1;
-  const startIndex = keyboardIndex.value < 0
-    ? (direction > 0 ? 0 : rules.value.length - 1)
-    : keyboardIndex.value;
+  const startIndex =
+    keyboardIndex.value < 0 ? (direction > 0 ? 0 : rules.value.length - 1) : keyboardIndex.value;
 
   const nextIndex = (startIndex + direction + rules.value.length) % rules.value.length;
   keyboardIndex.value = nextIndex;

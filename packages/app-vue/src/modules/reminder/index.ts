@@ -13,3 +13,6 @@ export { useReminder } from './composables/useReminder';
 
 // Routes
 export { reminderRoutes } from './router';
+
+// Components
+export * from './components';

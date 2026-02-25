@@ -10,9 +10,10 @@
  * @module governance/composables
  */
 
-import { computed, ref, inject } from 'vue';
+import { computed, ref } from 'vue';
 import { useGovernanceStore } from '../stores/governanceStore';
 import { RULE_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
   RuleClientDTO,
   CreateRuleReq,
@@ -24,10 +25,7 @@ import type {
 export function useGovernance() {
   const store = useGovernanceStore();
   const savingId = ref<string | null>(null);
-
-  // 严格注入 — 未提供时抛出错误
-  const apiClient = inject(RULE_SERVICE_KEY);
-  if (!apiClient) throw new Error('RULE_SERVICE_KEY not provided');
+  const apiClient = useStrictInject(RULE_SERVICE_KEY, 'RuleService');
 
   // ============ Computed State ============
 

@@ -7,7 +7,7 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useReminderStore } from '../presentation/stores/reminderStore';
+import { useReminderStore } from '@dailyuse/app-vue';
 
 /**
  * 注册 Reminder 模块的初始化任务

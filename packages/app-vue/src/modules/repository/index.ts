@@ -13,3 +13,6 @@ export { useRepository } from './composables/useRepository';
 
 // Routes
 export { repositoryRoutes } from './router';
+
+// Components
+export * from './components';

@@ -1,16 +1,10 @@
 import { createWebHistory } from 'vue-router';
-import {
-  accountRoutes,
-  createAppRouter,
-  goalRoutes,
-  useAuthenticationStore,
-} from '@dailyuse/app-vue';
+import { createAppRouter, useAuthenticationStore } from '@dailyuse/app-vue';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
-import { governanceRoutes } from '@/modules/governance/presentation/router';
+
 const router = createAppRouter({
   history: createWebHistory(),
   isAuthenticated: () => useAuthenticationStore().isAuthenticated,
-  additionalRoutes: [...accountRoutes, ...governanceRoutes, ...goalRoutes],
 });
 router.beforeEach(() => {
   progressStart();

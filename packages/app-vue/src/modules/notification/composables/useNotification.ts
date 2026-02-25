@@ -4,14 +4,14 @@
  * 通过 inject 获取 NotificationClientService，所有方法返回 Result<T>。
  */
 
-import { computed, inject } from 'vue';
+import { computed } from 'vue';
 import { useNotificationStore } from '../stores/notificationStore';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 export function useNotification() {
-  const service = inject(NOTIFICATION_SERVICE_KEY);
-  if (!service) throw new Error('NOTIFICATION_SERVICE_KEY not provided');
+  const service = useStrictInject(NOTIFICATION_SERVICE_KEY, 'NotificationService');
   const store = useNotificationStore();
 
   const notifications = computed(() => store.notifications);
@@ -27,7 +27,8 @@ export function useNotification() {
   }
 
   async function fetchNotifications(query?: Record<string, unknown>) {
-    store.setLoading(true); store.setError(null);
+    store.setLoading(true);
+    store.setError(null);
     const result = await service.findNotifications({
       ...query,
       page: store.pagination.page,
@@ -55,7 +56,12 @@ export function useNotification() {
     const result = await service.markAllAsRead();
     if (result.ok) {
       store.notifications.forEach((n) => {
-        if (!n.isRead) store.updateNotification({ ...n, isRead: true, readAt: Date.now() } as NotificationClientDTO);
+        if (!n.isRead)
+          store.updateNotification({
+            ...n,
+            isRead: true,
+            readAt: Date.now(),
+          } as NotificationClientDTO);
       });
       store.setUnreadCount(0);
     } else {
@@ -65,8 +71,11 @@ export function useNotification() {
 
   async function dismiss(id: string) {
     const result = await service.deleteNotification(id);
-    if (result.ok) { store.removeNotification(id); }
-    else { handleError(result.error.message || '删除通知失败'); }
+    if (result.ok) {
+      store.removeNotification(id);
+    } else {
+      handleError(result.error.message || '删除通知失败');
+    }
   }
 
   async function dismissAll() {
@@ -76,15 +85,31 @@ export function useNotification() {
 
   async function refreshStats() {
     const result = await service.getUnreadCount();
-    if (result.ok) { store.setUnreadCount(result.data.count); }
-    else { handleError(result.error.message || '刷新统计失败'); }
+    if (result.ok) {
+      store.setUnreadCount(result.data.count);
+    } else {
+      handleError(result.error.message || '刷新统计失败');
+    }
   }
 
-  function setPage(p: number) { store.setPage(p); fetchNotifications(); }
+  function setPage(p: number) {
+    store.setPage(p);
+    fetchNotifications();
+  }
 
   return {
-    notifications, unreadCount, hasUnread, isLoading, error, pagination,
-    fetchNotifications, markAsRead, markAllAsRead, dismiss, dismissAll,
-    refreshStats, setPage,
+    notifications,
+    unreadCount,
+    hasUnread,
+    isLoading,
+    error,
+    pagination,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    dismiss,
+    dismissAll,
+    refreshStats,
+    setPage,
   };
 }

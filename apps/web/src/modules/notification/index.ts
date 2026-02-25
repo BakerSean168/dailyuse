@@ -1,15 +1,15 @@
 /**
- * Notification 模块入口
+ * Notification Web Module
+ * Re-exports from shared app-vue package + web-specific initialization
  */
 
-// ===== Presentation Layer =====
-export { useNotificationStore } from './presentation/stores/notificationStore';
-export type { NotificationStoreType } from './presentation/stores/notificationStore';
-export { useNotification } from './presentation/composables/useNotification';
+// Store, Composables from app-vue
+export {
+  useNotificationStore,
+  type NotificationStoreType,
+  useNotification,
+  notificationRoutes,
+} from '@dailyuse/app-vue';
 
-// UI 组件
-export { default as InAppNotification } from './presentation/components/InAppNotification.vue';
-export { default as NotificationPermissionWarning } from './presentation/components/NotificationPermissionWarning.vue';
-
-// ===== Initialization =====
+// Initialization (web-specific)
 export { registerNotificationInitializationTasks } from './initialization/notificationInitialization';

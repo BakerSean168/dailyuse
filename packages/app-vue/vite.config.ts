@@ -10,7 +10,10 @@ const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 
   peerDependencies?: Record<string, string>;
 };
 
-const external = [...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})];
+const external = [
+  ...Object.keys(pkg.dependencies ?? {}),
+  ...Object.keys(pkg.peerDependencies ?? {}),
+];
 
 export default defineConfig({
   plugins: [
@@ -19,7 +22,12 @@ export default defineConfig({
       tsconfigPath: path.resolve(__dirname, 'tsconfig.json'),
       entryRoot: path.resolve(__dirname, 'src'),
       include: ['src/**/*.ts', 'src/**/*.vue'],
-      exclude: ['src/**/*.stories.ts', 'src/**/*.stories.vue', 'src/**/*.test.ts', 'src/**/*.spec.ts'],
+      exclude: [
+        'src/**/*.stories.ts',
+        'src/**/*.stories.vue',
+        'src/**/*.test.ts',
+        'src/**/*.spec.ts',
+      ],
       outDir: path.resolve(__dirname, 'dist'),
     }),
   ],
@@ -35,7 +43,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external,
+      external: (id) => external.some((dep) => id === dep || id.startsWith(dep + '/')),
       output: {
         exports: 'named',
       },

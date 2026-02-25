@@ -1,9 +1,15 @@
 /**
  * Repository Web Module
- * 仓储Web模块导出
+ * Re-exports from shared app-vue package + web-specific initialization
  */
 
-// ===== Presentation Layer =====
-export { useRepositoryStore } from './presentation/stores/repositoryStore';
-export type { RepositoryStoreType } from './presentation/stores/repositoryStore';
-export { useRepository } from './presentation/composables/useRepository';
+// Store, Composables, Routes from app-vue
+export {
+  useRepositoryStore,
+  type RepositoryStoreType,
+  useRepository,
+  repositoryRoutes,
+} from '@dailyuse/app-vue';
+
+// Initialization (web-specific, not yet wired up)
+export { registerRepositoryInitializationTasks } from './initialization/repositoryInitialization';

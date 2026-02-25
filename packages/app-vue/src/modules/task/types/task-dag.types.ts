@@ -3,7 +3,11 @@
  * 任务依赖关系图可视化专用类型定义
  */
 
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  TaskDependencyServerDTO,
+} from '@dailyuse/contracts/task';
 
 /**
  * 用于 DAG 可视化的任务数据类型
@@ -30,7 +34,7 @@ export interface TaskForDAG {
 export function taskTemplateToDAG(template: TaskTemplateClientDTO): TaskForDAG {
   return {
     id: template.id,
-    title: template.title,
+    title: template.name,
     description: template.description,
     status: template.status,
     priorityLevel: mapPriorityScoreToLevel(template.priority),
@@ -50,12 +54,10 @@ export function taskInstanceToDAG(
 ): TaskForDAG {
   return {
     id: instance.id,
-    title: template?.title || `Task ${instance.id.slice(0, 8)}`,
+    title: template?.name || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
-    priorityLevel: template
-      ? mapPriorityScoreToLevel(template.priority)
-      : 'MEDIUM',
+    priorityLevel: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
     priorityScore: template?.priority,
     importance: template?.importance,
     estimatedMinutes: extractEstimatedMinutes(instance.timeConfig),
@@ -69,11 +71,9 @@ export function taskInstanceToDAG(
  * 将优先级分数 (0-100) 映射到优先级级别
  * 基于 Story 1.3 的算法
  */
-function mapPriorityScoreToLevel(
-  priorityScore?: number,
-): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
+function mapPriorityScoreToLevel(priorityScore?: number): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
   if (priorityScore === undefined || priorityScore === null) return 'MEDIUM';
-  
+
   // 优先级分数映射
   if (priorityScore >= 80) return 'CRITICAL';
   if (priorityScore >= 60) return 'HIGH';
@@ -124,17 +124,15 @@ export function taskInstanceToWidget(
 ): TaskForWidget {
   return {
     id: instance.id,
-    title: template?.title || `Task ${instance.id.slice(0, 8)}`,
+    title: template?.name || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
-    priority: template
-      ? mapPriorityScoreToLevel(template.priority)
-      : 'MEDIUM',
+    priority: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
     priorityScore: template?.priority,
     scheduledTime: instance.timeConfig?.timePoint ?? null,
     dueDate: template?.dueDate ?? null,
     templateId: instance.templateId,
-    templateTitle: template?.title,
+    templateTitle: template?.name,
     instanceDate: instance.instanceDate,
   };
 }

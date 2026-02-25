@@ -7,7 +7,7 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useTaskStore } from '../presentation/stores/taskStore';
+import { useTaskStore } from '@dailyuse/app-vue';
 
 /**
  * 注册 Task 模块的初始化任务

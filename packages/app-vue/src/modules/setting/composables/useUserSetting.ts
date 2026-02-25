@@ -1,20 +1,19 @@
 /**
  * useUserSetting - 设置模块主 composable
  *
- * 通过 inject 获取 SettingClientService，所有方法返回 Result<T>。
- * 使用新的分类偏好模型（appearance, locale, workflow 等）。
+ * 通过 inject 获取 SettingClientService。
+ * NOTE: SettingClientService 返回 raw Promise<T>（非 Result<T>），
+ * 失败时会抛出异常，因此使用 try/catch 处理错误。
  */
 
-import { computed, inject } from 'vue';
+import { computed } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 export function useUserSetting() {
-  const service = inject(SETTING_SERVICE_KEY);
-  if (!service) {
-    throw new Error('SettingClientService not provided. Ensure SETTING_SERVICE_KEY is provided via app.provide().');
-  }
+  const service = useStrictInject(SETTING_SERVICE_KEY, 'SettingService');
   const store = useUserSettingStore();
 
   const isLoading = computed(() => store.isLoading);
@@ -28,7 +27,9 @@ export function useUserSetting() {
   }
 
   /** 获取指定分类设置 */
-  function getCategory<K extends PreferenceCategory>(category: K): UserSettingPreferences[K] | undefined {
+  function getCategory<K extends PreferenceCategory>(
+    category: K,
+  ): UserSettingPreferences[K] | undefined {
     return store.userSetting?.preferences?.[category];
   }
 
@@ -38,14 +39,16 @@ export function useUserSetting() {
   }
 
   async function loadSettings() {
-    store.setLoading(true); store.setError(null);
-    const result = await service.getUserSettings();
-    if (result.ok) {
-      store.setUserSetting(result.data);
-    } else {
-      handleError(result.error.message || '加载设置失败');
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const data = await service.getUserSettings();
+      store.setUserSetting(data);
+    } catch (e: unknown) {
+      handleError((e as Error).message || '加载设置失败');
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   async function loadDefaults() {
@@ -62,33 +65,48 @@ export function useUserSetting() {
     console.warn('updateCategory: not yet implemented — requires HTTP client integration');
   }
 
-  async function resetToDefaults(category?: PreferenceCategory) {
+  async function resetToDefaults(_category?: PreferenceCategory) {
     store.setError(null);
-    const result = await service.resetUserSettings();
-    if (result.ok) { store.setUserSetting(result.data); }
-    else { handleError(result.error.message || '重置设置失败'); }
+    try {
+      const data = await service.resetUserSettings();
+      store.setUserSetting(data);
+    } catch (e: unknown) {
+      handleError((e as Error).message || '重置设置失败');
+    }
   }
 
   async function exportSettings() {
-    const result = await service.exportSettings();
-    if (result.ok) { return result.data; }
-    handleError(result.error.message || '导出设置失败');
-    return null;
+    try {
+      return await service.exportSettings();
+    } catch (e: unknown) {
+      handleError((e as Error).message || '导出设置失败');
+      return null;
+    }
   }
 
   async function importSettings(data: unknown) {
     store.setError(null);
-    const result = await service.importSettings(data as string);
-    if (result.ok) { store.setUserSetting(result.data); }
-    else { handleError(result.error.message || '导入设置失败'); }
+    try {
+      const result = await service.importSettings(data as string);
+      store.setUserSetting(result);
+    } catch (e: unknown) {
+      handleError((e as Error).message || '导入设置失败');
+    }
   }
 
   return {
-    userSetting, defaults, isLoading, error,
-    getCategory, getValue,
-    loadSettings, loadDefaults,
-    updateCategory, resetToDefaults,
-    exportSettings, importSettings,
+    userSetting,
+    defaults,
+    isLoading,
+    error,
+    getCategory,
+    getValue,
+    loadSettings,
+    loadDefaults,
+    updateCategory,
+    resetToDefaults,
+    exportSettings,
+    importSettings,
   };
 }
 

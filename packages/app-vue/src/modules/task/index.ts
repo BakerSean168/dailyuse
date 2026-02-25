@@ -16,3 +16,6 @@ export { useTask } from './composables/useTask';
 
 // Routes
 export { taskRoutes } from './router';
+
+// Components
+export * from './components';

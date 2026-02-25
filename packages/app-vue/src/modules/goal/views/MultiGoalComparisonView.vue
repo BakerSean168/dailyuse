@@ -56,10 +56,7 @@
         </div>
 
         <!-- 对比统计面板 -->
-        <ComparisonStatsPanel
-          v-if="selectedGoals.length >= 2"
-          :goals="selectedGoals"
-        />
+        <ComparisonStatsPanel v-if="selectedGoals.length >= 2" :goals="selectedGoals" />
       </div>
     </ScrollArea>
 
@@ -77,9 +74,16 @@
 import { computed, onMounted, ref } from 'vue';
 import { GitCompare } from 'lucide-vue-next';
 import {
-  Button, Badge, Card, CardHeader, CardTitle, CardDescription, CardContent,
-  ScrollArea, ComparisonStatsPanel, MultiGoalSelector,
+  Button,
+  Badge,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
+import { ComparisonStatsPanel, MultiGoalSelector } from '../components';
 import { useGoal } from '../composables/useGoal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 

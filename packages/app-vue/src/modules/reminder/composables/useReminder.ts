@@ -6,9 +6,10 @@
  * 使用 Result<T> 模式替代 try/catch。
  */
 
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useReminderStore } from '../stores/reminderStore';
 import { REMINDER_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -19,8 +20,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 
 export function useReminder() {
-  const service = inject(REMINDER_SERVICE_KEY);
-  if (!service) throw new Error('REMINDER_SERVICE_KEY not provided');
+  const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
 
   const store = useReminderStore();
   const savingId = ref<string | null>(null);
@@ -76,7 +76,9 @@ export function useReminder() {
     }
   }
 
-  async function createTemplate(data: CreateReminderTemplateReq): Promise<ReminderTemplateClientDTO | null> {
+  async function createTemplate(
+    data: CreateReminderTemplateReq,
+  ): Promise<ReminderTemplateClientDTO | null> {
     savingId.value = 'new';
     store.setError(null);
     try {
@@ -93,7 +95,10 @@ export function useReminder() {
     }
   }
 
-  async function updateTemplate(id: string, data: UpdateReminderTemplateReq): Promise<ReminderTemplateClientDTO | null> {
+  async function updateTemplate(
+    id: string,
+    data: UpdateReminderTemplateReq,
+  ): Promise<ReminderTemplateClientDTO | null> {
     savingId.value = id;
     store.setError(null);
     try {
@@ -161,7 +166,10 @@ export function useReminder() {
     }
   }
 
-  async function updateGroup(id: string, data: UpdateReminderGroupReq): Promise<ReminderGroupClientDTO | null> {
+  async function updateGroup(
+    id: string,
+    data: UpdateReminderGroupReq,
+  ): Promise<ReminderGroupClientDTO | null> {
     savingId.value = id;
     store.setError(null);
     try {
@@ -195,13 +203,29 @@ export function useReminder() {
     }
   }
 
-  function setPage(p: number) { store.setPage(p); fetchTemplates(); }
+  function setPage(p: number) {
+    store.setPage(p);
+    fetchTemplates();
+  }
 
   return {
-    templates, groups, currentTemplate, currentGroup,
-    isLoading, isSaving, error, pagination,
-    fetchTemplates, fetchTemplate, createTemplate, updateTemplate, deleteTemplate,
-    fetchGroups, createGroup, updateGroup, deleteGroup,
+    templates,
+    groups,
+    currentTemplate,
+    currentGroup,
+    isLoading,
+    isSaving,
+    error,
+    pagination,
+    fetchTemplates,
+    fetchTemplate,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    fetchGroups,
+    createGroup,
+    updateGroup,
+    deleteGroup,
     setPage,
   };
 }

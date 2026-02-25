@@ -10,11 +10,8 @@
  * @module shared/http
  */
 
-import {
-  AxiosHttpClient,
-  ResultHttpClient,
-  type TokenProvider,
-} from '@dailyuse/http-client';
+import { AxiosHttpClient, ResultHttpClient, type TokenProvider } from '@dailyuse/http-client';
+import { useAuthenticationStore } from '@dailyuse/app-vue';
 
 // ────────────────────────────────────────
 // Token Provider（延迟获取 Store 避免循环引用）
@@ -23,12 +20,13 @@ import {
 /**
  * TokenProvider 实现
  *
- * 延迟导入 authenticationStore 以避免 Pinia 在 createApp 之前初始化的问题。
+ * useAuthenticationStore() 在 Pinia 安装后才可调用；
+ * getAccessToken / getRefreshToken 仅在请求时才被调用，
+ * 此时 Pinia 已经就绪。
  */
 export const tokenProvider: TokenProvider = {
   getAccessToken() {
     try {
-      const { useAuthenticationStore } = require('@/modules/authentication/presentation/stores/authenticationStore');
       const store = useAuthenticationStore();
       return store.accessToken;
     } catch {
@@ -37,7 +35,6 @@ export const tokenProvider: TokenProvider = {
   },
   getRefreshToken() {
     try {
-      const { useAuthenticationStore } = require('@/modules/authentication/presentation/stores/authenticationStore');
       const store = useAuthenticationStore();
       return store.refreshToken;
     } catch {
@@ -59,10 +56,6 @@ const httpClientConfig = {
   timeout: 15000,
   tokenProvider,
   onTokenRefresh: async () => {
-    // 延迟导入避免循环依赖
-    const { useAuthenticationStore } = await import(
-      '@/modules/authentication/presentation/stores/authenticationStore'
-    );
     const store = useAuthenticationStore();
     const refreshToken = store.refreshToken;
     if (!refreshToken) return null;
@@ -80,10 +73,10 @@ const httpClientConfig = {
       const data = json.data ?? json;
 
       // 更新 Store 中的新 Token
-      store.setAccessToken(data.accessToken);
-      if (data.refreshToken) {
-        store.setRefreshToken(data.refreshToken);
-      }
+      store.$patch({
+        accessToken: data.accessToken,
+        ...(data.refreshToken ? { refreshToken: data.refreshToken } : {}),
+      });
       return data.accessToken;
     } catch {
       return null;
@@ -91,12 +84,12 @@ const httpClientConfig = {
   },
   onUnauthorized: () => {
     // 刷新失败 → 清除状态 → 跳转登录
-    import('@/modules/authentication/presentation/stores/authenticationStore').then(
-      ({ useAuthenticationStore }) => {
-        const store = useAuthenticationStore();
-        store.reset();
-      },
-    );
+    try {
+      const store = useAuthenticationStore();
+      store.$reset();
+    } catch {
+      // ignore — store may not be ready
+    }
     // 使用 window.location 保证一定能跳转
     window.location.href = '/auth';
   },

@@ -7,7 +7,7 @@
  * @module authentication/composables
  */
 
-import { computed, inject } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import type {
@@ -20,12 +20,12 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
 export function useAuth() {
   const store = useAuthenticationStore();
   const router = useRouter();
-  const service = inject(AUTH_SERVICE_KEY);
-  if (!service) throw new Error('AUTH_SERVICE_KEY not provided');
+  const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
 
   // ========== Computed State ==========
   const isAuthenticated = computed(() => store.isAuthenticated);

@@ -78,7 +78,7 @@ export const useGovernanceStore = defineStore('governance', {
 
     /** 根据标签过滤规则 */
     getRulesByTag: (state) => (tag: string) =>
-      state.rules.filter((rule) => rule.tags.includes(tag)),
+      state.rules.filter((rule) => rule.tags.some((t) => t.value === tag)),
 
     /** 根据严重级别过滤 */
     getRulesBySeverity: (state) => (severity: RuleSeverity) =>
@@ -87,7 +87,7 @@ export const useGovernanceStore = defineStore('governance', {
     /** 所有唯一标签 */
     allTags: (state): string[] => {
       const tags = new Set<string>();
-      state.rules.forEach((rule) => rule.tags.forEach((tag) => tags.add(tag)));
+      state.rules.forEach((rule) => rule.tags.forEach((t) => tags.add(t.value)));
       return Array.from(tags).sort();
     },
 

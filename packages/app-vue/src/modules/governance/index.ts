@@ -17,3 +17,6 @@ export { usePerformanceMonitor } from './composables/use-performance-monitor';
 
 // Routes
 export { governanceRoutes } from './router';
+
+// Components
+export * from './components';

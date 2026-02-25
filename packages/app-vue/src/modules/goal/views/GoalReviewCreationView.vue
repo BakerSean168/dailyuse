@@ -83,19 +83,28 @@ import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { ArrowLeft } from 'lucide-vue-next';
 import {
-  Button, Input, Label, Textarea, ScrollArea, Separator,
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Button,
+  Input,
+  Label,
+  Textarea,
+  ScrollArea,
+  Separator,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
 const router = useRouter();
-const goalId = route.params.goalId as string || route.params.id as string;
+const goalId = (route.params.goalId as string) || (route.params.id as string);
 
 const { createReview, isSaving } = useGoal();
 
 const form = reactive({
-  reviewType: 'Weekly' as string,
+  reviewType: 'Weekly' as 'Weekly' | 'Monthly' | 'Quarterly' | 'Annual' | 'Adhoc' | 'Final',
   rating: 7,
   title: '',
   content: '',

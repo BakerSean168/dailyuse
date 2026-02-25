@@ -14,7 +14,10 @@
       <!-- Breadcrumb & Actions -->
       <div class="flex items-center justify-between mb-6">
         <nav class="flex items-center gap-1 text-sm text-muted-foreground">
-          <router-link :to="{ name: 'governance-list' }" class="hover:text-foreground transition-colors">
+          <router-link
+            :to="{ name: 'governance-list' }"
+            class="hover:text-foreground transition-colors"
+          >
             治理规则
           </router-link>
           <ChevronRight :size="14" />
@@ -53,9 +56,11 @@
           <RuleStatusBadge :status="currentRule.status" />
           <span
             class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium"
-            :class="currentRule.severity === 'Mandatory'
-              ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'"
+            :class="
+              currentRule.severity === 'Mandatory'
+                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+            "
           >
             {{ currentRule.severity === 'Mandatory' ? '强制' : '推荐' }}
           </span>
@@ -64,10 +69,10 @@
         <div class="flex items-center gap-1.5 mb-2 flex-wrap">
           <span
             v-for="tag in currentRule.tags"
-            :key="tag"
+            :key="typeof tag === 'string' ? tag : tag.value"
             class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
           >
-            {{ tag }}
+            {{ typeof tag === 'string' ? tag : tag.value }}
           </span>
         </div>
 
@@ -84,7 +89,10 @@
         <AlertTriangle :size="20" class="text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
         <div>
           <h3 class="font-medium text-yellow-800 dark:text-yellow-300">此规则已弃用</h3>
-          <p v-if="currentRule.deprecationReason" class="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+          <p
+            v-if="currentRule.deprecationReason"
+            class="text-sm text-yellow-700 dark:text-yellow-400 mt-1"
+          >
             {{ currentRule.deprecationReason }}
           </p>
           <p v-if="currentRule.replacementRuleId" class="text-sm mt-1">
@@ -164,15 +172,15 @@
             <History :size="14" />
             修订历史 ({{ revisions.length }})
           </span>
-          <ChevronRight :size="16" :class="{ 'rotate-90': showRevisions }" class="transition-transform" />
+          <ChevronRight
+            :size="16"
+            :class="{ 'rotate-90': showRevisions }"
+            class="transition-transform"
+          />
         </button>
         <div v-if="showRevisions" class="p-4 border-t">
           <div v-if="revisions.length > 0" class="space-y-4">
-            <div
-              v-for="rev in revisions"
-              :key="rev.id"
-              class="flex gap-3 relative pl-6"
-            >
+            <div v-for="rev in revisions" :key="rev.id" class="flex gap-3 relative pl-6">
               <!-- Timeline line -->
               <div class="absolute left-2 top-2 bottom-0 w-px bg-border"></div>
               <!-- Timeline dot -->
@@ -248,7 +256,7 @@ import {
 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
 import { usePerformanceMonitor } from '../composables/use-performance-monitor';
-import { RuleStatusBadge, CodeSnippetView } from '@dailyuse/ui-vue-shadcn';
+import { RuleStatusBadge, CodeSnippetView } from '../components';
 
 const props = defineProps<{
   id: string;
@@ -293,7 +301,7 @@ async function handleDelete() {
   }
 }
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string | number): string {
   return new Date(dateStr).toLocaleString('zh-CN', {
     year: 'numeric',
     month: 'short',
@@ -305,31 +313,46 @@ function formatDate(dateStr: string): string {
 
 function revisionDotColor(changeType: string): string {
   switch (changeType) {
-    case 'Created': return 'bg-green-500';
-    case 'Updated': return 'bg-blue-500';
-    case 'Deprecated': return 'bg-yellow-500';
-    case 'Reactivated': return 'bg-primary';
-    default: return 'bg-muted-foreground';
+    case 'Created':
+      return 'bg-green-500';
+    case 'Updated':
+      return 'bg-blue-500';
+    case 'Deprecated':
+      return 'bg-yellow-500';
+    case 'Reactivated':
+      return 'bg-primary';
+    default:
+      return 'bg-muted-foreground';
   }
 }
 
 function revisionBadgeClasses(changeType: string): string {
   switch (changeType) {
-    case 'Created': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'Updated': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-    case 'Deprecated': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-    case 'Reactivated': return 'bg-primary/10 text-primary';
-    default: return 'bg-muted text-muted-foreground';
+    case 'Created':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    case 'Updated':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    case 'Deprecated':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+    case 'Reactivated':
+      return 'bg-primary/10 text-primary';
+    default:
+      return 'bg-muted text-muted-foreground';
   }
 }
 
 function revisionLabel(changeType: string): string {
   switch (changeType) {
-    case 'Created': return '创建';
-    case 'Updated': return '更新';
-    case 'Deprecated': return '弃用';
-    case 'Reactivated': return '重新激活';
-    default: return changeType;
+    case 'Created':
+      return '创建';
+    case 'Updated':
+      return '更新';
+    case 'Deprecated':
+      return '弃用';
+    case 'Reactivated':
+      return '重新激活';
+    default:
+      return changeType;
   }
 }
 

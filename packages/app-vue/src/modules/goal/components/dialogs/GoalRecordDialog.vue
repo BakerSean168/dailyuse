@@ -136,8 +136,10 @@ const handleCreateKeyResult = async () => {
     console.error('未找到目标');
     return;
   }
-  
-  const currentKeyResult = currentGoal.keyResults.find((kr: any) => kr.id === propKeyResultId.value);
+
+  const currentKeyResult = currentGoal.keyResults?.find(
+    (kr: any) => kr.id === propKeyResultId.value,
+  );
   if (!currentKeyResult) {
     console.error('未找到关键结果');
     return;
@@ -146,7 +148,7 @@ const handleCreateKeyResult = async () => {
   // ✅ 新的数据模型：value 就是本次记录的独立值
   // 不需要再加上 previousValue
   await createGoalRecord(propGoalId.value, propKeyResultId.value, {
-    value: localRecord.value.changeAmount,  // ✅ 直接传递用户输入的值
+    value: localRecord.value.changeAmount, // ✅ 直接传递用户输入的值
     note: localRecord.value.note,
     recordedAt: Date.now(),
   });
@@ -186,7 +188,7 @@ watch(
       if (propRecord.value) {
         // 编辑模式：显示已有记录
         localRecord.value = {
-          changeAmount: propRecord.value.value,  // 使用 value 属性
+          changeAmount: propRecord.value.value, // 使用 value 属性
           note: propRecord.value.comment || '',
         };
       } else {

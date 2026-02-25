@@ -13,15 +13,10 @@
             <CardTitle class="flex items-center gap-2">
               <Settings class="h-4 w-4" /> 状态规则配置
             </CardTitle>
-            <CardDescription>
-              定义当特定条件满足时，目标状态的自动转换规则
-            </CardDescription>
+            <CardDescription> 定义当特定条件满足时，目标状态的自动转换规则 </CardDescription>
           </CardHeader>
           <CardContent>
-            <StatusRuleEditor
-              v-model:rules="rules"
-              @save="handleSaveRules"
-            />
+            <StatusRuleEditor v-model:rules="rules" @save="handleSaveRules" />
           </CardContent>
         </Card>
 
@@ -38,12 +33,10 @@
               请先添加规则
             </div>
             <div v-else class="space-y-4">
-              <div
-                v-for="(rule, idx) in rules"
-                :key="idx"
-                class="flex items-start gap-3"
-              >
-                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+              <div v-for="(rule, idx) in rules" :key="idx" class="flex items-start gap-3">
+                <div
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary"
+                >
                   {{ idx + 1 }}
                 </div>
                 <div class="flex-1 rounded-lg border p-3">
@@ -70,9 +63,15 @@ import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { Settings, Clock, ArrowRight } from 'lucide-vue-next';
 import {
-  Card, CardHeader, CardTitle, CardDescription, CardContent,
-  ScrollArea, Badge, StatusRuleEditor,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  ScrollArea,
+  Badge,
 } from '@dailyuse/ui-vue-shadcn';
+import { StatusRuleEditor } from '../components';
 
 interface StatusRule {
   fromStatus: string;

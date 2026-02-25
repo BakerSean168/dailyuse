@@ -4,19 +4,16 @@
  * 通过 inject 获取 TaskClientService，所有方法返回 Result<T>。
  */
 
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { useTaskStore } from '../stores/taskStore';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
-import type {
-  CreateTaskReq,
-  UpdateTaskReq,
-} from '@dailyuse/contracts/task';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 
 export function useTask() {
-  const service = inject(TASK_SERVICE_KEY);
-  if (!service) throw new Error('TASK_SERVICE_KEY not provided');
+  const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
   const store = useTaskStore();
   const savingId = ref<string | null>(null);
 
@@ -37,14 +34,18 @@ export function useTask() {
 
   // ========== Templates ==========
   async function fetchTemplates(query?: Record<string, unknown>) {
-    store.setLoading(true); store.setError(null);
+    store.setLoading(true);
+    store.setError(null);
     const result = await service.listTemplates({
       ...query,
       page: store.pagination.page,
       limit: store.pagination.pageSize,
     } as Parameters<typeof service.listTemplates>[0]);
     if (result.ok) {
-      store.setTemplates(result.data.templates.map((t: TaskTemplate) => t.toDTO()), result.data.total);
+      store.setTemplates(
+        result.data.templates.map((t: TaskTemplate) => t.toDTO()),
+        result.data.total,
+      );
     } else {
       handleError(result.error.message || '加载任务模板失败');
     }
@@ -52,16 +53,22 @@ export function useTask() {
   }
 
   async function fetchTemplate(id: string) {
-    store.setLoading(true); store.setError(null);
+    store.setLoading(true);
+    store.setError(null);
     const result = await service.getTemplate(id);
     store.setLoading(false);
-    if (result.ok) { const dto = result.data.toDTO(); store.setCurrentTemplate(dto); return dto; }
+    if (result.ok) {
+      const dto = result.data.toDTO();
+      store.setCurrentTemplate(dto);
+      return dto;
+    }
     handleError(result.error.message || '加载任务模板失败');
     return null;
   }
 
-  async function createTemplate(req: CreateTaskReq) {
-    savingId.value = 'new'; store.setError(null);
+  async function createTemplate(req: CreateTaskTemplateReq) {
+    savingId.value = 'new';
+    store.setError(null);
     const result = await service.createTemplate(req);
     savingId.value = null;
     if (result.ok) {
@@ -74,8 +81,9 @@ export function useTask() {
     return null;
   }
 
-  async function updateTemplate(id: string, req: UpdateTaskReq) {
-    savingId.value = id; store.setError(null);
+  async function updateTemplate(id: string, req: UpdateTaskTemplateReq) {
+    savingId.value = id;
+    store.setError(null);
     const result = await service.updateTemplate(id, req);
     savingId.value = null;
     if (result.ok) {
@@ -89,7 +97,8 @@ export function useTask() {
   }
 
   async function deleteTemplate(id: string) {
-    savingId.value = id; store.setError(null);
+    savingId.value = id;
+    store.setError(null);
     const result = await service.deleteTemplate(id);
     savingId.value = null;
     if (result.ok) {
@@ -139,8 +148,11 @@ export function useTask() {
 
   // ========== Instances ==========
   async function fetchInstances(query?: Record<string, unknown>) {
-    store.setLoading(true); store.setError(null);
-    const result = await service.listInstances(query as Parameters<typeof service.listInstances>[0]);
+    store.setLoading(true);
+    store.setError(null);
+    const result = await service.listInstances(
+      query as Parameters<typeof service.listInstances>[0],
+    );
     if (result.ok) {
       store.setInstances(result.data.map((i: TaskInstance) => i.toDTO()));
     } else {
@@ -151,7 +163,11 @@ export function useTask() {
 
   async function startInstance(id: string) {
     const result = await service.startInstance(id);
-    if (result.ok) { const dto = result.data.toDTO(); store.updateInstance(dto); return dto; }
+    if (result.ok) {
+      const dto = result.data.toDTO();
+      store.updateInstance(dto);
+      return dto;
+    }
     handleError(result.error.message || '开始任务失败');
     return null;
   }
@@ -192,14 +208,34 @@ export function useTask() {
     */
   }
 
-  function setPage(p: number) { store.setPage(p); fetchTemplates(); }
+  function setPage(p: number) {
+    store.setPage(p);
+    fetchTemplates();
+  }
 
   return {
-    templates, instances, folders, currentTemplate, currentInstance,
-    isLoading, isSaving, error, pagination,
-    fetchTemplates, fetchTemplate, createTemplate, updateTemplate, deleteTemplate,
-    activateTemplate, pauseTemplate, archiveTemplate,
-    fetchInstances, startInstance, completeInstance, skipInstance,
-    fetchFolders, setPage,
+    templates,
+    instances,
+    folders,
+    currentTemplate,
+    currentInstance,
+    isLoading,
+    isSaving,
+    error,
+    pagination,
+    fetchTemplates,
+    fetchTemplate,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    activateTemplate,
+    pauseTemplate,
+    archiveTemplate,
+    fetchInstances,
+    startInstance,
+    completeInstance,
+    skipInstance,
+    fetchFolders,
+    setPage,
   };
 }

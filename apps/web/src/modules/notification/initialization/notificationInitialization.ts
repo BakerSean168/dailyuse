@@ -7,7 +7,7 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { useNotificationStore } from '../presentation/stores/notificationStore';
+import { useNotificationStore } from '@dailyuse/app-vue';
 
 export function registerNotificationInitializationTasks(): void {
   const manager = InitializationManager.getInstance();

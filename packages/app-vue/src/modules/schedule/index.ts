@@ -13,3 +13,6 @@ export { useSchedule } from './composables/useSchedule';
 
 // Routes
 export { scheduleRoutes } from './router';
+
+// Components
+export * from './components';

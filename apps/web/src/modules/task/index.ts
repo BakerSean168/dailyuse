@@ -1,12 +1,10 @@
 /**
  * Task Web Module
- * 任务Web模块导出
+ * Re-exports from shared app-vue package + web-specific initialization
  */
 
-// ===== Presentation Layer =====
-export { useTaskStore } from './presentation/stores/taskStore';
-export type { TaskStoreType } from './presentation/stores/taskStore';
-export { useTask } from './presentation/composables/useTask';
+// Store, Composables, Routes from app-vue
+export { useTaskStore, type TaskStoreType, useTask, taskRoutes } from '@dailyuse/app-vue';
 
-// 导出初始化任务
+// Initialization (web-specific)
 export { registerTaskInitializationTasks } from './initialization';

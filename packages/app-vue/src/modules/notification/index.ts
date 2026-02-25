@@ -13,3 +13,6 @@ export { useNotification } from './composables/useNotification';
 
 // Routes
 export { notificationRoutes } from './router';
+
+// Components
+export * from './components';

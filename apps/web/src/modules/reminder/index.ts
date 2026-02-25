@@ -1,14 +1,15 @@
 /**
- * Reminder Module - Public API
+ * Reminder Web Module
+ * Re-exports from shared app-vue package + web-specific initialization
  */
 
-// ===== Presentation Layer =====
-export { useReminderStore } from './presentation/stores/reminderStore';
-export type { ReminderStoreType } from './presentation/stores/reminderStore';
-export { useReminder } from './presentation/composables/useReminder';
+// Store, Composables, Routes from app-vue
+export {
+  useReminderStore,
+  type ReminderStoreType,
+  useReminder,
+  reminderRoutes,
+} from '@dailyuse/app-vue';
 
-// Views
-export { default as ReminderDesktopView } from './presentation/views/ReminderDesktopView.vue';
-
-// Initialization
+// Initialization (web-specific)
 export { registerReminderInitializationTasks } from './initialization';

@@ -1,12 +1,19 @@
 /**
  * Mock data factory for goal module stories.
  */
-import type { GoalClientDTO, KeyResultClientDTO, GoalRecordClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goal';
+import type {
+  GoalClientDTO,
+  KeyResultClientDTO,
+  GoalRecordClientDTO,
+  GoalReviewClientDTO,
+} from '@dailyuse/contracts/goal';
 
 const now = Date.now();
 const DAY = 86400000;
 
-export function createMockKeyResult(overrides: Partial<KeyResultClientDTO> = {}): KeyResultClientDTO {
+export function createMockKeyResult(
+  overrides: Partial<KeyResultClientDTO> = {},
+): KeyResultClientDTO {
   return {
     id: 'kr-1',
     title: '每日完成3道算法题',
@@ -120,13 +127,27 @@ export function createMockGoals(): GoalClientDTO[] {
         createMockKeyResult({
           id: 'kr-4',
           title: '每周运动3次',
-          progress: { valueType: 'Number', aggregationMethod: 'SUM', initialValue: 0, targetValue: 36, currentValue: 20, unit: '次' } as any,
+          progress: {
+            valueType: 'Number',
+            aggregationMethod: 'SUM',
+            initialValue: 0,
+            targetValue: 36,
+            currentValue: 20,
+            unit: '次',
+          } as any,
           weight: 50,
         }),
         createMockKeyResult({
           id: 'kr-5',
           title: '体重降至70kg',
-          progress: { valueType: 'Number', aggregationMethod: 'LAST', initialValue: 80, targetValue: 70, currentValue: 74, unit: 'kg' } as any,
+          progress: {
+            valueType: 'Number',
+            aggregationMethod: 'LAST',
+            initialValue: 80,
+            targetValue: 70,
+            currentValue: 74,
+            unit: 'kg',
+          } as any,
           weight: 50,
         }),
       ],
@@ -147,7 +168,14 @@ export function createMockGoals(): GoalClientDTO[] {
         createMockKeyResult({
           id: 'kr-6',
           title: '迁移所有API',
-          progress: { valueType: 'Number', aggregationMethod: 'SUM', initialValue: 0, targetValue: 20, currentValue: 20, unit: '个' } as any,
+          progress: {
+            valueType: 'Number',
+            aggregationMethod: 'SUM',
+            initialValue: 0,
+            targetValue: 20,
+            currentValue: 20,
+            unit: '个',
+          } as any,
           weight: 60,
         }),
       ],
@@ -155,7 +183,9 @@ export function createMockGoals(): GoalClientDTO[] {
   ];
 }
 
-export function createMockGoalRecord(overrides: Partial<GoalRecordClientDTO> = {}): GoalRecordClientDTO {
+export function createMockGoalRecord(
+  overrides: Partial<GoalRecordClientDTO> = {},
+): GoalRecordClientDTO {
   return {
     id: 'record-1',
     keyResultId: 'kr-1',
@@ -175,7 +205,7 @@ export function createMockRecords(): GoalRecordClientDTO[] {
   return [
     createMockGoalRecord(),
     createMockGoalRecord({
-      id: 'record-2',
+      id: 'record-2' as unknown as GoalRecordClientDTO['id'],
       value: 2,
       valueAfter: 45,
       comment: '完成了链表相关题目',
@@ -183,7 +213,7 @@ export function createMockRecords(): GoalRecordClientDTO[] {
       updatedAt: now - DAY,
     }),
     createMockGoalRecord({
-      id: 'record-3',
+      id: 'record-3' as unknown as GoalRecordClientDTO['id'],
       value: 5,
       valueAfter: 43,
       comment: null,
@@ -193,7 +223,9 @@ export function createMockRecords(): GoalRecordClientDTO[] {
   ];
 }
 
-export function createMockReview(overrides: Partial<GoalReviewClientDTO> = {}): GoalReviewClientDTO {
+export function createMockReview(
+  overrides: Partial<GoalReviewClientDTO> = {},
+): GoalReviewClientDTO {
   return {
     id: 'review-1',
     goalId: 'goal-1',

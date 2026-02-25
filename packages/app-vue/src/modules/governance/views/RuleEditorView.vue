@@ -2,7 +2,10 @@
   <div class="max-w-[1100px] mx-auto p-6">
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-1 text-sm text-muted-foreground mb-4">
-      <router-link :to="{ name: 'governance-list' }" class="hover:text-foreground transition-colors">
+      <router-link
+        :to="{ name: 'governance-list' }"
+        class="hover:text-foreground transition-colors"
+      >
         治理规则
       </router-link>
       <ChevronRight :size="14" />
@@ -47,7 +50,9 @@
                     required
                     pattern="^[A-Z]+-[0-9]+$"
                   />
-                  <p class="text-[11px] text-muted-foreground mt-1">格式: 大写字母-数字 (如 GOV-001)</p>
+                  <p class="text-[11px] text-muted-foreground mt-1">
+                    格式: 大写字母-数字 (如 GOV-001)
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium mb-1.5">
@@ -276,15 +281,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  ChevronRight,
-  Plus,
-  CheckCircle,
-  XCircle,
-  Trash2,
-} from 'lucide-vue-next';
+import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
-import { TagInput } from '@dailyuse/ui-vue-shadcn';
+import { TagInput } from '../components';
 import type { CreateRuleReq, UpdateRuleReq, RuleSeverity } from '../types';
 
 const props = defineProps<{
@@ -292,16 +291,8 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const {
-  currentRule,
-  isLoading,
-  isSaving,
-  error,
-  allTags,
-  fetchRule,
-  createRule,
-  updateRule,
-} = useGovernance();
+const { currentRule, isLoading, isSaving, error, allTags, fetchRule, createRule, updateRule } =
+  useGovernance();
 
 const isEdit = computed(() => !!props.id);
 
@@ -401,7 +392,7 @@ async function loadEditData() {
       form.title = rule.title;
       form.description = rule.description;
       form.severity = rule.severity;
-      form.tags = [...rule.tags];
+      form.tags = rule.tags.map((t) => (typeof t === 'string' ? t : t.value));
       form.liveReferenceLocation = rule.liveReferenceLocation ?? '';
       form.goodExamples = rule.goodExamples.map((e) => ({
         language: e.language,

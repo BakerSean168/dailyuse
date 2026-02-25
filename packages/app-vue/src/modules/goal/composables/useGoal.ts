@@ -6,10 +6,17 @@
  * 使用 Result<T> 模式替代 try/catch。
  */
 
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useGoalStore } from '../stores/goalStore';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
-import type { Goal, GoalFolder, KeyResult, GoalReview, GoalRecord } from '@dailyuse/goal/domain-client';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import type {
+  Goal,
+  GoalFolder,
+  KeyResult,
+  GoalReview,
+  GoalRecord,
+} from '@dailyuse/goal/domain-client';
 import type {
   GoalClientDTO,
   CreateGoalReq,
@@ -25,8 +32,7 @@ import type {
 
 export function useGoal() {
   const store = useGoalStore();
-  const service = inject(GOAL_SERVICE_KEY);
-  if (!service) throw new Error('GOAL_SERVICE_KEY not provided');
+  const service = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
   const savingId = ref<string | null>(null);
 
   const goals = computed(() => store.goals);
@@ -255,6 +261,38 @@ export function useGoal() {
     }
   }
 
+  /**
+   * createGoalRecord - 便捷别名，接收 (goalId, keyResultId, data) 三参数
+   * 供 GoalRecordDialog 等组件调用
+   */
+  async function createGoalRecord(
+    goalId: string,
+    keyResultId: string,
+    data: { value: number; note?: string; recordedAt?: number },
+  ) {
+    return createRecord(goalId, { keyResultId, ...data } as CreateGoalRecordReq);
+  }
+
+  /**
+   * getGoalAggregateView - 获取单个目标聚合视图（含关键结果等）
+   * 供 GoalDAGVisualization 等组件调用
+   */
+  async function getGoalAggregateView(goalId: string) {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const result = await service.getGoal(goalId);
+      if (result.ok) {
+        return result.data;
+      } else {
+        handleError(result.error.message || '加载目标聚合视图失败');
+        return null;
+      }
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
   async function fetchReviews(goalId: string) {
     const result = await service.getGoalReviews(goalId);
     if (result.ok) {
@@ -276,18 +314,57 @@ export function useGoal() {
     }
   }
 
-  function setFilterStatus(s: GoalStatus | null) { store.setFilterStatus(s); fetchGoals(); }
-  function setPage(p: number) { store.setPage(p); fetchGoals(); }
-  function clearFilters() { store.clearFilters(); fetchGoals(); }
-  function search(q: string) { store.setSearchQuery(q); fetchGoals(); }
+  function setFilterStatus(s: GoalStatus | null) {
+    store.setFilterStatus(s);
+    fetchGoals();
+  }
+  function setPage(p: number) {
+    store.setPage(p);
+    fetchGoals();
+  }
+  function clearFilters() {
+    store.clearFilters();
+    fetchGoals();
+  }
+  function search(q: string) {
+    store.setSearchQuery(q);
+    fetchGoals();
+  }
 
   return {
-    goals, currentGoal, keyResults, goalFolders, goalReviews, goalRecords,
-    isLoading, isSaving, error, pagination, hasActiveFilter,
-    fetchGoals, fetchGoal, createGoal, updateGoal, deleteGoal,
-    fetchFolders, createFolder, updateFolder, deleteFolder,
-    fetchKeyResults, addKeyResult, updateKeyResult, deleteKeyResult,
-    fetchRecords, createRecord, fetchReviews, createReview,
-    setFilterStatus, setPage, clearFilters, search,
+    goals,
+    currentGoal,
+    keyResults,
+    goalFolders,
+    goalReviews,
+    goalRecords,
+    isLoading,
+    isSaving,
+    error,
+    pagination,
+    hasActiveFilter,
+    fetchGoals,
+    fetchGoal,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    fetchFolders,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+    fetchKeyResults,
+    addKeyResult,
+    updateKeyResult,
+    deleteKeyResult,
+    fetchRecords,
+    createRecord,
+    createGoalRecord,
+    getGoalAggregateView,
+    fetchReviews,
+    createReview,
+    setFilterStatus,
+    setPage,
+    clearFilters,
+    search,
   };
 }

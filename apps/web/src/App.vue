@@ -8,14 +8,14 @@
  * 3. 全局辅助交互 (GlobalCommandPalette, GlobalSheet, GlobalProgressBar)
  * 4. 错误兜底系统 (GlobalErrorBoundary)
  */
+import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
-  Toaster,
   GlobalConfirmDialog,
   GlobalErrorBoundary,
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
-} from '@dailyuse/ui-vue-shadcn';
+} from '@dailyuse/app-vue';
 </script>
 
 <template>

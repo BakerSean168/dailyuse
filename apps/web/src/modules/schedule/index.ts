@@ -1,18 +1,15 @@
 /**
  * Schedule Web Module
- * 调度Web模块导出
+ * Re-exports from shared app-vue package + web-specific initialization
  */
 
-// ===== Presentation Layer =====
-export { useScheduleStore } from './presentation/stores/scheduleStore';
-export type { ScheduleStoreType } from './presentation/stores/scheduleStore';
-export { useSchedule } from './presentation/composables/useSchedule';
+// Store, Composables, Routes from app-vue
+export {
+  useScheduleStore,
+  type ScheduleStoreType,
+  useSchedule,
+  scheduleRoutes,
+} from '@dailyuse/app-vue';
 
-// 导出路由
-export { scheduleRoutes } from './presentation/router';
-
-// 导出组件
-export * from './presentation/components';
-
-// 导出初始化
+// Initialization (web-specific)
 export { registerScheduleInitializationTasks } from './initialization/scheduleInitialization';

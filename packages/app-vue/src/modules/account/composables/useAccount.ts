@@ -7,7 +7,7 @@
  * @module account/presentation/composables
  */
 
-import { computed, inject } from 'vue';
+import { computed } from 'vue';
 import { toast } from 'vue-sonner';
 import type {
   UpdateAccountReq,
@@ -15,18 +15,13 @@ import type {
   CloseAccountReq,
   UpdateAccountSettingsReq,
 } from '@dailyuse/contracts/account';
-import type { IAccountApiClient } from '../../../di/types';
 import { useAccountStore } from '../stores/accountStore';
 import { ACCOUNT_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
 export function useAccount() {
   const accountStore = useAccountStore();
-
-  const service = inject(ACCOUNT_SERVICE_KEY);
-  if (!service) {
-    throw new Error('ACCOUNT_SERVICE_KEY is not provided');
-  }
-  const accountService: IAccountApiClient = service;
+  const accountService = useStrictInject(ACCOUNT_SERVICE_KEY, 'AccountService');
 
   // ========== Computed State ==========
   const currentAccount = computed(() => accountStore.currentAccount);

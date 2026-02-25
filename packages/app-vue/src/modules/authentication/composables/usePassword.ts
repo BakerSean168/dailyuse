@@ -7,7 +7,7 @@
  * @module authentication/composables
  */
 
-import { ref, inject } from 'vue';
+import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import type {
   ChangePasswordReq,
@@ -16,11 +16,11 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
+import { useStrictInject } from '../../../shared/utils/useStrictInject';
 
 export function usePassword() {
   const store = useAuthenticationStore();
-  const service = inject(AUTH_SERVICE_KEY);
-  if (!service) throw new Error('AUTH_SERVICE_KEY not provided');
+  const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
 
   const isLoading = ref(false);
 
