@@ -43,10 +43,6 @@
     "packages/assets": {
       "release-type": "node",
       "package-name": "@dailyuse/assets"
-    },
-    "packages/sync-client": {
-      "release-type": "node",
-      "package-name": "@dailyuse/sync-client"
     }
   }
 }

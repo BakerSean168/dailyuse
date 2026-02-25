@@ -5,7 +5,6 @@
  * - app:* - Application information and status checks.
  * - system:* - System utilities (DI status, memory usage, performance stats).
  * - desktop:* - Desktop features (auto-launch, shortcuts, tray).
- * - sync:* - Synchronization operations and status.
  *
  * @module ipc/system-handlers
  */
@@ -15,7 +14,6 @@ import type { TrayManager } from '../modules/tray';
 import type { ShortcutManager } from '../modules/shortcuts';
 import type { AutoLaunchManager } from '../modules/autolaunch';
 import { isDIConfigured, getLazyModuleStats } from '../di';
-import { getSyncManager } from '../services';
 import { getIpcCache } from '../utils';
 
 /**
@@ -131,7 +129,7 @@ function registerSystemHandlers(): void {
 function registerDesktopFeaturesHandlers(
   trayManager: TrayManager | null,
   shortcutManager: ShortcutManager | null,
-  autoLaunchManager: AutoLaunchManager | null
+  autoLaunchManager: AutoLaunchManager | null,
 ): void {
   // ========== Auto Launch ==========
   /**
@@ -186,19 +184,22 @@ function registerDesktopFeaturesHandlers(
    * Return: boolean
    * Security: None
    */
-  ipcMain.handle('desktop:shortcuts:update', async (_, accelerator: string, newConfig: { enabled?: boolean }) => {
-    if (!shortcutManager) return false;
-    if (newConfig.enabled === false) {
-      shortcutManager.unregister(accelerator);
-    } else {
-      const shortcuts = shortcutManager.getShortcuts();
-      const existing = shortcuts.find((s: any) => s.accelerator === accelerator);
-      if (existing) {
-        shortcutManager.register({ ...existing, enabled: true });
+  ipcMain.handle(
+    'desktop:shortcuts:update',
+    async (_, accelerator: string, newConfig: { enabled?: boolean }) => {
+      if (!shortcutManager) return false;
+      if (newConfig.enabled === false) {
+        shortcutManager.unregister(accelerator);
+      } else {
+        const shortcuts = shortcutManager.getShortcuts();
+        const existing = shortcuts.find((s: any) => s.accelerator === accelerator);
+        if (existing) {
+          shortcutManager.register({ ...existing, enabled: true });
+        }
       }
-    }
-    return true;
-  });
+      return true;
+    },
+  );
 
   // Tray
   /**
@@ -224,265 +225,13 @@ function registerDesktopFeaturesHandlers(
   });
 }
 
-/**
- * @function registerSyncHandlers
- * @description Registers synchronization IPC handlers.
- * Channels start with 'sync:'.
- */
-function registerSyncHandlers(): void {
-  // ========== Basic Sync Channels ==========
-  /**
-   * @description 获取同步摘要
-   * Channel Name: sync:getSummary
-   * Payload: void
-   * Return: SyncSummary
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:getSummary', async () => {
-    try {
-      return getSyncManager().getSyncSummary();
-    } catch {
-      return null;
-    }
-  });
-
-  /**
-   * @description 获取同步统计
-   * Channel Name: sync:getStats
-   * Payload: void
-   * Return: SyncStats
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:getStats', async () => {
-    try {
-      return getSyncManager().getStats();
-    } catch {
-      return null;
-    }
-  });
-
-  /**
-   * @description 获取待同步数量
-   * Channel Name: sync:getPendingCount
-   * Payload: void
-   * Return: number
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:getPendingCount', async () => {
-    try {
-      return getSyncManager().getSyncLogService().getPendingCount();
-    } catch {
-      return 0;
-    }
-  });
-
-  /**
-   * @description 获取同步状态
-   * Channel Name: sync:getState
-   * Payload: void
-   * Return: SyncState
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:getState', async () => {
-    try {
-      return getSyncManager().getSyncStateService().getState();
-    } catch {
-      return null;
-    }
-  });
-
-  /**
-   * @description 触发同步
-   * Channel Name: sync:triggerSync
-   * Payload: void
-   * Return: { success: boolean, error?: string }
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:triggerSync', async () => {
-    try {
-      getSyncManager().triggerSync();
-      return { success: true };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  });
-
-  /**
-   * @description 强制同步
-   * Channel Name: sync:forceSync
-   * Payload: void
-   * Return: SyncResult
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:forceSync', async () => {
-    try {
-      return getSyncManager().forceSync();
-    } catch (e) {
-      return { status: 'error', error: String(e) };
-    }
-  });
-
-  /**
-   * @description 检查在线状态
-   * Channel Name: sync:isOnline
-   * Payload: void
-   * Return: boolean
-   * Security: None
-   */
-  ipcMain.handle('sync:isOnline', async () => {
-    try {
-      return getSyncManager().isOnline();
-    } catch {
-      return false;
-    }
-  });
-
-  // ========== Conflict Handlers ==========
-  /**
-   * @description 获取未解决的冲突
-   * Channel Name: sync:conflict:getUnresolved
-   * Payload: entityType (string, optional)
-   * Return: Conflict[]
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:getUnresolved', async (_, entityType?: string) => {
-    try {
-      return getSyncManager().getConflictManager().getUnresolvedConflicts(entityType ?? '');
-    } catch {
-      return [];
-    }
-  });
-
-  /**
-   * @description 获取未解决冲突数量
-   * Channel Name: sync:conflict:getCount
-   * Payload: entityType (string, optional)
-   * Return: number
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:getCount', async (_, entityType?: string) => {
-    try {
-      return getSyncManager().getConflictManager().getUnresolvedCount(entityType ?? '');
-    } catch {
-      return 0;
-    }
-  });
-
-  /**
-   * @description 手动解决冲突
-   * Channel Name: sync:conflict:resolve
-   * Payload: conflictId (string), fieldSelections (Record<string, 'local' | 'server'>)
-   * Return: ResolutionResult
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:resolve', async (_, conflictId: string, fieldSelections: Record<string, 'local' | 'server'>) => {
-    try {
-      return getSyncManager().getConflictManager().resolveManually(conflictId, fieldSelections);
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  });
-
-  /**
-   * @description 使用本地版本解决冲突
-   * Channel Name: sync:conflict:resolveWithLocal
-   * Payload: conflictId (string)
-   * Return: ResolutionResult
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:resolveWithLocal', async (_, conflictId: string) => {
-    try {
-      return getSyncManager().getConflictManager().resolveWithLocal(conflictId);
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  });
-
-  /**
-   * @description 使用服务器版本解决冲突
-   * Channel Name: sync:conflict:resolveWithServer
-   * Payload: conflictId (string)
-   * Return: ResolutionResult
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:resolveWithServer', async (_, conflictId: string) => {
-    try {
-      return getSyncManager().getConflictManager().resolveWithServer(conflictId);
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  });
-
-  /**
-   * @description 获取冲突历史
-   * Channel Name: sync:conflict:getHistory
-   * Payload: filter (object, optional), pagination (object, optional)
-   * Return: PaginatedResult<Conflict>
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:getHistory', async (_, filter?: unknown, pagination?: unknown) => {
-    try {
-      return getSyncManager().getConflictManager().queryHistory(filter as never, pagination as never);
-    } catch {
-      return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
-    }
-  });
-
-  /**
-   * @description 获取冲突统计
-   * Channel Name: sync:conflict:getStats
-   * Payload: void
-   * Return: ConflictStats
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:conflict:getStats', async () => {
-    try {
-      return getSyncManager().getConflictManager().getStats();
-    } catch {
-      return null;
-    }
-  });
-
-  // ========== Device Handlers ==========
-  /**
-   * @description 获取设备信息
-   * Channel Name: sync:device:getInfo
-   * Payload: void
-   * Return: DeviceInfo
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:device:getInfo', async () => {
-    try {
-      return getSyncManager().getDeviceService().getDeviceInfo();
-    } catch {
-      return null;
-    }
-  });
-
-  /**
-   * @description 重命名设备
-   * Channel Name: sync:device:rename
-   * Payload: newName (string)
-   * Return: { success: boolean, error?: string }
-   * Security: Requires authentication
-   */
-  ipcMain.handle('sync:device:rename', async (_, newName: string) => {
-    try {
-      getSyncManager().getDeviceService().updateDeviceName(newName);
-      return { success: true };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  });
-}
-
 // Flag to prevent duplicate handler registration
 let systemHandlersRegistered = false;
 
 /**
  * @function registerSystemIpcHandlers
  * @description Registers all system-level IPC handlers.
- * 
+ *
  * This function is idempotent - calling it multiple times is safe.
  * Handlers are only registered once on the first call.
  *
@@ -493,7 +242,7 @@ let systemHandlersRegistered = false;
 export function registerSystemIpcHandlers(
   trayManager: TrayManager | null,
   shortcutManager: ShortcutManager | null,
-  autoLaunchManager: AutoLaunchManager | null
+  autoLaunchManager: AutoLaunchManager | null,
 ): void {
   // Prevent duplicate registration
   if (systemHandlersRegistered) {
@@ -510,7 +259,4 @@ export function registerSystemIpcHandlers(
 
   // ========== Desktop Features Channels ==========
   registerDesktopFeaturesHandlers(trayManager, shortcutManager, autoLaunchManager);
-
-  // ========== Sync Channels ==========
-  registerSyncHandlers();
 }

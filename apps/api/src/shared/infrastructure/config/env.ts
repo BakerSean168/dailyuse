@@ -1,13 +1,13 @@
 /**
  * @file env.ts
  * @description 环境变量统一加载和验证模块
- * 
+ *
  * 加载优先级（后面覆盖前面）：
  * 1. .env                    - 共享默认值
  * 2. .env.{NODE_ENV}         - 环境特定配置
  * 3. .env.local              - 本地覆盖（.gitignore）
  * 4. .env.{NODE_ENV}.local   - 环境特定本地覆盖（.gitignore）
- * 
+ *
  * @date 2025-12-22
  */
 
@@ -42,7 +42,7 @@ function loadEnvFile(filePath: string, override = true): void {
  */
 function loadAllEnvFiles(): void {
   const nodeEnv = process.env.NODE_ENV || 'development';
-  
+
   // Load order (low to high priority)
   const envFiles = [
     // Workspace root (centralized env files)
@@ -51,20 +51,20 @@ function loadAllEnvFiles(): void {
     resolve(PROJECT_ROOT, '.env.local'),
     resolve(PROJECT_ROOT, `.env.${nodeEnv}.local`),
   ];
-  
+
   // 按顺序加载，后面的覆盖前面的
-  envFiles.forEach(file => loadEnvFile(file, true));
+  envFiles.forEach((file) => loadEnvFile(file, true));
 }
 
 /**
  * 格式化 Zod 验证错误
  */
 function formatZodError(error: ZodError): string {
-  const issues = error.issues.map(issue => {
+  const issues = error.issues.map((issue) => {
     const path = issue.path.join('.');
     return `  - ${path}: ${issue.message}`;
   });
-  
+
   return `环境变量验证失败:\n${issues.join('\n')}`;
 }
 
@@ -74,14 +74,14 @@ function formatZodError(error: ZodError): string {
 function validateEnv(): Env {
   // 先加载所有 .env 文件
   loadAllEnvFiles();
-  
+
   try {
     // 使用 Zod Schema 验证
     let env = envSchema.parse(process.env);
-    
+
     // 后处理：如果未提供 DATABASE_URL，从分解式配置生成
     env = processEnv(env);
-    
+
     return env;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -92,7 +92,7 @@ function validateEnv(): Env {
       console.error('='.repeat(60));
       console.error('\n请检查 .env 文件配置是否正确\n');
       console.error('参考: .env.example 或 .env.development\n');
-      
+
       // 在非测试环境下退出
       if (process.env.NODE_ENV !== 'test') {
         process.exit(1);
@@ -131,7 +131,7 @@ export function getRedisConfig() {
   if (env.REDIS_URL) {
     return { url: env.REDIS_URL };
   }
-  
+
   return {
     host: env.REDIS_HOST,
     port: env.REDIS_PORT,
@@ -144,9 +144,8 @@ export function getRedisConfig() {
  * 获取 CORS 允许的来源列表
  */
 export function getCorsOrigins(): string[] {
-  return env.CORS_ORIGIN
-    .split(',')
-    .map(s => s.trim())
+  return env.CORS_ORIGIN.split(',')
+    .map((s) => s.trim())
     .filter(Boolean);
 }
 
@@ -166,6 +165,21 @@ export function getJwtConfig() {
     expiresIn: env.JWT_EXPIRES_IN,
     refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
     refreshSecret: env.REFRESH_TOKEN_SECRET || env.JWT_SECRET,
+  };
+}
+
+/**
+ * 获取 PowerSync 配置
+ */
+export function getPowerSyncConfig() {
+  return {
+    url: env.POWERSYNC_URL,
+    privateKey: env.POWERSYNC_PRIVATE_KEY
+      ? Buffer.from(env.POWERSYNC_PRIVATE_KEY, 'base64').toString('utf-8')
+      : undefined,
+    publicKeyN: env.POWERSYNC_PUBLIC_KEY_N,
+    publicKeyE: env.POWERSYNC_PUBLIC_KEY_E,
+    keyId: env.POWERSYNC_KEY_ID,
   };
 }
 

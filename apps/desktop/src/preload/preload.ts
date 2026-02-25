@@ -362,57 +362,11 @@ const ALLOWED_CHANNELS = [
   'dev:memory:snapshots',
   'dev:memory:force-gc',
 
-  // ═══════════ Sync ═══════════
-  'sync:getSummary',
-  'sync:getStats',
-  'sync:getState',
-  'sync:triggerSync',
-  'sync:forceSync',
-  'sync:isOnline',
-  'sync:getSettings',
-  'sync:updateSettings',
-  'sync:conflict:getUnresolved',
-  'sync:conflict:getCount',
-  'sync:conflict:resolve',
-  'sync:conflict:resolveWithLocal',
-  'sync:conflict:resolveWithServer',
-  'sync:conflict:getHistory',
-  'sync:conflict:getStats',
-  'sync:device:getInfo',
-  'sync:device:rename',
-  'sync:device:list',
-
   // ═══════════ Window Management ═══════════
   'window:transition-to-main',
   'window:transition-to-login',
   'window:minimize-login',
   'window:close-login',
-
-  // ═══════════ GitHub Gist Sync ═══════════
-  'sync:github:connect',
-  'sync:github:disconnect',
-  'sync:github:get-status',
-  'sync:github:push',
-  'sync:github:pull',
-  'sync:github:full-sync',
-  'sync:github:get-user',
-  'sync:github:set-token',
-
-  // ═══════════ Data Import/Export ═══════════
-  'sync:export-data',
-  'sync:import-data',
-  'sync:get-export-preview',
-
-  // ═══════════ Sync Coordinator ═══════════
-  'sync:trigger',
-  'sync:force-full',
-  'sync:get-coordinator-status',
-
-  // ═══════════ Backup ═══════════
-  'sync:backup:create',
-  'sync:backup:list',
-  'sync:backup:restore',
-  'sync:backup:delete',
 ] as const;
 
 /**
@@ -501,7 +455,8 @@ const electronAPI = {
    * @param {(...args: unknown[]) => void} callback - The original callback function to remove.
    */
   off: (channel: string, callback: (...args: unknown[]) => void): void => {
-    const wrappedCallback = (callback as unknown as { __wrapped: (...args: unknown[]) => void }).__wrapped;
+    const wrappedCallback = (callback as unknown as { __wrapped: (...args: unknown[]) => void })
+      .__wrapped;
     if (wrappedCallback) {
       ipcRenderer.removeListener(channel, wrappedCallback);
     }
@@ -511,7 +466,7 @@ const electronAPI = {
   },
 
   // ========== Convenience Methods (Backward Compatibility) ==========
-  
+
   /** Retrieves application info. */
   getAppInfo: () => ipcRenderer.invoke('app:getInfo'),
   /** Checks Dependency Injection status. */

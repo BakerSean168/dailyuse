@@ -6,8 +6,8 @@
 
 ## 📁 文件说明
 
-| 文件 | 说明 |
-|------|------|
+| 文件            | 说明                  |
+| --------------- | --------------------- |
 | `sync-api.yaml` | 同步服务完整 API 规范 |
 
 ## 🚀 快速开始
@@ -53,19 +53,6 @@ prism proxy docs/api/sync-api.yaml http://localhost:3000
 ```bash
 # 安装 OpenAPI Generator
 pnpm add -g @openapitools/openapi-generator-cli
-
-# 生成 TypeScript Axios 客户端
-openapi-generator-cli generate \
-  -i docs/api/sync-api.yaml \
-  -g typescript-axios \
-  -o packages/sync-client \
-  --additional-properties=supportsES6=true,npmName=@dailyuse/sync-client
-
-# 生成 TypeScript Fetch 客户端（用于前端）
-openapi-generator-cli generate \
-  -i docs/api/sync-api.yaml \
-  -g typescript-fetch \
-  -o packages/sync-client-fetch
 ```
 
 ### 5. 生成服务端接口
@@ -82,29 +69,29 @@ openapi-generator-cli generate \
 
 ### 同步操作
 
-| 方法 | 端点 | 说明 |
-|------|------|------|
+| 方法 | 端点         | 说明         |
+| ---- | ------------ | ------------ |
 | POST | `/sync/push` | 推送本地变更 |
 | POST | `/sync/pull` | 拉取远程变更 |
 
 ### 设备管理
 
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| POST | `/sync/devices` | 注册设备 |
-| GET | `/sync/devices` | 获取设备列表 |
-| PUT | `/sync/devices/{id}` | 更新设备信息 |
-| DELETE | `/sync/devices/{id}` | 远程登出 |
-| POST | `/sync/devices/{id}/heartbeat` | 设备心跳 |
+| 方法   | 端点                           | 说明         |
+| ------ | ------------------------------ | ------------ |
+| POST   | `/sync/devices`                | 注册设备     |
+| GET    | `/sync/devices`                | 获取设备列表 |
+| PUT    | `/sync/devices/{id}`           | 更新设备信息 |
+| DELETE | `/sync/devices/{id}`           | 远程登出     |
+| POST   | `/sync/devices/{id}/heartbeat` | 设备心跳     |
 
 ### 冲突处理
 
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| GET | `/sync/conflicts` | 获取未解决冲突 |
-| GET | `/sync/conflicts/{id}` | 获取冲突详情 |
-| POST | `/sync/conflicts/{id}/resolve` | 解决冲突 |
-| GET | `/sync/conflicts/history` | 冲突历史 |
+| 方法 | 端点                           | 说明           |
+| ---- | ------------------------------ | -------------- |
+| GET  | `/sync/conflicts`              | 获取未解决冲突 |
+| GET  | `/sync/conflicts/{id}`         | 获取冲突详情   |
+| POST | `/sync/conflicts/{id}/resolve` | 解决冲突       |
+| GET  | `/sync/conflicts/history`      | 冲突历史       |
 
 ## 🔐 认证方式
 
@@ -117,38 +104,6 @@ X-Device-ID: <device_uuid>
 
 ## 📝 使用示例
 
-### 推送变更
-
-```typescript
-// 使用生成的客户端 SDK
-import { SyncApi } from '@dailyuse/sync-client';
-
-const api = new SyncApi({
-  basePath: 'http://localhost:3000/api/v1',
-  accessToken: 'your-jwt-token'
-});
-
-// 推送新创建的目标
-const response = await api.pushChanges({
-  deviceId: 'your-device-uuid',
-  changes: [{
-    eventId: crypto.randomUUID(),
-    entityType: 'goal',
-    entityId: crypto.randomUUID(),
-    operation: 'create',
-    payload: {
-      title: '学习 TypeScript',
-      status: 'active'
-    },
-    baseVersion: 0,
-    clientTimestamp: Date.now()
-  }]
-});
-
-console.log('Accepted:', response.data.accepted);
-console.log('Conflicts:', response.data.conflicts);
-```
-
 ### 拉取变更
 
 ```typescript
@@ -160,7 +115,7 @@ while (hasMore) {
   const response = await api.pullChanges({
     deviceId: 'your-device-uuid',
     lastSyncVersion: lastVersion,
-    limit: 100
+    limit: 100,
   });
 
   // 应用变更到本地
@@ -183,8 +138,8 @@ localStorage.setItem('lastSyncVersion', lastVersion);
 
 ## 📋 版本历史
 
-| 版本 | 日期 | 说明 |
-|------|------|------|
+| 版本  | 日期       | 说明                           |
+| ----- | ---------- | ------------------------------ |
 | 1.0.0 | 2025-12-07 | 初始版本，基于技术评审决策创建 |
 
 ---

@@ -3,6 +3,9 @@ export * from './di/keys';
 export * from './di/types';
 export * from './di/navigation';
 
+// ── Plugins ──
+export * from './plugins/powersync';
+
 // ── Router & Layouts ──
 export * from './router';
 export { default as MainLayout } from './layouts/MainLayout.vue';

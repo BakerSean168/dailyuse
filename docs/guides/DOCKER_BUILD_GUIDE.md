@@ -17,17 +17,17 @@
 
 ### 1.1 Dockerfile 指令概览
 
-| 指令 | 作用 | 示例 |
-|------|------|------|
-| `FROM` | 指定基础镜像 | `FROM node:22-alpine` |
-| `WORKDIR` | 设置工作目录 | `WORKDIR /app` |
-| `COPY` | 复制文件到镜像 | `COPY package.json ./` |
-| `RUN` | 执行命令 | `RUN pnpm install` |
-| `ENV` | 设置环境变量 | `ENV NODE_ENV=production` |
-| `ARG` | 定义构建参数 | `ARG VITE_API_URL` |
-| `EXPOSE` | 声明端口 | `EXPOSE 3000` |
-| `CMD` | 容器启动命令 | `CMD ["node", "dist/index.js"]` |
-| `HEALTHCHECK` | 健康检查 | `HEALTHCHECK CMD curl -f http://localhost/health` |
+| 指令          | 作用           | 示例                                              |
+| ------------- | -------------- | ------------------------------------------------- |
+| `FROM`        | 指定基础镜像   | `FROM node:22-alpine`                             |
+| `WORKDIR`     | 设置工作目录   | `WORKDIR /app`                                    |
+| `COPY`        | 复制文件到镜像 | `COPY package.json ./`                            |
+| `RUN`         | 执行命令       | `RUN pnpm install`                                |
+| `ENV`         | 设置环境变量   | `ENV NODE_ENV=production`                         |
+| `ARG`         | 定义构建参数   | `ARG VITE_API_URL`                                |
+| `EXPOSE`      | 声明端口       | `EXPOSE 3000`                                     |
+| `CMD`         | 容器启动命令   | `CMD ["node", "dist/index.js"]`                   |
+| `HEALTHCHECK` | 健康检查       | `HEALTHCHECK CMD curl -f http://localhost/health` |
 
 ### 1.2 镜像分层原理
 
@@ -50,6 +50,7 @@ Docker 镜像由多个**只读层（Layer）**组成，每条指令创建一层�
 ```
 
 **关键理解**：
+
 - 每层是增量的，只存储与上一层的差异
 - 层一旦创建就不可变，可被多个镜像共享
 - **缓存失效是级联的**：某层变化，其后所有层都需重建
@@ -183,11 +184,11 @@ RUN pnpm install --frozen-lockfile --ignore-scripts --offline
 
 **为什么这样设计？**
 
-| 步骤 | 目的 | 缓存效果 |
-|------|------|----------|
-| `pnpm fetch` | 仅根据 lockfile 下载包 | 只要 lockfile 不变，此层永远命中缓存 |
-| `--offline` | 使用已下载的包，无网络请求 | 避免构建时的网络不稳定 |
-| `--ignore-scripts` | 跳过 prepare/postinstall | 避免 monorepo 中子包脚本失败 |
+| 步骤               | 目的                       | 缓存效果                             |
+| ------------------ | -------------------------- | ------------------------------------ |
+| `pnpm fetch`       | 仅根据 lockfile 下载包     | 只要 lockfile 不变，此层永远命中缓存 |
+| `--offline`        | 使用已下载的包，无网络请求 | 避免构建时的网络不稳定               |
+| `--ignore-scripts` | 跳过 prepare/postinstall   | 避免 monorepo 中子包脚本失败         |
 
 ### 3.3 生产阶段的关键配置
 
@@ -203,6 +204,7 @@ RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 ```
 
 **常见错误**：忘记复制根 `package.json`，导致：
+
 ```
 ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
 Cannot proceed with the frozen installation.
@@ -279,6 +281,7 @@ docs
 ### 5.1 lockfile 不匹配
 
 **错误信息**：
+
 ```
 ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
 ```
@@ -286,28 +289,15 @@ ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
 **原因**：生产阶段缺少根 `package.json`（包含 `overrides`、`resolutions` 等配置）
 
 **解决**：
+
 ```dockerfile
 COPY --from=builder /app/package.json ./
 ```
 
-### 5.2 prepare 脚本失败
-
-**错误信息**：
-```
-packages/sync-client prepare$ npm run build
-ELIFECYCLE  Command failed with exit code 1
-```
-
-**原因**：pnpm install 默认执行生命周期脚本，但构建阶段可能缺少必要上下文
-
-**解决**：
-```dockerfile
-RUN pnpm install --frozen-lockfile --ignore-scripts
-```
-
-### 5.3 Node 版本不匹配
+### 5.2 Node 版本不匹配
 
 **警告信息**：
+
 ```
 WARN  Unsupported engine: wanted: {"node":">=22.0.0"}
 ```
@@ -315,6 +305,7 @@ WARN  Unsupported engine: wanted: {"node":">=22.0.0"}
 **原因**：Dockerfile 使用的 Node 版本低于项目要求
 
 **解决**：确保基础镜像版本与 `package.json` 中 `engines.node` 一致
+
 ```dockerfile
 FROM node:22-alpine  # 不是 node:20-alpine
 ```
@@ -322,6 +313,7 @@ FROM node:22-alpine  # 不是 node:20-alpine
 ### 5.4 网络超时
 
 **错误信息**：
+
 ```
 Error when performing the request to https://registry.npmjs.org/...
 ```
@@ -330,6 +322,7 @@ Error when performing the request to https://registry.npmjs.org/...
 
 1. 使用 `pnpm fetch` + `--offline` 分离网络步骤
 2. 配置 npm 镜像（中国大陆用户）：
+
 ```dockerfile
 RUN npm config set registry https://registry.npmmirror.com
 ```
@@ -419,6 +412,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 ```
 
 **为什么 Web 不需要 Node 运行时？**
+
 - Vite 构建输出纯静态文件（HTML/CSS/JS）
 - 运行时只需 HTTP 服务器（Nginx 更轻量高效）
 

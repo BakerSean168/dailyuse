@@ -35,14 +35,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    command: 
-      - "postgres"
-      - "-c"
-      - "fsync=off"
-      - "-c"
-      - "synchronous_commit=off"
-      - "-c"
-      - "full_page_writes=off"
+    command:
+      - 'postgres'
+      - '-c'
+      - 'fsync=off'
+      - '-c'
+      - 'synchronous_commit=off'
+      - '-c'
+      - 'full_page_writes=off'
 
   # Redis - 端口 6384
   redis-dev:
@@ -56,6 +56,34 @@ services:
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
       interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # PowerSync Service - 实时同步引擎
+  powersync-dev:
+    image: journeyapps/powersync-service:latest
+    container_name: dailyuse-dev-powersync
+    ports:
+      - '8080:8080'
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    volumes:
+      - ./docker/powersync/powersync.yaml:/config/powersync.yaml
+    command: ['start', '-c', '/config/powersync.yaml']
+    environment:
+      # Source Postgres connection (replication)
+      PS_SOURCE_URI: postgresql://dailyuse:dailyuse123@postgres-dev:5432/dailyuse
+      # Storage Postgres connection (sync bucket storage)
+      PS_STORAGE_URI: postgresql://dailyuse:dailyuse123@postgres-dev:5432/dailyuse
+      # JWKS public key components (must match API's RSA key pair)
+      PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:-iPsCAeT3UnpBpzEuLxRxsnj3GCGLp8UQrv5_WGLGR4Q0nw8OX_wmYGb4pGIzcnYsjM_JkmzZZxxtdS_lT6pWcQs9UdZbSxb1XDD_nRjohdrFvFEjGrATte05qm1Aj2VzmJnowh1tBC_QhVpljjQLBhfbQupgB4H-nuD4HKuzCYQ2-lo-zr2zRVQM9MBsuSFgijPHdHdejKqCKje4VIFjz-zxygoUvxtct3Fcloz06wtURLu5qSwHVAKOgwyHz008iSEZdvm7FfK0M931PH8iZKMb_2OIXDgc_vfIcXw5fadGo3qCgb0hFTE5WK3kHYlRxTCKDPCdznsdW_ZwIwXGvQ}
+      PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
+      PS_JWK_KID: ${POWERSYNC_KEY_ID:-powersync-dev-d90f228f}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/api/status']
+      interval: 15s
       timeout: 5s
       retries: 5
     restart: unless-stopped

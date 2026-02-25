@@ -13,6 +13,10 @@
     "./prisma": {
       "types": "./src/generated/prisma/client.d.ts",
       "import": "./src/generated/prisma/client.js"
+    },
+    "./powersync": {
+      "types": "./src/powersync-schema.ts",
+      "import": "./src/powersync-schema.ts"
     }
   },
   "scripts": {
@@ -26,6 +30,7 @@
     "prisma:push": "prisma db push --config ./prisma/prisma.config.ts"
   },
   "dependencies": {
+    "@powersync/common": "^1.47.0",
     "@prisma/adapter-pg": "7.3.0",
     "@prisma/client": "^7.0.0",
     "pg": "8.18.0"

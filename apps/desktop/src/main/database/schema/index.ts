@@ -1,7 +1,7 @@
 /**
  * @file Schema Entry Point
  * @description 统一导出所有模块的 Schema 初始化函数
- * 
+ *
  * 架构说明：
  * - 每个模块对应一个独立的 schema 文件
  * - 遵循 Package-First 架构，与 @dailyuse/domain-* 包对齐
@@ -20,7 +20,6 @@ export { initializeNotificationTables } from './notification.schema';
 export { initializeDashboardTables } from './dashboard.schema';
 export { initializeRepositoryTables } from './repository.schema';
 export { initializeSettingTables } from './setting.schema';
-export { initializeSyncTables } from './sync.schema';
 
 import { initializeAccountTables } from './account.schema';
 import { initializeGoalTables } from './goal.schema';
@@ -32,12 +31,11 @@ import { initializeNotificationTables } from './notification.schema';
 import { initializeDashboardTables } from './dashboard.schema';
 import { initializeRepositoryTables } from './repository.schema';
 import { initializeSettingTables } from './setting.schema';
-import { initializeSyncTables } from './sync.schema';
 
 /**
  * @function initializeAllTables
  * @description 初始化所有模块的数据库表
- * 
+ *
  * 执行顺序：
  * 1. Account & Auth (基础设施，其他模块依赖)
  * 2. Goal (核心业务模块)
@@ -49,8 +47,7 @@ import { initializeSyncTables } from './sync.schema';
  * 8. Dashboard (支持模块)
  * 9. Repository (支持模块)
  * 10. Setting (支持模块)
- * 11. Sync (基础设施，EPIC-004)
- * 
+ *
  * @param {Database.Database} database - 数据库实例
  */
 export function initializeAllTables(database: Database.Database): void {
@@ -71,9 +68,6 @@ export function initializeAllTables(database: Database.Database): void {
   initializeDashboardTables(database);
   initializeRepositoryTables(database);
   initializeSettingTables(database);
-
-  // Sync Infrastructure (EPIC-004)
-  initializeSyncTables(database);
 
   console.log('[Database] ✅ All module tables initialized successfully');
 }

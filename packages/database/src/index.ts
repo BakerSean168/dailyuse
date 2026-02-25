@@ -22,3 +22,6 @@ export * from './generated/prisma/client.js';
 
 // 单例实例 & 生命周期管理
 export { prisma, connectDatabase, disconnectDatabase } from './client.js';
+
+// PowerSync 客户端 Schema（Desktop 和 Web 共用）
+export { PowerSyncAppSchema } from './powersync-schema.js';

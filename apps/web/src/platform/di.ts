@@ -55,6 +55,7 @@ import { TaskClientService } from '@dailyuse/task/application-client';
 import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 
 import { resultHttpClient } from './http';
+import { disconnectWebPowerSync } from './powersync';
 
 // ============================================================================
 // Service Instances
@@ -118,7 +119,8 @@ export function installWebServices(app: App): void {
   // ── UI / Navigation ──
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
-  app.provide(LOGOUT_HANDLER_KEY, () => {
+  app.provide(LOGOUT_HANDLER_KEY, async () => {
+    await disconnectWebPowerSync();
     const authStore = useAuthenticationStore();
     authStore.reset();
     window.location.href = '/auth';

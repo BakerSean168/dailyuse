@@ -8,6 +8,5 @@
   "packages/ui-vue-shadcn": "0.1.10",
   "packages/utils": "0.1.10",
   "packages/test-utils": "0.1.10",
-  "packages/assets": "0.1.10",
-  "packages/sync-client": "0.1.10"
+  "packages/assets": "0.1.10"
 }

@@ -310,26 +310,6 @@ export type ScheduleStatistic = $Result.DefaultSelection<Prisma.$ScheduleStatist
  */
 export type UserSetting = $Result.DefaultSelection<Prisma.$UserSettingPayload>
 /**
- * Model SyncProfile
- * 
- */
-export type SyncProfile = $Result.DefaultSelection<Prisma.$SyncProfilePayload>
-/**
- * Model SyncSession
- * 
- */
-export type SyncSession = $Result.DefaultSelection<Prisma.$SyncSessionPayload>
-/**
- * Model SyncConflict
- * 
- */
-export type SyncConflict = $Result.DefaultSelection<Prisma.$SyncConflictPayload>
-/**
- * Model PendingChange
- * 
- */
-export type PendingChange = $Result.DefaultSelection<Prisma.$PendingChangePayload>
-/**
  * Model TaskFolder
  * TaskFolder 聚合根 - 任务文件夹
  * 用于组织和分类任务模板
@@ -1096,46 +1076,6 @@ export class PrismaClient<
   get userSetting(): Prisma.UserSettingDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.syncProfile`: Exposes CRUD operations for the **SyncProfile** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SyncProfiles
-    * const syncProfiles = await prisma.syncProfile.findMany()
-    * ```
-    */
-  get syncProfile(): Prisma.SyncProfileDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.syncSession`: Exposes CRUD operations for the **SyncSession** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SyncSessions
-    * const syncSessions = await prisma.syncSession.findMany()
-    * ```
-    */
-  get syncSession(): Prisma.SyncSessionDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.syncConflict`: Exposes CRUD operations for the **SyncConflict** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SyncConflicts
-    * const syncConflicts = await prisma.syncConflict.findMany()
-    * ```
-    */
-  get syncConflict(): Prisma.SyncConflictDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.pendingChange`: Exposes CRUD operations for the **PendingChange** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more PendingChanges
-    * const pendingChanges = await prisma.pendingChange.findMany()
-    * ```
-    */
-  get pendingChange(): Prisma.PendingChangeDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.taskFolder`: Exposes CRUD operations for the **TaskFolder** model.
     * Example usage:
     * ```ts
@@ -1685,10 +1625,6 @@ export namespace Prisma {
     ScheduleExecution: 'ScheduleExecution',
     ScheduleStatistic: 'ScheduleStatistic',
     UserSetting: 'UserSetting',
-    SyncProfile: 'SyncProfile',
-    SyncSession: 'SyncSession',
-    SyncConflict: 'SyncConflict',
-    PendingChange: 'PendingChange',
     TaskFolder: 'TaskFolder',
     TaskTemplate: 'TaskTemplate',
     TaskInstance: 'TaskInstance',
@@ -1710,7 +1646,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "syncProfile" | "syncSession" | "syncConflict" | "pendingChange" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
+      modelProps: "account" | "aiConversation" | "aiMessage" | "aiGenerationTask" | "aiUsageQuota" | "aiProviderConfig" | "knowledgeGenerationTask" | "dashboardConfig" | "authIdentity" | "authIdentifier" | "authOAuthBinding" | "authCredential" | "authSession" | "document" | "documentVersion" | "documentLink" | "editorWorkspace" | "editorWorkspaceSession" | "editorWorkspaceSessionGroup" | "editorWorkspaceSessionGroupTab" | "goal" | "goalFolder" | "keyResult" | "goalRecord" | "goalReview" | "keyResultWeightSnapshot" | "focusSession" | "focusMode" | "goalStatistic" | "rule" | "ruleRevision" | "notification" | "notificationChannel" | "notificationHistory" | "notificationPreference" | "notificationTemplate" | "reminderTemplate" | "reminderGroup" | "reminderInstance" | "reminderHistory" | "reminderStatistic" | "reminderResponse" | "userReminderPreference" | "repository" | "folder" | "resource" | "repositoryResource" | "linkedContent" | "resourceReference" | "repositoryExplorer" | "repositoryStatistic" | "schedule" | "scheduleJob" | "scheduleTask" | "scheduleExecution" | "scheduleStatistic" | "userSetting" | "taskFolder" | "taskTemplate" | "taskInstance" | "taskDependency" | "taskTemplateHistory" | "taskStatistic"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5932,302 +5868,6 @@ export namespace Prisma {
           }
         }
       }
-      SyncProfile: {
-        payload: Prisma.$SyncProfilePayload<ExtArgs>
-        fields: Prisma.SyncProfileFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SyncProfileFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SyncProfileFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>
-          }
-          findFirst: {
-            args: Prisma.SyncProfileFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SyncProfileFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>
-          }
-          findMany: {
-            args: Prisma.SyncProfileFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>[]
-          }
-          create: {
-            args: Prisma.SyncProfileCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>
-          }
-          createMany: {
-            args: Prisma.SyncProfileCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SyncProfileCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>[]
-          }
-          delete: {
-            args: Prisma.SyncProfileDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>
-          }
-          update: {
-            args: Prisma.SyncProfileUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>
-          }
-          deleteMany: {
-            args: Prisma.SyncProfileDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SyncProfileUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SyncProfileUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>[]
-          }
-          upsert: {
-            args: Prisma.SyncProfileUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncProfilePayload>
-          }
-          aggregate: {
-            args: Prisma.SyncProfileAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSyncProfile>
-          }
-          groupBy: {
-            args: Prisma.SyncProfileGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SyncProfileGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SyncProfileCountArgs<ExtArgs>
-            result: $Utils.Optional<SyncProfileCountAggregateOutputType> | number
-          }
-        }
-      }
-      SyncSession: {
-        payload: Prisma.$SyncSessionPayload<ExtArgs>
-        fields: Prisma.SyncSessionFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SyncSessionFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SyncSessionFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>
-          }
-          findFirst: {
-            args: Prisma.SyncSessionFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SyncSessionFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>
-          }
-          findMany: {
-            args: Prisma.SyncSessionFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>[]
-          }
-          create: {
-            args: Prisma.SyncSessionCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>
-          }
-          createMany: {
-            args: Prisma.SyncSessionCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SyncSessionCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>[]
-          }
-          delete: {
-            args: Prisma.SyncSessionDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>
-          }
-          update: {
-            args: Prisma.SyncSessionUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>
-          }
-          deleteMany: {
-            args: Prisma.SyncSessionDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SyncSessionUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SyncSessionUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>[]
-          }
-          upsert: {
-            args: Prisma.SyncSessionUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncSessionPayload>
-          }
-          aggregate: {
-            args: Prisma.SyncSessionAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSyncSession>
-          }
-          groupBy: {
-            args: Prisma.SyncSessionGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SyncSessionGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SyncSessionCountArgs<ExtArgs>
-            result: $Utils.Optional<SyncSessionCountAggregateOutputType> | number
-          }
-        }
-      }
-      SyncConflict: {
-        payload: Prisma.$SyncConflictPayload<ExtArgs>
-        fields: Prisma.SyncConflictFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SyncConflictFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SyncConflictFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>
-          }
-          findFirst: {
-            args: Prisma.SyncConflictFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SyncConflictFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>
-          }
-          findMany: {
-            args: Prisma.SyncConflictFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>[]
-          }
-          create: {
-            args: Prisma.SyncConflictCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>
-          }
-          createMany: {
-            args: Prisma.SyncConflictCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.SyncConflictCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>[]
-          }
-          delete: {
-            args: Prisma.SyncConflictDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>
-          }
-          update: {
-            args: Prisma.SyncConflictUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>
-          }
-          deleteMany: {
-            args: Prisma.SyncConflictDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SyncConflictUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.SyncConflictUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>[]
-          }
-          upsert: {
-            args: Prisma.SyncConflictUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SyncConflictPayload>
-          }
-          aggregate: {
-            args: Prisma.SyncConflictAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSyncConflict>
-          }
-          groupBy: {
-            args: Prisma.SyncConflictGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SyncConflictGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SyncConflictCountArgs<ExtArgs>
-            result: $Utils.Optional<SyncConflictCountAggregateOutputType> | number
-          }
-        }
-      }
-      PendingChange: {
-        payload: Prisma.$PendingChangePayload<ExtArgs>
-        fields: Prisma.PendingChangeFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.PendingChangeFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.PendingChangeFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>
-          }
-          findFirst: {
-            args: Prisma.PendingChangeFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.PendingChangeFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>
-          }
-          findMany: {
-            args: Prisma.PendingChangeFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>[]
-          }
-          create: {
-            args: Prisma.PendingChangeCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>
-          }
-          createMany: {
-            args: Prisma.PendingChangeCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.PendingChangeCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>[]
-          }
-          delete: {
-            args: Prisma.PendingChangeDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>
-          }
-          update: {
-            args: Prisma.PendingChangeUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>
-          }
-          deleteMany: {
-            args: Prisma.PendingChangeDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.PendingChangeUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.PendingChangeUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>[]
-          }
-          upsert: {
-            args: Prisma.PendingChangeUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PendingChangePayload>
-          }
-          aggregate: {
-            args: Prisma.PendingChangeAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePendingChange>
-          }
-          groupBy: {
-            args: Prisma.PendingChangeGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PendingChangeGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.PendingChangeCountArgs<ExtArgs>
-            result: $Utils.Optional<PendingChangeCountAggregateOutputType> | number
-          }
-        }
-      }
       TaskFolder: {
         payload: Prisma.$TaskFolderPayload<ExtArgs>
         fields: Prisma.TaskFolderFieldRefs
@@ -6837,10 +6477,6 @@ export namespace Prisma {
     scheduleExecution?: ScheduleExecutionOmit
     scheduleStatistic?: ScheduleStatisticOmit
     userSetting?: UserSettingOmit
-    syncProfile?: SyncProfileOmit
-    syncSession?: SyncSessionOmit
-    syncConflict?: SyncConflictOmit
-    pendingChange?: PendingChangeOmit
     taskFolder?: TaskFolderOmit
     taskTemplate?: TaskTemplateOmit
     taskInstance?: TaskInstanceOmit
@@ -6952,10 +6588,6 @@ export namespace Prisma {
     aiConversations: number
     aiGenerationTasks: number
     aiProviderConfigs: number
-    syncProfiles: number
-    syncSessions: number
-    syncConflicts: number
-    pendingChanges: number
   }
 
   export type AccountCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6984,10 +6616,6 @@ export namespace Prisma {
     aiConversations?: boolean | AccountCountOutputTypeCountAiConversationsArgs
     aiGenerationTasks?: boolean | AccountCountOutputTypeCountAiGenerationTasksArgs
     aiProviderConfigs?: boolean | AccountCountOutputTypeCountAiProviderConfigsArgs
-    syncProfiles?: boolean | AccountCountOutputTypeCountSyncProfilesArgs
-    syncSessions?: boolean | AccountCountOutputTypeCountSyncSessionsArgs
-    syncConflicts?: boolean | AccountCountOutputTypeCountSyncConflictsArgs
-    pendingChanges?: boolean | AccountCountOutputTypeCountPendingChangesArgs
   }
 
   // Custom InputTypes
@@ -7174,34 +6802,6 @@ export namespace Prisma {
    */
   export type AccountCountOutputTypeCountAiProviderConfigsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiProviderConfigWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountSyncProfilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncProfileWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountSyncSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncSessionWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountSyncConflictsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncConflictWhereInput
-  }
-
-  /**
-   * AccountCountOutputType without action
-   */
-  export type AccountCountOutputTypeCountPendingChangesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PendingChangeWhereInput
   }
 
 
@@ -7913,68 +7513,6 @@ export namespace Prisma {
 
 
   /**
-   * Count Type SyncProfileCountOutputType
-   */
-
-  export type SyncProfileCountOutputType = {
-    sessions: number
-  }
-
-  export type SyncProfileCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sessions?: boolean | SyncProfileCountOutputTypeCountSessionsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * SyncProfileCountOutputType without action
-   */
-  export type SyncProfileCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfileCountOutputType
-     */
-    select?: SyncProfileCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * SyncProfileCountOutputType without action
-   */
-  export type SyncProfileCountOutputTypeCountSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncSessionWhereInput
-  }
-
-
-  /**
-   * Count Type SyncSessionCountOutputType
-   */
-
-  export type SyncSessionCountOutputType = {
-    conflicts: number
-  }
-
-  export type SyncSessionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conflicts?: boolean | SyncSessionCountOutputTypeCountConflictsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * SyncSessionCountOutputType without action
-   */
-  export type SyncSessionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSessionCountOutputType
-     */
-    select?: SyncSessionCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * SyncSessionCountOutputType without action
-   */
-  export type SyncSessionCountOutputTypeCountConflictsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncConflictWhereInput
-  }
-
-
-  /**
    * Count Type TaskFolderCountOutputType
    */
 
@@ -8397,10 +7935,6 @@ export namespace Prisma {
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
-    syncProfiles?: boolean | Account$syncProfilesArgs<ExtArgs>
-    syncSessions?: boolean | Account$syncSessionsArgs<ExtArgs>
-    syncConflicts?: boolean | Account$syncConflictsArgs<ExtArgs>
-    pendingChanges?: boolean | Account$pendingChangesArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["account"]>
 
@@ -8503,10 +8037,6 @@ export namespace Prisma {
     aiUsageQuotas?: boolean | Account$aiUsageQuotasArgs<ExtArgs>
     aiProviderConfigs?: boolean | Account$aiProviderConfigsArgs<ExtArgs>
     dashboardConfigs?: boolean | Account$dashboardConfigsArgs<ExtArgs>
-    syncProfiles?: boolean | Account$syncProfilesArgs<ExtArgs>
-    syncSessions?: boolean | Account$syncSessionsArgs<ExtArgs>
-    syncConflicts?: boolean | Account$syncConflictsArgs<ExtArgs>
-    pendingChanges?: boolean | Account$pendingChangesArgs<ExtArgs>
     _count?: boolean | AccountCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AccountIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8554,10 +8084,6 @@ export namespace Prisma {
       aiUsageQuotas: Prisma.$AiUsageQuotaPayload<ExtArgs> | null
       aiProviderConfigs: Prisma.$AiProviderConfigPayload<ExtArgs>[]
       dashboardConfigs: Prisma.$DashboardConfigPayload<ExtArgs> | null
-      syncProfiles: Prisma.$SyncProfilePayload<ExtArgs>[]
-      syncSessions: Prisma.$SyncSessionPayload<ExtArgs>[]
-      syncConflicts: Prisma.$SyncConflictPayload<ExtArgs>[]
-      pendingChanges: Prisma.$PendingChangePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9006,10 +8532,6 @@ export namespace Prisma {
     aiUsageQuotas<T extends Account$aiUsageQuotasArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiUsageQuotasArgs<ExtArgs>>): Prisma__AiUsageQuotaClient<$Result.GetResult<Prisma.$AiUsageQuotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     aiProviderConfigs<T extends Account$aiProviderConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$aiProviderConfigsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiProviderConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dashboardConfigs<T extends Account$dashboardConfigsArgs<ExtArgs> = {}>(args?: Subset<T, Account$dashboardConfigsArgs<ExtArgs>>): Prisma__DashboardConfigClient<$Result.GetResult<Prisma.$DashboardConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    syncProfiles<T extends Account$syncProfilesArgs<ExtArgs> = {}>(args?: Subset<T, Account$syncProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    syncSessions<T extends Account$syncSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Account$syncSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    syncConflicts<T extends Account$syncConflictsArgs<ExtArgs> = {}>(args?: Subset<T, Account$syncConflictsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    pendingChanges<T extends Account$pendingChangesArgs<ExtArgs> = {}>(args?: Subset<T, Account$pendingChangesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10220,102 +9742,6 @@ export namespace Prisma {
      */
     include?: DashboardConfigInclude<ExtArgs> | null
     where?: DashboardConfigWhereInput
-  }
-
-  /**
-   * Account.syncProfiles
-   */
-  export type Account$syncProfilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    where?: SyncProfileWhereInput
-    orderBy?: SyncProfileOrderByWithRelationInput | SyncProfileOrderByWithRelationInput[]
-    cursor?: SyncProfileWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SyncProfileScalarFieldEnum | SyncProfileScalarFieldEnum[]
-  }
-
-  /**
-   * Account.syncSessions
-   */
-  export type Account$syncSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    where?: SyncSessionWhereInput
-    orderBy?: SyncSessionOrderByWithRelationInput | SyncSessionOrderByWithRelationInput[]
-    cursor?: SyncSessionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SyncSessionScalarFieldEnum | SyncSessionScalarFieldEnum[]
-  }
-
-  /**
-   * Account.syncConflicts
-   */
-  export type Account$syncConflictsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    where?: SyncConflictWhereInput
-    orderBy?: SyncConflictOrderByWithRelationInput | SyncConflictOrderByWithRelationInput[]
-    cursor?: SyncConflictWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SyncConflictScalarFieldEnum | SyncConflictScalarFieldEnum[]
-  }
-
-  /**
-   * Account.pendingChanges
-   */
-  export type Account$pendingChangesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    where?: PendingChangeWhereInput
-    orderBy?: PendingChangeOrderByWithRelationInput | PendingChangeOrderByWithRelationInput[]
-    cursor?: PendingChangeWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PendingChangeScalarFieldEnum | PendingChangeScalarFieldEnum[]
   }
 
   /**
@@ -78401,5067 +77827,6 @@ export namespace Prisma {
 
 
   /**
-   * Model SyncProfile
-   */
-
-  export type AggregateSyncProfile = {
-    _count: SyncProfileCountAggregateOutputType | null
-    _avg: SyncProfileAvgAggregateOutputType | null
-    _sum: SyncProfileSumAggregateOutputType | null
-    _min: SyncProfileMinAggregateOutputType | null
-    _max: SyncProfileMaxAggregateOutputType | null
-  }
-
-  export type SyncProfileAvgAggregateOutputType = {
-    lastSyncAt: number | null
-    createdAt: number | null
-    updatedAt: number | null
-  }
-
-  export type SyncProfileSumAggregateOutputType = {
-    lastSyncAt: bigint | null
-    createdAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncProfileMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    name: string | null
-    description: string | null
-    providerType: string | null
-    providerConfigJson: string | null
-    syncConfigJson: string | null
-    isDefault: boolean | null
-    isActive: boolean | null
-    isConnected: boolean | null
-    lastSyncAt: bigint | null
-    lastSyncVersionJson: string | null
-    lastSyncResult: string | null
-    historyStatsJson: string | null
-    createdAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncProfileMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    name: string | null
-    description: string | null
-    providerType: string | null
-    providerConfigJson: string | null
-    syncConfigJson: string | null
-    isDefault: boolean | null
-    isActive: boolean | null
-    isConnected: boolean | null
-    lastSyncAt: bigint | null
-    lastSyncVersionJson: string | null
-    lastSyncResult: string | null
-    historyStatsJson: string | null
-    createdAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncProfileCountAggregateOutputType = {
-    id: number
-    identityId: number
-    name: number
-    description: number
-    providerType: number
-    providerConfigJson: number
-    syncConfigJson: number
-    isDefault: number
-    isActive: number
-    isConnected: number
-    lastSyncAt: number
-    lastSyncVersionJson: number
-    lastSyncResult: number
-    historyStatsJson: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type SyncProfileAvgAggregateInputType = {
-    lastSyncAt?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncProfileSumAggregateInputType = {
-    lastSyncAt?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncProfileMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    name?: true
-    description?: true
-    providerType?: true
-    providerConfigJson?: true
-    syncConfigJson?: true
-    isDefault?: true
-    isActive?: true
-    isConnected?: true
-    lastSyncAt?: true
-    lastSyncVersionJson?: true
-    lastSyncResult?: true
-    historyStatsJson?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncProfileMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    name?: true
-    description?: true
-    providerType?: true
-    providerConfigJson?: true
-    syncConfigJson?: true
-    isDefault?: true
-    isActive?: true
-    isConnected?: true
-    lastSyncAt?: true
-    lastSyncVersionJson?: true
-    lastSyncResult?: true
-    historyStatsJson?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncProfileCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    name?: true
-    description?: true
-    providerType?: true
-    providerConfigJson?: true
-    syncConfigJson?: true
-    isDefault?: true
-    isActive?: true
-    isConnected?: true
-    lastSyncAt?: true
-    lastSyncVersionJson?: true
-    lastSyncResult?: true
-    historyStatsJson?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type SyncProfileAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SyncProfile to aggregate.
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncProfiles to fetch.
-     */
-    orderBy?: SyncProfileOrderByWithRelationInput | SyncProfileOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SyncProfileWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncProfiles from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncProfiles.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned SyncProfiles
-    **/
-    _count?: true | SyncProfileCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SyncProfileAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SyncProfileSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SyncProfileMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SyncProfileMaxAggregateInputType
-  }
-
-  export type GetSyncProfileAggregateType<T extends SyncProfileAggregateArgs> = {
-        [P in keyof T & keyof AggregateSyncProfile]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSyncProfile[P]>
-      : GetScalarType<T[P], AggregateSyncProfile[P]>
-  }
-
-
-
-
-  export type SyncProfileGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncProfileWhereInput
-    orderBy?: SyncProfileOrderByWithAggregationInput | SyncProfileOrderByWithAggregationInput[]
-    by: SyncProfileScalarFieldEnum[] | SyncProfileScalarFieldEnum
-    having?: SyncProfileScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SyncProfileCountAggregateInputType | true
-    _avg?: SyncProfileAvgAggregateInputType
-    _sum?: SyncProfileSumAggregateInputType
-    _min?: SyncProfileMinAggregateInputType
-    _max?: SyncProfileMaxAggregateInputType
-  }
-
-  export type SyncProfileGroupByOutputType = {
-    id: string
-    identityId: string
-    name: string
-    description: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault: boolean
-    isActive: boolean
-    isConnected: boolean
-    lastSyncAt: bigint | null
-    lastSyncVersionJson: string | null
-    lastSyncResult: string | null
-    historyStatsJson: string
-    createdAt: bigint
-    updatedAt: bigint
-    _count: SyncProfileCountAggregateOutputType | null
-    _avg: SyncProfileAvgAggregateOutputType | null
-    _sum: SyncProfileSumAggregateOutputType | null
-    _min: SyncProfileMinAggregateOutputType | null
-    _max: SyncProfileMaxAggregateOutputType | null
-  }
-
-  type GetSyncProfileGroupByPayload<T extends SyncProfileGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SyncProfileGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SyncProfileGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SyncProfileGroupByOutputType[P]>
-            : GetScalarType<T[P], SyncProfileGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SyncProfileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    name?: boolean
-    description?: boolean
-    providerType?: boolean
-    providerConfigJson?: boolean
-    syncConfigJson?: boolean
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: boolean
-    lastSyncVersionJson?: boolean
-    lastSyncResult?: boolean
-    historyStatsJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    sessions?: boolean | SyncProfile$sessionsArgs<ExtArgs>
-    _count?: boolean | SyncProfileCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncProfile"]>
-
-  export type SyncProfileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    name?: boolean
-    description?: boolean
-    providerType?: boolean
-    providerConfigJson?: boolean
-    syncConfigJson?: boolean
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: boolean
-    lastSyncVersionJson?: boolean
-    lastSyncResult?: boolean
-    historyStatsJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncProfile"]>
-
-  export type SyncProfileSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    name?: boolean
-    description?: boolean
-    providerType?: boolean
-    providerConfigJson?: boolean
-    syncConfigJson?: boolean
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: boolean
-    lastSyncVersionJson?: boolean
-    lastSyncResult?: boolean
-    historyStatsJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncProfile"]>
-
-  export type SyncProfileSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    name?: boolean
-    description?: boolean
-    providerType?: boolean
-    providerConfigJson?: boolean
-    syncConfigJson?: boolean
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: boolean
-    lastSyncVersionJson?: boolean
-    lastSyncResult?: boolean
-    historyStatsJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type SyncProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "name" | "description" | "providerType" | "providerConfigJson" | "syncConfigJson" | "isDefault" | "isActive" | "isConnected" | "lastSyncAt" | "lastSyncVersionJson" | "lastSyncResult" | "historyStatsJson" | "createdAt" | "updatedAt", ExtArgs["result"]["syncProfile"]>
-  export type SyncProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    sessions?: boolean | SyncProfile$sessionsArgs<ExtArgs>
-    _count?: boolean | SyncProfileCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type SyncProfileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type SyncProfileIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $SyncProfilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SyncProfile"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-      sessions: Prisma.$SyncSessionPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      name: string
-      description: string | null
-      providerType: string
-      providerConfigJson: string
-      syncConfigJson: string
-      isDefault: boolean
-      isActive: boolean
-      isConnected: boolean
-      lastSyncAt: bigint | null
-      lastSyncVersionJson: string | null
-      lastSyncResult: string | null
-      historyStatsJson: string
-      createdAt: bigint
-      updatedAt: bigint
-    }, ExtArgs["result"]["syncProfile"]>
-    composites: {}
-  }
-
-  type SyncProfileGetPayload<S extends boolean | null | undefined | SyncProfileDefaultArgs> = $Result.GetResult<Prisma.$SyncProfilePayload, S>
-
-  type SyncProfileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SyncProfileFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SyncProfileCountAggregateInputType | true
-    }
-
-  export interface SyncProfileDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SyncProfile'], meta: { name: 'SyncProfile' } }
-    /**
-     * Find zero or one SyncProfile that matches the filter.
-     * @param {SyncProfileFindUniqueArgs} args - Arguments to find a SyncProfile
-     * @example
-     * // Get one SyncProfile
-     * const syncProfile = await prisma.syncProfile.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SyncProfileFindUniqueArgs>(args: SelectSubset<T, SyncProfileFindUniqueArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one SyncProfile that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SyncProfileFindUniqueOrThrowArgs} args - Arguments to find a SyncProfile
-     * @example
-     * // Get one SyncProfile
-     * const syncProfile = await prisma.syncProfile.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SyncProfileFindUniqueOrThrowArgs>(args: SelectSubset<T, SyncProfileFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SyncProfile that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileFindFirstArgs} args - Arguments to find a SyncProfile
-     * @example
-     * // Get one SyncProfile
-     * const syncProfile = await prisma.syncProfile.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SyncProfileFindFirstArgs>(args?: SelectSubset<T, SyncProfileFindFirstArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SyncProfile that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileFindFirstOrThrowArgs} args - Arguments to find a SyncProfile
-     * @example
-     * // Get one SyncProfile
-     * const syncProfile = await prisma.syncProfile.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SyncProfileFindFirstOrThrowArgs>(args?: SelectSubset<T, SyncProfileFindFirstOrThrowArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more SyncProfiles that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all SyncProfiles
-     * const syncProfiles = await prisma.syncProfile.findMany()
-     * 
-     * // Get first 10 SyncProfiles
-     * const syncProfiles = await prisma.syncProfile.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const syncProfileWithIdOnly = await prisma.syncProfile.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SyncProfileFindManyArgs>(args?: SelectSubset<T, SyncProfileFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a SyncProfile.
-     * @param {SyncProfileCreateArgs} args - Arguments to create a SyncProfile.
-     * @example
-     * // Create one SyncProfile
-     * const SyncProfile = await prisma.syncProfile.create({
-     *   data: {
-     *     // ... data to create a SyncProfile
-     *   }
-     * })
-     * 
-     */
-    create<T extends SyncProfileCreateArgs>(args: SelectSubset<T, SyncProfileCreateArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many SyncProfiles.
-     * @param {SyncProfileCreateManyArgs} args - Arguments to create many SyncProfiles.
-     * @example
-     * // Create many SyncProfiles
-     * const syncProfile = await prisma.syncProfile.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SyncProfileCreateManyArgs>(args?: SelectSubset<T, SyncProfileCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many SyncProfiles and returns the data saved in the database.
-     * @param {SyncProfileCreateManyAndReturnArgs} args - Arguments to create many SyncProfiles.
-     * @example
-     * // Create many SyncProfiles
-     * const syncProfile = await prisma.syncProfile.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many SyncProfiles and only return the `id`
-     * const syncProfileWithIdOnly = await prisma.syncProfile.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SyncProfileCreateManyAndReturnArgs>(args?: SelectSubset<T, SyncProfileCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a SyncProfile.
-     * @param {SyncProfileDeleteArgs} args - Arguments to delete one SyncProfile.
-     * @example
-     * // Delete one SyncProfile
-     * const SyncProfile = await prisma.syncProfile.delete({
-     *   where: {
-     *     // ... filter to delete one SyncProfile
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SyncProfileDeleteArgs>(args: SelectSubset<T, SyncProfileDeleteArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one SyncProfile.
-     * @param {SyncProfileUpdateArgs} args - Arguments to update one SyncProfile.
-     * @example
-     * // Update one SyncProfile
-     * const syncProfile = await prisma.syncProfile.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SyncProfileUpdateArgs>(args: SelectSubset<T, SyncProfileUpdateArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more SyncProfiles.
-     * @param {SyncProfileDeleteManyArgs} args - Arguments to filter SyncProfiles to delete.
-     * @example
-     * // Delete a few SyncProfiles
-     * const { count } = await prisma.syncProfile.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SyncProfileDeleteManyArgs>(args?: SelectSubset<T, SyncProfileDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SyncProfiles.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many SyncProfiles
-     * const syncProfile = await prisma.syncProfile.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SyncProfileUpdateManyArgs>(args: SelectSubset<T, SyncProfileUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SyncProfiles and returns the data updated in the database.
-     * @param {SyncProfileUpdateManyAndReturnArgs} args - Arguments to update many SyncProfiles.
-     * @example
-     * // Update many SyncProfiles
-     * const syncProfile = await prisma.syncProfile.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more SyncProfiles and only return the `id`
-     * const syncProfileWithIdOnly = await prisma.syncProfile.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SyncProfileUpdateManyAndReturnArgs>(args: SelectSubset<T, SyncProfileUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one SyncProfile.
-     * @param {SyncProfileUpsertArgs} args - Arguments to update or create a SyncProfile.
-     * @example
-     * // Update or create a SyncProfile
-     * const syncProfile = await prisma.syncProfile.upsert({
-     *   create: {
-     *     // ... data to create a SyncProfile
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the SyncProfile we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SyncProfileUpsertArgs>(args: SelectSubset<T, SyncProfileUpsertArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of SyncProfiles.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileCountArgs} args - Arguments to filter SyncProfiles to count.
-     * @example
-     * // Count the number of SyncProfiles
-     * const count = await prisma.syncProfile.count({
-     *   where: {
-     *     // ... the filter for the SyncProfiles we want to count
-     *   }
-     * })
-    **/
-    count<T extends SyncProfileCountArgs>(
-      args?: Subset<T, SyncProfileCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SyncProfileCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a SyncProfile.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SyncProfileAggregateArgs>(args: Subset<T, SyncProfileAggregateArgs>): Prisma.PrismaPromise<GetSyncProfileAggregateType<T>>
-
-    /**
-     * Group by SyncProfile.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncProfileGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SyncProfileGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SyncProfileGroupByArgs['orderBy'] }
-        : { orderBy?: SyncProfileGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SyncProfileGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSyncProfileGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the SyncProfile model
-   */
-  readonly fields: SyncProfileFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for SyncProfile.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SyncProfileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    sessions<T extends SyncProfile$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, SyncProfile$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the SyncProfile model
-   */
-  interface SyncProfileFieldRefs {
-    readonly id: FieldRef<"SyncProfile", 'String'>
-    readonly identityId: FieldRef<"SyncProfile", 'String'>
-    readonly name: FieldRef<"SyncProfile", 'String'>
-    readonly description: FieldRef<"SyncProfile", 'String'>
-    readonly providerType: FieldRef<"SyncProfile", 'String'>
-    readonly providerConfigJson: FieldRef<"SyncProfile", 'String'>
-    readonly syncConfigJson: FieldRef<"SyncProfile", 'String'>
-    readonly isDefault: FieldRef<"SyncProfile", 'Boolean'>
-    readonly isActive: FieldRef<"SyncProfile", 'Boolean'>
-    readonly isConnected: FieldRef<"SyncProfile", 'Boolean'>
-    readonly lastSyncAt: FieldRef<"SyncProfile", 'BigInt'>
-    readonly lastSyncVersionJson: FieldRef<"SyncProfile", 'String'>
-    readonly lastSyncResult: FieldRef<"SyncProfile", 'String'>
-    readonly historyStatsJson: FieldRef<"SyncProfile", 'String'>
-    readonly createdAt: FieldRef<"SyncProfile", 'BigInt'>
-    readonly updatedAt: FieldRef<"SyncProfile", 'BigInt'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * SyncProfile findUnique
-   */
-  export type SyncProfileFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncProfile to fetch.
-     */
-    where: SyncProfileWhereUniqueInput
-  }
-
-  /**
-   * SyncProfile findUniqueOrThrow
-   */
-  export type SyncProfileFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncProfile to fetch.
-     */
-    where: SyncProfileWhereUniqueInput
-  }
-
-  /**
-   * SyncProfile findFirst
-   */
-  export type SyncProfileFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncProfile to fetch.
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncProfiles to fetch.
-     */
-    orderBy?: SyncProfileOrderByWithRelationInput | SyncProfileOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SyncProfiles.
-     */
-    cursor?: SyncProfileWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncProfiles from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncProfiles.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SyncProfiles.
-     */
-    distinct?: SyncProfileScalarFieldEnum | SyncProfileScalarFieldEnum[]
-  }
-
-  /**
-   * SyncProfile findFirstOrThrow
-   */
-  export type SyncProfileFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncProfile to fetch.
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncProfiles to fetch.
-     */
-    orderBy?: SyncProfileOrderByWithRelationInput | SyncProfileOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SyncProfiles.
-     */
-    cursor?: SyncProfileWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncProfiles from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncProfiles.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SyncProfiles.
-     */
-    distinct?: SyncProfileScalarFieldEnum | SyncProfileScalarFieldEnum[]
-  }
-
-  /**
-   * SyncProfile findMany
-   */
-  export type SyncProfileFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncProfiles to fetch.
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncProfiles to fetch.
-     */
-    orderBy?: SyncProfileOrderByWithRelationInput | SyncProfileOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing SyncProfiles.
-     */
-    cursor?: SyncProfileWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncProfiles from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncProfiles.
-     */
-    skip?: number
-    distinct?: SyncProfileScalarFieldEnum | SyncProfileScalarFieldEnum[]
-  }
-
-  /**
-   * SyncProfile create
-   */
-  export type SyncProfileCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * The data needed to create a SyncProfile.
-     */
-    data: XOR<SyncProfileCreateInput, SyncProfileUncheckedCreateInput>
-  }
-
-  /**
-   * SyncProfile createMany
-   */
-  export type SyncProfileCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many SyncProfiles.
-     */
-    data: SyncProfileCreateManyInput | SyncProfileCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * SyncProfile createManyAndReturn
-   */
-  export type SyncProfileCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * The data used to create many SyncProfiles.
-     */
-    data: SyncProfileCreateManyInput | SyncProfileCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SyncProfile update
-   */
-  export type SyncProfileUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * The data needed to update a SyncProfile.
-     */
-    data: XOR<SyncProfileUpdateInput, SyncProfileUncheckedUpdateInput>
-    /**
-     * Choose, which SyncProfile to update.
-     */
-    where: SyncProfileWhereUniqueInput
-  }
-
-  /**
-   * SyncProfile updateMany
-   */
-  export type SyncProfileUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update SyncProfiles.
-     */
-    data: XOR<SyncProfileUpdateManyMutationInput, SyncProfileUncheckedUpdateManyInput>
-    /**
-     * Filter which SyncProfiles to update
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * Limit how many SyncProfiles to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * SyncProfile updateManyAndReturn
-   */
-  export type SyncProfileUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * The data used to update SyncProfiles.
-     */
-    data: XOR<SyncProfileUpdateManyMutationInput, SyncProfileUncheckedUpdateManyInput>
-    /**
-     * Filter which SyncProfiles to update
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * Limit how many SyncProfiles to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SyncProfile upsert
-   */
-  export type SyncProfileUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * The filter to search for the SyncProfile to update in case it exists.
-     */
-    where: SyncProfileWhereUniqueInput
-    /**
-     * In case the SyncProfile found by the `where` argument doesn't exist, create a new SyncProfile with this data.
-     */
-    create: XOR<SyncProfileCreateInput, SyncProfileUncheckedCreateInput>
-    /**
-     * In case the SyncProfile was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SyncProfileUpdateInput, SyncProfileUncheckedUpdateInput>
-  }
-
-  /**
-   * SyncProfile delete
-   */
-  export type SyncProfileDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-    /**
-     * Filter which SyncProfile to delete.
-     */
-    where: SyncProfileWhereUniqueInput
-  }
-
-  /**
-   * SyncProfile deleteMany
-   */
-  export type SyncProfileDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SyncProfiles to delete
-     */
-    where?: SyncProfileWhereInput
-    /**
-     * Limit how many SyncProfiles to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SyncProfile.sessions
-   */
-  export type SyncProfile$sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    where?: SyncSessionWhereInput
-    orderBy?: SyncSessionOrderByWithRelationInput | SyncSessionOrderByWithRelationInput[]
-    cursor?: SyncSessionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SyncSessionScalarFieldEnum | SyncSessionScalarFieldEnum[]
-  }
-
-  /**
-   * SyncProfile without action
-   */
-  export type SyncProfileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncProfile
-     */
-    select?: SyncProfileSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncProfile
-     */
-    omit?: SyncProfileOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncProfileInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model SyncSession
-   */
-
-  export type AggregateSyncSession = {
-    _count: SyncSessionCountAggregateOutputType | null
-    _avg: SyncSessionAvgAggregateOutputType | null
-    _sum: SyncSessionSumAggregateOutputType | null
-    _min: SyncSessionMinAggregateOutputType | null
-    _max: SyncSessionMaxAggregateOutputType | null
-  }
-
-  export type SyncSessionAvgAggregateOutputType = {
-    retryCount: number | null
-    createdAt: number | null
-    startedAt: number | null
-    completedAt: number | null
-    updatedAt: number | null
-  }
-
-  export type SyncSessionSumAggregateOutputType = {
-    retryCount: number | null
-    createdAt: bigint | null
-    startedAt: bigint | null
-    completedAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncSessionMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    profileId: string | null
-    status: string | null
-    direction: string | null
-    strategy: string | null
-    triggerType: string | null
-    triggerDeviceJson: string | null
-    startVersionJson: string | null
-    endVersionJson: string | null
-    localSnapshotId: string | null
-    remoteSnapshotId: string | null
-    statisticsJson: string | null
-    errorJson: string | null
-    canRetry: boolean | null
-    retryCount: number | null
-    createdAt: bigint | null
-    startedAt: bigint | null
-    completedAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncSessionMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    profileId: string | null
-    status: string | null
-    direction: string | null
-    strategy: string | null
-    triggerType: string | null
-    triggerDeviceJson: string | null
-    startVersionJson: string | null
-    endVersionJson: string | null
-    localSnapshotId: string | null
-    remoteSnapshotId: string | null
-    statisticsJson: string | null
-    errorJson: string | null
-    canRetry: boolean | null
-    retryCount: number | null
-    createdAt: bigint | null
-    startedAt: bigint | null
-    completedAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncSessionCountAggregateOutputType = {
-    id: number
-    identityId: number
-    profileId: number
-    status: number
-    direction: number
-    strategy: number
-    triggerType: number
-    triggerDeviceJson: number
-    startVersionJson: number
-    endVersionJson: number
-    localSnapshotId: number
-    remoteSnapshotId: number
-    statisticsJson: number
-    errorJson: number
-    canRetry: number
-    retryCount: number
-    createdAt: number
-    startedAt: number
-    completedAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type SyncSessionAvgAggregateInputType = {
-    retryCount?: true
-    createdAt?: true
-    startedAt?: true
-    completedAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncSessionSumAggregateInputType = {
-    retryCount?: true
-    createdAt?: true
-    startedAt?: true
-    completedAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncSessionMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    profileId?: true
-    status?: true
-    direction?: true
-    strategy?: true
-    triggerType?: true
-    triggerDeviceJson?: true
-    startVersionJson?: true
-    endVersionJson?: true
-    localSnapshotId?: true
-    remoteSnapshotId?: true
-    statisticsJson?: true
-    errorJson?: true
-    canRetry?: true
-    retryCount?: true
-    createdAt?: true
-    startedAt?: true
-    completedAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncSessionMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    profileId?: true
-    status?: true
-    direction?: true
-    strategy?: true
-    triggerType?: true
-    triggerDeviceJson?: true
-    startVersionJson?: true
-    endVersionJson?: true
-    localSnapshotId?: true
-    remoteSnapshotId?: true
-    statisticsJson?: true
-    errorJson?: true
-    canRetry?: true
-    retryCount?: true
-    createdAt?: true
-    startedAt?: true
-    completedAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncSessionCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    profileId?: true
-    status?: true
-    direction?: true
-    strategy?: true
-    triggerType?: true
-    triggerDeviceJson?: true
-    startVersionJson?: true
-    endVersionJson?: true
-    localSnapshotId?: true
-    remoteSnapshotId?: true
-    statisticsJson?: true
-    errorJson?: true
-    canRetry?: true
-    retryCount?: true
-    createdAt?: true
-    startedAt?: true
-    completedAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type SyncSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SyncSession to aggregate.
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncSessions to fetch.
-     */
-    orderBy?: SyncSessionOrderByWithRelationInput | SyncSessionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SyncSessionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncSessions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncSessions.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned SyncSessions
-    **/
-    _count?: true | SyncSessionCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SyncSessionAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SyncSessionSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SyncSessionMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SyncSessionMaxAggregateInputType
-  }
-
-  export type GetSyncSessionAggregateType<T extends SyncSessionAggregateArgs> = {
-        [P in keyof T & keyof AggregateSyncSession]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSyncSession[P]>
-      : GetScalarType<T[P], AggregateSyncSession[P]>
-  }
-
-
-
-
-  export type SyncSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncSessionWhereInput
-    orderBy?: SyncSessionOrderByWithAggregationInput | SyncSessionOrderByWithAggregationInput[]
-    by: SyncSessionScalarFieldEnum[] | SyncSessionScalarFieldEnum
-    having?: SyncSessionScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SyncSessionCountAggregateInputType | true
-    _avg?: SyncSessionAvgAggregateInputType
-    _sum?: SyncSessionSumAggregateInputType
-    _min?: SyncSessionMinAggregateInputType
-    _max?: SyncSessionMaxAggregateInputType
-  }
-
-  export type SyncSessionGroupByOutputType = {
-    id: string
-    identityId: string
-    profileId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson: string | null
-    localSnapshotId: string | null
-    remoteSnapshotId: string | null
-    statisticsJson: string | null
-    errorJson: string | null
-    canRetry: boolean
-    retryCount: number
-    createdAt: bigint
-    startedAt: bigint | null
-    completedAt: bigint | null
-    updatedAt: bigint
-    _count: SyncSessionCountAggregateOutputType | null
-    _avg: SyncSessionAvgAggregateOutputType | null
-    _sum: SyncSessionSumAggregateOutputType | null
-    _min: SyncSessionMinAggregateOutputType | null
-    _max: SyncSessionMaxAggregateOutputType | null
-  }
-
-  type GetSyncSessionGroupByPayload<T extends SyncSessionGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SyncSessionGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SyncSessionGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SyncSessionGroupByOutputType[P]>
-            : GetScalarType<T[P], SyncSessionGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SyncSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    profileId?: boolean
-    status?: boolean
-    direction?: boolean
-    strategy?: boolean
-    triggerType?: boolean
-    triggerDeviceJson?: boolean
-    startVersionJson?: boolean
-    endVersionJson?: boolean
-    localSnapshotId?: boolean
-    remoteSnapshotId?: boolean
-    statisticsJson?: boolean
-    errorJson?: boolean
-    canRetry?: boolean
-    retryCount?: boolean
-    createdAt?: boolean
-    startedAt?: boolean
-    completedAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    profile?: boolean | SyncProfileDefaultArgs<ExtArgs>
-    conflicts?: boolean | SyncSession$conflictsArgs<ExtArgs>
-    _count?: boolean | SyncSessionCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncSession"]>
-
-  export type SyncSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    profileId?: boolean
-    status?: boolean
-    direction?: boolean
-    strategy?: boolean
-    triggerType?: boolean
-    triggerDeviceJson?: boolean
-    startVersionJson?: boolean
-    endVersionJson?: boolean
-    localSnapshotId?: boolean
-    remoteSnapshotId?: boolean
-    statisticsJson?: boolean
-    errorJson?: boolean
-    canRetry?: boolean
-    retryCount?: boolean
-    createdAt?: boolean
-    startedAt?: boolean
-    completedAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    profile?: boolean | SyncProfileDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncSession"]>
-
-  export type SyncSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    profileId?: boolean
-    status?: boolean
-    direction?: boolean
-    strategy?: boolean
-    triggerType?: boolean
-    triggerDeviceJson?: boolean
-    startVersionJson?: boolean
-    endVersionJson?: boolean
-    localSnapshotId?: boolean
-    remoteSnapshotId?: boolean
-    statisticsJson?: boolean
-    errorJson?: boolean
-    canRetry?: boolean
-    retryCount?: boolean
-    createdAt?: boolean
-    startedAt?: boolean
-    completedAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    profile?: boolean | SyncProfileDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncSession"]>
-
-  export type SyncSessionSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    profileId?: boolean
-    status?: boolean
-    direction?: boolean
-    strategy?: boolean
-    triggerType?: boolean
-    triggerDeviceJson?: boolean
-    startVersionJson?: boolean
-    endVersionJson?: boolean
-    localSnapshotId?: boolean
-    remoteSnapshotId?: boolean
-    statisticsJson?: boolean
-    errorJson?: boolean
-    canRetry?: boolean
-    retryCount?: boolean
-    createdAt?: boolean
-    startedAt?: boolean
-    completedAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type SyncSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "profileId" | "status" | "direction" | "strategy" | "triggerType" | "triggerDeviceJson" | "startVersionJson" | "endVersionJson" | "localSnapshotId" | "remoteSnapshotId" | "statisticsJson" | "errorJson" | "canRetry" | "retryCount" | "createdAt" | "startedAt" | "completedAt" | "updatedAt", ExtArgs["result"]["syncSession"]>
-  export type SyncSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    profile?: boolean | SyncProfileDefaultArgs<ExtArgs>
-    conflicts?: boolean | SyncSession$conflictsArgs<ExtArgs>
-    _count?: boolean | SyncSessionCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type SyncSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    profile?: boolean | SyncProfileDefaultArgs<ExtArgs>
-  }
-  export type SyncSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    profile?: boolean | SyncProfileDefaultArgs<ExtArgs>
-  }
-
-  export type $SyncSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SyncSession"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-      profile: Prisma.$SyncProfilePayload<ExtArgs>
-      conflicts: Prisma.$SyncConflictPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      profileId: string
-      status: string
-      direction: string
-      strategy: string
-      triggerType: string
-      triggerDeviceJson: string
-      startVersionJson: string
-      endVersionJson: string | null
-      localSnapshotId: string | null
-      remoteSnapshotId: string | null
-      statisticsJson: string | null
-      errorJson: string | null
-      canRetry: boolean
-      retryCount: number
-      createdAt: bigint
-      startedAt: bigint | null
-      completedAt: bigint | null
-      updatedAt: bigint
-    }, ExtArgs["result"]["syncSession"]>
-    composites: {}
-  }
-
-  type SyncSessionGetPayload<S extends boolean | null | undefined | SyncSessionDefaultArgs> = $Result.GetResult<Prisma.$SyncSessionPayload, S>
-
-  type SyncSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SyncSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SyncSessionCountAggregateInputType | true
-    }
-
-  export interface SyncSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SyncSession'], meta: { name: 'SyncSession' } }
-    /**
-     * Find zero or one SyncSession that matches the filter.
-     * @param {SyncSessionFindUniqueArgs} args - Arguments to find a SyncSession
-     * @example
-     * // Get one SyncSession
-     * const syncSession = await prisma.syncSession.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SyncSessionFindUniqueArgs>(args: SelectSubset<T, SyncSessionFindUniqueArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one SyncSession that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SyncSessionFindUniqueOrThrowArgs} args - Arguments to find a SyncSession
-     * @example
-     * // Get one SyncSession
-     * const syncSession = await prisma.syncSession.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SyncSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, SyncSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SyncSession that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionFindFirstArgs} args - Arguments to find a SyncSession
-     * @example
-     * // Get one SyncSession
-     * const syncSession = await prisma.syncSession.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SyncSessionFindFirstArgs>(args?: SelectSubset<T, SyncSessionFindFirstArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SyncSession that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionFindFirstOrThrowArgs} args - Arguments to find a SyncSession
-     * @example
-     * // Get one SyncSession
-     * const syncSession = await prisma.syncSession.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SyncSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, SyncSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more SyncSessions that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all SyncSessions
-     * const syncSessions = await prisma.syncSession.findMany()
-     * 
-     * // Get first 10 SyncSessions
-     * const syncSessions = await prisma.syncSession.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const syncSessionWithIdOnly = await prisma.syncSession.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SyncSessionFindManyArgs>(args?: SelectSubset<T, SyncSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a SyncSession.
-     * @param {SyncSessionCreateArgs} args - Arguments to create a SyncSession.
-     * @example
-     * // Create one SyncSession
-     * const SyncSession = await prisma.syncSession.create({
-     *   data: {
-     *     // ... data to create a SyncSession
-     *   }
-     * })
-     * 
-     */
-    create<T extends SyncSessionCreateArgs>(args: SelectSubset<T, SyncSessionCreateArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many SyncSessions.
-     * @param {SyncSessionCreateManyArgs} args - Arguments to create many SyncSessions.
-     * @example
-     * // Create many SyncSessions
-     * const syncSession = await prisma.syncSession.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SyncSessionCreateManyArgs>(args?: SelectSubset<T, SyncSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many SyncSessions and returns the data saved in the database.
-     * @param {SyncSessionCreateManyAndReturnArgs} args - Arguments to create many SyncSessions.
-     * @example
-     * // Create many SyncSessions
-     * const syncSession = await prisma.syncSession.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many SyncSessions and only return the `id`
-     * const syncSessionWithIdOnly = await prisma.syncSession.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SyncSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, SyncSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a SyncSession.
-     * @param {SyncSessionDeleteArgs} args - Arguments to delete one SyncSession.
-     * @example
-     * // Delete one SyncSession
-     * const SyncSession = await prisma.syncSession.delete({
-     *   where: {
-     *     // ... filter to delete one SyncSession
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SyncSessionDeleteArgs>(args: SelectSubset<T, SyncSessionDeleteArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one SyncSession.
-     * @param {SyncSessionUpdateArgs} args - Arguments to update one SyncSession.
-     * @example
-     * // Update one SyncSession
-     * const syncSession = await prisma.syncSession.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SyncSessionUpdateArgs>(args: SelectSubset<T, SyncSessionUpdateArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more SyncSessions.
-     * @param {SyncSessionDeleteManyArgs} args - Arguments to filter SyncSessions to delete.
-     * @example
-     * // Delete a few SyncSessions
-     * const { count } = await prisma.syncSession.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SyncSessionDeleteManyArgs>(args?: SelectSubset<T, SyncSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SyncSessions.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many SyncSessions
-     * const syncSession = await prisma.syncSession.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SyncSessionUpdateManyArgs>(args: SelectSubset<T, SyncSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SyncSessions and returns the data updated in the database.
-     * @param {SyncSessionUpdateManyAndReturnArgs} args - Arguments to update many SyncSessions.
-     * @example
-     * // Update many SyncSessions
-     * const syncSession = await prisma.syncSession.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more SyncSessions and only return the `id`
-     * const syncSessionWithIdOnly = await prisma.syncSession.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SyncSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, SyncSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one SyncSession.
-     * @param {SyncSessionUpsertArgs} args - Arguments to update or create a SyncSession.
-     * @example
-     * // Update or create a SyncSession
-     * const syncSession = await prisma.syncSession.upsert({
-     *   create: {
-     *     // ... data to create a SyncSession
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the SyncSession we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SyncSessionUpsertArgs>(args: SelectSubset<T, SyncSessionUpsertArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of SyncSessions.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionCountArgs} args - Arguments to filter SyncSessions to count.
-     * @example
-     * // Count the number of SyncSessions
-     * const count = await prisma.syncSession.count({
-     *   where: {
-     *     // ... the filter for the SyncSessions we want to count
-     *   }
-     * })
-    **/
-    count<T extends SyncSessionCountArgs>(
-      args?: Subset<T, SyncSessionCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SyncSessionCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a SyncSession.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SyncSessionAggregateArgs>(args: Subset<T, SyncSessionAggregateArgs>): Prisma.PrismaPromise<GetSyncSessionAggregateType<T>>
-
-    /**
-     * Group by SyncSession.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncSessionGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SyncSessionGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SyncSessionGroupByArgs['orderBy'] }
-        : { orderBy?: SyncSessionGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SyncSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSyncSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the SyncSession model
-   */
-  readonly fields: SyncSessionFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for SyncSession.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SyncSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    profile<T extends SyncProfileDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SyncProfileDefaultArgs<ExtArgs>>): Prisma__SyncProfileClient<$Result.GetResult<Prisma.$SyncProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    conflicts<T extends SyncSession$conflictsArgs<ExtArgs> = {}>(args?: Subset<T, SyncSession$conflictsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the SyncSession model
-   */
-  interface SyncSessionFieldRefs {
-    readonly id: FieldRef<"SyncSession", 'String'>
-    readonly identityId: FieldRef<"SyncSession", 'String'>
-    readonly profileId: FieldRef<"SyncSession", 'String'>
-    readonly status: FieldRef<"SyncSession", 'String'>
-    readonly direction: FieldRef<"SyncSession", 'String'>
-    readonly strategy: FieldRef<"SyncSession", 'String'>
-    readonly triggerType: FieldRef<"SyncSession", 'String'>
-    readonly triggerDeviceJson: FieldRef<"SyncSession", 'String'>
-    readonly startVersionJson: FieldRef<"SyncSession", 'String'>
-    readonly endVersionJson: FieldRef<"SyncSession", 'String'>
-    readonly localSnapshotId: FieldRef<"SyncSession", 'String'>
-    readonly remoteSnapshotId: FieldRef<"SyncSession", 'String'>
-    readonly statisticsJson: FieldRef<"SyncSession", 'String'>
-    readonly errorJson: FieldRef<"SyncSession", 'String'>
-    readonly canRetry: FieldRef<"SyncSession", 'Boolean'>
-    readonly retryCount: FieldRef<"SyncSession", 'Int'>
-    readonly createdAt: FieldRef<"SyncSession", 'BigInt'>
-    readonly startedAt: FieldRef<"SyncSession", 'BigInt'>
-    readonly completedAt: FieldRef<"SyncSession", 'BigInt'>
-    readonly updatedAt: FieldRef<"SyncSession", 'BigInt'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * SyncSession findUnique
-   */
-  export type SyncSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncSession to fetch.
-     */
-    where: SyncSessionWhereUniqueInput
-  }
-
-  /**
-   * SyncSession findUniqueOrThrow
-   */
-  export type SyncSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncSession to fetch.
-     */
-    where: SyncSessionWhereUniqueInput
-  }
-
-  /**
-   * SyncSession findFirst
-   */
-  export type SyncSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncSession to fetch.
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncSessions to fetch.
-     */
-    orderBy?: SyncSessionOrderByWithRelationInput | SyncSessionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SyncSessions.
-     */
-    cursor?: SyncSessionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncSessions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncSessions.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SyncSessions.
-     */
-    distinct?: SyncSessionScalarFieldEnum | SyncSessionScalarFieldEnum[]
-  }
-
-  /**
-   * SyncSession findFirstOrThrow
-   */
-  export type SyncSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncSession to fetch.
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncSessions to fetch.
-     */
-    orderBy?: SyncSessionOrderByWithRelationInput | SyncSessionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SyncSessions.
-     */
-    cursor?: SyncSessionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncSessions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncSessions.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SyncSessions.
-     */
-    distinct?: SyncSessionScalarFieldEnum | SyncSessionScalarFieldEnum[]
-  }
-
-  /**
-   * SyncSession findMany
-   */
-  export type SyncSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncSessions to fetch.
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncSessions to fetch.
-     */
-    orderBy?: SyncSessionOrderByWithRelationInput | SyncSessionOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing SyncSessions.
-     */
-    cursor?: SyncSessionWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncSessions from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncSessions.
-     */
-    skip?: number
-    distinct?: SyncSessionScalarFieldEnum | SyncSessionScalarFieldEnum[]
-  }
-
-  /**
-   * SyncSession create
-   */
-  export type SyncSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * The data needed to create a SyncSession.
-     */
-    data: XOR<SyncSessionCreateInput, SyncSessionUncheckedCreateInput>
-  }
-
-  /**
-   * SyncSession createMany
-   */
-  export type SyncSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many SyncSessions.
-     */
-    data: SyncSessionCreateManyInput | SyncSessionCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * SyncSession createManyAndReturn
-   */
-  export type SyncSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * The data used to create many SyncSessions.
-     */
-    data: SyncSessionCreateManyInput | SyncSessionCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SyncSession update
-   */
-  export type SyncSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * The data needed to update a SyncSession.
-     */
-    data: XOR<SyncSessionUpdateInput, SyncSessionUncheckedUpdateInput>
-    /**
-     * Choose, which SyncSession to update.
-     */
-    where: SyncSessionWhereUniqueInput
-  }
-
-  /**
-   * SyncSession updateMany
-   */
-  export type SyncSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update SyncSessions.
-     */
-    data: XOR<SyncSessionUpdateManyMutationInput, SyncSessionUncheckedUpdateManyInput>
-    /**
-     * Filter which SyncSessions to update
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * Limit how many SyncSessions to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * SyncSession updateManyAndReturn
-   */
-  export type SyncSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * The data used to update SyncSessions.
-     */
-    data: XOR<SyncSessionUpdateManyMutationInput, SyncSessionUncheckedUpdateManyInput>
-    /**
-     * Filter which SyncSessions to update
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * Limit how many SyncSessions to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SyncSession upsert
-   */
-  export type SyncSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * The filter to search for the SyncSession to update in case it exists.
-     */
-    where: SyncSessionWhereUniqueInput
-    /**
-     * In case the SyncSession found by the `where` argument doesn't exist, create a new SyncSession with this data.
-     */
-    create: XOR<SyncSessionCreateInput, SyncSessionUncheckedCreateInput>
-    /**
-     * In case the SyncSession was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SyncSessionUpdateInput, SyncSessionUncheckedUpdateInput>
-  }
-
-  /**
-   * SyncSession delete
-   */
-  export type SyncSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-    /**
-     * Filter which SyncSession to delete.
-     */
-    where: SyncSessionWhereUniqueInput
-  }
-
-  /**
-   * SyncSession deleteMany
-   */
-  export type SyncSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SyncSessions to delete
-     */
-    where?: SyncSessionWhereInput
-    /**
-     * Limit how many SyncSessions to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SyncSession.conflicts
-   */
-  export type SyncSession$conflictsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    where?: SyncConflictWhereInput
-    orderBy?: SyncConflictOrderByWithRelationInput | SyncConflictOrderByWithRelationInput[]
-    cursor?: SyncConflictWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SyncConflictScalarFieldEnum | SyncConflictScalarFieldEnum[]
-  }
-
-  /**
-   * SyncSession without action
-   */
-  export type SyncSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncSession
-     */
-    select?: SyncSessionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncSession
-     */
-    omit?: SyncSessionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncSessionInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model SyncConflict
-   */
-
-  export type AggregateSyncConflict = {
-    _count: SyncConflictCountAggregateOutputType | null
-    _avg: SyncConflictAvgAggregateOutputType | null
-    _sum: SyncConflictSumAggregateOutputType | null
-    _min: SyncConflictMinAggregateOutputType | null
-    _max: SyncConflictMaxAggregateOutputType | null
-  }
-
-  export type SyncConflictAvgAggregateOutputType = {
-    createdAt: number | null
-    updatedAt: number | null
-  }
-
-  export type SyncConflictSumAggregateOutputType = {
-    createdAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncConflictMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    sessionId: string | null
-    entityType: string | null
-    entityId: string | null
-    entityName: string | null
-    conflictType: string | null
-    localVersionJson: string | null
-    localDataJson: string | null
-    remoteVersionJson: string | null
-    remoteDataJson: string | null
-    status: string | null
-    autoResolvable: boolean | null
-    resolutionJson: string | null
-    createdAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncConflictMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    sessionId: string | null
-    entityType: string | null
-    entityId: string | null
-    entityName: string | null
-    conflictType: string | null
-    localVersionJson: string | null
-    localDataJson: string | null
-    remoteVersionJson: string | null
-    remoteDataJson: string | null
-    status: string | null
-    autoResolvable: boolean | null
-    resolutionJson: string | null
-    createdAt: bigint | null
-    updatedAt: bigint | null
-  }
-
-  export type SyncConflictCountAggregateOutputType = {
-    id: number
-    identityId: number
-    sessionId: number
-    entityType: number
-    entityId: number
-    entityName: number
-    conflictType: number
-    localVersionJson: number
-    localDataJson: number
-    remoteVersionJson: number
-    remoteDataJson: number
-    status: number
-    autoResolvable: number
-    resolutionJson: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type SyncConflictAvgAggregateInputType = {
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncConflictSumAggregateInputType = {
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncConflictMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    sessionId?: true
-    entityType?: true
-    entityId?: true
-    entityName?: true
-    conflictType?: true
-    localVersionJson?: true
-    localDataJson?: true
-    remoteVersionJson?: true
-    remoteDataJson?: true
-    status?: true
-    autoResolvable?: true
-    resolutionJson?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncConflictMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    sessionId?: true
-    entityType?: true
-    entityId?: true
-    entityName?: true
-    conflictType?: true
-    localVersionJson?: true
-    localDataJson?: true
-    remoteVersionJson?: true
-    remoteDataJson?: true
-    status?: true
-    autoResolvable?: true
-    resolutionJson?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SyncConflictCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    sessionId?: true
-    entityType?: true
-    entityId?: true
-    entityName?: true
-    conflictType?: true
-    localVersionJson?: true
-    localDataJson?: true
-    remoteVersionJson?: true
-    remoteDataJson?: true
-    status?: true
-    autoResolvable?: true
-    resolutionJson?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type SyncConflictAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SyncConflict to aggregate.
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncConflicts to fetch.
-     */
-    orderBy?: SyncConflictOrderByWithRelationInput | SyncConflictOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SyncConflictWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncConflicts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncConflicts.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned SyncConflicts
-    **/
-    _count?: true | SyncConflictCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: SyncConflictAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: SyncConflictSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SyncConflictMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SyncConflictMaxAggregateInputType
-  }
-
-  export type GetSyncConflictAggregateType<T extends SyncConflictAggregateArgs> = {
-        [P in keyof T & keyof AggregateSyncConflict]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSyncConflict[P]>
-      : GetScalarType<T[P], AggregateSyncConflict[P]>
-  }
-
-
-
-
-  export type SyncConflictGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SyncConflictWhereInput
-    orderBy?: SyncConflictOrderByWithAggregationInput | SyncConflictOrderByWithAggregationInput[]
-    by: SyncConflictScalarFieldEnum[] | SyncConflictScalarFieldEnum
-    having?: SyncConflictScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SyncConflictCountAggregateInputType | true
-    _avg?: SyncConflictAvgAggregateInputType
-    _sum?: SyncConflictSumAggregateInputType
-    _min?: SyncConflictMinAggregateInputType
-    _max?: SyncConflictMaxAggregateInputType
-  }
-
-  export type SyncConflictGroupByOutputType = {
-    id: string
-    identityId: string
-    sessionId: string
-    entityType: string
-    entityId: string
-    entityName: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable: boolean
-    resolutionJson: string | null
-    createdAt: bigint
-    updatedAt: bigint
-    _count: SyncConflictCountAggregateOutputType | null
-    _avg: SyncConflictAvgAggregateOutputType | null
-    _sum: SyncConflictSumAggregateOutputType | null
-    _min: SyncConflictMinAggregateOutputType | null
-    _max: SyncConflictMaxAggregateOutputType | null
-  }
-
-  type GetSyncConflictGroupByPayload<T extends SyncConflictGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SyncConflictGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SyncConflictGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SyncConflictGroupByOutputType[P]>
-            : GetScalarType<T[P], SyncConflictGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SyncConflictSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    sessionId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    conflictType?: boolean
-    localVersionJson?: boolean
-    localDataJson?: boolean
-    remoteVersionJson?: boolean
-    remoteDataJson?: boolean
-    status?: boolean
-    autoResolvable?: boolean
-    resolutionJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    session?: boolean | SyncSessionDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncConflict"]>
-
-  export type SyncConflictSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    sessionId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    conflictType?: boolean
-    localVersionJson?: boolean
-    localDataJson?: boolean
-    remoteVersionJson?: boolean
-    remoteDataJson?: boolean
-    status?: boolean
-    autoResolvable?: boolean
-    resolutionJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    session?: boolean | SyncSessionDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncConflict"]>
-
-  export type SyncConflictSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    sessionId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    conflictType?: boolean
-    localVersionJson?: boolean
-    localDataJson?: boolean
-    remoteVersionJson?: boolean
-    remoteDataJson?: boolean
-    status?: boolean
-    autoResolvable?: boolean
-    resolutionJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    session?: boolean | SyncSessionDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["syncConflict"]>
-
-  export type SyncConflictSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    sessionId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    conflictType?: boolean
-    localVersionJson?: boolean
-    localDataJson?: boolean
-    remoteVersionJson?: boolean
-    remoteDataJson?: boolean
-    status?: boolean
-    autoResolvable?: boolean
-    resolutionJson?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type SyncConflictOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "sessionId" | "entityType" | "entityId" | "entityName" | "conflictType" | "localVersionJson" | "localDataJson" | "remoteVersionJson" | "remoteDataJson" | "status" | "autoResolvable" | "resolutionJson" | "createdAt" | "updatedAt", ExtArgs["result"]["syncConflict"]>
-  export type SyncConflictInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    session?: boolean | SyncSessionDefaultArgs<ExtArgs>
-  }
-  export type SyncConflictIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    session?: boolean | SyncSessionDefaultArgs<ExtArgs>
-  }
-  export type SyncConflictIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-    session?: boolean | SyncSessionDefaultArgs<ExtArgs>
-  }
-
-  export type $SyncConflictPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SyncConflict"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-      session: Prisma.$SyncSessionPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      sessionId: string
-      entityType: string
-      entityId: string
-      entityName: string | null
-      conflictType: string
-      localVersionJson: string
-      localDataJson: string
-      remoteVersionJson: string
-      remoteDataJson: string
-      status: string
-      autoResolvable: boolean
-      resolutionJson: string | null
-      createdAt: bigint
-      updatedAt: bigint
-    }, ExtArgs["result"]["syncConflict"]>
-    composites: {}
-  }
-
-  type SyncConflictGetPayload<S extends boolean | null | undefined | SyncConflictDefaultArgs> = $Result.GetResult<Prisma.$SyncConflictPayload, S>
-
-  type SyncConflictCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SyncConflictFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SyncConflictCountAggregateInputType | true
-    }
-
-  export interface SyncConflictDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SyncConflict'], meta: { name: 'SyncConflict' } }
-    /**
-     * Find zero or one SyncConflict that matches the filter.
-     * @param {SyncConflictFindUniqueArgs} args - Arguments to find a SyncConflict
-     * @example
-     * // Get one SyncConflict
-     * const syncConflict = await prisma.syncConflict.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SyncConflictFindUniqueArgs>(args: SelectSubset<T, SyncConflictFindUniqueArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one SyncConflict that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SyncConflictFindUniqueOrThrowArgs} args - Arguments to find a SyncConflict
-     * @example
-     * // Get one SyncConflict
-     * const syncConflict = await prisma.syncConflict.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SyncConflictFindUniqueOrThrowArgs>(args: SelectSubset<T, SyncConflictFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SyncConflict that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictFindFirstArgs} args - Arguments to find a SyncConflict
-     * @example
-     * // Get one SyncConflict
-     * const syncConflict = await prisma.syncConflict.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SyncConflictFindFirstArgs>(args?: SelectSubset<T, SyncConflictFindFirstArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SyncConflict that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictFindFirstOrThrowArgs} args - Arguments to find a SyncConflict
-     * @example
-     * // Get one SyncConflict
-     * const syncConflict = await prisma.syncConflict.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SyncConflictFindFirstOrThrowArgs>(args?: SelectSubset<T, SyncConflictFindFirstOrThrowArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more SyncConflicts that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all SyncConflicts
-     * const syncConflicts = await prisma.syncConflict.findMany()
-     * 
-     * // Get first 10 SyncConflicts
-     * const syncConflicts = await prisma.syncConflict.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const syncConflictWithIdOnly = await prisma.syncConflict.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends SyncConflictFindManyArgs>(args?: SelectSubset<T, SyncConflictFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a SyncConflict.
-     * @param {SyncConflictCreateArgs} args - Arguments to create a SyncConflict.
-     * @example
-     * // Create one SyncConflict
-     * const SyncConflict = await prisma.syncConflict.create({
-     *   data: {
-     *     // ... data to create a SyncConflict
-     *   }
-     * })
-     * 
-     */
-    create<T extends SyncConflictCreateArgs>(args: SelectSubset<T, SyncConflictCreateArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many SyncConflicts.
-     * @param {SyncConflictCreateManyArgs} args - Arguments to create many SyncConflicts.
-     * @example
-     * // Create many SyncConflicts
-     * const syncConflict = await prisma.syncConflict.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SyncConflictCreateManyArgs>(args?: SelectSubset<T, SyncConflictCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many SyncConflicts and returns the data saved in the database.
-     * @param {SyncConflictCreateManyAndReturnArgs} args - Arguments to create many SyncConflicts.
-     * @example
-     * // Create many SyncConflicts
-     * const syncConflict = await prisma.syncConflict.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many SyncConflicts and only return the `id`
-     * const syncConflictWithIdOnly = await prisma.syncConflict.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends SyncConflictCreateManyAndReturnArgs>(args?: SelectSubset<T, SyncConflictCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a SyncConflict.
-     * @param {SyncConflictDeleteArgs} args - Arguments to delete one SyncConflict.
-     * @example
-     * // Delete one SyncConflict
-     * const SyncConflict = await prisma.syncConflict.delete({
-     *   where: {
-     *     // ... filter to delete one SyncConflict
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SyncConflictDeleteArgs>(args: SelectSubset<T, SyncConflictDeleteArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one SyncConflict.
-     * @param {SyncConflictUpdateArgs} args - Arguments to update one SyncConflict.
-     * @example
-     * // Update one SyncConflict
-     * const syncConflict = await prisma.syncConflict.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SyncConflictUpdateArgs>(args: SelectSubset<T, SyncConflictUpdateArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more SyncConflicts.
-     * @param {SyncConflictDeleteManyArgs} args - Arguments to filter SyncConflicts to delete.
-     * @example
-     * // Delete a few SyncConflicts
-     * const { count } = await prisma.syncConflict.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SyncConflictDeleteManyArgs>(args?: SelectSubset<T, SyncConflictDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SyncConflicts.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many SyncConflicts
-     * const syncConflict = await prisma.syncConflict.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SyncConflictUpdateManyArgs>(args: SelectSubset<T, SyncConflictUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SyncConflicts and returns the data updated in the database.
-     * @param {SyncConflictUpdateManyAndReturnArgs} args - Arguments to update many SyncConflicts.
-     * @example
-     * // Update many SyncConflicts
-     * const syncConflict = await prisma.syncConflict.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more SyncConflicts and only return the `id`
-     * const syncConflictWithIdOnly = await prisma.syncConflict.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends SyncConflictUpdateManyAndReturnArgs>(args: SelectSubset<T, SyncConflictUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one SyncConflict.
-     * @param {SyncConflictUpsertArgs} args - Arguments to update or create a SyncConflict.
-     * @example
-     * // Update or create a SyncConflict
-     * const syncConflict = await prisma.syncConflict.upsert({
-     *   create: {
-     *     // ... data to create a SyncConflict
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the SyncConflict we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SyncConflictUpsertArgs>(args: SelectSubset<T, SyncConflictUpsertArgs<ExtArgs>>): Prisma__SyncConflictClient<$Result.GetResult<Prisma.$SyncConflictPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of SyncConflicts.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictCountArgs} args - Arguments to filter SyncConflicts to count.
-     * @example
-     * // Count the number of SyncConflicts
-     * const count = await prisma.syncConflict.count({
-     *   where: {
-     *     // ... the filter for the SyncConflicts we want to count
-     *   }
-     * })
-    **/
-    count<T extends SyncConflictCountArgs>(
-      args?: Subset<T, SyncConflictCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SyncConflictCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a SyncConflict.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SyncConflictAggregateArgs>(args: Subset<T, SyncConflictAggregateArgs>): Prisma.PrismaPromise<GetSyncConflictAggregateType<T>>
-
-    /**
-     * Group by SyncConflict.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SyncConflictGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SyncConflictGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SyncConflictGroupByArgs['orderBy'] }
-        : { orderBy?: SyncConflictGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SyncConflictGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSyncConflictGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the SyncConflict model
-   */
-  readonly fields: SyncConflictFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for SyncConflict.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SyncConflictClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    session<T extends SyncSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SyncSessionDefaultArgs<ExtArgs>>): Prisma__SyncSessionClient<$Result.GetResult<Prisma.$SyncSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the SyncConflict model
-   */
-  interface SyncConflictFieldRefs {
-    readonly id: FieldRef<"SyncConflict", 'String'>
-    readonly identityId: FieldRef<"SyncConflict", 'String'>
-    readonly sessionId: FieldRef<"SyncConflict", 'String'>
-    readonly entityType: FieldRef<"SyncConflict", 'String'>
-    readonly entityId: FieldRef<"SyncConflict", 'String'>
-    readonly entityName: FieldRef<"SyncConflict", 'String'>
-    readonly conflictType: FieldRef<"SyncConflict", 'String'>
-    readonly localVersionJson: FieldRef<"SyncConflict", 'String'>
-    readonly localDataJson: FieldRef<"SyncConflict", 'String'>
-    readonly remoteVersionJson: FieldRef<"SyncConflict", 'String'>
-    readonly remoteDataJson: FieldRef<"SyncConflict", 'String'>
-    readonly status: FieldRef<"SyncConflict", 'String'>
-    readonly autoResolvable: FieldRef<"SyncConflict", 'Boolean'>
-    readonly resolutionJson: FieldRef<"SyncConflict", 'String'>
-    readonly createdAt: FieldRef<"SyncConflict", 'BigInt'>
-    readonly updatedAt: FieldRef<"SyncConflict", 'BigInt'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * SyncConflict findUnique
-   */
-  export type SyncConflictFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncConflict to fetch.
-     */
-    where: SyncConflictWhereUniqueInput
-  }
-
-  /**
-   * SyncConflict findUniqueOrThrow
-   */
-  export type SyncConflictFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncConflict to fetch.
-     */
-    where: SyncConflictWhereUniqueInput
-  }
-
-  /**
-   * SyncConflict findFirst
-   */
-  export type SyncConflictFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncConflict to fetch.
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncConflicts to fetch.
-     */
-    orderBy?: SyncConflictOrderByWithRelationInput | SyncConflictOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SyncConflicts.
-     */
-    cursor?: SyncConflictWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncConflicts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncConflicts.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SyncConflicts.
-     */
-    distinct?: SyncConflictScalarFieldEnum | SyncConflictScalarFieldEnum[]
-  }
-
-  /**
-   * SyncConflict findFirstOrThrow
-   */
-  export type SyncConflictFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncConflict to fetch.
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncConflicts to fetch.
-     */
-    orderBy?: SyncConflictOrderByWithRelationInput | SyncConflictOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SyncConflicts.
-     */
-    cursor?: SyncConflictWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncConflicts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncConflicts.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SyncConflicts.
-     */
-    distinct?: SyncConflictScalarFieldEnum | SyncConflictScalarFieldEnum[]
-  }
-
-  /**
-   * SyncConflict findMany
-   */
-  export type SyncConflictFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * Filter, which SyncConflicts to fetch.
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SyncConflicts to fetch.
-     */
-    orderBy?: SyncConflictOrderByWithRelationInput | SyncConflictOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing SyncConflicts.
-     */
-    cursor?: SyncConflictWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SyncConflicts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SyncConflicts.
-     */
-    skip?: number
-    distinct?: SyncConflictScalarFieldEnum | SyncConflictScalarFieldEnum[]
-  }
-
-  /**
-   * SyncConflict create
-   */
-  export type SyncConflictCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * The data needed to create a SyncConflict.
-     */
-    data: XOR<SyncConflictCreateInput, SyncConflictUncheckedCreateInput>
-  }
-
-  /**
-   * SyncConflict createMany
-   */
-  export type SyncConflictCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many SyncConflicts.
-     */
-    data: SyncConflictCreateManyInput | SyncConflictCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * SyncConflict createManyAndReturn
-   */
-  export type SyncConflictCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * The data used to create many SyncConflicts.
-     */
-    data: SyncConflictCreateManyInput | SyncConflictCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SyncConflict update
-   */
-  export type SyncConflictUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * The data needed to update a SyncConflict.
-     */
-    data: XOR<SyncConflictUpdateInput, SyncConflictUncheckedUpdateInput>
-    /**
-     * Choose, which SyncConflict to update.
-     */
-    where: SyncConflictWhereUniqueInput
-  }
-
-  /**
-   * SyncConflict updateMany
-   */
-  export type SyncConflictUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update SyncConflicts.
-     */
-    data: XOR<SyncConflictUpdateManyMutationInput, SyncConflictUncheckedUpdateManyInput>
-    /**
-     * Filter which SyncConflicts to update
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * Limit how many SyncConflicts to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * SyncConflict updateManyAndReturn
-   */
-  export type SyncConflictUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * The data used to update SyncConflicts.
-     */
-    data: XOR<SyncConflictUpdateManyMutationInput, SyncConflictUncheckedUpdateManyInput>
-    /**
-     * Filter which SyncConflicts to update
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * Limit how many SyncConflicts to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * SyncConflict upsert
-   */
-  export type SyncConflictUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * The filter to search for the SyncConflict to update in case it exists.
-     */
-    where: SyncConflictWhereUniqueInput
-    /**
-     * In case the SyncConflict found by the `where` argument doesn't exist, create a new SyncConflict with this data.
-     */
-    create: XOR<SyncConflictCreateInput, SyncConflictUncheckedCreateInput>
-    /**
-     * In case the SyncConflict was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SyncConflictUpdateInput, SyncConflictUncheckedUpdateInput>
-  }
-
-  /**
-   * SyncConflict delete
-   */
-  export type SyncConflictDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-    /**
-     * Filter which SyncConflict to delete.
-     */
-    where: SyncConflictWhereUniqueInput
-  }
-
-  /**
-   * SyncConflict deleteMany
-   */
-  export type SyncConflictDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SyncConflicts to delete
-     */
-    where?: SyncConflictWhereInput
-    /**
-     * Limit how many SyncConflicts to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SyncConflict without action
-   */
-  export type SyncConflictDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SyncConflict
-     */
-    select?: SyncConflictSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SyncConflict
-     */
-    omit?: SyncConflictOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SyncConflictInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model PendingChange
-   */
-
-  export type AggregatePendingChange = {
-    _count: PendingChangeCountAggregateOutputType | null
-    _avg: PendingChangeAvgAggregateOutputType | null
-    _sum: PendingChangeSumAggregateOutputType | null
-    _min: PendingChangeMinAggregateOutputType | null
-    _max: PendingChangeMaxAggregateOutputType | null
-  }
-
-  export type PendingChangeAvgAggregateOutputType = {
-    createdAt: number | null
-    syncedAt: number | null
-  }
-
-  export type PendingChangeSumAggregateOutputType = {
-    createdAt: bigint | null
-    syncedAt: bigint | null
-  }
-
-  export type PendingChangeMinAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    entityType: string | null
-    entityId: string | null
-    entityName: string | null
-    operation: string | null
-    beforeDataJson: string | null
-    afterDataJson: string | null
-    versionJson: string | null
-    isSynced: boolean | null
-    syncedInSession: string | null
-    createdAt: bigint | null
-    syncedAt: bigint | null
-  }
-
-  export type PendingChangeMaxAggregateOutputType = {
-    id: string | null
-    identityId: string | null
-    entityType: string | null
-    entityId: string | null
-    entityName: string | null
-    operation: string | null
-    beforeDataJson: string | null
-    afterDataJson: string | null
-    versionJson: string | null
-    isSynced: boolean | null
-    syncedInSession: string | null
-    createdAt: bigint | null
-    syncedAt: bigint | null
-  }
-
-  export type PendingChangeCountAggregateOutputType = {
-    id: number
-    identityId: number
-    entityType: number
-    entityId: number
-    entityName: number
-    operation: number
-    beforeDataJson: number
-    afterDataJson: number
-    versionJson: number
-    isSynced: number
-    syncedInSession: number
-    createdAt: number
-    syncedAt: number
-    _all: number
-  }
-
-
-  export type PendingChangeAvgAggregateInputType = {
-    createdAt?: true
-    syncedAt?: true
-  }
-
-  export type PendingChangeSumAggregateInputType = {
-    createdAt?: true
-    syncedAt?: true
-  }
-
-  export type PendingChangeMinAggregateInputType = {
-    id?: true
-    identityId?: true
-    entityType?: true
-    entityId?: true
-    entityName?: true
-    operation?: true
-    beforeDataJson?: true
-    afterDataJson?: true
-    versionJson?: true
-    isSynced?: true
-    syncedInSession?: true
-    createdAt?: true
-    syncedAt?: true
-  }
-
-  export type PendingChangeMaxAggregateInputType = {
-    id?: true
-    identityId?: true
-    entityType?: true
-    entityId?: true
-    entityName?: true
-    operation?: true
-    beforeDataJson?: true
-    afterDataJson?: true
-    versionJson?: true
-    isSynced?: true
-    syncedInSession?: true
-    createdAt?: true
-    syncedAt?: true
-  }
-
-  export type PendingChangeCountAggregateInputType = {
-    id?: true
-    identityId?: true
-    entityType?: true
-    entityId?: true
-    entityName?: true
-    operation?: true
-    beforeDataJson?: true
-    afterDataJson?: true
-    versionJson?: true
-    isSynced?: true
-    syncedInSession?: true
-    createdAt?: true
-    syncedAt?: true
-    _all?: true
-  }
-
-  export type PendingChangeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PendingChange to aggregate.
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PendingChanges to fetch.
-     */
-    orderBy?: PendingChangeOrderByWithRelationInput | PendingChangeOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: PendingChangeWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PendingChanges from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PendingChanges.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned PendingChanges
-    **/
-    _count?: true | PendingChangeCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: PendingChangeAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: PendingChangeSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: PendingChangeMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: PendingChangeMaxAggregateInputType
-  }
-
-  export type GetPendingChangeAggregateType<T extends PendingChangeAggregateArgs> = {
-        [P in keyof T & keyof AggregatePendingChange]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregatePendingChange[P]>
-      : GetScalarType<T[P], AggregatePendingChange[P]>
-  }
-
-
-
-
-  export type PendingChangeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PendingChangeWhereInput
-    orderBy?: PendingChangeOrderByWithAggregationInput | PendingChangeOrderByWithAggregationInput[]
-    by: PendingChangeScalarFieldEnum[] | PendingChangeScalarFieldEnum
-    having?: PendingChangeScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: PendingChangeCountAggregateInputType | true
-    _avg?: PendingChangeAvgAggregateInputType
-    _sum?: PendingChangeSumAggregateInputType
-    _min?: PendingChangeMinAggregateInputType
-    _max?: PendingChangeMaxAggregateInputType
-  }
-
-  export type PendingChangeGroupByOutputType = {
-    id: string
-    identityId: string
-    entityType: string
-    entityId: string
-    entityName: string | null
-    operation: string
-    beforeDataJson: string | null
-    afterDataJson: string | null
-    versionJson: string
-    isSynced: boolean
-    syncedInSession: string | null
-    createdAt: bigint
-    syncedAt: bigint | null
-    _count: PendingChangeCountAggregateOutputType | null
-    _avg: PendingChangeAvgAggregateOutputType | null
-    _sum: PendingChangeSumAggregateOutputType | null
-    _min: PendingChangeMinAggregateOutputType | null
-    _max: PendingChangeMaxAggregateOutputType | null
-  }
-
-  type GetPendingChangeGroupByPayload<T extends PendingChangeGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<PendingChangeGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof PendingChangeGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], PendingChangeGroupByOutputType[P]>
-            : GetScalarType<T[P], PendingChangeGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type PendingChangeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    operation?: boolean
-    beforeDataJson?: boolean
-    afterDataJson?: boolean
-    versionJson?: boolean
-    isSynced?: boolean
-    syncedInSession?: boolean
-    createdAt?: boolean
-    syncedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["pendingChange"]>
-
-  export type PendingChangeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    operation?: boolean
-    beforeDataJson?: boolean
-    afterDataJson?: boolean
-    versionJson?: boolean
-    isSynced?: boolean
-    syncedInSession?: boolean
-    createdAt?: boolean
-    syncedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["pendingChange"]>
-
-  export type PendingChangeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    identityId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    operation?: boolean
-    beforeDataJson?: boolean
-    afterDataJson?: boolean
-    versionJson?: boolean
-    isSynced?: boolean
-    syncedInSession?: boolean
-    createdAt?: boolean
-    syncedAt?: boolean
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["pendingChange"]>
-
-  export type PendingChangeSelectScalar = {
-    id?: boolean
-    identityId?: boolean
-    entityType?: boolean
-    entityId?: boolean
-    entityName?: boolean
-    operation?: boolean
-    beforeDataJson?: boolean
-    afterDataJson?: boolean
-    versionJson?: boolean
-    isSynced?: boolean
-    syncedInSession?: boolean
-    createdAt?: boolean
-    syncedAt?: boolean
-  }
-
-  export type PendingChangeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "entityType" | "entityId" | "entityName" | "operation" | "beforeDataJson" | "afterDataJson" | "versionJson" | "isSynced" | "syncedInSession" | "createdAt" | "syncedAt", ExtArgs["result"]["pendingChange"]>
-  export type PendingChangeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type PendingChangeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-  export type PendingChangeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    account?: boolean | AccountDefaultArgs<ExtArgs>
-  }
-
-  export type $PendingChangePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PendingChange"
-    objects: {
-      account: Prisma.$AccountPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      identityId: string
-      entityType: string
-      entityId: string
-      entityName: string | null
-      operation: string
-      beforeDataJson: string | null
-      afterDataJson: string | null
-      versionJson: string
-      isSynced: boolean
-      syncedInSession: string | null
-      createdAt: bigint
-      syncedAt: bigint | null
-    }, ExtArgs["result"]["pendingChange"]>
-    composites: {}
-  }
-
-  type PendingChangeGetPayload<S extends boolean | null | undefined | PendingChangeDefaultArgs> = $Result.GetResult<Prisma.$PendingChangePayload, S>
-
-  type PendingChangeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PendingChangeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PendingChangeCountAggregateInputType | true
-    }
-
-  export interface PendingChangeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PendingChange'], meta: { name: 'PendingChange' } }
-    /**
-     * Find zero or one PendingChange that matches the filter.
-     * @param {PendingChangeFindUniqueArgs} args - Arguments to find a PendingChange
-     * @example
-     * // Get one PendingChange
-     * const pendingChange = await prisma.pendingChange.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends PendingChangeFindUniqueArgs>(args: SelectSubset<T, PendingChangeFindUniqueArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one PendingChange that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {PendingChangeFindUniqueOrThrowArgs} args - Arguments to find a PendingChange
-     * @example
-     * // Get one PendingChange
-     * const pendingChange = await prisma.pendingChange.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends PendingChangeFindUniqueOrThrowArgs>(args: SelectSubset<T, PendingChangeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PendingChange that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeFindFirstArgs} args - Arguments to find a PendingChange
-     * @example
-     * // Get one PendingChange
-     * const pendingChange = await prisma.pendingChange.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends PendingChangeFindFirstArgs>(args?: SelectSubset<T, PendingChangeFindFirstArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PendingChange that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeFindFirstOrThrowArgs} args - Arguments to find a PendingChange
-     * @example
-     * // Get one PendingChange
-     * const pendingChange = await prisma.pendingChange.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends PendingChangeFindFirstOrThrowArgs>(args?: SelectSubset<T, PendingChangeFindFirstOrThrowArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more PendingChanges that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all PendingChanges
-     * const pendingChanges = await prisma.pendingChange.findMany()
-     * 
-     * // Get first 10 PendingChanges
-     * const pendingChanges = await prisma.pendingChange.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const pendingChangeWithIdOnly = await prisma.pendingChange.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends PendingChangeFindManyArgs>(args?: SelectSubset<T, PendingChangeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a PendingChange.
-     * @param {PendingChangeCreateArgs} args - Arguments to create a PendingChange.
-     * @example
-     * // Create one PendingChange
-     * const PendingChange = await prisma.pendingChange.create({
-     *   data: {
-     *     // ... data to create a PendingChange
-     *   }
-     * })
-     * 
-     */
-    create<T extends PendingChangeCreateArgs>(args: SelectSubset<T, PendingChangeCreateArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many PendingChanges.
-     * @param {PendingChangeCreateManyArgs} args - Arguments to create many PendingChanges.
-     * @example
-     * // Create many PendingChanges
-     * const pendingChange = await prisma.pendingChange.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends PendingChangeCreateManyArgs>(args?: SelectSubset<T, PendingChangeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many PendingChanges and returns the data saved in the database.
-     * @param {PendingChangeCreateManyAndReturnArgs} args - Arguments to create many PendingChanges.
-     * @example
-     * // Create many PendingChanges
-     * const pendingChange = await prisma.pendingChange.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many PendingChanges and only return the `id`
-     * const pendingChangeWithIdOnly = await prisma.pendingChange.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends PendingChangeCreateManyAndReturnArgs>(args?: SelectSubset<T, PendingChangeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a PendingChange.
-     * @param {PendingChangeDeleteArgs} args - Arguments to delete one PendingChange.
-     * @example
-     * // Delete one PendingChange
-     * const PendingChange = await prisma.pendingChange.delete({
-     *   where: {
-     *     // ... filter to delete one PendingChange
-     *   }
-     * })
-     * 
-     */
-    delete<T extends PendingChangeDeleteArgs>(args: SelectSubset<T, PendingChangeDeleteArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one PendingChange.
-     * @param {PendingChangeUpdateArgs} args - Arguments to update one PendingChange.
-     * @example
-     * // Update one PendingChange
-     * const pendingChange = await prisma.pendingChange.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends PendingChangeUpdateArgs>(args: SelectSubset<T, PendingChangeUpdateArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more PendingChanges.
-     * @param {PendingChangeDeleteManyArgs} args - Arguments to filter PendingChanges to delete.
-     * @example
-     * // Delete a few PendingChanges
-     * const { count } = await prisma.pendingChange.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends PendingChangeDeleteManyArgs>(args?: SelectSubset<T, PendingChangeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PendingChanges.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many PendingChanges
-     * const pendingChange = await prisma.pendingChange.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends PendingChangeUpdateManyArgs>(args: SelectSubset<T, PendingChangeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PendingChanges and returns the data updated in the database.
-     * @param {PendingChangeUpdateManyAndReturnArgs} args - Arguments to update many PendingChanges.
-     * @example
-     * // Update many PendingChanges
-     * const pendingChange = await prisma.pendingChange.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more PendingChanges and only return the `id`
-     * const pendingChangeWithIdOnly = await prisma.pendingChange.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends PendingChangeUpdateManyAndReturnArgs>(args: SelectSubset<T, PendingChangeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one PendingChange.
-     * @param {PendingChangeUpsertArgs} args - Arguments to update or create a PendingChange.
-     * @example
-     * // Update or create a PendingChange
-     * const pendingChange = await prisma.pendingChange.upsert({
-     *   create: {
-     *     // ... data to create a PendingChange
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the PendingChange we want to update
-     *   }
-     * })
-     */
-    upsert<T extends PendingChangeUpsertArgs>(args: SelectSubset<T, PendingChangeUpsertArgs<ExtArgs>>): Prisma__PendingChangeClient<$Result.GetResult<Prisma.$PendingChangePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of PendingChanges.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeCountArgs} args - Arguments to filter PendingChanges to count.
-     * @example
-     * // Count the number of PendingChanges
-     * const count = await prisma.pendingChange.count({
-     *   where: {
-     *     // ... the filter for the PendingChanges we want to count
-     *   }
-     * })
-    **/
-    count<T extends PendingChangeCountArgs>(
-      args?: Subset<T, PendingChangeCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], PendingChangeCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a PendingChange.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends PendingChangeAggregateArgs>(args: Subset<T, PendingChangeAggregateArgs>): Prisma.PrismaPromise<GetPendingChangeAggregateType<T>>
-
-    /**
-     * Group by PendingChange.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PendingChangeGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends PendingChangeGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PendingChangeGroupByArgs['orderBy'] }
-        : { orderBy?: PendingChangeGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, PendingChangeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPendingChangeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the PendingChange model
-   */
-  readonly fields: PendingChangeFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for PendingChange.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__PendingChangeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    account<T extends AccountDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AccountDefaultArgs<ExtArgs>>): Prisma__AccountClient<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the PendingChange model
-   */
-  interface PendingChangeFieldRefs {
-    readonly id: FieldRef<"PendingChange", 'String'>
-    readonly identityId: FieldRef<"PendingChange", 'String'>
-    readonly entityType: FieldRef<"PendingChange", 'String'>
-    readonly entityId: FieldRef<"PendingChange", 'String'>
-    readonly entityName: FieldRef<"PendingChange", 'String'>
-    readonly operation: FieldRef<"PendingChange", 'String'>
-    readonly beforeDataJson: FieldRef<"PendingChange", 'String'>
-    readonly afterDataJson: FieldRef<"PendingChange", 'String'>
-    readonly versionJson: FieldRef<"PendingChange", 'String'>
-    readonly isSynced: FieldRef<"PendingChange", 'Boolean'>
-    readonly syncedInSession: FieldRef<"PendingChange", 'String'>
-    readonly createdAt: FieldRef<"PendingChange", 'BigInt'>
-    readonly syncedAt: FieldRef<"PendingChange", 'BigInt'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * PendingChange findUnique
-   */
-  export type PendingChangeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * Filter, which PendingChange to fetch.
-     */
-    where: PendingChangeWhereUniqueInput
-  }
-
-  /**
-   * PendingChange findUniqueOrThrow
-   */
-  export type PendingChangeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * Filter, which PendingChange to fetch.
-     */
-    where: PendingChangeWhereUniqueInput
-  }
-
-  /**
-   * PendingChange findFirst
-   */
-  export type PendingChangeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * Filter, which PendingChange to fetch.
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PendingChanges to fetch.
-     */
-    orderBy?: PendingChangeOrderByWithRelationInput | PendingChangeOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PendingChanges.
-     */
-    cursor?: PendingChangeWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PendingChanges from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PendingChanges.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PendingChanges.
-     */
-    distinct?: PendingChangeScalarFieldEnum | PendingChangeScalarFieldEnum[]
-  }
-
-  /**
-   * PendingChange findFirstOrThrow
-   */
-  export type PendingChangeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * Filter, which PendingChange to fetch.
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PendingChanges to fetch.
-     */
-    orderBy?: PendingChangeOrderByWithRelationInput | PendingChangeOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PendingChanges.
-     */
-    cursor?: PendingChangeWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PendingChanges from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PendingChanges.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PendingChanges.
-     */
-    distinct?: PendingChangeScalarFieldEnum | PendingChangeScalarFieldEnum[]
-  }
-
-  /**
-   * PendingChange findMany
-   */
-  export type PendingChangeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * Filter, which PendingChanges to fetch.
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PendingChanges to fetch.
-     */
-    orderBy?: PendingChangeOrderByWithRelationInput | PendingChangeOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing PendingChanges.
-     */
-    cursor?: PendingChangeWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PendingChanges from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PendingChanges.
-     */
-    skip?: number
-    distinct?: PendingChangeScalarFieldEnum | PendingChangeScalarFieldEnum[]
-  }
-
-  /**
-   * PendingChange create
-   */
-  export type PendingChangeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * The data needed to create a PendingChange.
-     */
-    data: XOR<PendingChangeCreateInput, PendingChangeUncheckedCreateInput>
-  }
-
-  /**
-   * PendingChange createMany
-   */
-  export type PendingChangeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many PendingChanges.
-     */
-    data: PendingChangeCreateManyInput | PendingChangeCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * PendingChange createManyAndReturn
-   */
-  export type PendingChangeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * The data used to create many PendingChanges.
-     */
-    data: PendingChangeCreateManyInput | PendingChangeCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * PendingChange update
-   */
-  export type PendingChangeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * The data needed to update a PendingChange.
-     */
-    data: XOR<PendingChangeUpdateInput, PendingChangeUncheckedUpdateInput>
-    /**
-     * Choose, which PendingChange to update.
-     */
-    where: PendingChangeWhereUniqueInput
-  }
-
-  /**
-   * PendingChange updateMany
-   */
-  export type PendingChangeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update PendingChanges.
-     */
-    data: XOR<PendingChangeUpdateManyMutationInput, PendingChangeUncheckedUpdateManyInput>
-    /**
-     * Filter which PendingChanges to update
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * Limit how many PendingChanges to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * PendingChange updateManyAndReturn
-   */
-  export type PendingChangeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * The data used to update PendingChanges.
-     */
-    data: XOR<PendingChangeUpdateManyMutationInput, PendingChangeUncheckedUpdateManyInput>
-    /**
-     * Filter which PendingChanges to update
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * Limit how many PendingChanges to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * PendingChange upsert
-   */
-  export type PendingChangeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * The filter to search for the PendingChange to update in case it exists.
-     */
-    where: PendingChangeWhereUniqueInput
-    /**
-     * In case the PendingChange found by the `where` argument doesn't exist, create a new PendingChange with this data.
-     */
-    create: XOR<PendingChangeCreateInput, PendingChangeUncheckedCreateInput>
-    /**
-     * In case the PendingChange was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<PendingChangeUpdateInput, PendingChangeUncheckedUpdateInput>
-  }
-
-  /**
-   * PendingChange delete
-   */
-  export type PendingChangeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-    /**
-     * Filter which PendingChange to delete.
-     */
-    where: PendingChangeWhereUniqueInput
-  }
-
-  /**
-   * PendingChange deleteMany
-   */
-  export type PendingChangeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PendingChanges to delete
-     */
-    where?: PendingChangeWhereInput
-    /**
-     * Limit how many PendingChanges to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * PendingChange without action
-   */
-  export type PendingChangeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PendingChange
-     */
-    select?: PendingChangeSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PendingChange
-     */
-    omit?: PendingChangeOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PendingChangeInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model TaskFolder
    */
 
@@ -92533,95 +86898,6 @@ export namespace Prisma {
   export type UserSettingScalarFieldEnum = (typeof UserSettingScalarFieldEnum)[keyof typeof UserSettingScalarFieldEnum]
 
 
-  export const SyncProfileScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    name: 'name',
-    description: 'description',
-    providerType: 'providerType',
-    providerConfigJson: 'providerConfigJson',
-    syncConfigJson: 'syncConfigJson',
-    isDefault: 'isDefault',
-    isActive: 'isActive',
-    isConnected: 'isConnected',
-    lastSyncAt: 'lastSyncAt',
-    lastSyncVersionJson: 'lastSyncVersionJson',
-    lastSyncResult: 'lastSyncResult',
-    historyStatsJson: 'historyStatsJson',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type SyncProfileScalarFieldEnum = (typeof SyncProfileScalarFieldEnum)[keyof typeof SyncProfileScalarFieldEnum]
-
-
-  export const SyncSessionScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    profileId: 'profileId',
-    status: 'status',
-    direction: 'direction',
-    strategy: 'strategy',
-    triggerType: 'triggerType',
-    triggerDeviceJson: 'triggerDeviceJson',
-    startVersionJson: 'startVersionJson',
-    endVersionJson: 'endVersionJson',
-    localSnapshotId: 'localSnapshotId',
-    remoteSnapshotId: 'remoteSnapshotId',
-    statisticsJson: 'statisticsJson',
-    errorJson: 'errorJson',
-    canRetry: 'canRetry',
-    retryCount: 'retryCount',
-    createdAt: 'createdAt',
-    startedAt: 'startedAt',
-    completedAt: 'completedAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type SyncSessionScalarFieldEnum = (typeof SyncSessionScalarFieldEnum)[keyof typeof SyncSessionScalarFieldEnum]
-
-
-  export const SyncConflictScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    sessionId: 'sessionId',
-    entityType: 'entityType',
-    entityId: 'entityId',
-    entityName: 'entityName',
-    conflictType: 'conflictType',
-    localVersionJson: 'localVersionJson',
-    localDataJson: 'localDataJson',
-    remoteVersionJson: 'remoteVersionJson',
-    remoteDataJson: 'remoteDataJson',
-    status: 'status',
-    autoResolvable: 'autoResolvable',
-    resolutionJson: 'resolutionJson',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type SyncConflictScalarFieldEnum = (typeof SyncConflictScalarFieldEnum)[keyof typeof SyncConflictScalarFieldEnum]
-
-
-  export const PendingChangeScalarFieldEnum: {
-    id: 'id',
-    identityId: 'identityId',
-    entityType: 'entityType',
-    entityId: 'entityId',
-    entityName: 'entityName',
-    operation: 'operation',
-    beforeDataJson: 'beforeDataJson',
-    afterDataJson: 'afterDataJson',
-    versionJson: 'versionJson',
-    isSynced: 'isSynced',
-    syncedInSession: 'syncedInSession',
-    createdAt: 'createdAt',
-    syncedAt: 'syncedAt'
-  };
-
-  export type PendingChangeScalarFieldEnum = (typeof PendingChangeScalarFieldEnum)[keyof typeof PendingChangeScalarFieldEnum]
-
-
   export const TaskFolderScalarFieldEnum: {
     id: 'id',
     identityId: 'identityId',
@@ -93012,10 +87288,6 @@ export namespace Prisma {
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
-    syncProfiles?: SyncProfileListRelationFilter
-    syncSessions?: SyncSessionListRelationFilter
-    syncConflicts?: SyncConflictListRelationFilter
-    pendingChanges?: PendingChangeListRelationFilter
   }
 
   export type AccountOrderByWithRelationInput = {
@@ -93071,10 +87343,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaOrderByWithRelationInput
     aiProviderConfigs?: AiProviderConfigOrderByRelationAggregateInput
     dashboardConfigs?: DashboardConfigOrderByWithRelationInput
-    syncProfiles?: SyncProfileOrderByRelationAggregateInput
-    syncSessions?: SyncSessionOrderByRelationAggregateInput
-    syncConflicts?: SyncConflictOrderByRelationAggregateInput
-    pendingChanges?: PendingChangeOrderByRelationAggregateInput
   }
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
@@ -93133,10 +87401,6 @@ export namespace Prisma {
     aiUsageQuotas?: XOR<AiUsageQuotaNullableScalarRelationFilter, AiUsageQuotaWhereInput> | null
     aiProviderConfigs?: AiProviderConfigListRelationFilter
     dashboardConfigs?: XOR<DashboardConfigNullableScalarRelationFilter, DashboardConfigWhereInput> | null
-    syncProfiles?: SyncProfileListRelationFilter
-    syncSessions?: SyncSessionListRelationFilter
-    syncConflicts?: SyncConflictListRelationFilter
-    pendingChanges?: PendingChangeListRelationFilter
   }, "id" | "emailAddress">
 
   export type AccountOrderByWithAggregationInput = {
@@ -98716,471 +92980,6 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"UserSetting"> | Date | string
   }
 
-  export type SyncProfileWhereInput = {
-    AND?: SyncProfileWhereInput | SyncProfileWhereInput[]
-    OR?: SyncProfileWhereInput[]
-    NOT?: SyncProfileWhereInput | SyncProfileWhereInput[]
-    id?: UuidFilter<"SyncProfile"> | string
-    identityId?: StringFilter<"SyncProfile"> | string
-    name?: StringFilter<"SyncProfile"> | string
-    description?: StringNullableFilter<"SyncProfile"> | string | null
-    providerType?: StringFilter<"SyncProfile"> | string
-    providerConfigJson?: StringFilter<"SyncProfile"> | string
-    syncConfigJson?: StringFilter<"SyncProfile"> | string
-    isDefault?: BoolFilter<"SyncProfile"> | boolean
-    isActive?: BoolFilter<"SyncProfile"> | boolean
-    isConnected?: BoolFilter<"SyncProfile"> | boolean
-    lastSyncAt?: BigIntNullableFilter<"SyncProfile"> | bigint | number | null
-    lastSyncVersionJson?: StringNullableFilter<"SyncProfile"> | string | null
-    lastSyncResult?: StringNullableFilter<"SyncProfile"> | string | null
-    historyStatsJson?: StringFilter<"SyncProfile"> | string
-    createdAt?: BigIntFilter<"SyncProfile"> | bigint | number
-    updatedAt?: BigIntFilter<"SyncProfile"> | bigint | number
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    sessions?: SyncSessionListRelationFilter
-  }
-
-  export type SyncProfileOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    name?: SortOrder
-    description?: SortOrderInput | SortOrder
-    providerType?: SortOrder
-    providerConfigJson?: SortOrder
-    syncConfigJson?: SortOrder
-    isDefault?: SortOrder
-    isActive?: SortOrder
-    isConnected?: SortOrder
-    lastSyncAt?: SortOrderInput | SortOrder
-    lastSyncVersionJson?: SortOrderInput | SortOrder
-    lastSyncResult?: SortOrderInput | SortOrder
-    historyStatsJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    account?: AccountOrderByWithRelationInput
-    sessions?: SyncSessionOrderByRelationAggregateInput
-  }
-
-  export type SyncProfileWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: SyncProfileWhereInput | SyncProfileWhereInput[]
-    OR?: SyncProfileWhereInput[]
-    NOT?: SyncProfileWhereInput | SyncProfileWhereInput[]
-    identityId?: StringFilter<"SyncProfile"> | string
-    name?: StringFilter<"SyncProfile"> | string
-    description?: StringNullableFilter<"SyncProfile"> | string | null
-    providerType?: StringFilter<"SyncProfile"> | string
-    providerConfigJson?: StringFilter<"SyncProfile"> | string
-    syncConfigJson?: StringFilter<"SyncProfile"> | string
-    isDefault?: BoolFilter<"SyncProfile"> | boolean
-    isActive?: BoolFilter<"SyncProfile"> | boolean
-    isConnected?: BoolFilter<"SyncProfile"> | boolean
-    lastSyncAt?: BigIntNullableFilter<"SyncProfile"> | bigint | number | null
-    lastSyncVersionJson?: StringNullableFilter<"SyncProfile"> | string | null
-    lastSyncResult?: StringNullableFilter<"SyncProfile"> | string | null
-    historyStatsJson?: StringFilter<"SyncProfile"> | string
-    createdAt?: BigIntFilter<"SyncProfile"> | bigint | number
-    updatedAt?: BigIntFilter<"SyncProfile"> | bigint | number
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    sessions?: SyncSessionListRelationFilter
-  }, "id">
-
-  export type SyncProfileOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    name?: SortOrder
-    description?: SortOrderInput | SortOrder
-    providerType?: SortOrder
-    providerConfigJson?: SortOrder
-    syncConfigJson?: SortOrder
-    isDefault?: SortOrder
-    isActive?: SortOrder
-    isConnected?: SortOrder
-    lastSyncAt?: SortOrderInput | SortOrder
-    lastSyncVersionJson?: SortOrderInput | SortOrder
-    lastSyncResult?: SortOrderInput | SortOrder
-    historyStatsJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: SyncProfileCountOrderByAggregateInput
-    _avg?: SyncProfileAvgOrderByAggregateInput
-    _max?: SyncProfileMaxOrderByAggregateInput
-    _min?: SyncProfileMinOrderByAggregateInput
-    _sum?: SyncProfileSumOrderByAggregateInput
-  }
-
-  export type SyncProfileScalarWhereWithAggregatesInput = {
-    AND?: SyncProfileScalarWhereWithAggregatesInput | SyncProfileScalarWhereWithAggregatesInput[]
-    OR?: SyncProfileScalarWhereWithAggregatesInput[]
-    NOT?: SyncProfileScalarWhereWithAggregatesInput | SyncProfileScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"SyncProfile"> | string
-    identityId?: StringWithAggregatesFilter<"SyncProfile"> | string
-    name?: StringWithAggregatesFilter<"SyncProfile"> | string
-    description?: StringNullableWithAggregatesFilter<"SyncProfile"> | string | null
-    providerType?: StringWithAggregatesFilter<"SyncProfile"> | string
-    providerConfigJson?: StringWithAggregatesFilter<"SyncProfile"> | string
-    syncConfigJson?: StringWithAggregatesFilter<"SyncProfile"> | string
-    isDefault?: BoolWithAggregatesFilter<"SyncProfile"> | boolean
-    isActive?: BoolWithAggregatesFilter<"SyncProfile"> | boolean
-    isConnected?: BoolWithAggregatesFilter<"SyncProfile"> | boolean
-    lastSyncAt?: BigIntNullableWithAggregatesFilter<"SyncProfile"> | bigint | number | null
-    lastSyncVersionJson?: StringNullableWithAggregatesFilter<"SyncProfile"> | string | null
-    lastSyncResult?: StringNullableWithAggregatesFilter<"SyncProfile"> | string | null
-    historyStatsJson?: StringWithAggregatesFilter<"SyncProfile"> | string
-    createdAt?: BigIntWithAggregatesFilter<"SyncProfile"> | bigint | number
-    updatedAt?: BigIntWithAggregatesFilter<"SyncProfile"> | bigint | number
-  }
-
-  export type SyncSessionWhereInput = {
-    AND?: SyncSessionWhereInput | SyncSessionWhereInput[]
-    OR?: SyncSessionWhereInput[]
-    NOT?: SyncSessionWhereInput | SyncSessionWhereInput[]
-    id?: UuidFilter<"SyncSession"> | string
-    identityId?: StringFilter<"SyncSession"> | string
-    profileId?: UuidFilter<"SyncSession"> | string
-    status?: StringFilter<"SyncSession"> | string
-    direction?: StringFilter<"SyncSession"> | string
-    strategy?: StringFilter<"SyncSession"> | string
-    triggerType?: StringFilter<"SyncSession"> | string
-    triggerDeviceJson?: StringFilter<"SyncSession"> | string
-    startVersionJson?: StringFilter<"SyncSession"> | string
-    endVersionJson?: StringNullableFilter<"SyncSession"> | string | null
-    localSnapshotId?: UuidNullableFilter<"SyncSession"> | string | null
-    remoteSnapshotId?: UuidNullableFilter<"SyncSession"> | string | null
-    statisticsJson?: StringNullableFilter<"SyncSession"> | string | null
-    errorJson?: StringNullableFilter<"SyncSession"> | string | null
-    canRetry?: BoolFilter<"SyncSession"> | boolean
-    retryCount?: IntFilter<"SyncSession"> | number
-    createdAt?: BigIntFilter<"SyncSession"> | bigint | number
-    startedAt?: BigIntNullableFilter<"SyncSession"> | bigint | number | null
-    completedAt?: BigIntNullableFilter<"SyncSession"> | bigint | number | null
-    updatedAt?: BigIntFilter<"SyncSession"> | bigint | number
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    profile?: XOR<SyncProfileScalarRelationFilter, SyncProfileWhereInput>
-    conflicts?: SyncConflictListRelationFilter
-  }
-
-  export type SyncSessionOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    profileId?: SortOrder
-    status?: SortOrder
-    direction?: SortOrder
-    strategy?: SortOrder
-    triggerType?: SortOrder
-    triggerDeviceJson?: SortOrder
-    startVersionJson?: SortOrder
-    endVersionJson?: SortOrderInput | SortOrder
-    localSnapshotId?: SortOrderInput | SortOrder
-    remoteSnapshotId?: SortOrderInput | SortOrder
-    statisticsJson?: SortOrderInput | SortOrder
-    errorJson?: SortOrderInput | SortOrder
-    canRetry?: SortOrder
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrderInput | SortOrder
-    completedAt?: SortOrderInput | SortOrder
-    updatedAt?: SortOrder
-    account?: AccountOrderByWithRelationInput
-    profile?: SyncProfileOrderByWithRelationInput
-    conflicts?: SyncConflictOrderByRelationAggregateInput
-  }
-
-  export type SyncSessionWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: SyncSessionWhereInput | SyncSessionWhereInput[]
-    OR?: SyncSessionWhereInput[]
-    NOT?: SyncSessionWhereInput | SyncSessionWhereInput[]
-    identityId?: StringFilter<"SyncSession"> | string
-    profileId?: UuidFilter<"SyncSession"> | string
-    status?: StringFilter<"SyncSession"> | string
-    direction?: StringFilter<"SyncSession"> | string
-    strategy?: StringFilter<"SyncSession"> | string
-    triggerType?: StringFilter<"SyncSession"> | string
-    triggerDeviceJson?: StringFilter<"SyncSession"> | string
-    startVersionJson?: StringFilter<"SyncSession"> | string
-    endVersionJson?: StringNullableFilter<"SyncSession"> | string | null
-    localSnapshotId?: UuidNullableFilter<"SyncSession"> | string | null
-    remoteSnapshotId?: UuidNullableFilter<"SyncSession"> | string | null
-    statisticsJson?: StringNullableFilter<"SyncSession"> | string | null
-    errorJson?: StringNullableFilter<"SyncSession"> | string | null
-    canRetry?: BoolFilter<"SyncSession"> | boolean
-    retryCount?: IntFilter<"SyncSession"> | number
-    createdAt?: BigIntFilter<"SyncSession"> | bigint | number
-    startedAt?: BigIntNullableFilter<"SyncSession"> | bigint | number | null
-    completedAt?: BigIntNullableFilter<"SyncSession"> | bigint | number | null
-    updatedAt?: BigIntFilter<"SyncSession"> | bigint | number
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    profile?: XOR<SyncProfileScalarRelationFilter, SyncProfileWhereInput>
-    conflicts?: SyncConflictListRelationFilter
-  }, "id">
-
-  export type SyncSessionOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    profileId?: SortOrder
-    status?: SortOrder
-    direction?: SortOrder
-    strategy?: SortOrder
-    triggerType?: SortOrder
-    triggerDeviceJson?: SortOrder
-    startVersionJson?: SortOrder
-    endVersionJson?: SortOrderInput | SortOrder
-    localSnapshotId?: SortOrderInput | SortOrder
-    remoteSnapshotId?: SortOrderInput | SortOrder
-    statisticsJson?: SortOrderInput | SortOrder
-    errorJson?: SortOrderInput | SortOrder
-    canRetry?: SortOrder
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrderInput | SortOrder
-    completedAt?: SortOrderInput | SortOrder
-    updatedAt?: SortOrder
-    _count?: SyncSessionCountOrderByAggregateInput
-    _avg?: SyncSessionAvgOrderByAggregateInput
-    _max?: SyncSessionMaxOrderByAggregateInput
-    _min?: SyncSessionMinOrderByAggregateInput
-    _sum?: SyncSessionSumOrderByAggregateInput
-  }
-
-  export type SyncSessionScalarWhereWithAggregatesInput = {
-    AND?: SyncSessionScalarWhereWithAggregatesInput | SyncSessionScalarWhereWithAggregatesInput[]
-    OR?: SyncSessionScalarWhereWithAggregatesInput[]
-    NOT?: SyncSessionScalarWhereWithAggregatesInput | SyncSessionScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"SyncSession"> | string
-    identityId?: StringWithAggregatesFilter<"SyncSession"> | string
-    profileId?: UuidWithAggregatesFilter<"SyncSession"> | string
-    status?: StringWithAggregatesFilter<"SyncSession"> | string
-    direction?: StringWithAggregatesFilter<"SyncSession"> | string
-    strategy?: StringWithAggregatesFilter<"SyncSession"> | string
-    triggerType?: StringWithAggregatesFilter<"SyncSession"> | string
-    triggerDeviceJson?: StringWithAggregatesFilter<"SyncSession"> | string
-    startVersionJson?: StringWithAggregatesFilter<"SyncSession"> | string
-    endVersionJson?: StringNullableWithAggregatesFilter<"SyncSession"> | string | null
-    localSnapshotId?: UuidNullableWithAggregatesFilter<"SyncSession"> | string | null
-    remoteSnapshotId?: UuidNullableWithAggregatesFilter<"SyncSession"> | string | null
-    statisticsJson?: StringNullableWithAggregatesFilter<"SyncSession"> | string | null
-    errorJson?: StringNullableWithAggregatesFilter<"SyncSession"> | string | null
-    canRetry?: BoolWithAggregatesFilter<"SyncSession"> | boolean
-    retryCount?: IntWithAggregatesFilter<"SyncSession"> | number
-    createdAt?: BigIntWithAggregatesFilter<"SyncSession"> | bigint | number
-    startedAt?: BigIntNullableWithAggregatesFilter<"SyncSession"> | bigint | number | null
-    completedAt?: BigIntNullableWithAggregatesFilter<"SyncSession"> | bigint | number | null
-    updatedAt?: BigIntWithAggregatesFilter<"SyncSession"> | bigint | number
-  }
-
-  export type SyncConflictWhereInput = {
-    AND?: SyncConflictWhereInput | SyncConflictWhereInput[]
-    OR?: SyncConflictWhereInput[]
-    NOT?: SyncConflictWhereInput | SyncConflictWhereInput[]
-    id?: UuidFilter<"SyncConflict"> | string
-    identityId?: StringFilter<"SyncConflict"> | string
-    sessionId?: UuidFilter<"SyncConflict"> | string
-    entityType?: StringFilter<"SyncConflict"> | string
-    entityId?: UuidFilter<"SyncConflict"> | string
-    entityName?: StringNullableFilter<"SyncConflict"> | string | null
-    conflictType?: StringFilter<"SyncConflict"> | string
-    localVersionJson?: StringFilter<"SyncConflict"> | string
-    localDataJson?: StringFilter<"SyncConflict"> | string
-    remoteVersionJson?: StringFilter<"SyncConflict"> | string
-    remoteDataJson?: StringFilter<"SyncConflict"> | string
-    status?: StringFilter<"SyncConflict"> | string
-    autoResolvable?: BoolFilter<"SyncConflict"> | boolean
-    resolutionJson?: StringNullableFilter<"SyncConflict"> | string | null
-    createdAt?: BigIntFilter<"SyncConflict"> | bigint | number
-    updatedAt?: BigIntFilter<"SyncConflict"> | bigint | number
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    session?: XOR<SyncSessionScalarRelationFilter, SyncSessionWhereInput>
-  }
-
-  export type SyncConflictOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sessionId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrderInput | SortOrder
-    conflictType?: SortOrder
-    localVersionJson?: SortOrder
-    localDataJson?: SortOrder
-    remoteVersionJson?: SortOrder
-    remoteDataJson?: SortOrder
-    status?: SortOrder
-    autoResolvable?: SortOrder
-    resolutionJson?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    account?: AccountOrderByWithRelationInput
-    session?: SyncSessionOrderByWithRelationInput
-  }
-
-  export type SyncConflictWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: SyncConflictWhereInput | SyncConflictWhereInput[]
-    OR?: SyncConflictWhereInput[]
-    NOT?: SyncConflictWhereInput | SyncConflictWhereInput[]
-    identityId?: StringFilter<"SyncConflict"> | string
-    sessionId?: UuidFilter<"SyncConflict"> | string
-    entityType?: StringFilter<"SyncConflict"> | string
-    entityId?: UuidFilter<"SyncConflict"> | string
-    entityName?: StringNullableFilter<"SyncConflict"> | string | null
-    conflictType?: StringFilter<"SyncConflict"> | string
-    localVersionJson?: StringFilter<"SyncConflict"> | string
-    localDataJson?: StringFilter<"SyncConflict"> | string
-    remoteVersionJson?: StringFilter<"SyncConflict"> | string
-    remoteDataJson?: StringFilter<"SyncConflict"> | string
-    status?: StringFilter<"SyncConflict"> | string
-    autoResolvable?: BoolFilter<"SyncConflict"> | boolean
-    resolutionJson?: StringNullableFilter<"SyncConflict"> | string | null
-    createdAt?: BigIntFilter<"SyncConflict"> | bigint | number
-    updatedAt?: BigIntFilter<"SyncConflict"> | bigint | number
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-    session?: XOR<SyncSessionScalarRelationFilter, SyncSessionWhereInput>
-  }, "id">
-
-  export type SyncConflictOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sessionId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrderInput | SortOrder
-    conflictType?: SortOrder
-    localVersionJson?: SortOrder
-    localDataJson?: SortOrder
-    remoteVersionJson?: SortOrder
-    remoteDataJson?: SortOrder
-    status?: SortOrder
-    autoResolvable?: SortOrder
-    resolutionJson?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: SyncConflictCountOrderByAggregateInput
-    _avg?: SyncConflictAvgOrderByAggregateInput
-    _max?: SyncConflictMaxOrderByAggregateInput
-    _min?: SyncConflictMinOrderByAggregateInput
-    _sum?: SyncConflictSumOrderByAggregateInput
-  }
-
-  export type SyncConflictScalarWhereWithAggregatesInput = {
-    AND?: SyncConflictScalarWhereWithAggregatesInput | SyncConflictScalarWhereWithAggregatesInput[]
-    OR?: SyncConflictScalarWhereWithAggregatesInput[]
-    NOT?: SyncConflictScalarWhereWithAggregatesInput | SyncConflictScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"SyncConflict"> | string
-    identityId?: StringWithAggregatesFilter<"SyncConflict"> | string
-    sessionId?: UuidWithAggregatesFilter<"SyncConflict"> | string
-    entityType?: StringWithAggregatesFilter<"SyncConflict"> | string
-    entityId?: UuidWithAggregatesFilter<"SyncConflict"> | string
-    entityName?: StringNullableWithAggregatesFilter<"SyncConflict"> | string | null
-    conflictType?: StringWithAggregatesFilter<"SyncConflict"> | string
-    localVersionJson?: StringWithAggregatesFilter<"SyncConflict"> | string
-    localDataJson?: StringWithAggregatesFilter<"SyncConflict"> | string
-    remoteVersionJson?: StringWithAggregatesFilter<"SyncConflict"> | string
-    remoteDataJson?: StringWithAggregatesFilter<"SyncConflict"> | string
-    status?: StringWithAggregatesFilter<"SyncConflict"> | string
-    autoResolvable?: BoolWithAggregatesFilter<"SyncConflict"> | boolean
-    resolutionJson?: StringNullableWithAggregatesFilter<"SyncConflict"> | string | null
-    createdAt?: BigIntWithAggregatesFilter<"SyncConflict"> | bigint | number
-    updatedAt?: BigIntWithAggregatesFilter<"SyncConflict"> | bigint | number
-  }
-
-  export type PendingChangeWhereInput = {
-    AND?: PendingChangeWhereInput | PendingChangeWhereInput[]
-    OR?: PendingChangeWhereInput[]
-    NOT?: PendingChangeWhereInput | PendingChangeWhereInput[]
-    id?: UuidFilter<"PendingChange"> | string
-    identityId?: StringFilter<"PendingChange"> | string
-    entityType?: StringFilter<"PendingChange"> | string
-    entityId?: UuidFilter<"PendingChange"> | string
-    entityName?: StringNullableFilter<"PendingChange"> | string | null
-    operation?: StringFilter<"PendingChange"> | string
-    beforeDataJson?: StringNullableFilter<"PendingChange"> | string | null
-    afterDataJson?: StringNullableFilter<"PendingChange"> | string | null
-    versionJson?: StringFilter<"PendingChange"> | string
-    isSynced?: BoolFilter<"PendingChange"> | boolean
-    syncedInSession?: UuidNullableFilter<"PendingChange"> | string | null
-    createdAt?: BigIntFilter<"PendingChange"> | bigint | number
-    syncedAt?: BigIntNullableFilter<"PendingChange"> | bigint | number | null
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }
-
-  export type PendingChangeOrderByWithRelationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrderInput | SortOrder
-    operation?: SortOrder
-    beforeDataJson?: SortOrderInput | SortOrder
-    afterDataJson?: SortOrderInput | SortOrder
-    versionJson?: SortOrder
-    isSynced?: SortOrder
-    syncedInSession?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    syncedAt?: SortOrderInput | SortOrder
-    account?: AccountOrderByWithRelationInput
-  }
-
-  export type PendingChangeWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: PendingChangeWhereInput | PendingChangeWhereInput[]
-    OR?: PendingChangeWhereInput[]
-    NOT?: PendingChangeWhereInput | PendingChangeWhereInput[]
-    identityId?: StringFilter<"PendingChange"> | string
-    entityType?: StringFilter<"PendingChange"> | string
-    entityId?: UuidFilter<"PendingChange"> | string
-    entityName?: StringNullableFilter<"PendingChange"> | string | null
-    operation?: StringFilter<"PendingChange"> | string
-    beforeDataJson?: StringNullableFilter<"PendingChange"> | string | null
-    afterDataJson?: StringNullableFilter<"PendingChange"> | string | null
-    versionJson?: StringFilter<"PendingChange"> | string
-    isSynced?: BoolFilter<"PendingChange"> | boolean
-    syncedInSession?: UuidNullableFilter<"PendingChange"> | string | null
-    createdAt?: BigIntFilter<"PendingChange"> | bigint | number
-    syncedAt?: BigIntNullableFilter<"PendingChange"> | bigint | number | null
-    account?: XOR<AccountScalarRelationFilter, AccountWhereInput>
-  }, "id">
-
-  export type PendingChangeOrderByWithAggregationInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrderInput | SortOrder
-    operation?: SortOrder
-    beforeDataJson?: SortOrderInput | SortOrder
-    afterDataJson?: SortOrderInput | SortOrder
-    versionJson?: SortOrder
-    isSynced?: SortOrder
-    syncedInSession?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    syncedAt?: SortOrderInput | SortOrder
-    _count?: PendingChangeCountOrderByAggregateInput
-    _avg?: PendingChangeAvgOrderByAggregateInput
-    _max?: PendingChangeMaxOrderByAggregateInput
-    _min?: PendingChangeMinOrderByAggregateInput
-    _sum?: PendingChangeSumOrderByAggregateInput
-  }
-
-  export type PendingChangeScalarWhereWithAggregatesInput = {
-    AND?: PendingChangeScalarWhereWithAggregatesInput | PendingChangeScalarWhereWithAggregatesInput[]
-    OR?: PendingChangeScalarWhereWithAggregatesInput[]
-    NOT?: PendingChangeScalarWhereWithAggregatesInput | PendingChangeScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"PendingChange"> | string
-    identityId?: StringWithAggregatesFilter<"PendingChange"> | string
-    entityType?: StringWithAggregatesFilter<"PendingChange"> | string
-    entityId?: UuidWithAggregatesFilter<"PendingChange"> | string
-    entityName?: StringNullableWithAggregatesFilter<"PendingChange"> | string | null
-    operation?: StringWithAggregatesFilter<"PendingChange"> | string
-    beforeDataJson?: StringNullableWithAggregatesFilter<"PendingChange"> | string | null
-    afterDataJson?: StringNullableWithAggregatesFilter<"PendingChange"> | string | null
-    versionJson?: StringWithAggregatesFilter<"PendingChange"> | string
-    isSynced?: BoolWithAggregatesFilter<"PendingChange"> | boolean
-    syncedInSession?: UuidNullableWithAggregatesFilter<"PendingChange"> | string | null
-    createdAt?: BigIntWithAggregatesFilter<"PendingChange"> | bigint | number
-    syncedAt?: BigIntNullableWithAggregatesFilter<"PendingChange"> | bigint | number | null
-  }
-
   export type TaskFolderWhereInput = {
     AND?: TaskFolderWhereInput | TaskFolderWhereInput[]
     OR?: TaskFolderWhereInput[]
@@ -99999,10 +93798,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateInput = {
@@ -100057,10 +93852,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUpdateInput = {
@@ -100115,10 +93906,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateInput = {
@@ -100173,10 +93960,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateManyInput = {
@@ -106548,547 +100331,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SyncProfileCreateInput = {
-    id: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncProfilesInput
-    sessions?: SyncSessionCreateNestedManyWithoutProfileInput
-  }
-
-  export type SyncProfileUncheckedCreateInput = {
-    id: string
-    identityId: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    sessions?: SyncSessionUncheckedCreateNestedManyWithoutProfileInput
-  }
-
-  export type SyncProfileUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncProfilesNestedInput
-    sessions?: SyncSessionUpdateManyWithoutProfileNestedInput
-  }
-
-  export type SyncProfileUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    sessions?: SyncSessionUncheckedUpdateManyWithoutProfileNestedInput
-  }
-
-  export type SyncProfileCreateManyInput = {
-    id: string
-    identityId: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncProfileUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncProfileUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncSessionCreateInput = {
-    id: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncSessionsInput
-    profile: SyncProfileCreateNestedOneWithoutSessionsInput
-    conflicts?: SyncConflictCreateNestedManyWithoutSessionInput
-  }
-
-  export type SyncSessionUncheckedCreateInput = {
-    id: string
-    identityId: string
-    profileId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    conflicts?: SyncConflictUncheckedCreateNestedManyWithoutSessionInput
-  }
-
-  export type SyncSessionUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncSessionsNestedInput
-    profile?: SyncProfileUpdateOneRequiredWithoutSessionsNestedInput
-    conflicts?: SyncConflictUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SyncSessionUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    profileId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    conflicts?: SyncConflictUncheckedUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SyncSessionCreateManyInput = {
-    id: string
-    identityId: string
-    profileId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-  }
-
-  export type SyncSessionUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncSessionUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    profileId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictCreateInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncConflictsInput
-    session: SyncSessionCreateNestedOneWithoutConflictsInput
-  }
-
-  export type SyncConflictUncheckedCreateInput = {
-    id: string
-    identityId: string
-    sessionId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncConflictUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncConflictsNestedInput
-    session?: SyncSessionUpdateOneRequiredWithoutConflictsNestedInput
-  }
-
-  export type SyncConflictUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    sessionId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictCreateManyInput = {
-    id: string
-    identityId: string
-    sessionId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncConflictUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    sessionId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type PendingChangeCreateInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    operation: string
-    beforeDataJson?: string | null
-    afterDataJson?: string | null
-    versionJson: string
-    isSynced?: boolean
-    syncedInSession?: string | null
-    createdAt: bigint | number
-    syncedAt?: bigint | number | null
-    account: AccountCreateNestedOneWithoutPendingChangesInput
-  }
-
-  export type PendingChangeUncheckedCreateInput = {
-    id: string
-    identityId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    operation: string
-    beforeDataJson?: string | null
-    afterDataJson?: string | null
-    versionJson: string
-    isSynced?: boolean
-    syncedInSession?: string | null
-    createdAt: bigint | number
-    syncedAt?: bigint | number | null
-  }
-
-  export type PendingChangeUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    account?: AccountUpdateOneRequiredWithoutPendingChangesNestedInput
-  }
-
-  export type PendingChangeUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-  }
-
-  export type PendingChangeCreateManyInput = {
-    id: string
-    identityId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    operation: string
-    beforeDataJson?: string | null
-    afterDataJson?: string | null
-    versionJson: string
-    isSynced?: boolean
-    syncedInSession?: string | null
-    createdAt: bigint | number
-    syncedAt?: bigint | number | null
-  }
-
-  export type PendingChangeUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-  }
-
-  export type PendingChangeUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-  }
-
   export type TaskFolderCreateInput = {
     id: string
     name: string
@@ -108288,30 +101530,6 @@ export namespace Prisma {
     isNot?: DashboardConfigWhereInput | null
   }
 
-  export type SyncProfileListRelationFilter = {
-    every?: SyncProfileWhereInput
-    some?: SyncProfileWhereInput
-    none?: SyncProfileWhereInput
-  }
-
-  export type SyncSessionListRelationFilter = {
-    every?: SyncSessionWhereInput
-    some?: SyncSessionWhereInput
-    none?: SyncSessionWhereInput
-  }
-
-  export type SyncConflictListRelationFilter = {
-    every?: SyncConflictWhereInput
-    some?: SyncConflictWhereInput
-    none?: SyncConflictWhereInput
-  }
-
-  export type PendingChangeListRelationFilter = {
-    every?: PendingChangeWhereInput
-    some?: PendingChangeWhereInput
-    none?: PendingChangeWhereInput
-  }
-
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -108414,22 +101632,6 @@ export namespace Prisma {
   }
 
   export type AiProviderConfigOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SyncProfileOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SyncSessionOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SyncConflictOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type PendingChangeOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -112343,376 +105545,6 @@ export namespace Prisma {
     version?: SortOrder
   }
 
-  export type UuidFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidFilter<$PrismaModel> | string
-  }
-
-  export type BigIntNullableFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel> | null
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null
-  }
-
-  export type SyncProfileCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    providerType?: SortOrder
-    providerConfigJson?: SortOrder
-    syncConfigJson?: SortOrder
-    isDefault?: SortOrder
-    isActive?: SortOrder
-    isConnected?: SortOrder
-    lastSyncAt?: SortOrder
-    lastSyncVersionJson?: SortOrder
-    lastSyncResult?: SortOrder
-    historyStatsJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncProfileAvgOrderByAggregateInput = {
-    lastSyncAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncProfileMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    providerType?: SortOrder
-    providerConfigJson?: SortOrder
-    syncConfigJson?: SortOrder
-    isDefault?: SortOrder
-    isActive?: SortOrder
-    isConnected?: SortOrder
-    lastSyncAt?: SortOrder
-    lastSyncVersionJson?: SortOrder
-    lastSyncResult?: SortOrder
-    historyStatsJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncProfileMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    name?: SortOrder
-    description?: SortOrder
-    providerType?: SortOrder
-    providerConfigJson?: SortOrder
-    syncConfigJson?: SortOrder
-    isDefault?: SortOrder
-    isActive?: SortOrder
-    isConnected?: SortOrder
-    lastSyncAt?: SortOrder
-    lastSyncVersionJson?: SortOrder
-    lastSyncResult?: SortOrder
-    historyStatsJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncProfileSumOrderByAggregateInput = {
-    lastSyncAt?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type UuidWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidWithAggregatesFilter<$PrismaModel> | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedStringFilter<$PrismaModel>
-    _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type BigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel> | null
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedBigIntNullableFilter<$PrismaModel>
-    _min?: NestedBigIntNullableFilter<$PrismaModel>
-    _max?: NestedBigIntNullableFilter<$PrismaModel>
-  }
-
-  export type UuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type SyncProfileScalarRelationFilter = {
-    is?: SyncProfileWhereInput
-    isNot?: SyncProfileWhereInput
-  }
-
-  export type SyncSessionCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    profileId?: SortOrder
-    status?: SortOrder
-    direction?: SortOrder
-    strategy?: SortOrder
-    triggerType?: SortOrder
-    triggerDeviceJson?: SortOrder
-    startVersionJson?: SortOrder
-    endVersionJson?: SortOrder
-    localSnapshotId?: SortOrder
-    remoteSnapshotId?: SortOrder
-    statisticsJson?: SortOrder
-    errorJson?: SortOrder
-    canRetry?: SortOrder
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrder
-    completedAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncSessionAvgOrderByAggregateInput = {
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrder
-    completedAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncSessionMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    profileId?: SortOrder
-    status?: SortOrder
-    direction?: SortOrder
-    strategy?: SortOrder
-    triggerType?: SortOrder
-    triggerDeviceJson?: SortOrder
-    startVersionJson?: SortOrder
-    endVersionJson?: SortOrder
-    localSnapshotId?: SortOrder
-    remoteSnapshotId?: SortOrder
-    statisticsJson?: SortOrder
-    errorJson?: SortOrder
-    canRetry?: SortOrder
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrder
-    completedAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncSessionMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    profileId?: SortOrder
-    status?: SortOrder
-    direction?: SortOrder
-    strategy?: SortOrder
-    triggerType?: SortOrder
-    triggerDeviceJson?: SortOrder
-    startVersionJson?: SortOrder
-    endVersionJson?: SortOrder
-    localSnapshotId?: SortOrder
-    remoteSnapshotId?: SortOrder
-    statisticsJson?: SortOrder
-    errorJson?: SortOrder
-    canRetry?: SortOrder
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrder
-    completedAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncSessionSumOrderByAggregateInput = {
-    retryCount?: SortOrder
-    createdAt?: SortOrder
-    startedAt?: SortOrder
-    completedAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type SyncSessionScalarRelationFilter = {
-    is?: SyncSessionWhereInput
-    isNot?: SyncSessionWhereInput
-  }
-
-  export type SyncConflictCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sessionId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrder
-    conflictType?: SortOrder
-    localVersionJson?: SortOrder
-    localDataJson?: SortOrder
-    remoteVersionJson?: SortOrder
-    remoteDataJson?: SortOrder
-    status?: SortOrder
-    autoResolvable?: SortOrder
-    resolutionJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncConflictAvgOrderByAggregateInput = {
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncConflictMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sessionId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrder
-    conflictType?: SortOrder
-    localVersionJson?: SortOrder
-    localDataJson?: SortOrder
-    remoteVersionJson?: SortOrder
-    remoteDataJson?: SortOrder
-    status?: SortOrder
-    autoResolvable?: SortOrder
-    resolutionJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncConflictMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    sessionId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrder
-    conflictType?: SortOrder
-    localVersionJson?: SortOrder
-    localDataJson?: SortOrder
-    remoteVersionJson?: SortOrder
-    remoteDataJson?: SortOrder
-    status?: SortOrder
-    autoResolvable?: SortOrder
-    resolutionJson?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SyncConflictSumOrderByAggregateInput = {
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PendingChangeCountOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrder
-    operation?: SortOrder
-    beforeDataJson?: SortOrder
-    afterDataJson?: SortOrder
-    versionJson?: SortOrder
-    isSynced?: SortOrder
-    syncedInSession?: SortOrder
-    createdAt?: SortOrder
-    syncedAt?: SortOrder
-  }
-
-  export type PendingChangeAvgOrderByAggregateInput = {
-    createdAt?: SortOrder
-    syncedAt?: SortOrder
-  }
-
-  export type PendingChangeMaxOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrder
-    operation?: SortOrder
-    beforeDataJson?: SortOrder
-    afterDataJson?: SortOrder
-    versionJson?: SortOrder
-    isSynced?: SortOrder
-    syncedInSession?: SortOrder
-    createdAt?: SortOrder
-    syncedAt?: SortOrder
-  }
-
-  export type PendingChangeMinOrderByAggregateInput = {
-    id?: SortOrder
-    identityId?: SortOrder
-    entityType?: SortOrder
-    entityId?: SortOrder
-    entityName?: SortOrder
-    operation?: SortOrder
-    beforeDataJson?: SortOrder
-    afterDataJson?: SortOrder
-    versionJson?: SortOrder
-    isSynced?: SortOrder
-    syncedInSession?: SortOrder
-    createdAt?: SortOrder
-    syncedAt?: SortOrder
-  }
-
-  export type PendingChangeSumOrderByAggregateInput = {
-    createdAt?: SortOrder
-    syncedAt?: SortOrder
-  }
-
   export type TaskFolderCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
@@ -113481,34 +106313,6 @@ export namespace Prisma {
     connect?: DashboardConfigWhereUniqueInput
   }
 
-  export type SyncProfileCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SyncProfileCreateWithoutAccountInput, SyncProfileUncheckedCreateWithoutAccountInput> | SyncProfileCreateWithoutAccountInput[] | SyncProfileUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncProfileCreateOrConnectWithoutAccountInput | SyncProfileCreateOrConnectWithoutAccountInput[]
-    createMany?: SyncProfileCreateManyAccountInputEnvelope
-    connect?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-  }
-
-  export type SyncSessionCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SyncSessionCreateWithoutAccountInput, SyncSessionUncheckedCreateWithoutAccountInput> | SyncSessionCreateWithoutAccountInput[] | SyncSessionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutAccountInput | SyncSessionCreateOrConnectWithoutAccountInput[]
-    createMany?: SyncSessionCreateManyAccountInputEnvelope
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-  }
-
-  export type SyncConflictCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SyncConflictCreateWithoutAccountInput, SyncConflictUncheckedCreateWithoutAccountInput> | SyncConflictCreateWithoutAccountInput[] | SyncConflictUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutAccountInput | SyncConflictCreateOrConnectWithoutAccountInput[]
-    createMany?: SyncConflictCreateManyAccountInputEnvelope
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-  }
-
-  export type PendingChangeCreateNestedManyWithoutAccountInput = {
-    create?: XOR<PendingChangeCreateWithoutAccountInput, PendingChangeUncheckedCreateWithoutAccountInput> | PendingChangeCreateWithoutAccountInput[] | PendingChangeUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: PendingChangeCreateOrConnectWithoutAccountInput | PendingChangeCreateOrConnectWithoutAccountInput[]
-    createMany?: PendingChangeCreateManyAccountInputEnvelope
-    connect?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-  }
-
   export type DocumentUncheckedCreateNestedManyWithoutAccountInput = {
     create?: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput> | DocumentCreateWithoutAccountInput[] | DocumentUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutAccountInput | DocumentCreateOrConnectWithoutAccountInput[]
@@ -113736,34 +106540,6 @@ export namespace Prisma {
     create?: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
     connectOrCreate?: DashboardConfigCreateOrConnectWithoutAccountInput
     connect?: DashboardConfigWhereUniqueInput
-  }
-
-  export type SyncProfileUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SyncProfileCreateWithoutAccountInput, SyncProfileUncheckedCreateWithoutAccountInput> | SyncProfileCreateWithoutAccountInput[] | SyncProfileUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncProfileCreateOrConnectWithoutAccountInput | SyncProfileCreateOrConnectWithoutAccountInput[]
-    createMany?: SyncProfileCreateManyAccountInputEnvelope
-    connect?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-  }
-
-  export type SyncSessionUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SyncSessionCreateWithoutAccountInput, SyncSessionUncheckedCreateWithoutAccountInput> | SyncSessionCreateWithoutAccountInput[] | SyncSessionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutAccountInput | SyncSessionCreateOrConnectWithoutAccountInput[]
-    createMany?: SyncSessionCreateManyAccountInputEnvelope
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-  }
-
-  export type SyncConflictUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<SyncConflictCreateWithoutAccountInput, SyncConflictUncheckedCreateWithoutAccountInput> | SyncConflictCreateWithoutAccountInput[] | SyncConflictUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutAccountInput | SyncConflictCreateOrConnectWithoutAccountInput[]
-    createMany?: SyncConflictCreateManyAccountInputEnvelope
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-  }
-
-  export type PendingChangeUncheckedCreateNestedManyWithoutAccountInput = {
-    create?: XOR<PendingChangeCreateWithoutAccountInput, PendingChangeUncheckedCreateWithoutAccountInput> | PendingChangeCreateWithoutAccountInput[] | PendingChangeUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: PendingChangeCreateOrConnectWithoutAccountInput | PendingChangeCreateOrConnectWithoutAccountInput[]
-    createMany?: PendingChangeCreateManyAccountInputEnvelope
-    connect?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -114246,62 +107022,6 @@ export namespace Prisma {
     update?: XOR<XOR<DashboardConfigUpdateToOneWithWhereWithoutAccountInput, DashboardConfigUpdateWithoutAccountInput>, DashboardConfigUncheckedUpdateWithoutAccountInput>
   }
 
-  export type SyncProfileUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SyncProfileCreateWithoutAccountInput, SyncProfileUncheckedCreateWithoutAccountInput> | SyncProfileCreateWithoutAccountInput[] | SyncProfileUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncProfileCreateOrConnectWithoutAccountInput | SyncProfileCreateOrConnectWithoutAccountInput[]
-    upsert?: SyncProfileUpsertWithWhereUniqueWithoutAccountInput | SyncProfileUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SyncProfileCreateManyAccountInputEnvelope
-    set?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    disconnect?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    delete?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    connect?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    update?: SyncProfileUpdateWithWhereUniqueWithoutAccountInput | SyncProfileUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SyncProfileUpdateManyWithWhereWithoutAccountInput | SyncProfileUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SyncProfileScalarWhereInput | SyncProfileScalarWhereInput[]
-  }
-
-  export type SyncSessionUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SyncSessionCreateWithoutAccountInput, SyncSessionUncheckedCreateWithoutAccountInput> | SyncSessionCreateWithoutAccountInput[] | SyncSessionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutAccountInput | SyncSessionCreateOrConnectWithoutAccountInput[]
-    upsert?: SyncSessionUpsertWithWhereUniqueWithoutAccountInput | SyncSessionUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SyncSessionCreateManyAccountInputEnvelope
-    set?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    disconnect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    delete?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    update?: SyncSessionUpdateWithWhereUniqueWithoutAccountInput | SyncSessionUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SyncSessionUpdateManyWithWhereWithoutAccountInput | SyncSessionUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SyncSessionScalarWhereInput | SyncSessionScalarWhereInput[]
-  }
-
-  export type SyncConflictUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SyncConflictCreateWithoutAccountInput, SyncConflictUncheckedCreateWithoutAccountInput> | SyncConflictCreateWithoutAccountInput[] | SyncConflictUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutAccountInput | SyncConflictCreateOrConnectWithoutAccountInput[]
-    upsert?: SyncConflictUpsertWithWhereUniqueWithoutAccountInput | SyncConflictUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SyncConflictCreateManyAccountInputEnvelope
-    set?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    disconnect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    delete?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    update?: SyncConflictUpdateWithWhereUniqueWithoutAccountInput | SyncConflictUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SyncConflictUpdateManyWithWhereWithoutAccountInput | SyncConflictUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SyncConflictScalarWhereInput | SyncConflictScalarWhereInput[]
-  }
-
-  export type PendingChangeUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<PendingChangeCreateWithoutAccountInput, PendingChangeUncheckedCreateWithoutAccountInput> | PendingChangeCreateWithoutAccountInput[] | PendingChangeUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: PendingChangeCreateOrConnectWithoutAccountInput | PendingChangeCreateOrConnectWithoutAccountInput[]
-    upsert?: PendingChangeUpsertWithWhereUniqueWithoutAccountInput | PendingChangeUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: PendingChangeCreateManyAccountInputEnvelope
-    set?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    disconnect?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    delete?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    connect?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    update?: PendingChangeUpdateWithWhereUniqueWithoutAccountInput | PendingChangeUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: PendingChangeUpdateManyWithWhereWithoutAccountInput | PendingChangeUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: PendingChangeScalarWhereInput | PendingChangeScalarWhereInput[]
-  }
-
   export type DocumentUncheckedUpdateManyWithoutAccountNestedInput = {
     create?: XOR<DocumentCreateWithoutAccountInput, DocumentUncheckedCreateWithoutAccountInput> | DocumentCreateWithoutAccountInput[] | DocumentUncheckedCreateWithoutAccountInput[]
     connectOrCreate?: DocumentCreateOrConnectWithoutAccountInput | DocumentCreateOrConnectWithoutAccountInput[]
@@ -114740,62 +107460,6 @@ export namespace Prisma {
     delete?: DashboardConfigWhereInput | boolean
     connect?: DashboardConfigWhereUniqueInput
     update?: XOR<XOR<DashboardConfigUpdateToOneWithWhereWithoutAccountInput, DashboardConfigUpdateWithoutAccountInput>, DashboardConfigUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SyncProfileUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SyncProfileCreateWithoutAccountInput, SyncProfileUncheckedCreateWithoutAccountInput> | SyncProfileCreateWithoutAccountInput[] | SyncProfileUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncProfileCreateOrConnectWithoutAccountInput | SyncProfileCreateOrConnectWithoutAccountInput[]
-    upsert?: SyncProfileUpsertWithWhereUniqueWithoutAccountInput | SyncProfileUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SyncProfileCreateManyAccountInputEnvelope
-    set?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    disconnect?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    delete?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    connect?: SyncProfileWhereUniqueInput | SyncProfileWhereUniqueInput[]
-    update?: SyncProfileUpdateWithWhereUniqueWithoutAccountInput | SyncProfileUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SyncProfileUpdateManyWithWhereWithoutAccountInput | SyncProfileUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SyncProfileScalarWhereInput | SyncProfileScalarWhereInput[]
-  }
-
-  export type SyncSessionUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SyncSessionCreateWithoutAccountInput, SyncSessionUncheckedCreateWithoutAccountInput> | SyncSessionCreateWithoutAccountInput[] | SyncSessionUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutAccountInput | SyncSessionCreateOrConnectWithoutAccountInput[]
-    upsert?: SyncSessionUpsertWithWhereUniqueWithoutAccountInput | SyncSessionUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SyncSessionCreateManyAccountInputEnvelope
-    set?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    disconnect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    delete?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    update?: SyncSessionUpdateWithWhereUniqueWithoutAccountInput | SyncSessionUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SyncSessionUpdateManyWithWhereWithoutAccountInput | SyncSessionUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SyncSessionScalarWhereInput | SyncSessionScalarWhereInput[]
-  }
-
-  export type SyncConflictUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<SyncConflictCreateWithoutAccountInput, SyncConflictUncheckedCreateWithoutAccountInput> | SyncConflictCreateWithoutAccountInput[] | SyncConflictUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutAccountInput | SyncConflictCreateOrConnectWithoutAccountInput[]
-    upsert?: SyncConflictUpsertWithWhereUniqueWithoutAccountInput | SyncConflictUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: SyncConflictCreateManyAccountInputEnvelope
-    set?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    disconnect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    delete?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    update?: SyncConflictUpdateWithWhereUniqueWithoutAccountInput | SyncConflictUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: SyncConflictUpdateManyWithWhereWithoutAccountInput | SyncConflictUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: SyncConflictScalarWhereInput | SyncConflictScalarWhereInput[]
-  }
-
-  export type PendingChangeUncheckedUpdateManyWithoutAccountNestedInput = {
-    create?: XOR<PendingChangeCreateWithoutAccountInput, PendingChangeUncheckedCreateWithoutAccountInput> | PendingChangeCreateWithoutAccountInput[] | PendingChangeUncheckedCreateWithoutAccountInput[]
-    connectOrCreate?: PendingChangeCreateOrConnectWithoutAccountInput | PendingChangeCreateOrConnectWithoutAccountInput[]
-    upsert?: PendingChangeUpsertWithWhereUniqueWithoutAccountInput | PendingChangeUpsertWithWhereUniqueWithoutAccountInput[]
-    createMany?: PendingChangeCreateManyAccountInputEnvelope
-    set?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    disconnect?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    delete?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    connect?: PendingChangeWhereUniqueInput | PendingChangeWhereUniqueInput[]
-    update?: PendingChangeUpdateWithWhereUniqueWithoutAccountInput | PendingChangeUpdateWithWhereUniqueWithoutAccountInput[]
-    updateMany?: PendingChangeUpdateManyWithWhereWithoutAccountInput | PendingChangeUpdateManyWithWhereWithoutAccountInput[]
-    deleteMany?: PendingChangeScalarWhereInput | PendingChangeScalarWhereInput[]
   }
 
   export type AccountCreateNestedOneWithoutAiConversationsInput = {
@@ -117370,182 +110034,6 @@ export namespace Prisma {
     update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutUserSettingsInput, AccountUpdateWithoutUserSettingsInput>, AccountUncheckedUpdateWithoutUserSettingsInput>
   }
 
-  export type AccountCreateNestedOneWithoutSyncProfilesInput = {
-    create?: XOR<AccountCreateWithoutSyncProfilesInput, AccountUncheckedCreateWithoutSyncProfilesInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutSyncProfilesInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type SyncSessionCreateNestedManyWithoutProfileInput = {
-    create?: XOR<SyncSessionCreateWithoutProfileInput, SyncSessionUncheckedCreateWithoutProfileInput> | SyncSessionCreateWithoutProfileInput[] | SyncSessionUncheckedCreateWithoutProfileInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutProfileInput | SyncSessionCreateOrConnectWithoutProfileInput[]
-    createMany?: SyncSessionCreateManyProfileInputEnvelope
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-  }
-
-  export type SyncSessionUncheckedCreateNestedManyWithoutProfileInput = {
-    create?: XOR<SyncSessionCreateWithoutProfileInput, SyncSessionUncheckedCreateWithoutProfileInput> | SyncSessionCreateWithoutProfileInput[] | SyncSessionUncheckedCreateWithoutProfileInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutProfileInput | SyncSessionCreateOrConnectWithoutProfileInput[]
-    createMany?: SyncSessionCreateManyProfileInputEnvelope
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-  }
-
-  export type NullableBigIntFieldUpdateOperationsInput = {
-    set?: bigint | number | null
-    increment?: bigint | number
-    decrement?: bigint | number
-    multiply?: bigint | number
-    divide?: bigint | number
-  }
-
-  export type AccountUpdateOneRequiredWithoutSyncProfilesNestedInput = {
-    create?: XOR<AccountCreateWithoutSyncProfilesInput, AccountUncheckedCreateWithoutSyncProfilesInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutSyncProfilesInput
-    upsert?: AccountUpsertWithoutSyncProfilesInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutSyncProfilesInput, AccountUpdateWithoutSyncProfilesInput>, AccountUncheckedUpdateWithoutSyncProfilesInput>
-  }
-
-  export type SyncSessionUpdateManyWithoutProfileNestedInput = {
-    create?: XOR<SyncSessionCreateWithoutProfileInput, SyncSessionUncheckedCreateWithoutProfileInput> | SyncSessionCreateWithoutProfileInput[] | SyncSessionUncheckedCreateWithoutProfileInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutProfileInput | SyncSessionCreateOrConnectWithoutProfileInput[]
-    upsert?: SyncSessionUpsertWithWhereUniqueWithoutProfileInput | SyncSessionUpsertWithWhereUniqueWithoutProfileInput[]
-    createMany?: SyncSessionCreateManyProfileInputEnvelope
-    set?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    disconnect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    delete?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    update?: SyncSessionUpdateWithWhereUniqueWithoutProfileInput | SyncSessionUpdateWithWhereUniqueWithoutProfileInput[]
-    updateMany?: SyncSessionUpdateManyWithWhereWithoutProfileInput | SyncSessionUpdateManyWithWhereWithoutProfileInput[]
-    deleteMany?: SyncSessionScalarWhereInput | SyncSessionScalarWhereInput[]
-  }
-
-  export type SyncSessionUncheckedUpdateManyWithoutProfileNestedInput = {
-    create?: XOR<SyncSessionCreateWithoutProfileInput, SyncSessionUncheckedCreateWithoutProfileInput> | SyncSessionCreateWithoutProfileInput[] | SyncSessionUncheckedCreateWithoutProfileInput[]
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutProfileInput | SyncSessionCreateOrConnectWithoutProfileInput[]
-    upsert?: SyncSessionUpsertWithWhereUniqueWithoutProfileInput | SyncSessionUpsertWithWhereUniqueWithoutProfileInput[]
-    createMany?: SyncSessionCreateManyProfileInputEnvelope
-    set?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    disconnect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    delete?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    connect?: SyncSessionWhereUniqueInput | SyncSessionWhereUniqueInput[]
-    update?: SyncSessionUpdateWithWhereUniqueWithoutProfileInput | SyncSessionUpdateWithWhereUniqueWithoutProfileInput[]
-    updateMany?: SyncSessionUpdateManyWithWhereWithoutProfileInput | SyncSessionUpdateManyWithWhereWithoutProfileInput[]
-    deleteMany?: SyncSessionScalarWhereInput | SyncSessionScalarWhereInput[]
-  }
-
-  export type AccountCreateNestedOneWithoutSyncSessionsInput = {
-    create?: XOR<AccountCreateWithoutSyncSessionsInput, AccountUncheckedCreateWithoutSyncSessionsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutSyncSessionsInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type SyncProfileCreateNestedOneWithoutSessionsInput = {
-    create?: XOR<SyncProfileCreateWithoutSessionsInput, SyncProfileUncheckedCreateWithoutSessionsInput>
-    connectOrCreate?: SyncProfileCreateOrConnectWithoutSessionsInput
-    connect?: SyncProfileWhereUniqueInput
-  }
-
-  export type SyncConflictCreateNestedManyWithoutSessionInput = {
-    create?: XOR<SyncConflictCreateWithoutSessionInput, SyncConflictUncheckedCreateWithoutSessionInput> | SyncConflictCreateWithoutSessionInput[] | SyncConflictUncheckedCreateWithoutSessionInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutSessionInput | SyncConflictCreateOrConnectWithoutSessionInput[]
-    createMany?: SyncConflictCreateManySessionInputEnvelope
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-  }
-
-  export type SyncConflictUncheckedCreateNestedManyWithoutSessionInput = {
-    create?: XOR<SyncConflictCreateWithoutSessionInput, SyncConflictUncheckedCreateWithoutSessionInput> | SyncConflictCreateWithoutSessionInput[] | SyncConflictUncheckedCreateWithoutSessionInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutSessionInput | SyncConflictCreateOrConnectWithoutSessionInput[]
-    createMany?: SyncConflictCreateManySessionInputEnvelope
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-  }
-
-  export type AccountUpdateOneRequiredWithoutSyncSessionsNestedInput = {
-    create?: XOR<AccountCreateWithoutSyncSessionsInput, AccountUncheckedCreateWithoutSyncSessionsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutSyncSessionsInput
-    upsert?: AccountUpsertWithoutSyncSessionsInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutSyncSessionsInput, AccountUpdateWithoutSyncSessionsInput>, AccountUncheckedUpdateWithoutSyncSessionsInput>
-  }
-
-  export type SyncProfileUpdateOneRequiredWithoutSessionsNestedInput = {
-    create?: XOR<SyncProfileCreateWithoutSessionsInput, SyncProfileUncheckedCreateWithoutSessionsInput>
-    connectOrCreate?: SyncProfileCreateOrConnectWithoutSessionsInput
-    upsert?: SyncProfileUpsertWithoutSessionsInput
-    connect?: SyncProfileWhereUniqueInput
-    update?: XOR<XOR<SyncProfileUpdateToOneWithWhereWithoutSessionsInput, SyncProfileUpdateWithoutSessionsInput>, SyncProfileUncheckedUpdateWithoutSessionsInput>
-  }
-
-  export type SyncConflictUpdateManyWithoutSessionNestedInput = {
-    create?: XOR<SyncConflictCreateWithoutSessionInput, SyncConflictUncheckedCreateWithoutSessionInput> | SyncConflictCreateWithoutSessionInput[] | SyncConflictUncheckedCreateWithoutSessionInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutSessionInput | SyncConflictCreateOrConnectWithoutSessionInput[]
-    upsert?: SyncConflictUpsertWithWhereUniqueWithoutSessionInput | SyncConflictUpsertWithWhereUniqueWithoutSessionInput[]
-    createMany?: SyncConflictCreateManySessionInputEnvelope
-    set?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    disconnect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    delete?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    update?: SyncConflictUpdateWithWhereUniqueWithoutSessionInput | SyncConflictUpdateWithWhereUniqueWithoutSessionInput[]
-    updateMany?: SyncConflictUpdateManyWithWhereWithoutSessionInput | SyncConflictUpdateManyWithWhereWithoutSessionInput[]
-    deleteMany?: SyncConflictScalarWhereInput | SyncConflictScalarWhereInput[]
-  }
-
-  export type SyncConflictUncheckedUpdateManyWithoutSessionNestedInput = {
-    create?: XOR<SyncConflictCreateWithoutSessionInput, SyncConflictUncheckedCreateWithoutSessionInput> | SyncConflictCreateWithoutSessionInput[] | SyncConflictUncheckedCreateWithoutSessionInput[]
-    connectOrCreate?: SyncConflictCreateOrConnectWithoutSessionInput | SyncConflictCreateOrConnectWithoutSessionInput[]
-    upsert?: SyncConflictUpsertWithWhereUniqueWithoutSessionInput | SyncConflictUpsertWithWhereUniqueWithoutSessionInput[]
-    createMany?: SyncConflictCreateManySessionInputEnvelope
-    set?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    disconnect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    delete?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    connect?: SyncConflictWhereUniqueInput | SyncConflictWhereUniqueInput[]
-    update?: SyncConflictUpdateWithWhereUniqueWithoutSessionInput | SyncConflictUpdateWithWhereUniqueWithoutSessionInput[]
-    updateMany?: SyncConflictUpdateManyWithWhereWithoutSessionInput | SyncConflictUpdateManyWithWhereWithoutSessionInput[]
-    deleteMany?: SyncConflictScalarWhereInput | SyncConflictScalarWhereInput[]
-  }
-
-  export type AccountCreateNestedOneWithoutSyncConflictsInput = {
-    create?: XOR<AccountCreateWithoutSyncConflictsInput, AccountUncheckedCreateWithoutSyncConflictsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutSyncConflictsInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type SyncSessionCreateNestedOneWithoutConflictsInput = {
-    create?: XOR<SyncSessionCreateWithoutConflictsInput, SyncSessionUncheckedCreateWithoutConflictsInput>
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutConflictsInput
-    connect?: SyncSessionWhereUniqueInput
-  }
-
-  export type AccountUpdateOneRequiredWithoutSyncConflictsNestedInput = {
-    create?: XOR<AccountCreateWithoutSyncConflictsInput, AccountUncheckedCreateWithoutSyncConflictsInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutSyncConflictsInput
-    upsert?: AccountUpsertWithoutSyncConflictsInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutSyncConflictsInput, AccountUpdateWithoutSyncConflictsInput>, AccountUncheckedUpdateWithoutSyncConflictsInput>
-  }
-
-  export type SyncSessionUpdateOneRequiredWithoutConflictsNestedInput = {
-    create?: XOR<SyncSessionCreateWithoutConflictsInput, SyncSessionUncheckedCreateWithoutConflictsInput>
-    connectOrCreate?: SyncSessionCreateOrConnectWithoutConflictsInput
-    upsert?: SyncSessionUpsertWithoutConflictsInput
-    connect?: SyncSessionWhereUniqueInput
-    update?: XOR<XOR<SyncSessionUpdateToOneWithWhereWithoutConflictsInput, SyncSessionUpdateWithoutConflictsInput>, SyncSessionUncheckedUpdateWithoutConflictsInput>
-  }
-
-  export type AccountCreateNestedOneWithoutPendingChangesInput = {
-    create?: XOR<AccountCreateWithoutPendingChangesInput, AccountUncheckedCreateWithoutPendingChangesInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutPendingChangesInput
-    connect?: AccountWhereUniqueInput
-  }
-
-  export type AccountUpdateOneRequiredWithoutPendingChangesNestedInput = {
-    create?: XOR<AccountCreateWithoutPendingChangesInput, AccountUncheckedCreateWithoutPendingChangesInput>
-    connectOrCreate?: AccountCreateOrConnectWithoutPendingChangesInput
-    upsert?: AccountUpsertWithoutPendingChangesInput
-    connect?: AccountWhereUniqueInput
-    update?: XOR<XOR<AccountUpdateToOneWithWhereWithoutPendingChangesInput, AccountUpdateWithoutPendingChangesInput>, AccountUncheckedUpdateWithoutPendingChangesInput>
-  }
-
   export type AccountCreateNestedOneWithoutTaskFoldersInput = {
     create?: XOR<AccountCreateWithoutTaskFoldersInput, AccountUncheckedCreateWithoutTaskFoldersInput>
     connectOrCreate?: AccountCreateOrConnectWithoutTaskFoldersInput
@@ -118310,83 +110798,6 @@ export namespace Prisma {
     _sum?: NestedBigIntFilter<$PrismaModel>
     _min?: NestedBigIntFilter<$PrismaModel>
     _max?: NestedBigIntFilter<$PrismaModel>
-  }
-
-  export type NestedUuidFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidFilter<$PrismaModel> | string
-  }
-
-  export type NestedBigIntNullableFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel> | null
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null
-  }
-
-  export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidWithAggregatesFilter<$PrismaModel> | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedStringFilter<$PrismaModel>
-    _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedBigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: bigint | number | BigIntFieldRefInput<$PrismaModel> | null
-    in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    notIn?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel> | null
-    lt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    lte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gt?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    gte?: bigint | number | BigIntFieldRefInput<$PrismaModel>
-    not?: NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedBigIntNullableFilter<$PrismaModel>
-    _min?: NestedBigIntNullableFilter<$PrismaModel>
-    _max?: NestedBigIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedUuidNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type AuthIdentityCreateWithoutAccountsInput = {
@@ -119990,196 +112401,6 @@ export namespace Prisma {
     create: XOR<DashboardConfigCreateWithoutAccountInput, DashboardConfigUncheckedCreateWithoutAccountInput>
   }
 
-  export type SyncProfileCreateWithoutAccountInput = {
-    id: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    sessions?: SyncSessionCreateNestedManyWithoutProfileInput
-  }
-
-  export type SyncProfileUncheckedCreateWithoutAccountInput = {
-    id: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    sessions?: SyncSessionUncheckedCreateNestedManyWithoutProfileInput
-  }
-
-  export type SyncProfileCreateOrConnectWithoutAccountInput = {
-    where: SyncProfileWhereUniqueInput
-    create: XOR<SyncProfileCreateWithoutAccountInput, SyncProfileUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SyncProfileCreateManyAccountInputEnvelope = {
-    data: SyncProfileCreateManyAccountInput | SyncProfileCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SyncSessionCreateWithoutAccountInput = {
-    id: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    profile: SyncProfileCreateNestedOneWithoutSessionsInput
-    conflicts?: SyncConflictCreateNestedManyWithoutSessionInput
-  }
-
-  export type SyncSessionUncheckedCreateWithoutAccountInput = {
-    id: string
-    profileId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    conflicts?: SyncConflictUncheckedCreateNestedManyWithoutSessionInput
-  }
-
-  export type SyncSessionCreateOrConnectWithoutAccountInput = {
-    where: SyncSessionWhereUniqueInput
-    create: XOR<SyncSessionCreateWithoutAccountInput, SyncSessionUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SyncSessionCreateManyAccountInputEnvelope = {
-    data: SyncSessionCreateManyAccountInput | SyncSessionCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SyncConflictCreateWithoutAccountInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    session: SyncSessionCreateNestedOneWithoutConflictsInput
-  }
-
-  export type SyncConflictUncheckedCreateWithoutAccountInput = {
-    id: string
-    sessionId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncConflictCreateOrConnectWithoutAccountInput = {
-    where: SyncConflictWhereUniqueInput
-    create: XOR<SyncConflictCreateWithoutAccountInput, SyncConflictUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SyncConflictCreateManyAccountInputEnvelope = {
-    data: SyncConflictCreateManyAccountInput | SyncConflictCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PendingChangeCreateWithoutAccountInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    operation: string
-    beforeDataJson?: string | null
-    afterDataJson?: string | null
-    versionJson: string
-    isSynced?: boolean
-    syncedInSession?: string | null
-    createdAt: bigint | number
-    syncedAt?: bigint | number | null
-  }
-
-  export type PendingChangeUncheckedCreateWithoutAccountInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    operation: string
-    beforeDataJson?: string | null
-    afterDataJson?: string | null
-    versionJson: string
-    isSynced?: boolean
-    syncedInSession?: string | null
-    createdAt: bigint | number
-    syncedAt?: bigint | number | null
-  }
-
-  export type PendingChangeCreateOrConnectWithoutAccountInput = {
-    where: PendingChangeWhereUniqueInput
-    create: XOR<PendingChangeCreateWithoutAccountInput, PendingChangeUncheckedCreateWithoutAccountInput>
-  }
-
-  export type PendingChangeCreateManyAccountInputEnvelope = {
-    data: PendingChangeCreateManyAccountInput | PendingChangeCreateManyAccountInput[]
-    skipDuplicates?: boolean
-  }
-
   export type AuthIdentityUpsertWithoutAccountsInput = {
     update: XOR<AuthIdentityUpdateWithoutAccountsInput, AuthIdentityUncheckedUpdateWithoutAccountsInput>
     create: XOR<AuthIdentityCreateWithoutAccountsInput, AuthIdentityUncheckedCreateWithoutAccountsInput>
@@ -121559,159 +113780,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SyncProfileUpsertWithWhereUniqueWithoutAccountInput = {
-    where: SyncProfileWhereUniqueInput
-    update: XOR<SyncProfileUpdateWithoutAccountInput, SyncProfileUncheckedUpdateWithoutAccountInput>
-    create: XOR<SyncProfileCreateWithoutAccountInput, SyncProfileUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SyncProfileUpdateWithWhereUniqueWithoutAccountInput = {
-    where: SyncProfileWhereUniqueInput
-    data: XOR<SyncProfileUpdateWithoutAccountInput, SyncProfileUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SyncProfileUpdateManyWithWhereWithoutAccountInput = {
-    where: SyncProfileScalarWhereInput
-    data: XOR<SyncProfileUpdateManyMutationInput, SyncProfileUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type SyncProfileScalarWhereInput = {
-    AND?: SyncProfileScalarWhereInput | SyncProfileScalarWhereInput[]
-    OR?: SyncProfileScalarWhereInput[]
-    NOT?: SyncProfileScalarWhereInput | SyncProfileScalarWhereInput[]
-    id?: UuidFilter<"SyncProfile"> | string
-    identityId?: StringFilter<"SyncProfile"> | string
-    name?: StringFilter<"SyncProfile"> | string
-    description?: StringNullableFilter<"SyncProfile"> | string | null
-    providerType?: StringFilter<"SyncProfile"> | string
-    providerConfigJson?: StringFilter<"SyncProfile"> | string
-    syncConfigJson?: StringFilter<"SyncProfile"> | string
-    isDefault?: BoolFilter<"SyncProfile"> | boolean
-    isActive?: BoolFilter<"SyncProfile"> | boolean
-    isConnected?: BoolFilter<"SyncProfile"> | boolean
-    lastSyncAt?: BigIntNullableFilter<"SyncProfile"> | bigint | number | null
-    lastSyncVersionJson?: StringNullableFilter<"SyncProfile"> | string | null
-    lastSyncResult?: StringNullableFilter<"SyncProfile"> | string | null
-    historyStatsJson?: StringFilter<"SyncProfile"> | string
-    createdAt?: BigIntFilter<"SyncProfile"> | bigint | number
-    updatedAt?: BigIntFilter<"SyncProfile"> | bigint | number
-  }
-
-  export type SyncSessionUpsertWithWhereUniqueWithoutAccountInput = {
-    where: SyncSessionWhereUniqueInput
-    update: XOR<SyncSessionUpdateWithoutAccountInput, SyncSessionUncheckedUpdateWithoutAccountInput>
-    create: XOR<SyncSessionCreateWithoutAccountInput, SyncSessionUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SyncSessionUpdateWithWhereUniqueWithoutAccountInput = {
-    where: SyncSessionWhereUniqueInput
-    data: XOR<SyncSessionUpdateWithoutAccountInput, SyncSessionUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SyncSessionUpdateManyWithWhereWithoutAccountInput = {
-    where: SyncSessionScalarWhereInput
-    data: XOR<SyncSessionUpdateManyMutationInput, SyncSessionUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type SyncSessionScalarWhereInput = {
-    AND?: SyncSessionScalarWhereInput | SyncSessionScalarWhereInput[]
-    OR?: SyncSessionScalarWhereInput[]
-    NOT?: SyncSessionScalarWhereInput | SyncSessionScalarWhereInput[]
-    id?: UuidFilter<"SyncSession"> | string
-    identityId?: StringFilter<"SyncSession"> | string
-    profileId?: UuidFilter<"SyncSession"> | string
-    status?: StringFilter<"SyncSession"> | string
-    direction?: StringFilter<"SyncSession"> | string
-    strategy?: StringFilter<"SyncSession"> | string
-    triggerType?: StringFilter<"SyncSession"> | string
-    triggerDeviceJson?: StringFilter<"SyncSession"> | string
-    startVersionJson?: StringFilter<"SyncSession"> | string
-    endVersionJson?: StringNullableFilter<"SyncSession"> | string | null
-    localSnapshotId?: UuidNullableFilter<"SyncSession"> | string | null
-    remoteSnapshotId?: UuidNullableFilter<"SyncSession"> | string | null
-    statisticsJson?: StringNullableFilter<"SyncSession"> | string | null
-    errorJson?: StringNullableFilter<"SyncSession"> | string | null
-    canRetry?: BoolFilter<"SyncSession"> | boolean
-    retryCount?: IntFilter<"SyncSession"> | number
-    createdAt?: BigIntFilter<"SyncSession"> | bigint | number
-    startedAt?: BigIntNullableFilter<"SyncSession"> | bigint | number | null
-    completedAt?: BigIntNullableFilter<"SyncSession"> | bigint | number | null
-    updatedAt?: BigIntFilter<"SyncSession"> | bigint | number
-  }
-
-  export type SyncConflictUpsertWithWhereUniqueWithoutAccountInput = {
-    where: SyncConflictWhereUniqueInput
-    update: XOR<SyncConflictUpdateWithoutAccountInput, SyncConflictUncheckedUpdateWithoutAccountInput>
-    create: XOR<SyncConflictCreateWithoutAccountInput, SyncConflictUncheckedCreateWithoutAccountInput>
-  }
-
-  export type SyncConflictUpdateWithWhereUniqueWithoutAccountInput = {
-    where: SyncConflictWhereUniqueInput
-    data: XOR<SyncConflictUpdateWithoutAccountInput, SyncConflictUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type SyncConflictUpdateManyWithWhereWithoutAccountInput = {
-    where: SyncConflictScalarWhereInput
-    data: XOR<SyncConflictUpdateManyMutationInput, SyncConflictUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type SyncConflictScalarWhereInput = {
-    AND?: SyncConflictScalarWhereInput | SyncConflictScalarWhereInput[]
-    OR?: SyncConflictScalarWhereInput[]
-    NOT?: SyncConflictScalarWhereInput | SyncConflictScalarWhereInput[]
-    id?: UuidFilter<"SyncConflict"> | string
-    identityId?: StringFilter<"SyncConflict"> | string
-    sessionId?: UuidFilter<"SyncConflict"> | string
-    entityType?: StringFilter<"SyncConflict"> | string
-    entityId?: UuidFilter<"SyncConflict"> | string
-    entityName?: StringNullableFilter<"SyncConflict"> | string | null
-    conflictType?: StringFilter<"SyncConflict"> | string
-    localVersionJson?: StringFilter<"SyncConflict"> | string
-    localDataJson?: StringFilter<"SyncConflict"> | string
-    remoteVersionJson?: StringFilter<"SyncConflict"> | string
-    remoteDataJson?: StringFilter<"SyncConflict"> | string
-    status?: StringFilter<"SyncConflict"> | string
-    autoResolvable?: BoolFilter<"SyncConflict"> | boolean
-    resolutionJson?: StringNullableFilter<"SyncConflict"> | string | null
-    createdAt?: BigIntFilter<"SyncConflict"> | bigint | number
-    updatedAt?: BigIntFilter<"SyncConflict"> | bigint | number
-  }
-
-  export type PendingChangeUpsertWithWhereUniqueWithoutAccountInput = {
-    where: PendingChangeWhereUniqueInput
-    update: XOR<PendingChangeUpdateWithoutAccountInput, PendingChangeUncheckedUpdateWithoutAccountInput>
-    create: XOR<PendingChangeCreateWithoutAccountInput, PendingChangeUncheckedCreateWithoutAccountInput>
-  }
-
-  export type PendingChangeUpdateWithWhereUniqueWithoutAccountInput = {
-    where: PendingChangeWhereUniqueInput
-    data: XOR<PendingChangeUpdateWithoutAccountInput, PendingChangeUncheckedUpdateWithoutAccountInput>
-  }
-
-  export type PendingChangeUpdateManyWithWhereWithoutAccountInput = {
-    where: PendingChangeScalarWhereInput
-    data: XOR<PendingChangeUpdateManyMutationInput, PendingChangeUncheckedUpdateManyWithoutAccountInput>
-  }
-
-  export type PendingChangeScalarWhereInput = {
-    AND?: PendingChangeScalarWhereInput | PendingChangeScalarWhereInput[]
-    OR?: PendingChangeScalarWhereInput[]
-    NOT?: PendingChangeScalarWhereInput | PendingChangeScalarWhereInput[]
-    id?: UuidFilter<"PendingChange"> | string
-    identityId?: StringFilter<"PendingChange"> | string
-    entityType?: StringFilter<"PendingChange"> | string
-    entityId?: UuidFilter<"PendingChange"> | string
-    entityName?: StringNullableFilter<"PendingChange"> | string | null
-    operation?: StringFilter<"PendingChange"> | string
-    beforeDataJson?: StringNullableFilter<"PendingChange"> | string | null
-    afterDataJson?: StringNullableFilter<"PendingChange"> | string | null
-    versionJson?: StringFilter<"PendingChange"> | string
-    isSynced?: BoolFilter<"PendingChange"> | boolean
-    syncedInSession?: UuidNullableFilter<"PendingChange"> | string | null
-    createdAt?: BigIntFilter<"PendingChange"> | bigint | number
-    syncedAt?: BigIntNullableFilter<"PendingChange"> | bigint | number | null
-  }
-
   export type AccountCreateWithoutAiConversationsInput = {
     status?: string
     profile: JsonNullValueInput | InputJsonValue
@@ -121763,10 +113831,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutAiConversationsInput = {
@@ -121820,10 +113884,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutAiConversationsInput = {
@@ -121919,10 +113979,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutAiConversationsInput = {
@@ -121976,10 +114032,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AiMessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -122129,10 +114181,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutAiGenerationTasksInput = {
@@ -122186,10 +114234,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutAiGenerationTasksInput = {
@@ -122259,10 +114303,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutAiGenerationTasksInput = {
@@ -122316,10 +114356,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutAiUsageQuotasInput = {
@@ -122373,10 +114409,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutAiUsageQuotasInput = {
@@ -122430,10 +114462,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutAiUsageQuotasInput = {
@@ -122503,10 +114531,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutAiUsageQuotasInput = {
@@ -122560,10 +114584,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutAiProviderConfigsInput = {
@@ -122617,10 +114637,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutAiProviderConfigsInput = {
@@ -122674,10 +114690,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutAiProviderConfigsInput = {
@@ -122747,10 +114759,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutAiProviderConfigsInput = {
@@ -122804,10 +114812,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutDashboardConfigsInput = {
@@ -122861,10 +114865,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutDashboardConfigsInput = {
@@ -122918,10 +114918,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutDashboardConfigsInput = {
@@ -122991,10 +114987,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutDashboardConfigsInput = {
@@ -123048,10 +115040,6 @@ export namespace Prisma {
     aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AuthIdentifierCreateWithoutIdentityInput = {
@@ -123243,10 +115231,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutIdentityInput = {
@@ -123300,10 +115284,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutIdentityInput = {
@@ -123855,10 +115835,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutDocumentsInput = {
@@ -123912,10 +115888,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutDocumentsInput = {
@@ -124091,10 +116063,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutDocumentsInput = {
@@ -124148,10 +116116,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type DocumentVersionUpsertWithWhereUniqueWithoutDocumentInput = {
@@ -124314,10 +116278,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutDocumentVersionsInput = {
@@ -124371,10 +116331,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutDocumentVersionsInput = {
@@ -124495,10 +116451,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutDocumentVersionsInput = {
@@ -124552,10 +116504,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type DocumentCreateWithoutSourceLinksInput = {
@@ -124837,10 +116785,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutEditorWorkspacesInput = {
@@ -124894,10 +116838,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutEditorWorkspacesInput = {
@@ -124983,10 +116923,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutEditorWorkspacesInput = {
@@ -125040,10 +116976,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type EditorWorkspaceSessionGroupCreateWithoutSessionInput = {
@@ -125135,10 +117067,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionsInput = {
@@ -125192,10 +117120,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutEditorWorkspaceSessionsInput = {
@@ -125320,10 +117244,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionsInput = {
@@ -125377,10 +117297,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type EditorWorkspaceUpsertWithoutSessionsInput = {
@@ -125525,10 +117441,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionGroupsInput = {
@@ -125582,10 +117494,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutEditorWorkspaceSessionGroupsInput = {
@@ -125702,10 +117610,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionGroupsInput = {
@@ -125759,10 +117663,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type EditorWorkspaceSessionUpsertWithoutGroupsInput = {
@@ -125853,10 +117753,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutEditorWorkspaceSessionGroupTabsInput = {
@@ -125910,10 +117806,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutEditorWorkspaceSessionGroupTabsInput = {
@@ -126016,10 +117908,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutEditorWorkspaceSessionGroupTabsInput = {
@@ -126073,10 +117961,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type EditorWorkspaceSessionGroupUpsertWithoutTabsInput = {
@@ -126169,10 +118053,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutGoalsInput = {
@@ -126226,10 +118106,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutGoalsInput = {
@@ -126657,10 +118533,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutGoalsInput = {
@@ -126714,10 +118586,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type GoalFolderUpsertWithoutGoalsInput = {
@@ -127032,10 +118900,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutGoalFoldersInput = {
@@ -127089,10 +118953,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutGoalFoldersInput = {
@@ -127329,10 +119189,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutGoalFoldersInput = {
@@ -127386,10 +119242,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type GoalFolderUpsertWithoutChildFoldersInput = {
@@ -128245,10 +120097,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutFocusSessionsInput = {
@@ -128302,10 +120150,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutFocusSessionsInput = {
@@ -128442,10 +120286,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutFocusSessionsInput = {
@@ -128499,10 +120339,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type GoalUpsertWithoutFocusSessionsInput = {
@@ -128629,10 +120465,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutFocusModesInput = {
@@ -128686,10 +120518,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutFocusModesInput = {
@@ -128759,10 +120587,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutFocusModesInput = {
@@ -128816,10 +120640,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutGoalStatisticsInput = {
@@ -128873,10 +120693,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutGoalStatisticsInput = {
@@ -128930,10 +120746,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutGoalStatisticsInput = {
@@ -129003,10 +120815,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutGoalStatisticsInput = {
@@ -129060,10 +120868,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type RuleRevisionCreateWithoutRuleInput = {
@@ -129326,10 +121130,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutNotificationsInput = {
@@ -129383,10 +121183,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutNotificationsInput = {
@@ -129515,10 +121311,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutNotificationsInput = {
@@ -129572,10 +121364,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type NotificationCreateWithoutChannelsInput = {
@@ -129953,10 +121741,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutReminderTemplatesInput = {
@@ -130010,10 +121794,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutReminderTemplatesInput = {
@@ -130198,10 +121978,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutReminderTemplatesInput = {
@@ -130255,10 +122031,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type ReminderGroupUpsertWithoutTemplatesInput = {
@@ -130359,10 +122131,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutReminderGroupsInput = {
@@ -130416,10 +122184,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutReminderGroupsInput = {
@@ -130583,10 +122347,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutReminderGroupsInput = {
@@ -130640,10 +122400,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type ReminderTemplateUpsertWithWhereUniqueWithoutGroupInput = {
@@ -130713,10 +122469,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutReminderInstancesInput = {
@@ -130770,10 +122522,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutReminderInstancesInput = {
@@ -130932,10 +122680,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutReminderInstancesInput = {
@@ -130989,10 +122733,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type ReminderTemplateUpsertWithoutInstancesInput = {
@@ -131325,10 +123065,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutReminderStatisticsInput = {
@@ -131382,10 +123118,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutReminderStatisticsInput = {
@@ -131455,10 +123187,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutReminderStatisticsInput = {
@@ -131512,10 +123240,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type ReminderTemplateCreateWithoutResponsesInput = {
@@ -131753,10 +123477,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutUserReminderPreferencesInput = {
@@ -131810,10 +123530,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutUserReminderPreferencesInput = {
@@ -131883,10 +123599,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutUserReminderPreferencesInput = {
@@ -131940,10 +123652,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutRepositoriesInput = {
@@ -131997,10 +123705,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutRepositoriesInput = {
@@ -132054,10 +123758,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutRepositoriesInput = {
@@ -132309,10 +124009,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutRepositoriesInput = {
@@ -132366,10 +124062,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type RepositoryExplorerUpsertWithWhereUniqueWithoutRepositoryInput = {
@@ -133479,10 +125171,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutRepositoryExplorersInput = {
@@ -133536,10 +125224,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutRepositoryExplorersInput = {
@@ -133660,10 +125344,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutRepositoryExplorersInput = {
@@ -133717,10 +125397,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type RepositoryUpsertWithoutExplorersInput = {
@@ -133831,10 +125507,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutRepositoryStatisticsInput = {
@@ -133888,10 +125560,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutRepositoryStatisticsInput = {
@@ -133961,10 +125629,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutRepositoryStatisticsInput = {
@@ -134018,10 +125682,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutSchedulesInput = {
@@ -134075,10 +125735,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutSchedulesInput = {
@@ -134132,10 +125788,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutSchedulesInput = {
@@ -134205,10 +125857,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutSchedulesInput = {
@@ -134262,10 +125910,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutScheduleJobsInput = {
@@ -134319,10 +125963,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutScheduleJobsInput = {
@@ -134376,10 +126016,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutScheduleJobsInput = {
@@ -134449,10 +126085,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutScheduleJobsInput = {
@@ -134506,10 +126138,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type ScheduleExecutionCreateWithoutTaskInput = {
@@ -134595,10 +126223,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutScheduleTasksInput = {
@@ -134652,10 +126276,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutScheduleTasksInput = {
@@ -134756,10 +126376,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutScheduleTasksInput = {
@@ -134813,10 +126429,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type ScheduleTaskCreateWithoutExecutionsInput = {
@@ -135026,10 +126638,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutScheduleStatisticsInput = {
@@ -135083,10 +126691,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutScheduleStatisticsInput = {
@@ -135156,10 +126760,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutScheduleStatisticsInput = {
@@ -135213,10 +126813,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutUserSettingsInput = {
@@ -135270,10 +126866,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutUserSettingsInput = {
@@ -135327,10 +126919,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutUserSettingsInput = {
@@ -135400,10 +126988,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutUserSettingsInput = {
@@ -135457,1320 +127041,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountCreateWithoutSyncProfilesInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutSyncProfilesInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutSyncProfilesInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutSyncProfilesInput, AccountUncheckedCreateWithoutSyncProfilesInput>
-  }
-
-  export type SyncSessionCreateWithoutProfileInput = {
-    id: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncSessionsInput
-    conflicts?: SyncConflictCreateNestedManyWithoutSessionInput
-  }
-
-  export type SyncSessionUncheckedCreateWithoutProfileInput = {
-    id: string
-    identityId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    conflicts?: SyncConflictUncheckedCreateNestedManyWithoutSessionInput
-  }
-
-  export type SyncSessionCreateOrConnectWithoutProfileInput = {
-    where: SyncSessionWhereUniqueInput
-    create: XOR<SyncSessionCreateWithoutProfileInput, SyncSessionUncheckedCreateWithoutProfileInput>
-  }
-
-  export type SyncSessionCreateManyProfileInputEnvelope = {
-    data: SyncSessionCreateManyProfileInput | SyncSessionCreateManyProfileInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type AccountUpsertWithoutSyncProfilesInput = {
-    update: XOR<AccountUpdateWithoutSyncProfilesInput, AccountUncheckedUpdateWithoutSyncProfilesInput>
-    create: XOR<AccountCreateWithoutSyncProfilesInput, AccountUncheckedCreateWithoutSyncProfilesInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutSyncProfilesInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutSyncProfilesInput, AccountUncheckedUpdateWithoutSyncProfilesInput>
-  }
-
-  export type AccountUpdateWithoutSyncProfilesInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutSyncProfilesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type SyncSessionUpsertWithWhereUniqueWithoutProfileInput = {
-    where: SyncSessionWhereUniqueInput
-    update: XOR<SyncSessionUpdateWithoutProfileInput, SyncSessionUncheckedUpdateWithoutProfileInput>
-    create: XOR<SyncSessionCreateWithoutProfileInput, SyncSessionUncheckedCreateWithoutProfileInput>
-  }
-
-  export type SyncSessionUpdateWithWhereUniqueWithoutProfileInput = {
-    where: SyncSessionWhereUniqueInput
-    data: XOR<SyncSessionUpdateWithoutProfileInput, SyncSessionUncheckedUpdateWithoutProfileInput>
-  }
-
-  export type SyncSessionUpdateManyWithWhereWithoutProfileInput = {
-    where: SyncSessionScalarWhereInput
-    data: XOR<SyncSessionUpdateManyMutationInput, SyncSessionUncheckedUpdateManyWithoutProfileInput>
-  }
-
-  export type AccountCreateWithoutSyncSessionsInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutSyncSessionsInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutSyncSessionsInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutSyncSessionsInput, AccountUncheckedCreateWithoutSyncSessionsInput>
-  }
-
-  export type SyncProfileCreateWithoutSessionsInput = {
-    id: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncProfilesInput
-  }
-
-  export type SyncProfileUncheckedCreateWithoutSessionsInput = {
-    id: string
-    identityId: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncProfileCreateOrConnectWithoutSessionsInput = {
-    where: SyncProfileWhereUniqueInput
-    create: XOR<SyncProfileCreateWithoutSessionsInput, SyncProfileUncheckedCreateWithoutSessionsInput>
-  }
-
-  export type SyncConflictCreateWithoutSessionInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncConflictsInput
-  }
-
-  export type SyncConflictUncheckedCreateWithoutSessionInput = {
-    id: string
-    identityId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncConflictCreateOrConnectWithoutSessionInput = {
-    where: SyncConflictWhereUniqueInput
-    create: XOR<SyncConflictCreateWithoutSessionInput, SyncConflictUncheckedCreateWithoutSessionInput>
-  }
-
-  export type SyncConflictCreateManySessionInputEnvelope = {
-    data: SyncConflictCreateManySessionInput | SyncConflictCreateManySessionInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type AccountUpsertWithoutSyncSessionsInput = {
-    update: XOR<AccountUpdateWithoutSyncSessionsInput, AccountUncheckedUpdateWithoutSyncSessionsInput>
-    create: XOR<AccountCreateWithoutSyncSessionsInput, AccountUncheckedCreateWithoutSyncSessionsInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutSyncSessionsInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutSyncSessionsInput, AccountUncheckedUpdateWithoutSyncSessionsInput>
-  }
-
-  export type AccountUpdateWithoutSyncSessionsInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutSyncSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type SyncProfileUpsertWithoutSessionsInput = {
-    update: XOR<SyncProfileUpdateWithoutSessionsInput, SyncProfileUncheckedUpdateWithoutSessionsInput>
-    create: XOR<SyncProfileCreateWithoutSessionsInput, SyncProfileUncheckedCreateWithoutSessionsInput>
-    where?: SyncProfileWhereInput
-  }
-
-  export type SyncProfileUpdateToOneWithWhereWithoutSessionsInput = {
-    where?: SyncProfileWhereInput
-    data: XOR<SyncProfileUpdateWithoutSessionsInput, SyncProfileUncheckedUpdateWithoutSessionsInput>
-  }
-
-  export type SyncProfileUpdateWithoutSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncProfilesNestedInput
-  }
-
-  export type SyncProfileUncheckedUpdateWithoutSessionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictUpsertWithWhereUniqueWithoutSessionInput = {
-    where: SyncConflictWhereUniqueInput
-    update: XOR<SyncConflictUpdateWithoutSessionInput, SyncConflictUncheckedUpdateWithoutSessionInput>
-    create: XOR<SyncConflictCreateWithoutSessionInput, SyncConflictUncheckedCreateWithoutSessionInput>
-  }
-
-  export type SyncConflictUpdateWithWhereUniqueWithoutSessionInput = {
-    where: SyncConflictWhereUniqueInput
-    data: XOR<SyncConflictUpdateWithoutSessionInput, SyncConflictUncheckedUpdateWithoutSessionInput>
-  }
-
-  export type SyncConflictUpdateManyWithWhereWithoutSessionInput = {
-    where: SyncConflictScalarWhereInput
-    data: XOR<SyncConflictUpdateManyMutationInput, SyncConflictUncheckedUpdateManyWithoutSessionInput>
-  }
-
-  export type AccountCreateWithoutSyncConflictsInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutSyncConflictsInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutSyncConflictsInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutSyncConflictsInput, AccountUncheckedCreateWithoutSyncConflictsInput>
-  }
-
-  export type SyncSessionCreateWithoutConflictsInput = {
-    id: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-    account: AccountCreateNestedOneWithoutSyncSessionsInput
-    profile: SyncProfileCreateNestedOneWithoutSessionsInput
-  }
-
-  export type SyncSessionUncheckedCreateWithoutConflictsInput = {
-    id: string
-    identityId: string
-    profileId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-  }
-
-  export type SyncSessionCreateOrConnectWithoutConflictsInput = {
-    where: SyncSessionWhereUniqueInput
-    create: XOR<SyncSessionCreateWithoutConflictsInput, SyncSessionUncheckedCreateWithoutConflictsInput>
-  }
-
-  export type AccountUpsertWithoutSyncConflictsInput = {
-    update: XOR<AccountUpdateWithoutSyncConflictsInput, AccountUncheckedUpdateWithoutSyncConflictsInput>
-    create: XOR<AccountCreateWithoutSyncConflictsInput, AccountUncheckedCreateWithoutSyncConflictsInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutSyncConflictsInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutSyncConflictsInput, AccountUncheckedUpdateWithoutSyncConflictsInput>
-  }
-
-  export type AccountUpdateWithoutSyncConflictsInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutSyncConflictsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
-  }
-
-  export type SyncSessionUpsertWithoutConflictsInput = {
-    update: XOR<SyncSessionUpdateWithoutConflictsInput, SyncSessionUncheckedUpdateWithoutConflictsInput>
-    create: XOR<SyncSessionCreateWithoutConflictsInput, SyncSessionUncheckedCreateWithoutConflictsInput>
-    where?: SyncSessionWhereInput
-  }
-
-  export type SyncSessionUpdateToOneWithWhereWithoutConflictsInput = {
-    where?: SyncSessionWhereInput
-    data: XOR<SyncSessionUpdateWithoutConflictsInput, SyncSessionUncheckedUpdateWithoutConflictsInput>
-  }
-
-  export type SyncSessionUpdateWithoutConflictsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncSessionsNestedInput
-    profile?: SyncProfileUpdateOneRequiredWithoutSessionsNestedInput
-  }
-
-  export type SyncSessionUncheckedUpdateWithoutConflictsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    profileId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type AccountCreateWithoutPendingChangesInput = {
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    identity: AuthIdentityCreateNestedOneWithoutAccountsInput
-    documents?: DocumentCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeCreateNestedManyWithoutAccountInput
-    goals?: GoalCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingCreateNestedOneWithoutAccountInput
-    notifications?: NotificationCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountUncheckedCreateWithoutPendingChangesInput = {
-    id: string
-    status?: string
-    profile: JsonNullValueInput | InputJsonValue
-    settings: JsonNullValueInput | InputJsonValue
-    emailAddress: string
-    emailIsVerified?: boolean
-    emailVerifiedAt?: Date | string | null
-    emailIsPrimary?: boolean
-    phoneCountryCode?: string | null
-    phoneNumber?: string | null
-    phoneFullNumber?: string | null
-    phoneIsVerified?: boolean | null
-    phoneVerifiedAt?: Date | string | null
-    version?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    deletedAt?: Date | string | null
-    documents?: DocumentUncheckedCreateNestedManyWithoutAccountInput
-    documentVersions?: DocumentVersionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaces?: EditorWorkspaceUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedCreateNestedManyWithoutAccountInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedCreateNestedManyWithoutAccountInput
-    focusSessions?: FocusSessionUncheckedCreateNestedManyWithoutAccountInput
-    focusModes?: FocusModeUncheckedCreateNestedManyWithoutAccountInput
-    goals?: GoalUncheckedCreateNestedManyWithoutAccountInput
-    goalFolders?: GoalFolderUncheckedCreateNestedManyWithoutAccountInput
-    goalStatistics?: GoalStatisticUncheckedCreateNestedOneWithoutAccountInput
-    reminderGroups?: ReminderGroupUncheckedCreateNestedManyWithoutAccountInput
-    reminderTemplates?: ReminderTemplateUncheckedCreateNestedManyWithoutAccountInput
-    reminderInstances?: ReminderInstanceUncheckedCreateNestedManyWithoutAccountInput
-    reminderStatistics?: ReminderStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedCreateNestedOneWithoutAccountInput
-    repositories?: RepositoryUncheckedCreateNestedManyWithoutAccountInput
-    repositoryExplorers?: RepositoryExplorerUncheckedCreateNestedManyWithoutAccountInput
-    repositoryStatistics?: RepositoryStatisticUncheckedCreateNestedOneWithoutAccountInput
-    schedules?: ScheduleUncheckedCreateNestedManyWithoutAccountInput
-    scheduleJobs?: ScheduleJobUncheckedCreateNestedManyWithoutAccountInput
-    scheduleTasks?: ScheduleTaskUncheckedCreateNestedManyWithoutAccountInput
-    scheduleStatistics?: ScheduleStatisticUncheckedCreateNestedOneWithoutAccountInput
-    taskFolders?: TaskFolderUncheckedCreateNestedManyWithoutAccountInput
-    taskTemplates?: TaskTemplateUncheckedCreateNestedManyWithoutAccountInput
-    taskInstances?: TaskInstanceUncheckedCreateNestedManyWithoutAccountInput
-    taskStatistics?: TaskStatisticUncheckedCreateNestedOneWithoutAccountInput
-    userSettings?: UserSettingUncheckedCreateNestedOneWithoutAccountInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutAccountInput
-    aiConversations?: AiConversationUncheckedCreateNestedManyWithoutAccountInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedCreateNestedManyWithoutAccountInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
-    aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
-    dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-  }
-
-  export type AccountCreateOrConnectWithoutPendingChangesInput = {
-    where: AccountWhereUniqueInput
-    create: XOR<AccountCreateWithoutPendingChangesInput, AccountUncheckedCreateWithoutPendingChangesInput>
-  }
-
-  export type AccountUpsertWithoutPendingChangesInput = {
-    update: XOR<AccountUpdateWithoutPendingChangesInput, AccountUncheckedUpdateWithoutPendingChangesInput>
-    create: XOR<AccountCreateWithoutPendingChangesInput, AccountUncheckedCreateWithoutPendingChangesInput>
-    where?: AccountWhereInput
-  }
-
-  export type AccountUpdateToOneWithWhereWithoutPendingChangesInput = {
-    where?: AccountWhereInput
-    data: XOR<AccountUpdateWithoutPendingChangesInput, AccountUncheckedUpdateWithoutPendingChangesInput>
-  }
-
-  export type AccountUpdateWithoutPendingChangesInput = {
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    identity?: AuthIdentityUpdateOneRequiredWithoutAccountsNestedInput
-    documents?: DocumentUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUpdateManyWithoutAccountNestedInput
-    goals?: GoalUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-  }
-
-  export type AccountUncheckedUpdateWithoutPendingChangesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    profile?: JsonNullValueInput | InputJsonValue
-    settings?: JsonNullValueInput | InputJsonValue
-    emailAddress?: StringFieldUpdateOperationsInput | string
-    emailIsVerified?: BoolFieldUpdateOperationsInput | boolean
-    emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    emailIsPrimary?: BoolFieldUpdateOperationsInput | boolean
-    phoneCountryCode?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneFullNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    phoneIsVerified?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    phoneVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    version?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    documents?: DocumentUncheckedUpdateManyWithoutAccountNestedInput
-    documentVersions?: DocumentVersionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaces?: EditorWorkspaceUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessions?: EditorWorkspaceSessionUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroups?: EditorWorkspaceSessionGroupUncheckedUpdateManyWithoutAccountNestedInput
-    editorWorkspaceSessionGroupTabs?: EditorWorkspaceSessionGroupTabUncheckedUpdateManyWithoutAccountNestedInput
-    focusSessions?: FocusSessionUncheckedUpdateManyWithoutAccountNestedInput
-    focusModes?: FocusModeUncheckedUpdateManyWithoutAccountNestedInput
-    goals?: GoalUncheckedUpdateManyWithoutAccountNestedInput
-    goalFolders?: GoalFolderUncheckedUpdateManyWithoutAccountNestedInput
-    goalStatistics?: GoalStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    reminderGroups?: ReminderGroupUncheckedUpdateManyWithoutAccountNestedInput
-    reminderTemplates?: ReminderTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    reminderInstances?: ReminderInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    reminderStatistics?: ReminderStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userReminderPreferences?: UserReminderPreferenceUncheckedUpdateOneWithoutAccountNestedInput
-    repositories?: RepositoryUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryExplorers?: RepositoryExplorerUncheckedUpdateManyWithoutAccountNestedInput
-    repositoryStatistics?: RepositoryStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    schedules?: ScheduleUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleJobs?: ScheduleJobUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleTasks?: ScheduleTaskUncheckedUpdateManyWithoutAccountNestedInput
-    scheduleStatistics?: ScheduleStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    taskFolders?: TaskFolderUncheckedUpdateManyWithoutAccountNestedInput
-    taskTemplates?: TaskTemplateUncheckedUpdateManyWithoutAccountNestedInput
-    taskInstances?: TaskInstanceUncheckedUpdateManyWithoutAccountNestedInput
-    taskStatistics?: TaskStatisticUncheckedUpdateOneWithoutAccountNestedInput
-    userSettings?: UserSettingUncheckedUpdateOneWithoutAccountNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutAccountNestedInput
-    aiConversations?: AiConversationUncheckedUpdateManyWithoutAccountNestedInput
-    aiGenerationTasks?: AiGenerationTaskUncheckedUpdateManyWithoutAccountNestedInput
-    aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
-    aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
-    dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountCreateWithoutTaskFoldersInput = {
@@ -136824,10 +127094,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTaskFoldersInput = {
@@ -136881,10 +127147,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTaskFoldersInput = {
@@ -137052,10 +127314,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTaskFoldersInput = {
@@ -137109,10 +127367,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type TaskTemplateUpsertWithWhereUniqueWithoutFolderInput = {
@@ -137182,10 +127436,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTaskTemplatesInput = {
@@ -137239,10 +127489,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTaskTemplatesInput = {
@@ -137666,10 +127912,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTaskTemplatesInput = {
@@ -137723,10 +127965,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type TaskFolderUpsertWithoutTemplatesInput = {
@@ -138022,10 +128260,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTaskInstancesInput = {
@@ -138079,10 +128313,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTaskInstancesInput = {
@@ -138245,10 +128475,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTaskInstancesInput = {
@@ -138302,10 +128528,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type TaskTemplateUpsertWithoutInstancesInput = {
@@ -139034,10 +129256,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeCreateNestedManyWithoutAccountInput
   }
 
   export type AccountUncheckedCreateWithoutTaskStatisticsInput = {
@@ -139091,10 +129309,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedCreateNestedOneWithoutAccountInput
     aiProviderConfigs?: AiProviderConfigUncheckedCreateNestedManyWithoutAccountInput
     dashboardConfigs?: DashboardConfigUncheckedCreateNestedOneWithoutAccountInput
-    syncProfiles?: SyncProfileUncheckedCreateNestedManyWithoutAccountInput
-    syncSessions?: SyncSessionUncheckedCreateNestedManyWithoutAccountInput
-    syncConflicts?: SyncConflictUncheckedCreateNestedManyWithoutAccountInput
-    pendingChanges?: PendingChangeUncheckedCreateNestedManyWithoutAccountInput
   }
 
   export type AccountCreateOrConnectWithoutTaskStatisticsInput = {
@@ -139164,10 +129378,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutTaskStatisticsInput = {
@@ -139221,10 +129431,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type DocumentCreateManyAccountInput = {
@@ -139695,79 +129901,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
-  }
-
-  export type SyncProfileCreateManyAccountInput = {
-    id: string
-    name: string
-    description?: string | null
-    providerType: string
-    providerConfigJson: string
-    syncConfigJson: string
-    isDefault?: boolean
-    isActive?: boolean
-    isConnected?: boolean
-    lastSyncAt?: bigint | number | null
-    lastSyncVersionJson?: string | null
-    lastSyncResult?: string | null
-    historyStatsJson?: string
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncSessionCreateManyAccountInput = {
-    id: string
-    profileId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-  }
-
-  export type SyncConflictCreateManyAccountInput = {
-    id: string
-    sessionId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type PendingChangeCreateManyAccountInput = {
-    id: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    operation: string
-    beforeDataJson?: string | null
-    afterDataJson?: string | null
-    versionJson: string
-    isSynced?: boolean
-    syncedInSession?: string | null
-    createdAt: bigint | number
-    syncedAt?: bigint | number | null
   }
 
   export type DocumentUpdateWithoutAccountInput = {
@@ -141242,229 +131375,6 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type SyncProfileUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    sessions?: SyncSessionUpdateManyWithoutProfileNestedInput
-  }
-
-  export type SyncProfileUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    sessions?: SyncSessionUncheckedUpdateManyWithoutProfileNestedInput
-  }
-
-  export type SyncProfileUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    providerType?: StringFieldUpdateOperationsInput | string
-    providerConfigJson?: StringFieldUpdateOperationsInput | string
-    syncConfigJson?: StringFieldUpdateOperationsInput | string
-    isDefault?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isConnected?: BoolFieldUpdateOperationsInput | boolean
-    lastSyncAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    lastSyncVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    lastSyncResult?: NullableStringFieldUpdateOperationsInput | string | null
-    historyStatsJson?: StringFieldUpdateOperationsInput | string
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncSessionUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    profile?: SyncProfileUpdateOneRequiredWithoutSessionsNestedInput
-    conflicts?: SyncConflictUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SyncSessionUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    profileId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    conflicts?: SyncConflictUncheckedUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SyncSessionUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    profileId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    session?: SyncSessionUpdateOneRequiredWithoutConflictsNestedInput
-  }
-
-  export type SyncConflictUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sessionId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type PendingChangeUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-  }
-
-  export type PendingChangeUncheckedUpdateWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-  }
-
-  export type PendingChangeUncheckedUpdateManyWithoutAccountInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    operation?: StringFieldUpdateOperationsInput | string
-    beforeDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    afterDataJson?: NullableStringFieldUpdateOperationsInput | string | null
-    versionJson?: StringFieldUpdateOperationsInput | string
-    isSynced?: BoolFieldUpdateOperationsInput | boolean
-    syncedInSession?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    syncedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-  }
-
   export type AiMessageCreateManyConversationInput = {
     id: string
     role: string
@@ -141763,10 +131673,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateWithoutIdentityInput = {
@@ -141820,10 +131726,6 @@ export namespace Prisma {
     aiUsageQuotas?: AiUsageQuotaUncheckedUpdateOneWithoutAccountNestedInput
     aiProviderConfigs?: AiProviderConfigUncheckedUpdateManyWithoutAccountNestedInput
     dashboardConfigs?: DashboardConfigUncheckedUpdateOneWithoutAccountNestedInput
-    syncProfiles?: SyncProfileUncheckedUpdateManyWithoutAccountNestedInput
-    syncSessions?: SyncSessionUncheckedUpdateManyWithoutAccountNestedInput
-    syncConflicts?: SyncConflictUncheckedUpdateManyWithoutAccountNestedInput
-    pendingChanges?: PendingChangeUncheckedUpdateManyWithoutAccountNestedInput
   }
 
   export type AccountUncheckedUpdateManyWithoutIdentityInput = {
@@ -143755,168 +133657,6 @@ export namespace Prisma {
     error?: NullableStringFieldUpdateOperationsInput | string | null
     retryCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SyncSessionCreateManyProfileInput = {
-    id: string
-    identityId: string
-    status: string
-    direction: string
-    strategy: string
-    triggerType: string
-    triggerDeviceJson: string
-    startVersionJson: string
-    endVersionJson?: string | null
-    localSnapshotId?: string | null
-    remoteSnapshotId?: string | null
-    statisticsJson?: string | null
-    errorJson?: string | null
-    canRetry?: boolean
-    retryCount?: number
-    createdAt: bigint | number
-    startedAt?: bigint | number | null
-    completedAt?: bigint | number | null
-    updatedAt: bigint | number
-  }
-
-  export type SyncSessionUpdateWithoutProfileInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncSessionsNestedInput
-    conflicts?: SyncConflictUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SyncSessionUncheckedUpdateWithoutProfileInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    conflicts?: SyncConflictUncheckedUpdateManyWithoutSessionNestedInput
-  }
-
-  export type SyncSessionUncheckedUpdateManyWithoutProfileInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    direction?: StringFieldUpdateOperationsInput | string
-    strategy?: StringFieldUpdateOperationsInput | string
-    triggerType?: StringFieldUpdateOperationsInput | string
-    triggerDeviceJson?: StringFieldUpdateOperationsInput | string
-    startVersionJson?: StringFieldUpdateOperationsInput | string
-    endVersionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    localSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    remoteSnapshotId?: NullableStringFieldUpdateOperationsInput | string | null
-    statisticsJson?: NullableStringFieldUpdateOperationsInput | string | null
-    errorJson?: NullableStringFieldUpdateOperationsInput | string | null
-    canRetry?: BoolFieldUpdateOperationsInput | boolean
-    retryCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    startedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    completedAt?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictCreateManySessionInput = {
-    id: string
-    identityId: string
-    entityType: string
-    entityId: string
-    entityName?: string | null
-    conflictType: string
-    localVersionJson: string
-    localDataJson: string
-    remoteVersionJson: string
-    remoteDataJson: string
-    status: string
-    autoResolvable?: boolean
-    resolutionJson?: string | null
-    createdAt: bigint | number
-    updatedAt: bigint | number
-  }
-
-  export type SyncConflictUpdateWithoutSessionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    account?: AccountUpdateOneRequiredWithoutSyncConflictsNestedInput
-  }
-
-  export type SyncConflictUncheckedUpdateWithoutSessionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
-  }
-
-  export type SyncConflictUncheckedUpdateManyWithoutSessionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    identityId?: StringFieldUpdateOperationsInput | string
-    entityType?: StringFieldUpdateOperationsInput | string
-    entityId?: StringFieldUpdateOperationsInput | string
-    entityName?: NullableStringFieldUpdateOperationsInput | string | null
-    conflictType?: StringFieldUpdateOperationsInput | string
-    localVersionJson?: StringFieldUpdateOperationsInput | string
-    localDataJson?: StringFieldUpdateOperationsInput | string
-    remoteVersionJson?: StringFieldUpdateOperationsInput | string
-    remoteDataJson?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    autoResolvable?: BoolFieldUpdateOperationsInput | boolean
-    resolutionJson?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: BigIntFieldUpdateOperationsInput | bigint | number
-    updatedAt?: BigIntFieldUpdateOperationsInput | bigint | number
   }
 
   export type TaskTemplateCreateManyFolderInput = {

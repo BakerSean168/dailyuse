@@ -1031,83 +1031,6 @@ exports.Prisma.UserSettingScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.SyncProfileScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  name: 'name',
-  description: 'description',
-  providerType: 'providerType',
-  providerConfigJson: 'providerConfigJson',
-  syncConfigJson: 'syncConfigJson',
-  isDefault: 'isDefault',
-  isActive: 'isActive',
-  isConnected: 'isConnected',
-  lastSyncAt: 'lastSyncAt',
-  lastSyncVersionJson: 'lastSyncVersionJson',
-  lastSyncResult: 'lastSyncResult',
-  historyStatsJson: 'historyStatsJson',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.SyncSessionScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  profileId: 'profileId',
-  status: 'status',
-  direction: 'direction',
-  strategy: 'strategy',
-  triggerType: 'triggerType',
-  triggerDeviceJson: 'triggerDeviceJson',
-  startVersionJson: 'startVersionJson',
-  endVersionJson: 'endVersionJson',
-  localSnapshotId: 'localSnapshotId',
-  remoteSnapshotId: 'remoteSnapshotId',
-  statisticsJson: 'statisticsJson',
-  errorJson: 'errorJson',
-  canRetry: 'canRetry',
-  retryCount: 'retryCount',
-  createdAt: 'createdAt',
-  startedAt: 'startedAt',
-  completedAt: 'completedAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.SyncConflictScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  sessionId: 'sessionId',
-  entityType: 'entityType',
-  entityId: 'entityId',
-  entityName: 'entityName',
-  conflictType: 'conflictType',
-  localVersionJson: 'localVersionJson',
-  localDataJson: 'localDataJson',
-  remoteVersionJson: 'remoteVersionJson',
-  remoteDataJson: 'remoteDataJson',
-  status: 'status',
-  autoResolvable: 'autoResolvable',
-  resolutionJson: 'resolutionJson',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.PendingChangeScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  entityType: 'entityType',
-  entityId: 'entityId',
-  entityName: 'entityName',
-  operation: 'operation',
-  beforeDataJson: 'beforeDataJson',
-  afterDataJson: 'afterDataJson',
-  versionJson: 'versionJson',
-  isSynced: 'isSynced',
-  syncedInSession: 'syncedInSession',
-  createdAt: 'createdAt',
-  syncedAt: 'syncedAt'
-};
-
 exports.Prisma.TaskFolderScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -1341,10 +1264,6 @@ exports.Prisma.ModelName = {
   ScheduleExecution: 'ScheduleExecution',
   ScheduleStatistic: 'ScheduleStatistic',
   UserSetting: 'UserSetting',
-  SyncProfile: 'SyncProfile',
-  SyncSession: 'SyncSession',
-  SyncConflict: 'SyncConflict',
-  PendingChange: 'PendingChange',
   TaskFolder: 'TaskFolder',
   TaskTemplate: 'TaskTemplate',
   TaskInstance: 'TaskInstance',

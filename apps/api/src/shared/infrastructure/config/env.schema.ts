@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 /**
  * 环境变量 Schema
- * 
+ *
  * 分类:
  * 1. 应用基础配置 - NODE_ENV, API_PORT, API_HOST, LOG_LEVEL
  * 2. 数据库配置 - DATABASE_URL, DB_*
@@ -22,38 +22,21 @@ import { z } from 'zod';
  */
 export const envSchema = z.object({
   // ========== 应用基础配置 ==========
-  NODE_ENV: z
-    .enum(['development', 'production', 'test'])
-    .default('development'),
-  
-  API_PORT: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(65535)
-    .default(3000),
-  
-  API_HOST: z
-    .string()
-    .default('0.0.0.0'),
-  
-  LOG_LEVEL: z
-    .enum(['debug', 'info', 'warn', 'error'])
-    .default('info'),
-  
-  TZ: z
-    .string()
-    .default('Asia/Shanghai'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+
+  API_HOST: z.string().default('0.0.0.0'),
+
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
+  TZ: z.string().default('Asia/Shanghai'),
 
   // ========== 数据库配置 ==========
   // 完整连接字符串（可选，如果提供则优先使用）
   // 否则应用会从分解式配置自动生成
-  DATABASE_URL: z
-    .string()
-    .url()
-    .optional()
-    .describe('PostgreSQL 连接字符串（可选，优先使用）'),
-  
+  DATABASE_URL: z.string().url().optional().describe('PostgreSQL 连接字符串（可选，优先使用）'),
+
   // 分解式配置（用于 docker-compose 等场景）
   // Docker 最佳实践：使用分解配置而非完整 URL
   // 当 DATABASE_URL 未提供时，应用会从这些值自动生成
@@ -64,46 +47,23 @@ export const envSchema = z.object({
   DB_PASSWORD: z.string().default(''),
 
   // ========== Redis 缓存配置 ==========
-  REDIS_URL: z
-    .string()
-    .url()
-    .optional()
-    .describe('Redis 连接字符串 (优先使用)'),
-  
-  REDIS_HOST: z
-    .string()
-    .default('localhost'),
-  
-  REDIS_PORT: z.coerce
-    .number()
-    .int()
-    .default(6379),
-  
-  REDIS_PASSWORD: z
-    .string()
-    .optional(),
-  
-  REDIS_DB: z.coerce
-    .number()
-    .int()
-    .default(0),
+  REDIS_URL: z.string().url().optional().describe('Redis 连接字符串 (优先使用)'),
+
+  REDIS_HOST: z.string().default('localhost'),
+
+  REDIS_PORT: z.coerce.number().int().default(6379),
+
+  REDIS_PASSWORD: z.string().optional(),
+
+  REDIS_DB: z.coerce.number().int().default(0),
 
   // ========== JWT 认证配置 ==========
-  JWT_SECRET: z
-    .string()
-    .min(32, 'JWT_SECRET 至少需要 32 个字符')
-    .describe('JWT 签名密钥'),
-  
-  JWT_EXPIRES_IN: z
-    .string()
-    .default('7d')
-    .describe('JWT Token 有效期'),
-  
-  JWT_REFRESH_EXPIRES_IN: z
-    .string()
-    .default('30d')
-    .describe('JWT 刷新 Token 有效期'),
-  
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET 至少需要 32 个字符').describe('JWT 签名密钥'),
+
+  JWT_EXPIRES_IN: z.string().default('7d').describe('JWT Token 有效期'),
+
+  JWT_REFRESH_EXPIRES_IN: z.string().default('30d').describe('JWT 刷新 Token 有效期'),
+
   REFRESH_TOKEN_SECRET: z
     .string()
     .min(32)
@@ -118,19 +78,11 @@ export const envSchema = z.object({
 
   // ========== AI 服务配置 ==========
   // OpenAI
-  OPENAI_API_KEY: z
-    .string()
-    .optional()
-    .describe('OpenAI API 密钥'),
-  
-  OPENAI_MODEL: z
-    .string()
-    .default('gpt-4-turbo-preview'),
-  
-  OPENAI_BASE_URL: z
-    .string()
-    .url()
-    .default('https://api.openai.com/v1'),
+  OPENAI_API_KEY: z.string().optional().describe('OpenAI API 密钥'),
+
+  OPENAI_MODEL: z.string().default('gpt-4-turbo-preview'),
+
+  OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
 
   // 七牛云 AI
   QI_NIU_YUN_API_KEY: z.string().optional(),
@@ -159,17 +111,40 @@ export const envSchema = z.object({
 
   // ========== 监控配置 ==========
   SENTRY_DSN: z.string().url().optional(),
-  
+
   // ========== 功能开关 ==========
   ENABLE_DAILY_ANALYSIS: z
     .enum(['true', 'false'])
     .default('true')
-    .transform(v => v === 'true'),
-  
+    .transform((v) => v === 'true'),
+
   USE_PRIORITY_QUEUE_SCHEDULER: z
     .enum(['true', 'false'])
     .default('true')
-    .transform(v => v === 'true'),
+    .transform((v) => v === 'true'),
+
+  // ========== PowerSync 同步配置 ==========
+  POWERSYNC_URL: z
+    .string()
+    .optional()
+    .describe('PowerSync Service URL (e.g. http://localhost:8080)'),
+
+  POWERSYNC_PRIVATE_KEY: z
+    .string()
+    .optional()
+    .describe('PowerSync RSA private key (PEM, base64 encoded) for signing sync JWTs'),
+
+  POWERSYNC_PUBLIC_KEY_N: z
+    .string()
+    .optional()
+    .describe('PowerSync RSA public key JWK "n" parameter'),
+
+  POWERSYNC_PUBLIC_KEY_E: z
+    .string()
+    .default('AQAB')
+    .describe('PowerSync RSA public key JWK "e" parameter'),
+
+  POWERSYNC_KEY_ID: z.string().default('powersync-key').describe('PowerSync JWKS key ID (kid)'),
 
   // ========== 构建信息（CI 注入）==========
   BUILD_TIMESTAMP: z.string().optional(),
@@ -184,10 +159,10 @@ export type Env = z.infer<typeof envSchema>;
 /**
  * 处理环境变量的后处理
  * 如果未提供 DATABASE_URL，则从分解式配置自动生成
- * 
+ *
  * ⚠️ 重要：必须同步设置回 process.env，因为 Prisma 直接读取 process.env.DATABASE_URL
  * ⚠️ 重要：密码中的特殊字符必须 URL 编码
- * 
+ *
  * @param env 验证后的环境变量对象
  * @returns 处理后的环境变量对象
  */
@@ -200,14 +175,14 @@ export function processEnv(env: Env): Env {
     const host = env.DB_HOST;
     const port = env.DB_PORT || 5432;
     const database = encodeURIComponent(env.DB_NAME || 'dailyuse');
-    
+
     const databaseUrl = `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
     env.DATABASE_URL = databaseUrl;
-    
+
     // ⚠️ 关键：同步设置回 process.env，Prisma 直接读取 process.env.DATABASE_URL
     process.env.DATABASE_URL = databaseUrl;
   }
-  
+
   // 如果没有 REDIS_URL，从分解式配置生成
   if (!env.REDIS_URL && env.REDIS_HOST) {
     // ⚠️ 密码必须 URL 编码
@@ -215,14 +190,14 @@ export function processEnv(env: Env): Env {
     const host = env.REDIS_HOST;
     const port = env.REDIS_PORT || 6379;
     const db = env.REDIS_DB || 0;
-    
+
     const redisUrl = `redis://${password}@${host}:${port}/${db}`;
     env.REDIS_URL = redisUrl;
-    
+
     // 同步设置回 process.env（如果其他库需要）
     process.env.REDIS_URL = redisUrl;
   }
-  
+
   return env;
 }
 

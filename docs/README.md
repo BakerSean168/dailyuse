@@ -12,7 +12,7 @@ updated: 2025-01-22T00:00:00
 
 > 🎯 生产级、开发友好、AI优化的文档系�?
 >
-> **最后扫�?*: 2025-12-16 | **版本**: 0.2.x | **架构**: Nx Monorepo + DDD | **包数�?*: 16
+> **最后扫�?\*: 2025-12-16 | **版本**: 0.2.x | **架构**: Nx Monorepo + DDD | **包数�?\*: 16
 
 ## 🚀 快速导�?
 
@@ -217,15 +217,15 @@ docs/
 
 ### 🚀 规范速查�?
 
-| 我需�?..              | 查看这个文档                                            |
+| 我需�?..               | 查看这个文档                                            |
 | ---------------------- | ------------------------------------------------------- |
 | **了解架构分层规则**   | [🏛 架构规范](./standards/architecture.md)              |
 | **学习编码规范**       | [📝 代码规范](./guides/development/coding-standards.md) |
-| **命名变量/函数/文件** | [🏷�?命名规范](./standards/naming.md)                    |
+| **命名变量/函数/文件** | [🏷�?命名规范](./standards/naming.md)                   |
 | **理解目录结构**       | [📂 目录结构](./standards/structure.md)                 |
 | **学习设计模式**       | [🔄 代码模式](./standards/patterns.md)                  |
-| **组织Contracts�?*    | [📦 Contracts结构](./standards/contracts-structure.md)  |
-| **了解技术栈约束**     | [🛠�?技术栈](./standards/tech-stack.md)                  |
+| \*_组织Contracts�?_    | [📦 Contracts结构](./standards/contracts-structure.md)  |
+| **了解技术栈约束**     | [🛠�?技术栈](./standards/tech-stack.md)                 |
 | **学习Git规范**        | [🌿 Git工作流](./guides/development/git-workflow.md)    |
 
 ### 📋 核心规范�?
@@ -259,19 +259,18 @@ docs/
 
 | 包名                         | 描述                 | 文档                                 |
 | ---------------------------- | -------------------- | ------------------------------------ |
-| `@dailyuse/contracts`        | TypeScript类型契约�?| [[packages-contracts\|查看文档]]     |
+| `@dailyuse/contracts`        | TypeScript类型契约�? | [[packages-contracts\|查看文档]]     |
 | `@dailyuse/domain-shared`    | 共享领域基础类型     | [[packages-domain-shared\|查看文档]] |
 | `@dailyuse/{domain}`         | 垂直业务模块包       | -                                    |
 | `@dailyuse/governance`       | 规约治理与执行检查   | -                                    |
-| `@dailyuse/application-*`    | 应用服务�?          | -                                    |
-| `@dailyuse/infrastructure-*` | 基础设施�?          | -                                    |
+| `@dailyuse/application-*`    | 应用服务�?           | -                                    |
+| `@dailyuse/infrastructure-*` | 基础设施�?           | -                                    |
 | `@dailyuse/ui-vue`           | Vue 3 组件           | -                                    |
 | `@dailyuse/ui-vuetify`       | Vuetify 3 组件       | -                                    |
 | `@dailyuse/ui-react`         | React Hooks          | -                                    |
-| `@dailyuse/ui-react-shadcn`        | shadcn/ui 组件       | -                                    |
-| `@dailyuse/utils`            | 通用工具�?          | [[packages-utils\|查看文档]]         |
-| `@dailyuse/assets`           | 静态资�?            | -                                    |
-| `@dailyuse/sync-client`      | 离线同步             | -                                    |
+| `@dailyuse/ui-react-shadcn`  | shadcn/ui 组件       | -                                    |
+| `@dailyuse/utils`            | 通用工具�?           | [[packages-utils\|查看文档]]         |
+| `@dailyuse/assets`           | 静态资�?             | -                                    |
 | `@dailyuse/test-utils`       | 测试工具             | -                                    |
 
 📑 [[packages-index|包文档完整索�?(16个包)]]
@@ -423,7 +422,7 @@ docs/
 | **Reminder**       | 智能提醒系统   | [[modules/reminder/README       | 查看文档]] |
 | **Notification**   | 通知中心       | [[modules/notification/README   | 查看文档]] |
 | **Repository**     | 知识仓库       | [[modules/repository/README     | 查看文档]] |
-| **Editor**         | Markdown编辑�?| [[modules/editor/README         | 查看文档]] |
+| **Editor**         | Markdown编辑�? | [[modules/editor/README         | 查看文档]] |
 | **Authentication** | 认证授权       | [[modules/authentication/README | 查看文档]] |
 
 ---
@@ -467,25 +466,25 @@ docs/
 
 ## 📊 文档统计
 
-| 类别                                | 数量         | 状�?     |
-| ----------------------------------- | ------------ | --------- |
-| **入门指南**                        | 4�?         | �?完成   |
-| **规范�?* (standards)              | 7�?         | �?完成   |
-| **开发工作流** (guides/development) | 5�?         | �?完成   |
-| **架构文档**                        | 5�?+ 3个ADR | �?完成   |
-| **业务模块**                        | 8个模�?     | 🔄 进行�?|
-| **部署指南** (guides/deployment)    | 3+�?        | 🔄 进行�?|
-| **参考文�?*                        | 15+�?       | 🔄 进行�?|
-| **贡献指南**                        | 4�?         | �?完成   |
-| **包文�?*                          | 6�?         | �?完成   |
-| **概念文档**                        | 8�?         | �?完成   |
-| **运维文档**                        | 2�?         | �?完成   |
-| **配置说明**                        | 8�?         | �?完成   |
-| **归档文档**                        | 21�?        | �?完成   |
+| 类别                                | 数量        | 状�?      |
+| ----------------------------------- | ----------- | --------- |
+| **入门指南**                        | 4�?         | �?完成    |
+| \*_规范�?_ (standards)              | 7�?         | �?完成    |
+| **开发工作流** (guides/development) | 5�?         | �?完成    |
+| **架构文档**                        | 5�?+ 3个ADR | �?完成    |
+| **业务模块**                        | 8个模�?     | 🔄 进行�? |
+| **部署指南** (guides/deployment)    | 3+�?        | 🔄 进行�? |
+| \*_参考文�?_                        | 15+�?       | 🔄 进行�? |
+| **贡献指南**                        | 4�?         | �?完成    |
+| \*_包文�?_                          | 6�?         | �?完成    |
+| **概念文档**                        | 8�?         | �?完成    |
+| **运维文档**                        | 2�?         | �?完成    |
+| **配置说明**                        | 8�?         | �?完成    |
+| **归档文档**                        | 21�?        | �?完成    |
 
 **文档总数**: 110+ 篇（包含规划中）  
-**v2.0完成�?*: 45% ⬆️  
-**规范完成�?*: 100% �?
+**v2.0完成�?\*: 45% ⬆️  
+**规范完成�?\*: 100% �?
 
 ---
 
@@ -515,9 +514,9 @@ updated: 2025-11-23T15:00:00
 ### 文档状态标�?
 
 - �?**完成** - 文档内容完整且最�?
-- 🔄 **进行�?* - 文档正在编写或更�?
-- �?**待创�?* - 文档计划中但尚未创建
-- 🗄�?**已归�?* - 历史文档，仅供参�?
+- 🔄 \*_进行�?_ - 文档正在编写或更�?
+- �?\*_待创�?_ - 文档计划中但尚未创建
+- 🗄�?\*_已归�?_ - 历史文档，仅供参�?
 
 ---
 
@@ -527,7 +526,7 @@ updated: 2025-11-23T15:00:00
 
 在Obsidian中打开 `docs/` 目录，使用以下搜索技巧：
 
-- **按标签搜�?*: `tag:#getting-started`
+- \*_按标签搜�?_: `tag:#getting-started`
 - **按文件名搜索**: `file:quick-start`
 - **全文搜索**: 直接输入关键�?
 - **组合搜索**: `tag:#api path:reference/`
@@ -546,7 +545,7 @@ updated: 2025-11-23T15:00:00
 
 ### 技术栈文档
 
-| 技�?          | 官方文档                                              |
+| 技�?           | 官方文档                                              |
 | -------------- | ----------------------------------------------------- |
 | **Nx**         | [nx.dev](https://nx.dev/)                             |
 | **Vue 3**      | [vuejs.org](https://vuejs.org/)                       |
@@ -591,7 +590,7 @@ updated: 2025-11-23T15:00:00
 
 ---
 
-**最后更�?*: 2025-11-23  
-**维护�?*: @BakerSean168  
+**最后更�?\*: 2025-11-23  
+**维护�?_: @BakerSean168  
 **版本**: v2.0  
-**状�?*: 🔄 持续完善�?
+\*\*状�?_: 🔄 持续完善�?

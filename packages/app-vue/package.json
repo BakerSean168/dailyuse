@@ -28,6 +28,8 @@
     "@dailyuse/ui-vue-shadcn": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "@internationalized/date": "^3.11.0",
+    "@powersync/common": "^1.47.0",
+    "@powersync/vue": "0.4.2",
     "@vueuse/core": "14.1.0",
     "date-fns": "^4.1.0",
     "echarts": "^6.0.0",

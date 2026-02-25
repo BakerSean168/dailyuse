@@ -64,10 +64,6 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
-  syncProfiles                    SyncProfile[]
-  syncSessions                    SyncSession[]
-  syncConflicts                   SyncConflict[]
-  pendingChanges                  PendingChange[]
 
   @@index([emailAddress])
   @@index([phoneFullNumber])

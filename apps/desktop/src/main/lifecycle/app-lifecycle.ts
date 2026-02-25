@@ -1,6 +1,6 @@
 /**
  * Application Lifecycle Management
- * 
+ *
  * Manages the complete lifecycle of the Electron application:
  * - app.whenReady() - Application ready, create window
  * - app.on('activate') - macOS reactivate
@@ -23,6 +23,7 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
+import { disconnectPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
 import { getTokenManager } from '../modules/authentication/infrastructure';
@@ -45,7 +46,7 @@ let mainWindow: BrowserWindow | null = null;
 export function createMainWindow(): BrowserWindow {
   // Resolve preload script path correctly in both dev and production
   const preloadPath = path.join(__dirname, 'preload.cjs');
-  
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -124,7 +125,9 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     console.log('[Lifecycle] Valid session found, going to main window');
     shouldShowMainWindow = true;
   } else if (tokenStatus.hasValidToken && tokenStatus.shouldRefresh) {
-    console.log('[Lifecycle] Token needs refresh, entering main window and refreshing in background');
+    console.log(
+      '[Lifecycle] Token needs refresh, entering main window and refreshing in background',
+    );
     shouldShowMainWindow = true;
   }
 
@@ -195,6 +198,9 @@ async function handleBeforeQuit(): Promise<void> {
   // Stop scheduled tasks
   stopMemoryCleanup();
 
+  // Disconnect PowerSync before closing database
+  await disconnectPowerSync();
+
   // Cleanup desktop feature resources
   await cleanupDesktopFeatures();
 
@@ -226,7 +232,7 @@ function setupSecurityHandlers(): void {
  *
  * Sets up handlers for 'ready', 'window-all-closed', 'before-quit' events,
  * and configures security policies.
- * 
+ *
  * @param {() => Promise<void>} initializeApp - The function to initialize the application logic.
  */
 export function registerAppLifecycleHandlers(initializeApp: () => Promise<void>): void {

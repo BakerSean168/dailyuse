@@ -9,16 +9,17 @@
  * Responsibilities of this file:
  *   1. Initialize the SQLite database
  *   2. Bootstrap all business modules via ElectronBootstrapper
- *   3. Start ancillary services (sync, memory cleanup, dev tools)
+ *   3. Start ancillary services (memory cleanup, dev tools)
  *   4. Hand off to the lifecycle manager (window creation, shutdown)
  */
 
 import { initializeDatabase, startMemoryCleanup } from './database';
+import { connectPowerSync, disconnectPowerSync } from './database/powersync';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
-import { initSyncManager } from './services';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
 import { ElectronBootstrapper } from './bootstrap';
+import { getTokenManager } from './modules/authentication/infrastructure';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@dailyuse/goal/electron-entry';
@@ -65,25 +66,40 @@ async function initializeApp(): Promise<void> {
     .register(GovernanceElectronModule)
     // Repository must precede Editor (cross-module dep)
     .register(RepositoryElectronModule)
-    .register(createEditorElectronModule({
-      // TODO: provide a real IRepositoryContentPort once FileSystemStorageAdapter is implemented
-      contentPort: { getContent: async () => ({ resourceId: '', name: '', content: null }), saveContent: async () => {} },
-    }))
+    .register(
+      createEditorElectronModule({
+        // TODO: provide a real IRepositoryContentPort once FileSystemStorageAdapter is implemented
+        contentPort: {
+          getContent: async () => ({ resourceId: '', name: '', content: null }),
+          saveContent: async () => {},
+        },
+      }),
+    )
     .init();
   console.log('[App] All modules bootstrapped');
 
-  // 3. Sync manager (stub)
-  initSyncManager(db);
-  console.log('[App] Sync manager initialized');
-
-  // 4. Cross-module event listeners
+  // 3. Cross-module event listeners
   await initializeEventListeners();
   console.log('[App] Event listeners initialized');
 
-  // 5. Ancillary
+  // 4. Ancillary
   startMemoryCleanup();
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
+
+  // 5. PowerSync — connect if user is already authenticated
+  try {
+    const tokenManager = getTokenManager();
+    const accessToken = await tokenManager.getAccessToken();
+    if (accessToken) {
+      await connectPowerSync();
+      console.log('[App] PowerSync connected');
+    } else {
+      console.log('[App] Skipping PowerSync — no valid session');
+    }
+  } catch (error) {
+    console.warn('[App] PowerSync connection deferred:', error);
+  }
 
   const initTime = performance.now() - startTime;
   console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);

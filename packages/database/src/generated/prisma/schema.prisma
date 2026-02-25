@@ -81,10 +81,6 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
-  syncProfiles                    SyncProfile[]
-  syncSessions                    SyncSession[]
-  syncConflicts                   SyncConflict[]
-  pendingChanges                  PendingChange[]
 
   @@index([emailAddress])
   @@index([phoneFullNumber])
@@ -1634,123 +1630,6 @@ model UserSetting {
 
   @@index([identityId])
   @@map("user_settings")
-}
-
-// ==========================================
-// Sync Module
-// 同步配置、会话、冲突、待同步变更
-// ==========================================
-
-model SyncProfile {
-  id                  String  @id @db.Uuid
-  identityId          String  @map("identity_id")
-  name                String  @db.VarChar(100)
-  description         String? @db.VarChar(500)
-  providerType        String  @map("provider_type") @db.VarChar(30) // GITHUB_GIST/WEBDAV/CUSTOM_SERVER/LOCAL_FILE
-  providerConfigJson  String  @map("provider_config_json") @db.Text
-  syncConfigJson      String  @map("sync_config_json") @db.Text
-  isDefault           Boolean @default(false) @map("is_default")
-  isActive            Boolean @default(true) @map("is_active")
-  isConnected         Boolean @default(false) @map("is_connected")
-  lastSyncAt          BigInt? @map("last_sync_at")
-  lastSyncVersionJson String? @map("last_sync_version_json") @db.Text
-  lastSyncResult      String? @map("last_sync_result") @db.VarChar(20) // success/failed/partial
-  historyStatsJson    String  @default("{}") @map("history_stats_json") @db.Text
-  createdAt           BigInt  @map("created_at")
-  updatedAt           BigInt  @map("updated_at")
-
-  account  Account       @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  sessions SyncSession[]
-
-  @@index([identityId])
-  @@index([identityId, isActive])
-  @@index([identityId, isDefault])
-  @@map("sync_profiles")
-}
-
-model SyncSession {
-  id                String  @id @db.Uuid
-  identityId        String  @map("identity_id")
-  profileId         String  @map("profile_id") @db.Uuid
-  status            String  @db.VarChar(20) // PENDING/COLLECTING/SYNCING/CONFLICTED/COMPLETED/FAILED/CANCELLED
-  direction         String  @db.VarChar(20) // PUSH/PULL/BIDIRECTIONAL
-  strategy          String  @db.VarChar(20) // FULL/INCREMENTAL/AUTO
-  triggerType       String  @map("trigger_type") @db.VarChar(30)
-  triggerDeviceJson String  @map("trigger_device_json") @db.Text
-  startVersionJson  String  @map("start_version_json") @db.Text
-  endVersionJson    String? @map("end_version_json") @db.Text
-  localSnapshotId   String? @map("local_snapshot_id") @db.Uuid
-  remoteSnapshotId  String? @map("remote_snapshot_id") @db.Uuid
-  statisticsJson    String? @map("statistics_json") @db.Text
-  errorJson         String? @map("error_json") @db.Text
-  canRetry          Boolean @default(true) @map("can_retry")
-  retryCount        Int     @default(0) @map("retry_count")
-  createdAt         BigInt  @map("created_at")
-  startedAt         BigInt? @map("started_at")
-  completedAt       BigInt? @map("completed_at")
-  updatedAt         BigInt  @map("updated_at")
-
-  account   Account        @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  profile   SyncProfile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  conflicts SyncConflict[]
-
-  @@index([identityId])
-  @@index([profileId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("sync_sessions")
-}
-
-model SyncConflict {
-  id                String  @id @db.Uuid
-  identityId        String  @map("identity_id")
-  sessionId         String  @map("session_id") @db.Uuid
-  entityType        String  @map("entity_type") @db.VarChar(50)
-  entityId          String  @map("entity_id") @db.Uuid
-  entityName        String? @map("entity_name") @db.VarChar(200)
-  conflictType      String  @map("conflict_type") @db.VarChar(20) // update-update/update-delete/delete-update
-  localVersionJson  String  @map("local_version_json") @db.Text
-  localDataJson     String  @map("local_data_json") @db.Text
-  remoteVersionJson String  @map("remote_version_json") @db.Text
-  remoteDataJson    String  @map("remote_data_json") @db.Text
-  status            String  @db.VarChar(20) // UNRESOLVED/RESOLVED/IGNORED
-  autoResolvable    Boolean @default(false) @map("auto_resolvable")
-  resolutionJson    String? @map("resolution_json") @db.Text
-  createdAt         BigInt  @map("created_at")
-  updatedAt         BigInt  @map("updated_at")
-
-  account Account     @relation(fields: [identityId], references: [id], onDelete: Cascade)
-  session SyncSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@index([identityId])
-  @@index([sessionId])
-  @@index([status])
-  @@index([entityType, entityId])
-  @@map("sync_conflicts")
-}
-
-model PendingChange {
-  id              String  @id @db.Uuid
-  identityId      String  @map("identity_id")
-  entityType      String  @map("entity_type") @db.VarChar(50)
-  entityId        String  @map("entity_id") @db.Uuid
-  entityName      String? @map("entity_name") @db.VarChar(200)
-  operation       String  @db.VarChar(20) // CREATE/UPDATE/DELETE/RESTORE
-  beforeDataJson  String? @map("before_data_json") @db.Text
-  afterDataJson   String? @map("after_data_json") @db.Text
-  versionJson     String  @map("version_json") @db.Text
-  isSynced        Boolean @default(false) @map("is_synced")
-  syncedInSession String? @map("synced_in_session") @db.Uuid
-  createdAt       BigInt  @map("created_at")
-  syncedAt        BigInt? @map("synced_at")
-
-  account Account @relation(fields: [identityId], references: [id], onDelete: Cascade)
-
-  @@index([identityId])
-  @@index([identityId, isSynced])
-  @@index([entityType, entityId])
-  @@index([createdAt])
-  @@map("pending_changes")
 }
 
 // ==========================================
