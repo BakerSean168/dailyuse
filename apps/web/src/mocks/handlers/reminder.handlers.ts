@@ -1,8 +1,8 @@
 /**
  * MSW Handlers - Reminder Module
  *
- * Intercepts HTTP requests to the Reminder API and returns mock data.
- * Active only in development when MSW is enabled.
+ * Paths match the actual HTTP adapter:
+ *   - ReminderHttpAdapter: /reminders/templates, /reminder-groups, /reminders/upcoming
  */
 
 import { http, HttpResponse } from 'msw';
@@ -14,127 +14,186 @@ import {
 } from '@dailyuse/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const TEMPLATES_BASE = `${API_BASE}/reminder-templates`;
-const GROUPS_BASE = `${API_BASE}/reminder-groups`;
+const TEMPLATES = `${API_BASE}/reminders/templates`;
+const GROUPS = `${API_BASE}/reminder-groups`;
 
 export const reminderHandlers = [
   // ============ Templates ============
 
-  // GET /api/v1/reminder-templates — list templates
-  http.get(TEMPLATES_BASE, () => {
+  http.get(`${TEMPLATES}/search`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: createMockReminderTemplateList(5),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(`${TEMPLATES}/user/:identityId`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: createMockReminderTemplateList(8),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(TEMPLATES, () => {
     const templates = createMockReminderTemplateList(10);
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
+      ok: true, code: 200, message: 'Success',
       data: templates,
       total: templates.length,
       timestamp: Date.now(),
     });
   }),
 
-  // GET /api/v1/reminder-templates/:id — get single template
-  http.get(`${TEMPLATES_BASE}/:id`, ({ params }) => {
+  http.post(TEMPLATES, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      { ok: true, code: 200, message: 'Created', data: createMockReminderTemplate({ name: body.name as string }), timestamp: Date.now() },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${TEMPLATES}/:id/schedule-status`, () => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
+      ok: true, code: 200, message: 'Success',
+      data: { isScheduled: true, nextFireAt: Date.now() + 3600000, lastFiredAt: Date.now() - 3600000 },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TEMPLATES}/:id/toggle`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Toggled',
       data: createMockReminderTemplate({ id: params.id as string }),
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/reminder-templates — create template
-  http.post(TEMPLATES_BASE, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockReminderTemplate({ name: body.name as string }),
-        timestamp: Date.now(),
-      },
-      { status: 201 },
-    );
-  }),
-
-  // PUT /api/v1/reminder-templates/:id — update template
-  http.put(`${TEMPLATES_BASE}/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+  http.post(`${TEMPLATES}/:templateId/move`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Updated',
-      data: createMockReminderTemplate({
-        id: params.id as string,
-        ...(body as object),
-      }),
+      ok: true, code: 200, message: 'Moved',
+      data: createMockReminderTemplate({ id: params.templateId as string }),
       timestamp: Date.now(),
     });
   }),
 
-  // DELETE /api/v1/reminder-templates/:id — delete template
-  http.delete(`${TEMPLATES_BASE}/:id`, ({ params }) => {
+  http.get(`${TEMPLATES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
+      ok: true, code: 200, message: 'Success',
+      data: createMockReminderTemplate({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.patch(`${TEMPLATES}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockReminderTemplate({ id: params.id as string, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.put(`${TEMPLATES}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockReminderTemplate({ id: params.id as string, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${TEMPLATES}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Deleted',
       data: { id: params.id },
+      timestamp: Date.now(),
+    });
+  }),
+
+  // ============ Upcoming ============
+
+  http.get(`${API_BASE}/reminders/upcoming`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: { reminders: [], total: 0 },
       timestamp: Date.now(),
     });
   }),
 
   // ============ Groups ============
 
-  // GET /api/v1/reminder-groups — list groups
-  http.get(GROUPS_BASE, () => {
+  http.get(`${GROUPS}/user/:identityId`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: createMockReminderGroupList(3),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(GROUPS, () => {
     const groups = createMockReminderGroupList(5);
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
+      ok: true, code: 200, message: 'Success',
       data: groups,
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/reminder-groups — create group
-  http.post(GROUPS_BASE, async ({ request }) => {
+  http.post(GROUPS, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockReminderGroup({ name: body.name as string }),
-        timestamp: Date.now(),
-      },
+      { ok: true, code: 200, message: 'Created', data: createMockReminderGroup({ name: body.name as string }), timestamp: Date.now() },
       { status: 201 },
     );
   }),
 
-  // PUT /api/v1/reminder-groups/:id — update group
-  http.put(`${GROUPS_BASE}/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+  http.post(`${GROUPS}/:id/toggle-status`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Updated',
-      data: createMockReminderGroup({
-        id: params.id as string,
-        ...(body as object),
-      }),
+      ok: true, code: 200, message: 'Toggled',
+      data: createMockReminderGroup({ id: params.id as string }),
       timestamp: Date.now(),
     });
   }),
 
-  // DELETE /api/v1/reminder-groups/:id — delete group
-  http.delete(`${GROUPS_BASE}/:id`, ({ params }) => {
+  http.post(`${GROUPS}/:id/toggle-control-mode`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
+      ok: true, code: 200, message: 'Toggled',
+      data: createMockReminderGroup({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(`${GROUPS}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: createMockReminderGroup({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.patch(`${GROUPS}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockReminderGroup({ id: params.id as string, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.put(`${GROUPS}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockReminderGroup({ id: params.id as string, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${GROUPS}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });
