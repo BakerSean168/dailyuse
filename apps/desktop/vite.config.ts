@@ -37,6 +37,9 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  worker: {
+    format: 'es',
+  },
   base: './',
   build: {
     rollupOptions: {

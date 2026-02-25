@@ -6,6 +6,8 @@
 @import 'tailwindcss';
 @import '../../../../../packages/ui-core/src/styles/globals.css';
 @source "../../../../../packages/ui-core/src";
+@source "../../../../../packages/ui-vue-shadcn/src";
+@source "../../../../../packages/app-vue/src";
 
 @layer base {
   body {
