@@ -17,6 +17,7 @@ export type {
 export {
   GoalHttpAdapter,
   GoalFolderHttpAdapter,
+  GoalFocusHttpAdapter,
   createGoalHttpAdapters,
   type GoalHttpAdapters,
 } from './adapters/http';

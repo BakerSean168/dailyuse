@@ -5,6 +5,15 @@
  * constructor-injected pattern using Result<T>.
  */
 
+// ===== Port Interfaces =====
+export type {
+  IAIConversationApiClient,
+  IAIMessageApiClient,
+  IAIGenerationTaskApiClient,
+  IAIProviderConfigApiClient,
+  IAIUsageQuotaApiClient,
+} from '../infrastructure-client/adapters/types';
+
 // Singleton placeholder
 let _aiApplicationService: any = null;
 
@@ -18,5 +27,5 @@ export const aiApplicationService: any = new Proxy({} as any, {
       throw new Error('aiApplicationService not initialized. Call setAiApplicationService first.');
     }
     return (_aiApplicationService as any)[prop];
-  }
+  },
 });

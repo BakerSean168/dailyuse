@@ -5,6 +5,9 @@
  * Uses Result<T> pattern for consistent error handling.
  */
 
+// ===== Port Interfaces =====
+export type { IRepositoryApiClient } from '../infrastructure-client/adapters/types';
+
 export { RepositoryClientService } from './repository-client-service';
 
 // Re-export as alias for backward compatibility
@@ -20,8 +23,10 @@ export function setRepositoryApplicationService(service: any) {
 export const repositoryApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_repositoryApplicationService) {
-      throw new Error('repositoryApplicationService not initialized. Call setRepositoryApplicationService first.');
+      throw new Error(
+        'repositoryApplicationService not initialized. Call setRepositoryApplicationService first.',
+      );
     }
     return (_repositoryApplicationService as any)[prop];
-  }
+  },
 });

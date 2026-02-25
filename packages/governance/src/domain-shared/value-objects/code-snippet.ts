@@ -1,8 +1,8 @@
 /**
  * CodeSnippet 值对象
- * 
+ *
  * 【规范说明：Class 类型值对象 - 参考 domain-shared-class-value-object-spec.md】
- * 
+ *
  * 代码示例片段：用于展示 Good/Bad 代码示例
  * - 支持多种编程语言
  * - 限制内容大小（最大 10KB）
@@ -17,7 +17,7 @@ import type {
   CodeSnippetDTO,
   CodeSnippetPersistenceDTO,
 } from '../../contracts/value-objects/code-snippet';
-import type { CodeSnippetId } from '@/contracts/primitives/ids';
+import type { CodeSnippetId } from '../../contracts/primitives/ids';
 import { Language, type Language as LanguageValue } from './language';
 import { SnippetType, type SnippetType as SnippetTypeValue } from './snippet-type';
 
@@ -38,7 +38,7 @@ interface CodeSnippetProps {
 
 /**
  * CodeSnippet 值对象实现
- * 
+ *
  * 包含：
  * - id: 代码片段 ID
  * - language: 编程语言
@@ -54,21 +54,29 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> {
   // ================= 工厂方法 1: 标准创建 =================
   /**
    * 创建新的代码片段（包含校验）
-   * 
+   *
    * @param props - 代码片段属性（id 可选，自动生成）
    * @returns Result<CodeSnippet> 成功或带验证错误
    */
   public static create(
-    props: Omit<CodeSnippetDTO, 'id'> & { id?: CodeSnippetId }
+    props: Omit<CodeSnippetDTO, 'id'> & { id?: CodeSnippetId },
   ): Result<CodeSnippet> {
     const languageResult = Language.create(props.language);
     if (!languageResult.ok) {
-      return error(languageResult.error.code, languageResult.error.message, languageResult.error.details);
+      return error(
+        languageResult.error.code,
+        languageResult.error.message,
+        languageResult.error.details,
+      );
     }
 
     const snippetTypeResult = SnippetType.create(props.type);
     if (!snippetTypeResult.ok) {
-      return error(snippetTypeResult.error.code, snippetTypeResult.error.message, snippetTypeResult.error.details);
+      return error(
+        snippetTypeResult.error.code,
+        snippetTypeResult.error.message,
+        snippetTypeResult.error.details,
+      );
     }
 
     const fullProps: CodeSnippetProps = {
@@ -81,7 +89,11 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> {
 
     const validationResult = this.validate(fullProps);
     if (!validationResult.ok) {
-      return error(validationResult.error.code, validationResult.error.message, validationResult.error.details);
+      return error(
+        validationResult.error.code,
+        validationResult.error.message,
+        validationResult.error.details,
+      );
     }
 
     return ok(new CodeSnippet(fullProps));
@@ -149,7 +161,7 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> {
     if (contentBytes > MAX_CONTENT_SIZE) {
       return error(
         'VALIDATION_ERROR',
-        `Code snippet exceeds maximum size of 10KB (current: ${(contentBytes / 1024).toFixed(2)}KB)`
+        `Code snippet exceeds maximum size of 10KB (current: ${(contentBytes / 1024).toFixed(2)}KB)`,
       );
     }
 
@@ -157,7 +169,7 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> {
     if (props.caption && props.caption.length > MAX_CAPTION_LENGTH) {
       return error(
         'VALIDATION_ERROR',
-        `Caption exceeds maximum length of ${MAX_CAPTION_LENGTH} characters`
+        `Caption exceeds maximum length of ${MAX_CAPTION_LENGTH} characters`,
       );
     }
 

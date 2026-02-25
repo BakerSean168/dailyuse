@@ -5,6 +5,12 @@
  * Uses Result<T> pattern for consistent error handling.
  */
 
+// ===== Port Interfaces =====
+export type {
+  IScheduleEventApiClient,
+  IScheduleTaskApiClient,
+} from '../infrastructure-client/adapters/types';
+
 export { ScheduleClientService } from './schedule-client-service';
 
 // ===== Singleton Proxy =====
@@ -18,8 +24,10 @@ export function setScheduleApplicationService(service: any) {
 export const scheduleApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_scheduleApplicationService) {
-      throw new Error('scheduleApplicationService not initialized. Call setScheduleApplicationService first.');
+      throw new Error(
+        'scheduleApplicationService not initialized. Call setScheduleApplicationService first.',
+      );
     }
     return (_scheduleApplicationService as any)[prop];
-  }
+  },
 });

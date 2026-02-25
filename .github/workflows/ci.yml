@@ -25,7 +25,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -97,7 +97,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -138,7 +138,7 @@ jobs:
     needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -182,7 +182,7 @@ jobs:
     needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -228,7 +228,7 @@ jobs:
     needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -265,14 +265,14 @@ jobs:
         uses: nrwl/nx-set-shas@v4
 
       - name: 🏗️ Build affected apps
-        run: pnpm nx affected -t build --parallel=3 --exclude='contracts,domain-server,domain-client,application-server,application-client,infrastructure-server,infrastructure-client,utils,ui-core,ui-vue,ui-vuetify,ui-react,ui-react-shadcn,assets,sync-client'
+        run: pnpm nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client'
 
   # ========== Job 7: CI 状态检查 ==========
   ci-success:
     needs: [lint, typecheck, test, build]
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
       - name: ✅ Check CI status
         run: |

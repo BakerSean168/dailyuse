@@ -19,7 +19,6 @@ export default createTsupConfig({
     // 根入口（精简版，只导出核心类型和常用枚举）
     'src/index.ts',
     // 模块入口（完整模块导出）
-    'src/modules/example/index.ts',
     'src/modules/task/index.ts',
     'src/modules/goal/index.ts',
     'src/modules/reminder/index.ts',
@@ -31,10 +30,8 @@ export default createTsupConfig({
     'src/modules/setting/index.ts',
     'src/modules/notification/index.ts',
     'src/modules/ai/index.ts',
-    'src/modules/dashboard/index.ts',
     'src/modules/sync/index.ts',
     // 其他模块入口
-    'src/document.contracts.ts',
     'src/result/index.ts',
     'src/shared/index.ts',
     'src/electron/index.ts',

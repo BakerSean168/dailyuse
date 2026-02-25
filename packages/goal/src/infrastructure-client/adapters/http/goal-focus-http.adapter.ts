@@ -1,0 +1,94 @@
+/**
+ * Goal Focus HTTP Adapter
+ *
+ * HTTP implementation of IGoalFocusApiClient using ResultHttpClient.
+ * Provides focus session management for web clients.
+ */
+
+import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
+import type { IGoalFocusApiClient, IResultHttpClient } from '../types';
+import type {
+  FocusSessionClientDTO,
+  StartFocusReq,
+  GetFocusHistoryReq,
+  GetFocusStatusRes,
+  GetFocusHistoryRes,
+} from '@dailyuse/contracts/goal';
+
+export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
+  private readonly baseUrl = '/goals/focus';
+
+  constructor(private readonly httpClient: IResultHttpClient) {}
+
+  // ===== Session Management =====
+
+  async startSession(request: StartFocusReq): Promise<Result<FocusSessionClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/start`, request);
+  }
+
+  async pauseSession(): Promise<Result<FocusSessionClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/pause`);
+  }
+
+  async resumeSession(): Promise<Result<FocusSessionClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/resume`);
+  }
+
+  async stopSession(notes?: string): Promise<Result<FocusSessionClientDTO | null>> {
+    return this.httpClient.post(`${this.baseUrl}/stop`, { notes });
+  }
+
+  // ===== Status & History =====
+
+  async getStatus(): Promise<Result<GetFocusStatusRes>> {
+    return this.httpClient.get(`${this.baseUrl}/status`);
+  }
+
+  async getHistory(request: GetFocusHistoryReq): Promise<Result<GetFocusHistoryRes>> {
+    return this.httpClient.get(`${this.baseUrl}/history`, {
+      params: request as unknown as Record<string, unknown>,
+    });
+  }
+
+  // ===== Convenience Methods =====
+
+  async isActive(): Promise<Result<boolean>> {
+    const result = await this.getStatus();
+    if (!result.ok) return result;
+    return ok(result.data.isActive);
+  }
+
+  async getTodayHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>> {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
+
+    return this.getHistory({
+      goalId,
+      startDate: startOfDay,
+      endDate: endOfDay,
+      limit: 100,
+      offset: 0,
+    });
+  }
+
+  async getWeekHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>> {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const startOfWeek = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - dayOfWeek,
+    ).getTime();
+    const endOfWeek = startOfWeek + 7 * 24 * 60 * 60 * 1000 - 1;
+
+    return this.getHistory({
+      goalId,
+      startDate: startOfWeek,
+      endDate: endOfWeek,
+      limit: 100,
+      offset: 0,
+    });
+  }
+}

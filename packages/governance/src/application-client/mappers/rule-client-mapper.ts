@@ -1,11 +1,11 @@
 /**
  * RuleClientMapper - Client DTO Mapping
  * 规则客户端映射器
- * 
+ *
  * Converts between client DTOs and view models for UI consumption
  */
 
-import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 
 export interface RuleViewModel extends RuleClientDTO {
   // UI-specific computed properties
@@ -17,7 +17,7 @@ export interface RuleViewModel extends RuleClientDTO {
 
 /**
  * Rule Client Mapper
- * 
+ *
  * Maps client DTOs to view models with UI-specific enhancements
  */
 export class RuleClientMapper {
@@ -41,7 +41,7 @@ export class RuleClientMapper {
    * Bulk conversion helper
    */
   static toViewModels(dtos: RuleClientDTO[], currentUserRole?: string): RuleViewModel[] {
-    return dtos.map(dto => this.toViewModel(dto, currentUserRole));
+    return dtos.map((dto) => this.toViewModel(dto, currentUserRole));
   }
 
   /**

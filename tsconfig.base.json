@@ -63,7 +63,7 @@
       // ✅ 客户端工具包
       "@dailyuse/http-client": ["packages/http-client/src/index.ts"],
       "@dailyuse/ipc-client": ["packages/ipc-client/src/index.ts"],
-      "@dailyuse/sync-client": ["packages/sync-client/src/index.ts"],
+      "@dailyuse/sync-client": ["packages/sync-client/index.ts"],
 
       // ✅ UI 组件包
       "@dailyuse/ui-core": ["packages/ui-core/src/index.ts"],

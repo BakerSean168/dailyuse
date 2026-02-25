@@ -4,7 +4,10 @@
   "description": "独立的调度器包，支持 Bree、node-cron 等多种调度引擎",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
@@ -13,6 +16,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@dailyuse/utils": "workspace:*",
     "bree": "^9.2.2",
     "node-cron": "^3.0.3"
   },
@@ -25,7 +29,13 @@
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },
-  "keywords": ["scheduler", "cron", "bree", "task", "scheduling"],
+  "keywords": [
+    "scheduler",
+    "cron",
+    "bree",
+    "task",
+    "scheduling"
+  ],
   "author": "DailyUse Team",
   "license": "MIT"
 }

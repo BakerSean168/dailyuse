@@ -20,33 +20,9 @@
       "package-name": "@dailyuse/desktop",
       "changelog-path": "CHANGELOG.md"
     },
-    "packages/application-client": {
-      "release-type": "node",
-      "package-name": "@dailyuse/application-client"
-    },
-    "packages/application-server": {
-      "release-type": "node",
-      "package-name": "@dailyuse/application-server"
-    },
     "packages/contracts": {
       "release-type": "node",
       "package-name": "@dailyuse/contracts"
-    },
-    "packages/domain-client": {
-      "release-type": "node",
-      "package-name": "@dailyuse/domain-client"
-    },
-    "packages/domain-server": {
-      "release-type": "node",
-      "package-name": "@dailyuse/domain-server"
-    },
-    "packages/infrastructure-client": {
-      "release-type": "node",
-      "package-name": "@dailyuse/infrastructure-client"
-    },
-    "packages/infrastructure-server": {
-      "release-type": "node",
-      "package-name": "@dailyuse/infrastructure-server"
     },
     "packages/ui-core": {
       "release-type": "node",

@@ -5,9 +5,9 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { SearchRulesQuery } from '@/contracts/api/rules';
+import type { SearchRulesQuery } from '../../contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
-import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 import { ruleFromDTO } from '../mappers/rule-dto-mapper';
 
 interface SearchRulesResult {

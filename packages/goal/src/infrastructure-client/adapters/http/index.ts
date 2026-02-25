@@ -8,10 +8,12 @@
 import type { IResultHttpClient } from '../types';
 import { GoalHttpAdapter } from './goal-http.adapter';
 import { GoalFolderHttpAdapter } from './goal-folder-http.adapter';
+import { GoalFocusHttpAdapter } from './goal-focus-http.adapter';
 
 // Re-export adapters
 export { GoalHttpAdapter } from './goal-http.adapter';
 export { GoalFolderHttpAdapter } from './goal-folder-http.adapter';
+export { GoalFocusHttpAdapter } from './goal-focus-http.adapter';
 
 /**
  * All HTTP adapters for the Goal module
@@ -19,6 +21,7 @@ export { GoalFolderHttpAdapter } from './goal-folder-http.adapter';
 export interface GoalHttpAdapters {
   goal: GoalHttpAdapter;
   folder: GoalFolderHttpAdapter;
+  focus: GoalFocusHttpAdapter;
 }
 
 /**
@@ -32,14 +35,14 @@ export interface GoalHttpAdapters {
  * const adapters = createGoalHttpAdapters(httpClient);
  * GoalContainer.getInstance()
  *   .registerApiClient(adapters.goal)
- *   .registerFolderApiClient(adapters.folder);
+ *   .registerFolderApiClient(adapters.folder)
+ *   .registerFocusApiClient(adapters.focus);
  * ```
  */
-export function createGoalHttpAdapters(
-  httpClient: IResultHttpClient,
-): GoalHttpAdapters {
+export function createGoalHttpAdapters(httpClient: IResultHttpClient): GoalHttpAdapters {
   return {
     goal: new GoalHttpAdapter(httpClient),
     folder: new GoalFolderHttpAdapter(httpClient),
+    focus: new GoalFocusHttpAdapter(httpClient),
   };
 }

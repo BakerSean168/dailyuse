@@ -1,4 +1,7 @@
 import type { IScheduler, ITaskHandler } from '../interfaces';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('IntervalScheduler');
 
 /**
  * IntervalScheduler
@@ -31,7 +34,9 @@ export class IntervalScheduler implements IScheduler {
     }
 
     if (typeof schedule === 'string') {
-      throw new Error(`IntervalScheduler does not support Cron expressions. Use BreeScheduler or CronScheduler instead.`);
+      throw new Error(
+        `IntervalScheduler does not support Cron expressions. Use BreeScheduler or CronScheduler instead.`,
+      );
     }
 
     if (schedule < 100) {
@@ -72,7 +77,7 @@ export class IntervalScheduler implements IScheduler {
       }
     }
 
-    console.log(`[IntervalScheduler] Started with ${this.registeredTasks.size} tasks`);
+    logger.info(`Started with ${this.registeredTasks.size} tasks`);
   }
 
   async stop(): Promise<void> {
@@ -81,7 +86,7 @@ export class IntervalScheduler implements IScheduler {
       clearInterval(interval);
     }
     this.intervals.clear();
-    console.log('[IntervalScheduler] Stopped');
+    logger.info('Stopped');
   }
 
   getRegisteredTasks(): string[] {

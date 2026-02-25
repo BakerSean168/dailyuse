@@ -7,7 +7,10 @@ import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rul
 import { RuleId } from '@/domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { GetRuleRevisionsQuery, GetRuleRevisionsRes } from '@/contracts/api/rule-revisions';
+import type {
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
+} from '../../../contracts/api/rule-revisions';
 
 /**
  * Get Rule Revisions Use Case
@@ -29,7 +32,11 @@ export class GetRuleRevisionsUseCase {
     // Fetch revisions from repository
     const revisionsResult = await this.revisionRepository.findByRuleId(ruleId);
     if (!revisionsResult.ok) {
-      return error(revisionsResult.error.code, revisionsResult.error.message, revisionsResult.error.details);
+      return error(
+        revisionsResult.error.code,
+        revisionsResult.error.message,
+        revisionsResult.error.details,
+      );
     }
 
     const revisions = revisionsResult.data;
@@ -42,7 +49,7 @@ export class GetRuleRevisionsUseCase {
     const paginated = sorted.slice(offset, offset + pageSize);
 
     // Map to DTOs
-    const dtos = paginated.map(revision => revision.toClientDTO());
+    const dtos = paginated.map((revision) => revision.toClientDTO());
 
     return ok({
       items: dtos,

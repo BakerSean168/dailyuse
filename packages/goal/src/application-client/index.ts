@@ -5,9 +5,28 @@
  * Uses Result<T> pattern for consistent error handling.
  */
 
+// ===== Port Interfaces =====
+export type {
+  IGoalApiClient,
+  IGoalFolderApiClient,
+  IGoalFocusApiClient,
+} from '../infrastructure-client/adapters/types';
+
 // ===== Data & Rules =====
-export { BUILT_IN_TEMPLATES, getTemplatesByCategory, getTemplatesByRole, getTemplatesByIndustry, getTemplateById } from './GoalTemplates';
-export { BUILT_IN_RULES, sortRulesByPriority, getEnabledRules, findRuleById, RULE_TEMPLATES } from './BuiltInRules';
+export {
+  BUILT_IN_TEMPLATES,
+  getTemplatesByCategory,
+  getTemplatesByRole,
+  getTemplatesByIndustry,
+  getTemplateById,
+} from './GoalTemplates';
+export {
+  BUILT_IN_RULES,
+  sortRulesByPriority,
+  getEnabledRules,
+  findRuleById,
+  RULE_TEMPLATES,
+} from './BuiltInRules';
 export type { GoalTemplate, KeyResultTemplate } from './GoalTemplates';
 
 // ===== Constructor-Injected Service (Result-based) =====
@@ -24,8 +43,10 @@ export function setGoalApplicationService(service: any) {
 export const goalApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_goalApplicationService) {
-      throw new Error('goalApplicationService not initialized. Call setGoalApplicationService first.');
+      throw new Error(
+        'goalApplicationService not initialized. Call setGoalApplicationService first.',
+      );
     }
     return (_goalApplicationService as any)[prop];
-  }
+  },
 });

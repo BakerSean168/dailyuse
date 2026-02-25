@@ -14,7 +14,6 @@ export class GlobalEventBus extends CrossPlatformEventBus<AppEventRegistry, AppR
     super();
     // 可以在这里进行全局初始化配置
     this.setDebugMode(process.env.NODE_ENV === 'development');
-    console.log('🚀 GlobalEventBus initialized with strong typing');
   }
 
   /**
@@ -36,7 +35,6 @@ export class GlobalEventBus extends CrossPlatformEventBus<AppEventRegistry, AppR
       GlobalEventBus.instance = null;
     }
   }
-
 }
 
 // ===================== 4. 导出单例 =====================

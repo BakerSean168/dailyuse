@@ -12,10 +12,10 @@ import { Language } from '@/domain-shared/value-objects/language';
 import type { Language as RuleLanguage } from '@/domain-shared/value-objects/language';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { CreateRuleReq, CreateRuleRes } from '@/contracts/api/rules';
-import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { CreateRuleReq, CreateRuleRes } from '../../../contracts/api/rules';
+import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { Context} from '@dailyuse/contracts/shared';
+import type { Context } from '@dailyuse/contracts/shared';
 
 /**
  * Execution Context
@@ -27,7 +27,7 @@ export interface ExecutionContext {
 
 /**
  * Create Rule Use Case
- * 
+ *
  * Dependencies injected via constructor (standard dependency injection)
  */
 export class CreateRuleUseCase {
@@ -38,10 +38,10 @@ export class CreateRuleUseCase {
 
   /**
    * Execute: Creates new rule in Draft status
-   * 
+   *
    * @param req - Create rule request from API
    * @param cx - Execution context with identityId from auth middleware
-   * 
+   *
    * Flow:
    * 1. Check for duplicate code
    * 2. Create Rule aggregate via factory method
@@ -52,7 +52,11 @@ export class CreateRuleUseCase {
     // Check for duplicate code
     const existingResult = await this.ruleRepository.findByCode(req.code);
     if (!existingResult.ok) {
-      return error(existingResult.error.code, existingResult.error.message, existingResult.error.details);
+      return error(
+        existingResult.error.code,
+        existingResult.error.message,
+        existingResult.error.details,
+      );
     }
 
     if (existingResult.data !== null) {
@@ -61,14 +65,22 @@ export class CreateRuleUseCase {
 
     const severityResult = RuleSeverity.create(req.severity);
     if (!severityResult.ok) {
-      return error(severityResult.error.code, severityResult.error.message, severityResult.error.details);
+      return error(
+        severityResult.error.code,
+        severityResult.error.message,
+        severityResult.error.details,
+      );
     }
 
     const goodExamples: Array<{ language: RuleLanguage; content: string; caption?: string }> = [];
     for (const example of req.goodExamples) {
       const languageResult = Language.create(example.language);
       if (!languageResult.ok) {
-        return error(languageResult.error.code, languageResult.error.message, languageResult.error.details);
+        return error(
+          languageResult.error.code,
+          languageResult.error.message,
+          languageResult.error.details,
+        );
       }
 
       goodExamples.push({
@@ -82,7 +94,11 @@ export class CreateRuleUseCase {
     for (const example of req.badExamples) {
       const languageResult = Language.create(example.language);
       if (!languageResult.ok) {
-        return error(languageResult.error.code, languageResult.error.message, languageResult.error.details);
+        return error(
+          languageResult.error.code,
+          languageResult.error.message,
+          languageResult.error.details,
+        );
       }
 
       badExamples.push({
@@ -113,7 +129,11 @@ export class CreateRuleUseCase {
 
     const revisionCountResult = await this.revisionRepository.countByRuleId(rule.id);
     if (!revisionCountResult.ok) {
-      return error(revisionCountResult.error.code, revisionCountResult.error.message, revisionCountResult.error.details);
+      return error(
+        revisionCountResult.error.code,
+        revisionCountResult.error.message,
+        revisionCountResult.error.details,
+      );
     }
 
     const revision = RuleRevision.create({
@@ -163,9 +183,9 @@ export class CreateRuleUseCase {
       deprecationReason: rule.deprecationReason,
       replacementRuleId: rule.replacementRuleId,
       liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map(tag => tag.toDTO()),
-      goodExamples: rule.goodExamples.map(ex => ex.toDTO()),
-      badExamples: rule.badExamples.map(ex => ex.toDTO()),
+      tags: rule.tags.map((tag) => tag.toDTO()),
+      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
+      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
       authorId: rule.authorId,
       createdAt: rule.createdAt.getTime(),
       updatedAt: rule.updatedAt.getTime(),

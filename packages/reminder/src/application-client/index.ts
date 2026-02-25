@@ -5,6 +5,9 @@
  * Uses Result<T> pattern for consistent error handling.
  */
 
+// ===== Port Interfaces =====
+export type { IReminderApiClient } from '../infrastructure-client/adapters/types';
+
 export { ReminderClientService } from './reminder-client-service';
 
 // ===== Singleton Proxy =====
@@ -18,8 +21,10 @@ export function setReminderApplicationService(service: any) {
 export const reminderApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_reminderApplicationService) {
-      throw new Error('reminderApplicationService not initialized. Call setReminderApplicationService first.');
+      throw new Error(
+        'reminderApplicationService not initialized. Call setReminderApplicationService first.',
+      );
     }
     return (_reminderApplicationService as any)[prop];
-  }
+  },
 });

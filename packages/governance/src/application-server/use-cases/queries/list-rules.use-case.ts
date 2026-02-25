@@ -8,8 +8,8 @@ import type { RuleFilter } from '@/domain-server/repositories/i-rule-repository'
 import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { ListRulesQuery, ListRulesRes } from '@/contracts/api/rules';
-import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { ListRulesQuery, ListRulesRes } from '../../../contracts/api/rules';
+import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 
 /**
  * List Rules Use Case
@@ -23,15 +23,15 @@ export class ListRulesUseCase {
   async execute(req: ListRulesQuery): Promise<Result<ListRulesRes>> {
     // Build filter
     const filter: RuleFilter = {};
-    
+
     if (req.status) {
       filter.status = req.status;
     }
-    
+
     if (req.severity) {
       filter.severity = req.severity;
     }
-    
+
     if (req.tags) {
       filter.tags = req.tags;
     }
@@ -52,7 +52,7 @@ export class ListRulesUseCase {
     const paginatedRules = rules.slice(offset, offset + pageSize);
 
     // Map to DTOs
-    const dtos = paginatedRules.map(rule => this.toClientDTO(rule));
+    const dtos = paginatedRules.map((rule) => this.toClientDTO(rule));
 
     return ok({
       items: dtos,
@@ -73,9 +73,9 @@ export class ListRulesUseCase {
       deprecationReason: rule.deprecationReason,
       replacementRuleId: rule.replacementRuleId,
       liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map(tag => tag.toDTO()),
-      goodExamples: rule.goodExamples.map(ex => ex.toDTO()),
-      badExamples: rule.badExamples.map(ex => ex.toDTO()),
+      tags: rule.tags.map((tag) => tag.toDTO()),
+      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
+      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
       authorId: rule.authorId,
       createdAt: rule.createdAt.getTime(),
       updatedAt: rule.updatedAt.getTime(),

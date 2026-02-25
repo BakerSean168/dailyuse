@@ -8,13 +8,11 @@
  * - 乐观更新支持
  */
 
-import type {
-  RuleClientDTO,
-} from '@/contracts/aggregates/rule-client';
-import type { RuleStatus } from '@/contracts/value-objects/rule-status';
-import type { RuleSeverity } from '@/contracts/value-objects/rule-severity';
+import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
+import type { RuleStatus } from '../../contracts/value-objects/rule-status';
+import type { RuleSeverity } from '../../contracts/value-objects/rule-severity';
 import { AggregateRoot } from '@dailyuse/utils';
-import type { RuleId } from '@/contracts/primitives/ids';
+import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
 import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
@@ -45,7 +43,7 @@ export interface RuleState {
 
 /**
  * Rule 聚合�?- Client �?
- * 
+ *
  * 提供规则的客户端视图，支持：
  * - �?API 响应创建实例
  * - UI 辅助方法（状态格式化、标签过滤）
@@ -158,7 +156,7 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 获取状态的中文显示名称
-   * 
+   *
    * @example
    * rule.displayStatus // '生效�?
    */
@@ -173,7 +171,7 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 获取严重程度的中文显示名�?
-   * 
+   *
    * @example
    * rule.displaySeverity // '强制执行'
    */
@@ -187,7 +185,7 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 获取严重程度�?UI 标签颜色
-   * 
+   *
    * @returns 'error' | 'warning'
    */
   get severityColor(): 'error' | 'warning' {
@@ -196,7 +194,7 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 获取状态的 UI 标签颜色
-   * 
+   *
    * @returns 'success' | 'info' | 'default'
    */
   get statusColor(): 'success' | 'info' | 'default' {
@@ -212,25 +210,25 @@ export class Rule extends AggregateRoot<RuleId> {
    * 获取所�?Good Example 代码示例
    */
   get goodExamples(): CodeSnippet[] {
-    return this._props.codeSnippets.filter(s => s.type === 'GoodExample');
+    return this._props.codeSnippets.filter((s) => s.type === 'GoodExample');
   }
 
   /**
    * 获取所有 Bad Example 代码示例
    */
   get badExamples(): CodeSnippet[] {
-    return this._props.codeSnippets.filter(s => s.type === 'BadExample');
+    return this._props.codeSnippets.filter((s) => s.type === 'BadExample');
   }
 
   /**
    * 检查规则是否包含指定标�?
-   * 
+   *
    * @param tag - 标签名（不区分大小写�?
    * @example
    * rule.hasTag('ddd') // true
    */
   public hasTag(tag: string): boolean {
-    return this._props.tags.some(t => t.value.toLowerCase() === tag.toLowerCase());
+    return this._props.tags.some((t) => t.value.toLowerCase() === tag.toLowerCase());
   }
 
   /**
@@ -258,10 +256,10 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 从状态创建 Rule 实例
-   * 
+   *
    * @param state - Rule 内部状态
    * @returns Rule 实例
-   * 
+   *
    * @example
    * const rule = Rule.load(state);
    */
@@ -273,9 +271,9 @@ export class Rule extends AggregateRoot<RuleId> {
 
   /**
    * 转换�?Client DTO
-   * 
+   *
    * @returns RuleClientDTO（可用于 API 请求�?
-   * 
+   *
    * @example
    * const dto = rule.toDTO();
    * await apiClient.updateRule(dto);
@@ -291,9 +289,9 @@ export class Rule extends AggregateRoot<RuleId> {
       deprecationReason: this._props.deprecationReason,
       replacementRuleId: this._props.replacementRuleId,
       liveReferenceLocation: this._props.liveReferenceLocation,
-      tags: this._props.tags.map(t => t.toDTO()),
-      goodExamples: this.goodExamples.map(s => s.toDTO()),
-      badExamples: this.badExamples.map(s => s.toDTO()),
+      tags: this._props.tags.map((t) => t.toDTO()),
+      goodExamples: this.goodExamples.map((s) => s.toDTO()),
+      badExamples: this.badExamples.map((s) => s.toDTO()),
       authorId: this._props.authorId,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),

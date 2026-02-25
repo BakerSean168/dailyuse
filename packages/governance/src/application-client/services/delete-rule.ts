@@ -5,8 +5,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type { DeleteRuleReq, DeleteRuleRes } from '@/contracts/api/rules';
-import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+import type { DeleteRuleReq, DeleteRuleRes } from '../../contracts/api/rules';
+import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
 /**
  * Delete Rule

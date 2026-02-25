@@ -21,5 +21,8 @@ export { goalRoutes } from './router';
 // ===== Widgets =====
 // export { registerGoalWidgets } from './widgets/registerGoalWidgets';
 
+// ===== Components =====
+export * from './components';
+
 // ===== Initialization =====
 export { registerGoalInitializationTasks } from './initialization';

@@ -1,5 +1,8 @@
 import Bree from 'bree';
 import type { IScheduler, ITaskHandler } from '../interfaces';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('BreeScheduler');
 
 /**
  * BreeScheduler
@@ -37,7 +40,9 @@ export class BreeScheduler implements IScheduler {
     }
 
     if (typeof schedule === 'number') {
-      throw new Error(`BreeScheduler does not support interval scheduling. Use IntervalScheduler instead.`);
+      throw new Error(
+        `BreeScheduler does not support interval scheduling. Use IntervalScheduler instead.`,
+      );
     }
 
     this.handlers.set(taskId, handler);
@@ -76,12 +81,12 @@ export class BreeScheduler implements IScheduler {
 
   async start(): Promise<void> {
     await this.bree.start();
-    console.log(`[BreeScheduler] Started with ${this.registeredTasks.size} tasks`);
+    logger.info(`Started with ${this.registeredTasks.size} tasks`);
   }
 
   async stop(): Promise<void> {
     await this.bree.stop();
-    console.log('[BreeScheduler] Stopped');
+    logger.info('Stopped');
   }
 
   getRegisteredTasks(): string[] {

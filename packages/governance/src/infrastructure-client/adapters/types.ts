@@ -8,7 +8,7 @@
 import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export the port interface
-export type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+export type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
 // Re-export API types used by adapters
 export type {
@@ -24,7 +24,7 @@ export type {
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
-} from '@/contracts/api/rules';
+} from '../../contracts/api/rules';
 
 // IResultHttpClient imported from @dailyuse/http-client
 

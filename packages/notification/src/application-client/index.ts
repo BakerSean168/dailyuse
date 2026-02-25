@@ -5,6 +5,9 @@
  * 简化版 - 只导出必要的类型和事件
  */
 
+// ===== Port Interfaces =====
+export type { INotificationApiClient } from '../infrastructure-client/adapters/types';
+
 // Client Service
 export { NotificationClientService } from './notification-client-service';
 
@@ -18,9 +21,10 @@ export function setNotificationApplicationService(service: any) {
 export const notificationApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_notificationApplicationService) {
-      throw new Error('notificationApplicationService not initialized. Call setNotificationApplicationService first.');
+      throw new Error(
+        'notificationApplicationService not initialized. Call setNotificationApplicationService first.',
+      );
     }
     return (_notificationApplicationService as any)[prop];
-  }
+  },
 });
-

@@ -1,5 +1,8 @@
 import cron, { type ScheduledTask } from 'node-cron';
 import type { IScheduler, ITaskHandler } from '../interfaces';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('CronScheduler');
 
 /**
  * CronScheduler
@@ -30,22 +33,21 @@ export class CronScheduler implements IScheduler {
     }
 
     if (typeof schedule === 'number') {
-      throw new Error(`CronScheduler does not support interval scheduling. Use IntervalScheduler instead.`);
+      throw new Error(
+        `CronScheduler does not support interval scheduling. Use IntervalScheduler instead.`,
+      );
     }
 
     this.handlers.set(taskId, handler);
     this.registeredTasks.add(taskId);
 
     try {
-      const task = cron.schedule(
-        schedule,
-        async () => {
-          const taskHandler = this.handlers.get(taskId);
-          if (taskHandler) {
-            await taskHandler.execute(taskId);
-          }
+      const task = cron.schedule(schedule, async () => {
+        const taskHandler = this.handlers.get(taskId);
+        if (taskHandler) {
+          await taskHandler.execute(taskId);
         }
-      );
+      });
 
       // Keep the task paused until scheduler starts
       task.stop();
@@ -78,7 +80,7 @@ export class CronScheduler implements IScheduler {
     for (const task of this.jobs.values()) {
       task.start();
     }
-    console.log(`[CronScheduler] Started with ${this.registeredTasks.size} tasks`);
+    logger.info(`Started with ${this.registeredTasks.size} tasks`);
   }
 
   async stop(): Promise<void> {
@@ -86,7 +88,7 @@ export class CronScheduler implements IScheduler {
     for (const task of this.jobs.values()) {
       task.stop();
     }
-    console.log('[CronScheduler] Stopped');
+    logger.info('Stopped');
   }
 
   getRegisteredTasks(): string[] {

@@ -7,9 +7,12 @@
 import {
   InitializationManager,
   InitializationPhase,
+  createLogger,
   type InitializationTask,
 } from '@dailyuse/utils';
 import { useGoalStore } from '../stores/goalStore';
+
+const logger = createLogger('goal:init');
 
 /**
  * 注册 Goal 模块的初始化任务
@@ -30,25 +33,25 @@ export function registerGoalInitializationTasks(): void {
     phase: InitializationPhase.APP_STARTUP,
     priority: 20, // 在基础设施之后初始化
     initialize: async () => {
-      console.log('🎯 [Goal] 开始初始化 Goal 模块...');
+      logger.info('Starting goal module initialization');
 
       try {
         // Goal 模块初始化：注册 widgets、路由等
-        console.log('✅ [Goal] Goal 模块初始化完成');
+        logger.info('Goal module initialized');
       } catch (error) {
-        console.error('❌ [Goal] Goal 模块初始化失败:', error);
+        logger.error('Goal module initialization failed', error);
         throw error;
       }
     },
     cleanup: async () => {
-      console.log('🧹 [Goal] 清理 Goal 模块数据...');
+      logger.info('Cleaning up goal module data');
 
       try {
         const store = useGoalStore();
         store.$reset();
-        console.log('✅ [Goal] Goal 模块数据清理完成');
+        logger.info('Goal module data cleaned up');
       } catch (error) {
-        console.error('❌ [Goal] Goal 模块清理失败:', error);
+        logger.error('Goal module cleanup failed', error);
       }
     },
   };
@@ -60,26 +63,26 @@ export function registerGoalInitializationTasks(): void {
     priority: 15,
     initialize: async (context?: unknown) => {
       const ctx = context as { identityId?: string } | undefined;
-      console.log(`🔄 [Goal] 同步用户 Goal 数据: ${ctx?.identityId || 'unknown'}`);
+      logger.info(`Syncing user goal data: ${ctx?.identityId || 'unknown'}`);
 
       try {
         // 用户登录后，Goal 数据将通过 composables 按需加载
         // 这里不做任何操作，保持懒加载策略
-        console.log('✅ [Goal] Goal 数据将按需加载');
+        logger.info('Goal data will be loaded on demand');
       } catch (error) {
-        console.error('❌ [Goal] 用户 Goal 数据同步失败:', error);
+        logger.error('User goal data sync failed', error);
         // 不抛出错误，允许其他模块继续初始化
       }
     },
     cleanup: async () => {
-      console.log('🧹 [Goal] 清理用户 Goal 数据...');
+      logger.info('Cleaning up user goal data');
 
       try {
         const store = useGoalStore();
         store.$reset();
-        console.log('✅ [Goal] 用户 Goal 数据清理完成');
+        logger.info('User goal data cleaned up');
       } catch (error) {
-        console.error('❌ [Goal] 用户 Goal 数据清理失败:', error);
+        logger.error('User goal data cleanup failed', error);
       }
     },
   };
@@ -87,5 +90,5 @@ export function registerGoalInitializationTasks(): void {
   manager.registerTask(goalModuleInitTask);
   manager.registerTask(goalUserDataSyncTask);
 
-  console.log('📝 [Goal] Goal 模块初始化任务已注册');
+  logger.info('Goal module initialization tasks registered');
 }

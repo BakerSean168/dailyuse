@@ -8,11 +8,9 @@
  * - UI 辅助方法（时间格式化、变更摘要）
  */
 
-import type {
-  RuleRevisionClientDTO,
-} from '@/contracts/entities/rule-revision-client';
+import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revision-client';
 import { Entity } from '@dailyuse/utils';
-import type { RuleId } from '@/contracts/primitives/ids';
+import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
 // ================= 内部状态接�?=================
@@ -36,7 +34,7 @@ export interface RuleRevisionState {
 
 /**
  * RuleRevision 实体 - Client 端
- * 
+ *
  * 提供修订记录的客户端视图，支持：
  * - 从 API 响应创建实例
  * - UI 辅助方法（变更摘要、字段对比）
@@ -120,7 +118,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 获取变更类型的中文显示名�?
-   * 
+   *
    * @example
    * revision.displayChangeType // '已更�?
    */
@@ -136,11 +134,14 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 获取变更类型�?UI 标签颜色
-   * 
+   *
    * @returns 'success' | 'info' | 'warning' | 'error'
    */
   get changeTypeColor(): 'success' | 'info' | 'warning' | 'error' {
-    const colorMap: Record<typeof this._props.changeType, 'success' | 'info' | 'warning' | 'error'> = {
+    const colorMap: Record<
+      typeof this._props.changeType,
+      'success' | 'info' | 'warning' | 'error'
+    > = {
       Created: 'success',
       Updated: 'info',
       Deprecated: 'warning',
@@ -151,7 +152,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 获取相对时间格式（例如：'5分钟�?�?2小时�?�?
-   * 
+   *
    * @returns 相对时间字符�?
    */
   get relativeCreatedAt(): string {
@@ -165,16 +166,16 @@ export class RuleRevision extends Entity<RuleRevisionId> {
     if (diffMinutes < 60) return `${diffMinutes}分钟前`;
     if (diffHours < 24) return `${diffHours}小时前`;
     if (diffDays < 30) return `${diffDays}天前`;
-    
+
     // 超过 30 天，显示具体日期
     return this._props.createdAt.toLocaleDateString('zh-CN');
   }
 
   /**
    * 生成变更摘要（用于列表展示）
-   * 
+   *
    * @example
-   * revision.changeSummary 
+   * revision.changeSummary
    * // '更新了字段：标题, 严重程度'
    */
   get changeSummary(): string {
@@ -187,7 +188,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
     if (this._props.changeType === 'Reactivated') {
       return '重新激活了规则';
     }
-    
+
     // Updated
     const fieldNames = this._props.changedFields.join(', ');
     return `更新了字段：${fieldNames}`;
@@ -195,10 +196,10 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 获取指定字段的变更详�?
-   * 
+   *
    * @param field - 字段�?
    * @returns { before: unknown, after: unknown } | null
-   * 
+   *
    * @example
    * const change = revision.getFieldChange('title');
    * if (change) {
@@ -217,7 +218,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 检查是否修改了指定字段
-   * 
+   *
    * @param field - 字段�?
    * @example
    * if (revision.hasFieldChanged('severity')) {
@@ -232,10 +233,10 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 从状态创建 RuleRevision 实例
-   * 
+   *
    * @param state - RuleRevision 内部状态
    * @returns RuleRevision 实例
-   * 
+   *
    * @example
    * const revision = RuleRevision.load(state);
    */
@@ -247,9 +248,9 @@ export class RuleRevision extends Entity<RuleRevisionId> {
 
   /**
    * 转换�?Client DTO
-   * 
+   *
    * @returns RuleRevisionClientDTO（可用于 API 请求�?
-   * 
+   *
    * @example
    * const dto = revision.toDTO();
    */

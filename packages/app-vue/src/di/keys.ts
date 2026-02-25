@@ -37,6 +37,5 @@ export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService'
 // ── UI / Navigation Keys ──
 export const MAIN_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('MainNavigation');
 export const BOTTOM_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('BottomNavigation');
-export const IS_AUTHENTICATED_KEY: InjectionKey<() => boolean> = Symbol('IsAuthenticated');
 export const USER_NAME_KEY: InjectionKey<string> = Symbol('UserName');
 export const LOGOUT_HANDLER_KEY: InjectionKey<() => void> = Symbol('LogoutHandler');

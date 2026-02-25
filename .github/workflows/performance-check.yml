@@ -3,7 +3,7 @@ name: Performance Regression Check
 on:
   pull_request:
     paths:
-      - 'apps/api/src/modules/task/**'
+      - 'packages/task/**'
       - 'packages/contracts/src/modules/task/**'
       - '.github/workflows/performance-check.yml'
 
@@ -12,18 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    env:
+      NODE_VERSION: '22'
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -31,7 +32,7 @@ jobs:
 
       - name: Run performance benchmarks
         run: |
-          pnpm nx test application-server \
+          pnpm nx test task \
             --testPathPattern="sort-algorithm.bench|service-sorting.bench|stability.bench|http-endpoint.bench" \
             --testNamePattern="acceptable time" \
             --reporter=verbose
@@ -46,7 +47,7 @@ jobs:
           echo "   - Stability variance: should be <10%"
           echo ""
           echo "ℹ️  If benchmarks failed, check logs above for details"
-          echo "💡 Tip: Run locally with: pnpm nx test application-server --testPathPattern='bench'"
+          echo "💡 Tip: Run locally with: pnpm nx test task --testPathPattern='bench'"
         continue-on-error: true
 
       - name: Verify no regressions
@@ -69,4 +70,4 @@ jobs:
           echo "If any metric exceeds targets, check:"
           echo "1. Review the benchmark test output above"
           echo "2. Check for other PRs affecting task sorting"
-          echo "3. Run benchmarks locally to verify: pnpm nx test application-server --testPathPattern=bench"
+          echo "3. Run benchmarks locally to verify: pnpm nx test task --testPathPattern=bench"

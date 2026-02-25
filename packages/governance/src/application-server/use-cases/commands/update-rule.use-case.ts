@@ -9,9 +9,9 @@ import { RuleRevision } from '@/domain-server/entities/rule-revision';
 import type { Result } from '@dailyuse/contracts/result';
 import { error } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
-import type { UpdateRuleReq, UpdateRuleRes } from '@/contracts/api/rules';
-import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
-import type { RuleId } from '@/contracts/primitives/ids';
+import type { UpdateRuleReq, UpdateRuleRes } from '../../../contracts/api/rules';
+import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
+import type { RuleId } from '../../../contracts/primitives/ids';
 import type { ExecutionContext } from './create-rule.use-case';
 
 /**
@@ -25,18 +25,22 @@ export class UpdateRuleUseCase {
 
   /**
    * Execute: Updates existing rule content
-   * 
+   *
    * @param ruleId - Rule ID from URL path parameter
    * @param req - Update request body (PATCH semantics)
    * @param cx - Execution context with identityId from auth middleware
-   * 
+   *
    * Flow:
    * 1. Fetch rule by ID
    * 2. Call domain methods to update
    * 3. Persist changes
    * 4. Return updated RuleClientDTO
    */
-  async execute(ruleId: string, req: UpdateRuleReq, cx: ExecutionContext): Promise<Result<UpdateRuleRes>> {
+  async execute(
+    ruleId: string,
+    req: UpdateRuleReq,
+    cx: ExecutionContext,
+  ): Promise<Result<UpdateRuleRes>> {
     // Fetch rule
     const ruleResult = await this.ruleRepository.findById(ruleId as RuleId);
     if (!ruleResult.ok) {
@@ -80,11 +84,16 @@ export class UpdateRuleUseCase {
         title: req.title,
         description: req.description,
         tags: req.tags,
-        liveReferenceLocation: req.liveReferenceLocation === null ? undefined : req.liveReferenceLocation,
+        liveReferenceLocation:
+          req.liveReferenceLocation === null ? undefined : req.liveReferenceLocation,
       });
 
       if (!updateResult.ok) {
-        return error(updateResult.error.code, updateResult.error.message, updateResult.error.details);
+        return error(
+          updateResult.error.code,
+          updateResult.error.message,
+          updateResult.error.details,
+        );
       }
     }
 
@@ -92,7 +101,11 @@ export class UpdateRuleUseCase {
     if (changedFields.length > 0) {
       const revisionCountResult = await this.revisionRepository.countByRuleId(rule.id);
       if (!revisionCountResult.ok) {
-        return error(revisionCountResult.error.code, revisionCountResult.error.message, revisionCountResult.error.details);
+        return error(
+          revisionCountResult.error.code,
+          revisionCountResult.error.message,
+          revisionCountResult.error.details,
+        );
       }
 
       const revision = RuleRevision.create({
@@ -125,9 +138,9 @@ export class UpdateRuleUseCase {
       deprecationReason: rule.deprecationReason,
       replacementRuleId: rule.replacementRuleId,
       liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map(tag => tag.toDTO()),
-      goodExamples: rule.goodExamples.map(ex => ex.toDTO()),
-      badExamples: rule.badExamples.map(ex => ex.toDTO()),
+      tags: rule.tags.map((tag) => tag.toDTO()),
+      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
+      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
       authorId: rule.authorId,
       createdAt: rule.createdAt.getTime(),
       updatedAt: rule.updatedAt.getTime(),

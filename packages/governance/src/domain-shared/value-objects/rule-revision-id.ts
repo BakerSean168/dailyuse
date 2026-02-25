@@ -3,12 +3,9 @@
  * 规则修订记录ID值对象
  */
 
-
-import type { RuleRevisionId as IRuleRevisionId } from '@/contracts/primitives/ids';
+import type { RuleRevisionId as IRuleRevisionId } from '../../contracts/primitives/ids';
 
 import { createIdType } from '@dailyuse/utils';
-
-
 
 /**
  * RuleRevisionId 值对象

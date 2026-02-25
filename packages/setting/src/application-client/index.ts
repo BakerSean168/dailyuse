@@ -6,6 +6,9 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 import type { ISettingApiClient } from '../infrastructure-client/adapters/types';
 
+// ===== Port Interfaces =====
+export type { ISettingApiClient } from '../infrastructure-client/adapters/types';
+
 /**
  * Setting Client Service — Facade over ISettingApiClient
  */
@@ -18,7 +21,10 @@ export class SettingClientService {
     return result.data;
   }
 
-  async patchCategory(category: PreferenceCategory, patch: Record<string, unknown>): Promise<UserSettingClientDTO> {
+  async patchCategory(
+    category: PreferenceCategory,
+    patch: Record<string, unknown>,
+  ): Promise<UserSettingClientDTO> {
     const result = await this.apiClient.patchCategory(category, patch);
     if (!result.ok) throw new Error(result.error?.message ?? 'Failed to patch settings');
     return result.data;
@@ -53,8 +59,10 @@ export function setSettingApplicationService(service: any) {
 export const settingApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_settingApplicationService) {
-      throw new Error('settingApplicationService not initialized. Call setSettingApplicationService first.');
+      throw new Error(
+        'settingApplicationService not initialized. Call setSettingApplicationService first.',
+      );
     }
     return (_settingApplicationService as any)[prop];
-  }
+  },
 });

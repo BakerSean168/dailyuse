@@ -2,15 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { SearchRulesUseCase } from '../search-rules.use-case';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import { ok } from '@dailyuse/contracts/result';
-import { RuleStatus } from '@/contracts/value-objects/rule-status';
-import { RuleSeverity } from '@/contracts/value-objects/rule-severity';
+import { RuleStatus } from '../../../../contracts/value-objects/rule-status';
+import { RuleSeverity } from '../../../../contracts/value-objects/rule-severity';
 
 function createRuleFixture(params: {
   id: string;
   code: string;
   title: string;
   description: string;
-  status: typeof RuleStatus[keyof typeof RuleStatus];
+  status: (typeof RuleStatus)[keyof typeof RuleStatus];
   updatedAt: Date;
   tags?: string[];
 }) {
@@ -49,32 +49,34 @@ function createRepositoryMock(searchImpl: IRuleRepository['search']): IRuleRepos
 
 describe('SearchRulesUseCase', () => {
   it('orders results by relevance and status weight', async () => {
-    const repository = createRepositoryMock(async () => ok([
-      createRuleFixture({
-        id: 'rule-1',
-        code: 'DDD-200',
-        title: 'Entity Props Pattern',
-        description: 'Pattern for constructor props',
-        status: RuleStatus.Draft,
-        updatedAt: new Date('2026-02-10T00:00:00.000Z'),
-      }),
-      createRuleFixture({
-        id: 'rule-2',
-        code: 'DDD-201',
-        title: 'Entity Props Pattern',
-        description: 'Pattern for constructor props',
-        status: RuleStatus.Active,
-        updatedAt: new Date('2026-02-09T00:00:00.000Z'),
-      }),
-      createRuleFixture({
-        id: 'rule-3',
-        code: 'ARCH-001',
-        title: 'Layer Isolation',
-        description: 'Entity props used in examples',
-        status: RuleStatus.Active,
-        updatedAt: new Date('2026-02-11T00:00:00.000Z'),
-      }),
-    ]));
+    const repository = createRepositoryMock(async () =>
+      ok([
+        createRuleFixture({
+          id: 'rule-1',
+          code: 'DDD-200',
+          title: 'Entity Props Pattern',
+          description: 'Pattern for constructor props',
+          status: RuleStatus.Draft,
+          updatedAt: new Date('2026-02-10T00:00:00.000Z'),
+        }),
+        createRuleFixture({
+          id: 'rule-2',
+          code: 'DDD-201',
+          title: 'Entity Props Pattern',
+          description: 'Pattern for constructor props',
+          status: RuleStatus.Active,
+          updatedAt: new Date('2026-02-09T00:00:00.000Z'),
+        }),
+        createRuleFixture({
+          id: 'rule-3',
+          code: 'ARCH-001',
+          title: 'Layer Isolation',
+          description: 'Entity props used in examples',
+          status: RuleStatus.Active,
+          updatedAt: new Date('2026-02-11T00:00:00.000Z'),
+        }),
+      ]),
+    );
 
     const useCase = new SearchRulesUseCase(repository);
     const result = await useCase.execute('Entity Props Pattern');
@@ -103,32 +105,34 @@ describe('SearchRulesUseCase', () => {
   });
 
   it('applies pagination to scored results', async () => {
-    const repository = createRepositoryMock(async () => ok([
-      createRuleFixture({
-        id: 'rule-a',
-        code: 'DDD-010',
-        title: 'Factory Method Pattern',
-        description: 'Factory method',
-        status: RuleStatus.Active,
-        updatedAt: new Date('2026-02-12T00:00:00.000Z'),
-      }),
-      createRuleFixture({
-        id: 'rule-b',
-        code: 'DDD-011',
-        title: 'Factory Method Pattern',
-        description: 'Factory method',
-        status: RuleStatus.Draft,
-        updatedAt: new Date('2026-02-11T00:00:00.000Z'),
-      }),
-      createRuleFixture({
-        id: 'rule-c',
-        code: 'DDD-012',
-        title: 'Factory Method Pattern',
-        description: 'Factory method',
-        status: RuleStatus.Deprecated,
-        updatedAt: new Date('2026-02-10T00:00:00.000Z'),
-      }),
-    ]));
+    const repository = createRepositoryMock(async () =>
+      ok([
+        createRuleFixture({
+          id: 'rule-a',
+          code: 'DDD-010',
+          title: 'Factory Method Pattern',
+          description: 'Factory method',
+          status: RuleStatus.Active,
+          updatedAt: new Date('2026-02-12T00:00:00.000Z'),
+        }),
+        createRuleFixture({
+          id: 'rule-b',
+          code: 'DDD-011',
+          title: 'Factory Method Pattern',
+          description: 'Factory method',
+          status: RuleStatus.Draft,
+          updatedAt: new Date('2026-02-11T00:00:00.000Z'),
+        }),
+        createRuleFixture({
+          id: 'rule-c',
+          code: 'DDD-012',
+          title: 'Factory Method Pattern',
+          description: 'Factory method',
+          status: RuleStatus.Deprecated,
+          updatedAt: new Date('2026-02-10T00:00:00.000Z'),
+        }),
+      ]),
+    );
 
     const useCase = new SearchRulesUseCase(repository);
     const result = await useCase.execute('Factory Method Pattern', { page: 2, pageSize: 1 });

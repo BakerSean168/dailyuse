@@ -1,13 +1,13 @@
 /**
  * RuleClientService - Client-side Rule Service
  * 规则客户端服务
- * 
+ *
  * Provides client-side operations for Rule management:
  * - Fetches rules from API
  * - Caches results locally
  * - Provides reactive state management
  * - Handles optimistic updates
- * 
+ *
  * This service is framework-agnostic and can be used in:
  * - Vue 3 applications (via Pinia stores)
  * - React applications (via hooks)
@@ -16,14 +16,14 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { RuleClientDTO } from '@/contracts/aggregates/rule-client';
+import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type {
   CreateRuleReq,
   ListRulesQuery,
   SearchRulesQuery,
   UpdateRuleReq,
-} from '@/contracts/api/rules';
-import type { IRuleApiClient } from '@/contracts/api/rule-api-client.port';
+} from '../../contracts/api/rules';
+import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
 export interface FetchRulesOptions {
   status?: string | string[];
@@ -41,7 +41,7 @@ export interface SearchRulesOptions {
 
 /**
  * Rule Client Service
- * 
+ *
  * Framework-agnostic service for client-side rule operations
  */
 export class RuleClientService {
@@ -71,9 +71,10 @@ export class RuleClientService {
       status: this.toStatus(options?.status),
       severity: this.toSeverity(options?.severity),
       tags: options?.tags,
-      page: options?.offset !== undefined && options?.limit
-        ? Math.floor(options.offset / options.limit) + 1
-        : 1,
+      page:
+        options?.offset !== undefined && options?.limit
+          ? Math.floor(options.offset / options.limit) + 1
+          : 1,
       pageSize: options?.limit ?? 20,
     };
 
