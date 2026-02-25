@@ -1,48 +1,58 @@
 /**
- * Web App Entry Point (精简版)
+ * Web App Entry Point
  *
- * 仅注册：Vue 3 + Pinia + Router + Tailwind CSS + Module DI
+ * 薄壳：Vue 3 + Pinia + app-vue Router + Platform DI
  */
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+import { createWebHistory } from 'vue-router';
+import { createAppRouter, useAuthenticationStore } from '@dailyuse/app-vue';
+import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
+
 import App from './App.vue';
-import router from './router';
-import { installModuleServices } from './shared/di';
+import { installWebServices } from './platform/di';
 import './styles/index.css';
 
-// Polyfill crypto.randomUUID for non-secure contexts or older browsers
+// Polyfill crypto.randomUUID for non-secure contexts
 if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
   crypto.randomUUID = () => {
     return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c: any) =>
-      (
-        c ^
-        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-      ).toString(16),
+      (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
     ) as `${string}-${string}-${string}-${string}-${string}`;
   };
 }
 
 async function startApp() {
-  // Enable MSW mock service worker in development when VITE_ENABLE_MOCK_API=true
+  // MSW mock in development
   if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_API === 'true') {
     const { worker } = await import('./mocks/browser');
-    await worker.start({
-      // Let unmatched requests pass through to the real server (or proxy)
-      onUnhandledRequest: 'bypass',
-    });
+    await worker.start({ onUnhandledRequest: 'bypass' });
   }
 
   const app = createApp(App);
+
+  // Pinia
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);
-
   app.use(pinia);
+
+  // Router (Web History)
+  const router = createAppRouter({
+    history: createWebHistory(),
+    isAuthenticated: () => useAuthenticationStore().isAuthenticated,
+  });
+  router.beforeEach(() => progressStart());
+  router.afterEach((to) => {
+    progressDone();
+    const title = to.meta.title as string | undefined;
+    document.title = title ? `${title} - DailyUse` : 'DailyUse';
+  });
   app.use(router);
 
-  // 注入模块服务（AccountClientService、AuthClientService、IRuleApiClient）
-  app.use(installModuleServices);
+  // Platform DI — HTTP-backed services + navigation
+  app.use(installWebServices);
 
   app.mount('#app');
 }

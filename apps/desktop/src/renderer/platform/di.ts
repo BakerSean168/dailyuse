@@ -2,7 +2,7 @@
  * Desktop Platform DI — IPC Adapter Injection
  *
  * Creates IPC-backed service instances and provides them via Vue DI,
- * mirroring the web app's installModuleServices but using IPC transport
+ * mirroring the web app's installWebServices but using IPC transport
  * instead of HTTP.
  *
  * Pattern: ipcClient → create*IpcAdapters(ipcClient) → new *ClientService(adapters) → app.provide(KEY, service)
@@ -11,6 +11,7 @@ import type { App } from 'vue';
 import { createIpcClient, createResultIpcClient } from '@dailyuse/ipc-client';
 
 import {
+  // Domain service keys
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
@@ -21,6 +22,15 @@ import {
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   RULE_SERVICE_KEY,
+  // UI keys
+  MAIN_NAVIGATION_KEY,
+  BOTTOM_NAVIGATION_KEY,
+  LOGOUT_HANDLER_KEY,
+  // Default navigation
+  defaultMainNavigation,
+  defaultBottomNavigation,
+  // Store
+  useAuthenticationStore,
 } from '@dailyuse/app-vue';
 
 // ── Adapter Factories ──
@@ -51,61 +61,59 @@ import { SettingClientService } from '@dailyuse/setting/application-client';
  * and provides them to the app's inject() context.
  */
 export function installIpcServices(app: App): void {
-  // Two IPC client variants:
-  // - ipcClient (IIpcClient): invoke() returns T, throws on error — used by 9 packages
-  // - resultIpcClient (IResultIpcClient): invoke() returns Result<T> — used by goal
   const ipcClient = createIpcClient();
   const resultIpcClient = createResultIpcClient();
 
-  // ── Account ──
+  // ── Domain Services ──
   const accountAdapters = createAccountIpcAdapters(ipcClient);
   app.provide(ACCOUNT_SERVICE_KEY, new AccountClientService(accountAdapters.account));
 
-  // ── Authentication ──
   const authAdapters = createAuthIpcAdapters(ipcClient);
   app.provide(AUTH_SERVICE_KEY, new AuthClientService(authAdapters.auth));
 
-  // ── Goal (uses ResultIpcClient) ──
   const goalAdapters = createGoalIpcAdapters(resultIpcClient);
   app.provide(
     GOAL_SERVICE_KEY,
     new GoalClientService(goalAdapters.goal, goalAdapters.folder, goalAdapters.focus),
   );
 
-  // ── Task ──
   const taskAdapters = createTaskIpcAdapters(ipcClient);
   app.provide(
     TASK_SERVICE_KEY,
     new TaskClientService(taskAdapters.template, taskAdapters.instance, taskAdapters.dependency),
   );
 
-  // ── Schedule ──
   const scheduleAdapters = createScheduleIpcAdapters(ipcClient);
   app.provide(
     SCHEDULE_SERVICE_KEY,
     new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task),
   );
 
-  // ── Reminder ──
   const reminderAdapters = createReminderIpcAdapters(ipcClient);
   app.provide(REMINDER_SERVICE_KEY, new ReminderClientService(reminderAdapters.reminder));
 
-  // ── Repository ──
   const repositoryAdapters = createRepositoryIpcAdapters(ipcClient);
   app.provide(REPOSITORY_SERVICE_KEY, new RepositoryClientService(repositoryAdapters.repository));
 
-  // ── Notification ──
   const notificationAdapters = createNotificationIpcAdapters(ipcClient);
   app.provide(
     NOTIFICATION_SERVICE_KEY,
     new NotificationClientService(notificationAdapters.notification),
   );
 
-  // ── Setting ──
   const settingAdapters = createSettingIpcAdapters(ipcClient);
   app.provide(SETTING_SERVICE_KEY, new SettingClientService(settingAdapters.setting));
 
-  // ── Governance (raw IRuleApiClient — no service wrapper) ──
   const governanceAdapters = createGovernanceIpcAdapters(ipcClient);
   app.provide(RULE_SERVICE_KEY, governanceAdapters.rule);
+
+  // ── UI / Navigation ──
+  app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
+  app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
+  app.provide(LOGOUT_HANDLER_KEY, () => {
+    const authStore = useAuthenticationStore();
+    authStore.reset();
+    // Desktop: transition to login window via IPC
+    window.electronAPI?.invoke('window:transition-to-login');
+  });
 }

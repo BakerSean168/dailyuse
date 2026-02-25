@@ -1,8 +1,18 @@
+// ── DI ──
 export * from './di/keys';
 export * from './di/types';
+export * from './di/navigation';
+
+// ── Router & Layouts ──
 export * from './router';
+export { default as MainLayout } from './layouts/MainLayout.vue';
+export { default as AuthLayout } from './layouts/AuthLayout.vue';
+
+// ── Shared ──
 export * from './shared/utils/result-helpers';
 export * from './shared/components';
+
+// ── Modules ──
 export * from './modules/account';
 export * from './modules/authentication';
 export * from './modules/goal';

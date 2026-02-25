@@ -1,17 +1,17 @@
 /**
- * Web Application — Module DI Container
+ * Web Platform — DI Container
  *
  * 集中管理所有模块的依赖注入。
- * 在 app 启动时创建 HTTP Client 实例，
- * 然后通过工厂函数将其注入到各模块的 Adapter → Service。
+ * 创建 HTTP 适配器 → 构建 Service 实例 → 通过 Vue provide/inject 注入。
  *
  * 统一使用 resultHttpClient (IResultHttpClient) — 所有方法返回 Result<T>。
  *
- * @module shared/di
+ * @module platform/di
  */
 
-import type { App, InjectionKey } from 'vue';
+import type { App } from 'vue';
 import {
+  // Domain service keys
   ACCOUNT_SERVICE_KEY,
   AUTH_SERVICE_KEY,
   GOAL_SERVICE_KEY,
@@ -22,28 +22,22 @@ import {
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   TASK_SERVICE_KEY,
-} from '@dailyuse/app-vue';
-export {
-  ACCOUNT_SERVICE_KEY,
-  AUTH_SERVICE_KEY,
-  GOAL_SERVICE_KEY,
-  NOTIFICATION_SERVICE_KEY,
-  REMINDER_SERVICE_KEY,
-  REPOSITORY_SERVICE_KEY,
-  RULE_SERVICE_KEY,
-  SCHEDULE_SERVICE_KEY,
-  SETTING_SERVICE_KEY,
-  TASK_SERVICE_KEY,
+  // UI keys
+  MAIN_NAVIGATION_KEY,
+  BOTTOM_NAVIGATION_KEY,
+  LOGOUT_HANDLER_KEY,
+  // Default navigation
+  defaultMainNavigation,
+  defaultBottomNavigation,
+  // Store
+  useAuthenticationStore,
 } from '@dailyuse/app-vue';
 
-// ── Package-level Services & Factories ──
-// Use explicit subpath imports to avoid bundling server-side code (Node.js-only
-// modules like argon2, prisma, etc.) into the browser bundle.
+// ── Adapter Factories (subpath imports to avoid bundling server code) ──
 import { AccountClientService } from '@dailyuse/account/application-client';
 import { createAccountHttpAdapter } from '@dailyuse/account/infrastructure-client';
 import { AuthClientService } from '@dailyuse/authentication/application-client';
 import { createAuthHttpAdapter } from '@dailyuse/authentication/infrastructure-client';
-import type { IRuleApiClient } from '@dailyuse/governance/infrastructure-client';
 import { createRuleHttpAdapter } from '@dailyuse/governance/infrastructure-client';
 import { GoalClientService } from '@dailyuse/goal/application-client';
 import { createGoalHttpAdapters } from '@dailyuse/goal/infrastructure-client';
@@ -60,51 +54,34 @@ import { createSettingHttpAdapters } from '@dailyuse/setting/infrastructure-clie
 import { TaskClientService } from '@dailyuse/task/application-client';
 import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 
-// ── Web App HTTP Client ──
-import { resultHttpClient } from '@/shared/http';
-
-export const RULE_API_CLIENT_KEY: InjectionKey<IRuleApiClient> = RULE_SERVICE_KEY;
+import { resultHttpClient } from './http';
 
 // ============================================================================
-// Service Instances — All modules use resultHttpClient (IResultHttpClient)
+// Service Instances
 // ============================================================================
 
-// ── Auth ──
-const authApiClient = createAuthHttpAdapter(resultHttpClient);
-export const authService = new AuthClientService(authApiClient);
+const authService = new AuthClientService(createAuthHttpAdapter(resultHttpClient));
+const accountService = new AccountClientService(createAccountHttpAdapter(resultHttpClient));
+const ruleApiClient = createRuleHttpAdapter(resultHttpClient);
 
-// ── Account ──
-const accountApiClient = createAccountHttpAdapter(resultHttpClient);
-export const accountService = new AccountClientService(accountApiClient);
-
-// ── Governance (Rule API Client only) ──
-export const ruleApiClient = createRuleHttpAdapter(resultHttpClient);
-
-// ── Goal ──
 const goalAdapters = createGoalHttpAdapters(resultHttpClient);
 const goalService = new GoalClientService(goalAdapters.goal, goalAdapters.folder);
 
-// ── Notification ──
 const notificationAdapters = createNotificationHttpAdapters(resultHttpClient);
 const notificationService = new NotificationClientService(notificationAdapters.notification);
 
-// ── Reminder ──
 const reminderAdapters = createReminderHttpAdapters(resultHttpClient);
 const reminderService = new ReminderClientService(reminderAdapters.reminder);
 
-// ── Repository ──
 const repositoryAdapters = createRepositoryHttpAdapters(resultHttpClient);
 const repositoryService = new RepositoryClientService(repositoryAdapters.repository);
 
-// ── Schedule ──
 const scheduleAdapters = createScheduleHttpAdapters(resultHttpClient);
 const scheduleService = new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task);
 
-// ── Setting ──
 const settingAdapters = createSettingHttpAdapters(resultHttpClient);
 const settingService = new SettingClientService(settingAdapters.setting);
 
-// ── Task ──
 const taskAdapters = createTaskHttpAdapters(resultHttpClient);
 const taskService = new TaskClientService(
   taskAdapters.template,
@@ -117,22 +94,19 @@ const taskService = new TaskClientService(
 // ============================================================================
 
 /**
- * 注册所有模块服务到 Vue app provide/inject 上下文。
- *
- * 所有模块统一通过 provide/inject 注入 Service 实例。
- * Composable 层通过 inject(KEY) 获取 Service。
+ * 注册所有模块服务 + UI 导航到 Vue provide/inject 上下文。
  *
  * @example
  * ```ts
  * // main.ts
- * import { installModuleServices } from '@/shared/di';
- * app.use(installModuleServices);
+ * app.use(installWebServices);
  * ```
  */
-export function installModuleServices(app: App): void {
+export function installWebServices(app: App): void {
+  // ── Domain Services ──
   app.provide(ACCOUNT_SERVICE_KEY, accountService);
   app.provide(AUTH_SERVICE_KEY, authService);
-  app.provide(RULE_API_CLIENT_KEY, ruleApiClient);
+  app.provide(RULE_SERVICE_KEY, ruleApiClient);
   app.provide(GOAL_SERVICE_KEY, goalService);
   app.provide(NOTIFICATION_SERVICE_KEY, notificationService);
   app.provide(REMINDER_SERVICE_KEY, reminderService);
@@ -140,4 +114,13 @@ export function installModuleServices(app: App): void {
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
   app.provide(TASK_SERVICE_KEY, taskService);
+
+  // ── UI / Navigation ──
+  app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
+  app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
+  app.provide(LOGOUT_HANDLER_KEY, () => {
+    const authStore = useAuthenticationStore();
+    authStore.reset();
+    window.location.href = '/auth';
+  });
 }

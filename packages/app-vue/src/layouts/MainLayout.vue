@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  BOTTOM_NAVIGATION_KEY,
-  LOGOUT_HANDLER_KEY,
-  MAIN_NAVIGATION_KEY,
-} from '../di/keys';
+import { BOTTOM_NAVIGATION_KEY, LOGOUT_HANDLER_KEY, MAIN_NAVIGATION_KEY } from '../di/keys';
+import { defaultMainNavigation, defaultBottomNavigation } from '../di/navigation';
 
 const router = useRouter();
 const route = useRoute();
 
-const mainNavigation = computed(
-  () => inject(MAIN_NAVIGATION_KEY) ?? [{ path: '/', title: '首页' }, { path: '/dashboard', title: '仪表盘' }],
-);
-const bottomNavigation = computed(() => inject(BOTTOM_NAVIGATION_KEY) ?? []);
+const mainNavigation = computed(() => inject(MAIN_NAVIGATION_KEY) ?? defaultMainNavigation);
+const bottomNavigation = computed(() => inject(BOTTOM_NAVIGATION_KEY) ?? defaultBottomNavigation);
 const logout = inject(LOGOUT_HANDLER_KEY);
 
-const isActive = (path: string) => (path === '/' ? route.path === '/' : route.path.startsWith(path));
+const isActive = (path: string) =>
+  path === '/' ? route.path === '/' : route.path.startsWith(path);
 const navigateTo = (path: string) => {
   if (route.path !== path) {
     router.push(path);
@@ -27,7 +23,10 @@ const navigateTo = (path: string) => {
 <template>
   <div class="flex h-screen overflow-hidden">
     <aside class="w-44 flex flex-col bg-sidebar border-r border-sidebar-border shrink-0 p-3 gap-2">
-      <button class="text-left font-bold px-2 py-2 rounded hover:bg-sidebar-accent" @click="navigateTo('/')">
+      <button
+        class="text-left font-bold px-2 py-2 rounded hover:bg-sidebar-accent"
+        @click="navigateTo('/')"
+      >
         DailyUse
       </button>
 
@@ -36,7 +35,11 @@ const navigateTo = (path: string) => {
           v-for="item in mainNavigation"
           :key="item.path"
           class="w-full text-left px-2 py-2 rounded transition-colors"
-          :class="isActive(item.path) ? 'bg-sidebar-accent text-sidebar-primary' : 'hover:bg-sidebar-accent text-sidebar-foreground'"
+          :class="
+            isActive(item.path)
+              ? 'bg-sidebar-accent text-sidebar-primary'
+              : 'hover:bg-sidebar-accent text-sidebar-foreground'
+          "
           @click="navigateTo(item.path)"
         >
           {{ item.title }}
@@ -48,7 +51,11 @@ const navigateTo = (path: string) => {
           v-for="item in bottomNavigation"
           :key="item.path"
           class="w-full text-left px-2 py-2 rounded transition-colors"
-          :class="isActive(item.path) ? 'bg-sidebar-accent text-sidebar-primary' : 'hover:bg-sidebar-accent text-sidebar-foreground'"
+          :class="
+            isActive(item.path)
+              ? 'bg-sidebar-accent text-sidebar-primary'
+              : 'hover:bg-sidebar-accent text-sidebar-foreground'
+          "
           @click="navigateTo(item.path)"
         >
           {{ item.title }}
