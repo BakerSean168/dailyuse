@@ -101,3 +101,18 @@ D:/.e2e-test-credentials.json
 html/
 
 opencode.jsonc
+
+
+# Windows 保留字
+CON
+PRN
+AUX
+NUL
+nul
+COM1
+COM2
+COM3
+LPT1
+
+# 包管理器缓存
+.pnpm-store/

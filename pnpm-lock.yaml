@@ -812,21 +812,57 @@ importers:
 
   packages/app-vue:
     dependencies:
+      '@codemirror/state':
+        specifier: 6.5.4
+        version: 6.5.4
+      '@codemirror/view':
+        specifier: 6.39.14
+        version: 6.39.14
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../contracts
       '@dailyuse/ui-vue-shadcn':
         specifier: workspace:*
         version: link:../ui-vue-shadcn
+      '@internationalized/date':
+        specifier: ^3.11.0
+        version: 3.11.0
+      '@vueuse/core':
+        specifier: 14.1.0
+        version: 14.1.0(vue@3.5.25(typescript@5.9.3))
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      echarts:
+        specifier: ^6.0.0
+        version: 6.0.0
+      highlight.js:
+        specifier: 11.11.1
+        version: 11.11.1
       lucide-vue-next:
         specifier: ^0.542.0
         version: 0.542.0(vue@3.5.25(typescript@5.9.3))
+      markdown-it:
+        specifier: 14.1.1
+        version: 14.1.1
+      marked:
+        specifier: 17.0.3
+        version: 17.0.3
       pinia:
         specifier: ^3.0.3
         version: 3.0.4(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3))
+      pinia-plugin-persistedstate:
+        specifier: ^4.2.0
+        version: 4.7.1(pinia@3.0.4(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3)))
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       vue:
         specifier: ^3.4.0
         version: 3.5.25(typescript@5.9.3)
+      vue-echarts:
+        specifier: ^8.0.1
+        version: 8.0.1(echarts@6.0.0)(vue@3.5.25(typescript@5.9.3))
       vue-router:
         specifier: ^4.0.0
         version: 4.6.3(vue@3.5.25(typescript@5.9.3))
@@ -834,6 +870,9 @@ importers:
         specifier: ^2.0.8
         version: 2.0.9
     devDependencies:
+      '@types/markdown-it':
+        specifier: 14.1.2
+        version: 14.1.2
       '@vitejs/plugin-vue':
         specifier: ^6.0.0
         version: 6.0.4(vite@7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.25(typescript@5.9.3))
@@ -1312,7 +1351,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.0.0
-        version: 1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15(vitest@4.0.15))(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/setting:
     dependencies:
@@ -4720,6 +4759,9 @@ packages:
   '@types/leaflet@1.7.6':
     resolution: {integrity: sha512-Emkz3V08QnlelSbpT46OEAx+TBZYTOX2r1yM7W+hWg5+djHtQ1GbEXBDRLaqQDOYcDI51Ss0ayoqoKD4CtLUDA==}
 
+  '@types/linkify-it@5.0.0':
+    resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
+
   '@types/lodash-es@4.17.12':
     resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
 
@@ -4732,8 +4774,14 @@ packages:
   '@types/mapbox__vector-tile@1.3.4':
     resolution: {integrity: sha512-bpd8dRn9pr6xKvuEBQup8pwQfD4VUyqO/2deGjfpe6AwC8YRlyEipvefyRJUSiCJTZuCb8Pl1ciVV5ekqJ96Bg==}
 
+  '@types/markdown-it@14.1.2':
+    resolution: {integrity: sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==}
+
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
+
+  '@types/mdurl@2.0.0':
+    resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
 
   '@types/mdx@2.0.13':
     resolution: {integrity: sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==}
@@ -15730,6 +15778,8 @@ snapshots:
     dependencies:
       '@types/geojson': 7946.0.16
 
+  '@types/linkify-it@5.0.0': {}
+
   '@types/lodash-es@4.17.12':
     dependencies:
       '@types/lodash': 4.17.23
@@ -15744,9 +15794,16 @@ snapshots:
       '@types/mapbox__point-geometry': 0.1.4
       '@types/pbf': 3.0.5
 
+  '@types/markdown-it@14.1.2':
+    dependencies:
+      '@types/linkify-it': 5.0.0
+      '@types/mdurl': 2.0.0
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
+
+  '@types/mdurl@2.0.0': {}
 
   '@types/mdx@2.0.13': {}
 
@@ -24790,7 +24847,7 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@1.6.1(@types/node@22.13.14)(@vitest/ui@4.0.15(vitest@4.0.15))(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1

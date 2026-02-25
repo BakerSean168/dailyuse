@@ -1,6 +1,6 @@
 import { reactive, computed, type ComputedRef } from 'vue';
 
-export interface CommandItem {
+export interface PaletteCommandItem {
   /** Unique id */
   id: string;
   /** Display label */
@@ -15,19 +15,19 @@ export interface CommandItem {
   action: () => void;
 }
 
-export interface CommandGroup {
+export interface PaletteCommandGroup {
   id: string;
   label: string;
-  items: CommandItem[];
+  items: PaletteCommandItem[];
 }
 
 interface CommandPaletteState {
   open: boolean;
   search: string;
   /** Static commands that always appear */
-  staticCommands: CommandItem[];
+  staticCommands: PaletteCommandItem[];
   /** Dynamic commands registered / unregistered by pages */
-  dynamicCommands: CommandItem[];
+  dynamicCommands: PaletteCommandItem[];
 }
 
 const _state = reactive<CommandPaletteState>({
@@ -54,8 +54,8 @@ export function _setSearch(value: string): void {
 
 // ── Computed: grouped commands ──
 
-function groupCommands(items: CommandItem[]): CommandGroup[] {
-  const groups = new Map<string, CommandItem[]>();
+function groupCommands(items: PaletteCommandItem[]): PaletteCommandGroup[] {
+  const groups = new Map<string, PaletteCommandItem[]>();
   for (const item of items) {
     const key = item.group ?? '操作';
     if (!groups.has(key)) groups.set(key, []);
@@ -69,7 +69,7 @@ function groupCommands(items: CommandItem[]): CommandGroup[] {
 }
 
 /** Grouped commands for rendering */
-export function useCommandGroups(): ComputedRef<CommandGroup[]> {
+export function useCommandGroups(): ComputedRef<PaletteCommandGroup[]> {
   return computed(() => {
     const all = [..._state.staticCommands, ..._state.dynamicCommands];
     return groupCommands(all);
@@ -118,7 +118,7 @@ export function toggleCommandPalette(): void {
  * ])
  * ```
  */
-export function registerStaticCommands(commands: CommandItem[]): void {
+export function registerStaticCommands(commands: PaletteCommandItem[]): void {
   _state.staticCommands = commands;
 }
 
@@ -137,13 +137,10 @@ export function registerStaticCommands(commands: CommandItem[]): void {
  * onUnmounted(unregister)
  * ```
  */
-export function registerDynamicCommands(commands: CommandItem[]): () => void {
+export function registerDynamicCommands(commands: PaletteCommandItem[]): () => void {
   const ids = new Set(commands.map((c) => c.id));
   // Remove any existing commands with same ids, then add
-  _state.dynamicCommands = [
-    ..._state.dynamicCommands.filter((c) => !ids.has(c.id)),
-    ...commands,
-  ];
+  _state.dynamicCommands = [..._state.dynamicCommands.filter((c) => !ids.has(c.id)), ...commands];
 
   // Return cleanup function
   return () => {

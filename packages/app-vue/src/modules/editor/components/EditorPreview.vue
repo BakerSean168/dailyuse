@@ -1,0 +1,285 @@
+<template>
+  <div class="w-full h-full overflow-auto bg-background">
+    <div
+      v-html="renderedHtml"
+      class="preview-content px-6 py-6 max-w-3xl mx-auto"
+      @click="handleClick"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+import MarkdownIt from 'markdown-it';
+
+interface Props {
+  content: string;
+  onLinkClick?: (title: string) => void;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  linkClick: [title: string];
+}>();
+
+const renderedHtml = ref('');
+let md: MarkdownIt;
+
+function initializeMarkdownIt() {
+  md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+    breaks: true,
+  });
+
+  md.core.ruler.after('inline', 'bidirectional-links', (state: any) => {
+    const blockTokens = state.tokens;
+
+    for (let i = 0; i < blockTokens.length; i++) {
+      if (blockTokens[i].type !== 'inline') continue;
+
+      const inlineTokens = blockTokens[i].children || [];
+      const newTokens = [];
+
+      for (let j = 0; j < inlineTokens.length; j++) {
+        const token = inlineTokens[j];
+
+        if (token.type === 'text') {
+          const linkPattern = /\[\[([^\]|#]+)(?:\|([^\]#]+))?(?:#([^\]]+))?\]\]/g;
+          const text = token.content;
+          let lastIndex = 0;
+          let match;
+
+          while ((match = linkPattern.exec(text)) !== null) {
+            const fullMatch = match[0];
+            const title = match[1].trim();
+            const alias = match[2]?.trim();
+            const section = match[3]?.trim();
+            const displayText = alias || (section ? `${title}#${section}` : title);
+
+            if (match.index > lastIndex) {
+              const textToken = new state.Token('text', '', 0);
+              textToken.content = text.slice(lastIndex, match.index);
+              newTokens.push(textToken);
+            }
+
+            const linkOpen = new state.Token('link_open', 'a', 1);
+            linkOpen.attrSet('href', `#${title}`);
+            linkOpen.attrSet('class', 'internal-link');
+            linkOpen.attrSet('data-title', title);
+            if (section) {
+              linkOpen.attrSet('data-section', section);
+            }
+
+            const linkText = new state.Token('text', '', 0);
+            linkText.content = displayText;
+
+            const linkClose = new state.Token('link_close', 'a', -1);
+
+            newTokens.push(linkOpen, linkText, linkClose);
+            lastIndex = match.index + fullMatch.length;
+          }
+
+          if (lastIndex < text.length) {
+            const textToken = new state.Token('text', '', 0);
+            textToken.content = text.slice(lastIndex);
+            newTokens.push(textToken);
+          }
+
+          if (lastIndex > 0) {
+            inlineTokens.splice(j, 1, ...newTokens);
+            j += newTokens.length - 1;
+          }
+        } else {
+          newTokens.push(token);
+        }
+      }
+    }
+
+    return true;
+  });
+}
+
+function renderMarkdown() {
+  if (!md) return;
+
+  try {
+    let content = props.content;
+    renderedHtml.value = md.render(content);
+  } catch (error) {
+    console.error('Markdown render error:', error);
+    renderedHtml.value = '<p>渲染错误</p>';
+  }
+}
+
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+
+  if (target.tagName === 'A' && target.classList.contains('internal-link')) {
+    event.preventDefault();
+    const title = target.getAttribute('data-title');
+    if (title) {
+      emit('linkClick', title);
+      props.onLinkClick?.(title);
+    }
+  }
+}
+
+onMounted(() => {
+  initializeMarkdownIt();
+  renderMarkdown();
+});
+
+watch(
+  () => props.content,
+  () => {
+    renderMarkdown();
+  },
+  { immediate: false },
+);
+</script>
+
+<style>
+.preview-content {
+  line-height: 1.6;
+}
+
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.preview-content h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 0.5rem;
+}
+
+.preview-content h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 0.5rem;
+}
+
+.preview-content h3 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.preview-content p {
+  margin-bottom: 1rem;
+}
+
+.preview-content a {
+  color: hsl(var(--primary));
+}
+
+.preview-content a:hover {
+  text-decoration-line: underline;
+}
+
+.preview-content a.internal-link {
+  background-color: hsl(var(--primary) / 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition-property: color, background-color;
+  transition-duration: 150ms;
+  text-decoration-line: none;
+}
+
+.preview-content a.internal-link:hover {
+  background-color: hsl(var(--primary) / 0.2);
+}
+
+.preview-content code {
+  background-color: hsl(var(--muted));
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.preview-content pre {
+  background-color: hsl(var(--muted));
+  border-radius: 0.375rem;
+  padding: 1rem;
+  overflow: auto;
+  margin-bottom: 1rem;
+}
+
+.preview-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.preview-content blockquote {
+  border-left: 4px solid hsl(var(--muted-foreground) / 0.3);
+  padding-left: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.preview-content ul,
+.preview-content ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.preview-content li {
+  margin-bottom: 0.25rem;
+}
+
+.preview-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.preview-content table th,
+.preview-content table td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem 0.75rem;
+}
+
+.preview-content table th {
+  background-color: hsl(var(--muted));
+  font-weight: 600;
+}
+
+.preview-content table tr:nth-child(even) {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.preview-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.preview-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.preview-content strong {
+  font-weight: 600;
+}
+
+.preview-content em {
+  font-style: italic;
+}
+</style>

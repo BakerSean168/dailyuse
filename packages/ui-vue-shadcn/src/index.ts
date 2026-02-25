@@ -1,16 +1,16 @@
 /**
  * @dailyuse/ui-vue-shadcn
- * 
+ *
  * Vue 3 UI 组件库（合并 ui-vue）
- * 
+ *
  * 此包包含：
  * 1. `components/ui/*` - 通过 shadcn-vue CLI 生成的官方组件（不可修改）
  * 2. `components/custom/*` - 自定义业务组件
  * 3. `composables/*` - Vue Composables（封装 ui-core 逻辑）
- * 
+ *
  * 使用方式：
  *   import { Button, useFormValidation } from '@dailyuse/ui-vue-shadcn'
- * 
+ *
  * 添加新组件：
  *   pnpm dlx shadcn-vue@latest add button
  *   pnpm dlx shadcn-vue@latest add card
@@ -51,26 +51,46 @@ export {
 // 2. Vue Composables
 // ==========================================
 export { useFormValidation, type UseFormValidationReturn } from './composables/useFormValidation';
-export { usePasswordStrength, type UsePasswordStrengthReturn } from './composables/usePasswordStrength';
+export {
+  usePasswordStrength,
+  type UsePasswordStrengthReturn,
+} from './composables/usePasswordStrength';
 export { useLoading, type UseLoadingReturn } from './composables/useLoading';
 export { useMessage, type UseMessageReturn } from './composables/useMessage';
 export { useDialog, type UseDialogReturn } from './composables/useDialog';
 export { useColorPicker, type UseColorPickerReturn } from './composables/useColorPicker';
-export { useConfirm, type ConfirmOptions, type ConfirmVariant } from './composables/useConfirm';
-export { useSheet, closeSheet, type SheetOptions, type SheetSide } from './composables/useSheet';
+export {
+  useConfirm,
+  _getConfirmState,
+  _resolveConfirm,
+  type ConfirmOptions,
+  type ConfirmVariant,
+} from './composables/useConfirm';
+export {
+  useSheet,
+  closeSheet,
+  _getSheetState,
+  _closeSheet,
+  type SheetOptions,
+  type SheetSide,
+} from './composables/useSheet';
 export {
   openCommandPalette,
   closeCommandPalette,
   toggleCommandPalette,
   registerStaticCommands,
   registerDynamicCommands,
-  type CommandItem,
-  type CommandGroup,
+  _getCommandPaletteState,
+  _setOpen,
+  useCommandGroups,
+  type PaletteCommandItem,
+  type PaletteCommandGroup,
 } from './composables/useCommandPalette';
 export {
   progressStart,
   progressDone,
   progressFinish,
+  _getProgressBarState,
 } from './composables/useProgressBar';
 
 // ==========================================
@@ -134,35 +154,9 @@ export * from './components/ui/tooltip';
 // ==========================================
 // 4. Custom Components
 // ==========================================
-// Application-level Global Components
-export * from './components/custom/application';
-
-// Authentication Components
-export * from './components/custom/authentication';
-
-// Linear Components
+// Linear layout components (generic, stays in ui-vue-shadcn)
 export * from './components/custom/linear';
 
-// Task Components
-export * from './components/custom/task';
-
-// Schedule Components
-export * from './components/custom/schedule';
-
-// Repository Components
-export * from './components/custom/repository';
-
-// Reminder Components
-export * from './components/custom/reminder';
-
-// Setting Components
-export * from './components/custom/setting';
-
-// Notification Components
-export * from './components/custom/notification';
-
-// Governance Components
-export * from './components/custom/governance';
-
-// Editor Components
-export * from './components/custom/editor';
+// NOTE: All business components (account, authentication, task, schedule,
+// reminder, repository, notification, governance, editor, setting, application)
+// have been migrated to @dailyuse/app-vue.
