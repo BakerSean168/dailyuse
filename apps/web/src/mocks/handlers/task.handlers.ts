@@ -2,204 +2,255 @@
  * MSW Handlers - Task Module
  *
  * Intercepts HTTP requests to the Task API and returns mock data.
- * Active only in development when MSW is enabled.
+ * Paths match the actual HTTP adapters:
+ *   - TaskTemplateHttpAdapter: /tasks/templates
+ *   - TaskInstanceHttpAdapter: /tasks/templates/instances
+ *   - TaskDependencyHttpAdapter: /tasks
  */
 
 import { http, HttpResponse } from 'msw';
 import { createMockTaskTemplate, createMockTaskTemplateList } from '@dailyuse/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const BASE = `${API_BASE}/task-templates`;
+const TEMPLATES = `${API_BASE}/tasks/templates`;
+const INSTANCES = `${TEMPLATES}/instances`;
+const TASKS = `${API_BASE}/tasks`;
 
 export const taskHandlers = [
-  // GET /api/v1/task-templates — list templates
-  http.get(BASE, () => {
-    const templates = createMockTaskTemplateList(10);
+  // ============ Templates ============
+
+  http.get(`${TEMPLATES}/by-priority`, () => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: {
-        templates,
-        total: templates.length,
-      },
+      ok: true, code: 200, message: 'Success',
+      data: createMockTaskTemplateList(10),
       timestamp: Date.now(),
     });
   }),
 
-  // GET /api/v1/task-templates/:id — get single template
-  http.get(`${BASE}/:id`, ({ params }) => {
+  http.get(TEMPLATES, () => {
+    const templates = createMockTaskTemplateList(10);
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
+      ok: true, code: 200, message: 'Success',
+      data: { templates, total: templates.length },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(TEMPLATES, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      { ok: true, code: 200, message: 'Created', data: createMockTaskTemplate({ name: body.name as string }), timestamp: Date.now() },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${TEMPLATES}/:id/instances`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: Array.from({ length: 5 }, (_, i) => ({
+        id: `instance-${i}`, templateId: params.id,
+        name: `任务实例 ${i + 1}`,
+        status: ['Completed', 'Pending', 'InProgress'][i % 3],
+        scheduledDate: Date.now() + i * 86400000,
+        createdAt: Date.now() - i * 86400000,
+      })),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TEMPLATES}/:id/generate-instances`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Generated',
+      data: Array.from({ length: 3 }, (_, i) => ({
+        id: `gen-instance-${i}`, templateId: params.id,
+        status: 'Pending', scheduledDate: Date.now() + i * 86400000,
+      })),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TEMPLATES}/:id/activate`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Activated',
+      data: createMockTaskTemplate({ id: params.id as string, status: 'Active' }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TEMPLATES}/:id/pause`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Paused',
+      data: createMockTaskTemplate({ id: params.id as string, status: 'Paused' }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TEMPLATES}/:id/archive`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Archived',
+      data: createMockTaskTemplate({ id: params.id as string, status: 'Deleted' }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TEMPLATES}/:id/bind-goal`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Bound',
       data: createMockTaskTemplate({ id: params.id as string }),
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/task-templates — create template
-  http.post(BASE, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockTaskTemplate({ name: body.name as string }),
-        timestamp: Date.now(),
-      },
-      { status: 201 },
-    );
-  }),
-
-  // PUT /api/v1/task-templates/:id — update template
-  http.put(`${BASE}/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+  http.post(`${TEMPLATES}/:id/unbind-goal`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Updated',
-      data: createMockTaskTemplate({
-        id: params.id as string,
-        ...(body as object),
-      }),
+      ok: true, code: 200, message: 'Unbound',
+      data: createMockTaskTemplate({ id: params.id as string, goalBinding: null }),
       timestamp: Date.now(),
     });
   }),
 
-  // DELETE /api/v1/task-templates/:id — delete template
-  http.delete(`${BASE}/:id`, ({ params }) => {
+  http.get(`${TEMPLATES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
+      ok: true, code: 200, message: 'Success',
+      data: createMockTaskTemplate({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.put(`${TEMPLATES}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockTaskTemplate({ id: params.id as string, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${TEMPLATES}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/task-templates/:id/activate
-  http.post(`${BASE}/:id/activate`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Activated',
-      data: createMockTaskTemplate({
-        id: params.id as string,
-        status: 'Active',
-      }),
-      timestamp: Date.now(),
-    });
-  }),
+  // ============ Instances ============
 
-  // POST /api/v1/task-templates/:id/pause
-  http.post(`${BASE}/:id/pause`, ({ params }) => {
+  http.get(INSTANCES, () => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Paused',
-      data: createMockTaskTemplate({
-        id: params.id as string,
-        status: 'Paused',
-      }),
-      timestamp: Date.now(),
-    });
-  }),
-
-  // POST /api/v1/task-templates/:id/archive
-  http.post(`${BASE}/:id/archive`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Archived',
-      data: createMockTaskTemplate({
-        id: params.id as string,
-        status: 'Deleted',
-      }),
-      timestamp: Date.now(),
-    });
-  }),
-
-  // GET /api/v1/task-templates/folders — list folders
-  http.get(`${BASE}/folders`, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: Array.from({ length: 3 }, (_, i) => ({
-        id: `folder-${i}`,
-        name: `任务文件夹 ${i + 1}`,
-        identityId: 'mock-identity-id',
-        sortOrder: i,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      })),
-      total: 3,
-      timestamp: Date.now(),
-    });
-  }),
-
-  // GET /api/v1/task-templates/:id/instances — list instances
-  http.get(`${BASE}/:id/instances`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: Array.from({ length: 5 }, (_, i) => ({
-        id: `instance-${i}`,
-        templateId: params.id,
+      ok: true, code: 200, message: 'Success',
+      data: Array.from({ length: 8 }, (_, i) => ({
+        id: `instance-${i}`, templateId: `template-${i % 3}`,
         name: `任务实例 ${i + 1}`,
-        status: i % 3 === 0 ? 'Completed' : i % 3 === 1 ? 'Pending' : 'InProgress',
+        status: ['Completed', 'Pending', 'InProgress'][i % 3],
         scheduledDate: Date.now() + i * 86400000,
         createdAt: Date.now() - i * 86400000,
       })),
-      total: 5,
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/task-instances/:id/start
-  http.post(`${API_BASE}/task-instances/:id/start`, ({ params }) => {
+  http.post(`${INSTANCES}/check-expired`, () => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Started',
-      data: {
-        id: params.id as string,
-        status: 'InProgress',
-        startedAt: Date.now(),
-      },
+      ok: true, code: 200, message: 'Checked',
+      data: { expiredCount: 0 },
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/task-instances/:id/complete
-  http.post(`${API_BASE}/task-instances/:id/complete`, ({ params }) => {
+  http.get(`${INSTANCES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Completed',
-      data: {
-        id: params.id as string,
-        status: 'Completed',
-        completedAt: Date.now(),
-      },
+      ok: true, code: 200, message: 'Success',
+      data: { id: params.id, templateId: 'template-1', status: 'Pending', scheduledDate: Date.now() },
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/task-instances/:id/skip
-  http.post(`${API_BASE}/task-instances/:id/skip`, ({ params }) => {
+  http.delete(`${INSTANCES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Skipped',
-      data: {
-        id: params.id as string,
-        status: 'Skipped',
-        skippedAt: Date.now(),
-      },
+      ok: true, code: 200, message: 'Deleted',
+      data: { id: params.id },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/:id/start`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Started',
+      data: { id: params.id as string, status: 'InProgress', startedAt: Date.now() },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/:id/complete`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Completed',
+      data: { id: params.id as string, status: 'Completed', completedAt: Date.now() },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/:id/skip`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Skipped',
+      data: { id: params.id as string, status: 'Skipped', skippedAt: Date.now() },
+      timestamp: Date.now(),
+    });
+  }),
+
+  // ============ Dependencies ============
+
+  http.post(`${TASKS}/dependencies/validate`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Valid',
+      data: { valid: true, cycles: [] },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${TASKS}/:taskId/dependencies`, ({ params }) => {
+    return HttpResponse.json(
+      { ok: true, code: 200, message: 'Created', data: { id: `dep-${Date.now()}`, sourceTaskId: params.taskId, targetTaskId: 'target-id', type: 'FinishToStart' }, timestamp: Date.now() },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${TASKS}/:taskId/dependencies`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: [],
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(`${TASKS}/:taskId/dependents`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: [],
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(`${TASKS}/:taskId/dependency-chain`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: { chain: [], hasCycle: false },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.put(`${TASKS}/dependencies/:id`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: {},
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${TASKS}/dependencies/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Deleted',
+      data: { id: params.id },
       timestamp: Date.now(),
     });
   }),

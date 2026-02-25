@@ -1,8 +1,8 @@
 /**
  * MSW Handlers - Repository Module
  *
- * Intercepts HTTP requests to the Repository API and returns mock data.
- * Active only in development when MSW is enabled.
+ * Paths match the actual HTTP adapter:
+ *   - RepositoryHttpAdapter: /repositories, /folders, /resources, /search
  */
 
 import { http, HttpResponse } from 'msw';
@@ -12,117 +12,196 @@ import {
   createMockResource,
   createMockResourceList,
 } from '@dailyuse/contracts/mocks';
+import { faker } from '@faker-js/faker';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const BASE = `${API_BASE}/repositories`;
+const REPOS = `${API_BASE}/repositories`;
+const FOLDERS = `${API_BASE}/folders`;
+const RESOURCES = `${API_BASE}/resources`;
+
+function createMockFolder(overrides: Record<string, unknown> = {}) {
+  return {
+    id: faker.string.uuid(),
+    repositoryId: faker.string.uuid(),
+    parentId: null,
+    name: faker.helpers.arrayElement(['文档', '笔记', '项目', '资料', '存档']),
+    path: '/' + faker.system.directoryPath(),
+    depth: faker.number.int({ min: 0, max: 3 }),
+    sortOrder: faker.number.int({ min: 0, max: 10 }),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    ...overrides,
+  };
+}
 
 export const repositoryHandlers = [
-  // GET /api/v1/repositories — list repositories
-  http.get(BASE, () => {
-    const repositories = createMockRepositoryList(5);
+  // ============ Repositories ============
+
+  http.get(REPOS, () => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: repositories,
+      ok: true, code: 200, message: 'Success',
+      data: createMockRepositoryList(5),
       timestamp: Date.now(),
     });
   }),
 
-  // GET /api/v1/repositories/:id — get single repository
-  http.get(`${BASE}/:id`, ({ params }) => {
+  http.post(REPOS, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      { ok: true, code: 200, message: 'Created', data: createMockRepository({ name: body.name as string }), timestamp: Date.now() },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${REPOS}/:id/tree`, ({ params }) => {
+    const folders = Array.from({ length: 4 }, (_, i) =>
+      createMockFolder({ repositoryId: params.id, name: `文件夹 ${i + 1}` }),
+    );
+    const resources = createMockResourceList(6, { repositoryId: params.id as string });
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
+      ok: true, code: 200, message: 'Success',
+      data: { folders, resources },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${REPOS}/:repositoryId/folders`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      { ok: true, code: 200, message: 'Created', data: createMockFolder({ repositoryId: params.repositoryId, ...body }), timestamp: Date.now() },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${REPOS}/:id/resources`, ({ params }) => {
+    const resources = createMockResourceList(15, { repositoryId: params.id as string });
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: { data: resources, total: resources.length },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${REPOS}/:id/resources`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      { ok: true, code: 200, message: 'Created', data: createMockResource({ repositoryId: params.id as string, name: body.name as string }), timestamp: Date.now() },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${REPOS}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
       data: createMockRepository({ id: params.id as string }),
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/repositories — create repository
-  http.post(BASE, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockRepository({ name: body.name as string }),
-        timestamp: Date.now(),
-      },
-      { status: 201 },
-    );
-  }),
-
-  // PUT /api/v1/repositories/:id — update repository
-  http.put(`${BASE}/:id`, async ({ params, request }) => {
+  http.put(`${REPOS}/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Updated',
-      data: createMockRepository({
-        id: params.id as string,
-        ...(body as object),
-      }),
+      ok: true, code: 200, message: 'Updated',
+      data: createMockRepository({ id: params.id as string, ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
 
-  // DELETE /api/v1/repositories/:id — delete repository
-  http.delete(`${BASE}/:id`, ({ params }) => {
+  http.delete(`${REPOS}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
+      ok: true, code: 200, message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });
   }),
 
-  // GET /api/v1/repositories/:id/resources — list resources
-  http.get(`${BASE}/:id/resources`, ({ params }) => {
-    const resources = createMockResourceList(15, {
-      repositoryId: params.id as string,
-    });
+  http.delete(`${REPOS}/:repositoryId/resources/:resourceId`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
+      ok: true, code: 200, message: 'Deleted',
+      data: { id: params.resourceId },
+      timestamp: Date.now(),
+    });
+  }),
+
+  // ============ Folders ============
+
+  http.get(`${FOLDERS}/:folderId/contents`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
       data: {
-        data: resources,
-        total: resources.length,
+        folders: Array.from({ length: 2 }, () => createMockFolder()),
+        resources: createMockResourceList(5),
       },
       timestamp: Date.now(),
     });
   }),
 
-  // POST /api/v1/repositories/:id/resources — create resource
-  http.post(`${BASE}/:id/resources`, async ({ params, request }) => {
+  http.patch(`${FOLDERS}/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockResource({
-          repositoryId: params.id as string,
-          name: body.name as string,
-        }),
-        timestamp: Date.now(),
-      },
-      { status: 201 },
-    );
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockFolder({ id: params.id, ...body }),
+      timestamp: Date.now(),
+    });
   }),
 
-  // DELETE /api/v1/repositories/:repositoryId/resources/:resourceId — delete resource
-  http.delete(`${BASE}/:repositoryId/resources/:resourceId`, ({ params }) => {
+  http.post(`${FOLDERS}/:id/move`, ({ params }) => {
     return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
-      data: { id: params.resourceId },
+      ok: true, code: 200, message: 'Moved',
+      data: createMockFolder({ id: params.id }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${FOLDERS}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Deleted',
+      data: { id: params.id },
+      timestamp: Date.now(),
+    });
+  }),
+
+  // ============ Resources ============
+
+  http.get(`${RESOURCES}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: createMockResource({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.patch(`${RESOURCES}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Updated',
+      data: createMockResource({ id: params.id as string, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${RESOURCES}/:id/move`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Moved',
+      data: createMockResource({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${RESOURCES}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Deleted',
+      data: { id: params.id },
+      timestamp: Date.now(),
+    });
+  }),
+
+  // ============ Search ============
+
+  http.post(`${API_BASE}/search`, () => {
+    return HttpResponse.json({
+      ok: true, code: 200, message: 'Success',
+      data: { results: createMockResourceList(5), total: 5 },
       timestamp: Date.now(),
     });
   }),
