@@ -4,7 +4,7 @@
  * 获取配额应用服务
  */
 
-import type { IAIUsageQuotaRepository } from '../../domain-server/repositories/IAIUsageQuotaRepository';
+import type { IAIUsageQuotaRepository } from '../../../domain-server/repositories/IAIUsageQuotaRepository';
 import type { GetQuotaRes } from '@dailyuse/contracts/ai';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
@@ -43,7 +43,7 @@ export class GetQuota {
 
     // 如果 quota 有 toClientDTO 方法则使用，否则直接返回
     return typeof (quota as any).toClientDTO === 'function'
-        ? (quota as any).toClientDTO()
-        : (quota as any);
+      ? (quota as any).toClientDTO()
+      : (quota as any);
   }
 }

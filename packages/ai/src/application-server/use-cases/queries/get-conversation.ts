@@ -4,7 +4,7 @@
  * 获取单个对话应用服务
  */
 
-import type { IAIConversationRepository } from '../../domain-server/repositories/IAIConversationRepository';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
 import type { GetConversationRes } from '@dailyuse/contracts/ai';
 // import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 

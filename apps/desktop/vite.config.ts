@@ -2,20 +2,22 @@
 import { defineConfig } from 'vite';
 import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 
-// 原生模块列表
+// Native modules — must be externalized
 const nativeModules = ['better-sqlite3', 'electron'];
 
-// 主进程外部化：原生模块 + 所有 @dailyuse/* 工作区包
+// Main process external: native + all workspace packages
 const electronMainExternal = [...nativeModules, /^@dailyuse\//];
 
-// 本地工作区包（避免被 optimizeDeps 处理�?
+// Workspace packages to exclude from optimizeDeps
 const workspacePkgs = [
   '@dailyuse/utils',
   '@dailyuse/contracts',
-  '@dailyuse/ui-react-shadcn',
+  '@dailyuse/app-vue',
+  '@dailyuse/ui-vue-shadcn',
+  '@dailyuse/ipc-client',
 ];
 
 // https://vitejs.dev/config/
@@ -26,15 +28,14 @@ export default defineConfig({
       '@main': path.resolve(__dirname, './src/main'),
       '@preload': path.resolve(__dirname, './src/preload'),
       '@renderer': path.resolve(__dirname, './src/renderer'),
-      // 浏览器环�?Node.js polyfills
-      'crypto': 'crypto-browserify',
-      'stream': 'stream-browserify',
-      'buffer': 'buffer',
+      // Browser-env Node.js polyfills
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify',
+      buffer: 'buffer',
     },
   },
   define: {
-    // �?crypto-browserify 提供全局 Buffer
-    'global': 'globalThis',
+    global: 'globalThis',
   },
   base: './',
   build: {
@@ -52,7 +53,7 @@ export default defineConfig({
     environment: 'jsdom',
   },
   plugins: [
-    react(),
+    vue(),
     tailwindcss(),
     electron({
       main: {

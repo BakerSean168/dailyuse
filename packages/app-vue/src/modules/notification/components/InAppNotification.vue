@@ -13,7 +13,7 @@
           'bg-background rounded-lg shadow-lg pointer-events-auto cursor-pointer',
           'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl',
           priorityBorderClass(notification.priority),
-          notification.priority === 'URGENT' && 'animate-pulse-shadow'
+          notification.priority === 'URGENT' && 'animate-pulse-shadow',
         ]"
         @click="$emit('notification-click', notification)"
       >
@@ -50,16 +50,7 @@
 import { computed } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { X } from 'lucide-vue-next';
-
-export interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  priority: string;
-  duration?: number;
-  onClick?: () => void;
-}
+import type { NotificationItem } from './types';
 
 interface Props {
   notifications: NotificationItem[];
@@ -117,7 +108,8 @@ function priorityBorderClass(priority: string): string {
 
 /* Pulse animation for urgent notifications */
 @keyframes pulse-shadow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
   50% {

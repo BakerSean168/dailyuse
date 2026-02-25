@@ -53,6 +53,7 @@ export class GenerateGoal {
       },
       providerId: (provider as any).id || 'unknown',
       processingTimeMs: 0,
+      generatedAt: now,
     };
   }
 }

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import InAppNotification from './InAppNotification.vue';
-import type { NotificationItem } from './InAppNotification.vue';
+import type { NotificationItem } from './types';
 
 function mockNotification(overrides: Partial<NotificationItem> = {}): NotificationItem {
   return {
@@ -28,19 +28,41 @@ type Story = StoryObj<typeof meta>;
 
 export const SingleNotification: Story = {
   args: {
-    notifications: [
-      mockNotification(),
-    ],
+    notifications: [mockNotification()],
   },
 };
 
 export const MultipleNotifications: Story = {
   args: {
     notifications: [
-      mockNotification({ id: '1', title: '紧急：系统维护通知', message: '系统将于今晚 22:00 进行维护升级，请提前保存数据。', type: 'SYSTEM', priority: 'URGENT' }),
-      mockNotification({ id: '2', title: '目标进度更新', message: '您的年度 OKR「提升代码质量」已达成 75%。', type: 'GOAL', priority: 'HIGH' }),
-      mockNotification({ id: '3', title: '日程提醒', message: '10 分钟后有「团队周会」。', type: 'SCHEDULE', priority: 'NORMAL' }),
-      mockNotification({ id: '4', title: '提醒', message: '别忘了喝水 💧', type: 'REMINDER', priority: 'LOW' }),
+      mockNotification({
+        id: '1',
+        title: '紧急：系统维护通知',
+        message: '系统将于今晚 22:00 进行维护升级，请提前保存数据。',
+        type: 'SYSTEM',
+        priority: 'URGENT',
+      }),
+      mockNotification({
+        id: '2',
+        title: '目标进度更新',
+        message: '您的年度 OKR「提升代码质量」已达成 75%。',
+        type: 'GOAL',
+        priority: 'HIGH',
+      }),
+      mockNotification({
+        id: '3',
+        title: '日程提醒',
+        message: '10 分钟后有「团队周会」。',
+        type: 'SCHEDULE',
+        priority: 'NORMAL',
+      }),
+      mockNotification({
+        id: '4',
+        title: '提醒',
+        message: '别忘了喝水 💧',
+        type: 'REMINDER',
+        priority: 'LOW',
+      }),
     ],
   },
 };
@@ -48,7 +70,13 @@ export const MultipleNotifications: Story = {
 export const UrgentOnly: Story = {
   args: {
     notifications: [
-      mockNotification({ id: '1', title: '紧急任务', message: '客户反馈的 P0 Bug 需要立即处理！', type: 'TASK', priority: 'URGENT' }),
+      mockNotification({
+        id: '1',
+        title: '紧急任务',
+        message: '客户反馈的 P0 Bug 需要立即处理！',
+        type: 'TASK',
+        priority: 'URGENT',
+      }),
     ],
   },
 };

@@ -1,67 +1,29 @@
 {
-  // 继承基础配置
   "extends": "../../tsconfig.base.json",
 
   "compilerOptions": {
-    // ============================================================
-    // 路径和输出配置
-    // ============================================================
-
-    // 基础路径：相对路径的起点
     "baseUrl": ".",
-
-    // 输出目录：编译后的文件
     "outDir": "./dist",
-
-    // 不生成输出文件（由 Vite/tsup 处理）
     "noEmit": true,
 
-    // ============================================================
-    // Electron + React 混合环境配置
-    // ============================================================
-
-    // 标准库：浏览器 API（渲染进程）
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-
-    // 类型定义：Vite 客户端 + Node.js（主进程）
     "types": ["vite/client", "node"],
-
-    // 模块解析：使用 Bundler 策略（Vite + Electron）
     "moduleResolution": "Bundler",
 
-    // JSX 支持：React JSX 转换
-    "jsx": "react-jsx",
-
-    // ============================================================
-    // 本地路径别名配置
-    // ============================================================
-
-    // 路径别名：仅用于项目内部导入
     "paths": {
-      // 渲染进程代码（React 组件等）
       "@/*": ["./src/*"],
-
-      // Electron 主进程代码
       "@electron/*": ["./electron/*"],
+      "@common/*": ["./common/*"],
 
-      // 共享代码（主进程和渲染进程共用）
-      "@common/*": ["./common/*"]
+      // UI layer packages: resolve to source (same pattern as web's tsconfig).
+      // This ensures di/types.ts inline import() expressions degrade the same way
+      // as in the web app, avoiding dist-vs-source type identity conflicts.
+      "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
+      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/src/index.ts"]
     }
   },
 
-  // ============================================================
-  // 包含和排除配置
-  // ============================================================
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "electron/**/*", "common/**/*"],
 
-  // 包含的文件：渲染进程、主进程、共享代码
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "electron/**/*",
-    "common/**/*"
-  ],
-
-  // 排除的文件
   "exclude": ["node_modules", "dist", "dist-electron", "**/*.test.ts", "**/*.spec.ts"]
 }

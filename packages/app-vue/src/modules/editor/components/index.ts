@@ -9,4 +9,6 @@ export { default as LinkSuggestion } from './LinkSuggestion.vue';
 export { default as MarkdownEditor } from './MarkdownEditor.vue';
 export { default as MediaViewer } from './MediaViewer.vue';
 
-export type { EditorTab } from './EditorTabBar.vue';
+// Re-export the EditorTab type directly from contracts (avoids tsc's
+// inability to resolve named type exports from .vue SFC files).
+export type { SimpleEditorTab as EditorTab } from '@dailyuse/contracts/shared';
