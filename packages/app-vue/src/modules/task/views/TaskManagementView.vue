@@ -65,16 +65,23 @@ const timeTypeMap: Record<string, TaskTemplateViewModel['timeConfig']['timeType'
   TimeRange: 'TIME_RANGE',
 };
 
+const statusMap: Record<string, string> = {
+  Active: 'ACTIVE',
+  Paused: 'PAUSED',
+  Archived: 'ARCHIVED',
+  Deleted: 'DELETED',
+};
+
 function mapToViewModel(dto: TaskTemplateClientDTO): TaskTemplateViewModel {
+  const status = statusMap[dto.status] ?? dto.status;
   return {
     id: dto.id,
     title: dto.name,
     description: dto.description ?? undefined,
-    status: dto.status,
-    isActive: dto.status === 'ACTIVE',
-    isPaused: dto.status === 'PAUSED',
-    isArchived: dto.status === 'ARCHIVED',
-    importance: dto.importance,
+    status,
+    isActive: status === 'ACTIVE',
+    isPaused: status === 'PAUSED',
+    isArchived: status === 'ARCHIVED',
     priority: dto.priority,
     tags: dto.tags,
     goalBinding: dto.goalBinding
@@ -85,7 +92,7 @@ function mapToViewModel(dto: TaskTemplateClientDTO): TaskTemplateViewModel {
         }
       : null,
     timeConfig: {
-      timeType: timeTypeMap[dto.timeConfig?.timeType] ?? dto.timeConfig?.timeType,
+      timeType: timeTypeMap[dto.timeConfig?.timeType] ?? (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
       timePoint: dto.timeConfig?.timePoint ?? undefined,
       timeRange: dto.timeConfig?.timeRange ?? undefined,
       startDate: dto.startDate ?? undefined,

@@ -106,7 +106,7 @@ const statusVariant = computed(() => {
   switch (currentTemplate.value?.status) {
     case 'Active': return 'default' as const;
     case 'Paused': return 'secondary' as const;
-    case 'Completed': return 'outline' as const;
+    case 'Archived': return 'outline' as const;
     default: return 'destructive' as const;
   }
 });

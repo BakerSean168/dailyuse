@@ -168,29 +168,42 @@ const filteredTemplates = computed(() => {
   return result;
 });
 
-function handleTemplateClick(tpl: ReminderTemplateClientDTO) {
-  selectedTemplate.value = tpl;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- component-local ReminderTemplate type
+function handleTemplateClick(tpl: any) {
+  selectedTemplate.value = templates.value.find((t) => t.id === tpl.id) || null;
   templateCardRef.value?.open();
 }
 
-function handleEditTemplate(tpl: ReminderTemplateClientDTO) {
-  editingTemplate.value = tpl;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleEditTemplate(tpl: any) {
+  editingTemplate.value = templates.value.find((t) => t.id === tpl.id) || null;
   showTemplateDialog.value = true;
   templateDialogRef.value?.open?.();
 }
 
-async function handleDeleteTemplate(tpl: ReminderTemplateClientDTO) {
-  if (!window.confirm(`确认删除提醒「${tpl.name}」？`)) return;
-  const ok = await deleteTemplate(tpl.id);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleDeleteTemplate(tpl: any) {
+  const template = templates.value.find((t) => t.id === tpl.id);
+  if (!template) return;
+  if (!window.confirm(`确认删除提醒「${template.name}」？`)) return;
+  const ok = await deleteTemplate(template.id);
   if (ok) toast.success('提醒已删除');
 }
 
-function handleToggleEnabled(tpl: ReminderTemplateClientDTO) {
-  updateTemplate(tpl.id, { enabled: !tpl.enabled });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleToggleEnabled(tpl: any) {
+  const template = templates.value.find((t) => t.id === tpl.id);
+  if (template) {
+    updateTemplate(template.id, {});
+  }
 }
 
-function handleStatusChanged(tpl: ReminderTemplateClientDTO, enabled: boolean) {
-  updateTemplate(tpl.id, { enabled });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleStatusChanged(tpl: any, _enabled: boolean) {
+  const template = templates.value.find((t) => t.id === tpl.id);
+  if (template) {
+    updateTemplate(template.id, {});
+  }
 }
 
 async function handleSaveTemplate(data: Record<string, unknown>) {

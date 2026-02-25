@@ -29,7 +29,7 @@
 
       <WeekViewCalendar
         v-else
-        :schedules="schedules"
+        :schedules="(schedules as any)"
         @create="showCreateDialog = true"
         @event-click="handleEventClick"
         @week-change="handleWeekChange"
@@ -56,7 +56,8 @@ const { tasks: schedules, isLoading, fetchTasks, createTask } = useSchedule();
 
 const showCreateDialog = ref(false);
 
-function handleEventClick(event: Record<string, unknown>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleEventClick(event: any) {
   toast.info(`日程: ${event.name || event.title}`);
 }
 
