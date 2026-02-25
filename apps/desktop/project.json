@@ -3,11 +3,14 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "sourceRoot": "apps/desktop/src",
-  "tags": ["scope:desktop", "type:app", "platform:electron"],
+  "tags": ["scope:desktop", "type:app", "platform:electron", "layer:app"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/apps/desktop/dist", "{workspaceRoot}/apps/desktop/dist-electron"],
+      "outputs": [
+        "{workspaceRoot}/apps/desktop/dist",
+        "{workspaceRoot}/apps/desktop/dist-electron"
+      ],
       "defaultConfiguration": "production",
       "dependsOn": ["^build"],
       "options": {

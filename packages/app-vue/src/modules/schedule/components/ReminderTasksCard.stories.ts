@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import ReminderTasksCard from './ReminderTasksCard.vue';
-import type { ScheduleTaskClient } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
-function makeReminderTask(overrides: Partial<ScheduleTaskClient> & { id: string; name: string }): ScheduleTaskClient {
+function makeReminderTask(
+  overrides: Partial<ScheduleTaskClientDTO> & { id: string; name: string },
+): ScheduleTaskClientDTO {
   const now = new Date();
   return {
     identityId: 'user-1',
@@ -58,8 +60,8 @@ function makeReminderTask(overrides: Partial<ScheduleTaskClient> & { id: string;
       payloadSummary: '',
     },
     version: 1,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: now.getTime(),
+    updatedAt: now.getTime(),
     deletedAt: null,
     statusDisplay: 'Active',
     statusColor: 'green',
@@ -72,12 +74,16 @@ function makeReminderTask(overrides: Partial<ScheduleTaskClient> & { id: string;
     isOverdue: false,
     executions: null,
     ...overrides,
-  } as ScheduleTaskClient;
+  } as ScheduleTaskClientDTO;
 }
 
-const mockTasks: ScheduleTaskClient[] = [
+const mockTasks: ScheduleTaskClientDTO[] = [
   makeReminderTask({ id: 'rem-1', name: 'Morning standup reminder' }),
-  makeReminderTask({ id: 'rem-2', name: 'Take medication', description: 'Daily vitamin D supplement' }),
+  makeReminderTask({
+    id: 'rem-2',
+    name: 'Take medication',
+    description: 'Daily vitamin D supplement',
+  }),
   makeReminderTask({
     id: 'rem-3',
     name: 'Weekly report deadline',

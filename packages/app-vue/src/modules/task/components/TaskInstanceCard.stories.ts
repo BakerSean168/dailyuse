@@ -11,7 +11,7 @@ function createMockTask(overrides: Record<string, unknown> = {}) {
     templateTitle: '每日复盘',
     isCompleted: false,
     statusText: 'PENDING',
-    instanceDate: now,
+    instanceDate: new Date(now).toISOString(),
     timeConfig: {
       timeType: 'TIME_POINT' as const,
       startDate: now,
@@ -55,7 +55,7 @@ export const Completed: Story = {
     task: createMockTask({
       isCompleted: true,
       statusText: 'COMPLETED',
-      actualEndTime: now,
+      actualEndTime: new Date(now).toISOString(),
     }),
   },
 };
@@ -98,7 +98,12 @@ export const TaskList: Story = {
     components: { TaskInstanceCard },
     setup() {
       const tasks = [
-        createMockTask({ id: '1', isCompleted: true, statusText: 'COMPLETED', actualEndTime: now }),
+        createMockTask({
+          id: '1',
+          isCompleted: true,
+          statusText: 'COMPLETED',
+          actualEndTime: new Date(now).toISOString(),
+        }),
         createMockTask({
           id: '2',
           statusText: 'PENDING',
@@ -107,7 +112,12 @@ export const TaskList: Story = {
         createMockTask({
           id: '3',
           statusText: 'PENDING',
-          timeConfig: { timeType: 'TIME_RANGE', startDate: now, timePoint: null, timeRange: { start: 780, end: 840 } },
+          timeConfig: {
+            timeType: 'TIME_RANGE',
+            startDate: now,
+            timePoint: null,
+            timeRange: { start: 780, end: 840 },
+          },
         }),
         createMockTask({
           id: '4',

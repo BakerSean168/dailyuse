@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TaskModuleTasksCard from './TaskModuleTasksCard.vue';
-import type { ScheduleTaskClient } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
-function makeTaskModuleTask(overrides: Partial<ScheduleTaskClient> & { id: string; name: string }): ScheduleTaskClient {
+function makeTaskModuleTask(
+  overrides: Partial<ScheduleTaskClientDTO> & { id: string; name: string },
+): ScheduleTaskClientDTO {
   const now = new Date();
   return {
     identityId: 'user-1',
@@ -58,8 +60,8 @@ function makeTaskModuleTask(overrides: Partial<ScheduleTaskClient> & { id: strin
       payloadSummary: '',
     },
     version: 1,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: now.getTime(),
+    updatedAt: now.getTime(),
     deletedAt: null,
     statusDisplay: 'Active',
     statusColor: 'green',
@@ -72,12 +74,16 @@ function makeTaskModuleTask(overrides: Partial<ScheduleTaskClient> & { id: strin
     isOverdue: false,
     executions: null,
     ...overrides,
-  } as ScheduleTaskClient;
+  } as ScheduleTaskClientDTO;
 }
 
-const mockTasks: ScheduleTaskClient[] = [
+const mockTasks: ScheduleTaskClientDTO[] = [
   makeTaskModuleTask({ id: 'tm-1', name: 'Auto-assign overdue tasks' }),
-  makeTaskModuleTask({ id: 'tm-2', name: 'Send task deadline reminders', description: 'Notify assignees 24h before deadline' }),
+  makeTaskModuleTask({
+    id: 'tm-2',
+    name: 'Send task deadline reminders',
+    description: 'Notify assignees 24h before deadline',
+  }),
   makeTaskModuleTask({
     id: 'tm-3',
     name: 'Archive completed tasks',

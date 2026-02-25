@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import GoalTasksCard from './GoalTasksCard.vue';
-import type { ScheduleTaskClient } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
-function makeTask(overrides: Partial<ScheduleTaskClient> & { id: string; name: string }): ScheduleTaskClient {
+function makeTask(
+  overrides: Partial<ScheduleTaskClientDTO> & { id: string; name: string },
+): ScheduleTaskClientDTO {
   const now = new Date();
   return {
     identityId: 'user-1',
@@ -58,8 +60,8 @@ function makeTask(overrides: Partial<ScheduleTaskClient> & { id: string; name: s
       payloadSummary: '',
     },
     version: 1,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: now.getTime(),
+    updatedAt: now.getTime(),
     deletedAt: null,
     statusDisplay: 'Active',
     statusColor: 'green',
@@ -72,12 +74,20 @@ function makeTask(overrides: Partial<ScheduleTaskClient> & { id: string; name: s
     isOverdue: false,
     executions: null,
     ...overrides,
-  } as ScheduleTaskClient;
+  } as ScheduleTaskClientDTO;
 }
 
-const mockTasks: ScheduleTaskClient[] = [
+const mockTasks: ScheduleTaskClientDTO[] = [
   makeTask({ id: 'task-1', name: 'Review quarterly goals' }),
-  makeTask({ id: 'task-2', name: 'Update OKR progress', status: 'Paused', statusDisplay: 'Paused', statusColor: 'gray', enabled: false, enabledDisplay: 'Disabled' }),
+  makeTask({
+    id: 'task-2',
+    name: 'Update OKR progress',
+    status: 'Paused',
+    statusDisplay: 'Paused',
+    statusColor: 'gray',
+    enabled: false,
+    enabledDisplay: 'Disabled',
+  }),
   makeTask({
     id: 'task-3',
     name: 'Send goal summary report',

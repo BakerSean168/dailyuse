@@ -3,8 +3,8 @@ import { ref } from 'vue';
 import CreateScheduleDialog from './CreateScheduleDialog.vue';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
-const now = new Date().toISOString();
-const later = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+const now = Date.now();
+const later = now + 2 * 60 * 60 * 1000;
 
 const existingSchedule: ScheduleJobClientDTO = {
   id: 'sched-1',

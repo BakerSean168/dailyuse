@@ -144,8 +144,10 @@ const greeting = computed(() => {
 
 // 用户名
 const userName = computed(() => {
-  const currentUser = authStore.currentUser;
-  return currentUser?.username || currentUser?.email || '用户';
+  const identity = authStore.currentIdentity;
+  if (!identity) return '用户';
+  const email = identity.identifiers?.find((id) => id.type === 'EMAIL');
+  return email?.value || '用户';
 });
 
 // 快速创建任务
