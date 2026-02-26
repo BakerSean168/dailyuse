@@ -1,29 +1,84 @@
 <template>
-  <v-card class="mb-4" elevation="0" variant="outlined">
-    <v-card-title class="section-title">
-      <v-icon class="mr-2">mdi-information-outline</v-icon>
-      任务属性
-    </v-card-title>
-    <v-card-text>
-      <v-row>
+  <Card class="mb-4">
+    <CardHeader class="pb-2">
+      <CardTitle class="flex items-center text-primary font-semibold">
+        <Info class="mr-2 h-5 w-5" />
+        任务属性
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div class="grid grid-cols-12 gap-4">
         <!-- 重要性 -->
-        <v-col cols="12" md="6">
-          <v-select v-model="importance" label="重要性" :items="importanceOptions" item-title="title" item-value="value"
-            variant="outlined" required />
-        </v-col>
+        <div class="col-span-12 md:col-span-6">
+          <Label for="importance-select">重要性</Label>
+          <Select v-model="importance">
+            <SelectTrigger id="importance-select" class="mt-1">
+              <SelectValue placeholder="选择重要性" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in importanceOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.title }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
-        <v-col cols="12">
-          <v-combobox v-model="tags" label="任务标签" variant="outlined" multiple chips closable-chips
-            :items="tagSuggestions" prepend-inner-icon="mdi-tag-multiple-outline" hint="按回车键添加新标签" persistent-hint />
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+        <div class="col-span-12">
+          <Label for="tags-input">任务标签</Label>
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <Badge v-for="tag in tags" :key="tag" variant="secondary" class="gap-1">
+              {{ tag }}
+              <button class="ml-1 hover:text-destructive" @click="removeTag(tag)">
+                <X class="h-3 w-3" />
+              </button>
+            </Badge>
+            <Input
+              id="tags-input"
+              v-model="tagInput"
+              placeholder="按回车键添加新标签"
+              class="flex-1 min-w-[150px]"
+              @keydown.enter.prevent="addTag"
+            />
+          </div>
+          <div v-if="tagSuggestions.length" class="mt-2 flex flex-wrap gap-1">
+            <Badge
+              v-for="suggestion in filteredSuggestions"
+              :key="suggestion"
+              variant="outline"
+              class="cursor-pointer"
+              @click="addSuggestion(suggestion)"
+            >
+              {{ suggestion }}
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Label,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Badge,
+  Input,
+} from '@dailyuse/ui-vue-shadcn';
+import { Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
@@ -38,6 +93,8 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+
+const tagInput = ref('');
 
 const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const updatedTemplate: TaskTemplateViewModel = {
@@ -90,6 +147,8 @@ const tagSuggestions = [
   '创作',
 ];
 
+const filteredSuggestions = computed(() => tagSuggestions.filter((s) => !tags.value.includes(s)));
+
 // 重要性
 const importance = computed({
   get: () => props.modelValue.importance,
@@ -110,6 +169,24 @@ const tags = computed({
   },
 });
 
+const addTag = () => {
+  const value = tagInput.value.trim();
+  if (value && !tags.value.includes(value)) {
+    tags.value = [...tags.value, value];
+  }
+  tagInput.value = '';
+};
+
+const removeTag = (tag: string) => {
+  tags.value = tags.value.filter((t) => t !== tag);
+};
+
+const addSuggestion = (suggestion: string) => {
+  if (!tags.value.includes(suggestion)) {
+    tags.value = [...tags.value, suggestion];
+  }
+};
+
 // Story 2.3: 简化验证 - 仅检查 importance（紧急性已移除）
 const isValid = computed(() => {
   return Boolean(importance.value);
@@ -124,11 +201,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style scoped>
-.section-title {
-  color: rgb(var(--v-theme-primary));
-  font-weight: 600;
-}
-</style>
-

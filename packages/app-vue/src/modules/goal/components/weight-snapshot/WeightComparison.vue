@@ -1,103 +1,121 @@
 <template>
-  <div class="weight-comparison">
-    <v-card>
-      <v-card-title>权重对比分析</v-card-title>
+  <div class="w-full">
+    <Card>
+      <CardHeader>
+        <CardTitle>权重对比分析</CardTitle>
+      </CardHeader>
 
-      <v-card-text>
+      <CardContent>
         <!-- 时间点选择器 -->
-        <div class="time-selector mb-4">
-          <v-alert type="info" variant="tonal" class="mb-3"> 最多选择 5 个时间点进行对比 </v-alert>
+        <div class="mb-4 rounded bg-muted/50 p-4">
+          <Alert class="mb-3">
+            <Info class="h-4 w-4" />
+            <AlertDescription>最多选择 5 个时间点进行对比</AlertDescription>
+          </Alert>
 
-          <v-row>
-            <v-col v-for="(timePoint, index) in selectedTimePoints" :key="index" cols="12" md="6">
-              <v-text-field
-                v-model="timePoint.label"
-                :label="`时间点 ${index + 1}`"
-                type="datetime-local"
-                density="compact"
-                @change="handleTimePointChange(index, $event)"
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div
+              v-for="(timePoint, index) in selectedTimePoints"
+              :key="index"
+              class="flex items-end gap-2"
+            >
+              <div class="flex-1 space-y-1">
+                <Label :for="`time-point-${index}`">时间点 {{ index + 1 }}</Label>
+                <Input
+                  :id="`time-point-${index}`"
+                  v-model="timePoint.label"
+                  type="datetime-local"
+                  @change="handleTimePointChange(index, $event)"
+                />
+              </div>
+              <Button
+                v-if="selectedTimePoints.length > 2"
+                variant="ghost"
+                size="icon-sm"
+                @click="removeTimePoint(index)"
               >
-                <template #append>
-                  <v-btn
-                    v-if="selectedTimePoints.length > 2"
-                    icon="mdi-close"
-                    variant="text"
-                    size="x-small"
-                    @click="removeTimePoint(index)"
-                  />
-                </template>
-              </v-text-field>
-            </v-col>
-          </v-row>
+                <X class="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
 
-          <v-btn
-            v-if="selectedTimePoints.length < 5"
-            prepend-icon="mdi-plus"
-            variant="outlined"
-            size="small"
-            @click="addTimePoint"
-          >
-            添加时间点
-          </v-btn>
+          <div class="mt-4 flex gap-2">
+            <Button
+              v-if="selectedTimePoints.length < 5"
+              variant="outline"
+              size="sm"
+              @click="addTimePoint"
+            >
+              <Plus class="h-4 w-4" />
+              添加时间点
+            </Button>
 
-          <v-btn
-            class="ml-2"
-            prepend-icon="mdi-chart-bar"
-            color="primary"
-            size="small"
-            :disabled="!canCompare"
-            @click="loadComparison"
-          >
-            开始对比
-          </v-btn>
+            <Button size="sm" :disabled="!canCompare" @click="loadComparison">
+              <BarChart3 class="h-4 w-4" />
+              开始对比
+            </Button>
+          </div>
         </div>
 
         <!-- 加载状态 -->
-        <v-progress-linear v-if="isLoading" indeterminate color="primary" />
+        <div v-if="isLoading" class="flex items-center justify-center py-8">
+          <Loader2 class="h-6 w-6 animate-spin text-primary" />
+        </div>
 
         <!-- 空状态 -->
-        <v-alert v-else-if="!hasComparisonData" type="info" variant="tonal">
-          请选择时间点并点击"开始对比"
-        </v-alert>
+        <Alert v-else-if="!hasComparisonData">
+          <Info class="h-4 w-4" />
+          <AlertDescription>请选择时间点并点击"开始对比"</AlertDescription>
+        </Alert>
 
         <!-- 对比图表 -->
         <div v-else>
           <!-- 柱状对比图 -->
-          <v-chart class="chart" :option="barChartOption" autoresize style="height: 400px" />
+          <v-chart class="h-[400px] w-full" :option="barChartOption" autoresize />
 
           <!-- 雷达对比图 -->
-          <v-chart class="chart mt-4" :option="radarChartOption" autoresize style="height: 400px" />
+          <v-chart class="mt-4 h-[400px] w-full" :option="radarChartOption" autoresize />
 
           <!-- 数据表格 -->
-          <v-table class="mt-4">
-            <thead>
-              <tr>
-                <th>KeyResult</th>
-                <th v-for="(tp, index) in timePointLabels" :key="index">
-                  {{ tp }}
-                </th>
-                <th>总变化</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="kr in comparisonData?.keyResults" :key="kr.id">
-                <td class="font-weight-medium">{{ kr.title }}</td>
-                <td v-for="(weight, index) in getKRWeights(kr.id)" :key="index">
-                  <v-chip size="small" :color="getWeightChangeColor(weight, index)">
-                    {{ weight }}%
-                  </v-chip>
-                </td>
-                <td>
-                  <v-chip size="small" :color="getTotalChangeColor(getTotalChange(kr.id))">
-                    {{ getTotalChange(kr.id) > 0 ? '+' : '' }}{{ getTotalChange(kr.id) }}%
-                  </v-chip>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
+          <div class="mt-4 overflow-x-auto rounded-md border">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b bg-muted/50">
+                  <th class="px-4 py-2 text-left font-medium">KeyResult</th>
+                  <th
+                    v-for="(tp, index) in timePointLabels"
+                    :key="index"
+                    class="px-4 py-2 text-left font-medium"
+                  >
+                    {{ tp }}
+                  </th>
+                  <th class="px-4 py-2 text-left font-medium">总变化</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="kr in comparisonData?.keyResults"
+                  :key="kr.id"
+                  class="border-b last:border-b-0"
+                >
+                  <td class="px-4 py-2 font-medium">{{ kr.title }}</td>
+                  <td v-for="(weight, index) in getKRWeights(kr.id)" :key="index" class="px-4 py-2">
+                    <Badge :variant="getBadgeVariant(getWeightChangeColor(weight, index))">
+                      {{ weight }}%
+                    </Badge>
+                  </td>
+                  <td class="px-4 py-2">
+                    <Badge :variant="getBadgeVariant(getTotalChangeColor(getTotalChange(kr.id)))">
+                      {{ getTotalChange(kr.id) > 0 ? '+' : '' }}{{ getTotalChange(kr.id) }}%
+                    </Badge>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </v-card-text>
-    </v-card>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -117,6 +135,19 @@ import VChart from 'vue-echarts';
 import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Alert,
+  AlertDescription,
+  Badge,
+  Input,
+  Label,
+} from '@dailyuse/ui-vue-shadcn';
+import { Plus, BarChart3, X, Loader2, Info } from 'lucide-vue-next';
 
 use([
   TitleComponent,
@@ -213,6 +244,19 @@ const getTotalChangeColor = (change: number) => {
   if (change > 0) return 'success';
   if (change < 0) return 'error';
   return 'grey';
+};
+
+// 将 Vuetify 颜色映射到 Badge variant
+const getBadgeVariant = (color: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  switch (color) {
+    case 'success':
+      return 'default';
+    case 'error':
+      return 'destructive';
+    case 'grey':
+    default:
+      return 'secondary';
+  }
 };
 
 // 柱状图配置
@@ -337,20 +381,3 @@ onMounted(() => {
   });
 });
 </script>
-
-<style scoped>
-.weight-comparison {
-  width: 100%;
-}
-
-.chart {
-  width: 100%;
-  min-height: 400px;
-}
-
-.time-selector {
-  padding: 16px;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-}
-</style>

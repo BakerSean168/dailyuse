@@ -18,6 +18,7 @@ import type {
   INotificationService,
   ISettingService,
   IRuleService,
+  IHttpClient,
   NavigationItem,
 } from './types';
 
@@ -33,6 +34,9 @@ export const NOTIFICATION_SERVICE_KEY: InjectionKey<INotificationService> =
   Symbol('NotificationService');
 export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('SettingService');
 export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService');
+
+// ── Infrastructure Keys ──
+export const HTTP_CLIENT_KEY: InjectionKey<IHttpClient> = Symbol('HttpClient');
 
 // ── UI / Navigation Keys ──
 export const MAIN_NAVIGATION_KEY: InjectionKey<NavigationItem[]> = Symbol('MainNavigation');

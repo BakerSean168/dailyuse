@@ -22,15 +22,19 @@ import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
  * HTTP 实现的通知 API 客户端
  */
 export class NotificationHttpAdapter implements INotificationApiClient {
-  private readonly baseUrl = '/api/v1/notifications';
+  private readonly baseUrl = '/notifications';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  async createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>> {
+  async createNotification(
+    request: CreateNotificationRequest,
+  ): Promise<Result<NotificationClientDTO>> {
     return this.httpClient.post(this.baseUrl, request);
   }
 
-  async findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>> {
+  async findNotifications(
+    query?: QueryNotificationsRequest,
+  ): Promise<Result<NotificationListResponse>> {
     return this.httpClient.get(this.baseUrl, {
       params: query as unknown as Record<string, unknown>,
     });
@@ -64,6 +68,8 @@ export class NotificationHttpAdapter implements INotificationApiClient {
 /**
  * Factory function to create NotificationHttpAdapter
  */
-export function createNotificationHttpAdapter(httpClient: IResultHttpClient): NotificationHttpAdapter {
+export function createNotificationHttpAdapter(
+  httpClient: IResultHttpClient,
+): NotificationHttpAdapter {
   return new NotificationHttpAdapter(httpClient);
 }

@@ -22,6 +22,8 @@ import {
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   TASK_SERVICE_KEY,
+  // Infrastructure keys
+  HTTP_CLIENT_KEY,
   // UI keys
   MAIN_NAVIGATION_KEY,
   BOTTOM_NAVIGATION_KEY,
@@ -115,6 +117,9 @@ export function installWebServices(app: App): void {
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
   app.provide(TASK_SERVICE_KEY, taskService);
+
+  // ── Infrastructure ──
+  app.provide(HTTP_CLIENT_KEY, resultHttpClient);
 
   // ── UI / Navigation ──
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);

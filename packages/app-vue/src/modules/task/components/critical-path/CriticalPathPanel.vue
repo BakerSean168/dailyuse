@@ -1,66 +1,94 @@
 <template>
-  <v-card class="critical-path-panel">
-    <v-card-title class="d-flex justify-space-between align-center">
-      <div>
-        <v-icon class="mr-2" color="primary">mdi-timeline</v-icon>
-        关键路径分析
+  <Card>
+    <CardHeader class="flex flex-row items-center justify-between">
+      <div class="flex items-center gap-2">
+        <Clock class="h-5 w-5 text-primary" />
+        <CardTitle>关键路径分析</CardTitle>
       </div>
-      <v-btn size="small" variant="text" prepend-icon="mdi-download" @click="handleExport">导出</v-btn>
-    </v-card-title>
+      <Button size="sm" variant="ghost" @click="handleExport">
+        <Download class="h-4 w-4 mr-2" />
+        导出
+      </Button>
+    </CardHeader>
 
-    <v-card-text v-if="!result">
-      <v-alert type="warning" density="compact">
-        <div class="text-body-2">请添加任务依赖关系以计算关键路径。</div>
-      </v-alert>
-    </v-card-text>
+    <CardContent v-if="!result">
+      <Alert>
+        <AlertDescription class="text-sm">请添加任务依赖关系以计算关键路径。</AlertDescription>
+      </Alert>
+    </CardContent>
 
-    <v-card-text v-else>
-      <v-row>
-        <v-col cols="6" md="3">
-          <v-card variant="tonal" color="primary">
-            <v-card-text class="text-center py-4">
-              <div class="text-h4 font-weight-bold">{{ formatDuration(result.projectDuration) }}</div>
-              <div class="text-caption mt-1">预计总工期</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+    <CardContent v-else>
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-6 md:col-span-3">
+          <Card class="bg-primary/10">
+            <CardContent class="text-center py-4">
+              <div class="text-3xl font-bold">{{ formatDuration(result.projectDuration) }}</div>
+              <div class="text-xs text-muted-foreground mt-1">预计总工期</div>
+            </CardContent>
+          </Card>
+        </div>
 
-        <v-col cols="6" md="3">
-          <v-card variant="tonal" color="error">
-            <v-card-text class="text-center py-4">
-              <div class="text-h4 font-weight-bold">{{ result.criticalTasks.length }}</div>
-              <div class="text-caption mt-1">关键任务数</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+        <div class="col-span-6 md:col-span-3">
+          <Card class="bg-destructive/10">
+            <CardContent class="text-center py-4">
+              <div class="text-3xl font-bold">{{ result.criticalTasks.length }}</div>
+              <div class="text-xs text-muted-foreground mt-1">关键任务数</div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-      <v-card class="mt-4" variant="outlined">
-        <v-card-title class="text-subtitle-1 bg-error-lighten-5">
-          <v-icon class="mr-2" color="error">mdi-alert-circle</v-icon>
-          关键路径任务 ({{ result.criticalTasks.length }})
-        </v-card-title>
+      <Card class="mt-4">
+        <CardHeader class="bg-destructive/5 pb-2">
+          <div class="flex items-center gap-2">
+            <AlertTriangle class="h-5 w-5 text-destructive" />
+            <CardTitle class="text-base font-medium"
+              >关键路径任务 ({{ result.criticalTasks.length }})</CardTitle
+            >
+          </div>
+        </CardHeader>
 
-        <v-card-text class="pa-0">
-          <v-list density="compact">
-            <v-list-item v-for="(task, index) in result.criticalTasks" :key="task.id" class="border-b">
-              <template #prepend>
-                <v-avatar color="error" size="32"><span class="text-subtitle-2">{{ index + 1 }}</span></v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-medium">{{ task.title }}</v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip size="x-small" color="primary" variant="flat">工期: {{ formatDuration(task.estimatedMinutes || 0) }}</v-chip>
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-    </v-card-text>
-  </v-card>
+        <CardContent class="p-0">
+          <div class="space-y-0 divide-y">
+            <div
+              v-for="(task, index) in result.criticalTasks"
+              :key="task.id"
+              class="flex items-center gap-3 px-4 py-3"
+            >
+              <div
+                class="flex items-center justify-center h-8 w-8 rounded-full bg-destructive text-destructive-foreground text-sm font-medium shrink-0"
+              >
+                {{ index + 1 }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium">{{ task.title }}</div>
+                <div class="mt-1">
+                  <Badge variant="default" class="text-xs">
+                    工期: {{ formatDuration(task.estimatedMinutes || 0) }}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import type { TaskForDAGViewModel } from '../types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Alert,
+  AlertDescription,
+  Button,
+  Badge,
+} from '@dailyuse/ui-vue-shadcn';
+import { Clock, Download, AlertTriangle } from 'lucide-vue-next';
 
 interface CriticalPathResultViewModel {
   projectDuration: number;

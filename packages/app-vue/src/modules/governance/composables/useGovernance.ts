@@ -49,14 +49,17 @@ export function useGovernance() {
   async function fetchRules(): Promise<void> {
     store.setLoading(true);
     store.setError(null);
-    const query = store.currentListQuery;
-    const result = await apiClient.listRules(query);
-    if (result.ok) {
-      store.setRules(result.data.items, result.data.total);
-    } else {
-      store.setError(result.error.message || '加载规则列表失败');
+    try {
+      const query = store.currentListQuery;
+      const result = await apiClient.listRules(query);
+      if (result.ok) {
+        store.setRules(result.data.items ?? [], result.data.total ?? 0);
+      } else {
+        store.setError(result.error.message || '加载规则列表失败');
+      }
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   /**
@@ -65,14 +68,17 @@ export function useGovernance() {
   async function fetchRule(id: string): Promise<RuleClientDTO | null> {
     store.setLoading(true);
     store.setError(null);
-    const result = await apiClient.getRule({ id });
-    store.setLoading(false);
-    if (result.ok) {
-      store.setCurrentRule(result.data);
-      return result.data;
+    try {
+      const result = await apiClient.getRule({ id });
+      if (result.ok) {
+        store.setCurrentRule(result.data);
+        return result.data;
+      }
+      store.setError(result.error.message || '加载规则失败');
+      return null;
+    } finally {
+      store.setLoading(false);
     }
-    store.setError(result.error.message || '加载规则失败');
-    return null;
   }
 
   /**
@@ -81,14 +87,17 @@ export function useGovernance() {
   async function createRule(req: CreateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = 'new';
     store.setError(null);
-    const result = await apiClient.createRule(req);
-    savingId.value = null;
-    if (result.ok) {
-      store.addRule(result.data);
-      return result.data;
+    try {
+      const result = await apiClient.createRule(req);
+      if (result.ok) {
+        store.addRule(result.data);
+        return result.data;
+      }
+      store.setError(result.error.message || '创建规则失败');
+      return null;
+    } finally {
+      savingId.value = null;
     }
-    store.setError(result.error.message || '创建规则失败');
-    return null;
   }
 
   /**
@@ -97,14 +106,17 @@ export function useGovernance() {
   async function updateRule(id: string, req: UpdateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = id;
     store.setError(null);
-    const result = await apiClient.updateRule(id, req);
-    savingId.value = null;
-    if (result.ok) {
-      store.updateRule(result.data);
-      return result.data;
+    try {
+      const result = await apiClient.updateRule(id, req);
+      if (result.ok) {
+        store.updateRule(result.data);
+        return result.data;
+      }
+      store.setError(result.error.message || '更新规则失败');
+      return null;
+    } finally {
+      savingId.value = null;
     }
-    store.setError(result.error.message || '更新规则失败');
-    return null;
   }
 
   /**
@@ -113,14 +125,17 @@ export function useGovernance() {
   async function deleteRule(id: string): Promise<boolean> {
     savingId.value = id;
     store.setError(null);
-    const result = await apiClient.deleteRule({ id });
-    savingId.value = null;
-    if (result.ok) {
-      store.removeRule(id);
-      return true;
+    try {
+      const result = await apiClient.deleteRule({ id });
+      if (result.ok) {
+        store.removeRule(id);
+        return true;
+      }
+      store.setError(result.error.message || '删除规则失败');
+      return false;
+    } finally {
+      savingId.value = null;
     }
-    store.setError(result.error.message || '删除规则失败');
-    return false;
   }
 
   /**
@@ -134,20 +149,23 @@ export function useGovernance() {
     }
     store.setLoading(true);
     store.setError(null);
-    const result = await apiClient.searchRules({
-      query,
-      status: store.filter.status ?? undefined,
-      tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
-      severity: store.filter.severity ?? undefined,
-      page: store.pagination.page,
-      pageSize: store.pagination.pageSize,
-    });
-    if (result.ok) {
-      store.setRules(result.data.items, result.data.total);
-    } else {
-      store.setError(result.error.message || '搜索规则失败');
+    try {
+      const result = await apiClient.searchRules({
+        query,
+        status: store.filter.status ?? undefined,
+        tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
+        severity: store.filter.severity ?? undefined,
+        page: store.pagination.page,
+        pageSize: store.pagination.pageSize,
+      });
+      if (result.ok) {
+        store.setRules(result.data.items ?? [], result.data.total ?? 0);
+      } else {
+        store.setError(result.error.message || '搜索规则失败');
+      }
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   /**

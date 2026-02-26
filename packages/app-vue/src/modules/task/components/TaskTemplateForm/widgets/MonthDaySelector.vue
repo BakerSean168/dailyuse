@@ -1,44 +1,38 @@
 <!-- widgets/MonthDaySelector.vue -->
 <template>
-  <div class="month-day-selector">
-    <v-label class="mb-2">选择日期</v-label>
-    <v-chip-group
-      v-model="localSelected"
-      multiple
-      variant="outlined"
-      selected-class="text-primary"
-      class="flex-wrap"
-    >
-      <v-chip
+  <div class="w-full">
+    <Label class="mb-2 block">选择日期</Label>
+    <div class="flex flex-wrap gap-1">
+      <Badge
         v-for="day in monthDayOptions"
         :key="day"
-        :value="day"
-        filter
-        variant="outlined"
-        size="small"
+        :variant="localSelected.includes(day) ? 'default' : 'outline'"
+        class="cursor-pointer select-none"
+        @click="toggleDay(day)"
       >
         {{ day }}
-      </v-chip>
-    </v-chip-group>
+      </Badge>
+    </div>
 
-    <div class="mt-2">
-      <v-btn size="small" variant="text" @click="selectFirstHalf"> 前半月 </v-btn>
+    <div class="mt-2 flex flex-wrap gap-1">
+      <Button size="sm" variant="ghost" @click="selectFirstHalf"> 前半月 </Button>
 
-      <v-btn size="small" variant="text" @click="selectSecondHalf"> 后半月 </v-btn>
+      <Button size="sm" variant="ghost" @click="selectSecondHalf"> 后半月 </Button>
 
-      <v-btn size="small" variant="text" @click="selectOddDays"> 奇数日 </v-btn>
+      <Button size="sm" variant="ghost" @click="selectOddDays"> 奇数日 </Button>
 
-      <v-btn size="small" variant="text" @click="selectEvenDays"> 偶数日 </v-btn>
+      <Button size="sm" variant="ghost" @click="selectEvenDays"> 偶数日 </Button>
 
-      <v-btn size="small" variant="text" @click="selectAll"> 全选 </v-btn>
+      <Button size="sm" variant="ghost" @click="selectAll"> 全选 </Button>
 
-      <v-btn size="small" variant="text" @click="clearAll"> 清空 </v-btn>
+      <Button size="sm" variant="ghost" @click="clearAll"> 清空 </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Badge, Button, Label } from '@dailyuse/ui-vue-shadcn';
 
 interface Props {
   modelValue: number[];
@@ -58,6 +52,15 @@ const localSelected = computed({
 
 // 生成1-31的日期选项
 const monthDayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+
+const toggleDay = (day: number) => {
+  const current = localSelected.value;
+  if (current.includes(day)) {
+    localSelected.value = current.filter((d) => d !== day);
+  } else {
+    localSelected.value = [...current, day];
+  }
+};
 
 // 快捷选择方法
 const selectFirstHalf = () => {
@@ -84,18 +87,3 @@ const clearAll = () => {
   localSelected.value = [];
 };
 </script>
-
-<style scoped>
-.month-day-selector {
-  width: 100%;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.v-chip-group {
-  width: 100%;
-}
-</style>

@@ -4,79 +4,130 @@
   使用 RecurrenceRule 值对象
 -->
 <template>
-  <v-card class="mb-4" elevation="0" variant="outlined">
-    <v-card-title class="section-title">
-      <v-icon class="mr-2">mdi-repeat</v-icon>
-      重复规则
-    </v-card-title>
-    <v-card-text>
+  <Card class="mb-4">
+    <CardHeader class="flex flex-row items-center gap-2 pb-2">
+      <Repeat class="h-5 w-5 text-primary" />
+      <CardTitle class="text-primary font-semibold">重复规则</CardTitle>
+    </CardHeader>
+    <CardContent>
       <!-- 显示验证错误 -->
-      <v-alert v-if="validationErrors.length > 0" type="error" variant="tonal" class="mb-4">
-        <ul class="mb-0">
-          <li v-for="error in validationErrors" :key="error">{{ error }}</li>
-        </ul>
-      </v-alert>
+      <Alert v-if="validationErrors.length > 0" variant="destructive" class="mb-4">
+        <AlertDescription>
+          <ul class="mb-0">
+            <li v-for="error in validationErrors" :key="error">{{ error }}</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
       <!-- 显示规则描述 -->
-      <v-alert v-if="isValid && hasRecurrence" type="info" variant="tonal" class="mb-4">
-        当前设置：{{ recurrenceDescription }}
-      </v-alert>
+      <Alert v-if="isValid && hasRecurrence" class="mb-4">
+        <Info class="h-4 w-4" />
+        <AlertDescription> 当前设置：{{ recurrenceDescription }} </AlertDescription>
+      </Alert>
 
-      <v-row>
+      <div class="grid grid-cols-12 gap-4">
         <!-- 是否启用重复 -->
-        <v-col cols="12">
-          <v-switch v-model="recurrenceEnabled" label="启用重复规则" color="primary" />
-        </v-col>
+        <div class="col-span-12">
+          <div class="flex items-center gap-2">
+            <Switch :checked="recurrenceEnabled" @update:checked="recurrenceEnabled = $event" />
+            <Label>启用重复规则</Label>
+          </div>
+        </div>
 
         <template v-if="recurrenceEnabled">
           <!-- 重复频率 -->
-          <v-col cols="12" md="6">
-            <v-select v-model="frequency" label="重复频率" :items="frequencyOptions" variant="outlined" />
-          </v-col>
+          <div class="col-span-12 md:col-span-6">
+            <Label class="mb-2 block">重复频率</Label>
+            <Select :model-value="frequency" @update:model-value="frequency = $event">
+              <SelectTrigger>
+                <SelectValue placeholder="选择频率" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="opt in frequencyOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.title }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <!-- 重复间隔 -->
-          <v-col cols="12" md="6">
-            <v-text-field v-model.number="interval" label="重复间隔" type="number" variant="outlined" min="1" max="365"
-              :hint="intervalHint" persistent-hint />
-          </v-col>
+          <div class="col-span-12 md:col-span-6">
+            <Label class="mb-2 block">重复间隔</Label>
+            <Input
+              :model-value="interval"
+              type="number"
+              min="1"
+              max="365"
+              @update:model-value="interval = Number($event)"
+            />
+            <p class="text-xs text-muted-foreground mt-1">{{ intervalHint }}</p>
+          </div>
 
           <!-- 每周重复：选择星期几 -->
-          <v-col cols="12" v-if="frequency === RecurrenceFrequency.WEEKLY">
-            <div class="text-subtitle-2 mb-2">选择星期</div>
-            <v-chip-group v-model="selectedDays" multiple column>
-              <v-chip v-for="day in dayOptions" :key="day.value" :value="day.value" filter variant="outlined">
+          <div class="col-span-12" v-if="frequency === RecurrenceFrequency.WEEKLY">
+            <div class="text-sm font-medium mb-2">选择星期</div>
+            <div class="flex flex-wrap gap-2">
+              <Badge
+                v-for="day in dayOptions"
+                :key="day.value"
+                :variant="selectedDays.includes(day.value) ? 'default' : 'outline'"
+                class="cursor-pointer select-none"
+                @click="toggleDay(day.value)"
+              >
                 {{ day.title }}
-              </v-chip>
-            </v-chip-group>
-          </v-col>
+              </Badge>
+            </div>
+          </div>
 
           <!-- 结束条件 -->
-          <v-col cols="12">
-            <v-divider class="my-2" />
-            <div class="text-subtitle-2 mb-2">结束条件</div>
-          </v-col>
+          <div class="col-span-12">
+            <Separator class="my-2" />
+            <div class="text-sm font-medium mb-2">结束条件</div>
+          </div>
 
-          <v-col cols="12" md="4">
-            <v-radio-group v-model="endConditionType">
-              <v-radio label="永不结束" value="never" />
-              <v-radio label="结束日期" value="date" />
-              <v-radio label="次数限制" value="count" />
-            </v-radio-group>
-          </v-col>
+          <div class="col-span-12 md:col-span-4">
+            <RadioGroup
+              :model-value="endConditionType"
+              @update:model-value="endConditionType = $event"
+            >
+              <div class="flex items-center gap-2">
+                <RadioGroupItem value="never" id="end-never" />
+                <Label for="end-never">永不结束</Label>
+              </div>
+              <div class="flex items-center gap-2">
+                <RadioGroupItem value="date" id="end-date" />
+                <Label for="end-date">结束日期</Label>
+              </div>
+              <div class="flex items-center gap-2">
+                <RadioGroupItem value="count" id="end-count" />
+                <Label for="end-count">次数限制</Label>
+              </div>
+            </RadioGroup>
+          </div>
 
-          <v-col cols="12" md="8">
+          <div class="col-span-12 md:col-span-8">
             <!-- 结束日期 -->
-            <v-text-field v-if="endConditionType === 'date'" v-model="endDate" label="结束日期" type="date"
-              variant="outlined" />
+            <div v-if="endConditionType === 'date'">
+              <Label class="mb-2 block">结束日期</Label>
+              <Input v-model="endDate" type="date" />
+            </div>
 
             <!-- 次数限制 -->
-            <v-text-field v-if="endConditionType === 'count'" v-model.number="occurrences" label="重复次数" type="number"
-              variant="outlined" min="1" max="999" />
-          </v-col>
+            <div v-if="endConditionType === 'count'">
+              <Label class="mb-2 block">重复次数</Label>
+              <Input
+                :model-value="occurrences"
+                type="number"
+                min="1"
+                max="999"
+                @update:model-value="occurrences = Number($event)"
+              />
+            </div>
+          </div>
         </template>
-      </v-row>
-    </v-card-text>
-  </v-card>
+      </div>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -84,6 +135,27 @@ import { computed, ref, watch } from 'vue';
 import { RecurrenceFrequency, DayOfWeek, RECURRENCE_RULE_DEFAULTS } from '@dailyuse/contracts/task';
 import type { RecurrenceRuleClientDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Alert,
+  AlertDescription,
+  Switch,
+  Label,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Input,
+  Badge,
+  Separator,
+  RadioGroup,
+  RadioGroupItem,
+} from '@dailyuse/ui-vue-shadcn';
+import { Repeat, Info } from 'lucide-vue-next';
 
 /**
  * 获取默认结束日期（今天 + 配置的天数）
@@ -137,6 +209,16 @@ const dayOptions = [
   { title: '周六', value: DayOfWeek.SATURDAY },
 ];
 
+// Toggle day for weekly selection (replaces v-chip-group)
+const toggleDay = (day: DayOfWeek) => {
+  const current = selectedDays.value;
+  if (current.includes(day)) {
+    selectedDays.value = current.filter((d) => d !== day);
+  } else {
+    selectedDays.value = [...current, day];
+  }
+};
+
 // 重复启用状态
 const recurrenceEnabled = computed({
   get: () => !!props.modelValue.recurrenceRule,
@@ -168,7 +250,9 @@ const recurrenceEnabled = computed({
 
 // 频率
 const frequency = computed({
-  get: () => ((props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.frequency ?? RecurrenceFrequency.DAILY),
+  get: () =>
+    (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.frequency ??
+    RecurrenceFrequency.DAILY,
   set: (value: RecurrenceFrequency) => {
     updateRecurrenceRule({ frequency: value });
   },
@@ -176,7 +260,7 @@ const frequency = computed({
 
 // 间隔
 const interval = computed({
-  get: () => ((props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.interval ?? 1),
+  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.interval ?? 1,
   set: (value: number) => {
     updateRecurrenceRule({ interval: value });
   },
@@ -184,7 +268,7 @@ const interval = computed({
 
 // 选中的星期
 const selectedDays = computed({
-  get: () => ((props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.daysOfWeek ?? []),
+  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.daysOfWeek ?? [],
   set: (value: DayOfWeek[]) => {
     updateRecurrenceRule({ daysOfWeek: value });
   },
@@ -309,7 +393,9 @@ const intervalHint = computed(() => {
 const hasRecurrence = computed(() => recurrenceEnabled.value);
 
 const recurrenceDescription = computed(() => {
-  return (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.recurrenceDisplayText ?? '';
+  return (
+    (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.recurrenceDisplayText ?? ''
+  );
 });
 
 // 验证
@@ -367,11 +453,3 @@ watch(
   { deep: true, immediate: true },
 );
 </script>
-
-<style scoped>
-.section-title {
-  color: rgb(var(--v-theme-primary));
-  font-weight: 600;
-}
-</style>
-

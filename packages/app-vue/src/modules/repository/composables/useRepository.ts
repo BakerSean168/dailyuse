@@ -39,7 +39,7 @@ export function useRepository() {
     try {
       const result = await service.getRepositories();
       if (result.ok) {
-        store.setRepositories(result.data.map((r: Repository) => r.toDTO()));
+        store.setRepositories((result.data ?? []).map((r: Repository) => r.toDTO()));
       } else {
         handleError(result.error.message || '加载仓库列表失败');
       }

@@ -1,77 +1,77 @@
 <template>
-  <div id="task-template-management">
-    <div class="template-controls">
-      <div class="template-filters">
-        <v-btn-toggle v-model="currentStatus" mandatory variant="outlined" divided class="filter-group">
-          <v-btn
-            v-for="status in statusFilters"
-            :key="status.value"
-            :value="status.value"
-            class="filter-button"
-            size="large"
-          >
-            <v-icon :icon="status.icon" start />
-            {{ status.label }}
-            <v-chip size="small" :color="getStatusChipColor(status.value)" variant="elevated" class="ml-2">
-              {{ getTemplateCountByStatus(status.value) }}
-            </v-chip>
-          </v-btn>
-        </v-btn-toggle>
+  <div id="task-template-management" class="p-6">
+    <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+      <div class="flex gap-1 border rounded-md">
+        <Button
+          v-for="status in statusFilters"
+          :key="status.value"
+          :variant="currentStatus === status.value ? 'default' : 'ghost'"
+          size="lg"
+          @click="currentStatus = status.value"
+        >
+          <component :is="getStatusIconComponent(status.icon)" class="h-4 w-4 mr-1" />
+          {{ status.label }}
+          <Badge :class="getStatusBadgeClass(status.value)" class="ml-2 text-xs">
+            {{ getTemplateCountByStatus(status.value) }}
+          </Badge>
+        </Button>
       </div>
 
-      <div class="action-buttons">
-        <v-btn
+      <div class="flex gap-4 items-center">
+        <Button
           v-if="templates.length > 0"
           data-testid="view-dependency-graph-button"
-          color="info"
-          variant="outlined"
-          size="large"
-          prepend-icon="mdi-graph-outline"
+          variant="outline"
+          size="lg"
           @click="showDependencyDialog = true"
-          class="view-dag-button"
         >
+          <Share2 class="h-4 w-4 mr-2" />
           查看依赖关系图
-        </v-btn>
+        </Button>
 
-        <v-btn
+        <Button
           v-if="templates.length > 0"
           data-testid="delete-all-templates-button"
-          color="error"
-          variant="outlined"
-          size="large"
-          prepend-icon="mdi-delete-sweep"
+          variant="outline"
+          size="lg"
+          class="border-destructive text-destructive hover:bg-destructive/10"
           @click="showDeleteAllDialog = true"
-          class="delete-all-button"
         >
+          <Trash2 class="h-4 w-4 mr-2" />
           删除所有模板
-        </v-btn>
+        </Button>
 
-        <v-btn
+        <Button
           data-testid="create-task-template-button"
-          color="primary"
-          variant="elevated"
-          size="large"
-          prepend-icon="mdi-plus"
+          size="lg"
           @click="emit('create-template')"
-          class="create-button"
         >
+          <Plus class="h-4 w-4 mr-2" />
           创建新模板
-        </v-btn>
+        </Button>
       </div>
     </div>
 
-    <div class="template-grid">
-      <v-card v-if="filteredTemplates.length === 0" class="empty-state-card" elevation="2">
-        <v-card-text class="text-center pa-8">
-          <v-icon :color="getStatusChipColor(currentStatus)" size="64" class="mb-4">
-            {{ getEmptyStateIcon() }}
-          </v-icon>
-          <h3 class="text-h5 mb-2">{{ getEmptyStateText() }}</h3>
-          <v-btn v-if="currentStatus === 'ACTIVE'" color="primary" variant="tonal" prepend-icon="mdi-plus" @click="emit('create-template')" class="mt-4">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-6">
+      <Card v-if="filteredTemplates.length === 0" class="col-span-full">
+        <CardContent class="text-center p-8">
+          <component
+            :is="getEmptyStateIconComponent()"
+            class="h-16 w-16 mx-auto mb-4"
+            :class="getEmptyStateIconColor()"
+          />
+          <h3 class="text-xl font-semibold mb-2">{{ getEmptyStateText() }}</h3>
+          <Button
+            v-if="currentStatus === 'ACTIVE'"
+            variant="secondary"
+            class="mt-4"
+            @click="emit('create-template')"
+          >
+            <Plus class="h-4 w-4 mr-2" />
             创建第一个模板
-          </v-btn>
-        </v-card-text>
-      </v-card>
+          </Button>
+        </CardContent>
+      </Card>
 
       <DraggableTaskCard
         v-for="template in filteredTemplates"
@@ -85,66 +85,107 @@
       />
     </div>
 
-    <v-dialog v-model="showDependencyDialog" max-width="1400px" max-height="800px">
-      <v-card>
-        <v-card-title class="d-flex justify-space-between align-center">
-          <span class="text-h6">
-            <v-icon>mdi-graph-outline</v-icon>
-            任务依赖关系图
-          </span>
-          <v-btn icon variant="text" @click="showDependencyDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text style="height: 600px">
+    <Dialog :open="showDependencyDialog" @update:open="showDependencyDialog = $event">
+      <DialogContent class="max-w-[1400px]">
+        <DialogHeader>
+          <DialogTitle class="flex items-center justify-between">
+            <span class="flex items-center text-lg font-semibold">
+              <Share2 class="h-5 w-5 mr-2" />
+              任务依赖关系图
+            </span>
+            <Button variant="ghost" size="icon" @click="showDependencyDialog = false">
+              <X class="h-4 w-4" />
+            </Button>
+          </DialogTitle>
+        </DialogHeader>
+        <div style="height: 600px">
           <TaskDAGVisualization
             v-if="showDependencyDialog"
             :tasks="templates as any"
             :dependencies="dependencies"
             :compact="false"
           />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+        </div>
+      </DialogContent>
+    </Dialog>
 
-    <v-dialog v-model="showDeleteAllDialog" max-width="500px" persistent>
-      <v-card>
-        <v-card-title class="d-flex align-center bg-error">
-          <v-icon color="white" class="mr-2">mdi-alert-circle</v-icon>
-          <span class="text-white">确认删除所有模板</span>
-        </v-card-title>
-        <v-card-text class="pt-4">
-          <v-alert type="warning" variant="tonal" class="mb-4">
-            <strong>此操作不可撤销！</strong>
-          </v-alert>
-          <p class="text-body-1 mb-4">您确定要删除所有 <strong>{{ templates.length }}</strong> 个任务模板吗？</p>
-          <v-text-field
-            v-model="deleteConfirmText"
-            label="请输入 'DELETE' 确认删除"
-            placeholder="DELETE"
-            variant="outlined"
-            class="mt-4"
-          />
-        </v-card-text>
-        <v-card-actions class="px-4 pb-4">
-          <v-spacer />
-          <v-btn variant="text" @click="cancelDeleteAll">取消</v-btn>
-          <v-btn color="error" variant="elevated" :disabled="deleteConfirmText !== 'DELETE'" @click="confirmDeleteAll">
-            <v-icon start>mdi-delete-forever</v-icon>
+    <Dialog
+      :open="showDeleteAllDialog"
+      @update:open="
+        (val: boolean) => {
+          if (!val) cancelDeleteAll();
+        }
+      "
+    >
+      <DialogContent class="max-w-[500px]">
+        <DialogHeader class="bg-destructive -m-6 mb-0 p-4 rounded-t-lg">
+          <DialogTitle class="flex items-center text-white">
+            <AlertCircle class="h-5 w-5 mr-2 text-white" />
+            确认删除所有模板
+          </DialogTitle>
+        </DialogHeader>
+        <div class="pt-4 space-y-4">
+          <Alert class="bg-yellow-50 border-yellow-200">
+            <AlertDescription>
+              <strong>此操作不可撤销！</strong>
+            </AlertDescription>
+          </Alert>
+          <p class="text-base">
+            您确定要删除所有 <strong>{{ templates.length }}</strong> 个任务模板吗？
+          </p>
+          <div class="space-y-2">
+            <Label for="delete-confirm">请输入 'DELETE' 确认删除</Label>
+            <Input id="delete-confirm" v-model="deleteConfirmText" placeholder="DELETE" />
+          </div>
+        </div>
+        <DialogFooter class="pt-4">
+          <Button variant="ghost" @click="cancelDeleteAll">取消</Button>
+          <Button
+            variant="destructive"
+            :disabled="deleteConfirmText !== 'DELETE'"
+            @click="confirmDeleteAll"
+          >
+            <Trash2 class="h-4 w-4 mr-1" />
             确认删除全部
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, markRaw } from 'vue';
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import type { TaskTemplateViewModel } from './types';
+import {
+  Card,
+  CardContent,
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Alert,
+  AlertDescription,
+  Input,
+  Label,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  Plus,
+  Trash2,
+  Share2,
+  X,
+  AlertCircle,
+  PlayCircle,
+  PauseCircle,
+  Archive,
+  Circle,
+} from 'lucide-vue-next';
 
 interface StatusFilter {
   label: string;
@@ -193,12 +234,21 @@ const getTemplateCountByStatus = (status: string) => {
   return templates.value.filter((template) => template.status === status).length;
 };
 
-const getStatusChipColor = (status: string) => {
-  if (status === 'ACTIVE') return 'success';
-  if (status === 'PAUSED') return 'warning';
-  if (status === 'ARCHIVED') return 'info';
-  if (status === 'DELETED') return 'error';
-  return 'default';
+const getStatusBadgeClass = (status: string) => {
+  if (status === 'ACTIVE') return 'bg-green-100 text-green-800';
+  if (status === 'PAUSED') return 'bg-yellow-100 text-yellow-800';
+  if (status === 'ARCHIVED') return 'bg-blue-100 text-blue-800';
+  if (status === 'DELETED') return 'bg-red-100 text-red-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
+const getStatusIconComponent = (icon: string) => {
+  const iconMap: Record<string, any> = {
+    'mdi-play-circle': PlayCircle,
+    'mdi-pause-circle': PauseCircle,
+    'mdi-archive': Archive,
+  };
+  return iconMap[icon] || Circle;
 };
 
 const getEmptyStateText = () => {
@@ -208,11 +258,24 @@ const getEmptyStateText = () => {
   return '暂无模板';
 };
 
-const getEmptyStateIcon = () => {
-  return props.statusFilters.find((s) => s.value === currentStatus.value)?.icon || 'mdi-circle';
+const getEmptyStateIconComponent = () => {
+  return getStatusIconComponent(
+    props.statusFilters.find((s) => s.value === currentStatus.value)?.icon || 'mdi-circle',
+  );
 };
 
-const handleCreateDependency = async (source: TaskTemplateViewModel, target: TaskTemplateViewModel) => {
+const getEmptyStateIconColor = () => {
+  const status = currentStatus.value;
+  if (status === 'ACTIVE') return 'text-green-400';
+  if (status === 'PAUSED') return 'text-yellow-400';
+  if (status === 'ARCHIVED') return 'text-blue-400';
+  return 'text-muted-foreground';
+};
+
+const handleCreateDependency = async (
+  source: TaskTemplateViewModel,
+  target: TaskTemplateViewModel,
+) => {
   const created = await props.onCreateDependency?.(source.id, target.id);
   if (created !== false) {
     emit('dependency-created', source.id, target.id);
@@ -232,34 +295,3 @@ const confirmDeleteAll = () => {
   cancelDeleteAll();
 };
 </script>
-
-<style scoped>
-#task-template-management {
-  padding: 1.5rem;
-}
-
-.template-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.template-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 1.5rem;
-}
-
-.empty-state-card {
-  grid-column: 1 / -1;
-}
-</style>

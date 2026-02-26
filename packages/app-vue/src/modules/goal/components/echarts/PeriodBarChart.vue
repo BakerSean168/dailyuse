@@ -1,11 +1,21 @@
 <template>
-  <v-chart class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl" :option="periodBarOption" autoresize />
+  <v-chart
+    class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl"
+    :option="periodBarOption"
+    autoresize
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
+import { use } from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
 import type { GoalClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+
+use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
 
 type GoalWithRecords = GoalClientDTO & {
   records?: GoalRecordClientDTO[] | null;

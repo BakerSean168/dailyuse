@@ -44,14 +44,23 @@ export const authHandlers = [
 
   // POST /api/v1/auth/refresh — refresh access token
   http.post(`${BASE}/refresh`, () => {
+    const mockAuth = createMockAuthResponse();
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Token refreshed',
-      data: {
-        accessToken: Math.random().toString(36).substring(2),
-        refreshToken: Math.random().toString(36).substring(2),
-      },
+      data: mockAuth,
+      timestamp: Date.now(),
+    });
+  }),
+
+  // GET /api/v1/auth/me — get current identity (used on app init)
+  http.get(`${BASE}/me`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'OK',
+      data: createMockAuthResponse().identity,
       timestamp: Date.now(),
     });
   }),

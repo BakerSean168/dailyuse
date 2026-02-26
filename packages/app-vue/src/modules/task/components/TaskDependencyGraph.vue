@@ -1,102 +1,127 @@
 <template>
-  <v-card class="task-dependency-graph" elevation="2">
+  <Card class="h-full">
     <!-- 工具栏 -->
-    <v-card-title class="d-flex align-center justify-space-between">
-      <div class="d-flex align-center">
-        <v-icon class="mr-2" color="primary">mdi-graph-outline</v-icon>
-        <span>任务依赖关系图</span>
+    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div class="flex items-center">
+        <Share2 class="mr-2 h-5 w-5 text-primary" />
+        <CardTitle class="text-lg font-semibold">任务依赖关系图</CardTitle>
       </div>
-      <div class="d-flex align-center gap-2">
-        <!--布局切换 -->
-        <v-btn-toggle v-model="layoutType" mandatory density="compact" variant="outlined">
-          <v-btn value="force" size="small">
-            <v-icon>mdi-chart-scatter-plot</v-icon>
-            <v-tooltip activator="parent" location="bottom">力导向布局</v-tooltip>
-          </v-btn>
-          <v-btn value="circular" size="small">
-            <v-icon>mdi-chart-donut</v-icon>
-            <v-tooltip activator="parent" location="bottom">环形布局</v-tooltip>
-          </v-btn>
-        </v-btn-toggle>
+      <div class="flex items-center gap-2">
+        <!-- 布局切换 -->
+        <div class="flex border rounded-md">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                :variant="layoutType === 'force' ? 'default' : 'ghost'"
+                size="sm"
+                @click="layoutType = 'force'"
+              >
+                <ScatterChart class="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>力导向布局</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                :variant="layoutType === 'circular' ? 'default' : 'ghost'"
+                size="sm"
+                @click="layoutType = 'circular'"
+              >
+                <PieChart class="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>环形布局</TooltipContent>
+          </Tooltip>
+        </div>
 
         <!-- 关键路径切换 -->
-        <v-switch
-          v-model="showCriticalPath"
-          hide-details
-          density="compact"
-          color="error"
-          label="关键路径"
-        />
+        <div class="flex items-center gap-2">
+          <Switch :checked="showCriticalPath" @update:checked="showCriticalPath = $event" />
+          <Label class="text-sm">关键路径</Label>
+        </div>
 
         <!-- 刷新按钮 -->
-        <v-btn
-          icon="mdi-refresh"
-          size="small"
-          variant="text"
-          @click="refreshGraph"
-          :loading="loading"
-        />
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              @click="refreshGraph"
+              :disabled="loading"
+            >
+              <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
+              <RefreshCw v-else class="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>刷新</TooltipContent>
+        </Tooltip>
       </div>
-    </v-card-title>
+    </CardHeader>
 
     <!-- 图表容器 -->
-    <v-card-text>
-      <div v-if="loading" class="d-flex justify-center align-center" style="height: 500px">
-        <v-progress-circular indeterminate color="primary" size="64" />
+    <CardContent>
+      <div v-if="loading" class="flex justify-center items-center" style="height: 500px">
+        <Loader2 class="h-16 w-16 animate-spin text-primary" />
       </div>
 
       <div v-else-if="error" class="text-center py-8">
-        <v-icon size="64" color="error">mdi-alert-circle</v-icon>
-        <p class="text-h6 mt-4">{{ error }}</p>
-        <v-btn color="primary" @click="refreshGraph">重试</v-btn>
+        <AlertCircle class="h-16 w-16 text-destructive mx-auto" />
+        <p class="text-lg font-semibold mt-4">{{ error }}</p>
+        <Button class="mt-4" @click="refreshGraph">重试</Button>
       </div>
 
       <div v-else-if="!hasData" class="text-center py-8">
-        <v-icon size="64" color="grey">mdi-graph-outline</v-icon>
-        <p class="text-h6 mt-4">暂无任务依赖数据</p>
-        <p class="text-body-2 text-grey">创建任务并添加依赖关系后，这里将显示依赖关系图</p>
+        <Share2 class="h-16 w-16 text-muted-foreground mx-auto" />
+        <p class="text-lg font-semibold mt-4">暂无任务依赖数据</p>
+        <p class="text-sm text-muted-foreground">创建任务并添加依赖关系后，这里将显示依赖关系图</p>
       </div>
 
       <div v-else ref="chartContainer" :style="{ height: chartHeight + 'px' }" />
-    </v-card-text>
+    </CardContent>
 
     <!-- 图例和统计 -->
-    <v-card-text v-if="hasData && !loading" class="pt-0">
-      <v-divider class="mb-4" />
-      
-      <v-row dense>
+    <CardContent v-if="hasData && !loading" class="pt-0">
+      <Separator class="mb-4" />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- 统计信息 -->
-        <v-col cols="12" md="6">
-          <div class="text-subtitle-2 mb-2">统计信息</div>
-          <v-chip class="mr-2" size="small" label>
-            <v-icon start>mdi-checkbox-multiple-marked</v-icon>
-            {{ graphStats.totalTasks }} 个任务
-          </v-chip>
-          <v-chip class="mr-2" size="small" label>
-            <v-icon start>mdi-arrow-right</v-icon>
-            {{ graphStats.totalDependencies }} 个依赖
-          </v-chip>
-          <v-chip v-if="graphStats.hasCycle" color="error" size="small" label>
-            <v-icon start>mdi-alert</v-icon>
-            检测到循环依赖
-          </v-chip>
-        </v-col>
+        <div>
+          <div class="text-sm font-medium mb-2">统计信息</div>
+          <div class="flex flex-wrap gap-2">
+            <Badge variant="secondary" class="text-xs">
+              <CheckSquare class="h-3 w-3 mr-1" />
+              {{ graphStats.totalTasks }} 个任务
+            </Badge>
+            <Badge variant="secondary" class="text-xs">
+              <ArrowRight class="h-3 w-3 mr-1" />
+              {{ graphStats.totalDependencies }} 个依赖
+            </Badge>
+            <Badge v-if="graphStats.hasCycle" variant="destructive" class="text-xs">
+              <AlertTriangle class="h-3 w-3 mr-1" />
+              检测到循环依赖
+            </Badge>
+          </div>
+        </div>
 
         <!-- 关键路径信息 -->
-        <v-col v-if="showCriticalPath && criticalPathInfo" cols="12" md="6">
-          <div class="text-subtitle-2 mb-2">关键路径</div>
-          <v-chip class="mr-2" size="small" label color="error">
-            <v-icon start>mdi-timer</v-icon>
-            总工期：{{ formatDuration(criticalPathInfo.duration) }}
-          </v-chip>
-          <v-chip size="small" label color="error">
-            <v-icon start>mdi-road</v-icon>
-            {{ criticalPathInfo.path.length }} 个关键任务
-          </v-chip>
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+        <div v-if="showCriticalPath && criticalPathInfo">
+          <div class="text-sm font-medium mb-2">关键路径</div>
+          <div class="flex flex-wrap gap-2">
+            <Badge variant="destructive" class="text-xs">
+              <Timer class="h-3 w-3 mr-1" />
+              总工期：{{ formatDuration(criticalPathInfo.duration) }}
+            </Badge>
+            <Badge variant="destructive" class="text-xs">
+              <Route class="h-3 w-3 mr-1" />
+              {{ criticalPathInfo.path.length }} 个关键任务
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -105,6 +130,33 @@ import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAGViewModel } from './types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Badge,
+  Button,
+  Separator,
+  Switch,
+  Label,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  Share2,
+  ScatterChart,
+  PieChart,
+  RefreshCw,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+  CheckSquare,
+  ArrowRight,
+  Timer,
+  Route,
+} from 'lucide-vue-next';
 
 type TaskClientDTO = TaskTemplateClientDTO & TaskForDAGViewModel;
 
@@ -265,7 +317,8 @@ function updateChart() {
       id: task.id,
       name: task.title,
       itemStyle: {
-        color: showCriticalPath.value && criticalPathSet.has(task.id) ? '#E53935' : getTaskColor(task),
+        color:
+          showCriticalPath.value && criticalPathSet.has(task.id) ? '#E53935' : getTaskColor(task),
       },
       symbolSize: showCriticalPath.value && criticalPathSet.has(task.id) ? 48 : 38,
     }));
@@ -295,7 +348,7 @@ function updateChart() {
         trigger: 'item',
         formatter: (params: any) => {
           if (params.dataType === 'node') {
-            const task = props.tasks.find(t => t.id === params.data.id);
+            const task = props.tasks.find((t) => t.id === params.data.id);
             if (!task) return '';
             return `<div style="padding: 8px;">
               <div style="font-weight: bold;">${task.title}</div>
@@ -305,18 +358,21 @@ function updateChart() {
           return '';
         },
       },
-      series: [{
-        type: 'graph',
-        layout: layoutType.value,
-        data: nodes,
-        links: edges as any,
-        roam: true,
-        label: { show: true, position: 'right' },
-        lineStyle: { curveness: 0.3 },
-        force: layoutType.value === 'force' ? { repulsion: 1000, edgeLength: [100, 300] } : undefined,
-        edgeSymbol: ['none', 'arrow'],
-        edgeSymbolSize: [0, 10],
-      }],
+      series: [
+        {
+          type: 'graph',
+          layout: layoutType.value,
+          data: nodes,
+          links: edges as any,
+          roam: true,
+          label: { show: true, position: 'right' },
+          lineStyle: { curveness: 0.3 },
+          force:
+            layoutType.value === 'force' ? { repulsion: 1000, edgeLength: [100, 300] } : undefined,
+          edgeSymbol: ['none', 'arrow'],
+          edgeSymbolSize: [0, 10],
+        },
+      ],
     };
 
     chartInstance.value.setOption(option);
@@ -365,13 +421,3 @@ onUnmounted(() => {
   chartInstance.value?.dispose();
 });
 </script>
-
-<style scoped>
-.task-dependency-graph {
-  height: 100%;
-}
-.gap-2 {
-  gap: 8px;
-}
-</style>
-

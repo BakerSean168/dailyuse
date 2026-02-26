@@ -1,118 +1,117 @@
 <!-- widgets/ReminderAlertsList.vue -->
 <template>
-  <div class="reminder-alerts-list">
-    <div class="d-flex justify-space-between align-center mb-3">
+  <div class="w-full">
+    <div class="flex justify-between items-center mb-3">
       <h4>提醒时间</h4>
-      <v-btn size="small" color="primary" variant="outlined" @click="addAlert">
-        <v-icon start>mdi-plus</v-icon>
+      <Button variant="outline" size="sm" @click="addAlert">
+        <Plus class="h-4 w-4 mr-1" />
         添加提醒
-      </v-btn>
+      </Button>
     </div>
 
-    <v-card v-for="(alert, index) in localAlerts" :key="alert.id" class="mb-2" variant="outlined">
-      <v-card-text class="py-2">
-        <v-row align="center">
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="alert.type"
-              label="通知方式"
-              :items="reminderTypes"
-              variant="outlined"
-              density="compact"
-              item-title="title"
-              item-value="value"
-              :item-props="getReminderItemProps"
-            >
-              <!-- 自定义选项显示 -->
-              <template #item="{ props, item }">
-                <v-list-item
-                  v-bind="props"
-                  :disabled="item.raw.disabled"
-                  :class="{ 'text-grey-400': item.raw.disabled }"
+    <Card v-for="(alert, index) in localAlerts" :key="alert.id" class="mb-2">
+      <CardContent class="py-3">
+        <div class="grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-12 md:col-span-3">
+            <Label class="mb-1.5 block">通知方式</Label>
+            <Select v-model="alert.type">
+              <SelectTrigger>
+                <SelectValue placeholder="选择通知方式" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="item in reminderTypes"
+                  :key="item.value"
+                  :value="item.value"
+                  :disabled="item.disabled"
                 >
-                  <template #title>
-                    <div class="d-flex align-center">
-                      <span>{{ item.raw.title }}</span>
-                      <v-chip
-                        v-if="item.raw.disabled"
-                        size="x-small"
-                        color="warning"
-                        variant="outlined"
-                        class="ml-2"
-                      >
-                        未实现
-                      </v-chip>
-                    </div>
-                  </template>
-                </v-list-item>
-              </template>
-            </v-select>
-          </v-col>
+                  <div class="flex items-center">
+                    <span>{{ item.title }}</span>
+                    <Badge v-if="item.disabled" variant="outline" class="ml-2 text-xs">
+                      未实现
+                    </Badge>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="alert.timing.type"
-              label="提醒时机"
-              :items="reminderTimingTypes"
-              variant="outlined"
-              density="compact"
-              item-title="title"
-              item-value="value"
-            />
-          </v-col>
+          <div class="col-span-12 md:col-span-3">
+            <Label class="mb-1.5 block">提醒时机</Label>
+            <Select v-model="alert.timing.type">
+              <SelectTrigger>
+                <SelectValue placeholder="选择时机" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="item in reminderTimingTypes"
+                  :key="item.value"
+                  :value="item.value"
+                >
+                  {{ item.title }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <v-col cols="12" md="3" v-if="alert.timing.type === 'relative'">
-            <v-text-field
-              v-model.number="alert.timing.minutesBefore"
-              label="提前分钟"
-              type="number"
-              variant="outlined"
-              density="compact"
-              min="1"
-              max="10080"
-              :rules="minutesBeforeRules"
-            />
-          </v-col>
+          <div v-if="alert.timing.type === 'relative'" class="col-span-12 md:col-span-3">
+            <Label class="mb-1.5 block">提前分钟</Label>
+            <Input v-model.number="alert.timing.minutesBefore" type="number" min="1" max="10080" />
+          </div>
 
-          <v-col cols="12" md="3" v-else-if="alert.timing.type === 'absolute'">
-            <v-text-field
-              v-model="absoluteTimeInput"
-              label="绝对时间"
+          <div v-else-if="alert.timing.type === 'absolute'" class="col-span-12 md:col-span-3">
+            <Label class="mb-1.5 block">绝对时间</Label>
+            <Input
+              :model-value="absoluteTimeInput"
               type="time"
-              variant="outlined"
-              density="compact"
-              @update:model-value="(value) => handleAbsoluteTimeChange(value, index)"
+              @update:model-value="(value: any) => handleAbsoluteTimeChange(value, index)"
             />
-          </v-col>
+          </div>
 
-          <v-col cols="12" md="2">
-            <v-btn icon variant="text" color="error" size="small" @click="removeAlert(index)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </v-col>
+          <div class="col-span-12 md:col-span-2 flex items-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="text-destructive"
+              @click="removeAlert(index)"
+            >
+              <Trash2 class="h-4 w-4" />
+            </Button>
+          </div>
 
-          <v-col cols="12" v-if="alert.message !== undefined">
-            <v-text-field
-              v-model="alert.message"
-              label="自定义消息"
-              variant="outlined"
-              density="compact"
-              placeholder="留空使用默认消息"
-            />
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+          <div v-if="alert.message !== undefined" class="col-span-12">
+            <Label class="mb-1.5 block">自定义消息</Label>
+            <Input v-model="alert.message" placeholder="留空使用默认消息" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
 
-    <v-alert v-if="!isValid && hasErrors" type="error" density="compact" class="mt-2">
-      {{ errorMessage }}
-    </v-alert>
+    <Alert v-if="!isValid && hasErrors" variant="destructive" class="mt-2">
+      <AlertDescription>{{ errorMessage }}</AlertDescription>
+    </Alert>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  Card,
+  CardContent,
+  Button,
+  Input,
+  Label,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Badge,
+  Alert,
+  AlertDescription,
+} from '@dailyuse/ui-vue-shadcn';
+import { Plus, Trash2 } from 'lucide-vue-next';
 
 // 本地类型定义
 interface ReminderAlert {
@@ -286,9 +285,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style scoped>
-.reminder-alerts-list {
-  width: 100%;
-}
-</style>

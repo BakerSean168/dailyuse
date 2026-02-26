@@ -114,5 +114,8 @@ COM2
 COM3
 LPT1
 
+# MCP tool outputs
+tmp/
+
 # 包管理器缓存
 .pnpm-store/

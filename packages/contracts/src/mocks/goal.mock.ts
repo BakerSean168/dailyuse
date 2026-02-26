@@ -28,21 +28,17 @@ import type {
  * Creates a single mock GoalClientDTO.
  * Pass overrides to customise specific fields.
  */
-export function createMockGoal(
-  overrides: Partial<GoalClientDTO> = {},
-): GoalClientDTO {
+export function createMockGoal(overrides: Partial<GoalClientDTO> = {}): GoalClientDTO {
   const now = Date.now();
-  const id = faker.string.uuid() as GoalClientDTO['id'];
-  const identityId = faker.string.uuid() as GoalClientDTO['identityId'];
+  const id = `IGoalId_${faker.string.uuid()}` as GoalClientDTO['id'];
+  const identityId = `IdentityId_${faker.string.uuid()}` as GoalClientDTO['identityId'];
 
   return {
     id,
     identityId,
     name: faker.lorem.words({ min: 2, max: 5 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
-    color: faker.datatype.boolean()
-      ? faker.color.rgb({ format: 'hex', casing: 'upper' })
-      : null,
+    color: faker.datatype.boolean() ? faker.color.rgb({ format: 'hex', casing: 'upper' }) : null,
     feasibilityAnalysis: null,
     motivation: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     status: faker.helpers.arrayElement(['Active', 'Completed', 'Archived'] as const),
@@ -59,12 +55,8 @@ export function createMockGoal(
       ['work', 'personal', 'health', 'learning', 'finance'],
       faker.number.int({ min: 0, max: 3 }),
     ),
-    startDate: faker.datatype.boolean()
-      ? faker.date.past({ years: 1 }).getTime()
-      : null,
-    targetDate: faker.datatype.boolean()
-      ? faker.date.future({ years: 1 }).getTime()
-      : null,
+    startDate: faker.datatype.boolean() ? faker.date.past({ years: 1 }).getTime() : null,
+    targetDate: faker.datatype.boolean() ? faker.date.future({ years: 1 }).getTime() : null,
     completedAt: null,
     archivedAt: null,
     folderId: null,
@@ -94,10 +86,7 @@ export function createMockGoalList(
 /**
  * Creates a paginated mock response for the goals list endpoint.
  */
-export function createMockQueryGoalsRes(
-  count = 5,
-  total?: number,
-): QueryGoalsRes {
+export function createMockQueryGoalsRes(count = 5, total?: number): QueryGoalsRes {
   const goals = createMockGoalList(count);
   const totalCount = total ?? count;
 
@@ -123,8 +112,8 @@ export function createMockGoalFolder(
   const now = Date.now();
 
   return {
-    id: faker.string.uuid() as GoalFolderClientDTO['id'],
-    identityId: faker.string.uuid() as GoalFolderClientDTO['identityId'],
+    id: `IGoalFolderId_${faker.string.uuid()}` as GoalFolderClientDTO['id'],
+    identityId: `IdentityId_${faker.string.uuid()}` as GoalFolderClientDTO['identityId'],
     name: faker.word.noun(),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     color: faker.color.rgb({ format: 'hex', casing: 'upper' }),
@@ -150,7 +139,7 @@ export function createMockKeyResult(
   const now = Date.now();
 
   return {
-    id: faker.string.uuid(),
+    id: `IKeyResultId_${faker.string.uuid()}`,
     title: faker.lorem.words({ min: 3, max: 6 }),
     description: faker.datatype.boolean() ? faker.lorem.sentence() : null,
     progress: {

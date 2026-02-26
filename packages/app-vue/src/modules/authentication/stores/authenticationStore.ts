@@ -35,7 +35,6 @@ export interface AuthenticationState {
 
   // UI 状态
   isLoading: boolean;
-  isAuthenticated: boolean;
   error: string | null;
 
   // 令牌过期时间
@@ -54,7 +53,6 @@ export const useAuthenticationStore = defineStore('authentication', {
     activeSessions: [],
     currentSession: null,
     isLoading: false,
-    isAuthenticated: false,
     error: null,
     tokenExpiresAt: null,
     isInitializing: false,
@@ -62,6 +60,12 @@ export const useAuthenticationStore = defineStore('authentication', {
 
   getters: {
     // ========== 认证状态 ==========
+    /**
+     * Derived from persisted state — survives page refresh.
+     * True when both identity and access token are present.
+     */
+    isAuthenticated: (state) => state.currentIdentity !== null && state.accessToken !== null,
+
     getIdentityId: (state) => state.currentIdentity?.id ?? null,
 
     getIdentityStatus: (state) => state.currentIdentity?.status ?? null,
@@ -85,12 +89,10 @@ export const useAuthenticationStore = defineStore('authentication', {
     // ========== Identity Actions ==========
     setCurrentIdentity(identity: AuthIdentityClientDTO | null) {
       this.currentIdentity = identity;
-      this.isAuthenticated = identity !== null;
     },
 
     clearCurrentIdentity() {
       this.currentIdentity = null;
-      this.isAuthenticated = false;
     },
 
     // ========== Token Actions ==========
@@ -163,7 +165,6 @@ export const useAuthenticationStore = defineStore('authentication', {
       this.activeSessions = [];
       this.currentSession = null;
       this.isLoading = false;
-      this.isAuthenticated = false;
       this.error = null;
       this.tokenExpiresAt = null;
       this.isInitializing = false;
@@ -171,7 +172,7 @@ export const useAuthenticationStore = defineStore('authentication', {
   },
 
   persist: {
-    // 持久化令牌和身份
-    pick: ['accessToken', 'refreshToken', 'currentIdentity'] as string[],
+    // 持久化令牌和身份（isAuthenticated is now a derived getter）
+    pick: ['accessToken', 'refreshToken', 'currentIdentity', 'tokenExpiresAt'] as string[],
   },
 });

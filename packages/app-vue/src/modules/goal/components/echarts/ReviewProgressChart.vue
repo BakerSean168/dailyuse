@@ -1,88 +1,66 @@
 <template>
-  <v-card class="review-progress-chart" elevation="2">
-    <v-card-title class="d-flex align-center">
-      <v-icon class="mr-2" color="primary">mdi-chart-line</v-icon>
-      <span class="text-h6">目标进度分析</span>
-    </v-card-title>
-    <v-card-text>
-      <div v-if="!review || !goal" class="text-center py-8">
-        <v-progress-circular indeterminate color="primary" />
+  <Card class="overflow-hidden rounded-2xl">
+    <CardHeader class="flex flex-row items-center gap-2 pb-2">
+      <TrendingUp class="h-5 w-5 text-primary" />
+      <CardTitle class="text-lg">目标进度分析</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div v-if="!review || !goal" class="flex items-center justify-center py-8">
+        <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-      <div v-else class="progress-charts">
+      <div v-else class="space-y-6">
         <!-- 整体进度对比 -->
-        <div class="progress-comparison mb-6">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">
-            目标完成进度 vs 时间进度
-          </h3>
-          <div class="d-flex align-center gap-4">
-            <div class="flex-1">
-              <div class="text-caption text-medium-emphasis mb-2">时间进度</div>
-              <v-progress-linear
-                :model-value="timeProgress"
-                height="24"
-                rounded
-                color="grey"
-                striped
-              >
-                <template #default>
-                  <strong class="text-white">{{ timeProgress.toFixed(1) }}%</strong>
-                </template>
-              </v-progress-linear>
+        <div class="rounded-xl bg-muted/30 p-4">
+          <h3 class="mb-4 text-sm font-medium">目标完成进度 vs 时间进度</h3>
+          <div class="flex items-center gap-4">
+            <div class="flex-1 space-y-2">
+              <div class="text-xs text-muted-foreground">时间进度</div>
+              <div class="relative">
+                <Progress :model-value="timeProgress" class="h-6" />
+                <span
+                  class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground"
+                >
+                  {{ timeProgress.toFixed(1) }}%
+                </span>
+              </div>
             </div>
-            <div class="flex-1">
-              <div class="text-caption text-medium-emphasis mb-2">目标完成进度</div>
-              <v-progress-linear
-                :model-value="goalProgress"
-                height="24"
-                rounded
-                :color="getProgressColor(goalProgress)"
-              >
-                <template #default>
-                  <strong class="text-white">{{ goalProgress.toFixed(1) }}%</strong>
-                </template>
-              </v-progress-linear>
+            <div class="flex-1 space-y-2">
+              <div class="text-xs text-muted-foreground">目标完成进度</div>
+              <div class="relative">
+                <Progress :model-value="goalProgress" class="h-6" />
+                <span
+                  class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary-foreground"
+                >
+                  {{ goalProgress.toFixed(1) }}%
+                </span>
+              </div>
             </div>
           </div>
-          <div class="mt-3 text-center">
-            <v-chip
-              :color="getProgressStatusColor()"
-              size="small"
-              variant="tonal"
-              prepend-icon="mdi-information"
-            >
+          <div class="mt-3 flex justify-center">
+            <Badge :variant="getProgressStatusVariant()">
+              <Info class="mr-1 h-3 w-3" />
               {{ getProgressStatusText() }}
-            </v-chip>
+            </Badge>
           </div>
         </div>
 
         <!-- 关键结果进度 -->
-        <div class="kr-progress">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">关键结果进度</h3>
-          <div class="kr-list">
+        <div class="rounded-xl bg-muted/20 p-4">
+          <h3 class="mb-4 text-sm font-medium">关键结果进度</h3>
+          <div class="space-y-4">
             <div
               v-for="(kr, index) in review.keyResultSnapshots"
               :key="kr.keyResultId"
-              class="kr-item mb-4"
+              class="rounded-lg border bg-card p-3 transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div class="d-flex justify-space-between align-center mb-2">
-                <div class="kr-title">
-                  <span class="text-body-2 font-weight-medium">{{ index + 1 }}. {{ kr.title }}</span>
-                </div>
-                <v-chip
-                  size="small"
-                  :color="getProgressColor(kr.progressPercentage)"
-                  variant="tonal"
-                >
+              <div class="mb-2 flex items-center justify-between">
+                <span class="text-sm font-medium">{{ index + 1 }}. {{ kr.title }}</span>
+                <Badge :variant="getProgressBadgeVariant(kr.progressPercentage)">
                   {{ kr.progressPercentage.toFixed(1) }}%
-                </v-chip>
+                </Badge>
               </div>
-              <v-progress-linear
-                :model-value="kr.progressPercentage"
-                height="10"
-                rounded
-                :color="getProgressColor(kr.progressPercentage)"
-              />
-              <div class="d-flex justify-space-between text-caption text-medium-emphasis mt-1">
+              <Progress :model-value="kr.progressPercentage" class="h-2.5" />
+              <div class="mt-1 flex justify-between text-xs text-muted-foreground">
                 <span>当前: {{ kr.currentValue }}</span>
                 <span>目标: {{ kr.targetValue }}</span>
               </div>
@@ -90,14 +68,14 @@
           </div>
         </div>
 
-        <!-- 不同时间段的任务完成数 -->
-        <div class="completion-by-period mt-6">
-          <h3 class="text-subtitle-1 font-weight-medium mb-4">不同进度区间的关键结果数量</h3>
+        <!-- 不同进度区间的关键结果数量 -->
+        <div class="rounded-xl bg-muted/20 p-4">
+          <h3 class="mb-4 text-sm font-medium">不同进度区间的关键结果数量</h3>
           <div ref="periodChartContainer" style="height: 280px"></div>
         </div>
       </div>
-    </v-card-text>
-  </v-card>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -109,7 +87,14 @@ import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
 use([GridComponent, TooltipComponent, TitleComponent, BarChart, CanvasRenderer]);
-import type { GoalReviewClientDTO, GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+
+import { Card, CardHeader, CardTitle, CardContent, Progress, Badge } from '@dailyuse/ui-vue-shadcn';
+import { TrendingUp, Loader2, Info } from 'lucide-vue-next';
+import type {
+  GoalReviewClientDTO,
+  GoalClientDTO,
+  KeyResultClientDTO,
+} from '@dailyuse/contracts/goal';
 
 defineOptions({ name: 'ReviewProgressChart' });
 
@@ -135,10 +120,7 @@ const weightsByKrId = computed(() => {
 });
 
 const totalWeight = computed(() => {
-  const sum = goalKeyResults.value.reduce(
-    (acc, kr) => acc + (kr.weight ?? 1),
-    0,
-  );
+  const sum = goalKeyResults.value.reduce((acc, kr) => acc + (kr.weight ?? 1), 0);
   if (sum > 0) return sum;
   const snapshotCount = props.review.keyResultSnapshots?.length ?? 0;
   return snapshotCount || 1;
@@ -182,22 +164,23 @@ const goalProgress = computed(() => {
   return weightedSum / total;
 });
 
-// 获取进度颜色
-const getProgressColor = (progress: number | undefined): string => {
-  if (progress == null) return 'grey';
-  if (progress >= 80) return 'success';
-  if (progress >= 60) return 'info';
-  if (progress >= 40) return 'warning';
-  return 'error';
+// 获取进度状态 Badge variant
+const getProgressStatusVariant = (): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  const diff = goalProgress.value - timeProgress.value;
+  if (diff >= 10) return 'default';
+  if (diff >= 0) return 'secondary';
+  if (diff >= -10) return 'outline';
+  return 'destructive';
 };
 
-// 获取进度状态颜色
-const getProgressStatusColor = (): string => {
-  const diff = goalProgress.value - timeProgress.value;
-  if (diff >= 10) return 'success';
-  if (diff >= 0) return 'info';
-  if (diff >= -10) return 'warning';
-  return 'error';
+// 获取 KR 进度 Badge variant
+const getProgressBadgeVariant = (
+  progress: number,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  if (progress >= 80) return 'default';
+  if (progress >= 60) return 'secondary';
+  if (progress >= 40) return 'outline';
+  return 'destructive';
 };
 
 // 获取进度状态文本
@@ -248,28 +231,28 @@ const initPeriodChart = () => {
     tooltip: {
       trigger: 'axis',
       axisPointer: {
-        type: 'shadow'
-      }
+        type: 'shadow',
+      },
     },
     grid: {
       left: '3%',
       right: '4%',
       bottom: '3%',
-      containLabel: true
+      containLabel: true,
     },
     xAxis: {
       type: 'category',
       data: bucketLabels,
       axisLabel: {
-        color: '#666'
-      }
+        color: '#666',
+      },
     },
     yAxis: {
       type: 'value',
       name: '关键结果数量',
       axisLabel: {
-        color: '#666'
-      }
+        color: '#666',
+      },
     },
     series: [
       {
@@ -279,17 +262,17 @@ const initPeriodChart = () => {
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: '#4CAF50' },
-            { offset: 1, color: '#81C784' }
+            { offset: 1, color: '#81C784' },
           ]),
-          borderRadius: [4, 4, 0, 0]
+          borderRadius: [4, 4, 0, 0],
         },
         label: {
           show: true,
           position: 'top',
-          color: '#666'
-        }
-      }
-    ]
+          color: '#666',
+        },
+      },
+    ],
   };
 
   periodChart.setOption(option);
@@ -306,7 +289,7 @@ watch(
       initPeriodChart();
     });
   },
-  { deep: true, immediate: true }
+  { deep: true, immediate: true },
 );
 
 // 初始化
@@ -325,47 +308,3 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
 });
 </script>
-
-<style scoped>
-.review-progress-chart {
-  border-radius: 16px;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-outline), 0.12);
-}
-
-.progress-comparison {
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-surface-variant), 0.3);
-}
-
-.kr-progress {
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-surface-variant), 0.2);
-}
-
-.kr-item {
-  padding: 12px;
-  border-radius: 8px;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-outline), 0.08);
-  transition: all 0.2s ease;
-}
-
-.kr-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.kr-title {
-  flex: 1;
-  min-width: 0;
-}
-
-.completion-by-period {
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-surface-variant), 0.2);
-}
-</style>

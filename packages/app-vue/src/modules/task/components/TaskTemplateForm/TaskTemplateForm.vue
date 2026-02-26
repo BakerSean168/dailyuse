@@ -1,16 +1,20 @@
 <template>
   <div class="task-template-form-container">
     <!-- 错误状态显示 - 修复：检查 computed 的 value -->
-    <v-alert v-if="!taskTemplateBeingEdited" type="error" variant="tonal" class="mb-4">
-      <v-alert-title>无法加载模板</v-alert-title>
-      <div>没有找到正在编辑的任务模板，请重新选择或创建模板。</div>
-      <template #append>
-        <v-btn variant="text" @click="handleClose"> 关闭 </v-btn>
-      </template>
-    </v-alert>
+    <div
+      v-if="!taskTemplateBeingEdited"
+      class="mb-4 flex items-start gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-destructive"
+    >
+      <AlertCircle class="mt-0.5 h-5 w-5 shrink-0" />
+      <div class="flex-1">
+        <p class="font-semibold">无法加载模板</p>
+        <p class="text-sm">没有找到正在编辑的任务模板，请重新选择或创建模板。</p>
+      </div>
+      <Button variant="ghost" size="sm" @click="handleClose">关闭</Button>
+    </div>
 
     <!-- 正常表单内容 -->
-    <v-form v-else ref="formRef" class="task-template-form">
+    <form v-else ref="formRef" class="task-template-form" @submit.prevent>
       <!-- 统一使用 @update:model-value 事件 -->
       <BasicInfoSection
         :model-value="taskTemplateBeingEdited!"
@@ -48,12 +52,14 @@
         @update:validation="updateMetadataValidation"
         @update:model-value="handleTemplateUpdate"
       />
-    </v-form>
+    </form>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, defineProps, defineEmits, watch } from 'vue';
+import { AlertCircle } from 'lucide-vue-next';
+import { Button } from '@dailyuse/ui-vue-shadcn';
 import BasicInfoSection from './sections/BasicInfoSection.vue';
 import TimeConfigSection from './sections/TimeConfigSection.vue';
 import RecurrenceSection from './sections/RecurrenceSection.vue';

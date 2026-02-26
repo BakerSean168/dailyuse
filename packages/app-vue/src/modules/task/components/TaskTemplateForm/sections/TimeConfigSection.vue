@@ -4,50 +4,87 @@
   重构：使用新的 TaskTimeConfig 结构
 -->
 <template>
-  <v-card>
-    <v-card-title>⏰ 时间配置</v-card-title>
-    <v-card-text>
+  <Card class="mb-4">
+    <CardHeader>
+      <CardTitle>⏰ 时间配置</CardTitle>
+    </CardHeader>
+    <CardContent>
       <!-- 时间类型选择 -->
-      <v-radio-group v-model="timeType" label="时间类型" @update:model-value="handleTimeTypeChange">
-        <v-radio label="全天" :value="TimeType.ALL_DAY"></v-radio>
-        <v-radio label="时间点" :value="TimeType.TIME_POINT"></v-radio>
-        <v-radio label="时间段" :value="TimeType.TIME_RANGE"></v-radio>
-      </v-radio-group>
+      <div class="mb-4">
+        <Label class="mb-2 block">时间类型</Label>
+        <RadioGroup
+          :model-value="timeType"
+          @update:model-value="
+            (v: string) => {
+              timeType = v as TimeType;
+              handleTimeTypeChange();
+            }
+          "
+        >
+          <div class="flex items-center space-x-2">
+            <RadioGroupItem :value="TimeType.ALL_DAY" id="time-all-day" />
+            <Label for="time-all-day">全天</Label>
+          </div>
+          <div class="flex items-center space-x-2">
+            <RadioGroupItem :value="TimeType.TIME_POINT" id="time-point" />
+            <Label for="time-point">时间点</Label>
+          </div>
+          <div class="flex items-center space-x-2">
+            <RadioGroupItem :value="TimeType.TIME_RANGE" id="time-range" />
+            <Label for="time-range">时间段</Label>
+          </div>
+        </RadioGroup>
+      </div>
 
       <!-- 日期范围 -->
-      <v-row>
-        <v-col cols="12" md="6">
-          <v-text-field v-model="startDate" label="开始日期" type="date" variant="outlined" density="comfortable"
-            @update:model-value="handleDateChange"></v-text-field>
-        </v-col>
-      </v-row>
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-6">
+          <Label class="mb-1.5 block">开始日期</Label>
+          <Input v-model="startDate" type="date" @update:model-value="handleDateChange" />
+        </div>
+      </div>
 
       <!-- 时间点输入 (仅当选择 TIME_POINT 时显示) -->
-      <v-row v-if="timeType === TimeType.TIME_POINT">
-        <v-col cols="12">
-          <v-text-field v-model="timePoint" label="具体时间" type="datetime-local" variant="outlined" density="comfortable"
-            hint="选择具体日期和时间" @update:model-value="handleTimePointChange"></v-text-field>
-        </v-col>
-      </v-row>
+      <div v-if="timeType === TimeType.TIME_POINT" class="grid grid-cols-12 gap-4 mt-4">
+        <div class="col-span-12">
+          <Label class="mb-1.5 block">具体时间</Label>
+          <Input
+            v-model="timePoint"
+            type="datetime-local"
+            @update:model-value="handleTimePointChange"
+          />
+          <p class="text-xs text-muted-foreground mt-1">选择具体日期和时间</p>
+        </div>
+      </div>
 
       <!-- 时间段输入 (仅当选择 TIME_RANGE 时显示) -->
-      <v-row v-if="timeType === TimeType.TIME_RANGE">
-        <v-col cols="12" md="6">
-          <v-text-field v-model="timeRangeStart" label="开始时间" type="datetime-local" variant="outlined" density="comfortable"
-            hint="选择开始日期和时间" @update:model-value="handleTimeRangeChange"></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field v-model="timeRangeEnd" label="结束时间" type="datetime-local" variant="outlined" density="comfortable"
-            hint="选择结束日期和时间" @update:model-value="handleTimeRangeChange"></v-text-field>
-        </v-col>
-      </v-row>
+      <div v-if="timeType === TimeType.TIME_RANGE" class="grid grid-cols-12 gap-4 mt-4">
+        <div class="col-span-12 md:col-span-6">
+          <Label class="mb-1.5 block">开始时间</Label>
+          <Input
+            v-model="timeRangeStart"
+            type="datetime-local"
+            @update:model-value="handleTimeRangeChange"
+          />
+          <p class="text-xs text-muted-foreground mt-1">选择开始日期和时间</p>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <Label class="mb-1.5 block">结束时间</Label>
+          <Input
+            v-model="timeRangeEnd"
+            type="datetime-local"
+            @update:model-value="handleTimeRangeChange"
+          />
+          <p class="text-xs text-muted-foreground mt-1">选择结束日期和时间</p>
+        </div>
+      </div>
 
       <!-- 验证提示 -->
-      <v-alert v-if="validationError" type="error" density="compact" class="mt-2">
-        {{ validationError }}
-      </v-alert>
-    </v-card-text>
-  </v-card>
+      <Alert v-if="validationError" variant="destructive" class="mt-2">
+        <AlertDescription>{{ validationError }}</AlertDescription>
+      </Alert>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -55,6 +92,18 @@ import { ref, watch, onMounted } from 'vue';
 import { TimeType } from '@dailyuse/contracts/task';
 import type { TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Input,
+  Label,
+  RadioGroup,
+  RadioGroupItem,
+  Alert,
+  AlertDescription,
+} from '@dailyuse/ui-vue-shadcn';
 
 const props = defineProps<{
   modelValue: TaskTemplateViewModel;
@@ -179,10 +228,10 @@ const handleTimeTypeChange = () => {
       } as any,
     };
     emit('update:modelValue', updated);
-    
+
     // 更新表单显示
     initializeFormData();
-    
+
     // 验证通过
     emit('update:validation', true);
   } catch (error) {
@@ -224,13 +273,14 @@ const updateTimeConfig = () => {
     const newConfig: TaskTimeConfigClientDTO = {
       timeType: timeType.value,
       startDate: parseDateInput(startDate.value),
-      timePoint: timeType.value === TimeType.TIME_POINT ? parseDateTimeInput(timePoint.value) : null,
+      timePoint:
+        timeType.value === TimeType.TIME_POINT ? parseDateTimeInput(timePoint.value) : null,
       timeRange:
         timeType.value === TimeType.TIME_RANGE && timeRangeStart.value && timeRangeEnd.value
           ? {
-            start: parseDateTimeInput(timeRangeStart.value)!,
-            end: parseDateTimeInput(timeRangeEnd.value)!,
-          }
+              start: parseDateTimeInput(timeRangeStart.value)!,
+              end: parseDateTimeInput(timeRangeEnd.value)!,
+            }
           : null,
       timeTypeText: '',
       formattedStartDate: '',
@@ -252,7 +302,7 @@ const updateTimeConfig = () => {
       emit('update:validation', false);
       return;
     }
-    
+
     if (
       timeType.value === TimeType.TIME_RANGE &&
       newConfig.timeRange &&
@@ -292,10 +342,3 @@ watch(
   { deep: true },
 );
 </script>
-
-<style scoped>
-.v-card {
-  margin-bottom: 16px;
-}
-</style>
-

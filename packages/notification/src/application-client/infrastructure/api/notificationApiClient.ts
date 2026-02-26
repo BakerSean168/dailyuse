@@ -5,22 +5,19 @@
 
 // @ts-nocheck - Some types not yet defined in contracts
 import { apiClient } from '@/shared/api/instances';
-import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
-
+import type {
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+} from '@dailyuse/contracts/notification';
 
 export class NotificationApiClient {
-  private readonly baseUrl = '/api/v1/notifications';
+  private readonly baseUrl = '/notifications';
 
   /**
    * 创建通知
    */
-  async createNotification(
-    request: CreateNotificationRequestDTO
-  ): Promise<NotificationClientDTO> {
-    const response = await apiClient.post<NotificationClientDTO>(
-      this.baseUrl,
-      request
-    );
+  async createNotification(request: CreateNotificationRequestDTO): Promise<NotificationClientDTO> {
+    const response = await apiClient.post<NotificationClientDTO>(this.baseUrl, request);
     return response.data;
   }
 
@@ -28,12 +25,11 @@ export class NotificationApiClient {
    * 查询通知列表
    */
   async findNotifications(
-    query: QueryNotificationsRequest = {}
+    query: QueryNotificationsRequest = {},
   ): Promise<NotificationListResponseDTO> {
-    const response = await apiClient.get<NotificationListResponseDTO>(
-      this.baseUrl,
-      { params: query }
-    );
+    const response = await apiClient.get<NotificationListResponseDTO>(this.baseUrl, {
+      params: query,
+    });
     return response.data;
   }
 
@@ -41,9 +37,7 @@ export class NotificationApiClient {
    * 根据 UUID 查询通知
    */
   async findNotificationById(id: string): Promise<NotificationClientDTO> {
-    const response = await apiClient.get<NotificationClientDTO>(
-      `${this.baseUrl}/${id}`
-    );
+    const response = await apiClient.get<NotificationClientDTO>(`${this.baseUrl}/${id}`);
     return response.data;
   }
 
@@ -51,9 +45,7 @@ export class NotificationApiClient {
    * 标记通知为已读
    */
   async markAsRead(id: string): Promise<NotificationClientDTO> {
-    const response = await apiClient.patch<NotificationClientDTO>(
-      `${this.baseUrl}/${id}/read`
-    );
+    const response = await apiClient.patch<NotificationClientDTO>(`${this.baseUrl}/${id}/read`);
     return response.data;
   }
 
@@ -62,7 +54,7 @@ export class NotificationApiClient {
    */
   async markAllAsRead(): Promise<{ success: boolean; count: number }> {
     const response = await apiClient.patch<{ success: boolean; count: number }>(
-      `${this.baseUrl}/read-all`
+      `${this.baseUrl}/read-all`,
     );
     return response.data;
   }
@@ -71,22 +63,17 @@ export class NotificationApiClient {
    * 删除通知
    */
   async deleteNotification(id: string): Promise<{ success: boolean }> {
-    const response = await apiClient.delete<{ success: boolean }>(
-      `${this.baseUrl}/${id}`
-    );
+    const response = await apiClient.delete<{ success: boolean }>(`${this.baseUrl}/${id}`);
     return response.data;
   }
 
   /**
    * 批量删除通知
    */
-  async batchDeleteNotifications(
-    ids: string[]
-  ): Promise<{ success: boolean; count: number }> {
-    const response = await apiClient.delete<{ success: boolean; count: number }>(
-      this.baseUrl,
-      { data: { ids } as BatchDeleteNotificationsRequest }
-    );
+  async batchDeleteNotifications(ids: string[]): Promise<{ success: boolean; count: number }> {
+    const response = await apiClient.delete<{ success: boolean; count: number }>(this.baseUrl, {
+      data: { ids } as BatchDeleteNotificationsRequest,
+    });
     return response.data;
   }
 
@@ -94,13 +81,10 @@ export class NotificationApiClient {
    * 获取未读数量
    */
   async getUnreadCount(): Promise<UnreadCountResponse> {
-    const response = await apiClient.get<UnreadCountResponse>(
-      `${this.baseUrl}/unread-count`
-    );
+    const response = await apiClient.get<UnreadCountResponse>(`${this.baseUrl}/unread-count`);
     return response.data;
   }
 }
 
 // 导出单例
 export const notificationApiClient = new NotificationApiClient();
-

@@ -13,18 +13,17 @@
 
           <div class="task-meta">
             <div class="due-date">
-              <v-icon icon="mdi-calendar" />
+              <Calendar class="h-4 w-4" />
               <span>任务日期: </span>
             </div>
 
             <div class="task-status">
-              <v-icon :icon="task.isCompleted ? 'mdi-check-circle' : 'mdi-clock-outline'
-                " />
+              <component :is="task.isCompleted ? CheckCircle : Clock" class="h-4 w-4" />
               <span>{{ task.statusText }}</span>
             </div>
 
             <div class="task-time">
-              <v-icon icon="mdi-clock" />
+              <Clock class="h-4 w-4" />
               <span>时间: </span>
             </div>
           </div>
@@ -35,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import { Calendar, CheckCircle, Clock } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
 const props = defineProps<{
   visible: boolean;

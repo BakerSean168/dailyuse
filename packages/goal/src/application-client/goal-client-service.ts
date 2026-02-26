@@ -89,8 +89,8 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
-    keyResults: dto.keyResults?.map(kr => keyResultFromDTO(kr)) ?? null,
-    reviews: dto.reviews?.map(r => goalReviewFromDTO(r)) ?? null,
+    keyResults: dto.keyResults?.map((kr) => keyResultFromDTO(kr)) ?? null,
+    reviews: dto.reviews?.map((r) => goalReviewFromDTO(r)) ?? null,
   });
 }
 
@@ -193,8 +193,14 @@ export class GoalClientService {
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.getGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
-      goals: data.data.map((dto) => goalFromDTO(dto)),
-      pagination: data.pagination,
+      goals: (data?.data ?? []).map((dto) => goalFromDTO(dto)),
+      pagination: data?.pagination ?? {
+        page: 1,
+        pageSize: 20,
+        total: 0,
+        hasMore: false,
+        totalPages: 0,
+      },
     }));
   }
 
@@ -236,8 +242,14 @@ export class GoalClientService {
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
-      goals: data.data.map((dto) => goalFromDTO(dto)),
-      pagination: data.pagination,
+      goals: (data?.data ?? []).map((dto) => goalFromDTO(dto)),
+      pagination: data?.pagination ?? {
+        page: 1,
+        pageSize: 20,
+        total: 0,
+        hasMore: false,
+        totalPages: 0,
+      },
     }));
   }
 
@@ -349,11 +361,7 @@ export class GoalClientService {
     }));
   }
 
-  async deleteGoalRecord(
-    goalId: string,
-    krId: string,
-    recordId: string,
-  ): Promise<Result<void>> {
+  async deleteGoalRecord(goalId: string, krId: string, recordId: string): Promise<Result<void>> {
     return this.goalApi.deleteGoalRecord(goalId, krId, recordId);
   }
 
@@ -404,10 +412,7 @@ export class GoalClientService {
     return mapResult(result, (dto) => goalFolderFromDTO(dto));
   }
 
-  async updateGoalFolder(
-    id: string,
-    request: UpdateGoalFolderReq,
-  ): Promise<Result<GoalFolder>> {
+  async updateGoalFolder(id: string, request: UpdateGoalFolderReq): Promise<Result<GoalFolder>> {
     const result = await this.folderApi.updateGoalFolder(id, request);
     return mapResult(result, (dto) => goalFolderFromDTO(dto));
   }

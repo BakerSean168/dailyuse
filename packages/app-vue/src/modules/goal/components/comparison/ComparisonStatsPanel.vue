@@ -4,341 +4,401 @@
 -->
 
 <template>
-  <v-card elevation="2" class="comparison-stats-card">
-    <v-card-title class="d-flex align-center pa-6 comparison-header">
-      <v-icon class="mr-3" color="primary" size="28">mdi-chart-box</v-icon>
-      <span class="text-h5 font-weight-bold">对比统计分析</span>
+  <Card class="overflow-hidden rounded-2xl">
+    <CardHeader class="flex flex-row items-center gap-3 border-b bg-muted/30 p-6">
+      <BarChart3 class="h-7 w-7 text-primary" />
+      <CardTitle class="text-xl font-bold">对比统计分析</CardTitle>
 
-      <v-spacer />
+      <div class="flex-1" />
 
       <!-- 视图切换 -->
-      <v-btn-toggle v-model="viewMode" density="comfortable" mandatory divided color="primary" class="view-toggle">
-        <v-btn value="table" size="default">
-          <v-icon left>mdi-table</v-icon>
-          <span class="ml-2">表格</span>
-        </v-btn>
-        <v-btn value="chart" size="default">
-          <v-icon left>mdi-chart-bar</v-icon>
-          <span class="ml-2">图表</span>
-        </v-btn>
-      </v-btn-toggle>
-    </v-card-title>
+      <div class="flex items-center rounded-lg border shadow-sm">
+        <Button
+          :variant="viewMode === 'table' ? 'default' : 'ghost'"
+          size="sm"
+          @click="viewMode = 'table'"
+        >
+          <Table class="mr-1.5 h-4 w-4" />
+          表格
+        </Button>
+        <Button
+          :variant="viewMode === 'chart' ? 'default' : 'ghost'"
+          size="sm"
+          @click="viewMode = 'chart'"
+        >
+          <BarChart3 class="mr-1.5 h-4 w-4" />
+          图表
+        </Button>
+      </div>
+    </CardHeader>
 
-    <v-divider />
-
-    <v-card-text class="pa-6">
+    <CardContent class="p-6">
       <!-- 表格视图 -->
-      <div v-if="viewMode === 'table'" class="table-view">
-        <v-table class="comparison-table" density="comfortable">
+      <div v-if="viewMode === 'table'" class="overflow-x-auto">
+        <table class="w-full text-sm">
           <thead>
-            <tr class="table-header">
-              <th class="text-left font-weight-bold text-subtitle-1" style="min-width: 150px;">指标</th>
-              <th v-for="goal in goals" :key="goal.id" class="text-left" style="min-width: 200px;">
-                <div class="d-flex align-center pa-2">
-                  <div class="goal-color-dot mr-3" :style="{ backgroundColor: goal.color || '#2196F3' }" />
+            <tr class="border-b-2 border-primary/20 bg-muted/50">
+              <th class="min-w-[150px] p-4 text-left font-bold">指标</th>
+              <th v-for="goal in goals" :key="goal.id" class="min-w-[200px] text-left">
+                <div class="flex items-center gap-3 p-2">
+                  <div
+                    class="h-3 w-3 shrink-0 rounded-full shadow-sm"
+                    :style="{ backgroundColor: goal.color || '#2196F3' }"
+                  />
                   <div>
-                    <div class="text-subtitle-2 font-weight-bold">{{ goal.title }}</div>
-                    <div class="text-caption text-medium-emphasis">{{ getStatusText(goal) }}</div>
+                    <div class="font-semibold">{{ goal.name }}</div>
+                    <div class="text-xs text-muted-foreground">{{ getStatusText(goal) }}</div>
                   </div>
                 </div>
               </th>
             </tr>
           </thead>
           <tbody>
-              <!-- 关键结果数量 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2" color="primary">mdi-target</v-icon>
+            <!-- 关键结果数量 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <Target class="h-4 w-4 text-primary" />
                   关键结果数量
-                </td>
-                <td v-for="goal in goals" :key="`kr-count-${goal.id}`">
-                  <v-chip size="default" color="primary" variant="tonal" class="px-4">
-                    <v-icon left size="small">mdi-numeric</v-icon>
-                    {{ getKRCount(goal) }} 个
-                  </v-chip>
-                </td>
-              </tr>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`kr-count-${goal.id}`" class="p-4">
+                <Badge variant="secondary" class="px-3">
+                  <Hash class="mr-1 h-3 w-3" />
+                  {{ getKRCount(goal) }} 个
+                </Badge>
+              </td>
+            </tr>
 
-              <!-- 整体进度 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2" color="success">mdi-chart-line</v-icon>
+            <!-- 整体进度 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <TrendingUp class="h-4 w-4 text-green-600" />
                   整体进度
-                </td>
-                <td v-for="goal in goals" :key="`progress-${goal.id}`">
-                  <div class="progress-cell">
-                    <v-progress-linear
-                      :model-value="getProgress(goal)"
-                      :color="getProgressColor(getProgress(goal))"
-                      height="12"
-                      rounded
-                      class="mb-2"
-                    />
-                    <div class="d-flex justify-space-between align-center">
-                      <span class="text-caption text-medium-emphasis">进度</span>
-                      <span class="text-body-1 font-weight-bold" :style="{ color: getProgressColor(getProgress(goal)) }">
-                        {{ getProgress(goal) }}%
-                      </span>
-                    </div>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`progress-${goal.id}`" class="p-4">
+                <div class="min-w-[180px] space-y-2">
+                  <Progress :model-value="getProgress(goal)" class="h-3" />
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">进度</span>
+                    <span class="font-bold" :class="getProgressTextClass(getProgress(goal))">
+                      {{ getProgress(goal) }}%
+                    </span>
                   </div>
-                </td>
-              </tr>
+                </div>
+              </td>
+            </tr>
 
-              <!-- 权重总和 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2" color="warning">mdi-weight</v-icon>
+            <!-- 权重总和 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <Weight class="h-4 w-4 text-amber-500" />
                   权重总和
-                </td>
-                <td v-for="goal in goals" :key="`weight-${goal.id}`">
-                  <v-chip
-                    size="default"
-                    :color="getTotalWeight(goal) === 100 ? 'success' : 'error'"
-                    variant="flat"
-                    class="px-4"
-                  >
-                    <v-icon left size="small">{{ getTotalWeight(goal) === 100 ? 'mdi-check-circle' : 'mdi-alert-circle' }}</v-icon>
-                    {{ getTotalWeight(goal) }}%
-                  </v-chip>
-                </td>
-              </tr>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`weight-${goal.id}`" class="p-4">
+                <Badge
+                  :variant="getTotalWeight(goal) === 100 ? 'default' : 'destructive'"
+                  class="px-3"
+                >
+                  <component
+                    :is="getTotalWeight(goal) === 100 ? CheckCircle2 : AlertCircle"
+                    class="mr-1 h-3 w-3"
+                  />
+                  {{ getTotalWeight(goal) }}%
+                </Badge>
+              </td>
+            </tr>
 
-              <!-- 平均权重 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2" color="info">mdi-chart-pie</v-icon>
+            <!-- 平均权重 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <PieChart class="h-4 w-4 text-blue-500" />
                   平均权重
-                </td>
-                <td v-for="goal in goals" :key="`avg-weight-${goal.id}`">
-                  <span class="text-body-1 font-weight-medium"> {{ getAverageWeight(goal) }}% </span>
-                </td>
-              </tr>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`avg-weight-${goal.id}`" class="p-4">
+                <span class="font-medium">{{ getAverageWeight(goal) }}%</span>
+              </td>
+            </tr>
 
-              <!-- 状态 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2" color="secondary">mdi-flag</v-icon>
+            <!-- 状态 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <Flag class="h-4 w-4 text-muted-foreground" />
                   状态
-                </td>
-                <td v-for="goal in goals" :key="`status-${goal.id}`">
-                  <v-chip size="default" :color="getStatusColor(goal)" variant="tonal" class="px-4">
-                    {{ getStatusText(goal) }}
-                  </v-chip>
-                </td>
-              </tr>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`status-${goal.id}`" class="p-4">
+                <Badge :variant="getStatusBadgeVariant(goal)" class="px-3">
+                  {{ getStatusText(goal) }}
+                </Badge>
+              </td>
+            </tr>
 
-              <!-- 创建时间 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2">mdi-calendar-plus</v-icon>
+            <!-- 创建时间 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <CalendarPlus class="h-4 w-4 text-muted-foreground" />
                   创建时间
-                </td>
-                <td v-for="goal in goals" :key="`created-${goal.id}`" class="text-body-2">
-                  {{ formatDate(goal.createdAt) }}
-                </td>
-              </tr>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`created-${goal.id}`" class="p-4 text-sm">
+                {{ formatDate(goal.createdAt) }}
+              </td>
+            </tr>
 
-              <!-- 更新时间 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2">mdi-calendar-edit</v-icon>
+            <!-- 更新时间 -->
+            <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <CalendarClock class="h-4 w-4 text-muted-foreground" />
                   最后更新
-                </td>
-                <td v-for="goal in goals" :key="`updated-${goal.id}`" class="text-body-2">
-                  {{ formatDate(goal.updatedAt) }}
-                </td>
-              </tr>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`updated-${goal.id}`" class="p-4 text-sm">
+                {{ formatDate(goal.updatedAt) }}
+              </td>
+            </tr>
 
-              <!-- 时间跨度 -->
-              <tr class="table-row">
-                <td class="font-weight-medium text-body-1">
-                  <v-icon size="small" class="mr-2">mdi-clock-outline</v-icon>
+            <!-- 时间跨度 -->
+            <tr class="transition-colors hover:bg-muted/30">
+              <td class="p-4 font-medium">
+                <span class="flex items-center gap-2">
+                  <Clock class="h-4 w-4 text-muted-foreground" />
                   活跃天数
-                </td>
-                <td v-for="goal in goals" :key="`days-${goal.id}`">
-                  <v-chip size="default" color="orange" variant="tonal" class="px-4">
-                    <v-icon left size="small">mdi-calendar-range</v-icon>
-                    {{ getActiveDays(goal) }} 天
-                  </v-chip>
-                </td>
-              </tr>
-            </tbody>
-        </v-table>
+                </span>
+              </td>
+              <td v-for="goal in goals" :key="`days-${goal.id}`" class="p-4">
+                <Badge variant="outline" class="px-3">
+                  <CalendarRange class="mr-1 h-3 w-3" />
+                  {{ getActiveDays(goal) }} 天
+                </Badge>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- 图表视图 -->
-      <div v-else class="chart-view">
-        <v-row>
+      <div v-else class="min-h-[300px] space-y-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <!-- 关键结果数量对比 -->
-          <v-col cols="12" md="6">
-            <div class="chart-card pa-4">
-              <div class="text-subtitle-2 mb-3 font-weight-bold">关键结果数量对比</div>
-              <div class="d-flex align-center justify-space-around">
-                <div v-for="goal in goals" :key="`kr-chart-${goal.id}`" class="text-center">
-                  <div
-                    class="stat-circle"
-                    :style="{
-                      backgroundColor: goal.color || '#2196F3',
-                      width: `${Math.max(60, getKRCount(goal) * 10)}px`,
-                      height: `${Math.max(60, getKRCount(goal) * 10)}px`,
-                    }"
-                  >
-                    <div class="stat-value">{{ getKRCount(goal) }}</div>
-                  </div>
-                  <div class="text-caption mt-2">{{ goal.title }}</div>
+          <div
+            class="rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div class="mb-3 text-sm font-bold">关键结果数量对比</div>
+            <div class="flex items-center justify-around">
+              <div v-for="goal in goals" :key="`kr-chart-${goal.id}`" class="text-center">
+                <div
+                  class="stat-circle"
+                  :style="{
+                    backgroundColor: goal.color || '#2196F3',
+                    width: `${Math.max(60, getKRCount(goal) * 10)}px`,
+                    height: `${Math.max(60, getKRCount(goal) * 10)}px`,
+                  }"
+                >
+                  <div class="text-[28px] font-bold text-white">{{ getKRCount(goal) }}</div>
                 </div>
+                <div class="mt-2 text-xs text-muted-foreground">{{ goal.name }}</div>
               </div>
             </div>
-          </v-col>
+          </div>
 
           <!-- 进度对比 -->
-          <v-col cols="12" md="6">
-            <div class="chart-card pa-4">
-              <div class="text-subtitle-2 mb-3 font-weight-bold">进度对比</div>
-              <div v-for="goal in goals" :key="`progress-chart-${goal.id}`" class="mb-3">
-                <div class="d-flex align-center mb-1">
-                  <v-chip size="x-small" :color="goal.color || 'primary'" class="mr-2" />
-                  <span class="text-caption">{{ goal.title }}</span>
-                  <v-spacer />
-                  <span class="text-caption font-weight-bold"> {{ getProgress(goal) }}% </span>
-                </div>
-                <v-progress-linear
-                  :model-value="getProgress(goal)"
-                  :color="getProgressColor(getProgress(goal))"
-                  height="12"
-                  rounded
+          <div
+            class="rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div class="mb-3 text-sm font-bold">进度对比</div>
+            <div v-for="goal in goals" :key="`progress-chart-${goal.id}`" class="mb-3 space-y-1">
+              <div class="flex items-center">
+                <div
+                  class="mr-2 h-2 w-2 rounded-full"
+                  :style="{ backgroundColor: goal.color || '#2196F3' }"
                 />
+                <span class="text-xs">{{ goal.name }}</span>
+                <div class="flex-1" />
+                <span class="text-xs font-bold">{{ getProgress(goal) }}%</span>
               </div>
+              <Progress :model-value="getProgress(goal)" class="h-3" />
             </div>
-          </v-col>
+          </div>
 
           <!-- 权重分布 -->
-          <v-col cols="12">
-            <div class="chart-card pa-4">
-              <div class="text-subtitle-2 mb-3 font-weight-bold">权重分布分析</div>
-              <v-row>
-                <v-col
-                  v-for="goal in goals"
-                  :key="`weight-dist-${goal.id}`"
-                  :cols="12 / goals.length"
-                >
-                  <div class="text-center mb-2">
-                    <v-chip size="small" :color="goal.color || 'primary'">
-                      {{ goal.title }}
-                    </v-chip>
+          <div
+            class="col-span-full rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div class="mb-3 text-sm font-bold">权重分布分析</div>
+            <div
+              class="grid gap-4"
+              :style="{ gridTemplateColumns: `repeat(${goals.length}, 1fr)` }"
+            >
+              <div v-for="goal in goals" :key="`weight-dist-${goal.id}`">
+                <div class="mb-2 text-center">
+                  <Badge variant="secondary">{{ goal.name }}</Badge>
+                </div>
+                <div class="space-y-2 rounded-lg border bg-muted/30 p-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">总和:</span>
+                    <Badge
+                      :variant="getTotalWeight(goal) === 100 ? 'default' : 'destructive'"
+                      class="text-xs"
+                    >
+                      {{ getTotalWeight(goal) }}%
+                    </Badge>
                   </div>
-                  <div class="weight-stats">
-                    <div class="stat-row">
-                      <span class="text-caption">总和:</span>
-                      <v-chip
-                        size="x-small"
-                        :color="getTotalWeight(goal) === 100 ? 'success' : 'error'"
-                      >
-                        {{ getTotalWeight(goal) }}%
-                      </v-chip>
-                    </div>
-                    <div class="stat-row">
-                      <span class="text-caption">平均:</span>
-                      <span class="text-body-2 font-weight-bold">
-                        {{ getAverageWeight(goal) }}%
-                      </span>
-                    </div>
-                    <div class="stat-row">
-                      <span class="text-caption">最大:</span>
-                      <span class="text-body-2">{{ getMaxWeight(goal) }}%</span>
-                    </div>
-                    <div class="stat-row">
-                      <span class="text-caption">最小:</span>
-                      <span class="text-body-2">{{ getMinWeight(goal) }}%</span>
-                    </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">平均:</span>
+                    <span class="text-sm font-bold">{{ getAverageWeight(goal) }}%</span>
                   </div>
-                </v-col>
-              </v-row>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">最大:</span>
+                    <span class="text-sm">{{ getMaxWeight(goal) }}%</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">最小:</span>
+                    <span class="text-sm">{{ getMinWeight(goal) }}%</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </v-col>
-        </v-row>
+          </div>
+        </div>
       </div>
 
       <!-- 汇总洞察 -->
-      <v-divider class="my-6" />
+      <Separator class="my-6" />
 
-      <div class="insights-section">
-        <div class="d-flex align-center mb-4">
-          <v-icon class="mr-3" size="28" color="amber">mdi-lightbulb-on</v-icon>
-          <span class="text-h6 font-weight-bold">对比洞察</span>
+      <div class="mt-4">
+        <div class="mb-4 flex items-center gap-3">
+          <Lightbulb class="h-7 w-7 text-amber-500" />
+          <span class="text-lg font-bold">对比洞察</span>
         </div>
 
-        <v-row>
-          <v-col cols="12" md="4">
-            <v-card variant="tonal" color="success" class="insight-card pa-4">
-              <div class="d-flex align-center mb-3">
-                <v-icon size="32" color="success">mdi-trophy</v-icon>
-                <div class="ml-3">
-                  <div class="text-caption text-medium-emphasis">进度最快</div>
-                  <div class="text-h4 font-weight-bold text-success mt-1">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <!-- 进度最快 -->
+          <Card
+            class="overflow-hidden border-green-200 bg-green-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-green-900 dark:bg-green-950/30"
+          >
+            <CardContent class="p-4">
+              <div class="mb-3 flex items-center gap-3">
+                <Trophy class="h-8 w-8 text-green-600" />
+                <div>
+                  <div class="text-xs text-muted-foreground">进度最快</div>
+                  <div class="mt-1 text-3xl font-bold text-green-600">
                     {{ getProgress(getHighestProgressGoal()) }}%
                   </div>
                 </div>
               </div>
-              <v-divider class="my-2" />
-              <div class="d-flex align-center mt-3">
-                <div class="goal-color-dot mr-2" :style="{ backgroundColor: getHighestProgressGoal()?.color || '#4CAF50' }" />
-                <span class="text-body-1 font-weight-medium">
-                  {{ getHighestProgressGoal()?.title || '-' }}
+              <Separator class="my-2" />
+              <div class="mt-3 flex items-center">
+                <div
+                  class="mr-2 h-3 w-3 rounded-full shadow-sm"
+                  :style="{ backgroundColor: getHighestProgressGoal()?.color || '#4CAF50' }"
+                />
+                <span class="font-medium">
+                  {{ getHighestProgressGoal()?.name || '-' }}
                 </span>
               </div>
-            </v-card>
-          </v-col>
+            </CardContent>
+          </Card>
 
-          <v-col cols="12" md="4">
-            <v-card variant="tonal" color="primary" class="insight-card pa-4">
-              <div class="d-flex align-center mb-3">
-                <v-icon size="32" color="primary">mdi-format-list-numbered</v-icon>
-                <div class="ml-3">
-                  <div class="text-caption text-medium-emphasis">KR 数量最多</div>
-                  <div class="text-h4 font-weight-bold text-primary mt-1">
+          <!-- KR 数量最多 -->
+          <Card
+            class="overflow-hidden border-blue-200 bg-blue-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-blue-900 dark:bg-blue-950/30"
+          >
+            <CardContent class="p-4">
+              <div class="mb-3 flex items-center gap-3">
+                <ListOrdered class="h-8 w-8 text-primary" />
+                <div>
+                  <div class="text-xs text-muted-foreground">KR 数量最多</div>
+                  <div class="mt-1 text-3xl font-bold text-primary">
                     {{ getKRCount(getMostKRsGoal()) }}
                   </div>
                 </div>
               </div>
-              <v-divider class="my-2" />
-              <div class="d-flex align-center mt-3">
-                <div class="goal-color-dot mr-2" :style="{ backgroundColor: getMostKRsGoal()?.color || '#2196F3' }" />
-                <span class="text-body-1 font-weight-medium">
-                  {{ getMostKRsGoal()?.title || '-' }}
+              <Separator class="my-2" />
+              <div class="mt-3 flex items-center">
+                <div
+                  class="mr-2 h-3 w-3 rounded-full shadow-sm"
+                  :style="{ backgroundColor: getMostKRsGoal()?.color || '#2196F3' }"
+                />
+                <span class="font-medium">
+                  {{ getMostKRsGoal()?.name || '-' }}
                 </span>
               </div>
-            </v-card>
-          </v-col>
+            </CardContent>
+          </Card>
 
-          <v-col cols="12" md="4">
-            <v-card variant="tonal" color="orange" class="insight-card pa-4">
-              <div class="d-flex align-center mb-3">
-                <v-icon size="32" color="orange">mdi-calendar-clock</v-icon>
-                <div class="ml-3">
-                  <div class="text-caption text-medium-emphasis">活跃时间最长</div>
-                  <div class="text-h4 font-weight-bold text-orange mt-1">
+          <!-- 活跃时间最长 -->
+          <Card
+            class="overflow-hidden border-amber-200 bg-amber-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-amber-900 dark:bg-amber-950/30"
+          >
+            <CardContent class="p-4">
+              <div class="mb-3 flex items-center gap-3">
+                <CalendarClock class="h-8 w-8 text-amber-500" />
+                <div>
+                  <div class="text-xs text-muted-foreground">活跃时间最长</div>
+                  <div class="mt-1 text-3xl font-bold text-amber-500">
                     {{ getActiveDays(getOldestGoal()) }}天
                   </div>
                 </div>
               </div>
-              <v-divider class="my-2" />
-              <div class="d-flex align-center mt-3">
-                <div class="goal-color-dot mr-2" :style="{ backgroundColor: getOldestGoal()?.color || '#FF9800' }" />
-                <span class="text-body-1 font-weight-medium">
-                  {{ getOldestGoal()?.title || '-' }}
+              <Separator class="my-2" />
+              <div class="mt-3 flex items-center">
+                <div
+                  class="mr-2 h-3 w-3 rounded-full shadow-sm"
+                  :style="{ backgroundColor: getOldestGoal()?.color || '#FF9800' }"
+                />
+                <span class="font-medium">
+                  {{ getOldestGoal()?.name || '-' }}
                 </span>
               </div>
-            </v-card>
-          </v-col>
-        </v-row>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </v-card-text>
-  </v-card>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Badge,
+  Button,
+  Progress,
+  Separator,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  BarChart3,
+  Table,
+  Target,
+  Hash,
+  TrendingUp,
+  Weight,
+  PieChart,
+  Flag,
+  CalendarPlus,
+  CalendarClock,
+  Clock,
+  CalendarRange,
+  Lightbulb,
+  Trophy,
+  ListOrdered,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-vue-next';
 
 const props = defineProps<{
   goals: any[];
@@ -353,7 +413,17 @@ const getKRCount = (goal: any): number => {
 };
 
 const getProgress = (goal: any): number => {
-  return goal?.progressPercentage || 0;
+  const krs = goal?.keyResults;
+  if (!krs || krs.length === 0) return 0;
+  const totalWeight = krs.reduce((sum: number, kr: any) => sum + (kr.weight ?? 1), 0);
+  if (totalWeight === 0) return 0;
+  const weightedProgress = krs.reduce((sum: number, kr: any) => {
+    const p = kr.progress;
+    if (!p || !p.targetValue) return sum;
+    const pct = Math.min(1, p.currentValue / p.targetValue);
+    return sum + pct * (kr.weight ?? 1);
+  }, 0);
+  return Math.round((weightedProgress / totalWeight) * 100);
 };
 
 const getTotalWeight = (goal: any): number => {
@@ -384,31 +454,31 @@ const getActiveDays = (goal: any): number => {
   return Math.floor((now - created) / (1000 * 60 * 60 * 24));
 };
 
-const getStatusColor = (goal: any): string => {
-  const colorMap: Record<string, string> = {
-    NOT_STARTED: 'grey',
-    IN_PROGRESS: 'primary',
-    COMPLETED: 'success',
-    ARCHIVED: 'warning',
+const getStatusBadgeVariant = (goal: any): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    Draft: 'outline',
+    Active: 'default',
+    Completed: 'secondary',
+    Archived: 'outline',
   };
-  return colorMap[goal.status] || 'default';
+  return variantMap[goal.status] || 'outline';
 };
 
 const getStatusText = (goal: any): string => {
   const textMap: Record<string, string> = {
-    NOT_STARTED: '未开始',
-    IN_PROGRESS: '进行中',
-    COMPLETED: '已完成',
-    ARCHIVED: '已归档',
+    Draft: '草稿',
+    Active: '进行中',
+    Completed: '已完成',
+    Archived: '已归档',
   };
   return textMap[goal.status] || goal.status;
 };
 
-const getProgressColor = (progress: number): string => {
-  if (progress >= 80) return 'success';
-  if (progress >= 50) return 'primary';
-  if (progress >= 20) return 'warning';
-  return 'error';
+const getProgressTextClass = (progress: number): string => {
+  if (progress >= 80) return 'text-green-600';
+  if (progress >= 50) return 'text-primary';
+  if (progress >= 20) return 'text-amber-500';
+  return 'text-destructive';
 };
 
 const formatDate = (timestamp: number | null | undefined): string => {
@@ -441,128 +511,16 @@ const getOldestGoal = () => {
 </script>
 
 <style scoped>
-.comparison-stats-card {
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.comparison-header {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.08),
-    rgba(var(--v-theme-surface), 1)
-  );
-}
-
-.view-toggle {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.table-view {
-  overflow-x: auto;
-}
-
-.comparison-table {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.table-header {
-  background: rgba(var(--v-theme-primary), 0.05);
-}
-
-.table-header th {
-  padding: 16px !important;
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.2) !important;
-}
-
-.table-row td {
-  padding: 20px 16px !important;
-  border-bottom: 1px solid rgba(var(--v-theme-outline), 0.08) !important;
-}
-
-.table-row:hover {
-  background: rgba(var(--v-theme-primary), 0.02);
-}
-
-.goal-color-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.progress-cell {
-  min-width: 180px;
-}
-
-.chart-view {
-  min-height: 300px;
-}
-
-.chart-card {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-surface), 1),
-    rgba(var(--v-theme-background), 0.98)
-  );
-  border-radius: 12px;
-  border: 1px solid rgba(var(--v-theme-outline), 0.12);
-  height: 100%;
-  transition: all 0.3s ease;
-}
-
-.chart-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
 .stat-circle {
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: bold;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .stat-circle:hover {
   transform: scale(1.1);
-}
-
-.stat-value {
-  font-size: 28px;
-}
-
-.weight-stats {
-  padding: 16px;
-  background: rgba(var(--v-theme-surface-bright), 0.5);
-  border-radius: 8px;
-  border: 1px solid rgba(var(--v-theme-outline), 0.08);
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.insights-section {
-  margin-top: 16px;
-}
-
-.insight-card {
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  height: 100%;
-}
-
-.insight-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 </style>

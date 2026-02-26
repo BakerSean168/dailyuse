@@ -1,34 +1,65 @@
 <!-- widgets/BasicInfoSection.vue -->
 <template>
-  <v-card class="mb-4" elevation="0" variant="outlined">
-    <v-card-title class="section-title">
-      <v-icon class="mr-2">mdi-information-outline</v-icon>
-      基础信息
-    </v-card-title>
-    <v-card-text>
+  <Card class="mb-4">
+    <CardHeader class="pb-2">
+      <CardTitle class="flex items-center text-primary font-semibold">
+        <Info class="mr-2 h-5 w-5" />
+        基础信息
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
       <!-- 显示验证错误 -->
-      <v-alert v-if="validationErrors.length > 0" type="error" variant="tonal" class="mb-4">
-        <ul class="mb-0">
-          <li v-for="error in validationErrors" :key="error">{{ error }}</li>
-        </ul>
-      </v-alert>
-      <v-row>
-        <v-col cols="12">
-          <v-text-field v-model="title" data-testid="task-template-title-input" label="任务标题" placeholder="请输入任务标题"
-            variant="outlined" required counter="100" />
-        </v-col>
+      <Alert v-if="validationErrors.length > 0" variant="destructive" class="mb-4">
+        <AlertDescription>
+          <ul class="mb-0 list-disc pl-4">
+            <li v-for="error in validationErrors" :key="error">{{ error }}</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12">
+          <Label for="task-template-title">任务标题</Label>
+          <Input
+            id="task-template-title"
+            v-model="title"
+            data-testid="task-template-title-input"
+            placeholder="请输入任务标题"
+            maxlength="100"
+            class="mt-1"
+          />
+        </div>
 
-        <v-col cols="12">
-          <v-textarea v-model="description" data-testid="task-template-description-input" label="任务描述"
-            placeholder="请输入任务描述（可选）" variant="outlined" rows="3" counter="1000" no-resize />
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+        <div class="col-span-12">
+          <Label for="task-template-description">任务描述</Label>
+          <Textarea
+            id="task-template-description"
+            v-model="description"
+            data-testid="task-template-description-input"
+            placeholder="请输入任务描述（可选）"
+            :rows="3"
+            maxlength="1000"
+            class="mt-1 resize-none"
+          />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { computed, watch } from 'vue';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Alert,
+  AlertDescription,
+  Input,
+  Textarea,
+  Label,
+} from '@dailyuse/ui-vue-shadcn';
+import { Info } from 'lucide-vue-next';
 import { useBasicInfoValidation } from '../../../composables/useBasicInfoValidation';
 import type { TaskTemplateViewModel } from '../../types';
 interface Props {
@@ -83,10 +114,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style scoped>
-.section-title {
-  color: rgb(var(--v-theme-primary));
-  font-weight: 600;
-}
-</style>

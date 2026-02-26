@@ -1,55 +1,66 @@
 <template>
-  <v-dialog :model-value="modelValue" max-width="800" persistent @update:model-value="(v) => emit('update:modelValue', v)">
-    <v-card class="template-selection-dialog">
-      <v-card-title class="dialog-header">
-        <v-icon color="primary" class="mr-2">mdi-view-grid-plus</v-icon>
-        选择任务模板
-      </v-card-title>
+  <Dialog :open="modelValue" @update:open="(v) => emit('update:modelValue', v)">
+    <DialogContent class="max-w-[800px]" @interact-outside.prevent>
+      <DialogHeader>
+        <DialogTitle class="flex items-center gap-2">
+          <LayoutGrid class="h-5 w-5 text-primary" />
+          选择任务模板
+        </DialogTitle>
+      </DialogHeader>
 
-      <v-card-text class="template-grid">
-        <div v-if="loading" class="text-center pa-8">
-          <v-progress-circular color="primary" indeterminate size="48" class="mb-4" />
-          <p class="text-body-1">正在加载模板...</p>
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 py-4">
+        <div v-if="loading" class="col-span-full text-center py-8">
+          <Loader2 class="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p class="text-base">正在加载模板...</p>
         </div>
 
-        <div v-else-if="templates.length === 0" class="text-center pa-8">
-          <v-icon size="64" color="grey" class="mb-4">mdi-folder-open-outline</v-icon>
-          <p class="text-body-1 text-medium-emphasis">暂无可用模板</p>
+        <div v-else-if="templates.length === 0" class="col-span-full text-center py-8">
+          <FolderOpen class="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+          <p class="text-base text-muted-foreground">暂无可用模板</p>
         </div>
 
-        <v-card
+        <Card
           v-else
           v-for="template in templates"
           :key="template.id"
-          class="template-type-card"
-          :class="{ selected: selectedId === template.id }"
-          elevation="2"
-          hover
+          class="cursor-pointer transition-all duration-300 border-2 hover:shadow-md"
+          :class="selectedId === template.id ? 'border-primary bg-primary/5' : 'border-transparent'"
           @click="selectedId = template.id"
         >
-          <v-card-text class="text-center pa-4">
-            <v-avatar color="primary" size="64" class="mb-3">
-              <v-icon size="32" color="white">mdi-file-document-outline</v-icon>
-            </v-avatar>
-            <h3 class="text-h6 mb-2">{{ template.title }}</h3>
-            <p class="text-body-2 text-medium-emphasis">{{ template.description || '无描述' }}</p>
-          </v-card-text>
-        </v-card>
-      </v-card-text>
+          <CardContent class="text-center p-4">
+            <div
+              class="h-16 w-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-3"
+            >
+              <FileText class="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h3 class="text-lg font-semibold mb-2">{{ template.title }}</h3>
+            <p class="text-sm text-muted-foreground">{{ template.description || '无描述' }}</p>
+          </CardContent>
+        </Card>
+      </div>
 
-      <v-card-actions class="dialog-actions">
-        <v-spacer />
-        <v-btn variant="text" @click="emit('cancel')">取消</v-btn>
-        <v-btn color="primary" variant="elevated" :disabled="!selectedId" @click="confirmSelection">
-          使用模板
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      <DialogFooter>
+        <div class="flex-1" />
+        <Button variant="ghost" @click="emit('cancel')">取消</Button>
+        <Button :disabled="!selectedId" @click="confirmSelection"> 使用模板 </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Card,
+  CardContent,
+  Button,
+} from '@dailyuse/ui-vue-shadcn';
+import { LayoutGrid, Loader2, FolderOpen, FileText } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../types';
 
 interface Props {
@@ -84,24 +95,3 @@ const confirmSelection = () => {
   emit('confirm', selectedId.value);
 };
 </script>
-
-<style scoped>
-.template-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  padding: 1.5rem;
-}
-
-.template-type-card {
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.template-type-card.selected {
-  border-color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.05);
-}
-</style>

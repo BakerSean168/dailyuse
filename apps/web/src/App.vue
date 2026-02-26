@@ -9,7 +9,7 @@
  * 4. 错误兜底系统 (GlobalErrorBoundary)
  */
 import { watch } from 'vue';
-import { Toaster } from '@dailyuse/ui-vue-shadcn';
+import { Toaster, TooltipProvider } from '@dailyuse/ui-vue-shadcn';
 import {
   GlobalConfirmDialog,
   GlobalErrorBoundary,
@@ -36,19 +36,21 @@ watch(
 </script>
 
 <template>
-  <!-- Progress bar — always on top -->
-  <GlobalProgressBar />
+  <TooltipProvider :delay-duration="300">
+    <!-- Progress bar — always on top -->
+    <GlobalProgressBar />
 
-  <!-- Error boundary wraps the entire view -->
-  <GlobalErrorBoundary>
-    <router-view />
-  </GlobalErrorBoundary>
+    <!-- Error boundary wraps the entire view -->
+    <GlobalErrorBoundary>
+      <router-view />
+    </GlobalErrorBoundary>
 
-  <!-- Global overlays -->
-  <Toaster position="top-right" :duration="3000" rich-colors />
-  <GlobalConfirmDialog />
-  <GlobalSheet />
-  <GlobalCommandPalette />
+    <!-- Global overlays -->
+    <Toaster position="top-right" :duration="3000" rich-colors />
+    <GlobalConfirmDialog />
+    <GlobalSheet />
+    <GlobalCommandPalette />
+  </TooltipProvider>
 </template>
 
 <style>

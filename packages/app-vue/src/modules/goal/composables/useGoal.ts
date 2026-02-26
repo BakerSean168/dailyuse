@@ -69,12 +69,14 @@ export function useGoal() {
 
       if (result.ok) {
         store.setGoals(
-          result.data.goals.map((g: Goal) => g.toDTO()),
-          result.data.pagination.total,
+          (result.data.goals ?? []).map((g: Goal) => g.toDTO()),
+          result.data.pagination?.total ?? 0,
         );
       } else {
         handleError(result.error.message || '加载目标列表失败');
       }
+    } catch (e: any) {
+      handleError(e?.message || '加载目标列表时发生异常');
     } finally {
       store.setLoading(false);
     }
@@ -154,7 +156,7 @@ export function useGoal() {
   async function fetchFolders() {
     const result = await service.listGoalFolders();
     if (result.ok) {
-      store.setGoalFolders(result.data.map((f: GoalFolder) => f.toDTO()));
+      store.setGoalFolders((result.data ?? []).map((f: GoalFolder) => f.toDTO()));
     } else {
       handleError(result.error.message || '加载文件夹失败');
     }
@@ -198,7 +200,7 @@ export function useGoal() {
   async function fetchKeyResults(goalId: string) {
     const result = await service.getKeyResults(goalId);
     if (result.ok) {
-      store.setKeyResults(result.data.keyResults.map((kr: KeyResult) => kr.toDTO()));
+      store.setKeyResults((result.data.keyResults ?? []).map((kr: KeyResult) => kr.toDTO()));
     } else {
       handleError(result.error.message || '加载关键结果失败');
     }
@@ -242,7 +244,7 @@ export function useGoal() {
   async function fetchRecords(goalId: string) {
     const result = await service.getGoalRecordsByGoal(goalId);
     if (result.ok) {
-      store.setGoalRecords(result.data.records.map((r: GoalRecord) => r.toDTO()));
+      store.setGoalRecords((result.data.records ?? []).map((r: GoalRecord) => r.toDTO()));
     } else {
       handleError(result.error.message || '加载进度记录失败');
     }
@@ -296,7 +298,7 @@ export function useGoal() {
   async function fetchReviews(goalId: string) {
     const result = await service.getGoalReviews(goalId);
     if (result.ok) {
-      store.setGoalReviews(result.data.reviews.map((r: GoalReview) => r.toDTO()));
+      store.setGoalReviews((result.data.reviews ?? []).map((r: GoalReview) => r.toDTO()));
     } else {
       handleError(result.error.message || '加载复盘失败');
     }

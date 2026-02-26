@@ -1,103 +1,93 @@
 <template>
-  <v-dialog :model-value="visible" max-width="600" persistent class="record-dialog">
-    <v-card class="record-dialog-card">
+  <Dialog :open="visible" @update:open="(val) => (visible = val)">
+    <DialogContent class="sm:max-w-[600px] gap-0 p-0">
       <!-- 对话框头部 -->
-      <v-card-title class="record-dialog-header pa-6">
-        <div class="d-flex align-center justify-space-between w-100">
-          <v-btn
-            variant="text"
-            color="medium-emphasis"
-            prepend-icon="mdi-close"
-            @click="handleCancel"
-          >
-            取消
-          </v-btn>
-          <div class="d-flex align-center">
-            <v-icon color="primary" size="24" class="mr-2">mdi-plus-circle</v-icon>
-            <span class="text-h6 font-weight-bold">{{ isEditing ? '编辑记录' : '添加记录' }}</span>
-          </div>
-          <v-btn
-            color="primary"
-            variant="elevated"
-            prepend-icon="mdi-check"
-            :disabled="!isValid"
-            @click="handleSave"
-            class="save-btn"
-          >
-            保存
-          </v-btn>
+      <div class="flex items-center justify-between px-6 pt-6 pb-4">
+        <Button variant="ghost" size="sm" @click="handleCancel">
+          <X class="mr-1 h-4 w-4" />
+          取消
+        </Button>
+        <div class="flex items-center">
+          <PlusCircle class="mr-2 h-5 w-5 text-primary" />
+          <span class="text-lg font-bold">{{ isEditing ? '编辑记录' : '添加记录' }}</span>
         </div>
-      </v-card-title>
-      <v-divider />
+        <Button size="sm" :disabled="!isValid" @click="handleSave">
+          <Check class="mr-1 h-4 w-4" />
+          保存
+        </Button>
+      </div>
+
+      <Separator />
+
       <!-- 表单内容 -->
-      <v-card-text class="pa-6">
-        <v-form ref="formRef" class="record-form" v-model="formValid">
-          <!-- 增加值输入 -->
-          <div class="mb-6">
-            <v-text-field
+      <form class="flex flex-col gap-6 p-6" @submit.prevent="handleSave">
+        <!-- 增加值输入 -->
+        <div class="space-y-2">
+          <Label for="change-amount">增加值</Label>
+          <div class="relative flex items-center">
+            <Plus class="absolute left-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="change-amount"
               v-model.number="localRecord.changeAmount"
-              label="增加值"
               type="number"
-              variant="outlined"
-              prepend-inner-icon="mdi-plus"
-              :rules="valueRules"
-              hide-details="auto"
-              class="value-input"
-              density="comfortable"
+              class="pl-9 pr-16"
               min="0.1"
               step="0.1"
-            >
-              <template v-slot:append>
-                <v-chip color="primary" variant="tonal" size="small" class="font-weight-medium">
-                  单位
-                </v-chip>
-              </template>
-            </v-text-field>
-          </div>
-          <!-- 备注输入 -->
-          <div class="mb-4">
-            <v-textarea
-              v-model="localRecord.note"
-              label="备注说明"
-              placeholder="添加关于此次记录的详细说明..."
-              variant="outlined"
-              prepend-inner-icon="mdi-note-text"
-              rows="3"
-              hide-details="auto"
-              density="comfortable"
-              class="note-input"
             />
+            <Badge variant="secondary" class="absolute right-3 font-medium"> 单位 </Badge>
           </div>
-          <!-- 快速选择值 -->
-          <div class="quick-values">
-            <div class="text-body-2 text-medium-emphasis mb-3">
-              <v-icon size="16" class="mr-1">mdi-lightning-bolt</v-icon>
-              快速选择
-            </div>
-            <div class="d-flex gap-2 flex-wrap">
-              <v-chip
-                v-for="quickValue in quickValues"
-                :key="quickValue"
-                :color="localRecord.changeAmount === quickValue ? 'primary' : 'surface-variant'"
-                :variant="localRecord.changeAmount === quickValue ? 'flat' : 'outlined'"
-                size="small"
-                clickable
-                @click="localRecord.changeAmount = quickValue"
-                class="quick-value-chip"
-              >
-                {{ quickValue }}
-              </v-chip>
-            </div>
+          <p v-if="validationError" class="text-xs text-destructive">{{ validationError }}</p>
+        </div>
+
+        <!-- 备注输入 -->
+        <div class="space-y-2">
+          <Label for="record-note" class="flex items-center gap-1">
+            <FileText class="h-4 w-4 text-muted-foreground" />
+            备注说明
+          </Label>
+          <Textarea
+            id="record-note"
+            v-model="localRecord.note"
+            placeholder="添加关于此次记录的详细说明..."
+            :rows="3"
+            class="resize-none"
+          />
+        </div>
+
+        <!-- 快速选择值 -->
+        <div>
+          <div class="mb-3 flex items-center text-sm text-muted-foreground">
+            <Zap class="mr-1 h-4 w-4" />
+            快速选择
           </div>
-        </v-form>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+          <div class="flex flex-wrap gap-2">
+            <Badge
+              v-for="quickValue in quickValues"
+              :key="quickValue"
+              :variant="localRecord.changeAmount === quickValue ? 'default' : 'outline'"
+              class="cursor-pointer select-none px-3 py-1 text-sm transition-shadow hover:shadow-md"
+              @click="localRecord.changeAmount = quickValue"
+            >
+              {{ quickValue }}
+            </Badge>
+          </div>
+        </div>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import { Dialog, DialogContent } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Input } from '@dailyuse/ui-vue-shadcn';
+import { Label } from '@dailyuse/ui-vue-shadcn';
+import { Textarea } from '@dailyuse/ui-vue-shadcn';
+import { Badge } from '@dailyuse/ui-vue-shadcn';
+import { Separator } from '@dailyuse/ui-vue-shadcn';
+import { X, PlusCircle, Check, Plus, FileText, Zap } from 'lucide-vue-next';
 // composables
 import { useGoal } from '../../composables/useGoal';
 
@@ -109,9 +99,6 @@ const propGoalId = ref<string>('');
 const propRecord = ref<GoalRecordClientDTO | null>(null);
 
 const quickValues = [1, 2, 5, 10];
-
-const formRef = ref();
-const formValid = ref(false);
 
 // 本地表单数据：只需要 changeAmount 和 note
 const localRecord = ref({
@@ -127,7 +114,16 @@ const valueRules = [
   (v: number) => v <= 10000 || '增加值不能超过10000',
 ];
 
-const isValid = computed(() => formValid.value && localRecord.value.changeAmount > 0);
+const validationError = computed(() => {
+  const v = localRecord.value.changeAmount;
+  for (const rule of valueRules) {
+    const result = rule(v);
+    if (result !== true) return result;
+  }
+  return '';
+});
+
+const isValid = computed(() => !validationError.value && localRecord.value.changeAmount > 0);
 
 const handleCreateKeyResult = async () => {
   // 获取当前 KeyResult
@@ -155,14 +151,14 @@ const handleCreateKeyResult = async () => {
 };
 
 const handleSave = () => {
-  if (formRef.value?.validate()) {
-    if (isEditing.value) {
-      console.warn('不允许编辑记录');
-    } else {
-      handleCreateKeyResult();
-    }
-    closeDialog();
+  if (!isValid.value) return;
+
+  if (isEditing.value) {
+    console.warn('不允许编辑记录');
+  } else {
+    handleCreateKeyResult();
   }
+  closeDialog();
 };
 
 const handleCancel = () => {
@@ -206,69 +202,3 @@ defineExpose({
   openDialog,
 });
 </script>
-
-<style scoped>
-.record-dialog-card {
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.record-dialog-header {
-  border-radius: 16px 16px 0 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.record-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.value-input {
-  font-size: 1.1rem;
-}
-
-.time-card {
-  border-radius: 8px;
-}
-
-.note-input {
-  font-size: 1rem;
-}
-
-.quick-values {
-  margin-top: 1rem;
-}
-
-.quick-value-chip {
-  font-size: 1rem;
-  min-width: 48px;
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-}
-
-.quick-value-chip:hover {
-  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.12);
-}
-
-.save-btn {
-  font-weight: bold;
-  letter-spacing: 0.05em;
-}
-
-@media (max-width: 600px) {
-  .record-dialog-card {
-    border-radius: 8px;
-    padding: 0.5rem;
-  }
-  .record-dialog-header {
-    font-size: 1rem;
-    padding: 1rem;
-  }
-  .record-form {
-    gap: 1rem;
-  }
-}
-</style>

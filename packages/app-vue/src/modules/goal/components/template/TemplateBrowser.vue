@@ -1,238 +1,297 @@
 <template>
-  <v-dialog v-model="visible" max-width="1200" scrollable>
-    <v-card>
+  <Dialog
+    :open="visible"
+    @update:open="
+      (val: boolean) => {
+        if (!val) close();
+      }
+    "
+  >
+    <DialogContent class="max-w-[1200px] max-h-[90vh] flex flex-col">
       <!-- 标题栏 -->
-      <v-card-title class="d-flex justify-space-between align-center">
-        <span class="text-h5">
-          <v-icon class="mr-2">mdi-lightbulb-outline</v-icon>
+      <DialogHeader class="flex flex-row items-center justify-between">
+        <DialogTitle class="flex items-center text-xl">
+          <Lightbulb class="h-5 w-5 mr-2" />
           选择目标模板
-        </span>
-        <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
-      </v-card-title>
+        </DialogTitle>
+      </DialogHeader>
 
-      <v-divider></v-divider>
+      <Separator />
 
       <!-- 搜索和筛选栏 -->
-      <v-card-text class="pb-0">
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="searchQuery"
-              label="搜索模板"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              density="comfortable"
-              clearable
-              hint="搜索标题、描述或标签"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="selectedCategory"
-              :items="categoryOptions"
-              label="类别"
-              variant="outlined"
-              density="comfortable"
-              clearable
-            ></v-select>
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="selectedRole"
-              :items="roleOptions"
-              label="角色"
-              variant="outlined"
-              density="comfortable"
-              clearable
-            ></v-select>
-          </v-col>
-        </v-row>
+      <div class="pb-0">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div class="col-span-1 md:col-span-3">
+            <div class="relative">
+              <Search
+                class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+              />
+              <Input v-model="searchQuery" placeholder="搜索模板" class="pl-9" />
+            </div>
+          </div>
+          <div class="col-span-1 md:col-span-1.5">
+            <Select v-model="selectedCategorySelect">
+              <SelectTrigger>
+                <SelectValue placeholder="类别" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.title }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="col-span-1 md:col-span-1.5">
+            <Select v-model="selectedRoleSelect">
+              <SelectTrigger>
+                <SelectValue placeholder="角色" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem v-for="opt in roleOptions" :key="opt.value" :value="opt.value">
+                  {{ opt.title }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <!-- 结果统计 -->
-        <v-alert
-          v-if="filteredTemplates.length > 0"
-          type="info"
-          variant="tonal"
-          density="compact"
-          class="mb-4"
-        >
-          找到 {{ filteredTemplates.length }} 个匹配的模板
-          <span v-if="filters.role || filters.category"> (已应用筛选)</span>
-        </v-alert>
-        <v-alert v-else type="warning" variant="tonal" density="compact" class="mb-4">
-          未找到匹配的模板，请调整筛选条件
-        </v-alert>
-      </v-card-text>
+        <Alert v-if="filteredTemplates.length > 0" class="mb-4 mt-4">
+          <AlertDescription>
+            找到 {{ filteredTemplates.length }} 个匹配的模板
+            <span v-if="filters.role || filters.category"> (已应用筛选)</span>
+          </AlertDescription>
+        </Alert>
+        <Alert v-else variant="destructive" class="mb-4 mt-4">
+          <AlertDescription> 未找到匹配的模板，请调整筛选条件 </AlertDescription>
+        </Alert>
+      </div>
 
       <!-- 模板卡片列表 -->
-      <v-card-text style="max-height: 600px">
-        <v-row>
-          <v-col
+      <ScrollArea class="flex-1" style="max-height: 600px">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-1">
+          <Card
             v-for="result in filteredTemplates"
             :key="result.template.id"
-            cols="12"
-            md="6"
-            lg="4"
+            :class="[
+              'cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all h-full flex flex-col',
+              selectedTemplate?.id === result.template.id ? 'ring-2 ring-primary shadow-lg' : '',
+            ]"
+            @click="selectTemplate(result.template as GoalTemplate)"
           >
-            <v-card
-              :class="{ 'border-primary': selectedTemplate?.id === result.template.id }"
-              :elevation="selectedTemplate?.id === result.template.id ? 8 : 2"
-              @click="selectTemplate(result.template as GoalTemplate)"
-              style="cursor: pointer; height: 100%"
-              hover
-            >
-              <!-- 卡片头部 -->
-              <v-card-title class="text-subtitle-1">
-                <v-icon :color="getCategoryColor(result.template.category as GoalTemplate['category'])" class="mr-2">
-                  {{ getCategoryIcon(result.template.category as GoalTemplate['category']) }}
-                </v-icon>
+            <!-- 卡片头部 -->
+            <CardHeader class="pb-2">
+              <CardTitle class="text-base flex items-center">
+                <component
+                  :is="
+                    getCategoryIconComponent(result.template.category as GoalTemplate['category'])
+                  "
+                  :class="[
+                    'h-5 w-5 mr-2',
+                    getCategoryColorClass(result.template.category as GoalTemplate['category']),
+                  ]"
+                />
                 {{ result.template.title }}
-              </v-card-title>
+              </CardTitle>
+            </CardHeader>
 
-              <!-- 匹配分数徽章 -->
-              <v-chip
-                v-if="result.score > 50"
-                :color="getScoreColor(result.score)"
-                size="small"
-                class="ml-4 mb-2"
+            <!-- 匹配分数徽章 -->
+            <div v-if="result.score > 50" class="px-6 pb-2">
+              <Badge :class="getScoreBadgeClass(result.score)"> {{ result.score }}% 匹配 </Badge>
+            </div>
+
+            <CardContent class="flex-1">
+              <!-- 描述 -->
+              <p class="text-sm mb-3">{{ result.template.description }}</p>
+
+              <!-- 标签 -->
+              <div class="mb-3">
+                <Badge
+                  v-for="tag in result.template.tags.slice(0, 3)"
+                  :key="tag"
+                  variant="outline"
+                  class="mr-1 mb-1 text-xs"
+                >
+                  {{ tag }}
+                </Badge>
+              </div>
+
+              <!-- 匹配原因 -->
+              <div v-if="result.reasons.length > 0" class="mt-2 flex items-center">
+                <CheckCircle class="h-4 w-4 text-green-500 mr-1 flex-shrink-0" />
+                <span class="text-xs text-green-500">{{ result.reasons[0] }}</span>
+              </div>
+
+              <!-- 关键结果预览 -->
+              <Separator class="my-3" />
+              <div class="text-xs text-muted-foreground">
+                <strong>{{ result.template.keyResults.length }} 个关键结果:</strong>
+                <ul class="ml-4 mt-1">
+                  <li v-for="(kr, idx) in result.template.keyResults.slice(0, 2)" :key="idx">
+                    {{ kr.title }} ({{ kr.suggestedWeight }}%)
+                  </li>
+                  <li v-if="result.template.keyResults.length > 2" class="text-muted-foreground">
+                    还有 {{ result.template.keyResults.length - 2 }} 个...
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+
+            <!-- 操作按钮 -->
+            <CardFooter class="flex justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                @click.stop="previewTemplate(result.template as GoalTemplate)"
               >
-                {{ result.score }}% 匹配
-              </v-chip>
+                <Eye class="h-4 w-4 mr-1" />
+                预览
+              </Button>
+              <Button
+                v-if="selectedTemplate?.id === result.template.id"
+                variant="default"
+                size="sm"
+              >
+                <Check class="h-4 w-4 mr-1" />
+                已选择
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </ScrollArea>
 
-              <v-card-text>
-                <!-- 描述 -->
-                <p class="text-body-2 mb-3">{{ result.template.description }}</p>
-
-                <!-- 标签 -->
-                <div class="mb-3">
-                  <v-chip
-                    v-for="tag in result.template.tags.slice(0, 3)"
-                    :key="tag"
-                    size="x-small"
-                    class="mr-1 mb-1"
-                    variant="outlined"
-                  >
-                    {{ tag }}
-                  </v-chip>
-                </div>
-
-                <!-- 匹配原因 -->
-                <div v-if="result.reasons.length > 0" class="mt-2">
-                  <v-icon size="small" color="success" class="mr-1">mdi-check-circle</v-icon>
-                  <span class="text-caption text-success">{{ result.reasons[0] }}</span>
-                </div>
-
-                <!-- 关键结果预览 -->
-                <v-divider class="my-3"></v-divider>
-                <div class="text-caption text-medium-emphasis">
-                  <strong>{{ result.template.keyResults.length }} 个关键结果:</strong>
-                  <ul class="ml-4 mt-1">
-                    <li v-for="(kr, idx) in result.template.keyResults.slice(0, 2)" :key="idx">
-                      {{ kr.title }} ({{ kr.suggestedWeight }}%)
-                    </li>
-                    <li v-if="result.template.keyResults.length > 2" class="text-medium-emphasis">
-                      还有 {{ result.template.keyResults.length - 2 }} 个...
-                    </li>
-                  </ul>
-                </div>
-              </v-card-text>
-
-              <!-- 操作按钮 -->
-              <v-card-actions>
-                <v-btn
-                  variant="text"
-                  prepend-icon="mdi-eye"
-                  @click.stop="previewTemplate(result.template as GoalTemplate)"
-                >
-                  预览
-                </v-btn>
-                <v-spacer></v-spacer>
-                <v-btn
-                  v-if="selectedTemplate?.id === result.template.id"
-                  color="primary"
-                  variant="elevated"
-                  prepend-icon="mdi-check"
-                >
-                  已选择
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-card-text>
-
-      <v-divider></v-divider>
+      <Separator />
 
       <!-- 底部操作栏 -->
-      <v-card-actions>
-        <v-btn variant="text" @click="close">取消</v-btn>
-        <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          variant="elevated"
-          :disabled="!selectedTemplate"
-          @click="applyTemplate"
-        >
-          <v-icon class="mr-1">mdi-check-circle</v-icon>
+      <DialogFooter class="flex flex-row items-center justify-between sm:justify-between">
+        <Button variant="ghost" @click="close">取消</Button>
+        <Button :disabled="!selectedTemplate" @click="applyTemplate">
+          <CheckCircle class="h-4 w-4 mr-1" />
           使用此模板
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 
-    <!-- 预览对话框 -->
-    <v-dialog v-model="previewVisible" max-width="700">
-      <v-card v-if="previewingTemplate">
-        <v-card-title>
-          <v-icon :color="getCategoryColor(previewingTemplate.category)" class="mr-2">
-            {{ getCategoryIcon(previewingTemplate.category) }}
-          </v-icon>
-          {{ previewingTemplate.title }}
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text>
-          <p class="text-body-1 mb-4">{{ previewingTemplate.description }}</p>
+  <!-- 预览对话框 -->
+  <Dialog
+    :open="previewVisible"
+    @update:open="
+      (val: boolean) => {
+        previewVisible = val;
+      }
+    "
+  >
+    <DialogContent class="max-w-[700px]">
+      <template v-if="previewingTemplate">
+        <DialogHeader>
+          <DialogTitle class="flex items-center">
+            <component
+              :is="getCategoryIconComponent(previewingTemplate.category)"
+              :class="['h-5 w-5 mr-2', getCategoryColorClass(previewingTemplate.category)]"
+            />
+            {{ previewingTemplate.title }}
+          </DialogTitle>
+        </DialogHeader>
+        <Separator />
+        <div>
+          <p class="text-base mb-4">{{ previewingTemplate.description }}</p>
 
-          <v-alert type="info" variant="tonal" density="compact" class="mb-4">
-            <strong>适用角色:</strong> {{ previewingTemplate.roles.join(', ') }}<br />
-            <strong>适用行业:</strong> {{ previewingTemplate.industries.join(', ') }}<br />
-            <strong>建议周期:</strong> {{ previewingTemplate.suggestedDuration }} 天
-          </v-alert>
+          <Alert class="mb-4">
+            <AlertDescription>
+              <strong>适用角色:</strong> {{ previewingTemplate.roles.join(', ') }}<br />
+              <strong>适用行业:</strong> {{ previewingTemplate.industries.join(', ') }}<br />
+              <strong>建议周期:</strong> {{ previewingTemplate.suggestedDuration }} 天
+            </AlertDescription>
+          </Alert>
 
-          <h4 class="text-h6 mb-3">关键结果 ({{ previewingTemplate.keyResults.length }})</h4>
-          <v-list density="compact">
-            <v-list-item v-for="(kr, idx) in previewingTemplate.keyResults" :key="idx" class="mb-2">
-              <template #prepend>
-                <v-avatar size="32" :color="getWeightColor(kr.suggestedWeight)">
-                  <span class="text-caption">{{ kr.suggestedWeight }}%</span>
-                </v-avatar>
-              </template>
-              <v-list-item-title>{{ kr.title }}</v-list-item-title>
-              <v-list-item-subtitle>
-                度量: {{ kr.metrics.join(', ') }}
-                <span v-if="kr.suggestedStartValue !== undefined">
-                  | 目标: {{ kr.suggestedStartValue }} → {{ kr.suggestedTargetValue }}
-                  {{ kr.unit }}
-                </span>
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-btn variant="text" @click="previewVisible = false">关闭</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" variant="elevated" @click="applyFromPreview"> 使用此模板 </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-dialog>
+          <h4 class="text-lg font-semibold mb-3">
+            关键结果 ({{ previewingTemplate.keyResults.length }})
+          </h4>
+          <div class="space-y-2">
+            <div
+              v-for="(kr, idx) in previewingTemplate.keyResults"
+              :key="idx"
+              class="flex items-start gap-3 p-2 rounded-md"
+            >
+              <div
+                :class="[
+                  'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium',
+                  getWeightBgClass(kr.suggestedWeight),
+                ]"
+              >
+                {{ kr.suggestedWeight }}%
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium">{{ kr.title }}</div>
+                <div class="text-xs text-muted-foreground">
+                  度量: {{ kr.metrics.join(', ') }}
+                  <span v-if="kr.suggestedStartValue !== undefined">
+                    | 目标: {{ kr.suggestedStartValue }} → {{ kr.suggestedTargetValue }}
+                    {{ kr.unit }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Separator />
+        <DialogFooter class="flex flex-row items-center justify-between sm:justify-between">
+          <Button variant="ghost" @click="previewVisible = false">关闭</Button>
+          <Button @click="applyFromPreview">使用此模板</Button>
+        </DialogFooter>
+      </template>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import type { Component } from 'vue';
 import type { GoalTemplate } from '../../application/templates/GoalTemplates';
 import templateRecommendationService from '../../application/services/TemplateRecommendationService';
 import type { RecommendationFilters } from '../../application/services/TemplateRecommendationService';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  Button,
+  Input,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Badge,
+  Alert,
+  AlertDescription,
+  Separator,
+  ScrollArea,
+} from '@dailyuse/ui-vue-shadcn';
+
+import {
+  Lightbulb,
+  Search,
+  CheckCircle,
+  Eye,
+  Check,
+  Rocket,
+  Code,
+  TrendingUp,
+  Megaphone,
+  Briefcase,
+  Folder,
+} from 'lucide-vue-next';
 
 // Emits
 const emit = defineEmits<{
@@ -243,11 +302,21 @@ const emit = defineEmits<{
 // State
 const visible = ref(false);
 const searchQuery = ref('');
-const selectedCategory = ref<GoalTemplate['category'] | null>(null);
-const selectedRole = ref<string | null>(null);
+const selectedCategorySelect = ref<string>('all');
+const selectedRoleSelect = ref<string>('all');
 const selectedTemplate = ref<GoalTemplate | null>(null);
 const previewVisible = ref(false);
 const previewingTemplate = ref<GoalTemplate | null>(null);
+
+// Derived state: map 'all' to null for filter logic
+const selectedCategory = computed<GoalTemplate['category'] | null>(() =>
+  selectedCategorySelect.value === 'all'
+    ? null
+    : (selectedCategorySelect.value as GoalTemplate['category']),
+);
+const selectedRole = computed<string | null>(() =>
+  selectedRoleSelect.value === 'all' ? null : selectedRoleSelect.value,
+);
 
 // Options
 const categoryOptions = [
@@ -294,8 +363,8 @@ const open = () => {
   visible.value = true;
   // 重置状态
   searchQuery.value = '';
-  selectedCategory.value = null;
-  selectedRole.value = null;
+  selectedCategorySelect.value = 'all';
+  selectedRoleSelect.value = 'all';
   selectedTemplate.value = null;
 };
 
@@ -329,38 +398,39 @@ const applyFromPreview = () => {
 };
 
 // Helper functions
-const getCategoryColor = (category: GoalTemplate['category']): string => {
-  const colors = {
-    product: 'purple',
-    engineering: 'blue',
-    sales: 'green',
-    marketing: 'orange',
-    general: 'grey',
+const categoryIcons: Record<string, Component> = {
+  product: Rocket,
+  engineering: Code,
+  sales: TrendingUp,
+  marketing: Megaphone,
+  general: Briefcase,
+};
+
+const getCategoryIconComponent = (category: string): Component => {
+  return categoryIcons[category] || Folder;
+};
+
+const getCategoryColorClass = (category: string): string => {
+  const colors: Record<string, string> = {
+    product: 'text-purple-500',
+    engineering: 'text-blue-500',
+    sales: 'text-green-500',
+    marketing: 'text-orange-500',
+    general: 'text-gray-500',
   };
-  return colors[category] || 'grey';
+  return colors[category] || 'text-gray-500';
 };
 
-const getCategoryIcon = (category: GoalTemplate['category']): string => {
-  const icons = {
-    product: 'mdi-rocket-launch',
-    engineering: 'mdi-code-braces',
-    sales: 'mdi-chart-line',
-    marketing: 'mdi-bullhorn',
-    general: 'mdi-briefcase',
-  };
-  return icons[category] || 'mdi-folder';
+const getScoreBadgeClass = (score: number): string => {
+  if (score >= 80) return 'bg-green-100 text-green-700 hover:bg-green-100';
+  if (score >= 60) return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100';
+  return 'bg-blue-100 text-blue-700 hover:bg-blue-100';
 };
 
-const getScoreColor = (score: number): string => {
-  if (score >= 80) return 'success';
-  if (score >= 60) return 'warning';
-  return 'info';
-};
-
-const getWeightColor = (weight: number): string => {
-  if (weight >= 40) return 'success';
-  if (weight >= 25) return 'warning';
-  return 'info';
+const getWeightBgClass = (weight: number): string => {
+  if (weight >= 40) return 'bg-green-100 text-green-700';
+  if (weight >= 25) return 'bg-yellow-100 text-yellow-700';
+  return 'bg-blue-100 text-blue-700';
 };
 
 // Expose
@@ -369,17 +439,3 @@ defineExpose({
   close,
 });
 </script>
-
-<style scoped>
-.border-primary {
-  border: 2px solid rgb(var(--v-theme-primary));
-}
-
-.v-card {
-  transition: all 0.3s ease;
-}
-
-.v-card:hover {
-  transform: translateY(-4px);
-}
-</style>

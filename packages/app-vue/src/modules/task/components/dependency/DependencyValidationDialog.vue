@@ -1,93 +1,114 @@
 <template>
-  <v-dialog v-model="dialog" max-width="600px" persistent>
-    <v-card>
-      <v-card-title class="text-h5 error--text d-flex align-center">
-        <v-icon color="error" class="mr-2">mdi-alert-circle</v-icon>
-        无法创建依赖关系
-      </v-card-title>
+  <Dialog :open="dialog" @update:open="(v) => (dialog = v)">
+    <DialogContent class="max-w-[600px]" @interact-outside.prevent>
+      <DialogHeader>
+        <DialogTitle class="flex items-center gap-2 text-destructive">
+          <AlertCircle class="h-5 w-5" />
+          无法创建依赖关系
+        </DialogTitle>
+      </DialogHeader>
 
-      <v-card-text class="pt-4">
+      <div class="pt-4">
         <!-- 循环依赖错误 -->
         <div v-if="error?.code === 'CIRCULAR_DEPENDENCY'" class="mb-4">
-          <p class="text-subtitle-1 font-weight-medium mb-3">⚠️ 创建此依赖会形成循环依赖路径：</p>
+          <p class="text-base font-medium mb-3">⚠️ 创建此依赖会形成循环依赖路径：</p>
 
-          <v-card outlined class="pa-3 mb-3" color="error lighten-5">
-            <div class="dependency-path">
+          <Card class="p-3 mb-3 border-destructive/30 bg-destructive/5">
+            <div class="flex flex-col gap-2">
               <div
                 v-for="(taskId, index) in cyclePath"
                 :key="`${taskId}-${index}`"
-                class="path-item"
+                class="relative"
               >
-                <div class="d-flex align-center">
-                  <v-icon color="primary" class="mr-2">mdi-checkbox-marked-circle</v-icon>
+                <div class="flex items-center">
+                  <CheckCircle class="h-5 w-5 text-primary mr-2 shrink-0" />
                   <div>
-                    <div class="font-weight-medium">
+                    <div class="font-medium">
                       {{ getTaskTitle(taskId) }}
                     </div>
-                    <div class="text-caption text--secondary">{{ taskId.slice(0, 8) }}...</div>
+                    <div class="text-xs text-muted-foreground">{{ taskId.slice(0, 8) }}...</div>
                   </div>
                 </div>
 
                 <!-- 箭头 -->
-                <div v-if="index < cyclePath.length - 1" class="arrow-down">
-                  <v-icon color="error">mdi-arrow-down-thick</v-icon>
+                <div v-if="index < cyclePath.length - 1" class="flex justify-center my-1">
+                  <ArrowDown class="h-5 w-5 text-destructive" />
                 </div>
 
                 <!-- 循环标记 -->
-                <div v-if="index === cyclePath.length - 1" class="cycle-indicator">
-                  <v-chip color="error" small>
-                    <v-icon left small>mdi-refresh</v-icon>
+                <div v-if="index === cyclePath.length - 1" class="flex justify-center mt-2">
+                  <Badge variant="destructive">
+                    <RefreshCw class="h-3 w-3 mr-1" />
                     循环回到起点
-                  </v-chip>
+                  </Badge>
                 </div>
               </div>
             </div>
-          </v-card>
+          </Card>
 
-          <v-alert type="info" dense outlined class="mb-0">
-            <div class="text-body-2">
-              <strong>建议：</strong>
-              <ul class="mt-2 ml-4">
-                <li>检查任务之间的逻辑关系</li>
-                <li>考虑拆分复杂任务为多个独立任务</li>
-                <li>使用 DAG 视图可视化依赖关系</li>
-              </ul>
-            </div>
-          </v-alert>
+          <Alert class="mb-0">
+            <Info class="h-4 w-4" />
+            <AlertDescription>
+              <div class="text-sm">
+                <strong>建议：</strong>
+                <ul class="mt-2 ml-4 list-disc">
+                  <li>检查任务之间的逻辑关系</li>
+                  <li>考虑拆分复杂任务为多个独立任务</li>
+                  <li>使用 DAG 视图可视化依赖关系</li>
+                </ul>
+              </div>
+            </AlertDescription>
+          </Alert>
         </div>
 
         <!-- 其他错误 -->
         <div v-else>
-          <v-alert type="error" prominent>
-            <div class="text-h6">{{ error?.message }}</div>
-            <div v-if="error?.details" class="text-caption mt-2">
-              详情: {{ JSON.stringify(error.details) }}
-            </div>
-          </v-alert>
+          <Alert variant="destructive">
+            <AlertDescription>
+              <div class="text-lg font-semibold">{{ error?.message }}</div>
+              <div v-if="error?.details" class="text-xs mt-2">
+                详情: {{ JSON.stringify(error.details) }}
+              </div>
+            </AlertDescription>
+          </Alert>
 
           <!-- 错误代码 -->
           <div class="mt-3">
-            <v-chip small outlined> 错误代码: {{ error?.code }} </v-chip>
+            <Badge variant="outline"> 错误代码: {{ error?.code }} </Badge>
           </div>
         </div>
-      </v-card-text>
+      </div>
 
-      <v-divider />
+      <Separator />
 
-      <v-card-actions>
-        <v-btn v-if="showViewGraphButton" color="primary" variant="text" @click="handleViewGraph">
-          <v-icon left>mdi-graph-outline</v-icon>
+      <DialogFooter>
+        <Button v-if="showViewGraphButton" variant="ghost" @click="handleViewGraph">
+          <Network class="h-4 w-4 mr-1" />
           查看依赖图
-        </v-btn>
-        <v-spacer />
-        <v-btn color="grey" variant="text" @click="handleClose"> 关闭 </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </Button>
+        <div class="flex-1" />
+        <Button variant="ghost" @click="handleClose"> 关闭 </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Card,
+  Button,
+  Badge,
+  Alert,
+  AlertDescription,
+  Separator,
+} from '@dailyuse/ui-vue-shadcn';
+import { AlertCircle, CheckCircle, ArrowDown, RefreshCw, Info, Network } from 'lucide-vue-next';
 import type { TaskDependencyValidationError, TaskForDAGViewModel } from '../types';
 
 interface Props {
@@ -136,27 +157,3 @@ const handleViewGraph = () => {
   handleClose();
 };
 </script>
-
-<style scoped>
-.dependency-path {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.path-item {
-  position: relative;
-}
-
-.arrow-down {
-  display: flex;
-  justify-content: center;
-  margin: 4px 0;
-}
-
-.cycle-indicator {
-  display: flex;
-  justify-content: center;
-  margin-top: 8px;
-}
-</style>

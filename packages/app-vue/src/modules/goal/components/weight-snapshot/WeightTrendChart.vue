@@ -1,51 +1,63 @@
 <template>
-  <div class="weight-trend-chart">
-    <v-card>
-      <v-card-title class="d-flex justify-space-between align-center">
-        <span>权重趋势分析</span>
-        <v-btn-group density="compact">
-          <v-btn
+  <div class="w-full">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle class="text-base">权重趋势分析</CardTitle>
+        <div class="flex items-center gap-0.5">
+          <Button
             v-for="range in timeRanges"
             :key="range.value"
-            :variant="selectedRange === range.value ? 'flat' : 'text'"
-            :color="selectedRange === range.value ? 'primary' : undefined"
-            size="small"
+            :variant="selectedRange === range.value ? 'default' : 'ghost'"
+            size="sm"
             @click="handleRangeChange(range.value)"
           >
             {{ range.label }}
-          </v-btn>
-        </v-btn-group>
-      </v-card-title>
+          </Button>
+        </div>
+      </CardHeader>
 
-      <v-card-text>
+      <CardContent>
         <!-- 加载状态 -->
-        <v-progress-linear v-if="isLoading" indeterminate color="primary" />
+        <div v-if="isLoading" class="flex items-center justify-center py-12">
+          <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
 
         <!-- 空状态 -->
-        <v-alert v-else-if="!hasTrendData" type="info" variant="tonal"> 暂无趋势数据 </v-alert>
+        <Alert v-else-if="!hasTrendData">
+          <Info class="h-4 w-4" />
+          <AlertDescription>暂无趋势数据</AlertDescription>
+        </Alert>
 
         <!-- 图表 -->
-        <v-chart v-else class="chart" :option="chartOption" autoresize style="height: 400px" />
+        <v-chart
+          v-else
+          class="w-full min-h-[400px]"
+          :option="chartOption"
+          autoresize
+          style="height: 400px"
+        />
 
         <!-- 图例说明 -->
-        <div v-if="hasTrendData" class="legend-section mt-4">
-          <v-chip
+        <div v-if="hasTrendData" class="mt-4 rounded-md bg-muted/30 p-3 flex flex-wrap gap-2">
+          <Badge
             v-for="kr in trendData?.keyResults"
             :key="kr.id"
-            :color="getKRColor(kr.id)"
-            size="small"
-            class="mr-2"
+            :style="{
+              backgroundColor: getKRColor(kr.id),
+              color: '#fff',
+              borderColor: getKRColor(kr.id),
+            }"
           >
             {{ kr.title }}
-          </v-chip>
+          </Badge>
         </div>
-      </v-card-text>
-    </v-card>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import {
@@ -60,6 +72,11 @@ import VChart from 'vue-echarts';
 import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
+import { Badge } from '@dailyuse/ui-vue-shadcn';
+import { Loader2, Info } from 'lucide-vue-next';
 
 use([
   TitleComponent,
@@ -241,20 +258,3 @@ onMounted(() => {
   loadTrendData();
 });
 </script>
-
-<style scoped>
-.weight-trend-chart {
-  width: 100%;
-}
-
-.chart {
-  width: 100%;
-  min-height: 400px;
-}
-
-.legend-section {
-  padding: 12px;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-}
-</style>

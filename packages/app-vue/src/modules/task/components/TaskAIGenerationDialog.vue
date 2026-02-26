@@ -1,195 +1,198 @@
 <template>
-    <v-dialog
-        :model-value="modelValue"
-        @update:model-value="$emit('update:modelValue', $event)"
-        max-width="800px"
-        persistent
-    >
-        <v-card>
-            <v-card-title class="d-flex align-center justify-space-between">
-                <span class="text-h5">✨ 为关键结果生成任务</span>
-                <v-btn icon="mdi-close" variant="text" @click="onCancel" :disabled="importing" />
-            </v-card-title>
+  <Dialog :open="modelValue" @update:open="$emit('update:modelValue', $event)">
+    <DialogContent class="max-w-[800px]">
+      <DialogHeader>
+        <DialogTitle class="flex items-center justify-between text-xl">
+          <span>✨ 为关键结果生成任务</span>
+          <Button variant="ghost" size="icon" @click="onCancel" :disabled="importing">
+            <X class="h-4 w-4" />
+          </Button>
+        </DialogTitle>
+      </DialogHeader>
 
-            <v-divider />
+      <Separator />
 
-            <v-card-text class="pa-6">
-                <div v-if="loading" class="text-center py-8">
-                    <v-progress-circular indeterminate color="primary" size="64" class="mb-4" />
-                    <p class="text-h6">{{ loadingText || '正在生成任务...' }}</p>
-                    <p class="text-caption text-medium-emphasis">AI 正在根据您的关键结果生成任务计划</p>
+      <div class="p-6">
+        <div v-if="loading" class="text-center py-8">
+          <Loader2 class="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
+          <p class="text-lg font-semibold">{{ loadingText || '正在生成任务...' }}</p>
+          <p class="text-xs text-muted-foreground">AI 正在根据您的关键结果生成任务计划</p>
+        </div>
+
+        <Alert v-else-if="error" variant="destructive" class="mb-4">
+          <AlertDescription>{{ error }}</AlertDescription>
+        </Alert>
+
+        <div v-else-if="localTasks.length > 0">
+          <Alert v-if="!importing" class="mb-4 bg-green-50 border-green-200">
+            <AlertDescription class="flex items-center gap-2">
+              <CheckCircle class="h-4 w-4 text-green-600" />
+              已生成 {{ localTasks.length }} 个任务
+            </AlertDescription>
+          </Alert>
+
+          <div class="space-y-3">
+            <div
+              v-for="(task, index) in sortedTasks"
+              :key="index"
+              class="flex items-start gap-3 p-3 rounded-lg border bg-card"
+            >
+              <Checkbox
+                :checked="task.selected"
+                @update:checked="task.selected = $event"
+                class="mt-1"
+              />
+
+              <div class="flex-1 space-y-2">
+                <div class="flex items-center gap-2">
+                  <Badge :class="getPriorityBadgeClass(task.priority)" class="text-xs">
+                    {{ task.priority }}
+                  </Badge>
+                  <Input v-model="task.title" class="flex-1" />
                 </div>
 
-                <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-                    {{ error }}
-                </v-alert>
+                <div class="flex items-center gap-2">
+                  <Clock class="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Input
+                    v-model.number="task.estimatedHours"
+                    type="number"
+                    :min="1"
+                    :max="40"
+                    class="w-20"
+                  />
+                  <span class="text-xs text-muted-foreground">小时</span>
 
-                <div v-else-if="localTasks.length > 0">
-                    <v-alert v-if="!importing" type="success" variant="tonal" class="mb-4" icon="mdi-check-circle">
-                        已生成 {{ localTasks.length }} 个任务
-                    </v-alert>
-
-                    <v-list class="pa-0">
-                        <v-list-item v-for="(task, index) in sortedTasks" :key="index" class="px-0 mb-2">
-                            <template #prepend>
-                                <v-checkbox v-model="task.selected" hide-details density="compact" class="mr-2" />
-                            </template>
-
-                            <v-list-item-title class="d-flex align-center mb-2">
-                                <v-chip :color="getPriorityColor(task.priority)" size="small" label class="mr-2">
-                                    {{ task.priority }}
-                                </v-chip>
-
-                                <v-text-field
-                                    v-model="task.title"
-                                    density="compact"
-                                    hide-details
-                                    variant="outlined"
-                                    class="flex-grow-1"
-                                />
-                            </v-list-item-title>
-
-                            <v-list-item-subtitle class="d-flex align-center gap-2 mb-2">
-                                <v-icon size="small">mdi-clock-outline</v-icon>
-                                <v-text-field
-                                    v-model.number="task.estimatedHours"
-                                    type="number"
-                                    density="compact"
-                                    hide-details
-                                    variant="outlined"
-                                    min="1"
-                                    max="40"
-                                    style="width: 80px"
-                                    suffix="小时"
-                                />
-
-                                <v-select
-                                    v-model="task.priority"
-                                    :items="priorityOptions"
-                                    density="compact"
-                                    hide-details
-                                    variant="outlined"
-                                    style="width: 120px"
-                                />
-                            </v-list-item-subtitle>
-
-                            <v-list-item-subtitle v-if="task.description" class="mt-2">
-                                <v-textarea
-                                    v-model="task.description"
-                                    density="compact"
-                                    hide-details
-                                    variant="outlined"
-                                    rows="2"
-                                    auto-grow
-                                />
-                            </v-list-item-subtitle>
-                        </v-list-item>
-                    </v-list>
-
-                    <v-progress-linear v-if="importing" :model-value="importProgress" color="primary" height="8" class="mt-4" />
+                  <Select v-model="task.priority">
+                    <SelectTrigger class="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">HIGH</SelectItem>
+                      <SelectItem value="normal">NORMAL</SelectItem>
+                      <SelectItem value="low">LOW</SelectItem>
+                      <SelectItem value="urgent">URGENT</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-            </v-card-text>
 
-            <v-divider />
+                <div v-if="task.description">
+                  <Textarea v-model="task.description" :rows="2" />
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <v-card-actions class="px-6 py-4">
-                <v-spacer />
-                <v-btn variant="text" @click="onCancel" :disabled="importing">取消</v-btn>
-                <v-btn
-                    v-if="localTasks.length > 0"
-                    color="primary"
-                    variant="flat"
-                    :disabled="selectedCount === 0 || importing"
-                    :loading="importing"
-                    @click="onConfirmImport"
-                >
-                    导入所选任务 ({{ selectedCount }})
-                </v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
+          <Progress v-if="importing" :model-value="importProgress" class="mt-4 h-2" />
+        </div>
+      </div>
+
+      <Separator />
+
+      <DialogFooter class="px-6 py-4">
+        <Button variant="ghost" @click="onCancel" :disabled="importing">取消</Button>
+        <Button
+          v-if="localTasks.length > 0"
+          :disabled="selectedCount === 0 || importing"
+          @click="onConfirmImport"
+        >
+          <Loader2 v-if="importing" class="h-4 w-4 mr-1 animate-spin" />
+          导入所选任务 ({{ selectedCount }})
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { EditableTaskUI, UIPriority } from './types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Input,
+  Textarea,
+  Separator,
+  Progress,
+  Checkbox,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@dailyuse/ui-vue-shadcn';
+import { X, Loader2, CheckCircle, Clock } from 'lucide-vue-next';
 
 const props = defineProps<{
-    modelValue: boolean;
-    loading: boolean;
-    loadingText?: string;
-    importing: boolean;
-    importProgress?: number;
-    error?: string | null;
-    tasks: EditableTaskUI[];
+  modelValue: boolean;
+  loading: boolean;
+  loadingText?: string;
+  importing: boolean;
+  importProgress?: number;
+  error?: string | null;
+  tasks: EditableTaskUI[];
 }>();
 
 const emit = defineEmits<{
-    'update:modelValue': [value: boolean];
-    cancel: [];
-    'confirm-import': [tasks: EditableTaskUI[]];
+  'update:modelValue': [value: boolean];
+  cancel: [];
+  'confirm-import': [tasks: EditableTaskUI[]];
 }>();
 
 const localTasks = ref<EditableTaskUI[]>([]);
 
-const priorityOptions = [
-    { title: 'HIGH', value: 'high' },
-    { title: 'NORMAL', value: 'normal' },
-    { title: 'LOW', value: 'low' },
-    { title: 'URGENT', value: 'urgent' },
-];
-
 const selectedCount = computed(() => {
-    return localTasks.value.filter((task) => task.selected).length;
+  return localTasks.value.filter((task) => task.selected).length;
 });
 
 const sortedTasks = computed(() => {
-    const priorityOrder: Record<UIPriority, number> = {
-        urgent: 0,
-        high: 1,
-        normal: 2,
-        low: 3,
-    };
-    return [...localTasks.value].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  const priorityOrder: Record<UIPriority, number> = {
+    urgent: 0,
+    high: 1,
+    normal: 2,
+    low: 3,
+  };
+  return [...localTasks.value].sort(
+    (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
+  );
 });
 
-function getPriorityColor(priority: string): string {
-    switch (priority) {
-        case 'urgent':
-        case 'high':
-            return 'error';
-        case 'normal':
-            return 'warning';
-        case 'low':
-            return 'info';
-        default:
-            return 'default';
-    }
+function getPriorityBadgeClass(priority: string): string {
+  switch (priority) {
+    case 'urgent':
+    case 'high':
+      return 'bg-red-100 text-red-800 border-red-200';
+    case 'normal':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'low':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
 }
 
 function onCancel() {
-    if (props.importing) return;
-    emit('cancel');
-    emit('update:modelValue', false);
+  if (props.importing) return;
+  emit('cancel');
+  emit('update:modelValue', false);
 }
 
 function onConfirmImport() {
-    const selected = localTasks.value.filter((task) => task.selected);
-    emit('confirm-import', selected);
+  const selected = localTasks.value.filter((task) => task.selected);
+  emit('confirm-import', selected);
 }
 
 watch(
-    () => props.tasks,
-    (newTasks) => {
-        localTasks.value = newTasks.map((task) => ({ ...task }));
-    },
-    { immediate: true, deep: true }
+  () => props.tasks,
+  (newTasks) => {
+    localTasks.value = newTasks.map((task) => ({ ...task }));
+  },
+  { immediate: true, deep: true },
 );
 </script>
-
-<style scoped>
-.gap-2 {
-    gap: 8px;
-}
-</style>
-

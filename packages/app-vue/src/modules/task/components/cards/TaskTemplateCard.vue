@@ -1,218 +1,209 @@
-<!-- filepath: d:\myPrograms\DailyUse\src\modules\Task\presentation\components\TaskTemplateCard.vue -->
 <template>
-  <v-card 
-    class="template-card" 
+  <Card
+    class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
-    elevation="2" 
-    hover
   >
     <!-- 卡片头部 -->
-    <v-card-title class="template-header">
-      <div class="header-content">
-        <!-- Priority Indicator Icon - Story 2.4 -->
-        <div v-if="(template.priority ?? 0) >= 80" class="priority-indicator">
-          <v-icon 
-            :class="getIndicatorClass(template.priority ?? 0)"
-            :color="getIndicatorColor(template.priority ?? 0)"
-            size="medium"
-          >
-            {{ getIndicatorIcon(template.priority ?? 0) }}
-          </v-icon>
-        </div>
-        
-        <h3 class="template-title">{{ template.title }}</h3>
-        <div class="header-meta">
-          <v-chip
-            :color="getTemplateStatusColor(template)"
-            variant="tonal"
-            size="small"
-            class="status-chip"
-          >
-            <v-icon start size="small">
-              {{ getTemplateStatusIcon(template) }}
-            </v-icon>
-            {{ getTemplateStatusText(template) }}
-          </v-chip>
-          <v-chip
-            :color="getImportanceColor(template.importance)"
-            variant="outlined"
-            size="small"
-            class="importance-chip ml-2"
-          >
-            <v-icon start size="small">mdi-flag</v-icon>
-            {{ template.importanceText }}
-          </v-chip>
-          <!-- Story 2.3: Urgency chip removed - Priority now computed automatically -->
-          <!-- Priority Score Chip - Story 2.4 -->
-          <v-chip
-            :color="getPriorityColor(template.priority ?? 0)"
-            variant="tonal"
-            size="small"
-            class="priority-chip ml-2"
-          >
-            <v-icon start size="small">mdi-flame</v-icon>
-            {{ Math.round(template.priority ?? 0) }}/100
-          </v-chip>
-        </div>
-      </div>
+    <CardHeader class="template-header border-b border-border/10 p-4 pb-3">
+      <div class="flex items-start justify-between">
+        <div class="flex flex-col gap-2 flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <!-- Priority Indicator Icon - Story 2.4 -->
+            <div
+              v-if="(template.priority ?? 0) >= 80"
+              class="priority-indicator flex items-center shrink-0"
+            >
+              <component
+                :is="getIndicatorIconComponent(template.priority ?? 0)"
+                :class="[getIndicatorClass(template.priority ?? 0), 'h-5 w-5']"
+                :style="{ color: getIndicatorColor(template.priority ?? 0) }"
+              />
+            </div>
 
-      <!-- 操作按钮 -->
-      <div class="template-actions">
-        <v-btn 
-          data-testid="task-card-edit-button"
-          icon 
-          variant="text" 
-          size="small" 
-          @click="handleEdit" 
-          class="action-btn"
-        >
-          <v-icon>mdi-pencil</v-icon>
-          <v-tooltip activator="parent" location="bottom">编辑模板</v-tooltip>
-        </v-btn>
-        <v-btn
-          data-testid="task-card-delete-button"
-          icon
-          variant="text"
-          size="small"
-          color="error"
-          @click="handleDelete"
-          class="action-btn"
-        >
-          <v-icon>mdi-delete</v-icon>
-          <v-tooltip activator="parent" location="bottom">删除模板</v-tooltip>
-        </v-btn>
+            <CardTitle class="text-lg font-semibold truncate">{{ template.title }}</CardTitle>
+          </div>
+
+          <div class="flex flex-wrap gap-2 items-center">
+            <Badge
+              :variant="template.isActive ? 'default' : 'secondary'"
+              :class="getTemplateStatusBadgeClass(template)"
+              class="text-xs"
+            >
+              <component :is="getTemplateStatusIconComponent(template)" class="h-3 w-3 mr-1" />
+              {{ getTemplateStatusText(template) }}
+            </Badge>
+            <Badge
+              variant="outline"
+              :class="getImportanceBadgeClass(template.importance)"
+              class="text-xs"
+            >
+              <Flag class="h-3 w-3 mr-1" />
+              {{ template.importanceText }}
+            </Badge>
+            <!-- Story 2.3: Urgency chip removed - Priority now computed automatically -->
+            <!-- Priority Score Chip - Story 2.4 -->
+            <Badge :class="getPriorityBadgeClass(template.priority ?? 0)" class="text-xs">
+              <Flame class="h-3 w-3 mr-1" />
+              {{ Math.round(template.priority ?? 0) }}/100
+            </Badge>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex gap-1 shrink-0 ml-2">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                data-testid="task-card-edit-button"
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8"
+                @click="handleEdit"
+              >
+                <Pencil class="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>编辑模板</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                data-testid="task-card-delete-button"
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 text-destructive hover:text-destructive"
+                @click="handleDelete"
+              >
+                <Trash2 class="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>删除模板</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
-    </v-card-title>
+    </CardHeader>
 
     <!-- 卡片内容 -->
-    <v-card-text class="template-content">
+    <CardContent class="p-4">
       <!-- 描述 -->
-      <p class="template-description">
+      <p class="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2 min-h-[2.7rem]">
         {{ template.description || '暂无描述' }}
       </p>
 
       <!-- 元信息 -->
-      <div class="template-meta">
+      <div class="flex flex-col gap-3">
         <!-- 日期范围 -->
-        <div class="meta-item">
-          <v-icon color="primary" size="small" class="meta-icon"> mdi-calendar-range </v-icon>
-          <span class="meta-text">
+        <div class="flex items-center gap-2">
+          <Calendar class="h-4 w-4 shrink-0 text-primary" />
+          <span class="text-sm text-muted-foreground">
             开始于 {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
           </span>
         </div>
 
         <!-- 时间范围 -->
-        <div class="meta-item">
-          <v-icon color="info" size="small" class="meta-icon"> mdi-clock </v-icon>
-          <span class="meta-text">
+        <div class="flex items-center gap-2">
+          <Clock class="h-4 w-4 shrink-0 text-blue-500" />
+          <span class="text-sm text-muted-foreground">
             {{ timeLabel }}
           </span>
         </div>
 
         <!-- 重复模式 -->
-        <div class="meta-item">
-          <v-icon color="success" size="small" class="meta-icon"> mdi-repeat </v-icon>
-          <span class="meta-text">
+        <div class="flex items-center gap-2">
+          <RefreshCw class="h-4 w-4 shrink-0 text-green-500" />
+          <span class="text-sm text-muted-foreground">
             {{ template.recurrenceText }}
           </span>
         </div>
 
         <!-- 分类和标签 -->
-        <div class="meta-item">
-          <v-icon color="purple" size="small" class="meta-icon"> mdi-tag </v-icon>
-          <span class="meta-text">
-            <span v-if="template.tags.length > 0" class="tags">
+        <div class="flex items-center gap-2">
+          <Tag class="h-4 w-4 shrink-0 text-purple-500" />
+          <span class="text-sm text-muted-foreground">
+            <span v-if="template.tags.length > 0" class="italic opacity-70">
               · {{ template.tags.slice(0, 2).join(', ') }}
-              <span v-if="template.tags.length > 2"
-                >等{{ template.tags.length }}个标签</span
-              >
+              <span v-if="template.tags.length > 2">等{{ template.tags.length }}个标签</span>
             </span>
           </span>
         </div>
 
         <!-- 关联目标 -->
-        <div v-if="template.goalBinding" class="meta-item">
-          <v-icon color="warning" size="small" class="meta-icon"> mdi-target </v-icon>
-          <span class="meta-text"> 关联目标 </span>
+        <div v-if="template.goalBinding" class="flex items-center gap-2">
+          <Target class="h-4 w-4 shrink-0 text-yellow-500" />
+          <span class="text-sm text-muted-foreground"> 关联目标 </span>
         </div>
       </div>
 
       <!-- 关键结果标签 -->
-      <div v-if="template.goalBinding" class="key-results mt-3">
-        <v-chip
-          size="small"
-          color="primary"
-          variant="outlined"
-          class="mr-1 mb-1"
-        >
-          <v-icon start size="small">mdi-target</v-icon>
+      <div v-if="template.goalBinding" class="flex flex-wrap gap-1 mt-3">
+        <Badge variant="outline" class="text-xs text-primary border-primary">
+          <Target class="h-3 w-3 mr-1" />
           {{ getGoalBindingName(template.goalBinding) }}
-        </v-chip>
+        </Badge>
       </div>
 
       <!-- 统计信息 -->
-      <div v-if="template.instanceCount > 0" class="analytics-info mt-3">
-        <v-divider class="mb-2"></v-divider>
-        <div class="analytics-row">
-          <div class="analytics-item">
-            <span class="analytics-label">总次数：</span>
-            <span class="analytics-value">{{ template.instanceCount }}</span>
+      <div v-if="template.instanceCount > 0" class="mt-3 rounded-lg bg-muted/30 p-3">
+        <Separator class="mb-2" />
+        <div class="flex justify-between gap-4 flex-wrap">
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span class="text-xs text-muted-foreground mb-1">总次数：</span>
+            <span class="text-sm font-semibold text-primary">{{ template.instanceCount }}</span>
           </div>
-          <div class="analytics-item">
-            <span class="analytics-label">完成率：</span>
-            <span class="analytics-value"
+          <div class="flex flex-col items-center min-w-[60px]">
+            <span class="text-xs text-muted-foreground mb-1">完成率：</span>
+            <span class="text-sm font-semibold text-primary"
               >{{ Math.round(template.completionRate * 100) }}%</span
             >
           </div>
         </div>
       </div>
-    </v-card-text>
+    </CardContent>
 
     <!-- 卡片底部操作 -->
-    <v-card-actions class="template-footer">
-      <v-btn
+    <CardFooter class="px-4 py-3 border-t border-border/10 bg-muted/30 flex items-center">
+      <Button
         v-if="template.isActive"
         data-testid="task-card-pause-button"
-        color="primary"
-        variant="outlined"
-        size="small"
+        variant="outline"
+        size="sm"
         @click="handlePauseTemplate"
       >
-        <v-icon start size="small">mdi-pause</v-icon>
+        <Pause class="h-4 w-4 mr-1" />
         暂停
-      </v-btn>
-      <v-btn
+      </Button>
+      <Button
         v-else-if="template.isPaused"
         data-testid="task-card-resume-button"
-        color="warning"
-        variant="outlined"
-        size="small"
+        variant="outline"
+        size="sm"
+        class="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
         @click="handleResume"
       >
-        <v-icon start size="small">mdi-play</v-icon>
+        <Play class="h-4 w-4 mr-1" />
         恢复
-      </v-btn>
-      <v-btn
+      </Button>
+      <Button
         v-else-if="template.status === 'ARCHIVED'"
         data-testid="task-card-activate-button"
-        color="info"
-        variant="outlined"
-        size="small"
+        variant="outline"
+        size="sm"
+        class="border-blue-500 text-blue-600 hover:bg-blue-50"
         @click="handleActivateTemplate"
       >
-        <v-icon start size="small">mdi-play</v-icon>
+        <Play class="h-4 w-4 mr-1" />
         激活
-      </v-btn>
+      </Button>
 
-      <v-divider class="mx-2" inset vertical></v-divider>
+      <Separator orientation="vertical" class="mx-2 h-6" />
 
-      <div class="template-dates">
-        <span class="date-text">
+      <div class="flex flex-col items-end ml-auto">
+        <span class="text-xs text-muted-foreground">
           创建于 {{ template.formattedCreatedAt }}
         </span>
       </div>
-    </v-card-actions>
-  </v-card>
+    </CardFooter>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -220,6 +211,39 @@ import { computed } from 'vue';
 import { format } from 'date-fns';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  Badge,
+  Button,
+  Separator,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  Pencil,
+  Trash2,
+  Flag,
+  Flame,
+  Calendar,
+  Clock,
+  RefreshCw,
+  Tag,
+  Target,
+  Pause,
+  Play,
+  Zap,
+  ArrowUp,
+  Pin,
+  PlayCircle,
+  PauseCircle,
+  Archive,
+  Circle,
+} from 'lucide-vue-next';
 
 interface Props {
   template: TaskTemplateViewModel;
@@ -257,41 +281,41 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 // 状态相关方法
-const getTemplateStatusColor = (template: TaskTemplateViewModel) => {
-  if (template.isActive) return 'success';
-  if (template.isPaused) return 'warning';
-  if (template.isArchived) return 'default';
-  return 'default';
+const getTemplateStatusBadgeClass = (template: TaskTemplateViewModel) => {
+  if (template.isActive) return 'bg-green-100 text-green-800 border-green-200';
+  if (template.isPaused) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+  if (template.isArchived) return 'bg-gray-100 text-gray-800 border-gray-200';
+  return 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
-const getTemplateStatusIcon = (template: TaskTemplateViewModel) => {
-  const statusMap: Record<string, string> = {
-    ACTIVE: 'mdi-play-circle',
-    PAUSED: 'mdi-pause-circle',
-    ARCHIVED: 'mdi-archive',
-    DELETED: 'mdi-delete',
+const getTemplateStatusIconComponent = (template: TaskTemplateViewModel) => {
+  const statusMap: Record<string, any> = {
+    ACTIVE: PlayCircle,
+    PAUSED: PauseCircle,
+    ARCHIVED: Archive,
+    DELETED: Trash2,
   };
-  return statusMap[template.status] || 'mdi-circle';
+  return statusMap[template.status] || Circle;
 };
 
 const getTemplateStatusText = (template: TaskTemplateViewModel) => {
   return template.statusText || template.status;
 };
 
-const getImportanceColor = (importance: ImportanceLevel) => {
+const getImportanceBadgeClass = (importance: ImportanceLevel) => {
   switch (importance) {
     case ImportanceLevel.Trivial:
-      return 'white';
+      return 'border-gray-300 text-gray-600';
     case ImportanceLevel.Minor:
-      return 'success';
+      return 'border-green-400 text-green-700';
     case ImportanceLevel.Moderate:
-      return 'info';
+      return 'border-blue-400 text-blue-700';
     case ImportanceLevel.Important:
-      return 'warning';
+      return 'border-yellow-400 text-yellow-700';
     case ImportanceLevel.Vital:
-      return 'error';
+      return 'border-red-400 text-red-700';
     default:
-      return 'default';
+      return 'border-gray-300 text-gray-600';
   }
 };
 
@@ -310,23 +334,23 @@ const getPriorityLevel = (priority: number): string => {
 };
 
 /**
- * Returns Vuetify color for priority chip
+ * Returns Tailwind classes for priority badge
  */
-const getPriorityColor = (priority: number): string => {
-  if (priority >= 80) return 'error'; // red
-  if (priority >= 60) return 'warning'; // amber
-  return 'grey'; // gray
+const getPriorityBadgeClass = (priority: number): string => {
+  if (priority >= 80) return 'bg-red-100 text-red-800 border-red-200';
+  if (priority >= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+  return 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
 /**
- * Returns icon for priority indicator
- * 90+: ⚡ (flash) - critical/on fire
- * 80-89: ⬆️ (arrow-up) - important
+ * Returns Lucide icon component for priority indicator
+ * 90+: Zap (flash) - critical/on fire
+ * 80-89: ArrowUp - important
  */
-const getIndicatorIcon = (priority: number): string => {
-  if (priority >= 90) return 'mdi-flash'; // ⚡
-  if (priority >= 80) return 'mdi-arrow-up'; // ⬆️
-  return 'mdi-pin'; // 📌 (shouldn't show for <80)
+const getIndicatorIconComponent = (priority: number) => {
+  if (priority >= 90) return Zap;
+  if (priority >= 80) return ArrowUp;
+  return Pin;
 };
 
 /**
@@ -343,9 +367,9 @@ const getIndicatorColor = (priority: number): string => {
  * Faster pulse for critical (>=90), subtle pulse for high (80-89)
  */
 const getIndicatorClass = (priority: number): string => {
-  if (priority >= 90) return 'pulse-animation'; // faster pulse
-  if (priority >= 80) return 'subtle-pulse'; // subtle pulse
-  return ''; // no animation for medium/low
+  if (priority >= 90) return 'pulse-animation';
+  if (priority >= 80) return 'subtle-pulse';
+  return '';
 };
 
 // 关键结果相关
@@ -365,29 +389,29 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
  */
 const timeLabel = computed(() => {
   const timeConfig = props.template.timeConfig;
-  
+
   if (timeConfig.timeType === 'ALL_DAY') {
     return '全天';
   }
-  
+
   if (timeConfig.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
     const hours = Math.floor(timeConfig.timePoint / 60);
     const minutes = timeConfig.timePoint % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
-  
+
   if (timeConfig.timeType === 'TIME_RANGE' && timeConfig.timeRange) {
     const startHours = Math.floor(timeConfig.timeRange.start / 60);
     const startMinutes = timeConfig.timeRange.start % 60;
     const endHours = Math.floor(timeConfig.timeRange.end / 60);
     const endMinutes = timeConfig.timeRange.end % 60;
-    
+
     const startTime = `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
     const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-    
+
     return `${startTime} - ${endTime}`;
   }
-  
+
   return '全天';
 });
 
@@ -421,233 +445,8 @@ const handleActivateTemplate = async () => {
 </script>
 
 <style scoped>
-/* 模板卡片样式 */
-.template-card {
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(var(--v-theme-outline), 0.12);
-}
-
-.template-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.template-header {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.05),
-    rgba(var(--v-theme-secondary), 0.05)
-  );
-  border-bottom: 1px solid rgba(var(--v-theme-outline), 0.08);
-  padding: 1rem 1.5rem;
-}
-
-.header-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-}
-
-.header-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.template-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
-  color: rgb(var(--v-theme-on-surface));
-  /* 标题固定1行，超出省略 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-.template-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-  transform: scale(1.1);
-}
-
-/* 卡片内容 */
-.template-content {
-  padding: 1.5rem;
-}
-
-.template-description {
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  /* 描述固定2行，超出省略 */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: calc(0.9rem * 1.5 * 2); /* 固定高度：字体大小 × 行高 × 2行 */
-}
-
-.time-summary {
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  padding-left: 0.75rem;
-  background: rgba(var(--v-theme-primary), 0.05);
-  border-radius: 0 8px 8px 0;
-  padding: 0.75rem;
-}
-
-.template-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.meta-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.meta-text {
-  font-size: 0.875rem;
-  color: rgba(var(--v-theme-on-surface), 0.8);
-  line-height: 1.4;
-}
-
-.tags {
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  font-style: italic;
-}
-
-.key-results {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-
-/* 统计信息 */
-.analytics-info {
-  background: rgba(var(--v-theme-surface), 0.3);
-  border-radius: 8px;
-  padding: 0.75rem;
-}
-
-.analytics-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.analytics-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 60px;
-}
-
-.analytics-label {
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  margin-bottom: 0.25rem;
-}
-
-.analytics-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgb(var(--v-theme-primary));
-}
-
-/* 卡片底部 */
-.template-footer {
-  padding: 0.75rem 1.5rem;
-  background: rgba(var(--v-theme-surface), 0.3);
-  border-top: 1px solid rgba(var(--v-theme-outline), 0.08);
-  min-height: auto;
-}
-
-.template-dates {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.date-text {
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .template-header {
-    padding: 1rem;
-  }
-
-  .template-content {
-    padding: 1rem;
-  }
-
-  .template-footer {
-    padding: 0.75rem 1rem;
-  }
-
-  .analytics-row {
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-content {
-    align-items: center;
-    text-align: center;
-  }
-
-  .template-actions {
-    justify-content: center;
-    margin-top: 0.5rem;
-  }
-
-  .meta-item {
-    justify-content: center;
-  }
-
-  .time-summary {
-    text-align: center;
-  }
-}
-
-/**
- * Story 2.4: Priority-Based Card Styling
- * ======================================
- * Cards now have visual priority indicators through:
- * 1. Left border color (high=red, medium=amber, low=gray)
- * 2. Background color tint
- * 3. Icon indicator for high priority tasks
- * 4. Subtle shadow effect
- */
-
 /* Priority Card Base Styling */
 .template-card {
-  transition: all 0.3s ease;
   border-left: 4px solid transparent;
 }
 
@@ -673,35 +472,28 @@ const handleActivateTemplate = async () => {
 }
 
 /* Dark Theme Adjustments */
-[data-theme="dark"] .template-card.priority-high {
+[data-theme='dark'] .template-card.priority-high {
   background: var(--priority-high-bg-dark);
   border-left-color: var(--priority-high-border-dark);
   box-shadow: 0 2px 4px var(--priority-high-shadow-dark);
 }
 
-[data-theme="dark"] .template-card.priority-medium {
+[data-theme='dark'] .template-card.priority-medium {
   background: var(--priority-medium-bg-dark);
   border-left-color: var(--priority-medium-border-dark);
   box-shadow: 0 2px 4px var(--priority-medium-shadow-dark);
 }
 
-[data-theme="dark"] .template-card.priority-low {
+[data-theme='dark'] .template-card.priority-low {
   background: var(--priority-low-bg-dark);
   border-left-color: var(--priority-low-border-dark);
   box-shadow: 0 1px 2px var(--priority-low-shadow-dark);
 }
 
-/* Priority Indicator Icon */
-.priority-indicator {
-  margin-right: 8px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
 /* Animation Keyframes */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -710,7 +502,8 @@ const handleActivateTemplate = async () => {
 }
 
 @keyframes subtle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -735,26 +528,4 @@ const handleActivateTemplate = async () => {
     opacity: 1;
   }
 }
-
-/* Responsive Icon Sizing */
-@media (max-width: 600px) {
-  .priority-indicator {
-    margin-right: 4px;
-  }
-
-  .priority-indicator :deep(i) {
-    font-size: 20px !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .priority-indicator {
-    margin-right: 12px;
-  }
-
-  .priority-indicator :deep(i) {
-    font-size: 28px !important;
-  }
-}
 </style>
-

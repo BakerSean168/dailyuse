@@ -21,7 +21,9 @@ export const taskHandlers = [
 
   http.get(`${TEMPLATES}/by-priority`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: createMockTaskTemplateList(10),
       timestamp: Date.now(),
     });
@@ -30,7 +32,9 @@ export const taskHandlers = [
   http.get(TEMPLATES, () => {
     const templates = createMockTaskTemplateList(10);
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: { templates, total: templates.length },
       timestamp: Date.now(),
     });
@@ -39,16 +43,25 @@ export const taskHandlers = [
   http.post(TEMPLATES, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: createMockTaskTemplate({ name: body.name as string }), timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockTaskTemplate({ name: body.name as string }),
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
   }),
 
   http.get(`${TEMPLATES}/:id/instances`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: Array.from({ length: 5 }, (_, i) => ({
-        id: `instance-${i}`, templateId: params.id,
+        id: `instance-${i}`,
+        templateId: params.id,
         name: `任务实例 ${i + 1}`,
         status: ['Completed', 'Pending', 'InProgress'][i % 3],
         scheduledDate: Date.now() + i * 86400000,
@@ -60,10 +73,14 @@ export const taskHandlers = [
 
   http.post(`${TEMPLATES}/:id/generate-instances`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Generated',
+      ok: true,
+      code: 200,
+      message: 'Generated',
       data: Array.from({ length: 3 }, (_, i) => ({
-        id: `gen-instance-${i}`, templateId: params.id,
-        status: 'Pending', scheduledDate: Date.now() + i * 86400000,
+        id: `gen-instance-${i}`,
+        templateId: params.id,
+        status: 'Pending',
+        scheduledDate: Date.now() + i * 86400000,
       })),
       timestamp: Date.now(),
     });
@@ -71,7 +88,9 @@ export const taskHandlers = [
 
   http.post(`${TEMPLATES}/:id/activate`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Activated',
+      ok: true,
+      code: 200,
+      message: 'Activated',
       data: createMockTaskTemplate({ id: params.id as string, status: 'Active' }),
       timestamp: Date.now(),
     });
@@ -79,7 +98,9 @@ export const taskHandlers = [
 
   http.post(`${TEMPLATES}/:id/pause`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Paused',
+      ok: true,
+      code: 200,
+      message: 'Paused',
       data: createMockTaskTemplate({ id: params.id as string, status: 'Paused' }),
       timestamp: Date.now(),
     });
@@ -87,7 +108,9 @@ export const taskHandlers = [
 
   http.post(`${TEMPLATES}/:id/archive`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Archived',
+      ok: true,
+      code: 200,
+      message: 'Archived',
       data: createMockTaskTemplate({ id: params.id as string, status: 'Deleted' }),
       timestamp: Date.now(),
     });
@@ -95,7 +118,9 @@ export const taskHandlers = [
 
   http.post(`${TEMPLATES}/:id/bind-goal`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Bound',
+      ok: true,
+      code: 200,
+      message: 'Bound',
       data: createMockTaskTemplate({ id: params.id as string }),
       timestamp: Date.now(),
     });
@@ -103,7 +128,9 @@ export const taskHandlers = [
 
   http.post(`${TEMPLATES}/:id/unbind-goal`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Unbound',
+      ok: true,
+      code: 200,
+      message: 'Unbound',
       data: createMockTaskTemplate({ id: params.id as string, goalBinding: null }),
       timestamp: Date.now(),
     });
@@ -111,7 +138,9 @@ export const taskHandlers = [
 
   http.get(`${TEMPLATES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: createMockTaskTemplate({ id: params.id as string }),
       timestamp: Date.now(),
     });
@@ -120,7 +149,9 @@ export const taskHandlers = [
   http.put(`${TEMPLATES}/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Updated',
+      ok: true,
+      code: 200,
+      message: 'Updated',
       data: createMockTaskTemplate({ id: params.id as string, ...(body as object) }),
       timestamp: Date.now(),
     });
@@ -128,7 +159,9 @@ export const taskHandlers = [
 
   http.delete(`${TEMPLATES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Deleted',
+      ok: true,
+      code: 200,
+      message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });
@@ -138,9 +171,12 @@ export const taskHandlers = [
 
   http.get(INSTANCES, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: Array.from({ length: 8 }, (_, i) => ({
-        id: `instance-${i}`, templateId: `template-${i % 3}`,
+        id: `instance-${i}`,
+        templateId: `template-${i % 3}`,
         name: `任务实例 ${i + 1}`,
         status: ['Completed', 'Pending', 'InProgress'][i % 3],
         scheduledDate: Date.now() + i * 86400000,
@@ -152,23 +188,34 @@ export const taskHandlers = [
 
   http.post(`${INSTANCES}/check-expired`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Checked',
-      data: { expiredCount: 0 },
+      ok: true,
+      code: 200,
+      message: 'Checked',
+      data: { count: 0, instances: [] },
       timestamp: Date.now(),
     });
   }),
 
   http.get(`${INSTANCES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
-      data: { id: params.id, templateId: 'template-1', status: 'Pending', scheduledDate: Date.now() },
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: {
+        id: params.id,
+        templateId: 'template-1',
+        status: 'Pending',
+        scheduledDate: Date.now(),
+      },
       timestamp: Date.now(),
     });
   }),
 
   http.delete(`${INSTANCES}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Deleted',
+      ok: true,
+      code: 200,
+      message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });
@@ -176,7 +223,9 @@ export const taskHandlers = [
 
   http.post(`${INSTANCES}/:id/start`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Started',
+      ok: true,
+      code: 200,
+      message: 'Started',
       data: { id: params.id as string, status: 'InProgress', startedAt: Date.now() },
       timestamp: Date.now(),
     });
@@ -184,7 +233,9 @@ export const taskHandlers = [
 
   http.post(`${INSTANCES}/:id/complete`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Completed',
+      ok: true,
+      code: 200,
+      message: 'Completed',
       data: { id: params.id as string, status: 'Completed', completedAt: Date.now() },
       timestamp: Date.now(),
     });
@@ -192,7 +243,9 @@ export const taskHandlers = [
 
   http.post(`${INSTANCES}/:id/skip`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Skipped',
+      ok: true,
+      code: 200,
+      message: 'Skipped',
       data: { id: params.id as string, status: 'Skipped', skippedAt: Date.now() },
       timestamp: Date.now(),
     });
@@ -202,7 +255,9 @@ export const taskHandlers = [
 
   http.post(`${TASKS}/dependencies/validate`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Valid',
+      ok: true,
+      code: 200,
+      message: 'Valid',
       data: { valid: true, cycles: [] },
       timestamp: Date.now(),
     });
@@ -210,14 +265,27 @@ export const taskHandlers = [
 
   http.post(`${TASKS}/:taskId/dependencies`, ({ params }) => {
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: { id: `dep-${Date.now()}`, sourceTaskId: params.taskId, targetTaskId: 'target-id', type: 'FinishToStart' }, timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: {
+          id: `dep-${Date.now()}`,
+          sourceTaskId: params.taskId,
+          targetTaskId: 'target-id',
+          type: 'FinishToStart',
+        },
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
   }),
 
   http.get(`${TASKS}/:taskId/dependencies`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: [],
       timestamp: Date.now(),
     });
@@ -225,7 +293,9 @@ export const taskHandlers = [
 
   http.get(`${TASKS}/:taskId/dependents`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: [],
       timestamp: Date.now(),
     });
@@ -233,23 +303,39 @@ export const taskHandlers = [
 
   http.get(`${TASKS}/:taskId/dependency-chain`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: { chain: [], hasCycle: false },
       timestamp: Date.now(),
     });
   }),
 
-  http.put(`${TASKS}/dependencies/:id`, () => {
+  http.put(`${TASKS}/dependencies/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Updated',
-      data: {},
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: {
+        id: params.id as string,
+        predecessorTaskId: 'predecessor-1',
+        successorTaskId: 'successor-1',
+        dependencyType: 'FinishToStart',
+        lagDays: 0,
+        version: 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        deletedAt: null,
+      },
       timestamp: Date.now(),
     });
   }),
 
   http.delete(`${TASKS}/dependencies/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Deleted',
+      ok: true,
+      code: 200,
+      message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });

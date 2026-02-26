@@ -9,223 +9,276 @@
   5. 防止误触，提供二次确认
 -->
 <template>
-  <v-dialog v-model="show" max-width="600px" persistent>
-    <v-card>
-      <v-card-title class="d-flex align-center bg-success">
-        <v-icon color="white" class="mr-2">mdi-check-circle</v-icon>
-        <span class="text-white">完成任务</span>
-      </v-card-title>
+  <Dialog
+    :open="show"
+    @update:open="
+      (val: boolean) => {
+        if (!val) cancel();
+      }
+    "
+  >
+    <DialogContent class="max-w-[600px]">
+      <DialogHeader class="bg-green-600 -m-6 mb-0 p-4 rounded-t-lg">
+        <DialogTitle class="flex items-center text-white">
+          <CheckCircle class="h-5 w-5 mr-2 text-white" />
+          完成任务
+        </DialogTitle>
+      </DialogHeader>
 
-      <v-card-text class="pt-4">
+      <div class="pt-4 space-y-4">
         <!-- 任务信息 -->
-        <div class="task-info mb-4">
-          <h3 class="text-h6 mb-1">{{ taskTitle }}</h3>
-          <p class="text-caption text-medium-emphasis">
-            <v-icon size="small">mdi-calendar</v-icon>
+        <div class="p-3 bg-muted/30 rounded-lg">
+          <h3 class="text-lg font-semibold mb-1">{{ taskTitle }}</h3>
+          <p class="text-xs text-muted-foreground flex items-center gap-1">
+            <Calendar class="h-3 w-3" />
             {{ formatDate(instanceDate) }}
           </p>
         </div>
 
         <!-- 关联的目标信息 -->
-        <v-alert
-          v-if="goalBinding"
-          type="info"
-          variant="tonal"
-          class="mb-4"
-          border="start"
-          border-color="info"
-        >
-          <div class="d-flex flex-column gap-2">
-            <div class="d-flex align-center">
-              <v-icon size="small" class="mr-2">mdi-target</v-icon>
-              <strong class="mr-2">关联目标：</strong>
-              <span>{{ goalBinding.goalTitle }}</span>
-            </div>
-            <div class="d-flex align-center">
-              <v-icon size="small" class="mr-2">mdi-key</v-icon>
-              <strong class="mr-2">关键结果：</strong>
-              <span>{{ goalBinding.keyResultTitle }}</span>
-            </div>
-            <div class="d-flex align-center">
-              <v-icon size="small" class="mr-2">mdi-calculator</v-icon>
-              <strong class="mr-2">计算方式：</strong>
-              <v-chip size="small" :color="getAggregationMethodColor(goalBinding.aggregationMethod)">
-                {{ getAggregationMethodText(goalBinding.aggregationMethod) }}
-              </v-chip>
-            </div>
-            
-            <!-- 当前进度详情 -->
-            <v-divider class="my-2"></v-divider>
-            <div class="d-flex flex-column gap-1">
-              <div class="d-flex justify-space-between align-center">
-                <div class="d-flex align-center">
-                  <v-icon size="small" class="mr-2">mdi-progress-check</v-icon>
-                  <strong>当前进度</strong>
+        <Alert v-if="goalBinding" class="border-l-4 border-l-blue-500">
+          <AlertDescription>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center">
+                <Target class="h-4 w-4 mr-2 shrink-0" />
+                <strong class="mr-2">关联目标：</strong>
+                <span>{{ goalBinding.goalTitle }}</span>
+              </div>
+              <div class="flex items-center">
+                <Key class="h-4 w-4 mr-2 shrink-0" />
+                <strong class="mr-2">关键结果：</strong>
+                <span>{{ goalBinding.keyResultTitle }}</span>
+              </div>
+              <div class="flex items-center">
+                <Calculator class="h-4 w-4 mr-2 shrink-0" />
+                <strong class="mr-2">计算方式：</strong>
+                <Badge
+                  :class="getAggregationMethodBadgeClass(goalBinding.aggregationMethod)"
+                  class="text-xs"
+                >
+                  {{ getAggregationMethodText(goalBinding.aggregationMethod) }}
+                </Badge>
+              </div>
+
+              <!-- 当前进度详情 -->
+              <Separator class="my-2" />
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center">
+                    <CheckCircle class="h-4 w-4 mr-2" />
+                    <strong>当前进度</strong>
+                  </div>
+                  <Badge
+                    :class="
+                      getProgressBadgeClass(goalBinding.currentValue, goalBinding.targetValue)
+                    "
+                    class="text-xs"
+                  >
+                    {{ calculatePercentage(goalBinding.currentValue, goalBinding.targetValue) }}%
+                  </Badge>
                 </div>
-                <v-chip size="small" :color="getProgressColor(goalBinding.currentValue, goalBinding.targetValue)">
-                  {{ calculatePercentage(goalBinding.currentValue, goalBinding.targetValue) }}%
-                </v-chip>
+
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-muted-foreground">当前值：</span>
+                  <strong>{{ goalBinding.currentValue }} {{ goalBinding.unit || '' }}</strong>
+                </div>
+
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-muted-foreground">目标值：</span>
+                  <strong>{{ goalBinding.targetValue }} {{ goalBinding.unit || '' }}</strong>
+                </div>
+
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-muted-foreground">还需完成：</span>
+                  <strong
+                    :class="getRemainingClass(goalBinding.currentValue, goalBinding.targetValue)"
+                  >
+                    {{ Math.max(0, goalBinding.targetValue - goalBinding.currentValue) }}
+                    {{ goalBinding.unit || '' }}
+                  </strong>
+                </div>
+
+                <!-- 进度条 -->
+                <Progress
+                  :model-value="
+                    calculatePercentage(goalBinding.currentValue, goalBinding.targetValue)
+                  "
+                  class="mt-2 h-2"
+                />
               </div>
-              
-              <div class="d-flex justify-space-between align-center text-body-2">
-                <span class="text-medium-emphasis">当前值：</span>
-                <strong>{{ goalBinding.currentValue }} {{ goalBinding.unit || '' }}</strong>
-              </div>
-              
-              <div class="d-flex justify-space-between align-center text-body-2">
-                <span class="text-medium-emphasis">目标值：</span>
-                <strong>{{ goalBinding.targetValue }} {{ goalBinding.unit || '' }}</strong>
-              </div>
-              
-              <div class="d-flex justify-space-between align-center text-body-2">
-                <span class="text-medium-emphasis">还需完成：</span>
-                <strong :class="getRemainingClass(goalBinding.currentValue, goalBinding.targetValue)">
-                  {{ Math.max(0, goalBinding.targetValue - goalBinding.currentValue) }} {{ goalBinding.unit || '' }}
-                </strong>
-              </div>
-              
-              <!-- 进度条 -->
-              <v-progress-linear
-                :model-value="calculatePercentage(goalBinding.currentValue, goalBinding.targetValue)"
-                :color="getProgressColor(goalBinding.currentValue, goalBinding.targetValue)"
-                height="8"
-                rounded
-                class="mt-2"
-              ></v-progress-linear>
             </div>
-          </div>
-        </v-alert>
+          </AlertDescription>
+        </Alert>
 
         <!-- 输入本次完成值（仅在有 Goal 绑定时显示） -->
-        <div v-if="goalBinding">
-          <v-text-field
-            v-model.number="recordValue"
-            :label="getInputLabel(goalBinding.aggregationMethod)"
-            :hint="getInputHint(goalBinding.aggregationMethod)"
-            :persistent-hint="true"
-            type="number"
-            :step="getInputStep(goalBinding.aggregationMethod)"
-            :min="0"
-            :rules="[validateRecordValue]"
-            autofocus
-            variant="outlined"
-            color="success"
-            class="mb-2"
-          >
-            <template #prepend-inner>
-              <v-icon :color="recordValue !== null && recordValue > 0 ? 'success' : 'grey'">
-                {{ getAggregationMethodIcon(goalBinding.aggregationMethod) }}
-              </v-icon>
-            </template>
-            <template #append-inner v-if="goalBinding.unit">
-              <span class="text-caption text-medium-emphasis">{{ goalBinding.unit }}</span>
-            </template>
-          </v-text-field>
+        <div v-if="goalBinding" class="space-y-3">
+          <div class="space-y-2">
+            <Label :for="'record-value'">{{ getInputLabel(goalBinding.aggregationMethod) }}</Label>
+            <div class="relative">
+              <div class="absolute left-3 top-1/2 -translate-y-1/2">
+                <component
+                  :is="getAggregationMethodIconComponent(goalBinding.aggregationMethod)"
+                  class="h-4 w-4"
+                  :class="
+                    recordValue !== null && recordValue > 0
+                      ? 'text-green-500'
+                      : 'text-muted-foreground'
+                  "
+                />
+              </div>
+              <Input
+                id="record-value"
+                v-model.number="recordValue"
+                type="number"
+                :step="getInputStep(goalBinding.aggregationMethod)"
+                :min="0"
+                class="pl-10"
+                :class="goalBinding.unit ? 'pr-16' : ''"
+                autofocus
+              />
+              <div
+                v-if="goalBinding.unit"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+              >
+                {{ goalBinding.unit }}
+              </div>
+            </div>
+            <p class="text-xs text-muted-foreground">
+              {{ getInputHint(goalBinding.aggregationMethod) }}
+            </p>
+          </div>
 
           <!-- 预测结果 -->
-          <v-alert
+          <Alert
             v-if="recordValue !== null && recordValue > 0"
-            type="success"
-            variant="tonal"
-            density="compact"
-            class="mb-4"
+            class="bg-green-50 border-green-200"
           >
-            <div class="text-caption">
-              <strong>完成后预计：</strong>
-              {{ predictProgress() }}
-            </div>
-          </v-alert>
+            <AlertDescription>
+              <div class="text-xs">
+                <strong>完成后预计：</strong>
+                {{ predictProgress() }}
+              </div>
+            </AlertDescription>
+          </Alert>
 
           <!-- 快捷值（可选） -->
-          <div v-if="showQuickValues && quickValues.length > 0" class="mb-4">
-            <div class="text-caption text-medium-emphasis mb-2">快捷值：</div>
-            <div class="d-flex flex-wrap gap-2">
-              <v-chip
+          <div v-if="showQuickValues && quickValues.length > 0">
+            <div class="text-xs text-muted-foreground mb-2">快捷值：</div>
+            <div class="flex flex-wrap gap-2">
+              <Badge
                 v-for="value in quickValues"
                 :key="value"
-                size="small"
-                :color="recordValue === value ? 'primary' : 'default'"
-                :variant="recordValue === value ? 'elevated' : 'outlined'"
+                :variant="recordValue === value ? 'default' : 'outline'"
+                class="cursor-pointer text-xs"
                 @click="recordValue = value"
               >
                 {{ value }} {{ goalBinding.unit || '' }}
-              </v-chip>
+              </Badge>
             </div>
           </div>
         </div>
 
         <!-- 无 Goal 绑定时的提示 -->
-        <v-alert
-          v-else
-          type="success"
-          variant="tonal"
-          density="compact"
-          class="mb-4"
-        >
-          <div class="text-body-2">
-            <v-icon size="small" class="mr-1">mdi-information</v-icon>
-            此任务未关联目标，点击确认后将直接完成。
-          </div>
-        </v-alert>
+        <Alert v-else class="bg-green-50 border-green-200">
+          <AlertDescription>
+            <div class="text-sm flex items-center gap-1">
+              <Info class="h-4 w-4 shrink-0" />
+              此任务未关联目标，点击确认后将直接完成。
+            </div>
+          </AlertDescription>
+        </Alert>
 
         <!-- 完成备注（可选） -->
-        <v-textarea
-          v-model="note"
-          label="完成备注（可选）"
-          placeholder="记录本次完成的情况..."
-          rows="3"
-          variant="outlined"
-          class="mb-2"
-        >
-          <template #prepend-inner>
-            <v-icon size="small">mdi-note-text</v-icon>
-          </template>
-        </v-textarea>
+        <div class="space-y-2">
+          <Label for="completion-note">完成备注（可选）</Label>
+          <Textarea
+            id="completion-note"
+            v-model="note"
+            placeholder="记录本次完成的情况..."
+            :rows="3"
+          />
+        </div>
 
         <!-- 实际耗时（可选） -->
-        <v-text-field
-          v-model.number="duration"
-          label="实际耗时（可选）"
-          hint="记录实际花费的时间（分钟）"
-          type="number"
-          :min="0"
-          :step="5"
-          variant="outlined"
-          clearable
-        >
-          <template #prepend-inner>
-            <v-icon size="small">mdi-clock-outline</v-icon>
-          </template>
-          <template #append-inner>
-            <span class="text-caption text-medium-emphasis">分钟</span>
-          </template>
-        </v-text-field>
-      </v-card-text>
+        <div class="space-y-2">
+          <Label for="duration-input">实际耗时（可选）</Label>
+          <div class="relative">
+            <div class="absolute left-3 top-1/2 -translate-y-1/2">
+              <Clock class="h-4 w-4 text-muted-foreground" />
+            </div>
+            <Input
+              id="duration-input"
+              v-model.number="duration"
+              type="number"
+              :min="0"
+              :step="5"
+              placeholder="记录实际花费的时间（分钟）"
+              class="pl-10 pr-12"
+            />
+            <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+              分钟
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <v-card-actions class="px-4 pb-4">
-        <v-spacer />
-        <v-btn variant="text" :disabled="isSubmitting" @click="cancel">
-          取消
-        </v-btn>
-        <v-btn
-          color="success"
-          variant="elevated"
+      <DialogFooter class="pt-4">
+        <Button variant="ghost" :disabled="isSubmitting" @click="cancel"> 取消 </Button>
+        <Button
           :disabled="!isValid || isSubmitting"
-          :loading="isSubmitting"
           @click="confirm"
+          class="bg-green-600 hover:bg-green-700"
         >
-          <v-icon start>mdi-check</v-icon>
+          <Loader2 v-if="isSubmitting" class="h-4 w-4 mr-1 animate-spin" />
+          <Check v-else class="h-4 w-4 mr-1" />
           确认完成
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { format } from 'date-fns';
-import { AggregationMethod, type GoalClientDTO, type KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import {
+  AggregationMethod,
+  type GoalClientDTO,
+  type KeyResultClientDTO,
+} from '@dailyuse/contracts/goal';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Separator,
+  Progress,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  CheckCircle,
+  Calendar,
+  Target,
+  Key,
+  Calculator,
+  Check,
+  Info,
+  Clock,
+  Loader2,
+  PlusCircle,
+  ArrowUpCircle,
+  TrendingUp,
+  ArrowDownCircle,
+  RefreshCw,
+  Hash,
+} from 'lucide-vue-next';
 
 // ===================== 接口定义 =====================
 
@@ -361,39 +414,39 @@ const getInputStep = (method?: AggregationMethod) => {
   return 0.01;
 };
 
-// 图标
-const getAggregationMethodIcon = (method?: AggregationMethod) => {
+// 图标组件
+const getAggregationMethodIconComponent = (method?: AggregationMethod) => {
   switch (method) {
     case AggregationMethod.SUM:
-      return 'mdi-plus-circle';
+      return PlusCircle;
     case AggregationMethod.MAX:
-      return 'mdi-arrow-up-circle';
+      return ArrowUpCircle;
     case AggregationMethod.AVERAGE:
-      return 'mdi-chart-line';
+      return TrendingUp;
     case AggregationMethod.MIN:
-      return 'mdi-arrow-down-circle';
+      return ArrowDownCircle;
     case AggregationMethod.LAST:
-      return 'mdi-update';
+      return RefreshCw;
     default:
-      return 'mdi-numeric';
+      return Hash;
   }
 };
 
-// 颜色
-const getAggregationMethodColor = (method?: AggregationMethod) => {
+// Badge class for aggregation method
+const getAggregationMethodBadgeClass = (method?: AggregationMethod) => {
   switch (method) {
     case AggregationMethod.SUM:
-      return 'primary';
+      return 'bg-blue-100 text-blue-800';
     case AggregationMethod.MAX:
-      return 'success';
+      return 'bg-green-100 text-green-800';
     case AggregationMethod.AVERAGE:
-      return 'info';
+      return 'bg-cyan-100 text-cyan-800';
     case AggregationMethod.MIN:
-      return 'warning';
+      return 'bg-yellow-100 text-yellow-800';
     case AggregationMethod.LAST:
-      return 'secondary';
+      return 'bg-purple-100 text-purple-800';
     default:
-      return 'grey';
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
@@ -477,22 +530,22 @@ const calculatePercentage = (current: number, target: number) => {
   return Math.min(Math.round((current / target) * 100), 100);
 };
 
-// 获取进度颜色
-const getProgressColor = (current: number, target: number) => {
+// 获取进度 Badge 样式
+const getProgressBadgeClass = (current: number, target: number) => {
   const percentage = (current / target) * 100;
-  if (percentage >= 100) return 'success';
-  if (percentage >= 70) return 'info';
-  if (percentage >= 40) return 'warning';
-  return 'error';
+  if (percentage >= 100) return 'bg-green-100 text-green-800';
+  if (percentage >= 70) return 'bg-blue-100 text-blue-800';
+  if (percentage >= 40) return 'bg-yellow-100 text-yellow-800';
+  return 'bg-red-100 text-red-800';
 };
 
 // 获取剩余量的样式类
 const getRemainingClass = (current: number, target: number) => {
   const remaining = target - current;
-  if (remaining <= 0) return 'text-success';
-  if (remaining / target <= 0.3) return 'text-info';
-  if (remaining / target <= 0.6) return 'text-warning';
-  return 'text-error';
+  if (remaining <= 0) return 'text-green-600';
+  if (remaining / target <= 0.3) return 'text-blue-600';
+  if (remaining / target <= 0.6) return 'text-yellow-600';
+  return 'text-red-600';
 };
 
 // 格式化日期
@@ -505,9 +558,9 @@ const formatDate = (date: number | Date) => {
 
 const confirm = () => {
   if (!isValid.value || isSubmitting.value) return;
-  
+
   isSubmitting.value = true;
-  
+
   const data: CompleteTaskData = {
     note: note.value || undefined,
     duration: duration.value || undefined,
@@ -527,24 +580,3 @@ const cancel = () => {
   show.value = false;
 };
 </script>
-
-<style scoped>
-.task-info {
-  padding: 12px;
-  background-color: rgba(var(--v-theme-surface-variant), 0.3);
-  border-radius: 8px;
-}
-
-.task-info h3 {
-  font-weight: 500;
-}
-
-:deep(.v-alert) {
-  font-size: 0.875rem;
-}
-
-:deep(.v-chip) {
-  font-weight: 500;
-}
-</style>
-

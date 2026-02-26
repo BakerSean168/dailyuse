@@ -1,49 +1,56 @@
 <!-- widgets/ReminderSnoozeSettings.vue -->
 <template>
-  <div class="reminder-snooze-settings">
-    <v-row>
-      <v-col cols="12">
-        <v-switch v-model="localSnooze.enabled" label="允许稍后提醒" color="primary" />
-      </v-col>
+  <div class="w-full">
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-12">
+        <div class="flex items-center gap-2">
+          <Switch :checked="localSnooze.enabled" @update:checked="updateEnabled" />
+          <Label>允许稍后提醒</Label>
+        </div>
+      </div>
 
       <template v-if="localSnooze.enabled">
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model.number="localSnooze.interval"
-            label="稍后提醒间隔（分钟）"
+        <div class="col-span-12 md:col-span-6">
+          <Label>稍后提醒间隔（分钟）</Label>
+          <Input
+            :model-value="localSnooze.interval"
+            @update:model-value="updateInterval"
             type="number"
-            variant="outlined"
             min="1"
             max="60"
-            :rules="intervalRules"
+            class="mt-1"
           />
-        </v-col>
+        </div>
 
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model.number="localSnooze.maxCount"
-            label="最大重复次数"
+        <div class="col-span-12 md:col-span-6">
+          <Label>最大重复次数</Label>
+          <Input
+            :model-value="localSnooze.maxCount"
+            @update:model-value="updateMaxCount"
             type="number"
-            variant="outlined"
             min="1"
             max="10"
-            :rules="maxCountRules"
+            class="mt-1"
           />
-        </v-col>
+        </div>
 
-        <v-col cols="12">
-          <v-alert type="info" density="compact" variant="tonal">
-            <v-icon start>mdi-information-outline</v-icon>
-            稍后提醒功能允许用户在收到任务提醒时选择推迟提醒，系统会在设定的间隔时间后再次提醒
-          </v-alert>
-        </v-col>
+        <div class="col-span-12">
+          <Alert>
+            <Info class="h-4 w-4" />
+            <AlertDescription>
+              稍后提醒功能允许用户在收到任务提醒时选择推迟提醒，系统会在设定的间隔时间后再次提醒
+            </AlertDescription>
+          </Alert>
+        </div>
       </template>
-    </v-row>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Switch, Label, Input, Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
+import { Info } from 'lucide-vue-next';
 
 // 本地 SnoozeConfig 类型定义 (此功能可能尚未实现)
 interface SnoozeConfig {
@@ -68,22 +75,15 @@ const localSnooze = computed({
   set: (value) => emit('update:modelValue', value),
 });
 
-// 验证规则
-const intervalRules = [
-  (v: number) => !!v || '间隔时间是必填的',
-  (v: number) => v > 0 || '间隔时间必须大于0分钟',
-  (v: number) => v <= 60 || '间隔时间不能超过60分钟',
-];
+const updateEnabled = (value: boolean) => {
+  emit('update:modelValue', { ...props.modelValue, enabled: value });
+};
 
-const maxCountRules = [
-  (v: number) => !!v || '最大次数是必填的',
-  (v: number) => v > 0 || '最大次数必须大于0',
-  (v: number) => v <= 10 || '最大次数不能超过10次',
-];
+const updateInterval = (value: string | number) => {
+  emit('update:modelValue', { ...props.modelValue, interval: Number(value) });
+};
+
+const updateMaxCount = (value: string | number) => {
+  emit('update:modelValue', { ...props.modelValue, maxCount: Number(value) });
+};
 </script>
-
-<style scoped>
-.reminder-snooze-settings {
-  width: 100%;
-}
-</style>

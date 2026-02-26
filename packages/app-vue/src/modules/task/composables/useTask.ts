@@ -36,78 +36,93 @@ export function useTask() {
   async function fetchTemplates(query?: Record<string, unknown>) {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.listTemplates({
-      ...query,
-      page: store.pagination.page,
-      limit: store.pagination.pageSize,
-    } as Parameters<typeof service.listTemplates>[0]);
-    if (result.ok) {
-      store.setTemplates(
-        result.data.templates.map((t: TaskTemplate) => t.toDTO()),
-        result.data.total,
-      );
-    } else {
-      handleError(result.error.message || '加载任务模板失败');
+    try {
+      const result = await service.listTemplates({
+        ...query,
+        page: store.pagination.page,
+        limit: store.pagination.pageSize,
+      } as Parameters<typeof service.listTemplates>[0]);
+      if (result.ok) {
+        store.setTemplates(
+          (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),
+          result.data.total ?? 0,
+        );
+      } else {
+        handleError(result.error.message || '加载任务模板失败');
+      }
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   async function fetchTemplate(id: string) {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.getTemplate(id);
-    store.setLoading(false);
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.setCurrentTemplate(dto);
-      return dto;
+    try {
+      const result = await service.getTemplate(id);
+      if (result.ok) {
+        const dto = result.data.toDTO();
+        store.setCurrentTemplate(dto);
+        return dto;
+      }
+      handleError(result.error.message || '加载任务模板失败');
+      return null;
+    } finally {
+      store.setLoading(false);
     }
-    handleError(result.error.message || '加载任务模板失败');
-    return null;
   }
 
   async function createTemplate(req: CreateTaskTemplateReq) {
     savingId.value = 'new';
     store.setError(null);
-    const result = await service.createTemplate(req);
-    savingId.value = null;
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.addTemplate(dto);
-      toast.success('任务创建成功');
-      return dto;
+    try {
+      const result = await service.createTemplate(req);
+      if (result.ok) {
+        const dto = result.data.toDTO();
+        store.addTemplate(dto);
+        toast.success('任务创建成功');
+        return dto;
+      }
+      handleError(result.error.message || '创建任务失败');
+      return null;
+    } finally {
+      savingId.value = null;
     }
-    handleError(result.error.message || '创建任务失败');
-    return null;
   }
 
   async function updateTemplate(id: string, req: UpdateTaskTemplateReq) {
     savingId.value = id;
     store.setError(null);
-    const result = await service.updateTemplate(id, req);
-    savingId.value = null;
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.updateTemplate(dto);
-      toast.success('任务更新成功');
-      return dto;
+    try {
+      const result = await service.updateTemplate(id, req);
+      if (result.ok) {
+        const dto = result.data.toDTO();
+        store.updateTemplate(dto);
+        toast.success('任务更新成功');
+        return dto;
+      }
+      handleError(result.error.message || '更新任务失败');
+      return null;
+    } finally {
+      savingId.value = null;
     }
-    handleError(result.error.message || '更新任务失败');
-    return null;
   }
 
   async function deleteTemplate(id: string) {
     savingId.value = id;
     store.setError(null);
-    const result = await service.deleteTemplate(id);
-    savingId.value = null;
-    if (result.ok) {
-      store.removeTemplate(id);
-      toast.success('任务删除成功');
-      return true;
+    try {
+      const result = await service.deleteTemplate(id);
+      if (result.ok) {
+        store.removeTemplate(id);
+        toast.success('任务删除成功');
+        return true;
+      }
+      handleError(result.error.message || '删除任务失败');
+      return false;
+    } finally {
+      savingId.value = null;
     }
-    handleError(result.error.message || '删除任务失败');
-    return false;
   }
 
   async function activateTemplate(id: string) {
@@ -150,15 +165,18 @@ export function useTask() {
   async function fetchInstances(query?: Record<string, unknown>) {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.listInstances(
-      query as Parameters<typeof service.listInstances>[0],
-    );
-    if (result.ok) {
-      store.setInstances(result.data.map((i: TaskInstance) => i.toDTO()));
-    } else {
-      handleError(result.error.message || '加载任务实例失败');
+    try {
+      const result = await service.listInstances(
+        query as Parameters<typeof service.listInstances>[0],
+      );
+      if (result.ok) {
+        store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
+      } else {
+        handleError(result.error.message || '加载任务实例失败');
+      }
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   async function startInstance(id: string) {

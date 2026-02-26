@@ -1,143 +1,177 @@
 <template>
-  <div class="weight-snapshot-list">
-    <v-card>
-      <v-card-title class="d-flex justify-space-between align-center">
-        <span>权重变更历史</span>
-        <v-btn-group density="compact">
-          <v-btn
+  <div class="w-full">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle>权重变更历史</CardTitle>
+        <div class="flex items-center gap-0.5">
+          <Button
             v-for="range in timeRanges"
             :key="range.value"
-            :variant="selectedRange === range.value ? 'flat' : 'text'"
-            :color="selectedRange === range.value ? 'primary' : undefined"
-            size="small"
+            :variant="selectedRange === range.value ? 'default' : 'ghost'"
+            size="sm"
             @click="selectedRange = range.value"
           >
             {{ range.label }}
-          </v-btn>
-        </v-btn-group>
-      </v-card-title>
+          </Button>
+        </div>
+      </CardHeader>
 
-      <v-card-text>
+      <CardContent>
         <!-- 筛选器 -->
-        <v-row class="mb-4">
-          <v-col cols="12" md="4">
-            <v-select
-              v-model="selectedKRId"
-              :items="krOptions"
-              item-title="text"
-              item-value="value"
-              label="筛选 KeyResult"
-              clearable
-              density="compact"
-            />
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-select
-              v-model="selectedTriggers"
-              :items="triggerOptions"
-              label="触发方式"
-              multiple
-              chips
-              clearable
-              density="compact"
-            />
-          </v-col>
-        </v-row>
+        <div class="mb-4 grid grid-cols-12 gap-4">
+          <div class="col-span-12 md:col-span-4">
+            <Select v-model="selectedKRId">
+              <SelectTrigger>
+                <SelectValue placeholder="筛选 KeyResult" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="option in krOptions"
+                  :key="option.value ?? 'all'"
+                  :value="option.value ?? '__all__'"
+                >
+                  {{ option.text }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="col-span-12 md:col-span-4">
+            <div class="flex flex-wrap gap-1.5">
+              <Badge
+                v-for="option in triggerOptions"
+                :key="option.value"
+                :variant="selectedTriggers.includes(option.value) ? 'default' : 'outline'"
+                class="cursor-pointer select-none"
+                @click="toggleTriggerFilter(option.value)"
+              >
+                {{ option.title }}
+              </Badge>
+            </div>
+          </div>
+        </div>
 
         <!-- 加载状态 -->
-        <v-progress-linear v-if="isLoading" indeterminate color="primary" />
+        <div v-if="isLoading" class="flex items-center justify-center py-8">
+          <Loader2 class="h-6 w-6 animate-spin text-primary" />
+        </div>
 
         <!-- 空状态 -->
-        <v-alert v-else-if="!hasGoalSnapshots" type="info" variant="tonal"> 暂无权重变更记录 </v-alert>
+        <Alert v-else-if="!hasGoalSnapshots">
+          <AlertDescription>暂无权重变更记录</AlertDescription>
+        </Alert>
 
         <!-- 快照列表 -->
-        <v-list v-else>
-          <v-list-item
+        <div v-else>
+          <div
             v-for="snapshot in filteredSnapshots"
             :key="snapshot.id"
-            class="snapshot-item"
-            @click="toggleDetail(snapshot.id)"
+            class="border-b border-border/50 transition-colors hover:bg-muted/50"
           >
-            <template #prepend>
-              <v-avatar :color="getWeightChangeColor(snapshot.weightDelta)" size="40">
-                <v-icon>{{ getWeightChangeIcon(snapshot.weightDelta) }}</v-icon>
-              </v-avatar>
-            </template>
-
-            <v-list-item-title>
-              <span class="font-weight-medium">{{ getKRTitle(snapshot.keyResultId) }}</span>
-              <v-chip size="x-small" :color="getTriggerColor(snapshot.trigger)" class="ml-2">
-                {{ getTriggerLabel(snapshot.trigger) }}
-              </v-chip>
-            </v-list-item-title>
-
-            <v-list-item-subtitle>
-              <div class="d-flex align-center ga-2">
-                <span>{{ formatTime(snapshot.snapshotTime) }}</span>
-                <v-divider vertical />
-                <span class="weight-change">
-                  {{ snapshot.oldWeight }}%
-                  <v-icon size="x-small">mdi-arrow-right</v-icon>
-                  {{ snapshot.newWeight }}%
-                </span>
-                <v-chip
-                  size="x-small"
-                  :color="getWeightChangeColor(snapshot.weightDelta)"
-                  variant="tonal"
-                >
-                  {{ snapshot.weightDelta > 0 ? '+' : '' }}{{ snapshot.weightDelta }}%
-                </v-chip>
+            <div
+              class="flex items-center gap-3 px-2 py-3 cursor-pointer"
+              @click="toggleDetail(snapshot.id)"
+            >
+              <!-- Avatar -->
+              <div
+                class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center"
+                :class="getWeightChangeAvatarClass(snapshot.weightDelta)"
+              >
+                <component
+                  :is="getWeightChangeIconComponent(snapshot.weightDelta)"
+                  class="h-4 w-4"
+                />
               </div>
-              <div v-if="snapshot.reason" class="text-caption mt-1">
-                {{ snapshot.reason }}
-              </div>
-            </v-list-item-subtitle>
 
-            <template #append>
-              <v-btn
-                :icon="expandedItems.has(snapshot.id) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                variant="text"
-                size="small"
-              />
-            </template>
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-sm">{{ getKRTitle(snapshot.keyResultId) }}</span>
+                  <Badge :variant="getTriggerBadgeVariant(snapshot.trigger)" class="text-[10px]">
+                    {{ getTriggerLabel(snapshot.trigger) }}
+                  </Badge>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                  <span>{{ formatTime(snapshot.snapshotTime) }}</span>
+                  <Separator orientation="vertical" class="h-3" />
+                  <span class="inline-flex items-center gap-1">
+                    {{ snapshot.oldWeight }}%
+                    <ArrowRight class="h-3 w-3" />
+                    {{ snapshot.newWeight }}%
+                  </span>
+                  <Badge
+                    :variant="
+                      snapshot.weightDelta === 0
+                        ? 'secondary'
+                        : snapshot.weightDelta > 0
+                          ? 'default'
+                          : 'destructive'
+                    "
+                    class="text-[10px]"
+                  >
+                    {{ snapshot.weightDelta > 0 ? '+' : '' }}{{ snapshot.weightDelta }}%
+                  </Badge>
+                </div>
+                <div v-if="snapshot.reason" class="text-xs text-muted-foreground mt-1">
+                  {{ snapshot.reason }}
+                </div>
+              </div>
+
+              <!-- Expand toggle -->
+              <Button variant="ghost" size="icon-sm">
+                <ChevronUp v-if="expandedItems.has(snapshot.id)" class="h-4 w-4" />
+                <ChevronDown v-else class="h-4 w-4" />
+              </Button>
+            </div>
 
             <!-- 展开详情 -->
-            <v-expand-transition>
-              <div v-if="expandedItems.has(snapshot.id)" class="detail-panel mt-3 pa-3">
-                <v-row>
-                  <v-col cols="6">
-                    <div class="text-caption text-medium-emphasis">调整前权重</div>
-                    <div class="text-h6">{{ snapshot.oldWeight }}%</div>
-                  </v-col>
-                  <v-col cols="6">
-                    <div class="text-caption text-medium-emphasis">调整后权重</div>
-                    <div class="text-h6">{{ snapshot.newWeight }}%</div>
-                  </v-col>
-                  <v-col cols="12">
-                    <div class="text-caption text-medium-emphasis">操作人</div>
-                    <div>{{ snapshot.operatorId }}</div>
-                  </v-col>
-                  <v-col v-if="snapshot.reason" cols="12">
-                    <div class="text-caption text-medium-emphasis">调整原因</div>
-                    <div>{{ snapshot.reason }}</div>
-                  </v-col>
-                </v-row>
+            <div
+              v-show="expandedItems.has(snapshot.id)"
+              class="mx-2 mb-3 p-3 bg-muted/50 rounded transition-all"
+            >
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <div class="text-xs text-muted-foreground">调整前权重</div>
+                  <div class="text-lg font-semibold">{{ snapshot.oldWeight }}%</div>
+                </div>
+                <div>
+                  <div class="text-xs text-muted-foreground">调整后权重</div>
+                  <div class="text-lg font-semibold">{{ snapshot.newWeight }}%</div>
+                </div>
+                <div class="col-span-2">
+                  <div class="text-xs text-muted-foreground">操作人</div>
+                  <div class="text-sm">{{ snapshot.operatorId }}</div>
+                </div>
+                <div v-if="snapshot.reason" class="col-span-2">
+                  <div class="text-xs text-muted-foreground">调整原因</div>
+                  <div class="text-sm">{{ snapshot.reason }}</div>
+                </div>
               </div>
-            </v-expand-transition>
-          </v-list-item>
-
-          <v-divider />
-        </v-list>
+            </div>
+          </div>
+        </div>
 
         <!-- 分页 -->
-        <v-pagination
+        <div
           v-if="hasGoalSnapshots && pagination && pagination.totalPages > 1"
-          v-model="currentPage"
-          :length="pagination.totalPages"
-          class="mt-4"
-        />
-      </v-card-text>
-    </v-card>
+          class="mt-4 flex items-center justify-center gap-2"
+        >
+          <Button variant="outline" size="sm" :disabled="currentPage <= 1" @click="currentPage--">
+            上一页
+          </Button>
+          <span class="text-sm text-muted-foreground">
+            {{ currentPage }} / {{ pagination.totalPages }}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="currentPage >= pagination.totalPages"
+            @click="currentPage++"
+          >
+            下一页
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -147,18 +181,38 @@ import { useWeightSnapshot } from '../../application/composables/useWeightSnapsh
 import { useGoal } from '../../composables/useGoal';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Badge,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Alert,
+  AlertDescription,
+  Separator,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  ArrowRight,
+  ChevronUp,
+  ChevronDown,
+  Loader2,
+} from 'lucide-vue-next';
 
 const props = defineProps<{
   goalId: string;
 }>();
 
-const {
-  goalSnapshots,
-  pagination,
-  isLoading,
-  hasGoalSnapshots,
-  fetchGoalSnapshots,
-} = useWeightSnapshot();
+const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapshots } =
+  useWeightSnapshot();
 const { goals } = useGoal();
 
 // 筛选状态
@@ -235,18 +289,18 @@ const formatTime = (timestamp: number) => {
   return format(new Date(timestamp), 'yyyy-MM-dd HH:mm', { locale: zhCN });
 };
 
-// 获取权重变化颜色
-const getWeightChangeColor = (delta: number) => {
-  if (delta > 0) return 'success';
-  if (delta < 0) return 'error';
-  return 'grey';
+// 获取权重变化 avatar 的 Tailwind 类
+const getWeightChangeAvatarClass = (delta: number) => {
+  if (delta > 0) return 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400';
+  if (delta < 0) return 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400';
+  return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
 };
 
-// 获取权重变化图标
-const getWeightChangeIcon = (delta: number) => {
-  if (delta > 0) return 'mdi-arrow-up';
-  if (delta < 0) return 'mdi-arrow-down';
-  return 'mdi-minus';
+// 获取权重变化图标组件
+const getWeightChangeIconComponent = (delta: number) => {
+  if (delta > 0) return ArrowUp;
+  if (delta < 0) return ArrowDown;
+  return Minus;
 };
 
 // 获取触发方式标签
@@ -260,15 +314,27 @@ const getTriggerLabel = (trigger: string) => {
   return labels[trigger] || trigger;
 };
 
-// 获取触发方式颜色
-const getTriggerColor = (trigger: string) => {
-  const colors: Record<string, string> = {
-    manual: 'primary',
-    auto: 'info',
-    restore: 'warning',
+// 获取触发方式 Badge variant
+const getTriggerBadgeVariant = (
+  trigger: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    manual: 'default',
+    auto: 'secondary',
+    restore: 'outline',
     import: 'secondary',
   };
-  return colors[trigger] || 'default';
+  return variants[trigger] || 'outline';
+};
+
+// 切换触发方式筛选
+const toggleTriggerFilter = (value: string) => {
+  const index = selectedTriggers.value.indexOf(value);
+  if (index === -1) {
+    selectedTriggers.value = [...selectedTriggers.value, value];
+  } else {
+    selectedTriggers.value = selectedTriggers.value.filter((v) => v !== value);
+  }
 };
 
 // 切换详情展开/收起
@@ -295,29 +361,3 @@ onMounted(() => {
   loadSnapshots();
 });
 </script>
-
-<style scoped>
-.weight-snapshot-list {
-  width: 100%;
-}
-
-.snapshot-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s;
-}
-
-.snapshot-item:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-.weight-change {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.detail-panel {
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-}
-</style>

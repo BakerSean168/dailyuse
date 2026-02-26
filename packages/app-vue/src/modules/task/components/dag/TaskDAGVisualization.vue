@@ -1,36 +1,56 @@
 <template>
-  <div class="task-dag-visualization" data-testid="task-dag-visualization">
-    <v-card elevation="2">
-      <v-card-title class="d-flex align-center justify-space-between">
-        <div class="d-flex align-center gap-2">
-          <v-icon color="primary">mdi-graph-outline</v-icon>
-          <span class="text-h6">任务依赖关系图</span>
-          <v-chip v-if="showCriticalPath && criticalPathDuration > 0" color="error" size="small" variant="flat">
+  <div class="task-dag-visualization w-full" data-testid="task-dag-visualization">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div class="flex items-center gap-2">
+          <Network class="h-5 w-5 text-primary" />
+          <CardTitle class="text-lg">任务依赖关系图</CardTitle>
+          <Badge v-if="showCriticalPath && criticalPathDuration > 0" variant="destructive">
             关键路径: {{ criticalPathDuration }}分钟
-          </v-chip>
+          </Badge>
         </div>
 
-        <div class="d-flex align-center gap-2">
-          <v-btn-toggle v-model="layoutType" mandatory density="compact" variant="outlined">
-            <v-btn value="force" size="small"><v-icon start>mdi-graph</v-icon>力导向</v-btn>
-            <v-btn value="hierarchical" size="small"><v-icon start>mdi-file-tree</v-icon>分层</v-btn>
-          </v-btn-toggle>
+        <div class="flex items-center gap-2">
+          <div class="inline-flex rounded-md border">
+            <Button
+              :variant="layoutType === 'force' ? 'default' : 'ghost'"
+              size="sm"
+              @click="layoutType = 'force'"
+            >
+              <Network class="h-4 w-4 mr-1" />
+              力导向
+            </Button>
+            <Button
+              :variant="layoutType === 'hierarchical' ? 'default' : 'ghost'"
+              size="sm"
+              @click="layoutType = 'hierarchical'"
+            >
+              <Network class="h-4 w-4 mr-1" />
+              分层
+            </Button>
+          </div>
 
-          <v-btn :color="showCriticalPath ? 'error' : 'default'" :variant="showCriticalPath ? 'flat' : 'outlined'" size="small" @click="showCriticalPath = !showCriticalPath">
-            <v-icon start>mdi-alert-decagram</v-icon>
+          <Button
+            :variant="showCriticalPath ? 'destructive' : 'outline'"
+            size="sm"
+            @click="showCriticalPath = !showCriticalPath"
+          >
+            <AlertTriangle class="h-4 w-4 mr-1" />
             关键路径
-          </v-btn>
+          </Button>
 
-          <v-btn icon="mdi-download" size="small" variant="text" @click="exportJson" />
+          <Button variant="ghost" size="icon" @click="exportJson">
+            <Download class="h-4 w-4" />
+          </Button>
         </div>
-      </v-card-title>
+      </CardHeader>
 
-      <v-card-text>
-        <div class="dag-container" :class="{ compact }">
-          <v-chart class="chart" :option="dagOption" autoresize @click="handleNodeClick" />
+      <CardContent>
+        <div class="w-full" :class="compact ? 'h-[420px]' : 'h-[560px]'">
+          <v-chart class="w-full h-full" :option="dagOption" autoresize @click="handleNodeClick" />
         </div>
-      </v-card-text>
-    </v-card>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -42,6 +62,8 @@ import { GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsOption } from 'echarts';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@dailyuse/ui-vue-shadcn';
+import { Network, AlertTriangle, Download } from 'lucide-vue-next';
 import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAGViewModel } from '../types';
 
@@ -143,7 +165,11 @@ const dagOption = computed<EChartsOption>(() => {
     value: task.estimatedMinutes || 0,
     symbolSize: criticalSet.has(task.id) ? 52 : 42,
     itemStyle: {
-      color: criticalSet.has(task.id) ? '#E53935' : task.status === 'COMPLETED' ? '#4CAF50' : '#2196F3',
+      color: criticalSet.has(task.id)
+        ? '#E53935'
+        : task.status === 'COMPLETED'
+          ? '#4CAF50'
+          : '#2196F3',
     },
     label: { show: true },
     task,
@@ -159,9 +185,7 @@ const dagOption = computed<EChartsOption>(() => {
           ? '#E53935'
           : '#9E9E9E',
       width:
-        criticalSet.has(dep.predecessorTaskId) && criticalSet.has(dep.successorTaskId)
-          ? 3
-          : 1.5,
+        criticalSet.has(dep.predecessorTaskId) && criticalSet.has(dep.successorTaskId) ? 3 : 1.5,
     },
   }));
 
@@ -224,23 +248,3 @@ const exportJson = () => {
   URL.revokeObjectURL(url);
 };
 </script>
-
-<style scoped>
-.task-dag-visualization {
-  width: 100%;
-}
-
-.dag-container {
-  width: 100%;
-  height: 560px;
-}
-
-.dag-container.compact {
-  height: 420px;
-}
-
-.chart {
-  width: 100%;
-  height: 100%;
-}
-</style>

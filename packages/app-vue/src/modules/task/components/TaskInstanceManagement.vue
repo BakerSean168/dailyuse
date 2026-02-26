@@ -6,66 +6,78 @@
           <h2 class="header-title">{{ headerTitle }}</h2>
           <p class="header-subtitle">{{ headerSubtitle }}</p>
         </div>
-        <div class="header-actions">
-          <v-btn icon variant="text" size="small" @click="emit('refresh')" :loading="loading" class="refresh-btn">
-            <v-icon>mdi-refresh</v-icon>
-          </v-btn>
-          <v-chip :color="completedCount === totalCount && totalCount > 0 ? 'success' : 'primary'" variant="elevated" size="large" class="progress-chip">
-            <v-icon start>mdi-check-circle</v-icon>
+        <div class="header-actions flex items-center gap-2">
+          <Button variant="ghost" size="icon" @click="emit('refresh')" :disabled="loading">
+            <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
+            <RefreshCw v-else class="h-4 w-4" />
+          </Button>
+          <Badge
+            :variant="completedCount === totalCount && totalCount > 0 ? 'default' : 'secondary'"
+            class="text-sm px-3 py-1"
+          >
+            <CheckCircle class="h-4 w-4 mr-1" />
             {{ completedCount }}/{{ totalCount }}
-          </v-chip>
+          </Badge>
         </div>
       </div>
 
-      <div v-if="totalCount > 0" class="progress-section">
-        <v-progress-linear :model-value="(completedCount / totalCount) * 100" :color="completedCount === totalCount ? 'success' : 'primary'" height="10" rounded class="progress-bar" />
-        <span class="progress-text">{{ Math.round((completedCount / totalCount) * 100) }}% 完成</span>
+      <div v-if="totalCount > 0" class="progress-section mt-3">
+        <Progress :model-value="(completedCount / totalCount) * 100" class="h-2.5" />
+        <span class="progress-text text-sm mt-1 block"
+          >{{ Math.round((completedCount / totalCount) * 100) }}% 完成</span
+        >
       </div>
     </div>
 
-    <v-card class="week-selector-card" elevation="3">
-      <v-card-text class="pa-4">
-        <div class="week-selector-header">
-          <v-btn icon variant="text" @click="shiftWeek(-7)" class="week-nav-btn"><v-icon>mdi-chevron-left</v-icon></v-btn>
-          <span class="week-title">{{ weekTitle }}</span>
-          <v-btn icon variant="text" @click="shiftWeek(7)" class="week-nav-btn"><v-icon>mdi-chevron-right</v-icon></v-btn>
+    <Card class="week-selector-card mt-4">
+      <CardContent class="p-4">
+        <div class="week-selector-header flex items-center justify-between">
+          <Button variant="ghost" size="icon" @click="shiftWeek(-7)">
+            <ChevronLeft class="h-4 w-4" />
+          </Button>
+          <span class="week-title font-medium">{{ weekTitle }}</span>
+          <Button variant="ghost" size="icon" @click="shiftWeek(7)">
+            <ChevronRight class="h-4 w-4" />
+          </Button>
         </div>
 
-        <div class="week-selector">
-          <v-btn
+        <div class="week-selector flex gap-1 mt-3">
+          <Button
             v-for="day in weekDays"
             :key="day.date"
-            :variant="day.date === selectedDate ? 'flat' : 'text'"
-            :color="day.date === selectedDate ? 'primary' : 'default'"
-            class="day-button"
+            :variant="day.date === selectedDate ? 'default' : 'ghost'"
+            class="day-button flex-1"
             @click="selectedDate = day.date"
           >
-            <div class="day-content">
-              <span class="weekday">{{ day.weekday }}</span>
-              <span class="date">{{ new Date(day.date).getDate() }}</span>
+            <div class="day-content flex flex-col items-center">
+              <span class="weekday text-xs">{{ day.weekday }}</span>
+              <span class="date text-sm font-medium">{{ new Date(day.date).getDate() }}</span>
             </div>
-          </v-btn>
+          </Button>
         </div>
-      </v-card-text>
-    </v-card>
+      </CardContent>
+    </Card>
 
-    <div class="task-sections">
-      <div v-if="totalCount === 0" class="overlay-card">
+    <div class="task-sections mt-4">
+      <div v-if="totalCount === 0" class="overlay-card text-center py-12">
         <div class="overlay-content">
-          <v-icon color="success" size="80" class="mb-4 empty-icon">mdi-beach</v-icon>
-          <h3 class="text-h5 mb-3">休息日</h3>
-          <p class="text-body-1 text-medium-emphasis mb-4">今天没有安排任务，好好休息吧！</p>
+          <Palmtree class="h-20 w-20 text-green-500 mx-auto mb-4" />
+          <h3 class="text-xl font-semibold mb-3">休息日</h3>
+          <p class="text-base text-muted-foreground mb-4">今天没有安排任务，好好休息吧！</p>
         </div>
       </div>
 
-      <div class="task-lists-row" v-else>
-        <v-card class="task-section-card incomplete-tasks" elevation="3">
-          <v-card-title class="section-header">
-            <div class="header-left"><v-icon color="warning" class="mr-2">mdi-clock-outline</v-icon><span>待完成任务</span></div>
-            <v-chip color="warning" variant="tonal" size="small" class="mr-2">{{ incompleteTasks.length }}</v-chip>
-          </v-card-title>
-          <v-card-text class="pa-0 task-content">
-            <v-list class="task-list">
+      <div class="task-lists-row grid grid-cols-1 md:grid-cols-2 gap-4" v-else>
+        <Card class="task-section-card incomplete-tasks">
+          <CardHeader class="section-header flex flex-row items-center justify-between pb-2">
+            <div class="flex items-center gap-2">
+              <Clock class="h-5 w-5 text-yellow-500" />
+              <CardTitle class="text-base">待完成任务</CardTitle>
+            </div>
+            <Badge variant="outline" class="text-yellow-600">{{ incompleteTasks.length }}</Badge>
+          </CardHeader>
+          <CardContent class="p-0 task-content">
+            <div class="task-list">
               <TaskInstanceCard
                 v-for="(task, index) in incompleteTasks"
                 :key="task.id"
@@ -74,17 +86,20 @@
                 :show-border="index < incompleteTasks.length - 1"
                 @complete="openCompleteDialog"
               />
-            </v-list>
-          </v-card-text>
-        </v-card>
+            </div>
+          </CardContent>
+        </Card>
 
-        <v-card class="task-section-card completed-tasks" elevation="2">
-          <v-card-title class="section-header">
-            <div class="header-left"><v-icon color="success" class="mr-2">mdi-check-circle</v-icon><span>已完成任务</span></div>
-            <v-chip color="success" variant="tonal" size="small">{{ completedTasks.length }}</v-chip>
-          </v-card-title>
-          <v-card-text class="pa-0 task-content">
-            <v-list class="task-list">
+        <Card class="task-section-card completed-tasks">
+          <CardHeader class="section-header flex flex-row items-center justify-between pb-2">
+            <div class="flex items-center gap-2">
+              <CheckCircle class="h-5 w-5 text-green-500" />
+              <CardTitle class="text-base">已完成任务</CardTitle>
+            </div>
+            <Badge variant="outline" class="text-green-600">{{ completedTasks.length }}</Badge>
+          </CardHeader>
+          <CardContent class="p-0 task-content">
+            <div class="task-list">
               <TaskInstanceCard
                 v-for="(task, index) in completedTasks"
                 :key="task.id"
@@ -93,9 +108,9 @@
                 :show-border="index < completedTasks.length - 1"
                 @undo="(id) => emit('undo-task', id)"
               />
-            </v-list>
-          </v-card-text>
-        </v-card>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
 
@@ -118,6 +133,24 @@ import { isSameDay } from 'date-fns';
 import TaskInstanceCard from './TaskInstanceCard.vue';
 import TaskCompleteDialog from './dialogs/TaskCompleteDialog.vue';
 import type { TaskInstanceViewModel } from './types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Badge,
+  Progress,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  RefreshCw,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Loader2,
+  Palmtree,
+} from 'lucide-vue-next';
 
 interface Props {
   taskInstances: TaskInstanceViewModel[];
@@ -131,7 +164,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'refresh'): void;
-  (e: 'complete-task', payload: { taskId: string; recordValue?: number; note?: string; duration?: number }): void;
+  (
+    e: 'complete-task',
+    payload: { taskId: string; recordValue?: number; note?: string; duration?: number },
+  ): void;
   (e: 'undo-task', taskId: string): void;
 }>();
 
@@ -201,7 +237,11 @@ const openCompleteDialog = (id: string) => {
   dialogVisible.value = true;
 };
 
-const handleCompleteConfirm = (payload: { recordValue?: number; note?: string; duration?: number }) => {
+const handleCompleteConfirm = (payload: {
+  recordValue?: number;
+  note?: string;
+  duration?: number;
+}) => {
   if (!selectedTask.value) return;
   emit('complete-task', {
     taskId: selectedTask.value.id,

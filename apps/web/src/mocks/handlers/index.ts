@@ -20,6 +20,7 @@ import { notificationHandlers } from './notification.handlers';
 import { repositoryHandlers } from './repository.handlers';
 import { governanceHandlers } from './governance.handlers';
 import { settingHandlers } from './setting.handlers';
+import { dashboardHandlers } from './dashboard.handlers';
 
 export const handlers = [
   ...goalHandlers,
@@ -32,4 +33,5 @@ export const handlers = [
   ...repositoryHandlers,
   ...governanceHandlers,
   ...settingHandlers,
+  ...dashboardHandlers,
 ];

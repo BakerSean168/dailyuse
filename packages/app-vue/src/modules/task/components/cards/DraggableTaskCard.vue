@@ -23,7 +23,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
   >
     <!-- Drag Handle (visible on hover) -->
     <div v-if="enableDrag && !isDragging" class="drag-handle" data-testid="drag-handle">
-      <v-icon size="small" color="grey">mdi-drag-vertical</v-icon>
+      <GripVertical class="h-4 w-4 text-gray-400" />
     </div>
 
     <!-- Drop Zone Indicator (when valid drop target) -->
@@ -32,7 +32,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       class="drop-zone-indicator"
       data-testid="drop-zone-valid"
     >
-      <v-icon color="success" size="large">mdi-plus-circle</v-icon>
+      <PlusCircle class="h-8 w-8 text-green-500" />
       <span class="drop-zone-text">松开创建依赖关系</span>
     </div>
 
@@ -42,20 +42,25 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       class="drop-zone-indicator invalid"
       data-testid="drop-zone-invalid"
     >
-      <v-icon color="error" size="large">mdi-close-circle</v-icon>
+      <XCircle class="h-8 w-8 text-red-500" />
       <span class="drop-zone-text">无法创建依赖</span>
     </div>
 
     <!-- Original Task Card -->
-    <TaskTemplateCard :template="template" @edit="handleEdit" @delete="handleDelete" @resume="handleResume" />
+    <TaskTemplateCard
+      :template="template"
+      @edit="handleEdit"
+      @delete="handleDelete"
+      @resume="handleResume"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { GripVertical, PlusCircle, XCircle } from 'lucide-vue-next';
 import TaskTemplateCard from './TaskTemplateCard.vue';
 import type { TaskTemplateViewModel } from '../types';
-
 
 // Props
 interface Props {
@@ -205,16 +210,16 @@ const onDrop = async (event: DragEvent) => {
 
 /* Valid drop target */
 .draggable-task-card--drag-over {
-  border: 2px solid rgb(var(--v-theme-success));
-  background-color: rgba(76, 175, 80, 0.08);
-  box-shadow: 0 0 12px rgba(76, 175, 80, 0.3);
+  border: 2px solid rgb(34 197 94);
+  background-color: rgba(34, 197, 94, 0.08);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
   transform: scale(1.02);
 }
 
 /* Invalid drop target */
 .draggable-task-card--invalid-drop {
-  border: 2px solid rgb(var(--v-theme-error));
-  background-color: rgba(244, 67, 54, 0.08);
+  border: 2px solid rgb(239 68 68);
+  background-color: rgba(239, 68, 68, 0.08);
   cursor: not-allowed;
 }
 
@@ -228,7 +233,7 @@ const onDrop = async (event: DragEvent) => {
   transition: opacity 0.2s ease;
   padding: 4px;
   border-radius: 4px;
-  background: rgba(var(--v-theme-surface), 0.8);
+  background: hsl(var(--background) / 0.8);
   cursor: grab;
 }
 
@@ -238,7 +243,7 @@ const onDrop = async (event: DragEvent) => {
 
 .drag-handle:hover {
   opacity: 1 !important;
-  background: rgba(var(--v-theme-surface), 0.95);
+  background: hsl(var(--background) / 0.95);
 }
 
 /* Drop zone indicator */
@@ -253,14 +258,14 @@ const onDrop = async (event: DragEvent) => {
   align-items: center;
   gap: 8px;
   padding: 16px 24px;
-  background: rgba(var(--v-theme-surface), 0.95);
+  background: hsl(var(--background) / 0.95);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   pointer-events: none;
 }
 
 .drop-zone-indicator.invalid {
-  background: rgba(244, 67, 54, 0.95);
+  background: rgba(239, 68, 68, 0.95);
   color: white;
 }
 
@@ -296,4 +301,3 @@ const onDrop = async (event: DragEvent) => {
   animation: none !important;
 }
 </style>
-

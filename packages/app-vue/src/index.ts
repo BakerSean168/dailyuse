@@ -18,6 +18,7 @@ export * from './shared/components';
 // ── Modules ──
 export * from './modules/account';
 export * from './modules/authentication';
+export * from './modules/dashboard';
 export * from './modules/goal';
 export * from './modules/governance';
 export * from './modules/task';

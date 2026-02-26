@@ -3,300 +3,317 @@
   状态规则编辑器组件
 -->
 <template>
-  <v-card class="rule-editor">
-    <v-card-title class="d-flex align-center justify-space-between">
-      <div class="d-flex align-center ga-2">
-        <v-icon icon="mdi-robot" size="24" />
-        <span>自动状态规则</span>
+  <Card class="rule-editor">
+    <CardHeader>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <Bot :size="24" />
+          <CardTitle>自动状态规则</CardTitle>
+        </div>
+        <Badge :variant="config.enabled ? 'default' : 'secondary'">
+          {{ config.enabled ? '已启用' : '已禁用' }}
+        </Badge>
       </div>
-      <v-chip :color="config.enabled ? 'success' : 'default'" variant="flat" size="small">
-        {{ config.enabled ? '已启用' : '已禁用' }}
-      </v-chip>
-    </v-card-title>
+      <CardDescription> 根据关键结果的进度、权重和截止日期自动更新目标状态 </CardDescription>
+    </CardHeader>
 
-    <v-card-subtitle> 根据关键结果的进度、权重和截止日期自动更新目标状态 </v-card-subtitle>
-
-    <v-card-text>
+    <CardContent>
       <!-- 全局配置 -->
-      <div class="mb-4">
-        <v-switch v-model="config.enabled" color="primary" label="启用自动规则" hide-details />
-        <v-switch
-          v-model="config.allowManualOverride"
-          color="primary"
-          label="允许手动覆盖"
-          hint="关闭后将不会自动应用规则建议"
-          class="mt-2"
-        />
-        <v-switch
-          v-model="config.notifyOnChange"
-          color="primary"
-          label="状态变更时通知"
-          class="mt-2"
-          hide-details
-        />
+      <div class="mb-4 space-y-2">
+        <div class="flex items-center gap-2">
+          <Switch :checked="config.enabled" @update:checked="config.enabled = $event" />
+          <Label>启用自动规则</Label>
+        </div>
+        <div class="flex items-center gap-2">
+          <Switch
+            :checked="config.allowManualOverride"
+            @update:checked="config.allowManualOverride = $event"
+          />
+          <Label>允许手动覆盖</Label>
+          <span class="text-sm text-muted-foreground">关闭后将不会自动应用规则建议</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Switch
+            :checked="config.notifyOnChange"
+            @update:checked="config.notifyOnChange = $event"
+          />
+          <Label>状态变更时通知</Label>
+        </div>
       </div>
 
-      <v-divider class="my-4" />
+      <Separator class="my-4" />
 
       <!-- 规则列表 -->
-      <div class="d-flex align-center justify-space-between mb-3">
-        <h3 class="text-subtitle-1 font-weight-medium">规则列表</h3>
-        <v-btn
-          prepend-icon="mdi-plus"
-          color="primary"
-          variant="text"
-          size="small"
-          @click="openAddDialog"
-        >
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-medium">规则列表</h3>
+        <Button variant="ghost" size="sm" @click="openAddDialog">
+          <Plus class="mr-1 h-4 w-4" />
           添加规则
-        </v-btn>
+        </Button>
       </div>
 
-      <v-list v-if="rules.length > 0" class="pa-0">
-        <v-list-item
+      <div v-if="rules.length > 0" class="space-y-2">
+        <div
           v-for="rule in sortedRules"
           :key="rule.id"
-          class="px-0 mb-2"
+          class="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
           :class="{ 'opacity-60': !rule.enabled }"
         >
-          <template #prepend>
-            <v-switch
-              v-model="rule.enabled"
-              color="primary"
-              hide-details
-              density="compact"
-              @update:model-value="handleRuleToggle(rule)"
-            />
-          </template>
+          <Switch
+            :checked="rule.enabled"
+            @update:checked="
+              (val: boolean) => {
+                rule.enabled = val;
+                handleRuleToggle(rule);
+              }
+            "
+          />
 
-          <v-list-item-title class="d-flex align-center ga-2">
-            <span>{{ rule.name }}</span>
-            <v-chip size="x-small" variant="tonal"> 优先级: {{ rule.priority }} </v-chip>
-            <v-chip v-if="rule.id.startsWith('rule-')" size="x-small" color="info" variant="flat">
-              内置
-            </v-chip>
-          </v-list-item-title>
-
-          <v-list-item-subtitle v-if="rule.description" class="mt-1">
-            {{ rule.description }}
-          </v-list-item-subtitle>
-
-          <v-list-item-subtitle class="mt-2 text-caption">
-            <div>
-              <v-icon icon="mdi-arrow-decision" size="12" class="mr-1" />
-              条件: {{ getConditionSummary(rule) }}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-medium">{{ rule.name }}</span>
+              <Badge variant="outline" class="text-xs"> 优先级: {{ rule.priority }} </Badge>
+              <Badge v-if="rule.id.startsWith('rule-')" variant="secondary" class="text-xs">
+                内置
+              </Badge>
             </div>
-            <div class="mt-1">
-              <v-icon icon="mdi-lightning-bolt" size="12" class="mr-1" />
-              动作: {{ getActionSummary(rule) }}
-            </div>
-          </v-list-item-subtitle>
 
-          <template #append>
-            <div class="d-flex ga-1">
-              <v-btn icon="mdi-pencil" size="small" variant="text" @click="openEditDialog(rule)" />
-              <v-btn
-                v-if="!rule.id.startsWith('rule-')"
-                icon="mdi-delete"
-                size="small"
-                variant="text"
-                color="error"
-                @click="handleDelete(rule.id)"
-              />
-            </div>
-          </template>
-        </v-list-item>
-      </v-list>
+            <p v-if="rule.description" class="mt-1 text-sm text-muted-foreground">
+              {{ rule.description }}
+            </p>
 
-      <v-alert v-else type="info" variant="tonal" class="mt-4">
-        暂无规则。点击"添加规则"创建自定义规则。
-      </v-alert>
-    </v-card-text>
+            <div class="mt-2 text-xs text-muted-foreground">
+              <div class="flex items-center">
+                <GitBranch class="mr-1 h-3 w-3" />
+                条件: {{ getConditionSummary(rule) }}
+              </div>
+              <div class="mt-1 flex items-center">
+                <Zap class="mr-1 h-3 w-3" />
+                动作: {{ getActionSummary(rule) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-1">
+            <Button variant="ghost" size="icon" class="h-8 w-8" @click="openEditDialog(rule)">
+              <Pencil class="h-4 w-4" />
+            </Button>
+            <Button
+              v-if="!rule.id.startsWith('rule-')"
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8 text-destructive hover:text-destructive"
+              @click="handleDelete(rule.id)"
+            >
+              <Trash2 class="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Alert v-else class="mt-4">
+        <AlertCircle class="h-4 w-4" />
+        <AlertDescription>暂无规则。点击"添加规则"创建自定义规则。</AlertDescription>
+      </Alert>
+    </CardContent>
 
     <!-- 编辑/新建规则对话框 -->
-    <v-dialog v-model="editDialog" max-width="800" persistent>
-      <v-card>
-        <v-card-title>
-          {{ editingRule ? '编辑规则' : '新建规则' }}
-        </v-card-title>
+    <Dialog :open="editDialog" @update:open="editDialog = $event">
+      <DialogContent class="max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>{{ editingRule ? '编辑规则' : '新建规则' }}</DialogTitle>
+        </DialogHeader>
 
-        <v-card-text>
-          <v-form ref="formRef">
-            <!-- 基本信息 -->
-            <v-text-field
-              v-model="form.name"
-              label="规则名称 *"
-              variant="outlined"
-              density="comfortable"
-              :rules="[(v: any) => !!v || '请输入规则名称']"
-              class="mb-4"
-            />
+        <form class="space-y-4" @submit.prevent>
+          <!-- 基本信息 -->
+          <div class="space-y-2">
+            <Label>规则名称 *</Label>
+            <Input v-model="form.name" placeholder="规则名称" />
+          </div>
 
-            <v-textarea
-              v-model="form.description"
-              label="描述"
-              variant="outlined"
-              density="comfortable"
-              rows="2"
-              class="mb-4"
-            />
+          <div class="space-y-2">
+            <Label>描述</Label>
+            <Textarea v-model="form.description" placeholder="描述" :rows="2" />
+          </div>
 
-            <v-row class="mb-4">
-              <v-col cols="6">
-                <v-text-field
-                  v-model.number="form.priority"
-                  label="优先级 *"
-                  variant="outlined"
-                  density="comfortable"
-                  type="number"
-                  hint="数值越大优先级越高"
-                  :rules="[(v: any) => v > 0 || '优先级必须大于 0']"
-                />
-              </v-col>
-              <v-col cols="6">
-                <v-select
-                  v-model="form.conditionType"
-                  label="条件类型 *"
-                  variant="outlined"
-                  density="comfortable"
-                  :items="conditionTypeOptions"
-                  item-title="title"
-                  item-value="value"
-                />
-              </v-col>
-            </v-row>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>优先级 *</Label>
+              <Input v-model.number="form.priority" type="number" placeholder="优先级" />
+              <p class="text-xs text-muted-foreground">数值越大优先级越高</p>
+            </div>
+            <div class="space-y-2">
+              <Label>条件类型 *</Label>
+              <Select v-model="form.conditionType">
+                <SelectTrigger>
+                  <SelectValue placeholder="条件类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="opt in conditionTypeOptions"
+                    :key="opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.title }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <v-divider class="my-4" />
+          <Separator class="my-4" />
 
-            <!-- 条件构建器 -->
-            <div class="mb-4">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <h4 class="text-subtitle-2">条件设置</h4>
-                <v-btn prepend-icon="mdi-plus" variant="text" size="small" @click="addCondition">
-                  添加条件
-                </v-btn>
-              </div>
-
-              <div v-if="form.conditions.length === 0" class="text-center py-4">
-                <v-icon icon="mdi-alert-circle-outline" size="48" color="grey" />
-                <p class="text-body-2 text-grey mt-2">请至少添加一个条件</p>
-              </div>
-
-              <v-row v-for="(condition, index) in form.conditions" :key="index" class="mb-2">
-                <v-col cols="3">
-                  <v-select
-                    v-model="condition.metric"
-                    label="指标"
-                    variant="outlined"
-                    density="compact"
-                    :items="metricOptions"
-                    item-title="title"
-                    item-value="value"
-                  />
-                </v-col>
-                <v-col cols="2">
-                  <v-select
-                    v-model="condition.operator"
-                    label="操作符"
-                    variant="outlined"
-                    density="compact"
-                    :items="operatorOptions"
-                    item-title="title"
-                    item-value="value"
-                  />
-                </v-col>
-                <v-col cols="2">
-                  <v-text-field
-                    v-model.number="condition.value"
-                    label="值"
-                    variant="outlined"
-                    density="compact"
-                    type="number"
-                  />
-                </v-col>
-                <v-col cols="3">
-                  <v-select
-                    v-model="condition.scope"
-                    label="范围"
-                    variant="outlined"
-                    density="compact"
-                    :items="scopeOptions"
-                    item-title="title"
-                    item-value="value"
-                  />
-                </v-col>
-                <v-col cols="2" class="d-flex align-center">
-                  <v-btn
-                    icon="mdi-delete"
-                    size="small"
-                    variant="text"
-                    color="error"
-                    @click="removeCondition(index)"
-                  />
-                </v-col>
-              </v-row>
+          <!-- 条件构建器 -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-medium">条件设置</h4>
+              <Button variant="ghost" size="sm" @click="addCondition">
+                <Plus class="mr-1 h-4 w-4" />
+                添加条件
+              </Button>
             </div>
 
-            <v-divider class="my-4" />
+            <div v-if="form.conditions.length === 0" class="text-center py-4">
+              <AlertCircle class="mx-auto h-12 w-12 text-muted-foreground" />
+              <p class="text-sm text-muted-foreground mt-2">请至少添加一个条件</p>
+            </div>
 
-            <!-- 动作设置 -->
-            <div class="mb-4">
-              <h4 class="text-subtitle-2 mb-3">动作设置</h4>
+            <div
+              v-for="(condition, index) in form.conditions"
+              :key="index"
+              class="grid grid-cols-12 gap-2 mb-2"
+            >
+              <div class="col-span-3">
+                <Select v-model="condition.metric">
+                  <SelectTrigger>
+                    <SelectValue placeholder="指标" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.title }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div class="col-span-2">
+                <Select v-model="condition.operator">
+                  <SelectTrigger>
+                    <SelectValue placeholder="操作符" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in operatorOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.title }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div class="col-span-2">
+                <Input v-model.number="condition.value" type="number" placeholder="值" />
+              </div>
+              <div class="col-span-3">
+                <Select v-model="condition.scope">
+                  <SelectTrigger>
+                    <SelectValue placeholder="范围" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in scopeOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.title }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div class="col-span-2 flex items-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="h-8 w-8 text-destructive hover:text-destructive"
+                  @click="removeCondition(index)"
+                >
+                  <Trash2 class="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
 
-              <v-select
-                v-model="form.action.status"
-                label="目标状态"
-                variant="outlined"
-                density="comfortable"
-                :items="statusOptions"
-                item-title="title"
-                item-value="value"
-                clearable
-                hint="留空则不改变状态"
-                persistent-hint
-                class="mb-4"
-              />
+          <Separator class="my-4" />
 
-              <v-switch
-                v-model="form.action.notify"
-                color="primary"
-                label="发送通知"
-                hide-details
-                class="mb-4"
-              />
+          <!-- 动作设置 -->
+          <div>
+            <h4 class="text-sm font-medium mb-3">动作设置</h4>
 
-              <v-textarea
-                v-if="form.action.notify"
+            <div class="space-y-2 mb-4">
+              <Label>目标状态</Label>
+              <Select v-model="form.action.status">
+                <SelectTrigger>
+                  <SelectValue placeholder="留空则不改变状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
+                    {{ opt.title }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p class="text-xs text-muted-foreground">留空则不改变状态</p>
+            </div>
+
+            <div class="flex items-center gap-2 mb-4">
+              <Switch :checked="form.action.notify" @update:checked="form.action.notify = $event" />
+              <Label>发送通知</Label>
+            </div>
+
+            <div v-if="form.action.notify" class="space-y-2">
+              <Label>通知消息</Label>
+              <Textarea
                 v-model="form.action.message"
-                label="通知消息"
-                variant="outlined"
-                density="comfortable"
-                rows="2"
+                :rows="2"
                 placeholder="例如：🎉 太棒了！目标进度达到 80%"
               />
             </div>
-          </v-form>
-        </v-card-text>
+          </div>
+        </form>
 
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="closeEditDialog">取消</v-btn>
-          <v-btn color="primary" @click="saveRule">保存</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+        <DialogFooter>
+          <Button variant="outline" @click="closeEditDialog">取消</Button>
+          <Button @click="saveRule">保存</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useAutoStatusRules } from '../../application/composables/useAutoStatusRules';
-import type {
-  StatusRule,
-  RuleCondition,
-} from '@dailyuse/contracts/goal';
+import type { StatusRule, RuleCondition } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { sortRulesByPriority } from '../../application/rules/BuiltInRules';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Badge,
+  Button,
+  Switch,
+  Label,
+  Separator,
+  Input,
+  Textarea,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Alert,
+  AlertDescription,
+} from '@dailyuse/ui-vue-shadcn';
+import { Bot, Plus, Pencil, Trash2, GitBranch, Zap, AlertCircle } from 'lucide-vue-next';
 
 const { config, getRuleEngine } = useAutoStatusRules();
 
@@ -304,7 +321,6 @@ const ruleEngine = getRuleEngine();
 const rules = ref<StatusRule[]>([]);
 const editDialog = ref(false);
 const editingRule = ref<StatusRule | null>(null);
-const formRef = ref<any>(null);
 
 interface RuleForm {
   name: string;
@@ -438,8 +454,15 @@ const closeEditDialog = () => {
 
 // 保存规则
 const saveRule = async () => {
-  const isValid = await formRef.value?.validate();
-  if (!isValid) return;
+  if (!form.value.name) {
+    alert('请输入规则名称');
+    return;
+  }
+
+  if (form.value.priority <= 0) {
+    alert('优先级必须大于 0');
+    return;
+  }
 
   if (form.value.conditions.length === 0) {
     alert('请至少添加一个条件');
@@ -511,22 +534,3 @@ onMounted(() => {
   loadRules();
 });
 </script>
-
-<style scoped lang="scss">
-.rule-editor {
-  :deep(.v-list-item) {
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    padding: 12px;
-    transition: all 0.2s;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.02);
-    }
-  }
-
-  :deep(.v-list-item-subtitle) {
-    opacity: 0.7;
-  }
-}
-</style>

@@ -50,7 +50,7 @@ export function useReminder() {
         limit: store.pagination.pageSize,
       });
       if (result.ok) {
-        store.setTemplates(result.data.templates, result.data.total);
+        store.setTemplates(result.data.templates ?? [], result.data.total ?? 0);
       } else {
         handleError(result.error.message || '加载提醒模板失败');
       }
@@ -140,7 +140,7 @@ export function useReminder() {
     try {
       const result = await service.getReminderGroups();
       if (result.ok) {
-        store.setGroups(result.data.groups);
+        store.setGroups(result.data.groups ?? []);
       } else {
         handleError(result.error.message || '加载提醒分组失败');
       }

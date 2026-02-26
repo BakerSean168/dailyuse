@@ -45,8 +45,10 @@ export const scheduleHandlers = [
 
   http.get(`${EVENTS}/conflicts/detect`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
-      data: { hasConflicts: false, conflicts: [] },
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: { hasConflict: false, conflicts: [], suggestions: [] },
       timestamp: Date.now(),
     });
   }),
@@ -54,7 +56,9 @@ export const scheduleHandlers = [
   http.get(EVENTS, () => {
     const events = Array.from({ length: 8 }, () => createMockCalendarEntry());
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: events,
       timestamp: Date.now(),
     });
@@ -62,8 +66,10 @@ export const scheduleHandlers = [
 
   http.post(`${EVENTS}/conflicts/detect`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
-      data: { hasConflicts: false, conflicts: [] },
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: { hasConflict: false, conflicts: [], suggestions: [] },
       timestamp: Date.now(),
     });
   }),
@@ -71,7 +77,13 @@ export const scheduleHandlers = [
   http.post(`${EVENTS}/with-conflict-detection`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: { schedule: createMockCalendarEntry(body), conflicts: null }, timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: { schedule: createMockCalendarEntry(body), conflicts: null },
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
   }),
@@ -79,30 +91,46 @@ export const scheduleHandlers = [
   http.post(EVENTS, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: createMockCalendarEntry(body), timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockCalendarEntry(body),
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
   }),
 
   http.get(`${EVENTS}/:id/conflicts`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
-      data: { hasConflicts: false, conflicts: [] },
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: { hasConflict: false, conflicts: [], suggestions: [] },
       timestamp: Date.now(),
     });
   }),
 
   http.post(`${EVENTS}/:id/resolve-conflict`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Resolved',
-      data: { schedule: createMockCalendarEntry({ id: params.id }), conflicts: { hasConflicts: false, conflicts: [] }, applied: { strategy: 'move', changes: [] } },
+      ok: true,
+      code: 200,
+      message: 'Resolved',
+      data: {
+        schedule: createMockCalendarEntry({ id: params.id }),
+        conflicts: { hasConflict: false, conflicts: [], suggestions: [] },
+        applied: { strategy: 'move', changes: [] },
+      },
       timestamp: Date.now(),
     });
   }),
 
   http.get(`${EVENTS}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: createMockCalendarEntry({ id: params.id }),
       timestamp: Date.now(),
     });
@@ -111,7 +139,9 @@ export const scheduleHandlers = [
   http.patch(`${EVENTS}/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Updated',
+      ok: true,
+      code: 200,
+      message: 'Updated',
       data: createMockCalendarEntry({ id: params.id, ...body }),
       timestamp: Date.now(),
     });
@@ -119,7 +149,9 @@ export const scheduleHandlers = [
 
   http.delete(`${EVENTS}/:id`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Deleted',
+      ok: true,
+      code: 200,
+      message: 'Deleted',
       data: { id: params.id },
       timestamp: Date.now(),
     });
@@ -129,7 +161,9 @@ export const scheduleHandlers = [
 
   http.get(`${TASKS}/due`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: createMockScheduleTaskList(3),
       timestamp: Date.now(),
     });
@@ -138,7 +172,9 @@ export const scheduleHandlers = [
   http.get(TASKS, () => {
     const tasks = createMockScheduleTaskList(10);
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: { tasks, total: tasks.length },
       timestamp: Date.now(),
     });
@@ -147,14 +183,22 @@ export const scheduleHandlers = [
   http.post(`${TASKS}/batch`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>[];
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: body.map(() => createMockScheduleTask()), timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: body.map(() => createMockScheduleTask()),
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
   }),
 
   http.post(`${TASKS}/batch/delete`, () => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Deleted',
+      ok: true,
+      code: 200,
+      message: 'Deleted',
       data: { count: 0 },
       timestamp: Date.now(),
     });
@@ -163,14 +207,22 @@ export const scheduleHandlers = [
   http.post(TASKS, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: createMockScheduleTask({ name: body.name as string }), timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockScheduleTask({ name: body.name as string }),
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
   }),
 
   http.get(`${TASKS}/:taskId`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Success',
+      ok: true,
+      code: 200,
+      message: 'Success',
       data: createMockScheduleTask({ id: params.taskId as string }),
       timestamp: Date.now(),
     });
@@ -178,23 +230,37 @@ export const scheduleHandlers = [
 
   http.post(`${TASKS}/:taskId/pause`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Paused',
-      data: createMockScheduleTask({ id: params.taskId as string, status: 'Paused', enabled: false }),
+      ok: true,
+      code: 200,
+      message: 'Paused',
+      data: createMockScheduleTask({
+        id: params.taskId as string,
+        status: 'Paused',
+        enabled: false,
+      }),
       timestamp: Date.now(),
     });
   }),
 
   http.post(`${TASKS}/:taskId/resume`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Resumed',
-      data: createMockScheduleTask({ id: params.taskId as string, status: 'Active', enabled: true }),
+      ok: true,
+      code: 200,
+      message: 'Resumed',
+      data: createMockScheduleTask({
+        id: params.taskId as string,
+        status: 'Active',
+        enabled: true,
+      }),
       timestamp: Date.now(),
     });
   }),
 
   http.post(`${TASKS}/:taskId/complete`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Completed',
+      ok: true,
+      code: 200,
+      message: 'Completed',
       data: createMockScheduleTask({ id: params.taskId as string, status: 'Completed' }),
       timestamp: Date.now(),
     });
@@ -202,7 +268,9 @@ export const scheduleHandlers = [
 
   http.post(`${TASKS}/:taskId/cancel`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Cancelled',
+      ok: true,
+      code: 200,
+      message: 'Cancelled',
       data: createMockScheduleTask({ id: params.taskId as string, status: 'Cancelled' }),
       timestamp: Date.now(),
     });
@@ -210,7 +278,9 @@ export const scheduleHandlers = [
 
   http.patch(`${TASKS}/:taskId/metadata`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Updated',
+      ok: true,
+      code: 200,
+      message: 'Updated',
       data: createMockScheduleTask({ id: params.taskId as string }),
       timestamp: Date.now(),
     });
@@ -218,7 +288,9 @@ export const scheduleHandlers = [
 
   http.delete(`${TASKS}/:taskId`, ({ params }) => {
     return HttpResponse.json({
-      ok: true, code: 200, message: 'Deleted',
+      ok: true,
+      code: 200,
+      message: 'Deleted',
       data: { id: params.taskId },
       timestamp: Date.now(),
     });

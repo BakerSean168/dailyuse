@@ -1,91 +1,92 @@
 <template>
-  <div class="goal-dag-visualization">
-    <v-card>
-      <v-card-title v-if="!compact" class="d-flex align-center">
-        <v-icon class="mr-2">mdi-graph-outline</v-icon>
-        目标权重分布图
+  <div class="goal-dag-visualization w-full">
+    <Card>
+      <CardHeader v-if="!compact" class="flex flex-row items-center gap-2 pb-2">
+        <GitBranch class="h-5 w-5 text-muted-foreground" />
+        <CardTitle class="text-lg">目标权重分布图</CardTitle>
 
-        <v-spacer />
+        <div class="flex-1" />
 
         <!-- 权重总和显示 -->
-        <v-chip color="info" size="small" class="mr-2">
-          <v-icon start>mdi-dumbbell</v-icon>
+        <Badge variant="secondary" class="mr-2">
+          <Dumbbell class="mr-1 h-3 w-3" />
           总权重: {{ totalWeight }}
-        </v-chip>
+        </Badge>
 
         <!-- 布局类型切换 -->
-        <v-btn-toggle v-model="layoutType" density="compact" mandatory divided>
-          <v-btn value="force" size="small">
-            <v-icon start>mdi-lightning-bolt</v-icon>
+        <div class="flex items-center rounded-md border">
+          <Button
+            :variant="layoutType === 'force' ? 'default' : 'ghost'"
+            size="sm"
+            @click="layoutType = 'force'"
+          >
+            <Zap class="mr-1 h-3.5 w-3.5" />
             力导向
-          </v-btn>
-          <v-btn value="hierarchical" size="small">
-            <v-icon start>mdi-file-tree</v-icon>
+          </Button>
+          <Button
+            :variant="layoutType === 'hierarchical' ? 'default' : 'ghost'"
+            size="sm"
+            @click="layoutType = 'hierarchical'"
+          >
+            <GitBranch class="mr-1 h-3.5 w-3.5" />
             分层
-          </v-btn>
-        </v-btn-toggle>
+          </Button>
+        </div>
 
         <!-- 重置布局按钮 -->
-        <v-btn
-          v-if="hasCustomLayout"
-          icon="mdi-refresh"
-          variant="text"
-          size="small"
-          class="ml-2"
-          @click="resetLayout"
-        >
-          <v-icon>mdi-refresh</v-icon>
-          <v-tooltip activator="parent" location="bottom"> 重置布局 </v-tooltip>
-        </v-btn>
+        <Tooltip v-if="hasCustomLayout">
+          <TooltipTrigger as-child>
+            <Button variant="ghost" size="icon" class="ml-2 h-8 w-8" @click="resetLayout">
+              <RefreshCw class="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>重置布局</TooltipContent>
+        </Tooltip>
 
         <!-- 导出按钮 -->
-        <v-btn
-          icon="mdi-download"
-          variant="text"
-          size="small"
-          class="ml-2"
-          @click="exportDialog?.open()"
-        >
-          <v-icon>mdi-download</v-icon>
-          <v-tooltip activator="parent" location="bottom"> 导出 (Ctrl+E) </v-tooltip>
-        </v-btn>
-      </v-card-title>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button variant="ghost" size="icon" class="ml-2 h-8 w-8" @click="exportDialog?.open()">
+              <Download class="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>导出 (Ctrl+E)</TooltipContent>
+        </Tooltip>
+      </CardHeader>
 
-      <v-card-text>
+      <CardContent>
         <!-- 权重分布信息 -->
-        <v-alert v-if="!compact && hasKeyResults" type="info" variant="tonal" class="mb-4">
-          <template #title>权重分布信息</template>
-          总权重: {{ totalWeight }} | 权重范围: 1-10 | 占比计算: (权重/总权重) × 100%
-        </v-alert>
+        <Alert v-if="!compact && hasKeyResults" class="mb-4">
+          <AlertTitle>权重分布信息</AlertTitle>
+          <AlertDescription>
+            总权重: {{ totalWeight }} | 权重范围: 1-10 | 占比计算: (权重/总权重) × 100%
+          </AlertDescription>
+        </Alert>
 
         <!-- 加载状态 -->
-        <v-alert v-if="isLoading && !loadError" type="info" variant="tonal" class="mb-4">
-          <v-progress-linear indeterminate color="primary" class="mb-2" />
-          正在加载目标数据...
-        </v-alert>
+        <Alert v-if="isLoading && !loadError" class="mb-4">
+          <Loader2 class="h-4 w-4 animate-spin" />
+          <AlertDescription>正在加载目标数据...</AlertDescription>
+        </Alert>
 
         <!-- 错误状态 -->
-        <v-alert v-else-if="loadError" type="error" variant="tonal" class="mb-4">
-          <template #title>加载失败</template>
-          {{ loadError }}
-          <template #append>
-            <v-btn 
-              color="error" 
-              variant="text" 
-              size="small" 
-              :loading="isRetrying"
-              @click="retryLoad"
-            >
-              <v-icon start>mdi-refresh</v-icon>
+        <Alert v-else-if="loadError" variant="destructive" class="mb-4">
+          <AlertTitle>加载失败</AlertTitle>
+          <AlertDescription class="flex items-center justify-between">
+            <span>{{ loadError }}</span>
+            <Button variant="ghost" size="sm" :disabled="isRetrying" @click="retryLoad">
+              <RefreshCw class="mr-1 h-3.5 w-3.5" :class="{ 'animate-spin': isRetrying }" />
               重试
-            </v-btn>
-          </template>
-        </v-alert>
+            </Button>
+          </AlertDescription>
+        </Alert>
 
         <!-- 空状态 -->
-        <v-alert v-else-if="!localGoal || !hasKeyResults" type="info" variant="tonal">
-          {{ !localGoal ? '正在加载目标数据...' : '该 Goal 暂无 KeyResult' }}
-        </v-alert>
+        <Alert v-else-if="!localGoal || !hasKeyResults">
+          <AlertDescription>
+            {{ !localGoal ? '正在加载目标数据...' : '该 Goal 暂无 KeyResult' }}
+          </AlertDescription>
+        </Alert>
 
         <!-- DAG 图表 -->
         <div v-else ref="containerRef" class="dag-container" :class="{ compact: compact }">
@@ -99,31 +100,31 @@
         </div>
 
         <!-- 图例说明 -->
-        <div v-if="!compact && hasKeyResults" class="legend-section mt-4">
-          <v-divider class="mb-3" />
-          <div class="d-flex align-center flex-wrap gap-3">
-            <v-chip size="small" color="primary" variant="flat">
-              <v-icon start>mdi-circle</v-icon>
+        <div v-if="!compact && hasKeyResults" class="mt-4 rounded-lg bg-muted/50 p-3">
+          <Separator class="mb-3" />
+          <div class="flex flex-wrap items-center gap-3">
+            <Badge variant="default">
+              <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
               Goal 节点
-            </v-chip>
-            <v-chip size="small" color="success" variant="flat">
-              <v-icon start>mdi-circle</v-icon>
+            </Badge>
+            <Badge class="bg-green-600 text-white hover:bg-green-700">
+              <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
               权重 7-10
-            </v-chip>
-            <v-chip size="small" color="warning" variant="flat">
-              <v-icon start>mdi-circle</v-icon>
+            </Badge>
+            <Badge class="bg-amber-500 text-white hover:bg-amber-600">
+              <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
               权重 4-7
-            </v-chip>
-            <v-chip size="small" color="error" variant="flat">
-              <v-icon start>mdi-circle</v-icon>
+            </Badge>
+            <Badge variant="destructive">
+              <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
               权重 1-3
-            </v-chip>
-            <v-spacer />
-            <div class="text-caption text-grey">节点大小表示权重，边宽度表示权重占比</div>
+            </Badge>
+            <div class="flex-1" />
+            <span class="text-xs text-muted-foreground">节点大小表示权重，边宽度表示权重占比</span>
           </div>
         </div>
-      </v-card-text>
-    </v-card>
+      </CardContent>
+    </Card>
 
     <!-- Export Dialog -->
     <ExportDialog ref="exportDialog" @export="handleExport" />
@@ -138,13 +139,26 @@ import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/compo
 import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsOption } from 'echarts';
 import VChart from 'vue-echarts';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Badge,
+  Button,
+  Alert,
+  AlertTitle,
+  AlertDescription,
+  Separator,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@dailyuse/ui-vue-shadcn';
+import { GitBranch, Dumbbell, Zap, RefreshCw, Download, Loader2, Circle } from 'lucide-vue-next';
 import { useGoal } from '../../composables/useGoal';
 import { useResizeObserver } from '@vueuse/core';
 import ExportDialog from './ExportDialog.vue';
-import {
-  dagExportService,
-  type ExportOptions,
-} from '../../application/services/DAGExportService';
+import { dagExportService, type ExportOptions } from '../../application/services/DAGExportService';
 
 use([TitleComponent, TooltipComponent, LegendComponent, GraphChart, CanvasRenderer]);
 
@@ -204,14 +218,14 @@ const calculateHierarchicalLayout = () => {
   const containerWidth = 800;
   const goalY = 100;
   const krY = 300;
-  const krs = localGoal.value.keyResults;
+  const krs = localGoal.value.keyResults ?? [];
 
   const nodes = [];
 
   // Goal 节点居中
   nodes.push({
     id: localGoal.value.id,
-    name: localGoal.value.title,
+    name: localGoal.value.name,
     x: containerWidth / 2,
     y: goalY,
     symbolSize: 80,
@@ -252,12 +266,12 @@ const calculateHierarchicalLayout = () => {
 const calculateForceLayout = () => {
   if (!localGoal.value) return { nodes: [], links: [] };
 
-  const krs = localGoal.value.keyResults;
+  const krs = localGoal.value.keyResults ?? [];
 
   const nodes = [
     {
       id: localGoal.value.id,
-      name: localGoal.value.title,
+      name: localGoal.value.name,
       symbolSize: 80,
       itemStyle: { color: '#2196F3' },
       category: 0,
@@ -330,9 +344,10 @@ const dagOption = computed<EChartsOption>(() => {
             `;
           } else {
             // 计算权重占比
-            const percentage = totalWeight.value > 0 
-              ? ((params.data.value / totalWeight.value) * 100).toFixed(1)
-              : 0;
+            const percentage =
+              totalWeight.value > 0
+                ? ((params.data.value / totalWeight.value) * 100).toFixed(1)
+                : 0;
             return `
               <div style="padding: 8px;">
                 <div style="font-weight: bold; margin-bottom: 4px;">
@@ -546,7 +561,7 @@ const handleExport = async (options: ExportOptions) => {
 
     // 生成文件名并下载
     const filename = dagExportService.generateFilename(
-      localGoal.value?.title || 'goal',
+      localGoal.value?.name || 'goal',
       options.format,
     );
     dagExportService.downloadBlob(blob, filename);
@@ -616,14 +631,18 @@ const updateViewport = (viewport: { zoom: number; center: [number, number] }) =>
 // 加载目标数据
 const loadGoalData = async () => {
   if (!props.goalId) return;
-  
+
   loadError.value = null;
   isLoading.value = true;
   try {
     const result = await getGoalAggregateView(props.goalId);
     // 将 Goal 实体转换为可用的数据格式
     const data = result as any;
-    localGoal.value = data?.goal ? (data.goal.toClientDTO ? data.goal.toClientDTO(true) : data.goal) : data;
+    localGoal.value = data?.goal
+      ? data.goal.toClientDTO
+        ? data.goal.toClientDTO(true)
+        : data.goal
+      : data;
   } catch (error) {
     console.error('Failed to load goal aggregate view:', error);
     loadError.value = error instanceof Error ? error.message : '加载目标数据失败，请重试';
@@ -670,18 +689,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.goal-dag-visualization {
-  width: 100%;
-}
-
 .dag-container {
   width: 100%;
   min-width: 600px;
-  /* 使用 aspect-ratio 保持比例，同时设置合理的高度范围 */
   height: clamp(400px, 50vh, 600px);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.02);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  background-color: hsl(var(--muted) / 0.3);
   position: relative;
 }
 
@@ -696,15 +710,5 @@ onMounted(async () => {
   position: absolute;
   top: 0;
   left: 0;
-}
-
-.legend-section {
-  padding: 12px;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-}
-
-.gap-3 {
-  gap: 12px;
 }
 </style>

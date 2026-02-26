@@ -1,0 +1,24 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "isolated": false,
+    "launchOptions": {
+      "headless": true,
+      "channel": "chrome"
+    },
+    "contextOptions": {
+      "viewport": { "width": 1280, "height": 720 }
+    }
+  },
+  "capabilities": ["core"],
+  "saveTrace": true,
+  "outputDir": "./tmp/playwright-mcp",
+  "outputMode": "file",
+  "network": {
+    "allowedOrigins": ["http://localhost:*", "http://127.0.0.1:*"]
+  },
+  "timeouts": {
+    "action": 15000,
+    "navigation": 60000
+  }
+}

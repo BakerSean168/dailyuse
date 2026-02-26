@@ -1,33 +1,34 @@
 <!-- widgets/WeekdaySelector.vue -->
 <template>
-  <div class="weekday-selector">
-    <v-label class="mb-2">选择星期</v-label>
-    <v-chip-group v-model="localSelected" multiple variant="outlined" selected-class="text-primary">
-      <v-chip
+  <div class="w-full">
+    <Label class="mb-2 block">选择星期</Label>
+    <div class="flex flex-wrap gap-1">
+      <Badge
         v-for="(day, index) in weekdayOptions"
         :key="index"
-        :value="index"
-        filter
-        variant="outlined"
+        :variant="localSelected.includes(index) ? 'default' : 'outline'"
+        class="cursor-pointer select-none"
+        @click="toggleDay(index)"
       >
         {{ day }}
-      </v-chip>
-    </v-chip-group>
+      </Badge>
+    </div>
 
-    <div class="mt-2">
-      <v-btn size="small" variant="text" @click="selectWorkdays"> 工作日 </v-btn>
+    <div class="mt-2 flex flex-wrap gap-1">
+      <Button size="sm" variant="ghost" @click="selectWorkdays"> 工作日 </Button>
 
-      <v-btn size="small" variant="text" @click="selectWeekends"> 周末 </v-btn>
+      <Button size="sm" variant="ghost" @click="selectWeekends"> 周末 </Button>
 
-      <v-btn size="small" variant="text" @click="selectAll"> 全选 </v-btn>
+      <Button size="sm" variant="ghost" @click="selectAll"> 全选 </Button>
 
-      <v-btn size="small" variant="text" @click="clearAll"> 清空 </v-btn>
+      <Button size="sm" variant="ghost" @click="clearAll"> 清空 </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Badge, Button, Label } from '@dailyuse/ui-vue-shadcn';
 
 interface Props {
   modelValue: number[];
@@ -47,6 +48,15 @@ const localSelected = computed({
 
 const weekdayOptions = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
+const toggleDay = (index: number) => {
+  const current = localSelected.value;
+  if (current.includes(index)) {
+    localSelected.value = current.filter((d) => d !== index);
+  } else {
+    localSelected.value = [...current, index];
+  }
+};
+
 // 快捷选择方法
 const selectWorkdays = () => {
   localSelected.value = [1, 2, 3, 4, 5]; // 周一到周五
@@ -64,9 +74,3 @@ const clearAll = () => {
   localSelected.value = [];
 };
 </script>
-
-<style scoped>
-.weekday-selector {
-  width: 100%;
-}
-</style>

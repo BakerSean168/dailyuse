@@ -29,12 +29,13 @@
           </CardHeader>
           <CardContent class="space-y-4">
             <!-- 进度条 -->
-            <div class="space-y-2">
+            <div v-if="keyResult.progress" class="space-y-2">
               <div class="flex items-center justify-between text-sm">
                 <span class="text-muted-foreground">当前进度</span>
                 <span class="font-medium">
-                  {{ keyResult.progress.currentValue }} / {{ keyResult.progress.targetValue }}
-                  {{ keyResult.progress.unit }}
+                  {{ keyResult.progress.currentValue ?? 0 }} /
+                  {{ keyResult.progress.targetValue ?? 0 }}
+                  {{ keyResult.progress.unit ?? '' }}
                 </span>
               </div>
               <Progress :model-value="progressPercent" />
@@ -56,7 +57,10 @@
             </div>
           </CardHeader>
           <CardContent>
-            <div v-if="goalRecords.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+            <div
+              v-if="goalRecords.length === 0"
+              class="py-8 text-center text-sm text-muted-foreground"
+            >
               暂无进度记录
             </div>
             <div v-else class="space-y-3">
@@ -65,15 +69,21 @@
                 :key="record.id"
                 class="flex items-start gap-3 rounded-lg border p-3"
               >
-                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                <div
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10"
+                >
                   <TrendingUp class="h-4 w-4 text-primary" />
                 </div>
                 <div class="flex-1 space-y-1">
                   <div class="flex items-center justify-between">
                     <span class="text-sm font-medium">+{{ record.value }}</span>
-                    <span class="text-xs text-muted-foreground">{{ formatDate(record.createdAt) }}</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      formatDate(record.createdAt)
+                    }}</span>
                   </div>
-                  <p v-if="record.comment" class="text-xs text-muted-foreground">{{ record.comment }}</p>
+                  <p v-if="record.comment" class="text-xs text-muted-foreground">
+                    {{ record.comment }}
+                  </p>
                   <p class="text-xs text-muted-foreground">记录后值: {{ record.valueAfter }}</p>
                 </div>
               </div>
@@ -121,23 +131,47 @@ import { useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { ArrowLeft, Plus, History, TrendingUp } from 'lucide-vue-next';
 import {
-  Button, Badge, Card, CardHeader, CardTitle, CardDescription, CardContent,
-  ScrollArea, Separator, Progress, Input, Label, Textarea,
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Button,
+  Badge,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  ScrollArea,
+  Separator,
+  Progress,
+  Input,
+  Label,
+  Textarea,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
-const goalId = route.params.goalId as string || route.params.id as string;
-const krId = route.params.krId as string || route.params.keyResultId as string;
+const goalId = (route.params.goalId as string) || (route.params.id as string);
+const krId = (route.params.krId as string) || (route.params.keyResultId as string);
 
-const { keyResults, goalRecords, isLoading, isSaving, fetchKeyResults, fetchRecords, createRecord } = useGoal();
+const {
+  keyResults,
+  goalRecords,
+  isLoading,
+  isSaving,
+  fetchKeyResults,
+  fetchRecords,
+  createRecord,
+} = useGoal();
 
 const keyResult = computed(() => keyResults.value.find((kr) => kr.id === krId) ?? null);
 
 const progressPercent = computed(() => {
-  if (!keyResult.value) return 0;
-  const { currentValue, targetValue } = keyResult.value.progress;
+  if (!keyResult.value?.progress) return 0;
+  const { currentValue = 0, targetValue = 0 } = keyResult.value.progress;
   if (!targetValue) return 0;
   return Math.min(100, Math.round((currentValue / targetValue) * 100));
 });
@@ -153,7 +187,11 @@ const newRecord = reactive({ value: 0, comment: '' });
 
 function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
-  return new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(d).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 async function handleAddRecord() {

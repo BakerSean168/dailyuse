@@ -36,44 +36,53 @@ export function useSchedule() {
   async function fetchTasks(query?: Record<string, unknown>) {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.getTasks();
-    if (result.ok) {
-      store.setTasks(
-        result.data.tasks.map((t: ScheduleTask) => t.toDTO()),
-        result.data.total,
-      );
-    } else {
-      handleError(result.error.message || '加载调度任务失败');
+    try {
+      const result = await service.getTasks();
+      if (result.ok) {
+        store.setTasks(
+          (result.data.tasks ?? []).map((t: ScheduleTask) => t.toDTO()),
+          result.data.total ?? 0,
+        );
+      } else {
+        handleError(result.error.message || '加载调度任务失败');
+      }
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   async function fetchTask(id: string) {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.getTaskById(id);
-    store.setLoading(false);
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.setCurrentTask(dto);
-      return dto;
+    try {
+      const result = await service.getTaskById(id);
+      if (result.ok) {
+        const dto = result.data.toDTO();
+        store.setCurrentTask(dto);
+        return dto;
+      }
+      handleError(result.error.message || '加载调度任务失败');
+      return null;
+    } finally {
+      store.setLoading(false);
     }
-    handleError(result.error.message || '加载调度任务失败');
-    return null;
   }
 
   async function createTask(data: Record<string, unknown>) {
     savingId.value = 'new';
     store.setError(null);
-    const result = await service.createTask(data as unknown as CreateScheduleTaskRequest);
-    savingId.value = null;
-    if (result.ok) {
-      const dto = result.data.toDTO();
-      store.addTask(dto);
-      return dto;
+    try {
+      const result = await service.createTask(data as unknown as CreateScheduleTaskRequest);
+      if (result.ok) {
+        const dto = result.data.toDTO();
+        store.addTask(dto);
+        return dto;
+      }
+      handleError(result.error.message || '创建调度任务失败');
+      return null;
+    } finally {
+      savingId.value = null;
     }
-    handleError(result.error.message || '创建调度任务失败');
-    return null;
   }
 
   async function updateTask(id: string, data: Record<string, unknown>) {
@@ -86,14 +95,17 @@ export function useSchedule() {
   async function deleteTask(id: string) {
     savingId.value = id;
     store.setError(null);
-    const result = await service.deleteTask(id);
-    savingId.value = null;
-    if (result.ok) {
-      store.removeTask(id);
-      return true;
+    try {
+      const result = await service.deleteTask(id);
+      if (result.ok) {
+        store.removeTask(id);
+        return true;
+      }
+      handleError(result.error.message || '删除调度任务失败');
+      return false;
+    } finally {
+      savingId.value = null;
     }
-    handleError(result.error.message || '删除调度任务失败');
-    return false;
   }
 
   async function pauseTask(id: string) {

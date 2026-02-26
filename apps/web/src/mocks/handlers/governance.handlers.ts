@@ -13,8 +13,8 @@ import {
   createMockRuleRevisionList,
 } from '@dailyuse/contracts/mocks';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const BASE = `${API_BASE}/governance/rules`;
+// NOTE: The governance adapter hardcodes '/api/governance/rules' (no /v1/).
+const BASE = '/api/governance/rules';
 
 export const governanceHandlers = [
   // GET /api/v1/governance/rules — list rules
@@ -27,6 +27,8 @@ export const governanceHandlers = [
       data: {
         items: rules,
         total: rules.length,
+        page: 1,
+        pageSize: 20,
       },
       timestamp: Date.now(),
     });
@@ -58,7 +60,7 @@ export const governanceHandlers = [
     );
   }),
 
-  // PUT /api/v1/governance/rules/:id — update rule
+  // PUT /api/v1/governance/rules/:id — update rule (legacy)
   http.put(`${BASE}/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({
@@ -73,13 +75,28 @@ export const governanceHandlers = [
     });
   }),
 
+  // PATCH /api/v1/governance/rules/:id — update rule (adapter uses PATCH)
+  http.patch(`${BASE}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: createMockRule({
+        id: params.id as string,
+        ...(body as object),
+      }),
+      timestamp: Date.now(),
+    });
+  }),
+
   // DELETE /api/v1/governance/rules/:id — delete rule
-  http.delete(`${BASE}/:id`, ({ params }) => {
+  http.delete(`${BASE}/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: { success: true },
       timestamp: Date.now(),
     });
   }),
@@ -97,7 +114,9 @@ export const governanceHandlers = [
       data: {
         items: rules,
         total: rules.length,
-        query,
+        page: 1,
+        pageSize: 20,
+        searchTime: 15,
       },
       timestamp: Date.now(),
     });

@@ -1,46 +1,56 @@
 <template>
-  <v-dialog :model-value="visible" max-width="900" persistent scrollable @update:model-value="setVisible">
-    <v-card class="task-template-dialog">
-      <v-card-title class="dialog-header d-flex align-center">
-        <v-icon :color="mode === 'edit' ? 'primary' : 'success'" class="mr-3" size="24">
-          {{ mode === 'edit' ? 'mdi-pencil' : 'mdi-plus-circle' }}
-        </v-icon>
+  <Dialog :open="visible" @update:open="setVisible">
+    <DialogContent class="max-w-[900px] rounded-xl p-0">
+      <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4">
+        <component
+          :is="mode === 'edit' ? Pencil : PlusCircle"
+          :class="mode === 'edit' ? 'text-primary' : 'text-green-500'"
+          class="h-6 w-6 shrink-0"
+        />
         <div>
-          <h3 class="text-h6">{{ mode === 'edit' ? '编辑任务模板' : '创建任务模板' }}</h3>
-          <p class="text-caption text-medium-emphasis ma-0">
+          <DialogTitle class="text-lg">{{
+            mode === 'edit' ? '编辑任务模板' : '创建任务模板'
+          }}</DialogTitle>
+          <p class="text-sm text-muted-foreground mt-0">
             {{ mode === 'edit' ? '修改现有任务模板配置' : '填写模板信息并保存' }}
           </p>
         </div>
-      </v-card-title>
+      </DialogHeader>
 
-      <v-card-text class="dialog-content pa-0">
-        <div class="form-container pa-4">
-          <TaskTemplateForm
-            v-if="localTemplate"
-            ref="formRef"
-            :model-value="localTemplate"
-            :is-edit-mode="mode === 'edit'"
-            :readonly="saving"
-            @update:model-value="handleTemplateUpdate"
-            @update:validation="handleValidationUpdate"
-            @close="handleCancel"
-          />
-        </div>
-      </v-card-text>
+      <div class="overflow-y-auto px-6 pb-4">
+        <TaskTemplateForm
+          v-if="localTemplate"
+          ref="formRef"
+          :model-value="localTemplate"
+          :is-edit-mode="mode === 'edit'"
+          :readonly="saving"
+          @update:model-value="handleTemplateUpdate"
+          @update:validation="handleValidationUpdate"
+          @close="handleCancel"
+        />
+      </div>
 
-      <v-card-actions class="dialog-actions">
-        <v-spacer />
-        <v-btn variant="text" :disabled="saving" @click="handleCancel">取消</v-btn>
-        <v-btn color="primary" variant="elevated" :disabled="!canSave" :loading="saving" @click="handleSave">
+      <DialogFooter class="p-6 pt-4">
+        <Button variant="ghost" :disabled="saving" @click="handleCancel">取消</Button>
+        <Button :disabled="!canSave" :loading="saving" @click="handleSave">
           {{ mode === 'edit' ? '保存更改' : '创建模板' }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Button,
+} from '@dailyuse/ui-vue-shadcn';
+import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
 
@@ -64,7 +74,9 @@ const emit = defineEmits<{
 }>();
 
 const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
-const localTemplate = ref<TaskTemplateViewModel | null>(props.template ? { ...props.template } : null);
+const localTemplate = ref<TaskTemplateViewModel | null>(
+  props.template ? { ...props.template } : null,
+);
 const isValid = ref(false);
 
 const visible = computed(() => props.modelValue);
@@ -102,9 +114,3 @@ const handleSave = () => {
   emit('save', localTemplate.value);
 };
 </script>
-
-<style scoped>
-.task-template-dialog {
-  border-radius: 12px;
-}
-</style>

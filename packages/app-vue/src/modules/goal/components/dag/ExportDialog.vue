@@ -1,93 +1,119 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="600">
-    <v-card>
-      <v-card-title class="d-flex align-center">
-        <v-icon class="mr-2">mdi-download</v-icon>
-        导出 DAG 可视化
-      </v-card-title>
+  <Dialog v-model:open="isOpen">
+    <DialogContent class="sm:max-w-[600px]">
+      <DialogHeader>
+        <DialogTitle class="flex items-center gap-2 font-semibold">
+          <Download class="h-5 w-5" />
+          导出 DAG 可视化
+        </DialogTitle>
+      </DialogHeader>
 
-      <v-divider />
+      <Separator />
 
-      <v-card-text class="pt-4">
-        <v-row>
-          <v-col cols="12">
-            <v-select
-              v-model="format"
-              :items="formatOptions"
-              label="导出格式"
-              variant="outlined"
-              density="comfortable"
-            >
-              <template #item="{ props, item }">
-                <v-list-item v-bind="props">
-                  <template #prepend>
-                    <v-icon :icon="item.raw.icon" />
-                  </template>
-                  <v-list-item-title>{{ item.title }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
-                </v-list-item>
-              </template>
-            </v-select>
-          </v-col>
+      <div class="space-y-4 pt-2">
+        <div>
+          <Label>导出格式</Label>
+          <Select v-model="format">
+            <SelectTrigger class="mt-1.5">
+              <SelectValue placeholder="导出格式" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="option in formatOptions" :key="option.value" :value="option.value">
+                <div class="flex items-center gap-2">
+                  <component :is="option.icon" class="h-4 w-4" />
+                  <div>
+                    <div>{{ option.title }}</div>
+                    <div class="text-xs text-muted-foreground">{{ option.description }}</div>
+                  </div>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <v-col v-if="format === 'png'" cols="12">
-            <v-select
-              v-model="resolution"
-              :items="resolutionOptions"
-              label="分辨率"
-              variant="outlined"
-              density="comfortable"
-            />
-          </v-col>
+        <div v-if="format === 'png'">
+          <Label>分辨率</Label>
+          <Select v-model="resolution">
+            <SelectTrigger class="mt-1.5">
+              <SelectValue placeholder="分辨率" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="option in resolutionOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.title }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <v-col cols="12">
-            <v-select
-              v-model="backgroundColor"
-              :items="bgOptions"
-              label="背景颜色"
-              variant="outlined"
-              density="comfortable"
-            />
-          </v-col>
+        <div>
+          <Label>背景颜色</Label>
+          <Select v-model="backgroundColor">
+            <SelectTrigger class="mt-1.5">
+              <SelectValue placeholder="背景颜色" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="option in bgOptions" :key="option.value" :value="option.value">
+                {{ option.title }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <v-col v-if="format === 'pdf'" cols="12">
-            <v-checkbox
-              v-model="includeMetadata"
-              label="包含元数据（标题、日期、作者）"
-              density="comfortable"
-              hide-details
-            />
-          </v-col>
-        </v-row>
+        <div v-if="format === 'pdf'" class="flex items-center space-x-2">
+          <Checkbox id="include-metadata" v-model:checked="includeMetadata" />
+          <Label for="include-metadata" class="text-sm font-normal cursor-pointer">
+            包含元数据（标题、日期、作者）
+          </Label>
+        </div>
 
-        <v-alert v-if="format === 'svg'" type="info" variant="tonal" class="mt-4">
-          <v-alert-title>SVG 导出说明</v-alert-title>
-          SVG 格式适合在设计工具中进一步编辑，支持无损缩放
-        </v-alert>
-      </v-card-text>
+        <Alert v-if="format === 'svg'">
+          <Info class="h-4 w-4" />
+          <AlertTitle>SVG 导出说明</AlertTitle>
+          <AlertDescription> SVG 格式适合在设计工具中进一步编辑，支持无损缩放 </AlertDescription>
+        </Alert>
+      </div>
 
-      <v-divider />
+      <Separator />
 
-      <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" @click="close">取消</v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
-          :loading="isExporting"
-          :prepend-icon="isExporting ? undefined : 'mdi-download'"
-          @click="handleExport"
-        >
+      <DialogFooter>
+        <Button variant="outline" @click="close">取消</Button>
+        <Button :disabled="isExporting" @click="handleExport">
+          <Loader2 v-if="isExporting" class="mr-2 h-4 w-4 animate-spin" />
+          <Download v-else class="mr-2 h-4 w-4" />
           {{ isExporting ? '导出中...' : '导出' }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, type Component } from 'vue';
 import type { ExportOptions } from '../../application/services/DAGExportService';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Separator,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Checkbox,
+  Label,
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from '@dailyuse/ui-vue-shadcn';
+import { Download, Image, SquareDashedKanban, FileText, Info, Loader2 } from 'lucide-vue-next';
 
 const emit = defineEmits<{
   export: [options: ExportOptions];
@@ -100,23 +126,23 @@ const resolution = ref<1 | 2 | 3>(2);
 const backgroundColor = ref('white');
 const includeMetadata = ref(true);
 
-const formatOptions = [
+const formatOptions: { title: string; value: string; icon: Component; description: string }[] = [
   {
     title: 'PNG 图片',
     value: 'png',
-    icon: 'mdi-file-image',
+    icon: Image,
     description: '适合分享和嵌入文档',
   },
   {
     title: 'SVG 矢量图',
     value: 'svg',
-    icon: 'mdi-vector-square',
+    icon: SquareDashedKanban,
     description: '支持无损缩放，适合编辑',
   },
   {
     title: 'PDF 文档',
     value: 'pdf',
-    icon: 'mdi-file-pdf-box',
+    icon: FileText,
     description: '包含元数据，适合存档',
   },
 ];
@@ -161,9 +187,3 @@ function close() {
 
 defineExpose({ open, close });
 </script>
-
-<style scoped>
-.v-card-title {
-  font-weight: 600;
-}
-</style>

@@ -29,17 +29,20 @@ export function useNotification() {
   async function fetchNotifications(query?: Record<string, unknown>) {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.findNotifications({
-      ...query,
-      page: store.pagination.page,
-      limit: store.pagination.pageSize,
-    } as Parameters<typeof service.findNotifications>[0]);
-    if (result.ok) {
-      store.setNotifications(result.data.notifications, result.data.total);
-    } else {
-      handleError(result.error.message || '加载通知列表失败');
+    try {
+      const result = await service.findNotifications({
+        ...query,
+        page: store.pagination.page,
+        limit: store.pagination.pageSize,
+      } as Parameters<typeof service.findNotifications>[0]);
+      if (result.ok) {
+        store.setNotifications(result.data.notifications ?? [], result.data.total ?? 0);
+      } else {
+        handleError(result.error.message || '加载通知列表失败');
+      }
+    } finally {
+      store.setLoading(false);
     }
-    store.setLoading(false);
   }
 
   async function markAsRead(id: string) {
@@ -55,7 +58,7 @@ export function useNotification() {
   async function markAllAsRead() {
     const result = await service.markAllAsRead();
     if (result.ok) {
-      store.notifications.forEach((n) => {
+      [...store.notifications].forEach((n) => {
         if (!n.isRead)
           store.updateNotification({
             ...n,
@@ -86,7 +89,7 @@ export function useNotification() {
   async function refreshStats() {
     const result = await service.getUnreadCount();
     if (result.ok) {
-      store.setUnreadCount(result.data.count);
+      store.setUnreadCount(result.data.count ?? 0);
     } else {
       handleError(result.error.message || '刷新统计失败');
     }

@@ -1,165 +1,168 @@
 <template>
-  <v-dialog :model-value="visible" max-width="700px" persistent>
-    <v-card>
+  <Dialog :open="visible" @update:open="(val) => (visible = val)">
+    <DialogContent class="sm:max-w-[700px] max-h-[90vh] overflow-y-auto gap-0">
       <!-- 对话框头部 -->
-      <v-card-title class="d-flex align-center pa-4">
-        <v-icon color="primary" class="mr-3">mdi-target</v-icon>
-        <span class="text-h5">{{ isEditing ? '更新关键结果' : '创建关键结果' }}</span>
-      </v-card-title>
+      <DialogHeader class="pb-4">
+        <DialogTitle class="flex items-center gap-3 text-xl">
+          <Target class="h-5 w-5 text-primary" />
+          {{ isEditing ? '更新关键结果' : '创建关键结果' }}
+        </DialogTitle>
+      </DialogHeader>
 
-      <v-divider />
+      <Separator />
 
-      <v-card-text class="pa-6">
-        <v-form ref="formRef" @submit.prevent>
-          <!-- 基本信息 -->
-          <div class="mb-6">
-            <h3 class="text-h6 mb-4">基本信息</h3>
-            <v-row>
-              <!-- 关键结果名称 -->
-              <v-col cols="12">
-                <v-text-field
-                  v-model="keyResultTitle"
-                  label="关键结果名称*"
-                  placeholder="例如：新增活跃用户数量"
-                  variant="outlined"
-                  required
-                />
-              </v-col>
-            </v-row>
+      <form class="space-y-6 py-6" @submit.prevent>
+        <!-- 基本信息 -->
+        <div>
+          <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
+            基本信息
+          </h3>
+          <div class="grid grid-cols-12 gap-4">
+            <!-- 关键结果名称 -->
+            <div class="col-span-12 grid gap-2">
+              <Label for="kr-title">关键结果名称*</Label>
+              <Input id="kr-title" v-model="keyResultTitle" placeholder="例如：新增活跃用户数量" />
+            </div>
           </div>
+        </div>
 
-          <!-- 数值配置 -->
-          <div class="mb-6">
-            <h3 class="text-h6 mb-4">数值配置</h3>
-            <v-row>
-              <!-- 起始值 -->
-              <v-col cols="4">
-                <v-text-field
-                  v-model.number="keyResultStartValue"
-                  label="起始值*"
-                  type="number"
-                  variant="outlined"
-                  hint="关键结果的初始数值"
-                  persistent-hint
-                  required
-                />
-              </v-col>
+        <!-- 数值配置 -->
+        <div>
+          <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
+            数值配置
+          </h3>
+          <div class="grid grid-cols-12 gap-4">
+            <!-- 起始值 -->
+            <div class="col-span-4 grid gap-2">
+              <Label for="kr-start">起始值*</Label>
+              <Input id="kr-start" v-model.number="keyResultStartValue" type="number" />
+              <p class="text-xs text-muted-foreground">关键结果的初始数值</p>
+            </div>
 
-              <!-- 目标值 -->
-              <v-col cols="4">
-                <v-text-field
-                  v-model.number="keyResultTargetValue"
-                  label="目标值*"
-                  type="number"
-                  variant="outlined"
-                  hint="期望达到的目标数值"
-                  persistent-hint
-                  required
-                />
-              </v-col>
+            <!-- 目标值 -->
+            <div class="col-span-4 grid gap-2">
+              <Label for="kr-target">目标值*</Label>
+              <Input id="kr-target" v-model.number="keyResultTargetValue" type="number" />
+              <p class="text-xs text-muted-foreground">期望达到的目标数值</p>
+            </div>
 
-              <!-- 当前值 -->
-              <v-col cols="4">
-                <v-text-field
-                  v-model.number="keyResultCurrentValue"
-                  label="当前值"
-                  type="number"
-                  variant="outlined"
-                  hint="目前的实际数值"
-                  persistent-hint
-                />
-              </v-col>
-            </v-row>
+            <!-- 当前值 -->
+            <div class="col-span-4 grid gap-2">
+              <Label for="kr-current">当前值</Label>
+              <Input id="kr-current" v-model.number="keyResultCurrentValue" type="number" />
+              <p class="text-xs text-muted-foreground">目前的实际数值</p>
+            </div>
           </div>
+        </div>
 
-          <!-- 高级配置 -->
-          <div class="mb-6">
-            <h3 class="text-h6 mb-4">高级配置</h3>
-            <v-row>
-              <!-- 计算方法 -->
-              <v-col cols="6">
-                <v-select
-                  v-model="keyResultCalculationMethod"
-                  :items="calculationMethods"
-                  label="进度计算方法*"
-                  variant="outlined"
-                  hint="选择如何计算进度百分比"
-                  persistent-hint
-                  required
-                />
-              </v-col>
+        <!-- 高级配置 -->
+        <div>
+          <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
+            高级配置
+          </h3>
+          <div class="grid grid-cols-12 gap-4">
+            <!-- 计算方法 -->
+            <div class="col-span-6 grid gap-2">
+              <Label>进度计算方法*</Label>
+              <Select v-model="keyResultCalculationMethod">
+                <SelectTrigger>
+                  <SelectValue placeholder="选择计算方法" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="method in calculationMethods"
+                    :key="method.value"
+                    :value="method.value"
+                  >
+                    {{ method.title }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p class="text-xs text-muted-foreground">选择如何计算进度百分比</p>
+            </div>
 
-              <!-- 权重 -->
-              <v-col cols="6">
-                <v-text-field
-                  v-model.number="keyResultWeight"
-                  label="权重*"
-                  type="number"
-                  min="1"
-                  max="10"
-                  step="1"
-                  variant="outlined"
-                  hint="该关键结果在目标中的重要程度 (1-10)"
-                  persistent-hint
-                  :rules="weightRules"
-                  required
-                />
-              </v-col>
-            </v-row>
-          </div>
-
-          <!-- 进度预览 -->
-          <div v-if="progressPercentage >= 0" class="mb-4">
-            <h3 class="text-h6 mb-3">进度预览</h3>
-            <v-card variant="outlined" class="pa-4">
-              <div class="d-flex justify-space-between align-center mb-2">
-                <span class="text-subtitle-1 font-weight-medium">{{
-                  keyResultTitle || '关键结果名称'
-                }}</span>
-                <span class="text-h6 font-weight-bold" :class="progressColor">
-                  {{ progressPercentage.toFixed(1) }}%
-                </span>
-              </div>
-
-              <v-progress-linear
-                :model-value="progressPercentage"
-                :color="progressBarColor"
-                height="12"
-                rounded
-                class="mb-2"
+            <!-- 权重 -->
+            <div class="col-span-6 grid gap-2">
+              <Label for="kr-weight">权重*</Label>
+              <Input
+                id="kr-weight"
+                v-model.number="keyResultWeight"
+                type="number"
+                min="1"
+                max="10"
+                step="1"
               />
-
-              <div class="d-flex justify-space-between text-caption text-medium-emphasis">
-                <span>{{ keyResultStartValue }}</span>
-                <span>{{ keyResultCurrentValue }} / {{ keyResultTargetValue }}</span>
-              </div>
-            </v-card>
+              <p class="text-xs text-muted-foreground">该关键结果在目标中的重要程度 (1-10)</p>
+            </div>
           </div>
-        </v-form>
-      </v-card-text>
+        </div>
 
-      <v-divider />
+        <!-- 进度预览 -->
+        <div v-if="progressPercentage >= 0">
+          <h3 class="text-base font-semibold mb-3 text-primary border-b-2 border-primary/10 pb-2">
+            进度预览
+          </h3>
+          <div
+            class="rounded-lg border-2 border-primary/10 p-4 transition-all hover:border-primary/30 hover:shadow-md"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium">{{ keyResultTitle || '关键结果名称' }}</span>
+              <span class="text-base font-bold" :class="progressColor">
+                {{ progressPercentage.toFixed(1) }}%
+              </span>
+            </div>
 
-      <v-card-actions class="pa-4">
-        <v-spacer />
-        <v-btn variant="text" @click="handleCancel"> 取消 </v-btn>
-        <v-btn
-          color="primary"
-          variant="elevated"
-          :disabled="!isFormValid || loading"
-          :loading="loading"
-          @click="handleSave"
-        >
+            <Progress
+              :model-value="progressPercentage"
+              class="h-3 mb-2"
+              :class="progressBarClass"
+            />
+
+            <div class="flex justify-between text-xs text-muted-foreground">
+              <span>{{ keyResultStartValue }}</span>
+              <span>{{ keyResultCurrentValue }} / {{ keyResultTargetValue }}</span>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <Separator />
+
+      <DialogFooter class="pt-4 gap-2 sm:gap-0">
+        <div class="flex-1" />
+        <Button variant="outline" @click="handleCancel"> 取消 </Button>
+        <Button :disabled="!isFormValid || loading" @click="handleSave">
+          <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
           {{ isEditing ? '更新' : '创建' }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Input } from '@dailyuse/ui-vue-shadcn';
+import { Label } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@dailyuse/ui-vue-shadcn';
+import { Separator } from '@dailyuse/ui-vue-shadcn';
+import { Progress } from '@dailyuse/ui-vue-shadcn';
+import { Target, Loader2 } from 'lucide-vue-next';
 
 const AggregationMethod = {
   SUM: 'SUM',
@@ -186,12 +189,14 @@ type EditableKeyResult = {
 };
 
 const emit = defineEmits<{
-  save: [payload: {
-    goalId: string | null;
-    keyResult: EditableKeyResult;
-    isEditing: boolean;
-    isInGoalEditing: boolean;
-  }];
+  save: [
+    payload: {
+      goalId: string | null;
+      keyResult: EditableKeyResult;
+      isEditing: boolean;
+      isInGoalEditing: boolean;
+    },
+  ];
   cancel: [];
 }>();
 
@@ -216,11 +221,14 @@ const propGoalId = ref<string | null>(null);
 const propGoal = ref<GoalClientDTO | null>(null);
 const isInGoalEditing = computed(() => !!propGoal.value);
 
-const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
 const localKeyResult = ref<EditableKeyResult>(createDraftKeyResult());
 const loading = ref(false);
 const isEditing = computed(() => !!propKeyResult.value);
-const isFormValid = computed(() => formRef.value?.isValid ?? false);
+const isFormValid = computed(() => {
+  const title = keyResultTitle.value.trim();
+  const weight = keyResultWeight.value;
+  return title.length > 0 && weight >= 1 && weight <= 10;
+});
 const progressPercentage = computed(() => {
   const progress = localKeyResult.value.progress;
   if (!progress.targetValue || progress.targetValue <= 0) return 0;
@@ -269,15 +277,6 @@ const keyResultWeight = computed({
   },
 });
 
-const weightRules = [
-  (value: number) => {
-    if (!value) return '权重不能为空';
-    if (value < 1 || value > 10) return '权重必须在 1-10 之间';
-    if (!Number.isInteger(value)) return '权重必须是整数';
-    return true;
-  },
-];
-
 const calculationMethods = [
   { title: '累加 - 适用于递增指标', value: AggregationMethod.SUM },
   { title: '平均值 - 适用于波动指标', value: AggregationMethod.AVERAGE },
@@ -288,18 +287,18 @@ const calculationMethods = [
 
 const progressColor = computed(() => {
   const progress = progressPercentage.value;
-  if (progress >= 80) return 'text-success';
-  if (progress >= 60) return 'text-warning';
-  if (progress >= 40) return 'text-orange';
-  return 'text-error';
+  if (progress >= 80) return 'text-green-600';
+  if (progress >= 60) return 'text-yellow-600';
+  if (progress >= 40) return 'text-orange-500';
+  return 'text-red-600';
 });
 
-const progressBarColor = computed(() => {
+const progressBarClass = computed(() => {
   const progress = progressPercentage.value;
-  if (progress >= 80) return 'success';
-  if (progress >= 60) return 'warning';
-  if (progress >= 40) return 'orange';
-  return 'error';
+  if (progress >= 80) return '[&>div]:bg-green-500';
+  if (progress >= 60) return '[&>div]:bg-yellow-500';
+  if (progress >= 40) return '[&>div]:bg-orange-500';
+  return '[&>div]:bg-red-500';
 });
 
 const handleSave = async () => {
@@ -345,7 +344,10 @@ const openForCreateKeyResultInGoalEditing = (goal: GoalClientDTO) => {
   openDialog({ goal });
 };
 
-const openForUpdateKeyResultInGoalEditing = (goal: GoalClientDTO, keyResult: KeyResultClientDTO) => {
+const openForUpdateKeyResultInGoalEditing = (
+  goal: GoalClientDTO,
+  keyResult: KeyResultClientDTO,
+) => {
   openDialog({ goal, keyResult });
 };
 
@@ -390,58 +392,3 @@ defineExpose({
   openForUpdateKeyResult,
 });
 </script>
-
-<style scoped>
-/* 对话框样式 */
-.v-dialog {
-  overflow-y: auto;
-}
-
-.v-card {
-  overflow-y: auto;
-  max-height: 90vh;
-}
-
-/* 表单分组样式 */
-.v-card-text h3 {
-  color: rgb(var(--v-theme-primary));
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.1);
-  padding-bottom: 8px;
-}
-
-/* 进度预览卡片样式 */
-.v-card[variant='outlined'] {
-  border: 2px solid rgba(var(--v-theme-primary), 0.1);
-  transition: all 0.3s ease;
-}
-
-.v-card[variant='outlined']:hover {
-  border-color: rgba(var(--v-theme-primary), 0.3);
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.1);
-}
-
-/* 表单字段样式 */
-.v-text-field,
-.v-textarea,
-.v-select {
-  margin-bottom: 8px;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .v-dialog {
-    width: 95vw !important;
-    max-width: none !important;
-  }
-
-  .v-card-text {
-    padding: 1rem !important;
-  }
-}
-</style>
-
-<style scoped>
-.v-progress-linear {
-  border-radius: 4px;
-}
-</style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * GoalTimelineWidget - 目标时间进度 Widget
- * 
+ *
  * 功能：
  * - 展示目标的时间进度（浅色框 = 时间范围，深色 = 完成百分比）
  * - 显示目标标题、进度百分比、剩余天数
@@ -12,14 +12,24 @@ import { computed, onMounted, ref } from 'vue';
 import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useGoal } from '../composables/useGoal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Separator,
+  Badge,
+  Progress,
+} from '@dailyuse/ui-vue-shadcn';
+import { TrendingUp, CalendarDays, Flag, FlagOff, ArrowRight, Loader2 } from 'lucide-vue-next';
 
 // ===== Props =====
 interface Props {
-    size?: WidgetSize;
+  size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    size: 'medium' as WidgetSize,
+  size: 'medium' as WidgetSize,
 });
 
 // ===== Composables =====
@@ -34,59 +44,61 @@ const isLoading = ref(true);
  * 活跃目标列表（有时间范围的进行中目标）
  */
 const activeGoals = computed(() => {
-    const today = new Date();
+  const today = new Date();
 
-    // 使用 composable 提供的响应式数据
-    const allGoals = goals.value;
-    if (!allGoals || !Array.isArray(allGoals)) {
-        return [];
-    }
+  // 使用 composable 提供的响应式数据
+  const allGoals = goals.value;
+  if (!allGoals || !Array.isArray(allGoals)) {
+    return [];
+  }
 
-    return allGoals
-        .filter(goal => {
-            if (goal.status !== GoalStatus.ACTIVE) return false;
-            return goal.startDate && goal.targetDate;
-        })
-        .map(goal => {
-            const start = new Date(goal.startDate!);
-            const end = new Date(goal.targetDate!);
-            const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-            const elapsedDays = Math.ceil((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-            const remainingDays = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return allGoals
+    .filter((goal) => {
+      if (goal.status !== GoalStatus.ACTIVE) return false;
+      return goal.startDate && goal.targetDate;
+    })
+    .map((goal) => {
+      const start = new Date(goal.startDate!);
+      const end = new Date(goal.targetDate!);
+      const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const elapsedDays = Math.ceil((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const remainingDays = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-            // 时间进度百分比
-            const timeProgress = Math.min(Math.max((elapsedDays / totalDays) * 100, 0), 100);
+      // 时间进度百分比
+      const timeProgress = Math.min(Math.max((elapsedDays / totalDays) * 100, 0), 100);
 
-            // 实际完成进度（如果有 keyResults）
-            let completionProgress = 0;
-            if (goal.keyResults && goal.keyResults.length > 0) {
-                const completedKRs = goal.keyResults.filter((kr: { isCompleted?: boolean }) => kr.isCompleted).length;
-                completionProgress = (completedKRs / goal.keyResults.length) * 100;
-            }
+      // 实际完成进度（如果有 keyResults）
+      let completionProgress = 0;
+      if (goal.keyResults && goal.keyResults.length > 0) {
+        const completedKRs = goal.keyResults.filter(
+          (kr: { isCompleted?: boolean }) => kr.isCompleted,
+        ).length;
+        completionProgress = (completedKRs / goal.keyResults.length) * 100;
+      }
 
-            return {
-                uuid: goal.uuid,
-                title: goal.title,
-                startDate: goal.startDate!,
-                targetDate: goal.targetDate!,
-                totalDays,
-                elapsedDays: Math.max(elapsedDays, 0),
-                remainingDays: Math.max(remainingDays, 0),
-                timeProgress,
-                completionProgress,
-                isOverdue: remainingDays < 0,
-                isWarning: remainingDays >= 0 && remainingDays <= 7,
-            };
-        })
-        .sort((a, b) => {
-            // 优先显示即将到期的
-            if (a.isOverdue && !b.isOverdue) return -1;
-            if (!a.isOverdue && b.isOverdue) return 1;
-            if (a.isWarning && !b.isWarning) return -1;
-            if (!a.isWarning && b.isWarning) return 1;
-            return a.remainingDays - b.remainingDays;
-        })
-        .slice(0, props.size === 'small' ? 3 : props.size === 'medium' ? 5 : 8);
+      return {
+        uuid: goal.uuid,
+        title: goal.title,
+        startDate: goal.startDate!,
+        targetDate: goal.targetDate!,
+        totalDays,
+        elapsedDays: Math.max(elapsedDays, 0),
+        remainingDays: Math.max(remainingDays, 0),
+        timeProgress,
+        completionProgress,
+        isOverdue: remainingDays < 0,
+        isWarning: remainingDays >= 0 && remainingDays <= 7,
+      };
+    })
+    .sort((a, b) => {
+      // 优先显示即将到期的
+      if (a.isOverdue && !b.isOverdue) return -1;
+      if (!a.isOverdue && b.isOverdue) return 1;
+      if (a.isWarning && !b.isWarning) return -1;
+      if (!a.isWarning && b.isWarning) return 1;
+      return a.remainingDays - b.remainingDays;
+    })
+    .slice(0, props.size === 'small' ? 3 : props.size === 'medium' ? 5 : 8);
 });
 
 /**
@@ -95,149 +107,180 @@ const activeGoals = computed(() => {
 const isSmallSize = computed(() => props.size === 'small');
 
 /**
- * 获取进度条颜色
+ * 获取进度条颜色类
  */
-const getProgressColor = (goal: typeof activeGoals.value[0]) => {
-    if (goal.isOverdue) return 'error';
-    if (goal.isWarning) return 'warning';
-    if (goal.completionProgress >= 80) return 'success';
-    return 'primary';
+const getProgressColorClass = (goal: (typeof activeGoals.value)[0]) => {
+  if (goal.isOverdue) return 'bg-destructive';
+  if (goal.isWarning) return 'bg-yellow-500';
+  if (goal.completionProgress >= 80) return 'bg-green-500';
+  return 'bg-primary';
 };
 
 /**
- * 获取芯片颜色
+ * 获取进度条背景色类
  */
-const getChipColor = (goal: typeof activeGoals.value[0]) => {
-    if (goal.isOverdue) return 'error';
-    if (goal.isWarning) return 'warning';
-    return 'info';
+const getProgressBgClass = (goal: (typeof activeGoals.value)[0]) => {
+  if (goal.isOverdue) return 'bg-destructive/20';
+  if (goal.isWarning) return 'bg-yellow-500/20';
+  if (goal.completionProgress >= 80) return 'bg-green-500/20';
+  return 'bg-primary/20';
+};
+
+/**
+ * 获取 Badge variant
+ */
+const getBadgeVariant = (goal: (typeof activeGoals.value)[0]) => {
+  if (goal.isOverdue) return 'destructive' as const;
+  if (goal.isWarning) return 'secondary' as const;
+  return 'outline' as const;
 };
 
 /**
  * 格式化日期
  */
 const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  const date = new Date(dateString);
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 };
 
 // ===== Lifecycle =====
 onMounted(async () => {
-    try {
-        isLoading.value = true;
-        await fetchGoals();
-    } catch (error) {
-        console.error('[GoalTimelineWidget] Failed to load goals:', error);
-    } finally {
-        isLoading.value = false;
-    }
+  try {
+    isLoading.value = true;
+    await fetchGoals();
+  } catch (error) {
+    console.error('[GoalTimelineWidget] Failed to load goals:', error);
+  } finally {
+    isLoading.value = false;
+  }
 });
 </script>
 
 <template>
-    <v-card class="goal-timeline-widget" :class="`widget-size-${size}`" elevation="2">
-        <!-- Header -->
-        <v-card-title class="d-flex align-center justify-space-between pa-4">
-            <div class="d-flex align-center">
-                <v-icon color="purple" size="large" class="mr-2">mdi-chart-timeline-variant</v-icon>
-                <span class="text-h6">目标进度</span>
-            </div>
-            <v-chip color="purple" size="small">{{ activeGoals.length }}</v-chip>
-        </v-card-title>
+  <Card class="goal-timeline-widget" :class="`widget-size-${size}`">
+    <!-- Header -->
+    <CardHeader class="flex flex-row items-center justify-between p-4">
+      <div class="flex items-center gap-2">
+        <TrendingUp class="h-6 w-6 text-purple-500" />
+        <CardTitle class="text-lg">目标进度</CardTitle>
+      </div>
+      <Badge variant="default" class="bg-purple-500 hover:bg-purple-500/80">
+        {{ activeGoals.length }}
+      </Badge>
+    </CardHeader>
 
-        <v-divider />
+    <Separator />
 
-        <!-- Loading State -->
-        <v-card-text v-if="isLoading" class="d-flex flex-column align-center justify-center" style="min-height: 200px;">
-            <v-progress-circular indeterminate color="purple" />
-            <p class="text-caption text-grey mt-2">加载中...</p>
-        </v-card-text>
+    <!-- Loading State -->
+    <CardContent v-if="isLoading" class="flex flex-col items-center justify-center min-h-[200px]">
+      <Loader2 class="h-8 w-8 animate-spin text-purple-500" />
+      <p class="text-xs text-muted-foreground mt-2">加载中...</p>
+    </CardContent>
 
-        <!-- Empty State -->
-        <v-card-text v-else-if="activeGoals.length === 0" class="d-flex flex-column align-center justify-center"
-            style="min-height: 200px;">
-            <v-icon color="grey" size="64">mdi-flag-outline</v-icon>
-            <p class="text-body-2 text-grey mt-2">暂无进行中的目标</p>
-        </v-card-text>
+    <!-- Empty State -->
+    <CardContent
+      v-else-if="activeGoals.length === 0"
+      class="flex flex-col items-center justify-center min-h-[200px]"
+    >
+      <FlagOff class="h-16 w-16 text-muted-foreground" />
+      <p class="text-sm text-muted-foreground mt-2">暂无进行中的目标</p>
+    </CardContent>
 
-        <!-- Goal Timeline List -->
-        <v-card-text v-else class="pa-3 goal-list-container">
-            <div v-for="goal in activeGoals" :key="goal.uuid" class="goal-item mb-3 pa-3">
-                <!-- Goal Header -->
-                <div class="d-flex align-start justify-space-between mb-2">
-                    <span class="text-body-2 font-weight-bold flex-grow-1">{{ goal.title }}</span>
-                    <v-chip :color="getChipColor(goal)" size="x-small" class="ml-2">
-                        {{ goal.isOverdue ? `超期 ${Math.abs(goal.remainingDays)}天` : `剩${goal.remainingDays}天` }}
-                    </v-chip>
-                </div>
+    <!-- Goal Timeline List -->
+    <CardContent v-else class="p-3 goal-list-container">
+      <div v-for="goal in activeGoals" :key="goal.uuid" class="goal-item mb-3 p-3">
+        <!-- Goal Header -->
+        <div class="flex items-start justify-between mb-2">
+          <span class="text-sm font-bold flex-1">{{ goal.title }}</span>
+          <Badge :variant="getBadgeVariant(goal)" class="ml-2 shrink-0">
+            {{
+              goal.isOverdue
+                ? `超期 ${Math.abs(goal.remainingDays)}天`
+                : `剩${goal.remainingDays}天`
+            }}
+          </Badge>
+        </div>
 
-                <!-- Progress Bar Container -->
-                <div class="mb-2">
-                    <v-progress-linear :model-value="goal.timeProgress" :color="getProgressColor(goal)" height="24"
-                        rounded>
-                        <template #default>
-                            <div class="d-flex justify-space-between align-center w-100 px-2">
-                                <span class="text-caption font-weight-bold">完成 {{ Math.round(goal.completionProgress)
-                                    }}%</span>
-                                <span class="text-caption">时间 {{ Math.round(goal.timeProgress) }}%</span>
-                            </div>
-                        </template>
-                    </v-progress-linear>
-                </div>
+        <!-- Progress Bar Container -->
+        <div class="mb-2 relative">
+          <Progress
+            :model-value="goal.timeProgress"
+            class="h-6 w-full"
+            :class="getProgressBgClass(goal)"
+          />
+          <!-- Custom indicator overlay for colored bar -->
+          <div class="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+            <div
+              class="h-full transition-all rounded-full"
+              :class="getProgressColorClass(goal)"
+              :style="{ width: `${goal.timeProgress}%` }"
+            />
+          </div>
+          <!-- Text overlay -->
+          <div class="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+            <span class="text-xs font-bold text-white drop-shadow-sm">
+              完成 {{ Math.round(goal.completionProgress) }}%
+            </span>
+            <span class="text-xs text-white drop-shadow-sm">
+              时间 {{ Math.round(goal.timeProgress) }}%
+            </span>
+          </div>
+        </div>
 
-                <!-- Dates (Medium/Large only) -->
-                <div v-if="!isSmallSize" class="d-flex align-center justify-space-between text-caption text-grey">
-                    <div class="d-flex align-center">
-                        <v-icon size="x-small" class="mr-1">mdi-calendar-start</v-icon>
-                        {{ formatDate(goal.startDate) }}
-                    </div>
-                    <v-icon size="x-small">mdi-arrow-right</v-icon>
-                    <div class="d-flex align-center">
-                        <v-icon size="x-small" class="mr-1">mdi-flag</v-icon>
-                        {{ formatDate(goal.targetDate) }}
-                    </div>
-                </div>
-            </div>
-        </v-card-text>
-    </v-card>
+        <!-- Dates (Medium/Large only) -->
+        <div
+          v-if="!isSmallSize"
+          class="flex items-center justify-between text-xs text-muted-foreground"
+        >
+          <div class="flex items-center gap-1">
+            <CalendarDays class="h-3 w-3" />
+            {{ formatDate(goal.startDate) }}
+          </div>
+          <ArrowRight class="h-3 w-3" />
+          <div class="flex items-center gap-1">
+            <Flag class="h-3 w-3" />
+            {{ formatDate(goal.targetDate) }}
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
 </template>
 
 <style scoped>
 .goal-timeline-widget {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .widget-size-small {
-    max-height: 300px;
+  max-height: 300px;
 }
 
 .widget-size-medium {
-    max-height: 500px;
+  max-height: 500px;
 }
 
 .widget-size-large {
-    max-height: 700px;
+  max-height: 700px;
 }
 
 .goal-list-container {
-    flex: 1;
-    overflow-y: auto;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .goal-item {
-    border-radius: 8px;
-    transition: all 0.2s;
-    background: rgba(var(--v-theme-surface-variant), 0.3);
-    border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
 }
 
 .goal-item:hover {
-    background: rgba(var(--v-theme-surface-variant), 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: hsl(var(--muted) / 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
-
-

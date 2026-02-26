@@ -4,75 +4,138 @@
   使用 TaskReminderConfig.triggers 数组结构
 -->
 <template>
-  <v-card class="mb-4" elevation="0" variant="outlined">
-    <v-card-title class="section-title">
-      <v-icon class="mr-2">mdi-bell-outline</v-icon>
-      提醒设置
+  <Card class="mb-4">
+    <CardHeader class="flex flex-row items-center gap-2 pb-2">
+      <Bell class="h-5 w-5 text-primary" />
+      <CardTitle class="text-primary font-semibold">提醒设置</CardTitle>
       <!-- 验证状态指示器 -->
-      <v-icon v-if="!isValid" color="error" class="ml-2">mdi-alert-circle</v-icon>
-      <v-icon v-else color="success" class="ml-2">mdi-check-circle</v-icon>
-    </v-card-title>
-    <v-card-text>
+      <AlertTriangle v-if="!isValid" class="h-5 w-5 ml-2 text-destructive" />
+      <CheckCircle v-else class="h-5 w-5 ml-2 text-green-500" />
+    </CardHeader>
+    <CardContent>
       <!-- 显示验证错误 -->
-      <v-alert v-if="errors.length > 0" type="error" variant="tonal" class="mb-4">
-        <ul class="mb-0">
-          <li v-for="error in errors" :key="error">{{ error }}</li>
-        </ul>
-      </v-alert>
+      <Alert v-if="errors.length > 0" variant="destructive" class="mb-4">
+        <AlertDescription>
+          <ul class="mb-0">
+            <li v-for="error in errors" :key="error">{{ error }}</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
-      <v-row>
-        <v-col cols="12">
-          <v-switch v-model="reminderEnabled" label="启用提醒" color="primary" />
-        </v-col>
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12">
+          <div class="flex items-center gap-2">
+            <Switch :checked="reminderEnabled" @update:checked="reminderEnabled = $event" />
+            <Label>启用提醒</Label>
+          </div>
+        </div>
 
         <template v-if="reminderEnabled">
           <!-- 提醒触发器列表 -->
-          <v-col cols="12">
-            <div class="text-subtitle-2 mb-2">提醒触发器</div>
-            <v-card v-for="(trigger, index) in triggers" :key="index" class="mb-3" variant="outlined">
-              <v-card-text>
-                <v-row>
-                  <v-col cols="12" md="4">
-                    <v-select v-model="trigger.type" label="提醒类型" :items="reminderTypeOptions" variant="outlined"
-                      density="comfortable" @update:model-value="updateTriggers" />
-                  </v-col>
+          <div class="col-span-12">
+            <div class="text-sm font-medium mb-2">提醒触发器</div>
+            <Card v-for="(trigger, index) in triggers" :key="index" class="mb-3">
+              <CardContent class="pt-4">
+                <div class="grid grid-cols-12 gap-4">
+                  <div class="col-span-12 md:col-span-4">
+                    <Label class="mb-2 block">提醒类型</Label>
+                    <Select
+                      :model-value="trigger.type"
+                      @update:model-value="
+                        (val) => {
+                          trigger.type = val;
+                          updateTriggers();
+                        }
+                      "
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem
+                          v-for="opt in reminderTypeOptions"
+                          :key="opt.value"
+                          :value="opt.value"
+                        >
+                          {{ opt.title }}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   <!-- 相对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.RELATIVE">
-                    <v-col cols="12" md="3">
-                      <v-text-field v-model.number="trigger.relativeValue" label="提前时间" type="number" variant="outlined"
-                        density="comfortable" min="1" @update:model-value="updateTriggers" />
-                    </v-col>
-                    <v-col cols="12" md="3">
-                      <v-select v-model="trigger.relativeUnit" label="时间单位" :items="timeUnitOptions" variant="outlined"
-                        density="comfortable" @update:model-value="updateTriggers" />
-                    </v-col>
+                    <div class="col-span-12 md:col-span-3">
+                      <Label class="mb-2 block">提前时间</Label>
+                      <Input
+                        :model-value="trigger.relativeValue"
+                        type="number"
+                        min="1"
+                        @update:model-value="
+                          (val) => {
+                            trigger.relativeValue = Number(val);
+                            updateTriggers();
+                          }
+                        "
+                      />
+                    </div>
+                    <div class="col-span-12 md:col-span-3">
+                      <Label class="mb-2 block">时间单位</Label>
+                      <Select
+                        :model-value="trigger.relativeUnit"
+                        @update:model-value="
+                          (val) => {
+                            trigger.relativeUnit = val;
+                            updateTriggers();
+                          }
+                        "
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择单位" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            v-for="opt in timeUnitOptions"
+                            :key="opt.value"
+                            :value="opt.value"
+                          >
+                            {{ opt.title }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </template>
 
                   <!-- 绝对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.ABSOLUTE">
-                    <v-col cols="12" md="4">
-                      <v-text-field :model-value="formatAbsoluteTime(trigger.absoluteTime)" label="提醒时间"
-                        type="datetime-local" variant="outlined" density="comfortable"
-                        @update:model-value="(val) => updateAbsoluteTime(index, val)" />
-                    </v-col>
+                    <div class="col-span-12 md:col-span-4">
+                      <Label class="mb-2 block">提醒时间</Label>
+                      <Input
+                        :model-value="formatAbsoluteTime(trigger.absoluteTime)"
+                        type="datetime-local"
+                        @update:model-value="(val) => updateAbsoluteTime(index, val)"
+                      />
+                    </div>
                   </template>
 
-                  <v-col cols="12" md="2" class="d-flex align-center">
-                    <v-btn color="error" variant="text" icon="mdi-delete" @click="removeTrigger(index)" />
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
+                  <div class="col-span-12 md:col-span-2 flex items-center">
+                    <Button variant="ghost" size="icon" @click="removeTrigger(index)">
+                      <Trash2 class="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <v-btn color="primary" variant="outlined" prepend-icon="mdi-plus" @click="addTrigger">
+            <Button variant="outline" @click="addTrigger">
+              <Plus class="h-4 w-4 mr-2" />
               添加提醒触发器
-            </v-btn>
-          </v-col>
+            </Button>
+          </div>
         </template>
-      </v-row>
-    </v-card-text>
-  </v-card>
+      </div>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup lang="ts">
@@ -80,6 +143,24 @@ import { computed, ref, watch } from 'vue';
 import { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import type { TaskReminderConfigClientDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Alert,
+  AlertDescription,
+  Switch,
+  Label,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Input,
+  Button,
+} from '@dailyuse/ui-vue-shadcn';
+import { Bell, AlertTriangle, CheckCircle, Trash2, Plus } from 'lucide-vue-next';
 
 // 类型别名
 const ReminderType = TaskReminderType;
@@ -272,11 +353,3 @@ watch(reminderEnabled, (newValue) => {
 // 初始化
 initializeTriggers();
 </script>
-
-<style scoped>
-.section-title {
-  color: rgb(var(--v-theme-primary));
-  font-weight: 600;
-}
-</style>
-

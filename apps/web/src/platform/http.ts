@@ -68,9 +68,12 @@ const httpClientConfig = {
       const json = await response.json();
       const data = json.data ?? json;
 
+      // Patch tokens + identity/session if the refresh returns a full AuthResponseDTO
       store.$patch({
         accessToken: data.accessToken,
         ...(data.refreshToken ? { refreshToken: data.refreshToken } : {}),
+        ...(data.identity ? { currentIdentity: data.identity } : {}),
+        ...(data.session ? { currentSession: data.session } : {}),
       });
       return data.accessToken;
     } catch {
@@ -80,7 +83,7 @@ const httpClientConfig = {
   onUnauthorized: () => {
     try {
       const store = useAuthenticationStore();
-      store.$reset();
+      store.reset();
     } catch {
       // ignore — store may not be ready
     }

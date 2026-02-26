@@ -1,6 +1,569 @@
+<script setup lang="ts">
+/**
+ * DashboardView - Linear-style aggregated dashboard
+ *
+ * Sections: stat cards, trend chart, activity timeline,
+ * goal progress, task board summary, upcoming schedule, quick actions.
+ */
+
+import { onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useDashboard } from '../modules/dashboard/composables/useDashboard';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Progress,
+  Skeleton,
+  Separator,
+  Button,
+  ScrollArea,
+} from '@dailyuse/ui-vue-shadcn';
+import {
+  CheckCircle2,
+  Target,
+  Bell,
+  ListTodo,
+  AlertTriangle,
+  Clock,
+  Calendar,
+  ArrowRight,
+  TrendingUp,
+  Plus,
+  RefreshCw,
+  Activity,
+} from 'lucide-vue-next';
+import VChart from 'vue-echarts';
+import { use } from 'echarts/core';
+import { LineChart, BarChart } from 'echarts/charts';
+import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  LegendComponent,
+} from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+use([
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  LegendComponent,
+  LineChart,
+  BarChart,
+  CanvasRenderer,
+]);
+
+const router = useRouter();
+const {
+  stats,
+  activityTimeline,
+  trendDays,
+  goalProgress,
+  taskBoard,
+  upcomingSchedule,
+  isLoading,
+  error,
+  fetchDashboard,
+} = useDashboard();
+
+onMounted(() => {
+  fetchDashboard();
+});
+
+// ── Stat cards config ──
+const statCards = computed(() => [
+  {
+    label: '进行中任务',
+    value: stats.value.activeTasks,
+    icon: ListTodo,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10',
+    route: '/tasks',
+  },
+  {
+    label: '今日完成',
+    value: stats.value.completedToday,
+    icon: CheckCircle2,
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-500/10',
+    route: '/tasks',
+  },
+  {
+    label: '活跃目标',
+    value: stats.value.activeGoals,
+    icon: Target,
+    color: 'text-violet-500',
+    bg: 'bg-violet-500/10',
+    route: '/goals',
+  },
+  {
+    label: '待处理提醒',
+    value: stats.value.upcomingReminders,
+    icon: Bell,
+    color: 'text-amber-500',
+    bg: 'bg-amber-500/10',
+    route: '/reminders',
+  },
+  {
+    label: '未读通知',
+    value: stats.value.unreadNotifications,
+    icon: Activity,
+    color: 'text-rose-500',
+    bg: 'bg-rose-500/10',
+    route: '/notifications',
+  },
+  {
+    label: '日程冲突',
+    value: stats.value.scheduleConflicts,
+    icon: AlertTriangle,
+    color: 'text-orange-500',
+    bg: 'bg-orange-500/10',
+    route: '/schedule',
+  },
+]);
+
+// ── Trend chart option ──
+const trendChartOption = computed(() => ({
+  tooltip: {
+    trigger: 'axis',
+    backgroundColor: 'hsl(var(--popover))',
+    borderColor: 'hsl(var(--border))',
+    textStyle: { color: 'hsl(var(--popover-foreground))', fontSize: 12 },
+  },
+  legend: {
+    bottom: 0,
+    textStyle: { color: 'hsl(var(--muted-foreground))', fontSize: 11 },
+  },
+  grid: { top: 16, right: 16, bottom: 36, left: 40 },
+  xAxis: {
+    type: 'category',
+    data: trendDays.value.map((d) => d.date.slice(5)),
+    axisLine: { lineStyle: { color: 'hsl(var(--border))' } },
+    axisLabel: { color: 'hsl(var(--muted-foreground))', fontSize: 11 },
+  },
+  yAxis: {
+    type: 'value',
+    splitLine: { lineStyle: { color: 'hsl(var(--border))', type: 'dashed' } },
+    axisLabel: { color: 'hsl(var(--muted-foreground))', fontSize: 11 },
+  },
+  series: [
+    {
+      name: '已完成',
+      type: 'bar',
+      data: trendDays.value.map((d) => d.tasksCompleted),
+      itemStyle: { color: 'hsl(var(--chart-1))', borderRadius: [4, 4, 0, 0] },
+      barMaxWidth: 24,
+    },
+    {
+      name: '新建',
+      type: 'line',
+      data: trendDays.value.map((d) => d.tasksCreated),
+      smooth: true,
+      lineStyle: { color: 'hsl(var(--chart-2))', width: 2 },
+      itemStyle: { color: 'hsl(var(--chart-2))' },
+      showSymbol: false,
+    },
+  ],
+}));
+
+// ── Task board data ──
+const taskBoardColumns = computed(() => [
+  { label: '待办', value: taskBoard.value.todo, color: 'bg-zinc-400' },
+  { label: '进行中', value: taskBoard.value.inProgress, color: 'bg-blue-500' },
+  { label: '已完成', value: taskBoard.value.done, color: 'bg-emerald-500' },
+  { label: '逾期', value: taskBoard.value.overdue, color: 'bg-rose-500' },
+]);
+
+const taskBoardTotal = computed(
+  () =>
+    taskBoard.value.todo +
+    taskBoard.value.inProgress +
+    taskBoard.value.done +
+    taskBoard.value.overdue,
+);
+
+// ── Quick actions ──
+const quickActions = [
+  { label: '新建任务', icon: Plus, route: '/tasks' },
+  { label: '查看日程', icon: Calendar, route: '/schedule' },
+  { label: '目标总览', icon: Target, route: '/goals' },
+  { label: '通知中心', icon: Bell, route: '/notifications' },
+];
+
+// ── Helpers ──
+function formatTime(ts: number): string {
+  const date = new Date(ts);
+  const now = Date.now();
+  const diff = now - ts;
+  if (diff < 60_000) return '刚刚';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
+  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatScheduleTime(ts: number): string {
+  const d = new Date(ts);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatScheduleDate(ts: number): string {
+  const d = new Date(ts);
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (d.toDateString() === today.toDateString()) return '今天';
+  if (d.toDateString() === tomorrow.toDateString()) return '明天';
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function activityIcon(type: string) {
+  const map: Record<string, typeof CheckCircle2> = {
+    task_completed: CheckCircle2,
+    goal_updated: Target,
+    reminder_fired: Bell,
+    task_created: Plus,
+    review_added: TrendingUp,
+    schedule_created: Calendar,
+  };
+  return map[type] ?? Activity;
+}
+
+function activityColor(type: string): string {
+  const map: Record<string, string> = {
+    task_completed: 'text-emerald-500',
+    goal_updated: 'text-violet-500',
+    reminder_fired: 'text-amber-500',
+    task_created: 'text-blue-500',
+    review_added: 'text-cyan-500',
+    schedule_created: 'text-indigo-500',
+  };
+  return map[type] ?? 'text-muted-foreground';
+}
+
+function navigateTo(path: string) {
+  router.push(path);
+}
+</script>
+
 <template>
-  <div class="min-h-screen p-8 bg-background">
-    <h1 class="text-2xl font-semibold">仪表盘</h1>
-    <p class="mt-2 text-muted-foreground">Phase 1 骨架页面</p>
+  <div class="flex flex-col h-full bg-background">
+    <!-- Page Header -->
+    <div
+      class="flex items-center justify-between px-6 py-3 border-b border-border bg-background sticky top-0 z-10"
+    >
+      <div>
+        <h1 class="text-base font-semibold tracking-tight text-foreground">仪表盘</h1>
+        <p class="text-xs text-muted-foreground mt-0.5">全局概览与快速操作</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <Button variant="ghost" size="sm" :disabled="isLoading" @click="fetchDashboard">
+          <RefreshCw class="w-4 h-4 mr-1" :class="{ 'animate-spin': isLoading }" />
+          刷新
+        </Button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <ScrollArea class="flex-1">
+      <div class="p-6 space-y-6 max-w-[1400px] mx-auto">
+        <!-- Error banner -->
+        <div
+          v-if="error"
+          class="rounded-lg border border-destructive/50 bg-destructive/5 px-4 py-3 text-sm text-destructive flex items-center gap-2"
+        >
+          <AlertTriangle class="w-4 h-4 shrink-0" />
+          {{ error }}
+        </div>
+
+        <!-- ═══ Stat Cards ═══ -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <template v-if="isLoading">
+            <Card v-for="i in 6" :key="i" class="border-border/50">
+              <CardContent class="p-4">
+                <Skeleton class="h-4 w-20 mb-3" />
+                <Skeleton class="h-8 w-12" />
+              </CardContent>
+            </Card>
+          </template>
+          <template v-else>
+            <Card
+              v-for="card in statCards"
+              :key="card.label"
+              class="border-border/50 hover:border-border transition-colors cursor-pointer group"
+              @click="navigateTo(card.route)"
+            >
+              <CardContent class="p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs text-muted-foreground font-medium">{{ card.label }}</span>
+                  <div :class="[card.bg, 'rounded-md p-1.5']">
+                    <component :is="card.icon" :class="[card.color, 'w-3.5 h-3.5']" />
+                  </div>
+                </div>
+                <p class="text-2xl font-bold tracking-tight text-foreground">
+                  {{ card.value }}
+                </p>
+              </CardContent>
+            </Card>
+          </template>
+        </div>
+
+        <!-- ═══ Main Grid: Chart + Activity ═══ -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Trend Chart -->
+          <Card class="lg:col-span-2 border-border/50">
+            <CardHeader class="pb-2 px-4 pt-4">
+              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
+                <TrendingUp class="w-4 h-4 text-muted-foreground" />
+                任务趋势 (近 7 天)
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="px-4 pb-4">
+              <template v-if="isLoading">
+                <Skeleton class="h-[220px] w-full rounded-lg" />
+              </template>
+              <template v-else>
+                <v-chart class="h-[220px] w-full" :option="trendChartOption" autoresize />
+              </template>
+            </CardContent>
+          </Card>
+
+          <!-- Activity Timeline -->
+          <Card class="border-border/50">
+            <CardHeader class="pb-2 px-4 pt-4">
+              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
+                <Activity class="w-4 h-4 text-muted-foreground" />
+                最近动态
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="px-4 pb-4">
+              <template v-if="isLoading">
+                <div class="space-y-3">
+                  <div v-for="i in 5" :key="i" class="flex items-start gap-2">
+                    <Skeleton class="w-5 h-5 rounded-full shrink-0" />
+                    <div class="flex-1 space-y-1">
+                      <Skeleton class="h-3 w-full" />
+                      <Skeleton class="h-3 w-16" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <ScrollArea class="h-[220px]">
+                  <div class="space-y-1">
+                    <div
+                      v-for="item in activityTimeline"
+                      :key="item.id"
+                      class="flex items-start gap-2.5 py-1.5 rounded-md hover:bg-muted/50 px-1 transition-colors"
+                    >
+                      <component
+                        :is="activityIcon(item.type)"
+                        :class="[activityColor(item.type), 'w-4 h-4 mt-0.5 shrink-0']"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs text-foreground leading-relaxed truncate">
+                          {{ item.description }}
+                        </p>
+                        <p class="text-[11px] text-muted-foreground">
+                          {{ formatTime(item.timestamp) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </template>
+            </CardContent>
+          </Card>
+        </div>
+
+        <!-- ═══ Second Row: Goals + Task Board + Schedule ═══ -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Goal Progress -->
+          <Card class="border-border/50">
+            <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
+              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
+                <Target class="w-4 h-4 text-muted-foreground" />
+                目标进度
+              </CardTitle>
+              <Button variant="ghost" size="sm" class="h-7 text-xs" @click="navigateTo('/goals')">
+                查看全部
+                <ArrowRight class="w-3 h-3 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent class="px-4 pb-4">
+              <template v-if="isLoading">
+                <div class="space-y-4">
+                  <div v-for="i in 4" :key="i" class="space-y-1.5">
+                    <Skeleton class="h-3 w-32" />
+                    <Skeleton class="h-2 w-full" />
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <div class="space-y-3">
+                  <div v-for="goal in goalProgress" :key="goal.id" class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-foreground font-medium truncate max-w-[60%]">
+                        {{ goal.name }}
+                      </span>
+                      <div class="flex items-center gap-1.5">
+                        <Badge
+                          v-if="goal.status === 'Paused'"
+                          variant="secondary"
+                          class="text-[10px] px-1.5 py-0"
+                        >
+                          暂停
+                        </Badge>
+                        <span class="text-[11px] text-muted-foreground font-mono">
+                          {{ goal.progress }}%
+                        </span>
+                      </div>
+                    </div>
+                    <Progress :model-value="goal.progress" class="h-1.5" />
+                  </div>
+                </div>
+              </template>
+            </CardContent>
+          </Card>
+
+          <!-- Task Board Summary -->
+          <Card class="border-border/50">
+            <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
+              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
+                <ListTodo class="w-4 h-4 text-muted-foreground" />
+                任务看板
+              </CardTitle>
+              <Button variant="ghost" size="sm" class="h-7 text-xs" @click="navigateTo('/tasks')">
+                查看全部
+                <ArrowRight class="w-3 h-3 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent class="px-4 pb-4">
+              <template v-if="isLoading">
+                <Skeleton class="h-[140px] w-full rounded-lg" />
+              </template>
+              <template v-else>
+                <!-- Stacked bar visual -->
+                <div class="mb-4">
+                  <div class="flex h-3 rounded-full overflow-hidden bg-muted">
+                    <div
+                      v-for="col in taskBoardColumns"
+                      :key="col.label"
+                      :class="[col.color]"
+                      :style="{
+                        width: taskBoardTotal > 0 ? `${(col.value / taskBoardTotal) * 100}%` : '0%',
+                      }"
+                      class="transition-all duration-300"
+                    />
+                  </div>
+                </div>
+                <!-- Legend -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div
+                    v-for="col in taskBoardColumns"
+                    :key="col.label"
+                    class="flex items-center gap-2"
+                  >
+                    <span :class="[col.color, 'w-2.5 h-2.5 rounded-full shrink-0']" />
+                    <span class="text-xs text-muted-foreground">{{ col.label }}</span>
+                    <span class="text-xs font-semibold text-foreground ml-auto">{{
+                      col.value
+                    }}</span>
+                  </div>
+                </div>
+                <Separator class="my-3" />
+                <div class="text-center">
+                  <span class="text-xs text-muted-foreground">任务总数</span>
+                  <p class="text-xl font-bold text-foreground">{{ taskBoardTotal }}</p>
+                </div>
+              </template>
+            </CardContent>
+          </Card>
+
+          <!-- Upcoming Schedule -->
+          <Card class="border-border/50">
+            <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
+              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
+                <Clock class="w-4 h-4 text-muted-foreground" />
+                即将到来
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-7 text-xs"
+                @click="navigateTo('/schedule')"
+              >
+                查看全部
+                <ArrowRight class="w-3 h-3 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent class="px-4 pb-4">
+              <template v-if="isLoading">
+                <div class="space-y-3">
+                  <div v-for="i in 4" :key="i" class="flex items-start gap-2">
+                    <Skeleton class="w-10 h-8 rounded" />
+                    <div class="flex-1 space-y-1">
+                      <Skeleton class="h-3 w-full" />
+                      <Skeleton class="h-3 w-20" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <div class="space-y-1">
+                  <div
+                    v-for="item in upcomingSchedule"
+                    :key="item.id"
+                    class="flex items-start gap-2.5 py-1.5 rounded-md hover:bg-muted/50 px-1 transition-colors"
+                  >
+                    <div
+                      class="flex flex-col items-center bg-muted/80 rounded px-1.5 py-0.5 shrink-0"
+                    >
+                      <span class="text-[10px] text-muted-foreground leading-none">
+                        {{ formatScheduleDate(item.startTime) }}
+                      </span>
+                      <span class="text-xs font-semibold text-foreground leading-tight">
+                        {{ formatScheduleTime(item.startTime) }}
+                      </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-foreground font-medium truncate">
+                        {{ item.title }}
+                      </p>
+                      <p class="text-[11px] text-muted-foreground">
+                        {{ formatScheduleTime(item.startTime) }} -
+                        {{ formatScheduleTime(item.endTime) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </CardContent>
+          </Card>
+        </div>
+
+        <!-- ═══ Quick Actions Bar ═══ -->
+        <Card class="border-border/50">
+          <CardContent class="px-4 py-3">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs text-muted-foreground mr-1">快速操作:</span>
+              <Button
+                v-for="action in quickActions"
+                :key="action.label"
+                variant="outline"
+                size="sm"
+                class="h-7 text-xs"
+                @click="navigateTo(action.route)"
+              >
+                <component :is="action.icon" class="w-3.5 h-3.5 mr-1" />
+                {{ action.label }}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </ScrollArea>
   </div>
 </template>

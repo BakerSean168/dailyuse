@@ -1,141 +1,151 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="1000" scrollable>
-    <v-card>
-      <v-card-title class="d-flex align-center bg-primary">
-        <v-icon class="mr-2">mdi-robot</v-icon>
-        AI 权重推荐
-        <v-spacer />
-        <v-btn icon="mdi-close" variant="text" size="small" @click="close" />
-      </v-card-title>
+  <Dialog v-model:open="isOpen">
+    <DialogScrollContent class="max-w-[1000px]">
+      <DialogHeader>
+        <DialogTitle class="flex items-center gap-2">
+          <Bot class="size-5" />
+          AI 权重推荐
+        </DialogTitle>
+        <p class="text-sm text-muted-foreground">
+          基于 KeyResult 内容分析，为您推荐以下 3 种权重分配策略
+        </p>
+      </DialogHeader>
 
-      <v-card-subtitle class="pt-3">
-        基于 KeyResult 内容分析，为您推荐以下 3 种权重分配策略
-      </v-card-subtitle>
+      <Separator />
 
-      <v-divider />
-
-      <v-card-text class="pa-4">
+      <div class="py-4">
         <!-- 加载状态 -->
-        <v-progress-linear v-if="isLoading" indeterminate color="primary" />
+        <Progress v-if="isLoading" :model-value="undefined" class="w-full" />
 
         <!-- 策略卡片 -->
-        <v-row v-else>
-          <v-col v-for="strategy in strategies" :key="strategy.name" cols="12" md="4">
-            <v-card
-              :class="['strategy-card', { selected: selectedStrategy === strategy.name }]"
-              :color="selectedStrategy === strategy.name ? 'primary' : undefined"
-              :variant="selectedStrategy === strategy.name ? 'tonal' : 'outlined'"
-              @click="selectedStrategy = strategy.name"
-            >
-              <v-card-title class="d-flex align-center">
-                {{ strategy.label }}
-                <v-spacer />
-                <v-chip
-                  size="small"
-                  :color="getConfidenceColor(strategy.confidence)"
-                  variant="flat"
-                >
+        <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Card
+            v-for="strategy in strategies"
+            :key="strategy.name"
+            class="cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            :class="[
+              selectedStrategy === strategy.name ? 'ring-2 ring-primary bg-primary/5' : 'border',
+            ]"
+            @click="selectedStrategy = strategy.name"
+          >
+            <CardHeader class="pb-2">
+              <div class="flex items-center justify-between">
+                <CardTitle class="text-base">{{ strategy.label }}</CardTitle>
+                <Badge :class="getConfidenceBadgeClass(strategy.confidence)">
                   {{ strategy.confidence }}% 匹配
-                </v-chip>
-              </v-card-title>
-
-              <v-card-subtitle class="text-caption">
+                </Badge>
+              </div>
+              <p class="text-xs text-muted-foreground">
                 {{ strategy.description }}
-              </v-card-subtitle>
+              </p>
+            </CardHeader>
 
-              <v-card-text>
-                <!-- 权重可视化 -->
-                <div class="weight-visualization mb-3">
-                  <div
-                    v-for="(weight, index) in strategy.weights"
-                    :key="index"
-                    class="weight-bar-container mb-2"
-                  >
-                    <div class="d-flex align-center mb-1">
-                      <span class="text-caption text-medium-emphasis" style="min-width: 40px">
-                        KR {{ index + 1 }}
-                      </span>
-                      <v-progress-linear
-                        :model-value="weight"
-                        :color="getWeightColor(weight)"
-                        height="20"
-                        class="mx-2"
+            <CardContent class="pb-2">
+              <!-- 权重可视化 -->
+              <div class="mb-3 min-h-[120px]">
+                <div v-for="(weight, index) in strategy.weights" :key="index" class="mb-2">
+                  <div class="mb-1 flex items-center">
+                    <span class="min-w-[40px] text-xs text-muted-foreground">
+                      KR {{ index + 1 }}
+                    </span>
+                    <div class="relative mx-2 h-5 flex-1 overflow-hidden rounded-full bg-muted">
+                      <div
+                        class="flex h-full items-center justify-center transition-all"
+                        :class="getWeightBarClass(weight)"
+                        :style="{ width: `${weight}%` }"
                       >
-                        <template #default>
-                          <strong class="text-caption">{{ weight }}%</strong>
-                        </template>
-                      </v-progress-linear>
+                        <strong class="text-xs text-white">{{ weight }}%</strong>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- 推荐理由 -->
-                <v-alert type="info" variant="tonal" density="compact" class="text-caption">
-                  <v-icon size="small" class="mr-1">mdi-lightbulb-outline</v-icon>
+              <!-- 推荐理由 -->
+              <Alert>
+                <Lightbulb class="size-4" />
+                <AlertDescription class="text-xs">
                   {{ strategy.reasoning }}
-                </v-alert>
-              </v-card-text>
+                </AlertDescription>
+              </Alert>
+            </CardContent>
 
-              <v-card-actions>
-                <v-btn
-                  block
-                  :color="selectedStrategy === strategy.name ? 'primary' : undefined"
-                  :variant="selectedStrategy === strategy.name ? 'flat' : 'tonal'"
-                  @click.stop="selectAndApply(strategy)"
-                >
-                  <v-icon start>mdi-check</v-icon>
-                  应用此策略
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-col>
-        </v-row>
+            <CardFooter class="pt-2">
+              <Button
+                class="w-full"
+                :variant="selectedStrategy === strategy.name ? 'default' : 'secondary'"
+                @click.stop="selectAndApply(strategy)"
+              >
+                <Check class="mr-2 size-4" />
+                应用此策略
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
 
         <!-- KeyResults 预览 -->
-        <v-card v-if="keyResults.length > 0" variant="outlined" class="mt-4">
-          <v-card-title class="text-subtitle-1">
-            <v-icon class="mr-2" size="small">mdi-format-list-bulleted</v-icon>
-            KeyResults 列表
-          </v-card-title>
-          <v-list density="compact">
-            <v-list-item
-              v-for="(kr, index) in keyResults"
-              :key="kr.id"
-              :title="`${index + 1}. ${kr.title}`"
-              :subtitle="getKeywordHighlight(kr.title)"
-            >
-              <template #prepend>
-                <v-icon :color="getWeightColor(kr.weight || 0)"> mdi-circle </v-icon>
-              </template>
-              <template #append>
-                <v-chip size="small" variant="text"> 当前: {{ kr.weight || 0 }}% </v-chip>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card>
-      </v-card-text>
+        <Card v-if="keyResults.length > 0" class="mt-4 border">
+          <CardHeader class="pb-2">
+            <CardTitle class="flex items-center gap-2 text-sm">
+              <List class="size-4" />
+              KeyResults 列表
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="space-y-1">
+              <div
+                v-for="(kr, index) in keyResults"
+                :key="kr.id"
+                class="flex items-center gap-3 rounded-md px-2 py-1.5 text-sm"
+              >
+                <Circle class="size-4 shrink-0" :class="getWeightIconClass(kr.weight || 0)" />
+                <div class="min-w-0 flex-1">
+                  <div class="truncate">{{ index + 1 }}. {{ kr.title }}</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ getKeywordHighlight(kr.title) }}
+                  </div>
+                </div>
+                <span class="shrink-0 text-xs text-muted-foreground">
+                  当前: {{ kr.weight || 0 }}%
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      <v-divider />
+      <Separator />
 
-      <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" @click="close">取消</v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
-          :disabled="!selectedStrategy"
-          @click="confirmSelection"
-        >
-          确认选择
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      <DialogFooter>
+        <Button variant="outline" @click="close">取消</Button>
+        <Button :disabled="!selectedStrategy" @click="confirmSelection"> 确认选择 </Button>
+      </DialogFooter>
+    </DialogScrollContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import {
+  Dialog,
+  DialogScrollContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  Button,
+  Badge,
+  Progress,
+  Alert,
+  AlertDescription,
+  Separator,
+} from '@dailyuse/ui-vue-shadcn';
+import { Bot, Check, Circle, Lightbulb, List } from 'lucide-vue-next';
 import {
   weightRecommendationService,
   type WeightStrategy,
@@ -176,18 +186,25 @@ function generateRecommendations() {
   }
 }
 
-// 获取置信度颜色
-function getConfidenceColor(confidence: number): string {
-  if (confidence >= 80) return 'success';
-  if (confidence >= 60) return 'warning';
-  return 'info';
+// 获取置信度 Badge 样式
+function getConfidenceBadgeClass(confidence: number): string {
+  if (confidence >= 80) return 'bg-green-500 text-white border-transparent';
+  if (confidence >= 60) return 'bg-yellow-500 text-white border-transparent';
+  return 'bg-blue-500 text-white border-transparent';
 }
 
-// 获取权重颜色
-function getWeightColor(weight: number): string {
-  if (weight >= 40) return 'success';
-  if (weight >= 20) return 'warning';
-  return 'error';
+// 获取权重条样式
+function getWeightBarClass(weight: number): string {
+  if (weight >= 40) return 'bg-green-500';
+  if (weight >= 20) return 'bg-yellow-500';
+  return 'bg-red-500';
+}
+
+// 获取权重图标颜色
+function getWeightIconClass(weight: number): string {
+  if (weight >= 40) return 'text-green-500';
+  if (weight >= 20) return 'text-yellow-500';
+  return 'text-red-500';
 }
 
 // 高亮关键词
@@ -252,28 +269,3 @@ function close() {
 
 defineExpose({ open, close });
 </script>
-
-<style scoped>
-.strategy-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  height: 100%;
-}
-
-.strategy-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.strategy-card.selected {
-  border: 2px solid rgb(var(--v-theme-primary));
-}
-
-.weight-visualization {
-  min-height: 120px;
-}
-
-.weight-bar-container {
-  position: relative;
-}
-</style>

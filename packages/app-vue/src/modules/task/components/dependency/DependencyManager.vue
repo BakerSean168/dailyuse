@@ -1,73 +1,98 @@
 <template>
-  <v-card class="dependency-manager">
-    <v-card-title>
-      <v-icon class="mr-2">mdi-link-variant</v-icon>
-      管理任务依赖
-    </v-card-title>
+  <Card class="dependency-manager">
+    <CardHeader>
+      <CardTitle class="flex items-center gap-2">
+        <Link2 class="h-5 w-5" />
+        管理任务依赖
+      </CardTitle>
+    </CardHeader>
 
-    <v-card-text>
+    <CardContent>
       <div v-if="currentDependencies.length > 0" class="mb-4">
-        <div class="text-subtitle-2 mb-2">当前依赖 ({{ currentDependencies.length }})</div>
-        <v-list density="compact">
-          <v-list-item v-for="dep in currentDependencies" :key="dep.id" class="px-0">
-            <template #prepend>
-              <v-icon :color="getDependencyTypeColor(dep.dependencyType)" size="small">
-                {{ getDependencyTypeIcon(dep.dependencyType) }}
-              </v-icon>
-            </template>
-            <v-list-item-title>
-              {{ getTaskTitle(dep.predecessorTaskId) }}
-              <v-icon size="x-small" class="mx-1">mdi-arrow-right</v-icon>
-              {{ getTaskTitle(dep.successorTaskId) }}
-            </v-list-item-title>
-            <v-list-item-subtitle>{{ getDependencyTypeName(dep.dependencyType) }}</v-list-item-subtitle>
-            <template #append>
-              <v-btn icon="mdi-delete" size="x-small" variant="text" @click="emit('dependency-deleted', dep.id)" />
-            </template>
-          </v-list-item>
-        </v-list>
+        <div class="text-sm font-medium mb-2">当前依赖 ({{ currentDependencies.length }})</div>
+        <div class="divide-y">
+          <div
+            v-for="dep in currentDependencies"
+            :key="dep.id"
+            class="flex items-center gap-2 py-2"
+          >
+            <component
+              :is="getDependencyTypeIconComponent(dep.dependencyType)"
+              class="h-4 w-4 shrink-0"
+              :class="getDependencyTypeColorClass(dep.dependencyType)"
+            />
+            <div class="flex-1 min-w-0">
+              <div class="text-sm">
+                {{ getTaskTitle(dep.predecessorTaskId) }}
+                <ArrowRight class="inline h-3 w-3 mx-1" />
+                {{ getTaskTitle(dep.successorTaskId) }}
+              </div>
+              <div class="text-xs text-muted-foreground">
+                {{ getDependencyTypeName(dep.dependencyType) }}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-7 w-7"
+              @click="emit('dependency-deleted', dep.id)"
+            >
+              <Trash2 class="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <v-divider class="my-4" />
-      <div class="text-subtitle-2 mb-3">添加新依赖</div>
+      <Separator class="my-4" />
+      <div class="text-sm font-medium mb-3">添加新依赖</div>
 
-      <v-row>
-        <v-col cols="12" md="5">
-          <v-select
-            v-model="newDependency.predecessorId"
-            :items="availablePredecessors"
-            item-title="title"
-            item-value="id"
-            label="前置任务"
-            density="compact"
-            :disabled="!currentTaskId"
-          />
-        </v-col>
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-5">
+          <Label class="mb-1.5 block">前置任务</Label>
+          <Select v-model="newDependency.predecessorId" :disabled="!currentTaskId">
+            <SelectTrigger>
+              <SelectValue placeholder="选择前置任务" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="task in availablePredecessors" :key="task.id" :value="task.id">
+                {{ task.title }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <v-col cols="12" md="3">
-          <v-select
-            v-model="newDependency.dependencyType"
-            :items="dependencyTypeOptions"
-            item-title="label"
-            item-value="value"
-            label="依赖类型"
-            density="compact"
-          />
-        </v-col>
+        <div class="col-span-12 md:col-span-3">
+          <Label class="mb-1.5 block">依赖类型</Label>
+          <Select v-model="newDependency.dependencyType">
+            <SelectTrigger>
+              <SelectValue placeholder="选择类型" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in dependencyTypeOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <v-col cols="12" md="4" class="d-flex align-center">
-          <v-btn color="primary" :disabled="!canAddDependency" @click="handleAddDependency">
-            <v-icon start>mdi-plus</v-icon>
+        <div class="col-span-12 md:col-span-4 flex items-end">
+          <Button :disabled="!canAddDependency" @click="handleAddDependency">
+            <Plus class="h-4 w-4 mr-1" />
             添加依赖
-          </v-btn>
-        </v-col>
-      </v-row>
+          </Button>
+        </div>
+      </div>
 
-      <v-alert v-if="validationWarnings.length > 0" type="warning" density="compact" class="mt-3">
-        <ul class="pl-4 mb-0">
-          <li v-for="(warning, index) in validationWarnings" :key="index">{{ warning.message }}</li>
-        </ul>
-      </v-alert>
+      <Alert v-if="validationWarnings.length > 0" variant="destructive" class="mt-3">
+        <AlertTriangle class="h-4 w-4" />
+        <AlertDescription>
+          <ul class="pl-4 mb-0 list-disc">
+            <li v-for="(warning, index) in validationWarnings" :key="index">
+              {{ warning.message }}
+            </li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
       <BlockedTaskInfo
         v-if="currentTaskId && blockingInfo"
@@ -75,15 +100,37 @@
         :total-predecessors="blockingInfo.totalPredecessors"
         class="mt-4"
       />
-    </v-card-text>
+    </CardContent>
 
-    <DependencyValidationDialog v-model="showValidationDialog" :error="validationError" :tasks="allTasks" @view-graph="emit('view-graph')" />
-  </v-card>
+    <DependencyValidationDialog
+      v-model="showValidationDialog"
+      :error="validationError"
+      :tasks="allTasks"
+      @view-graph="emit('view-graph')"
+    />
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { DependencyType, type TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Separator,
+  Alert,
+  AlertDescription,
+  Label,
+} from '@dailyuse/ui-vue-shadcn';
+import { Link2, ArrowRight, ArrowRightLeft, Trash2, Plus, AlertTriangle } from 'lucide-vue-next';
 import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';
 import type {
@@ -101,7 +148,10 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'dependency-added', dependency: { predecessorTaskId: string; successorTaskId: string; dependencyType: string }): void;
+  (
+    e: 'dependency-added',
+    dependency: { predecessorTaskId: string; successorTaskId: string; dependencyType: string },
+  ): void;
   (e: 'dependency-deleted', dependencyId: string): void;
   (e: 'view-graph'): void;
 }>();
@@ -126,7 +176,11 @@ const availablePredecessors = computed(() => {
 });
 
 const canAddDependency = computed(() => {
-  return !!props.currentTaskId && !!newDependency.value.predecessorId && !!newDependency.value.dependencyType;
+  return (
+    !!props.currentTaskId &&
+    !!newDependency.value.predecessorId &&
+    !!newDependency.value.dependencyType
+  );
 });
 
 const blockingInfo = computed(() => {
@@ -225,20 +279,18 @@ const getTaskTitle = (id: string): string => {
   return props.allTasks.find((task) => task.id === id)?.title || `${id.slice(0, 8)}...`;
 };
 
-const getDependencyTypeColor = (type: string): string => {
-  if (type === 'FS') return 'primary';
-  if (type === 'SS') return 'info';
-  if (type === 'FF') return 'success';
-  if (type === 'SF') return 'warning';
-  return 'default';
+const getDependencyTypeColorClass = (type: string): string => {
+  if (type === 'FS') return 'text-primary';
+  if (type === 'SS') return 'text-blue-500';
+  if (type === 'FF') return 'text-green-500';
+  if (type === 'SF') return 'text-yellow-500';
+  return 'text-muted-foreground';
 };
 
-const getDependencyTypeIcon = (type: string): string => {
-  if (type === 'FS') return 'mdi-arrow-right-bold';
-  if (type === 'SS') return 'mdi-arrow-right';
-  if (type === 'FF') return 'mdi-arrow-right-thick';
-  if (type === 'SF') return 'mdi-arrow-right-bold-circle';
-  return 'mdi-arrow-right';
+const getDependencyTypeIconComponent = (type: string) => {
+  // All dependency types use ArrowRight variants
+  if (type === 'SF') return ArrowRightLeft;
+  return ArrowRight;
 };
 
 const getDependencyTypeName = (type: string): string => {
