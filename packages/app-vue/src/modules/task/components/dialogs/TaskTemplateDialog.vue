@@ -1,7 +1,7 @@
 <template>
   <Dialog :open="visible" @update:open="setVisible">
-    <DialogContent class="max-w-[900px] rounded-xl p-0">
-      <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4">
+    <DialogContent class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex flex-col">
+      <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
         <component
           :is="mode === 'edit' ? Pencil : PlusCircle"
           :class="mode === 'edit' ? 'text-primary' : 'text-green-500'"
@@ -23,7 +23,7 @@
         </div>
       </DialogHeader>
 
-      <div class="overflow-y-auto px-6 pb-4">
+      <div class="flex-1 min-h-0 overflow-y-auto px-6 pb-4">
         <TaskTemplateForm
           v-if="localTemplate"
           ref="formRef"
@@ -36,7 +36,7 @@
         />
       </div>
 
-      <DialogFooter class="p-6 pt-4">
+      <DialogFooter class="p-6 pt-4 shrink-0 border-t">
         <Button variant="ghost" :disabled="saving" @click="handleCancel">{{
           t('task.templateDialog.cancel')
         }}</Button>

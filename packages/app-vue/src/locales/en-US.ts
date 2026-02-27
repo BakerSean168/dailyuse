@@ -561,11 +561,16 @@ export default {
     template: {
       confirmDelete: "Delete reminder '{name}'?",
     },
+    group: {
+      confirmDelete: "Delete group '{name}'?",
+    },
     toast: {
       templateCreated: 'Reminder created',
       templateUpdated: 'Reminder updated',
       templateDeleted: 'Reminder deleted',
       groupCreated: 'Group created',
+      groupUpdated: 'Group updated',
+      groupDeleted: 'Group deleted',
     },
     error: {
       loadTemplatesFailed: 'Failed to load reminder templates',
@@ -1162,6 +1167,10 @@ export default {
       deleted: 'Goal deleted',
       created: 'Goal created',
       updated: 'Goal updated',
+    },
+    folder: {
+      confirmDelete: "Delete folder '{name}'?",
+      deleted: 'Folder deleted',
     },
     detail: {
       back: 'Back',

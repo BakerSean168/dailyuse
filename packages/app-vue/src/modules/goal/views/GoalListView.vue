@@ -21,28 +21,30 @@
             <Badge variant="secondary" class="ml-auto text-xs">{{ goals.length }}</Badge>
           </div>
 
-          <div
+          <ActionableWrapper
             v-for="folder in goalFolders"
             :key="folder.id"
-            class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-            :class="
-              selectedFolderId === folder.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
-            "
-            @click="selectedFolderId = folder.id"
+            :actions="getFolderActions(folder)"
+            :show-more-button="false"
           >
-            <Folder class="h-4 w-4" />
-            <span class="truncate">{{ folder.name }}</span>
-          </div>
+            <div
+              class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+              :class="
+                selectedFolderId === folder.id
+                  ? 'bg-accent text-accent-foreground'
+                  : 'hover:bg-muted'
+              "
+              @click="selectedFolderId = folder.id"
+            >
+              <Folder class="h-4 w-4" />
+              <span class="truncate">{{ folder.name }}</span>
+            </div>
+          </ActionableWrapper>
         </div>
       </ScrollArea>
 
       <div class="border-t p-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          class="w-full justify-start"
-          @click="showGoalDialog = true"
-        >
+        <Button variant="ghost" size="sm" class="w-full justify-start" @click="openCreateFolder">
           <FolderPlus class="mr-2 h-4 w-4" /> New Folder
         </Button>
       </div>
@@ -154,6 +156,9 @@
       @created="handleGoalCreated"
       @updated="handleGoalUpdated"
     />
+
+    <!-- Folder Dialog -->
+    <GoalFolderDialog ref="folderDialogRef" @save="handleFolderSaved" />
   </div>
 </template>
 
@@ -161,11 +166,22 @@
 import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
-import { Target, Plus, LayoutGrid, Search, Folder, FolderPlus } from 'lucide-vue-next';
+import {
+  Target,
+  Plus,
+  LayoutGrid,
+  Search,
+  Folder,
+  FolderPlus,
+  Pencil,
+  Trash2,
+} from 'lucide-vue-next';
 import { Button, Badge, ScrollArea, Input, Separator } from '@dailyuse/ui-vue-shadcn';
-import { GoalCard, GoalDialog } from '../components';
+import { GoalCard, GoalDialog, GoalFolderDialog } from '../components';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 import { useGoal } from '../composables/useGoal';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 const { t } = useI18n();
 
@@ -176,6 +192,9 @@ const {
   fetchGoals,
   fetchFolders,
   deleteGoal,
+  deleteFolder,
+  createFolder,
+  updateFolder,
   setFilterStatus,
   search,
 } = useGoal();
@@ -186,6 +205,7 @@ const searchQuery = ref('');
 const showGoalDialog = ref(false);
 const dialogMode = ref<'create' | 'edit'>('create');
 const editingGoal = ref<GoalClientDTO | null>(null);
+const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 
 const statusTabs = [
   { label: 'All', value: 'all' },
@@ -241,6 +261,53 @@ function handleGoalUpdated() {
   showGoalDialog.value = false;
   fetchGoals();
   toast.success(t('goal.list.updated'));
+}
+
+function getFolderActions(folder: GoalFolderClientDTO): MenuAction[] {
+  return [
+    {
+      key: 'edit',
+      label: menuLabel('editFolder'),
+      icon: Pencil,
+      handler: () => handleEditFolder(folder),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('deleteFolder'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => handleDeleteFolder(folder.id),
+    },
+  ];
+}
+
+function handleEditFolder(folder: GoalFolderClientDTO) {
+  folderDialogRef.value?.openForEdit(folder);
+}
+
+async function handleDeleteFolder(id: string) {
+  if (!window.confirm(t('goal.folder.confirmDelete'))) return;
+  const ok = await deleteFolder(id);
+  if (ok) {
+    if (selectedFolderId.value === id) selectedFolderId.value = null;
+    toast.success(t('goal.folder.deleted'));
+  }
+}
+
+async function handleFolderSaved(payload: any) {
+  if (payload.id) {
+    const ok = await updateFolder(payload.id, payload);
+    if (ok) toast.success(t('goal.list.updated'));
+  } else {
+    const ok = await createFolder(payload);
+    if (ok) toast.success(t('goal.list.created'));
+  }
+  await fetchFolders();
+}
+
+function openCreateFolder() {
+  folderDialogRef.value?.openForCreate();
 }
 
 onMounted(async () => {

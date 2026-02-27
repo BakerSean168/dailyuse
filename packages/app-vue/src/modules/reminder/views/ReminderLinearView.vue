@@ -21,28 +21,28 @@
             <Badge variant="secondary" class="ml-auto text-xs">{{ templates.length }}</Badge>
           </div>
 
-          <div
+          <ActionableWrapper
             v-for="group in groups"
             :key="group.id"
-            class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-            :class="
-              selectedGroupId === group.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
-            "
-            @click="selectedGroupId = group.id"
+            :actions="getGroupActions(group)"
+            :show-more-button="false"
           >
-            <Folder class="h-4 w-4" />
-            <span class="truncate">{{ group.name }}</span>
-          </div>
+            <div
+              class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+              :class="
+                selectedGroupId === group.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
+              "
+              @click="selectedGroupId = group.id"
+            >
+              <Folder class="h-4 w-4" />
+              <span class="truncate">{{ group.name }}</span>
+            </div>
+          </ActionableWrapper>
         </div>
       </ScrollArea>
 
       <div class="border-t p-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          class="w-full justify-start"
-          @click="showGroupDialog = true"
-        >
+        <Button variant="ghost" size="sm" class="w-full justify-start" @click="openCreateGroup">
           <FolderPlus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createGroup') }}
         </Button>
       </div>
@@ -129,7 +129,12 @@
       @update="handleUpdateTemplate"
     />
 
-    <GroupDialog ref="groupDialogRef" @save="handleSaveGroup" />
+    <GroupDialog
+      ref="groupDialogRef"
+      :group="editingGroup"
+      @save="handleSaveGroup"
+      @update="handleUpdateGroup"
+    />
   </div>
 </template>
 
@@ -137,8 +142,19 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
-import { BellRing, LayoutGrid, Folder, FolderPlus, Plus, Search } from 'lucide-vue-next';
+import {
+  BellRing,
+  LayoutGrid,
+  Folder,
+  FolderPlus,
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+} from 'lucide-vue-next';
 import { Button, Badge, ScrollArea, Input } from '@dailyuse/ui-vue-shadcn';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
 import TemplateDesktopCard from '../components/TemplateDesktopCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
@@ -156,6 +172,8 @@ const {
   updateTemplate,
   deleteTemplate,
   createGroup,
+  updateGroup,
+  deleteGroup,
 } = useReminder();
 
 const { t } = useI18n();
@@ -168,6 +186,7 @@ const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard> | null>(null);
 const templateDialogRef = ref<InstanceType<typeof TemplateDialog> | null>(null);
 const groupDialogRef = ref<InstanceType<typeof GroupDialog> | null>(null);
+const editingGroup = ref<any>(null);
 
 const filteredTemplates = computed(() => {
   let result = templates.value;
@@ -244,6 +263,55 @@ async function handleSaveGroup(data: Record<string, unknown>) {
     showGroupDialog.value = false;
     toast.success(t('reminder.toast.groupCreated'));
   }
+}
+
+async function handleUpdateGroup(id: string, data: Record<string, unknown>) {
+  const result = await updateGroup(id, data as any);
+  if (result) {
+    toast.success(t('reminder.toast.groupUpdated'));
+  }
+  await fetchGroups();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getGroupActions(group: any): MenuAction[] {
+  return [
+    {
+      key: 'edit',
+      label: menuLabel('editGroup'),
+      icon: Pencil,
+      handler: () => handleEditGroup(group),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('deleteGroup'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => handleDeleteGroup(group),
+    },
+  ];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleEditGroup(group: any) {
+  editingGroup.value = group;
+  groupDialogRef.value?.openForEdit(group);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleDeleteGroup(group: any) {
+  if (!window.confirm(t('reminder.group.confirmDelete'))) return;
+  const ok = await deleteGroup(group.id);
+  if (ok) {
+    if (selectedGroupId.value === group.id) selectedGroupId.value = null;
+    toast.success(t('reminder.toast.groupDeleted'));
+  }
+}
+
+function openCreateGroup() {
+  editingGroup.value = null;
+  groupDialogRef.value?.open();
 }
 
 onMounted(async () => {

@@ -235,7 +235,7 @@
                     <SelectValue placeholder="No folder" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem v-for="folder in goalFolders" :key="folder.id" :value="folder.id">
                       {{ folder.name }}
                     </SelectItem>
@@ -251,7 +251,7 @@
                     <SelectValue placeholder="No parent goal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem v-for="g in availableParentGoals" :key="g.id" :value="g.id">
                       {{ g.name }}
                     </SelectItem>
@@ -525,12 +525,12 @@ async function handleSave() {
       req.targetDate = form.targetDate;
     }
 
-    const folderId = form.folderId || null;
+    const folderId = form.folderId === 'none' ? null : form.folderId || null;
     if (folderId !== (props.goal.folderId ?? null)) {
       req.folderId = (folderId as GoalFolderId) ?? null;
     }
 
-    const parentGoalId = form.parentGoalId || null;
+    const parentGoalId = form.parentGoalId === 'none' ? null : form.parentGoalId || null;
     if (parentGoalId !== (props.goal.parentGoalId ?? null)) {
       req.parentGoalId = (parentGoalId as GoalId) ?? null;
     }
@@ -559,8 +559,9 @@ async function handleSave() {
       tags: form.tags.length > 0 ? form.tags : undefined,
       startDate: form.startDate ?? undefined,
       targetDate: form.targetDate ?? undefined,
-      folderId: (form.folderId as GoalFolderId) || undefined,
-      parentGoalId: (form.parentGoalId as GoalId) || undefined,
+      folderId: form.folderId === 'none' ? undefined : (form.folderId as GoalFolderId) || undefined,
+      parentGoalId:
+        form.parentGoalId === 'none' ? undefined : (form.parentGoalId as GoalId) || undefined,
     };
 
     const result = await createGoal(req);

@@ -166,7 +166,7 @@ const fontSizeOpts = computed(() => [
 ]);
 
 const fontFamilyOpts = computed(() => [
-  { label: t('setting.appearance.fontDefault'), value: '' },
+  { label: t('setting.appearance.fontDefault'), value: 'default' },
   { label: 'Inter', value: 'Inter' },
   { label: 'Arial', value: 'Arial' },
   { label: 'Roboto', value: 'Roboto' },

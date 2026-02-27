@@ -555,11 +555,16 @@ export default {
     template: {
       confirmDelete: '确认删除提醒「{name}」？',
     },
+    group: {
+      confirmDelete: '确认删除分组「{name}」？',
+    },
     toast: {
       templateCreated: '提醒已创建',
       templateUpdated: '提醒已更新',
       templateDeleted: '提醒已删除',
       groupCreated: '分组已创建',
+      groupUpdated: '分组已更新',
+      groupDeleted: '分组已删除',
     },
     error: {
       loadTemplatesFailed: '加载提醒模板失败',
@@ -1151,6 +1156,10 @@ export default {
       deleted: '目标已删除',
       created: '目标已创建',
       updated: '目标已更新',
+    },
+    folder: {
+      confirmDelete: '确认删除文件夹「{name}」？',
+      deleted: '文件夹已删除',
     },
     detail: {
       back: '返回',
