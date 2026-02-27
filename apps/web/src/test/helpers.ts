@@ -109,7 +109,6 @@ export function createMockEditorStore() {
  */
 export function createMockEntity(overrides: any = {}) {
   return {
-    id: 'mock-id',
     id: 'mock-uuid',
     name: 'Mock Entity',
     createdAt: new Date(),

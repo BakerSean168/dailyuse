@@ -15,7 +15,9 @@
       @create-resource="$emit('create-resource', $event)"
       @select-node="handleSelectNode"
       @open-file="$emit('open-resource', $event)"
-      @context-menu="handleContextMenu"
+      @rename-node="handleRenameNode"
+      @delete-node="handleDeleteNode"
+      @create-subfolder="$emit('create-folder', $event.id)"
     />
   </div>
 </template>
@@ -57,12 +59,19 @@ function handleSelectNode(node: TreeNode) {
   }
 }
 
-function handleContextMenu(event: { node: TreeNode; mouseEvent: MouseEvent }) {
-  const { node } = event;
+function handleRenameNode(node: TreeNode) {
   if (node.type === 'folder') {
-    // Handle folder context menu
+    emit('rename-folder', node);
   } else {
-    // Handle file context menu
+    emit('rename-resource', node);
+  }
+}
+
+function handleDeleteNode(node: TreeNode) {
+  if (node.type === 'folder') {
+    emit('delete-folder', node);
+  } else {
+    emit('delete-resource', node);
   }
 }
 </script>

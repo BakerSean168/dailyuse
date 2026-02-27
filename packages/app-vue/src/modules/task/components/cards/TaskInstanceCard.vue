@@ -2,7 +2,7 @@
   <div
     :class="[
       'flex items-center gap-3 p-4 min-h-[64px] transition-all duration-200 hover:bg-muted/50 group',
-      { 'border-b border-border': showBorder, 'opacity-60': isCompleted }
+      { 'border-b border-border': showBorder, 'opacity-60': isCompleted },
     ]"
   >
     <!-- Completion Checkbox/Button -->
@@ -21,7 +21,7 @@
       <h3
         :class="[
           'text-sm font-medium leading-normal truncate transition-colors',
-          { 'line-through text-muted-foreground': isCompleted, 'text-foreground': !isCompleted }
+          { 'line-through text-muted-foreground': isCompleted, 'text-foreground': !isCompleted },
         ]"
       >
         {{ taskTitle }}
@@ -67,10 +67,7 @@ const emit = defineEmits<{
 const isCompleted = computed(() => props.task.isCompleted);
 
 const taskTitle = computed(() => {
-  // TODO: Fetch from actual template via ID using new domain service
-  // const template = taskStore.getTaskTemplateById(props.task.templateId);
-  // return template?.title || 'Unknown Task';
-  return 'Refactored Task Title (Linear Style)';
+  return props.task.templateTitle ?? '未知任务';
 });
 
 const formatCompletionTime = computed(() => {

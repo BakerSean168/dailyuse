@@ -25,7 +25,9 @@
             v-for="group in groups"
             :key="group.id"
             class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-            :class="selectedGroupId === group.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'"
+            :class="
+              selectedGroupId === group.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
+            "
             @click="selectedGroupId = group.id"
           >
             <Folder class="h-4 w-4" />
@@ -35,7 +37,12 @@
       </ScrollArea>
 
       <div class="border-t p-4">
-        <Button variant="ghost" size="sm" class="w-full justify-start" @click="showGroupDialog = true">
+        <Button
+          variant="ghost"
+          size="sm"
+          class="w-full justify-start"
+          @click="showGroupDialog = true"
+        >
           <FolderPlus class="mr-2 h-4 w-4" /> 新建分组
         </Button>
       </div>
@@ -43,18 +50,22 @@
 
     <!-- Main -->
     <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <header class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm">
+      <header
+        class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
+      >
         <h1 class="text-lg font-medium text-foreground">提醒模板</h1>
         <div class="flex items-center gap-2">
           <div class="relative hidden w-64 lg:block">
-            <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
               v-model="searchQuery"
               placeholder="搜索提醒..."
               class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
             />
           </div>
-          <Button size="sm" class="h-8 gap-2" @click="showTemplateDialog = true">
+          <Button size="sm" class="h-8 gap-2" @click="handleCreateTemplate">
             <Plus class="h-4 w-4" />
             新建提醒
           </Button>
@@ -70,15 +81,16 @@
             加载中...
           </div>
 
-          <div v-else-if="filteredTemplates.length === 0" class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground">
+          <div
+            v-else-if="filteredTemplates.length === 0"
+            class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
+          >
             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
               <BellRing class="h-6 w-6 opacity-50" />
             </div>
             <h3 class="mb-1 text-lg font-medium text-foreground">暂无提醒模板</h3>
             <p class="mb-6 text-sm">创建一个新的提醒来管理你的事务</p>
-            <Button @click="showTemplateDialog = true">
-              <Plus class="mr-2 h-4 w-4" /> 新建提醒
-            </Button>
+            <Button @click="handleCreateTemplate"> <Plus class="mr-2 h-4 w-4" /> 新建提醒 </Button>
           </div>
 
           <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -113,10 +125,7 @@
       @update="handleUpdateTemplate"
     />
 
-    <GroupDialog
-      ref="groupDialogRef"
-      @save="handleSaveGroup"
-    />
+    <GroupDialog ref="groupDialogRef" @save="handleSaveGroup" />
   </div>
 </template>
 
@@ -147,7 +156,6 @@ const {
 const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
 const showGroupDialog = ref(false);
-const showTemplateDialog = ref(false);
 const selectedTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard> | null>(null);
@@ -174,11 +182,18 @@ function handleTemplateClick(tpl: any) {
   templateCardRef.value?.open();
 }
 
+function handleCreateTemplate() {
+  editingTemplate.value = null;
+  templateDialogRef.value?.openForCreate();
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function handleEditTemplate(tpl: any) {
-  editingTemplate.value = templates.value.find((t) => t.id === tpl.id) || null;
-  showTemplateDialog.value = true;
-  templateDialogRef.value?.open?.();
+  const found = templates.value.find((t) => t.id === tpl.id);
+  if (found) {
+    editingTemplate.value = found;
+    templateDialogRef.value?.openForEdit(found);
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -98,7 +98,7 @@
             <span>Compare</span>
           </Button>
 
-          <Button size="sm" class="h-8 gap-2" @click="showGoalDialog = true">
+          <Button size="sm" class="h-8 gap-2" @click="openCreateDialog">
             <Plus class="h-4 w-4" />
             <span>New Goal</span>
           </Button>
@@ -137,7 +137,7 @@
             </div>
             <h3 class="mb-1 text-lg font-medium text-foreground">No goals found</h3>
             <p class="mb-6 text-sm">Create a new goal to get started with tracking.</p>
-            <Button @click="showGoalDialog = true">
+            <Button @click="openCreateDialog">
               <Plus class="mr-2 h-4 w-4" />
               Create Goal
             </Button>
@@ -147,7 +147,13 @@
     </main>
 
     <!-- Goal Dialog -->
-    <GoalDialog v-model:open="showGoalDialog" @created="handleGoalCreated" />
+    <GoalDialog
+      v-model:open="showGoalDialog"
+      :mode="dialogMode"
+      :goal="editingGoal"
+      @created="handleGoalCreated"
+      @updated="handleGoalUpdated"
+    />
   </div>
 </template>
 
@@ -175,6 +181,8 @@ const selectedFolderId = ref<string | null>(null);
 const selectedStatus = ref('all');
 const searchQuery = ref('');
 const showGoalDialog = ref(false);
+const dialogMode = ref<'create' | 'edit'>('create');
+const editingGoal = ref<GoalClientDTO | null>(null);
 
 const statusTabs = [
   { label: 'All', value: 'all' },
@@ -202,8 +210,16 @@ function getGoalCountByStatus(status: string): number {
   return goals.value.filter((g) => g.status === status).length;
 }
 
+function openCreateDialog() {
+  editingGoal.value = null;
+  dialogMode.value = 'create';
+  showGoalDialog.value = true;
+}
+
 function handleEditGoal(goal: GoalClientDTO) {
-  toast.info(`Edit goal: ${goal.name}`);
+  editingGoal.value = goal;
+  dialogMode.value = 'edit';
+  showGoalDialog.value = true;
 }
 
 async function handleDeleteGoal(id: string) {
@@ -216,6 +232,12 @@ function handleGoalCreated() {
   showGoalDialog.value = false;
   fetchGoals();
   toast.success('目标已创建');
+}
+
+function handleGoalUpdated() {
+  showGoalDialog.value = false;
+  fetchGoals();
+  toast.success('目标已更新');
 }
 
 onMounted(async () => {

@@ -14,14 +14,17 @@ import {
   createMockGoalFolder,
   createMockKeyResult,
 } from '@dailyuse/contracts/mocks';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const GOALS = `${API_BASE}/goals`;
 const FOLDERS = `${API_BASE}/goal-folders`;
 
-const toGoalId = (p: string | readonly string[]) =>
-  (Array.isArray(p) ? p[0] : p) as GoalClientDTO['id'];
+const toGoalId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as GoalClientDTO['id'];
+
+const toFolderId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as GoalFolderClientDTO['id'];
 
 export const goalHandlers = [
   // ============ Goals ============
@@ -75,7 +78,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Paused',
-      data: createMockGoal({ id: toGoalId(params['id']), status: 'Paused' }),
+      data: createMockGoal({ id: toGoalId(params['id']), status: 'Archived' }),
       timestamp: Date.now(),
     });
   }),
@@ -180,6 +183,16 @@ export const goalHandlers = [
   }),
 
   // Records
+  http.get(`${GOALS}/:goalId/records`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: { data: [], total: 0 },
+      timestamp: Date.now(),
+    });
+  }),
+
   http.post(`${GOALS}/:goalId/key-results/:keyResultId/records`, () => {
     return HttpResponse.json(
       { ok: true, code: 200, message: 'Created', data: {}, timestamp: Date.now() },
@@ -221,11 +234,12 @@ export const goalHandlers = [
   // ============ Goal Folders ============
 
   http.get(FOLDERS, () => {
+    const folders = Array.from({ length: 3 }, () => createMockGoalFolder());
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: Array.from({ length: 3 }, () => createMockGoalFolder()),
+      data: { data: folders, total: folders.length },
       timestamp: Date.now(),
     });
   }),
@@ -249,7 +263,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockGoalFolder({ id: params.id as string }),
+      data: createMockGoalFolder({ id: toFolderId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -260,7 +274,7 @@ export const goalHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockGoalFolder({ id: params.id as string, ...(body as object) }),
+      data: createMockGoalFolder({ id: toFolderId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),

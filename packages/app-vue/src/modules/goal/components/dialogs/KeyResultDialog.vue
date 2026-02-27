@@ -23,6 +23,17 @@
               <Label for="kr-title">关键结果名称*</Label>
               <Input id="kr-title" v-model="keyResultTitle" placeholder="例如：新增活跃用户数量" />
             </div>
+
+            <!-- 描述 -->
+            <div class="col-span-12 grid gap-2">
+              <Label for="kr-description">描述</Label>
+              <Textarea
+                id="kr-description"
+                v-model="keyResultDescription"
+                placeholder="可选：说明如何衡量和达成这个关键结果"
+                class="min-h-[60px] resize-none"
+              />
+            </div>
           </div>
         </div>
 
@@ -153,6 +164,7 @@ import {
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
+import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import {
   Select,
   SelectTrigger,
@@ -239,6 +251,13 @@ const keyResultTitle = computed({
   get: () => localKeyResult.value.title || '',
   set: (val: string) => {
     localKeyResult.value.title = val;
+  },
+});
+
+const keyResultDescription = computed({
+  get: () => localKeyResult.value.description || '',
+  set: (val: string) => {
+    localKeyResult.value.description = val || null;
   },
 });
 

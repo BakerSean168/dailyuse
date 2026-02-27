@@ -9,10 +9,10 @@
     </CardHeader>
     <CardContent>
       <!-- 显示验证错误 -->
-      <Alert v-if="validationErrors.length > 0" variant="destructive" class="mb-4">
+      <Alert v-if="Object.keys(validationErrors).length > 0" variant="destructive" class="mb-4">
         <AlertDescription>
           <ul class="mb-0 list-disc pl-4">
-            <li v-for="error in validationErrors" :key="error">{{ error }}</li>
+            <li v-for="(error, key) in validationErrors" :key="key">{{ error }}</li>
           </ul>
         </AlertDescription>
       </Alert>

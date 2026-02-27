@@ -16,21 +16,21 @@
           :model-value="timeType"
           @update:model-value="
             (v: string) => {
-              timeType = v as TimeType;
+              timeType = v as TaskTimeType;
               handleTimeTypeChange();
             }
           "
         >
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TimeType.ALL_DAY" id="time-all-day" />
+            <RadioGroupItem :value="TaskTimeType.AllDay" id="time-all-day" />
             <Label for="time-all-day">全天</Label>
           </div>
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TimeType.TIME_POINT" id="time-point" />
+            <RadioGroupItem :value="TaskTimeType.TimePoint" id="time-point" />
             <Label for="time-point">时间点</Label>
           </div>
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TimeType.TIME_RANGE" id="time-range" />
+            <RadioGroupItem :value="TaskTimeType.TimeRange" id="time-range" />
             <Label for="time-range">时间段</Label>
           </div>
         </RadioGroup>
@@ -44,8 +44,8 @@
         </div>
       </div>
 
-      <!-- 时间点输入 (仅当选择 TIME_POINT 时显示) -->
-      <div v-if="timeType === TimeType.TIME_POINT" class="grid grid-cols-12 gap-4 mt-4">
+      <!-- 时间点输入 (仅当选择 TimePoint 时显示) -->
+      <div v-if="timeType === TaskTimeType.TimePoint" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12">
           <Label class="mb-1.5 block">具体时间</Label>
           <Input
@@ -57,8 +57,8 @@
         </div>
       </div>
 
-      <!-- 时间段输入 (仅当选择 TIME_RANGE 时显示) -->
-      <div v-if="timeType === TimeType.TIME_RANGE" class="grid grid-cols-12 gap-4 mt-4">
+      <!-- 时间段输入 (仅当选择 TimeRange 时显示) -->
+      <div v-if="timeType === TaskTimeType.TimeRange" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">开始时间</Label>
           <Input
@@ -89,8 +89,8 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { TimeType } from '@dailyuse/contracts/task';
-import type { TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import { TaskTimeType } from '@dailyuse/contracts/task';
+import type { TaskTimeConfigDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
@@ -115,7 +115,7 @@ const emit = defineEmits<{
 }>();
 
 // 表单数据
-const timeType = ref<TimeType>(TimeType.ALL_DAY);
+const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
 const startDate = ref<string>('');
 const timePoint = ref<string>('');
 const timeRangeStart = ref<string>('');
@@ -126,11 +126,11 @@ const validationError = ref<string>('');
  * 初始化表单数据
  */
 const initializeFormData = () => {
-  const config = props.modelValue.timeConfig as TaskTimeConfigClientDTO | undefined;
+  const config = props.modelValue.timeConfig as TaskTimeConfigDTO | undefined;
 
   if (!config) {
     // 默认配置
-    timeType.value = TimeType.ALL_DAY;
+    timeType.value = TaskTimeType.AllDay;
     startDate.value = '';
     timePoint.value = '';
     timeRangeStart.value = '';
@@ -146,12 +146,12 @@ const initializeFormData = () => {
   }
 
   // 时间点
-  if (config.timeType === TimeType.TIME_POINT && config.timePoint) {
+  if (config.timeType === TaskTimeType.TimePoint && config.timePoint) {
     timePoint.value = formatDateTimeToInput(config.timePoint);
   }
 
   // 时间段
-  if (config.timeType === TimeType.TIME_RANGE && config.timeRange) {
+  if (config.timeType === TaskTimeType.TimeRange && config.timeRange) {
     timeRangeStart.value = formatDateTimeToInput(config.timeRange.start);
     timeRangeEnd.value = formatDateTimeToInput(config.timeRange.end);
   }
@@ -270,41 +270,35 @@ const updateTimeConfig = () => {
     validationError.value = '';
 
     // 构建新的时间配置
-    const newConfig: TaskTimeConfigClientDTO = {
+    const newConfig: TaskTimeConfigDTO = {
       timeType: timeType.value,
       startDate: parseDateInput(startDate.value),
       timePoint:
-        timeType.value === TimeType.TIME_POINT ? parseDateTimeInput(timePoint.value) : null,
+        timeType.value === TaskTimeType.TimePoint ? parseDateTimeInput(timePoint.value) : null,
       timeRange:
-        timeType.value === TimeType.TIME_RANGE && timeRangeStart.value && timeRangeEnd.value
+        timeType.value === TaskTimeType.TimeRange && timeRangeStart.value && timeRangeEnd.value
           ? {
               start: parseDateTimeInput(timeRangeStart.value)!,
               end: parseDateTimeInput(timeRangeEnd.value)!,
             }
           : null,
-      timeTypeText: '',
-      formattedStartDate: '',
-      formattedTimePoint: '',
-      formattedTimeRange: '',
-      displayText: '',
-      hasDateRange: false,
     };
 
     // 验证
-    if (timeType.value === TimeType.TIME_POINT && !newConfig.timePoint) {
+    if (timeType.value === TaskTimeType.TimePoint && !newConfig.timePoint) {
       validationError.value = '请输入具体时间';
       emit('update:validation', false);
       return;
     }
 
-    if (timeType.value === TimeType.TIME_RANGE && !newConfig.timeRange) {
+    if (timeType.value === TaskTimeType.TimeRange && !newConfig.timeRange) {
       validationError.value = '请输入完整的时间段';
       emit('update:validation', false);
       return;
     }
 
     if (
-      timeType.value === TimeType.TIME_RANGE &&
+      timeType.value === TaskTimeType.TimeRange &&
       newConfig.timeRange &&
       newConfig.timeRange.start >= newConfig.timeRange.end
     ) {

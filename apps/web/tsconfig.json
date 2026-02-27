@@ -56,11 +56,12 @@
       // 项目内部别名：@/ 指向 src 目录
       "@/*": ["./src/*"],
 
-      // ✅ UI 层包：直接指向 source，因为 web 深度集成其 Vue 组件/composables
-      "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
-      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/src/index.ts"]
+      // ✅ App 层包：直接指向 source，因为 web 深度集成其 Vue 组件/composables
+      "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"]
 
-      // 其他 @dailyuse/* 包通过 package.json exports → dist 解析。
+      // @dailyuse/ui-vue-shadcn 通过 package.json exports → dist 解析。
+      // 不能指向 source，因其内部 @/ 别名在 web 的 tsconfig 中会错误解析。
+      // 其他 @dailyuse/* 包同样通过 dist 解析。
       // DI 类型使用 PublicInterface<T> 工具类型消除了 source-vs-dist
       // 的 private property 名义类型冲突。
     }

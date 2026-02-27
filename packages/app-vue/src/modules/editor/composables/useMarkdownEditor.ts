@@ -1,6 +1,6 @@
 /**
  * useMarkdownEditor Composable
- * 
+ *
  * Presentation Layer - Composable
  * Markdown 编辑器状态管理和操作方法
  */
@@ -144,7 +144,10 @@ export function useMarkdownEditor(initialContent = '') {
   }
 
   function insertTable(rows = 2, cols = 3) {
-    const headerRow = `| ${Array(cols).fill('列').map((col, i) => `${col}${i + 1}`).join(' | ')} |`;
+    const headerRow = `| ${Array(cols)
+      .fill('列')
+      .map((col, i) => `${col}${i + 1}`)
+      .join(' | ')} |`;
     const separatorRow = `|${Array(cols).fill('-----').join('|')}|`;
     const dataRows = Array(rows - 1)
       .fill(null)
@@ -157,12 +160,10 @@ export function useMarkdownEditor(initialContent = '') {
 
   function undo() {
     // CodeMirror 的 undo 通过快捷键处理
-    console.log('Undo via keyboard shortcut (Ctrl+Z)');
   }
 
   function redo() {
     // CodeMirror 的 redo 通过快捷键处理
-    console.log('Redo via keyboard shortcut (Ctrl+Y)');
   }
 
   function resetUnsavedChanges() {

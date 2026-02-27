@@ -26,7 +26,12 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <Button variant="outline" size="sm" class="h-8" @click="$router.push({ name: 'ScheduleWeekView' })">
+        <Button
+          variant="outline"
+          size="sm"
+          class="h-8"
+          @click="$router.push({ name: 'ScheduleWeekView' })"
+        >
           <CalendarDays class="mr-2 h-4 w-4" />
           周视图
         </Button>
@@ -47,7 +52,10 @@
           加载中...
         </div>
 
-        <div v-else-if="filteredTasks.length === 0" class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground">
+        <div
+          v-else-if="filteredTasks.length === 0"
+          class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
+        >
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
             <CalendarClock class="h-6 w-6 opacity-50" />
           </div>
@@ -60,70 +68,45 @@
         </div>
 
         <div v-else class="space-y-3">
-          <div
+          <ActionableWrapper
             v-for="task in filteredTasks"
             :key="task.id"
-            class="group flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+            :actions="getTaskActions(task)"
+            more-button-position="top-right"
           >
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-              :class="statusColorMap[task.status] || 'bg-gray-100'"
+              class="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
             >
-              <CalendarClock class="h-5 w-5 text-white" />
-            </div>
-
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2">
-                <span class="font-medium">{{ task.name }}</span>
-                <Badge variant="outline" class="text-xs">{{ task.sourceModule }}</Badge>
-                <Badge :variant="task.enabled ? 'default' : 'secondary'" class="text-xs">
-                  {{ task.enabled ? '启用' : '禁用' }}
-                </Badge>
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                :class="statusColorMap[task.status] || 'bg-gray-100'"
+              >
+                <CalendarClock class="h-5 w-5 text-white" />
               </div>
-              <p v-if="task.description" class="mt-0.5 text-sm text-muted-foreground truncate">{{ task.description }}</p>
-              <div class="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                <span>下次: {{ task.nextRunAtFormatted || '-' }}</span>
-                <span>{{ task.executionSummary }}</span>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">{{ task.name }}</span>
+                  <Badge variant="outline" class="text-xs">{{ task.sourceModule }}</Badge>
+                  <Badge :variant="task.enabled ? 'default' : 'secondary'" class="text-xs">
+                    {{ task.enabled ? '启用' : '禁用' }}
+                  </Badge>
+                </div>
+                <p v-if="task.description" class="mt-0.5 text-sm text-muted-foreground truncate">
+                  {{ task.description }}
+                </p>
+                <div class="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span>下次: {{ task.nextRunAtFormatted || '-' }}</span>
+                  <span>{{ task.executionSummary }}</span>
+                </div>
               </div>
             </div>
-
-            <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              <Button
-                v-if="task.status === 'Active'"
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                @click="handlePause(task.id)"
-              >
-                <Pause class="h-4 w-4" />
-              </Button>
-              <Button
-                v-if="task.status === 'Paused'"
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                @click="handleResume(task.id)"
-              >
-                <Play class="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8 text-destructive hover:text-destructive"
-                @click="handleDelete(task)"
-              >
-                <Trash2 class="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          </ActionableWrapper>
         </div>
       </div>
     </ScrollArea>
 
-    <CreateScheduleDialog
-      v-model="showCreateDialog"
-      @submit="handleCreateSchedule"
-    />
+    <CreateScheduleDialog v-model="showCreateDialog" @submit="handleCreateSchedule" />
   </div>
 </template>
 
@@ -135,8 +118,11 @@ import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import { useSchedule } from '../composables/useSchedule';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 
-const { tasks, isLoading, fetchTasks, createTask, deleteTask, pauseTask, resumeTask } = useSchedule();
+const { tasks, isLoading, fetchTasks, createTask, deleteTask, pauseTask, resumeTask } =
+  useSchedule();
 
 const showCreateDialog = ref(false);
 const selectedStatus = ref('all');
@@ -188,6 +174,39 @@ async function handleDelete(task: ScheduleTaskClientDTO) {
   if (!window.confirm(`确认删除调度「${task.name}」？`)) return;
   const ok = await deleteTask(task.id);
   if (ok) toast.success('调度任务已删除');
+}
+
+function getTaskActions(task: ScheduleTaskClientDTO): MenuAction[] {
+  const actions: MenuAction[] = [];
+
+  if (task.status === 'Active') {
+    actions.push({
+      key: 'pause',
+      label: menuLabel('pause'),
+      icon: Pause,
+      handler: () => handlePause(task.id),
+    });
+  }
+
+  if (task.status === 'Paused') {
+    actions.push({
+      key: 'resume',
+      label: menuLabel('resume'),
+      icon: Play,
+      handler: () => handleResume(task.id),
+    });
+  }
+
+  actions.push({
+    key: 'delete',
+    label: menuLabel('delete'),
+    icon: Trash2,
+    destructive: true,
+    separator: actions.length > 0,
+    handler: () => handleDelete(task),
+  });
+
+  return actions;
 }
 
 onMounted(async () => {

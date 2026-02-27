@@ -3,7 +3,14 @@ import { ref, computed } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@dailyuse/ui-vue-shadcn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import type { RegisterByEmailReq, RegisterByPhoneReq } from '@dailyuse/contracts/authentication';
@@ -46,13 +53,13 @@ const phoneForm = ref({
 // SMS code state
 const smsCodeSending = ref(false);
 const smsCodeCountdown = ref(0);
-let countdownTimer: NodeJS.Timeout | null = null;
+let countdownTimer: ReturnType<typeof setInterval> | null = null;
 
 // Password strength
 const passwordStrength = computed(() => {
   const password = emailForm.value.password;
   if (!password) return { strength: 0, text: '' };
-  
+
   let strength = 0;
   if (password.length >= 8) strength += 25;
   if (password.length >= 12) strength += 15;
@@ -60,12 +67,12 @@ const passwordStrength = computed(() => {
   if (/[A-Z]/.test(password)) strength += 20;
   if (/[0-9]/.test(password)) strength += 20;
   if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
-  
+
   let text = '';
   if (strength < 40) text = '弱';
   else if (strength < 70) text = '中';
   else text = '强';
-  
+
   return { strength, text };
 });
 
@@ -102,7 +109,7 @@ const canSendSmsCode = computed(() => {
 // Handlers
 const handleEmailRegister = () => {
   if (!emailFormValid.value || props.loading) return;
-  
+
   emit('registerByEmail', {
     email: emailForm.value.email,
     password: emailForm.value.password,
@@ -111,25 +118,25 @@ const handleEmailRegister = () => {
 
 const handlePhoneRegister = () => {
   if (!phoneFormValid.value || props.loading) return;
-  
+
   const data: RegisterByPhoneReq = {
     phoneNumber: phoneForm.value.phoneNumber,
     code: phoneForm.value.code,
   };
-  
+
   if (phoneForm.value.nickname) {
     data.nickname = phoneForm.value.nickname;
   }
-  
+
   emit('registerByPhone', data);
 };
 
 const handleSendSmsCode = async () => {
   if (!canSendSmsCode.value) return;
-  
+
   smsCodeSending.value = true;
   emit('sendSmsCode', phoneForm.value.phoneNumber);
-  
+
   // Start countdown
   smsCodeCountdown.value = 60;
   countdownTimer = setInterval(() => {
@@ -139,7 +146,7 @@ const handleSendSmsCode = async () => {
       countdownTimer = null;
     }
   }, 1000);
-  
+
   // Simulate sending
   setTimeout(() => {
     smsCodeSending.value = false;
@@ -165,14 +172,14 @@ onUnmounted(() => {
       <CardTitle>注册</CardTitle>
       <CardDescription>创建您的账号</CardDescription>
     </CardHeader>
-    
+
     <CardContent>
       <Tabs :default-value="defaultTab" class="w-full">
         <TabsList class="grid w-full grid-cols-2">
           <TabsTrigger value="email">邮箱注册</TabsTrigger>
           <TabsTrigger value="phone">手机注册</TabsTrigger>
         </TabsList>
-        
+
         <!-- Email Register -->
         <TabsContent value="email" class="space-y-4">
           <div class="space-y-2">
@@ -188,7 +195,7 @@ onUnmounted(() => {
               邮箱格式不正确
             </p>
           </div>
-          
+
           <div class="space-y-2">
             <Label for="password">密码</Label>
             <Input
@@ -210,7 +217,7 @@ onUnmounted(() => {
               </p>
             </div>
           </div>
-          
+
           <div class="space-y-2">
             <Label for="confirmPassword">确认密码</Label>
             <Input
@@ -225,7 +232,7 @@ onUnmounted(() => {
               两次密码输入不一致
             </p>
           </div>
-          
+
           <Button
             class="w-full"
             :disabled="!emailFormValid || loading"
@@ -234,7 +241,7 @@ onUnmounted(() => {
             {{ loading ? '注册中...' : '注册' }}
           </Button>
         </TabsContent>
-        
+
         <!-- Phone Register -->
         <TabsContent value="phone" class="space-y-4">
           <div class="space-y-2">
@@ -247,7 +254,7 @@ onUnmounted(() => {
               :disabled="loading"
             />
           </div>
-          
+
           <div class="space-y-2">
             <Label for="code">验证码</Label>
             <div class="flex gap-2">
@@ -259,22 +266,18 @@ onUnmounted(() => {
                 maxlength="6"
                 :disabled="loading"
               />
-              <Button
-                variant="outline"
-                :disabled="!canSendSmsCode"
-                @click="handleSendSmsCode"
-              >
+              <Button variant="outline" :disabled="!canSendSmsCode" @click="handleSendSmsCode">
                 {{
                   smsCodeCountdown > 0
                     ? `${smsCodeCountdown}秒`
                     : smsCodeSending
-                    ? '发送中...'
-                    : '获取验证码'
+                      ? '发送中...'
+                      : '获取验证码'
                 }}
               </Button>
             </div>
           </div>
-          
+
           <div class="space-y-2">
             <Label for="nickname">昵称（可选）</Label>
             <Input
@@ -286,7 +289,7 @@ onUnmounted(() => {
               @keyup.enter="handlePhoneRegister"
             />
           </div>
-          
+
           <Button
             class="w-full"
             :disabled="!phoneFormValid || loading"
@@ -297,17 +300,11 @@ onUnmounted(() => {
         </TabsContent>
       </Tabs>
     </CardContent>
-    
+
     <CardFooter v-if="showLoginLink" class="flex justify-center">
       <p class="text-sm text-muted-foreground">
         已有账号？
-        <Button
-          variant="link"
-          class="px-1"
-          @click="handleLogin"
-        >
-          立即登录
-        </Button>
+        <Button variant="link" class="px-1" @click="handleLogin"> 立即登录 </Button>
       </p>
     </CardFooter>
   </Card>

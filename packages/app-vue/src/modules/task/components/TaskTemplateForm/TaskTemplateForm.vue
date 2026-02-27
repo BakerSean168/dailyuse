@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { AlertCircle } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import BasicInfoSection from './sections/BasicInfoSection.vue';

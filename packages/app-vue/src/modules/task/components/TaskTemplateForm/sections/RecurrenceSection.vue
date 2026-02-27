@@ -38,7 +38,10 @@
           <!-- 重复频率 -->
           <div class="col-span-12 md:col-span-6">
             <Label class="mb-2 block">重复频率</Label>
-            <Select :model-value="frequency" @update:model-value="frequency = $event">
+            <Select
+              :model-value="frequency"
+              @update:model-value="frequency = $event as RecurrenceFrequency"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="选择频率" />
               </SelectTrigger>
@@ -64,7 +67,7 @@
           </div>
 
           <!-- 每周重复：选择星期几 -->
-          <div class="col-span-12" v-if="frequency === RecurrenceFrequency.WEEKLY">
+          <div class="col-span-12" v-if="frequency === RecurrenceFrequency.Weekly">
             <div class="text-sm font-medium mb-2">选择星期</div>
             <div class="flex flex-wrap gap-2">
               <Badge
@@ -88,7 +91,7 @@
           <div class="col-span-12 md:col-span-4">
             <RadioGroup
               :model-value="endConditionType"
-              @update:model-value="endConditionType = $event"
+              @update:model-value="endConditionType = $event as 'never' | 'date' | 'count'"
             >
               <div class="flex items-center gap-2">
                 <RadioGroupItem value="never" id="end-never" />
@@ -133,7 +136,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { RecurrenceFrequency, DayOfWeek, RECURRENCE_RULE_DEFAULTS } from '@dailyuse/contracts/task';
-import type { RecurrenceRuleClientDTO } from '@dailyuse/contracts/task';
+import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
@@ -183,7 +186,7 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
     ...props.modelValue,
     timeConfig: { ...(props.modelValue.timeConfig || {}) },
     recurrenceRule: props.modelValue.recurrenceRule
-      ? { ...(props.modelValue.recurrenceRule as RecurrenceRuleClientDTO) }
+      ? { ...(props.modelValue.recurrenceRule as RecurrenceRuleDTO) }
       : null,
   } as TaskTemplateViewModel;
   updater(updatedTemplate);
@@ -192,21 +195,21 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
 
 // 重复频率选项
 const frequencyOptions = [
-  { title: '每天', value: RecurrenceFrequency.DAILY },
-  { title: '每周', value: RecurrenceFrequency.WEEKLY },
-  { title: '每月', value: RecurrenceFrequency.MONTHLY },
-  { title: '每年', value: RecurrenceFrequency.YEARLY },
+  { title: '每天', value: RecurrenceFrequency.Daily },
+  { title: '每周', value: RecurrenceFrequency.Weekly },
+  { title: '每月', value: RecurrenceFrequency.Monthly },
+  { title: '每年', value: RecurrenceFrequency.Yearly },
 ];
 
 // 星期选项
 const dayOptions = [
-  { title: '周日', value: DayOfWeek.SUNDAY },
-  { title: '周一', value: DayOfWeek.MONDAY },
-  { title: '周二', value: DayOfWeek.TUESDAY },
-  { title: '周三', value: DayOfWeek.WEDNESDAY },
-  { title: '周四', value: DayOfWeek.THURSDAY },
-  { title: '周五', value: DayOfWeek.FRIDAY },
-  { title: '周六', value: DayOfWeek.SATURDAY },
+  { title: '周日', value: DayOfWeek.Sunday },
+  { title: '周一', value: DayOfWeek.Monday },
+  { title: '周二', value: DayOfWeek.Tuesday },
+  { title: '周三', value: DayOfWeek.Wednesday },
+  { title: '周四', value: DayOfWeek.Thursday },
+  { title: '周五', value: DayOfWeek.Friday },
+  { title: '周六', value: DayOfWeek.Saturday },
 ];
 
 // Toggle day for weekly selection (replaces v-chip-group)
@@ -225,16 +228,12 @@ const recurrenceEnabled = computed({
   set: (value: boolean) => {
     if (value && !props.modelValue.recurrenceRule) {
       // 启用重复：创建默认规则
-      const defaultRule: RecurrenceRuleClientDTO = {
-        frequency: RecurrenceFrequency.DAILY,
+      const defaultRule: RecurrenceRuleDTO = {
+        frequency: RecurrenceFrequency.Daily,
         interval: 1,
         daysOfWeek: [],
         endDate: null,
         occurrences: null,
-        frequencyText: '每天',
-        dayNames: [],
-        recurrenceDisplayText: '每 1 天重复',
-        hasEndCondition: false,
       };
       updateTemplate((template) => {
         (template as any).recurrenceRule = defaultRule;
@@ -251,8 +250,8 @@ const recurrenceEnabled = computed({
 // 频率
 const frequency = computed({
   get: () =>
-    (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.frequency ??
-    RecurrenceFrequency.DAILY,
+    (props.modelValue.recurrenceRule as RecurrenceRuleDTO | null)?.frequency ??
+    RecurrenceFrequency.Daily,
   set: (value: RecurrenceFrequency) => {
     updateRecurrenceRule({ frequency: value });
   },
@@ -260,7 +259,7 @@ const frequency = computed({
 
 // 间隔
 const interval = computed({
-  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.interval ?? 1,
+  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleDTO | null)?.interval ?? 1,
   set: (value: number) => {
     updateRecurrenceRule({ interval: value });
   },
@@ -268,7 +267,7 @@ const interval = computed({
 
 // 选中的星期
 const selectedDays = computed({
-  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.daysOfWeek ?? [],
+  get: () => (props.modelValue.recurrenceRule as RecurrenceRuleDTO | null)?.daysOfWeek ?? [],
   set: (value: DayOfWeek[]) => {
     updateRecurrenceRule({ daysOfWeek: value });
   },
@@ -303,20 +302,16 @@ const initializeEndCondition = () => {
 };
 
 // 更新重复规则
-const updateRecurrenceRule = (updates: Partial<RecurrenceRuleClientDTO>) => {
-  const currentRule = props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null;
+const updateRecurrenceRule = (updates: Partial<RecurrenceRuleDTO>) => {
+  const currentRule = props.modelValue.recurrenceRule as RecurrenceRuleDTO | null;
   if (!currentRule) return;
 
-  const newRuleDTO: RecurrenceRuleClientDTO = {
+  const newRuleDTO: RecurrenceRuleDTO = {
     frequency: updates.frequency ?? currentRule.frequency,
     interval: updates.interval ?? currentRule.interval,
     daysOfWeek: updates.daysOfWeek ?? currentRule.daysOfWeek,
     endDate: updates.endDate !== undefined ? updates.endDate : currentRule.endDate,
     occurrences: updates.occurrences !== undefined ? updates.occurrences : currentRule.occurrences,
-    frequencyText: currentRule.frequencyText,
-    dayNames: currentRule.dayNames,
-    recurrenceDisplayText: currentRule.recurrenceDisplayText,
-    hasEndCondition: currentRule.hasEndCondition,
   };
 
   updateTemplate((template) => {
@@ -377,13 +372,13 @@ watch(occurrences, (newValue) => {
 const intervalHint = computed(() => {
   const freq = frequency.value;
   switch (freq) {
-    case RecurrenceFrequency.DAILY:
+    case RecurrenceFrequency.Daily:
       return '每几天重复一次';
-    case RecurrenceFrequency.WEEKLY:
+    case RecurrenceFrequency.Weekly:
       return '每几周重复一次';
-    case RecurrenceFrequency.MONTHLY:
+    case RecurrenceFrequency.Monthly:
       return '每几月重复一次';
-    case RecurrenceFrequency.YEARLY:
+    case RecurrenceFrequency.Yearly:
       return '每几年重复一次';
     default:
       return '';
@@ -393,9 +388,19 @@ const intervalHint = computed(() => {
 const hasRecurrence = computed(() => recurrenceEnabled.value);
 
 const recurrenceDescription = computed(() => {
-  return (
-    (props.modelValue.recurrenceRule as RecurrenceRuleClientDTO | null)?.recurrenceDisplayText ?? ''
-  );
+  const rule = props.modelValue.recurrenceRule as RecurrenceRuleDTO | null;
+  if (!rule) return '';
+  const freq = rule.frequency;
+  const interval = rule.interval;
+  const freqText =
+    freq === RecurrenceFrequency.Daily
+      ? '天'
+      : freq === RecurrenceFrequency.Weekly
+        ? '周'
+        : freq === RecurrenceFrequency.Monthly
+          ? '月'
+          : '年';
+  return `每 ${interval} ${freqText}重复`;
 });
 
 // 验证
@@ -415,7 +420,7 @@ const validateRecurrence = () => {
       validationErrors.value.push('重复间隔必须在 1-365 之间');
     }
 
-    if (rule.frequency === RecurrenceFrequency.WEEKLY && rule.daysOfWeek.length === 0) {
+    if (rule.frequency === RecurrenceFrequency.Weekly && rule.daysOfWeek.length === 0) {
       validationErrors.value.push('每周重复时，请至少选择一天');
     }
 

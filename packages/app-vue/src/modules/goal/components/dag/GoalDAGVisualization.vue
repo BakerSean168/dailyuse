@@ -568,8 +568,6 @@ const handleExport = async (options: ExportOptions) => {
 
     // 关闭对话框
     exportDialog.value?.close();
-
-    console.log(`Successfully exported ${options.format.toUpperCase()}: ${filename}`);
   } catch (error) {
     console.error('Export failed:', error);
     alert('导出失败，请重试');

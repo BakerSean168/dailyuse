@@ -33,71 +33,47 @@
 
       <!-- Task list -->
       <div v-else-if="tasks.length > 0" class="task-list max-h-[400px] overflow-y-auto">
-        <div
+        <ActionableWrapper
           v-for="task in tasks"
           :key="task.id"
-          class="flex items-center gap-3 py-3 border-b last:border-b-0"
-          :class="{ 'opacity-70': task.status === 'Paused' }"
+          :actions="getTaskActions(task)"
+          :show-more-button="true"
+          dropdown-align="end"
+          more-button-position="top-right"
         >
-          <component
-            :is="getTaskStatusIcon(task.status)"
-            :class="getTaskStatusColorClass(task.status)"
-            class="h-5 w-5 shrink-0"
-          />
+          <div
+            class="flex items-center gap-3 py-3 border-b last:border-b-0"
+            :class="{ 'opacity-70': task.status === 'Paused' }"
+          >
+            <component
+              :is="getTaskStatusIcon(task.status)"
+              :class="getTaskStatusColorClass(task.status)"
+              class="h-5 w-5 shrink-0"
+            />
 
-          <div class="flex-1 min-w-0">
-            <div class="font-medium text-sm">{{ task.name }}</div>
-            <div class="text-xs text-muted-foreground truncate">
-              {{ task.description || '暂无描述' }}
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm">{{ task.name }}</div>
+              <div class="text-xs text-muted-foreground truncate">
+                {{ task.description || '暂无描述' }}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <Badge :variant="getBadgeVariant(task.status)" class="text-[10px] h-5">
+                {{ getTaskStatusText(task.status) }}
+              </Badge>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7"
+                @click="emit('view-detail', task.id)"
+              >
+                <Eye class="h-4 w-4" />
+              </Button>
             </div>
           </div>
-
-          <div class="flex items-center gap-2 shrink-0">
-            <Badge :variant="getBadgeVariant(task.status)" class="text-[10px] h-5">
-              {{ getTaskStatusText(task.status) }}
-            </Badge>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-7 w-7"
-              @click="$emit('view-detail', task.id)"
-            >
-              <Eye class="h-4 w-4" />
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="icon" class="h-7 w-7">
-                  <MoreVertical class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  v-if="task.status === 'Active'"
-                  @click="$emit('pause-task', task.id)"
-                >
-                  <Pause class="mr-2 h-4 w-4" />
-                  暂停
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  v-if="task.status === 'Paused'"
-                  @click="$emit('resume-task', task.id)"
-                >
-                  <Play class="mr-2 h-4 w-4" />
-                  恢复
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  class="text-destructive focus:text-destructive"
-                  @click="$emit('delete-task', task.id)"
-                >
-                  <Trash2 class="mr-2 h-4 w-4" />
-                  删除
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        </ActionableWrapper>
       </div>
 
       <!-- Empty state -->
@@ -116,17 +92,10 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@dailyuse/ui-vue-shadcn';
-import {
   Target,
   Loader2,
   AlertCircle,
   Eye,
-  MoreVertical,
   Pause,
   Play,
   Trash2,
@@ -137,6 +106,8 @@ import {
   HelpCircle,
 } from 'lucide-vue-next';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 
 interface Props {
   tasks: ScheduleTaskClientDTO[];
@@ -146,12 +117,44 @@ interface Props {
 
 const props = defineProps<Props>();
 
-defineEmits<{
+const emit = defineEmits<{
   'pause-task': [taskId: string];
   'resume-task': [taskId: string];
   'delete-task': [taskId: string];
   'view-detail': [taskId: string];
 }>();
+
+function getTaskActions(task: ScheduleTaskClientDTO): MenuAction[] {
+  const actions: MenuAction[] = [];
+
+  if (task.status === 'Active') {
+    actions.push({
+      key: 'pause',
+      label: menuLabel('pause'),
+      icon: Pause,
+      handler: () => emit('pause-task', task.id),
+    });
+  }
+
+  if (task.status === 'Paused') {
+    actions.push({
+      key: 'resume',
+      label: menuLabel('resume'),
+      icon: Play,
+      handler: () => emit('resume-task', task.id),
+    });
+  }
+
+  actions.push({
+    key: 'delete',
+    label: menuLabel('delete'),
+    icon: Trash2,
+    destructive: true,
+    handler: () => emit('delete-task', task.id),
+  });
+
+  return actions;
+}
 
 function getStatusVariant(): BadgeVariants['variant'] {
   const activeCount = props.tasks.filter((t) => t.status === 'Active').length;

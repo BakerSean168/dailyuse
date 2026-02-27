@@ -3,3 +3,7 @@ export { default as GlobalErrorBoundary } from './GlobalErrorBoundary.vue';
 export { default as GlobalSheet } from './GlobalSheet.vue';
 export { default as GlobalCommandPalette } from './GlobalCommandPalette.vue';
 export { default as GlobalProgressBar } from './GlobalProgressBar.vue';
+
+// ── Actionable wrapper (context menu + hover dropdown) ──
+export { default as ActionableWrapper } from '../../components/shared/ActionableWrapper.vue';
+export type { MenuAction } from '../../components/shared/types';

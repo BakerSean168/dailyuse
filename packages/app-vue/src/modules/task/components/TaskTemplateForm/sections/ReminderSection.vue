@@ -43,7 +43,7 @@
                       :model-value="trigger.type"
                       @update:model-value="
                         (val) => {
-                          trigger.type = val;
+                          trigger.type = val as TaskReminderType;
                           updateTriggers();
                         }
                       "
@@ -64,11 +64,11 @@
                   </div>
 
                   <!-- 相对时间提醒 -->
-                  <template v-if="trigger.type === ReminderType.RELATIVE">
+                  <template v-if="trigger.type === ReminderType.Relative">
                     <div class="col-span-12 md:col-span-3">
                       <Label class="mb-2 block">提前时间</Label>
                       <Input
-                        :model-value="trigger.relativeValue"
+                        :model-value="trigger.relativeValue ?? undefined"
                         type="number"
                         min="1"
                         @update:model-value="
@@ -82,10 +82,10 @@
                     <div class="col-span-12 md:col-span-3">
                       <Label class="mb-2 block">时间单位</Label>
                       <Select
-                        :model-value="trigger.relativeUnit"
+                        :model-value="trigger.relativeUnit ?? undefined"
                         @update:model-value="
                           (val) => {
-                            trigger.relativeUnit = val;
+                            trigger.relativeUnit = val as ReminderTimeUnit;
                             updateTriggers();
                           }
                         "
@@ -107,13 +107,13 @@
                   </template>
 
                   <!-- 绝对时间提醒 -->
-                  <template v-if="trigger.type === ReminderType.ABSOLUTE">
+                  <template v-if="trigger.type === ReminderType.Absolute">
                     <div class="col-span-12 md:col-span-4">
                       <Label class="mb-2 block">提醒时间</Label>
                       <Input
                         :model-value="formatAbsoluteTime(trigger.absoluteTime)"
                         type="datetime-local"
-                        @update:model-value="(val) => updateAbsoluteTime(index, val)"
+                        @update:model-value="(val) => updateAbsoluteTime(index, String(val))"
                       />
                     </div>
                   </template>
@@ -141,7 +141,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
-import type { TaskReminderConfigClientDTO } from '@dailyuse/contracts/task';
+import type { TaskReminderConfigDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
   Card,
@@ -181,7 +181,7 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const updatedTemplate: TaskTemplateViewModel = {
     ...props.modelValue,
     reminderConfig: props.modelValue.reminderConfig
-      ? ({ ...(props.modelValue.reminderConfig as TaskReminderConfigClientDTO) } as any)
+      ? ({ ...(props.modelValue.reminderConfig as TaskReminderConfigDTO) } as any)
       : null,
   } as TaskTemplateViewModel;
   updater(updatedTemplate);
@@ -190,15 +190,15 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
 
 // 提醒类型选项
 const reminderTypeOptions = [
-  { title: '相对时间', value: ReminderType.RELATIVE },
-  { title: '绝对时间', value: ReminderType.ABSOLUTE },
+  { title: '相对时间', value: ReminderType.Relative },
+  { title: '绝对时间', value: ReminderType.Absolute },
 ];
 
 // 时间单位选项
 const timeUnitOptions = [
-  { title: '分钟', value: ReminderTimeUnit.MINUTES },
-  { title: '小时', value: ReminderTimeUnit.HOURS },
-  { title: '天', value: ReminderTimeUnit.DAYS },
+  { title: '分钟', value: ReminderTimeUnit.Minutes },
+  { title: '小时', value: ReminderTimeUnit.Hours },
+  { title: '天', value: ReminderTimeUnit.Days },
 ];
 
 // 提醒启用状态
@@ -207,13 +207,9 @@ const reminderEnabled = computed({
   set: (value: boolean) => {
     updateTemplate((template) => {
       const currentConfig = template.reminderConfig;
-      const newConfigDTO: TaskReminderConfigClientDTO = {
+      const newConfigDTO: TaskReminderConfigDTO = {
         enabled: value,
         triggers: currentConfig?.triggers ?? [],
-        hasTriggers: (currentConfig?.triggers ?? []).length > 0,
-        triggerCount: (currentConfig?.triggers ?? []).length,
-        reminderSummary: currentConfig?.reminderSummary ?? '',
-        triggerDescriptions: currentConfig?.triggerDescriptions ?? [],
       };
       (template as any).reminderConfig = newConfigDTO;
     });
@@ -232,16 +228,16 @@ const triggers = ref<
 
 // 初始化触发器
 const initializeTriggers = () => {
-  const config = props.modelValue.reminderConfig as TaskReminderConfigClientDTO | null | undefined;
+  const config = props.modelValue.reminderConfig as TaskReminderConfigDTO | null | undefined;
   if (config?.triggers && config.triggers.length > 0) {
     triggers.value = config.triggers.map((t) => ({ ...t }));
   } else if (reminderEnabled.value && triggers.value.length === 0) {
     // 默认添加一个相对时间触发器
     triggers.value = [
       {
-        type: ReminderType.RELATIVE,
+        type: ReminderType.Relative,
         relativeValue: 15,
-        relativeUnit: ReminderTimeUnit.MINUTES,
+        relativeUnit: ReminderTimeUnit.Minutes,
       },
     ];
   }
@@ -250,9 +246,9 @@ const initializeTriggers = () => {
 // 添加触发器
 const addTrigger = () => {
   triggers.value.push({
-    type: ReminderType.RELATIVE,
+    type: ReminderType.Relative,
     relativeValue: 15,
-    relativeUnit: ReminderTimeUnit.MINUTES,
+    relativeUnit: ReminderTimeUnit.Minutes,
   });
   updateTriggers();
 };
@@ -288,13 +284,14 @@ const formatAbsoluteTime = (timestamp?: number | null): string => {
 // 更新触发器到模板
 const updateTriggers = () => {
   updateTemplate((template) => {
-    const newConfigDTO: TaskReminderConfigClientDTO = {
+    const newConfigDTO: TaskReminderConfigDTO = {
       enabled: reminderEnabled.value,
-      triggers: triggers.value.map((t) => ({ ...t })),
-      hasTriggers: triggers.value.length > 0,
-      triggerCount: triggers.value.length,
-      reminderSummary: '',
-      triggerDescriptions: [],
+      triggers: triggers.value.map((t) => ({
+        type: t.type,
+        absoluteTime: t.absoluteTime ?? null,
+        relativeValue: t.relativeValue ?? null,
+        relativeUnit: t.relativeUnit ?? null,
+      })),
     };
     (template as any).reminderConfig = newConfigDTO;
   });
@@ -312,14 +309,14 @@ const validateReminderConfig = () => {
     }
 
     triggers.value.forEach((trigger, index) => {
-      if (trigger.type === ReminderType.RELATIVE) {
+      if (trigger.type === ReminderType.Relative) {
         if (!trigger.relativeValue || trigger.relativeValue < 1) {
           errors.value.push(`触发器 ${index + 1}: 提前时间必须大于 0`);
         }
         if (!trigger.relativeUnit) {
           errors.value.push(`触发器 ${index + 1}: 请选择时间单位`);
         }
-      } else if (trigger.type === ReminderType.ABSOLUTE) {
+      } else if (trigger.type === ReminderType.Absolute) {
         if (!trigger.absoluteTime) {
           errors.value.push(`触发器 ${index + 1}: 请设置提醒时间`);
         }

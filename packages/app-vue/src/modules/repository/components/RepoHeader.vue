@@ -36,12 +36,7 @@
         />
       </div>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        :disabled="refreshing"
-        @click="handleRefresh"
-      >
+      <Button variant="ghost" size="icon" :disabled="refreshing" @click="handleRefresh">
         <RefreshCw :class="['h-4 w-4', refreshing && 'animate-spin']" />
       </Button>
 
@@ -113,7 +108,7 @@ const currentView = ref(props.modelValue);
 const searchQuery = ref('');
 const refreshing = ref(false);
 
-let searchTimeout: NodeJS.Timeout | null = null;
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 watch(
   () => props.modelValue,

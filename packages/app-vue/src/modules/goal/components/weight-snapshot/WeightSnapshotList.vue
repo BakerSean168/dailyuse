@@ -216,7 +216,7 @@ const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapsho
 const { goals } = useGoal();
 
 // 筛选状态
-const selectedKRId = ref<string | null>(null);
+const selectedKRId = ref<string | undefined>(undefined);
 const selectedTriggers = ref<string[]>([]);
 const selectedRange = ref<'all' | '7d' | '30d' | '90d'>('all');
 const currentPage = ref(1);

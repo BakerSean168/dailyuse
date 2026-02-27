@@ -3,7 +3,14 @@ import { ref, computed } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@dailyuse/ui-vue-shadcn';
 import { Checkbox } from '@dailyuse/ui-vue-shadcn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import type { LoginByEmailReq, LoginByPhoneReq } from '@dailyuse/contracts/authentication';
@@ -48,7 +55,7 @@ const phoneForm = ref({
 // SMS code state
 const smsCodeSending = ref(false);
 const smsCodeCountdown = ref(0);
-let countdownTimer: NodeJS.Timeout | null = null;
+let countdownTimer: ReturnType<typeof setInterval> | null = null;
 
 // Validation
 const emailValid = computed(() => {
@@ -75,7 +82,7 @@ const canSendSmsCode = computed(() => {
 // Handlers
 const handleEmailLogin = () => {
   if (!emailFormValid.value || props.loading) return;
-  
+
   emit('loginByEmail', {
     email: emailForm.value.email,
     password: emailForm.value.password,
@@ -85,7 +92,7 @@ const handleEmailLogin = () => {
 
 const handlePhoneLogin = () => {
   if (!phoneFormValid.value || props.loading) return;
-  
+
   emit('loginByPhone', {
     phoneNumber: phoneForm.value.phoneNumber,
     code: phoneForm.value.code,
@@ -94,10 +101,10 @@ const handlePhoneLogin = () => {
 
 const handleSendSmsCode = async () => {
   if (!canSendSmsCode.value) return;
-  
+
   smsCodeSending.value = true;
   emit('sendSmsCode', phoneForm.value.phoneNumber);
-  
+
   // Start countdown
   smsCodeCountdown.value = 60;
   countdownTimer = setInterval(() => {
@@ -107,7 +114,7 @@ const handleSendSmsCode = async () => {
       countdownTimer = null;
     }
   }, 1000);
-  
+
   // Simulate sending (remove this timeout when integrated with real API)
   setTimeout(() => {
     smsCodeSending.value = false;
@@ -137,14 +144,14 @@ onUnmounted(() => {
       <CardTitle>登录</CardTitle>
       <CardDescription>选择您喜欢的登录方式</CardDescription>
     </CardHeader>
-    
+
     <CardContent>
       <Tabs :default-value="defaultTab" class="w-full">
         <TabsList class="grid w-full grid-cols-2">
           <TabsTrigger value="email">邮箱登录</TabsTrigger>
           <TabsTrigger value="phone">手机登录</TabsTrigger>
         </TabsList>
-        
+
         <!-- Email Login -->
         <TabsContent value="email" class="space-y-4">
           <div class="space-y-2">
@@ -158,7 +165,7 @@ onUnmounted(() => {
               @keyup.enter="handleEmailLogin"
             />
           </div>
-          
+
           <div class="space-y-2">
             <Label for="password">密码</Label>
             <Input
@@ -170,22 +177,13 @@ onUnmounted(() => {
               @keyup.enter="handleEmailLogin"
             />
           </div>
-          
+
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                v-model:checked="emailForm.rememberMe"
-                :disabled="loading"
-              />
-              <Label
-                for="remember"
-                class="text-sm font-normal cursor-pointer"
-              >
-                记住我
-              </Label>
+              <Checkbox id="remember" v-model:checked="emailForm.rememberMe" :disabled="loading" />
+              <Label for="remember" class="text-sm font-normal cursor-pointer"> 记住我 </Label>
             </div>
-            
+
             <Button
               v-if="showForgotPassword"
               variant="link"
@@ -196,16 +194,12 @@ onUnmounted(() => {
               忘记密码？
             </Button>
           </div>
-          
-          <Button
-            class="w-full"
-            :disabled="!emailFormValid || loading"
-            @click="handleEmailLogin"
-          >
+
+          <Button class="w-full" :disabled="!emailFormValid || loading" @click="handleEmailLogin">
             {{ loading ? '登录中...' : '登录' }}
           </Button>
         </TabsContent>
-        
+
         <!-- Phone Login -->
         <TabsContent value="phone" class="space-y-4">
           <div class="space-y-2">
@@ -218,7 +212,7 @@ onUnmounted(() => {
               :disabled="loading"
             />
           </div>
-          
+
           <div class="space-y-2">
             <Label for="code">验证码</Label>
             <div class="flex gap-2">
@@ -231,43 +225,29 @@ onUnmounted(() => {
                 :disabled="loading"
                 @keyup.enter="handlePhoneLogin"
               />
-              <Button
-                variant="outline"
-                :disabled="!canSendSmsCode"
-                @click="handleSendSmsCode"
-              >
+              <Button variant="outline" :disabled="!canSendSmsCode" @click="handleSendSmsCode">
                 {{
                   smsCodeCountdown > 0
                     ? `${smsCodeCountdown}秒`
                     : smsCodeSending
-                    ? '发送中...'
-                    : '获取验证码'
+                      ? '发送中...'
+                      : '获取验证码'
                 }}
               </Button>
             </div>
           </div>
-          
-          <Button
-            class="w-full"
-            :disabled="!phoneFormValid || loading"
-            @click="handlePhoneLogin"
-          >
+
+          <Button class="w-full" :disabled="!phoneFormValid || loading" @click="handlePhoneLogin">
             {{ loading ? '登录中...' : '登录' }}
           </Button>
         </TabsContent>
       </Tabs>
     </CardContent>
-    
+
     <CardFooter v-if="showRegisterLink" class="flex justify-center">
       <p class="text-sm text-muted-foreground">
         还没有账号？
-        <Button
-          variant="link"
-          class="px-1"
-          @click="handleRegister"
-        >
-          立即注册
-        </Button>
+        <Button variant="link" class="px-1" @click="handleRegister"> 立即注册 </Button>
       </p>
     </CardFooter>
   </Card>

@@ -9,11 +9,7 @@
     <div class="flex items-center gap-2 px-2 py-2 border-b">
       <div class="relative flex-1 max-w-xs">
         <Search class="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          v-model="searchQuery"
-          placeholder="搜索资源..."
-          class="pl-8 h-8"
-        />
+        <Input v-model="searchQuery" placeholder="搜索资源..." class="pl-8 h-8" />
       </div>
 
       <DropdownMenu>
@@ -37,12 +33,7 @@
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8"
-        @click="toggleDisplayMode"
-      >
+      <Button variant="ghost" size="icon" class="h-8 w-8" @click="toggleDisplayMode">
         <component :is="displayMode === 'grid' ? List : Grid3x3" class="h-4 w-4" />
       </Button>
 
@@ -50,7 +41,13 @@
         <Upload class="h-4 w-4" />
       </Button>
 
-      <Button variant="ghost" size="icon" class="h-8 w-8" :disabled="isLoading" @click="$emit('refresh')">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :disabled="isLoading"
+        @click="$emit('refresh')"
+      >
         <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" />
       </Button>
     </div>
@@ -58,18 +55,27 @@
     <!-- Content -->
     <div class="flex-1 overflow-y-auto p-2">
       <!-- Empty State -->
-      <div v-if="!repositoryId" class="flex flex-col items-center justify-center h-full text-center px-4">
-        <FolderOff class="w-12 h-12 mb-2 text-muted-foreground/50" />
+      <div
+        v-if="!repositoryId"
+        class="flex flex-col items-center justify-center h-full text-center px-4"
+      >
+        <FolderX class="w-12 h-12 mb-2 text-muted-foreground/50" />
         <span class="text-sm text-muted-foreground">请先选择仓储</span>
       </div>
 
       <!-- Loading -->
-      <div v-else-if="isLoading && filteredResources.length === 0" class="flex items-center justify-center h-full">
+      <div
+        v-else-if="isLoading && filteredResources.length === 0"
+        class="flex items-center justify-center h-full"
+      >
         <Loader2 class="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
 
       <!-- No Resources -->
-      <div v-else-if="filteredResources.length === 0" class="flex flex-col items-center justify-center h-full text-center px-4">
+      <div
+        v-else-if="filteredResources.length === 0"
+        class="flex flex-col items-center justify-center h-full text-center px-4"
+      >
         <ImageOff class="w-12 h-12 mb-2 text-muted-foreground/50" />
         <span class="text-sm text-muted-foreground mb-1">暂无资源文件</span>
         <span class="text-xs text-muted-foreground/60 mb-3">上传图片、音频、视频等文件</span>
@@ -80,66 +86,81 @@
       </div>
 
       <!-- Grid View -->
-      <div v-else-if="displayMode === 'grid'" class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2">
-        <div
+      <div
+        v-else-if="displayMode === 'grid'"
+        class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2"
+      >
+        <ActionableWrapper
           v-for="resource in filteredResources"
           :key="resource.id"
-          class="flex flex-col items-center p-2 rounded-lg hover:bg-accent cursor-pointer transition-colors group"
-          @click="$emit('preview', resource)"
-          @contextmenu.prevent="handleContextMenu($event, resource)"
+          :actions="getResourceActions(resource)"
+          :show-more-button="false"
         >
-          <div class="w-16 h-16 flex items-center justify-center bg-muted rounded-lg mb-2 overflow-hidden">
-            <component
-              v-if="!isImageType(resource.type)"
-              :is="getResourceIcon(resource.type)"
-              class="w-8 h-8 text-muted-foreground"
-            />
-            <img
-              v-else
-              :src="getResourceUrl(resource)"
-              :alt="resource.name"
-              class="w-full h-full object-cover"
-            />
+          <div
+            class="flex flex-col items-center p-2 rounded-lg hover:bg-accent cursor-pointer transition-colors group"
+            @click="$emit('preview', resource)"
+          >
+            <div
+              class="w-16 h-16 flex items-center justify-center bg-muted rounded-lg mb-2 overflow-hidden"
+            >
+              <component
+                v-if="!isImageType(resource.type)"
+                :is="getResourceIcon(resource.type)"
+                class="w-8 h-8 text-muted-foreground"
+              />
+              <img
+                v-else
+                :src="getResourceUrl(resource)"
+                :alt="resource.name"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <span class="text-xs truncate max-w-full text-center">{{ resource.name }}</span>
+            <Badge :variant="getResourceVariant(resource.type)" class="text-[10px] mt-1">
+              {{ getResourceTypeLabel(resource.type) }}
+            </Badge>
           </div>
-          <span class="text-xs truncate max-w-full text-center">{{ resource.name }}</span>
-          <Badge :variant="getResourceVariant(resource.type)" class="text-[10px] mt-1">
-            {{ getResourceTypeLabel(resource.type) }}
-          </Badge>
-        </div>
+        </ActionableWrapper>
       </div>
 
       <!-- List View -->
       <div v-else class="space-y-1">
-        <div
+        <ActionableWrapper
           v-for="resource in filteredResources"
           :key="resource.id"
-          class="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer"
-          @click="$emit('preview', resource)"
-          @contextmenu.prevent="handleContextMenu($event, resource)"
+          :actions="getResourceActions(resource)"
+          :show-more-button="false"
         >
-          <div class="w-8 h-8 flex items-center justify-center bg-muted rounded overflow-hidden shrink-0">
-            <component
-              v-if="!isImageType(resource.type)"
-              :is="getResourceIcon(resource.type)"
-              class="w-4 h-4 text-muted-foreground"
-            />
-            <img
-              v-else
-              :src="getResourceUrl(resource)"
-              :alt="resource.name"
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm truncate">{{ resource.name }}</div>
-            <div class="text-xs text-muted-foreground">
-              {{ formatFileSize(resource.size) }} · {{ formatDate(resource.updatedAt) }}
+          <div
+            class="flex items-center gap-2 p-2 rounded-md hover:bg-accent cursor-pointer"
+            @click="$emit('preview', resource)"
+          >
+            <div
+              class="w-8 h-8 flex items-center justify-center bg-muted rounded overflow-hidden shrink-0"
+            >
+              <component
+                v-if="!isImageType(resource.type)"
+                :is="getResourceIcon(resource.type)"
+                class="w-4 h-4 text-muted-foreground"
+              />
+              <img
+                v-else
+                :src="getResourceUrl(resource)"
+                :alt="resource.name"
+                class="w-full h-full object-cover"
+              />
             </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm truncate">{{ resource.name }}</div>
+              <div class="text-xs text-muted-foreground">
+                {{ formatFileSize(resource.size) }} · {{ formatDate(resource.updatedAt) }}
+              </div>
+            </div>
+            <Badge :variant="getResourceVariant(resource.type)" class="text-xs">
+              {{ getResourceTypeLabel(resource.type) }}
+            </Badge>
           </div>
-          <Badge :variant="getResourceVariant(resource.type)" class="text-xs">
-            {{ getResourceTypeLabel(resource.type) }}
-          </Badge>
-        </div>
+        </ActionableWrapper>
       </div>
     </div>
   </div>
@@ -164,6 +185,9 @@ import {
   Link as LinkIcon,
   Code,
   File,
+  Eye,
+  Pencil,
+  Trash2,
 } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
@@ -176,6 +200,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@dailyuse/ui-vue-shadcn';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 
 interface Resource {
   id: string;
@@ -200,7 +226,9 @@ const emit = defineEmits<{
   upload: [];
   refresh: [];
   preview: [resource: Resource];
-  'context-menu': [event: MouseEvent, resource: Resource];
+  open: [resource: Resource];
+  rename: [resource: Resource];
+  delete: [resource: Resource];
 }>();
 
 const searchQuery = ref('');
@@ -218,19 +246,44 @@ const resourceTypes = [
 ];
 
 const filteredResources = computed(() => {
-  let filtered = props.resources.filter(r => r.type !== 'MARKDOWN');
-  
+  let filtered = props.resources.filter((r) => r.type !== 'MARKDOWN');
+
   if (selectedTypes.value.length > 0) {
-    filtered = filtered.filter(r => selectedTypes.value.includes(r.type));
+    filtered = filtered.filter((r) => selectedTypes.value.includes(r.type));
   }
-  
+
   const query = searchQuery.value.trim().toLowerCase();
   if (query) {
-    filtered = filtered.filter(r => r.name.toLowerCase().includes(query));
+    filtered = filtered.filter((r) => r.name.toLowerCase().includes(query));
   }
-  
+
   return filtered;
 });
+
+function getResourceActions(resource: Resource): MenuAction[] {
+  return [
+    {
+      key: 'open',
+      label: menuLabel('open'),
+      icon: Eye,
+      handler: () => emit('open', resource),
+    },
+    {
+      key: 'rename',
+      label: menuLabel('rename'),
+      icon: Pencil,
+      handler: () => emit('rename', resource),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => emit('delete', resource),
+    },
+  ];
+}
 
 function toggleTypeFilter(type: string) {
   const index = selectedTypes.value.indexOf(type);
@@ -306,9 +359,5 @@ function formatFileSize(bytes: number): string {
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString('zh-CN');
-}
-
-function handleContextMenu(event: MouseEvent, resource: Resource) {
-  emit('context-menu', event, resource);
 }
 </script>

@@ -1,5 +1,3 @@
 <template>
-  <div class="p-6">
-    <p class="text-muted-foreground">TODO: Migrate view from web app</p>
-  </div>
+  <div class="flex items-center justify-center h-full text-muted-foreground">用户设置</div>
 </template>

@@ -122,7 +122,7 @@ const emit = defineEmits<{
 const isOpen = ref(false);
 const isExporting = ref(false);
 const format = ref<'png' | 'svg' | 'pdf'>('png');
-const resolution = ref<1 | 2 | 3>(2);
+const resolution = ref<string>('2');
 const backgroundColor = ref('white');
 const includeMetadata = ref(true);
 
@@ -148,9 +148,9 @@ const formatOptions: { title: string; value: string; icon: Component; descriptio
 ];
 
 const resolutionOptions = [
-  { title: '标准 (1x)', value: 1 },
-  { title: '高清 (2x) 推荐', value: 2 },
-  { title: '超高清 (3x)', value: 3 },
+  { title: '标准 (1x)', value: '1' },
+  { title: '高清 (2x) 推荐', value: '2' },
+  { title: '超高清 (3x)', value: '3' },
 ];
 
 const bgOptions = [
@@ -164,7 +164,7 @@ async function handleExport() {
   try {
     emit('export', {
       format: format.value,
-      resolution: resolution.value,
+      resolution: Number(resolution.value) as 1 | 2 | 3,
       backgroundColor: backgroundColor.value,
       includeMetadata: includeMetadata.value,
     });

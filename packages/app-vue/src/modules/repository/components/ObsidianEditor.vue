@@ -12,7 +12,10 @@
       enter-from-class="opacity-0"
       leave-to-class="opacity-0"
     >
-      <div v-if="isDragOver" class="absolute inset-0 bg-background/95 z-50 flex items-center justify-center">
+      <div
+        v-if="isDragOver"
+        class="absolute inset-0 bg-background/95 z-50 flex items-center justify-center"
+      >
         <div class="text-center">
           <Upload class="w-16 h-16 mb-4 text-primary mx-auto" />
           <p class="text-lg font-medium text-primary">释放以上传文件</p>
@@ -90,8 +93,13 @@
       <Card v-if="isReadingMode && hasProperties" class="mb-6">
         <CardHeader class="cursor-pointer" @click="propertiesExpanded = !propertiesExpanded">
           <div class="flex items-center justify-between">
-            <CardTitle class="text-xs uppercase tracking-wide text-muted-foreground">Properties</CardTitle>
-            <ChevronRight class="h-4 w-4 transition-transform" :class="{ 'rotate-90': propertiesExpanded }" />
+            <CardTitle class="text-xs uppercase tracking-wide text-muted-foreground"
+              >Properties</CardTitle
+            >
+            <ChevronRight
+              class="h-4 w-4 transition-transform"
+              :class="{ 'rotate-90': propertiesExpanded }"
+            />
           </div>
         </CardHeader>
         <CardContent v-show="propertiesExpanded" class="space-y-2">
@@ -100,7 +108,9 @@
             <span class="text-sm text-muted-foreground w-20">{{ key }}</span>
             <div class="flex-1 text-sm">
               <template v-if="key === 'tags' && Array.isArray(value)">
-                <Badge v-for="tag in value" :key="tag" variant="secondary" class="mr-1">{{ tag }}</Badge>
+                <Badge v-for="tag in value" :key="tag" variant="secondary" class="mr-1">{{
+                  tag
+                }}</Badge>
               </template>
               <template v-else-if="isDateField(key as string)">{{ formatDate(value) }}</template>
               <template v-else>{{ value }}</template>
@@ -110,7 +120,11 @@
       </Card>
 
       <!-- Markdown Content -->
-      <div v-if="isReadingMode" class="prose dark:prose-invert max-w-none" v-html="renderedContent"></div>
+      <div
+        v-if="isReadingMode"
+        class="prose dark:prose-invert max-w-none"
+        v-html="renderedContent"
+      ></div>
       <Textarea
         v-else
         v-model="fullContent"
@@ -122,7 +136,9 @@
     </div>
 
     <!-- Status Bar -->
-    <div class="absolute bottom-4 right-6 flex items-center gap-2 px-3 py-1 text-xs bg-background/90 rounded border">
+    <div
+      class="absolute bottom-4 right-6 flex items-center gap-2 px-3 py-1 text-xs bg-background/90 rounded border"
+    >
       <span v-if="isSaving" class="flex items-center gap-1 text-yellow-600">
         <Loader2 class="h-3 w-3 animate-spin" />
         保存中...
@@ -151,7 +167,6 @@ import {
   Link2,
   ExternalLink,
   Info,
-  ChevronRight as ChevronRightIcon,
   Loader2,
   Tag,
   Calendar,
@@ -188,7 +203,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'save': [content: string];
+  save: [content: string];
   'paste-files': [files: File[]];
   'drop-files': [files: File[]];
 }>();
@@ -201,20 +216,18 @@ const isDragOver = ref(false);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
 const uploadStatusText = ref('');
-let dragCounter = 0;
-
 const parsedContent = computed(() => {
   const content = fullContent.value || '';
   const frontmatterRegex = /^---\n([\s\S]*?)\n---\n?/;
   const match = content.match(frontmatterRegex);
-  
+
   if (match) {
     const frontmatterStr = match[1];
     const body = content.slice(match[0].length);
     const properties = parseFrontmatter(frontmatterStr);
     return { properties, body };
   }
-  
+
   return { properties: {}, body: content };
 });
 
@@ -249,22 +262,25 @@ const wordCount = computed(() => {
 function parseFrontmatter(str: string): Record<string, any> {
   const result: Record<string, any> = {};
   const lines = str.split('\n');
-  
+
   for (const line of lines) {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.slice(0, colonIndex).trim();
       let value = line.slice(colonIndex + 1).trim();
-      
+
       if (value.startsWith('[') && value.endsWith(']')) {
         value = value.slice(1, -1);
-        result[key] = value.split(',').map(v => v.trim()).filter(Boolean);
+        result[key] = value
+          .split(',')
+          .map((v) => v.trim())
+          .filter(Boolean);
       } else {
         result[key] = value;
       }
     }
   }
-  
+
   return result;
 }
 
@@ -310,7 +326,7 @@ function openInNewTab() {
 }
 
 function showFileInfo() {
-  console.log('Show file info');
+  // TODO: Implement file info dialog
 }
 
 const debouncedSave = useDebounceFn((content: string) => {
@@ -339,21 +355,15 @@ async function handlePaste(e: ClipboardEvent) {
   }
 }
 
-function handleDrop(e: DragEvent) {
-  dragCounter = 0;
-  isDragOver.value = false;
-
-  const files = e.dataTransfer?.files;
-  if (files && files.length > 0) {
-    emit('drop-files', Array.from(files));
-  }
-}
-
-watch(() => props.content, (newContent) => {
-  if (newContent !== fullContent.value) {
-    fullContent.value = newContent;
-  }
-}, { immediate: true });
+watch(
+  () => props.content,
+  (newContent) => {
+    if (newContent !== fullContent.value) {
+      fullContent.value = newContent;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style>

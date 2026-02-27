@@ -32,55 +32,60 @@
 
       <!-- Schedule List -->
       <div v-else class="space-y-2">
-        <div
+        <ActionableWrapper
           v-for="schedule in schedules"
           :key="schedule.id"
-          class="flex items-start gap-4 p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
-          @click="$emit('schedule-click', schedule)"
+          :actions="getScheduleActions(schedule)"
+          more-button-position="top-right"
         >
-          <div class="flex-shrink-0">
-            <div
-              class="w-10 h-10 rounded-full flex items-center justify-center"
-              :class="getPriorityColorClass(schedule.priority)"
-            >
-              <Calendar class="h-5 w-5 text-white" />
-            </div>
-          </div>
-
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <h4 class="font-semibold">{{ schedule.title }}</h4>
-              <Badge v-if="schedule.hasConflict" variant="destructive" class="gap-1">
-                <AlertCircle class="h-3 w-3" />
-                冲突
-              </Badge>
-            </div>
-
-            <div class="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Clock class="h-4 w-4" />
-              <span>{{ formatDateTime(schedule.startTime) }} - {{ formatDateTime(schedule.endTime) }}</span>
-              <span class="ml-2">({{ schedule.duration }}分钟)</span>
-            </div>
-
-            <div v-if="schedule.location" class="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <MapPin class="h-4 w-4" />
-              <span>{{ schedule.location }}</span>
-            </div>
-
-            <p v-if="schedule.description" class="mt-2 text-sm text-muted-foreground line-clamp-2">
-              {{ schedule.description }}
-            </p>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            @click.stop="$emit('delete', schedule.id)"
-            class="flex-shrink-0"
+          <div
+            class="flex items-start gap-4 p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
+            @click="emit('schedule-click', schedule)"
           >
-            <Trash2 class="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
+            <div class="flex-shrink-0">
+              <div
+                class="w-10 h-10 rounded-full flex items-center justify-center"
+                :class="getPriorityColorClass(schedule.priority)"
+              >
+                <Calendar class="h-5 w-5 text-white" />
+              </div>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h4 class="font-semibold">{{ schedule.title }}</h4>
+                <Badge v-if="schedule.hasConflict" variant="destructive" class="gap-1">
+                  <AlertCircle class="h-3 w-3" />
+                  冲突
+                </Badge>
+              </div>
+
+              <div class="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                <Clock class="h-4 w-4" />
+                <span
+                  >{{ formatDateTime(schedule.startTime) }} -
+                  {{ formatDateTime(schedule.endTime) }}</span
+                >
+                <span class="ml-2">({{ schedule.duration }}分钟)</span>
+              </div>
+
+              <div
+                v-if="schedule.location"
+                class="flex items-center gap-2 mt-1 text-sm text-muted-foreground"
+              >
+                <MapPin class="h-4 w-4" />
+                <span>{{ schedule.location }}</span>
+              </div>
+
+              <p
+                v-if="schedule.description"
+                class="mt-2 text-sm text-muted-foreground line-clamp-2"
+              >
+                {{ schedule.description }}
+              </p>
+            </div>
+          </div>
+        </ActionableWrapper>
       </div>
     </CardContent>
   </Card>
@@ -91,8 +96,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadc
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
-import { Plus, Calendar, Clock, MapPin, Trash2, Loader2, AlertCircle, CalendarOff } from 'lucide-vue-next';
+import {
+  Plus,
+  Calendar,
+  Clock,
+  MapPin,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  CalendarOff,
+} from 'lucide-vue-next';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 
 interface Props {
   schedules: ScheduleJobClientDTO[];
@@ -111,7 +127,19 @@ withDefaults(defineProps<Props>(), {
   error: null,
 });
 
-defineEmits<Emits>();
+const emit = defineEmits<Emits>();
+
+function getScheduleActions(schedule: ScheduleJobClientDTO): MenuAction[] {
+  return [
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      handler: () => emit('delete', schedule.id),
+    },
+  ];
+}
 
 function formatDateTime(timestamp: number): string {
   const date = new Date(timestamp);

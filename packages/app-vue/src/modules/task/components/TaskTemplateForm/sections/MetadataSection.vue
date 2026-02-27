@@ -8,6 +8,20 @@
     </CardHeader>
     <CardContent>
       <div class="grid grid-cols-12 gap-4">
+        <!-- 任务类型 -->
+        <div class="col-span-12 md:col-span-6">
+          <Label for="task-type-select">任务类型</Label>
+          <Select v-model="taskType">
+            <SelectTrigger id="task-type-select" class="mt-1">
+              <SelectValue placeholder="选择任务类型" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ONE_TIME">单次任务</SelectItem>
+              <SelectItem value="RECURRING">重复任务</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <!-- 重要性 -->
         <div class="col-span-12 md:col-span-6">
           <Label for="importance-select">重要性</Label>
@@ -25,6 +39,60 @@
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <!-- 颜色 -->
+        <div class="col-span-12 md:col-span-6">
+          <Label>颜色标记</Label>
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button variant="outline" class="mt-1 w-full justify-start gap-2">
+                <div
+                  v-if="color"
+                  class="h-4 w-4 rounded-full border"
+                  :style="{ backgroundColor: color }"
+                />
+                <div v-else class="h-4 w-4 rounded-full border border-dashed" />
+                {{ color || '选择颜色' }}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-64">
+              <div class="grid grid-cols-6 gap-2">
+                <button
+                  v-for="c in colorSwatches"
+                  :key="c"
+                  type="button"
+                  class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
+                  :class="
+                    color === c ? 'border-primary ring-2 ring-primary/30' : 'border-transparent'
+                  "
+                  :style="{ backgroundColor: c }"
+                  @click="color = c"
+                />
+              </div>
+              <Button
+                v-if="color"
+                variant="ghost"
+                size="sm"
+                class="mt-2 w-full"
+                @click="color = null"
+              >
+                清除颜色
+              </Button>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <!-- 文件夹 ID -->
+        <div class="col-span-12 md:col-span-6">
+          <Label for="folder-id-input">文件夹 ID</Label>
+          <Input
+            id="folder-id-input"
+            :model-value="folderId ?? ''"
+            placeholder="可选，输入文件夹 ID"
+            class="mt-1"
+            @update:model-value="folderId = String($event) || null"
+          />
         </div>
 
         <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
@@ -77,6 +145,10 @@ import {
   SelectItem,
   Badge,
   Input,
+  Button,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from '@dailyuse/ui-vue-shadcn';
 import { Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
@@ -155,6 +227,51 @@ const importance = computed({
   set: (value: ImportanceLevel) => {
     updateTemplate((template) => {
       template.importance = value;
+    });
+  },
+});
+
+// 任务类型
+const taskType = computed({
+  get: () => props.modelValue.taskType ?? 'RECURRING',
+  set: (value: string) => {
+    updateTemplate((template) => {
+      template.taskType = value;
+    });
+  },
+});
+
+// 颜色
+const colorSwatches = [
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#06b6d4',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#f43f5e',
+  '#14b8a6',
+  '#6366f1',
+  '#a855f7',
+];
+
+const color = computed({
+  get: () => props.modelValue.color ?? null,
+  set: (value: string | null) => {
+    updateTemplate((template) => {
+      template.color = value;
+    });
+  },
+});
+
+// 文件夹
+const folderId = computed({
+  get: () => props.modelValue.folderId ?? null,
+  set: (value: string | null) => {
+    updateTemplate((template) => {
+      template.folderId = value;
     });
   },
 });

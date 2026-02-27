@@ -16,7 +16,7 @@ export interface TaskTimeRangeViewModel {
 }
 
 export interface TaskTimeConfigViewModel {
-  timeType?: 'ALL_DAY' | 'TIME_POINT' | 'TIME_RANGE';
+  timeType?: 'AllDay' | 'TimePoint' | 'TimeRange';
   timePoint?: number | null;
   timeRange?: TaskTimeRangeViewModel | null;
   startDate?: string | Date | number;
@@ -81,16 +81,24 @@ export interface TaskTemplateViewModel {
   isActive?: boolean;
   isPaused?: boolean;
   isArchived?: boolean;
-  importance?: number;
+  importance?: string;
   importanceText?: string;
   priority?: number;
   recurrenceText?: string;
   tags?: string[];
   goalBinding?: TaskGoalBindingViewModel | null;
   timeConfig: TaskTimeConfigViewModel;
+  recurrenceRule?: any;
+  reminderConfig?: any;
   instanceCount?: number;
   completionRate?: number;
   formattedCreatedAt?: string;
+  /** 'ONE_TIME' | 'RECURRING' — maps to CreateTaskTemplateReq.taskType */
+  taskType?: string;
+  /** Folder ID for organising task templates */
+  folderId?: string | null;
+  /** Colour swatch hex string */
+  color?: string | null;
 }
 
 export interface TaskInstanceViewModel {

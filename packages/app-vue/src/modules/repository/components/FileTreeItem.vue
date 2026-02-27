@@ -4,60 +4,26 @@
 
 <template>
   <div class="select-none">
-    <div
-      class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
-      :class="{ 'bg-accent': isSelected }"
-      @click="handleClick"
-    >
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-5 w-5 shrink-0"
-        @click.stop="$emit('toggle', item.id)"
+    <ActionableWrapper :actions="getItemActions()" :show-more-button="false">
+      <div
+        class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+        :class="{ 'bg-accent': isSelected }"
+        @click="handleClick"
       >
-        <ChevronRight class="h-4 w-4 transition-transform" :class="{ 'rotate-90': isOpen }" />
-      </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-5 w-5 shrink-0"
+          @click.stop="$emit('toggle', item.id)"
+        >
+          <ChevronRight class="h-4 w-4 transition-transform" :class="{ 'rotate-90': isOpen }" />
+        </Button>
 
-      <component
-        :is="isOpen ? FolderOpen : Folder"
-        class="h-4 w-4 shrink-0"
-      />
+        <component :is="isOpen ? FolderOpen : Folder" class="h-4 w-4 shrink-0" />
 
-      <span class="text-sm flex-1 truncate">{{ item.title }}</span>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="h-6 w-6 opacity-0 group-hover:opacity-100"
-            @click.stop
-          >
-            <MoreVertical class="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem @click.stop="$emit('create-subfolder', item.raw.id)">
-            <FolderPlus class="mr-2 h-4 w-4" />
-            新建子文件夹
-          </DropdownMenuItem>
-          <DropdownMenuItem @click.stop="$emit('rename', item.raw)">
-            <Pencil class="mr-2 h-4 w-4" />
-            重命名
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem @click.stop="$emit('add-bookmark', item.raw)">
-            <Bookmark class="mr-2 h-4 w-4" />
-            添加到书签
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem class="text-destructive" @click.stop="$emit('delete', item.raw)">
-            <Trash2 class="mr-2 h-4 w-4" />
-            删除
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+        <span class="text-sm flex-1 truncate">{{ item.title }}</span>
+      </div>
+    </ActionableWrapper>
 
     <div v-if="isOpen && item.children.length > 0" class="ml-4">
       <TreeItem
@@ -84,19 +50,13 @@ import {
   FolderOpen,
   FolderPlus,
   ChevronRight,
-  MoreVertical,
   Pencil,
   Bookmark,
   Trash2,
 } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@dailyuse/ui-vue-shadcn';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
 
 interface TreeItemData {
@@ -130,5 +90,37 @@ const isSelected = computed(() => props.selectedId === props.item.id);
 
 function handleClick() {
   emit('select', props.item.raw);
+}
+
+function getItemActions(): MenuAction[] {
+  return [
+    {
+      key: 'create-subfolder',
+      label: menuLabel('createSubfolder'),
+      icon: FolderPlus,
+      handler: () => emit('create-subfolder', props.item.raw.id),
+    },
+    {
+      key: 'rename',
+      label: menuLabel('rename'),
+      icon: Pencil,
+      handler: () => emit('rename', props.item.raw),
+    },
+    {
+      key: 'add-bookmark',
+      label: menuLabel('addBookmark'),
+      icon: Bookmark,
+      separator: true,
+      handler: () => emit('add-bookmark', props.item.raw),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => emit('delete', props.item.raw),
+    },
+  ];
 }
 </script>

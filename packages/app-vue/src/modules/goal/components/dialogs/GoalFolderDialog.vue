@@ -9,7 +9,12 @@
       <div class="space-y-4 py-2">
         <div class="space-y-2">
           <Label for="folder-name">节点名称</Label>
-          <Input id="folder-name" v-model="draft.name" placeholder="请输入节点名称" @keyup.enter="handleSave" />
+          <Input
+            id="folder-name"
+            v-model="draft.name"
+            placeholder="请输入节点名称"
+            @keyup.enter="handleSave"
+          />
           <p v-if="nameError" class="text-xs text-destructive">{{ nameError }}</p>
         </div>
 
@@ -26,6 +31,53 @@
             </SelectContent>
           </Select>
         </div>
+
+        <div class="space-y-2">
+          <Label for="folder-description">描述</Label>
+          <Textarea
+            id="folder-description"
+            :model-value="draft.description ?? ''"
+            @update:model-value="draft.description = String($event) || null"
+            placeholder="可选：添加文件夹描述"
+            class="min-h-[60px] resize-none"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <Label>颜色</Label>
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button variant="outline" class="h-10 w-[140px] justify-start gap-2">
+                <div
+                  class="h-4 w-4 rounded-full border"
+                  :style="{ backgroundColor: draft.color || '#94a3b8' }"
+                />
+                <span class="text-sm">{{ draft.color || '选择颜色' }}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-3" align="start">
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  v-for="c in colorOptions"
+                  :key="c"
+                  class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
+                  :class="draft.color === c ? 'border-foreground scale-110' : 'border-transparent'"
+                  :style="{ backgroundColor: c }"
+                  @click="draft.color = c"
+                />
+              </div>
+              <Button
+                v-if="draft.color"
+                variant="ghost"
+                size="sm"
+                class="mt-2 w-full text-xs"
+                @click="draft.color = null"
+              >
+                清除颜色
+              </Button>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       <DialogFooter>
@@ -40,10 +92,40 @@
 import { computed, ref, watch } from 'vue';
 import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@dailyuse/ui-vue-shadcn';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import { Textarea } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
+import { Popover, PopoverTrigger, PopoverContent } from '@dailyuse/ui-vue-shadcn';
+
+const colorOptions = [
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#84cc16',
+  '#22c55e',
+  '#06b6d4',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#f43f5e',
+  '#14b8a6',
+  '#6366f1',
+];
 
 type GoalFolderDraft = {
   id?: GoalFolderClientDTO['id'];

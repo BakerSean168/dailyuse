@@ -15,109 +15,80 @@
     <Alert v-if="keyResults.length === 0" class="mb-4">
       <Info class="w-4 h-4" />
       <AlertTitle>暂无生成的关键结果</AlertTitle>
-      <AlertDescription>
-        请点击"AI 生成关键结果"按钮开始。
-      </AlertDescription>
+      <AlertDescription> 请点击"AI 生成关键结果"按钮开始。 </AlertDescription>
     </Alert>
 
     <!-- Results List -->
     <div v-else class="space-y-3" data-testid="kr-preview-list">
-      <Card
+      <ActionableWrapper
         v-for="(kr, index) in keyResults"
         :key="kr.id || index"
-        :class="[
-          'p-4 transition-all',
-          kr.selected ? 'border-primary bg-primary/5' : 'opacity-60'
-        ]"
-        data-testid="kr-preview-item"
+        :actions="getKRActions(kr, index)"
+        more-button-position="top-right"
       >
-        <div class="flex items-start gap-3">
-          <!-- Checkbox -->
-          <Checkbox
-            :checked="kr.selected"
-            @update:checked="(val) => handleSelectionChange(kr, val)"
-            data-testid="kr-checkbox"
-            class="mt-1"
-          />
+        <Card
+          :class="[
+            'p-4 transition-all',
+            kr.selected ? 'border-primary bg-primary/5' : 'opacity-60',
+          ]"
+          data-testid="kr-preview-item"
+        >
+          <div class="flex items-start gap-3">
+            <!-- Checkbox -->
+            <Checkbox
+              :checked="kr.selected"
+              @update:checked="(val) => handleSelectionChange(kr, val)"
+              data-testid="kr-checkbox"
+              class="mt-1"
+            />
 
-          <div class="flex-1">
-            <!-- Title -->
-            <div class="flex items-center gap-2 mb-2">
-              <Target class="w-4 h-4 text-primary" />
-              <strong>{{ kr.title }}</strong>
-            </div>
+            <div class="flex-1">
+              <!-- Title -->
+              <div class="flex items-center gap-2 mb-2">
+                <Target class="w-4 h-4 text-primary" />
+                <strong>{{ kr.title }}</strong>
+              </div>
 
-            <!-- Metrics -->
-            <div class="flex flex-wrap gap-2 mt-2">
-              <Badge variant="outline" class="text-success border-success">
-                <Flag class="w-3 h-3 mr-1" />
-                目标：{{ kr.targetValue }} {{ kr.unit }}
-              </Badge>
+              <!-- Metrics -->
+              <div class="flex flex-wrap gap-2 mt-2">
+                <Badge variant="outline" class="text-success border-success">
+                  <Flag class="w-3 h-3 mr-1" />
+                  目标：{{ kr.targetValue }} {{ kr.unit }}
+                </Badge>
 
-              <Badge v-if="kr.weight" variant="outline" class="text-info border-info">
-                <Scale class="w-3 h-3 mr-1" />
-                权重：{{ kr.weight }}%
-              </Badge>
+                <Badge v-if="kr.weight" variant="outline" class="text-info border-info">
+                  <Scale class="w-3 h-3 mr-1" />
+                  权重：{{ kr.weight }}%
+                </Badge>
 
-              <Badge
-                v-if="kr.importance"
-                variant="outline"
-                :class="getImportanceClass(kr.importance)"
-              >
-                <Star class="w-3 h-3 mr-1" />
-                {{ getImportanceLabel(kr.importance) }}
-              </Badge>
-            </div>
+                <Badge
+                  v-if="kr.importance"
+                  variant="outline"
+                  :class="getImportanceClass(kr.importance)"
+                >
+                  <Star class="w-3 h-3 mr-1" />
+                  {{ getImportanceLabel(kr.importance) }}
+                </Badge>
+              </div>
 
-            <!-- Description -->
-            <div v-if="kr.description" class="mt-3 text-sm text-muted-foreground">
-              <FileText class="w-3 h-3 inline mr-1" />
-              {{ kr.description }}
+              <!-- Description -->
+              <div v-if="kr.description" class="mt-3 text-sm text-muted-foreground">
+                <FileText class="w-3 h-3 inline mr-1" />
+                {{ kr.description }}
+              </div>
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="flex flex-col gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8"
-              @click="handleEdit(kr, index)"
-              data-testid="kr-edit-button"
-            >
-              <Pencil class="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8 text-destructive"
-              @click="handleRemove(index)"
-              data-testid="kr-remove-button"
-            >
-              <Trash2 class="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </ActionableWrapper>
     </div>
 
     <!-- Batch Actions -->
     <div v-if="keyResults.length > 0" class="flex gap-2 mt-4">
-      <Button
-        variant="outline"
-        size="sm"
-        @click="selectAll"
-        data-testid="select-all-button"
-      >
+      <Button variant="outline" size="sm" @click="selectAll" data-testid="select-all-button">
         <CheckSquare class="w-4 h-4 mr-2" />
         全选
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        @click="deselectAll"
-        data-testid="deselect-all-button"
-      >
+      <Button variant="outline" size="sm" @click="deselectAll" data-testid="deselect-all-button">
         <Square class="w-4 h-4 mr-2" />
         全不选
       </Button>
@@ -156,11 +127,7 @@
         <div v-if="editingKR" class="space-y-4">
           <div class="space-y-2">
             <Label for="title">标题 *</Label>
-            <Input
-              id="title"
-              v-model="editingKR.title"
-              placeholder="输入标题"
-            />
+            <Input id="title" v-model="editingKR.title" placeholder="输入标题" />
           </div>
 
           <div class="space-y-2">
@@ -186,11 +153,7 @@
 
             <div class="space-y-2">
               <Label for="unit">单位 *</Label>
-              <Input
-                id="unit"
-                v-model="editingKR.unit"
-                placeholder="输入单位"
-              />
+              <Input id="unit" v-model="editingKR.unit" placeholder="输入单位" />
             </div>
           </div>
 
@@ -254,11 +217,25 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card } from '@dailyuse/ui-vue-shadcn';
 import { Checkbox } from '@dailyuse/ui-vue-shadcn';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@dailyuse/ui-vue-shadcn';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 
 export interface KeyResultPreview {
   id?: string;
@@ -290,18 +267,20 @@ const editingKR = ref<KeyResultPreview | null>(null);
 const editingIndex = ref(-1);
 
 const selectedCount = computed(() => {
-  return keyResults.value.filter(kr => kr.selected).length;
+  return keyResults.value.filter((kr) => kr.selected).length;
 });
 
 const selectedResults = computed(() => {
-  return keyResults.value.filter(kr => kr.selected);
+  return keyResults.value.filter((kr) => kr.selected);
 });
 
 const isEditFormValid = computed(() => {
-  return editingKR.value &&
+  return (
+    editingKR.value &&
     editingKR.value.title &&
     editingKR.value.targetValue > 0 &&
-    editingKR.value.unit;
+    editingKR.value.unit
+  );
 });
 
 function loadResults(results: any[]) {
@@ -323,12 +302,12 @@ function handleSelectionChange(kr: KeyResultPreview, selected: boolean) {
 }
 
 function selectAll() {
-  keyResults.value.forEach(kr => kr.selected = true);
+  keyResults.value.forEach((kr) => (kr.selected = true));
   emit('selectionChange', selectedResults.value);
 }
 
 function deselectAll() {
-  keyResults.value.forEach(kr => kr.selected = false);
+  keyResults.value.forEach((kr) => (kr.selected = false));
   emit('selectionChange', selectedResults.value);
 }
 
@@ -371,6 +350,25 @@ function handleRemove(index: number) {
   }
 }
 
+function getKRActions(kr: KeyResultPreview, index: number): MenuAction[] {
+  return [
+    {
+      key: 'edit',
+      label: menuLabel('edit'),
+      icon: Pencil,
+      handler: () => handleEdit(kr, index),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => handleRemove(index),
+    },
+  ];
+}
+
 function handleAccept() {
   if (selectedCount.value === 0) {
     props.onWarning?.('请至少选择一个关键结果');
@@ -406,11 +404,15 @@ function getImportanceLabel(importance: string): string {
   }
 }
 
-watch(() => props.results, (newResults) => {
-  if (newResults && newResults.length > 0) {
-    loadResults(newResults);
-  }
-}, { immediate: true });
+watch(
+  () => props.results,
+  (newResults) => {
+    if (newResults && newResults.length > 0) {
+      loadResults(newResults);
+    }
+  },
+  { immediate: true },
+);
 
 defineExpose({
   loadResults,

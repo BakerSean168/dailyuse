@@ -22,10 +22,7 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-auto">
-      <div
-        v-if="isLoading"
-        class="flex h-[50vh] items-center justify-center text-muted-foreground"
-      >
+      <div v-if="isLoading" class="flex h-[50vh] items-center justify-center text-muted-foreground">
         加载中...
       </div>
 
@@ -40,6 +37,15 @@
         @delete-all-templates="handleDeleteAll"
       />
     </div>
+
+    <!-- 创建模板对话框 -->
+    <TaskTemplateDialog
+      v-model="showCreateDialog"
+      mode="create"
+      :saving="isSaving"
+      @save="handleSaveCreate"
+      @cancel="showCreateDialog = false"
+    />
   </div>
 </template>
 
@@ -50,19 +56,29 @@ import { toast } from 'vue-sonner';
 import { Search } from 'lucide-vue-next';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
+import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 const router = useRouter();
-const { templates, isLoading, fetchTemplates, deleteTemplate, activateTemplate } = useTask();
+const {
+  templates,
+  isLoading,
+  isSaving,
+  fetchTemplates,
+  createTemplate,
+  deleteTemplate,
+  activateTemplate,
+} = useTask();
 
 const searchQuery = ref('');
+const showCreateDialog = ref(false);
 
 const timeTypeMap: Record<string, TaskTemplateViewModel['timeConfig']['timeType']> = {
-  AllDay: 'ALL_DAY',
-  TimePoint: 'TIME_POINT',
-  TimeRange: 'TIME_RANGE',
+  AllDay: 'AllDay',
+  TimePoint: 'TimePoint',
+  TimeRange: 'TimeRange',
 };
 
 const statusMap: Record<string, string> = {
@@ -92,11 +108,15 @@ function mapToViewModel(dto: TaskTemplateClientDTO): TaskTemplateViewModel {
         }
       : null,
     timeConfig: {
-      timeType: timeTypeMap[dto.timeConfig?.timeType] ?? (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
+      timeType:
+        timeTypeMap[dto.timeConfig?.timeType] ??
+        (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
       timePoint: dto.timeConfig?.timePoint ?? undefined,
       timeRange: dto.timeConfig?.timeRange ?? undefined,
       startDate: dto.startDate ?? undefined,
     },
+    recurrenceRule: dto.recurrenceRule ?? null,
+    reminderConfig: dto.reminderConfig ?? null,
     instanceCount: dto.instanceCount,
     completionRate: dto.completionRate,
     formattedCreatedAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString() : undefined,
@@ -117,7 +137,28 @@ const filteredViewModels = computed(() => {
 });
 
 function handleCreate() {
-  router.push({ name: 'task-detail', params: { id: 'new' } });
+  showCreateDialog.value = true;
+}
+
+async function handleSaveCreate(template: TaskTemplateViewModel) {
+  const result = await createTemplate({
+    name: template.title,
+    description: template.description ?? null,
+    taskType:
+      (template.taskType as 'ONE_TIME' | 'RECURRING') ??
+      (template.recurrenceRule ? 'RECURRING' : 'ONE_TIME'),
+    timeConfig: template.timeConfig as any,
+    recurrenceRule: template.recurrenceRule ?? null,
+    reminderConfig: template.reminderConfig ?? null,
+    importance: (template.importance as any) ?? 'Moderate',
+    tags: template.tags ?? [],
+    folderId: (template.folderId as any) ?? null,
+    color: template.color ?? null,
+  });
+  if (result) {
+    showCreateDialog.value = false;
+    toast.success('模板创建成功');
+  }
 }
 
 function handleEdit(templateId: string) {

@@ -48,12 +48,13 @@ hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('json', json);
 hljs.registerLanguage('yaml', yaml);
 
-// Code snippet interface
+// Code snippet interface — aligned with contracts CodeSnippetDTO
 interface CodeSnippetDTO {
+  id?: string;
   type: 'GoodExample' | 'BadExample';
   language: string;
   content: string;
-  caption?: string;
+  caption?: string | null;
 }
 
 const props = defineProps<{
@@ -68,18 +69,21 @@ const typeClasses = computed(() =>
     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 );
 
-const typeLabel = computed(() =>
-  props.snippet.type === 'GoodExample' ? '✓ Good' : '✗ Bad',
-);
+const typeLabel = computed(() => (props.snippet.type === 'GoodExample' ? '✓ Good' : '✗ Bad'));
 
 const languageClass = computed(() => {
   const lang = props.snippet.language.toLowerCase();
   switch (lang) {
-    case 'typescript': return 'typescript';
-    case 'json': return 'json';
-    case 'yaml': return 'yaml';
-    case 'prisma': return 'typescript';
-    default: return 'plaintext';
+    case 'typescript':
+      return 'typescript';
+    case 'json':
+      return 'json';
+    case 'yaml':
+      return 'yaml';
+    case 'prisma':
+      return 'typescript';
+    default:
+      return 'plaintext';
   }
 });
 

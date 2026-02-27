@@ -386,9 +386,9 @@ const initializeFromModel = () => {
   const binding = props.modelValue.goalBinding;
   if (binding) {
     linkEnabled.value = true;
-    selectedGoalId.value = binding.goalId;
-    selectedKeyResultId.value = binding.keyResultId;
-    incrementValue.value = binding.incrementValue;
+    selectedGoalId.value = binding.goalId ?? null;
+    selectedKeyResultId.value = binding.keyResultId ?? null;
+    incrementValue.value = binding.incrementValue ?? 1;
   } else {
     linkEnabled.value = false;
     selectedGoalId.value = null;

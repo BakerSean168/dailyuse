@@ -12,12 +12,19 @@ import {
   createMockResource,
   createMockResourceList,
 } from '@dailyuse/contracts/mocks';
+import type { RepositoryClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { faker } from '@faker-js/faker';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const REPOS = `${API_BASE}/repositories`;
 const FOLDERS = `${API_BASE}/folders`;
 const RESOURCES = `${API_BASE}/resources`;
+
+const toRepoId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as RepositoryClientDTO['id'];
+
+const toResourceId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as ResourceClientDTO['id'];
 
 function createMockFolder(overrides: Record<string, unknown> = {}) {
   return {
@@ -62,7 +69,7 @@ export const repositoryHandlers = [
   }),
 
   http.get(`${REPOS}/:id/tree`, ({ params }) => {
-    const repoId = params.id as string;
+    const repoId = toRepoId(params['id']);
     const folders = Array.from({ length: 4 }, (_, i) =>
       createMockFolder({ repositoryId: repoId, name: `文件夹 ${i + 1}` }),
     );
@@ -74,17 +81,17 @@ export const repositoryHandlers = [
         name: f.name,
         type: 'folder' as const,
         parentId: f.parentId,
-        repositoryId: repoId,
+        repositoryId: repoId as string,
         path: f.path,
         children: [],
       })),
-      ...resources.map((r: Record<string, unknown>) => ({
+      ...resources.map((r) => ({
         id: r.id as string,
-        name: r.name as string,
+        name: r.name,
         type: 'file' as const,
         parentId: null,
-        repositoryId: repoId,
-        path: `/${r.name as string}`,
+        repositoryId: repoId as string,
+        path: `/${r.name}`,
       })),
     ];
     return HttpResponse.json({
@@ -111,7 +118,7 @@ export const repositoryHandlers = [
   }),
 
   http.get(`${REPOS}/:id/resources`, ({ params }) => {
-    const resources = createMockResourceList(15, { repositoryId: params.id as string });
+    const resources = createMockResourceList(15, { repositoryId: toRepoId(params['id']) });
     return HttpResponse.json({
       ok: true,
       code: 200,
@@ -128,7 +135,10 @@ export const repositoryHandlers = [
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockResource({ repositoryId: params.id as string, name: body.name as string }),
+        data: createMockResource({
+          repositoryId: toRepoId(params['id']),
+          name: body.name as string,
+        }),
         timestamp: Date.now(),
       },
       { status: 201 },
@@ -140,7 +150,7 @@ export const repositoryHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockRepository({ id: params.id as string }),
+      data: createMockRepository({ id: toRepoId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -151,7 +161,7 @@ export const repositoryHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockRepository({ id: params.id as string, ...(body as object) }),
+      data: createMockRepository({ id: toRepoId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
@@ -229,7 +239,7 @@ export const repositoryHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockResource({ id: params.id as string }),
+      data: createMockResource({ id: toResourceId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -240,7 +250,7 @@ export const repositoryHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockResource({ id: params.id as string, ...(body as object) }),
+      data: createMockResource({ id: toResourceId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
@@ -250,7 +260,7 @@ export const repositoryHandlers = [
       ok: true,
       code: 200,
       message: 'Moved',
-      data: createMockResource({ id: params.id as string }),
+      data: createMockResource({ id: toResourceId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -270,11 +280,11 @@ export const repositoryHandlers = [
   http.post(`${API_BASE}/search`, ({ request }) => {
     const url = new URL(request.url);
     const query = url.searchParams.get('q') || 'mock-query';
-    const mockResults = createMockResourceList(5).map((r: Record<string, unknown>) => ({
+    const mockResults = createMockResourceList(5).map((r) => ({
       resourceId: r.id as string,
-      resourceName: r.name as string,
-      resourcePath: `/${r.name as string}`,
-      resourceType: (r.type as string) || 'markdown',
+      resourceName: r.name,
+      resourcePath: `/${r.name}`,
+      resourceType: r.type || 'markdown',
       matchType: 'content' as const,
       matches: [],
       matchCount: 0,

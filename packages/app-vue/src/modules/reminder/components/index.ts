@@ -12,6 +12,5 @@ export { default as GroupDialog } from './GroupDialog.vue';
 export { default as TemplateDialog } from './TemplateDialog.vue';
 export { default as TemplateMoveDialog } from './TemplateMoveDialog.vue';
 
-// Sidebar & Menu Components
+// Sidebar Components
 export { default as ReminderInstanceSidebar } from './ReminderInstanceSidebar.vue';
-export { default as ReminderContextMenu } from './ContextMenu.vue';

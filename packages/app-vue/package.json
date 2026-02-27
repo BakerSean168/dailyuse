@@ -19,6 +19,7 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/goal": "workspace:*",
     "@dailyuse/governance": "workspace:*",
+    "@dailyuse/http-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
     "@dailyuse/reminder": "workspace:*",
     "@dailyuse/repository": "workspace:*",

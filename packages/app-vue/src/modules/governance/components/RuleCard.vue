@@ -34,10 +34,10 @@
       <div class="flex items-center gap-1 flex-wrap">
         <span
           v-for="tag in rule.tags"
-          :key="tag"
+          :key="tag.value"
           class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
         >
-          {{ tag }}
+          {{ tag.value }}
         </span>
       </div>
 
@@ -70,20 +70,7 @@
 import { computed } from 'vue';
 import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from 'lucide-vue-next';
 import RuleStatusBadge from './RuleStatusBadge.vue';
-
-// Rule interface - simplified for display purposes
-interface RuleClientDTO {
-  code: string;
-  title: string;
-  description: string;
-  severity: 'Mandatory' | 'Recommended';
-  status: string;
-  tags: string[];
-  goodExamples: any[];
-  badExamples: any[];
-  updatedAt: string;
-  deprecationReason?: string;
-}
+import type { RuleClientDTO } from '../types';
 
 const props = defineProps<{
   rule: RuleClientDTO;
@@ -98,12 +85,10 @@ const truncatedDescription = computed(() => {
   return desc.length > 150 ? `${desc.slice(0, 150)}…` : desc;
 });
 
-const severityIcon = computed(() =>
-  props.rule.severity === 'Mandatory' ? AlertCircle : Info,
-);
+const severityIcon = computed(() => (props.rule.severity === 'Mandatory' ? AlertCircle : Info));
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+function formatDate(timestamp: number): string {
+  const date = new Date(timestamp);
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 }
 </script>

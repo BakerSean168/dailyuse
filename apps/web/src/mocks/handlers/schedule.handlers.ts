@@ -13,11 +13,15 @@ import {
   createMockScheduleExecution,
   createMockScheduleExecutionList,
 } from '@dailyuse/contracts/mocks';
+import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { faker } from '@faker-js/faker';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const EVENTS = `${API_BASE}/schedules/events`;
 const TASKS = `${API_BASE}/schedules/tasks`;
+
+const toScheduleTaskId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as ScheduleTaskClientDTO['id'];
 
 function createMockCalendarEntry(overrides: Record<string, unknown> = {}) {
   const now = Date.now();
@@ -223,7 +227,7 @@ export const scheduleHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockScheduleTask({ id: params.taskId as string }),
+      data: createMockScheduleTask({ id: toScheduleTaskId(params['taskId']) }),
       timestamp: Date.now(),
     });
   }),
@@ -234,7 +238,7 @@ export const scheduleHandlers = [
       code: 200,
       message: 'Paused',
       data: createMockScheduleTask({
-        id: params.taskId as string,
+        id: toScheduleTaskId(params['taskId']),
         status: 'Paused',
         enabled: false,
       }),
@@ -248,7 +252,7 @@ export const scheduleHandlers = [
       code: 200,
       message: 'Resumed',
       data: createMockScheduleTask({
-        id: params.taskId as string,
+        id: toScheduleTaskId(params['taskId']),
         status: 'Active',
         enabled: true,
       }),
@@ -261,7 +265,7 @@ export const scheduleHandlers = [
       ok: true,
       code: 200,
       message: 'Completed',
-      data: createMockScheduleTask({ id: params.taskId as string, status: 'Completed' }),
+      data: createMockScheduleTask({ id: toScheduleTaskId(params['taskId']), status: 'Completed' }),
       timestamp: Date.now(),
     });
   }),
@@ -271,7 +275,7 @@ export const scheduleHandlers = [
       ok: true,
       code: 200,
       message: 'Cancelled',
-      data: createMockScheduleTask({ id: params.taskId as string, status: 'Cancelled' }),
+      data: createMockScheduleTask({ id: toScheduleTaskId(params['taskId']), status: 'Cancelled' }),
       timestamp: Date.now(),
     });
   }),
@@ -281,7 +285,7 @@ export const scheduleHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockScheduleTask({ id: params.taskId as string }),
+      data: createMockScheduleTask({ id: toScheduleTaskId(params['taskId']) }),
       timestamp: Date.now(),
     });
   }),

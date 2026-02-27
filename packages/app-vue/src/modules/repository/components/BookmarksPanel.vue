@@ -19,62 +19,26 @@
     <!-- Bookmarks List -->
     <div class="flex-1 overflow-y-auto">
       <div v-if="bookmarks.length > 0" class="p-2 space-y-1">
-        <div
-          v-for="bookmark in bookmarks"
+        <ActionableWrapper
+          v-for="(bookmark, index) in bookmarks"
           :key="bookmark.id"
-          class="group flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer"
-          @click="$emit('select', bookmark)"
+          :actions="getBookmarkActions(bookmark, index)"
+          :show-more-button="false"
         >
-          <component :is="getBookmarkIcon(bookmark)" class="w-4 h-4 shrink-0" />
-          
-          <div class="flex-1 min-w-0">
-            <div class="text-sm truncate">{{ bookmark.displayName }}</div>
-            <div class="text-xs text-muted-foreground">
-              {{ bookmark.icon?.includes('folder') ? '文件夹' : '文件' }}
+          <div
+            class="group flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer"
+            @click="$emit('select', bookmark)"
+          >
+            <component :is="getBookmarkIcon(bookmark)" class="w-4 h-4 shrink-0" />
+
+            <div class="flex-1 min-w-0">
+              <div class="text-sm truncate">{{ bookmark.displayName }}</div>
+              <div class="text-xs text-muted-foreground">
+                {{ bookmark.icon?.includes('folder') ? '文件夹' : '文件' }}
+              </div>
             </div>
           </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-6 w-6 opacity-0 group-hover:opacity-100"
-                @click.stop
-              >
-                <MoreVertical class="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem @click.stop="$emit('rename', bookmark)">
-                <Pencil class="mr-2 h-4 w-4" />
-                重命名
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                @click.stop="$emit('move-up', bookmark)"
-                :disabled="isFirst(bookmark)"
-              >
-                <ArrowUp class="mr-2 h-4 w-4" />
-                上移
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                @click.stop="$emit('move-down', bookmark)"
-                :disabled="isLast(bookmark)"
-              >
-                <ArrowDown class="mr-2 h-4 w-4" />
-                下移
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                class="text-destructive"
-                @click.stop="$emit('remove', bookmark)"
-              >
-                <Trash2 class="mr-2 h-4 w-4" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        </ActionableWrapper>
       </div>
 
       <!-- Empty State -->
@@ -88,17 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Bookmark, Folder, FileText, MoreVertical, Pencil, ArrowUp, ArrowDown, Trash2 } from 'lucide-vue-next';
-import { Button } from '@dailyuse/ui-vue-shadcn';
+import { Bookmark, Folder, FileText, Pencil, ArrowUp, ArrowDown, Trash2 } from 'lucide-vue-next';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@dailyuse/ui-vue-shadcn';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 import type { ResourceBookmarkClientDTO as BookmarkType } from '@dailyuse/contracts/repository';
 
 interface Props {
@@ -124,12 +81,36 @@ function getBookmarkIcon(bookmark: BookmarkType) {
   return FileText;
 }
 
-function isFirst(bookmark: BookmarkType): boolean {
-  return props.bookmarks[0]?.id === bookmark.id;
-}
-
-function isLast(bookmark: BookmarkType): boolean {
-  const bookmarks = props.bookmarks;
-  return bookmarks[bookmarks.length - 1]?.id === bookmark.id;
+function getBookmarkActions(bookmark: BookmarkType, index: number): MenuAction[] {
+  return [
+    {
+      key: 'rename',
+      label: menuLabel('rename'),
+      icon: Pencil,
+      handler: () => emit('rename', bookmark),
+    },
+    {
+      key: 'move-up',
+      label: menuLabel('moveUp'),
+      icon: ArrowUp,
+      disabled: index === 0,
+      handler: () => emit('move-up', bookmark),
+    },
+    {
+      key: 'move-down',
+      label: menuLabel('moveDown'),
+      icon: ArrowDown,
+      disabled: index === props.bookmarks.length - 1,
+      handler: () => emit('move-down', bookmark),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => emit('remove', bookmark),
+    },
+  ];
 }
 </script>

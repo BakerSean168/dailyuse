@@ -1,209 +1,178 @@
 <template>
-  <Card
-    class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-    :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
-  >
-    <!-- 卡片头部 -->
-    <CardHeader class="template-header border-b border-border/10 p-4 pb-3">
-      <div class="flex items-start justify-between">
-        <div class="flex flex-col gap-2 flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <!-- Priority Indicator Icon - Story 2.4 -->
-            <div
-              v-if="(template.priority ?? 0) >= 80"
-              class="priority-indicator flex items-center shrink-0"
-            >
-              <component
-                :is="getIndicatorIconComponent(template.priority ?? 0)"
-                :class="[getIndicatorClass(template.priority ?? 0), 'h-5 w-5']"
-                :style="{ color: getIndicatorColor(template.priority ?? 0) }"
-              />
+  <ActionableWrapper :actions="menuActions">
+    <Card
+      class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
+    >
+      <!-- 卡片头部 -->
+      <CardHeader class="template-header border-b border-border/10 p-4 pb-3">
+        <div class="flex items-start justify-between">
+          <div class="flex flex-col gap-2 flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <!-- Priority Indicator Icon - Story 2.4 -->
+              <div
+                v-if="(template.priority ?? 0) >= 80"
+                class="priority-indicator flex items-center shrink-0"
+              >
+                <component
+                  :is="getIndicatorIconComponent(template.priority ?? 0)"
+                  :class="[getIndicatorClass(template.priority ?? 0), 'h-5 w-5']"
+                  :style="{ color: getIndicatorColor(template.priority ?? 0) }"
+                />
+              </div>
+
+              <CardTitle class="text-lg font-semibold truncate">{{ template.title }}</CardTitle>
             </div>
 
-            <CardTitle class="text-lg font-semibold truncate">{{ template.title }}</CardTitle>
-          </div>
-
-          <div class="flex flex-wrap gap-2 items-center">
-            <Badge
-              :variant="template.isActive ? 'default' : 'secondary'"
-              :class="getTemplateStatusBadgeClass(template)"
-              class="text-xs"
-            >
-              <component :is="getTemplateStatusIconComponent(template)" class="h-3 w-3 mr-1" />
-              {{ getTemplateStatusText(template) }}
-            </Badge>
-            <Badge
-              variant="outline"
-              :class="getImportanceBadgeClass(template.importance)"
-              class="text-xs"
-            >
-              <Flag class="h-3 w-3 mr-1" />
-              {{ template.importanceText }}
-            </Badge>
-            <!-- Story 2.3: Urgency chip removed - Priority now computed automatically -->
-            <!-- Priority Score Chip - Story 2.4 -->
-            <Badge :class="getPriorityBadgeClass(template.priority ?? 0)" class="text-xs">
-              <Flame class="h-3 w-3 mr-1" />
-              {{ Math.round(template.priority ?? 0) }}/100
-            </Badge>
+            <div class="flex flex-wrap gap-2 items-center">
+              <Badge
+                :variant="template.isActive ? 'default' : 'secondary'"
+                :class="getTemplateStatusBadgeClass(template)"
+                class="text-xs"
+              >
+                <component :is="getTemplateStatusIconComponent(template)" class="h-3 w-3 mr-1" />
+                {{ getTemplateStatusText(template) }}
+              </Badge>
+              <Badge
+                variant="outline"
+                :class="getImportanceBadgeClass(template.importance)"
+                class="text-xs"
+              >
+                <Flag class="h-3 w-3 mr-1" />
+                {{ template.importanceText }}
+              </Badge>
+              <!-- Priority Score Chip - Story 2.4 -->
+              <Badge :class="getPriorityBadgeClass(template.priority ?? 0)" class="text-xs">
+                <Flame class="h-3 w-3 mr-1" />
+                {{ Math.round(template.priority ?? 0) }}/100
+              </Badge>
+            </div>
           </div>
         </div>
+      </CardHeader>
 
-        <!-- 操作按钮 -->
-        <div class="flex gap-1 shrink-0 ml-2">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button
-                data-testid="task-card-edit-button"
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8"
-                @click="handleEdit"
-              >
-                <Pencil class="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>编辑模板</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button
-                data-testid="task-card-delete-button"
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8 text-destructive hover:text-destructive"
-                @click="handleDelete"
-              >
-                <Trash2 class="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>删除模板</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
-    </CardHeader>
+      <!-- 卡片内容 -->
+      <CardContent class="p-4">
+        <!-- 描述 -->
+        <p class="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2 min-h-[2.7rem]">
+          {{ template.description || '暂无描述' }}
+        </p>
 
-    <!-- 卡片内容 -->
-    <CardContent class="p-4">
-      <!-- 描述 -->
-      <p class="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2 min-h-[2.7rem]">
-        {{ template.description || '暂无描述' }}
-      </p>
-
-      <!-- 元信息 -->
-      <div class="flex flex-col gap-3">
-        <!-- 日期范围 -->
-        <div class="flex items-center gap-2">
-          <Calendar class="h-4 w-4 shrink-0 text-primary" />
-          <span class="text-sm text-muted-foreground">
-            开始于 {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
-          </span>
-        </div>
-
-        <!-- 时间范围 -->
-        <div class="flex items-center gap-2">
-          <Clock class="h-4 w-4 shrink-0 text-blue-500" />
-          <span class="text-sm text-muted-foreground">
-            {{ timeLabel }}
-          </span>
-        </div>
-
-        <!-- 重复模式 -->
-        <div class="flex items-center gap-2">
-          <RefreshCw class="h-4 w-4 shrink-0 text-green-500" />
-          <span class="text-sm text-muted-foreground">
-            {{ template.recurrenceText }}
-          </span>
-        </div>
-
-        <!-- 分类和标签 -->
-        <div class="flex items-center gap-2">
-          <Tag class="h-4 w-4 shrink-0 text-purple-500" />
-          <span class="text-sm text-muted-foreground">
-            <span v-if="template.tags.length > 0" class="italic opacity-70">
-              · {{ template.tags.slice(0, 2).join(', ') }}
-              <span v-if="template.tags.length > 2">等{{ template.tags.length }}个标签</span>
+        <!-- 元信息 -->
+        <div class="flex flex-col gap-3">
+          <!-- 日期范围 -->
+          <div class="flex items-center gap-2">
+            <Calendar class="h-4 w-4 shrink-0 text-primary" />
+            <span class="text-sm text-muted-foreground">
+              开始于 {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
             </span>
+          </div>
+
+          <!-- 时间范围 -->
+          <div class="flex items-center gap-2">
+            <Clock class="h-4 w-4 shrink-0 text-blue-500" />
+            <span class="text-sm text-muted-foreground">
+              {{ timeLabel }}
+            </span>
+          </div>
+
+          <!-- 重复模式 -->
+          <div class="flex items-center gap-2">
+            <RefreshCw class="h-4 w-4 shrink-0 text-green-500" />
+            <span class="text-sm text-muted-foreground">
+              {{ template.recurrenceText }}
+            </span>
+          </div>
+
+          <!-- 分类和标签 -->
+          <div class="flex items-center gap-2">
+            <Tag class="h-4 w-4 shrink-0 text-purple-500" />
+            <span class="text-sm text-muted-foreground">
+              <span v-if="template.tags && template.tags.length > 0" class="italic opacity-70">
+                · {{ template.tags.slice(0, 2).join(', ') }}
+                <span v-if="template.tags.length > 2">等{{ template.tags.length }}个标签</span>
+              </span>
+            </span>
+          </div>
+
+          <!-- 关联目标 -->
+          <div v-if="template.goalBinding" class="flex items-center gap-2">
+            <Target class="h-4 w-4 shrink-0 text-yellow-500" />
+            <span class="text-sm text-muted-foreground"> 关联目标 </span>
+          </div>
+        </div>
+
+        <!-- 关键结果标签 -->
+        <div v-if="template.goalBinding" class="flex flex-wrap gap-1 mt-3">
+          <Badge variant="outline" class="text-xs text-primary border-primary">
+            <Target class="h-3 w-3 mr-1" />
+            {{ getGoalBindingName(template.goalBinding) }}
+          </Badge>
+        </div>
+
+        <!-- 统计信息 -->
+        <div v-if="(template.instanceCount ?? 0) > 0" class="mt-3 rounded-lg bg-muted/30 p-3">
+          <Separator class="mb-2" />
+          <div class="flex justify-between gap-4 flex-wrap">
+            <div class="flex flex-col items-center min-w-[60px]">
+              <span class="text-xs text-muted-foreground mb-1">总次数：</span>
+              <span class="text-sm font-semibold text-primary">{{ template.instanceCount }}</span>
+            </div>
+            <div class="flex flex-col items-center min-w-[60px]">
+              <span class="text-xs text-muted-foreground mb-1">完成率：</span>
+              <span class="text-sm font-semibold text-primary"
+                >{{ Math.round((template.completionRate ?? 0) * 100) }}%</span
+              >
+            </div>
+          </div>
+        </div>
+      </CardContent>
+
+      <!-- 卡片底部操作 -->
+      <CardFooter class="px-4 py-3 border-t border-border/10 bg-muted/30 flex items-center">
+        <Button
+          v-if="template.isActive"
+          data-testid="task-card-pause-button"
+          variant="outline"
+          size="sm"
+          @click="handlePauseTemplate"
+        >
+          <Pause class="h-4 w-4 mr-1" />
+          暂停
+        </Button>
+        <Button
+          v-else-if="template.isPaused"
+          data-testid="task-card-resume-button"
+          variant="outline"
+          size="sm"
+          class="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+          @click="handleResume"
+        >
+          <Play class="h-4 w-4 mr-1" />
+          恢复
+        </Button>
+        <Button
+          v-else-if="template.status === 'ARCHIVED'"
+          data-testid="task-card-activate-button"
+          variant="outline"
+          size="sm"
+          class="border-blue-500 text-blue-600 hover:bg-blue-50"
+          @click="handleActivateTemplate"
+        >
+          <Play class="h-4 w-4 mr-1" />
+          激活
+        </Button>
+
+        <Separator orientation="vertical" class="mx-2 h-6" />
+
+        <div class="flex flex-col items-end ml-auto">
+          <span class="text-xs text-muted-foreground">
+            创建于 {{ template.formattedCreatedAt }}
           </span>
         </div>
-
-        <!-- 关联目标 -->
-        <div v-if="template.goalBinding" class="flex items-center gap-2">
-          <Target class="h-4 w-4 shrink-0 text-yellow-500" />
-          <span class="text-sm text-muted-foreground"> 关联目标 </span>
-        </div>
-      </div>
-
-      <!-- 关键结果标签 -->
-      <div v-if="template.goalBinding" class="flex flex-wrap gap-1 mt-3">
-        <Badge variant="outline" class="text-xs text-primary border-primary">
-          <Target class="h-3 w-3 mr-1" />
-          {{ getGoalBindingName(template.goalBinding) }}
-        </Badge>
-      </div>
-
-      <!-- 统计信息 -->
-      <div v-if="template.instanceCount > 0" class="mt-3 rounded-lg bg-muted/30 p-3">
-        <Separator class="mb-2" />
-        <div class="flex justify-between gap-4 flex-wrap">
-          <div class="flex flex-col items-center min-w-[60px]">
-            <span class="text-xs text-muted-foreground mb-1">总次数：</span>
-            <span class="text-sm font-semibold text-primary">{{ template.instanceCount }}</span>
-          </div>
-          <div class="flex flex-col items-center min-w-[60px]">
-            <span class="text-xs text-muted-foreground mb-1">完成率：</span>
-            <span class="text-sm font-semibold text-primary"
-              >{{ Math.round(template.completionRate * 100) }}%</span
-            >
-          </div>
-        </div>
-      </div>
-    </CardContent>
-
-    <!-- 卡片底部操作 -->
-    <CardFooter class="px-4 py-3 border-t border-border/10 bg-muted/30 flex items-center">
-      <Button
-        v-if="template.isActive"
-        data-testid="task-card-pause-button"
-        variant="outline"
-        size="sm"
-        @click="handlePauseTemplate"
-      >
-        <Pause class="h-4 w-4 mr-1" />
-        暂停
-      </Button>
-      <Button
-        v-else-if="template.isPaused"
-        data-testid="task-card-resume-button"
-        variant="outline"
-        size="sm"
-        class="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
-        @click="handleResume"
-      >
-        <Play class="h-4 w-4 mr-1" />
-        恢复
-      </Button>
-      <Button
-        v-else-if="template.status === 'ARCHIVED'"
-        data-testid="task-card-activate-button"
-        variant="outline"
-        size="sm"
-        class="border-blue-500 text-blue-600 hover:bg-blue-50"
-        @click="handleActivateTemplate"
-      >
-        <Play class="h-4 w-4 mr-1" />
-        激活
-      </Button>
-
-      <Separator orientation="vertical" class="mx-2 h-6" />
-
-      <div class="flex flex-col items-end ml-auto">
-        <span class="text-xs text-muted-foreground">
-          创建于 {{ template.formattedCreatedAt }}
-        </span>
-      </div>
-    </CardFooter>
-  </Card>
+      </CardFooter>
+    </Card>
+  </ActionableWrapper>
 </template>
 
 <script setup lang="ts">
@@ -211,6 +180,8 @@ import { computed } from 'vue';
 import { format } from 'date-fns';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
+import { ActionableWrapper, menuLabel } from '../../../../components/shared';
+import type { MenuAction } from '../../../../components/shared';
 import {
   Card,
   CardHeader,
@@ -220,9 +191,6 @@ import {
   Badge,
   Button,
   Separator,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
 } from '@dailyuse/ui-vue-shadcn';
 import {
   Pencil,
@@ -280,6 +248,24 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+// --- ActionableWrapper menu actions ---
+const menuActions = computed<MenuAction[]>(() => [
+  {
+    key: 'edit',
+    label: menuLabel('edit'),
+    icon: Pencil,
+    handler: handleEdit,
+  },
+  {
+    key: 'delete',
+    label: menuLabel('delete'),
+    icon: Trash2,
+    destructive: true,
+    separator: true,
+    handler: handleDelete,
+  },
+]);
+
 // 状态相关方法
 const getTemplateStatusBadgeClass = (template: TaskTemplateViewModel) => {
   if (template.isActive) return 'bg-green-100 text-green-800 border-green-200';
@@ -302,7 +288,7 @@ const getTemplateStatusText = (template: TaskTemplateViewModel) => {
   return template.statusText || template.status;
 };
 
-const getImportanceBadgeClass = (importance: ImportanceLevel) => {
+const getImportanceBadgeClass = (importance: string | undefined) => {
   switch (importance) {
     case ImportanceLevel.Trivial:
       return 'border-gray-300 text-gray-600';
@@ -390,17 +376,17 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
 const timeLabel = computed(() => {
   const timeConfig = props.template.timeConfig;
 
-  if (timeConfig.timeType === 'ALL_DAY') {
+  if (timeConfig.timeType === 'AllDay') {
     return '全天';
   }
 
-  if (timeConfig.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
+  if (timeConfig.timeType === 'TimePoint' && timeConfig.timePoint != null) {
     const hours = Math.floor(timeConfig.timePoint / 60);
     const minutes = timeConfig.timePoint % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 
-  if (timeConfig.timeType === 'TIME_RANGE' && timeConfig.timeRange) {
+  if (timeConfig.timeType === 'TimeRange' && timeConfig.timeRange) {
     const startHours = Math.floor(timeConfig.timeRange.start / 60);
     const startMinutes = timeConfig.timeRange.start % 60;
     const endHours = Math.floor(timeConfig.timeRange.end / 60);

@@ -12,10 +12,20 @@ import {
   createMockReminderGroup,
   createMockReminderGroupList,
 } from '@dailyuse/contracts/mocks';
+import type {
+  ReminderTemplateClientDTO,
+  ReminderGroupClientDTO,
+} from '@dailyuse/contracts/reminder';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const TEMPLATES = `${API_BASE}/reminders/templates`;
 const GROUPS = `${API_BASE}/reminder-groups`;
+
+const toTemplateId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as ReminderTemplateClientDTO['id'];
+
+const toGroupId = (p: string | readonly string[] | undefined) =>
+  (Array.isArray(p) ? p[0] : (p ?? '')) as ReminderGroupClientDTO['id'];
 
 export const reminderHandlers = [
   // ============ Templates ============
@@ -71,7 +81,7 @@ export const reminderHandlers = [
       code: 200,
       message: 'Success',
       data: {
-        templateId: params.id as string,
+        templateId: toTemplateId(params['id']),
         hasSchedule: true,
         nextExecutionTime: Date.now() + 3600000,
         lastExecutionTime: Date.now() - 3600000,
@@ -86,7 +96,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Toggled',
-      data: createMockReminderTemplate({ id: params.id as string }),
+      data: createMockReminderTemplate({ id: toTemplateId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -96,7 +106,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Moved',
-      data: createMockReminderTemplate({ id: params.templateId as string }),
+      data: createMockReminderTemplate({ id: toTemplateId(params['templateId']) }),
       timestamp: Date.now(),
     });
   }),
@@ -106,7 +116,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockReminderTemplate({ id: params.id as string }),
+      data: createMockReminderTemplate({ id: toTemplateId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -117,7 +127,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockReminderTemplate({ id: params.id as string, ...(body as object) }),
+      data: createMockReminderTemplate({ id: toTemplateId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
@@ -128,7 +138,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockReminderTemplate({ id: params.id as string, ...(body as object) }),
+      data: createMockReminderTemplate({ id: toTemplateId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
@@ -197,7 +207,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Toggled',
-      data: createMockReminderGroup({ id: params.id as string }),
+      data: createMockReminderGroup({ id: toGroupId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -207,7 +217,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Toggled',
-      data: createMockReminderGroup({ id: params.id as string }),
+      data: createMockReminderGroup({ id: toGroupId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -217,7 +227,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: createMockReminderGroup({ id: params.id as string }),
+      data: createMockReminderGroup({ id: toGroupId(params['id']) }),
       timestamp: Date.now(),
     });
   }),
@@ -228,7 +238,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockReminderGroup({ id: params.id as string, ...(body as object) }),
+      data: createMockReminderGroup({ id: toGroupId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),
@@ -239,7 +249,7 @@ export const reminderHandlers = [
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockReminderGroup({ id: params.id as string, ...(body as object) }),
+      data: createMockReminderGroup({ id: toGroupId(params['id']), ...(body as object) }),
       timestamp: Date.now(),
     });
   }),

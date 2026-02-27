@@ -54,6 +54,35 @@ import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
 
+function createBlankTemplate(): TaskTemplateViewModel {
+  return {
+    id: '',
+    title: '',
+    description: '',
+    status: 'ACTIVE',
+    isActive: true,
+    isPaused: false,
+    isArchived: false,
+    importance: 'Moderate',
+    priority: 0,
+    tags: [],
+    goalBinding: null,
+    timeConfig: {
+      timeType: 'AllDay',
+      timePoint: null,
+      timeRange: null,
+      startDate: undefined,
+    },
+    recurrenceRule: null,
+    reminderConfig: null,
+    instanceCount: 0,
+    completionRate: 0,
+    taskType: 'RECURRING',
+    folderId: null,
+    color: null,
+  };
+}
+
 interface Props {
   modelValue: boolean;
   template?: TaskTemplateViewModel | null;
@@ -75,7 +104,7 @@ const emit = defineEmits<{
 
 const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
 const localTemplate = ref<TaskTemplateViewModel | null>(
-  props.template ? { ...props.template } : null,
+  props.template ? { ...props.template } : props.mode === 'create' ? createBlankTemplate() : null,
 );
 const isValid = ref(false);
 
@@ -87,7 +116,11 @@ const canSave = computed(() => !!localTemplate.value && isValid.value && !saving
 watch(
   () => props.template,
   (template) => {
-    localTemplate.value = template ? { ...template } : null;
+    localTemplate.value = template
+      ? { ...template }
+      : props.mode === 'create'
+        ? createBlankTemplate()
+        : null;
   },
   { immediate: true, deep: true },
 );

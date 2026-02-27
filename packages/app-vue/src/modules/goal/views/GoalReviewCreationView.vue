@@ -119,6 +119,7 @@ async function handleSubmit() {
     return;
   }
   const result = await createReview(goalId, {
+    goalId,
     reviewType: form.reviewType,
     rating: form.rating,
     title: form.title || `${form.reviewType} 复盘`,

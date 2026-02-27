@@ -3,12 +3,16 @@
     <div class="flex-1 flex items-center justify-center overflow-auto p-6">
       <!-- Image Viewer -->
       <div v-if="fileType === 'image'" class="flex flex-col items-center max-w-full">
-        <img :src="filePath" :alt="fileName" @load="handleImageLoad" @error="handleImageError" class="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg shadow-lg" />
+        <img
+          :src="filePath"
+          :alt="fileName"
+          @load="handleImageLoad"
+          @error="handleImageError"
+          class="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg shadow-lg"
+        />
 
         <div v-if="imageInfo" class="flex gap-2 mt-4">
-          <Badge variant="secondary">
-            {{ imageInfo.width }} × {{ imageInfo.height }}
-          </Badge>
+          <Badge variant="secondary"> {{ imageInfo.width }} × {{ imageInfo.height }} </Badge>
           <Badge variant="secondary">
             {{ imageInfo.size }}
           </Badge>
@@ -17,7 +21,12 @@
 
       <!-- Video Player -->
       <div v-else-if="fileType === 'video'" class="w-full max-w-5xl">
-        <video :src="filePath" controls @loadedmetadata="handleVideoLoad" class="w-full max-h-[calc(100vh-200px)] rounded-lg shadow-lg">
+        <video
+          :src="filePath"
+          controls
+          @loadedmetadata="handleVideoLoad"
+          class="w-full max-h-[calc(100vh-200px)] rounded-lg shadow-lg"
+        >
           您的浏览器不支持视频播放
         </video>
       </div>
@@ -40,12 +49,19 @@
     </div>
 
     <!-- Loading Overlay -->
-    <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+    <div
+      v-if="loading"
+      class="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+    >
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>
 
     <!-- Error Alert -->
-    <Alert v-if="error" variant="destructive" class="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-[90%]">
+    <Alert
+      v-if="error"
+      variant="destructive"
+      class="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-[90%]"
+    >
       <AlertCircle class="h-4 w-4" />
       <AlertDescription>{{ error }}</AlertDescription>
     </Alert>
@@ -92,10 +108,8 @@ function handleImageError() {
   error.value = '图片加载失败';
 }
 
-function handleVideoLoad(event: Event) {
+function handleVideoLoad(_event: Event) {
   loading.value = false;
-  const video = event.target as HTMLVideoElement;
-  console.log('Video loaded:', video.duration);
 }
 
 function formatFileSize(bytes: number): string {

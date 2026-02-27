@@ -142,7 +142,7 @@ const criticalPath = computed(() => {
   });
 
   const path: string[] = [];
-  let cursor = endNode;
+  let cursor: string | null = endNode;
   while (cursor) {
     path.unshift(cursor);
     cursor = predecessor.get(cursor) || null;

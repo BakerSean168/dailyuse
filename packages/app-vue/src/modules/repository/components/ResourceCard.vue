@@ -3,73 +3,56 @@
 -->
 
 <template>
-  <Card class="hover:shadow-lg transition-all duration-300 cursor-pointer group">
-    <CardHeader class="pb-3">
-      <div class="flex items-start justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="getIconBgClass()">
-            <component :is="getResourceIcon()" class="h-5 w-5" :class="getIconClass()" />
-          </div>
-          <div>
-            <CardTitle class="text-lg mb-1">{{ resource.name }}</CardTitle>
-            <Badge :variant="getTypeVariant()">
-              <component :is="getResourceIcon()" class="mr-1 h-3 w-3" />
-              {{ getTypeLabel() }}
-            </Badge>
+  <ActionableWrapper :actions="menuActions">
+    <Card class="hover:shadow-lg transition-all duration-300 cursor-pointer">
+      <CardHeader class="pb-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center"
+              :class="getIconBgClass()"
+            >
+              <component :is="getResourceIcon()" class="h-5 w-5" :class="getIconClass()" />
+            </div>
+            <div>
+              <CardTitle class="text-lg mb-1">{{ resource.name }}</CardTitle>
+              <Badge :variant="getTypeVariant()">
+                <component :is="getResourceIcon()" class="mr-1 h-3 w-3" />
+                {{ getTypeLabel() }}
+              </Badge>
+            </div>
           </div>
         </div>
+      </CardHeader>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="h-8 w-8 opacity-0 group-hover:opacity-100">
-              <MoreVertical class="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="$emit('view', resource)">
-              <Eye class="mr-2 h-4 w-4" />
-              查看
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="$emit('edit', resource)">
-              <Edit3 class="mr-2 h-4 w-4" />
-              编辑
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-destructive" @click="$emit('delete', resource)">
-              <Trash2 class="mr-2 h-4 w-4" />
-              删除
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </CardHeader>
+      <CardContent class="pb-3">
+        <div class="flex items-center gap-4 text-xs text-muted-foreground">
+          <Badge variant="outline">
+            <File class="mr-1 h-3 w-3" />
+            {{ formatFileSize(resource.size) }}
+          </Badge>
+          <span>创建于 {{ formatDate(resource.createdAt) }}</span>
+        </div>
+      </CardContent>
 
-    <CardContent class="pb-3">
-      <div class="flex items-center gap-4 text-xs text-muted-foreground">
-        <Badge variant="outline">
-          <File class="mr-1 h-3 w-3" />
-          {{ formatFileSize(resource.size) }}
-        </Badge>
-        <span>创建于 {{ formatDate(resource.createdAt) }}</span>
-      </div>
-    </CardContent>
-
-    <CardFooter class="pt-3 border-t bg-muted/30">
-      <div class="flex gap-2 ml-auto">
-        <Button variant="ghost" size="sm" @click.stop="$emit('view', resource)">
-          <Eye class="mr-2 h-4 w-4" />
-          查看
-        </Button>
-        <Button variant="ghost" size="sm" @click.stop="$emit('edit', resource)">
-          <Edit3 class="mr-2 h-4 w-4" />
-          编辑
-        </Button>
-      </div>
-    </CardFooter>
-  </Card>
+      <CardFooter class="pt-3 border-t bg-muted/30">
+        <div class="flex gap-2 ml-auto">
+          <Button variant="ghost" size="sm" @click.stop="$emit('view', resource)">
+            <Eye class="mr-2 h-4 w-4" />
+            查看
+          </Button>
+          <Button variant="ghost" size="sm" @click.stop="$emit('edit', resource)">
+            <Pencil class="mr-2 h-4 w-4" />
+            编辑
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  </ActionableWrapper>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import {
   File,
   Image,
@@ -78,21 +61,21 @@ import {
   FileText,
   Link2,
   Code,
-  MoreVertical,
   Eye,
-  Edit3,
+  Pencil,
   Trash2,
 } from 'lucide-vue-next';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  Button,
+  Badge,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from '@dailyuse/ui-vue-shadcn';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 interface Props {
@@ -106,6 +89,29 @@ const emit = defineEmits<{
   edit: [resource: ResourceClientDTO];
   delete: [resource: ResourceClientDTO];
 }>();
+
+const menuActions = computed<MenuAction[]>(() => [
+  {
+    key: 'view',
+    label: menuLabel('view'),
+    icon: Eye,
+    handler: () => emit('view', props.resource),
+  },
+  {
+    key: 'edit',
+    label: menuLabel('edit'),
+    icon: Pencil,
+    handler: () => emit('edit', props.resource),
+  },
+  {
+    key: 'delete',
+    label: menuLabel('delete'),
+    icon: Trash2,
+    destructive: true,
+    separator: true,
+    handler: () => emit('delete', props.resource),
+  },
+]);
 
 function getResourceIcon() {
   const type = (props.resource as any).type;

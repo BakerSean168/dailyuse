@@ -5,37 +5,41 @@
 
 <template>
   <div class="tree-node-item">
-    <div
-      class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
-      :class="{ 'bg-accent': isSelected }"
-      @click="handleClick"
-      @dblclick="handleDoubleClick"
-      @contextmenu.prevent="handleContextMenu"
-    >
-      <!-- Expand/Collapse (folders only) -->
-      <Button
-        v-if="node.type === 'folder'"
-        variant="ghost"
-        size="icon"
-        class="h-5 w-5 shrink-0"
-        @click.stop="$emit('toggle', node)"
+    <ActionableWrapper :actions="nodeActions" :show-more-button="false">
+      <div
+        class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+        :class="{ 'bg-accent': isSelected }"
+        @click="handleClick"
+        @dblclick="handleDoubleClick"
       >
-        <ChevronRight class="h-4 w-4 transition-transform" :class="{ 'rotate-90': isExpanded }" />
-      </Button>
-      <span v-else class="w-5" />
+        <!-- Expand/Collapse (folders only) -->
+        <Button
+          v-if="node.type === 'folder'"
+          variant="ghost"
+          size="icon"
+          class="h-5 w-5 shrink-0"
+          @click.stop="$emit('toggle', node)"
+        >
+          <ChevronRight class="h-4 w-4 transition-transform" :class="{ 'rotate-90': isExpanded }" />
+        </Button>
+        <span v-else class="w-5" />
 
-      <!-- Icon -->
-      <component :is="getNodeIcon()" :class="getIconClass()" class="w-4 h-4 shrink-0" />
+        <!-- Icon -->
+        <component :is="getNodeIcon()" :class="getIconClass()" class="w-4 h-4 shrink-0" />
 
-      <!-- Name -->
-      <span class="text-sm truncate flex-1" :title="node.path">{{ node.name }}</span>
+        <!-- Name -->
+        <span class="text-sm truncate flex-1" :title="node.path">{{ node.name }}</span>
 
-      <!-- File Info (optional) -->
-      <span v-if="node.type === 'file' && showFileInfo" class="text-xs text-muted-foreground shrink-0">
-        <span v-if="node.size">{{ formatFileSize(node.size) }}</span>
-        <span v-if="node.updatedAt" class="ml-2">{{ formatDate(node.updatedAt) }}</span>
-      </span>
-    </div>
+        <!-- File Info (optional) -->
+        <span
+          v-if="node.type === 'file' && showFileInfo"
+          class="text-xs text-muted-foreground shrink-0"
+        >
+          <span v-if="node.size">{{ formatFileSize(node.size) }}</span>
+          <span v-if="node.updatedAt" class="ml-2">{{ formatDate(node.updatedAt) }}</span>
+        </span>
+      </div>
+    </ActionableWrapper>
 
     <!-- Children (recursive) -->
     <div v-if="node.type === 'folder' && isExpanded && node.children" class="ml-4">
@@ -50,7 +54,9 @@
         @select="$emit('select', $event)"
         @toggle="$emit('toggle', $event)"
         @open="$emit('open', $event)"
-        @context-menu="$emit('context-menu', $event)"
+        @rename="$emit('rename', $event)"
+        @delete="$emit('delete', $event)"
+        @create-subfolder="$emit('create-subfolder', $event)"
       />
     </div>
   </div>
@@ -62,14 +68,20 @@ import {
   ChevronRight,
   Folder,
   FolderOpen,
+  FolderPlus,
   FileText,
   FileJson,
   FileCode,
   FileImage,
   File,
+  Pencil,
+  Trash2,
+  ExternalLink,
 } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { TreeNode } from '@dailyuse/contracts/repository';
+import { ActionableWrapper, menuLabel } from '../../../components/shared';
+import type { MenuAction } from '../../../components/shared';
 
 interface Props {
   node: TreeNode;
@@ -90,17 +102,71 @@ const emit = defineEmits<{
   select: [node: TreeNode];
   toggle: [node: TreeNode];
   open: [node: TreeNode];
-  'context-menu': [event: { node: TreeNode; mouseEvent: MouseEvent }];
+  rename: [node: TreeNode];
+  delete: [node: TreeNode];
+  'create-subfolder': [node: TreeNode];
 }>();
 
 const isSelected = computed(() => props.selectedId === props.node.id);
-const isExpanded = computed(() => props.node.type === 'folder' && props.expandedIds.includes(props.node.id));
+const isExpanded = computed(
+  () => props.node.type === 'folder' && props.expandedIds.includes(props.node.id),
+);
+
+const nodeActions = computed<MenuAction[]>(() => {
+  if (props.node.type === 'folder') {
+    return [
+      {
+        key: 'createSubfolder',
+        label: menuLabel('createSubfolder'),
+        icon: FolderPlus,
+        handler: () => emit('create-subfolder', props.node),
+      },
+      {
+        key: 'rename',
+        label: menuLabel('rename'),
+        icon: Pencil,
+        handler: () => emit('rename', props.node),
+      },
+      {
+        key: 'delete',
+        label: menuLabel('delete'),
+        icon: Trash2,
+        destructive: true,
+        separator: true,
+        handler: () => emit('delete', props.node),
+      },
+    ];
+  }
+
+  return [
+    {
+      key: 'open',
+      label: menuLabel('open'),
+      icon: ExternalLink,
+      handler: () => emit('open', props.node),
+    },
+    {
+      key: 'rename',
+      label: menuLabel('rename'),
+      icon: Pencil,
+      handler: () => emit('rename', props.node),
+    },
+    {
+      key: 'delete',
+      label: menuLabel('delete'),
+      icon: Trash2,
+      destructive: true,
+      separator: true,
+      handler: () => emit('delete', props.node),
+    },
+  ];
+});
 
 function getNodeIcon() {
   if (props.node.type === 'folder') {
     return isExpanded.value ? FolderOpen : Folder;
   }
-  
+
   const ext = props.node.extension?.toLowerCase();
   const iconMap: Record<string, any> = {
     md: FileText,
@@ -117,7 +183,7 @@ function getNodeIcon() {
     gif: FileImage,
     svg: FileImage,
   };
-  
+
   return iconMap[ext || ''] || File;
 }
 
@@ -125,7 +191,7 @@ function getIconClass() {
   if (props.node.type === 'folder') {
     return isExpanded.value ? 'text-primary' : 'text-muted-foreground';
   }
-  
+
   const ext = props.node.extension?.toLowerCase();
   const colorMap: Record<string, string> = {
     md: 'text-blue-500',
@@ -136,7 +202,7 @@ function getIconClass() {
     png: 'text-purple-500',
     jpg: 'text-purple-500',
   };
-  
+
   return colorMap[ext || ''] || 'text-muted-foreground';
 }
 
@@ -152,10 +218,6 @@ function handleDoubleClick() {
   }
 }
 
-function handleContextMenu(event: MouseEvent) {
-  emit('context-menu', { node: props.node, mouseEvent: event });
-}
-
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -167,11 +229,11 @@ function formatDate(date: Date | string): string {
   const now = new Date();
   const diff = now.getTime() - d.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
+
   if (days === 0) return '今天';
   if (days === 1) return '昨天';
   if (days < 7) return `${days} 天前`;
-  
+
   return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 }
 </script>
