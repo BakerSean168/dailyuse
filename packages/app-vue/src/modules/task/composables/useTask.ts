@@ -6,6 +6,7 @@
 
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { useTaskStore } from '../stores/taskStore';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -15,6 +16,7 @@ import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 export function useTask() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
   const store = useTaskStore();
+  const { t } = useI18n();
   const savingId = ref<string | null>(null);
 
   const templates = computed(() => store.templates);
@@ -29,7 +31,7 @@ export function useTask() {
 
   function handleError(message: string): void {
     store.setError(message);
-    toast.error('操作失败', { description: message });
+    toast.error(t('task.error.operationFailed'), { description: message });
   }
 
   // ========== Templates ==========
@@ -48,7 +50,7 @@ export function useTask() {
           result.data.total ?? 0,
         );
       } else {
-        handleError(result.error.message || '加载任务模板失败');
+        handleError(result.error.message || t('task.error.loadTemplatesFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -65,7 +67,7 @@ export function useTask() {
         store.setCurrentTemplate(dto);
         return dto;
       }
-      handleError(result.error.message || '加载任务模板失败');
+      handleError(result.error.message || t('task.error.loadTemplatesFailed'));
       return null;
     } finally {
       store.setLoading(false);
@@ -80,10 +82,10 @@ export function useTask() {
       if (result.ok) {
         const dto = result.data.toDTO();
         store.addTemplate(dto);
-        toast.success('任务创建成功');
+        toast.success(t('task.error.createSuccess'));
         return dto;
       }
-      handleError(result.error.message || '创建任务失败');
+      handleError(result.error.message || t('task.error.createFailed'));
       return null;
     } finally {
       savingId.value = null;
@@ -98,10 +100,10 @@ export function useTask() {
       if (result.ok) {
         const dto = result.data.toDTO();
         store.updateTemplate(dto);
-        toast.success('任务更新成功');
+        toast.success(t('task.error.updateSuccess'));
         return dto;
       }
-      handleError(result.error.message || '更新任务失败');
+      handleError(result.error.message || t('task.error.updateFailed'));
       return null;
     } finally {
       savingId.value = null;
@@ -115,10 +117,10 @@ export function useTask() {
       const result = await service.deleteTemplate(id);
       if (result.ok) {
         store.removeTemplate(id);
-        toast.success('任务删除成功');
+        toast.success(t('task.error.deleteSuccess'));
         return true;
       }
-      handleError(result.error.message || '删除任务失败');
+      handleError(result.error.message || t('task.error.deleteFailed'));
       return false;
     } finally {
       savingId.value = null;
@@ -130,10 +132,10 @@ export function useTask() {
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
-      toast.success('任务已激活');
+      toast.success(t('task.error.activateSuccess'));
       return dto;
     }
-    handleError(result.error.message || '激活任务失败');
+    handleError(result.error.message || t('task.error.activateFailed'));
     return null;
   }
 
@@ -142,10 +144,10 @@ export function useTask() {
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
-      toast.success('任务已暂停');
+      toast.success(t('task.error.pauseSuccess'));
       return dto;
     }
-    handleError(result.error.message || '暂停任务失败');
+    handleError(result.error.message || t('task.error.pauseFailed'));
     return null;
   }
 
@@ -154,10 +156,10 @@ export function useTask() {
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateTemplate(dto);
-      toast.success('任务已归档');
+      toast.success(t('task.error.archiveSuccess'));
       return dto;
     }
-    handleError(result.error.message || '归档任务失败');
+    handleError(result.error.message || t('task.error.archiveFailed'));
     return null;
   }
 
@@ -172,7 +174,7 @@ export function useTask() {
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));
       } else {
-        handleError(result.error.message || '加载任务实例失败');
+        handleError(result.error.message || t('task.error.loadInstancesFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -186,7 +188,7 @@ export function useTask() {
       store.updateInstance(dto);
       return dto;
     }
-    handleError(result.error.message || '开始任务失败');
+    handleError(result.error.message || t('task.error.startFailed'));
     return null;
   }
 
@@ -195,10 +197,10 @@ export function useTask() {
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
-      toast.success('任务完成');
+      toast.success(t('task.error.completeSuccess'));
       return dto;
     }
-    handleError(result.error.message || '完成任务失败');
+    handleError(result.error.message || t('task.error.completeFailed'));
     return null;
   }
 
@@ -207,10 +209,10 @@ export function useTask() {
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateInstance(dto);
-      toast.success('任务已跳过');
+      toast.success(t('task.error.skipSuccess'));
       return dto;
     }
-    handleError(result.error.message || '跳过任务失败');
+    handleError(result.error.message || t('task.error.skipFailed'));
     return null;
   }
 

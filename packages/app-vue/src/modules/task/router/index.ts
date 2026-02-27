@@ -9,7 +9,7 @@ export const taskRoutes: RouteRecordRaw[] = [
     path: '/tasks',
     name: 'tasks',
     meta: {
-      title: '任务管理',
+      title: 'task.route.management',
       showInNav: true,
       icon: 'mdi-check-circle',
       order: 2,
@@ -21,7 +21,7 @@ export const taskRoutes: RouteRecordRaw[] = [
         name: 'task-list',
         component: () => import('../views/TaskManagementView.vue'),
         meta: {
-          title: '任务管理',
+          title: 'task.route.management',
           requiresAuth: true,
         },
       },
@@ -30,7 +30,7 @@ export const taskRoutes: RouteRecordRaw[] = [
         name: 'task-dependency-demo',
         component: () => import('../views/DependencyValidationDemoView.vue'),
         meta: {
-          title: '依赖验证演示 (STORY-024)',
+          title: 'task.route.dependencyDemo',
           requiresAuth: true,
           showInNav: import.meta.env.DEV, // 仅开发环境显示
         },
@@ -40,7 +40,7 @@ export const taskRoutes: RouteRecordRaw[] = [
         name: 'task-detail',
         component: () => import('../views/TaskDetailView.vue'),
         meta: {
-          title: '任务详情',
+          title: 'task.route.detail',
           requiresAuth: true,
         },
         props: true,

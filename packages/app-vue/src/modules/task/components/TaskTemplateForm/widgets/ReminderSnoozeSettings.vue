@@ -5,13 +5,13 @@
       <div class="col-span-12">
         <div class="flex items-center gap-2">
           <Switch :checked="localSnooze.enabled" @update:checked="updateEnabled" />
-          <Label>允许稍后提醒</Label>
+          <Label>{{ t('task.reminderSnooze.allowSnooze') }}</Label>
         </div>
       </div>
 
       <template v-if="localSnooze.enabled">
         <div class="col-span-12 md:col-span-6">
-          <Label>稍后提醒间隔（分钟）</Label>
+          <Label>{{ t('task.reminderSnooze.snoozeInterval') }}</Label>
           <Input
             :model-value="localSnooze.interval"
             @update:model-value="updateInterval"
@@ -23,7 +23,7 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <Label>最大重复次数</Label>
+          <Label>{{ t('task.reminderSnooze.maxRepeats') }}</Label>
           <Input
             :model-value="localSnooze.maxCount"
             @update:model-value="updateMaxCount"
@@ -38,7 +38,7 @@
           <Alert>
             <Info class="h-4 w-4" />
             <AlertDescription>
-              稍后提醒功能允许用户在收到任务提醒时选择推迟提醒，系统会在设定的间隔时间后再次提醒
+              {{ t('task.reminderSnooze.alertText') }}
             </AlertDescription>
           </Alert>
         </div>
@@ -51,6 +51,9 @@
 import { computed } from 'vue';
 import { Switch, Label, Input, Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Info } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 本地 SnoozeConfig 类型定义 (此功能可能尚未实现)
 interface SnoozeConfig {

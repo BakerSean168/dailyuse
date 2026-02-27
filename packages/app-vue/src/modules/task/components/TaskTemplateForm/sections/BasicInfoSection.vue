@@ -4,7 +4,7 @@
     <CardHeader class="pb-2">
       <CardTitle class="flex items-center text-primary font-semibold">
         <Info class="mr-2 h-5 w-5" />
-        基础信息
+        {{ t('task.basicInfo.title') }}
       </CardTitle>
     </CardHeader>
     <CardContent>
@@ -18,24 +18,24 @@
       </Alert>
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
-          <Label for="task-template-title">任务标题</Label>
+          <Label for="task-template-title">{{ t('task.basicInfo.taskTitle') }}</Label>
           <Input
             id="task-template-title"
             v-model="title"
             data-testid="task-template-title-input"
-            placeholder="请输入任务标题"
+            :placeholder="t('task.basicInfo.titlePlaceholder')"
             maxlength="100"
             class="mt-1"
           />
         </div>
 
         <div class="col-span-12">
-          <Label for="task-template-description">任务描述</Label>
+          <Label for="task-template-description">{{ t('task.basicInfo.description') }}</Label>
           <Textarea
             id="task-template-description"
             v-model="description"
             data-testid="task-template-description-input"
-            placeholder="请输入任务描述（可选）"
+            :placeholder="t('task.basicInfo.descPlaceholder')"
             :rows="3"
             maxlength="1000"
             class="mt-1 resize-none"
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Card,
   CardHeader,
@@ -62,6 +63,9 @@ import {
 import { Info } from 'lucide-vue-next';
 import { useBasicInfoValidation } from '../../../composables/useBasicInfoValidation';
 import type { TaskTemplateViewModel } from '../../types';
+
+const { t } = useI18n();
+
 interface Props {
   modelValue: TaskTemplateViewModel;
 }

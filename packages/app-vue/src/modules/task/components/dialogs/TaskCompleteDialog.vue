@@ -21,7 +21,7 @@
       <DialogHeader class="bg-green-600 -m-6 mb-0 p-4 rounded-t-lg">
         <DialogTitle class="flex items-center text-white">
           <CheckCircle class="h-5 w-5 mr-2 text-white" />
-          完成任务
+          {{ t('task.complete.title') }}
         </DialogTitle>
       </DialogHeader>
 
@@ -41,17 +41,17 @@
             <div class="flex flex-col gap-2">
               <div class="flex items-center">
                 <Target class="h-4 w-4 mr-2 shrink-0" />
-                <strong class="mr-2">关联目标：</strong>
+                <strong class="mr-2">{{ t('task.complete.linkedGoal') }}</strong>
                 <span>{{ goalBinding.goalTitle }}</span>
               </div>
               <div class="flex items-center">
                 <Key class="h-4 w-4 mr-2 shrink-0" />
-                <strong class="mr-2">关键结果：</strong>
+                <strong class="mr-2">{{ t('task.complete.keyResult') }}</strong>
                 <span>{{ goalBinding.keyResultTitle }}</span>
               </div>
               <div class="flex items-center">
                 <Calculator class="h-4 w-4 mr-2 shrink-0" />
-                <strong class="mr-2">计算方式：</strong>
+                <strong class="mr-2">{{ t('task.complete.calcMethod') }}</strong>
                 <Badge
                   :class="getAggregationMethodBadgeClass(goalBinding.aggregationMethod)"
                   class="text-xs"
@@ -66,7 +66,7 @@
                 <div class="flex justify-between items-center">
                   <div class="flex items-center">
                     <CheckCircle class="h-4 w-4 mr-2" />
-                    <strong>当前进度</strong>
+                    <strong>{{ t('task.complete.currentProgress') }}</strong>
                   </div>
                   <Badge
                     :class="
@@ -79,17 +79,17 @@
                 </div>
 
                 <div class="flex justify-between items-center text-sm">
-                  <span class="text-muted-foreground">当前值：</span>
+                  <span class="text-muted-foreground">{{ t('task.complete.currentValue') }}</span>
                   <strong>{{ goalBinding.currentValue }} {{ goalBinding.unit || '' }}</strong>
                 </div>
 
                 <div class="flex justify-between items-center text-sm">
-                  <span class="text-muted-foreground">目标值：</span>
+                  <span class="text-muted-foreground">{{ t('task.complete.targetValue') }}</span>
                   <strong>{{ goalBinding.targetValue }} {{ goalBinding.unit || '' }}</strong>
                 </div>
 
                 <div class="flex justify-between items-center text-sm">
-                  <span class="text-muted-foreground">还需完成：</span>
+                  <span class="text-muted-foreground">{{ t('task.complete.remaining') }}</span>
                   <strong
                     :class="getRemainingClass(goalBinding.currentValue, goalBinding.targetValue)"
                   >
@@ -155,7 +155,7 @@
           >
             <AlertDescription>
               <div class="text-xs">
-                <strong>完成后预计：</strong>
+                <strong>{{ t('task.complete.afterCompletion') }}</strong>
                 {{ predictProgress() }}
               </div>
             </AlertDescription>
@@ -163,7 +163,9 @@
 
           <!-- 快捷值（可选） -->
           <div v-if="showQuickValues && quickValues.length > 0">
-            <div class="text-xs text-muted-foreground mb-2">快捷值：</div>
+            <div class="text-xs text-muted-foreground mb-2">
+              {{ t('task.complete.quickValues') }}
+            </div>
             <div class="flex flex-wrap gap-2">
               <Badge
                 v-for="value in quickValues"
@@ -183,25 +185,25 @@
           <AlertDescription>
             <div class="text-sm flex items-center gap-1">
               <Info class="h-4 w-4 shrink-0" />
-              此任务未关联目标，点击确认后将直接完成。
+              {{ t('task.complete.noGoalHint') }}
             </div>
           </AlertDescription>
         </Alert>
 
         <!-- 完成备注（可选） -->
         <div class="space-y-2">
-          <Label for="completion-note">完成备注（可选）</Label>
+          <Label for="completion-note">{{ t('task.complete.noteOptional') }}</Label>
           <Textarea
             id="completion-note"
             v-model="note"
-            placeholder="记录本次完成的情况..."
+            :placeholder="t('task.complete.notePlaceholder')"
             :rows="3"
           />
         </div>
 
         <!-- 实际耗时（可选） -->
         <div class="space-y-2">
-          <Label for="duration-input">实际耗时（可选）</Label>
+          <Label for="duration-input">{{ t('task.complete.actualTimeOptional') }}</Label>
           <div class="relative">
             <div class="absolute left-3 top-1/2 -translate-y-1/2">
               <Clock class="h-4 w-4 text-muted-foreground" />
@@ -212,18 +214,20 @@
               type="number"
               :min="0"
               :step="5"
-              placeholder="记录实际花费的时间（分钟）"
+              :placeholder="t('task.complete.actualTimePlaceholder')"
               class="pl-10 pr-12"
             />
             <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-              分钟
+              {{ t('task.complete.minuteUnit') }}
             </div>
           </div>
         </div>
       </div>
 
       <DialogFooter class="pt-4">
-        <Button variant="ghost" :disabled="isSubmitting" @click="cancel"> 取消 </Button>
+        <Button variant="ghost" :disabled="isSubmitting" @click="cancel">
+          {{ t('task.complete.cancel') }}
+        </Button>
         <Button
           :disabled="!isValid || isSubmitting"
           @click="confirm"
@@ -231,7 +235,7 @@
         >
           <Loader2 v-if="isSubmitting" class="h-4 w-4 mr-1 animate-spin" />
           <Check v-else class="h-4 w-4 mr-1" />
-          确认完成
+          {{ t('task.complete.confirm') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -241,6 +245,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { format } from 'date-fns';
+import { useI18n } from 'vue-i18n';
 import {
   AggregationMethod,
   type GoalClientDTO,
@@ -279,6 +284,8 @@ import {
   RefreshCw,
   Hash,
 } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 // ===================== 接口定义 =====================
 
@@ -366,29 +373,29 @@ const quickValues = computed(() => {
 // 根据 AggregationMethod 返回不同的标签
 const getInputLabel = (method?: AggregationMethod) => {
   if (!props.goalBinding) {
-    return '本次完成量';
+    return t('task.complete.amount');
   }
 
   switch (method) {
     case AggregationMethod.SUM:
-      return '本次完成量（将累加到当前进度）';
+      return t('task.complete.amountHintCumulative');
     case AggregationMethod.MAX:
-      return '本次达到的最高值';
+      return t('task.complete.amountHintMax');
     case AggregationMethod.AVERAGE:
-      return '本次的值（将计算平均值）';
+      return t('task.complete.amountHintAvg');
     case AggregationMethod.MIN:
-      return '本次的最小值';
+      return t('task.complete.amountHintMin');
     case AggregationMethod.LAST:
-      return '最新的值（将覆盖当前值）';
+      return t('task.complete.amountHintLatest');
     default:
-      return '本次完成量';
+      return t('task.complete.amount');
   }
 };
 
 // 输入提示
 const getInputHint = (method?: AggregationMethod) => {
   if (!props.goalBinding) {
-    return '请输入本次完成的数量';
+    return t('task.complete.inputPlaceholder');
   }
 
   const unit = props.goalBinding.unit || '单位';
@@ -454,17 +461,17 @@ const getAggregationMethodBadgeClass = (method?: AggregationMethod) => {
 const getAggregationMethodText = (method?: AggregationMethod) => {
   switch (method) {
     case AggregationMethod.SUM:
-      return '累加型';
+      return t('task.complete.cumulative');
     case AggregationMethod.MAX:
-      return '最大值';
+      return t('task.complete.max');
     case AggregationMethod.AVERAGE:
-      return '平均值';
+      return t('task.complete.avg');
     case AggregationMethod.MIN:
-      return '最小值';
+      return t('task.complete.min');
     case AggregationMethod.LAST:
-      return '最新值';
+      return t('task.complete.latest');
     default:
-      return '未知';
+      return t('task.complete.unknown');
   }
 };
 
@@ -475,11 +482,11 @@ const validateRecordValue = () => {
   }
 
   if (recordValue.value === null || recordValue.value === undefined) {
-    return '请输入完成值';
+    return t('task.complete.inputRequired');
   }
 
   if (recordValue.value < 0) {
-    return '值不能为负数';
+    return t('task.complete.negativeError');
   }
 
   return true;

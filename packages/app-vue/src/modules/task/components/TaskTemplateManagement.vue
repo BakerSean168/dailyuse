@@ -26,7 +26,7 @@
           @click="showDependencyDialog = true"
         >
           <Share2 class="h-4 w-4 mr-2" />
-          查看依赖关系图
+          {{ t('task.templateMgmt.viewDependencyGraph') }}
         </Button>
 
         <Button
@@ -38,7 +38,7 @@
           @click="showDeleteAllDialog = true"
         >
           <Trash2 class="h-4 w-4 mr-2" />
-          删除所有模板
+          {{ t('task.templateMgmt.deleteAll') }}
         </Button>
 
         <Button
@@ -47,7 +47,7 @@
           @click="emit('create-template')"
         >
           <Plus class="h-4 w-4 mr-2" />
-          创建新模板
+          {{ t('task.templateMgmt.createNew') }}
         </Button>
       </div>
     </div>
@@ -68,7 +68,7 @@
             @click="emit('create-template')"
           >
             <Plus class="h-4 w-4 mr-2" />
-            创建第一个模板
+            {{ t('task.templateMgmt.createFirst') }}
           </Button>
         </CardContent>
       </Card>
@@ -91,7 +91,7 @@
           <DialogTitle class="flex items-center justify-between">
             <span class="flex items-center text-lg font-semibold">
               <Share2 class="h-5 w-5 mr-2" />
-              任务依赖关系图
+              {{ t('task.templateMgmt.dependencyGraphTitle') }}
             </span>
             <Button variant="ghost" size="icon" @click="showDependencyDialog = false">
               <X class="h-4 w-4" />
@@ -121,32 +121,34 @@
         <DialogHeader class="bg-destructive -m-6 mb-0 p-4 rounded-t-lg">
           <DialogTitle class="flex items-center text-white">
             <AlertCircle class="h-5 w-5 mr-2 text-white" />
-            确认删除所有模板
+            {{ t('task.templateMgmt.confirmDeleteAll') }}
           </DialogTitle>
         </DialogHeader>
         <div class="pt-4 space-y-4">
           <Alert class="bg-yellow-50 border-yellow-200">
             <AlertDescription>
-              <strong>此操作不可撤销！</strong>
+              <strong>{{ t('task.templateMgmt.cannotUndo') }}</strong>
             </AlertDescription>
           </Alert>
           <p class="text-base">
-            您确定要删除所有 <strong>{{ templates.length }}</strong> 个任务模板吗？
+            {{ t('task.templateMgmt.confirmText', { count: templates.length }) }}
           </p>
           <div class="space-y-2">
-            <Label for="delete-confirm">请输入 'DELETE' 确认删除</Label>
+            <Label for="delete-confirm">{{ t('task.templateMgmt.inputDeletePlaceholder') }}</Label>
             <Input id="delete-confirm" v-model="deleteConfirmText" placeholder="DELETE" />
           </div>
         </div>
         <DialogFooter class="pt-4">
-          <Button variant="ghost" @click="cancelDeleteAll">取消</Button>
+          <Button variant="ghost" @click="cancelDeleteAll">{{
+            t('task.templateMgmt.cancel')
+          }}</Button>
           <Button
             variant="destructive"
             :disabled="deleteConfirmText !== 'DELETE'"
             @click="confirmDeleteAll"
           >
             <Trash2 class="h-4 w-4 mr-1" />
-            确认删除全部
+            {{ t('task.templateMgmt.confirmDeleteAllBtn') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -186,6 +188,9 @@ import {
   Archive,
   Circle,
 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface StatusFilter {
   label: string;
@@ -202,9 +207,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   statusFilters: () => [
-    { label: '进行中', value: 'ACTIVE', icon: 'mdi-play-circle' },
-    { label: '已暂停', value: 'PAUSED', icon: 'mdi-pause-circle' },
-    { label: '已归档', value: 'ARCHIVED', icon: 'mdi-archive' },
+    { label: 'ACTIVE', value: 'ACTIVE', icon: 'mdi-play-circle' },
+    { label: 'PAUSED', value: 'PAUSED', icon: 'mdi-pause-circle' },
+    { label: 'ARCHIVED', value: 'ARCHIVED', icon: 'mdi-archive' },
   ],
 });
 
@@ -216,6 +221,19 @@ const emit = defineEmits<{
   (e: 'delete-all-templates'): void;
   (e: 'dependency-created', sourceId: string, targetId: string): void;
 }>();
+
+const statusLabelMap = computed<Record<string, string>>(() => ({
+  ACTIVE: t('task.templateMgmt.statusActive'),
+  PAUSED: t('task.templateMgmt.statusPaused'),
+  ARCHIVED: t('task.templateMgmt.statusArchived'),
+}));
+
+const statusFilters = computed(() =>
+  props.statusFilters.map((s) => ({
+    ...s,
+    label: statusLabelMap.value[s.value] || s.label,
+  })),
+);
 
 const currentStatus = ref('ACTIVE');
 const showDeleteAllDialog = ref(false);
@@ -252,10 +270,10 @@ const getStatusIconComponent = (icon: string) => {
 };
 
 const getEmptyStateText = () => {
-  if (currentStatus.value === 'ACTIVE') return '暂无进行中的模板';
-  if (currentStatus.value === 'PAUSED') return '暂无暂停的模板';
-  if (currentStatus.value === 'ARCHIVED') return '暂无归档的模板';
-  return '暂无模板';
+  if (currentStatus.value === 'ACTIVE') return t('task.templateMgmt.noActive');
+  if (currentStatus.value === 'PAUSED') return t('task.templateMgmt.noPaused');
+  if (currentStatus.value === 'ARCHIVED') return t('task.templateMgmt.noArchived');
+  return t('task.templateMgmt.noTemplates');
 };
 
 const getEmptyStateIconComponent = () => {

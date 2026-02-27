@@ -2,28 +2,28 @@
   <Card class="p-6">
     <div class="flex items-center gap-2 mb-6">
       <CalendarPlus class="h-6 w-6" />
-      <h2 class="text-2xl font-bold">创建日程 (冲突检测演示)</h2>
+      <h2 class="text-2xl font-bold">{{ t('schedule.formDemo.title') }}</h2>
     </div>
 
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <!-- 标题 -->
       <div>
-        <Label for="title">日程标题 *</Label>
+        <Label for="title">{{ t('schedule.formDemo.fieldTitle') }}</Label>
         <Input
           id="title"
           v-model="form.title"
-          placeholder="例如：团队会议"
+          :placeholder="t('schedule.formDemo.fieldTitlePlaceholder')"
           required
         />
       </div>
 
       <!-- 描述 -->
       <div>
-        <Label for="description">描述</Label>
+        <Label for="description">{{ t('schedule.formDemo.fieldDescription') }}</Label>
         <Textarea
           id="description"
           v-model="form.description"
-          placeholder="日程详细说明（可选）"
+          :placeholder="t('schedule.formDemo.fieldDescriptionPlaceholder')"
           rows="3"
         />
       </div>
@@ -31,7 +31,7 @@
       <!-- 开始/结束时间 -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <Label for="startTime">开始时间 *</Label>
+          <Label for="startTime">{{ t('schedule.formDemo.fieldStartTime') }}</Label>
           <Input
             id="startTime"
             v-model="startTimeFormatted"
@@ -41,7 +41,7 @@
           />
         </div>
         <div>
-          <Label for="endTime">结束时间 *</Label>
+          <Label for="endTime">{{ t('schedule.formDemo.fieldEndTime') }}</Label>
           <Input
             id="endTime"
             v-model="endTimeFormatted"
@@ -55,32 +55,32 @@
       <!-- 时长显示 -->
       <Badge v-if="form.duration > 0" variant="secondary" class="gap-1">
         <Clock class="h-3 w-3" />
-        时长: {{ formatDuration(form.duration) }}
+        {{ t('schedule.formDemo.durationLabel', { duration: formatDuration(form.duration) }) }}
       </Badge>
 
       <!-- 优先级和地点 -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <Label for="priority">优先级</Label>
+          <Label for="priority">{{ t('schedule.formDemo.fieldPriority') }}</Label>
           <Select v-model="form.priority">
             <SelectTrigger>
-              <SelectValue placeholder="选择优先级" />
+              <SelectValue :placeholder="t('schedule.formDemo.fieldPriorityPlaceholder')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="5">最高</SelectItem>
-              <SelectItem value="4">高</SelectItem>
-              <SelectItem value="3">中</SelectItem>
-              <SelectItem value="2">低</SelectItem>
-              <SelectItem value="1">最低</SelectItem>
+              <SelectItem value="5">{{ t('schedule.formDemo.priorityHighest') }}</SelectItem>
+              <SelectItem value="4">{{ t('schedule.formDemo.priorityHigh') }}</SelectItem>
+              <SelectItem value="3">{{ t('schedule.formDemo.priorityMedium') }}</SelectItem>
+              <SelectItem value="2">{{ t('schedule.formDemo.priorityLow') }}</SelectItem>
+              <SelectItem value="1">{{ t('schedule.formDemo.priorityLowest') }}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label for="location">地点</Label>
+          <Label for="location">{{ t('schedule.formDemo.fieldLocation') }}</Label>
           <Input
             id="location"
             v-model="form.location"
-            placeholder="例如：会议室A"
+            :placeholder="t('schedule.formDemo.fieldLocationPlaceholder')"
           />
         </div>
       </div>
@@ -91,12 +91,12 @@
       <!-- Actions -->
       <div class="flex justify-between pt-4">
         <Button type="button" variant="outline" @click="handleReset">
-          重置
+          {{ t('schedule.formDemo.reset') }}
         </Button>
         <Button type="submit" :disabled="!isFormValid || loading">
           <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
           <Check v-else class="mr-2 h-4 w-4" />
-          创建日程
+          {{ t('schedule.formDemo.createSchedule') }}
         </Button>
       </div>
     </form>
@@ -110,9 +110,16 @@ import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { CalendarPlus, Clock, Check, Loader2 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
 
 interface Props {
@@ -135,6 +142,8 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+const { t } = useI18n();
+
 const form = reactive({
   title: '',
   description: '',
@@ -153,10 +162,12 @@ const isFormValid = computed(() => {
 });
 
 function formatDuration(minutes: number): string {
-  if (minutes < 60) return `${minutes} 分钟`;
+  if (minutes < 60) return t('schedule.duration.minutes', { n: minutes });
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return mins > 0 ? `${hours} 小时 ${mins} 分钟` : `${hours} 小时`;
+  return mins > 0
+    ? t('schedule.duration.hoursMinutes', { h: hours, m: mins })
+    : t('schedule.duration.hours', { h: hours });
 }
 
 function handleStartTimeChange(event: Event) {

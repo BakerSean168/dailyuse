@@ -2,14 +2,14 @@
   <div class="flex h-full flex-col p-6">
     <div class="mb-6 flex items-center gap-3">
       <Button variant="ghost" size="sm" @click="$router.back()">
-        <ArrowLeft class="mr-1 h-4 w-4" /> 返回
+        <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.krDetail.back') }}
       </Button>
       <Separator orientation="vertical" class="h-6" />
-      <h2 class="text-lg font-semibold">关键结果详情</h2>
+      <h2 class="text-lg font-semibold">{{ t('goal.krDetail.title') }}</h2>
     </div>
 
     <div v-if="isLoading" class="flex flex-1 items-center justify-center">
-      <div class="text-muted-foreground">加载中...</div>
+      <div class="text-muted-foreground">{{ t('goal.krDetail.loading') }}</div>
     </div>
 
     <ScrollArea v-else-if="keyResult" class="flex-1">
@@ -24,14 +24,16 @@
                   {{ keyResult.description }}
                 </CardDescription>
               </div>
-              <Badge variant="outline">权重: {{ keyResult.weight }}%</Badge>
+              <Badge variant="outline"
+                >{{ t('goal.krDetail.weight') }} {{ keyResult.weight }}%</Badge
+              >
             </div>
           </CardHeader>
           <CardContent class="space-y-4">
             <!-- 进度条 -->
             <div v-if="keyResult.progress" class="space-y-2">
               <div class="flex items-center justify-between text-sm">
-                <span class="text-muted-foreground">当前进度</span>
+                <span class="text-muted-foreground">{{ t('goal.krDetail.currentProgress') }}</span>
                 <span class="font-medium">
                   {{ keyResult.progress.currentValue ?? 0 }} /
                   {{ keyResult.progress.targetValue ?? 0 }}
@@ -49,10 +51,10 @@
           <CardHeader>
             <div class="flex items-center justify-between">
               <CardTitle class="flex items-center gap-2">
-                <History class="h-4 w-4" /> 进度记录
+                <History class="h-4 w-4" /> {{ t('goal.krDetail.progressRecords') }}
               </CardTitle>
               <Button size="sm" @click="showAddRecord = true">
-                <Plus class="mr-1 h-4 w-4" /> 添加记录
+                <Plus class="mr-1 h-4 w-4" /> {{ t('goal.krDetail.addRecord') }}
               </Button>
             </div>
           </CardHeader>
@@ -61,7 +63,7 @@
               v-if="goalRecords.length === 0"
               class="py-8 text-center text-sm text-muted-foreground"
             >
-              暂无进度记录
+              {{ t('goal.krDetail.noRecords') }}
             </div>
             <div v-else class="space-y-3">
               <div
@@ -84,7 +86,9 @@
                   <p v-if="record.comment" class="text-xs text-muted-foreground">
                     {{ record.comment }}
                   </p>
-                  <p class="text-xs text-muted-foreground">记录后值: {{ record.valueAfter }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ t('goal.krDetail.recordValue') }} {{ record.valueAfter }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -94,30 +98,36 @@
     </ScrollArea>
 
     <div v-else class="flex flex-1 items-center justify-center text-muted-foreground">
-      未找到关键结果
+      {{ t('goal.krDetail.notFound') }}
     </div>
 
     <!-- 添加记录对话框 -->
     <Dialog v-model:open="showAddRecord">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>添加进度记录</DialogTitle>
-          <DialogDescription>为关键结果记录一次进展</DialogDescription>
+          <DialogTitle>{{ t('goal.krDetail.addRecordTitle') }}</DialogTitle>
+          <DialogDescription>{{ t('goal.krDetail.addRecordDesc') }}</DialogDescription>
         </DialogHeader>
         <div class="space-y-4 py-4">
           <div class="space-y-2">
-            <Label>增加值</Label>
+            <Label>{{ t('goal.krDetail.incrementValue') }}</Label>
             <Input v-model.number="newRecord.value" type="number" placeholder="0" />
           </div>
           <div class="space-y-2">
-            <Label>备注</Label>
-            <Textarea v-model="newRecord.comment" placeholder="可选备注..." rows="2" />
+            <Label>{{ t('goal.krDetail.remarks') }}</Label>
+            <Textarea
+              v-model="newRecord.comment"
+              :placeholder="t('goal.krDetail.remarksPlaceholder')"
+              rows="2"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="showAddRecord = false">取消</Button>
+          <Button variant="outline" @click="showAddRecord = false">{{
+            t('goal.krDetail.cancel')
+          }}</Button>
           <Button :disabled="isSaving" @click="handleAddRecord">
-            {{ isSaving ? '保存中...' : '确认添加' }}
+            {{ isSaving ? t('goal.krDetail.saving') : t('goal.krDetail.confirm') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -129,6 +139,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, History, TrendingUp } from 'lucide-vue-next';
 import {
   Button,
@@ -154,6 +165,7 @@ import {
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
+const { t, locale } = useI18n();
 const goalId = (route.params.goalId as string) || (route.params.id as string);
 const krId = (route.params.krId as string) || (route.params.keyResultId as string);
 
@@ -187,7 +199,7 @@ const newRecord = reactive({ value: 0, comment: '' });
 
 function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
-  return new Date(d).toLocaleDateString('zh-CN', {
+  return new Date(d).toLocaleDateString(locale.value, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -196,7 +208,7 @@ function formatDate(d: string | number | null | undefined): string {
 
 async function handleAddRecord() {
   if (!newRecord.value) {
-    toast.warning('请填写增加值');
+    toast.warning(t('goal.krDetail.fillValue'));
     return;
   }
   const result = await createRecord(goalId, {
@@ -205,7 +217,7 @@ async function handleAddRecord() {
     note: newRecord.comment || undefined,
   });
   if (result) {
-    toast.success('记录添加成功');
+    toast.success(t('goal.krDetail.addSuccess'));
     showAddRecord.value = false;
     newRecord.value = 0;
     newRecord.comment = '';

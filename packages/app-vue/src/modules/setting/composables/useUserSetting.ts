@@ -7,12 +7,14 @@
  */
 
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 export function useUserSetting() {
+  const { t } = useI18n();
   const service = useStrictInject(SETTING_SERVICE_KEY, 'SettingService');
   const store = useUserSettingStore();
 
@@ -45,7 +47,7 @@ export function useUserSetting() {
       const data = await service.getUserSettings();
       store.setUserSetting(data);
     } catch (e: unknown) {
-      handleError((e as Error).message || '加载设置失败');
+      handleError((e as Error).message || t('setting.errors.loadFailed'));
     } finally {
       store.setLoading(false);
     }
@@ -71,7 +73,7 @@ export function useUserSetting() {
       const data = await service.resetUserSettings();
       store.setUserSetting(data);
     } catch (e: unknown) {
-      handleError((e as Error).message || '重置设置失败');
+      handleError((e as Error).message || t('setting.errors.resetFailed'));
     }
   }
 
@@ -79,7 +81,7 @@ export function useUserSetting() {
     try {
       return await service.exportSettings();
     } catch (e: unknown) {
-      handleError((e as Error).message || '导出设置失败');
+      handleError((e as Error).message || t('setting.errors.exportFailed'));
       return null;
     }
   }
@@ -90,7 +92,7 @@ export function useUserSetting() {
       const result = await service.importSettings(data as string);
       store.setUserSetting(result);
     } catch (e: unknown) {
-      handleError((e as Error).message || '导入设置失败');
+      handleError((e as Error).message || t('setting.errors.importFailed'));
     }
   }
 

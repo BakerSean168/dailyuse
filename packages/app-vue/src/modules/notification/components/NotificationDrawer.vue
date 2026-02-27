@@ -2,7 +2,7 @@
   <Sheet :open="modelValue" @update:open="$emit('update:modelValue', $event)">
     <SheetContent side="right" class="w-[400px] sm:w-[540px]">
       <SheetHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
-        <SheetTitle>通知中心</SheetTitle>
+        <SheetTitle>{{ t('notification.drawer.title') }}</SheetTitle>
         <div class="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -10,7 +10,7 @@
             :disabled="unreadCount === 0"
             @click="$emit('mark-all-read')"
           >
-            <CheckCheck class="h-4 w-4" />
+            {{ t('notification.drawer.viewAll') }}
           </Button>
           <SheetClose as-child>
             <Button variant="ghost" size="icon">
@@ -25,13 +25,7 @@
       </div>
 
       <SheetFooter class="pt-4 border-t">
-        <Button
-          variant="ghost"
-          class="w-full"
-          @click="handleViewAll"
-        >
-          查看全部通知
-        </Button>
+        <Button variant="ghost" class="w-full" @click="handleViewAll"> 查看全部通知 </Button>
       </SheetFooter>
     </SheetContent>
   </Sheet>
@@ -48,6 +42,7 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCheck, X } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 
 interface Props {
   modelValue: boolean;
@@ -57,6 +52,8 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   unreadCount: 0,
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];

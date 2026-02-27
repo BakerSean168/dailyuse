@@ -2,7 +2,7 @@
   <Card class="overflow-hidden rounded-2xl">
     <CardHeader class="flex flex-row items-center gap-2 pb-2">
       <TrendingUp class="h-5 w-5 text-primary" />
-      <CardTitle class="text-lg">目标进度分析</CardTitle>
+      <CardTitle class="text-lg">{{ t('goal.chart.reviewProgress.title') }}</CardTitle>
     </CardHeader>
     <CardContent>
       <div v-if="!review || !goal" class="flex items-center justify-center py-8">
@@ -11,10 +11,12 @@
       <div v-else class="space-y-6">
         <!-- 整体进度对比 -->
         <div class="rounded-xl bg-muted/30 p-4">
-          <h3 class="mb-4 text-sm font-medium">目标完成进度 vs 时间进度</h3>
+          <h3 class="mb-4 text-sm font-medium">{{ t('goal.chart.reviewProgress.vsTitle') }}</h3>
           <div class="flex items-center gap-4">
             <div class="flex-1 space-y-2">
-              <div class="text-xs text-muted-foreground">时间进度</div>
+              <div class="text-xs text-muted-foreground">
+                {{ t('goal.chart.reviewProgress.timeProgress') }}
+              </div>
               <div class="relative">
                 <Progress :model-value="timeProgress" class="h-6" />
                 <span
@@ -25,7 +27,9 @@
               </div>
             </div>
             <div class="flex-1 space-y-2">
-              <div class="text-xs text-muted-foreground">目标完成进度</div>
+              <div class="text-xs text-muted-foreground">
+                {{ t('goal.chart.reviewProgress.goalProgress') }}
+              </div>
               <div class="relative">
                 <Progress :model-value="goalProgress" class="h-6" />
                 <span
@@ -46,7 +50,7 @@
 
         <!-- 关键结果进度 -->
         <div class="rounded-xl bg-muted/20 p-4">
-          <h3 class="mb-4 text-sm font-medium">关键结果进度</h3>
+          <h3 class="mb-4 text-sm font-medium">{{ t('goal.chart.reviewProgress.krProgress') }}</h3>
           <div class="space-y-4">
             <div
               v-for="(kr, index) in review.keyResultSnapshots"
@@ -61,8 +65,8 @@
               </div>
               <Progress :model-value="kr.progressPercentage" class="h-2.5" />
               <div class="mt-1 flex justify-between text-xs text-muted-foreground">
-                <span>当前: {{ kr.currentValue }}</span>
-                <span>目标: {{ kr.targetValue }}</span>
+                <span>{{ t('goal.chart.reviewProgress.current') }} {{ kr.currentValue }}</span>
+                <span>{{ t('goal.chart.reviewProgress.target') }} {{ kr.targetValue }}</span>
               </div>
             </div>
           </div>
@@ -70,7 +74,9 @@
 
         <!-- 不同进度区间的关键结果数量 -->
         <div class="rounded-xl bg-muted/20 p-4">
-          <h3 class="mb-4 text-sm font-medium">不同进度区间的关键结果数量</h3>
+          <h3 class="mb-4 text-sm font-medium">
+            {{ t('goal.chart.reviewProgress.differentRanges') }}
+          </h3>
           <div ref="periodChartContainer" style="height: 280px"></div>
         </div>
       </div>
@@ -80,7 +86,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
+
+const { t } = useI18n();
 import { use } from 'echarts/core';
 import { GridComponent, TooltipComponent, TitleComponent } from 'echarts/components';
 import { BarChart } from 'echarts/charts';
@@ -186,10 +195,10 @@ const getProgressBadgeVariant = (
 // 获取进度状态文本
 const getProgressStatusText = (): string => {
   const diff = goalProgress.value - timeProgress.value;
-  if (diff >= 10) return `进度超前 ${diff.toFixed(1)}%，表现优秀！`;
-  if (diff >= 0) return `进度正常，按计划推进`;
-  if (diff >= -10) return `进度稍有延迟 ${Math.abs(diff).toFixed(1)}%`;
-  return `进度严重滞后 ${Math.abs(diff).toFixed(1)}%，需加快推进`;
+  if (diff >= 10) return t('goal.chart.reviewProgress.ahead', { n: diff.toFixed(1) });
+  if (diff >= 0) return t('goal.chart.reviewProgress.normal');
+  if (diff >= -10) return t('goal.chart.reviewProgress.delay', { n: Math.abs(diff).toFixed(1) });
+  return t('goal.chart.reviewProgress.lagging', { n: Math.abs(diff).toFixed(1) });
 };
 
 const progressBuckets = computed(() => {
@@ -249,14 +258,14 @@ const initPeriodChart = () => {
     },
     yAxis: {
       type: 'value',
-      name: '关键结果数量',
+      name: t('goal.chart.reviewProgress.yAxisName'),
       axisLabel: {
         color: '#666',
       },
     },
     series: [
       {
-        name: '关键结果数',
+        name: t('goal.chart.reviewProgress.seriesName'),
         type: 'bar',
         data: bucketData,
         itemStyle: {

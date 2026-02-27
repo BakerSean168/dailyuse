@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { BOTTOM_NAVIGATION_KEY, LOGOUT_HANDLER_KEY, MAIN_NAVIGATION_KEY } from '../di/keys';
 import { defaultMainNavigation, defaultBottomNavigation } from '../di/navigation';
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
@@ -42,7 +44,7 @@ const navigateTo = (path: string) => {
           "
           @click="navigateTo(item.path)"
         >
-          {{ item.title }}
+          {{ t(item.title) }}
         </button>
       </nav>
 
@@ -58,7 +60,7 @@ const navigateTo = (path: string) => {
           "
           @click="navigateTo(item.path)"
         >
-          {{ item.title }}
+          {{ t(item.title) }}
         </button>
 
         <button
@@ -66,7 +68,7 @@ const navigateTo = (path: string) => {
           class="w-full text-left px-2 py-2 rounded transition-colors hover:bg-sidebar-accent hover:text-destructive"
           @click="logout"
         >
-          退出登录
+          {{ t('nav.logout') }}
         </button>
       </div>
     </aside>

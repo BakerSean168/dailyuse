@@ -7,7 +7,7 @@
   <Card class="overflow-hidden rounded-2xl">
     <CardHeader class="flex flex-row items-center gap-3 border-b bg-muted/30 p-6">
       <BarChart3 class="h-7 w-7 text-primary" />
-      <CardTitle class="text-xl font-bold">对比统计分析</CardTitle>
+      <CardTitle class="text-xl font-bold">{{ t('goal.comparison.statsTitle') }}</CardTitle>
 
       <div class="flex-1" />
 
@@ -19,7 +19,7 @@
           @click="viewMode = 'table'"
         >
           <Table class="mr-1.5 h-4 w-4" />
-          表格
+          {{ t('goal.comparison.tableTab') }}
         </Button>
         <Button
           :variant="viewMode === 'chart' ? 'default' : 'ghost'"
@@ -27,7 +27,7 @@
           @click="viewMode = 'chart'"
         >
           <BarChart3 class="mr-1.5 h-4 w-4" />
-          图表
+          {{ t('goal.comparison.chartTab') }}
         </Button>
       </div>
     </CardHeader>
@@ -38,7 +38,9 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b-2 border-primary/20 bg-muted/50">
-              <th class="min-w-[150px] p-4 text-left font-bold">指标</th>
+              <th class="min-w-[150px] p-4 text-left font-bold">
+                {{ t('goal.comparison.metricHeader') }}
+              </th>
               <th v-for="goal in goals" :key="goal.id" class="min-w-[200px] text-left">
                 <div class="flex items-center gap-3 p-2">
                   <div
@@ -59,13 +61,13 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <Target class="h-4 w-4 text-primary" />
-                  关键结果数量
+                  {{ t('goal.comparison.krCount') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`kr-count-${goal.id}`" class="p-4">
                 <Badge variant="secondary" class="px-3">
                   <Hash class="mr-1 h-3 w-3" />
-                  {{ getKRCount(goal) }} 个
+                  {{ getKRCount(goal) }} {{ t('goal.comparison.unit') }}
                 </Badge>
               </td>
             </tr>
@@ -75,14 +77,16 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <TrendingUp class="h-4 w-4 text-green-600" />
-                  整体进度
+                  {{ t('goal.comparison.overallProgress') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`progress-${goal.id}`" class="p-4">
                 <div class="min-w-[180px] space-y-2">
                   <Progress :model-value="getProgress(goal)" class="h-3" />
                   <div class="flex items-center justify-between">
-                    <span class="text-xs text-muted-foreground">进度</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      t('goal.comparison.progress')
+                    }}</span>
                     <span class="font-bold" :class="getProgressTextClass(getProgress(goal))">
                       {{ getProgress(goal) }}%
                     </span>
@@ -96,7 +100,7 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <Weight class="h-4 w-4 text-amber-500" />
-                  权重总和
+                  {{ t('goal.comparison.weightSum') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`weight-${goal.id}`" class="p-4">
@@ -118,7 +122,7 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <PieChart class="h-4 w-4 text-blue-500" />
-                  平均权重
+                  {{ t('goal.comparison.avgWeight') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`avg-weight-${goal.id}`" class="p-4">
@@ -131,7 +135,7 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <Flag class="h-4 w-4 text-muted-foreground" />
-                  状态
+                  {{ t('goal.comparison.status') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`status-${goal.id}`" class="p-4">
@@ -146,7 +150,7 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <CalendarPlus class="h-4 w-4 text-muted-foreground" />
-                  创建时间
+                  {{ t('goal.comparison.createTime') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`created-${goal.id}`" class="p-4 text-sm">
@@ -159,7 +163,7 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <CalendarClock class="h-4 w-4 text-muted-foreground" />
-                  最后更新
+                  {{ t('goal.comparison.lastUpdate') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`updated-${goal.id}`" class="p-4 text-sm">
@@ -172,13 +176,13 @@
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
                   <Clock class="h-4 w-4 text-muted-foreground" />
-                  活跃天数
+                  {{ t('goal.comparison.activeDays') }}
                 </span>
               </td>
               <td v-for="goal in goals" :key="`days-${goal.id}`" class="p-4">
                 <Badge variant="outline" class="px-3">
                   <CalendarRange class="mr-1 h-3 w-3" />
-                  {{ getActiveDays(goal) }} 天
+                  {{ getActiveDays(goal) }} {{ t('goal.comparison.dayUnit') }}
                 </Badge>
               </td>
             </tr>
@@ -193,7 +197,7 @@
           <div
             class="rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
           >
-            <div class="mb-3 text-sm font-bold">关键结果数量对比</div>
+            <div class="mb-3 text-sm font-bold">{{ t('goal.comparison.krCountCompare') }}</div>
             <div class="flex items-center justify-around">
               <div v-for="goal in goals" :key="`kr-chart-${goal.id}`" class="text-center">
                 <div
@@ -215,7 +219,7 @@
           <div
             class="rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
           >
-            <div class="mb-3 text-sm font-bold">进度对比</div>
+            <div class="mb-3 text-sm font-bold">{{ t('goal.comparison.progressCompare') }}</div>
             <div v-for="goal in goals" :key="`progress-chart-${goal.id}`" class="mb-3 space-y-1">
               <div class="flex items-center">
                 <div
@@ -234,7 +238,7 @@
           <div
             class="col-span-full rounded-xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg"
           >
-            <div class="mb-3 text-sm font-bold">权重分布分析</div>
+            <div class="mb-3 text-sm font-bold">{{ t('goal.comparison.weightAnalysis') }}</div>
             <div
               class="grid gap-4"
               :style="{ gridTemplateColumns: `repeat(${goals.length}, 1fr)` }"
@@ -245,7 +249,9 @@
                 </div>
                 <div class="space-y-2 rounded-lg border bg-muted/30 p-4">
                   <div class="flex items-center justify-between">
-                    <span class="text-xs text-muted-foreground">总和:</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      t('goal.comparison.weightSum2')
+                    }}</span>
                     <Badge
                       :variant="getTotalWeight(goal) === 100 ? 'default' : 'destructive'"
                       class="text-xs"
@@ -254,15 +260,21 @@
                     </Badge>
                   </div>
                   <div class="flex items-center justify-between">
-                    <span class="text-xs text-muted-foreground">平均:</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      t('goal.comparison.weightAvg')
+                    }}</span>
                     <span class="text-sm font-bold">{{ getAverageWeight(goal) }}%</span>
                   </div>
                   <div class="flex items-center justify-between">
-                    <span class="text-xs text-muted-foreground">最大:</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      t('goal.comparison.weightMax')
+                    }}</span>
                     <span class="text-sm">{{ getMaxWeight(goal) }}%</span>
                   </div>
                   <div class="flex items-center justify-between">
-                    <span class="text-xs text-muted-foreground">最小:</span>
+                    <span class="text-xs text-muted-foreground">{{
+                      t('goal.comparison.weightMin')
+                    }}</span>
                     <span class="text-sm">{{ getMinWeight(goal) }}%</span>
                   </div>
                 </div>
@@ -278,7 +290,7 @@
       <div class="mt-4">
         <div class="mb-4 flex items-center gap-3">
           <Lightbulb class="h-7 w-7 text-amber-500" />
-          <span class="text-lg font-bold">对比洞察</span>
+          <span class="text-lg font-bold">{{ t('goal.comparison.insights') }}</span>
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -290,7 +302,9 @@
               <div class="mb-3 flex items-center gap-3">
                 <Trophy class="h-8 w-8 text-green-600" />
                 <div>
-                  <div class="text-xs text-muted-foreground">进度最快</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('goal.comparison.fastestProgress') }}
+                  </div>
                   <div class="mt-1 text-3xl font-bold text-green-600">
                     {{ getProgress(getHighestProgressGoal()) }}%
                   </div>
@@ -317,7 +331,7 @@
               <div class="mb-3 flex items-center gap-3">
                 <ListOrdered class="h-8 w-8 text-primary" />
                 <div>
-                  <div class="text-xs text-muted-foreground">KR 数量最多</div>
+                  <div class="text-xs text-muted-foreground">{{ t('goal.comparison.mostKR') }}</div>
                   <div class="mt-1 text-3xl font-bold text-primary">
                     {{ getKRCount(getMostKRsGoal()) }}
                   </div>
@@ -344,9 +358,11 @@
               <div class="mb-3 flex items-center gap-3">
                 <CalendarClock class="h-8 w-8 text-amber-500" />
                 <div>
-                  <div class="text-xs text-muted-foreground">活跃时间最长</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('goal.comparison.longestActive') }}
+                  </div>
                   <div class="mt-1 text-3xl font-bold text-amber-500">
-                    {{ getActiveDays(getOldestGoal()) }}天
+                    {{ getActiveDays(getOldestGoal()) }}{{ t('goal.comparison.dayUnit') }}
                   </div>
                 </div>
               </div>
@@ -370,6 +386,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Card,
   CardHeader,
@@ -405,6 +422,7 @@ const props = defineProps<{
 }>();
 
 // State
+const { t, locale } = useI18n();
 const viewMode = ref<'table' | 'chart'>('table');
 
 // Helper Methods
@@ -466,10 +484,10 @@ const getStatusBadgeVariant = (goal: any): 'default' | 'secondary' | 'destructiv
 
 const getStatusText = (goal: any): string => {
   const textMap: Record<string, string> = {
-    Draft: '草稿',
-    Active: '进行中',
-    Completed: '已完成',
-    Archived: '已归档',
+    Draft: t('goal.comparison.statusDraft'),
+    Active: t('goal.comparison.statusActive'),
+    Completed: t('goal.comparison.statusCompleted'),
+    Archived: t('goal.comparison.statusArchived'),
   };
   return textMap[goal.status] || goal.status;
 };
@@ -484,7 +502,7 @@ const getProgressTextClass = (progress: number): string => {
 const formatDate = (timestamp: number | null | undefined): string => {
   if (!timestamp) return '-';
   const date = new Date(timestamp);
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString(locale.value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

@@ -4,7 +4,7 @@
       <slot name="activator" :open="() => (isOpen = true)">
         <Button>
           <Target class="w-4 h-4 mr-2" />
-          启用专注模式
+          {{ t('goal.focusMode.activateDialog.title') }}
         </Button>
       </slot>
     </DialogTrigger>
@@ -12,64 +12,52 @@
     <DialogContent class="max-w-[600px]">
       <DialogHeader>
         <DialogTitle class="flex items-center justify-between">
-          启用专注模式
+          {{ t('goal.focusMode.activateDialog.title') }}
         </DialogTitle>
       </DialogHeader>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <!-- Goal Selection -->
         <div class="space-y-2">
-          <Label for="goals">选择专注目标</Label>
-          <Select
-            v-model="(formData.focusedGoalIds as any)"
-          >
+          <Label for="goals">{{ t('goal.focusMode.activateDialog.selectGoal') }}</Label>
+          <Select v-model="formData.focusedGoalIds as any">
             <SelectTrigger id="goals">
-              <SelectValue placeholder="请选择 1-3 个目标" />
+              <SelectValue
+                :placeholder="t('goal.focusMode.activateDialog.selectGoalPlaceholder')"
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                v-for="goal in availableGoals"
-                :key="goal.id"
-                :value="goal.id"
-              >
+              <SelectItem v-for="goal in availableGoals" :key="goal.id" :value="goal.id">
                 {{ goal.title }}
               </SelectItem>
             </SelectContent>
           </Select>
           <p class="text-sm text-muted-foreground">
-            选择 1-3 个你想要专注完成的目标
+            {{ t('goal.focusMode.activateDialog.selectGoalHint') }}
           </p>
         </div>
 
         <!-- Start Time -->
         <div class="space-y-2">
-          <Label for="startTime">开始时间</Label>
-          <Input
-            id="startTime"
-            v-model="formData.startTime"
-            type="datetime-local"
-          />
+          <Label for="startTime">{{ t('goal.focusMode.activateDialog.startTime') }}</Label>
+          <Input id="startTime" v-model="formData.startTime" type="datetime-local" />
           <p class="text-sm text-muted-foreground">
-            专注周期的开始时间
+            {{ t('goal.focusMode.activateDialog.startTimeHint') }}
           </p>
         </div>
 
         <!-- End Time -->
         <div class="space-y-2">
-          <Label for="endTime">结束时间</Label>
-          <Input
-            id="endTime"
-            v-model="formData.endTime"
-            type="datetime-local"
-          />
+          <Label for="endTime">{{ t('goal.focusMode.activateDialog.endTime') }}</Label>
+          <Input id="endTime" v-model="formData.endTime" type="datetime-local" />
           <p class="text-sm text-muted-foreground">
-            专注周期的结束时间（建议 14-30 天）
+            {{ t('goal.focusMode.activateDialog.endTimeHint') }}
           </p>
         </div>
 
         <!-- Hidden Goals Mode -->
         <div class="space-y-2">
-          <Label for="hiddenMode">隐藏目标模式</Label>
+          <Label for="hiddenMode">{{ t('goal.focusMode.activateDialog.hiddenMode') }}</Label>
           <Select v-model="formData.hiddenGoalsMode">
             <SelectTrigger id="hiddenMode">
               <SelectValue />
@@ -91,21 +79,18 @@
             </SelectContent>
           </Select>
           <p class="text-sm text-muted-foreground">
-            控制非专注目标的显示方式
+            {{ t('goal.focusMode.activateDialog.hiddenModeHint') }}
           </p>
         </div>
       </form>
 
       <DialogFooter>
         <Button variant="outline" @click="handleClose" :disabled="isLoading">
-          取消
+          {{ t('goal.focusMode.activateDialog.cancel') }}
         </Button>
-        <Button
-          @click="handleSubmit"
-          :disabled="!isFormValid || isLoading"
-        >
+        <Button @click="handleSubmit" :disabled="!isFormValid || isLoading">
           <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
-          启用专注模式
+          {{ t('goal.focusMode.activateDialog.activate') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -114,14 +99,32 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Target, EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
-import type { FocusModeClientDTO, ActivateFocusModeRequest, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type {
+  FocusModeClientDTO,
+  ActivateFocusModeRequest,
+  HiddenGoalsMode,
+} from '@dailyuse/contracts/goal';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@dailyuse/ui-vue-shadcn';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 
 interface Props {
   modelValue?: boolean;
@@ -138,6 +141,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean];
   activated: [focusMode: FocusModeClientDTO];
 }>();
+
+const { t } = useI18n();
 
 const isLoading = ref(false);
 const formData = ref({
@@ -165,26 +170,26 @@ const isFormValid = computed(() => {
   );
 });
 
-const hiddenModeOptions = [
+const hiddenModeOptions = computed(() => [
   {
     value: 'hide' as const,
-    label: '隐藏',
-    description: '隐藏所有非专注目标',
+    label: t('goal.focusMode.activateDialog.modeHide'),
+    description: t('goal.focusMode.activateDialog.modeHideDesc'),
     icon: EyeOff,
   },
   {
     value: 'dim' as const,
-    label: '变暗',
-    description: '只降低非专注目标的可见度',
+    label: t('goal.focusMode.activateDialog.modeDim'),
+    description: t('goal.focusMode.activateDialog.modeDimDesc'),
     icon: FolderX,
   },
   {
     value: 'collapse' as const,
-    label: '折叠',
-    description: '仅折叠非专注目标，不完全隐藏',
+    label: t('goal.focusMode.activateDialog.modeFold'),
+    description: t('goal.focusMode.activateDialog.modeFoldDesc'),
     icon: Eye,
   },
-];
+]);
 
 const handleSubmit = async () => {
   if (!isFormValid.value) return;

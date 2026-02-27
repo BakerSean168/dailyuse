@@ -3,14 +3,14 @@
     <Card>
       <CardHeader v-if="!compact" class="flex flex-row items-center gap-2 pb-2">
         <GitBranch class="h-5 w-5 text-muted-foreground" />
-        <CardTitle class="text-lg">目标权重分布图</CardTitle>
+        <CardTitle class="text-lg">{{ t('goal.dag.title') }}</CardTitle>
 
         <div class="flex-1" />
 
         <!-- 权重总和显示 -->
         <Badge variant="secondary" class="mr-2">
           <Dumbbell class="mr-1 h-3 w-3" />
-          总权重: {{ totalWeight }}
+          {{ t('goal.dag.totalWeight') }} {{ totalWeight }}
         </Badge>
 
         <!-- 布局类型切换 -->
@@ -21,7 +21,7 @@
             @click="layoutType = 'force'"
           >
             <Zap class="mr-1 h-3.5 w-3.5" />
-            力导向
+            {{ t('goal.dag.forceLayout') }}
           </Button>
           <Button
             :variant="layoutType === 'hierarchical' ? 'default' : 'ghost'"
@@ -29,7 +29,7 @@
             @click="layoutType = 'hierarchical'"
           >
             <GitBranch class="mr-1 h-3.5 w-3.5" />
-            分层
+            {{ t('goal.dag.layeredLayout') }}
           </Button>
         </div>
 
@@ -40,7 +40,7 @@
               <RefreshCw class="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>重置布局</TooltipContent>
+          <TooltipContent>{{ t('goal.dag.resetLayout') }}</TooltipContent>
         </Tooltip>
 
         <!-- 导出按钮 -->
@@ -50,33 +50,33 @@
               <Download class="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>导出 (Ctrl+E)</TooltipContent>
+          <TooltipContent>{{ t('goal.dag.export') }}</TooltipContent>
         </Tooltip>
       </CardHeader>
 
       <CardContent>
         <!-- 权重分布信息 -->
         <Alert v-if="!compact && hasKeyResults" class="mb-4">
-          <AlertTitle>权重分布信息</AlertTitle>
+          <AlertTitle>{{ t('goal.dag.weightInfo') }}</AlertTitle>
           <AlertDescription>
-            总权重: {{ totalWeight }} | 权重范围: 1-10 | 占比计算: (权重/总权重) × 100%
+            {{ t('goal.dag.weightInfoDesc') }}
           </AlertDescription>
         </Alert>
 
         <!-- 加载状态 -->
         <Alert v-if="isLoading && !loadError" class="mb-4">
           <Loader2 class="h-4 w-4 animate-spin" />
-          <AlertDescription>正在加载目标数据...</AlertDescription>
+          <AlertDescription>{{ t('goal.dag.loading') }}</AlertDescription>
         </Alert>
 
         <!-- 错误状态 -->
         <Alert v-else-if="loadError" variant="destructive" class="mb-4">
-          <AlertTitle>加载失败</AlertTitle>
+          <AlertTitle>{{ t('goal.dag.loadFailed') }}</AlertTitle>
           <AlertDescription class="flex items-center justify-between">
             <span>{{ loadError }}</span>
             <Button variant="ghost" size="sm" :disabled="isRetrying" @click="retryLoad">
               <RefreshCw class="mr-1 h-3.5 w-3.5" :class="{ 'animate-spin': isRetrying }" />
-              重试
+              {{ t('goal.dag.retry') }}
             </Button>
           </AlertDescription>
         </Alert>
@@ -84,7 +84,7 @@
         <!-- 空状态 -->
         <Alert v-else-if="!localGoal || !hasKeyResults">
           <AlertDescription>
-            {{ !localGoal ? '正在加载目标数据...' : '该 Goal 暂无 KeyResult' }}
+            {{ !localGoal ? t('goal.dag.loading') : t('goal.dag.noKeyResult') }}
           </AlertDescription>
         </Alert>
 
@@ -105,22 +105,22 @@
           <div class="flex flex-wrap items-center gap-3">
             <Badge variant="default">
               <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
-              Goal 节点
+              {{ t('goal.dag.legendGoalNode') }}
             </Badge>
             <Badge class="bg-green-600 text-white hover:bg-green-700">
               <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
-              权重 7-10
+              {{ t('goal.dag.legendWeight7to10') }}
             </Badge>
             <Badge class="bg-amber-500 text-white hover:bg-amber-600">
               <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
-              权重 4-7
+              {{ t('goal.dag.legendWeight4to7') }}
             </Badge>
             <Badge variant="destructive">
               <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
-              权重 1-3
+              {{ t('goal.dag.legendWeight1to3') }}
             </Badge>
             <div class="flex-1" />
-            <span class="text-xs text-muted-foreground">节点大小表示权重，边宽度表示权重占比</span>
+            <span class="text-xs text-muted-foreground">{{ t('goal.dag.legendHint') }}</span>
           </div>
         </div>
       </CardContent>
@@ -133,6 +133,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -174,6 +175,7 @@ const emit = defineEmits<{
 }>();
 
 const { getGoalAggregateView } = useGoal();
+const { t } = useI18n();
 const chartRef = ref<any>(null);
 const exportDialog = ref<any>(null);
 const containerRef = ref<HTMLElement>();
@@ -355,7 +357,7 @@ const dagOption = computed<EChartsOption>(() => {
                 </div>
                 <div>${params.data.name}</div>
                 <div style="margin-top: 4px;">
-                  <span style="color: #666;">权重:</span> 
+                  <span style="color: #666;">${t('goal.dag.tooltipWeight')}</span> 
                   <span style="font-weight: bold; color: ${params.data.itemStyle.color};">${params.data.value}/10</span>
                   <span style="color: #999; margin-left: 4px;">(${percentage}%)</span>
                 </div>
@@ -365,9 +367,9 @@ const dagOption = computed<EChartsOption>(() => {
         } else if (params.dataType === 'edge') {
           return `
             <div style="padding: 8px;">
-              <div style="font-weight: bold;">权重分配</div>
+              <div style="font-weight: bold;">${t('goal.dag.tooltipWeightAllocation')}</div>
               <div style="margin-top: 4px; color: #666;">
-                边宽度表示权重占比
+                ${t('goal.dag.tooltipEdgeHint')}
               </div>
             </div>
           `;
@@ -570,7 +572,7 @@ const handleExport = async (options: ExportOptions) => {
     exportDialog.value?.close();
   } catch (error) {
     console.error('Export failed:', error);
-    alert('导出失败，请重试');
+    alert(t('goal.dag.exportFailed'));
   }
 };
 
@@ -643,7 +645,7 @@ const loadGoalData = async () => {
       : data;
   } catch (error) {
     console.error('Failed to load goal aggregate view:', error);
-    loadError.value = error instanceof Error ? error.message : '加载目标数据失败，请重试';
+    loadError.value = error instanceof Error ? error.message : t('goal.dag.loadDataFailed');
   } finally {
     isLoading.value = false;
   }

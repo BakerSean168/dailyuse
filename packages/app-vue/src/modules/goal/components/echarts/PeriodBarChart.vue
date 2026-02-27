@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { BarChart } from 'echarts/charts';
@@ -16,6 +17,8 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { GoalClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
+
+const { t } = useI18n();
 
 type GoalWithRecords = GoalClientDTO & {
   records?: GoalRecordClientDTO[] | null;
@@ -68,6 +71,13 @@ function getTimePeriod(date: Date): TimePeriod {
   return '凌晨';
 }
 
+const translatedTimePeriods = computed(() => [
+  t('goal.chart.periodBar.morning'),
+  t('goal.chart.periodBar.afternoon'),
+  t('goal.chart.periodBar.evening'),
+  t('goal.chart.periodBar.lateNight'),
+]);
+
 const periodBarOption = computed(() => {
   const records = props.goal?.records ?? [];
   const stat = classifyGoalRecordsByPeriod(records);
@@ -81,7 +91,7 @@ const periodBarOption = computed(() => {
   return {
     backgroundColor: surfaceColor,
     title: {
-      text: '不同时间段的任务完成数',
+      text: t('goal.chart.periodBar.title'),
       left: 'center',
       top: 10,
       textStyle: { fontSize: 16 },
@@ -98,7 +108,7 @@ const periodBarOption = computed(() => {
     },
     xAxis: {
       type: 'category',
-      data: timePeriods,
+      data: translatedTimePeriods.value,
       axisLabel: { fontSize: 12 },
       axisLine: { show: false },
       axisTick: { show: false },
@@ -113,7 +123,7 @@ const periodBarOption = computed(() => {
     },
     series: [
       {
-        name: '完成数',
+        name: t('goal.chart.periodBar.seriesName'),
         type: 'bar',
         data: dataArr,
         itemStyle: {

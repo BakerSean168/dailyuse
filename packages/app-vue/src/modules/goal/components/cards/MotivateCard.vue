@@ -4,25 +4,35 @@
       <CardTitle class="flex items-center justify-between text-base">
         <div class="flex items-center gap-2">
           <component :is="isShowingMotive ? Flag : Lightbulb" class="h-4 w-4 text-primary" />
-          {{ isShowingMotive ? '目标动机' : '可行性分析' }}
+          {{
+            isShowingMotive
+              ? t('goal.cards.motivateCard.goalMotivation')
+              : t('goal.cards.motivateCard.feasibility')
+          }}
         </div>
         <Button variant="ghost" size="icon" @click.stop="refreshContent">
           <RefreshCw class="h-4 w-4" />
         </Button>
       </CardTitle>
-      <CardDescription>点击卡片可随机切换内容</CardDescription>
+      <CardDescription>{{ t('goal.cards.motivateCard.clickHint') }}</CardDescription>
     </CardHeader>
 
     <CardContent class="space-y-3">
-      <p v-if="currentContent" class="rounded-md border bg-muted/40 px-3 py-3 text-sm leading-6 italic">
+      <p
+        v-if="currentContent"
+        class="rounded-md border bg-muted/40 px-3 py-3 text-sm leading-6 italic"
+      >
         {{ currentContent }}
       </p>
-      <div v-else class="flex items-center justify-center rounded-md border border-dashed py-6 text-sm text-muted-foreground">
-        暂无内容
+      <div
+        v-else
+        class="flex items-center justify-center rounded-md border border-dashed py-6 text-sm text-muted-foreground"
+      >
+        {{ t('goal.cards.motivateCard.noContent') }}
       </div>
 
       <div v-if="currentGoal" class="flex items-center gap-2 text-xs text-muted-foreground">
-        <Badge variant="outline">来源目标</Badge>
+        <Badge variant="outline">{{ t('goal.cards.motivateCard.sourceGoal') }}</Badge>
         <span class="truncate">{{ currentGoal.name }}</span>
       </div>
     </CardContent>
@@ -31,6 +41,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Flag, Lightbulb, RefreshCw } from 'lucide-vue-next';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -40,6 +51,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dail
 interface Props {
   goals?: GoalClientDTO[];
 }
+
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<Props>(), {
   goals: () => [],
@@ -72,7 +85,8 @@ const refreshContent = () => {
 
   const selected = validGoals[Math.floor(Math.random() * validGoals.length)];
   currentGoal.value = selected;
-  currentContent.value = (isShowingMotive.value ? selected.motivation : selected.feasibilityAnalysis) ?? '';
+  currentContent.value =
+    (isShowingMotive.value ? selected.motivation : selected.feasibilityAnalysis) ?? '';
 };
 
 onMounted(() => {

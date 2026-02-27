@@ -4,19 +4,21 @@
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <LayoutGrid class="h-5 w-5 text-primary" />
-          选择任务模板
+          {{ t('task.templateSelection.title') }}
         </DialogTitle>
       </DialogHeader>
 
       <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 py-4">
         <div v-if="loading" class="col-span-full text-center py-8">
           <Loader2 class="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-          <p class="text-base">正在加载模板...</p>
+          <p class="text-base">{{ t('task.templateSelection.loading') }}</p>
         </div>
 
         <div v-else-if="templates.length === 0" class="col-span-full text-center py-8">
           <FolderOpen class="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <p class="text-base text-muted-foreground">暂无可用模板</p>
+          <p class="text-base text-muted-foreground">
+            {{ t('task.templateSelection.noTemplates') }}
+          </p>
         </div>
 
         <Card
@@ -34,15 +36,21 @@
               <FileText class="h-8 w-8 text-primary-foreground" />
             </div>
             <h3 class="text-lg font-semibold mb-2">{{ template.title }}</h3>
-            <p class="text-sm text-muted-foreground">{{ template.description || '无描述' }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ template.description || t('task.templateSelection.noDescription') }}
+            </p>
           </CardContent>
         </Card>
       </div>
 
       <DialogFooter>
         <div class="flex-1" />
-        <Button variant="ghost" @click="emit('cancel')">取消</Button>
-        <Button :disabled="!selectedId" @click="confirmSelection"> 使用模板 </Button>
+        <Button variant="ghost" @click="emit('cancel')">{{
+          t('task.templateSelection.cancel')
+        }}</Button>
+        <Button :disabled="!selectedId" @click="confirmSelection">
+          {{ t('task.templateSelection.useTemplate') }}
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -50,6 +58,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogContent,
@@ -62,6 +71,8 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { LayoutGrid, Loader2, FolderOpen, FileText } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../types';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: boolean;

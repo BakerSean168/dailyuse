@@ -7,10 +7,12 @@
     >
       <AlertCircle class="mt-0.5 h-5 w-5 shrink-0" />
       <div class="flex-1">
-        <p class="font-semibold">无法加载模板</p>
-        <p class="text-sm">没有找到正在编辑的任务模板，请重新选择或创建模板。</p>
+        <p class="font-semibold">{{ t('task.templateForm.loadError') }}</p>
+        <p class="text-sm">{{ t('task.templateForm.notFoundMessage') }}</p>
       </div>
-      <Button variant="ghost" size="sm" @click="handleClose">关闭</Button>
+      <Button variant="ghost" size="sm" @click="handleClose">{{
+        t('task.templateForm.close')
+      }}</Button>
     </div>
 
     <!-- 正常表单内容 -->
@@ -60,6 +62,7 @@
 import { ref, computed, watch } from 'vue';
 import { AlertCircle } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
+import { useI18n } from 'vue-i18n';
 import BasicInfoSection from './sections/BasicInfoSection.vue';
 import TimeConfigSection from './sections/TimeConfigSection.vue';
 import RecurrenceSection from './sections/RecurrenceSection.vue';
@@ -68,6 +71,8 @@ import MetadataSection from './sections/MetadataSection.vue';
 import KeyResultLinksSection from './sections/KeyResultLinksSection.vue';
 import { useTaskTemplateForm } from '../../composables/useTaskTemplateForm';
 import type { TaskTemplateViewModel } from '../types';
+
+const { t } = useI18n();
 
 // ===== Props 定义 =====
 interface Props {

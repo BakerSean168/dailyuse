@@ -1,24 +1,41 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-background">
     <!-- Header -->
-    <header class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm">
+    <header
+      class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
+    >
       <div class="flex items-center gap-3">
         <Button variant="ghost" size="icon" class="h-8 w-8" @click="$router.back()">
           <ArrowLeft class="h-4 w-4" />
         </Button>
         <Separator orientation="vertical" class="h-4" />
-        <h1 class="text-lg font-medium text-foreground">SSE 监控</h1>
+        <h1 class="text-lg font-medium text-foreground">
+          {{ t('notification.sseMonitor.title') }}
+        </h1>
         <Badge :variant="connected ? 'default' : 'destructive'" class="text-xs">
-          {{ connected ? '已连接' : '未连接' }}
+          {{
+            connected
+              ? t('notification.sseMonitor.connected')
+              : t('notification.sseMonitor.disconnected')
+          }}
         </Badge>
       </div>
 
       <div class="flex items-center gap-2">
         <Button variant="outline" size="sm" class="h-8" @click="clearMessages">
-          清空日志
+          {{ t('notification.sseMonitor.clearLog') }}
         </Button>
-        <Button size="sm" class="h-8" :variant="connected ? 'destructive' : 'default'" @click="toggleConnection">
-          {{ connected ? '断开' : '连接' }}
+        <Button
+          size="sm"
+          class="h-8"
+          :variant="connected ? 'destructive' : 'default'"
+          @click="toggleConnection"
+        >
+          {{
+            connected
+              ? t('notification.sseMonitor.actionDisconnect')
+              : t('notification.sseMonitor.actionConnect')
+          }}
         </Button>
       </div>
     </header>
@@ -31,8 +48,10 @@
           class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
         >
           <Radio class="mb-4 h-12 w-12 opacity-50" />
-          <h3 class="mb-1 text-lg font-medium text-foreground">等待 SSE 事件</h3>
-          <p class="text-sm">连接后，收到的事件将在这里显示</p>
+          <h3 class="mb-1 text-lg font-medium text-foreground">
+            {{ t('notification.sseMonitor.waitingTitle') }}
+          </h3>
+          <p class="text-sm">{{ t('notification.sseMonitor.waitingDescription') }}</p>
         </div>
 
         <div
@@ -53,6 +72,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Radio } from 'lucide-vue-next';
 import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
 
@@ -61,6 +81,8 @@ interface SSEMessage {
   type: string;
   data: string;
 }
+
+const { t } = useI18n();
 
 const connected = ref(false);
 const messages = ref<SSEMessage[]>([]);
@@ -71,13 +93,13 @@ function toggleConnection() {
     messages.value.push({
       time: new Date().toLocaleTimeString(),
       type: 'system',
-      data: 'SSE 连接已建立（模拟）',
+      data: t('notification.sseMonitor.msgConnected'),
     });
   } else {
     messages.value.push({
       time: new Date().toLocaleTimeString(),
       type: 'system',
-      data: 'SSE 连接已断开',
+      data: t('notification.sseMonitor.msgDisconnected'),
     });
   }
 }

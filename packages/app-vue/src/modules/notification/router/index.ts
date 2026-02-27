@@ -13,7 +13,7 @@ export const notificationRoutes: RouteRecordRaw[] = [
     name: 'notifications',
     component: () => import('../views/NotificationListPage.vue'),
     meta: {
-      title: '通知中心',
+      title: 'notification.title',
       showInNav: true,
       icon: 'mdi-bell',
       order: 7,
@@ -25,7 +25,7 @@ export const notificationRoutes: RouteRecordRaw[] = [
     name: 'sse-monitor',
     component: () => import('../views/SSEMonitorPage.vue'),
     meta: {
-      title: 'SSE 监控',
+      title: 'notification.sseMonitor.title',
       showInNav: import.meta.env.DEV, // 仅开发环境显示
       icon: 'mdi-radio-tower',
       order: 999,

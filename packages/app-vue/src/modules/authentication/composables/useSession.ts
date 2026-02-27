@@ -9,6 +9,7 @@
 
 import { computed } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -16,6 +17,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 export function useSession() {
   const store = useAuthenticationStore();
   const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
+  const { t } = useI18n();
 
   // ========== Computed State ==========
   const activeSessions = computed(() => store.activeSessions);
@@ -35,9 +37,9 @@ export function useSession() {
       store.setActiveSessions(result.data.sessions as any);
       return true;
     }
-    const message = result.error.message || '加载会话列表失败';
+    const message = result.error.message || t('auth.toast.loadSessionsFailed');
     store.setError(message);
-    toast.error('加载失败', { description: message });
+    toast.error(t('auth.toast.loadFailed'), { description: message });
     return false;
   }
 
@@ -52,12 +54,12 @@ export function useSession() {
 
     if (result.ok) {
       store.removeActiveSession(sessionId);
-      toast.success('会话已撤销');
+      toast.success(t('auth.toast.sessionRevoked'));
       return true;
     }
-    const message = result.error.message || '撤销会话失败';
+    const message = result.error.message || t('auth.toast.revokeSessionFailed');
     store.setError(message);
-    toast.error('操作失败', { description: message });
+    toast.error(t('auth.toast.operationFailed'), { description: message });
     return false;
   }
 

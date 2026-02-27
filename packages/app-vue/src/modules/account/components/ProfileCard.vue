@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardHeader, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -23,6 +24,8 @@ const props = withDefaults(defineProps<ProfileCardProps>(), {
 
 const emit = defineEmits<ProfileCardEmits>();
 
+const { t } = useI18n();
+
 const initials = computed(() => {
   if (props.profile.realName) {
     return props.profile.realName.slice(0, 2).toUpperCase();
@@ -33,23 +36,23 @@ const initials = computed(() => {
 const genderText = computed(() => {
   switch (props.profile.gender) {
     case 'MALE':
-      return '男';
+      return t('account.gender.male');
     case 'FEMALE':
-      return '女';
+      return t('account.gender.female');
     case 'OTHER':
-      return '其他';
+      return t('account.gender.other');
     default:
-      return '未设置';
+      return t('account.gender.notSet');
   }
 });
 
 const formatBirthday = (birthday: number | null) => {
-  if (!birthday) return '未设置';
+  if (!birthday) return t('account.gender.notSet');
   try {
     const date = new Date(birthday);
-    return date.toLocaleDateString('zh-CN');
+    return date.toLocaleDateString();
   } catch {
-    return '未设置';
+    return t('account.gender.notSet');
   }
 };
 
@@ -80,24 +83,28 @@ const handleEdit = () => {
         :disabled="loading"
         @click="handleEdit"
       >
-        编辑资料
+        {{ t('account.profile.editProfile') }}
       </Button>
     </CardHeader>
-    
+
     <CardContent class="space-y-4">
       <div v-if="profile.bio" class="space-y-2">
-        <h4 class="text-sm font-medium text-muted-foreground">个人简介</h4>
+        <h4 class="text-sm font-medium text-muted-foreground">{{ t('account.profile.bio') }}</h4>
         <p class="text-sm">{{ profile.bio }}</p>
       </div>
-      
+
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-1">
-          <h4 class="text-sm font-medium text-muted-foreground">性别</h4>
+          <h4 class="text-sm font-medium text-muted-foreground">
+            {{ t('account.profile.gender') }}
+          </h4>
           <Badge variant="secondary">{{ genderText }}</Badge>
         </div>
-        
+
         <div class="space-y-1">
-          <h4 class="text-sm font-medium text-muted-foreground">生日</h4>
+          <h4 class="text-sm font-medium text-muted-foreground">
+            {{ t('account.profile.birthday') }}
+          </h4>
           <p class="text-sm">{{ formatBirthday(profile.birthday) }}</p>
         </div>
       </div>

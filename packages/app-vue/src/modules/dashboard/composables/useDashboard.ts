@@ -8,6 +8,7 @@
 import { ref, computed } from 'vue';
 import { HTTP_CLIENT_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { getI18nGlobal } from '../../../plugins/i18n';
 
 // ── Types ──
 
@@ -116,7 +117,10 @@ export function useDashboard() {
           upcomingSchedule: result.data.upcomingSchedule ?? [],
         };
       } else {
-        error.value = result.error.message || '加载仪表盘数据失败';
+        error.value =
+          result.error.message ||
+          getI18nGlobal()?.t('dashboard.error.loadFailed') ||
+          'Failed to load dashboard data';
         console.error('[dashboard]', error.value);
       }
     } finally {

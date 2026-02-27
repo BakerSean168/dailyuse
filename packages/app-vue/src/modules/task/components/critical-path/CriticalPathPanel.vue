@@ -3,17 +3,19 @@
     <CardHeader class="flex flex-row items-center justify-between">
       <div class="flex items-center gap-2">
         <Clock class="h-5 w-5 text-primary" />
-        <CardTitle>关键路径分析</CardTitle>
+        <CardTitle>{{ t('task.criticalPath.title') }}</CardTitle>
       </div>
       <Button size="sm" variant="ghost" @click="handleExport">
         <Download class="h-4 w-4 mr-2" />
-        导出
+        {{ t('task.criticalPath.export') }}
       </Button>
     </CardHeader>
 
     <CardContent v-if="!result">
       <Alert>
-        <AlertDescription class="text-sm">请添加任务依赖关系以计算关键路径。</AlertDescription>
+        <AlertDescription class="text-sm">{{
+          t('task.criticalPath.addDepsHint')
+        }}</AlertDescription>
       </Alert>
     </CardContent>
 
@@ -23,7 +25,9 @@
           <Card class="bg-primary/10">
             <CardContent class="text-center py-4">
               <div class="text-3xl font-bold">{{ formatDuration(result.projectDuration) }}</div>
-              <div class="text-xs text-muted-foreground mt-1">预计总工期</div>
+              <div class="text-xs text-muted-foreground mt-1">
+                {{ t('task.criticalPath.estimatedDuration') }}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -32,7 +36,9 @@
           <Card class="bg-destructive/10">
             <CardContent class="text-center py-4">
               <div class="text-3xl font-bold">{{ result.criticalTasks.length }}</div>
-              <div class="text-xs text-muted-foreground mt-1">关键任务数</div>
+              <div class="text-xs text-muted-foreground mt-1">
+                {{ t('task.criticalPath.criticalTaskCount') }}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -43,7 +49,7 @@
           <div class="flex items-center gap-2">
             <AlertTriangle class="h-5 w-5 text-destructive" />
             <CardTitle class="text-base font-medium"
-              >关键路径任务 ({{ result.criticalTasks.length }})</CardTitle
+              >{{ t('task.criticalPath.tasks') }} ({{ result.criticalTasks.length }})</CardTitle
             >
           </div>
         </CardHeader>
@@ -64,7 +70,8 @@
                 <div class="font-medium">{{ task.title }}</div>
                 <div class="mt-1">
                   <Badge variant="default" class="text-xs">
-                    工期: {{ formatDuration(task.estimatedMinutes || 0) }}
+                    {{ t('task.criticalPath.durationLabel') }}
+                    {{ formatDuration(task.estimatedMinutes || 0) }}
                   </Badge>
                 </div>
               </div>
@@ -78,6 +85,7 @@
 
 <script setup lang="ts">
 import type { TaskForDAGViewModel } from '../types';
+import { useI18n } from 'vue-i18n';
 import {
   Card,
   CardHeader,
@@ -103,6 +111,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t } = useI18n();
 
 const formatDuration = (minutes: number): string => {
   if (minutes === 0) return '0 min';

@@ -4,10 +4,10 @@
     <div class="flex items-center mb-4">
       <h2 class="text-2xl font-semibold flex items-center gap-2">
         <Target class="w-6 h-6 text-primary" />
-        关键结果管理
+        {{ t('goal.aiKeyResults.title') }}
       </h2>
       <div class="flex-1" />
-      
+
       <!-- AI Generate Button -->
       <AIGenerateKRButton
         ref="generateButtonRef"
@@ -20,23 +20,13 @@
     </div>
 
     <!-- Usage Hint -->
-    <Alert
-      v-if="showHint && !hasGeneratedResults"
-      class="mb-4"
-      data-testid="usage-hint"
-    >
+    <Alert v-if="showHint && !hasGeneratedResults" class="mb-4" data-testid="usage-hint">
       <Lightbulb class="w-4 h-4" />
-      <AlertTitle>提示</AlertTitle>
+      <AlertTitle>{{ t('goal.aiKeyResults.hint') }}</AlertTitle>
       <AlertDescription>
-        点击"AI 生成关键结果"按钮，让 AI 帮你智能生成可量化的关键结果，
-        你可以预览、编辑后再采纳。
+        {{ t('goal.aiKeyResults.hintText') }}
       </AlertDescription>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="absolute top-2 right-2"
-        @click="showHint = false"
-      >
+      <Button variant="ghost" size="icon" class="absolute top-2 right-2" @click="showHint = false">
         <X class="w-4 h-4" />
       </Button>
     </Alert>
@@ -55,14 +45,14 @@
     <!-- Accepted Results -->
     <div v-if="acceptedResults.length > 0" class="mt-6">
       <Separator class="mb-4" />
-      
+
       <div class="flex items-center mb-4">
         <h3 class="text-lg font-semibold flex items-center gap-2">
           <CheckCircle class="w-5 h-5 text-success" />
-          已采纳的关键结果
+          {{ t('goal.aiKeyResults.adoptedKR') }}
         </h3>
         <Badge class="ml-2 bg-green-100 text-green-700 hover:bg-green-100">
-          {{ acceptedResults.length }} 个
+          {{ acceptedResults.length }} {{ t('goal.aiKeyResults.count') }}
         </Badge>
       </div>
 
@@ -75,16 +65,16 @@
         >
           <div class="flex items-start gap-3">
             <CheckCircle class="w-5 h-5 text-success shrink-0 mt-0.5" />
-            
+
             <div class="flex-1">
               <div class="font-semibold mb-2">{{ kr.title }}</div>
-              
+
               <div class="flex flex-wrap gap-2">
                 <Badge variant="outline" class="text-success border-success">
-                  目标：{{ kr.targetValue }} {{ kr.unit }}
+                  {{ t('goal.aiKeyResults.target') }}{{ kr.targetValue }} {{ kr.unit }}
                 </Badge>
                 <Badge v-if="kr.weight" variant="outline" class="text-info border-info">
-                  权重：{{ kr.weight }}%
+                  {{ t('goal.aiKeyResults.weight') }}{{ kr.weight }}%
                 </Badge>
               </div>
             </div>
@@ -104,13 +94,9 @@
 
     <!-- Manual Add Button -->
     <div class="mt-4">
-      <Button
-        variant="outline"
-        @click="handleManualAdd"
-        data-testid="manual-add-button"
-      >
+      <Button variant="outline" @click="handleManualAdd" data-testid="manual-add-button">
         <Plus class="w-4 h-4 mr-2" />
-        手动添加关键结果
+        {{ t('goal.aiKeyResults.manualAdd') }}
       </Button>
     </div>
   </div>
@@ -118,6 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Target, Lightbulb, CheckCircle, X, Plus } from 'lucide-vue-next';
 import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
@@ -151,6 +138,8 @@ const emit = defineEmits<{
   manualAdd: [];
 }>();
 
+const { t } = useI18n();
+
 const generateButtonRef = ref();
 const previewListRef = ref();
 const showHint = ref(true);
@@ -163,7 +152,7 @@ const hasGeneratedResults = computed(() => generatedResults.value.length > 0);
 function handleGenerated(result: any) {
   if (result.keyResults && Array.isArray(result.keyResults)) {
     generatedResults.value = result.keyResults;
-    props.onSuccess?.(`成功生成 ${result.keyResults.length} 个关键结果！`);
+    props.onSuccess?.(t('goal.aiKeyResults.generateSuccess', { n: result.keyResults.length }));
   }
 }
 
@@ -174,9 +163,9 @@ function handleError(error: string) {
 function handleAccept(results: KeyResultData[]) {
   acceptedResults.value.push(...results);
   generatedResults.value = [];
-  
+
   emit('resultsUpdated', acceptedResults.value);
-  props.onSuccess?.(`已采纳 ${results.length} 个关键结果`);
+  props.onSuccess?.(t('goal.aiKeyResults.adoptSuccess', { n: results.length }));
 }
 
 function handleEdit(index: number, kr: KeyResultData) {
@@ -195,7 +184,7 @@ function handleSelectionChange(selected: KeyResultData[]) {
 function handleRemoveAccepted(index: number) {
   acceptedResults.value.splice(index, 1);
   emit('resultsUpdated', acceptedResults.value);
-  props.onSuccess?.('已移除');
+  props.onSuccess?.(t('goal.aiKeyResults.removed'));
 }
 
 function handleManualAdd() {

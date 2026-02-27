@@ -14,7 +14,9 @@
           <div class="min-w-0 flex-1">
             <p class="truncate font-semibold">{{ keyResult.title }}</p>
             <div class="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="outline">权重 {{ keyResult.weight }}</Badge>
+              <Badge variant="outline"
+                >{{ t('goal.cards.keyResultCard.weight') }} {{ keyResult.weight }}</Badge
+              >
               <span>{{ progressPercentage }}%</span>
             </div>
           </div>
@@ -38,7 +40,7 @@
           <!-- Keep "Add Record" as a visible primary action -->
           <Button size="sm" variant="outline" @click="$emit('add-record', keyResult)">
             <Plus class="mr-1 h-4 w-4" />
-            添加记录
+            {{ t('goal.cards.keyResultCard.addRecord') }}
           </Button>
         </div>
 
@@ -52,6 +54,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ArrowRight, ExternalLink, Plus, ListPlus, Trash2 } from 'lucide-vue-next';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -60,6 +63,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadc
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   keyResult: KeyResultClientDTO;

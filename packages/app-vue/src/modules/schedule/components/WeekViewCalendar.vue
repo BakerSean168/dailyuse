@@ -10,11 +10,13 @@
           <Button variant="outline" size="icon" @click="nextWeek">
             <ChevronRight class="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" @click="goToToday">今天</Button>
+          <Button variant="outline" size="sm" @click="goToToday">{{
+            t('schedule.calendar.today')
+          }}</Button>
         </div>
         <Button @click="$emit('create')">
           <Plus class="mr-2 h-4 w-4" />
-          新建日程
+          {{ t('schedule.calendar.createSchedule') }}
         </Button>
       </div>
     </CardHeader>
@@ -60,11 +62,7 @@
             :class="{ 'bg-gray-50': day.isToday }"
           >
             <!-- Time Slot Backgrounds -->
-            <div
-              v-for="hour in hours"
-              :key="hour"
-              class="time-slot-bg h-15 border-b"
-            ></div>
+            <div v-for="hour in hours" :key="hour" class="time-slot-bg h-15 border-b"></div>
 
             <!-- Events for this day -->
             <div
@@ -94,6 +92,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { Card, CardContent, CardHeader } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { ChevronLeft, ChevronRight, Plus, Loader2, AlertCircle } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
 interface Props {
@@ -112,6 +111,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+
+const { t, locale } = useI18n();
 
 const currentWeekStart = ref<Date>(getWeekStart(new Date()));
 
@@ -142,8 +143,9 @@ const weekRange = computed(() => {
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
 
-  const format = (date: Date) => `${date.getMonth() + 1}月${date.getDate()}日`;
-  return `${format(start)} - ${format(end)}`;
+  const format = (date: Date) =>
+    date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
+  return t('schedule.calendar.weekRange', { start: format(start), end: format(end) });
 });
 
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
@@ -158,7 +160,16 @@ function getWeekStart(date: Date): Date {
 }
 
 function getDayName(day: number): string {
-  return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][day];
+  const dayKeys = [
+    'schedule.calendar.daySun',
+    'schedule.calendar.dayMon',
+    'schedule.calendar.dayTue',
+    'schedule.calendar.dayWed',
+    'schedule.calendar.dayThu',
+    'schedule.calendar.dayFri',
+    'schedule.calendar.daySat',
+  ];
+  return t(dayKeys[day]);
 }
 
 function formatHour(hour: number): string {
@@ -168,7 +179,8 @@ function formatHour(hour: number): string {
 function formatEventTime(event: ScheduleJobClientDTO): string {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
-  const format = (date: Date) => `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  const format = (date: Date) =>
+    `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   return `${format(start)}-${format(end)}`;
 }
 

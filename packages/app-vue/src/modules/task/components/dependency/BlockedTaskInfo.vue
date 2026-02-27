@@ -3,12 +3,14 @@
     <CardHeader class="bg-destructive/5 p-3">
       <CardTitle class="text-base flex items-center">
         <Lock class="h-5 w-5 text-destructive mr-2" />
-        任务被阻塞
+        {{ t('task.blocked.title') }}
       </CardTitle>
     </CardHeader>
 
     <CardContent class="p-3">
-      <p class="text-sm mb-3">此任务正在等待以下 {{ blockingTasks.length }} 个前置任务完成：</p>
+      <p class="text-sm mb-3">
+        {{ t('task.blocked.waitingMessage', { count: blockingTasks.length }) }}
+      </p>
 
       <div class="divide-y">
         <div v-for="task in blockingTasks" :key="task.id" class="flex items-start gap-3 py-2">
@@ -27,7 +29,7 @@
                 {{ task.status }}
               </Badge>
               <span v-if="task.estimatedMinutes" class="text-xs text-muted-foreground">
-                预估: {{ formatDuration(task.estimatedMinutes) }}
+                {{ t('task.blocked.estimate') }} {{ formatDuration(task.estimatedMinutes) }}
               </span>
             </div>
           </div>
@@ -37,7 +39,7 @@
       <!-- 进度条 -->
       <div class="mt-3">
         <div class="flex justify-between text-xs mb-1">
-          <span>完成进度</span>
+          <span>{{ t('task.blocked.completionProgress') }}</span>
           <span>{{ completedCount }} / {{ totalCount }}</span>
         </div>
         <Progress :model-value="progressPercentage" class="h-2" />
@@ -49,8 +51,8 @@
     <CardContent class="p-3 flex items-center">
       <CheckCircle class="h-5 w-5 text-green-500 mr-2" />
       <div>
-        <div class="font-medium">任务已就绪</div>
-        <div class="text-xs text-muted-foreground">所有前置任务已完成，可以开始执行</div>
+        <div class="font-medium">{{ t('task.blocked.ready') }}</div>
+        <div class="text-xs text-muted-foreground">{{ t('task.blocked.readyMessage') }}</div>
       </div>
     </CardContent>
   </Card>
@@ -58,6 +60,7 @@
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Progress } from '@dailyuse/ui-vue-shadcn';
 import { Lock, CheckCircle, Clock, Ban, PlayCircle, HelpCircle, Loader2 } from 'lucide-vue-next';
 
@@ -74,6 +77,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t } = useI18n();
 
 const completedCount = computed(() => {
   return props.totalPredecessors - props.blockingTasks.length;

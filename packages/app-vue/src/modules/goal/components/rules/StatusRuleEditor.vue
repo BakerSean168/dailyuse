@@ -8,13 +8,13 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <Bot :size="24" />
-          <CardTitle>自动状态规则</CardTitle>
+          <CardTitle>{{ t('goal.statusRule.title') }}</CardTitle>
         </div>
         <Badge :variant="config.enabled ? 'default' : 'secondary'">
-          {{ config.enabled ? '已启用' : '已禁用' }}
+          {{ config.enabled ? t('goal.statusRule.enabled') : t('goal.statusRule.disabled') }}
         </Badge>
       </div>
-      <CardDescription> 根据关键结果的进度、权重和截止日期自动更新目标状态 </CardDescription>
+      <CardDescription> {{ t('goal.statusRule.description') }} </CardDescription>
     </CardHeader>
 
     <CardContent>
@@ -22,22 +22,22 @@
       <div class="mb-4 space-y-2">
         <div class="flex items-center gap-2">
           <Switch :checked="config.enabled" @update:checked="config.enabled = $event" />
-          <Label>启用自动规则</Label>
+          <Label>{{ t('goal.statusRule.enableAutoRules') }}</Label>
         </div>
         <div class="flex items-center gap-2">
           <Switch
             :checked="config.allowManualOverride"
             @update:checked="config.allowManualOverride = $event"
           />
-          <Label>允许手动覆盖</Label>
-          <span class="text-sm text-muted-foreground">关闭后将不会自动应用规则建议</span>
+          <Label>{{ t('goal.statusRule.allowManualOverride') }}</Label>
+          <span class="text-sm text-muted-foreground">{{ t('goal.statusRule.disableNote') }}</span>
         </div>
         <div class="flex items-center gap-2">
           <Switch
             :checked="config.notifyOnChange"
             @update:checked="config.notifyOnChange = $event"
           />
-          <Label>状态变更时通知</Label>
+          <Label>{{ t('goal.statusRule.notifyOnChange') }}</Label>
         </div>
       </div>
 
@@ -45,10 +45,10 @@
 
       <!-- 规则列表 -->
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-medium">规则列表</h3>
+        <h3 class="text-sm font-medium">{{ t('goal.statusRule.ruleList') }}</h3>
         <Button variant="ghost" size="sm" @click="openAddDialog">
           <Plus class="mr-1 h-4 w-4" />
-          添加规则
+          {{ t('goal.statusRule.addRule') }}
         </Button>
       </div>
 
@@ -72,9 +72,11 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <span class="font-medium">{{ rule.name }}</span>
-              <Badge variant="outline" class="text-xs"> 优先级: {{ rule.priority }} </Badge>
+              <Badge variant="outline" class="text-xs">
+                {{ t('goal.statusRule.priority') }} {{ rule.priority }}
+              </Badge>
               <Badge v-if="rule.id.startsWith('rule-')" variant="secondary" class="text-xs">
-                内置
+                {{ t('goal.statusRule.builtIn') }}
               </Badge>
             </div>
 
@@ -85,11 +87,11 @@
             <div class="mt-2 text-xs text-muted-foreground">
               <div class="flex items-center">
                 <GitBranch class="mr-1 h-3 w-3" />
-                条件: {{ getConditionSummary(rule) }}
+                {{ t('goal.statusRule.condition') }} {{ getConditionSummary(rule) }}
               </div>
               <div class="mt-1 flex items-center">
                 <Zap class="mr-1 h-3 w-3" />
-                动作: {{ getActionSummary(rule) }}
+                {{ t('goal.statusRule.action') }} {{ getActionSummary(rule) }}
               </div>
             </div>
           </div>
@@ -113,7 +115,7 @@
 
       <Alert v-else class="mt-4">
         <AlertCircle class="h-4 w-4" />
-        <AlertDescription>暂无规则。点击"添加规则"创建自定义规则。</AlertDescription>
+        <AlertDescription>{{ t('goal.statusRule.atLeastOneCondition') }}</AlertDescription>
       </Alert>
     </CardContent>
 
@@ -121,32 +123,42 @@
     <Dialog :open="editDialog" @update:open="editDialog = $event">
       <DialogContent class="max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>{{ editingRule ? '编辑规则' : '新建规则' }}</DialogTitle>
+          <DialogTitle>{{
+            editingRule ? t('goal.statusRule.editRule') : t('goal.statusRule.newRule')
+          }}</DialogTitle>
         </DialogHeader>
 
         <form class="space-y-4" @submit.prevent>
           <!-- 基本信息 -->
           <div class="space-y-2">
-            <Label>规则名称 *</Label>
-            <Input v-model="form.name" placeholder="规则名称" />
+            <Label>{{ t('goal.statusRule.ruleName') }}</Label>
+            <Input v-model="form.name" :placeholder="t('goal.statusRule.ruleName')" />
           </div>
 
           <div class="space-y-2">
-            <Label>描述</Label>
-            <Textarea v-model="form.description" placeholder="描述" :rows="2" />
+            <Label>{{ t('goal.statusRule.ruleDesc') }}</Label>
+            <Textarea
+              v-model="form.description"
+              :placeholder="t('goal.statusRule.ruleDesc')"
+              :rows="2"
+            />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label>优先级 *</Label>
-              <Input v-model.number="form.priority" type="number" placeholder="优先级" />
-              <p class="text-xs text-muted-foreground">数值越大优先级越高</p>
+              <Label>{{ t('goal.statusRule.rulePriority') }}</Label>
+              <Input
+                v-model.number="form.priority"
+                type="number"
+                :placeholder="t('goal.statusRule.rulePriority')"
+              />
+              <p class="text-xs text-muted-foreground">{{ t('goal.statusRule.priorityHint') }}</p>
             </div>
             <div class="space-y-2">
-              <Label>条件类型 *</Label>
+              <Label>{{ t('goal.statusRule.conditionType') }}</Label>
               <Select v-model="form.conditionType">
                 <SelectTrigger>
-                  <SelectValue placeholder="条件类型" />
+                  <SelectValue :placeholder="t('goal.statusRule.conditionType')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem
@@ -166,16 +178,18 @@
           <!-- 条件构建器 -->
           <div>
             <div class="flex items-center justify-between mb-3">
-              <h4 class="text-sm font-medium">条件设置</h4>
+              <h4 class="text-sm font-medium">{{ t('goal.statusRule.conditionSettings') }}</h4>
               <Button variant="ghost" size="sm" @click="addCondition">
                 <Plus class="mr-1 h-4 w-4" />
-                添加条件
+                {{ t('goal.statusRule.addCondition') }}
               </Button>
             </div>
 
             <div v-if="form.conditions.length === 0" class="text-center py-4">
               <AlertCircle class="mx-auto h-12 w-12 text-muted-foreground" />
-              <p class="text-sm text-muted-foreground mt-2">请至少添加一个条件</p>
+              <p class="text-sm text-muted-foreground mt-2">
+                {{ t('goal.statusRule.atLeastOneCondition') }}
+              </p>
             </div>
 
             <div
@@ -239,13 +253,13 @@
 
           <!-- 动作设置 -->
           <div>
-            <h4 class="text-sm font-medium mb-3">动作设置</h4>
+            <h4 class="text-sm font-medium mb-3">{{ t('goal.statusRule.actionSettings') }}</h4>
 
             <div class="space-y-2 mb-4">
-              <Label>目标状态</Label>
+              <Label>{{ t('goal.statusRule.targetStatus') }}</Label>
               <Select v-model="form.action.status">
                 <SelectTrigger>
-                  <SelectValue placeholder="留空则不改变状态" />
+                  <SelectValue :placeholder="t('goal.statusRule.targetStatusHint')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
@@ -253,28 +267,32 @@
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p class="text-xs text-muted-foreground">留空则不改变状态</p>
+              <p class="text-xs text-muted-foreground">
+                {{ t('goal.statusRule.targetStatusHint') }}
+              </p>
             </div>
 
             <div class="flex items-center gap-2 mb-4">
               <Switch :checked="form.action.notify" @update:checked="form.action.notify = $event" />
-              <Label>发送通知</Label>
+              <Label>{{ t('goal.statusRule.sendNotification') }}</Label>
             </div>
 
             <div v-if="form.action.notify" class="space-y-2">
-              <Label>通知消息</Label>
+              <Label>{{ t('goal.statusRule.notificationMessage') }}</Label>
               <Textarea
                 v-model="form.action.message"
                 :rows="2"
-                placeholder="例如：🎉 太棒了！目标进度达到 80%"
+                :placeholder="t('goal.statusRule.messagePlaceholder')"
               />
             </div>
           </div>
         </form>
 
         <DialogFooter>
-          <Button variant="outline" @click="closeEditDialog">取消</Button>
-          <Button @click="saveRule">保存</Button>
+          <Button variant="outline" @click="closeEditDialog">{{
+            t('goal.statusRule.cancel')
+          }}</Button>
+          <Button @click="saveRule">{{ t('goal.statusRule.save') }}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -283,7 +301,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAutoStatusRules } from '../../application/composables/useAutoStatusRules';
+
+const { t } = useI18n();
 import type { StatusRule, RuleCondition } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { sortRulesByPriority } from '../../application/rules/BuiltInRules';
@@ -349,37 +370,37 @@ const form = ref<RuleForm>({
 });
 
 // 选项
-const conditionTypeOptions = [
-  { title: '所有条件都满足 (AND)', value: 'all' },
-  { title: '任意条件满足 (OR)', value: 'any' },
-];
+const conditionTypeOptions = computed(() => [
+  { title: t('goal.statusRule.conditionTypeProgress'), value: 'all' },
+  { title: t('goal.statusRule.conditionTypeTime'), value: 'any' },
+]);
 
-const metricOptions = [
-  { title: '进度 (%)', value: 'progress' },
-  { title: '权重 (%)', value: 'weight' },
-  { title: 'KR 数量', value: 'kr_count' },
-  { title: '剩余天数', value: 'deadline' },
-];
+const metricOptions = computed(() => [
+  { title: t('goal.statusRule.metricProgress'), value: 'progress' },
+  { title: t('goal.statusRule.metricKRCompletion'), value: 'weight' },
+  { title: t('goal.statusRule.metricTimeElapsed'), value: 'kr_count' },
+  { title: t('goal.statusRule.conditionTypeManual'), value: 'deadline' },
+]);
 
-const operatorOptions = [
-  { title: '大于 (>)', value: '>' },
-  { title: '小于 (<)', value: '<' },
-  { title: '等于 (=)', value: '=' },
-  { title: '大于等于 (>=)', value: '>=' },
-  { title: '小于等于 (<=)', value: '<=' },
-  { title: '不等于 (!=)', value: '!=' },
-];
+const operatorOptions = computed(() => [
+  { title: t('goal.statusRule.operatorGt') + ' (>)', value: '>' },
+  { title: t('goal.statusRule.operatorLt') + ' (<)', value: '<' },
+  { title: t('goal.statusRule.operatorEq') + ' (=)', value: '=' },
+  { title: t('goal.statusRule.operatorGte') + ' (>=)', value: '>=' },
+  { title: t('goal.statusRule.operatorLte') + ' (<=)', value: '<=' },
+  { title: '!= (!=)', value: '!=' },
+]);
 
-const scopeOptions = [
-  { title: '所有 KR', value: 'all' },
-  { title: '任意 KR', value: 'any' },
-];
+const scopeOptions = computed(() => [
+  { title: t('goal.statusRule.scopeAll'), value: 'all' },
+  { title: t('goal.statusRule.scopeAny'), value: 'any' },
+]);
 
-const statusOptions = [
-  { title: '进行中', value: GoalStatus.Active },
-  { title: '已完成', value: GoalStatus.Completed },
-  { title: '已归档', value: GoalStatus.Archived },
-];
+const statusOptions = computed(() => [
+  { title: t('goal.statusRule.statusActive'), value: GoalStatus.Active },
+  { title: t('goal.statusRule.statusCompleted'), value: GoalStatus.Completed },
+  { title: t('goal.statusRule.statusArchived'), value: GoalStatus.Archived },
+]);
 
 // 计算属性
 const sortedRules = computed(() => sortRulesByPriority(rules.value));
@@ -387,13 +408,16 @@ const sortedRules = computed(() => sortRulesByPriority(rules.value));
 // 生成条件摘要
 const getConditionSummary = (rule: StatusRule): string => {
   const conditionTexts = rule.conditions.map((c) => {
-    const metric = metricOptions.find((m) => m.value === c.metric)?.title || c.metric;
-    const operator = operatorOptions.find((o) => o.value === c.operator)?.title || c.operator;
-    const scope = scopeOptions.find((s) => s.value === c.scope)?.title || c.scope;
+    const metric = metricOptions.value.find((m) => m.value === c.metric)?.title || c.metric;
+    const operator = operatorOptions.value.find((o) => o.value === c.operator)?.title || c.operator;
+    const scope = scopeOptions.value.find((s) => s.value === c.scope)?.title || c.scope;
     return `${metric} ${operator} ${c.value} (${scope})`;
   });
 
-  const connector = rule.conditionType === 'all' ? ' 且 ' : ' 或 ';
+  const connector =
+    rule.conditionType === 'all'
+      ? ` ${t('goal.statusRule.connectorAnd')} `
+      : ` ${t('goal.statusRule.connectorOr')} `;
   return conditionTexts.join(connector);
 };
 
@@ -403,15 +427,15 @@ const getActionSummary = (rule: StatusRule): string => {
 
   if (rule.action.status) {
     const statusText =
-      statusOptions.find((s) => s.value === rule.action.status)?.title || rule.action.status;
-    parts.push(`状态 → ${statusText}`);
+      statusOptions.value.find((s) => s.value === rule.action.status)?.title || rule.action.status;
+    parts.push(`${t('goal.statusRule.setStatusTo')} ${statusText}`);
   }
 
   if (rule.action.notify) {
-    parts.push('发送通知');
+    parts.push(t('goal.statusRule.andNotify'));
   }
 
-  return parts.join(', ') || '无动作';
+  return parts.join(', ') || t('goal.statusRule.save');
 };
 
 // 打开新建对话框
@@ -455,17 +479,17 @@ const closeEditDialog = () => {
 // 保存规则
 const saveRule = async () => {
   if (!form.value.name) {
-    alert('请输入规则名称');
+    alert(t('goal.statusRule.ruleName'));
     return;
   }
 
   if (form.value.priority <= 0) {
-    alert('优先级必须大于 0');
+    alert(t('goal.statusRule.priorityHint'));
     return;
   }
 
   if (form.value.conditions.length === 0) {
-    alert('请至少添加一个条件');
+    alert(t('goal.statusRule.atLeastOneCondition'));
     return;
   }
 
@@ -519,7 +543,7 @@ const handleRuleToggle = (rule: StatusRule) => {
 
 // 删除规则
 const handleDelete = (ruleId: string) => {
-  if (confirm('确定要删除此规则吗？')) {
+  if (confirm(t('goal.statusRule.alertDeleteConfirm'))) {
     ruleEngine.removeRule(ruleId);
     loadRules();
   }

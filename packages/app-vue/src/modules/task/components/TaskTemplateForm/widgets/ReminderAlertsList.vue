@@ -2,10 +2,10 @@
 <template>
   <div class="w-full">
     <div class="flex justify-between items-center mb-3">
-      <h4>提醒时间</h4>
+      <h4>{{ t('task.reminderAlerts.time') }}</h4>
       <Button variant="outline" size="sm" @click="addAlert">
         <Plus class="h-4 w-4 mr-1" />
-        添加提醒
+        {{ t('task.reminderAlerts.add') }}
       </Button>
     </div>
 
@@ -13,10 +13,10 @@
       <CardContent class="py-3">
         <div class="grid grid-cols-12 gap-4 items-center">
           <div class="col-span-12 md:col-span-3">
-            <Label class="mb-1.5 block">通知方式</Label>
+            <Label class="mb-1.5 block">{{ t('task.reminderAlerts.method') }}</Label>
             <Select v-model="alert.type">
               <SelectTrigger>
-                <SelectValue placeholder="选择通知方式" />
+                <SelectValue :placeholder="t('task.reminderAlerts.selectMethod')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
@@ -28,7 +28,7 @@
                   <div class="flex items-center">
                     <span>{{ item.title }}</span>
                     <Badge v-if="item.disabled" variant="outline" class="ml-2 text-xs">
-                      未实现
+                      {{ t('task.reminderAlerts.notImplemented') }}
                     </Badge>
                   </div>
                 </SelectItem>
@@ -37,10 +37,10 @@
           </div>
 
           <div class="col-span-12 md:col-span-3">
-            <Label class="mb-1.5 block">提醒时机</Label>
+            <Label class="mb-1.5 block">{{ t('task.reminderAlerts.timing') }}</Label>
             <Select v-model="alert.timing.type">
               <SelectTrigger>
-                <SelectValue placeholder="选择时机" />
+                <SelectValue :placeholder="t('task.reminderAlerts.selectTiming')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
@@ -55,12 +55,12 @@
           </div>
 
           <div v-if="alert.timing.type === 'relative'" class="col-span-12 md:col-span-3">
-            <Label class="mb-1.5 block">提前分钟</Label>
+            <Label class="mb-1.5 block">{{ t('task.reminderAlerts.advanceMinutes') }}</Label>
             <Input v-model.number="alert.timing.minutesBefore" type="number" min="1" max="10080" />
           </div>
 
           <div v-else-if="alert.timing.type === 'absolute'" class="col-span-12 md:col-span-3">
-            <Label class="mb-1.5 block">绝对时间</Label>
+            <Label class="mb-1.5 block">{{ t('task.reminderAlerts.absoluteTime') }}</Label>
             <Input
               :model-value="absoluteTimeInput"
               type="time"
@@ -80,8 +80,8 @@
           </div>
 
           <div v-if="alert.message !== undefined" class="col-span-12">
-            <Label class="mb-1.5 block">自定义消息</Label>
-            <Input v-model="alert.message" placeholder="留空使用默认消息" />
+            <Label class="mb-1.5 block">{{ t('task.reminderAlerts.customMessage') }}</Label>
+            <Input v-model="alert.message" :placeholder="t('task.reminderAlerts.emptyMessage')" />
           </div>
         </div>
       </CardContent>
@@ -112,6 +112,9 @@ import {
   AlertDescription,
 } from '@dailyuse/ui-vue-shadcn';
 import { Plus, Trash2 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 本地类型定义
 interface ReminderAlert {
@@ -145,23 +148,23 @@ const localAlerts = computed({
 });
 
 // 表单选项数据
-const reminderTimingTypes = [
-  { title: '相对时间', value: 'relative' },
-  { title: '绝对时间', value: 'absolute' },
-];
+const reminderTimingTypes = computed(() => [
+  { title: t('task.reminderAlerts.relative'), value: 'relative' },
+  { title: t('task.reminderAlerts.absolute'), value: 'absolute' },
+]);
 
-const reminderTypes = [
-  { title: '通知', value: 'notification', disabled: false },
-  { title: '邮件', value: 'email', disabled: true },
-  { title: '声音', value: 'sound', disabled: true },
-  { title: '短信', value: 'sms', disabled: true },
-];
+const reminderTypes = computed(() => [
+  { title: t('task.reminderAlerts.notification'), value: 'notification', disabled: false },
+  { title: t('task.reminderAlerts.email'), value: 'email', disabled: true },
+  { title: t('task.reminderAlerts.sound'), value: 'sound', disabled: true },
+  { title: t('task.reminderAlerts.sms'), value: 'sms', disabled: true },
+]);
 
 // 验证规则
 const minutesBeforeRules = [
-  (v: number) => !!v || '提前分钟数是必填的',
-  (v: number) => v > 0 || '提前分钟数必须大于0',
-  (v: number) => v <= 10080 || '提前分钟数不能超过7天(10080分钟)',
+  (v: number) => !!v || t('task.reminderAlerts.invalidMinutes'),
+  (v: number) => v > 0 || t('task.reminderAlerts.invalidMinutes'),
+  (v: number) => v <= 10080 || t('task.reminderAlerts.invalidTime'),
 ];
 
 // 验证状态
@@ -186,14 +189,16 @@ const hasErrors = computed(() => localAlerts.value.length > 0 && !isValid.value)
 
 const errorMessage = computed(() => {
   if (!hasErrors.value) return '';
-  return '请完善所有提醒配置项';
+  return t('task.reminderAlerts.selectMethodRequired');
 });
 
 // 方法
 const getReminderItemProps = (item: any) => {
   return {
     disabled: item.disabled,
-    title: item.disabled ? `${item.title} (暂未实现)` : item.title,
+    title: item.disabled
+      ? `${item.title} (${t('task.reminderAlerts.notImplemented')})`
+      : item.title,
   };
 };
 const handleAbsoluteTimeChange = (timeValue: string, alertIndex: number) => {

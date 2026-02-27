@@ -2,8 +2,10 @@
   <div class="modal-overlay" v-if="props.visible">
     <div class="modal-container">
       <div class="modal-header">
-        <h2>任务详情</h2>
-        <button class="btn btn-secondary" @click="handleClose">关闭</button>
+        <h2>{{ t('task.infoCard.title') }}</h2>
+        <button class="btn btn-secondary" @click="handleClose">
+          {{ t('task.infoCard.close') }}
+        </button>
       </div>
 
       <div class="modal-content">
@@ -14,7 +16,7 @@
           <div class="task-meta">
             <div class="due-date">
               <Calendar class="h-4 w-4" />
-              <span>任务日期: </span>
+              <span>{{ t('task.infoCard.dateLabel') }}</span>
             </div>
 
             <div class="task-status">
@@ -24,7 +26,7 @@
 
             <div class="task-time">
               <Clock class="h-4 w-4" />
-              <span>时间: </span>
+              <span>{{ t('task.infoCard.timeLabel') }}</span>
             </div>
           </div>
         </div>
@@ -36,6 +38,9 @@
 <script setup lang="ts">
 import { Calendar, CheckCircle, Clock } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 const props = defineProps<{
   visible: boolean;
   task: TaskInstanceViewModel;

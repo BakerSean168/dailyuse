@@ -5,15 +5,17 @@
       <div class="flex items-center justify-between px-6 pt-6 pb-4">
         <Button variant="ghost" size="sm" @click="handleCancel">
           <X class="mr-1 h-4 w-4" />
-          取消
+          {{ t('goal.recordDialog.cancel') }}
         </Button>
         <div class="flex items-center">
           <PlusCircle class="mr-2 h-5 w-5 text-primary" />
-          <span class="text-lg font-bold">{{ isEditing ? '编辑记录' : '添加记录' }}</span>
+          <span class="text-lg font-bold">{{
+            isEditing ? t('goal.recordDialog.editTitle') : t('goal.recordDialog.addTitle')
+          }}</span>
         </div>
         <Button size="sm" :disabled="!isValid" @click="handleSave">
           <Check class="mr-1 h-4 w-4" />
-          保存
+          {{ t('goal.recordDialog.save') }}
         </Button>
       </div>
 
@@ -23,7 +25,7 @@
       <form class="flex flex-col gap-6 p-6" @submit.prevent="handleSave">
         <!-- 增加值输入 -->
         <div class="space-y-2">
-          <Label for="change-amount">增加值</Label>
+          <Label for="change-amount">{{ t('goal.recordDialog.incrementValue') }}</Label>
           <div class="relative flex items-center">
             <Plus class="absolute left-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -34,7 +36,9 @@
               min="0.1"
               step="0.1"
             />
-            <Badge variant="secondary" class="absolute right-3 font-medium"> 单位 </Badge>
+            <Badge variant="secondary" class="absolute right-3 font-medium">
+              {{ t('goal.recordDialog.unit') }}
+            </Badge>
           </div>
           <p v-if="validationError" class="text-xs text-destructive">{{ validationError }}</p>
         </div>
@@ -43,12 +47,12 @@
         <div class="space-y-2">
           <Label for="record-note" class="flex items-center gap-1">
             <FileText class="h-4 w-4 text-muted-foreground" />
-            备注说明
+            {{ t('goal.recordDialog.remarks') }}
           </Label>
           <Textarea
             id="record-note"
             v-model="localRecord.note"
-            placeholder="添加关于此次记录的详细说明..."
+            :placeholder="t('goal.recordDialog.remarksPlaceholder')"
             :rows="3"
             class="resize-none"
           />
@@ -58,7 +62,7 @@
         <div>
           <div class="mb-3 flex items-center text-sm text-muted-foreground">
             <Zap class="mr-1 h-4 w-4" />
-            快速选择
+            {{ t('goal.recordDialog.quickSelect') }}
           </div>
           <div class="flex flex-wrap gap-2">
             <Badge
@@ -79,6 +83,7 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import { Dialog, DialogContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -92,6 +97,8 @@ import { X, PlusCircle, Check, Plus, FileText, Zap } from 'lucide-vue-next';
 import { useGoal } from '../../composables/useGoal';
 
 const { createGoalRecord, goals } = useGoal();
+
+const { t } = useI18n();
 
 const visible = ref(false);
 const propKeyResultId = ref<string>('');
@@ -108,15 +115,15 @@ const localRecord = ref({
 
 const isEditing = computed(() => !!propRecord.value);
 
-const valueRules = [
-  (v: number) => !!v || '增加值不能为空',
-  (v: number) => v > 0 || '增加值必须大于0',
-  (v: number) => v <= 10000 || '增加值不能超过10000',
-];
+const valueRules = computed(() => [
+  (v: number) => !!v || t('goal.recordDialog.valueRequired'),
+  (v: number) => v > 0 || t('goal.recordDialog.valuePositive'),
+  (v: number) => v <= 10000 || t('goal.recordDialog.valueMax'),
+]);
 
 const validationError = computed(() => {
   const v = localRecord.value.changeAmount;
-  for (const rule of valueRules) {
+  for (const rule of valueRules.value) {
     const result = rule(v);
     if (result !== true) return result;
   }
@@ -129,7 +136,7 @@ const handleCreateKeyResult = async () => {
   // 获取当前 KeyResult
   const currentGoal = goals.value.find((g: any) => g.id === propGoalId.value);
   if (!currentGoal) {
-    console.error('未找到目标');
+    console.error(t('goal.recordDialog.goalNotFound'));
     return;
   }
 
@@ -137,7 +144,7 @@ const handleCreateKeyResult = async () => {
     (kr: any) => kr.id === propKeyResultId.value,
   );
   if (!currentKeyResult) {
-    console.error('未找到关键结果');
+    console.error(t('goal.recordDialog.krNotFound'));
     return;
   }
 
@@ -154,7 +161,7 @@ const handleSave = () => {
   if (!isValid.value) return;
 
   if (isEditing.value) {
-    console.warn('不允许编辑记录');
+    console.warn(t('goal.recordDialog.editNotAllowed'));
   } else {
     handleCreateKeyResult();
   }

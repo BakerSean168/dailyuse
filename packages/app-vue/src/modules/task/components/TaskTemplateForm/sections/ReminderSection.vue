@@ -7,7 +7,9 @@
   <Card class="mb-4">
     <CardHeader class="flex flex-row items-center gap-2 pb-2">
       <Bell class="h-5 w-5 text-primary" />
-      <CardTitle class="text-primary font-semibold">提醒设置</CardTitle>
+      <CardTitle class="text-primary font-semibold">{{
+        t('task.reminderSection.title')
+      }}</CardTitle>
       <!-- 验证状态指示器 -->
       <AlertTriangle v-if="!isValid" class="h-5 w-5 ml-2 text-destructive" />
       <CheckCircle v-else class="h-5 w-5 ml-2 text-green-500" />
@@ -26,19 +28,19 @@
         <div class="col-span-12">
           <div class="flex items-center gap-2">
             <Switch :checked="reminderEnabled" @update:checked="reminderEnabled = $event" />
-            <Label>启用提醒</Label>
+            <Label>{{ t('task.reminderSection.enable') }}</Label>
           </div>
         </div>
 
         <template v-if="reminderEnabled">
           <!-- 提醒触发器列表 -->
           <div class="col-span-12">
-            <div class="text-sm font-medium mb-2">提醒触发器</div>
+            <div class="text-sm font-medium mb-2">{{ t('task.reminderSection.triggers') }}</div>
             <Card v-for="(trigger, index) in triggers" :key="index" class="mb-3">
               <CardContent class="pt-4">
                 <div class="grid grid-cols-12 gap-4">
                   <div class="col-span-12 md:col-span-4">
-                    <Label class="mb-2 block">提醒类型</Label>
+                    <Label class="mb-2 block">{{ t('task.reminderSection.type') }}</Label>
                     <Select
                       :model-value="trigger.type"
                       @update:model-value="
@@ -49,7 +51,7 @@
                       "
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="选择类型" />
+                        <SelectValue :placeholder="t('task.reminderSection.selectType')" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem
@@ -66,7 +68,7 @@
                   <!-- 相对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.Relative">
                     <div class="col-span-12 md:col-span-3">
-                      <Label class="mb-2 block">提前时间</Label>
+                      <Label class="mb-2 block">{{ t('task.reminderSection.advanceTime') }}</Label>
                       <Input
                         :model-value="trigger.relativeValue ?? undefined"
                         type="number"
@@ -80,7 +82,7 @@
                       />
                     </div>
                     <div class="col-span-12 md:col-span-3">
-                      <Label class="mb-2 block">时间单位</Label>
+                      <Label class="mb-2 block">{{ t('task.reminderSection.timeUnit') }}</Label>
                       <Select
                         :model-value="trigger.relativeUnit ?? undefined"
                         @update:model-value="
@@ -91,7 +93,7 @@
                         "
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="选择单位" />
+                          <SelectValue :placeholder="t('task.reminderSection.selectUnit')" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem
@@ -109,7 +111,7 @@
                   <!-- 绝对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.Absolute">
                     <div class="col-span-12 md:col-span-4">
-                      <Label class="mb-2 block">提醒时间</Label>
+                      <Label class="mb-2 block">{{ t('task.reminderSection.reminderTime') }}</Label>
                       <Input
                         :model-value="formatAbsoluteTime(trigger.absoluteTime)"
                         type="datetime-local"
@@ -129,7 +131,7 @@
 
             <Button variant="outline" @click="addTrigger">
               <Plus class="h-4 w-4 mr-2" />
-              添加提醒触发器
+              {{ t('task.reminderSection.addTrigger') }}
             </Button>
           </div>
         </template>
@@ -140,6 +142,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import type { TaskReminderConfigDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
@@ -161,6 +164,8 @@ import {
   Button,
 } from '@dailyuse/ui-vue-shadcn';
 import { Bell, AlertTriangle, CheckCircle, Trash2, Plus } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 // 类型别名
 const ReminderType = TaskReminderType;
@@ -189,17 +194,17 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
 };
 
 // 提醒类型选项
-const reminderTypeOptions = [
-  { title: '相对时间', value: ReminderType.Relative },
-  { title: '绝对时间', value: ReminderType.Absolute },
-];
+const reminderTypeOptions = computed(() => [
+  { title: t('task.reminderSection.relative'), value: ReminderType.Relative },
+  { title: t('task.reminderSection.absolute'), value: ReminderType.Absolute },
+]);
 
 // 时间单位选项
-const timeUnitOptions = [
-  { title: '分钟', value: ReminderTimeUnit.Minutes },
-  { title: '小时', value: ReminderTimeUnit.Hours },
-  { title: '天', value: ReminderTimeUnit.Days },
-];
+const timeUnitOptions = computed(() => [
+  { title: t('task.reminderSection.minutes'), value: ReminderTimeUnit.Minutes },
+  { title: t('task.reminderSection.hours'), value: ReminderTimeUnit.Hours },
+  { title: t('task.reminderSection.days'), value: ReminderTimeUnit.Days },
+]);
 
 // 提醒启用状态
 const reminderEnabled = computed({
@@ -305,20 +310,22 @@ const validateReminderConfig = () => {
 
   if (reminderEnabled.value) {
     if (triggers.value.length === 0) {
-      errors.value.push('启用提醒时，请至少添加一个提醒触发器');
+      errors.value.push(t('task.reminderSection.atLeastOneTrigger'));
     }
 
     triggers.value.forEach((trigger, index) => {
       if (trigger.type === ReminderType.Relative) {
         if (!trigger.relativeValue || trigger.relativeValue < 1) {
-          errors.value.push(`触发器 ${index + 1}: 提前时间必须大于 0`);
+          errors.value.push(
+            t('task.reminderSection.triggerAdvanceTimePositive', { index: index + 1 }),
+          );
         }
         if (!trigger.relativeUnit) {
-          errors.value.push(`触发器 ${index + 1}: 请选择时间单位`);
+          errors.value.push(t('task.reminderSection.triggerSelectUnit', { index: index + 1 }));
         }
       } else if (trigger.type === ReminderType.Absolute) {
         if (!trigger.absoluteTime) {
-          errors.value.push(`触发器 ${index + 1}: 请设置提醒时间`);
+          errors.value.push(t('task.reminderSection.triggerSelectTime', { index: index + 1 }));
         }
       }
     });

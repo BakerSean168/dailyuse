@@ -1,8 +1,8 @@
 <template>
   <div class="flex h-full flex-col p-6">
     <div class="mb-6">
-      <h2 class="text-lg font-semibold">状态规则演示</h2>
-      <p class="text-sm text-muted-foreground">配置目标的自动状态转换规则</p>
+      <h2 class="text-lg font-semibold">{{ t('goal.statusRulesDemo.title') }}</h2>
+      <p class="text-sm text-muted-foreground">{{ t('goal.statusRulesDemo.subtitle') }}</p>
     </div>
 
     <ScrollArea class="flex-1">
@@ -11,9 +11,9 @@
         <Card>
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Settings class="h-4 w-4" /> 状态规则配置
+              <Settings class="h-4 w-4" /> {{ t('goal.statusRulesDemo.rulesConfig') }}
             </CardTitle>
-            <CardDescription> 定义当特定条件满足时，目标状态的自动转换规则 </CardDescription>
+            <CardDescription> {{ t('goal.statusRulesDemo.rulesConfigDesc') }} </CardDescription>
           </CardHeader>
           <CardContent>
             <StatusRuleEditor v-model:rules="rules" @save="handleSaveRules" />
@@ -24,13 +24,13 @@
         <Card>
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Clock class="h-4 w-4" /> 规则时间线
+              <Clock class="h-4 w-4" /> {{ t('goal.statusRulesDemo.rulesTimeline') }}
             </CardTitle>
-            <CardDescription>规则触发的时间线模拟</CardDescription>
+            <CardDescription>{{ t('goal.statusRulesDemo.rulesTimelineDesc') }}</CardDescription>
           </CardHeader>
           <CardContent>
             <div v-if="rules.length === 0" class="py-8 text-center text-sm text-muted-foreground">
-              请先添加规则
+              {{ t('goal.statusRulesDemo.addRulesFirst') }}
             </div>
             <div v-else class="space-y-4">
               <div v-for="(rule, idx) in rules" :key="idx" class="flex items-start gap-3">
@@ -46,7 +46,8 @@
                     <Badge>{{ rule.toStatus }}</Badge>
                   </div>
                   <p class="mt-1 text-xs text-muted-foreground">
-                    条件: {{ rule.condition || '无' }}
+                    {{ t('goal.statusRulesDemo.condition') }}
+                    {{ rule.condition || t('goal.statusRulesDemo.none') }}
                   </p>
                 </div>
               </div>
@@ -61,6 +62,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { Settings, Clock, ArrowRight } from 'lucide-vue-next';
 import {
   Card,
@@ -73,6 +75,8 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { StatusRuleEditor } from '../components';
 
+const { t } = useI18n();
+
 interface StatusRule {
   fromStatus: string;
   toStatus: string;
@@ -82,6 +86,6 @@ interface StatusRule {
 const rules = ref<StatusRule[]>([]);
 
 function handleSaveRules() {
-  toast.success('状态规则已保存');
+  toast.success(t('goal.statusRulesDemo.rulesSaved'));
 }
 </script>

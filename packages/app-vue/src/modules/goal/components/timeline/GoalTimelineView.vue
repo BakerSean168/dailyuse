@@ -1,16 +1,19 @@
 <template>
   <div class="goal-timeline-view">
     <div class="timeline-header">
-      <h2>{{ goalTitle }} - 时间线</h2>
+      <h2>{{ goalTitle }} - {{ t('goal.timeline.viewTitle') }}</h2>
       <div class="timeline-stats" v-if="timelineData">
         <span class="stat">
-          <strong>{{ timelineData.stats.totalSnapshots }}</strong> 个快照
+          <strong>{{ timelineData.stats.totalSnapshots }}</strong>
+          {{ t('goal.timeline.snapshotCount', { n: '' }).trim() }}
         </span>
         <span class="stat">
-          <strong>{{ timelineData.stats.totalChanges }}</strong> 次变更
+          <strong>{{ timelineData.stats.totalChanges }}</strong>
+          {{ t('goal.timeline.changeCount', { n: '' }).trim() }}
         </span>
         <span class="stat">
-          平均权重变化: <strong>{{ timelineData.stats.avgWeightChange.toFixed(1) }}%</strong>
+          {{ t('goal.timeline.avgWeightChange') }}
+          <strong>{{ timelineData.stats.avgWeightChange.toFixed(1) }}%</strong>
         </span>
       </div>
     </div>
@@ -18,7 +21,7 @@
     <!-- 加载状态 -->
     <div v-if="loadingSnapshots" class="loading-state">
       <div class="spinner" />
-      <span>加载时间线数据...</span>
+      <span>{{ t('goal.timeline.loading') }}</span>
     </div>
 
     <!-- 无数据状态 -->
@@ -29,8 +32,8 @@
           fill="currentColor"
         />
       </svg>
-      <h3>暂无时间线数据</h3>
-      <p>此目标尚无权重变更历史记录</p>
+      <h3>{{ t('goal.timeline.empty') }}</h3>
+      <p>{{ t('goal.timeline.emptyHint') }}</p>
     </div>
 
     <!-- 时间线内容 -->
@@ -50,13 +53,13 @@
       <div class="visualization-area">
         <!-- 权重饼图 -->
         <div class="weight-chart">
-          <h3>关键结果权重分布</h3>
+          <h3>{{ t('goal.timeline.krWeightDistribution') }}</h3>
           <div ref="weightChartRef" class="chart-container" />
         </div>
 
         <!-- 权重列表 -->
         <div class="weight-list">
-          <h3>关键结果详情</h3>
+          <h3>{{ t('goal.timeline.krDetails') }}</h3>
           <div v-if="currentSnapshot" class="kr-items">
             <div v-for="kr in currentSnapshot.data.keyResults" :key="kr.id" class="kr-item">
               <div class="kr-header">
@@ -83,7 +86,7 @@
               fill="currentColor"
             />
           </svg>
-          {{ exporting ? '导出中...' : '导出为图片' }}
+          {{ exporting ? t('goal.timeline.exporting') : t('goal.timeline.exportImage') }}
         </button>
       </div>
     </template>
@@ -92,7 +95,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
+
+const { t } = useI18n();
 import type { ECharts } from 'echarts';
 import TimelineControls from './TimelineControls.vue';
 import { useGoalTimeline } from '../../composables/useGoalTimeline';
@@ -126,7 +132,7 @@ const {
   loop,
 } = useGoalTimeline(goalRef);
 
-const goalTitle = computed(() => props.goal?.title || '未命名目标');
+const goalTitle = computed(() => props.goal?.title || t('goal.timeline.untitledGoal'));
 
 // ==================== Methods ====================
 
@@ -160,7 +166,7 @@ function updateWeightChart() {
     },
     series: [
       {
-        name: '权重',
+        name: t('goal.timeline.weightSeriesName'),
         type: 'pie',
         radius: ['40%', '70%'],
         avoidLabelOverlap: false,
@@ -210,7 +216,7 @@ async function exportAsImage() {
     // 创建下载链接
     const link = document.createElement('a');
     link.href = imageData;
-    link.download = `${goalTitle.value}-时间线-${Date.now()}.png`;
+    link.download = `${goalTitle.value}-timeline-${Date.now()}.png`;
     link.click();
   } catch (error) {
     console.error('Failed to export image:', error);

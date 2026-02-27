@@ -1,11 +1,12 @@
 /**
  * useAutoSave Composable
- * 
+ *
  * Presentation Layer - Composable
  * 自动保存、冲突检测、保存状态管理
  */
 
 import { ref, watch, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 export interface AutoSaveConfig {
   /** 自动保存间隔（毫秒） */
@@ -19,6 +20,8 @@ export interface AutoSaveConfig {
 }
 
 export function useAutoSave(config: AutoSaveConfig) {
+  const { t } = useI18n();
+
   // ==================== State ====================
   const isSaving = ref(false);
   const lastSaved = ref<Date | null>(null);
@@ -42,7 +45,7 @@ export function useAutoSave(config: AutoSaveConfig) {
 
       if (result.conflict) {
         saveStatus.value = 'conflict';
-        saveError.value = '检测到编辑冲突，请刷新页面查看最新版本';
+        saveError.value = t('editor.autoSave.conflictDetected');
         return false;
       }
 
@@ -61,12 +64,12 @@ export function useAutoSave(config: AutoSaveConfig) {
       }
 
       saveStatus.value = 'error';
-      saveError.value = '保存失败，请重试';
+      saveError.value = t('editor.autoSave.saveFailed');
       return false;
     } catch (error) {
       console.error('Save error:', error);
       saveStatus.value = 'error';
-      saveError.value = error instanceof Error ? error.message : '保存失败';
+      saveError.value = error instanceof Error ? error.message : t('editor.autoSave.saveError');
       return false;
     } finally {
       isSaving.value = false;

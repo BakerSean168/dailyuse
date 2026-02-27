@@ -1,17 +1,17 @@
 <template>
   <div class="flex h-full flex-col p-6">
     <div class="mb-6 flex items-center justify-between">
-      <h2 class="text-lg font-semibold">多目标对比</h2>
+      <h2 class="text-lg font-semibold">{{ t('goal.multiComparison.title') }}</h2>
       <Button variant="outline" size="sm" @click="showSelector = true">
-        <GitCompare class="mr-1 h-4 w-4" /> 选择目标
+        <GitCompare class="mr-1 h-4 w-4" /> {{ t('goal.multiComparison.selectGoals') }}
       </Button>
     </div>
 
     <div v-if="selectedGoals.length === 0" class="flex flex-1 items-center justify-center">
       <div class="text-center space-y-2">
         <GitCompare class="mx-auto h-12 w-12 text-muted-foreground/40" />
-        <p class="text-muted-foreground">请选择至少两个目标进行对比</p>
-        <Button @click="showSelector = true">选择目标</Button>
+        <p class="text-muted-foreground">{{ t('goal.multiComparison.selectAtLeastTwo') }}</p>
+        <Button @click="showSelector = true">{{ t('goal.multiComparison.selectGoals') }}</Button>
       </div>
     </div>
 
@@ -28,15 +28,17 @@
             </CardHeader>
             <CardContent class="space-y-2 text-sm">
               <div class="flex justify-between">
-                <span class="text-muted-foreground">优先级</span>
+                <span class="text-muted-foreground">{{ t('goal.multiComparison.priority') }}</span>
                 <span class="font-medium">{{ goal.priority }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-muted-foreground">重要性</span>
+                <span class="text-muted-foreground">{{
+                  t('goal.multiComparison.importance')
+                }}</span>
                 <span class="font-medium">{{ goal.importance }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-muted-foreground">标签</span>
+                <span class="text-muted-foreground">{{ t('goal.multiComparison.tags') }}</span>
                 <div class="flex flex-wrap gap-1">
                   <Badge v-for="tag in goal.tags" :key="tag" variant="secondary" class="text-xs">
                     {{ tag }}
@@ -44,11 +46,13 @@
                 </div>
               </div>
               <div v-if="goal.startDate" class="flex justify-between">
-                <span class="text-muted-foreground">开始日期</span>
+                <span class="text-muted-foreground">{{ t('goal.multiComparison.startDate') }}</span>
                 <span>{{ formatDate(goal.startDate) }}</span>
               </div>
               <div v-if="goal.targetDate" class="flex justify-between">
-                <span class="text-muted-foreground">目标日期</span>
+                <span class="text-muted-foreground">{{
+                  t('goal.multiComparison.targetDate')
+                }}</span>
                 <span>{{ formatDate(goal.targetDate) }}</span>
               </div>
             </CardContent>
@@ -72,6 +76,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { GitCompare } from 'lucide-vue-next';
 import {
   Button,
@@ -89,6 +94,7 @@ import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const { goals, fetchGoals } = useGoal();
 
+const { t, locale } = useI18n();
 const selectedIds = ref<string[]>([]);
 const showSelector = ref(false);
 
@@ -111,7 +117,7 @@ function statusVariant(status: string) {
 
 function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
-  return new Date(d).toLocaleDateString('zh-CN');
+  return new Date(d).toLocaleDateString(locale.value);
 }
 
 function handleSelect(ids: string[]) {

@@ -1,7 +1,7 @@
 <template>
   <Card>
     <CardHeader>
-      <CardTitle>工作流设置</CardTitle>
+      <CardTitle>{{ t('setting.workflow.title') }}</CardTitle>
     </CardHeader>
     <CardContent class="space-y-6">
       <!-- Auto Save -->
@@ -9,9 +9,11 @@
         <div class="space-y-1">
           <Label class="text-base flex items-center">
             <Save class="h-4 w-4 mr-2" />
-            自动保存
+            {{ t('setting.workflow.autoSave') }}
           </Label>
-          <p class="text-sm text-muted-foreground">编辑内容时自动保存更改</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.workflow.autoSaveDescription') }}
+          </p>
         </div>
         <Switch
           :checked="modelValue.autoSave"
@@ -23,7 +25,7 @@
       <div v-if="modelValue.autoSave" class="space-y-2">
         <Label class="text-sm font-medium flex items-center">
           <Timer class="h-4 w-4 mr-2" />
-          自动保存间隔 (秒)
+          {{ t('setting.workflow.autoSaveInterval') }}
         </Label>
         <div class="flex items-center space-x-4">
           <Slider
@@ -32,9 +34,17 @@
             :max="60"
             :step="5"
             class="flex-1"
-            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, autoSaveInterval: (value?.[0] ?? 10) * 1000 })"
+            @update:model-value="
+              (value: any) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  autoSaveInterval: (value?.[0] ?? 10) * 1000,
+                })
+            "
           />
-          <span class="text-sm w-12 text-right">{{ Math.floor((modelValue.autoSaveInterval || 10000) / 1000) }}s</span>
+          <span class="text-sm w-12 text-right"
+            >{{ Math.floor((modelValue.autoSaveInterval || 10000) / 1000) }}s</span
+          >
         </div>
       </div>
 
@@ -45,13 +55,17 @@
         <div class="space-y-1">
           <Label class="text-base flex items-center">
             <AlertCircle class="h-4 w-4 mr-2" />
-            删除前确认
+            {{ t('setting.workflow.confirmBeforeDelete') }}
           </Label>
-          <p class="text-sm text-muted-foreground">删除项目前显示确认对话框</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.workflow.confirmBeforeDeleteDescription') }}
+          </p>
         </div>
         <Switch
           :checked="modelValue.confirmBeforeDelete"
-          @update:checked="(value) => emit('update:modelValue', { ...modelValue, confirmBeforeDelete: value })"
+          @update:checked="
+            (value) => emit('update:modelValue', { ...modelValue, confirmBeforeDelete: value })
+          "
         />
       </div>
 
@@ -63,21 +77,19 @@
         <div class="space-y-2">
           <Label for="goal-view-select" class="flex items-center">
             <Target class="h-4 w-4 mr-2" />
-            默认目标视图
+            {{ t('setting.workflow.defaultGoalView') }}
           </Label>
           <Select
             :model-value="modelValue.defaultGoalView"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, defaultGoalView: value })"
+            @update:model-value="
+              (value) => emit('update:modelValue', { ...modelValue, defaultGoalView: value })
+            "
           >
             <SelectTrigger id="goal-view-select">
-              <SelectValue placeholder="选择视图" />
+              <SelectValue :placeholder="t('setting.workflow.viewPlaceholder')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                v-for="option in goalViewOptions"
-                :key="option.value"
-                :value="option.value"
-              >
+              <SelectItem v-for="option in goalViewOpts" :key="option.value" :value="option.value">
                 {{ option.label }}
               </SelectItem>
             </SelectContent>
@@ -88,18 +100,20 @@
         <div class="space-y-2">
           <Label for="schedule-view-select" class="flex items-center">
             <Calendar class="h-4 w-4 mr-2" />
-            默认日程视图
+            {{ t('setting.workflow.defaultScheduleView') }}
           </Label>
           <Select
             :model-value="modelValue.defaultScheduleView"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, defaultScheduleView: value })"
+            @update:model-value="
+              (value) => emit('update:modelValue', { ...modelValue, defaultScheduleView: value })
+            "
           >
             <SelectTrigger id="schedule-view-select">
-              <SelectValue placeholder="选择视图" />
+              <SelectValue :placeholder="t('setting.workflow.viewPlaceholder')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                v-for="option in scheduleViewOptions"
+                v-for="option in scheduleViewOpts"
                 :key="option.value"
                 :value="option.value"
               >
@@ -113,21 +127,19 @@
         <div class="space-y-2">
           <Label for="task-view-select" class="flex items-center">
             <CheckSquare class="h-4 w-4 mr-2" />
-            默认任务视图
+            {{ t('setting.workflow.defaultTaskView') }}
           </Label>
           <Select
             :model-value="modelValue.defaultTaskView"
-            @update:model-value="(value) => emit('update:modelValue', { ...modelValue, defaultTaskView: value })"
+            @update:model-value="
+              (value) => emit('update:modelValue', { ...modelValue, defaultTaskView: value })
+            "
           >
             <SelectTrigger id="task-view-select">
-              <SelectValue placeholder="选择视图" />
+              <SelectValue :placeholder="t('setting.workflow.viewPlaceholder')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                v-for="option in taskViewOptions"
-                :key="option.value"
-                :value="option.value"
-              >
+              <SelectItem v-for="option in taskViewOpts" :key="option.value" :value="option.value">
                 {{ option.label }}
               </SelectItem>
             </SelectContent>
@@ -139,13 +151,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { Slider } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Save, Timer, AlertCircle, Target, Calendar, CheckSquare } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface WorkflowSettings {
   autoSave?: boolean;
@@ -166,24 +188,24 @@ const emit = defineEmits<{
   'update:modelValue': [value: WorkflowSettings];
 }>();
 
-const goalViewOptions = [
-  { label: '列表视图', value: 'LIST' },
-  { label: '看板视图', value: 'KANBAN' },
-  { label: '甘特图', value: 'GANTT' },
-  { label: '树形视图', value: 'TREE' },
-];
+const goalViewOpts = computed(() => [
+  { label: t('setting.workflow.listView'), value: 'LIST' },
+  { label: t('setting.workflow.kanbanView'), value: 'KANBAN' },
+  { label: t('setting.workflow.ganttView'), value: 'GANTT' },
+  { label: t('setting.workflow.treeView'), value: 'TREE' },
+]);
 
-const scheduleViewOptions = [
-  { label: '日视图', value: 'DAY' },
-  { label: '周视图', value: 'WEEK' },
-  { label: '月视图', value: 'MONTH' },
-  { label: '列表视图', value: 'LIST' },
-];
+const scheduleViewOpts = computed(() => [
+  { label: t('setting.workflow.dayView'), value: 'DAY' },
+  { label: t('setting.workflow.weekView'), value: 'WEEK' },
+  { label: t('setting.workflow.monthView'), value: 'MONTH' },
+  { label: t('setting.workflow.listView'), value: 'LIST' },
+]);
 
-const taskViewOptions = [
-  { label: '列表视图', value: 'LIST' },
-  { label: '看板视图', value: 'KANBAN' },
-  { label: '日历视图', value: 'CALENDAR' },
-  { label: '矩阵视图', value: 'MATRIX' },
-];
+const taskViewOpts = computed(() => [
+  { label: t('setting.workflow.listView'), value: 'LIST' },
+  { label: t('setting.workflow.kanbanView'), value: 'KANBAN' },
+  { label: t('setting.workflow.calendarView'), value: 'CALENDAR' },
+  { label: t('setting.workflow.matrixView'), value: 'MATRIX' },
+]);
 </script>

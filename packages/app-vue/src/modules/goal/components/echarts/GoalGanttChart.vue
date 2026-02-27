@@ -3,17 +3,19 @@
     <CardHeader class="pb-3">
       <CardTitle class="flex items-center gap-2 text-base">
         <GanttChartSquare class="h-4 w-4" />
-        目标时间线
+        {{ t('goal.chart.goalGantt.title') }}
       </CardTitle>
-      <CardDescription>{{ sortedGoals.length }} 个目标</CardDescription>
+      <CardDescription>{{
+        t('goal.chart.goalGantt.description', { n: sortedGoals.length })
+      }}</CardDescription>
     </CardHeader>
 
     <Separator />
 
     <CardContent class="space-y-4 overflow-x-auto py-4">
       <div class="flex min-w-245 items-center justify-between text-xs text-muted-foreground">
-        <div class="w-56">目标</div>
-        <div class="flex-1 px-2">时间轴</div>
+        <div class="w-56">{{ t('goal.chart.goalGantt.goalAxis') }}</div>
+        <div class="flex-1 px-2">{{ t('goal.chart.goalGantt.timeAxis') }}</div>
       </div>
 
       <div class="space-y-3">
@@ -49,10 +51,12 @@
 
       <div class="flex items-center gap-3 text-xs text-muted-foreground">
         <div class="flex items-center gap-1">
-          <span class="inline-block h-2 w-2 rounded-full bg-primary" /> 已完成进度
+          <span class="inline-block h-2 w-2 rounded-full bg-primary" />
+          {{ t('goal.chart.goalGantt.completedLegend') }}
         </div>
         <div class="flex items-center gap-1">
-          <span class="inline-block h-2 w-2 rounded-full bg-muted-foreground/40" /> 总周期
+          <span class="inline-block h-2 w-2 rounded-full bg-muted-foreground/40" />
+          {{ t('goal.chart.goalGantt.totalLegend') }}
         </div>
       </div>
     </CardContent>
@@ -61,6 +65,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { GanttChartSquare } from 'lucide-vue-next';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -74,6 +79,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   goals: () => [],
 });
+
+const { t } = useI18n();
 
 const dateRange = computed(() => {
   const today = new Date();

@@ -6,12 +6,12 @@
 <template>
   <Card class="mb-4">
     <CardHeader>
-      <CardTitle>⏰ 时间配置</CardTitle>
+      <CardTitle>⏰ {{ t('task.timeConfig.title') }}</CardTitle>
     </CardHeader>
     <CardContent>
       <!-- 时间类型选择 -->
       <div class="mb-4">
-        <Label class="mb-2 block">时间类型</Label>
+        <Label class="mb-2 block">{{ t('task.timeConfig.timeType') }}</Label>
         <RadioGroup
           :model-value="timeType"
           @update:model-value="
@@ -23,15 +23,15 @@
         >
           <div class="flex items-center space-x-2">
             <RadioGroupItem :value="TaskTimeType.AllDay" id="time-all-day" />
-            <Label for="time-all-day">全天</Label>
+            <Label for="time-all-day">{{ t('task.timeConfig.allDay') }}</Label>
           </div>
           <div class="flex items-center space-x-2">
             <RadioGroupItem :value="TaskTimeType.TimePoint" id="time-point" />
-            <Label for="time-point">时间点</Label>
+            <Label for="time-point">{{ t('task.timeConfig.timePoint') }}</Label>
           </div>
           <div class="flex items-center space-x-2">
             <RadioGroupItem :value="TaskTimeType.TimeRange" id="time-range" />
-            <Label for="time-range">时间段</Label>
+            <Label for="time-range">{{ t('task.timeConfig.timeRange') }}</Label>
           </div>
         </RadioGroup>
       </div>
@@ -39,7 +39,7 @@
       <!-- 日期范围 -->
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-6">
-          <Label class="mb-1.5 block">开始日期</Label>
+          <Label class="mb-1.5 block">{{ t('task.timeConfig.startDate') }}</Label>
           <Input v-model="startDate" type="date" @update:model-value="handleDateChange" />
         </div>
       </div>
@@ -47,35 +47,41 @@
       <!-- 时间点输入 (仅当选择 TimePoint 时显示) -->
       <div v-if="timeType === TaskTimeType.TimePoint" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12">
-          <Label class="mb-1.5 block">具体时间</Label>
+          <Label class="mb-1.5 block">{{ t('task.timeConfig.specificTime') }}</Label>
           <Input
             v-model="timePoint"
             type="datetime-local"
             @update:model-value="handleTimePointChange"
           />
-          <p class="text-xs text-muted-foreground mt-1">选择具体日期和时间</p>
+          <p class="text-xs text-muted-foreground mt-1">
+            {{ t('task.timeConfig.selectDateTime') }}
+          </p>
         </div>
       </div>
 
       <!-- 时间段输入 (仅当选择 TimeRange 时显示) -->
       <div v-if="timeType === TaskTimeType.TimeRange" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12 md:col-span-6">
-          <Label class="mb-1.5 block">开始时间</Label>
+          <Label class="mb-1.5 block">{{ t('task.timeConfig.startTime') }}</Label>
           <Input
             v-model="timeRangeStart"
             type="datetime-local"
             @update:model-value="handleTimeRangeChange"
           />
-          <p class="text-xs text-muted-foreground mt-1">选择开始日期和时间</p>
+          <p class="text-xs text-muted-foreground mt-1">
+            {{ t('task.timeConfig.selectStartDateTime') }}
+          </p>
         </div>
         <div class="col-span-12 md:col-span-6">
-          <Label class="mb-1.5 block">结束时间</Label>
+          <Label class="mb-1.5 block">{{ t('task.timeConfig.endTime') }}</Label>
           <Input
             v-model="timeRangeEnd"
             type="datetime-local"
             @update:model-value="handleTimeRangeChange"
           />
-          <p class="text-xs text-muted-foreground mt-1">选择结束日期和时间</p>
+          <p class="text-xs text-muted-foreground mt-1">
+            {{ t('task.timeConfig.selectEndDateTime') }}
+          </p>
         </div>
       </div>
 
@@ -89,6 +95,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { TaskTimeType } from '@dailyuse/contracts/task';
 import type { TaskTimeConfigDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
@@ -104,6 +111,8 @@ import {
   Alert,
   AlertDescription,
 } from '@dailyuse/ui-vue-shadcn';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   modelValue: TaskTemplateViewModel;
@@ -214,6 +223,87 @@ const parseDateTimeInput = (datetimeStr: string): number | null => {
 };
 
 /**
+ * 处理日期变更
+ */
+const handleDateChange = () => {
+  try {
+    validationError.value = '';
+    const parsedDate = parseDateInput(startDate.value);
+
+    const updated: TaskTemplateViewModel = {
+      ...props.modelValue,
+      timeConfig: {
+        ...(props.modelValue.timeConfig || {}),
+        startDate: parsedDate,
+      } as any,
+    };
+    emit('update:modelValue', updated);
+    emit('update:validation', true);
+  } catch (error) {
+    console.error('更新日期失败:', error);
+    validationError.value =
+      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    emit('update:validation', false);
+  }
+};
+
+/**
+ * 处理时间点变更
+ */
+const handleTimePointChange = () => {
+  try {
+    validationError.value = '';
+    const parsedTime = parseDateTimeInput(timePoint.value);
+
+    const updated: TaskTemplateViewModel = {
+      ...props.modelValue,
+      timeConfig: {
+        ...(props.modelValue.timeConfig || {}),
+        timeType: TaskTimeType.TimePoint,
+        timePoint: parsedTime,
+      } as any,
+    };
+    emit('update:modelValue', updated);
+    emit('update:validation', true);
+  } catch (error) {
+    console.error('更新时间点失败:', error);
+    validationError.value =
+      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    emit('update:validation', false);
+  }
+};
+
+/**
+ * 处理时间段变更
+ */
+const handleTimeRangeChange = () => {
+  try {
+    validationError.value = '';
+    const parsedStart = parseDateTimeInput(timeRangeStart.value);
+    const parsedEnd = parseDateTimeInput(timeRangeEnd.value);
+
+    const updated: TaskTemplateViewModel = {
+      ...props.modelValue,
+      timeConfig: {
+        ...(props.modelValue.timeConfig || {}),
+        timeType: TaskTimeType.TimeRange,
+        timeRange: {
+          start: parsedStart ?? 0,
+          end: parsedEnd ?? 0,
+        },
+      } as any,
+    };
+    emit('update:modelValue', updated);
+    emit('update:validation', true);
+  } catch (error) {
+    console.error('更新时间段失败:', error);
+    validationError.value =
+      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
+    emit('update:validation', false);
+  }
+};
+
+/**
  * 处理时间类型变更
  */
 const handleTimeTypeChange = () => {
@@ -236,88 +326,8 @@ const handleTimeTypeChange = () => {
     emit('update:validation', true);
   } catch (error) {
     console.error('更新时间类型失败:', error);
-    validationError.value = error instanceof Error ? error.message : '更新失败';
-    emit('update:validation', false);
-  }
-};
-
-/**
- * 处理日期变更
- */
-const handleDateChange = () => {
-  updateTimeConfig();
-};
-
-/**
- * 处理时间点变更
- */
-const handleTimePointChange = () => {
-  updateTimeConfig();
-};
-
-/**
- * 处理时间段变更
- */
-const handleTimeRangeChange = () => {
-  updateTimeConfig();
-};
-
-/**
- * 更新时间配置
- */
-const updateTimeConfig = () => {
-  try {
-    validationError.value = '';
-
-    // 构建新的时间配置
-    const newConfig: TaskTimeConfigDTO = {
-      timeType: timeType.value,
-      startDate: parseDateInput(startDate.value),
-      timePoint:
-        timeType.value === TaskTimeType.TimePoint ? parseDateTimeInput(timePoint.value) : null,
-      timeRange:
-        timeType.value === TaskTimeType.TimeRange && timeRangeStart.value && timeRangeEnd.value
-          ? {
-              start: parseDateTimeInput(timeRangeStart.value)!,
-              end: parseDateTimeInput(timeRangeEnd.value)!,
-            }
-          : null,
-    };
-
-    // 验证
-    if (timeType.value === TaskTimeType.TimePoint && !newConfig.timePoint) {
-      validationError.value = '请输入具体时间';
-      emit('update:validation', false);
-      return;
-    }
-
-    if (timeType.value === TaskTimeType.TimeRange && !newConfig.timeRange) {
-      validationError.value = '请输入完整的时间段';
-      emit('update:validation', false);
-      return;
-    }
-
-    if (
-      timeType.value === TaskTimeType.TimeRange &&
-      newConfig.timeRange &&
-      newConfig.timeRange.start >= newConfig.timeRange.end
-    ) {
-      validationError.value = '结束时间必须晚于开始时间';
-      emit('update:validation', false);
-      return;
-    }
-
-    const updated: TaskTemplateViewModel = {
-      ...props.modelValue,
-      timeConfig: newConfig as any,
-    };
-    emit('update:modelValue', updated);
-
-    // 发出验证成功事件
-    emit('update:validation', true);
-  } catch (error) {
-    console.error('更新时间配置失败:', error);
-    validationError.value = error instanceof Error ? error.message : '更新失败';
+    validationError.value =
+      error instanceof Error ? error.message : t('task.timeConfig.updateFailed');
     emit('update:validation', false);
   }
 };

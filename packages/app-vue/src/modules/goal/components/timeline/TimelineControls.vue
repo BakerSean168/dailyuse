@@ -34,7 +34,11 @@
     <div class="controls-row">
       <!-- 播放控制 -->
       <div class="play-controls">
-        <button class="control-btn" :title="isPlaying ? '暂停' : '播放'" @click="togglePlay">
+        <button
+          class="control-btn"
+          :title="isPlaying ? t('goal.timeline.controls.pause') : t('goal.timeline.controls.play')"
+          @click="togglePlay"
+        >
           <svg v-if="!isPlaying" viewBox="0 0 24 24" class="icon">
             <path d="M8 5v14l11-7z" fill="currentColor" />
           </svg>
@@ -45,7 +49,7 @@
 
         <button
           class="control-btn"
-          title="上一个"
+          :title="t('goal.timeline.controls.prev')"
           :disabled="currentIndex === 0"
           @click="previousSnapshot"
         >
@@ -56,7 +60,7 @@
 
         <button
           class="control-btn"
-          title="下一个"
+          :title="t('goal.timeline.controls.next')"
           :disabled="currentIndex === maxIndex"
           @click="nextSnapshot"
         >
@@ -65,7 +69,12 @@
           </svg>
         </button>
 
-        <button class="control-btn" :class="{ active: loop }" title="循环播放" @click="toggleLoop">
+        <button
+          class="control-btn"
+          :class="{ active: loop }"
+          :title="t('goal.timeline.controls.loop')"
+          @click="toggleLoop"
+        >
           <svg viewBox="0 0 24 24" class="icon">
             <path
               d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"
@@ -77,7 +86,7 @@
 
       <!-- 速度控制 -->
       <div class="speed-controls">
-        <span class="speed-label">速度:</span>
+        <span class="speed-label">{{ t('goal.timeline.controls.speed') }}</span>
         <button
           v-for="speedOption in speedOptions"
           :key="speedOption"
@@ -105,20 +114,20 @@
             fill="currentColor"
           />
         </svg>
-        <span>{{ currentSnapshot.reason || '无描述' }}</span>
+        <span>{{ currentSnapshot.reason || t('goal.timeline.controls.noDescription') }}</span>
       </div>
 
       <div class="snapshot-stats">
         <div class="stat-item">
-          <span class="stat-label">总权重:</span>
+          <span class="stat-label">{{ t('goal.timeline.controls.totalWeight') }}</span>
           <span class="stat-value">{{ currentSnapshot.data.totalWeight.toFixed(1) }}%</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">总进度:</span>
+          <span class="stat-label">{{ t('goal.timeline.controls.totalProgress') }}</span>
           <span class="stat-value">{{ currentSnapshot.data.totalProgress.toFixed(1) }}%</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">关键结果:</span>
+          <span class="stat-label">{{ t('goal.timeline.controls.keyResults') }}</span>
           <span class="stat-value">{{ currentSnapshot.data.keyResults.length }}</span>
         </div>
       </div>
@@ -128,8 +137,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { TimelineSnapshot } from '../../application/services/GoalTimelineService';
 import { formatTimelineTimestamp } from '../../application/services/GoalTimelineService';
+
+const { t } = useI18n();
 
 // ==================== Props ====================
 

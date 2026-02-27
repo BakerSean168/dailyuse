@@ -5,7 +5,7 @@
       <DialogHeader class="pb-4">
         <DialogTitle class="flex items-center gap-3 text-xl">
           <Target class="h-5 w-5 text-primary" />
-          {{ isEditing ? '更新关键结果' : '创建关键结果' }}
+          {{ isEditing ? t('goal.krDialog.updateTitle') : t('goal.krDialog.createTitle') }}
         </DialogTitle>
       </DialogHeader>
 
@@ -15,22 +15,26 @@
         <!-- 基本信息 -->
         <div>
           <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
-            基本信息
+            {{ t('goal.krDialog.basicInfo') }}
           </h3>
           <div class="grid grid-cols-12 gap-4">
             <!-- 关键结果名称 -->
             <div class="col-span-12 grid gap-2">
-              <Label for="kr-title">关键结果名称*</Label>
-              <Input id="kr-title" v-model="keyResultTitle" placeholder="例如：新增活跃用户数量" />
+              <Label for="kr-title">{{ t('goal.krDialog.name') }}</Label>
+              <Input
+                id="kr-title"
+                v-model="keyResultTitle"
+                :placeholder="t('goal.krDialog.namePlaceholder')"
+              />
             </div>
 
             <!-- 描述 -->
             <div class="col-span-12 grid gap-2">
-              <Label for="kr-description">描述</Label>
+              <Label for="kr-description">{{ t('goal.krDialog.description') }}</Label>
               <Textarea
                 id="kr-description"
                 v-model="keyResultDescription"
-                placeholder="可选：说明如何衡量和达成这个关键结果"
+                :placeholder="t('goal.krDialog.descPlaceholder')"
                 class="min-h-[60px] resize-none"
               />
             </div>
@@ -40,28 +44,28 @@
         <!-- 数值配置 -->
         <div>
           <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
-            数值配置
+            {{ t('goal.krDialog.numConfig') }}
           </h3>
           <div class="grid grid-cols-12 gap-4">
             <!-- 起始值 -->
             <div class="col-span-4 grid gap-2">
-              <Label for="kr-start">起始值*</Label>
+              <Label for="kr-start">{{ t('goal.krDialog.startValue') }}</Label>
               <Input id="kr-start" v-model.number="keyResultStartValue" type="number" />
-              <p class="text-xs text-muted-foreground">关键结果的初始数值</p>
+              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.startValueHint') }}</p>
             </div>
 
             <!-- 目标值 -->
             <div class="col-span-4 grid gap-2">
-              <Label for="kr-target">目标值*</Label>
+              <Label for="kr-target">{{ t('goal.krDialog.targetValue') }}</Label>
               <Input id="kr-target" v-model.number="keyResultTargetValue" type="number" />
-              <p class="text-xs text-muted-foreground">期望达到的目标数值</p>
+              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.targetValueHint') }}</p>
             </div>
 
             <!-- 当前值 -->
             <div class="col-span-4 grid gap-2">
-              <Label for="kr-current">当前值</Label>
+              <Label for="kr-current">{{ t('goal.krDialog.currentValue') }}</Label>
               <Input id="kr-current" v-model.number="keyResultCurrentValue" type="number" />
-              <p class="text-xs text-muted-foreground">目前的实际数值</p>
+              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.currentValueHint') }}</p>
             </div>
           </div>
         </div>
@@ -69,15 +73,15 @@
         <!-- 高级配置 -->
         <div>
           <h3 class="text-base font-semibold mb-4 text-primary border-b-2 border-primary/10 pb-2">
-            高级配置
+            {{ t('goal.krDialog.advancedConfig') }}
           </h3>
           <div class="grid grid-cols-12 gap-4">
             <!-- 计算方法 -->
             <div class="col-span-6 grid gap-2">
-              <Label>进度计算方法*</Label>
+              <Label>{{ t('goal.krDialog.calcMethod') }}</Label>
               <Select v-model="keyResultCalculationMethod">
                 <SelectTrigger>
-                  <SelectValue placeholder="选择计算方法" />
+                  <SelectValue :placeholder="t('goal.krDialog.selectCalcMethod')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem
@@ -89,12 +93,12 @@
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p class="text-xs text-muted-foreground">选择如何计算进度百分比</p>
+              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.calcMethodHint') }}</p>
             </div>
 
             <!-- 权重 -->
             <div class="col-span-6 grid gap-2">
-              <Label for="kr-weight">权重*</Label>
+              <Label for="kr-weight">{{ t('goal.krDialog.weight') }}</Label>
               <Input
                 id="kr-weight"
                 v-model.number="keyResultWeight"
@@ -103,7 +107,7 @@
                 max="10"
                 step="1"
               />
-              <p class="text-xs text-muted-foreground">该关键结果在目标中的重要程度 (1-10)</p>
+              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.weightHint') }}</p>
             </div>
           </div>
         </div>
@@ -111,13 +115,15 @@
         <!-- 进度预览 -->
         <div v-if="progressPercentage >= 0">
           <h3 class="text-base font-semibold mb-3 text-primary border-b-2 border-primary/10 pb-2">
-            进度预览
+            {{ t('goal.krDialog.progressPreview') }}
           </h3>
           <div
             class="rounded-lg border-2 border-primary/10 p-4 transition-all hover:border-primary/30 hover:shadow-md"
           >
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium">{{ keyResultTitle || '关键结果名称' }}</span>
+              <span class="text-sm font-medium">{{
+                keyResultTitle || t('goal.krDialog.krName')
+              }}</span>
               <span class="text-base font-bold" :class="progressColor">
                 {{ progressPercentage.toFixed(1) }}%
               </span>
@@ -141,10 +147,10 @@
 
       <DialogFooter class="pt-4 gap-2 sm:gap-0">
         <div class="flex-1" />
-        <Button variant="outline" @click="handleCancel"> 取消 </Button>
+        <Button variant="outline" @click="handleCancel"> {{ t('goal.krDialog.cancel') }} </Button>
         <Button :disabled="!isFormValid || loading" @click="handleSave">
           <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
-          {{ isEditing ? '更新' : '创建' }}
+          {{ isEditing ? t('goal.krDialog.update') : t('goal.krDialog.create') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -153,6 +159,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import {
   Dialog,
@@ -175,6 +182,8 @@ import {
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import { Target, Loader2 } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 const AggregationMethod = {
   SUM: 'SUM',
@@ -296,13 +305,13 @@ const keyResultWeight = computed({
   },
 });
 
-const calculationMethods = [
-  { title: '累加 - 适用于递增指标', value: AggregationMethod.SUM },
-  { title: '平均值 - 适用于波动指标', value: AggregationMethod.AVERAGE },
-  { title: '最大值 - 取最高值', value: AggregationMethod.MAX },
-  { title: '最小值 - 取最低值', value: AggregationMethod.MIN },
-  { title: '取最后一次 - 适用于绝对值', value: AggregationMethod.LAST },
-];
+const calculationMethods = computed(() => [
+  { title: t('goal.krDialog.calcCumulative'), value: AggregationMethod.SUM },
+  { title: t('goal.krDialog.calcAverage'), value: AggregationMethod.AVERAGE },
+  { title: t('goal.krDialog.calcMax'), value: AggregationMethod.MAX },
+  { title: t('goal.krDialog.calcMin'), value: AggregationMethod.MIN },
+  { title: t('goal.krDialog.calcLatest'), value: AggregationMethod.LAST },
+]);
 
 const progressColor = computed(() => {
   const progress = progressPercentage.value;

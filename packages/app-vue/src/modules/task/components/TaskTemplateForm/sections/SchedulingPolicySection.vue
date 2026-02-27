@@ -4,7 +4,7 @@
     <CardHeader class="pb-2">
       <CardTitle class="text-primary font-semibold flex items-center">
         <Clock class="h-5 w-5 mr-2" />
-        调度策略
+        {{ t('task.schedulingPolicy.title') }}
       </CardTitle>
     </CardHeader>
     <CardContent>
@@ -13,13 +13,13 @@
           <Alert>
             <Info class="h-4 w-4" />
             <AlertDescription>
-              任务模板的时间配置和重复规则请在"时间配置"部分设置。这里只配置标签信息。
+              {{ t('task.schedulingPolicy.alertDescription') }}
             </AlertDescription>
           </Alert>
         </div>
 
         <div class="col-span-12">
-          <Label>标签</Label>
+          <Label>{{ t('task.schedulingPolicy.label') }}</Label>
           <div class="flex flex-wrap gap-2 mt-1">
             <Badge
               v-for="(tag, index) in tags"
@@ -34,7 +34,7 @@
             </Badge>
             <Input
               v-model="newTag"
-              placeholder="按回车键添加新标签"
+              :placeholder="t('task.schedulingPolicy.tagPlaceholder')"
               class="w-40"
               @keydown.enter.prevent="addTag"
             />
@@ -48,7 +48,7 @@
           <Alert>
             <Info class="h-4 w-4" />
             <AlertDescription>
-              调度模式决定任务实例的生成频率。标签和地点信息将应用于所有生成的任务实例。
+              {{ t('task.schedulingPolicy.alertMessage') }}
             </AlertDescription>
           </Alert>
         </div>
@@ -72,6 +72,9 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Clock, Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: TaskTemplateViewModel;

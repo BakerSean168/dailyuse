@@ -5,7 +5,7 @@
       <div class="flex h-14 items-center border-b p-4">
         <div class="flex items-center gap-2 font-semibold">
           <BellRing class="h-5 w-5 text-primary" />
-          <span>提醒</span>
+          <span>{{ t('reminder.title') }}</span>
         </div>
       </div>
 
@@ -17,7 +17,7 @@
             @click="selectedGroupId = null"
           >
             <LayoutGrid class="h-4 w-4" />
-            <span>全部提醒</span>
+            <span>{{ t('reminder.linear.allReminders') }}</span>
             <Badge variant="secondary" class="ml-auto text-xs">{{ templates.length }}</Badge>
           </div>
 
@@ -43,7 +43,7 @@
           class="w-full justify-start"
           @click="showGroupDialog = true"
         >
-          <FolderPlus class="mr-2 h-4 w-4" /> 新建分组
+          <FolderPlus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createGroup') }}
         </Button>
       </div>
     </aside>
@@ -53,7 +53,9 @@
       <header
         class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
       >
-        <h1 class="text-lg font-medium text-foreground">提醒模板</h1>
+        <h1 class="text-lg font-medium text-foreground">
+          {{ t('reminder.linear.templateTitle') }}
+        </h1>
         <div class="flex items-center gap-2">
           <div class="relative hidden w-64 lg:block">
             <Search
@@ -61,13 +63,13 @@
             />
             <Input
               v-model="searchQuery"
-              placeholder="搜索提醒..."
+              :placeholder="t('reminder.linear.searchPlaceholder')"
               class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
             />
           </div>
           <Button size="sm" class="h-8 gap-2" @click="handleCreateTemplate">
             <Plus class="h-4 w-4" />
-            新建提醒
+            {{ t('reminder.action.createReminder') }}
           </Button>
         </div>
       </header>
@@ -78,7 +80,7 @@
             v-if="isLoading"
             class="flex h-[50vh] items-center justify-center text-muted-foreground"
           >
-            加载中...
+            {{ t('reminder.status.loading') }}
           </div>
 
           <div
@@ -88,9 +90,11 @@
             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
               <BellRing class="h-6 w-6 opacity-50" />
             </div>
-            <h3 class="mb-1 text-lg font-medium text-foreground">暂无提醒模板</h3>
-            <p class="mb-6 text-sm">创建一个新的提醒来管理你的事务</p>
-            <Button @click="handleCreateTemplate"> <Plus class="mr-2 h-4 w-4" /> 新建提醒 </Button>
+            <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('reminder.empty') }}</h3>
+            <p class="mb-6 text-sm">{{ t('reminder.emptyDescription') }}</p>
+            <Button @click="handleCreateTemplate">
+              <Plus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createReminder') }}
+            </Button>
           </div>
 
           <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -131,6 +135,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { BellRing, LayoutGrid, Folder, FolderPlus, Plus, Search } from 'lucide-vue-next';
 import { Button, Badge, ScrollArea, Input } from '@dailyuse/ui-vue-shadcn';
@@ -152,6 +157,8 @@ const {
   deleteTemplate,
   createGroup,
 } = useReminder();
+
+const { t } = useI18n();
 
 const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
@@ -200,9 +207,9 @@ function handleEditTemplate(tpl: any) {
 async function handleDeleteTemplate(tpl: any) {
   const template = templates.value.find((t) => t.id === tpl.id);
   if (!template) return;
-  if (!window.confirm(`确认删除提醒「${template.name}」？`)) return;
+  if (!window.confirm(t('reminder.template.confirmDelete', { name: template.name }))) return;
   const ok = await deleteTemplate(template.id);
-  if (ok) toast.success('提醒已删除');
+  if (ok) toast.success(t('reminder.toast.templateDeleted'));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -223,19 +230,19 @@ function handleStatusChanged(tpl: any, _enabled: boolean) {
 
 async function handleSaveTemplate(data: Record<string, unknown>) {
   const result = await createTemplate(data as any);
-  if (result) toast.success('提醒已创建');
+  if (result) toast.success(t('reminder.toast.templateCreated'));
 }
 
 async function handleUpdateTemplate(id: string, data: Record<string, unknown>) {
   const result = await updateTemplate(id, data as any);
-  if (result) toast.success('提醒已更新');
+  if (result) toast.success(t('reminder.toast.templateUpdated'));
 }
 
 async function handleSaveGroup(data: Record<string, unknown>) {
   const result = await createGroup(data as any);
   if (result) {
     showGroupDialog.value = false;
-    toast.success('分组已创建');
+    toast.success(t('reminder.toast.groupCreated'));
   }
 }
 

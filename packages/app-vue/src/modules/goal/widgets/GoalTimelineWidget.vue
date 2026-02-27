@@ -9,6 +9,7 @@
  */
 
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useGoal } from '../composables/useGoal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
@@ -33,6 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // ===== Composables =====
+const { t, locale } = useI18n();
 const { goals, fetchGoals } = useGoal();
 
 // ===== State =====
@@ -140,7 +142,7 @@ const getBadgeVariant = (goal: (typeof activeGoals.value)[0]) => {
  */
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
 };
 
 // ===== Lifecycle =====
@@ -162,7 +164,7 @@ onMounted(async () => {
     <CardHeader class="flex flex-row items-center justify-between p-4">
       <div class="flex items-center gap-2">
         <TrendingUp class="h-6 w-6 text-purple-500" />
-        <CardTitle class="text-lg">目标进度</CardTitle>
+        <CardTitle class="text-lg">{{ t('goal.timeline.widget.title') }}</CardTitle>
       </div>
       <Badge variant="default" class="bg-purple-500 hover:bg-purple-500/80">
         {{ activeGoals.length }}
@@ -174,7 +176,7 @@ onMounted(async () => {
     <!-- Loading State -->
     <CardContent v-if="isLoading" class="flex flex-col items-center justify-center min-h-[200px]">
       <Loader2 class="h-8 w-8 animate-spin text-purple-500" />
-      <p class="text-xs text-muted-foreground mt-2">加载中...</p>
+      <p class="text-xs text-muted-foreground mt-2">{{ t('goal.timeline.widget.loading') }}</p>
     </CardContent>
 
     <!-- Empty State -->
@@ -183,7 +185,7 @@ onMounted(async () => {
       class="flex flex-col items-center justify-center min-h-[200px]"
     >
       <FlagOff class="h-16 w-16 text-muted-foreground" />
-      <p class="text-sm text-muted-foreground mt-2">暂无进行中的目标</p>
+      <p class="text-sm text-muted-foreground mt-2">{{ t('goal.timeline.widget.empty') }}</p>
     </CardContent>
 
     <!-- Goal Timeline List -->
@@ -195,8 +197,8 @@ onMounted(async () => {
           <Badge :variant="getBadgeVariant(goal)" class="ml-2 shrink-0">
             {{
               goal.isOverdue
-                ? `超期 ${Math.abs(goal.remainingDays)}天`
-                : `剩${goal.remainingDays}天`
+                ? `${t('goal.timeline.widget.overdue')} ${Math.abs(goal.remainingDays)}${t('goal.comparison.dayUnit')}`
+                : `${t('goal.timeline.widget.remaining')}${goal.remainingDays}${t('goal.comparison.dayUnit')}`
             }}
           </Badge>
         </div>
@@ -219,10 +221,10 @@ onMounted(async () => {
           <!-- Text overlay -->
           <div class="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
             <span class="text-xs font-bold text-white drop-shadow-sm">
-              完成 {{ Math.round(goal.completionProgress) }}%
+              {{ t('goal.timeline.widget.completed') }} {{ Math.round(goal.completionProgress) }}%
             </span>
             <span class="text-xs text-white drop-shadow-sm">
-              时间 {{ Math.round(goal.timeProgress) }}%
+              {{ t('goal.timeline.widget.time') }} {{ Math.round(goal.timeProgress) }}%
             </span>
           </div>
         </div>

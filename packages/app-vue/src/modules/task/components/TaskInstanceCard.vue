@@ -2,7 +2,7 @@
   <div
     :class="[
       'flex items-center gap-3 p-4 min-h-[64px] transition-all duration-200 hover:bg-muted/50 group',
-      { 'border-b border-border': showBorder, 'opacity-60': isCompleted }
+      { 'border-b border-border': showBorder, 'opacity-60': isCompleted },
     ]"
   >
     <!-- Completion Checkbox/Button -->
@@ -21,7 +21,7 @@
       <h3
         :class="[
           'text-sm font-medium leading-normal truncate transition-colors',
-          { 'line-through text-muted-foreground': isCompleted, 'text-foreground': !isCompleted }
+          { 'line-through text-muted-foreground': isCompleted, 'text-foreground': !isCompleted },
         ]"
       >
         {{ taskTitle }}
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { format } from 'date-fns';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle2, Circle, Clock, Check } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from './types';
@@ -55,6 +56,8 @@ const props = withDefaults(defineProps<Props>(), {
   showBorder: true,
 });
 
+const { t } = useI18n();
+
 // Emits
 const emit = defineEmits<{
   complete: [id: string];
@@ -68,7 +71,7 @@ const emit = defineEmits<{
 const isCompleted = computed(() => props.task.isCompleted);
 
 const taskTitle = computed(() => {
-  return props.taskTitle || props.task.templateTitle || '任务';
+  return props.taskTitle || props.task.templateTitle || t('task.rootInstanceCard.taskFallback');
 });
 
 const formatCompletionTime = computed(() => {

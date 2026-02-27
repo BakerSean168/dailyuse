@@ -9,10 +9,16 @@
         />
         <div>
           <DialogTitle class="text-lg">{{
-            mode === 'edit' ? '编辑任务模板' : '创建任务模板'
+            mode === 'edit'
+              ? t('task.templateDialog.editTitle')
+              : t('task.templateDialog.createTitle')
           }}</DialogTitle>
           <p class="text-sm text-muted-foreground mt-0">
-            {{ mode === 'edit' ? '修改现有任务模板配置' : '填写模板信息并保存' }}
+            {{
+              mode === 'edit'
+                ? t('task.templateDialog.editSubtitle')
+                : t('task.templateDialog.createSubtitle')
+            }}
           </p>
         </div>
       </DialogHeader>
@@ -31,9 +37,13 @@
       </div>
 
       <DialogFooter class="p-6 pt-4">
-        <Button variant="ghost" :disabled="saving" @click="handleCancel">取消</Button>
+        <Button variant="ghost" :disabled="saving" @click="handleCancel">{{
+          t('task.templateDialog.cancel')
+        }}</Button>
         <Button :disabled="!canSave" :loading="saving" @click="handleSave">
-          {{ mode === 'edit' ? '保存更改' : '创建模板' }}
+          {{
+            mode === 'edit' ? t('task.templateDialog.saveChanges') : t('task.templateDialog.create')
+          }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -42,6 +52,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogContent,
@@ -53,6 +64,8 @@ import {
 import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
+
+const { t } = useI18n();
 
 function createBlankTemplate(): TaskTemplateViewModel {
   return {

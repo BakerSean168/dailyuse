@@ -2,7 +2,7 @@
   <div class="w-full">
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle class="text-base">权重趋势分析</CardTitle>
+        <CardTitle class="text-base">{{ t('goal.weightTrend.title') }}</CardTitle>
         <div class="flex items-center gap-0.5">
           <Button
             v-for="range in timeRanges"
@@ -25,7 +25,7 @@
         <!-- 空状态 -->
         <Alert v-else-if="!hasTrendData">
           <Info class="h-4 w-4" />
-          <AlertDescription>暂无趋势数据</AlertDescription>
+          <AlertDescription>{{ t('goal.weightTrend.empty') }}</AlertDescription>
         </Alert>
 
         <!-- 图表 -->
@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import {
@@ -71,7 +72,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
 import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
 import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS } from 'date-fns/locale';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
@@ -99,15 +100,22 @@ const {
   fetchWeightTrend,
 } = useWeightSnapshot();
 
+const { t, locale } = useI18n();
+
+const dateFnsLocaleMap: Record<string, any> = {
+  'zh-CN': zhCN,
+  'en-US': enUS,
+};
+
 const selectedRange = ref<'7d' | '30d' | '90d' | '180d'>('30d');
 
 // 时间范围选项
-const timeRanges: Array<{ label: string; value: '7d' | '30d' | '90d' | '180d' }> = [
-  { label: '7天', value: '7d' },
-  { label: '30天', value: '30d' },
-  { label: '90天', value: '90d' },
-  { label: '半年', value: '180d' },
-];
+const timeRanges = computed(() => [
+  { label: t('goal.weightTrend.range7d'), value: '7d' as const },
+  { label: t('goal.weightTrend.range30d'), value: '30d' as const },
+  { label: t('goal.weightTrend.range90d'), value: '90d' as const },
+  { label: t('goal.weightTrend.range180d'), value: '180d' as const },
+]);
 
 // KR 颜色映射
 const krColors = [
@@ -154,7 +162,7 @@ const chartOption = computed(() => {
 
   return {
     title: {
-      text: '权重变化趋势',
+      text: t('goal.weightTrend.chartTitle'),
       left: 'center',
       textStyle: {
         fontSize: 16,
@@ -169,7 +177,9 @@ const chartOption = computed(() => {
         },
       },
       formatter: (params: any) => {
-        const time = format(new Date(params[0].value[0]), 'yyyy-MM-dd HH:mm', { locale: zhCN });
+        const time = format(new Date(params[0].value[0]), 'yyyy-MM-dd HH:mm', {
+          locale: dateFnsLocaleMap[locale.value] || zhCN,
+        });
         let html = `<div style="padding: 8px;">
           <div style="font-weight: bold; margin-bottom: 8px;">${time}</div>`;
 
@@ -201,12 +211,13 @@ const chartOption = computed(() => {
       type: 'time',
       boundaryGap: false,
       axisLabel: {
-        formatter: (value: number) => format(new Date(value), 'MM-dd', { locale: zhCN }),
+        formatter: (value: number) =>
+          format(new Date(value), 'MM-dd', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
       },
     },
     yAxis: {
       type: 'value',
-      name: '权重 (%)',
+      name: t('goal.weightTrend.yAxisLabel'),
       min: 0,
       max: 100,
       axisLabel: {

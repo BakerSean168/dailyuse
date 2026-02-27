@@ -1,9 +1,9 @@
 <template>
   <div class="flex items-center justify-between border-b bg-background px-2 py-1 gap-2">
-    <div class="text-sm font-medium">Markdown 编辑器</div>
-    
+    <div class="text-sm font-medium">{{ t('editor.toolbar.title') }}</div>
+
     <div class="flex-1" />
-    
+
     <div class="flex items-center gap-1">
       <!-- Heading Menu -->
       <DropdownMenu>
@@ -14,7 +14,7 @@
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem v-for="level in 6" :key="level" @click="insertHeading(level)">
-            标题 {{ level }}
+            {{ t('editor.toolbar.heading', { level }) }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -82,7 +82,11 @@
     <div class="flex-1" />
 
     <!-- View Mode Toggle -->
-    <ToggleGroup v-model="viewMode" type="single" @update:model-value="(val: any) => $emit('view-mode-change', val)">
+    <ToggleGroup
+      v-model="viewMode"
+      type="single"
+      @update:model-value="(val: any) => $emit('view-mode-change', val)"
+    >
       <ToggleGroupItem value="edit" aria-label="Edit mode" class="h-8 w-8">
         <Pencil class="h-4 w-4" />
       </ToggleGroupItem>
@@ -98,13 +102,14 @@
 
     <Button :disabled="saving" @click="$emit('save')">
       <Save class="h-4 w-4 mr-2" />
-      保存
+      {{ t('common.save') }}
     </Button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { ToggleGroup, ToggleGroupItem } from '@dailyuse/ui-vue-shadcn';
@@ -134,6 +139,8 @@ import {
   Eye,
   Save,
 } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface Props {
   saving?: boolean;
@@ -203,6 +210,11 @@ function insertDivider() {
 }
 
 function insertTable() {
-  emit('insert-text', '\n| 列1 | 列2 | 列3 |\n|-----|-----|-----|\n| 内容 | 内容 | 内容 |\n');
+  const col = t('editor.toolbar.column');
+  const content = t('editor.toolbar.content');
+  emit(
+    'insert-text',
+    `\n| ${col}1 | ${col}2 | ${col}3 |\n|-----|-----|-----|\n| ${content} | ${content} | ${content} |\n`,
+  );
 }
 </script>

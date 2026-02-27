@@ -14,7 +14,11 @@
         <MarkdownEditor
           v-if="activeTab.fileType === 'markdown'"
           :model-value="activeTab.content ?? ''"
-          :placeholder="`编辑 ${activeTab.title ?? '文档'}...`"
+          :placeholder="
+            t('editor.container.editingTitle', {
+              name: activeTab.title ?? t('editor.container.document'),
+            })
+          "
           @update:model-value="handleContentChange"
           @change="handleContentChange"
         />
@@ -29,8 +33,8 @@
 
       <div v-else class="flex flex-col items-center justify-center h-full text-muted-foreground">
         <FileText class="h-16 w-16 mb-4" />
-        <div class="text-lg font-semibold mb-2">没有打开的文件</div>
-        <div class="text-sm">从左侧文件列表中选择一个文件开始编辑</div>
+        <div class="text-lg font-semibold mb-2">{{ t('editor.container.noOpenFiles') }}</div>
+        <div class="text-sm">{{ t('editor.container.noOpenFilesDescription') }}</div>
       </div>
     </div>
   </div>
@@ -38,10 +42,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { FileText } from 'lucide-vue-next';
 import EditorTabBar, { type EditorTab } from './EditorTabBar.vue';
 import MarkdownEditor from './MarkdownEditor.vue';
 import MediaViewer from './MediaViewer.vue';
+
+const { t } = useI18n();
 
 interface Props {
   initialTabs?: EditorTab[];
@@ -61,9 +68,7 @@ const emit = defineEmits<Emits>();
 
 const tabs = ref<EditorTab[]>([...props.initialTabs]);
 
-const activeTabId = ref<string | undefined>(
-  tabs.value.length > 0 ? tabs.value[0].id : undefined,
-);
+const activeTabId = ref<string | undefined>(tabs.value.length > 0 ? tabs.value[0].id : undefined);
 
 const activeTab = computed(() => {
   if (!activeTabId.value) return null;
@@ -106,7 +111,7 @@ function closeTab(tabId: string) {
   const tab = tabs.value[index];
 
   if (tab.isDirty) {
-    const confirmed = confirm(`文件 "${tab.title}" 有未保存的更改，确定要关闭吗？`);
+    const confirmed = confirm(t('editor.container.unsavedCloseConfirm', { name: tab.title }));
     if (!confirmed) return;
   }
 
@@ -126,7 +131,9 @@ function closeTab(tabId: string) {
 function closeAllTabs() {
   const dirtyTabs = tabs.value.filter((tab) => tab.isDirty);
   if (dirtyTabs.length > 0) {
-    const confirmed = confirm(`有 ${dirtyTabs.length} 个文件有未保存的更改，确定要全部关闭吗？`);
+    const confirmed = confirm(
+      t('editor.container.unsavedCloseAllConfirm', { count: dirtyTabs.length }),
+    );
     if (!confirmed) return;
   }
 

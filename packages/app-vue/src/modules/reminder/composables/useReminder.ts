@@ -7,6 +7,7 @@
  */
 
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useReminderStore } from '../stores/reminderStore';
 import { REMINDER_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -21,6 +22,7 @@ import type {
 
 export function useReminder() {
   const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
+  const { t } = useI18n();
 
   const store = useReminderStore();
   const savingId = ref<string | null>(null);
@@ -52,7 +54,7 @@ export function useReminder() {
       if (result.ok) {
         store.setTemplates(result.data.templates ?? [], result.data.total ?? 0);
       } else {
-        handleError(result.error.message || '加载提醒模板失败');
+        handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -68,7 +70,7 @@ export function useReminder() {
         store.setCurrentTemplate(result.data);
         return result.data;
       } else {
-        handleError(result.error.message || '加载提醒模板失败');
+        handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
         return null;
       }
     } finally {
@@ -87,7 +89,7 @@ export function useReminder() {
         store.addTemplate(result.data);
         return result.data;
       } else {
-        handleError(result.error.message || '创建提醒失败');
+        handleError(result.error.message || t('reminder.error.createTemplateFailed'));
         return null;
       }
     } finally {
@@ -107,7 +109,7 @@ export function useReminder() {
         store.updateTemplate(result.data);
         return result.data;
       } else {
-        handleError(result.error.message || '更新提醒失败');
+        handleError(result.error.message || t('reminder.error.updateTemplateFailed'));
         return null;
       }
     } finally {
@@ -124,7 +126,7 @@ export function useReminder() {
         store.removeTemplate(id);
         return true;
       } else {
-        handleError(result.error.message || '删除提醒失败');
+        handleError(result.error.message || t('reminder.error.deleteTemplateFailed'));
         return false;
       }
     } finally {
@@ -142,7 +144,7 @@ export function useReminder() {
       if (result.ok) {
         store.setGroups(result.data.groups ?? []);
       } else {
-        handleError(result.error.message || '加载提醒分组失败');
+        handleError(result.error.message || t('reminder.error.loadGroupsFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -158,7 +160,7 @@ export function useReminder() {
         store.addGroup(result.data);
         return result.data;
       } else {
-        handleError(result.error.message || '创建分组失败');
+        handleError(result.error.message || t('reminder.error.createGroupFailed'));
         return null;
       }
     } finally {
@@ -178,7 +180,7 @@ export function useReminder() {
         store.updateGroup(result.data);
         return result.data;
       } else {
-        handleError(result.error.message || '更新分组失败');
+        handleError(result.error.message || t('reminder.error.updateGroupFailed'));
         return null;
       }
     } finally {
@@ -195,7 +197,7 @@ export function useReminder() {
         store.removeGroup(id);
         return true;
       } else {
-        handleError(result.error.message || '删除分组失败');
+        handleError(result.error.message || t('reminder.error.deleteGroupFailed'));
         return false;
       }
     } finally {

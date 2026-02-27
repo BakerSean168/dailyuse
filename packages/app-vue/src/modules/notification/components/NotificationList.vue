@@ -6,9 +6,12 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!notifications.length" class="flex flex-col items-center justify-center py-12 text-center">
+    <div
+      v-else-if="!notifications.length"
+      class="flex flex-col items-center justify-center py-12 text-center"
+    >
       <Bell class="h-12 w-12 text-muted-foreground mb-3" />
-      <p class="text-sm text-muted-foreground">暂无通知</p>
+      <p class="text-sm text-muted-foreground">{{ t('notification.empty') }}</p>
     </div>
 
     <!-- Notification List -->
@@ -32,6 +35,7 @@
 
 <script setup lang="ts">
 import { Loader2, Bell } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import NotificationItem from './NotificationItem.vue';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
@@ -43,6 +47,8 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   loading: false,
 });
+
+const { t } = useI18n();
 
 defineEmits<{
   'notification-click': [notification: NotificationClientDTO];

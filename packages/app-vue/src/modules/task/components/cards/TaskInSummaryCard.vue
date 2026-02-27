@@ -8,9 +8,9 @@
         <div class="flex items-center">
           <CheckCircle class="h-6 w-6 text-primary mr-3" />
           <div>
-            <CardTitle class="text-lg font-bold mb-0">今日任务</CardTitle>
+            <CardTitle class="text-lg font-bold mb-0">{{ t('task.summaryCard.title') }}</CardTitle>
             <CardDescription class="text-xs text-muted-foreground">
-              {{ todayTasks.length }} 个待办任务
+              {{ todayTasks.length }} {{ t('task.summaryCard.pendingTasks') }}
             </CardDescription>
           </div>
         </div>
@@ -81,11 +81,13 @@
       <!-- 空状态 -->
       <div v-else class="p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
         <CheckCircle class="h-16 w-16 text-green-500 mb-4 animate-bounce" />
-        <h3 class="text-lg font-medium mb-1">今日任务已完成</h3>
-        <p class="text-sm text-muted-foreground mb-4">恭喜！您已完成今天的所有任务</p>
+        <h3 class="text-lg font-medium mb-1">{{ t('task.summaryCard.allCompleted') }}</h3>
+        <p class="text-sm text-muted-foreground mb-4">
+          {{ t('task.summaryCard.congratsMessage') }}
+        </p>
         <Button variant="outline" size="sm" @click="navigateToTaskManagement">
           <Plus class="h-4 w-4 mr-1" />
-          添加新任务
+          {{ t('task.summaryCard.addNew') }}
         </Button>
       </div>
     </CardContent>
@@ -106,6 +108,9 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle, Clock, Plus } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   tasks?: TaskInstanceViewModel[];

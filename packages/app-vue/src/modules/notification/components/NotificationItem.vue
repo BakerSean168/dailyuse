@@ -51,8 +51,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { formatDistanceToNow } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS, ja, ko, zhTW } from 'date-fns/locale';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import {
   Info,
@@ -74,6 +75,16 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t, locale } = useI18n();
+
+const dateFnsLocaleMap: Record<string, any> = {
+  'zh-CN': zhCN,
+  'en-US': enUS,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTW,
+};
 
 const emit = defineEmits<{
   click: [notification: NotificationClientDTO];
@@ -139,9 +150,9 @@ const priorityVariant = computed(() => {
 const priorityText = computed(() => {
   switch (props.notification.importance) {
     case ImportanceLevel.Vital:
-      return '紧急';
+      return t('notification.item.priorityVital');
     case ImportanceLevel.Important:
-      return '重要';
+      return t('notification.item.priorityImportant');
     default:
       return '';
   }
@@ -151,7 +162,7 @@ const timeDisplay = computed(() => {
   try {
     return formatDistanceToNow(new Date(props.notification.createdAt), {
       addSuffix: true,
-      locale: zhCN,
+      locale: dateFnsLocaleMap[locale.value] || zhCN,
     });
   } catch {
     return props.notification.createdAt;

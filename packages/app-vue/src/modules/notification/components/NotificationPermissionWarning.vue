@@ -6,9 +6,11 @@
     <Alert variant="default" class="border-warning bg-warning/10">
       <div class="flex items-center gap-4">
         <div class="shrink-0 text-3xl leading-none">⚠️</div>
-        
+
         <div class="flex-1 min-w-0">
-          <AlertTitle class="text-warning mb-1">通知权限提示</AlertTitle>
+          <AlertTitle class="text-warning mb-1">{{
+            t('notification.permission.warningTitle')
+          }}</AlertTitle>
           <AlertDescription class="text-sm text-muted-foreground">
             {{ statusMessage }}
           </AlertDescription>
@@ -21,14 +23,10 @@
             variant="default"
             size="sm"
           >
-            开启通知
+            {{ t('notification.action.enableNotification') }}
           </Button>
-          <Button
-            @click="$emit('dismiss')"
-            variant="outline"
-            size="sm"
-          >
-            知道了
+          <Button @click="$emit('dismiss')" variant="outline" size="sm">
+            {{ t('notification.action.dismiss') }}
           </Button>
         </div>
       </div>
@@ -39,6 +37,9 @@
 <script setup lang="ts">
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   showWarning: boolean;

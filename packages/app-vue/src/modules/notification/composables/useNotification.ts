@@ -5,6 +5,7 @@
  */
 
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useNotificationStore } from '../stores/notificationStore';
 import { NOTIFICATION_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -13,6 +14,7 @@ import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 export function useNotification() {
   const service = useStrictInject(NOTIFICATION_SERVICE_KEY, 'NotificationService');
   const store = useNotificationStore();
+  const { t } = useI18n();
 
   const notifications = computed(() => store.notifications);
   const unreadCount = computed(() => store.unreadCount);
@@ -38,7 +40,7 @@ export function useNotification() {
       if (result.ok) {
         store.setNotifications(result.data.notifications ?? [], result.data.total ?? 0);
       } else {
-        handleError(result.error.message || '加载通知列表失败');
+        handleError(result.error.message || t('notification.error.fetchFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -51,7 +53,7 @@ export function useNotification() {
       store.updateNotification(result.data);
       store.decrementUnread();
     } else {
-      handleError(result.error.message || '标记已读失败');
+      handleError(result.error.message || t('notification.error.markReadFailed'));
     }
   }
 
@@ -68,7 +70,7 @@ export function useNotification() {
       });
       store.setUnreadCount(0);
     } else {
-      handleError(result.error.message || '全部标记已读失败');
+      handleError(result.error.message || t('notification.error.markAllReadFailed'));
     }
   }
 
@@ -77,7 +79,7 @@ export function useNotification() {
     if (result.ok) {
       store.removeNotification(id);
     } else {
-      handleError(result.error.message || '删除通知失败');
+      handleError(result.error.message || t('notification.error.deleteFailed'));
     }
   }
 
@@ -91,7 +93,7 @@ export function useNotification() {
     if (result.ok) {
       store.setUnreadCount(result.data.count ?? 0);
     } else {
-      handleError(result.error.message || '刷新统计失败');
+      handleError(result.error.message || t('notification.error.refreshStatsFailed'));
     }
   }
 

@@ -1,13 +1,11 @@
 <template>
   <div class="relative inline-block">
-    <Button
-      variant="ghost"
-      size="icon"
-      :disabled="loading"
-      @click="$emit('click')"
-    >
+    <Button variant="ghost" size="icon" :disabled="loading" @click="$emit('click')">
       <Bell class="h-5 w-5" />
-      <span v-if="hasUnread" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+      <span
+        v-if="hasUnread"
+        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground"
+      >
         {{ displayCount }}
       </span>
     </Button>
@@ -24,6 +22,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@dailyuse/ui-vue-shadcn';
 import { Bell } from 'lucide-vue-next';
@@ -42,6 +41,8 @@ defineEmits<{
   click: [];
 }>();
 
+const { t } = useI18n();
+
 const hasUnread = computed(() => props.unreadCount > 0);
 
 const displayCount = computed(() => {
@@ -49,6 +50,8 @@ const displayCount = computed(() => {
 });
 
 const tooltipText = computed(() => {
-  return hasUnread.value ? `${props.unreadCount} 条未读通知` : '通知';
+  return hasUnread.value
+    ? t('notification.bell.unreadCount', { count: props.unreadCount })
+    : t('notification.bell.title');
 });
 </script>

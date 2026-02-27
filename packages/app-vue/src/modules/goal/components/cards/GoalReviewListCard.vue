@@ -2,9 +2,12 @@
   <Dialog v-model:open="isVisible">
     <DialogContent class="max-h-[90vh] max-w-4xl overflow-hidden p-0">
       <DialogHeader class="border-b px-6 py-4">
-        <DialogTitle class="text-lg font-semibold">复盘记录</DialogTitle>
+        <DialogTitle class="text-lg font-semibold">{{
+          t('goal.cards.reviewListCard.title')
+        }}</DialogTitle>
         <DialogDescription>
-          {{ goal?.name ?? '目标' }} · {{ goalReviews.length }} 条记录
+          {{ goal?.name ?? t('goal.cards.reviewListCard.goal') }} · {{ goalReviews.length }}
+          {{ t('goal.cards.reviewListCard.count') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -15,14 +18,20 @@
         </div>
 
         <div v-else-if="!hasReviews" class="rounded-md border border-dashed p-8 text-center">
-          <p class="text-sm text-muted-foreground">暂无复盘记录</p>
-          <Button class="mt-3" size="sm" @click="createNewReview">创建复盘</Button>
+          <p class="text-sm text-muted-foreground">{{ t('goal.cards.reviewListCard.empty') }}</p>
+          <Button class="mt-3" size="sm" @click="createNewReview">{{
+            t('goal.cards.reviewListCard.createReview')
+          }}</Button>
         </div>
 
         <div v-else class="space-y-3">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium">复盘记录 ({{ goalReviews.length }})</p>
-            <Button size="sm" variant="outline" @click="createNewReview">新建复盘</Button>
+            <p class="text-sm font-medium">
+              {{ t('goal.cards.reviewListCard.records') }} ({{ goalReviews.length }})
+            </p>
+            <Button size="sm" variant="outline" @click="createNewReview">{{
+              t('goal.cards.reviewListCard.newReview')
+            }}</Button>
           </div>
 
           <Card v-for="review in goalReviews" :key="String(review.id)" class="border">
@@ -37,13 +46,17 @@
                     {{ formatReviewedAt(review.reviewedAt) }}
                   </p>
                   <p v-if="review.achievements" class="mt-2 text-sm text-muted-foreground">
-                    成果：{{ review.achievements }}
+                    {{ t('goal.cards.reviewListCard.achievement') }}{{ review.achievements }}
                   </p>
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <Button size="sm" variant="outline" @click="handleView(review.id)">查看</Button>
-                  <Button size="sm" variant="destructive" @click="handleDelete(review.id)">删除</Button>
+                  <Button size="sm" variant="outline" @click="handleView(review.id)">{{
+                    t('goal.cards.reviewListCard.view')
+                  }}</Button>
+                  <Button size="sm" variant="destructive" @click="handleDelete(review.id)">{{
+                    t('goal.cards.reviewListCard.delete')
+                  }}</Button>
                 </div>
               </div>
             </CardContent>
@@ -52,7 +65,9 @@
       </div>
 
       <DialogFooter class="border-t px-6 py-3">
-        <Button variant="ghost" @click="handleClose">关闭</Button>
+        <Button variant="ghost" @click="handleClose">{{
+          t('goal.cards.reviewListCard.close')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -60,13 +75,23 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 import type { GoalClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@dailyuse/ui-vue-shadcn';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@dailyuse/ui-vue-shadcn';
 import { Skeleton } from '@dailyuse/ui-vue-shadcn';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   goal?: GoalClientDTO;
@@ -123,12 +148,12 @@ const hasReviews = computed(() => goalReviews.value.length > 0);
 
 const getReviewTypeText = (type: GoalReviewClientDTO['type']) => {
   const texts: Record<string, string> = {
-    Weekly: '周复盘',
-    Monthly: '月复盘',
-    Quarterly: '季度复盘',
-    Annual: '年度复盘',
-    Adhoc: '临时复盘',
-    Final: '终结复盘',
+    Weekly: t('goal.cards.reviewListCard.typeWeekly'),
+    Monthly: t('goal.cards.reviewListCard.typeMonthly'),
+    Quarterly: t('goal.cards.reviewListCard.typeQuarterly'),
+    Annual: t('goal.cards.reviewListCard.typeYearly'),
+    Adhoc: t('goal.cards.reviewListCard.typeAdhoc'),
+    Final: t('goal.cards.reviewListCard.typeFinal'),
   };
   return texts[type] ?? String(type);
 };

@@ -1,25 +1,37 @@
 <template>
-  <Alert v-if="!dismissed && conflictResult && conflictResult.hasConflict" variant="destructive" class="mb-4 relative">
+  <Alert
+    v-if="!dismissed && conflictResult && conflictResult.hasConflict"
+    variant="destructive"
+    class="mb-4 relative"
+  >
     <AlertCircle class="h-4 w-4" />
     <AlertTitle class="font-semibold pr-6">
-      检测到 {{ conflictResult.conflicts.length }} 个时间冲突
+      {{ t('schedule.conflictAlert.conflictsDetected', { n: conflictResult.conflicts.length }) }}
     </AlertTitle>
     <AlertDescription class="mt-2 space-y-2">
       <div class="text-sm">
         <div v-for="conflict in conflictResult.conflicts" :key="conflict.scheduleId" class="mb-1">
-          • 与"{{ conflict.scheduleTitle }}"重叠 {{ formatDuration(conflict.overlapDuration) }}
+          • {{ t('schedule.conflictAlert.conflictWith', { title: conflict.scheduleTitle }) }}
+          {{
+            t('schedule.conflictAlert.overlap', {
+              duration: formatDuration(conflict.overlapDuration),
+            })
+          }}
         </div>
       </div>
 
-      <div v-if="conflictResult.suggestions.length > 0" class="text-xs mt-3 pt-2 border-t border-border/40">
-        <strong>建议：</strong>
+      <div
+        v-if="conflictResult.suggestions.length > 0"
+        class="text-xs mt-3 pt-2 border-t border-border/40"
+      >
+        <strong>{{ t('schedule.conflictAlert.suggestion') }}</strong>
         <span v-for="(suggestion, index) in conflictResult.suggestions" :key="index">
           {{ formatSuggestion(suggestion) }}
           <span v-if="index < conflictResult.suggestions.length - 1"> · </span>
         </span>
       </div>
     </AlertDescription>
-    
+
     <Button
       v-if="dismissible"
       variant="ghost"
@@ -37,6 +49,7 @@ import { ref } from 'vue';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, X } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
 
 interface Props {
@@ -54,6 +67,8 @@ const emit = defineEmits<{
 
 const dismissed = ref(false);
 
+const { t, locale } = useI18n();
+
 function handleDismiss() {
   dismissed.value = true;
   emit('dismiss');
@@ -63,28 +78,28 @@ function formatDuration(ms: number): string {
   const minutes = Math.floor(ms / 60000);
   const hours = Math.floor(minutes / 60);
   if (hours > 0) {
-    return `${hours}小时${minutes % 60}分钟`;
+    return t('schedule.duration.hoursMinutes', { h: hours, m: minutes % 60 });
   }
-  return `${minutes}分钟`;
+  return t('schedule.duration.minutes', { n: minutes });
 }
 
 function formatSuggestion(suggestion: ConflictSuggestion): string {
-  const startTime = new Date(suggestion.newStartTime).toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const startTime = new Date(suggestion.newStartTime).toLocaleTimeString(locale.value, {
+    hour: '2-digit',
+    minute: '2-digit',
   });
-  const endTime = new Date(suggestion.newEndTime).toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const endTime = new Date(suggestion.newEndTime).toLocaleTimeString(locale.value, {
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
   switch (suggestion.type) {
     case 'move_earlier':
-      return `提前到 ${startTime}-${endTime}`;
+      return t('schedule.conflictAlert.advanceTo', { start: startTime, end: endTime });
     case 'move_later':
-      return `延后到 ${startTime}-${endTime}`;
+      return t('schedule.conflictAlert.delayTo', { start: startTime, end: endTime });
     case 'shorten':
-      return `缩短到 ${startTime}-${endTime}`;
+      return t('schedule.conflictAlert.shortenTo', { start: startTime, end: endTime });
     default:
       return '';
   }

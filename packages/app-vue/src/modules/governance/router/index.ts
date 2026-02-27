@@ -9,7 +9,7 @@ export const governanceRoutes: RouteRecordRaw[] = [
     path: '/governance',
     name: 'governance',
     meta: {
-      title: '治理规则',
+      title: 'governance.route.ruleList',
       showInNav: true,
       icon: 'mdi-shield-check',
       order: 8,
@@ -21,7 +21,7 @@ export const governanceRoutes: RouteRecordRaw[] = [
         name: 'governance-list',
         component: () => import('../views/GovernanceListView.vue'),
         meta: {
-          title: '治理规则',
+          title: 'governance.route.ruleList',
           requiresAuth: true,
         },
       },
@@ -30,7 +30,7 @@ export const governanceRoutes: RouteRecordRaw[] = [
         name: 'governance-editor',
         component: () => import('../views/RuleEditorView.vue'),
         meta: {
-          title: '新建规则',
+          title: 'governance.route.newRule',
           requiresAuth: true,
         },
       },
@@ -39,7 +39,7 @@ export const governanceRoutes: RouteRecordRaw[] = [
         name: 'governance-editor-edit',
         component: () => import('../views/RuleEditorView.vue'),
         meta: {
-          title: '编辑规则',
+          title: 'governance.route.editRule',
           requiresAuth: true,
         },
         props: true,
@@ -49,7 +49,7 @@ export const governanceRoutes: RouteRecordRaw[] = [
         name: 'governance-detail',
         component: () => import('../views/GovernanceDetailView.vue'),
         meta: {
-          title: '治理规则详情',
+          title: 'governance.route.ruleDetail',
           requiresAuth: true,
         },
         props: true,
@@ -59,7 +59,7 @@ export const governanceRoutes: RouteRecordRaw[] = [
         name: 'governance-history',
         component: () => import('../views/RevisionHistoryView.vue'),
         meta: {
-          title: '修订历史',
+          title: 'governance.route.revisionHistory',
           requiresAuth: true,
         },
         props: true,

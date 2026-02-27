@@ -33,7 +33,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       data-testid="drop-zone-valid"
     >
       <PlusCircle class="h-8 w-8 text-green-500" />
-      <span class="drop-zone-text">松开创建依赖关系</span>
+      <span class="drop-zone-text">{{ t('task.draggableCard.releaseToDep') }}</span>
     </div>
 
     <!-- Invalid Drop Indicator -->
@@ -43,7 +43,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       data-testid="drop-zone-invalid"
     >
       <XCircle class="h-8 w-8 text-red-500" />
-      <span class="drop-zone-text">无法创建依赖</span>
+      <span class="drop-zone-text">{{ t('task.draggableCard.cannotCreateDep') }}</span>
     </div>
 
     <!-- Original Task Card -->
@@ -61,6 +61,9 @@ import { ref } from 'vue';
 import { GripVertical, PlusCircle, XCircle } from 'lucide-vue-next';
 import TaskTemplateCard from './TaskTemplateCard.vue';
 import type { TaskTemplateViewModel } from '../types';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // Props
 interface Props {

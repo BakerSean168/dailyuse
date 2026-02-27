@@ -10,6 +10,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import type {
   LoginByEmailReq,
   LoginByPhoneReq,
@@ -26,6 +27,7 @@ export function useAuth() {
   const store = useAuthenticationStore();
   const router = useRouter();
   const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
+  const { t } = useI18n();
 
   // ========== Computed State ==========
   const isAuthenticated = computed(() => store.isAuthenticated);
@@ -49,13 +51,13 @@ export function useAuth() {
     store.setLoading(false);
     if (result.ok) {
       handleAuthSuccess(result.data);
-      toast.success('登录成功', { description: '欢迎回来！' });
+      toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
       router.push('/');
       return true;
     }
-    const message = result.error.message || '登录失败';
+    const message = result.error.message || t('auth.toast.loginFailed');
     store.setError(message);
-    toast.error('登录失败', { description: message });
+    toast.error(t('auth.toast.loginFailed'), { description: message });
     return false;
   }
 
@@ -66,13 +68,13 @@ export function useAuth() {
     store.setLoading(false);
     if (result.ok) {
       handleAuthSuccess(result.data);
-      toast.success('登录成功', { description: '欢迎回来！' });
+      toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
       router.push('/');
       return true;
     }
-    const message = result.error.message || '登录失败';
+    const message = result.error.message || t('auth.toast.loginFailed');
     store.setError(message);
-    toast.error('登录失败', { description: message });
+    toast.error(t('auth.toast.loginFailed'), { description: message });
     return false;
   }
 
@@ -85,13 +87,13 @@ export function useAuth() {
     store.setLoading(false);
     if (result.ok) {
       handleAuthSuccess(result.data);
-      toast.success('注册成功', { description: '欢迎加入！' });
+      toast.success(t('auth.toast.registerSuccess'), { description: t('auth.toast.welcomeJoin') });
       router.push('/');
       return true;
     }
-    const message = result.error.message || '注册失败';
+    const message = result.error.message || t('auth.toast.registerFailed');
     store.setError(message);
-    toast.error('注册失败', { description: message });
+    toast.error(t('auth.toast.registerFailed'), { description: message });
     return false;
   }
 
@@ -102,13 +104,13 @@ export function useAuth() {
     store.setLoading(false);
     if (result.ok) {
       handleAuthSuccess(result.data);
-      toast.success('注册成功', { description: '欢迎加入！' });
+      toast.success(t('auth.toast.registerSuccess'), { description: t('auth.toast.welcomeJoin') });
       router.push('/');
       return true;
     }
-    const message = result.error.message || '注册失败';
+    const message = result.error.message || t('auth.toast.registerFailed');
     store.setError(message);
-    toast.error('注册失败', { description: message });
+    toast.error(t('auth.toast.registerFailed'), { description: message });
     return false;
   }
 
@@ -120,11 +122,11 @@ export function useAuth() {
   ): Promise<boolean> {
     const result = await service.sendSmsCode({ phoneNumber, purpose });
     if (result.ok) {
-      toast.success('验证码已发送', { description: '请查收手机短信' });
+      toast.success(t('auth.toast.smsCodeSent'), { description: t('auth.toast.checkSms') });
       return true;
     }
-    const message = result.error.message || '发送验证码失败';
-    toast.error('发送失败', { description: message });
+    const message = result.error.message || t('auth.toast.smsCodeFailed');
+    toast.error(t('auth.toast.sendFailed'), { description: message });
     return false;
   }
 
@@ -157,7 +159,7 @@ export function useAuth() {
       }
     } finally {
       store.reset();
-      toast.success('已登出');
+      toast.success(t('auth.toast.loggedOut'));
       router.push('/auth');
     }
   }

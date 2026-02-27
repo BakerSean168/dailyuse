@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
@@ -14,6 +15,8 @@ import {
 import { Checkbox } from '@dailyuse/ui-vue-shadcn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import type { LoginByEmailReq, LoginByPhoneReq } from '@dailyuse/contracts/authentication';
+
+const { t } = useI18n();
 
 interface LoginFormProps {
   loading?: boolean;
@@ -141,21 +144,21 @@ onUnmounted(() => {
 <template>
   <Card class="w-full max-w-md">
     <CardHeader>
-      <CardTitle>登录</CardTitle>
-      <CardDescription>选择您喜欢的登录方式</CardDescription>
+      <CardTitle>{{ t('auth.login.title') }}</CardTitle>
+      <CardDescription>{{ t('auth.login.description') }}</CardDescription>
     </CardHeader>
 
     <CardContent>
       <Tabs :default-value="defaultTab" class="w-full">
         <TabsList class="grid w-full grid-cols-2">
-          <TabsTrigger value="email">邮箱登录</TabsTrigger>
-          <TabsTrigger value="phone">手机登录</TabsTrigger>
+          <TabsTrigger value="email">{{ t('auth.login.tab.email') }}</TabsTrigger>
+          <TabsTrigger value="phone">{{ t('auth.login.tab.phone') }}</TabsTrigger>
         </TabsList>
 
         <!-- Email Login -->
         <TabsContent value="email" class="space-y-4">
           <div class="space-y-2">
-            <Label for="email">邮箱</Label>
+            <Label for="email">{{ t('auth.field.email') }}</Label>
             <Input
               id="email"
               v-model="emailForm.email"
@@ -167,12 +170,12 @@ onUnmounted(() => {
           </div>
 
           <div class="space-y-2">
-            <Label for="password">密码</Label>
+            <Label for="password">{{ t('auth.field.password') }}</Label>
             <Input
               id="password"
               v-model="emailForm.password"
               type="password"
-              placeholder="请输入密码"
+              :placeholder="t('auth.placeholder.password')"
               :disabled="loading"
               @keyup.enter="handleEmailLogin"
             />
@@ -181,7 +184,9 @@ onUnmounted(() => {
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
               <Checkbox id="remember" v-model:checked="emailForm.rememberMe" :disabled="loading" />
-              <Label for="remember" class="text-sm font-normal cursor-pointer"> 记住我 </Label>
+              <Label for="remember" class="text-sm font-normal cursor-pointer">
+                {{ t('auth.login.rememberMe') }}
+              </Label>
             </div>
 
             <Button
@@ -191,36 +196,36 @@ onUnmounted(() => {
               class="px-0"
               @click="handleForgotPassword"
             >
-              忘记密码？
+              {{ t('auth.login.forgotPassword') }}
             </Button>
           </div>
 
           <Button class="w-full" :disabled="!emailFormValid || loading" @click="handleEmailLogin">
-            {{ loading ? '登录中...' : '登录' }}
+            {{ loading ? t('auth.login.submitting') : t('auth.login.submit') }}
           </Button>
         </TabsContent>
 
         <!-- Phone Login -->
         <TabsContent value="phone" class="space-y-4">
           <div class="space-y-2">
-            <Label for="phone">手机号</Label>
+            <Label for="phone">{{ t('auth.field.phone') }}</Label>
             <Input
               id="phone"
               v-model="phoneForm.phoneNumber"
               type="tel"
-              placeholder="请输入手机号"
+              :placeholder="t('auth.placeholder.phone')"
               :disabled="loading"
             />
           </div>
 
           <div class="space-y-2">
-            <Label for="code">验证码</Label>
+            <Label for="code">{{ t('auth.field.smsCode') }}</Label>
             <div class="flex gap-2">
               <Input
                 id="code"
                 v-model="phoneForm.code"
                 type="text"
-                placeholder="请输入验证码"
+                :placeholder="t('auth.placeholder.smsCode')"
                 maxlength="6"
                 :disabled="loading"
                 @keyup.enter="handlePhoneLogin"
@@ -228,17 +233,17 @@ onUnmounted(() => {
               <Button variant="outline" :disabled="!canSendSmsCode" @click="handleSendSmsCode">
                 {{
                   smsCodeCountdown > 0
-                    ? `${smsCodeCountdown}秒`
+                    ? t('auth.smsCode.countdown', { n: smsCodeCountdown })
                     : smsCodeSending
-                      ? '发送中...'
-                      : '获取验证码'
+                      ? t('auth.smsCode.sending')
+                      : t('auth.smsCode.send')
                 }}
               </Button>
             </div>
           </div>
 
           <Button class="w-full" :disabled="!phoneFormValid || loading" @click="handlePhoneLogin">
-            {{ loading ? '登录中...' : '登录' }}
+            {{ loading ? t('auth.login.submitting') : t('auth.login.submit') }}
           </Button>
         </TabsContent>
       </Tabs>
@@ -246,8 +251,10 @@ onUnmounted(() => {
 
     <CardFooter v-if="showRegisterLink" class="flex justify-center">
       <p class="text-sm text-muted-foreground">
-        还没有账号？
-        <Button variant="link" class="px-1" @click="handleRegister"> 立即注册 </Button>
+        {{ t('auth.login.noAccount') }}
+        <Button variant="link" class="px-1" @click="handleRegister">
+          {{ t('auth.login.registerLink') }}
+        </Button>
       </p>
     </CardFooter>
   </Card>

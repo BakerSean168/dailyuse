@@ -3,10 +3,12 @@
     <CardHeader class="space-y-2">
       <CardTitle class="flex items-center gap-2 text-base">
         <GitCompare class="h-4 w-4" />
-        选择对比目标
+        {{ t('goal.multiGoalSelector.title') }}
         <Badge variant="secondary">{{ selectedGoals.length }}/{{ maxGoals }}</Badge>
       </CardTitle>
-      <CardDescription>选择 {{ minGoals }}-{{ maxGoals }} 个目标进行对比分析</CardDescription>
+      <CardDescription>{{
+        t('goal.multiGoalSelector.subtitle', { min: minGoals, max: maxGoals })
+      }}</CardDescription>
     </CardHeader>
 
     <CardContent class="space-y-4">
@@ -19,11 +21,7 @@
         >
           <Target class="h-3 w-3" />
           {{ goal.name }}
-          <button
-            type="button"
-            class="ml-1 rounded-sm hover:bg-muted"
-            @click="removeGoal(goal.id)"
-          >
+          <button type="button" class="ml-1 rounded-sm hover:bg-muted" @click="removeGoal(goal.id)">
             <X class="h-3 w-3" />
           </button>
         </Badge>
@@ -31,20 +29,24 @@
 
       <Alert v-if="selectedGoals.length < minGoals">
         <Info class="h-4 w-4" />
-        <AlertTitle>还不能开始对比</AlertTitle>
-        <AlertDescription>请至少选择 {{ minGoals }} 个目标。</AlertDescription>
+        <AlertTitle>{{ t('goal.multiGoalSelector.cannotStart') }}</AlertTitle>
+        <AlertDescription>{{
+          t('goal.multiGoalSelector.needMore', { n: minGoals })
+        }}</AlertDescription>
       </Alert>
 
       <Alert v-else-if="selectedGoals.length >= maxGoals" variant="destructive">
         <AlertCircle class="h-4 w-4" />
-        <AlertTitle>已达上限</AlertTitle>
-        <AlertDescription>最多只能选择 {{ maxGoals }} 个目标。</AlertDescription>
+        <AlertTitle>{{ t('goal.multiGoalSelector.reachedMax') }}</AlertTitle>
+        <AlertDescription>{{
+          t('goal.multiGoalSelector.maxMessage', { n: maxGoals })
+        }}</AlertDescription>
       </Alert>
 
       <div class="space-y-2">
         <Input
           v-model="searchQuery"
-          placeholder="搜索目标名称..."
+          :placeholder="t('goal.multiGoalSelector.searchPlaceholder')"
           :disabled="selectedGoals.length >= maxGoals"
         />
 
@@ -61,27 +63,40 @@
               <p class="truncate text-sm font-medium">{{ goal.name }}</p>
               <p class="text-xs text-muted-foreground">{{ getStatusText(goal.status) }}</p>
             </div>
-            <Badge :class="getStatusBadgeClass(goal.status)">{{ getStatusText(goal.status) }}</Badge>
+            <Badge :class="getStatusBadgeClass(goal.status)">{{
+              getStatusText(goal.status)
+            }}</Badge>
           </button>
 
-          <p v-if="availableGoals.length === 0" class="py-4 text-center text-sm text-muted-foreground">
-            没有可选择的目标
+          <p
+            v-if="availableGoals.length === 0"
+            class="py-4 text-center text-sm text-muted-foreground"
+          >
+            {{ t('goal.multiGoalSelector.noGoals') }}
           </p>
         </div>
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" @click="toggleFilter('IN_PROGRESS')">进行中</Button>
-        <Button variant="outline" size="sm" @click="toggleFilter('COMPLETED')">已完成</Button>
-        <Button variant="outline" size="sm" @click="toggleFilter('IMPORTANT')">重要目标</Button>
+        <Button variant="outline" size="sm" @click="toggleFilter('IN_PROGRESS')">{{
+          t('goal.multiGoalSelector.statusActive')
+        }}</Button>
+        <Button variant="outline" size="sm" @click="toggleFilter('COMPLETED')">{{
+          t('goal.multiGoalSelector.statusCompleted')
+        }}</Button>
+        <Button variant="outline" size="sm" @click="toggleFilter('IMPORTANT')">{{
+          t('goal.multiGoalSelector.importantGoals')
+        }}</Button>
       </div>
     </CardContent>
 
     <CardFooter class="justify-end gap-2">
-      <Button variant="ghost" @click="clearSelection">清空选择</Button>
+      <Button variant="ghost" @click="clearSelection">{{
+        t('goal.multiGoalSelector.clearSelection')
+      }}</Button>
       <Button :disabled="!canStartComparison" @click="startComparison">
         <Eye class="mr-1 h-4 w-4" />
-        开始对比
+        {{ t('goal.multiGoalSelector.startComparison') }}
       </Button>
     </CardFooter>
   </Card>
@@ -89,12 +104,20 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { AlertCircle, Eye, GitCompare, Info, Target, X } from 'lucide-vue-next';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 
 interface Props {
@@ -117,6 +140,8 @@ const emit = defineEmits<{
 const selectedGoals = ref<GoalClientDTO[]>([]);
 const searchQuery = ref('');
 const selectedFilter = ref<'IN_PROGRESS' | 'COMPLETED' | 'IMPORTANT' | null>(null);
+
+const { t } = useI18n();
 
 const availableGoals = computed(() => {
   const normalizedQuery = searchQuery.value.trim().toLowerCase();
@@ -175,9 +200,9 @@ const toggleFilter = (filter: 'IN_PROGRESS' | 'COMPLETED' | 'IMPORTANT') => {
 
 const getStatusText = (status: GoalClientDTO['status']) => {
   const map: Record<string, string> = {
-    Active: '进行中',
-    Completed: '已完成',
-    Archived: '已归档',
+    Active: t('goal.multiGoalSelector.statusActive'),
+    Completed: t('goal.multiGoalSelector.statusCompleted'),
+    Archived: t('goal.multiGoalSelector.statusArchived'),
   };
   return map[status] ?? String(status);
 };

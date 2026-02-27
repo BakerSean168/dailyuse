@@ -2,7 +2,7 @@
   <div class="w-full">
     <Card>
       <CardHeader>
-        <CardTitle>权重对比分析</CardTitle>
+        <CardTitle>{{ t('goal.weightComparison.title') }}</CardTitle>
       </CardHeader>
 
       <CardContent>
@@ -10,7 +10,7 @@
         <div class="mb-4 rounded bg-muted/50 p-4">
           <Alert class="mb-3">
             <Info class="h-4 w-4" />
-            <AlertDescription>最多选择 5 个时间点进行对比</AlertDescription>
+            <AlertDescription>{{ t('goal.weightComparison.maxPoints') }}</AlertDescription>
           </Alert>
 
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -20,7 +20,9 @@
               class="flex items-end gap-2"
             >
               <div class="flex-1 space-y-1">
-                <Label :for="`time-point-${index}`">时间点 {{ index + 1 }}</Label>
+                <Label :for="`time-point-${index}`">{{
+                  t('goal.weightComparison.timePoint', { n: index + 1 })
+                }}</Label>
                 <Input
                   :id="`time-point-${index}`"
                   v-model="timePoint.label"
@@ -47,12 +49,12 @@
               @click="addTimePoint"
             >
               <Plus class="h-4 w-4" />
-              添加时间点
+              {{ t('goal.weightComparison.addTimePoint') }}
             </Button>
 
             <Button size="sm" :disabled="!canCompare" @click="loadComparison">
               <BarChart3 class="h-4 w-4" />
-              开始对比
+              {{ t('goal.weightComparison.startComparison') }}
             </Button>
           </div>
         </div>
@@ -65,7 +67,7 @@
         <!-- 空状态 -->
         <Alert v-else-if="!hasComparisonData">
           <Info class="h-4 w-4" />
-          <AlertDescription>请选择时间点并点击"开始对比"</AlertDescription>
+          <AlertDescription>{{ t('goal.weightComparison.selectHint') }}</AlertDescription>
         </Alert>
 
         <!-- 对比图表 -->
@@ -81,7 +83,9 @@
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b bg-muted/50">
-                  <th class="px-4 py-2 text-left font-medium">KeyResult</th>
+                  <th class="px-4 py-2 text-left font-medium">
+                    {{ t('goal.weightComparison.tableKeyResult') }}
+                  </th>
                   <th
                     v-for="(tp, index) in timePointLabels"
                     :key="index"
@@ -89,7 +93,9 @@
                   >
                     {{ tp }}
                   </th>
-                  <th class="px-4 py-2 text-left font-medium">总变化</th>
+                  <th class="px-4 py-2 text-left font-medium">
+                    {{ t('goal.weightComparison.tableTotalChange') }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -121,6 +127,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { BarChart, RadarChart } from 'echarts/charts';
 import {
@@ -134,7 +141,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import VChart from 'vue-echarts';
 import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
 import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS } from 'date-fns/locale';
 import {
   Card,
   CardHeader,
@@ -171,6 +178,13 @@ const {
   fetchWeightComparison,
 } = useWeightSnapshot();
 
+const { t, locale } = useI18n();
+
+const dateFnsLocaleMap: Record<string, any> = {
+  'zh-CN': zhCN,
+  'en-US': enUS,
+};
+
 // 时间点选择
 interface TimePoint {
   label: string;
@@ -192,7 +206,7 @@ const canCompare = computed(() => {
 const timePointLabels = computed(() => {
   if (!comparisonData.value) return [];
   return comparisonData.value.timePoints.map((tp) =>
-    format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN }),
+    format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
   );
 });
 
@@ -266,14 +280,14 @@ const barChartOption = computed(() => {
   const { keyResults, comparisons, timePoints } = comparisonData.value;
 
   const series = timePoints.map((tp, tpIndex) => ({
-    name: format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN }),
+    name: format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
     type: 'bar',
     data: keyResults.map((kr) => comparisons[kr.id][tpIndex]),
   }));
 
   return {
     title: {
-      text: '权重分布对比（柱状图）',
+      text: t('goal.weightComparison.barChartTitle'),
       left: 'center',
     },
     tooltip: {
@@ -295,7 +309,9 @@ const barChartOption = computed(() => {
       },
     },
     legend: {
-      data: timePoints.map((tp) => format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN })),
+      data: timePoints.map((tp) =>
+        format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+      ),
       bottom: 10,
     },
     xAxis: {
@@ -308,7 +324,7 @@ const barChartOption = computed(() => {
     },
     yAxis: {
       type: 'value',
-      name: '权重 (%)',
+      name: t('goal.weightComparison.yAxisLabel'),
       min: 0,
       max: 100,
       axisLabel: {
@@ -339,19 +355,21 @@ const radarChartOption = computed(() => {
 
   const series = timePoints.map((tp, tpIndex) => ({
     value: keyResults.map((kr) => comparisons[kr.id][tpIndex]),
-    name: format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN }),
+    name: format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
   }));
 
   return {
     title: {
-      text: '权重分布对比（雷达图）',
+      text: t('goal.weightComparison.radarChartTitle'),
       left: 'center',
     },
     tooltip: {
       trigger: 'item',
     },
     legend: {
-      data: timePoints.map((tp) => format(new Date(tp), 'MM-dd HH:mm', { locale: zhCN })),
+      data: timePoints.map((tp) =>
+        format(new Date(tp), 'MM-dd HH:mm', { locale: dateFnsLocaleMap[locale.value] || zhCN }),
+      ),
       bottom: 10,
     },
     radar: {

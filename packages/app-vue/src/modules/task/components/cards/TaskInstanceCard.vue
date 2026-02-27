@@ -31,7 +31,7 @@
       <div class="flex items-center gap-2 text-xs text-muted-foreground">
         <component :is="isCompleted ? Check : Clock" class="h-3 w-3" />
         <span v-if="!isCompleted">{{ timeLabel }}</span>
-        <span v-else>Completed at {{ formatCompletionTime }}</span>
+        <span v-else>{{ t('task.instanceCard.completedAt', { time: formatCompletionTime }) }}</span>
       </div>
     </div>
   </div>
@@ -43,6 +43,9 @@ import { format } from 'date-fns';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { CheckCircle2, Circle, Clock, Check } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from '../types';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // Props
 interface Props {
@@ -67,7 +70,7 @@ const emit = defineEmits<{
 const isCompleted = computed(() => props.task.isCompleted);
 
 const taskTitle = computed(() => {
-  return props.task.templateTitle ?? '未知任务';
+  return props.task.templateTitle ?? t('task.instanceCard.unknownTask');
 });
 
 const formatCompletionTime = computed(() => {
@@ -78,7 +81,7 @@ const timeLabel = computed(() => {
   const timeConfig = props.task.timeConfig;
 
   if (timeConfig?.timeType === 'ALL_DAY') {
-    return 'All Day';
+    return t('task.templateCard.allDay');
   }
 
   if (timeConfig?.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
@@ -96,7 +99,7 @@ const timeLabel = computed(() => {
     return `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')} - ${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   }
 
-  return 'All Day';
+  return t('task.templateCard.allDay');
 });
 
 const toggleComplete = () => {

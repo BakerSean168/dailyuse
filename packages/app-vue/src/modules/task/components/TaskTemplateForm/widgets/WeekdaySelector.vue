@@ -1,7 +1,7 @@
 <!-- widgets/WeekdaySelector.vue -->
 <template>
   <div class="w-full">
-    <Label class="mb-2 block">选择星期</Label>
+    <Label class="mb-2 block">{{ t('task.weekday.title') }}</Label>
     <div class="flex flex-wrap gap-1">
       <Badge
         v-for="(day, index) in weekdayOptions"
@@ -15,13 +15,19 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-1">
-      <Button size="sm" variant="ghost" @click="selectWorkdays"> 工作日 </Button>
+      <Button size="sm" variant="ghost" @click="selectWorkdays">
+        {{ t('task.weekday.workdays') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="selectWeekends"> 周末 </Button>
+      <Button size="sm" variant="ghost" @click="selectWeekends">
+        {{ t('task.weekday.weekends') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="selectAll"> 全选 </Button>
+      <Button size="sm" variant="ghost" @click="selectAll">
+        {{ t('task.weekday.selectAll') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="clearAll"> 清空 </Button>
+      <Button size="sm" variant="ghost" @click="clearAll"> {{ t('task.weekday.clear') }} </Button>
     </div>
   </div>
 </template>
@@ -29,6 +35,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Badge, Button, Label } from '@dailyuse/ui-vue-shadcn';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: number[];
@@ -46,7 +55,15 @@ const localSelected = computed({
   set: (value: number[]) => emit('update:modelValue', value),
 });
 
-const weekdayOptions = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+const weekdayOptions = computed(() => [
+  t('task.weekday.sun'),
+  t('task.weekday.mon'),
+  t('task.weekday.tue'),
+  t('task.weekday.wed'),
+  t('task.weekday.thu'),
+  t('task.weekday.fri'),
+  t('task.weekday.sat'),
+]);
 
 const toggleDay = (index: number) => {
   const current = localSelected.value;

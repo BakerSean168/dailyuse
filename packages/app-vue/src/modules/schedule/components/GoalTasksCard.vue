@@ -8,11 +8,13 @@
           <Target class="h-5 w-5" />
         </div>
         <div>
-          <CardTitle class="text-lg font-bold">目标模块任务</CardTitle>
-          <p class="text-xs text-muted-foreground">Goal Module Tasks</p>
+          <CardTitle class="text-lg font-bold">{{ t('schedule.goalCard.title') }}</CardTitle>
+          <p class="text-xs text-muted-foreground">{{ t('schedule.goalCard.subtitle') }}</p>
         </div>
       </div>
-      <Badge :variant="getStatusVariant()" class="font-medium"> {{ tasks.length }} 个任务 </Badge>
+      <Badge :variant="getStatusVariant()" class="font-medium">
+        {{ t('schedule.taskCard.taskCount', { n: tasks.length }) }}
+      </Badge>
     </CardHeader>
 
     <Separator />
@@ -54,7 +56,7 @@
             <div class="flex-1 min-w-0">
               <div class="font-medium text-sm">{{ task.name }}</div>
               <div class="text-xs text-muted-foreground truncate">
-                {{ task.description || '暂无描述' }}
+                {{ task.description || t('schedule.taskCard.noDescription') }}
               </div>
             </div>
 
@@ -79,13 +81,14 @@
       <!-- Empty state -->
       <div v-else class="text-center py-8">
         <Target class="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-        <p class="text-sm text-muted-foreground">暂无目标模块任务</p>
+        <p class="text-sm text-muted-foreground">{{ t('schedule.goalCard.emptyTitle') }}</p>
       </div>
     </CardContent>
   </Card>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Badge, type BadgeVariants } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -108,6 +111,8 @@ import {
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
+
+const { t } = useI18n();
 
 interface Props {
   tasks: ScheduleTaskClientDTO[];
@@ -190,13 +195,13 @@ function getTaskStatusIcon(status: string) {
 }
 
 function getTaskStatusText(status: string): string {
-  const textMap: Record<string, string> = {
-    Active: '活跃',
-    Paused: '暂停',
-    Completed: '完成',
-    Failed: '失败',
-    Cancelled: '取消',
+  const keyMap: Record<string, string> = {
+    Active: 'schedule.taskStatus.active',
+    Paused: 'schedule.taskStatus.paused',
+    Completed: 'schedule.taskStatus.completed',
+    Failed: 'schedule.taskStatus.failed',
+    Cancelled: 'schedule.taskStatus.cancelled',
   };
-  return textMap[status] || status;
+  return keyMap[status] ? t(keyMap[status]) : status;
 }
 </script>

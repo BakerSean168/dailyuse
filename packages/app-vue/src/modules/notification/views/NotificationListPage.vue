@@ -1,9 +1,11 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-background">
     <!-- Header -->
-    <header class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm">
+    <header
+      class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
+    >
       <div class="flex items-center gap-4">
-        <h1 class="text-lg font-medium text-foreground">通知中心</h1>
+        <h1 class="text-lg font-medium text-foreground">{{ t('notification.title') }}</h1>
         <Separator orientation="vertical" class="h-4" />
         <div class="flex items-center gap-1">
           <Button
@@ -24,11 +26,17 @@
 
       <div class="flex items-center gap-2">
         <Badge v-if="unreadCount > 0" variant="destructive" class="text-xs">
-          {{ unreadCount }} 未读
+          {{ t('notification.filter.unreadBadge', { count: unreadCount }) }}
         </Badge>
-        <Button variant="outline" size="sm" class="h-8" :disabled="!hasUnread" @click="handleMarkAllRead">
+        <Button
+          variant="outline"
+          size="sm"
+          class="h-8"
+          :disabled="!hasUnread"
+          @click="handleMarkAllRead"
+        >
           <CheckCheck class="mr-2 h-4 w-4" />
-          全部已读
+          {{ t('notification.action.markAllRead') }}
         </Button>
       </div>
     </header>
@@ -40,15 +48,18 @@
           v-if="isLoading"
           class="flex h-[50vh] items-center justify-center text-muted-foreground"
         >
-          加载中...
+          {{ t('notification.loading') }}
         </div>
 
-        <div v-else-if="filteredNotifications.length === 0" class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground">
+        <div
+          v-else-if="filteredNotifications.length === 0"
+          class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
+        >
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
             <Bell class="h-6 w-6 opacity-50" />
           </div>
-          <h3 class="mb-1 text-lg font-medium text-foreground">暂无通知</h3>
-          <p class="text-sm">所有通知将在这里显示</p>
+          <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('notification.empty') }}</h3>
+          <p class="text-sm">{{ t('notification.emptyDescription') }}</p>
         </div>
 
         <div v-else>
@@ -67,6 +78,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
 import { Bell, CheckCheck } from 'lucide-vue-next';
 import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
@@ -86,13 +98,15 @@ const {
   refreshStats,
 } = useNotification();
 
+const { t } = useI18n();
+
 const selectedFilter = ref('all');
 
-const filterTabs = [
-  { label: '全部', value: 'all' },
-  { label: '未读', value: 'unread' },
-  { label: '已读', value: 'read' },
-];
+const filterTabs = computed(() => [
+  { label: t('notification.filter.all'), value: 'all' },
+  { label: t('notification.filter.unread'), value: 'unread' },
+  { label: t('notification.filter.read'), value: 'read' },
+]);
 
 const filteredNotifications = computed(() => {
   if (selectedFilter.value === 'unread') return notifications.value.filter((n) => !n.isRead);
@@ -112,12 +126,12 @@ async function handleMarkRead(id: string) {
 
 async function handleMarkAllRead() {
   await markAllAsRead();
-  toast.success('已全部标记为已读');
+  toast.success(t('notification.toast.allMarkedRead'));
 }
 
 async function handleDelete(id: string) {
   await dismiss(id);
-  toast.success('通知已删除');
+  toast.success(t('notification.toast.deleted'));
 }
 
 onMounted(async () => {

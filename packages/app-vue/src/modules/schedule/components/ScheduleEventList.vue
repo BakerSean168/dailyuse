@@ -2,10 +2,10 @@
   <Card>
     <CardHeader>
       <div class="flex items-center justify-between">
-        <CardTitle>日程事件</CardTitle>
+        <CardTitle>{{ t('schedule.eventList.title') }}</CardTitle>
         <Button @click="$emit('create')">
           <Plus class="mr-2 h-4 w-4" />
-          创建日程
+          {{ t('schedule.eventList.createSchedule') }}
         </Button>
       </div>
     </CardHeader>
@@ -19,15 +19,17 @@
       <!-- Error -->
       <Alert v-else-if="error" variant="destructive" class="mb-4">
         <AlertCircle class="h-4 w-4" />
-        <AlertTitle>错误</AlertTitle>
+        <AlertTitle>{{ t('schedule.eventList.error') }}</AlertTitle>
         <AlertDescription>{{ error }}</AlertDescription>
       </Alert>
 
       <!-- Empty State -->
       <div v-else-if="schedules.length === 0" class="text-center py-12">
         <CalendarOff class="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 class="mt-4 text-lg font-semibold">暂无日程</h3>
-        <p class="text-sm text-muted-foreground mt-2">点击右上角按钮创建您的第一个日程</p>
+        <h3 class="mt-4 text-lg font-semibold">{{ t('schedule.eventList.emptyTitle') }}</h3>
+        <p class="text-sm text-muted-foreground mt-2">
+          {{ t('schedule.eventList.emptyDescription') }}
+        </p>
       </div>
 
       <!-- Schedule List -->
@@ -56,7 +58,7 @@
                 <h4 class="font-semibold">{{ schedule.title }}</h4>
                 <Badge v-if="schedule.hasConflict" variant="destructive" class="gap-1">
                   <AlertCircle class="h-3 w-3" />
-                  冲突
+                  {{ t('schedule.eventList.conflict') }}
                 </Badge>
               </div>
 
@@ -66,7 +68,9 @@
                   >{{ formatDateTime(schedule.startTime) }} -
                   {{ formatDateTime(schedule.endTime) }}</span
                 >
-                <span class="ml-2">({{ schedule.duration }}分钟)</span>
+                <span class="ml-2"
+                  >({{ t('schedule.eventList.durationMinutes', { n: schedule.duration }) }})</span
+                >
               </div>
 
               <div
@@ -106,6 +110,7 @@ import {
   AlertCircle,
   CalendarOff,
 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
@@ -129,6 +134,8 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+const { t, locale } = useI18n();
+
 function getScheduleActions(schedule: ScheduleJobClientDTO): MenuAction[] {
   return [
     {
@@ -143,7 +150,7 @@ function getScheduleActions(schedule: ScheduleJobClientDTO): MenuAction[] {
 
 function formatDateTime(timestamp: number): string {
   const date = new Date(timestamp);
-  return date.toLocaleString('zh-CN', {
+  return date.toLocaleString(locale.value, {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',

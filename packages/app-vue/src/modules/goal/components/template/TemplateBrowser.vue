@@ -12,7 +12,7 @@
       <DialogHeader class="flex flex-row items-center justify-between">
         <DialogTitle class="flex items-center text-xl">
           <Lightbulb class="h-5 w-5 mr-2" />
-          选择目标模板
+          {{ t('goal.templateBrowser.title') }}
         </DialogTitle>
       </DialogHeader>
 
@@ -26,16 +26,20 @@
               <Search
                 class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
               />
-              <Input v-model="searchQuery" placeholder="搜索模板" class="pl-9" />
+              <Input
+                v-model="searchQuery"
+                :placeholder="t('goal.templateBrowser.search')"
+                class="pl-9"
+              />
             </div>
           </div>
           <div class="col-span-1 md:col-span-1.5">
             <Select v-model="selectedCategorySelect">
               <SelectTrigger>
-                <SelectValue placeholder="类别" />
+                <SelectValue :placeholder="t('goal.templateBrowser.category')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="all">{{ t('goal.templateBrowser.all') }}</SelectItem>
                 <SelectItem v-for="opt in categoryOptions" :key="opt.value" :value="opt.value">
                   {{ opt.title }}
                 </SelectItem>
@@ -45,10 +49,10 @@
           <div class="col-span-1 md:col-span-1.5">
             <Select v-model="selectedRoleSelect">
               <SelectTrigger>
-                <SelectValue placeholder="角色" />
+                <SelectValue :placeholder="t('goal.templateBrowser.role')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="all">{{ t('goal.templateBrowser.all') }}</SelectItem>
                 <SelectItem v-for="opt in roleOptions" :key="opt.value" :value="opt.value">
                   {{ opt.title }}
                 </SelectItem>
@@ -60,12 +64,14 @@
         <!-- 结果统计 -->
         <Alert v-if="filteredTemplates.length > 0" class="mb-4 mt-4">
           <AlertDescription>
-            找到 {{ filteredTemplates.length }} 个匹配的模板
-            <span v-if="filters.role || filters.category"> (已应用筛选)</span>
+            {{ t('goal.templateBrowser.matchedCount', { n: filteredTemplates.length }) }}
+            <span v-if="filters.role || filters.category">
+              ({{ t('goal.templateBrowser.filtered') }})</span
+            >
           </AlertDescription>
         </Alert>
         <Alert v-else variant="destructive" class="mb-4 mt-4">
-          <AlertDescription> 未找到匹配的模板，请调整筛选条件 </AlertDescription>
+          <AlertDescription> {{ t('goal.templateBrowser.noMatch') }} </AlertDescription>
         </Alert>
       </div>
 
@@ -99,7 +105,9 @@
 
             <!-- 匹配分数徽章 -->
             <div v-if="result.score > 50" class="px-6 pb-2">
-              <Badge :class="getScoreBadgeClass(result.score)"> {{ result.score }}% 匹配 </Badge>
+              <Badge :class="getScoreBadgeClass(result.score)">
+                {{ t('goal.templateBrowser.matchPercent', { n: result.score }) }}
+              </Badge>
             </div>
 
             <CardContent class="flex-1">
@@ -127,13 +135,18 @@
               <!-- 关键结果预览 -->
               <Separator class="my-3" />
               <div class="text-xs text-muted-foreground">
-                <strong>{{ result.template.keyResults.length }} 个关键结果:</strong>
+                <strong
+                  >{{ result.template.keyResults.length }}
+                  {{ t('goal.templateBrowser.krCount') }}</strong
+                >
                 <ul class="ml-4 mt-1">
                   <li v-for="(kr, idx) in result.template.keyResults.slice(0, 2)" :key="idx">
                     {{ kr.title }} ({{ kr.suggestedWeight }}%)
                   </li>
                   <li v-if="result.template.keyResults.length > 2" class="text-muted-foreground">
-                    还有 {{ result.template.keyResults.length - 2 }} 个...
+                    {{
+                      t('goal.templateBrowser.moreKR', { n: result.template.keyResults.length - 2 })
+                    }}
                   </li>
                 </ul>
               </div>
@@ -147,7 +160,7 @@
                 @click.stop="previewTemplate(result.template as GoalTemplate)"
               >
                 <Eye class="h-4 w-4 mr-1" />
-                预览
+                {{ t('goal.templateBrowser.preview') }}
               </Button>
               <Button
                 v-if="selectedTemplate?.id === result.template.id"
@@ -155,7 +168,7 @@
                 size="sm"
               >
                 <Check class="h-4 w-4 mr-1" />
-                已选择
+                {{ t('goal.templateBrowser.selected') }}
               </Button>
             </CardFooter>
           </Card>
@@ -166,10 +179,10 @@
 
       <!-- 底部操作栏 -->
       <DialogFooter class="flex flex-row items-center justify-between sm:justify-between">
-        <Button variant="ghost" @click="close">取消</Button>
+        <Button variant="ghost" @click="close">{{ t('goal.templateBrowser.cancel') }}</Button>
         <Button :disabled="!selectedTemplate" @click="applyTemplate">
           <CheckCircle class="h-4 w-4 mr-1" />
-          使用此模板
+          {{ t('goal.templateBrowser.useTemplate') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -201,14 +214,20 @@
 
           <Alert class="mb-4">
             <AlertDescription>
-              <strong>适用角色:</strong> {{ previewingTemplate.roles.join(', ') }}<br />
-              <strong>适用行业:</strong> {{ previewingTemplate.industries.join(', ') }}<br />
-              <strong>建议周期:</strong> {{ previewingTemplate.suggestedDuration }} 天
+              <strong>{{ t('goal.templateBrowser.previewRole') }}</strong>
+              {{ previewingTemplate.roles.join(', ') }}<br />
+              <strong>{{ t('goal.templateBrowser.previewIndustry') }}</strong>
+              {{ previewingTemplate.industries.join(', ') }}<br />
+              <strong>{{
+                t('goal.templateBrowser.previewCycleDays', {
+                  n: previewingTemplate.suggestedDuration,
+                })
+              }}</strong>
             </AlertDescription>
           </Alert>
 
           <h4 class="text-lg font-semibold mb-3">
-            关键结果 ({{ previewingTemplate.keyResults.length }})
+            {{ t('goal.templateBrowser.previewKR', { n: previewingTemplate.keyResults.length }) }}
           </h4>
           <div class="space-y-2">
             <div
@@ -227,9 +246,15 @@
               <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium">{{ kr.title }}</div>
                 <div class="text-xs text-muted-foreground">
-                  度量: {{ kr.metrics.join(', ') }}
+                  {{ t('goal.templateBrowser.previewMeasure') }} {{ kr.metrics.join(', ') }}
                   <span v-if="kr.suggestedStartValue !== undefined">
-                    | 目标: {{ kr.suggestedStartValue }} → {{ kr.suggestedTargetValue }}
+                    |
+                    {{
+                      t('goal.templateBrowser.previewTarget', {
+                        start: kr.suggestedStartValue,
+                        end: kr.suggestedTargetValue,
+                      })
+                    }}
                     {{ kr.unit }}
                   </span>
                 </div>
@@ -239,8 +264,10 @@
         </div>
         <Separator />
         <DialogFooter class="flex flex-row items-center justify-between sm:justify-between">
-          <Button variant="ghost" @click="previewVisible = false">关闭</Button>
-          <Button @click="applyFromPreview">使用此模板</Button>
+          <Button variant="ghost" @click="previewVisible = false">{{
+            t('goal.templateBrowser.close')
+          }}</Button>
+          <Button @click="applyFromPreview">{{ t('goal.templateBrowser.useTemplate') }}</Button>
         </DialogFooter>
       </template>
     </DialogContent>
@@ -249,7 +276,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { Component } from 'vue';
+
+const { t } = useI18n();
 import type { GoalTemplate } from '../../application/templates/GoalTemplates';
 import templateRecommendationService from '../../application/services/TemplateRecommendationService';
 import type { RecommendationFilters } from '../../application/services/TemplateRecommendationService';
@@ -319,21 +349,21 @@ const selectedRole = computed<string | null>(() =>
 );
 
 // Options
-const categoryOptions = [
-  { title: '产品管理', value: 'product' },
-  { title: '工程研发', value: 'engineering' },
-  { title: '销售', value: 'sales' },
-  { title: '市场营销', value: 'marketing' },
-  { title: '通用', value: 'general' },
-];
+const categoryOptions = computed(() => [
+  { title: t('goal.templateBrowser.catProduct'), value: 'product' },
+  { title: t('goal.templateBrowser.catEngineering'), value: 'engineering' },
+  { title: t('goal.templateBrowser.catSales'), value: 'sales' },
+  { title: t('goal.templateBrowser.catMarketing'), value: 'marketing' },
+  { title: t('goal.templateBrowser.catGeneral'), value: 'general' },
+]);
 
-const roleOptions = [
-  { title: '产品经理', value: '产品经理' },
-  { title: '技术负责人', value: '技术负责人' },
-  { title: '销售总监', value: '销售总监' },
-  { title: '市场总监', value: '市场总监' },
-  { title: '团队负责人', value: '团队负责人' },
-];
+const roleOptions = computed(() => [
+  { title: t('goal.templateBrowser.roleProductManager'), value: '产品经理' },
+  { title: t('goal.templateBrowser.roleTechLead'), value: '技术负责人' },
+  { title: t('goal.templateBrowser.roleSalesDirector'), value: '销售总监' },
+  { title: t('goal.templateBrowser.roleMarketingDirector'), value: '市场总监' },
+  { title: t('goal.templateBrowser.roleTeamLead'), value: '团队负责人' },
+]);
 
 // Computed
 const filters = computed<RecommendationFilters>(() => ({

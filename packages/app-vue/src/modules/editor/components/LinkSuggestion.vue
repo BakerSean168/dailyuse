@@ -5,19 +5,25 @@
     </PopoverTrigger>
     <PopoverContent class="w-80 p-0" align="start">
       <Command class="rounded-lg border-none shadow-md">
-        <CommandInput placeholder="搜索文档..." :model-value="searchQuery" readonly />
+        <CommandInput
+          :placeholder="t('editor.linkSuggestion.searchPlaceholder')"
+          :model-value="searchQuery"
+          readonly
+        />
         <CommandEmpty>
           <div v-if="loading" class="flex items-center justify-center py-6">
             <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-2"></div>
-            <span class="text-sm">搜索中...</span>
+            <span class="text-sm">{{ t('editor.linkSuggestion.searching') }}</span>
           </div>
           <div v-else class="py-6 text-center text-sm">
-            <p class="text-muted-foreground">未找到匹配文档</p>
-            <p class="text-xs text-muted-foreground mt-1">按 Enter 创建新文档 "{{ searchQuery }}"</p>
+            <p class="text-muted-foreground">{{ t('editor.linkSuggestion.noResults') }}</p>
+            <p class="text-xs text-muted-foreground mt-1">
+              {{ t('editor.linkSuggestion.createNew', { name: searchQuery }) }}
+            </p>
           </div>
         </CommandEmpty>
         <CommandList>
-          <CommandGroup heading="文档">
+          <CommandGroup :heading="t('editor.linkSuggestion.documents')">
             <CommandItem
               v-for="(doc, index) in filteredDocuments"
               :key="doc.id"
@@ -31,7 +37,9 @@
               <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium truncate">{{ doc.name }}</div>
                 <div class="flex items-center gap-2 mt-1">
-                  <span class="text-xs text-muted-foreground truncate">{{ getFolderPath(doc.path) || '/' }}</span>
+                  <span class="text-xs text-muted-foreground truncate">{{
+                    getFolderPath(doc.path) || '/'
+                  }}</span>
                   <Badge v-if="doc.metadata?.tags?.length" variant="secondary" class="text-xs">
                     {{ doc.metadata.tags[0] }}
                   </Badge>
@@ -42,7 +50,7 @@
         </CommandList>
         <div class="border-t p-2 text-xs text-muted-foreground flex items-center gap-1">
           <Keyboard class="h-3 w-3" />
-          ↑↓ 导航 | Enter 选择 | Esc 取消
+          {{ t('editor.linkSuggestion.keyboardHints') }}
         </div>
       </Command>
     </PopoverContent>
@@ -51,12 +59,22 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@dailyuse/ui-vue-shadcn';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { FileText, Keyboard } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface Props {
   visible: boolean;
@@ -85,10 +103,11 @@ const filteredDocuments = computed(() => {
   if (!props.searchQuery.trim()) return documents.value;
 
   const query = props.searchQuery.toLowerCase();
-  return documents.value.filter(doc =>
-    doc.name.toLowerCase().includes(query) ||
-    doc.path?.toLowerCase().includes(query) ||
-    doc.metadata?.tags?.some((tag: string) => tag.toLowerCase().includes(query))
+  return documents.value.filter(
+    (doc) =>
+      doc.name.toLowerCase().includes(query) ||
+      doc.path?.toLowerCase().includes(query) ||
+      doc.metadata?.tags?.some((tag: string) => tag.toLowerCase().includes(query)),
   );
 });
 
@@ -143,10 +162,7 @@ function handleKeyDown(event: KeyboardEvent) {
   switch (event.key) {
     case 'ArrowDown':
       event.preventDefault();
-      selectedIndex.value = Math.min(
-        selectedIndex.value + 1,
-        filteredDocuments.value.length - 1
-      );
+      selectedIndex.value = Math.min(selectedIndex.value + 1, filteredDocuments.value.length - 1);
       break;
 
     case 'ArrowUp':
@@ -166,20 +182,26 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-watch(() => props.visible, (visible) => {
-  isVisible.value = visible;
-  if (visible) {
-    selectedIndex.value = 0;
-  }
-});
+watch(
+  () => props.visible,
+  (visible) => {
+    isVisible.value = visible;
+    if (visible) {
+      selectedIndex.value = 0;
+    }
+  },
+);
 
-watch(() => props.searchQuery, (query) => {
-  if (query) {
-    searchDocuments(query);
-  } else {
-    documents.value = [];
-  }
-});
+watch(
+  () => props.searchQuery,
+  (query) => {
+    if (query) {
+      searchDocuments(query);
+    } else {
+      documents.value = [];
+    }
+  },
+);
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);

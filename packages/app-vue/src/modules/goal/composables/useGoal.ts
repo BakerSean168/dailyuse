@@ -7,6 +7,7 @@
  */
 
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useGoalStore } from '../stores/goalStore';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -33,6 +34,7 @@ import type {
 export function useGoal() {
   const store = useGoalStore();
   const service = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
+  const { t } = useI18n();
   const savingId = ref<string | null>(null);
 
   const goals = computed(() => store.goals);
@@ -73,10 +75,10 @@ export function useGoal() {
           result.data.pagination?.total ?? 0,
         );
       } else {
-        handleError(result.error.message || '加载目标列表失败');
+        handleError(result.error.message || t('goal.error.loadListFailed'));
       }
     } catch (e: any) {
-      handleError(e?.message || '加载目标列表时发生异常');
+      handleError(e?.message || t('goal.error.loadListException'));
     } finally {
       store.setLoading(false);
     }
@@ -92,7 +94,7 @@ export function useGoal() {
         store.setCurrentGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || '加载目标失败');
+        handleError(result.error.message || t('goal.error.loadFailed'));
         return null;
       }
     } finally {
@@ -110,7 +112,7 @@ export function useGoal() {
         store.addGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || '创建目标失败');
+        handleError(result.error.message || t('goal.error.createFailed'));
         return null;
       }
     } finally {
@@ -128,7 +130,7 @@ export function useGoal() {
         store.updateGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || '更新目标失败');
+        handleError(result.error.message || t('goal.error.updateFailed'));
         return null;
       }
     } finally {
@@ -145,7 +147,7 @@ export function useGoal() {
         store.removeGoal(id);
         return true;
       } else {
-        handleError(result.error.message || '删除目标失败');
+        handleError(result.error.message || t('goal.error.deleteFailed'));
         return false;
       }
     } finally {
@@ -158,7 +160,7 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalFolders((result.data ?? []).map((f: GoalFolder) => f.toDTO()));
     } else {
-      handleError(result.error.message || '加载文件夹失败');
+      handleError(result.error.message || t('goal.error.loadFoldersFailed'));
     }
   }
 
@@ -169,7 +171,7 @@ export function useGoal() {
       store.addGoalFolder(dto);
       return dto;
     } else {
-      handleError(result.error.message || '创建文件夹失败');
+      handleError(result.error.message || t('goal.error.createFolderFailed'));
       return null;
     }
   }
@@ -181,7 +183,7 @@ export function useGoal() {
       store.updateGoalFolder(dto);
       return dto;
     } else {
-      handleError(result.error.message || '更新文件夹失败');
+      handleError(result.error.message || t('goal.error.updateFolderFailed'));
       return null;
     }
   }
@@ -192,7 +194,7 @@ export function useGoal() {
       store.removeGoalFolder(id);
       return true;
     } else {
-      handleError(result.error.message || '删除文件夹失败');
+      handleError(result.error.message || t('goal.error.deleteFolderFailed'));
       return false;
     }
   }
@@ -202,7 +204,7 @@ export function useGoal() {
     if (result.ok) {
       store.setKeyResults((result.data.keyResults ?? []).map((kr: KeyResult) => kr.toDTO()));
     } else {
-      handleError(result.error.message || '加载关键结果失败');
+      handleError(result.error.message || t('goal.error.loadKRFailed'));
     }
   }
 
@@ -213,7 +215,7 @@ export function useGoal() {
       store.addKeyResult(dto);
       return dto;
     } else {
-      handleError(result.error.message || '添加关键结果失败');
+      handleError(result.error.message || t('goal.error.addKRFailed'));
       return null;
     }
   }
@@ -225,7 +227,7 @@ export function useGoal() {
       store.updateKeyResult(dto);
       return dto;
     } else {
-      handleError(result.error.message || '更新关键结果失败');
+      handleError(result.error.message || t('goal.error.updateKRFailed'));
       return null;
     }
   }
@@ -236,7 +238,7 @@ export function useGoal() {
       store.removeKeyResult(krId);
       return true;
     } else {
-      handleError(result.error.message || '删除关键结果失败');
+      handleError(result.error.message || t('goal.error.deleteKRFailed'));
       return false;
     }
   }
@@ -246,7 +248,7 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalRecords((result.data.records ?? []).map((r: GoalRecord) => r.toDTO()));
     } else {
-      handleError(result.error.message || '加载进度记录失败');
+      handleError(result.error.message || t('goal.error.loadRecordsFailed'));
     }
   }
 
@@ -258,7 +260,7 @@ export function useGoal() {
       store.addGoalRecord(dto);
       return dto;
     } else {
-      handleError(result.error.message || '创建进度记录失败');
+      handleError(result.error.message || t('goal.error.createRecordFailed'));
       return null;
     }
   }
@@ -287,7 +289,7 @@ export function useGoal() {
       if (result.ok) {
         return result.data;
       } else {
-        handleError(result.error.message || '加载目标聚合视图失败');
+        handleError(result.error.message || t('goal.error.loadAggregateViewFailed'));
         return null;
       }
     } finally {
@@ -300,7 +302,7 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalReviews((result.data.reviews ?? []).map((r: GoalReview) => r.toDTO()));
     } else {
-      handleError(result.error.message || '加载复盘失败');
+      handleError(result.error.message || t('goal.error.loadReviewsFailed'));
     }
   }
 
@@ -311,7 +313,7 @@ export function useGoal() {
       store.addGoalReview(dto);
       return dto;
     } else {
-      handleError(result.error.message || '创建复盘失败');
+      handleError(result.error.message || t('goal.error.createReviewFailed'));
       return null;
     }
   }

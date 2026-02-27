@@ -4,9 +4,10 @@
       <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
         <div class="flex items-center gap-2">
           <Network class="h-5 w-5 text-primary" />
-          <CardTitle class="text-lg">任务依赖关系图</CardTitle>
+          <CardTitle class="text-lg">{{ t('task.dagVisualization.title') }}</CardTitle>
           <Badge v-if="showCriticalPath && criticalPathDuration > 0" variant="destructive">
-            关键路径: {{ criticalPathDuration }}分钟
+            {{ t('task.dagVisualization.criticalPathLabel') }} {{ criticalPathDuration
+            }}{{ t('task.dagVisualization.minutes') }}
           </Badge>
         </div>
 
@@ -18,7 +19,7 @@
               @click="layoutType = 'force'"
             >
               <Network class="h-4 w-4 mr-1" />
-              力导向
+              {{ t('task.dagVisualization.forceLayout') }}
             </Button>
             <Button
               :variant="layoutType === 'hierarchical' ? 'default' : 'ghost'"
@@ -26,7 +27,7 @@
               @click="layoutType = 'hierarchical'"
             >
               <Network class="h-4 w-4 mr-1" />
-              分层
+              {{ t('task.dagVisualization.layeredLayout') }}
             </Button>
           </div>
 
@@ -36,7 +37,7 @@
             @click="showCriticalPath = !showCriticalPath"
           >
             <AlertTriangle class="h-4 w-4 mr-1" />
-            关键路径
+            {{ t('task.dagVisualization.criticalPath') }}
           </Button>
 
           <Button variant="ghost" size="icon" @click="exportJson">
@@ -56,6 +57,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
@@ -78,6 +80,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   compact: false,
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   (e: 'node-click', task: TaskForDAGViewModel): void;
@@ -195,7 +199,7 @@ const dagOption = computed<EChartsOption>(() => {
       formatter: (params: any) => {
         if (params.dataType === 'node') {
           const task = params.data.task as TaskForDAGViewModel;
-          return `<div><b>${task.title}</b><br/>状态: ${task.status || 'UNKNOWN'}<br/>预计时长: ${task.estimatedMinutes || 0} 分钟</div>`;
+          return `<div><b>${task.title}</b><br/>${t('task.dagVisualization.statusTooltip')} ${task.status || 'UNKNOWN'}<br/>${t('task.dagVisualization.durationTooltip')} ${task.estimatedMinutes || 0} ${t('task.dagVisualization.minuteUnit')}</div>`;
         }
         return '';
       },

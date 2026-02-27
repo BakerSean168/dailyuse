@@ -5,29 +5,37 @@
       <div class="p-4 space-y-4">
         <div class="flex items-center space-x-2">
           <Pencil class="h-5 w-5" />
-          <h3 class="text-base font-medium">编辑模式</h3>
+          <h3 class="text-base font-medium">{{ t('setting.editor.editMode') }}</h3>
         </div>
-        
+
         <div class="space-y-4">
           <!-- Default Mode -->
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <Label class="text-sm font-medium">默认打开模式</Label>
-              <p class="text-sm text-muted-foreground">打开笔记时的默认显示模式</p>
+              <Label class="text-sm font-medium">{{ t('setting.editor.defaultOpenMode') }}</Label>
+              <p class="text-sm text-muted-foreground">
+                {{ t('setting.editor.defaultOpenModeDescription') }}
+              </p>
             </div>
             <ToggleGroup
               type="single"
               :model-value="modelValue.defaultMode"
-              @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, defaultMode: value as 'reading' | 'editing' })"
+              @update:model-value="
+                (value: any) =>
+                  emit('update:modelValue', {
+                    ...modelValue,
+                    defaultMode: value as 'reading' | 'editing',
+                  })
+              "
               class="ml-4"
             >
-              <ToggleGroupItem value="reading" aria-label="阅读模式">
+              <ToggleGroupItem value="reading" :aria-label="t('setting.editor.readingMode')">
                 <BookOpen class="h-4 w-4 mr-1" />
-                阅读
+                {{ t('setting.editor.reading') }}
               </ToggleGroupItem>
-              <ToggleGroupItem value="editing" aria-label="编辑模式">
+              <ToggleGroupItem value="editing" :aria-label="t('setting.editor.editingMode')">
                 <Pencil class="h-4 w-4 mr-1" />
-                编辑
+                {{ t('setting.editor.editing') }}
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
@@ -35,20 +43,25 @@
           <!-- Auto Save Delay -->
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <Label class="text-sm font-medium">自动保存延迟</Label>
-              <p class="text-sm text-muted-foreground">停止输入后多久自动保存内容</p>
+              <Label class="text-sm font-medium">{{ t('setting.editor.autoSaveDelay') }}</Label>
+              <p class="text-sm text-muted-foreground">
+                {{ t('setting.editor.autoSaveDelayDescription') }}
+              </p>
             </div>
             <Select
               :model-value="String(modelValue.autoSaveDelay)"
-              @update:model-value="(value) => emit('update:modelValue', { ...modelValue, autoSaveDelay: Number(value) })"
+              @update:model-value="
+                (value) =>
+                  emit('update:modelValue', { ...modelValue, autoSaveDelay: Number(value) })
+              "
               class="ml-4 w-[180px]"
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择延迟" />
+                <SelectValue :placeholder="t('setting.editor.autoSaveDelayPlaceholder')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
-                  v-for="option in autoSaveDelayOptions"
+                  v-for="option in autoSaveDelayOpts"
                   :key="option.value"
                   :value="String(option.value)"
                 >
@@ -66,38 +79,48 @@
       <div class="p-4 space-y-4">
         <div class="flex items-center space-x-2">
           <Image class="h-5 w-5" />
-          <h3 class="text-base font-medium">媒体嵌入</h3>
+          <h3 class="text-base font-medium">{{ t('setting.editor.mediaEmbed') }}</h3>
         </div>
-        
+
         <div class="space-y-4">
           <!-- Enable Link Preview -->
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <Label class="text-sm font-medium">链接悬浮预览</Label>
-              <p class="text-sm text-muted-foreground">鼠标悬停在链接上时显示预览卡片</p>
+              <Label class="text-sm font-medium">{{ t('setting.editor.linkPreview') }}</Label>
+              <p class="text-sm text-muted-foreground">
+                {{ t('setting.editor.linkPreviewDescription') }}
+              </p>
             </div>
             <Switch
               :checked="modelValue.enableLinkPreview"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, enableLinkPreview: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, enableLinkPreview: value })
+              "
             />
           </div>
 
           <!-- Enable Media Embed -->
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <Label class="text-sm font-medium">启用媒体嵌入</Label>
-              <p class="text-sm text-muted-foreground">在笔记中直接显示图片、音频、视频播放器</p>
+              <Label class="text-sm font-medium">{{ t('setting.editor.enableMediaEmbed') }}</Label>
+              <p class="text-sm text-muted-foreground">
+                {{ t('setting.editor.enableMediaEmbedDescription') }}
+              </p>
             </div>
             <Switch
               :checked="modelValue.enableMediaEmbed"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, enableMediaEmbed: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, enableMediaEmbed: value })
+              "
             />
           </div>
 
           <!-- Supported Video Sites -->
           <div v-if="modelValue.enableMediaEmbed" class="space-y-2">
-            <Label class="text-sm font-medium">支持的视频网站</Label>
-            <p class="text-sm text-muted-foreground">这些网站的链接将自动转换为嵌入式播放器</p>
+            <Label class="text-sm font-medium">{{ t('setting.editor.supportedVideoSites') }}</Label>
+            <p class="text-sm text-muted-foreground">
+              {{ t('setting.editor.supportedVideoSitesDescription') }}
+            </p>
             <div class="flex flex-wrap gap-2">
               <Badge
                 v-for="site in videoSiteOptions"
@@ -119,14 +142,16 @@
       <div class="p-4 space-y-4">
         <div class="flex items-center space-x-2">
           <Type class="h-5 w-5" />
-          <h3 class="text-base font-medium">显示</h3>
+          <h3 class="text-base font-medium">{{ t('setting.editor.display') }}</h3>
         </div>
-        
+
         <div class="space-y-4">
           <!-- Font Size -->
           <div class="space-y-2">
-            <Label class="text-sm font-medium">字体大小</Label>
-            <p class="text-sm text-muted-foreground">编辑器中的文字大小</p>
+            <Label class="text-sm font-medium">{{ t('setting.editor.fontSize') }}</Label>
+            <p class="text-sm text-muted-foreground">
+              {{ t('setting.editor.fontSizeDescription') }}
+            </p>
             <div class="flex items-center space-x-4">
               <Slider
                 :model-value="[modelValue.fontSize || 16]"
@@ -134,7 +159,10 @@
                 :max="24"
                 :step="1"
                 class="flex-1"
-                @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, fontSize: value?.[0] ?? 16 })"
+                @update:model-value="
+                  (value: any) =>
+                    emit('update:modelValue', { ...modelValue, fontSize: value?.[0] ?? 16 })
+                "
               />
               <span class="text-sm w-12 text-right">{{ modelValue.fontSize }}px</span>
             </div>
@@ -143,24 +171,32 @@
           <!-- Show Line Numbers -->
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <Label class="text-sm font-medium">显示行号</Label>
-              <p class="text-sm text-muted-foreground">在编辑模式下显示行号</p>
+              <Label class="text-sm font-medium">{{ t('setting.editor.showLineNumbers') }}</Label>
+              <p class="text-sm text-muted-foreground">
+                {{ t('setting.editor.showLineNumbersDescription') }}
+              </p>
             </div>
             <Switch
               :checked="modelValue.showLineNumbers"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, showLineNumbers: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, showLineNumbers: value })
+              "
             />
           </div>
 
           <!-- Show Word Count -->
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <Label class="text-sm font-medium">显示字数统计</Label>
-              <p class="text-sm text-muted-foreground">在状态栏显示当前文档的字数</p>
+              <Label class="text-sm font-medium">{{ t('setting.editor.showWordCount') }}</Label>
+              <p class="text-sm text-muted-foreground">
+                {{ t('setting.editor.showWordCountDescription') }}
+              </p>
             </div>
             <Switch
               :checked="modelValue.showWordCount"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, showWordCount: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, showWordCount: value })
+              "
             />
           </div>
         </div>
@@ -172,31 +208,41 @@
       <div class="p-4 space-y-4">
         <div class="flex items-center space-x-2">
           <FileText class="h-5 w-5" />
-          <h3 class="text-base font-medium">媒体嵌入语法</h3>
+          <h3 class="text-base font-medium">{{ t('setting.editor.mediaEmbedSyntax') }}</h3>
         </div>
-        
+
         <Alert>
           <Info class="h-4 w-4" />
           <AlertDescription class="space-y-1">
             <div class="flex items-center justify-between">
               <code class="text-xs bg-muted px-2 py-1 rounded">![[image.png]]</code>
-              <span class="text-xs text-muted-foreground">嵌入仓储中的图片</span>
+              <span class="text-xs text-muted-foreground">{{
+                t('setting.editor.syntaxEmbedImage')
+              }}</span>
             </div>
             <div class="flex items-center justify-between">
               <code class="text-xs bg-muted px-2 py-1 rounded">![[audio.mp3]]</code>
-              <span class="text-xs text-muted-foreground">嵌入音频播放器</span>
+              <span class="text-xs text-muted-foreground">{{
+                t('setting.editor.syntaxEmbedAudio')
+              }}</span>
             </div>
             <div class="flex items-center justify-between">
               <code class="text-xs bg-muted px-2 py-1 rounded">![[video.mp4]]</code>
-              <span class="text-xs text-muted-foreground">嵌入视频播放器</span>
+              <span class="text-xs text-muted-foreground">{{
+                t('setting.editor.syntaxEmbedVideo')
+              }}</span>
             </div>
             <div class="flex items-center justify-between">
               <code class="text-xs bg-muted px-2 py-1 rounded">![](https://...)</code>
-              <span class="text-xs text-muted-foreground">嵌入外部图片</span>
+              <span class="text-xs text-muted-foreground">{{
+                t('setting.editor.syntaxExternalImage')
+              }}</span>
             </div>
             <div class="flex items-center justify-between">
               <code class="text-xs bg-muted px-2 py-1 rounded">&lt;iframe src="..."&gt;</code>
-              <span class="text-xs text-muted-foreground">嵌入网页视频</span>
+              <span class="text-xs text-muted-foreground">{{
+                t('setting.editor.syntaxEmbedWeb')
+              }}</span>
             </div>
           </AlertDescription>
         </Alert>
@@ -206,9 +252,17 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { Slider } from '@dailyuse/ui-vue-shadcn';
 import { ToggleGroup, ToggleGroupItem } from '@dailyuse/ui-vue-shadcn';
@@ -216,6 +270,8 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Pencil, BookOpen, Image, Type, FileText, Info } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface EditorSettings {
   defaultMode?: 'reading' | 'editing';
@@ -232,19 +288,19 @@ interface Props {
   modelValue: EditorSettings;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:modelValue': [value: EditorSettings];
 }>();
 
-const autoSaveDelayOptions = [
-  { value: 300, label: '300ms (快)' },
-  { value: 500, label: '500ms (推荐)' },
-  { value: 1000, label: '1秒' },
-  { value: 2000, label: '2秒' },
-  { value: 5000, label: '5秒' },
-];
+const autoSaveDelayOpts = computed(() => [
+  { value: 300, label: t('setting.editor.delay300') },
+  { value: 500, label: t('setting.editor.delay500') },
+  { value: 1000, label: t('setting.editor.delay1000') },
+  { value: 2000, label: t('setting.editor.delay2000') },
+  { value: 5000, label: t('setting.editor.delay5000') },
+]);
 
 const videoSiteOptions = [
   'youtube.com',
@@ -255,11 +311,8 @@ const videoSiteOptions = [
 ];
 
 function toggleVideoSite(site: string) {
-  const props = defineProps<Props>();
   const current = props.modelValue.supportedVideoSites || [];
-  const newSites = current.includes(site)
-    ? current.filter(s => s !== site)
-    : [...current, site];
+  const newSites = current.includes(site) ? current.filter((s) => s !== site) : [...current, site];
   emit('update:modelValue', { ...props.modelValue, supportedVideoSites: newSites });
 }
 </script>

@@ -6,9 +6,12 @@
  */
 
 import { ref, computed, type Ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { EditorView } from '@codemirror/view';
 
 export function useMarkdownEditor(initialContent = '') {
+  const { t } = useI18n();
+
   // ==================== State ====================
   const content = ref(initialContent);
   const hasUnsavedChanges = ref(false);
@@ -145,13 +148,13 @@ export function useMarkdownEditor(initialContent = '') {
 
   function insertTable(rows = 2, cols = 3) {
     const headerRow = `| ${Array(cols)
-      .fill('列')
+      .fill(t('editor.toolbar.column'))
       .map((col, i) => `${col}${i + 1}`)
       .join(' | ')} |`;
     const separatorRow = `|${Array(cols).fill('-----').join('|')}|`;
     const dataRows = Array(rows - 1)
       .fill(null)
-      .map(() => `| ${Array(cols).fill('内容').join(' | ')} |`)
+      .map(() => `| ${Array(cols).fill(t('editor.toolbar.content')).join(' | ')} |`)
       .join('\n');
 
     const table = `\n${headerRow}\n${separatorRow}\n${dataRows}\n`;

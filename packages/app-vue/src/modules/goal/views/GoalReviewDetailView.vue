@@ -2,15 +2,15 @@
   <div class="flex h-full flex-col p-6">
     <div class="mb-6 flex items-center gap-3">
       <Button variant="ghost" size="sm" @click="$router.back()">
-        <ArrowLeft class="mr-1 h-4 w-4" /> 返回
+        <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.reviewDetail.back') }}
       </Button>
       <Separator orientation="vertical" class="h-6" />
-      <h2 class="text-lg font-semibold">复盘详情</h2>
+      <h2 class="text-lg font-semibold">{{ t('goal.reviewDetail.title') }}</h2>
       <Badge v-if="review" variant="outline">{{ review.type }}</Badge>
     </div>
 
     <div v-if="isLoading" class="flex flex-1 items-center justify-center">
-      <div class="text-muted-foreground">加载中...</div>
+      <div class="text-muted-foreground">{{ t('goal.reviewDetail.loading') }}</div>
     </div>
 
     <ScrollArea v-else-if="review" class="flex-1">
@@ -19,7 +19,7 @@
         <Card>
           <CardHeader>
             <div class="flex items-center justify-between">
-              <CardTitle>总体评分</CardTitle>
+              <CardTitle>{{ t('goal.reviewDetail.overallRating') }}</CardTitle>
               <div class="flex items-center gap-2">
                 <Star class="h-5 w-5 text-yellow-500" />
                 <span class="text-2xl font-bold">{{ review.rating }}</span>
@@ -27,7 +27,7 @@
               </div>
             </div>
             <CardDescription>
-              复盘于 {{ formatDate(review.reviewedAt) }}
+              {{ t('goal.reviewDetail.reviewedAt') }} {{ formatDate(review.reviewedAt) }}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -36,7 +36,7 @@
         <Card>
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <FileText class="h-4 w-4" /> 摘要
+              <FileText class="h-4 w-4" /> {{ t('goal.reviewDetail.summary') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -48,7 +48,7 @@
         <Card v-if="review.achievements">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Trophy class="h-4 w-4 text-green-500" /> 主要成就
+              <Trophy class="h-4 w-4 text-green-500" /> {{ t('goal.reviewDetail.achievements') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -60,7 +60,8 @@
         <Card v-if="review.challenges">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <AlertTriangle class="h-4 w-4 text-orange-500" /> 遇到的挑战
+              <AlertTriangle class="h-4 w-4 text-orange-500" />
+              {{ t('goal.reviewDetail.challenges') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -72,7 +73,7 @@
         <Card v-if="review.improvements">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Lightbulb class="h-4 w-4 text-blue-500" /> 改进方向
+              <Lightbulb class="h-4 w-4 text-blue-500" /> {{ t('goal.reviewDetail.improvements') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -83,8 +84,8 @@
         <!-- KR 快照 -->
         <Card v-if="review.keyResultSnapshots?.length">
           <CardHeader>
-            <CardTitle>关键结果快照</CardTitle>
-            <CardDescription>复盘时各关键结果的进度</CardDescription>
+            <CardTitle>{{ t('goal.reviewDetail.krSnapshot') }}</CardTitle>
+            <CardDescription>{{ t('goal.reviewDetail.krSnapshotDesc') }}</CardDescription>
           </CardHeader>
           <CardContent>
             <div class="space-y-3">
@@ -104,7 +105,7 @@
     </ScrollArea>
 
     <div v-else class="flex flex-1 items-center justify-center text-muted-foreground">
-      未找到复盘记录
+      {{ t('goal.reviewDetail.notFound') }}
     </div>
   </div>
 </template>
@@ -112,17 +113,25 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { ArrowLeft, Star, FileText, Trophy, AlertTriangle, Lightbulb } from 'lucide-vue-next';
 import {
-  ArrowLeft, Star, FileText, Trophy, AlertTriangle, Lightbulb,
-} from 'lucide-vue-next';
-import {
-  Button, Badge, Card, CardHeader, CardTitle, CardDescription, CardContent,
-  ScrollArea, Separator, Progress,
+  Button,
+  Badge,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  ScrollArea,
+  Separator,
+  Progress,
 } from '@dailyuse/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
-const goalId = route.params.goalId as string || route.params.id as string;
+const { t, locale } = useI18n();
+const goalId = (route.params.goalId as string) || (route.params.id as string);
 const reviewId = route.params.reviewId as string;
 
 const { goalReviews, isLoading, fetchReviews } = useGoal();
@@ -131,7 +140,11 @@ const review = computed(() => goalReviews.value.find((r) => r.id === reviewId) ?
 
 function formatDate(d: string | number | null | undefined): string {
   if (!d) return '-';
-  return new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+  return new Date(d).toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
 onMounted(async () => {

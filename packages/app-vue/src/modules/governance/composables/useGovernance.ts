@@ -11,6 +11,7 @@
  */
 
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useGovernanceStore } from '../stores/governanceStore';
 import { RULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -26,6 +27,7 @@ export function useGovernance() {
   const store = useGovernanceStore();
   const savingId = ref<string | null>(null);
   const apiClient = useStrictInject(RULE_SERVICE_KEY, 'RuleService');
+  const { t } = useI18n();
 
   // ============ Computed State ============
 
@@ -55,7 +57,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
-        store.setError(result.error.message || '加载规则列表失败');
+        store.setError(result.error.message || t('governance.error.loadListFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -74,7 +76,7 @@ export function useGovernance() {
         store.setCurrentRule(result.data);
         return result.data;
       }
-      store.setError(result.error.message || '加载规则失败');
+      store.setError(result.error.message || t('governance.error.loadRuleFailed'));
       return null;
     } finally {
       store.setLoading(false);
@@ -93,7 +95,7 @@ export function useGovernance() {
         store.addRule(result.data);
         return result.data;
       }
-      store.setError(result.error.message || '创建规则失败');
+      store.setError(result.error.message || t('governance.error.createRuleFailed'));
       return null;
     } finally {
       savingId.value = null;
@@ -112,7 +114,7 @@ export function useGovernance() {
         store.updateRule(result.data);
         return result.data;
       }
-      store.setError(result.error.message || '更新规则失败');
+      store.setError(result.error.message || t('governance.error.updateRuleFailed'));
       return null;
     } finally {
       savingId.value = null;
@@ -131,7 +133,7 @@ export function useGovernance() {
         store.removeRule(id);
         return true;
       }
-      store.setError(result.error.message || '删除规则失败');
+      store.setError(result.error.message || t('governance.error.deleteRuleFailed'));
       return false;
     } finally {
       savingId.value = null;
@@ -161,7 +163,7 @@ export function useGovernance() {
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
-        store.setError(result.error.message || '搜索规则失败');
+        store.setError(result.error.message || t('governance.error.searchRuleFailed'));
       }
     } finally {
       store.setLoading(false);

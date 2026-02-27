@@ -1,7 +1,7 @@
 <!-- widgets/MonthDaySelector.vue -->
 <template>
   <div class="w-full">
-    <Label class="mb-2 block">选择日期</Label>
+    <Label class="mb-2 block">{{ t('task.monthDay.title') }}</Label>
     <div class="flex flex-wrap gap-1">
       <Badge
         v-for="day in monthDayOptions"
@@ -15,17 +15,27 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-1">
-      <Button size="sm" variant="ghost" @click="selectFirstHalf"> 前半月 </Button>
+      <Button size="sm" variant="ghost" @click="selectFirstHalf">
+        {{ t('task.monthDay.firstHalf') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="selectSecondHalf"> 后半月 </Button>
+      <Button size="sm" variant="ghost" @click="selectSecondHalf">
+        {{ t('task.monthDay.secondHalf') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="selectOddDays"> 奇数日 </Button>
+      <Button size="sm" variant="ghost" @click="selectOddDays">
+        {{ t('task.monthDay.oddDays') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="selectEvenDays"> 偶数日 </Button>
+      <Button size="sm" variant="ghost" @click="selectEvenDays">
+        {{ t('task.monthDay.evenDays') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="selectAll"> 全选 </Button>
+      <Button size="sm" variant="ghost" @click="selectAll">
+        {{ t('task.monthDay.selectAll') }}
+      </Button>
 
-      <Button size="sm" variant="ghost" @click="clearAll"> 清空 </Button>
+      <Button size="sm" variant="ghost" @click="clearAll"> {{ t('task.monthDay.clear') }} </Button>
     </div>
   </div>
 </template>
@@ -33,6 +43,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Badge, Button, Label } from '@dailyuse/ui-vue-shadcn';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: number[];

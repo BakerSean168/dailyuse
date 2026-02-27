@@ -12,6 +12,7 @@ import {
   createAppRouter,
   useAuthenticationStore,
   createPowerSyncVuePlugin,
+  createI18nPlugin,
 } from '@dailyuse/app-vue';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
@@ -42,6 +43,9 @@ async function startApp() {
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);
   app.use(pinia);
+
+  // I18n — must be after Pinia (locale bridge reads store) but before Router
+  app.use(createI18nPlugin('zh-CN'));
 
   // Router (Web History)
   const router = createAppRouter({

@@ -1,5 +1,9 @@
 <template>
-  <v-chart class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl" :option="progressOption" autoresize />
+  <v-chart
+    class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl"
+    :option="progressOption"
+    autoresize
+  />
 </template>
 
 <script setup lang="ts">
@@ -23,8 +27,11 @@ type EChartsOption = ComposeOption<
 >;
 
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
+
+const { t } = useI18n();
 
 type GoalWithDerivedMetrics = GoalClientDTO & {
   timeRangeSummary?: {
@@ -66,7 +73,10 @@ const toTimestamp = (value: number | string | Date | null | undefined): number |
 const resolveTimeRange = (goal: GoalWithDerivedMetrics | null) => {
   if (!goal) return { start: null, end: null };
 
-  const legacyGoal = goal as GoalWithDerivedMetrics & { startTime?: number | string; endTime?: number | string };
+  const legacyGoal = goal as GoalWithDerivedMetrics & {
+    startTime?: number | string;
+    endTime?: number | string;
+  };
   const startCandidates = [goal.startDate, legacyGoal.startTime, goal.createdAt];
   const endCandidates = [goal.targetDate, legacyGoal.endTime, goal.completedAt, goal.updatedAt];
 
@@ -89,7 +99,9 @@ const computeGoalProgress = (goal: GoalWithDerivedMetrics | null): number => {
   const keyResults = goal?.keyResults ?? [];
   if (!keyResults.length) return 0;
 
-  const progressValues = keyResults.map((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue));
+  const progressValues = keyResults.map((kr) =>
+    getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
+  );
   const weights = keyResults.map((kr) => kr.weight ?? 0);
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
@@ -157,7 +169,7 @@ const remainingDays = computed(() => {
 });
 
 const formatDateLabel = (timestamp: number | null) => {
-  if (!timestamp) return '未设置';
+  if (!timestamp) return t('goal.progressChart.notSet');
   return format(new Date(timestamp), 'yyyy-MM-dd');
 };
 
@@ -180,7 +192,7 @@ const progressOption = computed<EChartsOption>(() => {
   return {
     backgroundColor: surfaceColor,
     title: {
-      text: '目标完成进度 vs 时间进度',
+      text: t('goal.progressChart.title'),
       left: 'center',
       top: 10,
       textStyle: { fontSize: 16 },
@@ -200,25 +212,26 @@ const progressOption = computed<EChartsOption>(() => {
         const name = dataPoint?.name ?? '';
         const value = dataPoint?.value ?? 0;
 
-        if (name === '时间进度') {
+        if (name === t('goal.progressChart.timeProgress')) {
           const startLabel = formatDateLabel(timeRange.value.start);
           const endLabel = formatDateLabel(timeRange.value.end);
           const days = remainingDays.value;
-          const remainingText = days === null ? '—' : `${days}天`;
+          const remainingText = days === null ? '—' : `${days}${t('goal.progressChart.remaining')}`;
           return `
         <div>
-          <strong>时间进度</strong><br/>
+          <strong>${t('goal.progressChart.timeProgress')}</strong><br/>
           ${startLabel} - ${endLabel}<br/>
-          剩余：${remainingText}
+          ${remainingText}
         </div>
       `;
-        } else if (name === '目标完成进度') {
+        } else if (name === t('goal.progressChart.goalProgress')) {
           const diffValue = chartData.value.goal - chartData.value.time;
-          const status = diffValue >= 0 ? '领先' : '落后';
+          const status =
+            diffValue >= 0 ? t('goal.progressChart.ahead') : t('goal.progressChart.behind');
           return `
         <div>
-          <strong>目标完成进度</strong><br/>
-          ${status}时间进度 ${Math.abs(diffValue).toFixed(1)}%
+          <strong>${t('goal.progressChart.goalProgress')}</strong><br/>
+          ${status}${t('goal.progressChart.timeProgress')} ${Math.abs(diffValue).toFixed(1)}%
         </div>
       `;
         }
@@ -234,7 +247,7 @@ const progressOption = computed<EChartsOption>(() => {
     },
     yAxis: {
       type: 'category',
-      data: ['目标完成进度', '时间进度'],
+      data: [t('goal.progressChart.goalProgress'), t('goal.progressChart.timeProgress')],
       axisTick: { show: false },
       axisLine: { show: false },
       axisLabel: { fontSize: 14 },

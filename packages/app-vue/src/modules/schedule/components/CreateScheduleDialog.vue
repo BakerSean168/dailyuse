@@ -2,18 +2,20 @@
   <Dialog :open="modelValue" @update:open="$emit('update:modelValue', $event)">
     <DialogContent class="max-w-2xl">
       <DialogHeader>
-        <DialogTitle>{{ isEditing ? '编辑日程事件' : '创建日程事件' }}</DialogTitle>
+        <DialogTitle>{{
+          isEditing ? t('schedule.createDialog.titleEdit') : t('schedule.createDialog.titleCreate')
+        }}</DialogTitle>
       </DialogHeader>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="space-y-4">
           <!-- 标题 -->
           <div>
-            <Label for="title">标题 *</Label>
+            <Label for="title">{{ t('schedule.createDialog.fieldTitle') }}</Label>
             <Input
               id="title"
               v-model="formData.title"
-              placeholder="输入日程标题"
+              :placeholder="t('schedule.createDialog.fieldTitlePlaceholder')"
               maxlength="200"
               required
             />
@@ -22,11 +24,11 @@
 
           <!-- 描述 -->
           <div>
-            <Label for="description">描述</Label>
+            <Label for="description">{{ t('schedule.createDialog.fieldDescription') }}</Label>
             <Textarea
               id="description"
               v-model="formData.description"
-              placeholder="输入描述信息"
+              :placeholder="t('schedule.createDialog.fieldDescriptionPlaceholder')"
               rows="3"
               maxlength="1000"
             />
@@ -36,11 +38,11 @@
           <!-- 开始时间 -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <Label for="startDate">开始日期 *</Label>
+              <Label for="startDate">{{ t('schedule.createDialog.fieldStartDate') }}</Label>
               <Input id="startDate" v-model="formData.startDate" type="date" required />
             </div>
             <div>
-              <Label for="startTime">开始时间 *</Label>
+              <Label for="startTime">{{ t('schedule.createDialog.fieldStartTime') }}</Label>
               <Input id="startTime" v-model="formData.startTime" type="time" required />
             </div>
           </div>
@@ -48,34 +50,38 @@
           <!-- 结束时间 -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <Label for="endDate">结束日期 *</Label>
+              <Label for="endDate">{{ t('schedule.createDialog.fieldEndDate') }}</Label>
               <Input id="endDate" v-model="formData.endDate" type="date" required />
             </div>
             <div>
-              <Label for="endTime">结束时间 *</Label>
+              <Label for="endTime">{{ t('schedule.createDialog.fieldEndTime') }}</Label>
               <Input id="endTime" v-model="formData.endTime" type="time" required />
             </div>
           </div>
 
           <!-- 优先级 -->
           <div>
-            <Label for="priority">优先级 (0-10)</Label>
+            <Label for="priority">{{ t('schedule.createDialog.fieldPriority') }}</Label>
             <Select v-model="formData.priority">
               <SelectTrigger>
-                <SelectValue placeholder="选择优先级" />
+                <SelectValue :placeholder="t('schedule.createDialog.fieldPriorityPlaceholder')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">无 (0)</SelectItem>
-                <SelectItem value="1">最低 (1)</SelectItem>
-                <SelectItem value="2">很低 (2)</SelectItem>
-                <SelectItem value="3">低 (3)</SelectItem>
-                <SelectItem value="4">偏低 (4)</SelectItem>
-                <SelectItem value="5">中 (5)</SelectItem>
-                <SelectItem value="6">偏高 (6)</SelectItem>
-                <SelectItem value="7">高 (7)</SelectItem>
-                <SelectItem value="8">很高 (8)</SelectItem>
-                <SelectItem value="9">极高 (9)</SelectItem>
-                <SelectItem value="10">最高 (10)</SelectItem>
+                <SelectItem value="0">{{ t('schedule.createDialog.priorityNone') }}</SelectItem>
+                <SelectItem value="1">{{ t('schedule.createDialog.priorityLowest') }}</SelectItem>
+                <SelectItem value="2">{{ t('schedule.createDialog.priorityVeryLow') }}</SelectItem>
+                <SelectItem value="3">{{ t('schedule.createDialog.priorityLow') }}</SelectItem>
+                <SelectItem value="4">{{
+                  t('schedule.createDialog.priorityBelowMedium')
+                }}</SelectItem>
+                <SelectItem value="5">{{ t('schedule.createDialog.priorityMedium') }}</SelectItem>
+                <SelectItem value="6">{{
+                  t('schedule.createDialog.priorityAboveMedium')
+                }}</SelectItem>
+                <SelectItem value="7">{{ t('schedule.createDialog.priorityHigh') }}</SelectItem>
+                <SelectItem value="8">{{ t('schedule.createDialog.priorityVeryHigh') }}</SelectItem>
+                <SelectItem value="9">{{ t('schedule.createDialog.priorityExtreme') }}</SelectItem>
+                <SelectItem value="10">{{ t('schedule.createDialog.priorityHighest') }}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -83,8 +89,12 @@
           <!-- 自动检测冲突 -->
           <div class="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <Label for="auto-detect-conflicts" class="text-sm font-medium">自动检测冲突</Label>
-              <p class="text-xs text-muted-foreground">创建日程时自动检查时间冲突</p>
+              <Label for="auto-detect-conflicts" class="text-sm font-medium">{{
+                t('schedule.createDialog.autoDetectConflicts')
+              }}</Label>
+              <p class="text-xs text-muted-foreground">
+                {{ t('schedule.createDialog.autoDetectConflictsDescription') }}
+              </p>
             </div>
             <Switch
               id="auto-detect-conflicts"
@@ -95,13 +105,13 @@
 
           <!-- 地点 -->
           <div>
-            <Label for="location">地点</Label>
+            <Label for="location">{{ t('schedule.createDialog.fieldLocation') }}</Label>
             <div class="relative">
               <MapPin class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="location"
                 v-model="formData.location"
-                placeholder="输入地点"
+                :placeholder="t('schedule.createDialog.fieldLocationPlaceholder')"
                 class="pl-10"
                 maxlength="200"
               />
@@ -111,7 +121,7 @@
 
           <!-- 参与者 -->
           <div>
-            <Label>参与者</Label>
+            <Label>{{ t('schedule.createDialog.fieldAttendees') }}</Label>
             <div class="flex flex-wrap gap-2 mb-2">
               <Badge
                 v-for="(attendee, index) in formData.attendees"
@@ -132,19 +142,23 @@
             <div class="flex gap-2">
               <Input
                 v-model="newAttendee"
-                placeholder="输入邮箱或用户名"
+                :placeholder="t('schedule.createDialog.fieldAttendeePlaceholder')"
                 @keydown.enter.prevent="addAttendee"
               />
-              <Button type="button" variant="outline" size="sm" @click="addAttendee"> 添加 </Button>
+              <Button type="button" variant="outline" size="sm" @click="addAttendee">
+                {{ t('schedule.createDialog.addAttendee') }}
+              </Button>
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" @click="handleClose"> 取消 </Button>
+          <Button type="button" variant="outline" @click="handleClose">
+            {{ t('common.cancel') }}
+          </Button>
           <Button type="submit" :disabled="loading">
             <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
-            {{ isEditing ? '保存' : '创建' }}
+            {{ isEditing ? t('common.save') : t('common.create') }}
           </Button>
         </DialogFooter>
       </form>
@@ -175,6 +189,7 @@ import {
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { MapPin, X, Loader2 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
 interface Props {
@@ -194,6 +209,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<Emits>();
+
+const { t } = useI18n();
 
 const isEditing = ref(false);
 const newAttendee = ref('');
@@ -246,7 +263,7 @@ function handleSubmit() {
   const endTimestamp = new Date(`${formData.endDate}T${formData.endTime}`).getTime();
 
   if (startTimestamp >= endTimestamp) {
-    alert('结束时间必须晚于开始时间');
+    alert(t('schedule.confirm.endBeforeStart'));
     return;
   }
 

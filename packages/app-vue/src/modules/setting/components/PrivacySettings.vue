@@ -1,18 +1,20 @@
 <template>
   <Card>
     <CardHeader>
-      <CardTitle>隐私设置</CardTitle>
+      <CardTitle>{{ t('setting.privacy.title') }}</CardTitle>
     </CardHeader>
     <CardContent class="space-y-6">
       <!-- Profile Visibility -->
       <div class="space-y-2">
-        <Label for="visibility-select">个人资料可见性</Label>
+        <Label for="visibility-select">{{ t('setting.privacy.profileVisibility') }}</Label>
         <Select
           :model-value="modelValue.profileVisibility"
-          @update:model-value="(value) => emit('update:modelValue', { ...modelValue, profileVisibility: value })"
+          @update:model-value="
+            (value) => emit('update:modelValue', { ...modelValue, profileVisibility: value })
+          "
         >
           <SelectTrigger id="visibility-select">
-            <SelectValue placeholder="选择可见性" />
+            <SelectValue :placeholder="t('setting.privacy.profileVisibilityPlaceholder')" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem
@@ -28,7 +30,7 @@
           </SelectContent>
         </Select>
         <p class="text-sm text-muted-foreground">
-          {{ visibilityOptions.find(o => o.value === modelValue.profileVisibility)?.description }}
+          {{ visibilityOptions.find((o) => o.value === modelValue.profileVisibility)?.description }}
         </p>
       </div>
 
@@ -37,12 +39,16 @@
       <!-- Online Status -->
       <div class="flex items-start justify-between">
         <div class="space-y-1">
-          <Label class="text-base">显示在线状态</Label>
-          <p class="text-sm text-muted-foreground">让其他用户看到您的在线状态</p>
+          <Label class="text-base">{{ t('setting.privacy.showOnlineStatus') }}</Label>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.privacy.showOnlineStatusDescription') }}
+          </p>
         </div>
         <Switch
           :checked="modelValue.showOnlineStatus"
-          @update:checked="(value) => emit('update:modelValue', { ...modelValue, showOnlineStatus: value })"
+          @update:checked="
+            (value) => emit('update:modelValue', { ...modelValue, showOnlineStatus: value })
+          "
         />
       </div>
 
@@ -52,25 +58,31 @@
       <div class="space-y-4">
         <Label class="text-base flex items-center">
           <Search class="h-4 w-4 mr-2" />
-          搜索权限
+          {{ t('setting.privacy.searchPermissions') }}
         </Label>
         <div class="space-y-3">
           <div class="flex items-start justify-between">
-            <Label class="text-sm font-normal">允许通过邮箱搜索</Label>
+            <Label class="text-sm font-normal">{{ t('setting.privacy.allowSearchByEmail') }}</Label>
             <Switch
               :checked="modelValue.allowSearchByEmail"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, allowSearchByEmail: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, allowSearchByEmail: value })
+              "
             />
           </div>
           <div class="flex items-start justify-between">
-            <Label class="text-sm font-normal">允许通过手机号搜索</Label>
+            <Label class="text-sm font-normal">{{ t('setting.privacy.allowSearchByPhone') }}</Label>
             <Switch
               :checked="modelValue.allowSearchByPhone"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, allowSearchByPhone: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, allowSearchByPhone: value })
+              "
             />
           </div>
         </div>
-        <p class="text-sm text-muted-foreground">控制其他用户是否可以通过您的联系方式找到您</p>
+        <p class="text-sm text-muted-foreground">
+          {{ t('setting.privacy.searchPermissionsDescription') }}
+        </p>
       </div>
 
       <Separator />
@@ -79,16 +91,20 @@
       <div class="space-y-4">
         <Label class="text-base flex items-center">
           <Database class="h-4 w-4 mr-2" />
-          数据共享
+          {{ t('setting.privacy.dataSharing') }}
         </Label>
         <div class="flex items-start justify-between">
           <div class="space-y-1">
-            <Label class="text-sm font-normal">共享使用数据</Label>
-            <p class="text-sm text-muted-foreground">帮助我们改进产品，您的数据将被匿名化处理</p>
+            <Label class="text-sm font-normal">{{ t('setting.privacy.shareUsageData') }}</Label>
+            <p class="text-sm text-muted-foreground">
+              {{ t('setting.privacy.shareUsageDataDescription') }}
+            </p>
           </div>
           <Switch
             :checked="modelValue.shareUsageData"
-            @update:checked="(value) => emit('update:modelValue', { ...modelValue, shareUsageData: value })"
+            @update:checked="
+              (value) => emit('update:modelValue', { ...modelValue, shareUsageData: value })
+            "
           />
         </div>
       </div>
@@ -99,20 +115,20 @@
       <div class="space-y-4">
         <Label class="text-base flex items-center">
           <Settings class="h-4 w-4 mr-2" />
-          数据管理
+          {{ t('setting.privacy.dataManagement') }}
         </Label>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Button variant="outline" class="w-full" @click="emit('exportData')">
             <Download class="h-4 w-4 mr-2" />
-            导出数据
+            {{ t('setting.privacy.exportData') }}
           </Button>
           <Button variant="outline" class="w-full" @click="emit('clearCache')">
             <Trash2 class="h-4 w-4 mr-2" />
-            清除缓存
+            {{ t('setting.privacy.clearCache') }}
           </Button>
           <Button variant="destructive" class="w-full" @click="emit('deleteAccount')">
             <UserMinus class="h-4 w-4 mr-2" />
-            删除账户
+            {{ t('setting.privacy.deleteAccount') }}
           </Button>
         </div>
       </div>
@@ -121,9 +137,11 @@
       <Alert>
         <Info class="h-4 w-4" />
         <AlertDescription>
-          您的隐私对我们很重要。查看我们的
-          <a href="#" class="text-primary underline">隐私政策</a>
-          了解更多关于我们如何保护您的数据。
+          {{ t('setting.privacy.privacyPolicyNotice') }}
+          <a href="#" class="text-primary underline">{{
+            t('setting.privacy.privacyPolicyLink')
+          }}</a>
+          {{ t('setting.privacy.privacyPolicyNoticeEnd') }}
         </AlertDescription>
       </Alert>
     </CardContent>
@@ -131,14 +149,35 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
-import { Globe, Users, Lock, Search, Database, Settings, Download, Trash2, UserMinus, Info } from 'lucide-vue-next';
+import {
+  Globe,
+  Users,
+  Lock,
+  Search,
+  Database,
+  Settings,
+  Download,
+  Trash2,
+  UserMinus,
+  Info,
+} from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface PrivacySettings {
   profileVisibility?: string;
@@ -156,29 +195,29 @@ defineProps<Props>();
 
 const emit = defineEmits<{
   'update:modelValue': [value: PrivacySettings];
-  'exportData': [];
-  'clearCache': [];
-  'deleteAccount': [];
+  exportData: [];
+  clearCache: [];
+  deleteAccount: [];
 }>();
 
-const visibilityOptions = [
+const visibilityOptions = computed(() => [
   {
-    label: '公开',
+    label: t('setting.privacy.visibilityPublic'),
     value: 'PUBLIC',
     iconComponent: Globe,
-    description: '所有人都可以查看您的资料',
+    description: t('setting.privacy.visibilityPublicDesc'),
   },
   {
-    label: '好友',
+    label: t('setting.privacy.visibilityFriends'),
     value: 'FRIENDS',
     iconComponent: Users,
-    description: '只有您的好友可以查看',
+    description: t('setting.privacy.visibilityFriendsDesc'),
   },
   {
-    label: '私密',
+    label: t('setting.privacy.visibilityPrivate'),
     value: 'PRIVATE',
     iconComponent: Lock,
-    description: '只有您自己可以查看',
+    description: t('setting.privacy.visibilityPrivateDesc'),
   },
-];
+]);
 </script>

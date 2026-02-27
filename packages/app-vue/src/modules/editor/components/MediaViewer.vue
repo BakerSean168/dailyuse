@@ -27,7 +27,7 @@
           @loadedmetadata="handleVideoLoad"
           class="w-full max-h-[calc(100vh-200px)] rounded-lg shadow-lg"
         >
-          您的浏览器不支持视频播放
+          {{ t('editor.mediaViewer.videoNotSupported') }}
         </video>
       </div>
 
@@ -36,14 +36,16 @@
         <div class="flex flex-col items-center p-12 bg-muted/20 rounded-2xl">
           <Music class="h-16 w-16 text-primary mb-4" />
           <div class="text-lg font-medium mb-4">{{ fileName }}</div>
-          <audio :src="filePath" controls class="w-full max-w-md">您的浏览器不支持音频播放</audio>
+          <audio :src="filePath" controls class="w-full max-w-md">
+            {{ t('editor.mediaViewer.audioNotSupported') }}
+          </audio>
         </div>
       </div>
 
       <!-- Unsupported Type -->
       <div v-else class="flex flex-col items-center text-muted-foreground">
         <FileQuestion class="h-16 w-16 mb-4" />
-        <div class="text-lg font-semibold">不支持的文件类型</div>
+        <div class="text-lg font-semibold">{{ t('editor.mediaViewer.unsupportedFileType') }}</div>
         <div class="text-sm mt-2">{{ fileName }}</div>
       </div>
     </div>
@@ -70,9 +72,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Music, FileQuestion, AlertCircle } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface Props {
   filePath: string;
@@ -81,7 +86,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  fileName: '未命名文件',
+  fileName: 'Untitled',
 });
 
 const loading = ref(false);
@@ -105,7 +110,7 @@ function handleImageLoad(event: Event) {
 
 function handleImageError() {
   loading.value = false;
-  error.value = '图片加载失败';
+  error.value = t('editor.mediaViewer.imageLoadFailed');
 }
 
 function handleVideoLoad(_event: Event) {
@@ -113,7 +118,7 @@ function handleVideoLoad(_event: Event) {
 }
 
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '未知大小';
+  if (bytes === 0) return t('editor.mediaViewer.unknownSize');
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));

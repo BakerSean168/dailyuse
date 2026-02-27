@@ -2,10 +2,10 @@
   <div class="flex h-full flex-col">
     <div class="flex items-center gap-3 border-b px-6 py-4">
       <Button variant="ghost" size="sm" @click="$router.back()">
-        <ArrowLeft class="mr-1 h-4 w-4" /> 返回
+        <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.detail.back') }}
       </Button>
       <Separator orientation="vertical" class="h-6" />
-      <h2 class="text-lg font-semibold">{{ goal?.name || '目标详情' }}</h2>
+      <h2 class="text-lg font-semibold">{{ goal?.name || t('goal.detail.title') }}</h2>
     </div>
 
     <ScrollArea v-if="goal" class="flex-1">
@@ -16,10 +16,14 @@
             <div class="flex items-center justify-between">
               <div>
                 <CardTitle>{{ goal.name }}</CardTitle>
-                <CardDescription>{{ goal.description || '暂无描述' }}</CardDescription>
+                <CardDescription>{{
+                  goal.description || t('goal.detail.noDescription')
+                }}</CardDescription>
               </div>
               <div class="flex gap-2">
-                <Badge :variant="goal.status === 'Active' ? 'default' : 'secondary'">{{ goal.status }}</Badge>
+                <Badge :variant="goal.status === 'Active' ? 'default' : 'secondary'">{{
+                  goal.status
+                }}</Badge>
                 <Badge variant="outline">{{ goal.importance }}</Badge>
               </div>
             </div>
@@ -27,16 +31,28 @@
           <CardContent>
             <div class="grid grid-cols-3 gap-4 text-sm">
               <div>
-                <span class="text-muted-foreground">开始日期</span>
-                <p class="font-medium">{{ goal.startDate ? new Date(goal.startDate).toLocaleDateString() : '未设置' }}</p>
+                <span class="text-muted-foreground">{{ t('goal.detail.startDate') }}</span>
+                <p class="font-medium">
+                  {{
+                    goal.startDate
+                      ? new Date(goal.startDate).toLocaleDateString()
+                      : t('goal.detail.notSet')
+                  }}
+                </p>
               </div>
               <div>
-                <span class="text-muted-foreground">目标日期</span>
-                <p class="font-medium">{{ goal.targetDate ? new Date(goal.targetDate).toLocaleDateString() : '未设置' }}</p>
+                <span class="text-muted-foreground">{{ t('goal.detail.targetDate') }}</span>
+                <p class="font-medium">
+                  {{
+                    goal.targetDate
+                      ? new Date(goal.targetDate).toLocaleDateString()
+                      : t('goal.detail.notSet')
+                  }}
+                </p>
               </div>
               <div>
-                <span class="text-muted-foreground">分类</span>
-                <p class="font-medium">{{ goal.category || '未分类' }}</p>
+                <span class="text-muted-foreground">{{ t('goal.detail.category') }}</span>
+                <p class="font-medium">{{ goal.category || t('goal.detail.uncategorized') }}</p>
               </div>
             </div>
             <div v-if="goal.tags?.length" class="mt-4 flex flex-wrap gap-1">
@@ -51,9 +67,9 @@
         <Card>
           <CardHeader>
             <div class="flex items-center justify-between">
-              <CardTitle class="text-base">关键结果</CardTitle>
+              <CardTitle class="text-base">{{ t('goal.detail.keyResults') }}</CardTitle>
               <Button size="sm" @click="showAddKR = true">
-                <Plus class="mr-1 h-4 w-4" /> 添加 KR
+                <Plus class="mr-1 h-4 w-4" /> {{ t('goal.detail.addKR') }}
               </Button>
             </div>
           </CardHeader>
@@ -73,8 +89,11 @@
               <Progress :model-value="calculateKRProgress(kr)" class="h-2" />
             </div>
 
-            <p v-if="keyResults.length === 0" class="py-4 text-center text-sm text-muted-foreground">
-              暂无关键结果
+            <p
+              v-if="keyResults.length === 0"
+              class="py-4 text-center text-sm text-muted-foreground"
+            >
+              {{ t('goal.detail.noKR') }}
             </p>
           </CardContent>
         </Card>
@@ -82,8 +101,8 @@
         <!-- 标签页 -->
         <Tabs default-value="records">
           <TabsList>
-            <TabsTrigger value="records">进度记录</TabsTrigger>
-            <TabsTrigger value="reviews">复盘</TabsTrigger>
+            <TabsTrigger value="records">{{ t('goal.detail.progressRecords') }}</TabsTrigger>
+            <TabsTrigger value="reviews">{{ t('goal.detail.review') }}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="records" class="mt-4 space-y-2">
@@ -93,12 +112,23 @@
               class="flex items-center justify-between rounded-lg border p-3"
             >
               <div>
-                <p class="text-sm font-medium">记录值: {{ record.value }}</p>
-                <p class="text-xs text-muted-foreground">{{ record.comment || '无备注' }}</p>
+                <p class="text-sm font-medium">
+                  {{ t('goal.detail.recordValue') }} {{ record.value }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ record.comment || t('goal.detail.noRemarks') }}
+                </p>
               </div>
-              <span class="text-xs text-muted-foreground">{{ new Date(record.createdAt).toLocaleDateString() }}</span>
+              <span class="text-xs text-muted-foreground">{{
+                new Date(record.createdAt).toLocaleDateString()
+              }}</span>
             </div>
-            <p v-if="goalRecords.length === 0" class="py-4 text-center text-sm text-muted-foreground">暂无记录</p>
+            <p
+              v-if="goalRecords.length === 0"
+              class="py-4 text-center text-sm text-muted-foreground"
+            >
+              {{ t('goal.detail.noRecords') }}
+            </p>
           </TabsContent>
 
           <TabsContent value="reviews" class="mt-4 space-y-2">
@@ -110,20 +140,29 @@
             >
               <CardContent class="flex items-center justify-between p-4">
                 <div>
-                  <p class="font-medium">{{ review.type }} 复盘</p>
-                  <p class="text-xs text-muted-foreground">{{ review.summary || '暂无摘要' }}</p>
+                  <p class="font-medium">{{ review.type }} {{ t('goal.detail.reviewSuffix') }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ review.summary || t('goal.detail.noSummary') }}
+                  </p>
                 </div>
-                <span class="text-xs text-muted-foreground">{{ new Date(review.reviewedAt).toLocaleDateString() }}</span>
+                <span class="text-xs text-muted-foreground">{{
+                  new Date(review.reviewedAt).toLocaleDateString()
+                }}</span>
               </CardContent>
             </Card>
-            <p v-if="goalReviews.length === 0" class="py-4 text-center text-sm text-muted-foreground">暂无复盘</p>
+            <p
+              v-if="goalReviews.length === 0"
+              class="py-4 text-center text-sm text-muted-foreground"
+            >
+              {{ t('goal.detail.noReviews') }}
+            </p>
           </TabsContent>
         </Tabs>
       </div>
     </ScrollArea>
 
     <div v-else class="flex flex-1 items-center justify-center">
-      <p class="text-muted-foreground">加载中...</p>
+      <p class="text-muted-foreground">{{ t('goal.detail.loading') }}</p>
     </div>
   </div>
 </template>
@@ -131,20 +170,39 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus } from 'lucide-vue-next';
 import {
-  Button, Card, CardHeader, CardTitle, CardDescription, CardContent,
-  Badge, Progress, ScrollArea, Separator,
-  Tabs, TabsList, TabsTrigger, TabsContent,
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Badge,
+  Progress,
+  ScrollArea,
+  Separator,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from '@dailyuse/ui-vue-shadcn';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
+const { t } = useI18n();
 const goalId = route.params.id as string;
 
 const {
-  currentGoal: goal, keyResults, goalRecords, goalReviews,
-  fetchGoal, fetchKeyResults, fetchRecords, fetchReviews,
+  currentGoal: goal,
+  keyResults,
+  goalRecords,
+  goalReviews,
+  fetchGoal,
+  fetchKeyResults,
+  fetchRecords,
+  fetchReviews,
 } = useGoal();
 
 const showAddKR = ref(false);
@@ -159,10 +217,6 @@ function calculateKRProgress(kr: any): number {
 
 onMounted(async () => {
   await fetchGoal(goalId);
-  await Promise.all([
-    fetchKeyResults(goalId),
-    fetchRecords(goalId),
-    fetchReviews(goalId),
-  ]);
+  await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId), fetchReviews(goalId)]);
 });
 </script>

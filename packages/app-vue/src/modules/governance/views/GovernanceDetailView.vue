@@ -18,7 +18,7 @@
             :to="{ name: 'governance-list' }"
             class="hover:text-foreground transition-colors"
           >
-            治理规则
+            {{ t('governance.detail.breadcrumbRules') }}
           </router-link>
           <ChevronRight :size="14" />
           <span class="text-foreground">{{ currentRule.code }}</span>
@@ -30,21 +30,21 @@
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm hover:bg-muted transition-colors"
           >
             <History :size="14" />
-            历史
+            {{ t('governance.detail.history') }}
           </router-link>
           <router-link
             :to="{ name: 'governance-editor-edit', params: { id: currentRule.id } }"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm hover:bg-muted transition-colors"
           >
             <Pencil :size="14" />
-            编辑
+            {{ t('governance.detail.edit') }}
           </router-link>
           <button
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-destructive/30 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors"
             @click="confirmDelete"
           >
             <Trash2 :size="14" />
-            删除
+            {{ t('governance.detail.delete') }}
           </button>
         </div>
       </div>
@@ -62,7 +62,11 @@
                 : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
             "
           >
-            {{ currentRule.severity === 'Mandatory' ? '强制' : '推荐' }}
+            {{
+              currentRule.severity === 'Mandatory'
+                ? t('governance.detail.severityMandatory')
+                : t('governance.detail.severityRecommended')
+            }}
           </span>
         </div>
 
@@ -77,7 +81,8 @@
         </div>
 
         <p class="text-xs text-muted-foreground">
-          代码: {{ currentRule.code }} · 更新于 {{ formatDate(currentRule.updatedAt) }}
+          {{ t('governance.detail.codePrefix') }}: {{ currentRule.code }} ·
+          {{ t('governance.detail.updatedAt') }} {{ formatDate(currentRule.updatedAt) }}
         </p>
       </div>
 
@@ -88,7 +93,9 @@
       >
         <AlertTriangle :size="20" class="text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
         <div>
-          <h3 class="font-medium text-yellow-800 dark:text-yellow-300">此规则已弃用</h3>
+          <h3 class="font-medium text-yellow-800 dark:text-yellow-300">
+            {{ t('governance.detail.deprecatedWarning') }}
+          </h3>
           <p
             v-if="currentRule.deprecationReason"
             class="text-sm text-yellow-700 dark:text-yellow-400 mt-1"
@@ -96,12 +103,12 @@
             {{ currentRule.deprecationReason }}
           </p>
           <p v-if="currentRule.replacementRuleId" class="text-sm mt-1">
-            替代规则:
+            {{ t('governance.detail.replacementRule') }}
             <router-link
               :to="{ name: 'governance-detail', params: { id: currentRule.replacementRuleId } }"
               class="text-primary hover:underline"
             >
-              查看替代规则 →
+              {{ t('governance.detail.viewReplacement') }}
             </router-link>
           </p>
         </div>
@@ -110,7 +117,7 @@
       <!-- Description -->
       <div class="border rounded-lg mb-6">
         <div class="px-4 py-3 border-b bg-muted/30">
-          <h2 class="text-sm font-medium">描述</h2>
+          <h2 class="text-sm font-medium">{{ t('governance.detail.description') }}</h2>
         </div>
         <div class="p-4">
           <div class="text-sm whitespace-pre-wrap leading-7">{{ currentRule.description }}</div>
@@ -122,7 +129,7 @@
         <div class="px-4 py-3 border-b bg-muted/30">
           <h2 class="text-sm font-medium flex items-center gap-1.5">
             <Link :size="14" />
-            实际引用位置
+            {{ t('governance.detail.liveReference') }}
           </h2>
         </div>
         <div class="p-4">
@@ -136,7 +143,7 @@
       <div v-if="currentRule.goodExamples.length > 0" class="mb-6">
         <h2 class="text-sm font-medium mb-3 flex items-center gap-1.5">
           <CheckCircle :size="16" class="text-green-500" />
-          正确示例 ({{ currentRule.goodExamples.length }})
+          {{ t('governance.detail.goodExamples', { count: currentRule.goodExamples.length }) }}
         </h2>
         <div class="space-y-3">
           <CodeSnippetView
@@ -151,7 +158,7 @@
       <div v-if="currentRule.badExamples.length > 0" class="mb-6">
         <h2 class="text-sm font-medium mb-3 flex items-center gap-1.5">
           <XCircle :size="16" class="text-destructive" />
-          错误示例 ({{ currentRule.badExamples.length }})
+          {{ t('governance.detail.badExamples', { count: currentRule.badExamples.length }) }}
         </h2>
         <div class="space-y-3">
           <CodeSnippetView
@@ -170,7 +177,7 @@
         >
           <span class="text-sm font-medium flex items-center gap-1.5">
             <History :size="14" />
-            修订历史 ({{ revisions.length }})
+            {{ t('governance.detail.revisionHistory', { count: revisions.length }) }}
           </span>
           <ChevronRight
             :size="16"
@@ -203,12 +210,15 @@
                   </span>
                 </div>
                 <p class="text-xs text-muted-foreground">
-                  变更字段: {{ rev.changedFields.join(', ') || '初始创建' }}
+                  {{ t('governance.detail.changedFields') }}
+                  {{ rev.changedFields.join(', ') || t('governance.detail.initialCreation') }}
                 </p>
               </div>
             </div>
           </div>
-          <p v-else class="text-sm text-muted-foreground">暂无修订历史</p>
+          <p v-else class="text-sm text-muted-foreground">
+            {{ t('governance.detail.noRevisions') }}
+          </p>
         </div>
       </div>
     </template>
@@ -217,23 +227,23 @@
     <div v-if="showDeleteDialog" class="fixed inset-0 z-50 flex items-center justify-center">
       <div class="fixed inset-0 bg-black/50" @click="showDeleteDialog = false"></div>
       <div class="relative bg-background rounded-lg shadow-lg w-full max-w-[400px] p-6 z-10">
-        <h3 class="text-lg font-semibold mb-2">确认删除</h3>
+        <h3 class="text-lg font-semibold mb-2">{{ t('governance.detail.confirmDeleteTitle') }}</h3>
         <p class="text-sm text-muted-foreground mb-6">
-          确定要删除规则 "{{ currentRule?.title }}" 吗？此操作不可撤销。
+          {{ t('governance.detail.confirmDeleteMsg', { title: currentRule?.title }) }}
         </p>
         <div class="flex justify-end gap-2">
           <button
             class="px-4 py-2 rounded-md border text-sm hover:bg-muted transition-colors"
             @click="showDeleteDialog = false"
           >
-            取消
+            {{ t('governance.detail.cancel') }}
           </button>
           <button
             class="px-4 py-2 rounded-md bg-destructive text-destructive-foreground text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
             :disabled="isSaving"
             @click="handleDelete"
           >
-            {{ isSaving ? '删除中...' : '删除' }}
+            {{ isSaving ? t('governance.detail.deleting') : t('governance.detail.delete') }}
           </button>
         </div>
       </div>
@@ -244,6 +254,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import {
   ChevronRight,
   Pencil,
@@ -264,6 +275,7 @@ const props = defineProps<{
 
 const route = useRoute();
 const router = useRouter();
+const { t, locale } = useI18n();
 const {
   currentRule,
   revisions,
@@ -302,7 +314,7 @@ async function handleDelete() {
 }
 
 function formatDate(dateStr: string | number): string {
-  return new Date(dateStr).toLocaleString('zh-CN', {
+  return new Date(dateStr).toLocaleString(locale.value, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -344,13 +356,13 @@ function revisionBadgeClasses(changeType: string): string {
 function revisionLabel(changeType: string): string {
   switch (changeType) {
     case 'Created':
-      return '创建';
+      return t('governance.detail.revisionCreated');
     case 'Updated':
-      return '更新';
+      return t('governance.detail.revisionUpdated');
     case 'Deprecated':
-      return '弃用';
+      return t('governance.detail.revisionDeprecated');
     case 'Reactivated':
-      return '重新激活';
+      return t('governance.detail.revisionReactivated');
     default:
       return changeType;
   }

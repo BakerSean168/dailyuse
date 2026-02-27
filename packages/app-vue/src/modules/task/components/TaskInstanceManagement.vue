@@ -24,7 +24,8 @@
       <div v-if="totalCount > 0" class="progress-section mt-3">
         <Progress :model-value="(completedCount / totalCount) * 100" class="h-2.5" />
         <span class="progress-text text-sm mt-1 block"
-          >{{ Math.round((completedCount / totalCount) * 100) }}% 完成</span
+          >{{ Math.round((completedCount / totalCount) * 100) }}%
+          {{ t('task.instanceMgmt.completed') }}</span
         >
       </div>
     </div>
@@ -62,8 +63,10 @@
       <div v-if="totalCount === 0" class="overlay-card text-center py-12">
         <div class="overlay-content">
           <Palmtree class="h-20 w-20 text-green-500 mx-auto mb-4" />
-          <h3 class="text-xl font-semibold mb-3">休息日</h3>
-          <p class="text-base text-muted-foreground mb-4">今天没有安排任务，好好休息吧！</p>
+          <h3 class="text-xl font-semibold mb-3">{{ t('task.instanceMgmt.restDay') }}</h3>
+          <p class="text-base text-muted-foreground mb-4">
+            {{ t('task.instanceMgmt.noTasksToday') }}
+          </p>
         </div>
       </div>
 
@@ -72,7 +75,7 @@
           <CardHeader class="section-header flex flex-row items-center justify-between pb-2">
             <div class="flex items-center gap-2">
               <Clock class="h-5 w-5 text-yellow-500" />
-              <CardTitle class="text-base">待完成任务</CardTitle>
+              <CardTitle class="text-base">{{ t('task.instanceMgmt.pendingTasks') }}</CardTitle>
             </div>
             <Badge variant="outline" class="text-yellow-600">{{ incompleteTasks.length }}</Badge>
           </CardHeader>
@@ -94,7 +97,7 @@
           <CardHeader class="section-header flex flex-row items-center justify-between pb-2">
             <div class="flex items-center gap-2">
               <CheckCircle class="h-5 w-5 text-green-500" />
-              <CardTitle class="text-base">已完成任务</CardTitle>
+              <CardTitle class="text-base">{{ t('task.instanceMgmt.completedTasks') }}</CardTitle>
             </div>
             <Badge variant="outline" class="text-green-600">{{ completedTasks.length }}</Badge>
           </CardHeader>
@@ -118,7 +121,9 @@
       v-if="dialogVisible && selectedTask"
       v-model="dialogVisible"
       :task-id="selectedTask.id"
-      :task-title="selectedTask.templateTitle || selectedTask.statusText || '任务'"
+      :task-title="
+        selectedTask.templateTitle || selectedTask.statusText || t('task.instanceMgmt.taskFallback')
+      "
       :instance-date="selectedTask.instanceDate"
       :goal-binding="undefined"
       @confirm="handleCompleteConfirm"
@@ -130,6 +135,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { isSameDay } from 'date-fns';
+import { useI18n } from 'vue-i18n';
 import TaskInstanceCard from './TaskInstanceCard.vue';
 import TaskCompleteDialog from './dialogs/TaskCompleteDialog.vue';
 import type { TaskInstanceViewModel } from './types';
@@ -178,6 +184,8 @@ const selectedTask = ref<TaskInstanceViewModel | null>(null);
 
 const loading = computed(() => props.loading);
 
+const { t, locale } = useI18n();
+
 const dayTasks = computed(() => {
   const date = new Date(selectedDate.value);
   return props.taskInstances.filter((task) => isSameDay(new Date(task.instanceDate), date));
@@ -190,15 +198,25 @@ const totalCount = computed(() => dayTasks.value.length);
 
 const headerTitle = computed(() => {
   const today = new Date().toISOString().split('T')[0];
-  if (selectedDate.value === today) return '今日任务';
+  if (selectedDate.value === today) return t('task.instanceMgmt.todayTasks');
   const date = new Date(selectedDate.value);
-  return `${date.getMonth() + 1}月${date.getDate()}日任务`;
+  return t('task.instanceMgmt.monthDayTasks', { month: date.getMonth() + 1, day: date.getDate() });
 });
+
+const weekdayKeys = [
+  'task.instanceMgmt.daySun',
+  'task.instanceMgmt.dayMon',
+  'task.instanceMgmt.dayTue',
+  'task.instanceMgmt.dayWed',
+  'task.instanceMgmt.dayThu',
+  'task.instanceMgmt.dayFri',
+  'task.instanceMgmt.daySat',
+];
 
 const headerSubtitle = computed(() => {
   const date = new Date(selectedDate.value);
-  const dayName = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
-  return `${dayName} · ${date.toLocaleDateString('zh-CN')}`;
+  const dayName = t(weekdayKeys[date.getDay()]);
+  return `${dayName} · ${date.toLocaleDateString(locale.value)}`;
 });
 
 const weekDays = computed(() => {
@@ -210,7 +228,7 @@ const weekDays = computed(() => {
     date.setDate(monday.getDate() + index);
     days.push({
       date: date.toISOString().split('T')[0],
-      weekday: '日一二三四五六'[date.getDay()],
+      weekday: t(weekdayKeys[date.getDay()]),
     });
   }
   return days;
@@ -221,7 +239,7 @@ const weekTitle = computed(() => {
   monday.setDate(currentWeekStart.value.getDate() - (currentWeekStart.value.getDay() || 7) + 1);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
-  return `${monday.getMonth() + 1}月${monday.getDate()}日 - ${sunday.getMonth() + 1}月${sunday.getDate()}日`;
+  return `${monday.toLocaleDateString(locale.value)} - ${sunday.toLocaleDateString(locale.value)}`;
 });
 
 const shiftWeek = (days: number) => {

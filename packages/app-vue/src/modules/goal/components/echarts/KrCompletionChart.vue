@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
@@ -16,6 +17,8 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 use([TitleComponent, TooltipComponent, LegendComponent, PieChart, CanvasRenderer]);
+
+const { t } = useI18n();
 
 const props = defineProps<{
   goal: GoalClientDTO | null;
@@ -60,8 +63,8 @@ const completionOption = computed(() => {
   return {
     backgroundColor: surfaceColor,
     title: {
-      text: '关键结果完成情况',
-      subtext: `完成率: ${stats.completedRate}%`,
+      text: t('goal.chart.krCompletion.title'),
+      subtext: `${t('goal.chart.krCompletion.subtextPrefix')}${stats.completedRate}%`,
       left: 'center',
       top: 10,
       textStyle: { fontSize: 16 },
@@ -77,7 +80,7 @@ const completionOption = computed(() => {
       },
       formatter: (params: any) => {
         const percent = ((params.value / stats.total) * 100).toFixed(1);
-        return `${params.name}: ${params.value}个 (${percent}%)`;
+        return `${params.name}: ${params.value}${t('goal.chart.krCompletion.tooltipUnit')} (${percent}%)`;
       },
     },
     legend: {
@@ -88,7 +91,7 @@ const completionOption = computed(() => {
     },
     series: [
       {
-        name: '完成情况',
+        name: t('goal.chart.krCompletion.seriesName'),
         type: 'pie',
         radius: ['45%', '70%'],
         center: ['40%', '55%'],
@@ -107,7 +110,8 @@ const completionOption = computed(() => {
             show: true,
             fontSize: 20,
             fontWeight: 'bold',
-            formatter: '{b}\n{c}个',
+            formatter: (params: any) =>
+              `${params.name}\n${params.value}${t('goal.chart.krCompletion.tooltipUnit')}`,
           },
         },
         labelLine: {
@@ -116,17 +120,17 @@ const completionOption = computed(() => {
         data: [
           {
             value: stats.completed,
-            name: '已完成',
+            name: t('goal.chart.krCompletion.completed'),
             itemStyle: { color: '#52c41a' },
           },
           {
             value: stats.inProgress,
-            name: '进行中',
+            name: t('goal.chart.krCompletion.inProgress'),
             itemStyle: { color: '#1890ff' },
           },
           {
             value: stats.notStarted,
-            name: '未开始',
+            name: t('goal.chart.krCompletion.notStarted'),
             itemStyle: { color: '#d9d9d9' },
           },
         ],

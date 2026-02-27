@@ -3,13 +3,15 @@
     <CardHeader>
       <CardTitle class="flex items-center gap-2">
         <Link2 class="h-5 w-5" />
-        管理任务依赖
+        {{ t('task.dependency.title') }}
       </CardTitle>
     </CardHeader>
 
     <CardContent>
       <div v-if="currentDependencies.length > 0" class="mb-4">
-        <div class="text-sm font-medium mb-2">当前依赖 ({{ currentDependencies.length }})</div>
+        <div class="text-sm font-medium mb-2">
+          {{ t('task.dependency.currentDeps') }} ({{ currentDependencies.length }})
+        </div>
         <div class="divide-y">
           <div
             v-for="dep in currentDependencies"
@@ -44,14 +46,14 @@
       </div>
 
       <Separator class="my-4" />
-      <div class="text-sm font-medium mb-3">添加新依赖</div>
+      <div class="text-sm font-medium mb-3">{{ t('task.dependency.addNew') }}</div>
 
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-5">
-          <Label class="mb-1.5 block">前置任务</Label>
+          <Label class="mb-1.5 block">{{ t('task.dependency.sourceTask') }}</Label>
           <Select v-model="newDependency.predecessorId" :disabled="!currentTaskId">
             <SelectTrigger>
-              <SelectValue placeholder="选择前置任务" />
+              <SelectValue :placeholder="t('task.dependency.selectSource')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="task in availablePredecessors" :key="task.id" :value="task.id">
@@ -62,10 +64,10 @@
         </div>
 
         <div class="col-span-12 md:col-span-3">
-          <Label class="mb-1.5 block">依赖类型</Label>
+          <Label class="mb-1.5 block">{{ t('task.dependency.depType') }}</Label>
           <Select v-model="newDependency.dependencyType">
             <SelectTrigger>
-              <SelectValue placeholder="选择类型" />
+              <SelectValue :placeholder="t('task.dependency.selectType')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="opt in dependencyTypeOptions" :key="opt.value" :value="opt.value">
@@ -78,7 +80,7 @@
         <div class="col-span-12 md:col-span-4 flex items-end">
           <Button :disabled="!canAddDependency" @click="handleAddDependency">
             <Plus class="h-4 w-4 mr-1" />
-            添加依赖
+            {{ t('task.dependency.add') }}
           </Button>
         </div>
       </div>
@@ -113,6 +115,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { DependencyType, type TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import {
   Card,
@@ -146,6 +149,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   (
@@ -207,12 +212,12 @@ const blockingInfo = computed(() => {
   };
 });
 
-const dependencyTypeOptions = [
-  { value: 'FS', label: 'FS - 完成到开始' },
-  { value: 'SS', label: 'SS - 开始到开始' },
-  { value: 'FF', label: 'FF - 完成到完成' },
-  { value: 'SF', label: 'SF - 开始到完成' },
-];
+const dependencyTypeOptions = computed(() => [
+  { value: 'FS', label: t('task.dependency.fs') },
+  { value: 'SS', label: t('task.dependency.ss') },
+  { value: 'FF', label: t('task.dependency.ff') },
+  { value: 'SF', label: t('task.dependency.sf') },
+]);
 
 const pathExists = (start: string, target: string): boolean => {
   const visited = new Set<string>();
@@ -248,7 +253,7 @@ const handleAddDependency = () => {
       dep.successorTaskId === props.currentTaskId,
   );
   if (duplicate) {
-    validationWarnings.value = [{ code: 'DUPLICATE', message: '该依赖关系已存在' }];
+    validationWarnings.value = [{ code: 'DUPLICATE', message: t('task.dependency.alreadyExists') }];
     return;
   }
 
@@ -256,7 +261,7 @@ const handleAddDependency = () => {
   if (hasCycle) {
     validationError.value = {
       code: 'CIRCULAR_DEPENDENCY',
-      message: '创建此依赖会形成循环依赖',
+      message: t('task.dependency.cyclicError'),
       details: {
         cyclePath: [newDependency.value.predecessorId, props.currentTaskId],
       },
@@ -294,10 +299,10 @@ const getDependencyTypeIconComponent = (type: string) => {
 };
 
 const getDependencyTypeName = (type: string): string => {
-  if (type === 'FS') return '完成到开始';
-  if (type === 'SS') return '开始到开始';
-  if (type === 'FF') return '完成到完成';
-  if (type === 'SF') return '开始到完成';
+  if (type === 'FS') return t('task.dependency.fsLabel');
+  if (type === 'SS') return t('task.dependency.ssLabel');
+  if (type === 'FF') return t('task.dependency.ffLabel');
+  if (type === 'SF') return t('task.dependency.sfLabel');
   return type;
 };
 </script>

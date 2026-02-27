@@ -2,27 +2,29 @@
   <Dialog v-model:open="visible">
     <DialogContent class="max-w-md">
       <DialogHeader>
-        <DialogTitle>{{ isEditing ? '编辑目标节点' : '创建目标节点' }}</DialogTitle>
-        <DialogDescription>请填写节点名称并选择图标。</DialogDescription>
+        <DialogTitle>{{
+          isEditing ? t('goal.folderDialog.editTitle') : t('goal.folderDialog.createTitle')
+        }}</DialogTitle>
+        <DialogDescription>{{ t('goal.folderDialog.hint') }}</DialogDescription>
       </DialogHeader>
 
       <div class="space-y-4 py-2">
         <div class="space-y-2">
-          <Label for="folder-name">节点名称</Label>
+          <Label for="folder-name">{{ t('goal.folderDialog.name') }}</Label>
           <Input
             id="folder-name"
             v-model="draft.name"
-            placeholder="请输入节点名称"
+            :placeholder="t('goal.folderDialog.namePlaceholder')"
             @keyup.enter="handleSave"
           />
           <p v-if="nameError" class="text-xs text-destructive">{{ nameError }}</p>
         </div>
 
         <div class="space-y-2">
-          <Label for="folder-icon">图标</Label>
+          <Label for="folder-icon">{{ t('goal.folderDialog.icon') }}</Label>
           <Select v-model="draft.icon">
             <SelectTrigger id="folder-icon">
-              <SelectValue placeholder="选择图标" />
+              <SelectValue :placeholder="t('goal.folderDialog.selectIcon')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="item in iconOptions" :key="item.value" :value="item.value">
@@ -33,18 +35,18 @@
         </div>
 
         <div class="space-y-2">
-          <Label for="folder-description">描述</Label>
+          <Label for="folder-description">{{ t('goal.folderDialog.description') }}</Label>
           <Textarea
             id="folder-description"
             :model-value="draft.description ?? ''"
             @update:model-value="draft.description = String($event) || null"
-            placeholder="可选：添加文件夹描述"
+            :placeholder="t('goal.folderDialog.descPlaceholder')"
             class="min-h-[60px] resize-none"
           />
         </div>
 
         <div class="space-y-2">
-          <Label>颜色</Label>
+          <Label>{{ t('goal.folderDialog.color') }}</Label>
           <Popover>
             <PopoverTrigger as-child>
               <Button variant="outline" class="h-10 w-[140px] justify-start gap-2">
@@ -52,7 +54,7 @@
                   class="h-4 w-4 rounded-full border"
                   :style="{ backgroundColor: draft.color || '#94a3b8' }"
                 />
-                <span class="text-sm">{{ draft.color || '选择颜色' }}</span>
+                <span class="text-sm">{{ draft.color || t('goal.folderDialog.selectColor') }}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-3" align="start">
@@ -73,7 +75,7 @@
                 class="mt-2 w-full text-xs"
                 @click="draft.color = null"
               >
-                清除颜色
+                {{ t('goal.folderDialog.clearColor') }}
               </Button>
             </PopoverContent>
           </Popover>
@@ -81,8 +83,10 @@
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="handleCancel">取消</Button>
-        <Button :disabled="!isFormValid" @click="handleSave">确定</Button>
+        <Button variant="outline" @click="handleCancel">{{ t('goal.folderDialog.cancel') }}</Button>
+        <Button :disabled="!isFormValid" @click="handleSave">{{
+          t('goal.folderDialog.confirm')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -90,6 +94,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
@@ -111,6 +116,8 @@ import {
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverTrigger, PopoverContent } from '@dailyuse/ui-vue-shadcn';
+
+const { t } = useI18n();
 
 const colorOptions = [
   '#ef4444',
@@ -142,14 +149,14 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-const iconOptions = [
-  { text: '文件夹', value: 'mdi-folder' },
-  { text: '目标', value: 'mdi-target' },
-  { text: '学习', value: 'mdi-school' },
-  { text: '工作', value: 'mdi-briefcase' },
-  { text: '生活', value: 'mdi-home' },
-  { text: '健康', value: 'mdi-heart' },
-];
+const iconOptions = computed(() => [
+  { text: t('goal.folderDialog.iconFolder'), value: 'mdi-folder' },
+  { text: t('goal.folderDialog.iconTarget'), value: 'mdi-target' },
+  { text: t('goal.folderDialog.iconStudy'), value: 'mdi-school' },
+  { text: t('goal.folderDialog.iconWork'), value: 'mdi-briefcase' },
+  { text: t('goal.folderDialog.iconLife'), value: 'mdi-home' },
+  { text: t('goal.folderDialog.iconHealth'), value: 'mdi-heart' },
+]);
 
 const visible = ref(false);
 const editingFolder = ref<GoalFolderClientDTO | null>(null);
@@ -166,9 +173,9 @@ const isEditing = computed(() => !!editingFolder.value);
 
 const nameError = computed(() => {
   const value = draft.value.name.trim();
-  if (!value) return '名称不能为空';
-  if (value.length < 1) return '名称至少需要1个字符';
-  if (value.length > 50) return '名称不能超过50个字符';
+  if (!value) return t('goal.folderDialog.nameRequired');
+  if (value.length < 1) return t('goal.folderDialog.nameMinLength');
+  if (value.length > 50) return t('goal.folderDialog.nameMaxLength');
   return '';
 });
 

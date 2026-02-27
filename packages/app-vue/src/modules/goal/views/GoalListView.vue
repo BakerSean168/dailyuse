@@ -112,7 +112,7 @@
             v-if="isLoading"
             class="flex h-[50vh] items-center justify-center text-muted-foreground"
           >
-            加载中...
+            {{ t('goal.list.loading') }}
           </div>
 
           <div
@@ -160,11 +160,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { Target, Plus, LayoutGrid, Search, Folder, FolderPlus } from 'lucide-vue-next';
 import { Button, Badge, ScrollArea, Input, Separator } from '@dailyuse/ui-vue-shadcn';
 import { GoalCard, GoalDialog } from '../components';
 import { useGoal } from '../composables/useGoal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+
+const { t } = useI18n();
 
 const {
   goals,
@@ -223,21 +226,21 @@ function handleEditGoal(goal: GoalClientDTO) {
 }
 
 async function handleDeleteGoal(id: string) {
-  if (!window.confirm('确认删除此目标？')) return;
+  if (!window.confirm(t('goal.list.confirmDelete'))) return;
   const ok = await deleteGoal(id);
-  if (ok) toast.success('目标已删除');
+  if (ok) toast.success(t('goal.list.deleted'));
 }
 
 function handleGoalCreated() {
   showGoalDialog.value = false;
   fetchGoals();
-  toast.success('目标已创建');
+  toast.success(t('goal.list.created'));
 }
 
 function handleGoalUpdated() {
   showGoalDialog.value = false;
   fetchGoals();
-  toast.success('目标已更新');
+  toast.success(t('goal.list.updated'));
 }
 
 onMounted(async () => {

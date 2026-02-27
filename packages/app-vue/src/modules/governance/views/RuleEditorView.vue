@@ -6,14 +6,16 @@
         :to="{ name: 'governance-list' }"
         class="hover:text-foreground transition-colors"
       >
-        治理规则
+        {{ t('governance.editor.breadcrumbRules') }}
       </router-link>
       <ChevronRight :size="14" />
-      <span class="text-foreground">{{ isEdit ? '编辑规则' : '新建规则' }}</span>
+      <span class="text-foreground">{{
+        isEdit ? t('governance.editor.editRule') : t('governance.editor.newRule')
+      }}</span>
     </nav>
 
     <h1 class="text-2xl font-bold mb-4">
-      {{ isEdit ? '编辑规则' : '新建规则' }}
+      {{ isEdit ? t('governance.editor.editRule') : t('governance.editor.newRule') }}
     </h1>
 
     <!-- Loading -->
@@ -33,13 +35,13 @@
           <!-- Basic Info Card -->
           <div class="border rounded-lg">
             <div class="px-4 py-3 border-b bg-muted/30">
-              <h2 class="text-sm font-medium">基本信息</h2>
+              <h2 class="text-sm font-medium">{{ t('governance.editor.basicInfo') }}</h2>
             </div>
             <div class="p-4 space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-4">
                 <div>
                   <label class="block text-sm font-medium mb-1.5">
-                    规则代码 <span class="text-destructive">*</span>
+                    {{ t('governance.editor.ruleCode') }} <span class="text-destructive">*</span>
                   </label>
                   <input
                     v-model="form.code"
@@ -51,17 +53,17 @@
                     pattern="^[A-Z]+-[0-9]+$"
                   />
                   <p class="text-[11px] text-muted-foreground mt-1">
-                    格式: 大写字母-数字 (如 GOV-001)
+                    {{ t('governance.editor.codeFormat') }}
                   </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium mb-1.5">
-                    标题 <span class="text-destructive">*</span>
+                    {{ t('governance.editor.title') }} <span class="text-destructive">*</span>
                   </label>
                   <input
                     v-model="form.title"
                     type="text"
-                    placeholder="规则标题"
+                    :placeholder="t('governance.editor.titlePlaceholder')"
                     class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                     required
                     minlength="3"
@@ -72,7 +74,7 @@
 
               <div>
                 <label class="block text-sm font-medium mb-1.5">
-                  描述 <span class="text-destructive">*</span>
+                  {{ t('governance.editor.description') }} <span class="text-destructive">*</span>
                 </label>
                 <textarea
                   v-model="form.description"
@@ -81,7 +83,7 @@
                   required
                   minlength="10"
                   maxlength="5000"
-                  placeholder="规则描述..."
+                  :placeholder="t('governance.editor.descriptionPlaceholder')"
                 ></textarea>
                 <p class="text-[11px] text-muted-foreground mt-1 text-right">
                   {{ form.description.length }} / 5000
@@ -91,7 +93,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium mb-1.5">
-                    严重级别 <span class="text-destructive">*</span>
+                    {{ t('governance.editor.severity') }} <span class="text-destructive">*</span>
                   </label>
                   <select
                     v-model="form.severity"
@@ -104,7 +106,9 @@
                   </select>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium mb-1.5">实际引用位置 (可选)</label>
+                  <label class="block text-sm font-medium mb-1.5">{{
+                    t('governance.editor.liveReference')
+                  }}</label>
                   <input
                     v-model="form.liveReferenceLocation"
                     type="text"
@@ -127,7 +131,7 @@
             <div class="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
               <h2 class="text-sm font-medium flex items-center gap-1.5">
                 <CheckCircle :size="14" class="text-green-500" />
-                正确示例
+                {{ t('governance.editor.goodExamples') }}
               </h2>
               <button
                 type="button"
@@ -135,12 +139,12 @@
                 @click="addExample('good')"
               >
                 <Plus :size="14" />
-                添加
+                {{ t('governance.editor.addBtn') }}
               </button>
             </div>
             <div class="p-4">
               <p v-if="form.goodExamples.length === 0" class="text-sm text-muted-foreground">
-                至少需要一个正确示例
+                {{ t('governance.editor.needGoodExample') }}
               </p>
 
               <div
@@ -160,7 +164,7 @@
                   <input
                     v-model="example.caption"
                     type="text"
-                    placeholder="说明 (可选)"
+                    :placeholder="t('governance.editor.captionPlaceholder')"
                     class="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
                   />
                   <button
@@ -174,7 +178,7 @@
                 <textarea
                   v-model="example.content"
                   rows="6"
-                  placeholder="// 代码..."
+                  :placeholder="t('governance.editor.codePlaceholder')"
                   class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-y font-mono"
                 ></textarea>
               </div>
@@ -186,7 +190,7 @@
             <div class="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
               <h2 class="text-sm font-medium flex items-center gap-1.5">
                 <XCircle :size="14" class="text-destructive" />
-                错误示例
+                {{ t('governance.editor.badExamples') }}
               </h2>
               <button
                 type="button"
@@ -194,12 +198,12 @@
                 @click="addExample('bad')"
               >
                 <Plus :size="14" />
-                添加
+                {{ t('governance.editor.addBtn') }}
               </button>
             </div>
             <div class="p-4">
               <p v-if="form.badExamples.length === 0" class="text-sm text-muted-foreground">
-                至少需要一个错误示例
+                {{ t('governance.editor.needBadExample') }}
               </p>
 
               <div
@@ -219,7 +223,7 @@
                   <input
                     v-model="example.caption"
                     type="text"
-                    placeholder="说明 (可选)"
+                    :placeholder="t('governance.editor.captionPlaceholder')"
                     class="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
                   />
                   <button
@@ -233,7 +237,7 @@
                 <textarea
                   v-model="example.content"
                   rows="6"
-                  placeholder="// 代码..."
+                  :placeholder="t('governance.editor.codePlaceholder')"
                   class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-y font-mono"
                 ></textarea>
               </div>
@@ -245,7 +249,7 @@
         <div>
           <div class="border rounded-lg sticky top-20">
             <div class="px-4 py-3 border-b bg-muted/30">
-              <h2 class="text-sm font-medium">操作</h2>
+              <h2 class="text-sm font-medium">{{ t('governance.editor.actions') }}</h2>
             </div>
             <div class="p-4 space-y-2">
               <button
@@ -253,22 +257,34 @@
                 class="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="isSaving"
               >
-                {{ isSaving ? '保存中...' : isEdit ? '保存更改' : '创建规则' }}
+                {{
+                  isSaving
+                    ? t('governance.editor.saving')
+                    : isEdit
+                      ? t('governance.editor.saveChanges')
+                      : t('governance.editor.createRule')
+                }}
               </button>
 
               <router-link
                 :to="{ name: 'governance-list' }"
                 class="block w-full px-4 py-2 rounded-md border text-sm text-center hover:bg-muted transition-colors"
               >
-                取消
+                {{ t('governance.editor.cancelBtn') }}
               </router-link>
             </div>
 
             <div class="border-t px-4 py-3">
               <div class="text-xs text-muted-foreground space-y-1">
-                <div>标签: {{ form.tags.length }}</div>
-                <div>正确示例: {{ form.goodExamples.length }}</div>
-                <div>错误示例: {{ form.badExamples.length }}</div>
+                <div>{{ t('governance.editor.tagsCount', { count: form.tags.length }) }}</div>
+                <div>
+                  {{
+                    t('governance.editor.goodExamplesCount', { count: form.goodExamples.length })
+                  }}
+                </div>
+                <div>
+                  {{ t('governance.editor.badExamplesCount', { count: form.badExamples.length }) }}
+                </div>
               </div>
             </div>
           </div>
@@ -281,6 +297,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from 'lucide-vue-next';
 import { useGovernance } from '../composables/useGovernance';
 import { TagInput } from '../components';
@@ -291,6 +308,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const { t } = useI18n();
 const { currentRule, isLoading, isSaving, error, allTags, fetchRule, createRule, updateRule } =
   useGovernance();
 
@@ -313,10 +331,10 @@ const form = reactive({
   badExamples: [] as SnippetForm[],
 });
 
-const severityOptions = [
-  { label: '强制 (Mandatory)', value: 'Mandatory' },
-  { label: '推荐 (Recommended)', value: 'Recommended' },
-];
+const severityOptions = computed(() => [
+  { label: t('governance.editor.severityMandatory'), value: 'Mandatory' },
+  { label: t('governance.editor.severityRecommended'), value: 'Recommended' },
+]);
 
 const languageOptions = [
   { label: 'TypeScript', value: 'TypeScript' },

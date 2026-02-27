@@ -3,17 +3,16 @@
     <div>
       <h3 class="text-lg font-medium flex items-center">
         <FlaskConical class="h-5 w-5 mr-2" />
-        实验性功能
+        {{ t('setting.experimental.title') }}
       </h3>
     </div>
 
     <!-- Warning Alert -->
     <Alert variant="destructive">
       <AlertCircle class="h-4 w-4" />
-      <AlertTitle>注意</AlertTitle>
+      <AlertTitle>{{ t('setting.experimental.warning') }}</AlertTitle>
       <AlertDescription>
-        实验性功能可能不稳定，可能会在未来版本中更改或移除。
-        启用这些功能意味着您愿意承担潜在的风险。
+        {{ t('setting.experimental.warningDescription') }}
       </AlertDescription>
     </Alert>
 
@@ -22,13 +21,22 @@
       <CardContent class="pt-6">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
-            <Label class="text-base">启用实验性功能</Label>
-            <p class="text-sm text-muted-foreground">允许访问正在开发中的新功能</p>
+            <Label class="text-base">{{ t('setting.experimental.enableExperimental') }}</Label>
+            <p class="text-sm text-muted-foreground">
+              {{ t('setting.experimental.enableExperimentalDescription') }}
+            </p>
           </div>
           <Switch
             :checked="modelValue.enabled"
             :disabled="disabled"
-            @update:checked="(value) => emit('update:modelValue', { ...modelValue, enabled: value, features: value ? modelValue.features : [] })"
+            @update:checked="
+              (value) =>
+                emit('update:modelValue', {
+                  ...modelValue,
+                  enabled: value,
+                  features: value ? modelValue.features : [],
+                })
+            "
           />
         </div>
       </CardContent>
@@ -36,11 +44,11 @@
 
     <!-- Available Features -->
     <div v-if="modelValue.enabled" class="space-y-4">
-      <h4 class="text-base font-medium">可用的实验性功能</h4>
+      <h4 class="text-base font-medium">{{ t('setting.experimental.availableFeatures') }}</h4>
 
       <Alert v-if="availableFeatures.length === 0" variant="default">
         <Info class="h-4 w-4" />
-        <AlertDescription>暂无可用的实验性功能</AlertDescription>
+        <AlertDescription>{{ t('setting.experimental.noFeatures') }}</AlertDescription>
       </Alert>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,7 +57,7 @@
           :key="feature.key"
           :class="[
             'hover:shadow-md transition-shadow',
-            isFeatureEnabled(feature.key) ? 'border-primary bg-primary/5' : ''
+            isFeatureEnabled(feature.key) ? 'border-primary bg-primary/5' : '',
           ]"
         >
           <CardContent class="pt-6">
@@ -59,7 +67,9 @@
                   <div class="flex items-center space-x-2">
                     <span class="text-2xl">{{ feature.icon }}</span>
                     <h3 class="text-base font-medium">{{ feature.name }}</h3>
-                    <Badge v-if="feature.isNew" variant="default" class="ml-2">新</Badge>
+                    <Badge v-if="feature.isNew" variant="default" class="ml-2">{{
+                      t('setting.experimental.new')
+                    }}</Badge>
                   </div>
                   <p class="text-sm text-muted-foreground">{{ feature.description }}</p>
                 </div>
@@ -77,19 +87,11 @@
 
     <!-- Action Buttons -->
     <div class="flex justify-end space-x-2">
-      <Button
-        variant="default"
-        :disabled="disabled || !hasChanges"
-        @click="emit('save')"
-      >
-        保存更改
+      <Button variant="default" :disabled="disabled || !hasChanges" @click="emit('save')">
+        {{ t('setting.experimental.saveChanges') }}
       </Button>
-      <Button
-        variant="outline"
-        :disabled="disabled"
-        @click="emit('reset')"
-      >
-        重置
+      <Button variant="outline" :disabled="disabled" @click="emit('reset')">
+        {{ t('setting.experimental.reset') }}
       </Button>
     </div>
   </div>
@@ -97,6 +99,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
@@ -104,6 +107,8 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { FlaskConical, AlertCircle, Info } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface ExperimentalFeature {
   key: string;
@@ -128,40 +133,40 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:modelValue': [value: ExperimentalSettings];
-  'save': [];
-  'reset': [];
+  save: [];
+  reset: [];
 }>();
 
-const availableFeatures: ExperimentalFeature[] = [
+const availableFeatures = computed<ExperimentalFeature[]>(() => [
   {
     key: 'ai-assistant',
-    name: 'AI 助手',
+    name: t('setting.experimental.aiAssistant'),
     icon: '🤖',
-    description: '基于 AI 的智能任务建议和自动化助手',
+    description: t('setting.experimental.aiAssistantDesc'),
     isNew: true,
   },
   {
     key: 'voice-input',
-    name: '语音输入',
+    name: t('setting.experimental.voiceInput'),
     icon: '🎤',
-    description: '使用语音输入创建任务和笔记',
+    description: t('setting.experimental.voiceInputDesc'),
     isNew: true,
   },
   {
     key: 'collaboration',
-    name: '协作模式',
+    name: t('setting.experimental.collaboration'),
     icon: '👥',
-    description: '实时协作编辑和共享工作空间',
+    description: t('setting.experimental.collaborationDesc'),
     isNew: false,
   },
   {
     key: 'advanced-analytics',
-    name: '高级分析',
+    name: t('setting.experimental.advancedAnalytics'),
     icon: '📊',
-    description: '深入的生产力分析和可视化报表',
+    description: t('setting.experimental.advancedAnalyticsDesc'),
     isNew: false,
   },
-];
+]);
 
 const isFeatureEnabled = (featureKey: string): boolean => {
   return props.modelValue.features?.includes(featureKey) || false;
@@ -170,9 +175,9 @@ const isFeatureEnabled = (featureKey: string): boolean => {
 const toggleFeature = (featureKey: string) => {
   const features = props.modelValue.features || [];
   const newFeatures = features.includes(featureKey)
-    ? features.filter(k => k !== featureKey)
+    ? features.filter((k) => k !== featureKey)
     : [...features, featureKey];
-  
+
   emit('update:modelValue', {
     ...props.modelValue,
     features: newFeatures,

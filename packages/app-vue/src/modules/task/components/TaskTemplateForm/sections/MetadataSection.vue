@@ -3,31 +3,31 @@
     <CardHeader class="pb-2">
       <CardTitle class="flex items-center text-primary font-semibold">
         <Info class="mr-2 h-5 w-5" />
-        任务属性
+        {{ t('task.metadata.title') }}
       </CardTitle>
     </CardHeader>
     <CardContent>
       <div class="grid grid-cols-12 gap-4">
         <!-- 任务类型 -->
         <div class="col-span-12 md:col-span-6">
-          <Label for="task-type-select">任务类型</Label>
+          <Label for="task-type-select">{{ t('task.metadata.taskType') }}</Label>
           <Select v-model="taskType">
             <SelectTrigger id="task-type-select" class="mt-1">
-              <SelectValue placeholder="选择任务类型" />
+              <SelectValue :placeholder="t('task.metadata.selectType')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ONE_TIME">单次任务</SelectItem>
-              <SelectItem value="RECURRING">重复任务</SelectItem>
+              <SelectItem value="ONE_TIME">{{ t('task.metadata.oneTime') }}</SelectItem>
+              <SelectItem value="RECURRING">{{ t('task.metadata.recurring') }}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <!-- 重要性 -->
         <div class="col-span-12 md:col-span-6">
-          <Label for="importance-select">重要性</Label>
+          <Label for="importance-select">{{ t('task.metadata.importance') }}</Label>
           <Select v-model="importance">
             <SelectTrigger id="importance-select" class="mt-1">
-              <SelectValue placeholder="选择重要性" />
+              <SelectValue :placeholder="t('task.metadata.selectImportance')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -43,7 +43,7 @@
 
         <!-- 颜色 -->
         <div class="col-span-12 md:col-span-6">
-          <Label>颜色标记</Label>
+          <Label>{{ t('task.metadata.colorMark') }}</Label>
           <Popover>
             <PopoverTrigger as-child>
               <Button variant="outline" class="mt-1 w-full justify-start gap-2">
@@ -53,7 +53,7 @@
                   :style="{ backgroundColor: color }"
                 />
                 <div v-else class="h-4 w-4 rounded-full border border-dashed" />
-                {{ color || '选择颜色' }}
+                {{ color || t('task.metadata.selectColor') }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-64">
@@ -77,7 +77,7 @@
                 class="mt-2 w-full"
                 @click="color = null"
               >
-                清除颜色
+                {{ t('task.metadata.clearColor') }}
               </Button>
             </PopoverContent>
           </Popover>
@@ -85,11 +85,11 @@
 
         <!-- 文件夹 ID -->
         <div class="col-span-12 md:col-span-6">
-          <Label for="folder-id-input">文件夹 ID</Label>
+          <Label for="folder-id-input">{{ t('task.metadata.folderId') }}</Label>
           <Input
             id="folder-id-input"
             :model-value="folderId ?? ''"
-            placeholder="可选，输入文件夹 ID"
+            :placeholder="t('task.metadata.folderPlaceholder')"
             class="mt-1"
             @update:model-value="folderId = String($event) || null"
           />
@@ -97,7 +97,7 @@
 
         <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
         <div class="col-span-12">
-          <Label for="tags-input">任务标签</Label>
+          <Label for="tags-input">{{ t('task.metadata.tags') }}</Label>
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <Badge v-for="tag in tags" :key="tag" variant="secondary" class="gap-1">
               {{ tag }}
@@ -108,7 +108,7 @@
             <Input
               id="tags-input"
               v-model="tagInput"
-              placeholder="按回车键添加新标签"
+              :placeholder="t('task.metadata.tagPlaceholder')"
               class="flex-1 min-w-[150px]"
               @keydown.enter.prevent="addTag"
             />
@@ -153,6 +153,9 @@ import {
 import { Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: TaskTemplateViewModel;
@@ -179,47 +182,57 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
 };
 
 // 重要性选项
-const importanceOptions = [
+const importanceOptions = computed(() => [
   {
-    title: '极其重要',
+    title: t('task.metadata.importanceCritical'),
     value: ImportanceLevel.Vital,
-    subtitle: '对生活/工作有重大影响，如健康检查、家人重要日子',
+    subtitle: t('task.metadata.importanceCriticalSub'),
   },
   {
-    title: '非常重要',
+    title: t('task.metadata.importanceHigh'),
     value: ImportanceLevel.Important,
-    subtitle: '对目标实现很关键，如职业发展相关任务',
+    subtitle: t('task.metadata.importanceHighSub'),
   },
   {
-    title: '中等重要',
+    title: t('task.metadata.importanceMedium'),
     value: ImportanceLevel.Moderate,
-    subtitle: '值得做但不是关键，如技能提升、社交活动',
+    subtitle: t('task.metadata.importanceMediumSub'),
   },
-  { title: '不太重要', value: ImportanceLevel.Minor, subtitle: '可做可不做，如日常琐事' },
-  { title: '无关紧要', value: ImportanceLevel.Trivial, subtitle: '纯粹消遣，如游戏娱乐' },
-];
+  {
+    title: t('task.metadata.importanceLow'),
+    value: ImportanceLevel.Minor,
+    subtitle: t('task.metadata.importanceLowSub'),
+  },
+  {
+    title: t('task.metadata.importanceMinimal'),
+    value: ImportanceLevel.Trivial,
+    subtitle: t('task.metadata.importanceMinimalSub'),
+  },
+]);
 
 // 标签建议
-const tagSuggestions = [
-  '重要',
-  '紧急',
-  '例行',
-  '学习',
-  '工作',
-  '会议',
-  '运动',
-  '阅读',
-  '编程',
-  '设计',
-  '写作',
-  '思考',
-  '计划',
-  '回顾',
-  '沟通',
-  '创作',
-];
+const tagSuggestions = computed(() => [
+  t('task.metadata.tagWork'),
+  t('task.metadata.tagPersonal'),
+  t('task.metadata.tagStudy'),
+  t('task.metadata.tagHealth'),
+  t('task.metadata.tagFinance'),
+  t('task.metadata.tagSocial'),
+  t('task.metadata.tagCreative'),
+  t('task.metadata.tagTravel'),
+  t('task.metadata.tagHome'),
+  t('task.metadata.tagShopping'),
+  t('task.metadata.tagExercise'),
+  t('task.metadata.tagReading'),
+  t('task.metadata.tagMeeting'),
+  t('task.metadata.tagDeadline'),
+  t('task.metadata.tagUrgent'),
+  t('task.metadata.tagReview'),
+]);
 
-const filteredSuggestions = computed(() => tagSuggestions.filter((s) => !tags.value.includes(s)));
+const filteredSuggestions = computed(() =>
+  tagSuggestions.value.filter((s) => !tags.value.includes(s)),
+);
 
 // 重要性
 const importance = computed({
@@ -295,7 +308,7 @@ const addTag = () => {
 };
 
 const removeTag = (tag: string) => {
-  tags.value = tags.value.filter((t) => t !== tag);
+  tags.value = tags.value.filter((item) => item !== tag);
 };
 
 const addSuggestion = (suggestion: string) => {

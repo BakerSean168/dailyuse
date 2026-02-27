@@ -5,6 +5,7 @@
  */
 
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { SCHEDULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -15,6 +16,7 @@ import type {
 import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 
 export function useSchedule() {
+  const { t } = useI18n();
   const service = useStrictInject(SCHEDULE_SERVICE_KEY, 'ScheduleService');
 
   const store = useScheduleStore();
@@ -44,7 +46,7 @@ export function useSchedule() {
           result.data.total ?? 0,
         );
       } else {
-        handleError(result.error.message || '加载调度任务失败');
+        handleError(result.error.message || t('schedule.error.loadTasksFailed'));
       }
     } finally {
       store.setLoading(false);
@@ -61,7 +63,7 @@ export function useSchedule() {
         store.setCurrentTask(dto);
         return dto;
       }
-      handleError(result.error.message || '加载调度任务失败');
+      handleError(result.error.message || t('schedule.error.loadTasksFailed'));
       return null;
     } finally {
       store.setLoading(false);
@@ -78,7 +80,7 @@ export function useSchedule() {
         store.addTask(dto);
         return dto;
       }
-      handleError(result.error.message || '创建调度任务失败');
+      handleError(result.error.message || t('schedule.error.createTaskFailed'));
       return null;
     } finally {
       savingId.value = null;
@@ -101,7 +103,7 @@ export function useSchedule() {
         store.removeTask(id);
         return true;
       }
-      handleError(result.error.message || '删除调度任务失败');
+      handleError(result.error.message || t('schedule.error.deleteTaskFailed'));
       return false;
     } finally {
       savingId.value = null;
@@ -111,7 +113,7 @@ export function useSchedule() {
   async function pauseTask(id: string) {
     const result = await service.pauseTask(id);
     if (!result.ok) {
-      handleError(result.error.message || '暂停调度任务失败');
+      handleError(result.error.message || t('schedule.error.pauseTaskFailed'));
       return null;
     }
     const refreshed = await service.getTaskById(id);
@@ -120,14 +122,14 @@ export function useSchedule() {
       store.updateTask(dto);
       return dto;
     }
-    handleError(refreshed.error.message || '暂停后刷新任务失败');
+    handleError(refreshed.error.message || t('schedule.error.pauseRefreshFailed'));
     return null;
   }
 
   async function resumeTask(id: string) {
     const result = await service.resumeTask(id);
     if (!result.ok) {
-      handleError(result.error.message || '恢复调度任务失败');
+      handleError(result.error.message || t('schedule.error.resumeTaskFailed'));
       return null;
     }
     const refreshed = await service.getTaskById(id);
@@ -136,7 +138,7 @@ export function useSchedule() {
       store.updateTask(dto);
       return dto;
     }
-    handleError(refreshed.error.message || '恢复后刷新任务失败');
+    handleError(refreshed.error.message || t('schedule.error.resumeRefreshFailed'));
     return null;
   }
 

@@ -87,6 +87,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
@@ -111,6 +112,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   (e: 'edit', goal: any): void;
@@ -182,10 +185,10 @@ const getStatusIcon = (status: string) => {
 
 const getStatusLabel = (status: string): string => {
   const map: Record<string, string> = {
-    Active: '进行中',
-    Completed: '已完成',
-    Archived: '已归档',
-    Draft: '草稿',
+    Active: t('goal.cards.goalStatus.active'),
+    Completed: t('goal.cards.goalStatus.completed'),
+    Archived: t('goal.cards.goalStatus.archived'),
+    Draft: t('goal.cards.goalStatus.draft'),
   };
   return map[status] ?? status;
 };

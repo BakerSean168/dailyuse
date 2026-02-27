@@ -7,7 +7,7 @@
   <Card class="mb-4">
     <CardHeader class="flex flex-row items-center gap-2 pb-2">
       <Repeat class="h-5 w-5 text-primary" />
-      <CardTitle class="text-primary font-semibold">重复规则</CardTitle>
+      <CardTitle class="text-primary font-semibold">{{ t('task.recurrence.title') }}</CardTitle>
     </CardHeader>
     <CardContent>
       <!-- 显示验证错误 -->
@@ -22,7 +22,9 @@
       <!-- 显示规则描述 -->
       <Alert v-if="isValid && hasRecurrence" class="mb-4">
         <Info class="h-4 w-4" />
-        <AlertDescription> 当前设置：{{ recurrenceDescription }} </AlertDescription>
+        <AlertDescription>
+          {{ t('task.recurrence.currentSetting') }}{{ recurrenceDescription }}
+        </AlertDescription>
       </Alert>
 
       <div class="grid grid-cols-12 gap-4">
@@ -30,20 +32,20 @@
         <div class="col-span-12">
           <div class="flex items-center gap-2">
             <Switch :checked="recurrenceEnabled" @update:checked="recurrenceEnabled = $event" />
-            <Label>启用重复规则</Label>
+            <Label>{{ t('task.recurrence.enable') }}</Label>
           </div>
         </div>
 
         <template v-if="recurrenceEnabled">
           <!-- 重复频率 -->
           <div class="col-span-12 md:col-span-6">
-            <Label class="mb-2 block">重复频率</Label>
+            <Label class="mb-2 block">{{ t('task.recurrence.frequency') }}</Label>
             <Select
               :model-value="frequency"
               @update:model-value="frequency = $event as RecurrenceFrequency"
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择频率" />
+                <SelectValue :placeholder="t('task.recurrence.selectFrequency')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="opt in frequencyOptions" :key="opt.value" :value="opt.value">
@@ -55,7 +57,7 @@
 
           <!-- 重复间隔 -->
           <div class="col-span-12 md:col-span-6">
-            <Label class="mb-2 block">重复间隔</Label>
+            <Label class="mb-2 block">{{ t('task.recurrence.interval') }}</Label>
             <Input
               :model-value="interval"
               type="number"
@@ -68,7 +70,7 @@
 
           <!-- 每周重复：选择星期几 -->
           <div class="col-span-12" v-if="frequency === RecurrenceFrequency.Weekly">
-            <div class="text-sm font-medium mb-2">选择星期</div>
+            <div class="text-sm font-medium mb-2">{{ t('task.recurrence.selectDay') }}</div>
             <div class="flex flex-wrap gap-2">
               <Badge
                 v-for="day in dayOptions"
@@ -85,7 +87,7 @@
           <!-- 结束条件 -->
           <div class="col-span-12">
             <Separator class="my-2" />
-            <div class="text-sm font-medium mb-2">结束条件</div>
+            <div class="text-sm font-medium mb-2">{{ t('task.recurrence.endCondition') }}</div>
           </div>
 
           <div class="col-span-12 md:col-span-4">
@@ -95,15 +97,15 @@
             >
               <div class="flex items-center gap-2">
                 <RadioGroupItem value="never" id="end-never" />
-                <Label for="end-never">永不结束</Label>
+                <Label for="end-never">{{ t('task.recurrence.never') }}</Label>
               </div>
               <div class="flex items-center gap-2">
                 <RadioGroupItem value="date" id="end-date" />
-                <Label for="end-date">结束日期</Label>
+                <Label for="end-date">{{ t('task.recurrence.endDate') }}</Label>
               </div>
               <div class="flex items-center gap-2">
                 <RadioGroupItem value="count" id="end-count" />
-                <Label for="end-count">次数限制</Label>
+                <Label for="end-count">{{ t('task.recurrence.countLimit') }}</Label>
               </div>
             </RadioGroup>
           </div>
@@ -111,13 +113,13 @@
           <div class="col-span-12 md:col-span-8">
             <!-- 结束日期 -->
             <div v-if="endConditionType === 'date'">
-              <Label class="mb-2 block">结束日期</Label>
+              <Label class="mb-2 block">{{ t('task.recurrence.endDate') }}</Label>
               <Input v-model="endDate" type="date" />
             </div>
 
             <!-- 次数限制 -->
             <div v-if="endConditionType === 'count'">
-              <Label class="mb-2 block">重复次数</Label>
+              <Label class="mb-2 block">{{ t('task.recurrence.count') }}</Label>
               <Input
                 :model-value="occurrences"
                 type="number"
@@ -135,6 +137,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { RecurrenceFrequency, DayOfWeek, RECURRENCE_RULE_DEFAULTS } from '@dailyuse/contracts/task';
 import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
@@ -159,6 +162,8 @@ import {
   RadioGroupItem,
 } from '@dailyuse/ui-vue-shadcn';
 import { Repeat, Info } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 /**
  * 获取默认结束日期（今天 + 配置的天数）
@@ -194,23 +199,23 @@ const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
 };
 
 // 重复频率选项
-const frequencyOptions = [
-  { title: '每天', value: RecurrenceFrequency.Daily },
-  { title: '每周', value: RecurrenceFrequency.Weekly },
-  { title: '每月', value: RecurrenceFrequency.Monthly },
-  { title: '每年', value: RecurrenceFrequency.Yearly },
-];
+const frequencyOptions = computed(() => [
+  { title: t('task.recurrence.daily'), value: RecurrenceFrequency.Daily },
+  { title: t('task.recurrence.weekly'), value: RecurrenceFrequency.Weekly },
+  { title: t('task.recurrence.monthly'), value: RecurrenceFrequency.Monthly },
+  { title: t('task.recurrence.yearly'), value: RecurrenceFrequency.Yearly },
+]);
 
 // 星期选项
-const dayOptions = [
-  { title: '周日', value: DayOfWeek.Sunday },
-  { title: '周一', value: DayOfWeek.Monday },
-  { title: '周二', value: DayOfWeek.Tuesday },
-  { title: '周三', value: DayOfWeek.Wednesday },
-  { title: '周四', value: DayOfWeek.Thursday },
-  { title: '周五', value: DayOfWeek.Friday },
-  { title: '周六', value: DayOfWeek.Saturday },
-];
+const dayOptions = computed(() => [
+  { title: t('task.recurrence.sun'), value: DayOfWeek.Sunday },
+  { title: t('task.recurrence.mon'), value: DayOfWeek.Monday },
+  { title: t('task.recurrence.tue'), value: DayOfWeek.Tuesday },
+  { title: t('task.recurrence.wed'), value: DayOfWeek.Wednesday },
+  { title: t('task.recurrence.thu'), value: DayOfWeek.Thursday },
+  { title: t('task.recurrence.fri'), value: DayOfWeek.Friday },
+  { title: t('task.recurrence.sat'), value: DayOfWeek.Saturday },
+]);
 
 // Toggle day for weekly selection (replaces v-chip-group)
 const toggleDay = (day: DayOfWeek) => {
@@ -373,13 +378,13 @@ const intervalHint = computed(() => {
   const freq = frequency.value;
   switch (freq) {
     case RecurrenceFrequency.Daily:
-      return '每几天重复一次';
+      return t('task.recurrence.intervalHintDay');
     case RecurrenceFrequency.Weekly:
-      return '每几周重复一次';
+      return t('task.recurrence.intervalHintWeek');
     case RecurrenceFrequency.Monthly:
-      return '每几月重复一次';
+      return t('task.recurrence.intervalHintMonth');
     case RecurrenceFrequency.Yearly:
-      return '每几年重复一次';
+      return t('task.recurrence.intervalHintYear');
     default:
       return '';
   }
@@ -394,13 +399,13 @@ const recurrenceDescription = computed(() => {
   const interval = rule.interval;
   const freqText =
     freq === RecurrenceFrequency.Daily
-      ? '天'
+      ? t('task.recurrence.intervalHintDay')
       : freq === RecurrenceFrequency.Weekly
-        ? '周'
+        ? t('task.recurrence.intervalHintWeek')
         : freq === RecurrenceFrequency.Monthly
-          ? '月'
-          : '年';
-  return `每 ${interval} ${freqText}重复`;
+          ? t('task.recurrence.intervalHintMonth')
+          : t('task.recurrence.intervalHintYear');
+  return t('task.recurrence.description', { interval, unit: freqText });
 });
 
 // 验证
@@ -412,24 +417,24 @@ const validateRecurrence = () => {
   if (recurrenceEnabled.value) {
     const rule = props.modelValue.recurrenceRule;
     if (!rule) {
-      validationErrors.value.push('重复规则配置无效');
+      validationErrors.value.push(t('task.recurrence.invalidConfig'));
       return;
     }
 
     if (rule.interval < 1 || rule.interval > 365) {
-      validationErrors.value.push('重复间隔必须在 1-365 之间');
+      validationErrors.value.push(t('task.recurrence.intervalRange'));
     }
 
     if (rule.frequency === RecurrenceFrequency.Weekly && rule.daysOfWeek.length === 0) {
-      validationErrors.value.push('每周重复时，请至少选择一天');
+      validationErrors.value.push(t('task.recurrence.weekdayRequired'));
     }
 
     if (endConditionType.value === 'date' && !endDate.value) {
-      validationErrors.value.push('请选择结束日期');
+      validationErrors.value.push(t('task.recurrence.selectEndDate'));
     }
 
     if (endConditionType.value === 'count' && (!occurrences.value || occurrences.value < 1)) {
-      validationErrors.value.push('重复次数必须大于 0');
+      validationErrors.value.push(t('task.recurrence.countPositive'));
     }
   }
 };

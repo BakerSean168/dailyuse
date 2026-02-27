@@ -9,7 +9,7 @@ export const reminderRoutes: RouteRecordRaw[] = [
     path: '/reminders',
     name: 'reminders',
     meta: {
-      title: '提醒管理',
+      title: 'reminder.route.management',
       showInNav: true,
       icon: 'lucide:bell',
       order: 4,
@@ -21,7 +21,7 @@ export const reminderRoutes: RouteRecordRaw[] = [
         name: 'reminder-desktop',
         component: () => import('../views/ReminderLinearView.vue'),
         meta: {
-          title: '提醒列表',
+          title: 'reminder.route.list',
           requiresAuth: true,
         },
       },

@@ -2,7 +2,7 @@
   <Card class="h-full flex flex-col border-l">
     <CardHeader class="flex flex-row items-center space-x-2 p-3">
       <Link2 class="h-5 w-5 text-primary" />
-      <CardTitle class="text-lg">反向引用</CardTitle>
+      <CardTitle class="text-lg">{{ t('editor.backlink.title') }}</CardTitle>
       <Badge v-if="!loading" variant="secondary" class="ml-2">
         {{ backlinks.length }}
       </Badge>
@@ -17,14 +17,17 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex-1 flex flex-col items-center justify-center p-4">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-2"></div>
-      <p class="text-sm text-muted-foreground">加载中...</p>
+      <p class="text-sm text-muted-foreground">{{ t('common.loading') }}</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="backlinks.length === 0" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+    <div
+      v-else-if="backlinks.length === 0"
+      class="flex-1 flex flex-col items-center justify-center p-6 text-center"
+    >
       <Link2Off class="h-16 w-16 text-muted-foreground/50 mb-3" />
-      <p class="text-sm font-medium text-muted-foreground">暂无反向引用</p>
-      <p class="text-xs text-muted-foreground mt-1">其他文档引用此文档时会显示在这里</p>
+      <p class="text-sm font-medium text-muted-foreground">{{ t('editor.backlink.empty') }}</p>
+      <p class="text-xs text-muted-foreground mt-1">{{ t('editor.backlink.emptyDescription') }}</p>
     </div>
 
     <!-- Backlinks List -->
@@ -58,12 +61,17 @@
                   {{ formatDate(backlink.sourceDocument.updatedAt) }}
                 </Badge>
                 <Badge v-if="backlink.link.isBroken" variant="destructive" class="text-xs">
-                  断裂
+                  {{ t('editor.backlink.broken') }}
                 </Badge>
               </div>
             </div>
 
-            <Button variant="ghost" size="icon" class="h-6 w-6" @click.stop="navigateToSource(backlink)">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-6 w-6"
+              @click.stop="navigateToSource(backlink)"
+            >
               <ExternalLink class="h-3 w-3" />
             </Button>
           </div>
@@ -81,6 +89,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -88,7 +97,17 @@ import { Avatar, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
 import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
-import { Link2, Link2Off, RotateCw, FileText, Clock, ExternalLink, AlertCircle } from 'lucide-vue-next';
+import {
+  Link2,
+  Link2Off,
+  RotateCw,
+  FileText,
+  Clock,
+  ExternalLink,
+  AlertCircle,
+} from 'lucide-vue-next';
+
+const { t, locale } = useI18n();
 
 interface BacklinkDTO {
   link: { id: string; isBroken: boolean };
@@ -121,10 +140,10 @@ async function loadBacklinks() {
 
   try {
     backlinks.value = [];
-    error.value = '反向引用功能正在开发中';
+    error.value = t('editor.backlink.comingSoon');
   } catch (err: any) {
     console.error('Load backlinks failed:', err);
-    error.value = err.message || '加载反向引用失败';
+    error.value = err.message || t('editor.backlink.loadFailed');
     backlinks.value = [];
   } finally {
     loading.value = false;
@@ -146,18 +165,21 @@ function formatDate(timestamp: number): string {
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return '今天';
-  if (diffDays === 1) return '昨天';
-  if (diffDays < 7) return `${diffDays} 天前`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`;
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  if (diffDays === 0) return t('editor.backlink.today');
+  if (diffDays === 1) return t('editor.backlink.yesterday');
+  if (diffDays < 7) return t('editor.backlink.daysAgo', { n: diffDays });
+  if (diffDays < 30) return t('editor.backlink.weeksAgo', { n: Math.floor(diffDays / 7) });
+  return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
 }
 
-watch(() => props.documentId, (newId) => {
-  if (newId && props.autoLoad) {
-    loadBacklinks();
-  }
-});
+watch(
+  () => props.documentId,
+  (newId) => {
+    if (newId && props.autoLoad) {
+      loadBacklinks();
+    }
+  },
+);
 
 onMounted(() => {
   if (props.documentId && props.autoLoad) {

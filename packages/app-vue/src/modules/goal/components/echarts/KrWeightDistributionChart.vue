@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
@@ -16,6 +17,8 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 use([TitleComponent, TooltipComponent, LegendComponent, PieChart, CanvasRenderer]);
+
+const { t } = useI18n();
 
 const props = defineProps<{
   goal: GoalClientDTO | null;
@@ -49,8 +52,8 @@ const weightOption = computed(() => {
   return {
     backgroundColor: surfaceColor,
     title: {
-      text: '关键结果权重分布',
-      subtext: `总权重: ${totalWeight}`,
+      text: t('goal.chart.krWeightDistribution.title'),
+      subtext: `${t('goal.chart.krWeightDistribution.subtextPrefix')}${totalWeight}`,
       left: 'center',
       top: 10,
       textStyle: { fontSize: 16 },
@@ -68,8 +71,8 @@ const weightOption = computed(() => {
         const item = data[params.dataIndex];
         return `
           <div style="font-weight: bold; margin-bottom: 4px;">${params.name}</div>
-          <div>权重: ${item.value}/10</div>
-          <div>占比: ${item.percentage}%</div>
+          <div>${t('goal.chart.krWeightDistribution.tooltipWeight')} ${item.value}/10</div>
+          <div>${t('goal.chart.krWeightDistribution.tooltipPercent')} ${item.percentage}%</div>
         `;
       },
     },
@@ -81,7 +84,7 @@ const weightOption = computed(() => {
     },
     series: [
       {
-        name: '权重分布',
+        name: t('goal.chart.krWeightDistribution.seriesName'),
         type: 'pie',
         radius: ['45%', '70%'],
         center: ['40%', '55%'],
@@ -102,7 +105,7 @@ const weightOption = computed(() => {
             fontWeight: 'bold',
             formatter: (params: any) => {
               const item = data[params.dataIndex];
-              return `${params.name}\n权重: ${item.value}\n占比: ${item.percentage}%`;
+              return `${params.name}\n${t('goal.chart.krWeightDistribution.tooltipWeight')} ${item.value}\n${t('goal.chart.krWeightDistribution.tooltipPercent')} ${item.percentage}%`;
             },
           },
         },

@@ -1,10 +1,10 @@
 <template>
   <Card>
     <CardHeader class="flex flex-row items-center justify-between">
-      <CardTitle>快捷键设置</CardTitle>
+      <CardTitle>{{ t('setting.shortcuts.title') }}</CardTitle>
       <Button size="sm" variant="outline" @click="emit('resetAll')">
         <RotateCcw class="h-4 w-4 mr-2" />
-        全部重置
+        {{ t('setting.shortcuts.resetAll') }}
       </Button>
     </CardHeader>
     <CardContent class="space-y-4">
@@ -13,7 +13,7 @@
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           v-model="searchQuery"
-          placeholder="搜索快捷键"
+          :placeholder="t('setting.shortcuts.searchPlaceholder')"
           class="pl-10"
         />
       </div>
@@ -54,7 +54,7 @@
                   <Input
                     v-else
                     :model-value="editingKey"
-                    placeholder="按下快捷键..."
+                    :placeholder="t('setting.shortcuts.pressKey')"
                     readonly
                     class="w-[200px] h-8 text-sm"
                     @keydown="(e: KeyboardEvent) => emit('captureKey', e)"
@@ -98,21 +98,20 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@dailyuse/ui-vue-shadcn';
 import {
-  Search,
-  RotateCcw,
-  Check,
-  X,
-  Globe,
-  FileEdit,
-  CheckSquare,
-  Target,
-} from 'lucide-vue-next';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@dailyuse/ui-vue-shadcn';
+import { Search, RotateCcw, Check, X, Globe, FileEdit, CheckSquare, Target } from 'lucide-vue-next';
+
+const { t } = useI18n();
 
 interface ShortcutItem {
   id: string;
@@ -138,19 +137,19 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  'startEdit': [shortcut: ShortcutItem];
-  'saveEdit': [];
-  'cancelEdit': [];
-  'captureKey': [event: KeyboardEvent];
-  'reset': [shortcut: ShortcutItem];
-  'resetAll': [];
+  startEdit: [shortcut: ShortcutItem];
+  saveEdit: [];
+  cancelEdit: [];
+  captureKey: [event: KeyboardEvent];
+  reset: [shortcut: ShortcutItem];
+  resetAll: [];
 }>();
 
 const searchQuery = ref('');
 
 const filteredCategories = computed(() => {
   if (!searchQuery.value) return props.categories;
-  
+
   const query = searchQuery.value.toLowerCase();
   return props.categories
     .map((category) => ({
@@ -166,10 +165,6 @@ const filteredCategories = computed(() => {
 });
 
 function formatShortcutKey(key: string): string {
-  return key
-    .replace('Ctrl', '⌃')
-    .replace('Alt', '⌥')
-    .replace('Shift', '⇧')
-    .replace('Meta', '⌘');
+  return key.replace('Ctrl', '⌃').replace('Alt', '⌥').replace('Shift', '⇧').replace('Meta', '⌘');
 }
 </script>

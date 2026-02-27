@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
@@ -14,6 +15,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Progress } from '@dailyuse/ui-vue-shadcn';
 import type { RegisterByEmailReq, RegisterByPhoneReq } from '@dailyuse/contracts/authentication';
+
+const { t } = useI18n();
 
 interface RegisterFormProps {
   loading?: boolean;
@@ -69,9 +72,9 @@ const passwordStrength = computed(() => {
   if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
 
   let text = '';
-  if (strength < 40) text = '弱';
-  else if (strength < 70) text = '中';
-  else text = '强';
+  if (strength < 40) text = t('auth.register.passwordStrength.weak');
+  else if (strength < 70) text = t('auth.register.passwordStrength.medium');
+  else text = t('auth.register.passwordStrength.strong');
 
   return { strength, text };
 });
@@ -169,21 +172,21 @@ onUnmounted(() => {
 <template>
   <Card class="w-full max-w-md">
     <CardHeader>
-      <CardTitle>注册</CardTitle>
-      <CardDescription>创建您的账号</CardDescription>
+      <CardTitle>{{ t('auth.register.title') }}</CardTitle>
+      <CardDescription>{{ t('auth.register.description') }}</CardDescription>
     </CardHeader>
 
     <CardContent>
       <Tabs :default-value="defaultTab" class="w-full">
         <TabsList class="grid w-full grid-cols-2">
-          <TabsTrigger value="email">邮箱注册</TabsTrigger>
-          <TabsTrigger value="phone">手机注册</TabsTrigger>
+          <TabsTrigger value="email">{{ t('auth.register.tab.email') }}</TabsTrigger>
+          <TabsTrigger value="phone">{{ t('auth.register.tab.phone') }}</TabsTrigger>
         </TabsList>
 
         <!-- Email Register -->
         <TabsContent value="email" class="space-y-4">
           <div class="space-y-2">
-            <Label for="email">邮箱</Label>
+            <Label for="email">{{ t('auth.field.email') }}</Label>
             <Input
               id="email"
               v-model="emailForm.email"
@@ -192,17 +195,17 @@ onUnmounted(() => {
               :disabled="loading"
             />
             <p v-if="emailForm.email && !emailValid" class="text-sm text-destructive">
-              邮箱格式不正确
+              {{ t('auth.validation.emailInvalid') }}
             </p>
           </div>
 
           <div class="space-y-2">
-            <Label for="password">密码</Label>
+            <Label for="password">{{ t('auth.field.password') }}</Label>
             <Input
               id="password"
               v-model="emailForm.password"
               type="password"
-              placeholder="至少8位密码"
+              :placeholder="t('auth.register.passwordPlaceholder')"
               :disabled="loading"
             />
             <div v-if="emailForm.password" class="space-y-1">
@@ -213,23 +216,23 @@ onUnmounted(() => {
                 </span>
               </div>
               <p v-if="!passwordValid" class="text-sm text-destructive">
-                密码长度需要在8-100位之间
+                {{ t('auth.validation.passwordLength') }}
               </p>
             </div>
           </div>
 
           <div class="space-y-2">
-            <Label for="confirmPassword">确认密码</Label>
+            <Label for="confirmPassword">{{ t('auth.field.confirmPassword') }}</Label>
             <Input
               id="confirmPassword"
               v-model="emailForm.confirmPassword"
               type="password"
-              placeholder="再次输入密码"
+              :placeholder="t('auth.register.confirmPasswordPlaceholder')"
               :disabled="loading"
               @keyup.enter="handleEmailRegister"
             />
             <p v-if="emailForm.confirmPassword && !passwordMatch" class="text-sm text-destructive">
-              两次密码输入不一致
+              {{ t('auth.validation.passwordMismatch') }}
             </p>
           </div>
 
@@ -238,53 +241,53 @@ onUnmounted(() => {
             :disabled="!emailFormValid || loading"
             @click="handleEmailRegister"
           >
-            {{ loading ? '注册中...' : '注册' }}
+            {{ loading ? t('auth.register.submitting') : t('auth.register.submit') }}
           </Button>
         </TabsContent>
 
         <!-- Phone Register -->
         <TabsContent value="phone" class="space-y-4">
           <div class="space-y-2">
-            <Label for="phone">手机号</Label>
+            <Label for="phone">{{ t('auth.field.phone') }}</Label>
             <Input
               id="phone"
               v-model="phoneForm.phoneNumber"
               type="tel"
-              placeholder="请输入手机号"
+              :placeholder="t('auth.placeholder.phone')"
               :disabled="loading"
             />
           </div>
 
           <div class="space-y-2">
-            <Label for="code">验证码</Label>
+            <Label for="code">{{ t('auth.field.smsCode') }}</Label>
             <div class="flex gap-2">
               <Input
                 id="code"
                 v-model="phoneForm.code"
                 type="text"
-                placeholder="请输入验证码"
+                :placeholder="t('auth.placeholder.smsCode')"
                 maxlength="6"
                 :disabled="loading"
               />
               <Button variant="outline" :disabled="!canSendSmsCode" @click="handleSendSmsCode">
                 {{
                   smsCodeCountdown > 0
-                    ? `${smsCodeCountdown}秒`
+                    ? t('auth.smsCode.countdown', { n: smsCodeCountdown })
                     : smsCodeSending
-                      ? '发送中...'
-                      : '获取验证码'
+                      ? t('auth.smsCode.sending')
+                      : t('auth.smsCode.send')
                 }}
               </Button>
             </div>
           </div>
 
           <div class="space-y-2">
-            <Label for="nickname">昵称（可选）</Label>
+            <Label for="nickname">{{ t('auth.field.nicknameOptional') }}</Label>
             <Input
               id="nickname"
               v-model="phoneForm.nickname"
               type="text"
-              placeholder="请输入昵称"
+              :placeholder="t('auth.placeholder.nickname')"
               :disabled="loading"
               @keyup.enter="handlePhoneRegister"
             />
@@ -295,7 +298,7 @@ onUnmounted(() => {
             :disabled="!phoneFormValid || loading"
             @click="handlePhoneRegister"
           >
-            {{ loading ? '注册中...' : '注册' }}
+            {{ loading ? t('auth.register.submitting') : t('auth.register.submit') }}
           </Button>
         </TabsContent>
       </Tabs>
@@ -303,8 +306,10 @@ onUnmounted(() => {
 
     <CardFooter v-if="showLoginLink" class="flex justify-center">
       <p class="text-sm text-muted-foreground">
-        已有账号？
-        <Button variant="link" class="px-1" @click="handleLogin"> 立即登录 </Button>
+        {{ t('auth.register.hasAccount') }}
+        <Button variant="link" class="px-1" @click="handleLogin">
+          {{ t('auth.register.loginLink') }}
+        </Button>
       </p>
     </CardFooter>
   </Card>

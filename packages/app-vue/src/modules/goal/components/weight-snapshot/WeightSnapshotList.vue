@@ -2,7 +2,7 @@
   <div class="w-full">
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>权重变更历史</CardTitle>
+        <CardTitle>{{ t('goal.weightSnapshotList.title') }}</CardTitle>
         <div class="flex items-center gap-0.5">
           <Button
             v-for="range in timeRanges"
@@ -22,7 +22,7 @@
           <div class="col-span-12 md:col-span-4">
             <Select v-model="selectedKRId">
               <SelectTrigger>
-                <SelectValue placeholder="筛选 KeyResult" />
+                <SelectValue :placeholder="t('goal.weightSnapshotList.filterKR')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
@@ -57,7 +57,7 @@
 
         <!-- 空状态 -->
         <Alert v-else-if="!hasGoalSnapshots">
-          <AlertDescription>暂无权重变更记录</AlertDescription>
+          <AlertDescription>{{ t('goal.weightSnapshotList.empty') }}</AlertDescription>
         </Alert>
 
         <!-- 快照列表 -->
@@ -130,19 +130,27 @@
             >
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <div class="text-xs text-muted-foreground">调整前权重</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('goal.weightSnapshotList.beforeWeight') }}
+                  </div>
                   <div class="text-lg font-semibold">{{ snapshot.oldWeight }}%</div>
                 </div>
                 <div>
-                  <div class="text-xs text-muted-foreground">调整后权重</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('goal.weightSnapshotList.afterWeight') }}
+                  </div>
                   <div class="text-lg font-semibold">{{ snapshot.newWeight }}%</div>
                 </div>
                 <div class="col-span-2">
-                  <div class="text-xs text-muted-foreground">操作人</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('goal.weightSnapshotList.operator') }}
+                  </div>
                   <div class="text-sm">{{ snapshot.operatorId }}</div>
                 </div>
                 <div v-if="snapshot.reason" class="col-span-2">
-                  <div class="text-xs text-muted-foreground">调整原因</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('goal.weightSnapshotList.reason') }}
+                  </div>
                   <div class="text-sm">{{ snapshot.reason }}</div>
                 </div>
               </div>
@@ -156,7 +164,7 @@
           class="mt-4 flex items-center justify-center gap-2"
         >
           <Button variant="outline" size="sm" :disabled="currentPage <= 1" @click="currentPage--">
-            上一页
+            {{ t('goal.weightSnapshotList.prevPage') }}
           </Button>
           <span class="text-sm text-muted-foreground">
             {{ currentPage }} / {{ pagination.totalPages }}
@@ -167,7 +175,7 @@
             :disabled="currentPage >= pagination.totalPages"
             @click="currentPage++"
           >
-            下一页
+            {{ t('goal.weightSnapshotList.nextPage') }}
           </Button>
         </div>
       </CardContent>
@@ -177,10 +185,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useWeightSnapshot } from '../../application/composables/useWeightSnapshot';
 import { useGoal } from '../../composables/useGoal';
 import { format } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+import { zhCN, enUS } from 'date-fns/locale';
 import {
   Card,
   CardHeader,
@@ -214,6 +223,12 @@ const props = defineProps<{
 const { goalSnapshots, pagination, isLoading, hasGoalSnapshots, fetchGoalSnapshots } =
   useWeightSnapshot();
 const { goals } = useGoal();
+const { t, locale } = useI18n();
+
+const dateFnsLocaleMap: Record<string, any> = {
+  'zh-CN': zhCN,
+  'en-US': enUS,
+};
 
 // 筛选状态
 const selectedKRId = ref<string | undefined>(undefined);
@@ -223,28 +238,28 @@ const currentPage = ref(1);
 const expandedItems = ref<Set<string>>(new Set());
 
 // 时间范围选项
-const timeRanges: Array<{ label: string; value: 'all' | '7d' | '30d' | '90d' }> = [
-  { label: '全部', value: 'all' },
-  { label: '7天', value: '7d' },
-  { label: '30天', value: '30d' },
-  { label: '90天', value: '90d' },
-];
+const timeRanges = computed(() => [
+  { label: t('goal.weightSnapshotList.timeRangeAll'), value: 'all' as const },
+  { label: t('goal.weightSnapshotList.timeRange7d'), value: '7d' as const },
+  { label: t('goal.weightSnapshotList.timeRange30d'), value: '30d' as const },
+  { label: t('goal.weightSnapshotList.timeRange90d'), value: '90d' as const },
+]);
 
 // 触发方式选项
-const triggerOptions = [
-  { title: '手动调整', value: 'manual' },
-  { title: '自动调整', value: 'auto' },
-  { title: '恢复快照', value: 'restore' },
-  { title: '批量导入', value: 'import' },
-];
+const triggerOptions = computed(() => [
+  { title: t('goal.weightSnapshotList.triggerManual'), value: 'manual' },
+  { title: t('goal.weightSnapshotList.triggerAuto'), value: 'auto' },
+  { title: t('goal.weightSnapshotList.triggerRestore'), value: 'restore' },
+  { title: t('goal.weightSnapshotList.triggerImport'), value: 'import' },
+]);
 
 // KeyResult 选项
 const krOptions = computed(() => {
   const goal = goals.value.find((g: any) => g.id === props.goalId);
-  if (!goal || !goal.keyResults) return [{ text: '全部', value: null }];
+  if (!goal || !goal.keyResults) return [{ text: t('goal.weightSnapshotList.allKR'), value: null }];
 
   return [
-    { text: '全部', value: null },
+    { text: t('goal.weightSnapshotList.allKR'), value: null },
     ...goal.keyResults.map((kr: any) => ({
       text: kr.title,
       value: kr.id,
@@ -286,7 +301,9 @@ const getKRTitle = (krId: string) => {
 
 // 格式化时间
 const formatTime = (timestamp: number) => {
-  return format(new Date(timestamp), 'yyyy-MM-dd HH:mm', { locale: zhCN });
+  return format(new Date(timestamp), 'yyyy-MM-dd HH:mm', {
+    locale: dateFnsLocaleMap[locale.value] || zhCN,
+  });
 };
 
 // 获取权重变化 avatar 的 Tailwind 类
@@ -306,10 +323,10 @@ const getWeightChangeIconComponent = (delta: number) => {
 // 获取触发方式标签
 const getTriggerLabel = (trigger: string) => {
   const labels: Record<string, string> = {
-    manual: '手动',
-    auto: '自动',
-    restore: '恢复',
-    import: '导入',
+    manual: t('goal.weightSnapshotList.triggerLabelManual'),
+    auto: t('goal.weightSnapshotList.triggerLabelAuto'),
+    restore: t('goal.weightSnapshotList.triggerLabelRestore'),
+    import: t('goal.weightSnapshotList.triggerLabelImport'),
   };
   return labels[trigger] || trigger;
 };

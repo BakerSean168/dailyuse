@@ -10,7 +10,7 @@ export const scheduleRoutes: RouteRecordRaw[] = [
     name: 'Schedule',
     redirect: '/schedule/dashboard',
     meta: {
-      title: '调度管理',
+      title: 'schedule.route.management',
       showInNav: true,
       icon: 'mdi-calendar-clock',
       order: 4.5,
@@ -22,7 +22,7 @@ export const scheduleRoutes: RouteRecordRaw[] = [
         name: 'ScheduleDashboard',
         component: () => import('../views/ScheduleDashboardView.vue'),
         meta: {
-          title: '调度控制台',
+          title: 'schedule.route.dashboard',
           requiresAuth: true,
         },
       },
@@ -31,7 +31,7 @@ export const scheduleRoutes: RouteRecordRaw[] = [
         name: 'ScheduleWeekView',
         component: () => import('../views/ScheduleWeekView.vue'),
         meta: {
-          title: '周视图',
+          title: 'schedule.route.weekView',
           requiresAuth: true,
         },
       },

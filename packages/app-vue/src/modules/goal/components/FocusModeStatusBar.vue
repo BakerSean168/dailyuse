@@ -3,8 +3,12 @@
     <CardContent class="flex items-center justify-between py-3 px-4 min-h-[60px]">
       <!-- Left side: Status info -->
       <div class="flex items-center gap-3">
-        <component :is="getStatusIcon(status)" :class="getStatusColorClass(status)" class="h-6 w-6" />
-        
+        <component
+          :is="getStatusIcon(status)"
+          :class="getStatusColorClass(status)"
+          class="h-6 w-6"
+        />
+
         <div>
           <div class="text-sm font-semibold">
             {{ statusText }}
@@ -20,29 +24,19 @@
         <!-- Remaining days indicator -->
         <Badge :variant="getRemainingDaysBadgeVariant(remainingDays)" class="font-medium">
           <Clock class="mr-1 h-3 w-3" />
-          剩余 {{ remainingDays }} 天
+          {{ t('goal.focusMode.statusBar.remainingDays', { n: remainingDays }) }}
         </Badge>
 
         <!-- Extend button -->
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="loading"
-          @click="$emit('extend')"
-        >
+        <Button variant="outline" size="sm" :disabled="loading" @click="$emit('extend')">
           <CalendarPlus class="mr-2 h-4 w-4" />
-          延期
+          {{ t('goal.focusMode.statusBar.extend') }}
         </Button>
 
         <!-- Close button -->
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="loading"
-          @click="$emit('close')"
-        >
+        <Button variant="outline" size="sm" :disabled="loading" @click="$emit('close')">
           <XCircle class="mr-2 h-4 w-4" />
-          关闭
+          {{ t('goal.focusMode.statusBar.close') }}
         </Button>
       </div>
     </CardContent>
@@ -54,6 +48,9 @@ import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge, type BadgeVariants } from '@dailyuse/ui-vue-shadcn';
 import { Clock, CalendarPlus, XCircle, Target, AlertCircle } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 type FocusModeStatus = 'active' | 'expired';
 

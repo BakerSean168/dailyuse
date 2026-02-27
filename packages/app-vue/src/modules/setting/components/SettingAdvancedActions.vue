@@ -3,12 +3,12 @@
     <CardHeader class="flex flex-row items-center justify-between">
       <CardTitle class="flex items-center">
         <Settings2 class="h-5 w-5 mr-2" />
-        高级操作
+        {{ t('setting.advanced.title') }}
       </CardTitle>
     </CardHeader>
-    
+
     <Separator />
-    
+
     <CardContent class="p-4 space-y-6">
       <!-- Export/Import Settings -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -16,39 +16,39 @@
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="w-full">
               <Download class="h-4 w-4 mr-2" />
-              导出设置
+              {{ t('setting.advanced.exportSettings') }}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem @click="emit('exportJSON')">
               <FileJson class="h-4 w-4 mr-2" />
-              导出为 JSON
+              {{ t('setting.advanced.exportJSON') }}
             </DropdownMenuItem>
             <DropdownMenuItem @click="emit('exportCSV')">
               <FileText class="h-4 w-4 mr-2" />
-              导出为 CSV
+              {{ t('setting.advanced.exportCSV') }}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        
+
         <Button variant="outline" class="w-full" @click="emit('import')">
           <Upload class="h-4 w-4 mr-2" />
-          导入设置
+          {{ t('setting.advanced.importSettings') }}
         </Button>
       </div>
-      
+
       <!-- Backup & Restore -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Button variant="outline" class="w-full" @click="emit('createBackup')">
           <Save class="h-4 w-4 mr-2" />
-          创建本地备份
+          {{ t('setting.advanced.createBackup') }}
         </Button>
-        
+
         <DropdownMenu v-if="backups && backups.length > 0">
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="w-full">
               <RotateCcw class="h-4 w-4 mr-2" />
-              恢复备份
+              {{ t('setting.advanced.restoreBackup') }}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -66,48 +66,43 @@
         </DropdownMenu>
         <Button v-else variant="outline" class="w-full" disabled>
           <RotateCcw class="h-4 w-4 mr-2" />
-          恢复备份（无可用备份）
+          {{ t('setting.advanced.restoreBackupNoBackups') }}
         </Button>
       </div>
-      
+
       <Separator />
-      
+
       <!-- Cloud Sync -->
       <div class="space-y-4">
         <h3 class="text-sm font-medium flex items-center">
           <Cloud class="h-4 w-4 mr-2" />
-          云同步
+          {{ t('setting.advanced.cloudSync') }}
         </h3>
-        
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Button
-            variant="outline"
-            class="w-full"
-            :disabled="syncing"
-            @click="emit('cloudSync')"
-          >
+          <Button variant="outline" class="w-full" :disabled="syncing" @click="emit('cloudSync')">
             <CloudUpload class="h-4 w-4 mr-2" />
-            {{ syncing ? '同步中...' : '同步所有设备' }}
+            {{ syncing ? t('setting.advanced.syncing') : t('setting.advanced.syncAllDevices') }}
           </Button>
-          
-          <Button
-            variant="outline"
-            class="w-full"
-            @click="emit('showVersionHistory')"
-          >
+
+          <Button variant="outline" class="w-full" @click="emit('showVersionHistory')">
             <History class="h-4 w-4 mr-2" />
-            查看版本历史
+            {{ t('setting.advanced.viewVersionHistory') }}
           </Button>
         </div>
-        
+
         <!-- Sync Status -->
         <Card v-if="syncStatus" variant="outline">
           <CardContent class="pt-6">
             <div class="space-y-2">
-              <div class="text-xs text-muted-foreground">最后同步</div>
+              <div class="text-xs text-muted-foreground">
+                {{ t('setting.advanced.lastSynced') }}
+              </div>
               <div class="text-sm">{{ formatTime(syncStatus.lastSyncedAt) }}</div>
               <Progress :value="(syncStatus.versionCount / 20) * 100" class="h-2" />
-              <div class="text-xs">版本: {{ syncStatus.versionCount }}/20</div>
+              <div class="text-xs">
+                {{ t('setting.advanced.version') }}: {{ syncStatus.versionCount }}/20
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -117,6 +112,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
@@ -140,6 +136,8 @@ import {
   FileText,
 } from 'lucide-vue-next';
 
+const { t } = useI18n();
+
 interface SyncStatus {
   lastSyncedAt: number;
   versionCount: number;
@@ -161,29 +159,29 @@ interface Props {
 defineProps<Props>();
 
 const emit = defineEmits<{
-  'exportJSON': [];
-  'exportCSV': [];
-  'import': [];
-  'createBackup': [];
-  'restoreBackup': [key: string];
-  'cloudSync': [];
-  'showVersionHistory': [];
+  exportJSON: [];
+  exportCSV: [];
+  import: [];
+  createBackup: [];
+  restoreBackup: [key: string];
+  cloudSync: [];
+  showVersionHistory: [];
 }>();
 
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
   const now = new Date();
   const diff = now.getTime() - date.getTime();
-  
+
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-  
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
-  if (days < 7) return `${days}天前`;
-  
-  return date.toLocaleString('zh-CN');
+
+  if (minutes < 1) return t('setting.time.justNow');
+  if (minutes < 60) return t('setting.time.minutesAgo', { n: minutes });
+  if (hours < 24) return t('setting.time.hoursAgo', { n: hours });
+  if (days < 7) return t('setting.time.daysAgo', { n: days });
+
+  return date.toLocaleString();
 }
 </script>

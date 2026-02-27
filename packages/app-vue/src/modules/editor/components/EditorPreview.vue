@@ -10,7 +10,10 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
+
+const { t } = useI18n();
 
 interface Props {
   content: string;
@@ -110,7 +113,7 @@ function renderMarkdown() {
     renderedHtml.value = md.render(content);
   } catch (error) {
     console.error('Markdown render error:', error);
-    renderedHtml.value = '<p>渲染错误</p>';
+    renderedHtml.value = '<p>' + t('editor.preview.renderError') + '</p>';
   }
 }
 

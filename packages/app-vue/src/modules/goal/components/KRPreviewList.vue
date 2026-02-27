@@ -3,19 +3,19 @@
     <!-- Header -->
     <div class="flex items-center mb-4">
       <Lightbulb class="w-5 h-5 text-primary mr-2" />
-      <h3 class="text-lg font-semibold">AI 生成的关键结果预览</h3>
+      <h3 class="text-lg font-semibold">{{ t('goal.krPreview.title') }}</h3>
       <div class="flex-1" />
       <Badge variant="default" class="flex items-center gap-1">
         <CheckCircle class="w-3 h-3" />
-        {{ selectedCount }} / {{ keyResults.length }} 已选择
+        {{ selectedCount }} / {{ keyResults.length }} {{ t('goal.krPreview.selected') }}
       </Badge>
     </div>
 
     <!-- Empty State -->
     <Alert v-if="keyResults.length === 0" class="mb-4">
       <Info class="w-4 h-4" />
-      <AlertTitle>暂无生成的关键结果</AlertTitle>
-      <AlertDescription> 请点击"AI 生成关键结果"按钮开始。 </AlertDescription>
+      <AlertTitle>{{ t('goal.krPreview.empty') }}</AlertTitle>
+      <AlertDescription> {{ t('goal.krPreview.emptyHint') }} </AlertDescription>
     </Alert>
 
     <!-- Results List -->
@@ -53,12 +53,12 @@
               <div class="flex flex-wrap gap-2 mt-2">
                 <Badge variant="outline" class="text-success border-success">
                   <Flag class="w-3 h-3 mr-1" />
-                  目标：{{ kr.targetValue }} {{ kr.unit }}
+                  {{ t('goal.krPreview.targetLabel') }}{{ kr.targetValue }} {{ kr.unit }}
                 </Badge>
 
                 <Badge v-if="kr.weight" variant="outline" class="text-info border-info">
                   <Scale class="w-3 h-3 mr-1" />
-                  权重：{{ kr.weight }}%
+                  {{ t('goal.krPreview.weightLabel') }}{{ kr.weight }}%
                 </Badge>
 
                 <Badge
@@ -86,11 +86,11 @@
     <div v-if="keyResults.length > 0" class="flex gap-2 mt-4">
       <Button variant="outline" size="sm" @click="selectAll" data-testid="select-all-button">
         <CheckSquare class="w-4 h-4 mr-2" />
-        全选
+        {{ t('goal.krPreview.selectAll') }}
       </Button>
       <Button variant="outline" size="sm" @click="deselectAll" data-testid="deselect-all-button">
         <Square class="w-4 h-4 mr-2" />
-        全不选
+        {{ t('goal.krPreview.deselectAll') }}
       </Button>
       <div class="flex-1" />
       <Button
@@ -101,7 +101,7 @@
         data-testid="clear-all-button"
       >
         <XCircle class="w-4 h-4 mr-2" />
-        清空列表
+        {{ t('goal.krPreview.clearList') }}
       </Button>
       <Button
         size="sm"
@@ -110,7 +110,7 @@
         data-testid="accept-button"
       >
         <CheckCircle class="w-4 h-4 mr-2" />
-        采纳选中的结果 ({{ selectedCount }})
+        {{ t('goal.krPreview.adoptSelected') }} ({{ selectedCount }})
       </Button>
     </div>
 
@@ -120,46 +120,54 @@
         <DialogHeader>
           <DialogTitle class="flex items-center gap-2">
             <Pencil class="w-5 h-5" />
-            编辑关键结果
+            {{ t('goal.krPreview.editTitle') }}
           </DialogTitle>
         </DialogHeader>
 
         <div v-if="editingKR" class="space-y-4">
           <div class="space-y-2">
-            <Label for="title">标题 *</Label>
-            <Input id="title" v-model="editingKR.title" placeholder="输入标题" />
+            <Label for="title">{{ t('goal.krPreview.fieldTitle') }}</Label>
+            <Input
+              id="title"
+              v-model="editingKR.title"
+              :placeholder="t('goal.krPreview.titlePlaceholder')"
+            />
           </div>
 
           <div class="space-y-2">
-            <Label for="description">描述（可选）</Label>
+            <Label for="description">{{ t('goal.krPreview.fieldDesc') }}</Label>
             <Textarea
               id="description"
               v-model="editingKR.description"
               rows="3"
-              placeholder="输入描述"
+              :placeholder="t('goal.krPreview.descPlaceholder')"
             />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label for="targetValue">目标值 *</Label>
+              <Label for="targetValue">{{ t('goal.krPreview.fieldTarget') }}</Label>
               <Input
                 id="targetValue"
                 v-model.number="editingKR.targetValue"
                 type="number"
-                placeholder="输入目标值"
+                :placeholder="t('goal.krPreview.targetPlaceholder')"
               />
             </div>
 
             <div class="space-y-2">
-              <Label for="unit">单位 *</Label>
-              <Input id="unit" v-model="editingKR.unit" placeholder="输入单位" />
+              <Label for="unit">{{ t('goal.krPreview.fieldUnit') }}</Label>
+              <Input
+                id="unit"
+                v-model="editingKR.unit"
+                :placeholder="t('goal.krPreview.unitPlaceholder')"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label for="weight">权重（可选）</Label>
+              <Label for="weight">{{ t('goal.krPreview.fieldWeight') }}</Label>
               <Input
                 id="weight"
                 v-model.number="editingKR.weight"
@@ -171,15 +179,15 @@
             </div>
 
             <div class="space-y-2">
-              <Label for="importance">重要性（可选）</Label>
+              <Label for="importance">{{ t('goal.krPreview.fieldImportance') }}</Label>
               <Select v-model="editingKR.importance">
                 <SelectTrigger id="importance">
-                  <SelectValue placeholder="选择重要性" />
+                  <SelectValue :placeholder="t('goal.krPreview.selectImportance')" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="high">高</SelectItem>
-                  <SelectItem value="medium">中</SelectItem>
-                  <SelectItem value="low">低</SelectItem>
+                  <SelectItem value="high">{{ t('goal.krPreview.importanceHigh') }}</SelectItem>
+                  <SelectItem value="medium">{{ t('goal.krPreview.importanceMedium') }}</SelectItem>
+                  <SelectItem value="low">{{ t('goal.krPreview.importanceLow') }}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -187,8 +195,10 @@
         </div>
 
         <DialogFooter>
-          <Button variant="outline" @click="cancelEdit">取消</Button>
-          <Button @click="saveEdit" :disabled="!isEditFormValid">保存</Button>
+          <Button variant="outline" @click="cancelEdit">{{ t('goal.krPreview.cancel') }}</Button>
+          <Button @click="saveEdit" :disabled="!isEditFormValid">{{
+            t('goal.krPreview.save')
+          }}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -197,6 +207,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Lightbulb,
   CheckCircle,
@@ -262,6 +273,7 @@ const emit = defineEmits<{
 }>();
 
 const keyResults = ref<KeyResultPreview[]>([]);
+const { t } = useI18n();
 const showEditDialog = ref(false);
 const editingKR = ref<KeyResultPreview | null>(null);
 const editingIndex = ref(-1);
@@ -312,10 +324,10 @@ function deselectAll() {
 }
 
 function clearAll() {
-  if (confirm('确定要清空所有生成的关键结果吗？')) {
+  if (confirm(t('goal.krPreview.confirmClear'))) {
     keyResults.value = [];
     emit('selectionChange', []);
-    props.onSuccess?.('已清空列表');
+    props.onSuccess?.(t('goal.krPreview.cleared'));
   }
 }
 
@@ -338,15 +350,15 @@ function saveEdit() {
 
   keyResults.value[editingIndex.value] = { ...editingKR.value };
   emit('edit', editingIndex.value, editingKR.value);
-  props.onSuccess?.('关键结果已更新');
+  props.onSuccess?.(t('goal.krPreview.updated'));
   cancelEdit();
 }
 
 function handleRemove(index: number) {
-  if (confirm('确定要移除这个关键结果吗？')) {
+  if (confirm(t('goal.krPreview.confirmRemove'))) {
     keyResults.value.splice(index, 1);
     emit('remove', index);
-    props.onSuccess?.('已移除');
+    props.onSuccess?.(t('goal.krPreview.removed'));
   }
 }
 
@@ -371,7 +383,7 @@ function getKRActions(kr: KeyResultPreview, index: number): MenuAction[] {
 
 function handleAccept() {
   if (selectedCount.value === 0) {
-    props.onWarning?.('请至少选择一个关键结果');
+    props.onWarning?.(t('goal.krPreview.selectAtLeastOne'));
     return;
   }
 
@@ -394,11 +406,11 @@ function getImportanceClass(importance: string): string {
 function getImportanceLabel(importance: string): string {
   switch (importance) {
     case 'high':
-      return '高';
+      return t('goal.krPreview.importanceHigh');
     case 'medium':
-      return '中';
+      return t('goal.krPreview.importanceMedium');
     case 'low':
-      return '低';
+      return t('goal.krPreview.importanceLow');
     default:
       return importance;
   }

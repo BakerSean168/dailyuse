@@ -9,6 +9,7 @@
 
 import { computed } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import type {
   UpdateAccountReq,
   CheckAvailabilityReq,
@@ -22,6 +23,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 export function useAccount() {
   const accountStore = useAccountStore();
   const accountService = useStrictInject(ACCOUNT_SERVICE_KEY, 'AccountService');
+  const { t } = useI18n();
 
   // ========== Computed State ==========
   const currentAccount = computed(() => accountStore.currentAccount);
@@ -42,9 +44,9 @@ export function useAccount() {
       accountStore.setCurrentAccount(result.data.toDTO());
       return true;
     } else {
-      const message = result.error.message || '获取资料失败';
+      const message = result.error.message || t('account.toast.loadProfileFailed');
       accountStore.setError(message);
-      toast.error('加载失败', { description: message });
+      toast.error(t('account.toast.loadFailed'), { description: message });
       return false;
     }
   }
@@ -56,12 +58,12 @@ export function useAccount() {
     accountStore.setLoading(false);
     if (result.ok) {
       accountStore.setCurrentAccount(result.data.toDTO());
-      toast.success('资料已更新');
+      toast.success(t('account.toast.profileUpdated'));
       return true;
     } else {
-      const message = result.error.message || '更新资料失败';
+      const message = result.error.message || t('account.toast.updateProfileFailed');
       accountStore.setError(message);
-      toast.error('更新失败', { description: message });
+      toast.error(t('account.toast.updateFailed'), { description: message });
       return false;
     }
   }
@@ -71,8 +73,8 @@ export function useAccount() {
     if (result.ok) {
       return result.data.available;
     } else {
-      const message = result.error.message || '检查可用性失败';
-      toast.error('检查失败', { description: message });
+      const message = result.error.message || t('account.toast.checkAvailabilityFailed');
+      toast.error(t('account.toast.checkFailed'), { description: message });
       return false;
     }
   }
@@ -81,7 +83,7 @@ export function useAccount() {
     accountStore.setLoading(true);
     void _req;
     // TODO: AccountClientService 尚未暴露 updateSettings，暂时通过 apiClient 调用
-    toast.success('设置已更新');
+    toast.success(t('account.toast.settingsUpdated'));
     accountStore.setLoading(false);
     return true;
   }
@@ -92,12 +94,12 @@ export function useAccount() {
     accountStore.setLoading(false);
     if (result.ok) {
       accountStore.clearCurrentAccount();
-      toast.success('账户已注销');
+      toast.success(t('account.toast.accountClosed'));
       return true;
     } else {
-      const message = result.error.message || '注销账户失败';
+      const message = result.error.message || t('account.toast.closeAccountFailed');
       accountStore.setError(message);
-      toast.error('注销失败', { description: message });
+      toast.error(t('account.toast.closeFailed'), { description: message });
       return false;
     }
   }

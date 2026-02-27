@@ -68,6 +68,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { AlertCircle, Info, CheckCircle, XCircle, AlertTriangle } from 'lucide-vue-next';
 import RuleStatusBadge from './RuleStatusBadge.vue';
 import type { RuleClientDTO } from '../types';
@@ -80,6 +81,8 @@ defineEmits<{
   click: [rule: RuleClientDTO];
 }>();
 
+const { locale } = useI18n();
+
 const truncatedDescription = computed(() => {
   const desc = props.rule.description;
   return desc.length > 150 ? `${desc.slice(0, 150)}…` : desc;
@@ -89,6 +92,6 @@ const severityIcon = computed(() => (props.rule.severity === 'Mandatory' ? Alert
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
 }
 </script>

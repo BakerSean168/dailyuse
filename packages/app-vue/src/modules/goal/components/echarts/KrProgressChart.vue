@@ -1,9 +1,14 @@
 <template>
-  <v-chart class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl" :option="krBarOption" autoresize />
+  <v-chart
+    class="mb-6 h-55 min-h-45 w-full overflow-hidden rounded-2xl"
+    :option="krBarOption"
+    autoresize
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
@@ -11,6 +16,9 @@ import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
+
+const { t } = useI18n();
+
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 
 const props = defineProps<{
@@ -27,12 +35,17 @@ const getProgressPercentage = (target: number, current: number) => {
 };
 
 const krNames = computed(() => props.goal?.keyResults?.map((kr) => kr.title) ?? []);
-const krProgress = computed(() =>
-  props.goal?.keyResults?.map((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue)) ?? [],
+const krProgress = computed(
+  () =>
+    props.goal?.keyResults?.map((kr) =>
+      getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
+    ) ?? [],
 );
 
 const krBarOption = computed(() => {
-  const data = keyResults.value.map((kr) => getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue));
+  const data = keyResults.value.map((kr) =>
+    getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
+  );
   const max = data.length ? Math.max(...data) : 0;
   const min = data.length ? Math.min(...data) : 0;
   const maxIdx = data.indexOf(max);
@@ -40,7 +53,12 @@ const krBarOption = computed(() => {
 
   return {
     backgroundColor: surfaceColor,
-    title: { text: '关键结果进度', left: 'center', top: 10, textStyle: { fontSize: 16 } },
+    title: {
+      text: t('goal.chart.krProgressChart.title'),
+      left: 'center',
+      top: 10,
+      textStyle: { fontSize: 16 },
+    },
     grid: { left: 60, right: 60, top: 50, bottom: 30 },
     tooltip: {
       show: true,
@@ -65,9 +83,9 @@ const krBarOption = computed(() => {
         <span style="font-weight:bold;">${params.name}</span>
       </div>
       <div>
-  起始值: ${kr.progress.initialValue ?? 0}<br/>
-        目标值: ${kr.progress.targetValue}<br/>
-        当前值: ${kr.progress.currentValue}
+  ${t('goal.chart.krProgressChart.tooltipStart')} ${kr.progress.initialValue ?? 0}<br/>
+        ${t('goal.chart.krProgressChart.tooltipTarget')} ${kr.progress.targetValue}<br/>
+        ${t('goal.chart.krProgressChart.tooltipCurrent')} ${kr.progress.currentValue}
       </div>
     `;
       },
@@ -89,7 +107,7 @@ const krBarOption = computed(() => {
     series: [
       {
         type: 'bar',
-  data: data,
+        data: data,
         label: {
           show: true,
           position: 'right',

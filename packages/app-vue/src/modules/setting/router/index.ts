@@ -10,7 +10,7 @@ export const settingRoutes: RouteRecordRaw[] = [
     name: 'settings',
     component: () => import('../views/UserSettingsView.vue'),
     meta: {
-      title: '应用设置',
+      title: 'setting.title',
       showInNav: false, // 不在侧边栏显示，通过 More 菜单访问
       requiresAuth: true,
     },

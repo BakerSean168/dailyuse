@@ -2,7 +2,7 @@
   <div class="container mx-auto p-4">
     <Card>
       <CardHeader>
-        <CardTitle>通知中心</CardTitle>
+        <CardTitle>{{ t('notification.title') }}</CardTitle>
       </CardHeader>
       <CardContent>
         <slot />
@@ -13,4 +13,7 @@
 
 <script setup lang="ts">
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 </script>

@@ -11,8 +11,10 @@
  *   </GlobalErrorBoundary>
  */
 import { ref, onErrorCaptured } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { createLogger } from '@dailyuse/utils';
 
+const { t } = useI18n();
 const logger = createLogger('GlobalErrorBoundary');
 
 const hasError = ref(false);
@@ -21,7 +23,7 @@ const errorStack = ref('');
 
 onErrorCaptured((err: Error) => {
   hasError.value = true;
-  errorMessage.value = err.message || '发生了未知错误';
+  errorMessage.value = err.message || t('common.unknownError');
   errorStack.value = err.stack || '';
 
   // 使用统一日志系统记录错误
@@ -55,7 +57,9 @@ function handleGoHome() {
   <div v-else class="flex min-h-screen items-center justify-center bg-background p-6">
     <div class="mx-auto max-w-md text-center space-y-6">
       <!-- Icon -->
-      <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+      <div
+        class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-8 w-8 text-destructive"
@@ -75,7 +79,7 @@ function handleGoHome() {
       <!-- Title & Description -->
       <div class="space-y-2">
         <h2 class="text-2xl font-semibold tracking-tight text-foreground">
-          页面出错了
+          {{ t('common.pageError') }}
         </h2>
         <p class="text-sm text-muted-foreground">
           {{ errorMessage }}
@@ -88,22 +92,27 @@ function handleGoHome() {
           class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
           @click="handleRetry"
         >
-          重试
+          {{ t('common.retry') }}
         </button>
         <button
           class="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
           @click="handleGoHome"
         >
-          返回首页
+          {{ t('common.goHome') }}
         </button>
       </div>
 
       <!-- Error Details (dev only) -->
       <details v-if="errorStack" class="text-left">
-        <summary class="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors">
-          查看错误详情
+        <summary
+          class="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {{ t('common.viewErrorDetails') }}
         </summary>
-        <pre class="mt-2 max-h-40 overflow-auto rounded-md bg-muted p-3 text-xs text-muted-foreground">{{ errorStack }}</pre>
+        <pre
+          class="mt-2 max-h-40 overflow-auto rounded-md bg-muted p-3 text-xs text-muted-foreground"
+          >{{ errorStack }}</pre
+        >
       </details>
     </div>
   </div>

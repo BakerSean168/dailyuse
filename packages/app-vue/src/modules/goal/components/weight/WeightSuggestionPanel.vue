@@ -4,10 +4,10 @@
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <Bot class="size-5" />
-          AI 权重推荐
+          {{ t('goal.weightSuggestion.title') }}
         </DialogTitle>
         <p class="text-sm text-muted-foreground">
-          基于 KeyResult 内容分析，为您推荐以下 3 种权重分配策略
+          {{ t('goal.weightSuggestion.subtitle') }}
         </p>
       </DialogHeader>
 
@@ -32,7 +32,7 @@
               <div class="flex items-center justify-between">
                 <CardTitle class="text-base">{{ strategy.label }}</CardTitle>
                 <Badge :class="getConfidenceBadgeClass(strategy.confidence)">
-                  {{ strategy.confidence }}% 匹配
+                  {{ strategy.confidence }}% {{ t('goal.weightSuggestion.matchPercent') }}
                 </Badge>
               </div>
               <p class="text-xs text-muted-foreground">
@@ -77,7 +77,7 @@
                 @click.stop="selectAndApply(strategy)"
               >
                 <Check class="mr-2 size-4" />
-                应用此策略
+                {{ t('goal.weightSuggestion.applyStrategy') }}
               </Button>
             </CardFooter>
           </Card>
@@ -88,7 +88,7 @@
           <CardHeader class="pb-2">
             <CardTitle class="flex items-center gap-2 text-sm">
               <List class="size-4" />
-              KeyResults 列表
+              {{ t('goal.weightSuggestion.krList') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -106,7 +106,7 @@
                   </div>
                 </div>
                 <span class="shrink-0 text-xs text-muted-foreground">
-                  当前: {{ kr.weight || 0 }}%
+                  {{ t('goal.weightSuggestion.current') }} {{ kr.weight || 0 }}%
                 </span>
               </div>
             </div>
@@ -117,8 +117,10 @@
       <Separator />
 
       <DialogFooter>
-        <Button variant="outline" @click="close">取消</Button>
-        <Button :disabled="!selectedStrategy" @click="confirmSelection"> 确认选择 </Button>
+        <Button variant="outline" @click="close">{{ t('goal.weightSuggestion.cancel') }}</Button>
+        <Button :disabled="!selectedStrategy" @click="confirmSelection">
+          {{ t('goal.weightSuggestion.confirm') }}
+        </Button>
       </DialogFooter>
     </DialogScrollContent>
   </Dialog>
@@ -126,6 +128,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import {
   Dialog,
@@ -159,6 +162,8 @@ const emit = defineEmits<{
   apply: [strategy: WeightStrategy];
   close: [];
 }>();
+
+const { t } = useI18n();
 
 const isOpen = ref(false);
 const isLoading = ref(false);
@@ -227,8 +232,8 @@ function getKeywordHighlight(title: string): string {
   const foundKeywords = keywords.filter((kw) => title.toLowerCase().includes(kw.toLowerCase()));
 
   return foundKeywords.length > 0
-    ? `包含关键词: ${foundKeywords.slice(0, 3).join(', ')}`
-    : '未检测到特殊关键词';
+    ? `${t('goal.weightSuggestion.hasKeywords')} ${foundKeywords.slice(0, 3).join(', ')}`
+    : t('goal.weightSuggestion.noKeywords');
 }
 
 // 选择并应用策略

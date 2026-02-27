@@ -13,7 +13,7 @@ export const accountRoutes: RouteRecordRaw[] = [
   {
     path: '/account',
     meta: {
-      title: '账户',
+      title: 'account.title',
       showInNav: false, // 不在侧边栏显示，通过头像菜单访问
       requiresAuth: true,
     },
@@ -27,7 +27,7 @@ export const accountRoutes: RouteRecordRaw[] = [
         name: 'account-center',
         component: () => import('../views/AccountCenterView.vue'),
         meta: {
-          title: '个人中心',
+          title: 'account.center',
           requiresAuth: true,
         },
       },

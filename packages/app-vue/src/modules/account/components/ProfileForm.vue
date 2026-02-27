@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
@@ -7,7 +8,13 @@ import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
 import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Calendar } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
 import type { AccountProfileDTO, GenderType } from '@dailyuse/contracts/account';
@@ -31,6 +38,7 @@ const props = withDefaults(defineProps<ProfileFormProps>(), {
 
 const emit = defineEmits<ProfileFormEmits>();
 
+const { t } = useI18n();
 const formData = ref<AccountProfileDTO>({ ...props.profile });
 const timeZone = getLocalTimeZone();
 
@@ -38,7 +46,7 @@ watch(
   () => props.profile,
   (newProfile) => {
     formData.value = { ...newProfile };
-  }
+  },
 );
 
 const initials = computed(() => {
@@ -52,7 +60,7 @@ const formatDate = (date: number | null) => {
   if (!date) return '';
   try {
     const d = new Date(date);
-    return d.toLocaleDateString('zh-CN');
+    return d.toLocaleDateString();
   } catch {
     return '';
   }
@@ -88,100 +96,99 @@ const realNameValue = computed({
   get: () => formData.value.realName ?? '',
   set: (value: string) => {
     formData.value.realName = value.trim() ? value : null;
-  }
+  },
 });
 
 const bioValue = computed({
   get: () => formData.value.bio ?? '',
   set: (value: string) => {
     formData.value.bio = value.trim() ? value : null;
-  }
+  },
 });
 </script>
 
 <template>
   <Card class="w-full max-w-2xl">
     <CardHeader>
-      <CardTitle>编辑个人资料</CardTitle>
+      <CardTitle>{{ t('account.profile.editTitle') }}</CardTitle>
     </CardHeader>
-    
+
     <CardContent class="space-y-6">
       <!-- Avatar -->
       <div class="flex items-center space-x-4">
         <Avatar class="h-20 w-20">
-          <AvatarImage v-if="formData.avatarUrl" :src="formData.avatarUrl" :alt="formData.nickname" />
+          <AvatarImage
+            v-if="formData.avatarUrl"
+            :src="formData.avatarUrl"
+            :alt="formData.nickname"
+          />
           <AvatarFallback>{{ initials }}</AvatarFallback>
         </Avatar>
         <div class="space-y-1">
-          <Button
-            variant="outline"
-            size="sm"
-            :disabled="loading"
-            @click="handleUploadAvatar"
-          >
-            更换头像
+          <Button variant="outline" size="sm" :disabled="loading" @click="handleUploadAvatar">
+            {{ t('account.profile.changeAvatar') }}
           </Button>
           <p class="text-xs text-muted-foreground">
-            推荐尺寸: 200x200
+            {{ t('account.profile.avatarRecommendation') }}
           </p>
         </div>
       </div>
-      
+
       <!-- Nickname -->
       <div class="space-y-2">
-        <Label for="nickname">昵称</Label>
+        <Label for="nickname">{{ t('account.profile.nickname') }}</Label>
         <Input
           id="nickname"
           v-model="formData.nickname"
           type="text"
-          placeholder="请输入昵称"
+          :placeholder="t('account.placeholder.nickname')"
           :disabled="loading"
         />
       </div>
-      
+
       <!-- Real Name -->
       <div class="space-y-2">
-        <Label for="realName">真实姓名</Label>
+        <Label for="realName">{{ t('account.profile.realName') }}</Label>
         <Input
           id="realName"
           v-model="realNameValue"
           type="text"
-          placeholder="请输入真实姓名（可选）"
+          :placeholder="t('account.placeholder.realNameOptional')"
           :disabled="loading"
         />
       </div>
-      
+
       <!-- Bio -->
       <div class="space-y-2">
-        <Label for="bio">个人简介</Label>
+        <Label for="bio">{{ t('account.profile.bio') }}</Label>
         <Textarea
           id="bio"
           v-model="bioValue"
-          placeholder="介绍一下自己吧..."
+          :placeholder="t('account.placeholder.bio')"
           rows="4"
           :disabled="loading"
         />
       </div>
-      
+
       <!-- Gender -->
       <div class="space-y-2">
-        <Label for="gender">性别</Label>
+        <Label for="gender">{{ t('account.profile.gender') }}</Label>
         <Select v-model="formData.gender" :disabled="loading">
           <SelectTrigger id="gender">
-            <SelectValue placeholder="请选择性别" />
+            <SelectValue :placeholder="t('account.placeholder.gender')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="MALE">男</SelectItem>
-            <SelectItem value="FEMALE">女</SelectItem>
-            <SelectItem value="OTHER">其他</SelectItem>
-            <SelectItem value="UNSPECIFIED">不设置</SelectItem>
+            <SelectItem value="MALE">{{ t('account.gender.male') }}</SelectItem>
+            <SelectItem value="FEMALE">{{ t('account.gender.female') }}</SelectItem>
+            <SelectItem value="OTHER">{{ t('account.gender.other') }}</SelectItem>
+            <SelectItem value="UNSPECIFIED">{{ t('account.gender.unspecified') }}</SelectItem>
           </SelectContent>
         </Select>
       </div>
-      
+
       <!-- Birthday -->
       <div class="space-y-2">
-        <Label for="birthday">生日</Label>
+        <Label for="birthday">{{ t('account.profile.birthday') }}</Label>
         <Popover>
           <PopoverTrigger as-child>
             <Button
@@ -190,33 +197,22 @@ const bioValue = computed({
               class="w-full justify-start text-left font-normal"
               :disabled="loading"
             >
-              {{ formatDate(formData.birthday) || '选择日期' }}
+              {{ formatDate(formData.birthday) || t('account.placeholder.selectDate') }}
             </Button>
           </PopoverTrigger>
           <PopoverContent class="w-auto p-0">
-            <Calendar
-              :model-value="calendarValue"
-              @update:model-value="handleDateSelect"
-            />
+            <Calendar :model-value="calendarValue" @update:model-value="handleDateSelect" />
           </PopoverContent>
         </Popover>
       </div>
     </CardContent>
-    
+
     <CardFooter class="flex justify-end space-x-2">
-      <Button
-        v-if="showCancel"
-        variant="outline"
-        :disabled="loading"
-        @click="handleCancel"
-      >
-        取消
+      <Button v-if="showCancel" variant="outline" :disabled="loading" @click="handleCancel">
+        {{ t('common.cancel') }}
       </Button>
-      <Button
-        :disabled="loading"
-        @click="handleSave"
-      >
-        {{ loading ? '保存中...' : '保存' }}
+      <Button :disabled="loading" @click="handleSave">
+        {{ loading ? t('common.saving') : t('common.save') }}
       </Button>
     </CardFooter>
   </Card>

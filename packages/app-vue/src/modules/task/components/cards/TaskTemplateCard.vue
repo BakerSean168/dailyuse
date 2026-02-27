@@ -55,7 +55,7 @@
       <CardContent class="p-4">
         <!-- 描述 -->
         <p class="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2 min-h-[2.7rem]">
-          {{ template.description || '暂无描述' }}
+          {{ template.description || t('task.templateCard.noDescription') }}
         </p>
 
         <!-- 元信息 -->
@@ -64,7 +64,8 @@
           <div class="flex items-center gap-2">
             <Calendar class="h-4 w-4 shrink-0 text-primary" />
             <span class="text-sm text-muted-foreground">
-              开始于 {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
+              {{ t('task.templateCard.startsAt') }}
+              {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
             </span>
           </div>
 
@@ -90,7 +91,9 @@
             <span class="text-sm text-muted-foreground">
               <span v-if="template.tags && template.tags.length > 0" class="italic opacity-70">
                 · {{ template.tags.slice(0, 2).join(', ') }}
-                <span v-if="template.tags.length > 2">等{{ template.tags.length }}个标签</span>
+                <span v-if="template.tags.length > 2">{{
+                  t('task.templateCard.moreTagsSuffix')
+                }}</span>
               </span>
             </span>
           </div>
@@ -98,7 +101,9 @@
           <!-- 关联目标 -->
           <div v-if="template.goalBinding" class="flex items-center gap-2">
             <Target class="h-4 w-4 shrink-0 text-yellow-500" />
-            <span class="text-sm text-muted-foreground"> 关联目标 </span>
+            <span class="text-sm text-muted-foreground">
+              {{ t('task.templateCard.linkedGoal') }}
+            </span>
           </div>
         </div>
 
@@ -115,11 +120,15 @@
           <Separator class="mb-2" />
           <div class="flex justify-between gap-4 flex-wrap">
             <div class="flex flex-col items-center min-w-[60px]">
-              <span class="text-xs text-muted-foreground mb-1">总次数：</span>
+              <span class="text-xs text-muted-foreground mb-1">{{
+                t('task.templateCard.totalCount')
+              }}</span>
               <span class="text-sm font-semibold text-primary">{{ template.instanceCount }}</span>
             </div>
             <div class="flex flex-col items-center min-w-[60px]">
-              <span class="text-xs text-muted-foreground mb-1">完成率：</span>
+              <span class="text-xs text-muted-foreground mb-1">{{
+                t('task.templateCard.completionRate')
+              }}</span>
               <span class="text-sm font-semibold text-primary"
                 >{{ Math.round((template.completionRate ?? 0) * 100) }}%</span
               >
@@ -138,7 +147,7 @@
           @click="handlePauseTemplate"
         >
           <Pause class="h-4 w-4 mr-1" />
-          暂停
+          {{ t('task.templateCard.pause') }}
         </Button>
         <Button
           v-else-if="template.isPaused"
@@ -149,7 +158,7 @@
           @click="handleResume"
         >
           <Play class="h-4 w-4 mr-1" />
-          恢复
+          {{ t('task.templateCard.resume') }}
         </Button>
         <Button
           v-else-if="template.status === 'ARCHIVED'"
@@ -160,14 +169,14 @@
           @click="handleActivateTemplate"
         >
           <Play class="h-4 w-4 mr-1" />
-          激活
+          {{ t('task.templateCard.activate') }}
         </Button>
 
         <Separator orientation="vertical" class="mx-2 h-6" />
 
         <div class="flex flex-col items-end ml-auto">
           <span class="text-xs text-muted-foreground">
-            创建于 {{ template.formattedCreatedAt }}
+            {{ t('task.templateCard.createdAt') }} {{ template.formattedCreatedAt }}
           </span>
         </div>
       </CardFooter>
@@ -182,6 +191,9 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { TaskTemplateViewModel, TaskGoalBindingViewModel } from '../types';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import {
   Card,
   CardHeader,
@@ -239,10 +251,10 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   statusFilters: () => [
-    { label: '进行中', value: 'active', icon: 'mdi-play-circle' },
-    { label: '草稿', value: 'draft', icon: 'mdi-file-document-outline' },
-    { label: '已暂停', value: 'paused', icon: 'mdi-pause-circle' },
-    { label: '已归档', value: 'archived', icon: 'mdi-archive' },
+    { label: 'active', value: 'active', icon: 'mdi-play-circle' },
+    { label: 'draft', value: 'draft', icon: 'mdi-file-document-outline' },
+    { label: 'paused', value: 'paused', icon: 'mdi-pause-circle' },
+    { label: 'archived', value: 'archived', icon: 'mdi-archive' },
   ],
 });
 
@@ -364,7 +376,7 @@ const getGoalBindingName = (binding: TaskGoalBindingViewModel | null | undefined
   if (props.resolveGoalBindingName) {
     return props.resolveGoalBindingName(binding, props.template);
   }
-  return '关联目标';
+  return t('task.templateCard.linkedGoal');
 };
 
 /**
@@ -377,7 +389,7 @@ const timeLabel = computed(() => {
   const timeConfig = props.template.timeConfig;
 
   if (timeConfig.timeType === 'AllDay') {
-    return '全天';
+    return t('task.templateCard.allDay');
   }
 
   if (timeConfig.timeType === 'TimePoint' && timeConfig.timePoint != null) {
@@ -398,7 +410,7 @@ const timeLabel = computed(() => {
     return `${startTime} - ${endTime}`;
   }
 
-  return '全天';
+  return t('task.templateCard.allDay');
 });
 
 // 事件处理方法

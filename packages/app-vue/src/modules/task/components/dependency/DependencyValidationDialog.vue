@@ -4,14 +4,14 @@
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2 text-destructive">
           <AlertCircle class="h-5 w-5" />
-          无法创建依赖关系
+          {{ t('task.depValidation.cannotCreate') }}
         </DialogTitle>
       </DialogHeader>
 
       <div class="pt-4">
         <!-- 循环依赖错误 -->
         <div v-if="error?.code === 'CIRCULAR_DEPENDENCY'" class="mb-4">
-          <p class="text-base font-medium mb-3">⚠️ 创建此依赖会形成循环依赖路径：</p>
+          <p class="text-base font-medium mb-3">⚠️ {{ t('task.depValidation.cyclicPath') }}</p>
 
           <Card class="p-3 mb-3 border-destructive/30 bg-destructive/5">
             <div class="flex flex-col gap-2">
@@ -39,7 +39,7 @@
                 <div v-if="index === cyclePath.length - 1" class="flex justify-center mt-2">
                   <Badge variant="destructive">
                     <RefreshCw class="h-3 w-3 mr-1" />
-                    循环回到起点
+                    {{ t('task.depValidation.backToStart') }}
                   </Badge>
                 </div>
               </div>
@@ -50,11 +50,11 @@
             <Info class="h-4 w-4" />
             <AlertDescription>
               <div class="text-sm">
-                <strong>建议：</strong>
+                <strong>{{ t('task.depValidation.suggestions') }}</strong>
                 <ul class="mt-2 ml-4 list-disc">
-                  <li>检查任务之间的逻辑关系</li>
-                  <li>考虑拆分复杂任务为多个独立任务</li>
-                  <li>使用 DAG 视图可视化依赖关系</li>
+                  <li>{{ t('task.depValidation.suggestion1') }}</li>
+                  <li>{{ t('task.depValidation.suggestion2') }}</li>
+                  <li>{{ t('task.depValidation.suggestion3') }}</li>
                 </ul>
               </div>
             </AlertDescription>
@@ -67,14 +67,16 @@
             <AlertDescription>
               <div class="text-lg font-semibold">{{ error?.message }}</div>
               <div v-if="error?.details" class="text-xs mt-2">
-                详情: {{ JSON.stringify(error.details) }}
+                {{ t('task.depValidation.details') }} {{ JSON.stringify(error.details) }}
               </div>
             </AlertDescription>
           </Alert>
 
           <!-- 错误代码 -->
           <div class="mt-3">
-            <Badge variant="outline"> 错误代码: {{ error?.code }} </Badge>
+            <Badge variant="outline">
+              {{ t('task.depValidation.errorCode') }} {{ error?.code }}
+            </Badge>
           </div>
         </div>
       </div>
@@ -84,10 +86,10 @@
       <DialogFooter>
         <Button v-if="showViewGraphButton" variant="ghost" @click="handleViewGraph">
           <Network class="h-4 w-4 mr-1" />
-          查看依赖图
+          {{ t('task.depValidation.viewGraph') }}
         </Button>
         <div class="flex-1" />
-        <Button variant="ghost" @click="handleClose"> 关闭 </Button>
+        <Button variant="ghost" @click="handleClose"> {{ t('task.depValidation.close') }} </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -95,6 +97,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogContent,
@@ -124,6 +127,8 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+
+const { t } = useI18n();
 
 const dialog = computed({
   get: () => props.modelValue,

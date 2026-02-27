@@ -4,28 +4,34 @@
     <div v-if="isLoading" class="w-full">
       <div class="flex items-center gap-2">
         <Loader2 class="h-4 w-4 animate-spin" />
-        <span class="text-sm text-muted-foreground">检测冲突中...</span>
+        <span class="text-sm text-muted-foreground">{{
+          t('schedule.conflictAlert.detecting')
+        }}</span>
       </div>
     </div>
 
     <!-- Error State -->
     <Alert v-if="error" variant="destructive">
       <AlertCircle class="h-4 w-4" />
-      <AlertTitle>错误</AlertTitle>
+      <AlertTitle>{{ t('schedule.conflictAlert.error') }}</AlertTitle>
       <AlertDescription>{{ error }}</AlertDescription>
     </Alert>
 
     <!-- No Conflicts -->
-    <Alert v-if="!isLoading && conflicts && !conflicts.hasConflict" variant="default" class="border-green-200 bg-green-50 text-green-800">
+    <Alert
+      v-if="!isLoading && conflicts && !conflicts.hasConflict"
+      variant="default"
+      class="border-green-200 bg-green-50 text-green-800"
+    >
       <CheckCircle class="h-4 w-4" />
-      <AlertDescription>无时间冲突</AlertDescription>
+      <AlertDescription>{{ t('schedule.conflictAlert.noConflict') }}</AlertDescription>
     </Alert>
 
     <!-- Conflicts Detected -->
     <Alert v-if="conflicts?.hasConflict" variant="destructive" class="border-l-4">
       <AlertTitle class="flex items-center gap-2 text-base font-semibold">
         <AlertCircle class="h-5 w-5" />
-        检测到 {{ conflicts.conflicts.length }} 个时间冲突
+        {{ t('schedule.conflictAlert.conflictsDetected', { n: conflicts.conflicts.length }) }}
       </AlertTitle>
 
       <Separator class="my-3" />
@@ -40,9 +46,15 @@
           <Badge :variant="getSeverityVariant(conflict.severity)" class="shrink-0">
             {{ getSeverityLabel(conflict.severity) }}
           </Badge>
-          <span class="font-medium">与"{{ conflict.scheduleTitle }}"冲突</span>
+          <span class="font-medium">{{
+            t('schedule.conflictAlert.conflictWith', { title: conflict.scheduleTitle })
+          }}</span>
           <span class="text-sm text-destructive font-medium ml-auto">
-            重叠 {{ formatDuration(conflict.overlapDuration) }}
+            {{
+              t('schedule.conflictAlert.overlap', {
+                duration: formatDuration(conflict.overlapDuration),
+              })
+            }}
           </span>
         </div>
       </div>
@@ -53,7 +65,7 @@
       <div v-if="conflicts.suggestions.length > 0" class="space-y-3">
         <div class="flex items-center gap-1 text-sm font-medium">
           <Lightbulb class="h-4 w-4" />
-          建议调整：
+          {{ t('schedule.conflictAlert.suggestion') }}
         </div>
         <div class="flex gap-2 flex-wrap">
           <Button
@@ -66,7 +78,7 @@
             {{ getSuggestionLabel(suggestion) }}
           </Button>
           <Button size="sm" variant="ghost" @click="handleIgnore">
-            忽略冲突
+            {{ t('schedule.conflictAlert.ignoreConflict') }}
           </Button>
         </div>
       </div>
@@ -80,6 +92,7 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
 
 interface Props {
@@ -96,7 +109,11 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const getSeverityVariant = (severity?: 'minor' | 'moderate' | 'severe'): 'default' | 'destructive' | 'outline' => {
+const { t, locale } = useI18n();
+
+const getSeverityVariant = (
+  severity?: 'minor' | 'moderate' | 'severe',
+): 'default' | 'destructive' | 'outline' => {
   if (severity === 'severe') return 'destructive';
   if (severity === 'moderate') return 'default';
   return 'outline';
@@ -104,46 +121,48 @@ const getSeverityVariant = (severity?: 'minor' | 'moderate' | 'severe'): 'defaul
 
 const getSeverityLabel = (severity?: 'minor' | 'moderate' | 'severe'): string => {
   const labels: Record<string, string> = {
-    severe: '严重',
-    moderate: '中',
-    minor: '轻微',
+    severe: t('schedule.severity.severe'),
+    moderate: t('schedule.severity.moderate'),
+    minor: t('schedule.severity.minor'),
   };
-  return severity ? labels[severity] || '未知' : '未知';
+  return severity ? labels[severity] || t('common.unknown') : t('common.unknown');
 };
 
 const formatDuration = (minutes: number): string => {
   if (minutes < 60) {
-    return `${minutes} 分钟`;
+    return t('schedule.duration.minutes', { n: minutes });
   }
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return mins > 0 ? `${hours} 小时 ${mins} 分钟` : `${hours} 小时`;
+  return mins > 0
+    ? t('schedule.duration.hoursMinutes', { h: hours, m: mins })
+    : t('schedule.duration.hours', { h: hours });
 };
 
 const getSuggestionLabel = (suggestion: ConflictSuggestion): string => {
   if (suggestion.type === 'move_earlier') {
     const startTime = new Date(suggestion.newStartTime);
-    const timeStr = startTime.toLocaleTimeString('zh-CN', {
+    const timeStr = startTime.toLocaleTimeString(locale.value, {
       hour: '2-digit',
       minute: '2-digit',
     });
-    return `移至 ${timeStr} (提前)`;
+    return t('schedule.conflictAlert.moveEarlier', { time: timeStr });
   }
-  
+
   if (suggestion.type === 'move_later') {
     const startTime = new Date(suggestion.newStartTime);
-    const timeStr = startTime.toLocaleTimeString('zh-CN', {
+    const timeStr = startTime.toLocaleTimeString(locale.value, {
       hour: '2-digit',
       minute: '2-digit',
     });
-    return `移至 ${timeStr} (推后)`;
+    return t('schedule.conflictAlert.moveLater', { time: timeStr });
   }
-  
+
   if (suggestion.type === 'shorten') {
-    return '缩短时长';
+    return t('schedule.conflictAlert.shortenDuration');
   }
-  
-  return '调整时间';
+
+  return t('schedule.conflictAlert.adjustTime');
 };
 
 const handleApplySuggestion = (suggestion: ConflictSuggestion): void => {

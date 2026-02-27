@@ -5,7 +5,7 @@
       class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
     >
       <div class="flex items-center gap-4">
-        <h1 class="text-lg font-medium text-foreground">任务管理</h1>
+        <h1 class="text-lg font-medium text-foreground">{{ t('task.management.title') }}</h1>
       </div>
 
       <div class="flex items-center gap-2">
@@ -13,7 +13,7 @@
           <Search class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             v-model="searchQuery"
-            placeholder="搜索任务模板..."
+            :placeholder="t('task.management.searchPlaceholder')"
             class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
           />
         </div>
@@ -23,7 +23,7 @@
     <!-- Content -->
     <div class="flex-1 overflow-auto">
       <div v-if="isLoading" class="flex h-[50vh] items-center justify-center text-muted-foreground">
-        加载中...
+        {{ t('task.management.loading') }}
       </div>
 
       <TaskTemplateManagement
@@ -53,6 +53,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import { Search } from 'lucide-vue-next';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
@@ -62,6 +63,7 @@ import type { TaskTemplateViewModel } from '../components/types';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 const router = useRouter();
+const { t } = useI18n();
 const {
   templates,
   isLoading,
@@ -157,7 +159,7 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
   });
   if (result) {
     showCreateDialog.value = false;
-    toast.success('模板创建成功');
+    toast.success(t('task.management.createSuccess'));
   }
 }
 
@@ -166,7 +168,7 @@ function handleEdit(templateId: string) {
 }
 
 async function handleDelete(template: TaskTemplateViewModel) {
-  if (!window.confirm(`确认删除模板「${template.title}」？`)) return;
+  if (!window.confirm(t('task.management.confirmDelete', { name: template.title }))) return;
   await deleteTemplate(template.id);
 }
 
@@ -175,11 +177,11 @@ async function handleResume(template: TaskTemplateViewModel) {
 }
 
 async function handleDeleteAll() {
-  if (!window.confirm('确认删除所有模板？此操作不可撤销！')) return;
-  for (const t of templates.value) {
-    await deleteTemplate(t.id);
+  if (!window.confirm(t('task.management.confirmDeleteAll'))) return;
+  for (const t_ of templates.value) {
+    await deleteTemplate(t_.id);
   }
-  toast.success('所有模板已删除');
+  toast.success(t('task.management.allDeleted'));
 }
 
 onMounted(async () => {

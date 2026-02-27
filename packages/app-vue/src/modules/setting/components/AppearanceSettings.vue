@@ -1,49 +1,49 @@
 <template>
   <Card>
     <CardHeader>
-      <CardTitle>外观设置</CardTitle>
+      <CardTitle>{{ t('setting.appearance.title') }}</CardTitle>
     </CardHeader>
     <CardContent class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Theme -->
         <div class="space-y-2">
-          <Label for="theme-select">主题</Label>
+          <Label for="theme-select">{{ t('setting.appearance.theme') }}</Label>
           <Select
             :model-value="modelValue.themeStyle"
-            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, themeStyle: value as string })"
+            @update:model-value="
+              (value: any) =>
+                emit('update:modelValue', { ...modelValue, themeStyle: value as string })
+            "
           >
             <SelectTrigger id="theme-select">
-              <SelectValue placeholder="选择主题" />
+              <SelectValue :placeholder="t('setting.appearance.themePlaceholder')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                v-for="option in themeOptions"
-                :key="option.value"
-                :value="option.value"
-              >
+              <SelectItem v-for="option in themeOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </SelectItem>
             </SelectContent>
           </Select>
-          <p class="text-sm text-muted-foreground">选择您喜欢的主题颜色方案</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.appearance.themeDescription') }}
+          </p>
         </div>
 
         <!-- Font Size -->
         <div class="space-y-2">
-          <Label for="font-size-select">字体大小</Label>
+          <Label for="font-size-select">{{ t('setting.appearance.fontSize') }}</Label>
           <Select
             :model-value="modelValue.fontSize"
-            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, fontSize: value as string })"
+            @update:model-value="
+              (value: any) =>
+                emit('update:modelValue', { ...modelValue, fontSize: value as string })
+            "
           >
             <SelectTrigger id="font-size-select">
-              <SelectValue placeholder="选择字体大小" />
+              <SelectValue :placeholder="t('setting.appearance.fontSizePlaceholder')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                v-for="option in fontSizeOptions"
-                :key="option.value"
-                :value="option.value"
-              >
+              <SelectItem v-for="option in fontSizeOpts" :key="option.value" :value="option.value">
                 {{ option.label }}
               </SelectItem>
             </SelectContent>
@@ -52,46 +52,54 @@
 
         <!-- Accent Color -->
         <div class="space-y-2">
-          <Label for="accent-color">强调色</Label>
+          <Label for="accent-color">{{ t('setting.appearance.accentColor') }}</Label>
           <Input
             id="accent-color"
             type="color"
             :model-value="modelValue.accentColor"
-            @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, accentColor: String(value) })"
+            @update:model-value="
+              (value: any) =>
+                emit('update:modelValue', { ...modelValue, accentColor: String(value) })
+            "
           />
-          <p class="text-sm text-muted-foreground">自定义主题的强调颜色</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.appearance.accentColorDescription') }}
+          </p>
         </div>
 
         <!-- Compact Mode -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <Label for="compact-mode">紧凑模式</Label>
+            <Label for="compact-mode">{{ t('setting.appearance.compactMode') }}</Label>
             <Switch
               id="compact-mode"
               :checked="modelValue.compactMode"
-              @update:checked="(value) => emit('update:modelValue', { ...modelValue, compactMode: value })"
+              @update:checked="
+                (value) => emit('update:modelValue', { ...modelValue, compactMode: value })
+              "
             />
           </div>
-          <p class="text-sm text-muted-foreground">减小组件间距，显示更多内容</p>
+          <p class="text-sm text-muted-foreground">
+            {{ t('setting.appearance.compactModeDescription') }}
+          </p>
         </div>
       </div>
 
       <!-- Font Family -->
       <div class="space-y-2">
-        <Label for="font-family-select">字体</Label>
+        <Label for="font-family-select">{{ t('setting.appearance.fontFamily') }}</Label>
         <Select
           :model-value="modelValue.fontFamily ?? undefined"
-          @update:model-value="(value: any) => emit('update:modelValue', { ...modelValue, fontFamily: value as string })"
+          @update:model-value="
+            (value: any) =>
+              emit('update:modelValue', { ...modelValue, fontFamily: value as string })
+          "
         >
           <SelectTrigger id="font-family-select">
-            <SelectValue placeholder="选择字体" />
+            <SelectValue :placeholder="t('setting.appearance.fontFamilyPlaceholder')" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem
-              v-for="option in fontFamilyOptions"
-              :key="option.value"
-              :value="option.value"
-            >
+            <SelectItem v-for="option in fontFamilyOpts" :key="option.value" :value="option.value">
               {{ option.label }}
             </SelectItem>
           </SelectContent>
@@ -102,11 +110,21 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@dailyuse/ui-vue-shadcn';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
+
+const { t } = useI18n();
 
 interface AppearanceSettings {
   themeStyle?: string;
@@ -122,32 +140,37 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  themeOptions: () => [
-    { label: '☀️ 标准浅色 (浅色)', value: 'light' },
-    { label: '🌙 标准深色 (深色)', value: 'dark' },
-    { label: '🌊 深蓝 (深色)', value: 'darkBlue' },
-    { label: '📄 暖纸 (浅色)', value: 'warmPaper' },
-    { label: '💠 浅蓝 (浅色)', value: 'lightBlue' },
-    { label: '🌿 蓝绿 (深色)', value: 'blueGreen' },
-  ],
+  themeOptions: undefined,
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: AppearanceSettings];
 }>();
 
-const fontSizeOptions = [
-  { label: '小', value: 'SMALL' },
-  { label: '中', value: 'MEDIUM' },
-  { label: '大', value: 'LARGE' },
-];
+const themeOptions = computed(
+  () =>
+    props.themeOptions ?? [
+      { label: `☀️ ${t('setting.appearance.themeLight')}`, value: 'light' },
+      { label: `🌙 ${t('setting.appearance.themeDark')}`, value: 'dark' },
+      { label: `🌊 ${t('setting.appearance.themeDarkBlue')}`, value: 'darkBlue' },
+      { label: `📄 ${t('setting.appearance.themeWarmPaper')}`, value: 'warmPaper' },
+      { label: `💠 ${t('setting.appearance.themeLightBlue')}`, value: 'lightBlue' },
+      { label: `🌿 ${t('setting.appearance.themeBlueGreen')}`, value: 'blueGreen' },
+    ],
+);
 
-const fontFamilyOptions = [
-  { label: '系统默认', value: '' },
+const fontSizeOpts = computed(() => [
+  { label: t('setting.appearance.fontSmall'), value: 'SMALL' },
+  { label: t('setting.appearance.fontMedium'), value: 'MEDIUM' },
+  { label: t('setting.appearance.fontLarge'), value: 'LARGE' },
+]);
+
+const fontFamilyOpts = computed(() => [
+  { label: t('setting.appearance.fontDefault'), value: '' },
   { label: 'Inter', value: 'Inter' },
   { label: 'Arial', value: 'Arial' },
   { label: 'Roboto', value: 'Roboto' },
-  { label: '微软雅黑', value: 'Microsoft YaHei' },
-  { label: '苹方', value: 'PingFang SC' },
-];
+  { label: t('setting.appearance.fontMSYH'), value: 'Microsoft YaHei' },
+  { label: t('setting.appearance.fontPingFang'), value: 'PingFang SC' },
+]);
 </script>

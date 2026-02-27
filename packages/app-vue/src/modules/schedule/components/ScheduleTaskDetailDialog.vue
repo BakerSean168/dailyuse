@@ -5,8 +5,8 @@
         <DialogTitle class="flex items-center gap-3">
           <CalendarClock class="h-6 w-6" />
           <div>
-            <h2 class="text-xl font-bold">任务详情</h2>
-            <p class="text-sm text-muted-foreground">Schedule Task Details</p>
+            <h2 class="text-xl font-bold">{{ t('schedule.detailDialog.title') }}</h2>
+            <p class="text-sm text-muted-foreground">{{ t('schedule.detailDialog.subtitle') }}</p>
           </div>
         </DialogTitle>
       </DialogHeader>
@@ -29,33 +29,45 @@
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Info class="h-5 w-5" />
-              基本信息
+              {{ t('schedule.detailDialog.basicInfo') }}
             </CardTitle>
           </CardHeader>
           <CardContent class="space-y-3">
             <div>
-              <p class="text-sm text-muted-foreground">任务名称</p>
+              <p class="text-sm text-muted-foreground">{{ t('schedule.detailDialog.taskName') }}</p>
               <p class="font-medium">{{ task.name }}</p>
             </div>
             <div v-if="task.description">
-              <p class="text-sm text-muted-foreground">描述</p>
+              <p class="text-sm text-muted-foreground">
+                {{ t('schedule.detailDialog.description') }}
+              </p>
               <p>{{ task.description }}</p>
             </div>
             <div class="flex gap-4">
               <div>
-                <p class="text-sm text-muted-foreground mb-1">来源模块</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.sourceModule') }}
+                </p>
                 <Badge>{{ task.sourceModule }}</Badge>
               </div>
               <div>
-                <p class="text-sm text-muted-foreground mb-1">任务状态</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.taskStatus') }}
+                </p>
                 <Badge :variant="task.status === 'active' ? 'default' : 'secondary'">
                   {{ task.status }}
                 </Badge>
               </div>
               <div>
-                <p class="text-sm text-muted-foreground mb-1">启用状态</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.enabledStatus') }}
+                </p>
                 <Badge :variant="task.enabled ? 'default' : 'destructive'">
-                  {{ task.enabled ? '已启用' : '已禁用' }}
+                  {{
+                    task.enabled
+                      ? t('schedule.detailDialog.enabled')
+                      : t('schedule.detailDialog.disabled')
+                  }}
                 </Badge>
               </div>
             </div>
@@ -67,26 +79,44 @@
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Clock class="h-5 w-5" />
-              执行信息
+              {{ t('schedule.detailDialog.executionInfo') }}
             </CardTitle>
           </CardHeader>
           <CardContent class="space-y-3">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <p class="text-sm text-muted-foreground">执行次数</p>
-                <p class="font-medium">{{ task.execution.executionCount }} 次</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('schedule.detailDialog.executionCount') }}
+                </p>
+                <p class="font-medium">
+                  {{
+                    t('schedule.detailDialog.executionCountValue', {
+                      n: task.execution.executionCount,
+                    })
+                  }}
+                </p>
               </div>
               <div v-if="task.execution.nextRunAt">
-                <p class="text-sm text-muted-foreground">下次执行</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('schedule.detailDialog.nextExecution') }}
+                </p>
                 <p>{{ formatDateTime(task.execution.nextRunAt) }}</p>
               </div>
               <div v-if="task.execution.lastRunAt">
-                <p class="text-sm text-muted-foreground">上次执行</p>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('schedule.detailDialog.lastExecution') }}
+                </p>
                 <p>{{ formatDateTime(task.execution.lastRunAt) }}</p>
               </div>
               <div v-if="task.execution.consecutiveFailures > 0">
-                <p class="text-sm text-muted-foreground">连续失败</p>
-                <Badge variant="destructive">{{ task.execution.consecutiveFailures }} 次</Badge>
+                <p class="text-sm text-muted-foreground">
+                  {{ t('schedule.detailDialog.consecutiveFailures') }}
+                </p>
+                <Badge variant="destructive">{{
+                  t('schedule.detailDialog.consecutiveFailuresValue', {
+                    n: task.execution.consecutiveFailures,
+                  })
+                }}</Badge>
               </div>
             </div>
           </CardContent>
@@ -97,25 +127,33 @@
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Settings class="h-5 w-5" />
-              调度配置
+              {{ t('schedule.detailDialog.scheduleConfig') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p class="text-sm text-muted-foreground mb-1">Cron 表达式</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.cronExpression') }}
+                </p>
                 <p class="font-mono text-sm">{{ task.schedule.cronExpression }}</p>
               </div>
               <div>
-                <p class="text-sm text-muted-foreground mb-1">时区</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.timezone') }}
+                </p>
                 <p>{{ task.schedule.timezone }}</p>
               </div>
               <div v-if="task.schedule.startDate">
-                <p class="text-sm text-muted-foreground mb-1">开始日期</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.startDate') }}
+                </p>
                 <p>{{ formatDate(task.schedule.startDate) }}</p>
               </div>
               <div v-if="task.schedule.endDate">
-                <p class="text-sm text-muted-foreground mb-1">结束日期</p>
+                <p class="text-sm text-muted-foreground mb-1">
+                  {{ t('schedule.detailDialog.endDate') }}
+                </p>
                 <p>{{ formatDate(task.schedule.endDate) }}</p>
               </div>
             </div>
@@ -128,9 +166,14 @@
             <div class="flex items-center justify-between">
               <CardTitle class="flex items-center gap-2">
                 <History class="h-5 w-5" />
-                执行历史
+                {{ t('schedule.detailDialog.executionHistory') }}
               </CardTitle>
-              <Button variant="outline" size="sm" @click="$emit('refresh-executions')" :disabled="loadingHistory">
+              <Button
+                variant="outline"
+                size="sm"
+                @click="$emit('refresh-executions')"
+                :disabled="loadingHistory"
+              >
                 <Loader2 v-if="loadingHistory" class="h-4 w-4 animate-spin" />
                 <RefreshCw v-else class="h-4 w-4" />
               </Button>
@@ -142,7 +185,7 @@
             </div>
             <div v-else-if="executions.length === 0" class="text-center py-8 text-muted-foreground">
               <CalendarOff class="mx-auto h-12 w-12 mb-2" />
-              <p>暂无执行记录</p>
+              <p>{{ t('schedule.detailDialog.noExecutionRecords') }}</p>
             </div>
             <div v-else class="space-y-2">
               <div
@@ -163,9 +206,11 @@
                   <div>
                     <p class="text-sm font-medium">{{ formatDateTime(execution.executionTime) }}</p>
                     <p v-if="execution.duration" class="text-xs text-muted-foreground">
-                      耗时: {{ execution.duration }}ms
+                      {{ t('schedule.detailDialog.executionDuration', { n: execution.duration }) }}
                     </p>
-                    <p v-if="execution.error" class="text-xs text-destructive">{{ execution.error }}</p>
+                    <p v-if="execution.error" class="text-xs text-destructive">
+                      {{ execution.error }}
+                    </p>
                   </div>
                 </div>
                 <Badge :variant="execution.status === 'success' ? 'default' : 'destructive'">
@@ -178,14 +223,22 @@
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="$emit('update:show', false)">关闭</Button>
+        <Button variant="outline" @click="$emit('update:show', false)">{{
+          t('common.close')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@dailyuse/ui-vue-shadcn';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -201,6 +254,7 @@ import {
   AlertCircle,
   CalendarOff,
 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 
 interface ScheduleTask {
   id: string;
@@ -257,15 +311,17 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<Emits>();
 
+const { t, locale } = useI18n();
+
 function formatDateTime(timestamp: number | string | null | undefined): string {
   if (!timestamp) return 'N/A';
   const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
-  return new Date(time).toLocaleString('zh-CN');
+  return new Date(time).toLocaleString(locale.value);
 }
 
 function formatDate(timestamp: number | string | null | undefined): string {
   if (!timestamp) return 'N/A';
   const time = typeof timestamp === 'string' ? new Date(timestamp).getTime() : timestamp;
-  return new Date(time).toLocaleDateString('zh-CN');
+  return new Date(time).toLocaleDateString(locale.value);
 }
 </script>

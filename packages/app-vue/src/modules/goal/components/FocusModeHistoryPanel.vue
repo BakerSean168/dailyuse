@@ -3,14 +3,9 @@
     <CardHeader class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <History class="w-5 h-5" />
-        <CardTitle>专注周期历史</CardTitle>
+        <CardTitle>{{ t('goal.focusMode.historyPanel.title') }}</CardTitle>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        :disabled="isLoading"
-        @click="handleRefresh"
-      >
+      <Button variant="ghost" size="icon" :disabled="isLoading" @click="handleRefresh">
         <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': isLoading }" />
       </Button>
     </CardHeader>
@@ -21,21 +16,17 @@
         <table class="w-full text-sm">
           <thead class="border-b">
             <tr>
-              <th class="text-left p-2">专注目标</th>
-              <th class="text-left p-2">状态</th>
-              <th class="text-left p-2">开始时间</th>
-              <th class="text-left p-2">结束时间</th>
-              <th class="text-left p-2">持续时间</th>
-              <th class="text-left p-2">隐藏模式</th>
-              <th class="text-center p-2">操作</th>
+              <th class="text-left p-2">{{ t('goal.focusMode.historyPanel.goalHeader') }}</th>
+              <th class="text-left p-2">{{ t('goal.focusMode.historyPanel.statusHeader') }}</th>
+              <th class="text-left p-2">{{ t('goal.focusMode.historyPanel.startTimeHeader') }}</th>
+              <th class="text-left p-2">{{ t('goal.focusMode.historyPanel.endTimeHeader') }}</th>
+              <th class="text-left p-2">{{ t('goal.focusMode.historyPanel.durationHeader') }}</th>
+              <th class="text-left p-2">{{ t('goal.focusMode.historyPanel.hiddenModeHeader') }}</th>
+              <th class="text-center p-2">{{ t('goal.focusMode.historyPanel.actionHeader') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in focusModeHistory"
-              :key="item.id"
-              class="border-b hover:bg-muted/50"
-            >
+            <tr v-for="item in focusModeHistory" :key="item.id" class="border-b hover:bg-muted/50">
               <td class="p-2">
                 <div class="flex flex-wrap gap-1">
                   <Badge
@@ -95,8 +86,12 @@
               <td colspan="7" class="p-8 text-center">
                 <div class="flex flex-col items-center gap-2">
                   <History class="w-16 h-16 text-muted-foreground" />
-                  <div class="text-lg font-semibold text-muted-foreground">暂无专注周期历史</div>
-                  <div class="text-sm text-muted-foreground">启用专注模式后，历史记录将显示在这里</div>
+                  <div class="text-lg font-semibold text-muted-foreground">
+                    {{ t('goal.focusMode.historyPanel.empty') }}
+                  </div>
+                  <div class="text-sm text-muted-foreground">
+                    {{ t('goal.focusMode.historyPanel.emptyHint') }}
+                  </div>
                 </div>
               </td>
             </tr>
@@ -109,7 +104,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { History, RefreshCw, CalendarPlus, XCircle, CheckCircle, AlertCircle, Clock } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+import {
+  History,
+  RefreshCw,
+  CalendarPlus,
+  XCircle,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+} from 'lucide-vue-next';
 import type { FocusModeClientDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -130,6 +134,8 @@ const props = withDefaults(defineProps<Props>(), {
   goals: () => [],
 });
 
+const { t, locale } = useI18n();
+
 const emit = defineEmits<{
   refresh: [];
   extend: [item: FocusModeClientDTO, newEndTime: number];
@@ -144,7 +150,9 @@ onMounted(async () => {
   }
 });
 
-const getStatusVariant = (item: FocusModeClientDTO): 'default' | 'outline' | 'destructive' | 'secondary' => {
+const getStatusVariant = (
+  item: FocusModeClientDTO,
+): 'default' | 'outline' | 'destructive' | 'secondary' => {
   if (item.isActive) {
     if (isExpiredItem(item)) return 'destructive';
     return 'default';
@@ -164,11 +172,11 @@ const getStatusIcon = (item: FocusModeClientDTO) => {
 
 const getStatusText = (item: FocusModeClientDTO): string => {
   if (item.isActive) {
-    if (isExpiredItem(item)) return '已过期';
-    return '进行中';
+    if (isExpiredItem(item)) return t('goal.focusMode.historyPanel.expired');
+    return t('goal.focusMode.historyPanel.active');
   }
-  if (isExpiredItem(item)) return '已过期';
-  return '已关闭';
+  if (isExpiredItem(item)) return t('goal.focusMode.historyPanel.expired');
+  return t('goal.focusMode.historyPanel.closed');
 };
 
 const isExpiredItem = (item: FocusModeClientDTO): boolean => {
@@ -176,7 +184,7 @@ const isExpiredItem = (item: FocusModeClientDTO): boolean => {
 };
 
 const formatDate = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleString('zh-CN', {
+  return new Date(timestamp).toLocaleString(locale.value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -188,23 +196,23 @@ const formatDate = (timestamp: number): string => {
 const calculateDuration = (item: FocusModeClientDTO): string => {
   const duration = item.endTime - item.startTime;
   const days = Math.floor(duration / (24 * 60 * 60 * 1000));
-  return `${days} 天`;
+  return `${days} ${t('goal.focusMode.historyPanel.days')}`;
 };
 
 const getHiddenModeLabel = (mode: HiddenGoalsMode): string => {
   const labels: Record<string, string> = {
-    hide: '隐藏',
-    dim: '变暗',
-    collapse: '折叠',
-    hide_all: '隐藏所有',
-    hide_folder: '隐藏文件夹',
-    hide_none: '不隐藏',
+    hide: t('goal.focusMode.historyPanel.modeHide'),
+    dim: t('goal.focusMode.historyPanel.modeDim'),
+    collapse: t('goal.focusMode.historyPanel.modeFold'),
+    hide_all: t('goal.focusMode.historyPanel.modeHideAll'),
+    hide_folder: t('goal.focusMode.historyPanel.modeHideFolder'),
+    hide_none: t('goal.focusMode.historyPanel.modeNone'),
   };
   return labels[mode] || mode;
 };
 
 const getGoalTitle = (id: string): string => {
-  const goal = props.goals.find(g => g.id === id);
+  const goal = props.goals.find((g) => g.id === id);
   return goal?.title ?? id.slice(0, 8);
 };
 
@@ -218,7 +226,7 @@ const handleRefresh = async () => {
 
 const handleExtend = (item: FocusModeClientDTO) => {
   const newEndTime = item.endTime + 7 * 24 * 60 * 60 * 1000;
-  
+
   if (props.onExtend) {
     props.onExtend(item, newEndTime);
   } else {
@@ -227,7 +235,7 @@ const handleExtend = (item: FocusModeClientDTO) => {
 };
 
 const handleDeactivate = (item: FocusModeClientDTO) => {
-  if (!confirm(`确定要关闭该专注周期吗？`)) {
+  if (!confirm(t('goal.focusMode.historyPanel.confirmClose'))) {
     return;
   }
 

@@ -4,7 +4,7 @@
     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
       <div class="flex items-center">
         <Share2 class="mr-2 h-5 w-5 text-primary" />
-        <CardTitle class="text-lg font-semibold">任务依赖关系图</CardTitle>
+        <CardTitle class="text-lg font-semibold">{{ t('task.dependencyGraph.title') }}</CardTitle>
       </div>
       <div class="flex items-center gap-2">
         <!-- 布局切换 -->
@@ -19,7 +19,7 @@
                 <ScatterChart class="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>力导向布局</TooltipContent>
+            <TooltipContent>{{ t('task.dependencyGraph.forceLayout') }}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger as-child>
@@ -31,14 +31,14 @@
                 <PieChart class="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>环形布局</TooltipContent>
+            <TooltipContent>{{ t('task.dependencyGraph.circularLayout') }}</TooltipContent>
           </Tooltip>
         </div>
 
         <!-- 关键路径切换 -->
         <div class="flex items-center gap-2">
           <Switch :checked="showCriticalPath" @update:checked="showCriticalPath = $event" />
-          <Label class="text-sm">关键路径</Label>
+          <Label class="text-sm">{{ t('task.dependencyGraph.criticalPath') }}</Label>
         </div>
 
         <!-- 刷新按钮 -->
@@ -55,7 +55,7 @@
               <RefreshCw v-else class="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>刷新</TooltipContent>
+          <TooltipContent>{{ t('task.dependencyGraph.refresh') }}</TooltipContent>
         </Tooltip>
       </div>
     </CardHeader>
@@ -69,13 +69,15 @@
       <div v-else-if="error" class="text-center py-8">
         <AlertCircle class="h-16 w-16 text-destructive mx-auto" />
         <p class="text-lg font-semibold mt-4">{{ error }}</p>
-        <Button class="mt-4" @click="refreshGraph">重试</Button>
+        <Button class="mt-4" @click="refreshGraph">{{ t('task.dependencyGraph.retry') }}</Button>
       </div>
 
       <div v-else-if="!hasData" class="text-center py-8">
         <Share2 class="h-16 w-16 text-muted-foreground mx-auto" />
-        <p class="text-lg font-semibold mt-4">暂无任务依赖数据</p>
-        <p class="text-sm text-muted-foreground">创建任务并添加依赖关系后，这里将显示依赖关系图</p>
+        <p class="text-lg font-semibold mt-4">{{ t('task.dependencyGraph.emptyTitle') }}</p>
+        <p class="text-sm text-muted-foreground">
+          {{ t('task.dependencyGraph.emptyDescription') }}
+        </p>
       </div>
 
       <div v-else ref="chartContainer" :style="{ height: chartHeight + 'px' }" />
@@ -88,34 +90,37 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- 统计信息 -->
         <div>
-          <div class="text-sm font-medium mb-2">统计信息</div>
+          <div class="text-sm font-medium mb-2">{{ t('task.dependencyGraph.stats') }}</div>
           <div class="flex flex-wrap gap-2">
             <Badge variant="secondary" class="text-xs">
               <CheckSquare class="h-3 w-3 mr-1" />
-              {{ graphStats.totalTasks }} 个任务
+              {{ graphStats.totalTasks }} {{ t('task.dependencyGraph.taskCount') }}
             </Badge>
             <Badge variant="secondary" class="text-xs">
               <ArrowRight class="h-3 w-3 mr-1" />
-              {{ graphStats.totalDependencies }} 个依赖
+              {{ graphStats.totalDependencies }} {{ t('task.dependencyGraph.depCount') }}
             </Badge>
             <Badge v-if="graphStats.hasCycle" variant="destructive" class="text-xs">
               <AlertTriangle class="h-3 w-3 mr-1" />
-              检测到循环依赖
+              {{ t('task.dependencyGraph.cyclicDetected') }}
             </Badge>
           </div>
         </div>
 
         <!-- 关键路径信息 -->
         <div v-if="showCriticalPath && criticalPathInfo">
-          <div class="text-sm font-medium mb-2">关键路径</div>
+          <div class="text-sm font-medium mb-2">
+            {{ t('task.dependencyGraph.criticalPathLabel') }}
+          </div>
           <div class="flex flex-wrap gap-2">
             <Badge variant="destructive" class="text-xs">
               <Timer class="h-3 w-3 mr-1" />
-              总工期：{{ formatDuration(criticalPathInfo.duration) }}
+              {{ t('task.dependencyGraph.totalDuration')
+              }}{{ formatDuration(criticalPathInfo.duration) }}
             </Badge>
             <Badge variant="destructive" class="text-xs">
               <Route class="h-3 w-3 mr-1" />
-              {{ criticalPathInfo.path.length }} 个关键任务
+              {{ criticalPathInfo.path.length }} {{ t('task.dependencyGraph.criticalTaskCount') }}
             </Badge>
           </div>
         </div>
@@ -126,6 +131,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
@@ -170,6 +176,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   height: 600,
 });
+
+const { t } = useI18n();
 
 const adjacency = computed(() => {
   const map = new Map<string, string[]>();
@@ -352,7 +360,7 @@ function updateChart() {
             if (!task) return '';
             return `<div style="padding: 8px;">
               <div style="font-weight: bold;">${task.title}</div>
-              <div>预估: ${task.estimatedMinutes || 0} 分钟</div>
+              <div>${t('task.dependencyGraph.estimateTooltip', { duration: task.estimatedMinutes || 0 })}</div>
             </div>`;
           }
           return '';
@@ -377,7 +385,7 @@ function updateChart() {
 
     chartInstance.value.setOption(option);
   } catch (err) {
-    error.value = '渲染图表失败';
+    error.value = t('task.dependencyGraph.renderFailed');
   }
 }
 
@@ -396,7 +404,9 @@ function refreshGraph() {
 function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return hours > 0 ? `${hours}小时${mins}分钟` : `${mins}分钟`;
+  return hours > 0
+    ? `${hours}${t('task.dependencyGraph.hours')}${mins}${t('task.dependencyGraph.minutes')}`
+    : `${mins}${t('task.dependencyGraph.minutes')}`;
 }
 
 // Watchers

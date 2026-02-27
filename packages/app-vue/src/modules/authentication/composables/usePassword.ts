@@ -9,6 +9,7 @@
 
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { useI18n } from 'vue-i18n';
 import type {
   ChangePasswordReq,
   ForgotPasswordReq,
@@ -21,6 +22,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 export function usePassword() {
   const store = useAuthenticationStore();
   const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
+  const { t } = useI18n();
 
   const isLoading = ref(false);
 
@@ -28,7 +30,7 @@ export function usePassword() {
 
   async function changePassword(req: ChangePasswordReq): Promise<boolean> {
     if (!store.accessToken) {
-      toast.error('请先登录');
+      toast.error(t('auth.toast.pleaseLogin'));
       return false;
     }
 
@@ -37,10 +39,14 @@ export function usePassword() {
     isLoading.value = false;
 
     if (result.ok) {
-      toast.success('密码已修改', { description: '请使用新密码重新登录' });
+      toast.success(t('auth.toast.passwordChanged'), {
+        description: t('auth.toast.reloginWithNew'),
+      });
       return true;
     }
-    toast.error('操作失败', { description: result.error.message || '修改密码失败' });
+    toast.error(t('auth.toast.operationFailed'), {
+      description: result.error.message || t('auth.toast.changePasswordFailed'),
+    });
     return false;
   }
 
@@ -52,10 +58,14 @@ export function usePassword() {
     isLoading.value = false;
 
     if (result.ok) {
-      toast.success('重置邮件已发送', { description: '请查收邮件并点击重置链接' });
+      toast.success(t('auth.toast.resetEmailSent'), {
+        description: t('auth.toast.checkResetEmail'),
+      });
       return true;
     }
-    toast.error('操作失败', { description: result.error.message || '发送重置邮件失败' });
+    toast.error(t('auth.toast.operationFailed'), {
+      description: result.error.message || t('auth.toast.sendResetEmailFailed'),
+    });
     return false;
   }
 
@@ -67,10 +77,12 @@ export function usePassword() {
     isLoading.value = false;
 
     if (result.ok) {
-      toast.success('密码已重置', { description: '请使用新密码登录' });
+      toast.success(t('auth.toast.passwordReset'), { description: t('auth.toast.loginWithNew') });
       return true;
     }
-    toast.error('操作失败', { description: result.error.message || '重置密码失败' });
+    toast.error(t('auth.toast.operationFailed'), {
+      description: result.error.message || t('auth.toast.resetPasswordFailed'),
+    });
     return false;
   }
 

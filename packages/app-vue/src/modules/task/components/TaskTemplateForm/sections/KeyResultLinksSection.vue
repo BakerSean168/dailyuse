@@ -3,11 +3,11 @@
     <CardHeader class="flex flex-row items-center justify-between">
       <div class="flex items-center gap-2">
         <Target class="h-5 w-5" />
-        <CardTitle>关键结果链接</CardTitle>
+        <CardTitle>{{ t('task.krLinks.title') }}</CardTitle>
       </div>
       <Badge v-if="hasGoalBinding" variant="default" class="bg-green-500">
         <CheckCircle class="h-3 w-3 mr-1" />
-        已关联
+        {{ t('task.krLinks.linkedCount') }}
       </Badge>
     </CardHeader>
 
@@ -16,7 +16,7 @@
       <Alert v-if="!hasGoalBinding" class="mb-4">
         <Info class="h-4 w-4" />
         <AlertDescription class="text-xs">
-          设置关键结果链接后，任务实例完成时会自动创建对应的进度记录
+          {{ t('task.krLinks.hint') }}
         </AlertDescription>
       </Alert>
 
@@ -31,14 +31,14 @@
             }
           "
         />
-        <Label>启用关键结果关联</Label>
+        <Label>{{ t('task.krLinks.enable') }}</Label>
       </div>
 
       <!-- 关联配置表单 -->
       <div v-if="linkEnabled">
         <!-- 目标选择 -->
         <div class="mb-3">
-          <Label class="mb-2 block">选择目标</Label>
+          <Label class="mb-2 block">{{ t('task.krLinks.selectGoal') }}</Label>
           <Select
             :model-value="selectedGoalId ?? undefined"
             :disabled="loadingGoals"
@@ -47,7 +47,7 @@
             <SelectTrigger>
               <div class="flex items-center gap-2">
                 <Flag class="h-4 w-4" />
-                <SelectValue placeholder="请选择要关联的目标" />
+                <SelectValue :placeholder="t('task.krLinks.selectGoalPlaceholder')" />
               </div>
             </SelectTrigger>
             <SelectContent>
@@ -68,7 +68,7 @@
 
         <!-- 关键结果选择 -->
         <div class="mb-3">
-          <Label class="mb-2 block">选择关键结果</Label>
+          <Label class="mb-2 block">{{ t('task.krLinks.selectKR') }}</Label>
           <Select
             :model-value="selectedKeyResultId ?? undefined"
             :disabled="!selectedGoalId || loadingKeyResults"
@@ -77,7 +77,7 @@
             <SelectTrigger>
               <div class="flex items-center gap-2">
                 <Target class="h-4 w-4" />
-                <SelectValue placeholder="请先选择目标" />
+                <SelectValue :placeholder="t('task.krLinks.selectGoalFirst')" />
               </div>
             </SelectTrigger>
             <SelectContent>
@@ -98,7 +98,7 @@
                         (item.raw as any).progressText
                       }}</span>
                       <Badge variant="secondary" class="text-xs"
-                        >权重: {{ (item.raw as any).weight }}%</Badge
+                        >{{ t('task.krLinks.points') }}: {{ (item.raw as any).weight }}%</Badge
                       >
                     </div>
                   </div>
@@ -110,13 +110,13 @@
 
         <!-- 增量值设置 -->
         <div class="mb-3">
-          <Label class="mb-2 block">完成后增加的进度值</Label>
+          <Label class="mb-2 block">{{ t('task.krLinks.progressValue') }}</Label>
           <div class="flex items-center gap-2">
             <PlusCircle class="h-4 w-4 text-muted-foreground" />
             <Input
               :model-value="incrementValue"
               type="number"
-              placeholder="输入进度增量（正数）"
+              :placeholder="t('task.krLinks.progressPlaceholder')"
               @update:model-value="
                 (val) => {
                   incrementValue = Number(val);
@@ -124,10 +124,10 @@
                 }
               "
             />
-            <span class="text-sm text-muted-foreground">点</span>
+            <span class="text-sm text-muted-foreground">{{ t('task.krLinks.points') }}</span>
           </div>
           <p class="text-xs text-muted-foreground mt-1">
-            任务实例完成时，会自动为关键结果创建此值的进度记录
+            {{ t('task.krLinks.progressText') }}
           </p>
         </div>
 
@@ -140,15 +140,9 @@
             <div class="flex items-center">
               <Link2 class="h-10 w-10 text-green-500 mr-3 shrink-0" />
               <div class="flex-1">
-                <div class="text-sm font-medium mb-1">关联配置预览</div>
+                <div class="text-sm font-medium mb-1">{{ t('task.krLinks.configPreview') }}</div>
                 <div class="text-xs text-muted-foreground">
-                  完成任务后将为
-                  <strong>{{ selectedGoalTitle }}</strong>
-                  的关键结果
-                  <strong>{{ selectedKeyResultTitle }}</strong>
-                  增加
-                  <strong class="text-green-600">{{ incrementValue }} 点</strong>
-                  进度
+                  {{ t('task.krLinks.previewText', { value: incrementValue }) }}
                 </div>
               </div>
             </div>
@@ -180,6 +174,9 @@ import {
   Badge,
 } from '@dailyuse/ui-vue-shadcn';
 import { Target, CheckCircle, Info, Flag, PlusCircle, Link2 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Props {
   modelValue: TaskTemplateViewModel;
@@ -210,9 +207,9 @@ const keyResults = ref<KeyResultBindingOption[]>([]);
 
 // ===== 验证规则 =====
 const rules = {
-  required: (value: any) => !!value || '此项为必填项',
-  positiveNumber: (value: number) => value > 0 || '必须是正数',
-  maxValue: (value: number) => value <= 1000 || '增量值不能超过1000',
+  required: (value: any) => !!value || t('task.krLinks.validation.required'),
+  positiveNumber: (value: number) => value > 0 || t('task.krLinks.validation.positiveNumber'),
+  maxValue: (value: number) => value <= 1000 || t('task.krLinks.validation.maxValue'),
 };
 
 // ===== 计算属性 =====

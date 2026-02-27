@@ -11,11 +11,8 @@
  *   3. 用户按 Ctrl+K 即可呼出
  */
 import { onMounted, onUnmounted } from 'vue';
-import {
-  _getCommandPaletteState,
-  _setOpen,
-  useCommandGroups,
-} from '@dailyuse/ui-vue-shadcn';
+import { useI18n } from 'vue-i18n';
+import { _getCommandPaletteState, _setOpen, useCommandGroups } from '@dailyuse/ui-vue-shadcn';
 import {
   CommandDialog,
   CommandEmpty,
@@ -28,6 +25,7 @@ import {
 
 const state = _getCommandPaletteState();
 const groups = useCommandGroups();
+const { t } = useI18n();
 
 function handleSelect(action: () => void) {
   _setOpen(false);
@@ -53,9 +51,9 @@ onUnmounted(() => {
 
 <template>
   <CommandDialog :open="state.open" @update:open="_setOpen">
-    <CommandInput placeholder="输入命令或搜索..." />
+    <CommandInput :placeholder="t('common.commandPalettePlaceholder')" />
     <CommandList>
-      <CommandEmpty>没有找到匹配的命令</CommandEmpty>
+      <CommandEmpty>{{ t('common.noMatchingCommands') }}</CommandEmpty>
       <template v-for="(group, index) in groups" :key="group.id">
         <CommandSeparator v-if="index > 0" />
         <CommandGroup :heading="group.label">

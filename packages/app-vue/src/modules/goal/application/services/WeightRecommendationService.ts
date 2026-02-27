@@ -1,3 +1,5 @@
+import { getI18nGlobal } from '../../../../plugins/i18n';
+
 type KeyResultLike = {
   title: string;
   weight?: number | null;
@@ -53,27 +55,39 @@ export const weightRecommendationService = {
     return [
       {
         name: 'balanced',
-        label: '均衡策略',
-        description: '各关键结果平均分配权重，适合稳定推进阶段',
+        label: getI18nGlobal()?.t('goal.weightRecommendation.balancedLabel') ?? '均衡策略',
+        description:
+          getI18nGlobal()?.t('goal.weightRecommendation.balancedDesc') ??
+          '各关键结果平均分配权重，适合稳定推进阶段',
         confidence: 82,
         weights: buildEqualWeights(count),
-        reasoning: '当前目标结构较均衡，建议采用平均分配以保持整体推进。',
+        reasoning:
+          getI18nGlobal()?.t('goal.weightRecommendation.balancedReasoning') ??
+          '当前目标结构较均衡，建议采用平均分配以保持整体推进。',
       },
       {
         name: 'keyword-priority',
-        label: '关键词优先',
-        description: '根据标题关键词提取重点，提升关键任务权重',
+        label: getI18nGlobal()?.t('goal.weightRecommendation.keywordLabel') ?? '关键词优先',
+        description:
+          getI18nGlobal()?.t('goal.weightRecommendation.keywordDesc') ??
+          '根据标题关键词提取重点，提升关键任务权重',
         confidence: 76,
         weights: buildKeywordPriority(keyResults),
-        reasoning: '根据关键字命中情况识别高优先级 KR，适合聚焦核心突破。',
+        reasoning:
+          getI18nGlobal()?.t('goal.weightRecommendation.keywordReasoning') ??
+          '根据关键字命中情况识别高优先级 KR，适合聚焦核心突破。',
       },
       {
         name: 'current-trend',
-        label: '沿用趋势',
-        description: '基于当前权重微调，降低变更成本',
+        label: getI18nGlobal()?.t('goal.weightRecommendation.trendLabel') ?? '沿用趋势',
+        description:
+          getI18nGlobal()?.t('goal.weightRecommendation.trendDesc') ??
+          '基于当前权重微调，降低变更成本',
         confidence: 71,
         weights: buildCurrentTrend(keyResults),
-        reasoning: '沿用当前分配趋势，减少剧烈调整带来的执行波动。',
+        reasoning:
+          getI18nGlobal()?.t('goal.weightRecommendation.trendReasoning') ??
+          '沿用当前分配趋势，减少剧烈调整带来的执行波动。',
       },
     ];
   },

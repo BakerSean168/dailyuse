@@ -3,7 +3,7 @@
     <DialogContent class="max-w-[800px]">
       <DialogHeader>
         <DialogTitle class="flex items-center justify-between text-xl">
-          <span>✨ 为关键结果生成任务</span>
+          <span>✨ {{ t('task.aiGeneration.title') }}</span>
           <Button variant="ghost" size="icon" @click="onCancel" :disabled="importing">
             <X class="h-4 w-4" />
           </Button>
@@ -15,8 +15,10 @@
       <div class="p-6">
         <div v-if="loading" class="text-center py-8">
           <Loader2 class="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
-          <p class="text-lg font-semibold">{{ loadingText || '正在生成任务...' }}</p>
-          <p class="text-xs text-muted-foreground">AI 正在根据您的关键结果生成任务计划</p>
+          <p class="text-lg font-semibold">
+            {{ loadingText || t('task.aiGeneration.generating') }}
+          </p>
+          <p class="text-xs text-muted-foreground">{{ t('task.aiGeneration.generatingHint') }}</p>
         </div>
 
         <Alert v-else-if="error" variant="destructive" class="mb-4">
@@ -27,7 +29,7 @@
           <Alert v-if="!importing" class="mb-4 bg-green-50 border-green-200">
             <AlertDescription class="flex items-center gap-2">
               <CheckCircle class="h-4 w-4 text-green-600" />
-              已生成 {{ localTasks.length }} 个任务
+              {{ t('task.aiGeneration.generated', { count: localTasks.length }) }}
             </AlertDescription>
           </Alert>
 
@@ -60,7 +62,9 @@
                     :max="40"
                     class="w-20"
                   />
-                  <span class="text-xs text-muted-foreground">小时</span>
+                  <span class="text-xs text-muted-foreground">{{
+                    t('task.aiGeneration.hours')
+                  }}</span>
 
                   <Select v-model="task.priority">
                     <SelectTrigger class="w-[120px]">
@@ -89,14 +93,16 @@
       <Separator />
 
       <DialogFooter class="px-6 py-4">
-        <Button variant="ghost" @click="onCancel" :disabled="importing">取消</Button>
+        <Button variant="ghost" @click="onCancel" :disabled="importing">{{
+          t('task.aiGeneration.cancel')
+        }}</Button>
         <Button
           v-if="localTasks.length > 0"
           :disabled="selectedCount === 0 || importing"
           @click="onConfirmImport"
         >
           <Loader2 v-if="importing" class="h-4 w-4 mr-1 animate-spin" />
-          导入所选任务 ({{ selectedCount }})
+          {{ t('task.aiGeneration.importSelected') }} ({{ selectedCount }})
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -105,6 +111,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { EditableTaskUI, UIPriority } from './types';
 import {
   Dialog,
@@ -146,6 +153,8 @@ const emit = defineEmits<{
 }>();
 
 const localTasks = ref<EditableTaskUI[]>([]);
+
+const { t } = useI18n();
 
 const selectedCount = computed(() => {
   return localTasks.value.filter((task) => task.selected).length;

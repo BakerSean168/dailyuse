@@ -2,13 +2,28 @@
   <Card class="h-full flex flex-col">
     <CardHeader class="flex flex-row items-center space-x-2 p-3">
       <Network class="h-5 w-5 text-primary" />
-      <CardTitle class="text-lg">链接图谱</CardTitle>
+      <CardTitle class="text-lg">{{ t('editor.linkGraph.title') }}</CardTitle>
       <div class="flex-1" />
-      
+
       <ToggleGroup v-model="currentDepthStr" type="single" class="mr-2">
-        <ToggleGroupItem value="1" aria-label="1 层" class="h-8 px-3 text-xs">1 层</ToggleGroupItem>
-        <ToggleGroupItem value="2" aria-label="2 层" class="h-8 px-3 text-xs">2 层</ToggleGroupItem>
-        <ToggleGroupItem value="3" aria-label="3 层" class="h-8 px-3 text-xs">3 层</ToggleGroupItem>
+        <ToggleGroupItem
+          value="1"
+          :aria-label="t('editor.linkGraph.depth', { n: 1 })"
+          class="h-8 px-3 text-xs"
+          >{{ t('editor.linkGraph.depth', { n: 1 }) }}</ToggleGroupItem
+        >
+        <ToggleGroupItem
+          value="2"
+          :aria-label="t('editor.linkGraph.depth', { n: 2 })"
+          class="h-8 px-3 text-xs"
+          >{{ t('editor.linkGraph.depth', { n: 2 }) }}</ToggleGroupItem
+        >
+        <ToggleGroupItem
+          value="3"
+          :aria-label="t('editor.linkGraph.depth', { n: 3 })"
+          class="h-8 px-3 text-xs"
+          >{{ t('editor.linkGraph.depth', { n: 3 }) }}</ToggleGroupItem
+        >
       </ToggleGroup>
 
       <Button variant="ghost" size="icon" class="h-8 w-8" @click="refresh" :disabled="loading">
@@ -25,31 +40,40 @@
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center h-full p-8">
         <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mb-4"></div>
-        <p class="text-sm text-muted-foreground">生成图谱中...</p>
+        <p class="text-sm text-muted-foreground">{{ t('editor.linkGraph.loading') }}</p>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="graphData.nodes.length === 0" class="flex flex-col items-center justify-center h-full p-8 text-center">
+      <div
+        v-else-if="graphData.nodes.length === 0"
+        class="flex flex-col items-center justify-center h-full p-8 text-center"
+      >
         <Network class="h-20 w-20 text-muted-foreground/50 mb-4" />
-        <p class="text-lg font-semibold text-muted-foreground">暂无关联文档</p>
-        <p class="text-sm text-muted-foreground mt-1">创建链接后图谱会显示在这里</p>
+        <p class="text-lg font-semibold text-muted-foreground">{{ t('editor.linkGraph.empty') }}</p>
+        <p class="text-sm text-muted-foreground mt-1">
+          {{ t('editor.linkGraph.emptyDescription') }}
+        </p>
       </div>
 
       <!-- ECharts Graph -->
       <div v-else ref="chartRef" class="w-full h-[600px] min-h-[400px]" />
 
       <!-- Legend -->
-      <div v-if="!loading && graphData.nodes.length > 0" class="border-t bg-muted/20 p-3 flex items-center justify-center gap-2 flex-wrap">
+      <div
+        v-if="!loading && graphData.nodes.length > 0"
+        class="border-t bg-muted/20 p-3 flex items-center justify-center gap-2 flex-wrap"
+      >
         <Badge variant="outline">
           <div class="w-2 h-2 rounded-full bg-primary mr-1.5"></div>
-          当前文档
+          {{ t('editor.linkGraph.currentDoc') }}
         </Badge>
         <Badge variant="outline">
           <div class="w-2 h-2 rounded-full bg-muted-foreground mr-1.5"></div>
-          关联文档
+          {{ t('editor.linkGraph.linkedDoc') }}
         </Badge>
         <Badge variant="secondary">
-          节点: {{ graphData.nodes.length }} | 链接: {{ graphData.edges.length }}
+          {{ t('editor.linkGraph.nodeCount') }} {{ graphData.nodes.length }} |
+          {{ t('editor.linkGraph.linkCount') }} {{ graphData.edges.length }}
         </Badge>
       </div>
     </CardContent>
@@ -64,6 +88,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Card, CardHeader, CardTitle, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -72,6 +97,8 @@ import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Network, RotateCw, X, AlertCircle } from 'lucide-vue-next';
 import * as echarts from 'echarts';
+
+const { t } = useI18n();
 
 interface LinkGraphNodeDTO {
   id: string;
@@ -117,7 +144,9 @@ const error = ref<string | null>(null);
 const currentDepth = ref(props.initialDepth);
 const currentDepthStr = computed({
   get: () => String(currentDepth.value),
-  set: (val: string) => { currentDepth.value = Number(val); },
+  set: (val: string) => {
+    currentDepth.value = Number(val);
+  },
 });
 const chartRef = ref<HTMLElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
@@ -136,15 +165,25 @@ async function loadLinkGraph() {
   error.value = null;
 
   try {
-    graphData.value = { nodes: [], edges: [], centerId: props.documentId, depth: currentDepth.value };
-    error.value = '链接图谱功能正在开发中';
-    
+    graphData.value = {
+      nodes: [],
+      edges: [],
+      centerId: props.documentId,
+      depth: currentDepth.value,
+    };
+    error.value = t('editor.linkGraph.comingSoon');
+
     await nextTick();
     renderGraph();
   } catch (err: any) {
     console.error('Load link graph failed:', err);
-    error.value = err.message || '加载链接图谱失败';
-    graphData.value = { nodes: [], edges: [], centerId: props.documentId, depth: currentDepth.value };
+    error.value = err.message || t('editor.linkGraph.loadFailed');
+    graphData.value = {
+      nodes: [],
+      edges: [],
+      centerId: props.documentId,
+      depth: currentDepth.value,
+    };
   } finally {
     loading.value = false;
   }
@@ -185,7 +224,10 @@ function renderGraph() {
       trigger: 'item',
       formatter: (params: any) => {
         if (params.dataType === 'node') {
-          return `${params.data.name}<br/>链接数: ${params.data.value}`;
+          return t('editor.linkGraph.linkCountTooltip', {
+            name: params.data.name,
+            count: params.data.value,
+          });
         }
         return '';
       },
@@ -239,9 +281,12 @@ function resizeChart() {
   }
 }
 
-watch(() => props.documentId, () => {
-  loadLinkGraph();
-});
+watch(
+  () => props.documentId,
+  () => {
+    loadLinkGraph();
+  },
+);
 
 watch(currentDepth, () => {
   loadLinkGraph();

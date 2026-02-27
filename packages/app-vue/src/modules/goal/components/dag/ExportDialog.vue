@@ -4,7 +4,7 @@
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2 font-semibold">
           <Download class="h-5 w-5" />
-          导出 DAG 可视化
+          {{ t('goal.exportDialog.title') }}
         </DialogTitle>
       </DialogHeader>
 
@@ -12,10 +12,10 @@
 
       <div class="space-y-4 pt-2">
         <div>
-          <Label>导出格式</Label>
+          <Label>{{ t('goal.exportDialog.format') }}</Label>
           <Select v-model="format">
             <SelectTrigger class="mt-1.5">
-              <SelectValue placeholder="导出格式" />
+              <SelectValue :placeholder="t('goal.exportDialog.format')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="option in formatOptions" :key="option.value" :value="option.value">
@@ -32,10 +32,10 @@
         </div>
 
         <div v-if="format === 'png'">
-          <Label>分辨率</Label>
+          <Label>{{ t('goal.exportDialog.resolution') }}</Label>
           <Select v-model="resolution">
             <SelectTrigger class="mt-1.5">
-              <SelectValue placeholder="分辨率" />
+              <SelectValue :placeholder="t('goal.exportDialog.resolution')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -50,10 +50,10 @@
         </div>
 
         <div>
-          <Label>背景颜色</Label>
+          <Label>{{ t('goal.exportDialog.bgColor') }}</Label>
           <Select v-model="backgroundColor">
             <SelectTrigger class="mt-1.5">
-              <SelectValue placeholder="背景颜色" />
+              <SelectValue :placeholder="t('goal.exportDialog.bgColor')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="option in bgOptions" :key="option.value" :value="option.value">
@@ -66,25 +66,25 @@
         <div v-if="format === 'pdf'" class="flex items-center space-x-2">
           <Checkbox id="include-metadata" v-model:checked="includeMetadata" />
           <Label for="include-metadata" class="text-sm font-normal cursor-pointer">
-            包含元数据（标题、日期、作者）
+            {{ t('goal.exportDialog.includeMetadata') }}
           </Label>
         </div>
 
         <Alert v-if="format === 'svg'">
           <Info class="h-4 w-4" />
-          <AlertTitle>SVG 导出说明</AlertTitle>
-          <AlertDescription> SVG 格式适合在设计工具中进一步编辑，支持无损缩放 </AlertDescription>
+          <AlertTitle>{{ t('goal.exportDialog.svgNote') }}</AlertTitle>
+          <AlertDescription> {{ t('goal.exportDialog.svgNoteDesc') }} </AlertDescription>
         </Alert>
       </div>
 
       <Separator />
 
       <DialogFooter>
-        <Button variant="outline" @click="close">取消</Button>
+        <Button variant="outline" @click="close">{{ t('goal.exportDialog.cancel') }}</Button>
         <Button :disabled="isExporting" @click="handleExport">
           <Loader2 v-if="isExporting" class="mr-2 h-4 w-4 animate-spin" />
           <Download v-else class="mr-2 h-4 w-4" />
-          {{ isExporting ? '导出中...' : '导出' }}
+          {{ isExporting ? t('goal.exportDialog.exporting') : t('goal.exportDialog.export') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -92,7 +92,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Component } from 'vue';
+import { ref, computed, type Component } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { ExportOptions } from '../../application/services/DAGExportService';
 import {
   Dialog,
@@ -126,37 +127,39 @@ const resolution = ref<string>('2');
 const backgroundColor = ref('white');
 const includeMetadata = ref(true);
 
-const formatOptions: { title: string; value: string; icon: Component; description: string }[] = [
+const { t } = useI18n();
+
+const formatOptions = computed(() => [
   {
-    title: 'PNG 图片',
+    title: t('goal.exportDialog.png'),
     value: 'png',
     icon: Image,
-    description: '适合分享和嵌入文档',
+    description: t('goal.exportDialog.pngDesc'),
   },
   {
-    title: 'SVG 矢量图',
+    title: t('goal.exportDialog.svg'),
     value: 'svg',
     icon: SquareDashedKanban,
-    description: '支持无损缩放，适合编辑',
+    description: t('goal.exportDialog.svgDesc'),
   },
   {
-    title: 'PDF 文档',
+    title: t('goal.exportDialog.pdf'),
     value: 'pdf',
     icon: FileText,
-    description: '包含元数据，适合存档',
+    description: t('goal.exportDialog.pdfDesc'),
   },
-];
+]);
 
-const resolutionOptions = [
-  { title: '标准 (1x)', value: '1' },
-  { title: '高清 (2x) 推荐', value: '2' },
-  { title: '超高清 (3x)', value: '3' },
-];
+const resolutionOptions = computed(() => [
+  { title: t('goal.exportDialog.standard') + ' (1x)', value: '1' },
+  { title: t('goal.exportDialog.hd') + ' (2x)', value: '2' },
+  { title: t('goal.exportDialog.ultra') + ' (3x)', value: '3' },
+]);
 
-const bgOptions = [
-  { title: '白色背景', value: 'white' },
-  { title: '透明背景', value: 'transparent' },
-];
+const bgOptions = computed(() => [
+  { title: t('goal.exportDialog.bgWhite'), value: 'white' },
+  { title: t('goal.exportDialog.bgTransparent'), value: 'transparent' },
+]);
 
 async function handleExport() {
   isExporting.value = true;
