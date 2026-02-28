@@ -25,7 +25,9 @@
       </div>
 
       <SheetFooter class="pt-4 border-t">
-        <Button variant="ghost" class="w-full" @click="handleViewAll"> 查看全部通知 </Button>
+        <Button variant="ghost" class="w-full" @click="handleViewAll">
+          {{ t('notification.drawer.viewAll') }}
+        </Button>
       </SheetFooter>
     </SheetContent>
   </Sheet>

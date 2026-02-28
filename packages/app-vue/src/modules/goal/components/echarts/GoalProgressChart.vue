@@ -102,7 +102,7 @@ const computeGoalProgress = (goal: GoalWithDerivedMetrics | null): number => {
   const progressValues = keyResults.map((kr) =>
     getProgressPercentage(kr.progress.targetValue, kr.progress.currentValue),
   );
-  const weights = keyResults.map((kr) => kr.weight ?? 0);
+  const weights = keyResults.map((kr) => kr.weight ?? 1);
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
   if (totalWeight <= 0) {

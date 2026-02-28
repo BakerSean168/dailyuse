@@ -44,9 +44,13 @@
           </Button>
         </div>
 
-        <p v-if="keyResult.description" class="text-sm text-muted-foreground">
+        <p
+          v-if="keyResult.description"
+          class="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]"
+        >
           {{ keyResult.description }}
         </p>
+        <div v-else class="min-h-[2.5rem]" />
       </CardContent>
     </Card>
   </ActionableWrapper>

@@ -125,6 +125,7 @@
               v-for="goal in filteredGoals"
               :key="goal.id"
               :goal="goal"
+              @view="handleViewGoal(goal)"
               @edit="handleEditGoal(goal)"
               @delete="handleDeleteGoal(goal.id)"
             />
@@ -164,6 +165,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
 import {
@@ -184,6 +186,7 @@ import { useGoal } from '../composables/useGoal';
 import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 const { t } = useI18n();
+const router = useRouter();
 
 const {
   goals,
@@ -237,6 +240,10 @@ function openCreateDialog() {
   editingGoal.value = null;
   dialogMode.value = 'create';
   showGoalDialog.value = true;
+}
+
+function handleViewGoal(goal: GoalClientDTO) {
+  router.push({ name: 'goal-detail', params: { id: goal.id } });
 }
 
 function handleEditGoal(goal: GoalClientDTO) {

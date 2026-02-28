@@ -22,7 +22,7 @@ export const defaultMainNavigation: NavigationItem[] = [
   { path: '/schedule', title: 'nav.schedule' },
   { path: '/reminders', title: 'nav.reminders' },
   { path: '/notifications', title: 'nav.notifications' },
-  { path: '/repositories', title: 'nav.repositories' },
+  { path: '/repository', title: 'nav.repositories' },
   { path: '/governance', title: 'nav.governance' },
 ];
 

@@ -17,8 +17,11 @@ import type {
   GoalClientDTO,
   GoalFolderClientDTO,
   KeyResultClientDTO,
+  GoalRecordClientDTO,
+  GoalReviewClientDTO,
   QueryGoalsRes,
 } from '../modules/goal';
+import { ReviewType } from '../modules/goal';
 
 // ============================================================================
 // GoalClientDTO
@@ -150,7 +153,7 @@ export function createMockKeyResult(
       currentValue: faker.number.int({ min: 0, max: 100 }),
       unit: null,
     },
-    weight: faker.number.int({ min: 1, max: 100 }),
+    weight: faker.number.int({ min: 1, max: 5 }),
     order: faker.number.int({ min: 0, max: 100 }),
     version: 1,
     createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
@@ -158,4 +161,91 @@ export function createMockKeyResult(
     deletedAt: null,
     ...overrides,
   };
+}
+
+// ============================================================================
+// GoalRecordClientDTO
+// ============================================================================
+
+/**
+ * Creates a single mock GoalRecordClientDTO.
+ * Pass overrides to customise specific fields.
+ */
+export function createMockGoalRecord(
+  overrides: Partial<GoalRecordClientDTO> = {},
+): GoalRecordClientDTO {
+  const now = Date.now();
+  const value = faker.number.int({ min: 1, max: 50 });
+
+  return {
+    id: `IGoalRecordId_${faker.string.uuid()}` as GoalRecordClientDTO['id'],
+    keyResultId: `IKeyResultId_${faker.string.uuid()}` as GoalRecordClientDTO['keyResultId'],
+    goalId: `IGoalId_${faker.string.uuid()}` as GoalRecordClientDTO['goalId'],
+    value,
+    valueAfter: faker.number.int({ min: value, max: 200 }),
+    comment: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    version: 1,
+    createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
+    updatedAt: now,
+    deletedAt: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Creates an array of mock GoalRecordClientDTO objects.
+ */
+export function createMockGoalRecordList(
+  count = 5,
+  overrides: Partial<GoalRecordClientDTO> = {},
+): GoalRecordClientDTO[] {
+  return Array.from({ length: count }, () => createMockGoalRecord(overrides));
+}
+
+// ============================================================================
+// GoalReviewClientDTO
+// ============================================================================
+
+/**
+ * Creates a single mock GoalReviewClientDTO.
+ * Pass overrides to customise specific fields.
+ */
+export function createMockGoalReview(
+  overrides: Partial<GoalReviewClientDTO> = {},
+): GoalReviewClientDTO {
+  const now = Date.now();
+
+  return {
+    id: `IGoalReviewId_${faker.string.uuid()}` as GoalReviewClientDTO['id'],
+    goalId: `IGoalId_${faker.string.uuid()}` as GoalReviewClientDTO['goalId'],
+    type: faker.helpers.arrayElement(Object.values(ReviewType)) as GoalReviewClientDTO['type'],
+    rating: faker.number.int({ min: 1, max: 5 }),
+    summary: faker.lorem.sentence(),
+    achievements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    challenges: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    improvements: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+    keyResultSnapshots: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () => ({
+      keyResultId: `IKeyResultId_${faker.string.uuid()}` as any,
+      title: faker.lorem.words({ min: 3, max: 6 }),
+      targetValue: faker.number.int({ min: 10, max: 100 }),
+      currentValue: faker.number.int({ min: 0, max: 100 }),
+      progressPercentage: faker.number.int({ min: 0, max: 100 }),
+    })),
+    version: 1,
+    reviewedAt: now - faker.number.int({ min: 0, max: 14 * 24 * 60 * 60 * 1000 }),
+    createdAt: now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
+    updatedAt: now,
+    deletedAt: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Creates an array of mock GoalReviewClientDTO objects.
+ */
+export function createMockGoalReviewList(
+  count = 3,
+  overrides: Partial<GoalReviewClientDTO> = {},
+): GoalReviewClientDTO[] {
+  return Array.from({ length: count }, () => createMockGoalReview(overrides));
 }

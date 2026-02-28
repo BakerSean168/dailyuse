@@ -398,19 +398,19 @@ const getInputHint = (method?: AggregationMethod) => {
     return t('task.complete.inputPlaceholder');
   }
 
-  const unit = props.goalBinding.unit || '单位';
+  const unit = props.goalBinding.unit || t('task.complete.unitFallback');
 
   switch (method) {
     case AggregationMethod.SUM:
-      return `例如：跑步 5 公里，输入 5`;
+      return t('task.complete.hintSum');
     case AggregationMethod.MAX:
-      return `例如：考试分数 85 分，输入 85`;
+      return t('task.complete.hintMax');
     case AggregationMethod.AVERAGE:
-      return `例如：每日学习 2 小时，输入 2`;
+      return t('task.complete.hintAvg');
     case AggregationMethod.MIN:
-      return `输入本次的最小值`;
+      return t('task.complete.hintMin');
     case AggregationMethod.LAST:
-      return `输入最新的值`;
+      return t('task.complete.hintLast');
     default:
       return '';
   }

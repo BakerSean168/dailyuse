@@ -84,7 +84,7 @@ function createBlankTemplate(): TaskTemplateViewModel {
       timeType: 'AllDay',
       timePoint: null,
       timeRange: null,
-      startDate: undefined,
+      startDate: Date.now(),
     },
     recurrenceRule: null,
     reminderConfig: null,

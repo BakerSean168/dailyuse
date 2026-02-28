@@ -200,7 +200,7 @@
               <div class="col-span-3">
                 <Select v-model="condition.metric">
                   <SelectTrigger>
-                    <SelectValue placeholder="指标" />
+                    <SelectValue :placeholder="t('goal.statusRule.metricPlaceholder')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem v-for="opt in metricOptions" :key="opt.value" :value="opt.value">
@@ -212,7 +212,7 @@
               <div class="col-span-2">
                 <Select v-model="condition.operator">
                   <SelectTrigger>
-                    <SelectValue placeholder="操作符" />
+                    <SelectValue :placeholder="t('goal.statusRule.operatorPlaceholder')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem v-for="opt in operatorOptions" :key="opt.value" :value="opt.value">
@@ -222,12 +222,16 @@
                 </Select>
               </div>
               <div class="col-span-2">
-                <Input v-model.number="condition.value" type="number" placeholder="值" />
+                <Input
+                  v-model.number="condition.value"
+                  type="number"
+                  :placeholder="t('goal.statusRule.valuePlaceholder')"
+                />
               </div>
               <div class="col-span-3">
                 <Select v-model="condition.scope">
                   <SelectTrigger>
-                    <SelectValue placeholder="范围" />
+                    <SelectValue :placeholder="t('goal.statusRule.scopePlaceholder')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem v-for="opt in scopeOptions" :key="opt.value" :value="opt.value">

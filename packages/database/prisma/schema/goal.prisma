@@ -126,7 +126,7 @@ model KeyResult {
   unit              String? /// 单位（如：个、%、小时）
 
   // ============ 权重与排序 ============
-  weight Float @default(1) /// 权重系数（计算目标进度时使用）
+  weight Int @default(1) /// 权重系数（1-5整数，计算目标进度时使用）
   order  Int   @default(0) /// 显示顺序
 
   // ============ 版本与审计 ============
@@ -213,9 +213,9 @@ model KeyResultWeightSnapshot {
   keyResultId String @map("key_result_id")
 
   // ============ 权重变更数据 ============
-  oldWeight   Float @map("old_weight") /// 旧权重值
-  newWeight   Float @map("new_weight") /// 新权重值
-  weightDelta Float @map("weight_delta") /// 权重变化量（新-旧）
+  oldWeight   Int @map("old_weight") /// 旧权重值（1-5整数）
+  newWeight   Int @map("new_weight") /// 新权重值（1-5整数）
+  weightDelta Int @map("weight_delta") /// 权重变化量（新-旧）
 
   // ============ 变更元数据 ============
   snapshotTime DateTime @map("snapshot_time") /// 快照时间

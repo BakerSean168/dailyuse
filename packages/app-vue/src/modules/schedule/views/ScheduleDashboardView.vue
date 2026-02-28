@@ -7,34 +7,26 @@
       <div class="flex items-center gap-4">
         <h1 class="text-lg font-medium text-foreground">{{ t('schedule.dashboard.title') }}</h1>
         <Separator orientation="vertical" class="h-4" />
+        <!-- View Mode Tabs: Day / Week / Month -->
         <div class="flex items-center gap-1">
           <Button
-            v-for="tab in statusTabs"
+            v-for="tab in viewTabs"
             :key="tab.value"
             variant="ghost"
             size="sm"
             :class="[
-              'h-7 px-2 text-muted-foreground hover:text-foreground',
-              selectedStatus === tab.value ? 'bg-secondary font-medium text-foreground' : '',
+              'h-7 px-3 text-muted-foreground hover:text-foreground',
+              activeView === tab.value ? 'bg-secondary font-medium text-foreground' : '',
             ]"
-            @click="selectedStatus = tab.value"
+            @click="activeView = tab.value"
           >
+            <component :is="tab.icon" class="mr-1.5 h-3.5 w-3.5" />
             {{ tab.label }}
-            <span class="ml-1.5 text-xs opacity-50">{{ getCountByStatus(tab.value) }}</span>
           </Button>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          class="h-8"
-          @click="$router.push({ name: 'ScheduleWeekView' })"
-        >
-          <CalendarDays class="mr-2 h-4 w-4" />
-          {{ t('schedule.dashboard.weekView') }}
-        </Button>
         <Button size="sm" class="h-8 gap-2" @click="showCreateDialog = true">
           <Plus class="h-4 w-4" />
           {{ t('schedule.dashboard.createSchedule') }}
@@ -42,78 +34,39 @@
       </div>
     </header>
 
-    <!-- Content -->
-    <ScrollArea class="flex-1 p-6">
-      <div class="mx-auto max-w-5xl">
-        <div
-          v-if="isLoading"
-          class="flex h-[50vh] items-center justify-center text-muted-foreground"
-        >
-          {{ t('schedule.dashboard.loading') }}
-        </div>
+    <!-- Calendar Content -->
+    <div class="flex-1 overflow-hidden">
+      <!-- Day View -->
+      <DayViewCalendar
+        v-if="activeView === 'day'"
+        :schedules="schedules as any"
+        :loading="isLoading"
+        @create="showCreateDialog = true"
+        @event-click="handleEventClick"
+        @day-change="handleDayChange"
+      />
 
-        <div
-          v-else-if="filteredTasks.length === 0"
-          class="flex h-[50vh] flex-col items-center justify-center text-muted-foreground"
-        >
-          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-            <CalendarClock class="h-6 w-6 opacity-50" />
-          </div>
-          <h3 class="mb-1 text-lg font-medium text-foreground">
-            {{ t('schedule.dashboard.emptyTitle') }}
-          </h3>
-          <p class="mb-6 text-sm">{{ t('schedule.dashboard.emptyDescription') }}</p>
-          <Button @click="showCreateDialog = true">
-            <Plus class="mr-2 h-4 w-4" />
-            {{ t('schedule.dashboard.createSchedule') }}
-          </Button>
-        </div>
+      <!-- Week View -->
+      <WeekViewCalendar
+        v-else-if="activeView === 'week'"
+        :schedules="schedules as any"
+        :loading="isLoading"
+        @create="showCreateDialog = true"
+        @event-click="handleEventClick"
+        @week-change="handleWeekChange"
+      />
 
-        <div v-else class="space-y-3">
-          <ActionableWrapper
-            v-for="task in filteredTasks"
-            :key="task.id"
-            :actions="getTaskActions(task)"
-            more-button-position="top-right"
-          >
-            <div
-              class="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
-            >
-              <div
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                :class="statusColorMap[task.status] || 'bg-gray-100'"
-              >
-                <CalendarClock class="h-5 w-5 text-white" />
-              </div>
-
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="font-medium">{{ task.name }}</span>
-                  <Badge variant="outline" class="text-xs">{{ task.sourceModule }}</Badge>
-                  <Badge :variant="task.enabled ? 'default' : 'secondary'" class="text-xs">
-                    {{
-                      task.enabled
-                        ? t('schedule.dashboard.enabled')
-                        : t('schedule.dashboard.disabled')
-                    }}
-                  </Badge>
-                </div>
-                <p v-if="task.description" class="mt-0.5 text-sm text-muted-foreground truncate">
-                  {{ task.description }}
-                </p>
-                <div class="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span
-                    >{{ t('schedule.dashboard.nextRun') }}
-                    {{ task.nextRunAtFormatted || '-' }}</span
-                  >
-                  <span>{{ task.executionSummary }}</span>
-                </div>
-              </div>
-            </div>
-          </ActionableWrapper>
-        </div>
-      </div>
-    </ScrollArea>
+      <!-- Month View -->
+      <MonthViewCalendar
+        v-else-if="activeView === 'month'"
+        :schedules="schedules as any"
+        :loading="isLoading"
+        @create="showCreateDialog = true"
+        @event-click="handleEventClick"
+        @month-change="handleMonthChange"
+        @day-click="handleDayClick"
+      />
+    </div>
 
     <CreateScheduleDialog v-model="showCreateDialog" @submit="handleCreateSchedule" />
   </div>
@@ -123,101 +76,53 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { toast } from 'vue-sonner';
-import { CalendarClock, CalendarDays, Plus, Pause, Play, Trash2 } from 'lucide-vue-next';
-import { Button, Badge, ScrollArea, Separator } from '@dailyuse/ui-vue-shadcn';
+import { CalendarDays, Calendar, CalendarRange, Plus } from 'lucide-vue-next';
+import { Button, Separator } from '@dailyuse/ui-vue-shadcn';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
+import DayViewCalendar from '../components/DayViewCalendar.vue';
+import WeekViewCalendar from '../components/WeekViewCalendar.vue';
+import MonthViewCalendar from '../components/MonthViewCalendar.vue';
 import { useSchedule } from '../composables/useSchedule';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
-import { ActionableWrapper, menuLabel } from '../../../components/shared';
-import type { MenuAction } from '../../../components/shared';
 
 const { t } = useI18n();
-const { tasks, isLoading, fetchTasks, createTask, deleteTask, pauseTask, resumeTask } =
-  useSchedule();
+const { tasks: schedules, isLoading, fetchTasks, createTask } = useSchedule();
 
 const showCreateDialog = ref(false);
-const selectedStatus = ref('all');
+const activeView = ref<'day' | 'week' | 'month'>('week');
 
-const statusTabs = [
-  { label: 'All', value: 'all' },
-  { label: 'Active', value: 'Active' },
-  { label: 'Paused', value: 'Paused' },
-  { label: 'Completed', value: 'Completed' },
-];
+const viewTabs = computed(() => [
+  { label: t('schedule.viewTabs.day'), value: 'day' as const, icon: Calendar },
+  { label: t('schedule.viewTabs.week'), value: 'week' as const, icon: CalendarDays },
+  { label: t('schedule.viewTabs.month'), value: 'month' as const, icon: CalendarRange },
+]);
 
-const statusColorMap: Record<string, string> = {
-  Active: 'bg-green-500',
-  Paused: 'bg-yellow-500',
-  Completed: 'bg-blue-500',
-  Cancelled: 'bg-gray-400',
-  Failed: 'bg-red-500',
-};
+function handleEventClick(event: any) {
+  toast.info(t('schedule.weekViewPage.eventToast', { name: event.name || event.title }));
+}
 
-const filteredTasks = computed(() => {
-  if (selectedStatus.value === 'all') return tasks.value;
-  return tasks.value.filter((t) => t.status === selectedStatus.value);
-});
+function handleDayChange(_date: Date) {
+  fetchTasks();
+}
 
-function getCountByStatus(status: string): number {
-  if (status === 'all') return tasks.value.length;
-  return tasks.value.filter((t) => t.status === status).length;
+function handleWeekChange(_start: Date, _end: Date) {
+  fetchTasks();
+}
+
+function handleMonthChange(_start: Date, _end: Date) {
+  fetchTasks();
+}
+
+function handleDayClick(date: Date) {
+  // Switch to day view for the clicked date
+  activeView.value = 'day';
 }
 
 async function handleCreateSchedule(data: Record<string, unknown>) {
   const result = await createTask(data);
   if (result) {
     showCreateDialog.value = false;
-    toast.success(t('schedule.toast.taskCreated'));
+    toast.success(t('schedule.toast.scheduleCreated'));
   }
-}
-
-async function handlePause(id: string) {
-  await pauseTask(id);
-  toast.success(t('schedule.toast.taskPaused'));
-}
-
-async function handleResume(id: string) {
-  await resumeTask(id);
-  toast.success(t('schedule.toast.taskResumed'));
-}
-
-async function handleDelete(task: ScheduleTaskClientDTO) {
-  if (!window.confirm(t('schedule.confirm.deleteTask', { name: task.name }))) return;
-  const ok = await deleteTask(task.id);
-  if (ok) toast.success(t('schedule.toast.taskDeleted'));
-}
-
-function getTaskActions(task: ScheduleTaskClientDTO): MenuAction[] {
-  const actions: MenuAction[] = [];
-
-  if (task.status === 'Active') {
-    actions.push({
-      key: 'pause',
-      label: menuLabel('pause'),
-      icon: Pause,
-      handler: () => handlePause(task.id),
-    });
-  }
-
-  if (task.status === 'Paused') {
-    actions.push({
-      key: 'resume',
-      label: menuLabel('resume'),
-      icon: Play,
-      handler: () => handleResume(task.id),
-    });
-  }
-
-  actions.push({
-    key: 'delete',
-    label: menuLabel('delete'),
-    icon: Trash2,
-    destructive: true,
-    separator: actions.length > 0,
-    handler: () => handleDelete(task),
-  });
-
-  return actions;
 }
 
 onMounted(async () => {

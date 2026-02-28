@@ -52,9 +52,9 @@
                       <div
                         class="flex h-full items-center justify-center transition-all"
                         :class="getWeightBarClass(weight)"
-                        :style="{ width: `${weight}%` }"
+                        :style="{ width: `${(weight / 5) * 100}%` }"
                       >
-                        <strong class="text-xs text-white">{{ weight }}%</strong>
+                        <strong class="text-xs text-white">{{ weight }}</strong>
                       </div>
                     </div>
                   </div>
@@ -106,7 +106,7 @@
                   </div>
                 </div>
                 <span class="shrink-0 text-xs text-muted-foreground">
-                  {{ t('goal.weightSuggestion.current') }} {{ kr.weight || 0 }}%
+                  {{ t('goal.weightSuggestion.current') }} {{ kr.weight || 1 }}
                 </span>
               </div>
             </div>
@@ -200,15 +200,15 @@ function getConfidenceBadgeClass(confidence: number): string {
 
 // 获取权重条样式
 function getWeightBarClass(weight: number): string {
-  if (weight >= 40) return 'bg-green-500';
-  if (weight >= 20) return 'bg-yellow-500';
+  if (weight >= 4) return 'bg-green-500';
+  if (weight >= 3) return 'bg-yellow-500';
   return 'bg-red-500';
 }
 
 // 获取权重图标颜色
 function getWeightIconClass(weight: number): string {
-  if (weight >= 40) return 'text-green-500';
-  if (weight >= 20) return 'text-yellow-500';
+  if (weight >= 4) return 'text-green-500';
+  if (weight >= 3) return 'text-yellow-500';
   return 'text-red-500';
 }
 

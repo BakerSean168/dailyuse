@@ -64,7 +64,7 @@
             <div v-for="kr in currentSnapshot.data.keyResults" :key="kr.id" class="kr-item">
               <div class="kr-header">
                 <span class="kr-title">{{ kr.title }}</span>
-                <span class="kr-weight">{{ kr.weight.toFixed(1) }}%</span>
+                <span class="kr-weight">{{ kr.weight }}</span>
               </div>
               <div class="kr-progress">
                 <div class="progress-bar">

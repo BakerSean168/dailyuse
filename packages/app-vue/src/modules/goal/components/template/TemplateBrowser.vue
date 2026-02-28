@@ -458,8 +458,8 @@ const getScoreBadgeClass = (score: number): string => {
 };
 
 const getWeightBgClass = (weight: number): string => {
-  if (weight >= 40) return 'bg-green-100 text-green-700';
-  if (weight >= 25) return 'bg-yellow-100 text-yellow-700';
+  if (weight >= 4) return 'bg-green-100 text-green-700';
+  if (weight >= 3) return 'bg-yellow-100 text-yellow-700';
   return 'bg-blue-100 text-blue-700';
 };
 

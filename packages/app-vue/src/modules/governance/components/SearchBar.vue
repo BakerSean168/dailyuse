@@ -6,14 +6,20 @@
       v-model="query"
       type="text"
       class="w-full h-9 pl-9 pr-8 rounded-md border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-      placeholder="搜索规则 (按 / 聚焦)"
+      :placeholder="t('governance.search.placeholder')"
       @input="onInput"
-      @keydown.escape="query = ''; onInput()"
+      @keydown.escape="
+        query = '';
+        onInput();
+      "
     />
     <button
       v-if="query"
       class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-      @click="query = ''; onInput()"
+      @click="
+        query = '';
+        onInput();
+      "
     >
       <X :size="14" />
     </button>
@@ -23,6 +29,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { Search, X } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{

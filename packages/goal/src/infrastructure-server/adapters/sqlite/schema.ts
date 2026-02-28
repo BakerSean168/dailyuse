@@ -1,16 +1,16 @@
 /**
  * SQLite Database Schema - Goal Module
- * 目标模块数据库架�?
+ * 目标模块数据库架�?
  *
- * 列名使用 snake_case，与 SQLite 约定一�?
- * 时间戳使�?INTEGER（毫秒级 epoch�?
- * 布尔值使�?INTEGER�?/1�?
+ * 列名使用 snake_case，与 SQLite 约定一�?
+ * 时间戳使�?INTEGER（毫秒级 epoch�?
+ * 布尔值使�?INTEGER�?/1�?
  * JSON 数据使用 TEXT
  */
 
 export const GOAL_MODULE_SCHEMA = `
 -- ============================================================
--- Goals Table (聚合�?
+-- Goals Table (聚合�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goals (
   id TEXT PRIMARY KEY,
@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_goals_folder_id ON goals(folder_id);
 CREATE INDEX IF NOT EXISTS idx_goals_parent_goal_id ON goals(parent_goal_id);
 
 -- ============================================================
--- Key Results Table (实体，属�?Goal 聚合)
+-- Key Results Table (实体，属�?Goal 聚合)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS key_results (
   id TEXT PRIMARY KEY,
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS key_results (
   title TEXT NOT NULL,
   description TEXT,
   progress TEXT NOT NULL DEFAULT '{}',
-  weight REAL NOT NULL DEFAULT 1.0,
+  weight INTEGER NOT NULL DEFAULT 1,
   sort_order INTEGER NOT NULL DEFAULT 0,
   version INTEGER NOT NULL DEFAULT 1,
   created_at INTEGER NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS key_results (
 CREATE INDEX IF NOT EXISTS idx_key_results_goal_id ON key_results(goal_id);
 
 -- ============================================================
--- Goal Reviews Table (实体，属�?Goal 聚合)
+-- Goal Reviews Table (实体，属�?Goal 聚合)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_reviews (
   id TEXT PRIMARY KEY,
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS goal_reviews (
 CREATE INDEX IF NOT EXISTS idx_goal_reviews_goal_id ON goal_reviews(goal_id);
 
 -- ============================================================
--- Goal Records Table (进度记录，属�?KeyResult)
+-- Goal Records Table (进度记录，属�?KeyResult)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_records (
   id TEXT PRIMARY KEY,
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS goal_statistics (
 );
 
 -- ============================================================
--- Goal Folders Table (聚合�?
+-- Goal Folders Table (聚合�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_folders (
   id TEXT PRIMARY KEY,
@@ -157,7 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_goal_folders_identity_id ON goal_folders(identity
 CREATE INDEX IF NOT EXISTS idx_goal_folders_parent_folder_id ON goal_folders(parent_folder_id);
 
 -- ============================================================
--- Focus Sessions Table (聚合�?
+-- Focus Sessions Table (聚合�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS focus_sessions (
   id TEXT PRIMARY KEY,
@@ -186,7 +186,7 @@ CREATE INDEX IF NOT EXISTS idx_focus_sessions_goal_id ON focus_sessions(goal_id)
 CREATE INDEX IF NOT EXISTS idx_focus_sessions_status ON focus_sessions(status);
 
 -- ============================================================
--- Focus Modes Table (值对�?
+-- Focus Modes Table (值对�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS focus_modes (
   id TEXT PRIMARY KEY,
@@ -216,15 +216,15 @@ CREATE TABLE IF NOT EXISTS focus_mode_goals (
 );
 
 -- ============================================================
--- Weight Snapshots Table (值对�?
+-- Weight Snapshots Table (值对�?
 -- ============================================================
 CREATE TABLE IF NOT EXISTS weight_snapshots (
   id TEXT PRIMARY KEY,
   goal_id TEXT NOT NULL,
   key_result_id TEXT NOT NULL,
-  old_weight REAL NOT NULL,
-  new_weight REAL NOT NULL,
-  weight_delta REAL NOT NULL,
+  old_weight INTEGER NOT NULL,
+  new_weight INTEGER NOT NULL,
+  weight_delta INTEGER NOT NULL,
   snapshot_time INTEGER NOT NULL,
   trigger TEXT NOT NULL DEFAULT 'MANUAL',
   reason TEXT,
@@ -238,4 +238,3 @@ CREATE INDEX IF NOT EXISTS idx_weight_snapshots_goal_id ON weight_snapshots(goal
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_key_result_id ON weight_snapshots(key_result_id);
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_snapshot_time ON weight_snapshots(snapshot_time);
 `;
-

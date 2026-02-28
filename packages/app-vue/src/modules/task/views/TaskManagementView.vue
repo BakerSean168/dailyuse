@@ -31,6 +31,7 @@
         :templates="filteredViewModels"
         :dependencies="[]"
         @create-template="handleCreate"
+        @click-template="handleClickTemplate"
         @edit-template="handleEdit"
         @delete-template="handleDelete"
         @resume-template="handleResume"
@@ -45,6 +46,17 @@
       :saving="isSaving"
       @save="handleSaveCreate"
       @cancel="showCreateDialog = false"
+    />
+
+    <!-- 编辑模板对话框 -->
+    <TaskTemplateDialog
+      v-if="editViewModel"
+      v-model="showEditDialog"
+      mode="edit"
+      :template="editViewModel"
+      :saving="isSaving"
+      @save="handleSaveEdit"
+      @cancel="showEditDialog = false"
     />
   </div>
 </template>
@@ -69,13 +81,17 @@ const {
   isLoading,
   isSaving,
   fetchTemplates,
+  fetchTemplate,
   createTemplate,
+  updateTemplate,
   deleteTemplate,
   activateTemplate,
 } = useTask();
 
 const searchQuery = ref('');
 const showCreateDialog = ref(false);
+const showEditDialog = ref(false);
+const editViewModel = ref<TaskTemplateViewModel | null>(null);
 
 const timeTypeMap: Record<string, TaskTemplateViewModel['timeConfig']['timeType']> = {
   AllDay: 'AllDay',
@@ -163,8 +179,38 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
   }
 }
 
-function handleEdit(templateId: string) {
+function handleClickTemplate(templateId: string) {
   router.push({ name: 'task-detail', params: { id: templateId } });
+}
+
+function handleEdit(templateId: string) {
+  const vm = viewModels.value.find((v) => v.id === templateId);
+  if (vm) {
+    editViewModel.value = { ...vm };
+    showEditDialog.value = true;
+  }
+}
+
+async function handleSaveEdit(vm: TaskTemplateViewModel) {
+  const result = await updateTemplate(vm.id, {
+    name: vm.title,
+    description: vm.description ?? null,
+    taskType:
+      (vm.taskType as 'ONE_TIME' | 'RECURRING') ?? (vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME'),
+    timeConfig: vm.timeConfig as any,
+    recurrenceRule: vm.recurrenceRule ?? null,
+    reminderConfig: vm.reminderConfig ?? null,
+    importance: (vm.importance as any) ?? 'Moderate',
+    tags: vm.tags ?? [],
+    folderId: (vm.folderId as any) ?? null,
+    color: vm.color ?? null,
+  });
+  if (result) {
+    showEditDialog.value = false;
+    editViewModel.value = null;
+    toast.success(t('task.management.editSuccess'));
+    await fetchTemplates();
+  }
 }
 
 async function handleDelete(template: TaskTemplateViewModel) {

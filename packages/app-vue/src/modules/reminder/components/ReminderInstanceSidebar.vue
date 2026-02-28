@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between bg-primary text-primary-foreground p-4">
       <div class="flex items-center gap-2">
         <BellRing class="h-5 w-5" />
-        <h2 class="text-lg font-semibold">{{ title }}</h2>
+        <h2 class="text-lg font-semibold">{{ title ?? t('reminder.sidebar.title') }}</h2>
       </div>
       <div class="flex items-center gap-2">
         <Button
@@ -34,13 +34,13 @@
     <div v-if="showFilters" class="border-b p-4 space-y-3">
       <Select v-model="localFilters.days" @update:model-value="handleFiltersChange">
         <SelectTrigger>
-          <SelectValue placeholder="Select time range" />
+          <SelectValue :placeholder="t('reminder.sidebar.selectTimeRange')" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="1">Today</SelectItem>
-          <SelectItem value="3">Next 3 Days</SelectItem>
-          <SelectItem value="7">Next Week</SelectItem>
-          <SelectItem value="30">Next Month</SelectItem>
+          <SelectItem value="1">{{ t('reminder.sidebar.today') }}</SelectItem>
+          <SelectItem value="3">{{ t('reminder.sidebar.next3Days') }}</SelectItem>
+          <SelectItem value="7">{{ t('reminder.sidebar.nextWeek') }}</SelectItem>
+          <SelectItem value="30">{{ t('reminder.sidebar.nextMonth') }}</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -50,15 +50,15 @@
       <div class="grid grid-cols-3 gap-4 text-center">
         <div>
           <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
-          <div class="text-xs text-muted-foreground">Total</div>
+          <div class="text-xs text-muted-foreground">{{ t('reminder.sidebar.total') }}</div>
         </div>
         <div>
           <div class="text-2xl font-bold text-blue-600">{{ stats.today }}</div>
-          <div class="text-xs text-muted-foreground">Today</div>
+          <div class="text-xs text-muted-foreground">{{ t('reminder.sidebar.statsToday') }}</div>
         </div>
         <div>
           <div class="text-2xl font-bold text-destructive">{{ stats.overdue }}</div>
-          <div class="text-xs text-muted-foreground">Overdue</div>
+          <div class="text-xs text-muted-foreground">{{ t('reminder.sidebar.overdue') }}</div>
         </div>
       </div>
     </div>
@@ -74,13 +74,18 @@
       <div v-else-if="error" class="flex flex-col items-center justify-center p-8 text-center">
         <AlertCircle class="h-12 w-12 text-destructive mb-2" />
         <p class="text-sm text-muted-foreground mb-4">{{ error }}</p>
-        <Button variant="outline" size="sm" @click="$emit('refresh')">Retry</Button>
+        <Button variant="outline" size="sm" @click="$emit('refresh')">{{
+          t('reminder.sidebar.retry')
+        }}</Button>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="groupedReminders.length === 0" class="flex flex-col items-center justify-center p-8 text-center">
+      <div
+        v-else-if="groupedReminders.length === 0"
+        class="flex flex-col items-center justify-center p-8 text-center"
+      >
         <BellOff class="h-12 w-12 text-muted-foreground mb-2" />
-        <p class="text-sm text-muted-foreground">No upcoming reminders</p>
+        <p class="text-sm text-muted-foreground">{{ t('reminder.sidebar.noUpcoming') }}</p>
       </div>
 
       <!-- Grouped Reminders -->
@@ -96,14 +101,18 @@
               :key="reminder.id"
               :class="[
                 'p-3 cursor-pointer transition-colors hover:bg-accent',
-                { 'border-destructive bg-destructive/5': reminder.isOverdue }
+                { 'border-destructive bg-destructive/5': reminder.isOverdue },
               ]"
               @click="$emit('reminder-click', reminder)"
             >
               <div class="flex items-start gap-2">
-                <div :class="['w-2 h-2 rounded-full mt-1.5', getPriorityClass(reminder.priority)]" />
+                <div
+                  :class="['w-2 h-2 rounded-full mt-1.5', getPriorityClass(reminder.priority)]"
+                />
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">{{ reminder.title || reminder.message }}</p>
+                  <p class="text-sm font-medium truncate">
+                    {{ reminder.title || reminder.message }}
+                  </p>
                   <p v-if="reminder.message" class="text-xs text-muted-foreground truncate mt-0.5">
                     {{ reminder.message }}
                   </p>
@@ -140,10 +149,10 @@
     <div class="border-t p-3 flex items-center justify-between">
       <Button variant="ghost" size="sm" @click="showFilters = !showFilters">
         <Filter class="h-4 w-4 mr-2" />
-        Filters
+        {{ t('reminder.sidebar.filters') }}
       </Button>
       <Button variant="ghost" size="sm" @click="$emit('view-all')">
-        View All
+        {{ t('reminder.sidebar.viewAll') }}
       </Button>
     </div>
   </aside>
@@ -151,6 +160,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { BellRing, RefreshCw, Settings, AlertCircle, BellOff, Filter } from 'lucide-vue-next';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -203,9 +213,11 @@ interface Props {
   filters?: Filters;
 }
 
+const { t } = useI18n();
+
 const props = withDefaults(defineProps<Props>(), {
   visible: true,
-  title: 'Upcoming Reminders',
+  title: undefined,
   isLoading: false,
   error: null,
   groupedReminders: () => [],
@@ -214,7 +226,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'refresh': [];
+  refresh: [];
   'open-settings': [];
   'reminder-click': [reminder: ReminderItem];
   'view-all': [];
@@ -224,9 +236,13 @@ const emit = defineEmits<{
 const showFilters = ref(false);
 const localFilters = ref<Filters>({ ...props.filters });
 
-watch(() => props.filters, (newFilters) => {
-  localFilters.value = { ...newFilters };
-}, { deep: true });
+watch(
+  () => props.filters,
+  (newFilters) => {
+    localFilters.value = { ...newFilters };
+  },
+  { deep: true },
+);
 
 const handleFiltersChange = () => {
   emit('filters-change', { ...localFilters.value });

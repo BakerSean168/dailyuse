@@ -2,12 +2,7 @@
   <Dialog :open="modelValue" @update:open="$emit('update:modelValue', $event)">
     <DialogContent class="max-w-[800px]">
       <DialogHeader>
-        <DialogTitle class="flex items-center justify-between text-xl">
-          <span>✨ {{ t('task.aiGeneration.title') }}</span>
-          <Button variant="ghost" size="icon" @click="onCancel" :disabled="importing">
-            <X class="h-4 w-4" />
-          </Button>
-        </DialogTitle>
+        <DialogTitle class="text-xl"> ✨ {{ t('task.aiGeneration.title') }} </DialogTitle>
       </DialogHeader>
 
       <Separator />
@@ -71,10 +66,16 @@
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="high">HIGH</SelectItem>
-                      <SelectItem value="normal">NORMAL</SelectItem>
-                      <SelectItem value="low">LOW</SelectItem>
-                      <SelectItem value="urgent">URGENT</SelectItem>
+                      <SelectItem value="high">{{
+                        t('task.aiGeneration.priorityHigh')
+                      }}</SelectItem>
+                      <SelectItem value="normal">{{
+                        t('task.aiGeneration.priorityNormal')
+                      }}</SelectItem>
+                      <SelectItem value="low">{{ t('task.aiGeneration.priorityLow') }}</SelectItem>
+                      <SelectItem value="urgent">{{
+                        t('task.aiGeneration.priorityUrgent')
+                      }}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -134,7 +135,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
-import { X, Loader2, CheckCircle, Clock } from 'lucide-vue-next';
+import { Loader2, CheckCircle, Clock } from 'lucide-vue-next';
 
 const props = defineProps<{
   modelValue: boolean;

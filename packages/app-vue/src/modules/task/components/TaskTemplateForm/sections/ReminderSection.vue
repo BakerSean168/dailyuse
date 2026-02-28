@@ -110,13 +110,68 @@
 
                   <!-- 绝对时间提醒 -->
                   <template v-if="trigger.type === ReminderType.Absolute">
-                    <div class="col-span-12 md:col-span-4">
+                    <div class="col-span-12 md:col-span-6">
                       <Label class="mb-2 block">{{ t('task.reminderSection.reminderTime') }}</Label>
-                      <Input
-                        :model-value="formatAbsoluteTime(trigger.absoluteTime)"
-                        type="datetime-local"
-                        @update:model-value="(val) => updateAbsoluteTime(index, String(val))"
-                      />
+                      <div class="flex flex-col gap-2">
+                        <Popover>
+                          <PopoverTrigger as-child>
+                            <Button
+                              variant="outline"
+                              class="w-full justify-start text-left font-normal"
+                              :class="{
+                                'text-muted-foreground': !getAbsoluteDatePart(trigger.absoluteTime),
+                              }"
+                            >
+                              <CalendarIcon class="mr-2 h-4 w-4" />
+                              {{
+                                getAbsoluteDatePart(trigger.absoluteTime)
+                                  ? formatDisplayDate(getAbsoluteDatePart(trigger.absoluteTime)!)
+                                  : t('task.reminderSection.reminderTime')
+                              }}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent class="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              :selected="getAbsoluteCalendarDate(trigger.absoluteTime)"
+                              @update:model-value="(d) => handleAbsoluteDateSelect(index, d)"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <div class="flex gap-2 items-center">
+                          <Select
+                            :model-value="getAbsoluteHour(trigger.absoluteTime)"
+                            @update:model-value="
+                              (v) => updateAbsoluteTimePart(index, 'hour', String(v))
+                            "
+                          >
+                            <SelectTrigger class="w-[80px]"
+                              ><SelectValue placeholder="HH"
+                            /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{
+                                h
+                              }}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span class="font-medium">:</span>
+                          <Select
+                            :model-value="getAbsoluteMinute(trigger.absoluteTime)"
+                            @update:model-value="
+                              (v) => updateAbsoluteTimePart(index, 'minute', String(v))
+                            "
+                          >
+                            <SelectTrigger class="w-[80px]"
+                              ><SelectValue placeholder="MM"
+                            /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{
+                                m
+                              }}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
                   </template>
 
@@ -162,13 +217,97 @@ import {
   SelectItem,
   Input,
   Button,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Calendar,
 } from '@dailyuse/ui-vue-shadcn';
-import { Bell, AlertTriangle, CheckCircle, Trash2, Plus } from 'lucide-vue-next';
+import {
+  Bell,
+  AlertTriangle,
+  CheckCircle,
+  Trash2,
+  Plus,
+  Calendar as CalendarIcon,
+} from 'lucide-vue-next';
 
 const { t } = useI18n();
 
 // 类型别名
 const ReminderType = TaskReminderType;
+
+// ── Time picker options ────────────────────────────────────────────────
+const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+// ── Calendar/DateTime helpers ──────────────────────────────────────────
+
+function formatDateToYMD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatDisplayDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+/** Extract date part (YYYY-MM-DD) from a timestamp */
+function getAbsoluteDatePart(ts?: number | null): string | null {
+  if (!ts) return null;
+  return formatDateToYMD(new Date(ts));
+}
+
+/** Get hour string from a timestamp */
+function getAbsoluteHour(ts?: number | null): string {
+  if (!ts) return '00';
+  return String(new Date(ts).getHours()).padStart(2, '0');
+}
+
+/** Get minute string from a timestamp */
+function getAbsoluteMinute(ts?: number | null): string {
+  if (!ts) return '00';
+  return String(new Date(ts).getMinutes()).padStart(2, '0');
+}
+
+/** Get a Date for Calendar :selected from a timestamp */
+function getAbsoluteCalendarDate(ts?: number | null): Date | undefined {
+  if (!ts) return undefined;
+  return new Date(ts);
+}
+
+/** Handle calendar date selection for absolute time trigger */
+function handleAbsoluteDateSelect(index: number, date: unknown) {
+  let dateStr: string;
+  if (date instanceof Date) {
+    dateStr = formatDateToYMD(date);
+  } else if (date && typeof date === 'object' && 'toDate' in date) {
+    dateStr = formatDateToYMD((date as { toDate: () => Date }).toDate());
+  } else {
+    triggers.value[index].absoluteTime = null;
+    updateTriggers();
+    return;
+  }
+  const hour = getAbsoluteHour(triggers.value[index].absoluteTime);
+  const minute = getAbsoluteMinute(triggers.value[index].absoluteTime);
+  triggers.value[index].absoluteTime = new Date(`${dateStr}T${hour}:${minute}:00`).getTime();
+  updateTriggers();
+}
+
+/** Update hour or minute part of absolute time */
+function updateAbsoluteTimePart(index: number, part: 'hour' | 'minute', value: string) {
+  const currentTs = triggers.value[index].absoluteTime;
+  const datePart = getAbsoluteDatePart(currentTs) || formatDateToYMD(new Date());
+  let hour = getAbsoluteHour(currentTs);
+  let minute = getAbsoluteMinute(currentTs);
+  if (part === 'hour') hour = value;
+  if (part === 'minute') minute = value;
+  triggers.value[index].absoluteTime = new Date(`${datePart}T${hour}:${minute}:00`).getTime();
+  updateTriggers();
+}
 
 interface Props {
   modelValue: TaskTemplateViewModel;

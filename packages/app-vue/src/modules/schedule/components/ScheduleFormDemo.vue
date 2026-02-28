@@ -144,18 +144,31 @@ const emit = defineEmits<Emits>();
 
 const { t } = useI18n();
 
+const now = Date.now();
+const oneHourLater = now + 60 * 60 * 1000;
+
+function formatDateTimeToInput(timestamp: number): string {
+  const d = new Date(timestamp);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 const form = reactive({
   title: '',
   description: '',
-  startTime: null as number | null,
-  endTime: null as number | null,
-  duration: 0,
+  startTime: now as number | null,
+  endTime: oneHourLater as number | null,
+  duration: 60,
   priority: '3',
   location: '',
 });
 
-const startTimeFormatted = ref('');
-const endTimeFormatted = ref('');
+const startTimeFormatted = ref(formatDateTimeToInput(now));
+const endTimeFormatted = ref(formatDateTimeToInput(oneHourLater));
 
 const isFormValid = computed(() => {
   return form.title && form.startTime && form.endTime && form.endTime > form.startTime;
@@ -202,16 +215,18 @@ function handleSubmit() {
 }
 
 function handleReset() {
+  const resetNow = Date.now();
+  const resetOneHourLater = resetNow + 60 * 60 * 1000;
   Object.assign(form, {
     title: '',
     description: '',
-    startTime: null,
-    endTime: null,
-    duration: 0,
+    startTime: resetNow,
+    endTime: resetOneHourLater,
+    duration: 60,
     priority: '3',
     location: '',
   });
-  startTimeFormatted.value = '';
-  endTimeFormatted.value = '';
+  startTimeFormatted.value = formatDateTimeToInput(resetNow);
+  endTimeFormatted.value = formatDateTimeToInput(resetOneHourLater);
 }
 </script>

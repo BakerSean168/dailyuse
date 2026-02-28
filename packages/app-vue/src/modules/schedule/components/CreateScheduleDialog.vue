@@ -39,11 +39,68 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <Label for="startDate">{{ t('schedule.createDialog.fieldStartDate') }}</Label>
-              <Input id="startDate" v-model="formData.startDate" type="date" required />
+              <Popover>
+                <PopoverTrigger as-child>
+                  <Button
+                    variant="outline"
+                    class="w-full justify-start text-left font-normal"
+                    :class="{ 'text-muted-foreground': !formData.startDate }"
+                  >
+                    <CalendarIcon class="mr-2 h-4 w-4" />
+                    {{
+                      formData.startDate
+                        ? formatDisplayDate(formData.startDate)
+                        : t('schedule.createDialog.fieldStartDate')
+                    }}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent class="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    :selected="parseToDate(formData.startDate)"
+                    @update:model-value="
+                      (d) =>
+                        handleCalendarSelect(d, (v) => {
+                          formData.startDate = v;
+                        })
+                    "
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <Label for="startTime">{{ t('schedule.createDialog.fieldStartTime') }}</Label>
-              <Input id="startTime" v-model="formData.startTime" type="time" required />
+              <div class="flex gap-2 items-center">
+                <Select
+                  :model-value="startHour"
+                  @update:model-value="
+                    (v) => {
+                      startHour = String(v);
+                      syncStartTime();
+                    }
+                  "
+                >
+                  <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span class="font-medium">:</span>
+                <Select
+                  :model-value="startMinute"
+                  @update:model-value="
+                    (v) => {
+                      startMinute = String(v);
+                      syncStartTime();
+                    }
+                  "
+                >
+                  <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -51,11 +108,68 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <Label for="endDate">{{ t('schedule.createDialog.fieldEndDate') }}</Label>
-              <Input id="endDate" v-model="formData.endDate" type="date" required />
+              <Popover>
+                <PopoverTrigger as-child>
+                  <Button
+                    variant="outline"
+                    class="w-full justify-start text-left font-normal"
+                    :class="{ 'text-muted-foreground': !formData.endDate }"
+                  >
+                    <CalendarIcon class="mr-2 h-4 w-4" />
+                    {{
+                      formData.endDate
+                        ? formatDisplayDate(formData.endDate)
+                        : t('schedule.createDialog.fieldEndDate')
+                    }}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent class="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    :selected="parseToDate(formData.endDate)"
+                    @update:model-value="
+                      (d) =>
+                        handleCalendarSelect(d, (v) => {
+                          formData.endDate = v;
+                        })
+                    "
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <Label for="endTime">{{ t('schedule.createDialog.fieldEndTime') }}</Label>
-              <Input id="endTime" v-model="formData.endTime" type="time" required />
+              <div class="flex gap-2 items-center">
+                <Select
+                  :model-value="endHour"
+                  @update:model-value="
+                    (v) => {
+                      endHour = String(v);
+                      syncEndTime();
+                    }
+                  "
+                >
+                  <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span class="font-medium">:</span>
+                <Select
+                  :model-value="endMinute"
+                  @update:model-value="
+                    (v) => {
+                      endMinute = String(v);
+                      syncEndTime();
+                    }
+                  "
+                >
+                  <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -174,21 +288,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@dailyuse/ui-vue-shadcn';
-import { Input } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
-import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Label } from '@dailyuse/ui-vue-shadcn';
-import {
+  Input,
+  Textarea,
+  Button,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Badge,
+  Switch,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Calendar,
 } from '@dailyuse/ui-vue-shadcn';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
-import { Switch } from '@dailyuse/ui-vue-shadcn';
-import { MapPin, X, Loader2 } from 'lucide-vue-next';
+import { MapPin, X, Loader2, Calendar as CalendarIcon } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
 
@@ -212,34 +328,114 @@ const emit = defineEmits<Emits>();
 
 const { t } = useI18n();
 
+// ── Time picker options ────────────────────────────────────────────────
+const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+// ── Calendar/DateTime helpers ──────────────────────────────────────────
+
+function formatDateToYMD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatDisplayDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function parseToDate(dateStr: string): Date | undefined {
+  if (!dateStr) return undefined;
+  return new Date(dateStr + 'T00:00:00');
+}
+
+function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
+  if (date instanceof Date) {
+    setter(formatDateToYMD(date));
+  } else if (date && typeof date === 'object' && 'toDate' in date) {
+    setter(formatDateToYMD((date as { toDate: () => Date }).toDate()));
+  } else {
+    setter('');
+  }
+}
+
+/** Split HH:MM string into hour/minute parts */
+function splitTime(timeStr: string): { hour: string; minute: string } {
+  if (!timeStr) return { hour: '00', minute: '00' };
+  const [h, m] = timeStr.split(':');
+  return { hour: h || '00', minute: m || '00' };
+}
+
+// ── Time select state ──────────────────────────────────────────────────
+const startHour = ref('00');
+const startMinute = ref('00');
+const endHour = ref('00');
+const endMinute = ref('00');
+
+function syncStartTime() {
+  formData.startTime = `${startHour.value}:${startMinute.value}`;
+}
+
+function syncEndTime() {
+  formData.endTime = `${endHour.value}:${endMinute.value}`;
+}
+
+/** Sync the hour/minute refs from formData.startTime / endTime */
+function syncTimeRefs() {
+  const st = splitTime(formData.startTime);
+  startHour.value = st.hour;
+  startMinute.value = st.minute;
+  const et = splitTime(formData.endTime);
+  endHour.value = et.hour;
+  endMinute.value = et.minute;
+}
+
 const isEditing = ref(false);
 const newAttendee = ref('');
+
+function nowDateStr(): string {
+  return new Date().toISOString().split('T')[0];
+}
+function nowTimeStr(): string {
+  return new Date().toTimeString().slice(0, 5);
+}
+function oneHourLaterTimeStr(): string {
+  const later = new Date(Date.now() + 60 * 60 * 1000);
+  return later.toTimeString().slice(0, 5);
+}
 
 const formData = reactive({
   title: '',
   description: '',
-  startDate: '',
-  startTime: '',
-  endDate: '',
-  endTime: '',
+  startDate: nowDateStr(),
+  startTime: nowTimeStr(),
+  endDate: nowDateStr(),
+  endTime: oneHourLaterTimeStr(),
   priority: '' as string,
   location: '',
   attendees: [] as string[],
   autoDetectConflicts: true,
 });
 
+// Initialize hour/minute refs from initial formData values
+syncTimeRefs();
+
 function resetForm() {
   formData.title = '';
   formData.description = '';
-  formData.startDate = '';
-  formData.startTime = '';
-  formData.endDate = '';
-  formData.endTime = '';
+  formData.startDate = nowDateStr();
+  formData.startTime = nowTimeStr();
+  formData.endDate = nowDateStr();
+  formData.endTime = oneHourLaterTimeStr();
   formData.priority = '';
   formData.location = '';
   formData.attendees = [];
   formData.autoDetectConflicts = true;
   newAttendee.value = '';
+  syncTimeRefs();
 }
 
 function handleClose() {
@@ -298,6 +494,7 @@ watch(
       formData.startTime = startDate.toTimeString().slice(0, 5);
       formData.endDate = endDate.toISOString().split('T')[0];
       formData.endTime = endDate.toTimeString().slice(0, 5);
+      syncTimeRefs();
     } else {
       isEditing.value = false;
       resetForm();
@@ -319,6 +516,7 @@ watch(
       formData.startTime = now.toTimeString().slice(0, 5);
       formData.endDate = oneHourLater.toISOString().split('T')[0];
       formData.endTime = oneHourLater.toTimeString().slice(0, 5);
+      syncTimeRefs();
     }
   },
 );

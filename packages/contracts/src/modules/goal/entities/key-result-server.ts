@@ -1,6 +1,6 @@
 /**
  * KeyResult Entity - Server Interface
- * 
+ *
  * 【同步支持】
  * - deletedAt: 软删除时间戳
  * - version: 乐观锁版本号
@@ -15,7 +15,7 @@ export interface KeyResultServerDTO {
   title: string;
   description: string | null;
   progress: KeyResultProgressDTO;
-  weight: number; // 权重 (0-100)
+  weight: number; // 权重 (1-5)
   sortOrder: number; // 排序位置
   version: number;
   createdAt: TransferDate;
@@ -33,7 +33,7 @@ export interface KeyResultPersistenceDTO {
   title: string;
   description: string | null;
   progress: string; // JSON string (KeyResultProgressDTO)
-  weight: number; // 权重 (0-100)
+  weight: number; // 权重 (1-5)
   sortOrder: number;
   version: number;
   createdAt: PersistenceDate;

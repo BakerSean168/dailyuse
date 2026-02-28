@@ -10,7 +10,7 @@ export interface KeyResultClientDTO {
   title: string;
   description: string | null;
   progress: KeyResultProgressDTO;
-  weight: number; // 权重 (0-100)
+  weight: number; // 权重 (1-5)
   order: number;
   version: number;
   createdAt: TransferDate;

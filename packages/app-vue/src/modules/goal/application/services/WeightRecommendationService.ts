@@ -17,20 +17,14 @@ export type WeightStrategy = {
 const normalizeWeights = (weights: number[]) => {
   if (weights.length === 0) return [];
   const safe = weights.map((weight) => Math.max(0, weight));
-  const total = safe.reduce((sum, weight) => sum + weight, 0) || 1;
-  const normalized = safe.map((weight) => Math.round((weight / total) * 100));
-  const diff = 100 - normalized.reduce((sum, weight) => sum + weight, 0);
-  if (normalized.length > 0 && diff !== 0) normalized[0] += diff;
-  return normalized;
+  const maxScore = Math.max(...safe) || 1;
+  // Scale to 1-5 range: each weight maps proportionally
+  return safe.map((weight) => Math.max(1, Math.min(5, Math.round((weight / maxScore) * 4 + 1))));
 };
 
 const buildEqualWeights = (count: number) => {
   if (count <= 0) return [];
-  const base = Math.floor(100 / count);
-  const weights = Array.from({ length: count }, () => base);
-  const rest = 100 - base * count;
-  for (let index = 0; index < rest; index += 1) weights[index] += 1;
-  return weights;
+  return Array.from({ length: count }, () => 3);
 };
 
 const buildKeywordPriority = (keyResults: KeyResultLike[]) => {

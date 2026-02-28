@@ -79,6 +79,7 @@
         :template="template"
         :enable-drag="true"
         :on-create-dependency="handleCreateDependency"
+        @click="(id) => emit('click-template', id)"
         @edit="(id) => emit('edit-template', id)"
         @delete="(tpl) => emit('delete-template', tpl)"
         @resume="(tpl) => emit('resume-template', tpl)"
@@ -88,14 +89,9 @@
     <Dialog :open="showDependencyDialog" @update:open="showDependencyDialog = $event">
       <DialogContent class="max-w-[1400px]">
         <DialogHeader>
-          <DialogTitle class="flex items-center justify-between">
-            <span class="flex items-center text-lg font-semibold">
-              <Share2 class="h-5 w-5 mr-2" />
-              {{ t('task.templateMgmt.dependencyGraphTitle') }}
-            </span>
-            <Button variant="ghost" size="icon" @click="showDependencyDialog = false">
-              <X class="h-4 w-4" />
-            </Button>
+          <DialogTitle class="flex items-center text-lg font-semibold">
+            <Share2 class="h-5 w-5 mr-2" />
+            {{ t('task.templateMgmt.dependencyGraphTitle') }}
           </DialogTitle>
         </DialogHeader>
         <div style="height: 600px">
@@ -106,6 +102,11 @@
             :compact="false"
           />
         </div>
+        <DialogFooter>
+          <Button variant="ghost" @click="showDependencyDialog = false">{{
+            t('task.templateMgmt.cancel')
+          }}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
 
@@ -181,7 +182,6 @@ import {
   Plus,
   Trash2,
   Share2,
-  X,
   AlertCircle,
   PlayCircle,
   PauseCircle,
@@ -215,6 +215,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'create-template'): void;
+  (e: 'click-template', templateId: string): void;
   (e: 'edit-template', templateId: string): void;
   (e: 'delete-template', template: TaskTemplateViewModel): void;
   (e: 'resume-template', template: TaskTemplateViewModel): void;

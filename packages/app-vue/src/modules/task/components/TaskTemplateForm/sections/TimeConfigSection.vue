@@ -2,6 +2,7 @@
   TimeConfigSection.vue
   任务模板时间配置部分
   重构：使用新的 TaskTimeConfig 结构
+  使用 Popover+Calendar 替代 native date/time inputs 以兼容 Dialog
 -->
 <template>
   <Card class="mb-4">
@@ -40,22 +41,101 @@
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.startDate') }}</Label>
-          <Input v-model="startDate" type="date" @update:model-value="handleDateChange" />
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                class="w-full justify-start text-left font-normal"
+                :class="{ 'text-muted-foreground': !startDate }"
+              >
+                <CalendarIcon class="mr-2 h-4 w-4" />
+                {{ startDate ? formatDisplayDate(startDate) : t('task.timeConfig.startDate') }}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                :selected="parseInputToDate(startDate)"
+                @update:model-value="
+                  (d) =>
+                    handleCalendarSelect(d, (v) => {
+                      startDate = v;
+                      handleDateChange();
+                    })
+                "
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
       <!-- 时间点输入 (仅当选择 TimePoint 时显示) -->
       <div v-if="timeType === TaskTimeType.TimePoint" class="grid grid-cols-12 gap-4 mt-4">
-        <div class="col-span-12">
+        <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.specificTime') }}</Label>
-          <Input
-            v-model="timePoint"
-            type="datetime-local"
-            @update:model-value="handleTimePointChange"
-          />
-          <p class="text-xs text-muted-foreground mt-1">
-            {{ t('task.timeConfig.selectDateTime') }}
-          </p>
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                class="w-full justify-start text-left font-normal"
+                :class="{ 'text-muted-foreground': !timePointDate }"
+              >
+                <CalendarIcon class="mr-2 h-4 w-4" />
+                {{
+                  timePointDate
+                    ? formatDisplayDate(timePointDate)
+                    : t('task.timeConfig.selectDateTime')
+                }}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                :selected="parseInputToDate(timePointDate)"
+                @update:model-value="
+                  (d) =>
+                    handleCalendarSelect(d, (v) => {
+                      timePointDate = v;
+                      rebuildTimePoint();
+                    })
+                "
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <Label class="mb-1.5 block">{{ t('task.timeConfig.selectDateTime') }}</Label>
+          <div class="flex gap-2 items-center">
+            <Select
+              :model-value="timePointHour"
+              @update:model-value="
+                (v) => {
+                  timePointHour = String(v);
+                  rebuildTimePoint();
+                }
+              "
+            >
+              <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
+              </SelectContent>
+            </Select>
+            <span class="flex items-center font-medium">:</span>
+            <Select
+              :model-value="timePointMinute"
+              @update:model-value="
+                (v) => {
+                  timePointMinute = String(v);
+                  rebuildTimePoint();
+                }
+              "
+            >
+              <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -63,22 +143,132 @@
       <div v-if="timeType === TaskTimeType.TimeRange" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.startTime') }}</Label>
-          <Input
-            v-model="timeRangeStart"
-            type="datetime-local"
-            @update:model-value="handleTimeRangeChange"
-          />
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                class="w-full justify-start text-left font-normal"
+                :class="{ 'text-muted-foreground': !timeRangeStartDate }"
+              >
+                <CalendarIcon class="mr-2 h-4 w-4" />
+                {{
+                  timeRangeStartDate
+                    ? formatDisplayDate(timeRangeStartDate)
+                    : t('task.timeConfig.selectStartDateTime')
+                }}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                :selected="parseInputToDate(timeRangeStartDate)"
+                @update:model-value="
+                  (d) =>
+                    handleCalendarSelect(d, (v) => {
+                      timeRangeStartDate = v;
+                      rebuildTimeRange();
+                    })
+                "
+              />
+            </PopoverContent>
+          </Popover>
+          <div class="flex gap-2 items-center mt-2">
+            <Select
+              :model-value="timeRangeStartHour"
+              @update:model-value="
+                (v) => {
+                  timeRangeStartHour = String(v);
+                  rebuildTimeRange();
+                }
+              "
+            >
+              <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
+              </SelectContent>
+            </Select>
+            <span class="flex items-center font-medium">:</span>
+            <Select
+              :model-value="timeRangeStartMinute"
+              @update:model-value="
+                (v) => {
+                  timeRangeStartMinute = String(v);
+                  rebuildTimeRange();
+                }
+              "
+            >
+              <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <p class="text-xs text-muted-foreground mt-1">
             {{ t('task.timeConfig.selectStartDateTime') }}
           </p>
         </div>
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.endTime') }}</Label>
-          <Input
-            v-model="timeRangeEnd"
-            type="datetime-local"
-            @update:model-value="handleTimeRangeChange"
-          />
+          <Popover>
+            <PopoverTrigger as-child>
+              <Button
+                variant="outline"
+                class="w-full justify-start text-left font-normal"
+                :class="{ 'text-muted-foreground': !timeRangeEndDate }"
+              >
+                <CalendarIcon class="mr-2 h-4 w-4" />
+                {{
+                  timeRangeEndDate
+                    ? formatDisplayDate(timeRangeEndDate)
+                    : t('task.timeConfig.selectEndDateTime')
+                }}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent class="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                :selected="parseInputToDate(timeRangeEndDate)"
+                @update:model-value="
+                  (d) =>
+                    handleCalendarSelect(d, (v) => {
+                      timeRangeEndDate = v;
+                      rebuildTimeRange();
+                    })
+                "
+              />
+            </PopoverContent>
+          </Popover>
+          <div class="flex gap-2 items-center mt-2">
+            <Select
+              :model-value="timeRangeEndHour"
+              @update:model-value="
+                (v) => {
+                  timeRangeEndHour = String(v);
+                  rebuildTimeRange();
+                }
+              "
+            >
+              <SelectTrigger class="w-[80px]"><SelectValue placeholder="HH" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="h in hourOptions" :key="h" :value="h">{{ h }}</SelectItem>
+              </SelectContent>
+            </Select>
+            <span class="flex items-center font-medium">:</span>
+            <Select
+              :model-value="timeRangeEndMinute"
+              @update:model-value="
+                (v) => {
+                  timeRangeEndMinute = String(v);
+                  rebuildTimeRange();
+                }
+              "
+            >
+              <SelectTrigger class="w-[80px]"><SelectValue placeholder="MM" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="m in minuteOptions" :key="m" :value="m">{{ m }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <p class="text-xs text-muted-foreground mt-1">
             {{ t('task.timeConfig.selectEndDateTime') }}
           </p>
@@ -104,13 +294,23 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-  Input,
+  Button,
   Label,
   RadioGroup,
   RadioGroupItem,
   Alert,
   AlertDescription,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Calendar,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
+import { Calendar as CalendarIcon } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
@@ -123,63 +323,69 @@ const emit = defineEmits<{
   (e: 'update:validation', valid: boolean): void;
 }>();
 
-// 表单数据
+// ── Time picker options ────────────────────────────────────────────────
+const hourOptions = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const minuteOptions = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+// ── Form data ──────────────────────────────────────────────────────────
 const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
-const startDate = ref<string>('');
-const timePoint = ref<string>('');
-const timeRangeStart = ref<string>('');
-const timeRangeEnd = ref<string>('');
+const startDate = ref<string>(''); // YYYY-MM-DD
 const validationError = ref<string>('');
 
-/**
- * 初始化表单数据
- */
-const initializeFormData = () => {
-  const config = props.modelValue.timeConfig as TaskTimeConfigDTO | undefined;
+// TimePoint: split into date + hour + minute
+const timePointDate = ref<string>('');
+const timePointHour = ref<string>('00');
+const timePointMinute = ref<string>('00');
 
-  if (!config) {
-    // 默认配置
-    timeType.value = TaskTimeType.AllDay;
-    startDate.value = '';
-    timePoint.value = '';
-    timeRangeStart.value = '';
-    timeRangeEnd.value = '';
-    return;
+// TimeRange start: split into date + hour + minute
+const timeRangeStartDate = ref<string>('');
+const timeRangeStartHour = ref<string>('00');
+const timeRangeStartMinute = ref<string>('00');
+
+// TimeRange end: split into date + hour + minute
+const timeRangeEndDate = ref<string>('');
+const timeRangeEndHour = ref<string>('00');
+const timeRangeEndMinute = ref<string>('00');
+
+// ── Helpers ────────────────────────────────────────────────────────────
+
+/** Format a YYYY-MM-DD string for display */
+function formatDisplayDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+/** Convert a YYYY-MM-DD string to a Date for Calendar :selected */
+function parseInputToDate(dateStr: string): Date | undefined {
+  if (!dateStr) return undefined;
+  return new Date(dateStr + 'T00:00:00');
+}
+
+/** Handle Calendar selection — works with both Date and radix DateValue objects */
+function handleCalendarSelect(date: unknown, setter: (v: string) => void) {
+  if (date instanceof Date) {
+    setter(formatDateToYMD(date));
+  } else if (date && typeof date === 'object' && 'toDate' in date) {
+    setter(formatDateToYMD((date as { toDate: () => Date }).toDate()));
+  } else {
+    setter('');
   }
+}
 
-  timeType.value = config.timeType;
-
-  // 开始日期
-  if (config.startDate) {
-    startDate.value = formatDateToInput(config.startDate);
-  }
-
-  // 时间点
-  if (config.timeType === TaskTimeType.TimePoint && config.timePoint) {
-    timePoint.value = formatDateTimeToInput(config.timePoint);
-  }
-
-  // 时间段
-  if (config.timeType === TaskTimeType.TimeRange && config.timeRange) {
-    timeRangeStart.value = formatDateTimeToInput(config.timeRange.start);
-    timeRangeEnd.value = formatDateTimeToInput(config.timeRange.end);
-  }
-};
+function formatDateToYMD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 /**
  * 格式化日期为 input[type=date] 格式
  */
 const formatDateToInput = (timestamp: number): string => {
   const date = new Date(timestamp);
-  return date.toISOString().split('T')[0];
-};
-
-/**
- * 格式化时间为 input[type=time] 格式
- */
-const formatTimeToInput = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  return date.toTimeString().slice(0, 5); // HH:MM
+  return formatDateToYMD(date);
 };
 
 /**
@@ -200,31 +406,77 @@ const formatDateTimeToInput = (timestamp: number): string => {
  */
 const parseDateInput = (dateStr: string): number | null => {
   if (!dateStr) return null;
-  return new Date(dateStr).getTime();
+  return new Date(dateStr + 'T00:00:00').getTime();
 };
 
 /**
- * 解析时间字符串为时间戳 (使用今天的日期)
+ * Combine date string (YYYY-MM-DD) + hour + minute into a timestamp
  */
-const parseTimeInput = (timeStr: string): number | null => {
-  if (!timeStr) return null;
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date.getTime();
-};
+function combineDateTimeParts(dateStr: string, hour: string, minute: string): number | null {
+  if (!dateStr) return null;
+  return new Date(`${dateStr}T${hour}:${minute}:00`).getTime();
+}
 
 /**
- * 解析 datetime-local 输入为时间戳
+ * Split a timestamp into date / hour / minute parts
  */
-const parseDateTimeInput = (datetimeStr: string): number | null => {
-  if (!datetimeStr) return null;
-  return new Date(datetimeStr).getTime();
+function splitTimestamp(ts: number): { date: string; hour: string; minute: string } {
+  const d = new Date(ts);
+  return {
+    date: formatDateToYMD(d),
+    hour: String(d.getHours()).padStart(2, '0'),
+    minute: String(d.getMinutes()).padStart(2, '0'),
+  };
+}
+
+// ── Initialization ─────────────────────────────────────────────────────
+
+const initializeFormData = () => {
+  const config = props.modelValue.timeConfig as TaskTimeConfigDTO | undefined;
+
+  if (!config) {
+    timeType.value = TaskTimeType.AllDay;
+    startDate.value = '';
+    timePointDate.value = '';
+    timePointHour.value = '00';
+    timePointMinute.value = '00';
+    timeRangeStartDate.value = '';
+    timeRangeStartHour.value = '00';
+    timeRangeStartMinute.value = '00';
+    timeRangeEndDate.value = '';
+    timeRangeEndHour.value = '00';
+    timeRangeEndMinute.value = '00';
+    return;
+  }
+
+  timeType.value = config.timeType;
+
+  if (config.startDate) {
+    startDate.value = formatDateToInput(config.startDate);
+  }
+
+  if (config.timeType === TaskTimeType.TimePoint && config.timePoint) {
+    const parts = splitTimestamp(config.timePoint);
+    timePointDate.value = parts.date;
+    timePointHour.value = parts.hour;
+    timePointMinute.value = parts.minute;
+  }
+
+  if (config.timeType === TaskTimeType.TimeRange && config.timeRange) {
+    const startParts = splitTimestamp(config.timeRange.start);
+    timeRangeStartDate.value = startParts.date;
+    timeRangeStartHour.value = startParts.hour;
+    timeRangeStartMinute.value = startParts.minute;
+
+    const endParts = splitTimestamp(config.timeRange.end);
+    timeRangeEndDate.value = endParts.date;
+    timeRangeEndHour.value = endParts.hour;
+    timeRangeEndMinute.value = endParts.minute;
+  }
 };
 
-/**
- * 处理日期变更
- */
+// ── Change handlers ────────────────────────────────────────────────────
+
 const handleDateChange = () => {
   try {
     validationError.value = '';
@@ -248,12 +500,16 @@ const handleDateChange = () => {
 };
 
 /**
- * 处理时间点变更
+ * Rebuild timePoint timestamp from date + hour + minute and emit
  */
-const handleTimePointChange = () => {
+const rebuildTimePoint = () => {
   try {
     validationError.value = '';
-    const parsedTime = parseDateTimeInput(timePoint.value);
+    const parsedTime = combineDateTimeParts(
+      timePointDate.value,
+      timePointHour.value,
+      timePointMinute.value,
+    );
 
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,
@@ -274,13 +530,21 @@ const handleTimePointChange = () => {
 };
 
 /**
- * 处理时间段变更
+ * Rebuild timeRange timestamps from date + hour + minute parts and emit
  */
-const handleTimeRangeChange = () => {
+const rebuildTimeRange = () => {
   try {
     validationError.value = '';
-    const parsedStart = parseDateTimeInput(timeRangeStart.value);
-    const parsedEnd = parseDateTimeInput(timeRangeEnd.value);
+    const parsedStart = combineDateTimeParts(
+      timeRangeStartDate.value,
+      timeRangeStartHour.value,
+      timeRangeStartMinute.value,
+    );
+    const parsedEnd = combineDateTimeParts(
+      timeRangeEndDate.value,
+      timeRangeEndHour.value,
+      timeRangeEndMinute.value,
+    );
 
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,

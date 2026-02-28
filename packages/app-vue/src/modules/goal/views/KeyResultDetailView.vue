@@ -25,7 +25,7 @@
                 </CardDescription>
               </div>
               <Badge variant="outline"
-                >{{ t('goal.krDetail.weight') }} {{ keyResult.weight }}%</Badge
+                >{{ t('goal.krDetail.weight') }} {{ keyResult.weight }}</Badge
               >
             </div>
           </CardHeader>

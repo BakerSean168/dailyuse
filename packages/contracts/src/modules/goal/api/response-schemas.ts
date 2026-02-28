@@ -7,7 +7,15 @@
 
 import { z } from 'zod';
 import { brandedId } from '@/primitives';
-import type { GoalId, GoalFolderId, GoalReviewId, KeyResultId, IdentityId, GoalRecordId, FocusSessionId } from '@/primitives';
+import type {
+  GoalId,
+  GoalFolderId,
+  GoalReviewId,
+  KeyResultId,
+  IdentityId,
+  GoalRecordId,
+  FocusSessionId,
+} from '@/primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
@@ -45,7 +53,7 @@ export const KeyResultClientDTOSchema: z.ZodType<KeyResultClientDTO> = z.object(
   title: z.string(),
   description: z.string().nullable(),
   progress: KeyResultProgressDTOSchema,
-  weight: z.number(),
+  weight: z.number().int().min(1).max(5),
   order: z.number(),
   version: z.number(),
   createdAt: z.number(),
@@ -241,13 +249,15 @@ export const GetGoalAggregateResSchema = z.object({
   keyResults: z.array(KeyResultClientDTOSchema).optional(),
   records: z.array(GoalRecordClientDTOSchema).optional(),
   reviews: z.array(GoalReviewClientDTOSchema).optional(),
-  statistics: z.object({
-    totalKeyResults: z.number(),
-    completedKeyResults: z.number(),
-    totalRecords: z.number(),
-    totalReviews: z.number(),
-    overallProgress: z.number(),
-  }).optional(),
+  statistics: z
+    .object({
+      totalKeyResults: z.number(),
+      completedKeyResults: z.number(),
+      totalRecords: z.number(),
+      totalReviews: z.number(),
+      overallProgress: z.number(),
+    })
+    .optional(),
 });
 
 export type GetGoalAggregateRes = z.infer<typeof GetGoalAggregateResSchema>;

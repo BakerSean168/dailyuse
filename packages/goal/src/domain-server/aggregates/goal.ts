@@ -1,14 +1,14 @@
 /**
  * Goal 聚合根实现
  * 实现 GoalServer 接口
- * 
+ *
  * 【规范说明：聚合根（Aggregate Root）】
  * 聚合根是 DDD 中的核心概念，代表一个业务边界：
  * - 唯一标识：通过 UUID 区分不同的聚合实例
  * - 事务边界：所有对聚合的修改在一个事务内完成
  * - 统一性：聚合保证内部状态的一致性
  * - 生命周期：聚合有创建、修改、删除的完整生命周期
- * 
+ *
  * 【Goal 职责】
  * 管理目标的完整生命周期：
  * - 目标属性管理（名称、描述、颜色、分析、动机）
@@ -18,7 +18,7 @@
  * - 权重快照（记录权重变更历史）
  * - 提醒配置（提醒触发器管理）
  * - 软删除支持（保留历史记录）
- * 
+ *
  * 【不变量（Invariants）】
  * 这些条件必须始终保持真：
  * - completedKeyResults <= totalKeyResults
@@ -31,15 +31,8 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalId, GoalFolderId, KeyResultWeightSnapshotId } from '../../domain-shared';
 import type { GoalEventMap } from '@dailyuse/contracts/goal';
-import {
-  GoalStatus,
-  ReminderTriggerType,
-  
-} from '@dailyuse/contracts/goal';
-import type {
-  SnapshotTrigger,
-  GoalReminderConfigDTO,
-} from '@dailyuse/contracts/goal';
+import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
+import type { SnapshotTrigger, GoalReminderConfigDTO } from '@dailyuse/contracts/goal';
 import type {
   GoalServerDTO,
   KeyResultServerDTO,
@@ -67,7 +60,11 @@ import {
   KeyResultWeightExceededError,
   GoalReviewRatingInvalidError,
 } from '../value-objects';
-import { calculateGoalPriority, mapPriorityToLevel, mapPriorityToText } from '../services/goal-priority-calculator';
+import {
+  calculateGoalPriority,
+  mapPriorityToLevel,
+  mapPriorityToText,
+} from '../services/goal-priority-calculator';
 
 // ================ 常量定义 ================
 const DAY_MS = 1000 * 60 * 60 * 24;
@@ -140,7 +137,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   private constructor(params: GoalState) {
     super(params.id);
-    
+
     this._props = {
       id: params.id,
       identityId: params.identityId,
@@ -244,7 +241,11 @@ export class Goal extends AggregateRoot<GoalId> {
    * - 每日 Cron Job 批量刷新时
    */
   public refreshPriority(referenceDate: Date = new Date()): void {
-    this._props.priority = calculateGoalPriority(this._props.importance, this._props.targetDate, referenceDate);
+    this._props.priority = calculateGoalPriority(
+      this._props.importance,
+      this._props.targetDate,
+      referenceDate,
+    );
   }
 
   get category(): string | null {
@@ -326,16 +327,16 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * 🏭 业务工厂：创建新的目标
-   * 
+   *
    * 【DDD 设计】
    * 工厂方法负责所有验证，确保创建的目标始终处于有效状态。
    * 这遵循了"Tell, Don't Ask"原则 - 调用者只需告诉 Goal 要做什么，
    * Goal 自己负责验证和保护其不变量。
-   * 
+   *
    * 【本地优先支持】
    * - 支持通过 params.id 传入前端生成的 ID
    * - 如果不提供则自动生成
-   * 
+   *
    * @param params 创建参数
    * @param parentGoal 可选的父目标（如果提供了 parentGoalId，需要传入父目标进行验证）
    * @throws {GoalNameRequiredError} 当名称为空时
@@ -368,13 +369,13 @@ export class Goal extends AggregateRoot<GoalId> {
     if (!params.identityId) {
       throw new GoalNameRequiredError();
     }
-    
+
     // 2. 验证标题（使用静态验证方法）
     Goal.validateTitle(params.name);
-    
+
     // 3. 验证日期范围
     Goal.validateDateRange(params.startDate, params.targetDate);
-    
+
     // 4. 验证父目标状态
     if (params.parentGoalId && !parentGoal) {
       throw new Error('Parent goal is required when parentGoalId is provided');
@@ -438,13 +439,13 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * ✅ 更新基本信息
-   * 
+   *
    * 【DDD 设计】
    * 聚合根自己保护自己的不变量：
    * - 不允许修改已删除的目标
    * - 不允许修改已归档的目标
    * - 验证名称有效性
-   * 
+   *
    * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalArchivedError} 当目标已归档时
    * @throws {GoalNameRequiredError} 当名称为空时
@@ -461,7 +462,7 @@ export class Goal extends AggregateRoot<GoalId> {
   }): void {
     // Guard: 确保可修改
     this.ensureModifiable();
-    
+
     let hasChanges = false;
     let importanceChanged = false;
 
@@ -493,7 +494,10 @@ export class Goal extends AggregateRoot<GoalId> {
       hasChanges = true;
     }
 
-    if (params.feasibilityAnalysis !== undefined && params.feasibilityAnalysis !== this._props.feasibilityAnalysis) {
+    if (
+      params.feasibilityAnalysis !== undefined &&
+      params.feasibilityAnalysis !== this._props.feasibilityAnalysis
+    ) {
       this._props.feasibilityAnalysis = params.feasibilityAnalysis?.trim() || null;
       hasChanges = true;
     }
@@ -505,12 +509,12 @@ export class Goal extends AggregateRoot<GoalId> {
 
     if (hasChanges) {
       this._props.updatedAt = new Date();
-      
+
       // 🔢 importance 变更时刷新优先级
       if (importanceChanged) {
         this.refreshPriority();
       }
-      
+
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
         changes: Object.keys(params),
       });
@@ -524,12 +528,18 @@ export class Goal extends AggregateRoot<GoalId> {
     let hasChanges = false;
     let targetDateChanged = false;
 
-    if (params.startDate !== undefined && params.startDate?.getTime() !== this._props.startDate?.getTime()) {
+    if (
+      params.startDate !== undefined &&
+      params.startDate?.getTime() !== this._props.startDate?.getTime()
+    ) {
       // Note: startDate is readonly, so we can't update it
       hasChanges = true;
     }
 
-    if (params.targetDate !== undefined && params.targetDate?.getTime() !== this._props.targetDate?.getTime()) {
+    if (
+      params.targetDate !== undefined &&
+      params.targetDate?.getTime() !== this._props.targetDate?.getTime()
+    ) {
       this._props.targetDate = params.targetDate;
       hasChanges = true;
       targetDateChanged = true;
@@ -537,12 +547,12 @@ export class Goal extends AggregateRoot<GoalId> {
 
     if (hasChanges) {
       this._props.updatedAt = new Date();
-      
+
       // 🔢 targetDate 变更时刷新优先级
       if (targetDateChanged) {
         this.refreshPriority();
       }
-      
+
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
         changes: Object.keys(params),
       });
@@ -665,10 +675,10 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * ✅ 归档目标
-   * 
+   *
    * 归档 = 原来的 "软删除"。归档后的目标不会在列表中显示，
    * 但数据不会被物理删除。可通过 restore() 恢复。
-   * 
+   *
    * 前置条件：
    * - 目标尚未归档（幂等）
    * - 活跃目标必须先完成才能归档
@@ -690,7 +700,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * ✅ 恢复归档的目标
-   * 
+   *
    * 将归档目标恢复为已完成状态
    */
   public restore(): void {
@@ -704,7 +714,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * ✅ 检查是否可以永久删除
-   * 
+   *
    * 只有已归档的目标才能被永久删除。
    */
   public canBePermanentlyDeleted(): boolean {
@@ -781,15 +791,14 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * 🏭 创建并添加关键结果
-   * 
+   *
    * 【DDD 设计】
    * 这是一个便捷方法，结合了创建和添加操作。
    * 聚合根自己验证权重范围和总和约束。
-   * 
+   *
    * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalArchivedError} 当目标已归档时
-   * @throws {KeyResultWeightInvalidError} 当权重不在0-100之间时
-   * @throws {KeyResultWeightExceededError} 当权重总和超过100时
+   * @throws {KeyResultWeightInvalidError} 当权重不在1-5之间时
    */
   public createAndAddKeyResult(params: {
     title: string;
@@ -803,16 +812,10 @@ export class Goal extends AggregateRoot<GoalId> {
   }): KeyResult {
     // Guard: 确保可修改
     this.ensureModifiable();
-    
+
     // 验证权重范围
     Goal.validateKeyResultWeight(params.weight);
-    
-    // 验证权重总和
-    const currentTotalWeight = this._props.keyResults.reduce((sum, kr) => sum + kr.weight, 0);
-    if (currentTotalWeight + params.weight > 100) {
-      throw new KeyResultWeightExceededError(currentTotalWeight, params.weight);
-    }
-    
+
     // 创建关键结果
     const keyResult = KeyResult.create({
       title: params.title,
@@ -828,7 +831,7 @@ export class Goal extends AggregateRoot<GoalId> {
       weight: params.weight,
       sortOrder: this._props.keyResults.length,
     });
-    
+
     // 添加到集合
     this._props.keyResults.push(keyResult);
     this._props.updatedAt = new Date();
@@ -836,7 +839,7 @@ export class Goal extends AggregateRoot<GoalId> {
     this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
       keyResultId: keyResult.id,
     });
-    
+
     return keyResult;
   }
 
@@ -856,7 +859,7 @@ export class Goal extends AggregateRoot<GoalId> {
     },
   ): void {
     this.ensureModifiable();
-    
+
     const keyResult = this._props.keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
       throw new GoalKeyResultNotFoundError(keyResultId);
@@ -930,7 +933,7 @@ export class Goal extends AggregateRoot<GoalId> {
   ): KeyResultServerDTO {
     // Guard: 确保未删除
     this.ensureNotDeleted();
-    
+
     const keyResult = this._props.keyResults.find((kr) => kr.id === keyResultId);
     if (!keyResult) {
       throw new GoalKeyResultNotFoundError(keyResultId);
@@ -958,7 +961,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public removeKeyResult(keyResultId: string): KeyResult | null {
     this.ensureModifiable();
-    
+
     const index = this._props.keyResults.findIndex((kr) => kr.id === keyResultId);
     if (index !== -1) {
       const removed = this._props.keyResults.splice(index, 1)[0];
@@ -975,9 +978,9 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * 📊 计算总进度（基于所有关键结果的加权平均）
-   * 
+   *
    * 公式：Progress = Σ(KR.progress × KR.weight) / Σ(KR.weight)
-   * 
+   *
    * @returns 目标进度百分比（0-100）
    */
   public calculateProgress(): number {
@@ -988,13 +991,16 @@ export class Goal extends AggregateRoot<GoalId> {
 
     // 如果总权重为 0，使用简单平均
     if (totalWeight === 0) {
-      const totalPercentage = this._props.keyResults.reduce((sum, kr) => sum + kr.calculatePercentage(), 0);
+      const totalPercentage = this._props.keyResults.reduce(
+        (sum, kr) => sum + kr.calculatePercentage(),
+        0,
+      );
       return Math.round((totalPercentage / this._props.keyResults.length) * 100) / 100;
     }
 
     // 加权平均计算
     const weightedSum = this._props.keyResults.reduce(
-      (sum, kr) => sum + (kr.calculatePercentage() * kr.weight),
+      (sum, kr) => sum + kr.calculatePercentage() * kr.weight,
       0,
     );
 
@@ -1018,7 +1024,7 @@ export class Goal extends AggregateRoot<GoalId> {
         const krProgress = kr.calculatePercentage();
         const contribution =
           totalWeight > 0
-            ? Math.round((krProgress * kr.weight) / totalWeight * 100) / 100
+            ? Math.round(((krProgress * kr.weight) / totalWeight) * 100) / 100
             : Math.round((krProgress / this._props.keyResults.length) * 100) / 100;
 
         return {
@@ -1099,10 +1105,10 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * 🏭 创建并添加回顾
-   * 
+   *
    * 【DDD 设计】
    * 便捷方法，结合创建和添加，并验证所有约束。
-   * 
+   *
    * @throws {GoalDeletedError} 当目标已删除时
    * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
    */
@@ -1117,10 +1123,10 @@ export class Goal extends AggregateRoot<GoalId> {
   }): GoalReview {
     // Guard: 确保未删除
     this.ensureNotDeleted();
-    
+
     // 验证评分
     Goal.validateReviewRating(params.rating);
-    
+
     // 创建关键结果快照
     const keyResultSnapshots: KeyResultSnapshotDTO[] = this._props.keyResults.map((kr) => ({
       keyResultId: kr.id as any,
@@ -1140,7 +1146,7 @@ export class Goal extends AggregateRoot<GoalId> {
       improvements: params.nextActions,
       keyResultSnapshots,
     });
-    
+
     // 添加到集合
     this._props.goalReviews.push(review);
     this._props.updatedAt = new Date();
@@ -1178,7 +1184,7 @@ export class Goal extends AggregateRoot<GoalId> {
   ): void {
     this.ensureNotDeleted();
     Goal.validateReviewRating(params.rating);
-    
+
     const review = this._props.goalReviews.find((r) => r.id === reviewId);
     if (!review) {
       throw new GoalReviewNotFoundError(reviewId);
@@ -1199,7 +1205,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public removeReview(reviewId: string): GoalReview | null {
     this.ensureNotDeleted();
-    
+
     const index = this._props.goalReviews.findIndex((r) => r.id === reviewId);
     if (index !== -1) {
       const removed = this._props.goalReviews.splice(index, 1)[0];
@@ -1272,15 +1278,18 @@ export class Goal extends AggregateRoot<GoalId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      keyResults: includeChildren && this._props.keyResults.length > 0
-        ? this._props.keyResults.map((kr) => kr.toServerDTO())
-        : null,
-      weightSnapshots: includeChildren && this._props.weightSnapshots.length > 0
-        ? this._props.weightSnapshots.map((ws) => ws.toDTO())
-        : null,
-      goalReviews: includeChildren && this._props.goalReviews.length > 0
-        ? this._props.goalReviews.map((r) => r.toServerDTO())
-        : null,
+      keyResults:
+        includeChildren && this._props.keyResults.length > 0
+          ? this._props.keyResults.map((kr) => kr.toServerDTO())
+          : null,
+      weightSnapshots:
+        includeChildren && this._props.weightSnapshots.length > 0
+          ? this._props.weightSnapshots.map((ws) => ws.toDTO())
+          : null,
+      goalReviews:
+        includeChildren && this._props.goalReviews.length > 0
+          ? this._props.goalReviews.map((r) => r.toServerDTO())
+          : null,
       version: 1, // Default version for optimistic locking
     };
   }
@@ -1288,9 +1297,13 @@ export class Goal extends AggregateRoot<GoalId> {
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(includeChildren: boolean = false): import('@dailyuse/contracts/goal').GoalClientDTO {
+  public toClientDTO(
+    includeChildren: boolean = false,
+  ): import('@dailyuse/contracts/goal').GoalClientDTO {
     const now = new Date();
-    const isOverdue = this._props.targetDate ? this._props.targetDate < now && this._props.status !== GoalStatus.Completed : false;
+    const isOverdue = this._props.targetDate
+      ? this._props.targetDate < now && this._props.status !== GoalStatus.Completed
+      : false;
     const daysRemaining = this._props.targetDate
       ? Math.ceil((this._props.targetDate.getTime() - now.getTime()) / DAY_MS)
       : null;
@@ -1320,12 +1333,14 @@ export class Goal extends AggregateRoot<GoalId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      keyResults: includeChildren && this._props.keyResults.length > 0
-        ? this._props.keyResults.map((kr) => kr.toClientDTO())
-        : null,
-      reviews: includeChildren && this._props.goalReviews.length > 0
-        ? this._props.goalReviews.map((r) => r.toClientDTO())
-        : null,
+      keyResults:
+        includeChildren && this._props.keyResults.length > 0
+          ? this._props.keyResults.map((kr) => kr.toClientDTO())
+          : null,
+      reviews:
+        includeChildren && this._props.goalReviews.length > 0
+          ? this._props.goalReviews.map((r) => r.toClientDTO())
+          : null,
     };
   }
 
@@ -1378,10 +1393,10 @@ export class Goal extends AggregateRoot<GoalId> {
 
   /**
    * 验证关键结果权重
-   * @throws {KeyResultWeightInvalidError} 当权重不在0-100之间时
+   * @throws {KeyResultWeightInvalidError} 当权重不在1-5之间时
    */
   public static validateKeyResultWeight(weight: number): void {
-    if (weight < 0 || weight > 100) {
+    if (!Number.isInteger(weight) || weight < 1 || weight > 5) {
       throw new KeyResultWeightInvalidError(weight);
     }
   }
@@ -1402,7 +1417,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public static validateParentGoal(parentGoal?: Goal): void {
     if (!parentGoal) return;
-    
+
     if (parentGoal.status === GoalStatus.Archived || parentGoal.archivedAt !== null) {
       throw new GoalArchivedError(parentGoal.id);
     }
@@ -1412,7 +1427,11 @@ export class Goal extends AggregateRoot<GoalId> {
 
   private resolveTimeRange(): { start: number | null; end: number | null } {
     const start = this._props.startDate?.getTime() ?? this._props.createdAt?.getTime() ?? null;
-    let end = this._props.targetDate?.getTime() ?? this._props.completedAt?.getTime() ?? this._props.updatedAt?.getTime() ?? null;
+    let end =
+      this._props.targetDate?.getTime() ??
+      this._props.completedAt?.getTime() ??
+      this._props.updatedAt?.getTime() ??
+      null;
 
     if (start && (!end || end <= start)) {
       end = start + DEFAULT_DURATION;

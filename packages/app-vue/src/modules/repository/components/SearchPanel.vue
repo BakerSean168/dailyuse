@@ -6,7 +6,7 @@
         <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           v-model="localQuery"
-          placeholder="搜索仓储内容..."
+          :placeholder="t('repository.search.inputPlaceholder')"
           class="pl-9"
           @keydown.enter="handleSearch"
           @keydown.esc="$emit('close')"
@@ -23,7 +23,7 @@
           @click="selectMode(mode.value)"
         >
           <component :is="mode.icon" class="h-3 w-3 mr-1" />
-          {{ mode.label }}
+          {{ t(mode.labelKey) }}
         </Badge>
       </div>
 
@@ -31,11 +31,11 @@
       <div v-if="showAdvanced" class="mt-3 space-y-2">
         <label class="flex items-center gap-2 text-sm">
           <input type="checkbox" v-model="caseSensitive" class="rounded" />
-          区分大小写
+          {{ t('repository.search.caseSensitive') }}
         </label>
         <label class="flex items-center gap-2 text-sm">
           <input type="checkbox" v-model="useRegex" class="rounded" />
-          使用正则表达式
+          {{ t('repository.search.useRegex') }}
         </label>
       </div>
     </CardContent>
@@ -47,7 +47,7 @@
       <!-- Loading -->
       <div v-if="searching" class="flex flex-col items-center justify-center p-8">
         <Loader2 class="h-8 w-8 animate-spin text-primary" />
-        <div class="text-sm text-muted-foreground mt-2">搜索中...</div>
+        <div class="text-sm text-muted-foreground mt-2">{{ t('repository.search.searching') }}</div>
       </div>
 
       <!-- Empty -->
@@ -56,7 +56,7 @@
         class="flex flex-col items-center justify-center p-8"
       >
         <Search class="h-12 w-12 text-muted-foreground" />
-        <div class="text-sm text-muted-foreground mt-2">未找到匹配结果</div>
+        <div class="text-sm text-muted-foreground mt-2">{{ t('repository.search.noMatch') }}</div>
       </div>
 
       <!-- Results -->
@@ -87,7 +87,7 @@
                   <span v-html="highlightMatchInLine(match)" />
                 </div>
                 <div v-if="result.matches.length > 3" class="text-xs text-muted-foreground">
-                  +{{ result.matches.length - 3 }} 更多匹配
+                  +{{ result.matches.length - 3 }} {{ t('repository.search.moreMatches') }}
                 </div>
               </div>
             </div>
@@ -99,7 +99,9 @@
       <!-- Initial state -->
       <div v-else class="flex flex-col items-center justify-center p-8">
         <FileSearch class="h-12 w-12 text-muted-foreground" />
-        <div class="text-sm text-muted-foreground mt-2">输入关键词开始搜索</div>
+        <div class="text-sm text-muted-foreground mt-2">
+          {{ t('repository.search.enterKeyword') }}
+        </div>
       </div>
     </CardContent>
 
@@ -109,7 +111,9 @@
       v-if="(results?.length ?? 0) > 0"
       class="text-xs text-muted-foreground px-4 py-2 justify-between"
     >
-      <span>找到 {{ totalResults }} 个文件，共 {{ totalMatches }} 处匹配</span>
+      <span>{{
+        t('repository.search.stats', { fileCount: totalResults, matchCount: totalMatches })
+      }}</span>
       <span>{{ searchTime }}ms</span>
     </CardFooter>
   </Card>
@@ -117,6 +121,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search, FileSearch, Loader2, FileText, Hash, Folder, Code2, Tag } from 'lucide-vue-next';
 import { Card, CardContent, CardFooter } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
@@ -136,6 +141,8 @@ interface Props {
 
 defineProps<Props>();
 
+const { t } = useI18n();
+
 const emit = defineEmits<{
   close: [];
   select: [result: SearchResultItem];
@@ -149,13 +156,13 @@ const useRegex = ref(false);
 const showAdvanced = ref(false);
 
 const searchModes = [
-  { value: 'all' as SearchMode, label: '全部', icon: FileSearch },
-  { value: 'file' as SearchMode, label: '文件名', icon: FileText },
-  { value: 'tag' as SearchMode, label: '标签', icon: Tag },
-  { value: 'line' as SearchMode, label: '行内容', icon: FileText },
-  { value: 'section' as SearchMode, label: '章节', icon: Hash },
-  { value: 'path' as SearchMode, label: '路径', icon: Folder },
-  { value: 'property' as SearchMode, label: '属性', icon: Code2 },
+  { value: 'all' as SearchMode, labelKey: 'repository.search.modeAll', icon: FileSearch },
+  { value: 'file' as SearchMode, labelKey: 'repository.search.modeFile', icon: FileText },
+  { value: 'tag' as SearchMode, labelKey: 'repository.search.modeTag', icon: Tag },
+  { value: 'line' as SearchMode, labelKey: 'repository.search.modeLine', icon: FileText },
+  { value: 'section' as SearchMode, labelKey: 'repository.search.modeSection', icon: Hash },
+  { value: 'path' as SearchMode, labelKey: 'repository.search.modePath', icon: Folder },
+  { value: 'property' as SearchMode, labelKey: 'repository.search.modeProperty', icon: Code2 },
 ];
 
 function selectMode(mode: SearchMode) {

@@ -14,6 +14,12 @@
         </h1>
         <Badge v-if="currentTemplate" :variant="statusVariant">{{ currentTemplate.status }}</Badge>
       </div>
+      <div v-if="currentTemplate" class="flex items-center gap-2">
+        <Button size="sm" @click="openEditDialog">
+          <Pencil class="h-4 w-4 mr-1" />
+          {{ t('task.detail.edit') }}
+        </Button>
+      </div>
     </header>
 
     <!-- Content -->
@@ -104,14 +110,25 @@
         </Card>
       </div>
     </div>
+
+    <!-- 编辑对话框 -->
+    <TaskTemplateDialog
+      v-if="editViewModel"
+      v-model="showEditDialog"
+      mode="edit"
+      :template="editViewModel"
+      :saving="isSaving"
+      @save="handleSaveEdit"
+      @cancel="showEditDialog = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ArrowLeft, FileQuestion } from 'lucide-vue-next';
+import { ArrowLeft, FileQuestion, Pencil } from 'lucide-vue-next';
 import {
   Button,
   Badge,
@@ -122,11 +139,15 @@ import {
   CardContent,
 } from '@dailyuse/ui-vue-shadcn';
 import { useTask } from '../composables/useTask';
+import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
+import type { TaskTemplateViewModel } from '../components/types';
 
 const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
-const { currentTemplate, isLoading, fetchTemplate } = useTask();
+const { currentTemplate, isLoading, isSaving, fetchTemplate, updateTemplate } = useTask();
+
+const showEditDialog = ref(false);
 
 const statusVariant = computed(() => {
   switch (currentTemplate.value?.status) {
@@ -140,6 +161,83 @@ const statusVariant = computed(() => {
       return 'destructive' as const;
   }
 });
+
+const timeTypeMap: Record<string, TaskTemplateViewModel['timeConfig']['timeType']> = {
+  AllDay: 'AllDay',
+  TimePoint: 'TimePoint',
+  TimeRange: 'TimeRange',
+};
+
+const statusMap: Record<string, string> = {
+  Active: 'ACTIVE',
+  Paused: 'PAUSED',
+  Archived: 'ARCHIVED',
+  Deleted: 'DELETED',
+};
+
+/** 将 store 中的 DTO 转换为 Dialog 所需的 ViewModel */
+const editViewModel = computed<TaskTemplateViewModel | null>(() => {
+  const dto = currentTemplate.value;
+  if (!dto) return null;
+  const status = statusMap[dto.status] ?? dto.status;
+  return {
+    id: dto.id,
+    title: dto.name,
+    description: dto.description ?? undefined,
+    status,
+    isActive: status === 'ACTIVE',
+    isPaused: status === 'PAUSED',
+    isArchived: status === 'ARCHIVED',
+    importance: dto.importance,
+    priority: dto.priority,
+    tags: dto.tags,
+    goalBinding: dto.goalBinding
+      ? {
+          goalId: dto.goalBinding.goalId,
+          keyResultId: dto.goalBinding.keyResultId,
+          incrementValue: dto.goalBinding.goalRecordValue,
+        }
+      : null,
+    timeConfig: {
+      timeType:
+        timeTypeMap[dto.timeConfig?.timeType] ??
+        (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
+      timePoint: dto.timeConfig?.timePoint ?? undefined,
+      timeRange: dto.timeConfig?.timeRange ?? undefined,
+      startDate: dto.startDate ?? undefined,
+    },
+    recurrenceRule: dto.recurrenceRule ?? null,
+    reminderConfig: dto.reminderConfig ?? null,
+    instanceCount: dto.instanceCount,
+    completionRate: dto.completionRate,
+    formattedCreatedAt: dto.createdAt ? new Date(dto.createdAt).toLocaleDateString() : undefined,
+  };
+});
+
+function openEditDialog() {
+  showEditDialog.value = true;
+}
+
+async function handleSaveEdit(vm: TaskTemplateViewModel) {
+  const id = route.params.id as string;
+  const result = await updateTemplate(id, {
+    name: vm.title,
+    description: vm.description ?? null,
+    taskType:
+      (vm.taskType as 'ONE_TIME' | 'RECURRING') ?? (vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME'),
+    timeConfig: vm.timeConfig as any,
+    recurrenceRule: vm.recurrenceRule ?? null,
+    reminderConfig: vm.reminderConfig ?? null,
+    importance: (vm.importance as any) ?? 'Moderate',
+    tags: vm.tags ?? [],
+    folderId: (vm.folderId as any) ?? null,
+    color: vm.color ?? null,
+  });
+  if (result) {
+    showEditDialog.value = false;
+    await fetchTemplate(id);
+  }
+}
 
 function formatDate(ts?: number | null): string {
   if (!ts) return '-';

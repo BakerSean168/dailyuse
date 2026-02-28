@@ -104,7 +104,7 @@
                 v-model.number="keyResultWeight"
                 type="number"
                 min="1"
-                max="10"
+                max="5"
                 step="1"
               />
               <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.weightHint') }}</p>
@@ -224,7 +224,7 @@ const emit = defineEmits<{
 const createDraftKeyResult = (): EditableKeyResult => ({
   title: '',
   description: null,
-  weight: 5,
+  weight: 1,
   order: 0,
   progress: {
     valueType: 'NUMBER',
@@ -248,7 +248,7 @@ const isEditing = computed(() => !!propKeyResult.value);
 const isFormValid = computed(() => {
   const title = keyResultTitle.value.trim();
   const weight = keyResultWeight.value;
-  return title.length > 0 && weight >= 1 && weight <= 10;
+  return title.length > 0 && weight >= 1 && weight <= 5;
 });
 const progressPercentage = computed(() => {
   const progress = localKeyResult.value.progress;
@@ -299,7 +299,7 @@ const keyResultCalculationMethod = computed({
 });
 
 const keyResultWeight = computed({
-  get: () => localKeyResult.value.weight || 5,
+  get: () => localKeyResult.value.weight || 1,
   set: (val: number) => {
     localKeyResult.value.weight = val;
   },

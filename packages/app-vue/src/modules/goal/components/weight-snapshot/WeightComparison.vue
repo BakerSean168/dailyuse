@@ -107,12 +107,12 @@
                   <td class="px-4 py-2 font-medium">{{ kr.title }}</td>
                   <td v-for="(weight, index) in getKRWeights(kr.id)" :key="index" class="px-4 py-2">
                     <Badge :variant="getBadgeVariant(getWeightChangeColor(weight, index))">
-                      {{ weight }}%
+                      {{ weight }}
                     </Badge>
                   </td>
                   <td class="px-4 py-2">
                     <Badge :variant="getBadgeVariant(getTotalChangeColor(getTotalChange(kr.id)))">
-                      {{ getTotalChange(kr.id) > 0 ? '+' : '' }}{{ getTotalChange(kr.id) }}%
+                      {{ getTotalChange(kr.id) > 0 ? '+' : '' }}{{ getTotalChange(kr.id) }}
                     </Badge>
                   </td>
                 </tr>
@@ -301,7 +301,7 @@ const barChartOption = computed(() => {
           html += `
             <div style="margin-bottom: 4px;">
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${param.color}; margin-right: 8px;"></span>
-              <span>${param.seriesName}: ${param.value}%</span>
+              <span>${param.seriesName}: ${param.value}</span>
             </div>`;
         });
         html += '</div>';
@@ -326,9 +326,9 @@ const barChartOption = computed(() => {
       type: 'value',
       name: t('goal.weightComparison.yAxisLabel'),
       min: 0,
-      max: 100,
+      max: 5,
       axisLabel: {
-        formatter: '{value}%',
+        formatter: '{value}',
       },
     },
     grid: {
@@ -350,7 +350,7 @@ const radarChartOption = computed(() => {
 
   const indicator = keyResults.map((kr) => ({
     name: kr.title,
-    max: 100,
+    max: 5,
   }));
 
   const series = timePoints.map((tp, tpIndex) => ({

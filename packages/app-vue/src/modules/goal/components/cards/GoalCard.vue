@@ -36,11 +36,16 @@
 
         <!-- Title -->
         <h3
-          class="font-medium text-sm leading-snug mb-1 line-clamp-2 group-hover:text-primary transition-colors cursor-pointer"
-          @click="emit('edit', goal)"
+          class="font-medium text-sm leading-snug mb-1 min-h-[2.5rem] line-clamp-2 group-hover:text-primary transition-colors cursor-pointer"
+          @click="emit('view', goal)"
         >
           {{ goal.name }}
         </h3>
+
+        <!-- Description -->
+        <p class="text-xs text-muted-foreground leading-relaxed min-h-[2rem] line-clamp-2 mb-1">
+          {{ goal.description || '' }}
+        </p>
 
         <!-- Progress Bar -->
         <div class="mt-4 mb-2">
@@ -116,6 +121,7 @@ const props = defineProps<Props>();
 const { t } = useI18n();
 
 const emit = defineEmits<{
+  (e: 'view', goal: any): void;
   (e: 'edit', goal: any): void;
   (e: 'delete', id: string): void;
 }>();

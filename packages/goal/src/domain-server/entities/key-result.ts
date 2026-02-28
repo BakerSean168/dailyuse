@@ -1,38 +1,36 @@
 /**
  * KeyResult 实体实现
- * 
+ *
  * 【规范说明：实体（Entity）】
  * 实体是有唯一标识符（ID/UUID）的领域对象：
  * - 有唯一标识：通过 UUID 区分，而非属性值
  * - 有生命周期：可以被创建、修改、删除
  * - 从属于聚合根：在本例中，KeyResult 从属于 Goal 聚合根
  * - 可变性：状态可以改变，但 UUID 不变
- * 
+ *
  * 【实体 vs 聚合根】
  * - KeyResult（实体）：Goal 聚合内的子对象，不能独立存在
  * - Goal（聚合根）：聚合的顶级对象，对外代表整个聚合
- * 
+ *
  * 【KeyResult 职责】
  * 管理关键结果的完整生命周期：
  * - 进度追踪（当前值、目标值、初始值）
  * - 权重管理（用于综合评分）
- * 
+ *
  * 【同步支持】
  * - deletedAt: 软删除时间戳
  * - version: 乐观锁版本号
  * - updatedAt: 最后更新时间（增量同步）
- * 
+ *
  * 【不变量（Invariants）】
  * 这些条件必须始终保持真：
- * - weight 在 0-100 之间
+ * - weight 在 1-5 之间（整数）
  * - title 不能为空
  */
 
 import { Entity } from '@dailyuse/utils';
 import { KeyResultId } from '../../domain-shared';
-import type {
-  KeyResultServerDTO,
-} from '@dailyuse/contracts/goal';
+import type { KeyResultServerDTO } from '@dailyuse/contracts/goal';
 
 // 内部状态接口
 export interface KeyResultState {
@@ -65,35 +63,35 @@ export class KeyResult extends Entity<KeyResultId> {
   get title(): string {
     return this._props.title;
   }
-  
+
   get description(): string | null {
     return this._props.description;
   }
-  
+
   get progress(): KeyResultServerDTO['progress'] {
     return this._props.progress;
   }
-  
+
   get weight(): number {
     return this._props.weight;
   }
-  
+
   get sortOrder(): number {
     return this._props.sortOrder;
   }
-  
+
   get version(): number {
     return this._props.version;
   }
-  
+
   get createdAt(): Date {
     return this._props.createdAt;
   }
-  
+
   get updatedAt(): Date {
     return this._props.updatedAt;
   }
-  
+
   get deletedAt(): Date | null {
     return this._props.deletedAt;
   }
@@ -109,7 +107,7 @@ export class KeyResult extends Entity<KeyResultId> {
 
   /**
    * 🏭 业务工厂：创建新的关键结果
-   * 
+   *
    * @param params.id 可选的 ID，支持前端生成。如果不提供则自动生成
    */
   public static create(params: {
@@ -133,7 +131,7 @@ export class KeyResult extends Entity<KeyResultId> {
       title: params.title.trim(),
       description: params.description?.trim() || null,
       progress: params.progress,
-      weight: params.weight ?? 0,
+      weight: params.weight ?? 1,
       sortOrder: params.sortOrder ?? 0,
       version: 1,
       createdAt: new Date(now),
@@ -166,13 +164,13 @@ export class KeyResult extends Entity<KeyResultId> {
 
   /**
    * ✅ 更新权重
-   * 
+   *
    * 【业务规则】
-   * - 权重必须在 0-100 之间
+   * - 权重必须在 1-5 之间（整数）
    */
   public updateWeight(weight: number): void {
-    if (weight < 0 || weight > 100) {
-      throw new Error('Weight must be between 0 and 100');
+    if (!Number.isInteger(weight) || weight < 1 || weight > 5) {
+      throw new Error('Weight must be an integer between 1 and 5');
     }
     this._props.weight = weight;
     this._props.updatedAt = new Date();
@@ -235,11 +233,11 @@ export class KeyResult extends Entity<KeyResultId> {
   public calculatePercentage(): number {
     const start = (this._props.progress as any).initialValue ?? 0;
     const range = this._props.progress.targetValue - start;
-    
+
     if (this._props.progress.targetValue <= 0 || range <= 0) {
       return 0;
     }
-    
+
     const percentage = ((this._props.progress.currentValue - start) / range) * 100;
     return Math.min(Math.max(percentage, 0), 100);
   }
@@ -314,5 +312,4 @@ export class KeyResult extends Entity<KeyResultId> {
       deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
-
 }

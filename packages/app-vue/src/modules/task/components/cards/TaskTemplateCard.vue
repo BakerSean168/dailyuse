@@ -1,8 +1,9 @@
 <template>
   <ActionableWrapper :actions="menuActions">
     <Card
-      class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      class="template-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
       :class="`priority-${getPriorityLevel(template.priority ?? 0)}`"
+      @click="handleCardClick"
     >
       <!-- 卡片头部 -->
       <CardHeader class="template-header border-b border-border/10 p-4 pb-3">
@@ -21,7 +22,9 @@
                 />
               </div>
 
-              <CardTitle class="text-lg font-semibold truncate">{{ template.title }}</CardTitle>
+              <CardTitle class="text-lg font-semibold line-clamp-1 min-h-[1.75rem]">{{
+                template.title
+              }}</CardTitle>
             </div>
 
             <div class="flex flex-wrap gap-2 items-center">
@@ -54,7 +57,7 @@
       <!-- 卡片内容 -->
       <CardContent class="p-4">
         <!-- 描述 -->
-        <p class="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2 min-h-[2.7rem]">
+        <p class="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2 min-h-[2.625rem]">
           {{ template.description || t('task.templateCard.noDescription') }}
         </p>
 
@@ -144,7 +147,7 @@
           data-testid="task-card-pause-button"
           variant="outline"
           size="sm"
-          @click="handlePauseTemplate"
+          @click.stop="handlePauseTemplate"
         >
           <Pause class="h-4 w-4 mr-1" />
           {{ t('task.templateCard.pause') }}
@@ -155,7 +158,7 @@
           variant="outline"
           size="sm"
           class="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
-          @click="handleResume"
+          @click.stop="handleResume"
         >
           <Play class="h-4 w-4 mr-1" />
           {{ t('task.templateCard.resume') }}
@@ -166,7 +169,7 @@
           variant="outline"
           size="sm"
           class="border-blue-500 text-blue-600 hover:bg-blue-50"
-          @click="handleActivateTemplate"
+          @click.stop="handleActivateTemplate"
         >
           <Play class="h-4 w-4 mr-1" />
           {{ t('task.templateCard.activate') }}
@@ -242,6 +245,7 @@ interface Props {
 }
 
 interface Emits {
+  (e: 'click', templateId: string): void;
   (e: 'edit', templateId: string): void;
   (e: 'delete', template: TaskTemplateViewModel): void;
   (e: 'pause', template: TaskTemplateViewModel): void;
@@ -414,6 +418,10 @@ const timeLabel = computed(() => {
 });
 
 // 事件处理方法
+const handleCardClick = () => {
+  emit('click', props.template.id);
+};
+
 const handleEdit = () => {
   emit('edit', props.template.id);
 };

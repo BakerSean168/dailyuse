@@ -8,21 +8,21 @@
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <Sparkles class="h-5 w-5 text-primary" />
-          AI 知识文档生成
+          {{ t('repository.aiKnowledge.title') }}
         </DialogTitle>
         <DialogDescription>
-          描述你想了解的知识主题，AI 将为你生成结构化的知识文档。
+          {{ t('repository.aiKnowledge.description') }}
         </DialogDescription>
       </DialogHeader>
 
       <!-- Input Stage -->
       <div v-if="!isGenerating && !isComplete" class="space-y-4">
         <div>
-          <Label for="prompt">知识主题</Label>
+          <Label for="prompt">{{ t('repository.aiKnowledge.topic') }}</Label>
           <Textarea
             id="prompt"
             v-model="prompt"
-            placeholder="例如：详细讲讲软路由相关知识，包括常见软路由系统对比、硬件选型、典型应用场景等"
+            :placeholder="t('repository.aiKnowledge.topicPlaceholder')"
             rows="4"
             maxlength="500"
             :disabled="isGenerating"
@@ -33,22 +33,22 @@
 
         <div class="flex items-center space-x-2">
           <Switch id="create-folder" v-model:checked="createFolder" />
-          <Label for="create-folder">创建子文件夹</Label>
+          <Label for="create-folder">{{ t('repository.aiKnowledge.createSubfolder') }}</Label>
         </div>
 
         <div v-if="createFolder">
-          <Label for="folder-name">文件夹名称</Label>
+          <Label for="folder-name">{{ t('repository.aiKnowledge.folderName') }}</Label>
           <Input
             id="folder-name"
             v-model="folderName"
-            placeholder="留空则使用主题名称"
+            :placeholder="t('repository.aiKnowledge.folderNamePlaceholder')"
             :disabled="isGenerating"
           />
         </div>
 
         <div class="flex items-center gap-2 text-xs text-muted-foreground">
           <Folder class="h-3 w-3" />
-          保存位置：{{ savePath }}
+          {{ t('repository.aiKnowledge.saveLocation') }}{{ savePath }}
         </div>
       </div>
 
@@ -56,7 +56,7 @@
       <div v-else-if="isGenerating" class="space-y-4">
         <div class="flex items-center gap-2">
           <Loader2 class="h-4 w-4 animate-spin text-primary" />
-          <span class="text-sm">正在生成知识文档...</span>
+          <span class="text-sm">{{ t('repository.aiKnowledge.generating') }}</span>
         </div>
 
         <Card class="max-h-80 overflow-y-auto">
@@ -66,15 +66,19 @@
           </CardContent>
         </Card>
 
-        <p class="text-xs text-muted-foreground">已生成 {{ generatedContent.length }} 字符</p>
+        <p class="text-xs text-muted-foreground">
+          {{ t('repository.aiKnowledge.generatedChars', { count: generatedContent.length }) }}
+        </p>
       </div>
 
       <!-- Complete Stage -->
       <div v-else-if="isComplete" class="space-y-4">
         <Alert>
           <CheckCircle class="h-4 w-4" />
-          <AlertTitle>生成完成</AlertTitle>
-          <AlertDescription>知识文档已成功生成并保存</AlertDescription>
+          <AlertTitle>{{ t('repository.aiKnowledge.generateComplete') }}</AlertTitle>
+          <AlertDescription>{{
+            t('repository.aiKnowledge.generateCompleteDesc')
+          }}</AlertDescription>
         </Alert>
 
         <Card>
@@ -91,13 +95,18 @@
       <!-- Error -->
       <Alert v-if="error" variant="destructive" class="mt-4">
         <AlertCircle class="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>{{ t('repository.aiKnowledge.error') }}</AlertTitle>
         <AlertDescription>{{ error }}</AlertDescription>
       </Alert>
 
       <DialogFooter>
-        <Button v-if="!isComplete" variant="outline" :disabled="isGenerating" @click="$emit('update:open', false)">
-          取消
+        <Button
+          v-if="!isComplete"
+          variant="outline"
+          :disabled="isGenerating"
+          @click="$emit('update:open', false)"
+        >
+          {{ t('repository.aiKnowledge.cancel') }}
         </Button>
         <Button
           v-if="!isGenerating && !isComplete"
@@ -105,21 +114,14 @@
           @click="handleGenerate"
         >
           <Sparkles class="mr-2 h-4 w-4" />
-          生成
+          {{ t('repository.aiKnowledge.generate') }}
         </Button>
-        <Button
-          v-if="isComplete"
-          @click="handleOpenDocument"
-        >
+        <Button v-if="isComplete" @click="handleOpenDocument">
           <ExternalLink class="mr-2 h-4 w-4" />
-          查看文档
+          {{ t('repository.aiKnowledge.viewDocument') }}
         </Button>
-        <Button
-          v-if="isComplete"
-          variant="outline"
-          @click="$emit('update:open', false)"
-        >
-          完成
+        <Button v-if="isComplete" variant="outline" @click="$emit('update:open', false)">
+          {{ t('repository.aiKnowledge.done') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -128,6 +130,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { marked } from 'marked';
 import {
   Sparkles,
@@ -160,8 +163,10 @@ interface Props {
   parentFolderName?: string;
 }
 
+const { t } = useI18n();
+
 const props = withDefaults(defineProps<Props>(), {
-  repositoryName: '知识库',
+  repositoryName: '',
   parentFolderName: '',
 });
 
@@ -191,9 +196,11 @@ const resultPath = ref('');
 const canGenerate = computed(() => prompt.value.trim().length >= 2);
 
 const savePath = computed(() => {
-  const repo = props.repositoryName;
+  const repo = props.repositoryName || t('repository.aiKnowledge.defaultRepositoryName');
   const parentPath = props.parentFolderName ? `/${props.parentFolderName}` : '';
-  const folderPath = createFolder.value ? `/${folderName.value || extractTopicName(prompt.value) || '新知识'}` : '';
+  const folderPath = createFolder.value
+    ? `/${folderName.value || extractTopicName(prompt.value) || t('repository.aiKnowledge.newKnowledge')}`
+    : '';
   return `${repo}${parentPath}${folderPath}`;
 });
 
@@ -205,21 +212,24 @@ const renderedContent = computed(() => {
   }
 });
 
-watch(() => props.open, (isOpen) => {
-  if (isOpen) {
-    // Reset state
-    prompt.value = '';
-    folderName.value = '';
-    createFolder.value = true;
-    generatedContent.value = '';
-    isGenerating.value = false;
-    isComplete.value = false;
-    error.value = '';
-    generatedResourceId.value = null;
-    generatedFileName.value = '';
-    resultPath.value = '';
-  }
-});
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen) {
+      // Reset state
+      prompt.value = '';
+      folderName.value = '';
+      createFolder.value = true;
+      generatedContent.value = '';
+      isGenerating.value = false;
+      isComplete.value = false;
+      error.value = '';
+      generatedResourceId.value = null;
+      generatedFileName.value = '';
+      resultPath.value = '';
+    }
+  },
+);
 
 watch(prompt, (newPrompt) => {
   if (!folderName.value && newPrompt) {
@@ -254,8 +264,12 @@ function handleOpenDocument() {
 
 // Expose methods for parent to control
 defineExpose({
-  setGenerating: (value: boolean) => { isGenerating.value = value; },
-  appendContent: (chunk: string) => { generatedContent.value += chunk; },
+  setGenerating: (value: boolean) => {
+    isGenerating.value = value;
+  },
+  appendContent: (chunk: string) => {
+    generatedContent.value += chunk;
+  },
   setComplete: (options: { fileName: string; filePath: string; resourceId: string }) => {
     generatedFileName.value = options.fileName;
     resultPath.value = options.filePath;

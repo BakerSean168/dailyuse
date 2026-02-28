@@ -1,15 +1,15 @@
 /**
  * KeyResultWeightSnapshot 值对象
- * 
+ *
  * 【规范说明：Class 类型值对象 - 参考 domain-shared-class-value-object-spec.md】
- * 
+ *
  * 关键成果权重快照：记录 KR 权重的历史变更
  * 用于权重调整的完整追溯和审计
- * 
+ *
  * 注意：
  * - 内部存储为 TransferDate (number/时间戳)
  * - Getter 返回 DomainDate (Date 对象)
- * 
+ *
  * 不可变性（所有修改返回新实例）
  */
 
@@ -20,11 +20,16 @@ import type {
   KeyResultWeightSnapshotPersistenceDTO,
   SnapshotTrigger,
 } from '@dailyuse/contracts/goal';
-import type { GoalId, KeyResultId, IdentityId, KeyResultWeightSnapshotId } from '@dailyuse/contracts/primitives';
+import type {
+  GoalId,
+  KeyResultId,
+  IdentityId,
+  KeyResultWeightSnapshotId,
+} from '@dailyuse/contracts/primitives';
 
 /**
  * KeyResultWeightSnapshot 值对象实现
- * 
+ *
  * 包含：
  * - id: 快照 ID
  * - goalId: 所属目标 ID
@@ -42,7 +47,6 @@ export class KeyResultWeightSnapshot
   extends ValueObject<KeyResultWeightSnapshotDTO>
   implements IKeyResultWeightSnapshot
 {
-
   private constructor(props: KeyResultWeightSnapshotDTO) {
     super(props);
   }
@@ -92,13 +96,13 @@ export class KeyResultWeightSnapshot
    * 集中校验逻辑
    */
   private static validate(props: KeyResultWeightSnapshotDTO): void {
-    // 权重值校验：0-100 之间
-    if (props.oldWeight < 0 || props.oldWeight > 100) {
-      throw new Error('Old weight must be between 0-100');
+    // 权重值校验：1-5 之间的整数
+    if (!Number.isInteger(props.oldWeight) || props.oldWeight < 1 || props.oldWeight > 5) {
+      throw new Error('Old weight must be an integer between 1-5');
     }
 
-    if (props.newWeight < 0 || props.newWeight > 100) {
-      throw new Error('New weight must be between 0-100');
+    if (!Number.isInteger(props.newWeight) || props.newWeight < 1 || props.newWeight > 5) {
+      throw new Error('New weight must be an integer between 1-5');
     }
 
     // 权重变化量校验：必须与实际差异相符
@@ -258,12 +262,12 @@ export class KeyResultWeightSnapshot
    */
   public getDisplayText(): string {
     const changeText = this.isIncreased
-      ? `↑ +${this.props.weightDelta.toFixed(2)}`
+      ? `↑ +${this.props.weightDelta}`
       : this.isDecreased
-        ? `↓ ${this.props.weightDelta.toFixed(2)}`
+        ? `↓ ${this.props.weightDelta}`
         : '→ 无变化';
 
-    return `${this.props.oldWeight.toFixed(2)} → ${this.props.newWeight.toFixed(2)} ${changeText}`;
+    return `${this.props.oldWeight} → ${this.props.newWeight} ${changeText}`;
   }
 
   /**

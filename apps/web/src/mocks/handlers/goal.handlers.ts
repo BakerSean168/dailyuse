@@ -13,6 +13,10 @@ import {
   createMockQueryGoalsRes,
   createMockGoalFolder,
   createMockKeyResult,
+  createMockGoalRecord,
+  createMockGoalRecordList,
+  createMockGoalReview,
+  createMockGoalReviewList,
 } from '@dailyuse/contracts/mocks';
 import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
@@ -165,39 +169,117 @@ export const goalHandlers = [
   }),
 
   // Reviews
-  http.get(`${GOALS}/:goalId/reviews`, () => {
+  http.get(`${GOALS}/:goalId/reviews`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
+    const reviews = createMockGoalReviewList(3, { goalId });
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: { data: [], total: 0 },
+      data: { data: reviews, total: reviews.length },
       timestamp: Date.now(),
     });
   }),
 
-  http.post(`${GOALS}/:goalId/reviews`, () => {
+  http.post(`${GOALS}/:goalId/reviews`, async ({ params, request }) => {
+    const goalId = toGoalId(params['goalId']);
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: {}, timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockGoalReview({ goalId, ...(body as object) }),
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
+  }),
+
+  http.put(`${GOALS}/:goalId/reviews/:reviewId`, async ({ params, request }) => {
+    const goalId = toGoalId(params['goalId']);
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: createMockGoalReview({ goalId, ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${GOALS}/:goalId/reviews/:reviewId`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Deleted',
+      data: {},
+      timestamp: Date.now(),
+    });
   }),
 
   // Records
-  http.get(`${GOALS}/:goalId/records`, () => {
+  http.get(`${GOALS}/:goalId/records`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
+    const records = createMockGoalRecordList(5, { goalId });
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: { data: [], total: 0 },
+      data: { data: records, total: records.length },
       timestamp: Date.now(),
     });
   }),
 
-  http.post(`${GOALS}/:goalId/key-results/:keyResultId/records`, () => {
+  http.get(`${GOALS}/:goalId/key-results/:keyResultId/records`, ({ params }) => {
+    const goalId = toGoalId(params['goalId']);
+    const keyResultId = (
+      Array.isArray(params['keyResultId'])
+        ? params['keyResultId'][0]
+        : (params['keyResultId'] ?? '')
+    ) as string;
+    const records = createMockGoalRecordList(3, { goalId, keyResultId: keyResultId as any });
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: { data: records, total: records.length },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${GOALS}/:goalId/key-results/:keyResultId/records`, async ({ params, request }) => {
+    const goalId = toGoalId(params['goalId']);
+    const keyResultId = (
+      Array.isArray(params['keyResultId'])
+        ? params['keyResultId'][0]
+        : (params['keyResultId'] ?? '')
+    ) as string;
+    const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json(
-      { ok: true, code: 200, message: 'Created', data: {}, timestamp: Date.now() },
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockGoalRecord({
+          goalId,
+          keyResultId: keyResultId as any,
+          ...(body as object),
+        }),
+        timestamp: Date.now(),
+      },
       { status: 201 },
     );
+  }),
+
+  http.delete(`${GOALS}/:goalId/key-results/:keyResultId/records/:recordId`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Deleted',
+      data: {},
+      timestamp: Date.now(),
+    });
   }),
 
   http.get(`${GOALS}/:id`, ({ params }) => {

@@ -71,7 +71,7 @@ const weightOption = computed(() => {
         const item = data[params.dataIndex];
         return `
           <div style="font-weight: bold; margin-bottom: 4px;">${params.name}</div>
-          <div>${t('goal.chart.krWeightDistribution.tooltipWeight')} ${item.value}/10</div>
+          <div>${t('goal.chart.krWeightDistribution.tooltipWeight')} ${item.value}/5</div>
           <div>${t('goal.chart.krWeightDistribution.tooltipPercent')} ${item.percentage}%</div>
         `;
       },

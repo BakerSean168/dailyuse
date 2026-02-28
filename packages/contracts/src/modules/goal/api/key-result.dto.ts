@@ -1,6 +1,6 @@
 /**
  * Goal - Key Result Operations
- * 
+ *
  * 关键结果(OKR)的管理操作
  */
 
@@ -25,7 +25,7 @@ export const AddKeyResultSchema = z.object({
   targetValue: z.number().min(0, '目标值不能为负数'),
   currentValue: z.number().optional(),
   unit: z.string().max(50).optional(),
-  weight: z.number().min(0).max(1, '权重必须在 0-1 之间'),
+  weight: z.number().int('权重必须为整数').min(1, '权重最小为 1').max(5, '权重最大为 5'),
 });
 
 export type AddKeyResultReq = z.infer<typeof AddKeyResultSchema>;
@@ -44,7 +44,7 @@ export const UpdateKeyResultSchema = z.object({
   startValue: z.number().optional(),
   targetValue: z.number().optional(),
   unit: z.string().max(50).nullable().optional(),
-  weight: z.number().min(0).max(1).optional(),
+  weight: z.number().int('权重必须为整数').min(1, '权重最小为 1').max(5, '权重最大为 5').optional(),
 });
 
 export type UpdateKeyResultReq = z.infer<typeof UpdateKeyResultSchema>;

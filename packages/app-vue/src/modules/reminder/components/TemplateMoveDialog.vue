@@ -4,7 +4,7 @@
       <DialogHeader>
         <div class="flex items-center gap-2">
           <FolderInput class="h-5 w-5 text-primary" />
-          <DialogTitle>Move Template</DialogTitle>
+          <DialogTitle>{{ t('reminder.templateMove.title') }}</DialogTitle>
         </div>
       </DialogHeader>
 
@@ -12,7 +12,7 @@
         <!-- Current Template Info -->
         <Alert v-if="template">
           <Info class="h-4 w-4" />
-          <AlertTitle>Current Template</AlertTitle>
+          <AlertTitle>{{ t('reminder.templateMove.currentTemplate') }}</AlertTitle>
           <AlertDescription>
             <div class="flex items-center gap-2 mt-1">
               <Bell class="h-4 w-4" />
@@ -20,17 +20,17 @@
             </div>
             <div v-if="template.groupId" class="flex items-center gap-2 mt-1 text-xs">
               <Folder class="h-3 w-3" />
-              <span>Current group: {{ getCurrentGroupName() }}</span>
+              <span>{{ t('reminder.templateMove.currentGroup') }} {{ getCurrentGroupName() }}</span>
             </div>
           </AlertDescription>
         </Alert>
 
         <!-- Target Group Selection -->
         <div class="space-y-2">
-          <Label>Target Group *</Label>
+          <Label>{{ t('reminder.templateMove.targetGroup') }}</Label>
           <Select v-model="selectedGroupId" :disabled="moveToRoot">
             <SelectTrigger>
-              <SelectValue placeholder="Select target group" />
+              <SelectValue :placeholder="t('reminder.templateMove.selectTargetGroup')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -42,8 +42,8 @@
                 <div class="flex items-center gap-2">
                   <component :is="getGroupIcon(group.icon)" class="h-4 w-4" />
                   <span>{{ group.name }}</span>
-                  <Badge v-if="group.id === template?.groupId" variant="outline" class="ml-auto">>
-                    Current
+                  <Badge v-if="group.id === template?.groupId" variant="outline" class="ml-auto"
+                    >> {{ t('reminder.templateMove.current') }}
                   </Badge>
                 </div>
               </SelectItem>
@@ -62,34 +62,41 @@
             for="move-to-root"
             class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
           >
-            Remove from all groups (move to desktop)
+            {{ t('reminder.templateMove.removeFromAllGroups') }}
           </Label>
         </div>
 
         <!-- Warning Alert -->
         <Alert v-if="moveToRoot" variant="destructive">
           <AlertCircle class="h-4 w-4" />
-          <AlertTitle>Warning</AlertTitle>
+          <AlertTitle>{{ t('reminder.templateMove.warning') }}</AlertTitle>
           <AlertDescription>
-            Template will be removed from current group and become an independent template.
+            {{ t('reminder.templateMove.warningDescription') }}
           </AlertDescription>
         </Alert>
 
         <!-- Target Group Info -->
         <Card v-if="selectedGroupId && !moveToRoot" class="p-4">
-          <h4 class="text-sm font-semibold mb-2">Target Group Info</h4>
+          <h4 class="text-sm font-semibold mb-2">
+            {{ t('reminder.templateMove.targetGroupInfo') }}
+          </h4>
           <div class="space-y-2 text-sm">
             <div class="flex items-center gap-2">
               <Info class="h-4 w-4 text-muted-foreground" />
-              <span>Name: {{ getGroupName(selectedGroupId) }}</span>
+              <span>{{ t('reminder.templateMove.name') }} {{ getGroupName(selectedGroupId) }}</span>
             </div>
             <div class="flex items-center gap-2">
               <Hash class="h-4 w-4 text-muted-foreground" />
-              <span>Templates: {{ getGroupTemplateCount(selectedGroupId) }}</span>
+              <span
+                >{{ t('reminder.templateMove.templates') }}
+                {{ getGroupTemplateCount(selectedGroupId) }}</span
+              >
             </div>
             <div class="flex items-center gap-2">
               <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
-              <span>Status: {{ getGroupStatus(selectedGroupId) }}</span>
+              <span
+                >{{ t('reminder.templateMove.status') }} {{ getGroupStatus(selectedGroupId) }}</span
+              >
             </div>
           </div>
         </Card>
@@ -97,11 +104,11 @@
 
       <DialogFooter class="flex-row justify-end gap-2">
         <Button variant="ghost" @click="close" :disabled="isMoving">
-          Cancel
+          {{ t('reminder.templateMove.cancel') }}
         </Button>
         <Button variant="default" @click="handleMove" :disabled="!canMove || isMoving">
           <Loader2 v-if="isMoving" class="h-4 w-4 mr-2 animate-spin" />
-          Move
+          {{ t('reminder.templateMove.move') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -110,6 +117,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   FolderInput,
   Info,
@@ -162,6 +170,8 @@ interface Props {
   templates?: ReminderTemplate[];
 }
 
+const { t } = useI18n();
+
 const props = withDefaults(defineProps<Props>(), {
   template: null,
   groups: () => [],
@@ -169,8 +179,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'moved': [templateId: string, targetGroupId: string | null];
-  'closed': [];
+  moved: [templateId: string, targetGroupId: string | null];
+  closed: [];
 }>();
 
 const visible = ref(false);
@@ -179,7 +189,7 @@ const moveToRoot = ref(false);
 const isMoving = ref(false);
 
 const groupOptions = computed(() => {
-  return props.groups.map(group => ({
+  return props.groups.map((group) => ({
     id: group.id,
     name: group.name,
     icon: group.icon || 'mdi-folder',
@@ -195,23 +205,23 @@ const canMove = computed(() => {
 });
 
 const getCurrentGroupName = (): string => {
-  if (!props.template?.groupId) return 'None';
-  const group = props.groups.find(g => g.id === props.template!.groupId);
-  return group?.name || 'Unknown Group';
+  if (!props.template?.groupId) return t('reminder.templateMove.none');
+  const group = props.groups.find((g) => g.id === props.template!.groupId);
+  return group?.name || t('reminder.templateMove.unknownGroup');
 };
 
 const getGroupName = (groupId: string): string => {
-  const group = props.groups.find(g => g.id === groupId);
-  return group?.name || 'Unknown';
+  const group = props.groups.find((g) => g.id === groupId);
+  return group?.name || t('reminder.templateMove.unknown');
 };
 
 const getGroupStatus = (groupId: string): string => {
-  const group = props.groups.find(g => g.id === groupId);
-  return group?.enabled ? 'Enabled' : 'Disabled';
+  const group = props.groups.find((g) => g.id === groupId);
+  return group?.enabled ? t('reminder.templateMove.enabled') : t('reminder.templateMove.disabled');
 };
 
 const getGroupTemplateCount = (groupId: string): number => {
-  return props.templates.filter(t => t.groupId === groupId).length;
+  return props.templates.filter((t) => t.groupId === groupId).length;
 };
 
 const getGroupIcon = (icon?: string) => {
@@ -261,11 +271,15 @@ const handleMove = async () => {
   }
 };
 
-watch(() => props.template, (newTemplate) => {
-  if (newTemplate) {
-    selectedGroupId.value = newTemplate.groupId || undefined;
-  }
-}, { immediate: true });
+watch(
+  () => props.template,
+  (newTemplate) => {
+    if (newTemplate) {
+      selectedGroupId.value = newTemplate.groupId || undefined;
+    }
+  },
+  { immediate: true },
+);
 
 watch(selectedGroupId, (newVal) => {
   if (newVal) {

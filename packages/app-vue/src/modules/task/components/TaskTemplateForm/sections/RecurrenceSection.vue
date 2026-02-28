@@ -114,7 +114,27 @@
             <!-- 结束日期 -->
             <div v-if="endConditionType === 'date'">
               <Label class="mb-2 block">{{ t('task.recurrence.endDate') }}</Label>
-              <Input v-model="endDate" type="date" />
+              <Popover>
+                <PopoverTrigger as-child>
+                  <Button
+                    variant="outline"
+                    class="w-full justify-start text-left font-normal"
+                    :class="{ 'text-muted-foreground': !endDate }"
+                  >
+                    <CalendarIcon class="mr-2 h-4 w-4" />
+                    {{
+                      endDate ? formatEndDateDisplay(endDate) : t('task.recurrence.selectEndDate')
+                    }}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent class="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    :selected="endDateAsDate"
+                    @update:model-value="handleEndDateCalendarSelect"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <!-- 次数限制 -->
@@ -156,14 +176,50 @@ import {
   SelectContent,
   SelectItem,
   Input,
+  Button,
   Badge,
   Separator,
   RadioGroup,
   RadioGroupItem,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Calendar,
 } from '@dailyuse/ui-vue-shadcn';
-import { Repeat, Info } from 'lucide-vue-next';
+import { Repeat, Info, Calendar as CalendarIcon } from 'lucide-vue-next';
 
 const { t } = useI18n();
+
+/** Format a YYYY-MM-DD date string for display */
+function formatEndDateDisplay(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+/** Convert endDate string to Date for Calendar :selected */
+const endDateAsDate = computed(() => {
+  if (!endDate.value) return undefined;
+  return new Date(endDate.value + 'T00:00:00');
+});
+
+/** Handle Calendar selection for end date */
+function handleEndDateCalendarSelect(date: unknown) {
+  if (date instanceof Date) {
+    endDate.value = formatDateToYMD(date);
+  } else if (date && typeof date === 'object' && 'toDate' in date) {
+    endDate.value = formatDateToYMD((date as { toDate: () => Date }).toDate());
+  } else {
+    endDate.value = '';
+  }
+}
+
+function formatDateToYMD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 /**
  * 获取默认结束日期（今天 + 配置的天数）

@@ -89,7 +89,10 @@ export class KeyResultNotFoundInGoalError extends DomainError {
  */
 export class GoalDeletedError extends DomainError {
   constructor(goalId?: string) {
-    super('goal_deleted', goalId ? `目标 ${goalId} 已删除，无法执行此操作` : '目标已删除，无法执行此操作');
+    super(
+      'goal_deleted',
+      goalId ? `目标 ${goalId} 已删除，无法执行此操作` : '目标已删除，无法执行此操作',
+    );
   }
 }
 
@@ -98,7 +101,10 @@ export class GoalDeletedError extends DomainError {
  */
 export class GoalArchivedError extends DomainError {
   constructor(goalId?: string) {
-    super('goal_archived', goalId ? `目标 ${goalId} 已归档，无法执行此操作` : '目标已归档，无法执行此操作');
+    super(
+      'goal_archived',
+      goalId ? `目标 ${goalId} 已归档，无法执行此操作` : '目标已归档，无法执行此操作',
+    );
   }
 }
 
@@ -116,7 +122,7 @@ export class GoalNameTooLongError extends DomainError {
  */
 export class KeyResultWeightInvalidError extends DomainError {
   constructor(weight: number) {
-    super('key_result_weight_invalid', `关键结果权重 ${weight} 无效（必须在 0-100 之间）`);
+    super('key_result_weight_invalid', `关键结果权重 ${weight} 无效（必须在 1-5 之间的整数）`);
   }
 }
 
@@ -127,7 +133,7 @@ export class KeyResultWeightExceededError extends DomainError {
   constructor(currentTotal: number, adding: number) {
     super(
       'key_result_weight_exceeded',
-      `关键结果权重总和超出：当前 ${currentTotal}，添加 ${adding}，总和将超过 100`,
+      `关键结果权重超出范围：当前总计 ${currentTotal}，添加 ${adding}`,
     );
   }
 }

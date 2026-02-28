@@ -4,15 +4,13 @@
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b">
         <Button variant="destructive" @click="close" :disabled="isSaving">
-          Cancel
+          {{ t('reminder.groupDialog.btnCancel') }}
         </Button>
-        <DialogTitle class="text-xl">{{ isEditMode ? 'Edit Group' : 'Create Group' }}</DialogTitle>
-        <Button
-          variant="default"
-          @click="handleSave"
-          :disabled="!formValid || isSaving"
-        >
-          Done
+        <DialogTitle class="text-xl">{{
+          isEditMode ? t('reminder.groupDialog.titleEdit') : t('reminder.groupDialog.titleCreate')
+        }}</DialogTitle>
+        <Button variant="default" @click="handleSave" :disabled="!formValid || isSaving">
+          {{ t('reminder.groupDialog.btnDone') }}
         </Button>
       </div>
 
@@ -23,17 +21,19 @@
           <div class="space-y-3">
             <div class="flex items-center gap-2 mb-3">
               <Info class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">Basic Information</h3>
+              <h3 class="text-sm font-semibold">
+                {{ t('reminder.groupDialog.sectionBasicInfo') }}
+              </h3>
             </div>
             <Separator />
 
             <div class="flex gap-3">
               <div class="flex-1">
-                <Label for="group-name">Group Name *</Label>
+                <Label for="group-name">{{ t('reminder.groupDialog.labelName') }}</Label>
                 <Input
                   id="group-name"
                   v-model="formData.name"
-                  placeholder="e.g., Work Reminders, Personal"
+                  :placeholder="t('reminder.groupDialog.placeholderName')"
                   maxlength="50"
                   autofocus
                   class="mt-1.5"
@@ -48,7 +48,9 @@
                 />
                 <Popover v-model:open="showColorPicker">
                   <PopoverTrigger as-child>
-                    <Button variant="ghost" size="sm" class="mt-1 h-6 text-xs">Pick</Button>
+                    <Button variant="ghost" size="sm" class="mt-1 h-6 text-xs">{{
+                      t('reminder.groupDialog.btnPick')
+                    }}</Button>
                   </PopoverTrigger>
                   <PopoverContent class="w-auto p-3">
                     <div class="grid grid-cols-4 gap-2">
@@ -56,9 +58,15 @@
                         v-for="color in colorOptions"
                         :key="color"
                         class="w-8 h-8 rounded-full cursor-pointer border-2 transition-all hover:scale-110"
-                        :class="{ 'border-primary': formData.color === color, 'border-transparent': formData.color !== color }"
+                        :class="{
+                          'border-primary': formData.color === color,
+                          'border-transparent': formData.color !== color,
+                        }"
                         :style="{ backgroundColor: color }"
-                        @click="formData.color = color; showColorPicker = false"
+                        @click="
+                          formData.color = color;
+                          showColorPicker = false;
+                        "
                       />
                     </div>
                   </PopoverContent>
@@ -67,16 +75,20 @@
             </div>
 
             <div>
-              <Label for="group-description">Description</Label>
+              <Label for="group-description">{{
+                t('reminder.groupDialog.labelDescription')
+              }}</Label>
               <Textarea
                 id="group-description"
                 v-model="formData.description"
-                placeholder="Describe the purpose of this group..."
+                :placeholder="t('reminder.groupDialog.placeholderDescription')"
                 rows="3"
                 maxlength="200"
                 class="mt-1.5"
               />
-              <p class="text-xs text-muted-foreground mt-1">{{ formData.description?.length || 0 }}/200</p>
+              <p class="text-xs text-muted-foreground mt-1">
+                {{ formData.description?.length || 0 }}/200
+              </p>
             </div>
           </div>
 
@@ -84,7 +96,9 @@
           <div class="space-y-3">
             <div class="flex items-center gap-2 mb-3">
               <Palette class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">Appearance</h3>
+              <h3 class="text-sm font-semibold">
+                {{ t('reminder.groupDialog.sectionAppearance') }}
+              </h3>
             </div>
             <Separator />
 
@@ -97,7 +111,7 @@
                 </PopoverTrigger>
                 <PopoverContent class="w-80">
                   <div class="space-y-2">
-                    <h4 class="text-sm font-medium">Select Icon</h4>
+                    <h4 class="text-sm font-medium">{{ t('reminder.groupDialog.selectIcon') }}</h4>
                     <div class="grid grid-cols-6 gap-2">
                       <Button
                         v-for="icon in iconOptions"
@@ -113,13 +127,15 @@
                 </PopoverContent>
               </Popover>
               <div class="flex-1">
-                <p class="text-sm font-medium">Icon</p>
-                <p class="text-xs text-muted-foreground">Current: {{ formData.icon }}</p>
+                <p class="text-sm font-medium">{{ t('reminder.groupDialog.labelIcon') }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ t('reminder.groupDialog.currentIcon', { icon: formData.icon }) }}
+                </p>
               </div>
             </div>
 
             <div>
-              <Label for="group-order">Sort Order</Label>
+              <Label for="group-order">{{ t('reminder.groupDialog.labelSortOrder') }}</Label>
               <Input
                 id="group-order"
                 v-model.number="formData.order"
@@ -127,7 +143,9 @@
                 placeholder="0"
                 class="mt-1.5"
               />
-              <p class="text-xs text-muted-foreground mt-1">Lower numbers appear first</p>
+              <p class="text-xs text-muted-foreground mt-1">
+                {{ t('reminder.groupDialog.hintSortOrder') }}
+              </p>
             </div>
           </div>
 
@@ -135,7 +153,9 @@
           <div class="space-y-3">
             <div class="flex items-center gap-2 mb-3">
               <Settings class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">Control Mode</h3>
+              <h3 class="text-sm font-semibold">
+                {{ t('reminder.groupDialog.sectionControlMode') }}
+              </h3>
             </div>
             <Separator />
 
@@ -143,15 +163,19 @@
               <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
                 <RadioGroupItem value="Individual" id="individual" />
                 <Label for="individual" class="flex-1 cursor-pointer">
-                  <div class="font-medium">Individual Control</div>
-                  <div class="text-xs text-muted-foreground">Each reminder template can be enabled/paused independently</div>
+                  <div class="font-medium">{{ t('reminder.groupDialog.controlIndividual') }}</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('reminder.groupDialog.controlIndividualDesc') }}
+                  </div>
                 </Label>
               </div>
               <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
                 <RadioGroupItem value="Group" id="group" />
                 <Label for="group" class="flex-1 cursor-pointer">
-                  <div class="font-medium">Group Control</div>
-                  <div class="text-xs text-muted-foreground">All reminder templates are enabled/paused together</div>
+                  <div class="font-medium">{{ t('reminder.groupDialog.controlGroup') }}</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ t('reminder.groupDialog.controlGroupDesc') }}
+                  </div>
                 </Label>
               </div>
             </RadioGroup>
@@ -164,6 +188,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   Info,
   Palette,
@@ -179,11 +204,7 @@ import {
   DollarSign,
   Users,
 } from 'lucide-vue-next';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@dailyuse/ui-vue-shadcn';
+import { Dialog, DialogContent, DialogTitle } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
@@ -191,11 +212,7 @@ import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { RadioGroup, RadioGroupItem } from '@dailyuse/ui-vue-shadcn';
 import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@dailyuse/ui-vue-shadcn';
+import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
 
 interface ReminderGroup {
   id?: string;
@@ -213,9 +230,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const { t } = useI18n();
+
 const emit = defineEmits<{
-  'save': [data: Omit<ReminderGroup, 'id'>];
-  'update': [id: string, data: Omit<ReminderGroup, 'id'>];
+  save: [data: Omit<ReminderGroup, 'id'>];
+  update: [id: string, data: Omit<ReminderGroup, 'id'>];
 }>();
 
 const visible = ref(false);
@@ -232,8 +251,14 @@ const formData = reactive({
 });
 
 const colorOptions = [
-  '#2196F3', '#4CAF50', '#FF9800', '#F44336',
-  '#9C27B0', '#E91E63', '#00BCD4', '#9E9E9E',
+  '#2196F3',
+  '#4CAF50',
+  '#FF9800',
+  '#F44336',
+  '#9C27B0',
+  '#E91E63',
+  '#00BCD4',
+  '#9E9E9E',
 ];
 
 const iconOptions = [
@@ -253,7 +278,7 @@ const isEditMode = computed(() => !!props.group?.id);
 const formValid = computed(() => formData.name.trim().length >= 2);
 
 const getIcon = (iconValue: string) => {
-  const option = iconOptions.find(opt => opt.value === iconValue);
+  const option = iconOptions.find((opt) => opt.value === iconValue);
   return option?.icon || Folder;
 };
 
@@ -316,7 +341,7 @@ const handleSave = async () => {
     } else {
       emit('save', data);
     }
-    
+
     close();
   } finally {
     isSaving.value = false;
