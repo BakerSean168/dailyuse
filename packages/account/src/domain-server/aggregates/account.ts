@@ -2,10 +2,7 @@
  * Account 聚合根实�?
  */
 
-import type {
-  AccountClientDTO,
-  AccountServerDTO,
-} from '@dailyuse/contracts/account';
+import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
 
 // IdentityId from shared primitives (cross-module shared type)
@@ -36,7 +33,6 @@ export interface AccountState {
 }
 
 export class Account extends AggregateRoot<IdentityId> {
-
   private _props: AccountState;
 
   private constructor(state: AccountState) {
@@ -46,22 +42,37 @@ export class Account extends AggregateRoot<IdentityId> {
 
   // ================= Getters =================
 
-  get profile(): AccountProfile { return this._props.profile; }
-  get email(): ContactEmail { return this._props.email; }
-  get settings(): AccountSettings { return this._props.settings; }
-  get status(): AccountStatus { return this._props.status; }
-  get phone(): ContactPhone | null { return this._props.phone; }
-  get version(): number { return this._props.version; }
-  get deletedAt(): Date | null { return this._props.deletedAt; }
-  get createdAt(): Date { return this._props.createdAt; }
-  get updatedAt(): Date { return this._props.updatedAt; }
+  get profile(): AccountProfile {
+    return this._props.profile;
+  }
+  get email(): ContactEmail {
+    return this._props.email;
+  }
+  get settings(): AccountSettings {
+    return this._props.settings;
+  }
+  get status(): AccountStatus {
+    return this._props.status;
+  }
+  get phone(): ContactPhone | null {
+    return this._props.phone;
+  }
+  get version(): number {
+    return this._props.version;
+  }
+  get deletedAt(): Date | null {
+    return this._props.deletedAt;
+  }
+  get createdAt(): Date {
+    return this._props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this._props.updatedAt;
+  }
 
   // ================= 工厂方法 =================
 
-  public static create(params: {
-    id: IdentityId;
-    email: string;
-  }): Account {
+  public static create(params: { id: IdentityId; email: string }): Account {
     const now = new Date();
     const state: AccountState = {
       id: params.id,
@@ -97,6 +108,24 @@ export class Account extends AggregateRoot<IdentityId> {
 
   private refreshUpdatedAt(): void {
     this._props.updatedAt = new Date();
+  }
+
+  public updateProfile(profile: AccountProfile): void {
+    this._props.profile = profile;
+    this.refreshUpdatedAt();
+
+    this.addDomainEvent<AccountEventMap['account:update-profile']>('account:update-profile', {
+      changes: ['profile'],
+    });
+  }
+
+  public updateSettings(settings: AccountSettings): void {
+    this._props.settings = settings;
+    this.refreshUpdatedAt();
+
+    this.addDomainEvent<AccountEventMap['account:update-settings']>('account:update-settings', {
+      settingKeys: ['settings'],
+    });
   }
 
   public close(): void {
@@ -146,5 +175,4 @@ export class Account extends AggregateRoot<IdentityId> {
       deletedAt: this._props.deletedAt ? this._props.deletedAt.getTime() : null,
     };
   }
-
 }

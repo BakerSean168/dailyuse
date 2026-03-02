@@ -3,6 +3,12 @@
  *
  * Provides factory functions for generating test IdentityId values
  * and minimal account-related test data.
+ *
+ * NOTE: Full Account aggregate fixtures (anAccount, aLoadedAccount, etc.)
+ * are intentionally NOT placed here to avoid a circular dependency
+ * between test-utils and @dailyuse/account. Instead, each test file in the
+ * account module creates its own local helpers following the pattern
+ * established in the task module tests.
  */
 
 import { IdentityId } from '@dailyuse/domain-shared';

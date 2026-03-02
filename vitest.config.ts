@@ -399,6 +399,20 @@ export default defineConfig({
           testTimeout: 10000,
         },
       },
+      // Account unit tests
+      {
+        extends: true,
+        plugins: [domainResolveAtAlias],
+        resolve: { alias: domainResolveAliases },
+        test: {
+          name: 'account',
+          root: './packages/account',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+          testTimeout: 10000,
+        },
+      },
       // Goal unit tests
       {
         extends: true,

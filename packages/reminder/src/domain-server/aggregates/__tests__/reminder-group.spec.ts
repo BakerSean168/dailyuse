@@ -1,0 +1,327 @@
+import { describe, it, expect } from 'vitest';
+import { ReminderGroup } from '../reminder-group';
+import type { ReminderGroupState } from '../reminder-group';
+import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
+import { GroupStats } from '../../value-objects';
+import { generateUUID } from '@dailyuse/utils';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function makeGroupState(overrides: Partial<ReminderGroupState> = {}): ReminderGroupState {
+  const now = new Date();
+  return {
+    id: generateUUID(),
+    identityId: `IdentityId_${generateUUID()}`,
+    name: 'Test Group',
+    description: null,
+    controlMode: ControlMode.Individual,
+    enabled: true,
+    status: ReminderStatus.Active,
+    order: 0,
+    color: null,
+    icon: null,
+    stats: GroupStats.createEmpty(),
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    version: 1,
+    ...overrides,
+  };
+}
+
+// ===========================================================================
+// Tests
+// ===========================================================================
+
+describe('ReminderGroup aggregate', () => {
+  // -----------------------------------------------------------------------
+  // Factory: create()
+  // -----------------------------------------------------------------------
+  describe('create()', () => {
+    it('should create a group with required fields', () => {
+      const group = ReminderGroup.create({
+        identityId: 'IdentityId_test-user',
+        name: 'Morning Reminders',
+      });
+
+      expect(group.name).toBe('Morning Reminders');
+      expect(group.controlMode).toBe(ControlMode.Individual);
+      expect(group.enabled).toBe(true);
+      expect(group.status).toBe(ReminderStatus.Active);
+      expect(group.version).toBe(1);
+      expect(group.deletedAt).toBeNull();
+    });
+
+    it('should generate a unique id', () => {
+      const g1 = ReminderGroup.create({ identityId: 'id1', name: 'G1' });
+      const g2 = ReminderGroup.create({ identityId: 'id2', name: 'G2' });
+      expect(g1.id).not.toBe(g2.id);
+    });
+
+    it('should apply optional fields when provided', () => {
+      const group = ReminderGroup.create({
+        identityId: 'IdentityId_test',
+        name: 'Custom',
+        controlMode: ControlMode.Group,
+        description: 'Desc',
+        color: '#AABB00',
+        icon: 'folder',
+        order: 5,
+      });
+
+      expect(group.controlMode).toBe(ControlMode.Group);
+      expect(group.description).toBe('Desc');
+      expect(group.color).toBe('#AABB00');
+      expect(group.icon).toBe('folder');
+      expect(group.order).toBe(5);
+    });
+
+    it('should emit a ReminderGroupCreated domain event', () => {
+      const group = ReminderGroup.create({
+        identityId: 'IdentityId_test',
+        name: 'Event Test',
+      });
+      const events = group.pullDomainEvents();
+      expect(events.length).toBeGreaterThanOrEqual(1);
+      const createdEvent = events.find((e) => e.eventType === 'ReminderGroupCreated');
+      expect(createdEvent).toBeDefined();
+    });
+
+    it('should initialize stats as empty', () => {
+      const group = ReminderGroup.create({ identityId: 'id1', name: 'Stats' });
+      expect(group.stats.totalTemplates).toBe(0);
+      expect(group.stats.activeTemplates).toBe(0);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Factory: load()
+  // -----------------------------------------------------------------------
+  describe('load()', () => {
+    it('should reconstruct a group from state', () => {
+      const state = makeGroupState({ name: 'Loaded Group', version: 3 });
+      const group = ReminderGroup.load(state);
+      expect(group.name).toBe('Loaded Group');
+      expect(group.version).toBe(3);
+    });
+
+    it('should not emit domain events on load', () => {
+      const group = ReminderGroup.load(makeGroupState());
+      const events = group.pullDomainEvents();
+      expect(events).toHaveLength(0);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Control mode switching
+  // -----------------------------------------------------------------------
+  describe('switchToGroupControl()', () => {
+    it('should switch from Individual to Group', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
+      group.switchToGroupControl();
+      expect(group.controlMode).toBe(ControlMode.Group);
+    });
+
+    it('should emit event on switch', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
+      group.switchToGroupControl();
+      const events = group.pullDomainEvents();
+      expect(events.some((e) => e.eventType === 'ReminderGroupControlModeSwitched')).toBe(true);
+    });
+
+    it('should be idempotent if already Group', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Group }));
+      group.switchToGroupControl();
+      const events = group.pullDomainEvents();
+      expect(events).toHaveLength(0);
+    });
+  });
+
+  describe('switchToIndividualControl()', () => {
+    it('should switch from Group to Individual', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Group }));
+      group.switchToIndividualControl();
+      expect(group.controlMode).toBe(ControlMode.Individual);
+    });
+
+    it('should be idempotent if already Individual', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
+      group.switchToIndividualControl();
+      const events = group.pullDomainEvents();
+      expect(events).toHaveLength(0);
+    });
+  });
+
+  describe('toggleControlMode()', () => {
+    it('should toggle from Individual to Group', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
+      group.toggleControlMode();
+      expect(group.controlMode).toBe(ControlMode.Group);
+    });
+
+    it('should toggle from Group to Individual', () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Group }));
+      group.toggleControlMode();
+      expect(group.controlMode).toBe(ControlMode.Individual);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // enable() / pause() / toggle()
+  // -----------------------------------------------------------------------
+  describe('enable()', () => {
+    it('should enable the group', () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ enabled: false, status: ReminderStatus.Paused }),
+      );
+      group.enable();
+      expect(group.enabled).toBe(true);
+      expect(group.status).toBe(ReminderStatus.Active);
+    });
+
+    it('should emit ReminderGroupEnabled event', () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ enabled: false, status: ReminderStatus.Paused }),
+      );
+      group.enable();
+      const events = group.pullDomainEvents();
+      expect(events.some((e) => e.eventType === 'ReminderGroupEnabled')).toBe(true);
+    });
+  });
+
+  describe('pause()', () => {
+    it('should pause the group', () => {
+      const group = ReminderGroup.load(makeGroupState());
+      group.pause();
+      expect(group.enabled).toBe(false);
+      expect(group.status).toBe(ReminderStatus.Paused);
+    });
+
+    it('should emit ReminderGroupPaused event', () => {
+      const group = ReminderGroup.load(makeGroupState());
+      group.pause();
+      const events = group.pullDomainEvents();
+      expect(events.some((e) => e.eventType === 'ReminderGroupPaused')).toBe(true);
+    });
+  });
+
+  describe('toggle()', () => {
+    it('should pause an enabled group', () => {
+      const group = ReminderGroup.load(makeGroupState({ enabled: true }));
+      group.toggle();
+      expect(group.enabled).toBe(false);
+    });
+
+    it('should enable a disabled group', () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ enabled: false, status: ReminderStatus.Paused }),
+      );
+      group.toggle();
+      expect(group.enabled).toBe(true);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // enableAllTemplates() / pauseAllTemplates()
+  // -----------------------------------------------------------------------
+  describe('enableAllTemplates()', () => {
+    it('should throw if not in GROUP mode', async () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
+      await expect(group.enableAllTemplates()).rejects.toThrow('只能在 GROUP 模式下批量启用模板');
+    });
+
+    it('should succeed in GROUP mode', async () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ controlMode: ControlMode.Group, enabled: false }),
+      );
+      await group.enableAllTemplates();
+      expect(group.enabled).toBe(true);
+    });
+  });
+
+  describe('pauseAllTemplates()', () => {
+    it('should throw if not in GROUP mode', async () => {
+      const group = ReminderGroup.load(makeGroupState({ controlMode: ControlMode.Individual }));
+      await expect(group.pauseAllTemplates()).rejects.toThrow('只能在 GROUP 模式下批量暂停模板');
+    });
+
+    it('should succeed in GROUP mode', async () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ controlMode: ControlMode.Group, enabled: true }),
+      );
+      await group.pauseAllTemplates();
+      expect(group.enabled).toBe(false);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // activate() / softDelete() / restore()
+  // -----------------------------------------------------------------------
+  describe('activate()', () => {
+    it('should set status to Active and clear deletedAt', () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ status: ReminderStatus.Paused, deletedAt: Date.now() }),
+      );
+      group.activate();
+      expect(group.status).toBe(ReminderStatus.Active);
+      expect(group.deletedAt).toBeNull();
+    });
+  });
+
+  describe('softDelete()', () => {
+    it('should set deletedAt and pause', () => {
+      const group = ReminderGroup.load(makeGroupState());
+      group.softDelete();
+      expect(group.deletedAt).not.toBeNull();
+      expect(group.status).toBe(ReminderStatus.Paused);
+    });
+
+    it('should emit ReminderGroupDeleted event', () => {
+      const group = ReminderGroup.load(makeGroupState());
+      group.softDelete();
+      const events = group.pullDomainEvents();
+      expect(events.some((e) => e.eventType === 'ReminderGroupDeleted')).toBe(true);
+    });
+  });
+
+  describe('restore()', () => {
+    it('should clear deletedAt and set Active', () => {
+      const group = ReminderGroup.load(
+        makeGroupState({ deletedAt: Date.now(), status: ReminderStatus.Paused }),
+      );
+      group.restore();
+      expect(group.deletedAt).toBeNull();
+      expect(group.status).toBe(ReminderStatus.Active);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // toServerDTO() / toClientDTO()
+  // -----------------------------------------------------------------------
+  describe('toServerDTO()', () => {
+    it('should return a valid server DTO', () => {
+      const group = ReminderGroup.load(makeGroupState({ name: 'DTO Test' }));
+      const dto = group.toServerDTO();
+      expect(dto.name).toBe('DTO Test');
+      expect(dto.stats).toBeDefined();
+    });
+  });
+
+  describe('toClientDTO()', () => {
+    it('should return a client DTO with display fields', () => {
+      const group = ReminderGroup.load(
+        makeGroupState({
+          name: 'Client DTO',
+          controlMode: ControlMode.Group,
+          status: ReminderStatus.Active,
+        }),
+      );
+      const dto = group.toClientDTO();
+      expect(dto.displayName).toBe('Client DTO');
+      expect(dto.controlModeText).toBe('组控制');
+      expect(dto.statusText).toBe('活跃');
+    });
+  });
+});

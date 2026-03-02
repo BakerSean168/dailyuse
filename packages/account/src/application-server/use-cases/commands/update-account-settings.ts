@@ -14,7 +14,10 @@ export interface UpdateSettingsResult {
 export class UpdateAccountSettingsUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}
 
-  async execute(accountId: string, request: UpdateAccountSettingsReq): Promise<UpdateSettingsResult> {
+  async execute(
+    accountId: string,
+    request: UpdateAccountSettingsReq,
+  ): Promise<UpdateSettingsResult> {
     const account = await this.accountRepository.findById(accountId);
     if (!account) {
       throw new Error(`Account not found: ${accountId}`);
@@ -37,6 +40,9 @@ export class UpdateAccountSettingsUseCase {
         ? settings.enableNotification()
         : settings.disableNotification();
     }
+
+    // Write updated settings back to aggregate
+    account.updateSettings(settings);
 
     await this.accountRepository.save(account);
 

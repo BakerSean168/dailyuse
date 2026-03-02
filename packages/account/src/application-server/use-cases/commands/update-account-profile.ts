@@ -34,6 +34,9 @@ export class UpdateAccountProfileUseCase {
       profile = request.bio ? profile.updateBio(request.bio) : profile;
     }
 
+    // Write updated profile back to aggregate
+    account.updateProfile(profile);
+
     // Note: Settings updates (timezone, language) go through UpdateAccountSettingsUseCase
 
     await this.accountRepository.save(account);
