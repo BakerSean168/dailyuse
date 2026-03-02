@@ -3,7 +3,7 @@
  * 完成记录值对象 - 接口
  */
 
-import type { TaskInstanceId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { TaskInstanceId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 
 
 // ============ 接口定义 ============

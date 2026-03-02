@@ -2,7 +2,7 @@
  * Generated Task Preview DTO
  */
 
-import type { AiProviderConfigId } from '@/primitives';
+import type { AiProviderConfigId } from '../../../primitives';
 
 export interface GeneratedTaskPreview {
   title: string;

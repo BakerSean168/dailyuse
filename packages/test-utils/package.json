@@ -1,17 +1,25 @@
 {
-  "name": "test-utils",
+  "name": "@dailyuse/test-utils",
   "version": "0.1.0",
   "type": "module",
   "description": "Unified testing utilities for DailyUse monorepo",
-  "main": "./src/setup/database.ts",
-  "types": "./src/setup/database.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
-    "./database": "./src/setup/database.ts"
+    ".": "./src/index.ts",
+    "./helpers": "./src/helpers/index.ts",
+    "./helpers/*": "./src/helpers/*.ts",
+    "./mocks": "./src/mocks/index.ts",
+    "./fixtures": "./src/fixtures/index.ts",
+    "./fixtures/*": "./src/fixtures/*.ts",
+    "./setup": "./src/setup/database.ts",
+    "./setup/*": "./src/setup/*.ts"
   },
   "dependencies": {
     "vitest": "^4.0.15"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "typescript": "^5.9.3"
   }
 }

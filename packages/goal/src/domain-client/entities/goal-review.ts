@@ -9,13 +9,9 @@
  * - Instance toDTO(): GoalReviewClientDTO
  */
 
-import type {
-  GoalReviewClientDTO,
-  KeyResultSnapshot,
-  ReviewType,
-} from '@dailyuse/contracts/goal';
+import type { GoalReviewClientDTO, KeyResultSnapshot, ReviewType } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
-import { GoalReviewId, GoalId } from '@/domain-shared';
+import { GoalReviewId, GoalId } from '../../domain-shared';
 
 export interface GoalReviewState {
   id: GoalReviewId;

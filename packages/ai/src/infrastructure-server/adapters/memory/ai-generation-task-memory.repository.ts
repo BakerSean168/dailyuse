@@ -5,7 +5,11 @@
  */
 
 import type { IAIGenerationTaskRepository } from '../../../domain-server';
-import type { AIGenerationTaskServerDTO, TaskStatus, GenerationTaskType } from '@dailyuse/contracts/ai';
+import type {
+  AIGenerationTaskServerDTO,
+  TaskStatus,
+  GenerationTaskType,
+} from '@dailyuse/contracts/ai';
 
 /**
  * AIGenerationTask Memory Repository
@@ -23,11 +27,14 @@ export class AIGenerationTaskMemoryRepository implements IAIGenerationTaskReposi
     return this.tasks.get(id) ?? null;
   }
 
-  async findByAccountId(identityId: string): Promise<AIGenerationTaskServerDTO[]> {
+  async findByIdentityId(identityId: string): Promise<AIGenerationTaskServerDTO[]> {
     return Array.from(this.tasks.values()).filter((t) => t.identityId === identityId);
   }
 
-  async findByTaskType(identityId: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
+  async findByTaskType(
+    identityId: string,
+    taskType: GenerationTaskType,
+  ): Promise<AIGenerationTaskServerDTO[]> {
     return Array.from(this.tasks.values()).filter(
       (t) => t.identityId === identityId && t.type === taskType,
     );
@@ -39,7 +46,11 @@ export class AIGenerationTaskMemoryRepository implements IAIGenerationTaskReposi
     );
   }
 
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+  async findRecent(
+    identityId: string,
+    limit: number,
+    offset?: number,
+  ): Promise<AIGenerationTaskServerDTO[]> {
     const filtered = Array.from(this.tasks.values())
       .filter((t) => t.identityId === identityId)
       .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));

@@ -6,7 +6,7 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
+import { brandedId } from '../../../primitives';
 import type {
   GoalId,
   GoalFolderId,
@@ -15,7 +15,7 @@ import type {
   IdentityId,
   GoalRecordId,
   FocusSessionId,
-} from '@/primitives';
+} from '../../../primitives';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';

@@ -3,7 +3,7 @@
  * 任务目标绑定值对象 - 服务端接口
  */
 
-import type { GoalId, KeyResultId } from '@/primitives';
+import type { GoalId, KeyResultId } from '../../../primitives';
 
 // ============ 接口定义 ============
 

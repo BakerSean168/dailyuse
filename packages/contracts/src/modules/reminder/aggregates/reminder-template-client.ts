@@ -9,7 +9,7 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-} from '@/primitives';
+} from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { ReminderType } from '../value-objects/reminder-type';
 import type { ReminderStatus } from '../value-objects/reminder-status';

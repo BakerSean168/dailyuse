@@ -3,7 +3,7 @@
  * 文档实体 - 服务端接�?
  */
 
-import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { DocumentLanguage } from '../value-objects/document-language';
 import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentClientDTO } from './document-client';

@@ -16,8 +16,8 @@ export interface TaskFolderSqliteRow {
 export class SqliteTaskFolderMapper {
   static toDTO(row: TaskFolderSqliteRow): TaskFolderServerDTO {
     return {
-      id: row.id,
-      identityId: row.identity_id,
+      id: row.id as TaskFolderServerDTO['id'],
+      identityId: row.identity_id as TaskFolderServerDTO['identityId'],
       name: row.name,
       color: row.color,
       icon: row.icon,

@@ -15,7 +15,7 @@ import type {
   DomainDate,
   TransferDate,
   PersistenceDate,
-} from '@/primitives';
+} from '../../../primitives';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {

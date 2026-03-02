@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "noEmit": true,
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@dailyuse/contracts": ["packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/primitives": ["packages/contracts/src/primitives/index.ts"],
+      "@dailyuse/contracts/shared": ["packages/contracts/src/shared/index.ts"],
+      "@dailyuse/contracts/result": ["packages/contracts/src/result/index.ts"],
+      "@dailyuse/contracts/*": ["packages/contracts/src/modules/*/index.ts"],
+      "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
+      "@dailyuse/domain-shared/*": ["packages/domain-shared/src/*/index.ts"],
+      "@dailyuse/task": ["packages/task/src/index.ts"],
+      "@dailyuse/task/*": ["packages/task/src/*/index.ts"],
+      "@dailyuse/utils": ["packages/utils/src/index.ts"],
+      "@dailyuse/utils/*": ["packages/utils/src/*/index.ts"],
+      "@dailyuse/account": ["packages/account/src/index.ts"],
+      "@dailyuse/account/*": ["packages/account/src/*/index.ts"],
+      "@dailyuse/database": ["packages/database/src/index.ts"],
+      "@dailyuse/patterns": ["packages/patterns/src/index.ts"],
+      "@dailyuse/test-utils": ["packages/test-utils/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

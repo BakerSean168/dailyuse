@@ -3,7 +3,7 @@ import GoalTasksCard from './GoalTasksCard.vue';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
 function makeTask(
-  overrides: Partial<ScheduleTaskClientDTO> & { id: string; name: string },
+  overrides: Record<string, unknown> & { id: string; name: string },
 ): ScheduleTaskClientDTO {
   const now = new Date();
   return {

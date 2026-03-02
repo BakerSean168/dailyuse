@@ -52,7 +52,7 @@ export class ReminderController {
 
   // ==================== Template Operations ====================
 
-  async createTemplate(input: CreateReminderTemplateReq, ctx: Context): Promise<Result<unknown>> {
+  async createTemplate(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateReminderTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -68,7 +68,10 @@ export class ReminderController {
     return this.useCases.listTemplates(ctx);
   }
 
-  async getUpcomingReminders(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>> {
+  async getUpcomingReminders(
+    query: Record<string, unknown>,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
     const parsed = GetUpcomingRemindersSchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -84,7 +87,7 @@ export class ReminderController {
     return this.useCases.getTemplate(id);
   }
 
-  async updateTemplate(id: string, input: UpdateReminderTemplateReq): Promise<Result<unknown>> {
+  async updateTemplate(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateReminderTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -102,7 +105,7 @@ export class ReminderController {
 
   // ==================== Group Operations ====================
 
-  async createGroup(input: CreateReminderGroupReq, ctx: Context): Promise<Result<unknown>> {
+  async createGroup(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateReminderGroupSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -122,7 +125,7 @@ export class ReminderController {
     return this.useCases.getGroup(id);
   }
 
-  async updateGroup(id: string, input: UpdateReminderGroupReq): Promise<Result<unknown>> {
+  async updateGroup(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateReminderGroupSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -138,7 +141,7 @@ export class ReminderController {
     return this.useCases.deleteGroup(id);
   }
 
-  async switchGroupControlMode(id: string, input: SwitchGroupControlModeReq): Promise<Result<unknown>> {
+  async switchGroupControlMode(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = SwitchGroupControlModeSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -150,7 +153,7 @@ export class ReminderController {
     return this.useCases.switchGroupControlMode(id, parsed.data);
   }
 
-  async batchGroupTemplates(id: string, input: BatchGroupTemplatesReq): Promise<Result<unknown>> {
+  async batchGroupTemplates(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = BatchGroupTemplatesSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

@@ -9,8 +9,14 @@ export default defineConfig({
       '@dailyuse/domain-server/ai': path.resolve(__dirname, '../../packages/domain-server/src/ai'),
       '@dailyuse/domain-server': path.resolve(__dirname, '../../packages/domain-server/src'),
       '@dailyuse/contracts/ai': path.resolve(__dirname, '../../packages/contracts/src/modules/ai'),
-      '@dailyuse/contracts/goal': path.resolve(__dirname, '../../packages/contracts/src/modules/goal'),
-      '@dailyuse/contracts/response': path.resolve(__dirname, '../../packages/contracts/src/response'),
+      '@dailyuse/contracts/goal': path.resolve(
+        __dirname,
+        '../../packages/contracts/src/modules/goal',
+      ),
+      '@dailyuse/contracts/response': path.resolve(
+        __dirname,
+        '../../packages/contracts/src/response',
+      ),
       '@dailyuse/contracts': path.resolve(__dirname, '../../packages/contracts/src'),
       '@dailyuse/utils': path.resolve(__dirname, '../../packages/utils/src'),
     },
@@ -28,10 +34,6 @@ export default defineConfig({
       'src/test/setup.ts',
       'prisma/**/*', // 排除 Prisma 文件
     ],
-    // Mock 配置
-    alias: {
-      '@nestjs/common': path.resolve(__dirname, './src/test/mocks/nestjs-common.ts'),
-    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -48,7 +50,5 @@ export default defineConfig({
         singleFork: true, // API 测试使用单进程避免数据库锁
       },
     },
-    // 测试数据库配置 - 暂时禁用 globalSetup (shell 路径问题)
-    // globalSetup: './src/test/globalSetup.ts',
   },
 });

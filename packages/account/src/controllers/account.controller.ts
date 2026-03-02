@@ -40,7 +40,7 @@ export class AccountController {
     return this.useCases.getProfile(ctx);
   }
 
-  async updateProfile(input: UpdateAccountReq, ctx: Context): Promise<Result<UpdateAccountRes>> {
+  async updateProfile(input: unknown, ctx: Context): Promise<Result<UpdateAccountRes>> {
     const parsed = UpdateAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -52,7 +52,7 @@ export class AccountController {
     return this.useCases.updateProfile(parsed.data, ctx);
   }
 
-  async checkAvailability(input: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
+  async checkAvailability(input: unknown): Promise<Result<CheckAvailabilityRes>> {
     const parsed = CheckAvailabilitySchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -64,7 +64,7 @@ export class AccountController {
     return this.useCases.checkAvailability(parsed.data);
   }
 
-  async closeAccount(input: CloseAccountReq, ctx: Context): Promise<Result<CloseAccountRes>> {
+  async closeAccount(input: unknown, ctx: Context): Promise<Result<CloseAccountRes>> {
     const parsed = CloseAccountSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

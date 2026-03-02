@@ -12,13 +12,11 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, isOk, ok } from '@dailyuse/contracts/result';
-import {
-  CreateTaskTemplateSchema,
-  UpdateTaskTemplateSchema,
-} from '@dailyuse/contracts/task';
+import { CreateTaskTemplateSchema, UpdateTaskTemplateSchema } from '@dailyuse/contracts/task';
 import type {
   TaskTemplateClientDTO,
   TaskTemplateStatus,
+  CreateTaskTemplateReq,
 } from '@dailyuse/contracts/task';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CreateTaskTemplate } from '../../application-server/use-cases/commands/create-task-template';
@@ -48,17 +46,12 @@ export interface TaskTemplateUseCases {
  * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class TaskTemplateController {
-  constructor(
-    private readonly useCases: TaskTemplateUseCases,
-  ) {}
+  constructor(private readonly useCases: TaskTemplateUseCases) {}
 
   /**
    * Create new task template (with Zod validation)
    */
-  async createTemplate(
-    input: unknown,
-    identityId: string,
-  ): Promise<Result<TaskTemplateClientDTO>> {
+  async createTemplate(input: unknown, identityId: string): Promise<Result<TaskTemplateClientDTO>> {
     const parsed = CreateTaskTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -69,7 +62,7 @@ export class TaskTemplateController {
     }
 
     const result = await this.useCases.createTemplate.execute({
-      identityId,
+      identityId: identityId as CreateTaskTemplateReq['identityId'],
       name: parsed.data.name,
       description: parsed.data.description,
       taskType: parsed.data.taskType,
@@ -102,7 +95,7 @@ export class TaskTemplateController {
       return result as Result<TaskTemplateClientDTO | null>;
     }
 
-    return ok(result.data.template ?? null);
+    return ok(result.data ?? null);
   }
 
   /**
@@ -135,10 +128,7 @@ export class TaskTemplateController {
   /**
    * Update template (with Zod validation)
    */
-  async updateTemplate(
-    id: string,
-    input: unknown,
-  ): Promise<Result<TaskTemplateClientDTO>> {
+  async updateTemplate(id: string, input: unknown): Promise<Result<TaskTemplateClientDTO>> {
     const parsed = UpdateTaskTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -163,7 +153,11 @@ export class TaskTemplateController {
    * Delete template
    */
   async deleteTemplate(id: string): Promise<Result<void>> {
-    return await this.useCases.deleteTemplate.execute(id);
+    const result = await this.useCases.deleteTemplate.execute(id);
+    if (!isOk(result)) {
+      return result as Result<void>;
+    }
+    return ok(undefined);
   }
 
   /**

@@ -21,51 +21,53 @@ import { SqliteTaskInstanceRepository } from '../adapters/sqlite/task-instance-s
 import { SqliteTaskDependencyRepository } from '../adapters/sqlite/task-dependency-sqlite.repository';
 import { SqliteTaskFolderRepository } from '../adapters/sqlite/task-folder-sqlite.repository';
 
+type BetterSQLiteDB = Database.Database;
+
 export class TaskRepositoryFactory {
   static createTaskTemplateRepository(
     dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | Database,
+    dbConnection: PrismaClient | BetterSQLiteDB,
   ): ITaskTemplateRepository {
     if (dataSourceType === 'prisma') {
       return new TaskTemplatePrismaRepository(dbConnection as PrismaClient);
     } else if (dataSourceType === 'sqlite') {
-      return new SqliteTaskTemplateRepository(dbConnection as Database);
+      return new SqliteTaskTemplateRepository(dbConnection as BetterSQLiteDB);
     }
     throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
   static createTaskInstanceRepository(
     dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | Database,
+    dbConnection: PrismaClient | BetterSQLiteDB,
   ): ITaskInstanceRepository {
     if (dataSourceType === 'prisma') {
       return new TaskInstancePrismaRepository(dbConnection as PrismaClient);
     } else if (dataSourceType === 'sqlite') {
-      return new SqliteTaskInstanceRepository(dbConnection as Database);
+      return new SqliteTaskInstanceRepository(dbConnection as BetterSQLiteDB);
     }
     throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
   static createTaskDependencyRepository(
     dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | Database,
+    dbConnection: PrismaClient | BetterSQLiteDB,
   ): ITaskDependencyRepository {
     if (dataSourceType === 'prisma') {
       return new TaskDependencyPrismaRepository(dbConnection as PrismaClient);
     } else if (dataSourceType === 'sqlite') {
-      return new SqliteTaskDependencyRepository(dbConnection as Database);
+      return new SqliteTaskDependencyRepository(dbConnection as BetterSQLiteDB);
     }
     throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
 
   static createTaskFolderRepository(
     dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | Database,
+    dbConnection: PrismaClient | BetterSQLiteDB,
   ): ITaskFolderRepository {
     if (dataSourceType === 'prisma') {
       return new TaskFolderPrismaRepository(dbConnection as PrismaClient);
     } else if (dataSourceType === 'sqlite') {
-      return new SqliteTaskFolderRepository(dbConnection as Database);
+      return new SqliteTaskFolderRepository(dbConnection as BetterSQLiteDB);
     }
     throw new Error(`Unknown data source type: ${dataSourceType}`);
   }
@@ -75,7 +77,7 @@ export class TaskRepositoryFactory {
    */
   static createAllRepositories(
     dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | Database,
+    dbConnection: PrismaClient | BetterSQLiteDB,
   ) {
     return {
       taskTemplateRepository: this.createTaskTemplateRepository(dataSourceType, dbConnection),

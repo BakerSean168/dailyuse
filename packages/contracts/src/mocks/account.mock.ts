@@ -13,7 +13,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { AccountClientDTO } from '../modules/account';
-import type { IdentityId } from '@/primitives/ids';
+import type { IdentityId } from '../primitives/ids';
 
 // ============================================================================
 // AccountClientDTO

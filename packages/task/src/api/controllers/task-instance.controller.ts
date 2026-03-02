@@ -12,10 +12,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail, isOk, ok } from '@dailyuse/contracts/result';
-import {
-  CompleteTaskInstanceSchema,
-  SkipTaskInstanceSchema,
-} from '@dailyuse/contracts/task';
+import { CompleteTaskInstanceSchema, SkipTaskInstanceSchema } from '@dailyuse/contracts/task';
 import type { TaskInstanceClientDTO, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CompleteTaskInstance } from '../../application-server/use-cases/commands/complete-task-instance';
@@ -47,9 +44,7 @@ export interface TaskInstanceUseCases {
  * Used by both expressAdapter (HTTP) and ipcAdapter (IPC).
  */
 export class TaskInstanceController {
-  constructor(
-    private readonly useCases: TaskInstanceUseCases,
-  ) {}
+  constructor(private readonly useCases: TaskInstanceUseCases) {}
 
   /**
    * Get instance by ID
@@ -85,26 +80,19 @@ export class TaskInstanceController {
     startDate: number,
     endDate: number,
   ): Promise<Result<TaskInstanceClientDTO[]>> {
-    const result = await this.useCases.getByDateRange.execute(
-      identityId,
-      startDate,
-      endDate,
-    );
+    const result = await this.useCases.getByDateRange.execute(identityId, startDate, endDate);
 
     if (!isOk(result)) {
       return result as Result<TaskInstanceClientDTO[]>;
     }
 
-    return ok(result.data.instances);
+    return ok(result.data.data);
   }
 
   /**
    * Complete instance (with Zod validation)
    */
-  async completeInstance(
-    id: string,
-    input: unknown,
-  ): Promise<Result<TaskInstanceClientDTO>> {
+  async completeInstance(id: string, input: unknown): Promise<Result<TaskInstanceClientDTO>> {
     const parsed = CompleteTaskInstanceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -125,10 +113,7 @@ export class TaskInstanceController {
   /**
    * Skip instance (with Zod validation)
    */
-  async skipInstance(
-    id: string,
-    input: unknown,
-  ): Promise<Result<TaskInstanceClientDTO>> {
+  async skipInstance(id: string, input: unknown): Promise<Result<TaskInstanceClientDTO>> {
     const parsed = SkipTaskInstanceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

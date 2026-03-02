@@ -2,7 +2,7 @@
  * Resource DTOs
  */
 
-import type { ResourceId, RepositoryId } from '@/primitives';
+import type { ResourceId, RepositoryId } from '../../../primitives';
 
 export interface ResourceDTO {
   id: ResourceId;
@@ -11,13 +11,13 @@ export interface ResourceDTO {
   type: 'FILE' | 'FOLDER'; // 逻辑上区分，方便前端渲染文件夹图标
   mimeType: string;
   size: number;
-  
+
   // 预览地址 (由后端动态生成，可能是带签名或临时 Token 的 URL)
   previewUrl: string | null;
-  
+
   // 统计信息
   versionCount: number;
-  
+
   createdAt: string;
   updatedAt: string;
 }

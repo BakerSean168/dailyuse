@@ -19,6 +19,7 @@ import {
   RecurrenceRule,
   TaskReminderConfig,
   TaskGoalBinding,
+  ChecklistItemDefinition,
 } from '@/domain-server/value-objects';
 
 /**
@@ -40,8 +41,11 @@ export class PrismaTaskTemplateMapper {
       timeConfig = TaskTimeConfig.create({
         timeType: data.timeConfigType as any,
         startDate: data.timeConfigStartTime ? data.timeConfigStartTime.getTime() : null,
-        timePoint: null,
-        timeRange: null,
+        timePoint: data.timeConfigTimePoint ?? null,
+        timeRange:
+          data.timeConfigTimeRangeStart != null && data.timeConfigTimeRangeEnd != null
+            ? { start: data.timeConfigTimeRangeStart, end: data.timeConfigTimeRangeEnd }
+            : null,
       });
     }
 
@@ -81,6 +85,12 @@ export class PrismaTaskTemplateMapper {
 
     const tags = data.tags ? JSON.parse(data.tags) : [];
 
+    const checklist = data.checklist
+      ? (JSON.parse(data.checklist) as Array<{ title: string; order: number }>).map((item) =>
+          ChecklistItemDefinition.fromDTO(item),
+        )
+      : [];
+
     return TaskTemplate.load({
       id: TaskTemplateId.of(data.id),
       identityId: IdentityId.of(data.identityId),
@@ -94,7 +104,7 @@ export class PrismaTaskTemplateMapper {
       goalBinding,
       goalId: null,
       keyResultId: null,
-      checklist: [],
+      checklist,
       folderId: data.folderId ? TaskFolderId.of(data.folderId) : null,
       tags,
       color: data.color,
@@ -126,9 +136,12 @@ export class PrismaTaskTemplateMapper {
     const timeConfigType = dto.timeConfig?.timeType ?? null;
     const timeConfigStartTime = toDate(dto.timeConfig?.startDate);
     const timeConfigEndTime = null;
+    const timeConfigTimePoint = dto.timeConfig?.timePoint ?? null;
+    const timeConfigTimeRangeStart = dto.timeConfig?.timeRange?.start ?? null;
+    const timeConfigTimeRangeEnd = dto.timeConfig?.timeRange?.end ?? null;
     const timeConfigDurationMinutes =
-      dto.timeConfig?.timeRange?.end && dto.timeConfig?.timeRange?.start
-        ? (dto.timeConfig.timeRange.end - dto.timeConfig.timeRange.start) / 60000
+      timeConfigTimeRangeEnd != null && timeConfigTimeRangeStart != null
+        ? timeConfigTimeRangeEnd - timeConfigTimeRangeStart
         : null;
 
     // Flatten nested recurrenceRule
@@ -142,7 +155,8 @@ export class PrismaTaskTemplateMapper {
 
     // Flatten nested reminderConfig
     const reminderConfigEnabled = dto.reminderConfig?.enabled ?? null;
-    const reminderConfigTimeOffsetMinutes = dto.reminderConfig?.triggers?.[0]?.relativeValue ?? null;
+    const reminderConfigTimeOffsetMinutes =
+      dto.reminderConfig?.triggers?.[0]?.relativeValue ?? null;
     const reminderConfigUnit = dto.reminderConfig?.triggers?.[0]?.relativeUnit ?? null;
     const reminderConfigChannel = dto.reminderConfig ? 'PUSH' : null;
 
@@ -160,6 +174,9 @@ export class PrismaTaskTemplateMapper {
       timeConfigStartTime,
       timeConfigEndTime,
       timeConfigDurationMinutes,
+      timeConfigTimePoint,
+      timeConfigTimeRangeStart,
+      timeConfigTimeRangeEnd,
       recurrenceRuleType,
       recurrenceRuleInterval,
       recurrenceRuleDaysOfWeek,
@@ -174,6 +191,7 @@ export class PrismaTaskTemplateMapper {
       lastGeneratedDate: toDate(dto.lastGeneratedDate),
       generateAheadDays: dto.generateAheadDays,
       goalBinding: dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
+      checklist: dto.checklist?.length ? JSON.stringify(dto.checklist) : null,
       dependencyStatus: dto.dependencyStatus ?? 'NONE',
       isBlocked: dto.isBlocked ?? false,
       blockingReason: dto.blockingReason,

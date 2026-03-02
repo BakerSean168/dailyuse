@@ -73,17 +73,20 @@ export function registerSettingRoutes(
       method: 'patch',
       path: '/:category',
       summary: '按分类更新用户设置',
-      request: { body: { content: { 'application/json': { schema: z.record(z.string(), z.unknown()) } } } },
+      request: {
+        body: { content: { 'application/json': { schema: z.record(z.string(), z.unknown()) } } },
+      },
       responses: {
         200: successResponse(UserSettingResponseSchema, '更新成功'),
         400: errorResponse('参数错误'),
       },
     },
     [auth],
-    (req, ctx) => controller.patchUserSetting(
-      { category: req.params.category as string, patch: req.body },
-      ctx,
-    ),
+    (req, ctx) =>
+      controller.patchUserSetting(
+        { category: req.params!.category as string, patch: req.body },
+        ctx,
+      ),
   );
 
   // POST /reset — 重置用户设置
@@ -144,7 +147,7 @@ export function registerSettingRoutes(
       },
     },
     [auth],
-    () => controller.getDefaultSettings(),
+    async () => controller.getDefaultSettings(),
     { requireAuth: false },
   );
 

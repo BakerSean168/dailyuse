@@ -9,7 +9,7 @@ export const repositoryRoutes: RouteRecordRaw[] = [
   {
     path: '/repository',
     name: 'repository',
-    component: () => import('../views/RepositoryLinearView.vue'),
+    component: () => import('../views/RepositoryWorkspaceView.vue'),
     meta: {
       title: '仓库',
       showInNav: true,

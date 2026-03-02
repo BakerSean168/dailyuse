@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { IdentityId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { IdentityId } from '../../../primitives';
 
 /**
  * UserSetting Response Schema

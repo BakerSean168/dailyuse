@@ -64,6 +64,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   ChevronRight,
   Folder,
@@ -82,6 +83,8 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import type { TreeNode } from '@dailyuse/contracts/repository';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
+
+const { t } = useI18n();
 
 interface Props {
   node: TreeNode;
@@ -230,9 +233,9 @@ function formatDate(date: Date | string): string {
   const diff = now.getTime() - d.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return '今天';
-  if (days === 1) return '昨天';
-  if (days < 7) return `${days} 天前`;
+  if (days === 0) return t('repository.treeNode.today');
+  if (days === 1) return t('repository.treeNode.yesterday');
+  if (days < 7) return t('repository.treeNode.daysAgo', { days });
 
   return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
 }

@@ -9,7 +9,7 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-} from '@/primitives';
+} from '../../../primitives';
 import type { DependencyType } from '../value-objects/dependency-type';
 import type { DependencyStatus } from '../value-objects/dependency-status';
 

@@ -3,7 +3,7 @@
  * 文档实体 - 客户端接�?
  */
 
-import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '@/primitives';
+import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { DocumentLanguage } from '../value-objects/document-language';
 import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentServerDTO } from './document-server';

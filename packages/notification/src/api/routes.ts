@@ -115,22 +115,23 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.list({
-      identityId: parseString(req.query?.identityId),
-      type: parseString(req.query?.type),
-      category: parseString(req.query?.category),
-      status: parseString(req.query?.status),
-      isRead: parseBoolean(req.query?.isRead),
-      relatedEntityType: parseString(req.query?.relatedEntityType),
-      relatedEntityId: parseString(req.query?.relatedEntityId),
-      startDate: parseNumber(req.query?.startDate),
-      endDate: parseNumber(req.query?.endDate),
-      keyword: parseString(req.query?.keyword),
-      page: parseNumber(req.query?.page),
-      limit: parseNumber(req.query?.limit),
-      sortBy: parseString(req.query?.sortBy),
-      sortOrder: parseString(req.query?.sortOrder),
-    }),
+    (req) =>
+      controller.list({
+        identityId: parseString(req.query?.identityId),
+        type: parseString(req.query?.type),
+        category: parseString(req.query?.category),
+        status: parseString(req.query?.status),
+        isRead: parseBoolean(req.query?.isRead),
+        relatedEntityType: parseString(req.query?.relatedEntityType),
+        relatedEntityId: parseString(req.query?.relatedEntityId),
+        startDate: parseNumber(req.query?.startDate),
+        endDate: parseNumber(req.query?.endDate),
+        keyword: parseString(req.query?.keyword),
+        page: parseNumber(req.query?.page),
+        limit: parseNumber(req.query?.limit),
+        sortBy: parseString(req.query?.sortBy),
+        sortOrder: parseString(req.query?.sortOrder),
+      }),
   );
 
   // POST /batch/read — Batch mark as read (must be before /:id)
@@ -155,7 +156,9 @@ export function registerNotificationRoutes(
       method: 'post',
       path: '/batch/delete',
       summary: '批量删除通知',
-      request: { body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } },
+      },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '删除成功'),
         400: errorResponse('参数错误'),
@@ -171,7 +174,9 @@ export function registerNotificationRoutes(
       method: 'post',
       path: '/cleanup',
       summary: '清理过期通知',
-      request: { body: { content: { 'application/json': { schema: CleanupOldNotificationsSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: CleanupOldNotificationsSchema } } },
+      },
       responses: {
         200: successResponse(NotificationBatchResultSchema, '清理成功'),
         400: errorResponse('参数错误'),

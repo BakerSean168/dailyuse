@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { AiConversationId, AiProviderConfigId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { AiConversationId, AiProviderConfigId } from '../../../primitives';
 import type { MessageClientDTO } from '../entities/message-client';
 import { MessageRole } from '../value-objects/message-role';
 

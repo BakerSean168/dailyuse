@@ -13,7 +13,7 @@ function createMockTask(overrides: Record<string, unknown> = {}) {
     statusText: 'PENDING',
     instanceDate: new Date(now).toISOString(),
     timeConfig: {
-      timeType: 'TIME_POINT' as const,
+      timeType: 'TimePoint' as const,
       startDate: now,
       timePoint: 540, // 9:00 AM
       timeRange: null,

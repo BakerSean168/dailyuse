@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { NotificationId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { NotificationId } from '../../../primitives';
 
 /**
  * Notification Response Schema

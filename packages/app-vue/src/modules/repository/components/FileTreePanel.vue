@@ -40,7 +40,9 @@
         class="flex flex-col items-center justify-center h-full gap-4"
       >
         <Loader2 class="w-8 h-8 animate-spin text-muted-foreground" />
-        <span class="text-sm text-muted-foreground">加载文件树...</span>
+        <span class="text-sm text-muted-foreground">{{
+          t('repository.fileTreePanel.loading')
+        }}</span>
       </div>
 
       <!-- Empty -->
@@ -49,10 +51,10 @@
         class="flex flex-col items-center justify-center h-full gap-4 text-center px-4"
       >
         <FolderOpen class="w-12 h-12 text-muted-foreground/50" />
-        <span class="text-sm text-muted-foreground">暂无文件</span>
+        <span class="text-sm text-muted-foreground">{{ t('repository.fileTreePanel.empty') }}</span>
         <Button size="sm" variant="outline" @click="$emit('create-folder')">
           <Plus class="mr-2 h-4 w-4" />
-          新建文件夹
+          {{ t('repository.fileTreePanel.createFolder') }}
         </Button>
       </div>
 
@@ -75,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import {
   RefreshCw,
   FolderPlus,
@@ -88,6 +91,8 @@ import {
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import TreeNodeItem from './TreeNodeItem.vue';
 import type { TreeNode } from '@dailyuse/contracts/repository';
+
+const { t } = useI18n();
 
 interface Props {
   nodes: TreeNode[];

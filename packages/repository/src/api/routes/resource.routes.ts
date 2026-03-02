@@ -18,10 +18,7 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import {
-  UpdateResourceSchema,
-  ResourceResponseSchema,
-} from '@dailyuse/contracts/repository';
+import { UpdateResourceSchema, ResourceResponseSchema } from '@dailyuse/contracts/repository';
 import type { RepositoryController } from '../../controllers/repository.controller';
 
 // ============ Types ============

@@ -2,10 +2,7 @@
  * ReminderGroup 聚合根实现
  */
 
-import {
-  ControlMode,
-  ReminderStatus,
-} from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 import type {
   GroupStatsServer,
   ReminderGroupClientDTO,
@@ -299,19 +296,16 @@ export class ReminderGroup extends AggregateRoot<string> {
   }
 
   public toClientDTO(): ReminderGroupClientDTO {
-    const controlModeText =
-      this.controlMode === ControlMode.Group ? '组控制' : '个体控制';
+    const controlModeText = this.controlMode === ControlMode.Group ? '组控制' : '个体控制';
     const statusText = this.status === ReminderStatus.Active ? '活跃' : '暂停';
     const controlDescription =
-      this.controlMode === ControlMode.Group
-        ? '所有提醒统一启用'
-        : '提醒独立控制';
+      this.controlMode === ControlMode.Group ? '所有提醒统一启用' : '提醒独立控制';
 
     const statsDTO = this._stats.toServerDTO();
 
     return {
-      id: this.id,
-      identityId: this.identityId,
+      id: this.id as ReminderGroupClientDTO['id'],
+      identityId: this.identityId as ReminderGroupClientDTO['identityId'],
       name: this.name,
       description: this.description,
       controlMode: this.controlMode,
@@ -339,5 +333,4 @@ export class ReminderGroup extends AggregateRoot<string> {
       controlDescription,
     };
   }
-
 }

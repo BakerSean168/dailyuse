@@ -3,7 +3,7 @@
  * 搜索引擎实体 - 服务端接�?
  */
 
-import type { SearchEngineId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { SearchEngineId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { SearchEngineClientDTO } from './search-engine-client';
 
 /**

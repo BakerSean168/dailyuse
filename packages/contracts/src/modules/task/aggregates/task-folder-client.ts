@@ -1,8 +1,7 @@
-import type { TaskFolderId, IdentityId } from '@/primitives/ids';
-import type { TransferDate } from '@/primitives';
+import type { TaskFolderId, IdentityId } from '../../../primitives/ids';
+import type { TransferDate } from '../../../primitives';
 
 export interface TaskFolderClientDTO {
-
   id: TaskFolderId;
   identityId: IdentityId;
   name: string;

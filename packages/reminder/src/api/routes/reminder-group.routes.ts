@@ -28,10 +28,6 @@ import {
   BatchGroupTemplatesSchema,
   ReminderGroupResponseSchema,
   ReminderBatchResultSchema,
-  type CreateReminderGroupReq,
-  type UpdateReminderGroupReq,
-  type SwitchGroupControlModeReq,
-  type BatchGroupTemplatesReq,
 } from '@dailyuse/contracts/reminder';
 import type { ReminderController } from '../../controllers/reminder.controller';
 
@@ -73,7 +69,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.createGroup(req.body as CreateReminderGroupReq, ctx),
+    (req, ctx) => controller.createGroup(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -123,7 +119,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.updateGroup(req.params!.id, req.body as UpdateReminderGroupReq),
+    (req) => controller.updateGroup(req.params!.id, req.body),
   );
 
   // DELETE /groups/:id
@@ -160,7 +156,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.switchGroupControlMode(req.params!.id, req.body as SwitchGroupControlModeReq),
+    (req) => controller.switchGroupControlMode(req.params!.id, req.body),
   );
 
   // POST /groups/:id/batch
@@ -179,7 +175,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.batchGroupTemplates(req.params!.id, req.body as BatchGroupTemplatesReq),
+    (req) => controller.batchGroupTemplates(req.params!.id, req.body),
   );
 
   return router;

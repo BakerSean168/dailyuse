@@ -3,7 +3,7 @@
  * 编辑器工作区聚合�?- 服务端接�?
  */
 
-import type { EditorWorkspaceId, EditorSessionId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { EditorWorkspaceId, EditorSessionId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { ProjectType } from '../value-objects/project-type';
 
 import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '../value-objects';

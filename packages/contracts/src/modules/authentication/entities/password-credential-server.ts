@@ -1,6 +1,6 @@
 import type { BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 import type { HashedPassword } from '../value-objects/hashed-password';
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 
 /**
  * 密码凭证 DTO (Server 端持有哈希值)

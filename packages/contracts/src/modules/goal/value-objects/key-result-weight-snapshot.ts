@@ -14,7 +14,7 @@ import type {
   GoalId,
   KeyResultId,
   IdentityId,
-} from '@/primitives';
+} from '../../../primitives';
 
 // ============ 枚举定义 ============
 

@@ -5,7 +5,7 @@
  * 此处仅保留 DTO 定义
  */
 
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 import type { BaseAuthCredentialServerDTO } from './base-auth-credential-server';
 import { OAuthProvider } from '../value-objects/oauth-provider';
 

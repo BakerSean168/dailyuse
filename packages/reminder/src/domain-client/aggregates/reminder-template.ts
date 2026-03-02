@@ -228,8 +228,8 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   // ================= DTO Conversion =================
   public toDTO(): ReminderTemplateClientDTO {
     return {
-      id: String(this._props.id),
-      identityId: String(this._props.identityId),
+      id: String(this._props.id) as ReminderTemplateClientDTO['id'],
+      identityId: String(this._props.identityId) as ReminderTemplateClientDTO['identityId'],
       name: this._props.name,
       description: this._props.description,
       type: this._props.type,
@@ -241,7 +241,9 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
       effectiveEnabled: this._props.effectiveEnabled,
-      groupId: this._props.groupId ? String(this._props.groupId) : null,
+      groupId: (this._props.groupId
+        ? String(this._props.groupId)
+        : null) as ReminderTemplateClientDTO['groupId'],
       importanceLevel: this._props.importanceLevel,
       tags: [...this._props.tags],
       color: this._props.color,
@@ -251,7 +253,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      history: this._props.history ? this._props.history.map(h => h.toDTO()) : null,
+      history: this._props.history ? this._props.history.map((h) => h.toDTO()) : null,
       displayTitle: this._props.displayTitle,
       typeText: this._props.typeText,
       triggerText: this._props.triggerText,

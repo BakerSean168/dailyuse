@@ -16,13 +16,13 @@ import { persistenceDtoToGoalState } from '../../prisma/mappers/goal-state-mappe
 
 /**
  * SQLiteGoalMapper
- * 
+ *
  * 实现 SQLite �?�?Goal 领域聚合�?的双向映�?
  */
 export class SqliteGoalMapper {
   /**
    * SQLite row �?GoalPersistenceDTO �?Goal 聚合�?
-   * 
+   *
    * @param row - SQLite 查询返回的行数据
    * @param children - 可选的子实体数据（keyResults, goalReviews, weightSnapshots�?
    */
@@ -69,9 +69,7 @@ export class SqliteGoalMapper {
       folderId: row.folder_id ?? null,
       parentGoalId: row.parent_goal_id ?? null,
       sortOrder: row.sort_order ?? 0,
-      reminderConfig: row.reminder_config
-        ? JSON.parse(row.reminder_config)
-        : null,
+      reminderConfig: row.reminder_config ? JSON.parse(row.reminder_config) : null,
       version: row.version ?? 1,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
@@ -146,7 +144,7 @@ export class SqliteGoalMapper {
 /**
  * Date �?INTEGER (millis) 转换工具
  */
-export function dateToInt(d: Date | null | undefined): number | null {
+export function dateToInt(d: Date | number | null | undefined): number | null {
   if (!d) return null;
   return d instanceof Date ? d.getTime() : (d as number);
 }

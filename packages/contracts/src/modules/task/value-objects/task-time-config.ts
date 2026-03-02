@@ -3,7 +3,7 @@
  * 任务时间配置值对�?- 服务端接�?
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 import type { TaskTimeType } from './task-time-type';
 
 

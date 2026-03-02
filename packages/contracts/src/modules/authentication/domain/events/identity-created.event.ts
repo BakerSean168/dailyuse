@@ -1,4 +1,4 @@
-import type { IdentityId } from '@/primitives';
+import type { IdentityId } from '../../../../primitives';
 
 export const IdentityCreateMethod = {
   Email: 'EMAIL',

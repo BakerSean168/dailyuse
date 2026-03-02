@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type {
   TaskTemplateClientDTO,

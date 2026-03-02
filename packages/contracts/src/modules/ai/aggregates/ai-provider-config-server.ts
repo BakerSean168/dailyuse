@@ -3,7 +3,7 @@
  * 用户自定义 AI 服务提供商配置（服务端视图）
  */
 
-import type { AiProviderConfigId, IdentityId, PersistenceDate, TransferDate, DomainDate } from '@/primitives';
+import type { AiProviderConfigId, IdentityId, PersistenceDate, TransferDate, DomainDate } from '../../../primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 import type { AIModelInfo } from './ai-provider-config-client';
 

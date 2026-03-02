@@ -11,9 +11,22 @@ import { registry } from './registry';
 import { env } from '../config/env';
 
 /**
+ * OpenAPI 3.0 文档结构（简化类型，避免 TS2742 因 openapi3-ts 为 transitive dep 无法解析）
+ */
+export interface OpenApiDocument {
+  openapi: string;
+  info: { title: string; version: string; description?: string; [k: string]: unknown };
+  paths: Record<string, unknown>;
+  components?: Record<string, unknown>;
+  servers?: Array<{ url: string; description?: string }>;
+  security?: Array<Record<string, string[]>>;
+  [k: string]: unknown;
+}
+
+/**
  * Generate the complete OpenAPI 3.0 document
  */
-export function generateOpenApiDocument() {
+export function generateOpenApiDocument(): OpenApiDocument {
   const generator = new OpenApiGeneratorV3(registry.definitions);
 
   return generator.generateDocument({
@@ -45,5 +58,5 @@ export function generateOpenApiDocument() {
       },
     ],
     security: [{ bearerAuth: [] }],
-  });
+  }) as OpenApiDocument;
 }

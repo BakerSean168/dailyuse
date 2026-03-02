@@ -1,0 +1,251 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import '@dailyuse/test-utils/helpers/result-matchers';
+import { createMockRepo } from '@dailyuse/test-utils/mocks';
+import { anIdentityId } from '@dailyuse/test-utils/fixtures';
+import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { CreateTaskTemplate } from '../create-task-template';
+
+// Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
+vi.mock('@dailyuse/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@dailyuse/utils')>();
+  return {
+    ...actual,
+    eventBus: { send: vi.fn() },
+  };
+});
+
+// Mock TaskInstanceGenerationService — provide a constructor mock
+const mockGenerateInstances = vi.fn().mockReturnValue([]);
+vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
+  return {
+    TaskInstanceGenerationService: class {
+      generateInstances = mockGenerateInstances;
+      shouldRefillInstances = vi.fn().mockReturnValue(false);
+      calculateRefillTargetDate = vi.fn().mockReturnValue(Date.now());
+    },
+  };
+});
+
+import { eventBus } from '@dailyuse/utils';
+
+describe('CreateTaskTemplate', () => {
+  let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
+  let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
+  let useCase: CreateTaskTemplate;
+
+  function aCreateRequest(overrides: Partial<CreateTaskTemplateReq> = {}): CreateTaskTemplateReq {
+    return {
+      identityId: anIdentityId(),
+      name: 'Test Task',
+      taskType: 'ONE_TIME',
+      timeConfig: {
+        timeType: 'AllDay',
+        startDate: Date.now(),
+        timePoint: null,
+        timeRange: null,
+      },
+      importance: ImportanceLevel.Moderate,
+      tags: [],
+      ...overrides,
+    } as CreateTaskTemplateReq;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGenerateInstances.mockReturnValue([]);
+
+    templateRepo = createMockRepo<ITaskTemplateRepository>({
+      save: vi.fn().mockResolvedValue(undefined),
+    });
+    instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      saveMany: vi.fn().mockResolvedValue(undefined),
+    });
+
+    useCase = new CreateTaskTemplate(templateRepo, instanceRepo);
+  });
+
+  it('should create a one-time task template', async () => {
+    const request = aCreateRequest({ name: 'Buy groceries', taskType: 'ONE_TIME' });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+    expect(templateRepo.save).toHaveBeenCalled();
+    if (result.ok) {
+      expect(result.data.template.name).toBe('Buy groceries');
+    }
+  });
+
+  it('should save the template to the repository', async () => {
+    const request = aCreateRequest();
+
+    await useCase.execute(request);
+
+    expect(templateRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should create a recurring task template', async () => {
+    const request = aCreateRequest({
+      name: 'Daily standup',
+      taskType: 'RECURRING',
+      recurrenceRule: {
+        frequency: 'Daily',
+        interval: 1,
+        daysOfWeek: [],
+        endDate: null,
+        occurrences: null,
+      },
+    });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+  });
+
+  it('should use provided description', async () => {
+    const request = aCreateRequest({
+      name: 'Task with desc',
+      description: 'A detailed description',
+    });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+  });
+
+  it('should use provided importance level', async () => {
+    const request = aCreateRequest({
+      importance: ImportanceLevel.Vital,
+    });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+  });
+
+  it('should use provided tags', async () => {
+    const request = aCreateRequest({
+      tags: ['work', 'urgent'],
+    });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+  });
+
+  it('should use provided color', async () => {
+    const request = aCreateRequest({
+      color: '#FF5500',
+    });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+  });
+
+  describe('instance generation for Active templates', () => {
+    it('should generate instances when template is Active', async () => {
+      const fakeInstances = [{}, {}, {}];
+      mockGenerateInstances.mockReturnValue(fakeInstances);
+      const request = aCreateRequest({
+        taskType: 'RECURRING',
+        recurrenceRule: {
+          frequency: 'Daily',
+          interval: 1,
+          daysOfWeek: [],
+          endDate: null,
+          occurrences: null,
+        },
+      });
+
+      const result = await useCase.execute(request);
+
+      expect(result).toBeOk();
+      // Template.create() creates with Active status by default
+      // So generateInstances should be called
+      if (result.ok) {
+        expect(result.data.instanceCount).toBe(3);
+      }
+    });
+
+    it('should save generated instances', async () => {
+      const fakeInstances = [{}, {}];
+      mockGenerateInstances.mockReturnValue(fakeInstances);
+      const request = aCreateRequest();
+
+      await useCase.execute(request);
+
+      expect(instanceRepo.saveMany).toHaveBeenCalledWith(fakeInstances);
+    });
+
+    it('should return instanceCount=0 when no instances generated', async () => {
+      mockGenerateInstances.mockReturnValue([]);
+      const request = aCreateRequest();
+
+      const result = await useCase.execute(request);
+
+      expect(result).toBeOk();
+      if (result.ok) {
+        expect(result.data.instanceCount).toBe(0);
+      }
+    });
+
+    it('should publish event when instances are generated', async () => {
+      const fakeInstances = [{}, {}, {}, {}, {}];
+      mockGenerateInstances.mockReturnValue(fakeInstances);
+      const request = aCreateRequest();
+
+      await useCase.execute(request);
+
+      expect(eventBus.send).toHaveBeenCalledWith(
+        'task.instances.generated',
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            instanceCount: 5,
+          }),
+        }),
+      );
+    });
+
+    it('should not publish event when no instances generated', async () => {
+      mockGenerateInstances.mockReturnValue([]);
+      const request = aCreateRequest();
+
+      await useCase.execute(request);
+
+      expect(eventBus.send).not.toHaveBeenCalled();
+    });
+
+    it('should handle instance generation error gracefully', async () => {
+      mockGenerateInstances.mockImplementation(() => {
+        throw new Error('Generation failed');
+      });
+      const request = aCreateRequest();
+
+      const result = await useCase.execute(request);
+
+      // Template creation should still succeed
+      expect(result).toBeOk();
+      if (result.ok) {
+        expect(result.data.instanceCount).toBe(0);
+      }
+    });
+  });
+
+  it('should return the template client DTO', async () => {
+    const request = aCreateRequest({ name: 'My New Task' });
+
+    const result = await useCase.execute(request);
+
+    expect(result).toBeOk();
+    if (result.ok) {
+      expect(result.data.template).toBeDefined();
+      expect(result.data.template.name).toBe('My New Task');
+      expect(result.data.template.id).toBeDefined();
+    }
+  });
+});

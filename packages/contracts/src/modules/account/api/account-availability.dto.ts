@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
+import { brandedId } from '../../../primitives';
 import type { IdentityId } from '../value-objects/identity-id';
 
 export const CheckAvailabilitySchema = z.object({

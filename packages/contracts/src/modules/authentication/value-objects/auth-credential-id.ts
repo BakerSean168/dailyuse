@@ -1,1 +1,1 @@
-export type { AuthCredentialId } from '@/primitives';
+export type { AuthCredentialId } from '../../../primitives';

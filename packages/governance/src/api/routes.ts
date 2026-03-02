@@ -30,6 +30,7 @@ import {
   SearchRulesQuerySchema,
   GetRuleRevisionsQuerySchema,
 } from '../contracts';
+import type { ListRulesQuery, SearchRulesQuery } from '../contracts';
 import { GovernanceController } from '../controllers/governance.controller';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
 
@@ -212,14 +213,18 @@ export function registerGovernanceCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.searchRules({
-      query: parseString(req.query?.query) ?? parseString(req.query?.q) ?? '',
-      status: parseString(req.query?.status),
-      severity: parseString(req.query?.severity),
-      tags: parseStringArray(req.query?.tags),
-      page: parseNumber(req.query?.page),
-      pageSize: parseNumber(req.query?.pageSize),
-    }, ctx),
+    (req, ctx) =>
+      controller.searchRules(
+        {
+          query: parseString(req.query?.query) ?? parseString(req.query?.q) ?? '',
+          status: parseString(req.query?.status) as SearchRulesQuery['status'],
+          severity: parseString(req.query?.severity) as SearchRulesQuery['severity'],
+          tags: parseStringArray(req.query?.tags),
+          page: parseNumber(req.query?.page) ?? 1,
+          pageSize: parseNumber(req.query?.pageSize) ?? 20,
+        },
+        ctx,
+      ),
   );
 
   // GET /:id/revisions — 获取修订历史 (must be before /:id)
@@ -243,10 +248,11 @@ export function registerGovernanceCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.getRevisions(req.params!.id, {
-      page: parseNumber(req.query?.page),
-      pageSize: parseNumber(req.query?.pageSize),
-    }),
+    (req) =>
+      controller.getRevisions(req.params!.id, {
+        page: parseNumber(req.query?.page) ?? 1,
+        pageSize: parseNumber(req.query?.pageSize) ?? 20,
+      }),
   );
 
   // GET /:id — 按 ID 获取规则
@@ -283,13 +289,14 @@ export function registerGovernanceCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.listRules({
-      status: parseString(req.query?.status),
-      severity: parseString(req.query?.severity),
-      tags: parseStringArray(req.query?.tags),
-      page: parseNumber(req.query?.page),
-      pageSize: parseNumber(req.query?.pageSize),
-    }),
+    (req) =>
+      controller.listRules({
+        status: parseString(req.query?.status) as ListRulesQuery['status'],
+        severity: parseString(req.query?.severity) as ListRulesQuery['severity'],
+        tags: parseStringArray(req.query?.tags),
+        page: parseNumber(req.query?.page) ?? 1,
+        pageSize: parseNumber(req.query?.pageSize) ?? 20,
+      }),
   );
 
   return router;

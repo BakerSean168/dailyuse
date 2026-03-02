@@ -7,7 +7,7 @@
 
 import type { CredentialStatus } from '../value-objects/credential-status';
 import { CredentialType, type AuthCredentialId } from '../value-objects';
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 
 // ============ Base Credential DTO ============
 

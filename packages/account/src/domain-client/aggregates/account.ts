@@ -35,15 +35,33 @@ export class Account extends AggregateRoot<IdentityId> {
     this._props = props;
   }
 
-  get profile(): AccountProfile { return this._props.profile; }
-  get email(): ContactEmail { return this._props.email; }
-  get settings(): AccountSettings { return this._props.settings; }
-  get status(): AccountStatus { return this._props.status; }
-  get phone(): ContactPhone | null { return this._props.phone; }
-  get version(): number { return this._props.version; }
-  get createdAt(): Date { return this._props.createdAt; }
-  get updatedAt(): Date { return this._props.updatedAt; }
-  get deletedAt(): Date | null { return this._props.deletedAt; }
+  get profile(): AccountProfile {
+    return this._props.profile;
+  }
+  get email(): ContactEmail {
+    return this._props.email;
+  }
+  get settings(): AccountSettings {
+    return this._props.settings;
+  }
+  get status(): AccountStatus {
+    return this._props.status;
+  }
+  get phone(): ContactPhone | null {
+    return this._props.phone;
+  }
+  get version(): number {
+    return this._props.version;
+  }
+  get createdAt(): Date {
+    return this._props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this._props.updatedAt;
+  }
+  get deletedAt(): Date | null {
+    return this._props.deletedAt;
+  }
 
   public static load(state: AccountState): Account {
     return new Account(state);
@@ -51,7 +69,7 @@ export class Account extends AggregateRoot<IdentityId> {
 
   public toDTO(): AccountClientDTO {
     return {
-      id: String(this.id),
+      id: String(this.id) as AccountClientDTO['id'],
       status: this._props.status,
       profile: this._props.profile.toDTO(),
       settings: this._props.settings.toDTO(),

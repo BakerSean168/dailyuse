@@ -1,13 +1,13 @@
 /**
  * Reminder Template Operations
- * 
+ *
  * This file contains DTOs for managing reminder templates.
  * Reminder templates define the structure and triggering rules for reminders.
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { ReminderGroupId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { ReminderGroupId } from '../../../primitives';
 import type { ReminderTemplateClientDTO } from '../aggregates';
 import {
   ReminderType,
@@ -17,7 +17,7 @@ import {
   RecurrenceType,
   WeekDay,
 } from '../value-objects';
-import { ImportanceLevel } from '@/shared/value-objects/importance';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 // ============================================================================
 // REMINDER TEMPLATE Operations
@@ -31,14 +31,18 @@ export const CreateReminderTemplateSchema = z.object({
   type: z.enum(ReminderType),
   trigger: z.object({
     type: z.enum(TriggerType),
-    fixedTime: z.object({
-      time: z.string(),
-      timezone: z.string().nullable(),
-    }).nullable(),
-    interval: z.object({
-      minutes: z.number().min(1),
-      startTime: z.number().nullable(),
-    }).nullable(),
+    fixedTime: z
+      .object({
+        time: z.string(),
+        timezone: z.string().nullable(),
+      })
+      .nullable(),
+    interval: z
+      .object({
+        minutes: z.number().min(1),
+        startTime: z.number().nullable(),
+      })
+      .nullable(),
   }),
   activeTime: z.object({
     startDate: z.number(),
@@ -48,36 +52,50 @@ export const CreateReminderTemplateSchema = z.object({
     channels: z.array(z.enum(NotificationChannel)),
     title: z.string().nullable(),
     body: z.string().nullable(),
-    sound: z.object({
-      enabled: z.boolean(),
-      soundName: z.string().nullable(),
-    }).nullable(),
-    vibration: z.object({
-      enabled: z.boolean(),
-      pattern: z.array(z.number()).nullable(),
-    }).nullable(),
-    actions: z.array(z.object({
-      id: z.string(),
-      label: z.string(),
-      action: z.enum(NotificationAction),
-      customAction: z.string().nullable(),
-    })).nullable(),
+    sound: z
+      .object({
+        enabled: z.boolean(),
+        soundName: z.string().nullable(),
+      })
+      .nullable(),
+    vibration: z
+      .object({
+        enabled: z.boolean(),
+        pattern: z.array(z.number()).nullable(),
+      })
+      .nullable(),
+    actions: z
+      .array(
+        z.object({
+          id: z.string(),
+          label: z.string(),
+          action: z.enum(NotificationAction),
+          customAction: z.string().nullable(),
+        }),
+      )
+      .nullable(),
   }),
   description: z.string().max(1000).optional(),
-  recurrence: z.object({
-    type: z.enum(RecurrenceType),
-    daily: z.object({ interval: z.number().min(1) }).nullable(),
-    weekly: z.object({
-      interval: z.number().min(1),
-      weekDays: z.array(z.enum(WeekDay)),
-    }).nullable(),
-    customDays: z.object({ dates: z.array(z.number()) }).nullable(),
-  }).optional(),
-  activeHours: z.object({
-    startHour: z.number().min(0).max(23),
-    endHour: z.number().min(0).max(23),
-    timezone: z.string().nullable(),
-  }).optional(),
+  recurrence: z
+    .object({
+      type: z.enum(RecurrenceType),
+      daily: z.object({ interval: z.number().min(1) }).nullable(),
+      weekly: z
+        .object({
+          interval: z.number().min(1),
+          weekDays: z.array(z.enum(WeekDay)),
+        })
+        .nullable(),
+      customDays: z.object({ dates: z.array(z.number()) }).nullable(),
+    })
+    .optional(),
+  activeHours: z
+    .object({
+      startHour: z.number().min(0).max(23),
+      endHour: z.number().min(0).max(23),
+      timezone: z.string().nullable(),
+    })
+    .optional(),
   importanceLevel: z.enum(ImportanceLevel).optional(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional(),

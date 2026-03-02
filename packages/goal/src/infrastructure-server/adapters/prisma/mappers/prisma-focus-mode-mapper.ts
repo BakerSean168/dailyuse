@@ -11,14 +11,14 @@ import { FocusMode } from '@/domain-server';
 
 export class PrismaFocusModeMapper {
   /**
-   * Prisma row â†?Domain FocusMode value object.
+   * Prisma row ï¿½?Domain FocusMode value object.
    * Converts DateTime fields to timestamps for FocusModeDTO.
    */
   static toDomain(data: PrismaFocusMode): FocusMode {
     const dto: FocusModeDTO = {
-      id: data.id,
-      identityId: data.identityId,
-      focusedGoalIds: data.focusedGoalIds ?? [],
+      id: data.id as FocusModeDTO['id'],
+      identityId: data.identityId as FocusModeDTO['identityId'],
+      focusedGoalIds: (data.focusedGoalIds ?? []) as FocusModeDTO['focusedGoalIds'],
       startTime: (data.startTime as Date).getTime(),
       endTime: (data.endTime as Date).getTime(),
       hiddenGoalsMode: data.hiddenGoalsMode as HiddenGoalsMode,
@@ -31,7 +31,7 @@ export class PrismaFocusModeMapper {
   }
 
   /**
-   * Batch conversion: Prisma â†?Domain
+   * Batch conversion: Prisma ï¿½?Domain
    */
   static toDomainList(rows: PrismaFocusMode[]): FocusMode[] {
     return rows.map((row) => PrismaFocusModeMapper.toDomain(row));

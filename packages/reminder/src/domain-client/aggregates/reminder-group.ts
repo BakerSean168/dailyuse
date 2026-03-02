@@ -146,8 +146,8 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
   // ================= DTO Conversion =================
   public toDTO(): ReminderGroupClientDTO {
     return {
-      id: String(this._props.id),
-      identityId: String(this._props.identityId),
+      id: String(this._props.id) as ReminderGroupClientDTO['id'],
+      identityId: String(this._props.identityId) as ReminderGroupClientDTO['identityId'],
       name: this._props.name,
       description: this._props.description,
       color: this._props.color,

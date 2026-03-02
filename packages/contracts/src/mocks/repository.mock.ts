@@ -14,7 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { RepositoryClientDTO, ResourceClientDTO } from '../modules/repository';
-import type { RepositoryId, IdentityId } from '@/primitives/ids';
+import type { RepositoryId, IdentityId } from '../primitives/ids';
 
 export function createMockRepository(
   overrides: Partial<RepositoryClientDTO> = {},

@@ -2,8 +2,8 @@
  * Resource Bookmark Entity - Client Interface
  * 资源书签实体 - 客户端接口
  */
-import type { TransferDate } from '@/primitives';
-import type { ResourceId, IdentityId } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
+import type { ResourceId, IdentityId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -15,11 +15,11 @@ export interface ResourceBookmarkClientDTO {
   id: string;
   resourceId: ResourceId;
   identityId: IdentityId;
-  
+
   aliasName: string | null;
   icon: string | null;
   color: string | null;
-  
+
   sortOrder: number;
   version: number;
   createdAt: TransferDate;

@@ -8,7 +8,7 @@ import type {
   IdentityId,
   DomainDate,
   TransferDate,
-} from '@/primitives';
+} from '../../../primitives';
 import type { TaskInstanceServerDTO } from './task-instance-server';
 import type { TaskInstanceStatus } from '../value-objects/task-instance-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';

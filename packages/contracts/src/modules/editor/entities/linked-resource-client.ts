@@ -3,7 +3,7 @@
  * 链接资源实体 - 客户端接�?
  */
 
-import type { LinkedResourceId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate } from '@/primitives';
+import type { LinkedResourceId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate } from '../../../primitives';
 import type { LinkedSourceType } from '../value-objects/linked-source-type';
 import type { LinkedTargetType } from '../value-objects/linked-target-type';
 import type { LinkedResourceServerDTO } from './linked-resource-server';

@@ -5,7 +5,7 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方�?
  */
 
-import type { DomainDate, TransferDate, PersistenceDate, GoalId, IdentityId, GoalFolderId } from '@/primitives';
+import type { DomainDate, TransferDate, PersistenceDate, GoalId, IdentityId, GoalFolderId } from '../../../primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
 import type { KeyResultServerDTO, KeyResultPersistenceDTO } from '../entities/key-result-server';

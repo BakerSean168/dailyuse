@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { GoalId, KeyResultId, AiProviderConfigId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { GoalId, KeyResultId, AiProviderConfigId } from '../../../primitives';
 import type { GenerateTasksResultDTO } from '../dtos';
 
 // ============================================================================

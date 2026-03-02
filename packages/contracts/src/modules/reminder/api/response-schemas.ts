@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { ReminderTemplateId, ReminderGroupId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { ReminderTemplateId, ReminderGroupId } from '../../../primitives';
 
 /**
  * ReminderTemplate Response Schema

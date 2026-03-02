@@ -4,7 +4,7 @@
  */
 
 // ============ Typed IDs (from primitives) ============
-export type { SettingId, SettingGroupId } from '@/primitives';
+export type { SettingId, SettingGroupId } from '../../../primitives';
 
 // ============ Const Object Enums ============
 export { SettingValueType } from './setting-value-type';

@@ -17,9 +17,6 @@ import {
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
   KeyResultClientDTOSchema,
-  type AddKeyResultReq,
-  type UpdateKeyResultReq,
-  type UpdateKeyResultProgressReq,
 } from '@dailyuse/contracts/goal';
 import type { GoalController } from '../../controllers/goal.controller';
 
@@ -62,7 +59,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.addKeyResult(req.params!.id, req.body as AddKeyResultReq),
+    (req) => controller.addKeyResult(req.params!.id, req.body),
     { successStatus: 201 },
   );
 
@@ -82,7 +79,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.updateKeyResult(req.params!.id, req.params!.krId, req.body as UpdateKeyResultReq),
+    (req) => controller.updateKeyResult(req.params!.id, req.params!.krId, req.body),
   );
 
   // PATCH /:id/key-results/:krId/progress — 更新关键结果进度
@@ -101,7 +98,7 @@ export function registerKeyResultRoutes(
       },
     },
     [auth],
-    (req) => controller.updateKeyResultProgress(req.params!.id, req.params!.krId, req.body as UpdateKeyResultProgressReq),
+    (req) => controller.updateKeyResultProgress(req.params!.id, req.params!.krId, req.body),
   );
 
   // DELETE /:id/key-results/:krId — 删除关键结果

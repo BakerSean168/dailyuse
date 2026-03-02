@@ -8,7 +8,7 @@
  * 此处仅保留 DTO 定义
  */
 
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 import type { OAuthProvider } from '../value-objects/oauth-provider';
 
 // ============ OAuthBinding DTO ============

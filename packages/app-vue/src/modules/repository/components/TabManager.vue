@@ -12,13 +12,13 @@
         >
           <component :is="tab.icon" class="mr-2 h-4 w-4" />
           <span class="text-sm">{{ displayName(tab.name) }}</span>
-          
+
           <!-- Dirty indicator -->
           <div v-if="tab.isDirty" class="ml-2 h-2 w-2 rounded-full bg-warning" />
-          
+
           <!-- Pin indicator -->
           <component v-if="tab.isPinned" :is="PinIcon" class="ml-1 h-3 w-3 text-primary" />
-          
+
           <!-- Close button -->
           <Button
             variant="ghost"
@@ -48,25 +48,25 @@
       <DropdownMenuContent>
         <DropdownMenuItem @click="emit('toggle-pin', contextMenu.tab!.id)">
           <component :is="contextMenu.tab?.isPinned ? PinOffIcon : PinIcon" class="mr-2 h-4 w-4" />
-          {{ contextMenu.tab?.isPinned ? '取消固定' : '固定' }}
+          {{ contextMenu.tab?.isPinned ? t('repository.tabs.unpin') : t('repository.tabs.pin') }}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem @click="emit('close-tab', contextMenu.tab!.id)">
           <component :is="XIcon" class="mr-2 h-4 w-4" />
-          关闭
+          {{ t('repository.tabs.close') }}
         </DropdownMenuItem>
         <DropdownMenuItem @click="emit('close-others', contextMenu.tab!.id)">
           <component :is="XIcon" class="mr-2 h-4 w-4" />
-          关闭其他
+          {{ t('repository.tabs.closeOthers') }}
         </DropdownMenuItem>
         <DropdownMenuItem @click="emit('close-right', contextMenu.tab!.id)">
           <component :is="ArrowRightIcon" class="mr-2 h-4 w-4" />
-          关闭右侧
+          {{ t('repository.tabs.closeRight') }}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem class="text-destructive" @click="emit('close-all')">
           <component :is="XIcon" class="mr-2 h-4 w-4" />
-          关闭所有
+          {{ t('repository.tabs.closeAll') }}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -75,6 +75,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { FileIcon, PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from 'lucide-vue-next';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -118,6 +119,8 @@ const localActiveTab = computed({
     if (value) emit('switch-tab', value);
   },
 });
+
+const { t } = useI18n();
 
 const contextMenu = reactive({
   show: false,

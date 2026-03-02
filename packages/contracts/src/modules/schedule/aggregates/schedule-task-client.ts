@@ -3,7 +3,7 @@
  * 调度任务聚合?- 客户端接?
  */
 
-import type { ScheduleTaskId, IdentityId, DomainDate, TransferDate } from '@/primitives';
+import type { ScheduleTaskId, IdentityId, DomainDate, TransferDate } from '../../../primitives';
 import type { ScheduleTaskStatus } from '../value-objects/schedule-task-status';
 import type { SourceModule } from '../value-objects/source-module';
 

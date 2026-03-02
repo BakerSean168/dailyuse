@@ -3,7 +3,7 @@
  * 重复规则值对�?- 服务端接�?
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 import type { RecurrenceFrequency } from './recurrence-frequency';
 import type { DayOfWeek } from './day-of-week';
 

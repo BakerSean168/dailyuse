@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 /**
  * 节流工具函数
  * @module throttle

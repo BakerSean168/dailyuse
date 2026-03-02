@@ -12,7 +12,7 @@ import type {
   IdentityId,
   FocusModeId,
   GoalId,
-} from '@/primitives';
+} from '../../../primitives';
 
 // ============ 枚举定义 ============
 

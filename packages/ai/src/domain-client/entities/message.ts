@@ -117,8 +117,8 @@ export class Message extends Entity<AiMessageId> {
 
   public toDTO(): MessageClientDTO {
     return {
-      id: String(this._props.id),
-      conversationId: String(this._props.conversationId),
+      id: String(this._props.id) as MessageClientDTO['id'],
+      conversationId: String(this._props.conversationId) as MessageClientDTO['conversationId'],
       role: this._props.role,
       content: this._props.content,
       tokenCount: this._props.tokenCount,

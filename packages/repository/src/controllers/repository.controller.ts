@@ -27,7 +27,10 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 export interface RepositoryUseCases {
   // Repository CRUD
   createRepository(data: CreateRepositoryZodReq, ctx: Context): Promise<Result<unknown>>;
-  listRepositories(filters: { status?: string; type?: string }, ctx: Context): Promise<Result<unknown>>;
+  listRepositories(
+    filters: { status?: string; type?: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
   getRepository(id: string): Promise<Result<unknown>>;
   updateRepository(id: string, data: UpdateRepositoryZodReq): Promise<Result<unknown>>;
   deleteRepository(id: string): Promise<Result<unknown>>;
@@ -35,7 +38,10 @@ export interface RepositoryUseCases {
   activateRepository(id: string): Promise<Result<unknown>>;
   // Resource CRUD
   createResource(data: CreateResourceZodReq & { repositoryId: string }): Promise<Result<unknown>>;
-  listResources(repositoryId: string, filters: { folderId?: string; status?: string }): Promise<Result<unknown>>;
+  listResources(
+    repositoryId: string,
+    filters: { folderId?: string; status?: string },
+  ): Promise<Result<unknown>>;
   getResource(id: string): Promise<Result<unknown>>;
   updateResource(id: string, data: UpdateResourceZodReq): Promise<Result<unknown>>;
   deleteResource(id: string): Promise<Result<unknown>>;
@@ -46,7 +52,7 @@ export class RepositoryController {
 
   // ==================== Repository Operations ====================
 
-  async createRepository(input: CreateRepositoryZodReq, ctx: Context): Promise<Result<unknown>> {
+  async createRepository(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateRepositorySchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -58,7 +64,10 @@ export class RepositoryController {
     return this.useCases.createRepository(parsed.data, ctx);
   }
 
-  async listRepositories(filters: { status?: string; type?: string }, ctx: Context): Promise<Result<unknown>> {
+  async listRepositories(
+    filters: { status?: string; type?: string },
+    ctx: Context,
+  ): Promise<Result<unknown>> {
     return this.useCases.listRepositories(filters, ctx);
   }
 
@@ -66,7 +75,7 @@ export class RepositoryController {
     return this.useCases.getRepository(id);
   }
 
-  async updateRepository(id: string, input: UpdateRepositoryZodReq): Promise<Result<unknown>> {
+  async updateRepository(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateRepositorySchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -92,7 +101,7 @@ export class RepositoryController {
 
   // ==================== Resource Operations ====================
 
-  async createResource(repoId: string, input: CreateResourceZodReq): Promise<Result<unknown>> {
+  async createResource(repoId: string, input: unknown): Promise<Result<unknown>> {
     const parsed = CreateResourceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -107,7 +116,10 @@ export class RepositoryController {
     });
   }
 
-  async listResources(repositoryId: string, filters: { folderId?: string; status?: string }): Promise<Result<unknown>> {
+  async listResources(
+    repositoryId: string,
+    filters: { folderId?: string; status?: string },
+  ): Promise<Result<unknown>> {
     return this.useCases.listResources(repositoryId, filters);
   }
 
@@ -115,7 +127,7 @@ export class RepositoryController {
     return this.useCases.getResource(id);
   }
 
-  async updateResource(id: string, input: UpdateResourceZodReq): Promise<Result<unknown>> {
+  async updateResource(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateResourceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

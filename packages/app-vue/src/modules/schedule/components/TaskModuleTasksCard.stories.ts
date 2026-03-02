@@ -3,7 +3,7 @@ import TaskModuleTasksCard from './TaskModuleTasksCard.vue';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
 function makeTaskModuleTask(
-  overrides: Partial<ScheduleTaskClientDTO> & { id: string; name: string },
+  overrides: Record<string, unknown> & { id: string; name: string },
 ): ScheduleTaskClientDTO {
   const now = new Date();
   return {

@@ -80,7 +80,10 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
     return row ? this.toServerDTO(row) : null;
   }
 
-  async findByIdentityIdAndName(identityId: string, name: string): Promise<AIProviderConfigServerDTO | null> {
+  async findByIdentityIdAndName(
+    identityId: string,
+    name: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
     const row = await this.prisma.aiProviderConfig.findFirst({
       where: { identityId, name, deletedAt: null },
     });
@@ -115,8 +118,8 @@ export class AIProviderConfigPrismaRepository implements IAIProviderConfigReposi
 
   private toServerDTO(row: PrismaAiProviderConfig): AIProviderConfigServerDTO {
     return {
-      id: row.id,
-      identityId: row.identityId,
+      id: row.id as AIProviderConfigServerDTO['id'],
+      identityId: row.identityId as AIProviderConfigServerDTO['identityId'],
       name: row.name,
       providerType: row.providerType as AIProviderType,
       baseUrl: row.baseUrl,

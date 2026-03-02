@@ -62,22 +62,36 @@ export function useRepository() {
     store.setLoading(true);
     store.setError(null);
     try {
-      // TODO: Migrate to service call when RepositoryClientService supports fetchResources
-      console.warn('[useRepository] fetchResources: TODO — migrate to service');
-      store.setResources([]);
+      const result = await service.listResources(store.repositoryId);
+      if (result.ok) {
+        store.setResources(result.data ?? []);
+      } else {
+        handleError(result.error.message || '加载资源失败');
+      }
     } finally {
       store.setLoading(false);
     }
   }
 
-  async function createResource(data: Record<string, unknown>): Promise<ResourceClientDTO | null> {
+  async function createResource(data: {
+    name: string;
+    type: string;
+    mimeType?: string;
+    content?: string;
+    folderId?: string;
+  }): Promise<ResourceClientDTO | null> {
     if (!store.repositoryId) return null;
     savingId.value = 'new';
     store.setError(null);
     try {
-      // TODO: Migrate to service call when RepositoryClientService supports createResource
-      console.warn('[useRepository] createResource: TODO — migrate to service');
-      return null;
+      const result = await service.createResource(store.repositoryId, data);
+      if (result.ok && result.data) {
+        store.addResource(result.data);
+        return result.data;
+      } else {
+        handleError(result.ok ? '创建资源返回空数据' : result.error.message || '创建资源失败');
+        return null;
+      }
     } finally {
       savingId.value = null;
     }
@@ -104,9 +118,14 @@ export function useRepository() {
     savingId.value = resourceId;
     store.setError(null);
     try {
-      // TODO: Migrate to service call
-      console.warn('[useRepository] saveResourceContent: TODO — migrate to service');
-      return false;
+      const result = await service.updateResource(resourceId, { content });
+      if (result.ok && result.data) {
+        store.updateResource(result.data);
+        return true;
+      } else {
+        handleError(result.ok ? '保存内容返回空数据' : result.error.message || '保存内容失败');
+        return false;
+      }
     } finally {
       savingId.value = null;
     }

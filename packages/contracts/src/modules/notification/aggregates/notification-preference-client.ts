@@ -3,9 +3,9 @@
  * 通知偏好聚合根 - 客户端接口
  */
 
-import type { NotificationPreferenceId } from '@/primitives';
+import type { NotificationPreferenceId } from '../../../primitives';
 import type { NotificationChannelType } from '../value-objects';
-import type { IdentityId } from '@/primitives';
+import type { IdentityId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

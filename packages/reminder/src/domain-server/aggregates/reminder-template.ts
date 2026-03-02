@@ -216,9 +216,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     const activeTime = ActiveTimeConfig.fromDTO(params.activeTime);
     const notificationConfig = NotificationConfig.fromDTO(params.notificationConfig);
     const recurrence = params.recurrence ? RecurrenceConfig.fromDTO(params.recurrence) : null;
-    const activeHours = params.activeHours
-      ? ActiveHoursConfig.fromDTO(params.activeHours)
-      : null;
+    const activeHours = params.activeHours ? ActiveHoursConfig.fromDTO(params.activeHours) : null;
 
     const template = new ReminderTemplate({
       id,
@@ -699,14 +697,21 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       return false;
     }
     // Check if effectiveness is low or ignore rate is high
-    return this._props.responseMetrics.effectivenessScore < 40 || this._props.responseMetrics.ignoreRate > 60;
+    return (
+      this._props.responseMetrics.effectivenessScore < 40 ||
+      this._props.responseMetrics.ignoreRate > 60
+    );
   }
 
   /**
    * 计算建议的频率调整
    */
   public calculateSuggestedAdjustment(): FrequencyAdjustmentDTO | null {
-    if (!this._props.responseMetrics || !this._props.smartFrequencyEnabled || !this._props.trigger) {
+    if (
+      !this._props.responseMetrics ||
+      !this._props.smartFrequencyEnabled ||
+      !this._props.trigger
+    ) {
       return null;
     }
 
@@ -850,7 +855,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     const activeHoursClientDTO = this._props.activeHours
       ? {
           ...this._props.activeHours.toServerDTO(),
-          displayText: this._props.activeHours.enabled 
+          displayText: this._props.activeHours.enabled
             ? `${this._props.activeHours.startHour}:00 - ${this._props.activeHours.endHour}:00`
             : '全天',
         }
@@ -867,7 +872,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     const lastTriggeredAt =
       this._props.history.length > 0
-        ? this._props.history[this._props.history.length - 1]?.triggeredAt ?? null
+        ? (this._props.history[this._props.history.length - 1]?.triggeredAt ?? null)
         : null;
 
     const clientDTO: ReminderTemplateClientDTO = {
@@ -884,7 +889,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       selfEnabled: this._props.selfEnabled,
       status: this._props.status,
       effectiveEnabled: effectiveEnabled,
-      groupId: this._props.groupId,
+      groupId: this._props.groupId as ReminderTemplateClientDTO['groupId'],
       importanceLevel: this._props.importanceLevel,
       tags: [...this._props.tags],
       color: this._props.color,
@@ -918,5 +923,4 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     return clientDTO;
   }
-
 }

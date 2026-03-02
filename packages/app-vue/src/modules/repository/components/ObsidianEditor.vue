@@ -18,8 +18,8 @@
       >
         <div class="text-center">
           <Upload class="w-16 h-16 mb-4 text-primary mx-auto" />
-          <p class="text-lg font-medium text-primary">释放以上传文件</p>
-          <span class="text-sm text-muted-foreground">支持图片、音频、视频、PDF 等</span>
+          <p class="text-lg font-medium text-primary">{{ t('repository.editor.dropToUpload') }}</p>
+          <span class="text-sm text-muted-foreground">{{ t('repository.editor.dropHint') }}</span>
         </div>
       </div>
     </Transition>
@@ -69,16 +69,16 @@
           <DropdownMenuContent align="end">
             <DropdownMenuItem @click="copyLink">
               <Link2 class="mr-2 h-4 w-4" />
-              复制链接
+              {{ t('repository.editor.copyLink') }}
             </DropdownMenuItem>
             <DropdownMenuItem @click="openInNewTab">
               <ExternalLink class="mr-2 h-4 w-4" />
-              在新标签页打开
+              {{ t('repository.editor.openInNewTab') }}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem @click="showFileInfo">
               <Info class="mr-2 h-4 w-4" />
-              文件信息
+              {{ t('repository.editor.fileInfo') }}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -129,7 +129,7 @@
         v-else
         v-model="fullContent"
         class="min-h-[500px] font-mono border-0 focus-visible:ring-0 resize-none"
-        placeholder="开始写作..."
+        :placeholder="t('repository.workspace.startWriting')"
         @input="handleContentChange"
         @paste="handlePaste"
       />
@@ -141,18 +141,23 @@
     >
       <span v-if="isSaving" class="flex items-center gap-1 text-yellow-600">
         <Loader2 class="h-3 w-3 animate-spin" />
-        保存中...
+        {{ t('repository.workspace.saving') }}
       </span>
-      <span v-else-if="isDirty" class="text-muted-foreground">未保存</span>
-      <span v-else class="text-green-600">已保存</span>
+      <span v-else-if="isDirty" class="text-muted-foreground">{{
+        t('repository.workspace.unsaved')
+      }}</span>
+      <span v-else class="text-green-600">{{ t('repository.workspace.saved') }}</span>
       <span class="text-muted-foreground">|</span>
-      <span class="text-muted-foreground">{{ wordCount }} 字</span>
+      <span class="text-muted-foreground"
+        >{{ wordCount }} {{ t('repository.workspace.chars') }}</span
+      >
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
 import { marked } from 'marked';
 import {
@@ -196,7 +201,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   content: '',
-  fileName: '无标题',
+  fileName: '',
   folderPath: '',
   isSaving: false,
   isDirty: false,
@@ -207,6 +212,8 @@ const emit = defineEmits<{
   'paste-files': [files: File[]];
   'drop-files': [files: File[]];
 }>();
+
+const { t } = useI18n();
 
 const isReadingMode = ref(true);
 const propertiesExpanded = ref(true);
@@ -236,7 +243,9 @@ const hasProperties = computed(() => Object.keys(properties.value).length > 0);
 const markdownBody = computed(() => parsedContent.value.body);
 
 const noteTitle = computed(() => {
-  return properties.value.title || props.fileName.replace(/\.md$/, '') || '无标题';
+  return (
+    properties.value.title || props.fileName.replace(/\.md$/, '') || t('repository.editor.untitled')
+  );
 });
 
 const displayFileName = computed(() => {
@@ -248,7 +257,7 @@ const renderedContent = computed(() => {
   try {
     return marked(markdownBody.value || '');
   } catch {
-    return '<p>渲染错误</p>';
+    return `<p>${t('repository.editor.renderError')}</p>`;
   }
 });
 

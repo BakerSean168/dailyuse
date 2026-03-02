@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 /**
  * 控制台传输器
  * 支持 Node.js 和浏览器

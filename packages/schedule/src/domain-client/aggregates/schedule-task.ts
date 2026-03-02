@@ -402,8 +402,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   // ================= DTO Conversion =================
   public toDTO(): ScheduleTaskClientDTO {
     return {
-      id: String(this._props.id),
-      identityId: String(this._props.identityId),
+      id: String(this._props.id) as ScheduleTaskClientDTO['id'],
+      identityId: String(this._props.identityId) as ScheduleTaskClientDTO['identityId'],
       name: this._props.name,
       description: this._props.description,
       sourceModule: this._props.sourceModule,
@@ -427,9 +427,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       executionSummary: this._props.executionSummary,
       healthStatus: this._props.healthStatus,
       isOverdue: this._props.isOverdue,
-      executions: this._props.executions
-        ? this._props.executions.map((e) => e.toDTO())
-        : null,
+      executions: this._props.executions ? this._props.executions.map((e) => e.toDTO()) : null,
     };
   }
 }

@@ -29,7 +29,7 @@ export type PrismaScheduleTaskWithExecutions = PrismaScheduleTask & {
 
 export class PrismaScheduleTaskMapper {
   /**
-   * Prisma record â†?ScheduleTask aggregate root (with optional executions)
+   * Prisma record ï¿½?ScheduleTask aggregate root (with optional executions)
    */
   static toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
     const state: ScheduleTaskState = {
@@ -42,15 +42,15 @@ export class PrismaScheduleTaskMapper {
       status: data.status as ScheduleTaskStatus,
       enabled: data.enabled,
       schedule: ScheduleConfig.fromPersistenceDTO({
-        cronExpression: data.cronExpression ?? null,
+        cronExpression: data.cronExpression ?? '',
         timezone: data.timezone,
-        startDate: data.startDate ?? null,
-        endDate: data.endDate ?? null,
+        startDate: data.startDate ? data.startDate.toISOString() : null,
+        endDate: data.endDate ? data.endDate.toISOString() : null,
         maxExecutions: data.maxExecutions ?? null,
       }),
       execution: ExecutionInfo.fromPersistenceDTO({
-        nextRunAt: data.nextRunAt,
-        lastRunAt: data.lastRunAt,
+        nextRunAt: data.nextRunAt ? data.nextRunAt.toISOString() : null,
+        lastRunAt: data.lastRunAt ? data.lastRunAt.toISOString() : null,
         executionCount: data.executionCount,
         lastExecutionStatus: (data.lastExecutionStatus as ExecutionStatus) ?? null,
         last_execution_duration: data.lastExecutionDuration ?? null,
@@ -64,8 +64,13 @@ export class PrismaScheduleTaskMapper {
         max_retry_delay: data.maxDelayMs ?? 0,
       }),
       metadata: TaskMetadata.fromPersistenceDTO({
-        payload: data.payload ?? {},
-        tags: data.tags ? (typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags) : [],
+        payload:
+          typeof data.payload === 'string' ? data.payload : JSON.stringify(data.payload ?? {}),
+        tags: data.tags
+          ? typeof data.tags === 'string'
+            ? data.tags
+            : JSON.stringify(data.tags)
+          : '[]',
         priority: data.priority,
         timeout: data.timeout,
       }),
@@ -86,7 +91,11 @@ export class PrismaScheduleTaskMapper {
           executionTime: execData.executionTime,
           status: execData.status as ExecutionStatus,
           duration: execData.duration ?? null,
-          result: execData.result ? (typeof execData.result === 'string' ? JSON.parse(execData.result as string) : execData.result as Record<string, any>) : null,
+          result: execData.result
+            ? typeof execData.result === 'string'
+              ? JSON.parse(execData.result as string)
+              : (execData.result as Record<string, any>)
+            : null,
           error: execData.error ?? null,
           retryCount: execData.retryCount,
           createdAt: execData.createdAt,
@@ -99,7 +108,7 @@ export class PrismaScheduleTaskMapper {
   }
 
   /**
-   * ScheduleTask aggregate â†?Prisma write data
+   * ScheduleTask aggregate ï¿½?Prisma write data
    */
   static toPersistence(task: ScheduleTask) {
     const metadataDTO = task.metadata.toServerDTO();
@@ -131,7 +140,10 @@ export class PrismaScheduleTaskMapper {
       maxDelayMs: task.retryPolicy.maxRetryDelay ?? 30000,
       backoffMultiplier: task.retryPolicy.backoffMultiplier ?? 2,
       retryableStatuses: '[]',
-      payload: typeof metadataDTO.payload === 'string' ? metadataDTO.payload : JSON.stringify(metadataDTO.payload),
+      payload:
+        typeof metadataDTO.payload === 'string'
+          ? metadataDTO.payload
+          : JSON.stringify(metadataDTO.payload),
       tags: JSON.stringify(metadataDTO.tags),
       priority: metadataDTO.priority,
       timeout: metadataDTO.timeout,

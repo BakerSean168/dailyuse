@@ -58,7 +58,7 @@ export class GroqAdapter extends BaseAIAdapter {
   private readonly timeoutMs: number;
 
   constructor(config: GroqConfig) {
-    super(AIProvider.CUSTOM, config.defaultModel as any);
+    super(AIProvider.Custom, config.defaultModel as any);
 
     this.modelId = config.defaultModel;
     // Groq 鎺ㄧ悊閫熷害鏋佸揩锛岄粯璁よ秴鏃惰缃緝锟?
@@ -87,7 +87,7 @@ export class GroqAdapter extends BaseAIAdapter {
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
-        maxOutputTokens: request.maxTokens,
+        maxTokens: request.maxTokens,
       });
 
       const result = await Promise.race([generationPromise, timeoutPromise]);
@@ -132,7 +132,7 @@ export class GroqAdapter extends BaseAIAdapter {
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
-        maxOutputTokens: request.maxTokens,
+        maxTokens: request.maxTokens,
       });
 
       let fullText = '';
@@ -179,7 +179,7 @@ export class GroqAdapter extends BaseAIAdapter {
       const result = await generateText({
         model: this.openai.chat(this.modelId),
         prompt: 'Say OK',
-        maxOutputTokens: 10,
+        maxTokens: 10,
       });
       return result.text.length > 0;
     } catch {

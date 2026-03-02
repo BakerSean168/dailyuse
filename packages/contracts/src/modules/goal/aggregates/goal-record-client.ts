@@ -2,9 +2,9 @@
  * GoalRecord Entity - Client Interface
  */
 
-import type { DomainDate, GoalId, TransferDate } from '@/primitives';
-import type { GoalRecordId } from '@/primitives';
-import type { KeyResultId } from '@/primitives';
+import type { DomainDate, GoalId, TransferDate } from '../../../primitives';
+import type { GoalRecordId } from '../../../primitives';
+import type { KeyResultId } from '../../../primitives';
 
 export interface GoalRecordClientDTO {
   id: GoalRecordId;

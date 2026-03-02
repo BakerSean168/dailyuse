@@ -77,7 +77,7 @@ export class GoalController {
 
   // ==================== Goal CRUD ====================
 
-  async create(input: CreateGoalReq, ctx: Context): Promise<Result<unknown>> {
+  async create(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -89,7 +89,7 @@ export class GoalController {
     return this.useCases.createGoal.execute(parsed.data, ctx);
   }
 
-  async list(query: QueryGoalsReq): Promise<Result<unknown>> {
+  async list(query: unknown): Promise<Result<unknown>> {
     const parsed = QueryGoalsSchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -115,7 +115,7 @@ export class GoalController {
     return this.useCases.getGoal.execute(id, includeChildren);
   }
 
-  async update(id: string, input: UpdateGoalReq): Promise<Result<unknown>> {
+  async update(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateGoalSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -143,7 +143,7 @@ export class GoalController {
 
   // ==================== Key Results ====================
 
-  async addKeyResult(goalId: string, input: AddKeyResultReq): Promise<Result<unknown>> {
+  async addKeyResult(goalId: string, input: unknown): Promise<Result<unknown>> {
     const parsed = AddKeyResultSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,
@@ -166,7 +166,7 @@ export class GoalController {
     });
   }
 
-  async updateKeyResult(goalId: string, krId: string, input: UpdateKeyResultReq): Promise<Result<unknown>> {
+  async updateKeyResult(goalId: string, krId: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateKeyResultSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -184,7 +184,11 @@ export class GoalController {
     });
   }
 
-  async updateKeyResultProgress(goalId: string, krId: string, input: UpdateKeyResultProgressReq): Promise<Result<unknown>> {
+  async updateKeyResultProgress(
+    goalId: string,
+    krId: string,
+    input: unknown,
+  ): Promise<Result<unknown>> {
     const parsed = UpdateKeyResultProgressSchema.safeParse({
       ...(input as Record<string, unknown>),
       keyResultId: krId,
@@ -210,7 +214,7 @@ export class GoalController {
 
   // ==================== Reviews ====================
 
-  async addReview(goalId: string, input: CreateGoalReviewReq): Promise<Result<unknown>> {
+  async addReview(goalId: string, input: unknown): Promise<Result<unknown>> {
     const parsed = CreateGoalReviewSchema.safeParse({
       ...(input as Record<string, unknown>),
       goalId,

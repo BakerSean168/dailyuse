@@ -55,7 +55,9 @@ export function registerWorkspaceRoutes(
       method: 'post',
       path: '/workspaces',
       summary: '创建工作区',
-      request: { body: { content: { 'application/json': { schema: CreateEditorWorkspaceSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: CreateEditorWorkspaceSchema } } },
+      },
       responses: {
         201: successResponse(WorkspaceResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),

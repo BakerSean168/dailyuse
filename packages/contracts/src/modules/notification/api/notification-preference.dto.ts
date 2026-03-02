@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { NotificationId, NotificationChannelId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { NotificationId, NotificationChannelId } from '../../../primitives';
 import type { NotificationPreferenceServerDTO } from '../aggregates/notification-preference-server';
 import type { NotificationStatsDTO, SendNotificationResultDTO, ListNotificationChannelsResultDTO } from '../dtos';
 import type { NotificationChannelServerDTO } from '../entities/notification-channel-server';

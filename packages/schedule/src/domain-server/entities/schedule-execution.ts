@@ -199,8 +199,8 @@ export class ScheduleExecution extends Entity<string> {
    */
   public toClientDTO(): ScheduleExecutionClientDTO {
     return {
-      id: this.id,
-      scheduleTaskId: this._taskId,
+      id: this.id as ScheduleExecutionClientDTO['id'],
+      scheduleTaskId: this._taskId as ScheduleExecutionClientDTO['scheduleTaskId'],
       executionTime: this._executionTime.getTime(),
       status: this._status,
       duration: this._duration,

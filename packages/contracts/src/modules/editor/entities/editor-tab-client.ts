@@ -3,7 +3,7 @@
  * 缂栬緫鍣ㄦ爣绛惧疄浣?- 瀹㈡埛绔帴�?
  */
 
-import type { EditorTabId, EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate } from '@/primitives';
+import type { EditorTabId, EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabServerDTO } from './editor-tab-server';
 

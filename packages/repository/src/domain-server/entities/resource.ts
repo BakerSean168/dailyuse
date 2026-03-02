@@ -306,12 +306,17 @@ export class Resource extends Entity<ResourceId> {
       '.css': 'mdi-language-css3',
     };
 
-    const icon = this._props.type === ResourceType.FOLDER ? 'mdi-folder' : iconMap[extension] ?? 'mdi-file';
+    const icon =
+      this._props.type === ResourceType.FOLDER ? 'mdi-folder' : (iconMap[extension] ?? 'mdi-file');
 
     return {
-      id: String(this.id),
-      repositoryId: String(this._props.repositoryId),
-      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      id: String(this.id) as import('@dailyuse/contracts/repository').ResourceClientDTO['id'],
+      repositoryId: String(
+        this._props.repositoryId,
+      ) as import('@dailyuse/contracts/repository').ResourceClientDTO['repositoryId'],
+      folderId: (this._props.folderId
+        ? String(this._props.folderId)
+        : null) as import('@dailyuse/contracts/repository').ResourceClientDTO['folderId'],
       name: this._props.name,
       type: this._props.type,
       mimeType: this._props.mimeType ?? '',
@@ -373,7 +378,7 @@ export class Resource extends Entity<ResourceId> {
       size: params.size ?? null,
       content: params.content ?? null,
       childrenCount: params.type === ResourceType.FOLDER ? 0 : null,
-      metadata: params.metadata 
+      metadata: params.metadata
         ? ResourceMetadata.create({
             tags: params.metadata.tags ?? [],
             wordCount: params.metadata.wordCount ?? null,

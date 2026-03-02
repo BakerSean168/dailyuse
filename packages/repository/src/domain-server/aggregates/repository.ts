@@ -240,8 +240,10 @@ export class Repository extends AggregateRoot<RepositoryId> {
     };
 
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: String(this.id) as import('@dailyuse/contracts/repository').RepositoryClientDTO['id'],
+      identityId: String(
+        this._props.identityId,
+      ) as import('@dailyuse/contracts/repository').RepositoryClientDTO['identityId'],
       name: this._props.name,
       type: this._props.type,
       path: this._props.path,
@@ -278,7 +280,7 @@ export class Repository extends AggregateRoot<RepositoryId> {
     const now = new Date();
 
     const config = params.config
-      ? RepositoryConfig.create({ 
+      ? RepositoryConfig.create({
           searchEngine: params.config.searchEngine ?? 'postgres',
           enableGit: params.config.enableGit ?? false,
           autoSync: params.config.autoSync,
@@ -306,5 +308,4 @@ export class Repository extends AggregateRoot<RepositoryId> {
   public static load(state: RepositoryState): Repository {
     return new Repository(state);
   }
-
 }

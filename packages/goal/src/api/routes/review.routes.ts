@@ -12,11 +12,7 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import {
-  CreateGoalReviewSchema,
-  GoalReviewClientDTOSchema,
-  type CreateGoalReviewReq,
-} from '@dailyuse/contracts/goal';
+import { CreateGoalReviewSchema, GoalReviewClientDTOSchema } from '@dailyuse/contracts/goal';
 import type { GoalController } from '../../controllers/goal.controller';
 
 // ============ Types ============
@@ -58,7 +54,7 @@ export function registerReviewRoutes(
       },
     },
     [auth],
-    (req) => controller.addReview(req.params!.id, req.body as CreateGoalReviewReq),
+    (req) => controller.addReview(req.params!.id, req.body),
     { successStatus: 201 },
   );
 

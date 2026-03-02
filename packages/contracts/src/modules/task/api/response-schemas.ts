@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { TaskTemplateId, TaskInstanceId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { TaskTemplateId, TaskInstanceId } from '../../../primitives';
 
 /**
  * TaskTemplate Response Schema

@@ -98,8 +98,8 @@ export class AIUsageQuotaPrismaRepository implements IAIUsageQuotaRepository {
 
   private toServerDTO(row: PrismaAiUsageQuota): AIUsageQuotaServerDTO {
     return {
-      id: row.id,
-      identityId: row.identityId,
+      id: row.id as AIUsageQuotaServerDTO['id'],
+      identityId: row.identityId as AIUsageQuotaServerDTO['identityId'],
       quotaLimit: row.quotaLimit,
       currentUsage: row.currentUsage,
       resetPeriod: row.resetPeriod as QuotaResetPeriod,

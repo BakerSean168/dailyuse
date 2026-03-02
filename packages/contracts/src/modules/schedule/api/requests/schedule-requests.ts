@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { IdentityId, ScheduleId } from '@/primitives';
+import { brandedId } from '../../../../primitives';
+import type { IdentityId, ScheduleId } from '../../../../primitives';
 import type { CalendarEntryClientDTO } from '../../aggregates/calendar-entry-client';
 import type { ConflictDetectionResult } from '../../value-objects/conflict-detection-result';
 

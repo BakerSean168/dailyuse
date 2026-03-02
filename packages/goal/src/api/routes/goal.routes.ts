@@ -19,8 +19,6 @@ import {
   QueryGoalsSchema,
   GoalClientDTOSchema,
   QueryGoalsResSchema,
-  type CreateGoalReq,
-  type UpdateGoalReq,
 } from '@dailyuse/contracts/goal';
 import type { GoalController } from '../../controllers/goal.controller';
 
@@ -43,7 +41,10 @@ function parseStringArray(value: unknown): string[] | undefined {
     return value.map(String).filter(Boolean);
   }
   if (typeof value === 'string') {
-    return value.split(',').map((s) => s.trim()).filter(Boolean);
+    return value
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
   return undefined;
 }
@@ -86,7 +87,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.create(req.body as CreateGoalReq, ctx),
+    (req, ctx) => controller.create(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -102,23 +103,29 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.list({
-      identityId: ctx.identityId,
-      status: parseStringArray(req.query?.status),
-      importance: parseStringArray(req.query?.importance) as any,
-      category: req.query?.category as string | undefined,
-      tags: parseStringArray(req.query?.tags),
-      folderId: req.query?.folderId as string | undefined,
-      keyword: req.query?.keyword as string | undefined,
-      startDate: parseNumber(req.query?.startDate),
-      endDate: parseNumber(req.query?.endDate),
-      sortBy: req.query?.sortBy as 'createdAt' | 'updatedAt' | 'targetDate' | 'priority' | undefined,
-      sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
-      page: parseNumber(req.query?.page),
-      pageSize: parseNumber(req.query?.pageSize),
-      includeKeyResults: parseBoolean(req.query?.includeKeyResults),
-      includeReviews: parseBoolean(req.query?.includeReviews),
-    }),
+    (req, ctx) =>
+      controller.list({
+        identityId: ctx.identityId as any,
+        status: parseStringArray(req.query?.status) as any,
+        importance: parseStringArray(req.query?.importance) as any,
+        category: req.query?.category as string | undefined,
+        tags: parseStringArray(req.query?.tags),
+        folderId: req.query?.folderId as any,
+        keyword: req.query?.keyword as string | undefined,
+        startDate: parseNumber(req.query?.startDate),
+        endDate: parseNumber(req.query?.endDate),
+        sortBy: req.query?.sortBy as
+          | 'createdAt'
+          | 'updatedAt'
+          | 'targetDate'
+          | 'priority'
+          | undefined,
+        sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
+        page: parseNumber(req.query?.page),
+        pageSize: parseNumber(req.query?.pageSize),
+        includeKeyResults: parseBoolean(req.query?.includeKeyResults),
+        includeReviews: parseBoolean(req.query?.includeReviews),
+      }),
   );
 
   // GET /search — 搜索目标
@@ -127,16 +134,15 @@ export function registerGoalCrudRoutes(
       method: 'get',
       path: '/search',
       summary: '搜索目标',
-      request: { query: z.object({ keyword: z.string().optional(), status: z.string().optional() }) },
+      request: {
+        query: z.object({ keyword: z.string().optional(), status: z.string().optional() }),
+      },
       responses: {
         200: successResponse(z.array(GoalClientDTOSchema), '搜索成功'),
       },
     },
     [auth],
-    (req, ctx) => controller.search(
-      typeof req.query?.q === 'string' ? req.query.q : '',
-      ctx,
-    ),
+    (req, ctx) => controller.search(typeof req.query?.q === 'string' ? req.query.q : '', ctx),
   );
 
   // GET /:id — 获取目标详情
@@ -172,7 +178,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body as UpdateGoalReq),
+    (req) => controller.update(req.params!.id, req.body),
   );
 
   // PATCH /:id — 更新目标（别名，跳过 OpenAPI 避免重复）
@@ -183,7 +189,7 @@ export function registerGoalCrudRoutes(
       skipOpenApi: true,
     },
     [auth],
-    (req) => controller.update(req.params!.id, req.body as UpdateGoalReq),
+    (req) => controller.update(req.params!.id, req.body),
   );
 
   // DELETE /:id — 删除目标（软删除）

@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { RepositoryId, ResourceId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { RepositoryId, ResourceId } from '../../../primitives';
 
 /**
  * Repository Response Schema

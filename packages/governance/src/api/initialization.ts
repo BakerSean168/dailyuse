@@ -22,7 +22,7 @@ const governanceEventHandlers: {
     logger.info(`[Governance] Rule created: ${payload.code}`);
   },
   'governance:rule-updated': (payload) => {
-    logger.info(`[Governance] Rule updated: ${payload.code}`);
+    logger.info(`[Governance] Rule updated: ${payload.ruleId}`);
   },
   'governance:rule-deprecated': (payload) => {
     logger.warn(`[Governance] Rule deprecated: ${payload.code}`);
@@ -43,13 +43,13 @@ const governanceEventHandlersInitTask: InitializationTask = {
   priority: 30,
   initialize: async () => {
     for (const [eventName, handler] of Object.entries(governanceEventHandlers)) {
-      eventBus.on(eventName as keyof GovernanceEventMap, handler as (payload: GovernanceEventMap[keyof GovernanceEventMap]) => void);
+      (eventBus as any).on(eventName, handler);
     }
     logger.info('[Governance] Event handlers initialized');
   },
   cleanup: async () => {
     for (const [eventName, handler] of Object.entries(governanceEventHandlers)) {
-      eventBus.off(eventName as keyof GovernanceEventMap, handler as (payload: GovernanceEventMap[keyof GovernanceEventMap]) => void);
+      (eventBus as any).off(eventName, handler);
     }
     logger.info('[Governance] Event handlers cleaned up');
   },

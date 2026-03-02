@@ -12,6 +12,8 @@ import type {
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
+  CreateResourceRequest,
+  UpdateResourceRequest,
 } from '../types';
 import type {
   RepositoryClientDTO,
@@ -56,10 +58,12 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:create`, request));
   }
 
-  async getFolderContents(folderId: string): Promise<Result<{
-    folders: FolderClientDTO[];
-    resources: ResourceClientDTO[];
-  }>> {
+  async getFolderContents(folderId: string): Promise<
+    Result<{
+      folders: FolderClientDTO[];
+      resources: ResourceClientDTO[];
+    }>
+  > {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:list`, folderId));
   }
 
@@ -68,7 +72,9 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   }
 
   async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:update`, { id, targetParentId }));
+    return tryCatch(() =>
+      this.ipcClient.invoke(`${this.channel}:folder:update`, { id, targetParentId }),
+    );
   }
 
   async deleteFolder(id: string): Promise<Result<void>> {
@@ -89,8 +95,30 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
 
   // ===== Resource Operations =====
 
+  async listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
+    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:list`, repositoryId));
+  }
+
+  async createResource(
+    repositoryId: string,
+    request: CreateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>> {
+    return tryCatch(() =>
+      this.ipcClient.invoke(`${this.channel}:resource:create`, { repositoryId, ...request }),
+    );
+  }
+
   async getResource(id: string): Promise<Result<ResourceClientDTO>> {
     return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:get`, id));
+  }
+
+  async updateResource(
+    id: string,
+    request: UpdateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>> {
+    return tryCatch(() =>
+      this.ipcClient.invoke(`${this.channel}:resource:update`, { id, ...request }),
+    );
   }
 
   async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {
@@ -98,7 +126,9 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   }
 
   async moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:update`, { id, targetFolderId }));
+    return tryCatch(() =>
+      this.ipcClient.invoke(`${this.channel}:resource:update`, { id, targetFolderId }),
+    );
   }
 
   async deleteResource(id: string): Promise<Result<void>> {

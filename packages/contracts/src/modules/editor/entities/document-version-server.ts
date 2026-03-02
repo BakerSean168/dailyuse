@@ -3,7 +3,7 @@
  * 文档版本实体 - 服务端接�?
  */
 
-import type { DocumentVersionId, DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { DocumentVersionId, DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { VersionChangeType } from '../value-objects/version-change-type';
 import type { DocumentVersionClientDTO } from './document-version-client';
 

@@ -3,14 +3,14 @@
  * 账户实体 - 服务器接口
  */
 
-import type { IdentityId } from '@/primitives';
+import type { IdentityId } from '../../../primitives';
 import type { AccountStatus } from '../value-objects/account-status';
 import type { AccountProfile, AccountProfileDTO, AccountProfilePersistenceDTO } from '../value-objects/account-profile';
 import type { AccountSettings, AccountSettingsDTO, AccountSettingsPersistenceDTO } from '../value-objects/account-settings';
 import type { ContactEmail, ContactEmailDTO, ContactEmailPersistenceDTO } from '../value-objects/contact-email';
 import type { ContactPhone, ContactPhoneDTO, ContactPhonePersistenceDTO } from '../value-objects/contact-phone';
 
-import type { DomainDate, PersistenceDate, TransferDate } from '@/primitives';
+import type { DomainDate, PersistenceDate, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

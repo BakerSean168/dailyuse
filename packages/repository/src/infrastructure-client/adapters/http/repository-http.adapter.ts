@@ -11,6 +11,8 @@ import type {
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
+  CreateResourceRequest,
+  UpdateResourceRequest,
 } from '../types';
 import type {
   RepositoryClientDTO,
@@ -55,10 +57,12 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     return this.httpClient.post(`${this.baseUrl}/${request.repositoryId}/folders`, request);
   }
 
-  async getFolderContents(folderId: string): Promise<Result<{
-    folders: FolderClientDTO[];
-    resources: ResourceClientDTO[];
-  }>> {
+  async getFolderContents(folderId: string): Promise<
+    Result<{
+      folders: FolderClientDTO[];
+      resources: ResourceClientDTO[];
+    }>
+  > {
     return this.httpClient.get(`/folders/${folderId}/contents`);
   }
 
@@ -88,8 +92,26 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
 
   // ===== Resource Operations =====
 
+  async listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
+    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/resources`);
+  }
+
+  async createResource(
+    repositoryId: string,
+    request: CreateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${repositoryId}/resources`, request);
+  }
+
   async getResource(id: string): Promise<Result<ResourceClientDTO>> {
     return this.httpClient.get(`/resources/${id}`);
+  }
+
+  async updateResource(
+    id: string,
+    request: UpdateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>> {
+    return this.httpClient.put(`/resources/${id}`, request);
   }
 
   async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {

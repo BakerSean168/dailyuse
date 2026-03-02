@@ -10,8 +10,8 @@ import type { AccountSettings, AccountSettingsDTO } from '../value-objects/accou
 import type { ContactEmail, ContactEmailDTO } from '../value-objects/contact-email';
 import type { ContactPhone, ContactPhoneDTO } from '../value-objects/contact-phone';
 
-import type { DomainDate } from '@/primitives';
-import type { TransferDate } from '@/primitives';
+import type { DomainDate } from '../../../primitives';
+import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

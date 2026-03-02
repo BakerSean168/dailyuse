@@ -46,7 +46,7 @@ import type {
   IGoalApiClient,
   IGoalFolderApiClient,
   IGoalFocusApiClient,
-} from '@/infrastructure-client/adapters/types';
+} from '../infrastructure-client/adapters/types';
 import {
   Goal,
   GoalFolder,
@@ -58,7 +58,7 @@ import {
   KeyResultId,
   GoalReviewId,
   GoalRecordId,
-} from '@/domain-client';
+} from '../domain-client';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 // ===== DTO-to-State Mappers =====

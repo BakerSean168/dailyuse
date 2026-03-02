@@ -9,14 +9,11 @@
  * - Instance toDTO(): GoalClientDTO
  */
 
-import type {
-  GoalClientDTO,
-  GoalReminderConfig,
-} from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, GoalReminderConfig } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalId, GoalFolderId } from '@/domain-shared';
+import { GoalId, GoalFolderId } from '../../domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { KeyResult, GoalReview } from '../entities';
 
@@ -186,16 +183,20 @@ export class Goal extends AggregateRoot<GoalId> {
       targetDate: this._props.targetDate?.getTime() ?? null,
       completedAt: this._props.completedAt?.getTime() ?? null,
       archivedAt: this._props.archivedAt?.getTime() ?? null,
-      folderId: this._props.folderId ? (String(this._props.folderId) as GoalClientDTO['folderId']) : null,
-      parentGoalId: this._props.parentGoalId ? (String(this._props.parentGoalId) as GoalClientDTO['parentGoalId']) : null,
+      folderId: this._props.folderId
+        ? (String(this._props.folderId) as GoalClientDTO['folderId'])
+        : null,
+      parentGoalId: this._props.parentGoalId
+        ? (String(this._props.parentGoalId) as GoalClientDTO['parentGoalId'])
+        : null,
       sortOrder: this._props.sortOrder,
       reminderConfig: this._props.reminderConfig ?? null,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      keyResults: this._props.keyResults?.map(kr => (kr as KeyResult).toDTO()) ?? null,
-      reviews: this._props.reviews?.map(r => (r as GoalReview).toDTO()) ?? null,
+      keyResults: this._props.keyResults?.map((kr) => (kr as KeyResult).toDTO()) ?? null,
+      reviews: this._props.reviews?.map((r) => (r as GoalReview).toDTO()) ?? null,
     };
   }
 }

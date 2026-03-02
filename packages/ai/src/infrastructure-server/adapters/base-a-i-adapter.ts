@@ -8,11 +8,21 @@
  * - 鏍囧噯鍖栬�?鍝嶅簲鏍煎紡
  */
 
-import type { GenerationTaskType, AIProvider, AIModel, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
+import type {
+  GenerationTaskType,
+  AIProvider,
+  AIModel,
+  TokenUsageServerDTO,
+} from '@dailyuse/contracts/ai';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
-import type { IAIAdapter, AIGenerationRequest, AIGenerationResponse, AIStreamChunk } from '../../domain-server/interfaces/adapter-types';
+import type {
+  IAIAdapter,
+  AIGenerationRequest,
+  AIGenerationResponse,
+  AIStreamChunk,
+} from '../../domain-server/interfaces/adapter-types';
 
-export { AIGenerationRequest, AIGenerationResponse, AIStreamChunk };
+export type { AIGenerationRequest, AIGenerationResponse, AIStreamChunk };
 
 /**
  * Base AI Adapter 鎶借薄�?
@@ -31,7 +41,9 @@ export abstract class BaseAIAdapter implements IAIAdapter {
   /**
    * 涓€娆℃€х敓鎴愭枃鏈紙甯﹁秴鏃朵繚鎶わ�?
    */
-  abstract generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>>;
+  abstract generateText<T = unknown>(
+    request: AIGenerationRequest,
+  ): Promise<AIGenerationResponse<T>>;
 
   /**
    * 娴佸紡鐢熸垚鏂囨�?
@@ -57,7 +69,3 @@ export abstract class BaseAIAdapter implements IAIAdapter {
     return this.defaultModel;
   }
 }
-
-
-
-

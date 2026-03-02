@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import LinearListItem from './LinearListItem.vue';
-import { Badge, Button } from '../../ui/badge';
-import { Button as ButtonComp } from '../../ui/button';
+import { Badge } from '../../ui/badge';
+import { Button } from '../../ui/button';
 
 const meta = {
   title: 'Business/Linear/LinearListItem',
@@ -35,7 +35,9 @@ export const Active: Story = {
 export const WithSlots: Story = {
   render: (args) => ({
     components: { LinearListItem, Badge, Button },
-    setup() { return { args }; },
+    setup() {
+      return { args };
+    },
     template: `
       <div class="border rounded-md">
         <LinearListItem v-bind="args">
@@ -55,7 +57,7 @@ export const WithSlots: Story = {
   }),
   args: {
     title: 'Fix navigation bug on mobile',
-    subtitle: 'Menu doesn\'t close after selecting an item',
+    subtitle: "Menu doesn't close after selecting an item",
   },
 };
 

@@ -29,17 +29,17 @@ import type {
 import type {
   IScheduleEventApiClient,
   IScheduleTaskApiClient,
-} from '@/infrastructure-client/adapters/types';
+} from '../infrastructure-client/adapters/types';
 import {
   ScheduleTask,
   ScheduleConfigVO,
   ExecutionInfoVO,
   RetryPolicyVO,
   TaskMetadataVO,
-} from '@/domain-client/aggregates/schedule-task';
-import { ScheduleExecution } from '@/domain-client/entities/schedule-execution';
-import { ScheduleTaskId } from '@/domain-shared/value-objects/schedule-task-id';
-import { ScheduleExecutionId } from '@/domain-shared/value-objects/schedule-execution-id';
+} from '../domain-client/aggregates/schedule-task';
+import { ScheduleExecution } from '../domain-client/entities/schedule-execution';
+import { ScheduleTaskId } from '../domain-shared/value-objects/schedule-task-id';
+import { ScheduleExecutionId } from '../domain-shared/value-objects/schedule-execution-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // ===== DTO-to-State Mappers =====
@@ -95,9 +95,7 @@ function scheduleTaskFromDTO(dto: ScheduleTaskClientDTO): ScheduleTask {
     executionSummary: dto.executionSummary,
     healthStatus: dto.healthStatus,
     isOverdue: dto.isOverdue,
-    executions: dto.executions
-      ? dto.executions.map((e) => scheduleExecutionFromDTO(e))
-      : null,
+    executions: dto.executions ? dto.executions.map((e) => scheduleExecutionFromDTO(e)) : null,
   });
 }
 
@@ -121,11 +119,16 @@ export class ScheduleClientService {
     return this.eventApi.getSchedulesByAccount();
   }
 
-  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<Result<CalendarEntryClientDTO[]>> {
+  async getSchedulesByTimeRange(
+    params: GetSchedulesByTimeRangeRequest,
+  ): Promise<Result<CalendarEntryClientDTO[]>> {
     return this.eventApi.getSchedulesByTimeRange(params);
   }
 
-  async updateSchedule(id: string, data: UpdateScheduleRequest): Promise<Result<CalendarEntryClientDTO>> {
+  async updateSchedule(
+    id: string,
+    data: UpdateScheduleRequest,
+  ): Promise<Result<CalendarEntryClientDTO>> {
     return this.eventApi.updateSchedule(id, data);
   }
 
@@ -148,28 +151,30 @@ export class ScheduleClientService {
     return this.eventApi.detectConflicts(params);
   }
 
-  async createScheduleWithConflictDetection(
-    request: CreateScheduleRequest,
-  ): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts?: ConflictDetectionResult;
-  }>> {
+  async createScheduleWithConflictDetection(request: CreateScheduleRequest): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts?: ConflictDetectionResult;
+    }>
+  > {
     return this.eventApi.createScheduleWithConflictDetection(request);
   }
 
   async resolveConflict(
     scheduleId: string,
     request: ResolveConflictRequest,
-  ): Promise<Result<{
-    schedule: CalendarEntryClientDTO;
-    conflicts: ConflictDetectionResult;
-    applied: {
-      strategy: string;
-      previousStartTime?: number;
-      previousEndTime?: number;
-      changes: string[];
-    };
-  }>> {
+  ): Promise<
+    Result<{
+      schedule: CalendarEntryClientDTO;
+      conflicts: ConflictDetectionResult;
+      applied: {
+        strategy: string;
+        previousStartTime?: number;
+        previousEndTime?: number;
+        changes: string[];
+      };
+    }>
+  > {
     return this.eventApi.resolveConflict(scheduleId, request);
   }
 
@@ -198,12 +203,18 @@ export class ScheduleClientService {
     return mapResult(result, (dto) => scheduleTaskFromDTO(dto));
   }
 
-  async getDueTasks(params?: { beforeTime?: string; limit?: number }): Promise<Result<ScheduleTask[]>> {
+  async getDueTasks(params?: {
+    beforeTime?: string;
+    limit?: number;
+  }): Promise<Result<ScheduleTask[]>> {
     const result = await this.taskApi.getDueTasks(params);
     return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }
 
-  async getTaskBySource(sourceModule: SourceModule, sourceEntityId: string): Promise<Result<ScheduleTask[]>> {
+  async getTaskBySource(
+    sourceModule: SourceModule,
+    sourceEntityId: string,
+  ): Promise<Result<ScheduleTask[]>> {
     const result = await this.taskApi.getTaskBySource(sourceModule, sourceEntityId);
     return mapResult(result, (dtos) => dtos.map((dto) => scheduleTaskFromDTO(dto)));
   }

@@ -44,7 +44,11 @@ import type {
 
 export interface GovernanceUseCases {
   createRule: (req: CreateRuleReq, cx: ExecutionContext) => Promise<Result<CreateRuleRes>>;
-  updateRule: (id: string, req: UpdateRuleReq, cx: ExecutionContext) => Promise<Result<UpdateRuleRes>>;
+  updateRule: (
+    id: string,
+    req: UpdateRuleReq,
+    cx: ExecutionContext,
+  ) => Promise<Result<UpdateRuleRes>>;
   deleteRule: (req: DeleteRuleReq, cx: ExecutionContext) => Promise<Result<DeleteRuleRes>>;
   getRule: (req: GetRuleReq) => Promise<Result<GetRuleRes>>;
   listRules: (query: ListRulesQuery) => Promise<Result<ListRulesRes>>;
@@ -75,16 +79,16 @@ export class GovernanceController {
     }
 
     if (
-      (result.error.code === 'BUSINESS_ERROR' || result.error.code === 'VALIDATION_ERROR')
-      && /transition|cannot transition|deprecat|reactivat|draft|active|status/i.test(message)
+      (result.error.code === 'BUSINESS_ERROR' || result.error.code === 'VALIDATION_ERROR') &&
+      /transition|cannot transition|deprecat|reactivat|draft|active|status/i.test(message)
     ) {
       return fail({
         code: 'INVALID_TRANSITION',
         message: '规则状态流转不合法',
-        details: {
-          cause: message,
-          ...(result.error.details ? { meta: result.error.details } : {}),
-        },
+        details: [
+          { code: 'INVALID_TRANSITION', message: message },
+          ...(result.error.details ?? []),
+        ],
       });
     }
 
@@ -96,7 +100,7 @@ export class GovernanceController {
     return { identityId: ctx.identityId as IdentityId };
   }
 
-  async createRule(input: CreateRuleReq, ctx: Context): Promise<Result<CreateRuleRes>> {
+  async createRule(input: unknown, ctx: Context): Promise<Result<CreateRuleRes>> {
     const parsed = CreateRuleSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -110,7 +114,7 @@ export class GovernanceController {
     );
   }
 
-  async updateRule(id: string, input: UpdateRuleReq, ctx: Context): Promise<Result<UpdateRuleRes>> {
+  async updateRule(id: string, input: unknown, ctx: Context): Promise<Result<UpdateRuleRes>> {
     const parsed = UpdateRuleSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -187,7 +191,10 @@ export class GovernanceController {
     return this.useCases.searchRules(keyword, filters, executionContext);
   }
 
-  async getRevisions(ruleId: string, query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {
+  async getRevisions(
+    ruleId: string,
+    query: Omit<GetRuleRevisionsQuery, 'ruleId'>,
+  ): Promise<Result<GetRuleRevisionsRes>> {
     const parsed = GetRuleRevisionsQuerySchema.safeParse({
       ruleId,
       ...query,

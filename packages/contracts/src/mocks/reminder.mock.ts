@@ -14,7 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '../modules/reminder';
-import type { IdentityId, ReminderGroupId, ReminderTemplateId } from '@/primitives/ids';
+import type { IdentityId, ReminderGroupId, ReminderTemplateId } from '../primitives/ids';
 
 export function createMockReminderTemplate(
   overrides: Partial<ReminderTemplateClientDTO> = {},

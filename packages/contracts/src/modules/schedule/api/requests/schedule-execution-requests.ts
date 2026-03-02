@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { ScheduleTaskId } from '@/primitives';
+import { brandedId } from '../../../../primitives';
+import type { ScheduleTaskId } from '../../../../primitives';
 import type { ScheduleExecutionClientDTO } from '../../entities/schedule-execution-client';
 import { ExecutionStatus } from '../../value-objects/execution-status';
 

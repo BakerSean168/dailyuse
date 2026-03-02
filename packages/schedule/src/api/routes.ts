@@ -83,7 +83,11 @@ export function registerScheduleRoutes(
       method: 'post',
       path: '/tasks/batch',
       summary: '批量操作调度任务',
-      request: { body: { content: { 'application/json': { schema: BatchScheduleTaskOperationRequestSchema } } } },
+      request: {
+        body: {
+          content: { 'application/json': { schema: BatchScheduleTaskOperationRequestSchema } },
+        },
+      },
       responses: {
         200: successResponse(BatchOperationResponseSchema, '操作成功'),
         400: errorResponse('参数错误'),
@@ -99,7 +103,9 @@ export function registerScheduleRoutes(
       method: 'post',
       path: '/tasks',
       summary: '创建调度任务',
-      request: { body: { content: { 'application/json': { schema: CreateScheduleTaskRequestSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: CreateScheduleTaskRequestSchema } } },
+      },
       responses: {
         201: successResponse(ScheduleTaskResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
@@ -122,17 +128,21 @@ export function registerScheduleRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listTasks({
-      sourceModule: parseString(req.query?.sourceModule),
-      sourceEntityId: parseString(req.query?.sourceEntityId),
-      status: parseString(req.query?.status),
-      enabled: parseBoolean(req.query?.enabled),
-      search: parseString(req.query?.search),
-      page: parseNumber(req.query?.page),
-      limit: parseNumber(req.query?.limit),
-      sortBy: parseString(req.query?.sortBy),
-      sortOrder: parseString(req.query?.sortOrder),
-    }, ctx),
+    (req, ctx) =>
+      controller.listTasks(
+        {
+          sourceModule: parseString(req.query?.sourceModule),
+          sourceEntityId: parseString(req.query?.sourceEntityId),
+          status: parseString(req.query?.status),
+          enabled: parseBoolean(req.query?.enabled),
+          search: parseString(req.query?.search),
+          page: parseNumber(req.query?.page),
+          limit: parseNumber(req.query?.limit),
+          sortBy: parseString(req.query?.sortBy),
+          sortOrder: parseString(req.query?.sortOrder),
+        },
+        ctx,
+      ),
   );
 
   // GET /tasks/:id — Get task by ID

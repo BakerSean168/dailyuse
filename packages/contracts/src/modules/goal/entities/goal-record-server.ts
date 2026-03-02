@@ -8,7 +8,7 @@
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import type { TransferDate, PersistenceDate, DomainDate, GoalRecordId, KeyResultId } from '@/primitives';
+import type { TransferDate, PersistenceDate, DomainDate, GoalRecordId, KeyResultId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

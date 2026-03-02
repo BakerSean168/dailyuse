@@ -17,7 +17,6 @@ import {
 import type {
   CreateScheduleTaskRequest,
   UpdateScheduleTaskRequest,
-  BatchScheduleTaskOperationRequest,
 } from '@dailyuse/contracts/schedule';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -39,7 +38,7 @@ export class ScheduleController {
 
   // ==================== Task CRUD ====================
 
-  async createTask(input: CreateScheduleTaskRequest, ctx: Context): Promise<Result<unknown>> {
+  async createTask(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateScheduleTaskRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -67,7 +66,7 @@ export class ScheduleController {
     return this.useCases.getTask(id);
   }
 
-  async updateTask(id: string, input: UpdateScheduleTaskRequest): Promise<Result<unknown>> {
+  async updateTask(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateScheduleTaskRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -99,7 +98,7 @@ export class ScheduleController {
 
   // ==================== Batch Operations ====================
 
-  async batchOperation(input: BatchScheduleTaskOperationRequest): Promise<Result<unknown>> {
+  async batchOperation(input: unknown): Promise<Result<unknown>> {
     const parsed = BatchScheduleTaskOperationRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

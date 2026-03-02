@@ -38,7 +38,7 @@ export interface AuthenticationUseCases {
 export class AuthenticationController {
   constructor(private readonly useCases: AuthenticationUseCases) {}
 
-  async register(input: RegisterByEmailReq, cx: Context): Promise<Result<RegisterByEmailRes>> {
+  async register(input: unknown, cx: Context): Promise<Result<RegisterByEmailRes>> {
     const parsed = RegisterByEmailSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -50,7 +50,7 @@ export class AuthenticationController {
     return this.useCases.register(parsed.data, cx);
   }
 
-  async login(input: LoginByEmailReq, cx: Context): Promise<Result<LoginByEmailRes>> {
+  async login(input: unknown, cx: Context): Promise<Result<LoginByEmailRes>> {
     const parsed = LoginByEmailSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -66,7 +66,7 @@ export class AuthenticationController {
     return this.useCases.logout(cx);
   }
 
-  async refreshToken(input: RefreshTokenReq, cx: Context): Promise<Result<RefreshTokenRes>> {
+  async refreshToken(input: unknown, cx: Context): Promise<Result<RefreshTokenRes>> {
     const parsed = RefreshTokenSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

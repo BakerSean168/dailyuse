@@ -3,7 +3,7 @@
  * 编辑器分组实�?- 服务端接�?
  */
 
-import type { EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { EditorGroupClientDTO } from './editor-group-client';
 
 // 从实体导入类�?

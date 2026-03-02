@@ -4,7 +4,7 @@
  */
 
 import type { ControlMode, ReminderStatus, GroupStatsServerDTO } from '../value-objects';
-import type { DomainDate, IdentityId, PersistenceDate, TransferDate } from '@/primitives';
+import type { DomainDate, IdentityId, PersistenceDate, TransferDate } from '../../../primitives';
 
 export interface ReminderGroupServerDTO {
   // 基础属性

@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { ScheduleTaskId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { ScheduleTaskId } from '../../../primitives';
 
 /**
  * ScheduleTask Response Schema

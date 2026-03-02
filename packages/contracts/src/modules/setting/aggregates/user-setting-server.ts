@@ -2,7 +2,7 @@
  * UserSetting Aggregate Root - Server Interface
  */
 
-import type { SettingId, IdentityId, TransferDate } from '@/primitives';
+import type { SettingId, IdentityId, TransferDate } from '../../../primitives';
 import type { UserSettingPreferences } from '../preferences';
 
 /**

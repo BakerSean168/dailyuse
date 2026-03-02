@@ -3,7 +3,7 @@
  * AI生成任务聚合根 - 服务端接口
  */
 
-import type { AiGenerationTaskId, AiConversationId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { AiGenerationTaskId, AiConversationId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { GenerationTaskType } from '../value-objects/generation-task-type';
 import type { TaskStatus } from '../value-objects/task-status';
 import type { AIProvider } from '../value-objects/ai-provider';

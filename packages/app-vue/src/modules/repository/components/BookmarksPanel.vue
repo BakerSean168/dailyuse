@@ -9,7 +9,7 @@
     <div class="flex items-center justify-between px-3 py-2 border-b">
       <div class="flex items-center gap-2">
         <Bookmark class="w-4 h-4" />
-        <span class="text-sm font-medium">书签</span>
+        <span class="text-sm font-medium">{{ t('repository.bookmarksPanel.title') }}</span>
         <Badge v-if="bookmarks.length > 0" variant="secondary" class="text-xs">
           {{ bookmarks.length }}
         </Badge>
@@ -34,7 +34,11 @@
             <div class="flex-1 min-w-0">
               <div class="text-sm truncate">{{ bookmark.displayName }}</div>
               <div class="text-xs text-muted-foreground">
-                {{ bookmark.icon?.includes('folder') ? '文件夹' : '文件' }}
+                {{
+                  bookmark.icon?.includes('folder')
+                    ? t('repository.bookmarksPanel.folder')
+                    : t('repository.bookmarksPanel.file')
+                }}
               </div>
             </div>
           </div>
@@ -44,14 +48,17 @@
       <!-- Empty State -->
       <div v-else class="flex flex-col items-center justify-center h-full px-8 py-12 text-center">
         <Bookmark class="w-16 h-16 mb-4 text-muted-foreground/50" />
-        <p class="text-sm text-muted-foreground mb-1">暂无书签</p>
-        <p class="text-xs text-muted-foreground/60">右键文件或文件夹选择"添加书签"</p>
+        <p class="text-sm text-muted-foreground mb-1">{{ t('repository.bookmarksPanel.empty') }}</p>
+        <p class="text-xs text-muted-foreground/60">
+          {{ t('repository.bookmarksPanel.emptyHint') }}
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Bookmark, Folder, FileText, Pencil, ArrowUp, ArrowDown, Trash2 } from 'lucide-vue-next';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
@@ -63,6 +70,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   select: [bookmark: BookmarkType];

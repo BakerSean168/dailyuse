@@ -10,11 +10,12 @@
  * - Instance toDTO(): ResourceClientDTO
  */
 
-import type {
-  ResourceClientDTO,
-} from '@dailyuse/contracts/repository';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
-import type { RepositoryId as IRepositoryId, FolderId as IFolderId } from '@dailyuse/contracts/primitives';
+import type {
+  RepositoryId as IRepositoryId,
+  FolderId as IFolderId,
+} from '@dailyuse/contracts/primitives';
 import { Entity } from '@dailyuse/utils';
 import { ResourceId } from '../../domain-shared/value-objects/resource-id';
 import { ResourceMetadata } from '../../domain-shared/value-objects/resource-metadata';
@@ -219,9 +220,11 @@ export class Resource extends Entity<ResourceId> {
   // ================= DTO Conversion =================
   public toDTO(): ResourceClientDTO {
     return {
-      id: String(this.id),
-      repositoryId: String(this._props.repositoryId),
-      folderId: this._props.folderId ? String(this._props.folderId) : null,
+      id: String(this.id) as ResourceClientDTO['id'],
+      repositoryId: String(this._props.repositoryId) as ResourceClientDTO['repositoryId'],
+      folderId: this._props.folderId
+        ? (String(this._props.folderId) as ResourceClientDTO['folderId'] & string)
+        : null,
       name: this._props.name,
       type: this._props.type,
       mimeType: this._props.mimeType,

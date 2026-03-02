@@ -7,7 +7,7 @@
  * @module Schedule
  */
 
-import type { ScheduleId, IdentityId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { ScheduleId, IdentityId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 
 export interface CalendarEntryServerDTO {
   id: string;

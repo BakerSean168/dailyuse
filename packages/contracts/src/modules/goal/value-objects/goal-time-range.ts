@@ -5,7 +5,7 @@
  * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方法
  */
 
-import type { DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 
 // ============ Domain Shape (领域层) ============
 

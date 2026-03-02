@@ -1,4 +1,4 @@
-import type { SubtaskId,  TransferDate } from '@/primitives';
+import type { SubtaskId,  TransferDate } from '../../../primitives';
 
 export interface SubtaskClientDTO {
   id: string;

@@ -25,7 +25,7 @@ import type {
   DocumentVersionId,
   SearchEngineId,
   LinkedResourceId,
-} from '@/primitives';
+} from '../../../primitives';
 
 // ==================== EditorWorkspace API DTOs ====================
 

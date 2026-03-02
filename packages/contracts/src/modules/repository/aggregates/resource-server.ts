@@ -2,7 +2,14 @@
  * Resource Entity - Server Interface
  * 资源实体 - 服务端接�?
  */
-import type { ResourceId, RepositoryId, FolderId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type {
+  ResourceId,
+  RepositoryId,
+  FolderId,
+  DomainDate,
+  TransferDate,
+  PersistenceDate,
+} from '../../../primitives';
 import type { ResourceType } from '../value-objects/resource-type';
 import type { ResourceStatus } from '../value-objects/resource-status';
 import type {
@@ -10,7 +17,7 @@ import type {
   ResourceMetadataDTO,
   ResourceStats,
   ResourceStatsDTO,
-  ExternalLink
+  ExternalLink,
 } from '../value-objects';
 
 // ============ DTO 定义 ============
@@ -24,10 +31,10 @@ export interface ResourceServerDTO {
   folderId: string | null; // 外键 - 所属文件夹
 
   name: string;
-  
+
   type: ResourceType;
   path: string;
-  
+
   content: string | null; // Markdown 内容 (TEXT)
   externalLinks: ExternalLink[] | null; // 外部链接列表 (ARRAY)
 

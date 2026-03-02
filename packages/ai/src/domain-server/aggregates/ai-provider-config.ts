@@ -3,9 +3,7 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import {
-  AIProviderType,
-} from '@dailyuse/contracts/ai';
+import { AIProviderType } from '@dailyuse/contracts/ai';
 import type {
   AIModelInfo,
   AIProviderConfigClientDTO,
@@ -253,8 +251,8 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
 
   public toClientDTO(): AIProviderConfigClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: String(this.id) as AIProviderConfigClientDTO['id'],
+      identityId: String(this._props.identityId) as AIProviderConfigClientDTO['identityId'],
       name: this._props.name,
       providerType: this._props.providerType,
       baseUrl: this._props.baseUrl,

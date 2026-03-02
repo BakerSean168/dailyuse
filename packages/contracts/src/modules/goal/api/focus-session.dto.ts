@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { GoalId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { GoalId } from '../../../primitives';
 import type { FocusSessionClientDTO } from '../aggregates';
 
 // ============================================================================

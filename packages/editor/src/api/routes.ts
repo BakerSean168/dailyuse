@@ -66,7 +66,9 @@ export function registerEditorRoutes(
       method: 'post',
       path: '/workspaces',
       summary: '创建工作区',
-      request: { body: { content: { 'application/json': { schema: CreateEditorWorkspaceSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: CreateEditorWorkspaceSchema } } },
+      },
       responses: {
         201: successResponse(WorkspaceResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
@@ -178,10 +180,14 @@ export function registerEditorRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listDocuments({
-      workspaceId: req.query?.workspaceId as string | undefined,
-      folderId: req.query?.folderId as string | undefined,
-    }, ctx),
+    (req, ctx) =>
+      controller.listDocuments(
+        {
+          workspaceId: req.query?.workspaceId as string | undefined,
+          folderId: req.query?.folderId as string | undefined,
+        },
+        ctx,
+      ),
   );
 
   // GET /documents/:id — Get document by ID

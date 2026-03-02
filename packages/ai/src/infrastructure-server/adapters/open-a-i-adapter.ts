@@ -25,8 +25,8 @@ import { AIGenerationTimeoutError, AIProviderError } from '../errors/a-i-errors'
 export class OpenAIAdapter extends BaseAIAdapter {
   private readonly openai: ReturnType<typeof createOpenAI>;
 
-  constructor(apiKey: string, defaultModel: AIModel = AIModel.GPT4_TURBO) {
-    super(AIProvider.OPENAI, defaultModel);
+  constructor(apiKey: string, defaultModel: AIModel = AIModel.Gpt4Turbo) {
+    super(AIProvider.OpenAI, defaultModel);
     this.openai = createOpenAI({
       apiKey,
     });
@@ -62,7 +62,8 @@ export class OpenAIAdapter extends BaseAIAdapter {
       const tokenUsage: TokenUsageServerDTO = {
         promptTokens: usage?.promptTokens ?? 0,
         completionTokens: usage?.completionTokens ?? 0,
-        totalTokens: usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
+        totalTokens:
+          usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
       // 灏濊瘯瑙ｆ瀽 JSON
@@ -119,7 +120,8 @@ export class OpenAIAdapter extends BaseAIAdapter {
       const tokenUsage: TokenUsageServerDTO = {
         promptTokens: usage?.promptTokens ?? 0,
         completionTokens: usage?.completionTokens ?? 0,
-        totalTokens: usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
+        totalTokens:
+          usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
       // 鍙戦€佹渶鍚庝竴涓潡锛堟爣璁板畬锟?+ token 缁熻锟?
@@ -144,7 +146,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       const result = await generateText({
-        model: this.openai(AIModel.GPT35_TURBO),
+        model: this.openai(AIModel.Gpt35Turbo),
         prompt: 'Say OK',
       });
       return result.text.length > 0;
@@ -193,7 +195,3 @@ export class OpenAIAdapter extends BaseAIAdapter {
     }
   }
 }
-
-
-
-

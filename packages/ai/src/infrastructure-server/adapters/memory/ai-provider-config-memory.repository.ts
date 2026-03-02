@@ -23,19 +23,25 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
     return this.configs.get(id) ?? null;
   }
 
-  async findByAccountId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
+  async findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
     return Array.from(this.configs.values()).filter((c) => c.identityId === identityId);
   }
 
-  async findDefaultByAccountId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
+  async findDefaultByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
     return (
-      Array.from(this.configs.values()).find((c) => c.identityId === identityId && c.isDefault) ?? null
+      Array.from(this.configs.values()).find((c) => c.identityId === identityId && c.isDefault) ??
+      null
     );
   }
 
-  async findByIdentityIdAndName(identityId: string, name: string): Promise<AIProviderConfigServerDTO | null> {
+  async findByIdentityIdAndName(
+    identityId: string,
+    name: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
     return (
-      Array.from(this.configs.values()).find((c) => c.identityId === identityId && c.name === name) ?? null
+      Array.from(this.configs.values()).find(
+        (c) => c.identityId === identityId && c.name === name,
+      ) ?? null
     );
   }
 
@@ -47,7 +53,7 @@ export class AIProviderConfigMemoryRepository implements IAIProviderConfigReposi
     return this.configs.has(id);
   }
 
-  async clearDefaultForAccount(identityId: string): Promise<void> {
+  async clearDefaultForIdentity(identityId: string): Promise<void> {
     this.configs.forEach((c) => {
       if (c.identityId === identityId) {
         c.isDefault = false;

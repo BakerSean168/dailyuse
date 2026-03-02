@@ -90,7 +90,8 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "**/*.deprecated.ts",
-    "src/**/__tests__/manual/**/*"
+    "src/**/__tests__/manual/**/*",
+    "src/**/__tests__/smoke/**/*"
   ]
 
   // 取消 TS Project References，交由包自身的 tsup 构建与导出的 d.ts 提供类型

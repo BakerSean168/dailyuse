@@ -37,11 +37,11 @@ import type {
   ITaskTemplateApiClient,
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
-} from '@/infrastructure-client/adapters/types';
-import { TaskTemplate } from '@/domain-client/aggregates/task-template';
-import { TaskInstance } from '@/domain-client/aggregates/task-instance';
-import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
-import { TaskInstanceId } from '@/domain-shared/value-objects/task-instance-id';
+} from '../infrastructure-client/adapters/types';
+import { TaskTemplate } from '../domain-client/aggregates/task-template';
+import { TaskInstance } from '../domain-client/aggregates/task-instance';
+import { TaskTemplateId } from '../domain-shared/value-objects/task-template-id';
+import { TaskInstanceId } from '../domain-shared/value-objects/task-instance-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // ===== DTO-to-State Mappers =====
@@ -179,7 +179,9 @@ export class TaskClientService {
     return this.templateApi.deleteTaskTemplate(id);
   }
 
-  async getTemplatesWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplate[]>> {
+  async getTemplatesWithPrioritySorting(params?: {
+    limit?: number;
+  }): Promise<Result<TaskTemplate[]>> {
     const result = await this.templateApi.getTasksWithPrioritySorting(params);
     return mapResult(result, (dtos) => dtos.map((dto) => taskTemplateFromDTO(dto)));
   }
@@ -199,12 +201,19 @@ export class TaskClientService {
     return mapResult(result, (dto) => taskTemplateFromDTO(dto));
   }
 
-  async generateInstances(templateId: string, request: GenerateInstancesReq): Promise<Result<TaskInstance[]>> {
+  async generateInstances(
+    templateId: string,
+    request: GenerateInstancesReq,
+  ): Promise<Result<TaskInstance[]>> {
     const result = await this.templateApi.generateInstances(templateId, request);
     return mapResult(result, (dtos) => dtos.map((dto) => taskInstanceFromDTO(dto)));
   }
 
-  async getInstancesByDateRange(templateId: string, from: number, to: number): Promise<Result<TaskInstance[]>> {
+  async getInstancesByDateRange(
+    templateId: string,
+    from: number,
+    to: number,
+  ): Promise<Result<TaskInstance[]>> {
     const result = await this.templateApi.getInstancesByDateRange(templateId, from, to);
     return mapResult(result, (dtos) => dtos.map((dto) => taskInstanceFromDTO(dto)));
   }
@@ -247,7 +256,10 @@ export class TaskClientService {
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
 
-  async completeInstance(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstance>> {
+  async completeInstance(
+    id: string,
+    request?: CompleteTaskInstanceReq,
+  ): Promise<Result<TaskInstance>> {
     const result = await this.instanceApi.completeTaskInstance(id, request);
     return mapResult(result, (dto) => taskInstanceFromDTO(dto));
   }
@@ -267,7 +279,10 @@ export class TaskClientService {
 
   // ===== Task Dependency Operations =====
 
-  async createDependency(taskId: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>> {
+  async createDependency(
+    taskId: string,
+    request: CreateTaskDependencyRequest,
+  ): Promise<Result<TaskDependencyClientDTO>> {
     return this.dependencyApi.createDependency(taskId, request);
   }
 
@@ -283,11 +298,16 @@ export class TaskClientService {
     return this.dependencyApi.getDependencyChain(taskId);
   }
 
-  async validateDependency(request: ValidateDependencyRequest): Promise<Result<ValidateDependencyResponse>> {
+  async validateDependency(
+    request: ValidateDependencyRequest,
+  ): Promise<Result<ValidateDependencyResponse>> {
     return this.dependencyApi.validateDependency(request);
   }
 
-  async updateDependency(id: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>> {
+  async updateDependency(
+    id: string,
+    request: UpdateTaskDependencyRequest,
+  ): Promise<Result<TaskDependencyClientDTO>> {
     return this.dependencyApi.updateDependency(id, request);
   }
 

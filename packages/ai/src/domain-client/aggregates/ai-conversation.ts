@@ -107,8 +107,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
 
   public toDTO(): AIConversationClientDTO {
     return {
-      id: String(this._props.id),
-      identityId: String(this._props.identityId),
+      id: String(this._props.id) as AIConversationClientDTO['id'],
+      identityId: String(this._props.identityId) as AIConversationClientDTO['identityId'],
       name: this._props.name,
       status: this._props.status,
       messageCount: this._props.messageCount,
@@ -117,7 +117,9 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
-      messages: this._props.messages ? (this._props.messages as Message[]).map((m) => m.toDTO()) : null,
+      messages: this._props.messages
+        ? (this._props.messages as Message[]).map((m) => m.toDTO())
+        : null,
     };
   }
 

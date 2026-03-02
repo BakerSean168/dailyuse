@@ -9,9 +9,9 @@
 import type { AuthCredentialServerDTO } from '../entities/auth-credential-server';
 import type { AuthIdentifierDTO } from '../value-objects';
 import type { OAuthBindingServerDTO } from '../entities/oauth-binding';
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 import type { AuthIdentityStatus } from '../value-objects/auth-identity-status';
-import type { IdentityId } from '@/primitives';
+import type { IdentityId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

@@ -2,7 +2,13 @@
  * Resource Entity - Client Interface
  * 资源实体 - 客户端接?
  */
-import type { ResourceId, RepositoryId, FolderId, DomainDate, TransferDate } from '@/primitives';
+import type {
+  ResourceId,
+  RepositoryId,
+  FolderId,
+  DomainDate,
+  TransferDate,
+} from '../../../primitives';
 import type { ResourceType } from '../value-objects/resource-type';
 import type { ResourceStatus } from '../value-objects/resource-status';
 import type { ResourceServerDTO } from './resource-server';

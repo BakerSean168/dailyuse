@@ -8,7 +8,7 @@ import type {
   GoalFolderId,
   DomainDate,
   TransferDate,
-} from '@/primitives';
+} from '../../../primitives';
 
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';

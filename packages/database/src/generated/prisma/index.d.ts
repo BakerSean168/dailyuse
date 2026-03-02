@@ -394,7 +394,9 @@ export const CredentialStatus: typeof $Enums.CredentialStatus
  * Type-safe database client for TypeScript & Node.js
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Accounts
  * const accounts = await prisma.account.findMany()
  * ```
@@ -415,7 +417,9 @@ export class PrismaClient<
    * Type-safe database client for TypeScript & Node.js
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Accounts
    * const accounts = await prisma.account.findMany()
    * ```
@@ -495,7 +499,7 @@ export class PrismaClient<
    * ])
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
   $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
@@ -1184,8 +1188,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.3.0
-   * Query Engine version: 9d6ad21cbbceab97458517b147a6a09ff43aa735
+   * Prisma Client JS version: 7.4.2
+   * Query Engine version: 94a226be1cf2967af2541cca5529f0f7ba866919
    */
   export type PrismaVersion = {
     client: string
@@ -35660,7 +35664,7 @@ export namespace Prisma {
        */
       unit: string | null
       /**
-       * 权重系数（计算目标进度时使用）
+       * 权重系数（1-5整数，计算目标进度时使用）
        */
       weight: number
       /**
@@ -36106,7 +36110,7 @@ export namespace Prisma {
     readonly targetValue: FieldRef<"KeyResult", 'Float'>
     readonly currentValue: FieldRef<"KeyResult", 'Float'>
     readonly unit: FieldRef<"KeyResult", 'String'>
-    readonly weight: FieldRef<"KeyResult", 'Float'>
+    readonly weight: FieldRef<"KeyResult", 'Int'>
     readonly order: FieldRef<"KeyResult", 'Int'>
     readonly version: FieldRef<"KeyResult", 'Int'>
     readonly createdAt: FieldRef<"KeyResult", 'DateTime'>
@@ -39281,11 +39285,11 @@ export namespace Prisma {
       goalId: string
       keyResultId: string
       /**
-       * 旧权重值
+       * 旧权重值（1-5整数）
        */
       oldWeight: number
       /**
-       * 新权重值
+       * 新权重值（1-5整数）
        */
       newWeight: number
       /**
@@ -39737,9 +39741,9 @@ export namespace Prisma {
     readonly id: FieldRef<"KeyResultWeightSnapshot", 'String'>
     readonly goalId: FieldRef<"KeyResultWeightSnapshot", 'String'>
     readonly keyResultId: FieldRef<"KeyResultWeightSnapshot", 'String'>
-    readonly oldWeight: FieldRef<"KeyResultWeightSnapshot", 'Float'>
-    readonly newWeight: FieldRef<"KeyResultWeightSnapshot", 'Float'>
-    readonly weightDelta: FieldRef<"KeyResultWeightSnapshot", 'Float'>
+    readonly oldWeight: FieldRef<"KeyResultWeightSnapshot", 'Int'>
+    readonly newWeight: FieldRef<"KeyResultWeightSnapshot", 'Int'>
+    readonly weightDelta: FieldRef<"KeyResultWeightSnapshot", 'Int'>
     readonly snapshotTime: FieldRef<"KeyResultWeightSnapshot", 'DateTime'>
     readonly trigger: FieldRef<"KeyResultWeightSnapshot", 'String'>
     readonly reason: FieldRef<"KeyResultWeightSnapshot", 'String'>
@@ -79044,6 +79048,9 @@ export namespace Prisma {
   export type TaskTemplateAvgAggregateOutputType = {
     priority: number | null
     timeConfigDurationMinutes: number | null
+    timeConfigTimePoint: number | null
+    timeConfigTimeRangeStart: number | null
+    timeConfigTimeRangeEnd: number | null
     recurrenceRuleInterval: number | null
     recurrenceRuleDayOfMonth: number | null
     recurrenceRuleMonthOfYear: number | null
@@ -79056,6 +79063,9 @@ export namespace Prisma {
   export type TaskTemplateSumAggregateOutputType = {
     priority: number | null
     timeConfigDurationMinutes: number | null
+    timeConfigTimePoint: number | null
+    timeConfigTimeRangeStart: number | null
+    timeConfigTimeRangeEnd: number | null
     recurrenceRuleInterval: number | null
     recurrenceRuleDayOfMonth: number | null
     recurrenceRuleMonthOfYear: number | null
@@ -79081,6 +79091,9 @@ export namespace Prisma {
     timeConfigStartTime: Date | null
     timeConfigEndTime: Date | null
     timeConfigDurationMinutes: number | null
+    timeConfigTimePoint: number | null
+    timeConfigTimeRangeStart: number | null
+    timeConfigTimeRangeEnd: number | null
     recurrenceRuleType: string | null
     recurrenceRuleInterval: number | null
     recurrenceRuleDaysOfWeek: string | null
@@ -79121,6 +79134,9 @@ export namespace Prisma {
     timeConfigStartTime: Date | null
     timeConfigEndTime: Date | null
     timeConfigDurationMinutes: number | null
+    timeConfigTimePoint: number | null
+    timeConfigTimeRangeStart: number | null
+    timeConfigTimeRangeEnd: number | null
     recurrenceRuleType: string | null
     recurrenceRuleInterval: number | null
     recurrenceRuleDaysOfWeek: string | null
@@ -79161,6 +79177,9 @@ export namespace Prisma {
     timeConfigStartTime: number
     timeConfigEndTime: number
     timeConfigDurationMinutes: number
+    timeConfigTimePoint: number
+    timeConfigTimeRangeStart: number
+    timeConfigTimeRangeEnd: number
     recurrenceRuleType: number
     recurrenceRuleInterval: number
     recurrenceRuleDaysOfWeek: number
@@ -79190,6 +79209,9 @@ export namespace Prisma {
   export type TaskTemplateAvgAggregateInputType = {
     priority?: true
     timeConfigDurationMinutes?: true
+    timeConfigTimePoint?: true
+    timeConfigTimeRangeStart?: true
+    timeConfigTimeRangeEnd?: true
     recurrenceRuleInterval?: true
     recurrenceRuleDayOfMonth?: true
     recurrenceRuleMonthOfYear?: true
@@ -79202,6 +79224,9 @@ export namespace Prisma {
   export type TaskTemplateSumAggregateInputType = {
     priority?: true
     timeConfigDurationMinutes?: true
+    timeConfigTimePoint?: true
+    timeConfigTimeRangeStart?: true
+    timeConfigTimeRangeEnd?: true
     recurrenceRuleInterval?: true
     recurrenceRuleDayOfMonth?: true
     recurrenceRuleMonthOfYear?: true
@@ -79227,6 +79252,9 @@ export namespace Prisma {
     timeConfigStartTime?: true
     timeConfigEndTime?: true
     timeConfigDurationMinutes?: true
+    timeConfigTimePoint?: true
+    timeConfigTimeRangeStart?: true
+    timeConfigTimeRangeEnd?: true
     recurrenceRuleType?: true
     recurrenceRuleInterval?: true
     recurrenceRuleDaysOfWeek?: true
@@ -79267,6 +79295,9 @@ export namespace Prisma {
     timeConfigStartTime?: true
     timeConfigEndTime?: true
     timeConfigDurationMinutes?: true
+    timeConfigTimePoint?: true
+    timeConfigTimeRangeStart?: true
+    timeConfigTimeRangeEnd?: true
     recurrenceRuleType?: true
     recurrenceRuleInterval?: true
     recurrenceRuleDaysOfWeek?: true
@@ -79307,6 +79338,9 @@ export namespace Prisma {
     timeConfigStartTime?: true
     timeConfigEndTime?: true
     timeConfigDurationMinutes?: true
+    timeConfigTimePoint?: true
+    timeConfigTimeRangeStart?: true
+    timeConfigTimeRangeEnd?: true
     recurrenceRuleType?: true
     recurrenceRuleInterval?: true
     recurrenceRuleDaysOfWeek?: true
@@ -79434,6 +79468,9 @@ export namespace Prisma {
     timeConfigStartTime: Date | null
     timeConfigEndTime: Date | null
     timeConfigDurationMinutes: number | null
+    timeConfigTimePoint: number | null
+    timeConfigTimeRangeStart: number | null
+    timeConfigTimeRangeEnd: number | null
     recurrenceRuleType: string | null
     recurrenceRuleInterval: number | null
     recurrenceRuleDaysOfWeek: string | null
@@ -79493,6 +79530,9 @@ export namespace Prisma {
     timeConfigStartTime?: boolean
     timeConfigEndTime?: boolean
     timeConfigDurationMinutes?: boolean
+    timeConfigTimePoint?: boolean
+    timeConfigTimeRangeStart?: boolean
+    timeConfigTimeRangeEnd?: boolean
     recurrenceRuleType?: boolean
     recurrenceRuleInterval?: boolean
     recurrenceRuleDaysOfWeek?: boolean
@@ -79542,6 +79582,9 @@ export namespace Prisma {
     timeConfigStartTime?: boolean
     timeConfigEndTime?: boolean
     timeConfigDurationMinutes?: boolean
+    timeConfigTimePoint?: boolean
+    timeConfigTimeRangeStart?: boolean
+    timeConfigTimeRangeEnd?: boolean
     recurrenceRuleType?: boolean
     recurrenceRuleInterval?: boolean
     recurrenceRuleDaysOfWeek?: boolean
@@ -79585,6 +79628,9 @@ export namespace Prisma {
     timeConfigStartTime?: boolean
     timeConfigEndTime?: boolean
     timeConfigDurationMinutes?: boolean
+    timeConfigTimePoint?: boolean
+    timeConfigTimeRangeStart?: boolean
+    timeConfigTimeRangeEnd?: boolean
     recurrenceRuleType?: boolean
     recurrenceRuleInterval?: boolean
     recurrenceRuleDaysOfWeek?: boolean
@@ -79628,6 +79674,9 @@ export namespace Prisma {
     timeConfigStartTime?: boolean
     timeConfigEndTime?: boolean
     timeConfigDurationMinutes?: boolean
+    timeConfigTimePoint?: boolean
+    timeConfigTimeRangeStart?: boolean
+    timeConfigTimeRangeEnd?: boolean
     recurrenceRuleType?: boolean
     recurrenceRuleInterval?: boolean
     recurrenceRuleDaysOfWeek?: boolean
@@ -79652,7 +79701,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type TaskTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "name" | "description" | "status" | "importance" | "priority" | "color" | "tags" | "folderId" | "parentTaskId" | "timeConfigType" | "timeConfigStartTime" | "timeConfigEndTime" | "timeConfigDurationMinutes" | "recurrenceRuleType" | "recurrenceRuleInterval" | "recurrenceRuleDaysOfWeek" | "recurrenceRuleDayOfMonth" | "recurrenceRuleMonthOfYear" | "recurrenceRuleEndDate" | "recurrenceRuleCount" | "reminderConfigEnabled" | "reminderConfigTimeOffsetMinutes" | "reminderConfigUnit" | "reminderConfigChannel" | "lastGeneratedDate" | "generateAheadDays" | "goalBinding" | "checklist" | "blockingReason" | "dependencyStatus" | "isBlocked" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["taskTemplate"]>
+  export type TaskTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "name" | "description" | "status" | "importance" | "priority" | "color" | "tags" | "folderId" | "parentTaskId" | "timeConfigType" | "timeConfigStartTime" | "timeConfigEndTime" | "timeConfigDurationMinutes" | "timeConfigTimePoint" | "timeConfigTimeRangeStart" | "timeConfigTimeRangeEnd" | "recurrenceRuleType" | "recurrenceRuleInterval" | "recurrenceRuleDaysOfWeek" | "recurrenceRuleDayOfMonth" | "recurrenceRuleMonthOfYear" | "recurrenceRuleEndDate" | "recurrenceRuleCount" | "reminderConfigEnabled" | "reminderConfigTimeOffsetMinutes" | "reminderConfigUnit" | "reminderConfigChannel" | "lastGeneratedDate" | "generateAheadDays" | "goalBinding" | "checklist" | "blockingReason" | "dependencyStatus" | "isBlocked" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["taskTemplate"]>
   export type TaskTemplateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
     folder?: boolean | TaskTemplate$folderArgs<ExtArgs>
@@ -79715,6 +79764,18 @@ export namespace Prisma {
       timeConfigStartTime: Date | null
       timeConfigEndTime: Date | null
       timeConfigDurationMinutes: number | null
+      /**
+       * 时间点（分钟数，如 540 = 9:00）
+       */
+      timeConfigTimePoint: number | null
+      /**
+       * 时间段开始（分钟数）
+       */
+      timeConfigTimeRangeStart: number | null
+      /**
+       * 时间段结束（分钟数）
+       */
+      timeConfigTimeRangeEnd: number | null
       recurrenceRuleType: string | null
       recurrenceRuleInterval: number | null
       recurrenceRuleDaysOfWeek: string | null
@@ -80189,6 +80250,9 @@ export namespace Prisma {
     readonly timeConfigStartTime: FieldRef<"TaskTemplate", 'DateTime'>
     readonly timeConfigEndTime: FieldRef<"TaskTemplate", 'DateTime'>
     readonly timeConfigDurationMinutes: FieldRef<"TaskTemplate", 'Int'>
+    readonly timeConfigTimePoint: FieldRef<"TaskTemplate", 'Int'>
+    readonly timeConfigTimeRangeStart: FieldRef<"TaskTemplate", 'Int'>
+    readonly timeConfigTimeRangeEnd: FieldRef<"TaskTemplate", 'Int'>
     readonly recurrenceRuleType: FieldRef<"TaskTemplate", 'String'>
     readonly recurrenceRuleInterval: FieldRef<"TaskTemplate", 'Int'>
     readonly recurrenceRuleDaysOfWeek: FieldRef<"TaskTemplate", 'String'>
@@ -86930,6 +86994,9 @@ export namespace Prisma {
     timeConfigStartTime: 'timeConfigStartTime',
     timeConfigEndTime: 'timeConfigEndTime',
     timeConfigDurationMinutes: 'timeConfigDurationMinutes',
+    timeConfigTimePoint: 'timeConfigTimePoint',
+    timeConfigTimeRangeStart: 'timeConfigTimeRangeStart',
+    timeConfigTimeRangeEnd: 'timeConfigTimeRangeEnd',
     recurrenceRuleType: 'recurrenceRuleType',
     recurrenceRuleInterval: 'recurrenceRuleInterval',
     recurrenceRuleDaysOfWeek: 'recurrenceRuleDaysOfWeek',
@@ -89468,7 +89535,7 @@ export namespace Prisma {
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
-    weight?: FloatFilter<"KeyResult"> | number
+    weight?: IntFilter<"KeyResult"> | number
     order?: IntFilter<"KeyResult"> | number
     version?: IntFilter<"KeyResult"> | number
     createdAt?: DateTimeFilter<"KeyResult"> | Date | string
@@ -89513,7 +89580,7 @@ export namespace Prisma {
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
-    weight?: FloatFilter<"KeyResult"> | number
+    weight?: IntFilter<"KeyResult"> | number
     order?: IntFilter<"KeyResult"> | number
     version?: IntFilter<"KeyResult"> | number
     createdAt?: DateTimeFilter<"KeyResult"> | Date | string
@@ -89560,7 +89627,7 @@ export namespace Prisma {
     targetValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     currentValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     unit?: StringNullableWithAggregatesFilter<"KeyResult"> | string | null
-    weight?: FloatWithAggregatesFilter<"KeyResult"> | number
+    weight?: IntWithAggregatesFilter<"KeyResult"> | number
     order?: IntWithAggregatesFilter<"KeyResult"> | number
     version?: IntWithAggregatesFilter<"KeyResult"> | number
     createdAt?: DateTimeWithAggregatesFilter<"KeyResult"> | Date | string
@@ -89749,9 +89816,9 @@ export namespace Prisma {
     id?: StringFilter<"KeyResultWeightSnapshot"> | string
     goalId?: StringFilter<"KeyResultWeightSnapshot"> | string
     keyResultId?: StringFilter<"KeyResultWeightSnapshot"> | string
-    oldWeight?: FloatFilter<"KeyResultWeightSnapshot"> | number
-    newWeight?: FloatFilter<"KeyResultWeightSnapshot"> | number
-    weightDelta?: FloatFilter<"KeyResultWeightSnapshot"> | number
+    oldWeight?: IntFilter<"KeyResultWeightSnapshot"> | number
+    newWeight?: IntFilter<"KeyResultWeightSnapshot"> | number
+    weightDelta?: IntFilter<"KeyResultWeightSnapshot"> | number
     snapshotTime?: DateTimeFilter<"KeyResultWeightSnapshot"> | Date | string
     trigger?: StringFilter<"KeyResultWeightSnapshot"> | string
     reason?: StringNullableFilter<"KeyResultWeightSnapshot"> | string | null
@@ -89784,9 +89851,9 @@ export namespace Prisma {
     NOT?: KeyResultWeightSnapshotWhereInput | KeyResultWeightSnapshotWhereInput[]
     goalId?: StringFilter<"KeyResultWeightSnapshot"> | string
     keyResultId?: StringFilter<"KeyResultWeightSnapshot"> | string
-    oldWeight?: FloatFilter<"KeyResultWeightSnapshot"> | number
-    newWeight?: FloatFilter<"KeyResultWeightSnapshot"> | number
-    weightDelta?: FloatFilter<"KeyResultWeightSnapshot"> | number
+    oldWeight?: IntFilter<"KeyResultWeightSnapshot"> | number
+    newWeight?: IntFilter<"KeyResultWeightSnapshot"> | number
+    weightDelta?: IntFilter<"KeyResultWeightSnapshot"> | number
     snapshotTime?: DateTimeFilter<"KeyResultWeightSnapshot"> | Date | string
     trigger?: StringFilter<"KeyResultWeightSnapshot"> | string
     reason?: StringNullableFilter<"KeyResultWeightSnapshot"> | string | null
@@ -89822,9 +89889,9 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"KeyResultWeightSnapshot"> | string
     goalId?: StringWithAggregatesFilter<"KeyResultWeightSnapshot"> | string
     keyResultId?: StringWithAggregatesFilter<"KeyResultWeightSnapshot"> | string
-    oldWeight?: FloatWithAggregatesFilter<"KeyResultWeightSnapshot"> | number
-    newWeight?: FloatWithAggregatesFilter<"KeyResultWeightSnapshot"> | number
-    weightDelta?: FloatWithAggregatesFilter<"KeyResultWeightSnapshot"> | number
+    oldWeight?: IntWithAggregatesFilter<"KeyResultWeightSnapshot"> | number
+    newWeight?: IntWithAggregatesFilter<"KeyResultWeightSnapshot"> | number
+    weightDelta?: IntWithAggregatesFilter<"KeyResultWeightSnapshot"> | number
     snapshotTime?: DateTimeWithAggregatesFilter<"KeyResultWeightSnapshot"> | Date | string
     trigger?: StringWithAggregatesFilter<"KeyResultWeightSnapshot"> | string
     reason?: StringNullableWithAggregatesFilter<"KeyResultWeightSnapshot"> | string | null
@@ -93084,6 +93151,9 @@ export namespace Prisma {
     timeConfigStartTime?: DateTimeNullableFilter<"TaskTemplate"> | Date | string | null
     timeConfigEndTime?: DateTimeNullableFilter<"TaskTemplate"> | Date | string | null
     timeConfigDurationMinutes?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimePoint?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeStart?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeEnd?: IntNullableFilter<"TaskTemplate"> | number | null
     recurrenceRuleType?: StringNullableFilter<"TaskTemplate"> | string | null
     recurrenceRuleInterval?: IntNullableFilter<"TaskTemplate"> | number | null
     recurrenceRuleDaysOfWeek?: StringNullableFilter<"TaskTemplate"> | string | null
@@ -93132,6 +93202,9 @@ export namespace Prisma {
     timeConfigStartTime?: SortOrderInput | SortOrder
     timeConfigEndTime?: SortOrderInput | SortOrder
     timeConfigDurationMinutes?: SortOrderInput | SortOrder
+    timeConfigTimePoint?: SortOrderInput | SortOrder
+    timeConfigTimeRangeStart?: SortOrderInput | SortOrder
+    timeConfigTimeRangeEnd?: SortOrderInput | SortOrder
     recurrenceRuleType?: SortOrderInput | SortOrder
     recurrenceRuleInterval?: SortOrderInput | SortOrder
     recurrenceRuleDaysOfWeek?: SortOrderInput | SortOrder
@@ -93183,6 +93256,9 @@ export namespace Prisma {
     timeConfigStartTime?: DateTimeNullableFilter<"TaskTemplate"> | Date | string | null
     timeConfigEndTime?: DateTimeNullableFilter<"TaskTemplate"> | Date | string | null
     timeConfigDurationMinutes?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimePoint?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeStart?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeEnd?: IntNullableFilter<"TaskTemplate"> | number | null
     recurrenceRuleType?: StringNullableFilter<"TaskTemplate"> | string | null
     recurrenceRuleInterval?: IntNullableFilter<"TaskTemplate"> | number | null
     recurrenceRuleDaysOfWeek?: StringNullableFilter<"TaskTemplate"> | string | null
@@ -93231,6 +93307,9 @@ export namespace Prisma {
     timeConfigStartTime?: SortOrderInput | SortOrder
     timeConfigEndTime?: SortOrderInput | SortOrder
     timeConfigDurationMinutes?: SortOrderInput | SortOrder
+    timeConfigTimePoint?: SortOrderInput | SortOrder
+    timeConfigTimeRangeStart?: SortOrderInput | SortOrder
+    timeConfigTimeRangeEnd?: SortOrderInput | SortOrder
     recurrenceRuleType?: SortOrderInput | SortOrder
     recurrenceRuleInterval?: SortOrderInput | SortOrder
     recurrenceRuleDaysOfWeek?: SortOrderInput | SortOrder
@@ -93279,6 +93358,9 @@ export namespace Prisma {
     timeConfigStartTime?: DateTimeNullableWithAggregatesFilter<"TaskTemplate"> | Date | string | null
     timeConfigEndTime?: DateTimeNullableWithAggregatesFilter<"TaskTemplate"> | Date | string | null
     timeConfigDurationMinutes?: IntNullableWithAggregatesFilter<"TaskTemplate"> | number | null
+    timeConfigTimePoint?: IntNullableWithAggregatesFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeStart?: IntNullableWithAggregatesFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeEnd?: IntNullableWithAggregatesFilter<"TaskTemplate"> | number | null
     recurrenceRuleType?: StringNullableWithAggregatesFilter<"TaskTemplate"> | string | null
     recurrenceRuleInterval?: IntNullableWithAggregatesFilter<"TaskTemplate"> | number | null
     recurrenceRuleDaysOfWeek?: StringNullableWithAggregatesFilter<"TaskTemplate"> | string | null
@@ -96321,7 +96403,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96342,7 +96424,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96379,7 +96461,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96397,7 +96479,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96629,9 +96711,9 @@ export namespace Prisma {
 
   export type KeyResultWeightSnapshotUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96645,9 +96727,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     goalId?: StringFieldUpdateOperationsInput | string
     keyResultId?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96671,9 +96753,9 @@ export namespace Prisma {
 
   export type KeyResultWeightSnapshotUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96685,9 +96767,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     goalId?: StringFieldUpdateOperationsInput | string
     keyResultId?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -100438,6 +100520,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -100486,6 +100571,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -100528,6 +100616,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -100576,6 +100667,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -100621,6 +100715,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -100658,6 +100755,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -100698,6 +100798,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -105640,6 +105743,9 @@ export namespace Prisma {
     timeConfigStartTime?: SortOrder
     timeConfigEndTime?: SortOrder
     timeConfigDurationMinutes?: SortOrder
+    timeConfigTimePoint?: SortOrder
+    timeConfigTimeRangeStart?: SortOrder
+    timeConfigTimeRangeEnd?: SortOrder
     recurrenceRuleType?: SortOrder
     recurrenceRuleInterval?: SortOrder
     recurrenceRuleDaysOfWeek?: SortOrder
@@ -105667,6 +105773,9 @@ export namespace Prisma {
   export type TaskTemplateAvgOrderByAggregateInput = {
     priority?: SortOrder
     timeConfigDurationMinutes?: SortOrder
+    timeConfigTimePoint?: SortOrder
+    timeConfigTimeRangeStart?: SortOrder
+    timeConfigTimeRangeEnd?: SortOrder
     recurrenceRuleInterval?: SortOrder
     recurrenceRuleDayOfMonth?: SortOrder
     recurrenceRuleMonthOfYear?: SortOrder
@@ -105692,6 +105801,9 @@ export namespace Prisma {
     timeConfigStartTime?: SortOrder
     timeConfigEndTime?: SortOrder
     timeConfigDurationMinutes?: SortOrder
+    timeConfigTimePoint?: SortOrder
+    timeConfigTimeRangeStart?: SortOrder
+    timeConfigTimeRangeEnd?: SortOrder
     recurrenceRuleType?: SortOrder
     recurrenceRuleInterval?: SortOrder
     recurrenceRuleDaysOfWeek?: SortOrder
@@ -105732,6 +105844,9 @@ export namespace Prisma {
     timeConfigStartTime?: SortOrder
     timeConfigEndTime?: SortOrder
     timeConfigDurationMinutes?: SortOrder
+    timeConfigTimePoint?: SortOrder
+    timeConfigTimeRangeStart?: SortOrder
+    timeConfigTimeRangeEnd?: SortOrder
     recurrenceRuleType?: SortOrder
     recurrenceRuleInterval?: SortOrder
     recurrenceRuleDaysOfWeek?: SortOrder
@@ -105759,6 +105874,9 @@ export namespace Prisma {
   export type TaskTemplateSumOrderByAggregateInput = {
     priority?: SortOrder
     timeConfigDurationMinutes?: SortOrder
+    timeConfigTimePoint?: SortOrder
+    timeConfigTimeRangeStart?: SortOrder
+    timeConfigTimeRangeEnd?: SortOrder
     recurrenceRuleInterval?: SortOrder
     recurrenceRuleDayOfMonth?: SortOrder
     recurrenceRuleMonthOfYear?: SortOrder
@@ -111943,6 +112061,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -111989,6 +112110,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -113401,6 +113525,9 @@ export namespace Prisma {
     timeConfigStartTime?: DateTimeNullableFilter<"TaskTemplate"> | Date | string | null
     timeConfigEndTime?: DateTimeNullableFilter<"TaskTemplate"> | Date | string | null
     timeConfigDurationMinutes?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimePoint?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeStart?: IntNullableFilter<"TaskTemplate"> | number | null
+    timeConfigTimeRangeEnd?: IntNullableFilter<"TaskTemplate"> | number | null
     recurrenceRuleType?: StringNullableFilter<"TaskTemplate"> | string | null
     recurrenceRuleInterval?: IntNullableFilter<"TaskTemplate"> | number | null
     recurrenceRuleDaysOfWeek?: StringNullableFilter<"TaskTemplate"> | string | null
@@ -118757,7 +118884,7 @@ export namespace Prisma {
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
-    weight?: FloatFilter<"KeyResult"> | number
+    weight?: IntFilter<"KeyResult"> | number
     order?: IntFilter<"KeyResult"> | number
     version?: IntFilter<"KeyResult"> | number
     createdAt?: DateTimeFilter<"KeyResult"> | Date | string
@@ -118823,9 +118950,9 @@ export namespace Prisma {
     id?: StringFilter<"KeyResultWeightSnapshot"> | string
     goalId?: StringFilter<"KeyResultWeightSnapshot"> | string
     keyResultId?: StringFilter<"KeyResultWeightSnapshot"> | string
-    oldWeight?: FloatFilter<"KeyResultWeightSnapshot"> | number
-    newWeight?: FloatFilter<"KeyResultWeightSnapshot"> | number
-    weightDelta?: FloatFilter<"KeyResultWeightSnapshot"> | number
+    oldWeight?: IntFilter<"KeyResultWeightSnapshot"> | number
+    newWeight?: IntFilter<"KeyResultWeightSnapshot"> | number
+    weightDelta?: IntFilter<"KeyResultWeightSnapshot"> | number
     snapshotTime?: DateTimeFilter<"KeyResultWeightSnapshot"> | Date | string
     trigger?: StringFilter<"KeyResultWeightSnapshot"> | string
     reason?: StringNullableFilter<"KeyResultWeightSnapshot"> | string | null
@@ -119645,7 +119772,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -119665,7 +119792,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -120017,7 +120144,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -120037,7 +120164,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -127167,6 +127294,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -127213,6 +127343,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -127540,6 +127673,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -127587,6 +127723,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -127633,6 +127772,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -127679,6 +127821,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128028,6 +128173,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128075,6 +128223,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128333,6 +128484,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128380,6 +128534,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128554,6 +128711,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128601,6 +128761,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128642,6 +128805,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128689,6 +128855,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128735,6 +128904,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128782,6 +128954,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -128839,6 +129014,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128886,6 +129064,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128938,6 +129119,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -128985,6 +129169,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -129026,6 +129213,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -129073,6 +129263,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -129130,6 +129323,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -129177,6 +129373,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -129793,6 +129992,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -130997,6 +131199,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -131043,6 +131248,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -131087,6 +131295,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132263,7 +132474,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -132282,7 +132493,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -132301,7 +132512,7 @@ export namespace Prisma {
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
-    weight?: FloatFieldUpdateOperationsInput | number
+    weight?: IntFieldUpdateOperationsInput | number
     order?: IntFieldUpdateOperationsInput | number
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -132356,9 +132567,9 @@ export namespace Prisma {
 
   export type KeyResultWeightSnapshotUpdateWithoutGoalInput = {
     id?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132370,9 +132581,9 @@ export namespace Prisma {
   export type KeyResultWeightSnapshotUncheckedUpdateWithoutGoalInput = {
     id?: StringFieldUpdateOperationsInput | string
     keyResultId?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132383,9 +132594,9 @@ export namespace Prisma {
   export type KeyResultWeightSnapshotUncheckedUpdateManyWithoutGoalInput = {
     id?: StringFieldUpdateOperationsInput | string
     keyResultId?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132702,9 +132913,9 @@ export namespace Prisma {
 
   export type KeyResultWeightSnapshotUpdateWithoutKeyResultInput = {
     id?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132716,9 +132927,9 @@ export namespace Prisma {
   export type KeyResultWeightSnapshotUncheckedUpdateWithoutKeyResultInput = {
     id?: StringFieldUpdateOperationsInput | string
     goalId?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132729,9 +132940,9 @@ export namespace Prisma {
   export type KeyResultWeightSnapshotUncheckedUpdateManyWithoutKeyResultInput = {
     id?: StringFieldUpdateOperationsInput | string
     goalId?: StringFieldUpdateOperationsInput | string
-    oldWeight?: FloatFieldUpdateOperationsInput | number
-    newWeight?: FloatFieldUpdateOperationsInput | number
-    weightDelta?: FloatFieldUpdateOperationsInput | number
+    oldWeight?: IntFieldUpdateOperationsInput | number
+    newWeight?: IntFieldUpdateOperationsInput | number
+    weightDelta?: IntFieldUpdateOperationsInput | number
     snapshotTime?: DateTimeFieldUpdateOperationsInput | Date | string
     trigger?: StringFieldUpdateOperationsInput | string
     reason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -133674,6 +133885,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -133711,6 +133925,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -133757,6 +133974,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -133801,6 +134021,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -133840,6 +134063,9 @@ export namespace Prisma {
     timeConfigStartTime?: Date | string | null
     timeConfigEndTime?: Date | string | null
     timeConfigDurationMinutes?: number | null
+    timeConfigTimePoint?: number | null
+    timeConfigTimeRangeStart?: number | null
+    timeConfigTimeRangeEnd?: number | null
     recurrenceRuleType?: string | null
     recurrenceRuleInterval?: number | null
     recurrenceRuleDaysOfWeek?: string | null
@@ -133923,6 +134149,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -133969,6 +134198,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null
@@ -134013,6 +134245,9 @@ export namespace Prisma {
     timeConfigStartTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigEndTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timeConfigDurationMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimePoint?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeStart?: NullableIntFieldUpdateOperationsInput | number | null
+    timeConfigTimeRangeEnd?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleType?: NullableStringFieldUpdateOperationsInput | string | null
     recurrenceRuleInterval?: NullableIntFieldUpdateOperationsInput | number | null
     recurrenceRuleDaysOfWeek?: NullableStringFieldUpdateOperationsInput | string | null

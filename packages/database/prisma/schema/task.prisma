@@ -58,6 +58,9 @@ model TaskTemplate {
   timeConfigStartTime       DateTime? @map("time_config_start_time")
   timeConfigEndTime         DateTime? @map("time_config_end_time")
   timeConfigDurationMinutes Int?      @map("time_config_duration_minutes")
+  timeConfigTimePoint       Int?      @map("time_config_time_point") /// 时间点（分钟数，如 540 = 9:00）
+  timeConfigTimeRangeStart  Int?      @map("time_config_time_range_start") /// 时间段开始（分钟数）
+  timeConfigTimeRangeEnd    Int?      @map("time_config_time_range_end") /// 时间段结束（分钟数）
 
   // ============ 重复规则（展开值对象） ============
   recurrenceRuleType        String?   @map("recurrence_rule_type")

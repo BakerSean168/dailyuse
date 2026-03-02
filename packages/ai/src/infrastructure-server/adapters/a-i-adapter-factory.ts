@@ -57,14 +57,14 @@ export class AIAdapterFactory {
     let adapter: BaseAIAdapter;
 
     switch (config.providerType) {
-      case AIProviderType.OPENAI:
+      case AIProviderType.OpenAI:
         adapter = new OpenAIAdapter(
           config.apiKey,
-          (config.defaultModel as AIModel) || AIModel.GPT4_TURBO,
+          (config.defaultModel as AIModel) || AIModel.Gpt4Turbo,
         );
         break;
 
-      case AIProviderType.OPENROUTER:
+      case AIProviderType.OpenRouter:
         adapter = new OpenRouterAdapter({
           apiKey: config.apiKey,
           defaultModel: config.defaultModel || 'google/gemini-2.0-flash-exp:free',
@@ -73,7 +73,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.GROQ:
+      case AIProviderType.Groq:
         adapter = new GroqAdapter({
           apiKey: config.apiKey,
           defaultModel: config.defaultModel || 'llama-3.3-70b-versatile',
@@ -81,7 +81,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.DEEPSEEK:
+      case AIProviderType.DeepSeek:
         adapter = new DeepSeekAdapter({
           apiKey: config.apiKey,
           defaultModel: config.defaultModel || 'deepseek-chat',
@@ -89,7 +89,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.SILICONFLOW:
+      case AIProviderType.SiliconFlow:
         adapter = new SiliconFlowAdapter({
           apiKey: config.apiKey,
           defaultModel: config.defaultModel || 'deepseek-ai/DeepSeek-V3',
@@ -97,7 +97,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.QINIU:
+      case AIProviderType.Qiniu:
         adapter = new CustomOpenAICompatibleAdapter({
           providerName: config.name || 'Qiniu',
           baseUrl: config.baseUrl,
@@ -107,7 +107,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.GOOGLE:
+      case AIProviderType.Google:
         adapter = new CustomOpenAICompatibleAdapter({
           providerName: config.name || 'Google AI',
           baseUrl: config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai',
@@ -117,7 +117,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.ANTHROPIC:
+      case AIProviderType.Anthropic:
         // TODO: 瀹炵幇 Anthropic 鍘熺敓閫傞厤鍣紙浣跨敤 x-api-key 璁よ瘉锟?
         // 鏆傛椂浣跨敤 OpenAI 鍏煎妯″紡锛堝锟?API 鍏煎锟?
         adapter = new CustomOpenAICompatibleAdapter({
@@ -129,7 +129,7 @@ export class AIAdapterFactory {
         });
         break;
 
-      case AIProviderType.CUSTOM_OPENAI_COMPATIBLE:
+      case AIProviderType.CustomOpenAICompatible:
       default:
         adapter = new CustomOpenAICompatibleAdapter({
           providerName: config.name || 'Custom',
@@ -165,7 +165,7 @@ export class AIAdapterFactory {
       if (!apiKey) {
         throw new Error('OPENAI_API_KEY environment variable is not set');
       }
-      this.defaultAdapter = new OpenAIAdapter(apiKey, AIModel.GPT4_TURBO);
+      this.defaultAdapter = new OpenAIAdapter(apiKey, AIModel.Gpt4Turbo);
     }
     return this.defaultAdapter;
   }
@@ -218,8 +218,8 @@ export class AIAdapterFactory {
 
     try {
       const tempConfig: AIProviderConfigServerDTO = {
-        id: 'test-' + Date.now(),
-        identityId: 'test',
+        id: ('test-' + Date.now()) as AIProviderConfigServerDTO['id'],
+        identityId: 'test' as AIProviderConfigServerDTO['identityId'],
         name: 'Test Connection',
         providerType: config.providerType,
         baseUrl: config.baseUrl,
@@ -231,6 +231,8 @@ export class AIAdapterFactory {
         priority: 100,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        version: 1,
+        deletedAt: null,
       };
 
       const adapter = this.createFromConfig(tempConfig);
@@ -262,7 +264,3 @@ export class AIAdapterFactory {
     }
   }
 }
-
-
-
-

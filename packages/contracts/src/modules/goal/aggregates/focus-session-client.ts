@@ -3,7 +3,7 @@
  * 专注周期聚合根 - 客户端接口
  */
 
-import type { IdentityId, FocusSessionId, GoalId, TransferDate, DomainDate } from '@/primitives';
+import type { IdentityId, FocusSessionId, GoalId, TransferDate, DomainDate } from '../../../primitives';
 import type { FocusSessionStatus } from '../value-objects/focus-session-status';
 import type { FocusSessionServerDTO } from './focus-session-server';
 

@@ -12,7 +12,7 @@ import type {
   NotificationChannelType,
 } from '../value-objects';
 
-import type { IdentityId, DomainDate, TransferDate, PersistenceDate } from '@/primitives';
+import type { IdentityId, DomainDate, TransferDate, PersistenceDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

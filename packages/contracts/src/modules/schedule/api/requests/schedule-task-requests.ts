@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { ScheduleTaskId } from '@/primitives';
+import { brandedId } from '../../../../primitives';
+import type { ScheduleTaskId } from '../../../../primitives';
 import type { ScheduleTaskClientDTO } from '../../aggregates/schedule-task-client';
 import type { ScheduleConfigServerDTO, RetryPolicyServerDTO, TaskMetadataServerDTO } from '../../value-objects';
 import { SourceModule } from '../../value-objects/source-module';

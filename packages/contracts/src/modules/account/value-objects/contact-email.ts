@@ -2,7 +2,7 @@
  * 账户模块的邮箱
  */
 
-import type { DomainDate, PersistenceDate, TransferDate } from '@/primitives';
+import type { DomainDate, PersistenceDate, TransferDate } from '../../../primitives';
 
 export interface ContactEmail {
   address: string;

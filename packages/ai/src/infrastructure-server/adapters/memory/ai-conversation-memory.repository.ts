@@ -20,11 +20,17 @@ export class AIConversationMemoryRepository implements IAIConversationRepository
     this.conversations.set((conversation as any).id, conversation);
   }
 
-  async findById(id: string, _options?: AIConversationQueryOptions): Promise<AIConversation | null> {
+  async findById(
+    id: string,
+    _options?: AIConversationQueryOptions,
+  ): Promise<AIConversation | null> {
     return this.conversations.get(id) ?? null;
   }
 
-  async findByAccountId(identityId: string, _options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+  async findByIdentityId(
+    identityId: string,
+    _options?: AIConversationQueryOptions,
+  ): Promise<AIConversation[]> {
     return Array.from(this.conversations.values()).filter((c: any) => c.identityId === identityId);
   }
 

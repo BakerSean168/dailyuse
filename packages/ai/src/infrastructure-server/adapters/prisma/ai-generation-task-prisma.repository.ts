@@ -77,7 +77,10 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
     return rows.map((row: PrismaAiGenerationTask) => this.toServerDTO(row));
   }
 
-  async findByTaskType(identityId: string, taskType: GenerationTaskType): Promise<AIGenerationTaskServerDTO[]> {
+  async findByTaskType(
+    identityId: string,
+    taskType: GenerationTaskType,
+  ): Promise<AIGenerationTaskServerDTO[]> {
     const rows = await this.prisma.aiGenerationTask.findMany({
       where: { identityId, taskType, deletedAt: null },
       orderBy: { createdAt: 'desc' },
@@ -95,7 +98,11 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
     return rows.map((row: PrismaAiGenerationTask) => this.toServerDTO(row));
   }
 
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+  async findRecent(
+    identityId: string,
+    limit: number,
+    offset?: number,
+  ): Promise<AIGenerationTaskServerDTO[]> {
     const rows = await this.prisma.aiGenerationTask.findMany({
       where: { identityId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
@@ -143,13 +150,17 @@ export class AIGenerationTaskPrismaRepository implements IAIGenerationTaskReposi
     let processingStartedAt: number | null =
       typeof inputMeta.processingStartedAt === 'number' ? inputMeta.processingStartedAt : null;
 
-    if (processingStartedAt == null && processingCompletedAt != null && typeof row.processingMs === 'number') {
+    if (
+      processingStartedAt == null &&
+      processingCompletedAt != null &&
+      typeof row.processingMs === 'number'
+    ) {
       processingStartedAt = processingCompletedAt - row.processingMs;
     }
 
     return {
-      id: row.id,
-      identityId: row.identityId,
+      id: row.id as AIGenerationTaskServerDTO['id'],
+      identityId: row.identityId as AIGenerationTaskServerDTO['identityId'],
       conversationId: inputMeta.conversationId ?? null,
       type: row.taskType as GenerationTaskType,
       status: row.status as TaskStatus,

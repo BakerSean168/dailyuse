@@ -2,7 +2,7 @@
  * 账户模块的电话
  */
 
-import type { DomainDate, PersistenceDate, TransferDate } from '@/primitives';
+import type { DomainDate, PersistenceDate, TransferDate } from '../../../primitives';
 
 export interface ContactPhone {
   countryCode: string;

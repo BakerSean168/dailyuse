@@ -83,10 +83,14 @@ export function registerDocumentRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listDocuments({
-      workspaceId: req.query?.workspaceId as string | undefined,
-      folderId: req.query?.folderId as string | undefined,
-    }, ctx),
+    (req, ctx) =>
+      controller.listDocuments(
+        {
+          workspaceId: req.query?.workspaceId as string | undefined,
+          folderId: req.query?.folderId as string | undefined,
+        },
+        ctx,
+      ),
   );
 
   // GET /documents/:id — Get document by ID

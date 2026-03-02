@@ -27,7 +27,7 @@ export class AIUsageQuotaMemoryRepository implements IAIUsageQuotaRepository {
 
   async findByIdentityId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
     const id = this.accountIndex.get(identityId);
-    return id ? this.quotas.get(id) ?? null : null;
+    return id ? (this.quotas.get(id) ?? null) : null;
   }
 
   async findByAccountId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
@@ -38,8 +38,8 @@ export class AIUsageQuotaMemoryRepository implements IAIUsageQuotaRepository {
     const id = `quota-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = Date.now();
     const quota: AIUsageQuotaServerDTO = {
-      id,
-      identityId,
+      id: id as AIUsageQuotaServerDTO['id'],
+      identityId: identityId as AIUsageQuotaServerDTO['identityId'],
       quotaLimit: 100000,
       currentUsage: 0,
       resetPeriod: 'DAILY' as QuotaResetPeriod,

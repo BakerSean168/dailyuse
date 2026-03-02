@@ -53,7 +53,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
 
   constructor(config: CustomProviderConfig) {
     // 浣跨敤 CUSTOM 浣滀负鍩虹 provider 绫诲瀷
-    super(AIProvider.CUSTOM, config.defaultModel as any);
+    super(AIProvider.Custom, config.defaultModel as any);
 
     this.providerName = config.providerName;
     this.modelId = config.defaultModel;
@@ -86,7 +86,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
-        maxOutputTokens: request.maxTokens,
+        maxTokens: request.maxTokens,
       });
 
       // 绔為€燂細鐢熸垚 vs 瓒呮椂
@@ -134,7 +134,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
-        maxOutputTokens: request.maxTokens,
+        maxTokens: request.maxTokens,
       });
 
       let fullText = '';
@@ -182,7 +182,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
       const result = await generateText({
         model: this.openai.chat(this.modelId),
         prompt: 'Say OK',
-        maxOutputTokens: 10,
+        maxTokens: 10,
       });
       return result.text.length > 0;
     } catch {
@@ -243,7 +243,3 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
     }
   }
 }
-
-
-
-

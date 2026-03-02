@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { openApiJsonValue } from '@/primitives';
+import { openApiJsonValue } from '../../../primitives';
 
 // ==================== Repository Schemas ====================
 

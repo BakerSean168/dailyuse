@@ -3,7 +3,7 @@
  * AI使用配额聚合�?- 客户端接�?
  */
 
-import type { AiUsageQuotaId, IdentityId, TransferDate, DomainDate } from '@/primitives';
+import type { AiUsageQuotaId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { QuotaResetPeriod } from '../value-objects/quota-reset-period';
 
 // ============ DTO 定义 ============

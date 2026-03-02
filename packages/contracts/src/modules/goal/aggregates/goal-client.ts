@@ -2,7 +2,7 @@
  * Goal Aggregate Root - Client Contracts
  */
 
-import type { DomainDate, TransferDate, GoalId, IdentityId, GoalFolderId } from '@/primitives';
+import type { DomainDate, TransferDate, GoalId, IdentityId, GoalFolderId } from '../../../primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
 import type { KeyResultClientDTO } from '../entities/key-result-client';

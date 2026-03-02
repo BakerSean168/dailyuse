@@ -5,7 +5,11 @@
  * 包含权重变化的完整上下文信息（谁、什么时候、为什么、怎么变的）。
  */
 
-import type { KeyResultWeightSnapshotPersistenceDTO, KeyResultWeightSnapshotDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
+import type {
+  KeyResultWeightSnapshotPersistenceDTO,
+  KeyResultWeightSnapshotDTO,
+  SnapshotTrigger,
+} from '@dailyuse/contracts/goal';
 import { InvalidWeightError } from './errors';
 
 // 类型别名
@@ -52,16 +56,16 @@ export class KeyResultWeightSnapshot {
    */
   public toDTO(): KeyResultWeightSnapshotDTO {
     return {
-      id: this.id,
-      goalId: this.goalId,
-      keyResultId: this.keyResultId,
+      id: this.id as KeyResultWeightSnapshotDTO['id'],
+      goalId: this.goalId as KeyResultWeightSnapshotDTO['goalId'],
+      keyResultId: this.keyResultId as KeyResultWeightSnapshotDTO['keyResultId'],
       oldWeight: this.oldWeight,
       newWeight: this.newWeight,
       weightDelta: this.weightDelta,
       snapshotTime: this.snapshotTime,
       trigger: this.trigger,
-      reason: this.reason,
-      operatorId: this.operatorId,
+      reason: this.reason ?? null,
+      operatorId: this.operatorId as KeyResultWeightSnapshotDTO['operatorId'],
       createdAt: this.createdAt ?? Date.now(),
     };
   }
@@ -89,16 +93,16 @@ export class KeyResultWeightSnapshot {
    */
   public toPersistenceDTO(): KeyResultWeightSnapshotPersistenceDTO {
     return {
-      id: this.id,
-      goalId: this.goalId,
-      keyResultId: this.keyResultId,
+      id: this.id as KeyResultWeightSnapshotPersistenceDTO['id'],
+      goalId: this.goalId as KeyResultWeightSnapshotPersistenceDTO['goalId'],
+      keyResultId: this.keyResultId as KeyResultWeightSnapshotPersistenceDTO['keyResultId'],
       oldWeight: this.oldWeight,
       newWeight: this.newWeight,
       weightDelta: this.weightDelta,
-      snapshotTime: this.snapshotTime,
+      snapshotTime: new Date(this.snapshotTime),
       trigger: this.trigger,
       reason: this.reason ?? null,
-      operatorId: this.operatorId,
+      operatorId: this.operatorId as KeyResultWeightSnapshotPersistenceDTO['operatorId'],
       createdAt: new Date(this.createdAt ?? Date.now()),
     };
   }
@@ -106,18 +110,20 @@ export class KeyResultWeightSnapshot {
   /**
    * 从 Persistence DTO 创建实例
    */
-  public static fromPersistenceDTO(dto: KeyResultWeightSnapshotPersistenceDTO): KeyResultWeightSnapshot {
+  public static fromPersistenceDTO(
+    dto: KeyResultWeightSnapshotPersistenceDTO,
+  ): KeyResultWeightSnapshot {
     return new KeyResultWeightSnapshot(
       dto.id,
       dto.goalId,
       dto.keyResultId,
       dto.oldWeight,
       dto.newWeight,
-      dto.snapshotTime,
-      dto.trigger,
+      dto.snapshotTime instanceof Date ? dto.snapshotTime.getTime() : dto.snapshotTime,
+      dto.trigger as SnapshotTrigger,
       dto.operatorId,
       dto.reason ?? undefined,
-      dto.createdAt.getTime(),
+      dto.createdAt instanceof Date ? dto.createdAt.getTime() : dto.createdAt,
     );
   }
 }

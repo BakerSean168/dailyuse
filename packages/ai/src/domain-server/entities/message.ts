@@ -1,8 +1,5 @@
 import { Entity } from '@dailyuse/utils';
-import type {
-  MessageClientDTO,
-  MessageServerDTO,
-} from '@dailyuse/contracts/ai';
+import type { MessageClientDTO, MessageServerDTO } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import type { AiConversationId as IAiConversationId } from '@dailyuse/contracts/primitives';
 import { AiMessageId } from '../../domain-shared/value-objects/ai-message-id';
@@ -97,8 +94,8 @@ export class Message extends Entity<AiMessageId> {
 
   public toClientDTO(): MessageClientDTO {
     return {
-      id: String(this.id),
-      conversationId: String(this._props.conversationId),
+      id: String(this.id) as MessageClientDTO['id'],
+      conversationId: String(this._props.conversationId) as MessageClientDTO['conversationId'],
       role: this._props.role,
       content: this._props.content,
       tokenCount: this._props.tokenCount,

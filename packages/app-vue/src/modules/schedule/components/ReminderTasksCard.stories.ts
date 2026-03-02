@@ -3,7 +3,7 @@ import ReminderTasksCard from './ReminderTasksCard.vue';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
 function makeReminderTask(
-  overrides: Partial<ScheduleTaskClientDTO> & { id: string; name: string },
+  overrides: Record<string, unknown> & { id: string; name: string },
 ): ScheduleTaskClientDTO {
   const now = new Date();
   return {

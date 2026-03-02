@@ -9,10 +9,7 @@
  * - Instance toDTO(): ScheduleExecutionClientDTO
  */
 
-import type {
-  ScheduleExecutionClientDTO,
-  ExecutionStatus,
-} from '@dailyuse/contracts/schedule';
+import type { ScheduleExecutionClientDTO, ExecutionStatus } from '@dailyuse/contracts/schedule';
 import { Entity } from '@dailyuse/utils';
 import { ScheduleExecutionId } from '../../domain-shared/value-objects/schedule-execution-id';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
@@ -155,8 +152,10 @@ export class ScheduleExecution extends Entity<ScheduleExecutionId> {
   // ================= DTO Conversion =================
   public toDTO(): ScheduleExecutionClientDTO {
     return {
-      id: String(this._props.id),
-      scheduleTaskId: String(this._props.scheduleTaskId),
+      id: String(this._props.id) as ScheduleExecutionClientDTO['id'],
+      scheduleTaskId: String(
+        this._props.scheduleTaskId,
+      ) as ScheduleExecutionClientDTO['scheduleTaskId'],
       executionTime: this._props.executionTime.getTime(),
       status: this._props.status,
       duration: this._props.duration,

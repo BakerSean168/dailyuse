@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { openApiJsonValue } from '@/primitives';
+import { openApiJsonValue } from '../../../primitives';
 import { DocumentLanguage } from '../value-objects/document-language';
 
 export const CreateDocumentSchema = z.object({

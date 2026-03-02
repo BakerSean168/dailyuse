@@ -89,7 +89,9 @@ export function registerReminderRoutes(
       method: 'post',
       path: '/templates',
       summary: '创建提醒模板',
-      request: { body: { content: { 'application/json': { schema: CreateReminderTemplateSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: CreateReminderTemplateSchema } } },
+      },
       responses: {
         201: successResponse(ReminderTemplateResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
@@ -137,10 +139,14 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.getUpcomingReminders({
-      limit: parseNumber(req.query?.limit),
-      beforeTime: parseString(req.query?.beforeTime),
-    }, ctx),
+    (req, ctx) =>
+      controller.getUpcomingReminders(
+        {
+          limit: parseNumber(req.query?.limit),
+          beforeTime: parseString(req.query?.beforeTime),
+        },
+        ctx,
+      ),
   );
 
   // GET /templates/:id — Get template by ID

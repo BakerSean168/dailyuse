@@ -41,11 +41,13 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
 
   async findById(id: string): Promise<AIUsageQuotaServerDTO | null> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_usage_quotas
         WHERE id = ? AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(id) as any;
 
     return row ? this.rowToDTO(row) : null;
@@ -53,11 +55,13 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
 
   async findByIdentityId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_usage_quotas
         WHERE identity_id = ? AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(identityId) as any;
 
     return row ? this.rowToDTO(row) : null;
@@ -70,8 +74,8 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
     nextResetAt.setHours(0, 0, 0, 0);
 
     const quota: AIUsageQuotaServerDTO = {
-      id: crypto.randomUUID(),
-      identityId,
+      id: crypto.randomUUID() as AIUsageQuotaServerDTO['id'],
+      identityId: identityId as AIUsageQuotaServerDTO['identityId'],
       quotaLimit: 50,
       currentUsage: 0,
       resetPeriod: QuotaResetPeriod.Daily,
@@ -86,16 +90,20 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   }
 
   async delete(id: string): Promise<void> {
-    this.db.prepare(`UPDATE ai_usage_quotas SET deleted_at = ?, updated_at = ? WHERE id = ?`).run(Date.now(), Date.now(), id);
+    this.db
+      .prepare(`UPDATE ai_usage_quotas SET deleted_at = ?, updated_at = ? WHERE id = ?`)
+      .run(Date.now(), Date.now(), id);
   }
 
   async exists(identityId: string): Promise<boolean> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT 1 FROM ai_usage_quotas
         WHERE identity_id = ? AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(identityId);
 
     return row !== undefined;

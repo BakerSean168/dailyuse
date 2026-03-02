@@ -6,8 +6,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { AiProviderConfigId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { AiProviderConfigId } from '../../../primitives';
 import type { AIGenerationTaskClientDTO } from '../aggregates/ai-generation-task-client';
 
 // ============================================================================

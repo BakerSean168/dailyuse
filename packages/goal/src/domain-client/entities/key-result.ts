@@ -9,12 +9,9 @@
  * - Instance toDTO(): KeyResultClientDTO
  */
 
-import type {
-  KeyResultClientDTO,
-  KeyResultProgress,
-} from '@dailyuse/contracts/goal';
+import type { KeyResultClientDTO, KeyResultProgress } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
-import { KeyResultId } from '@/domain-shared';
+import { KeyResultId } from '../../domain-shared';
 
 export interface KeyResultState {
   id: KeyResultId;

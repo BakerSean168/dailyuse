@@ -11,7 +11,7 @@ import type { DeviceInfo } from '../value-objects/device-info';
 import type { AuthSessionId } from '../value-objects/auth-session-id';
 import type { IdentityId } from '../value-objects/identity-id';
 import { SessionStatus } from '../value-objects/session-status';
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

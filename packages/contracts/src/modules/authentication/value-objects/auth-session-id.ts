@@ -1,1 +1,1 @@
-export type { AuthSessionId } from '@/primitives';
+export type { AuthSessionId } from '../../../primitives';

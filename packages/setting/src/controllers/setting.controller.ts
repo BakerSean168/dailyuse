@@ -14,12 +14,7 @@ import {
   ExportSettingsSchema,
   ImportSettingsSchema,
 } from '@dailyuse/contracts/setting';
-import type {
-  PatchUserSettingReq,
-  ResetUserSettingReq,
-  ExportSettingsReq,
-  ImportSettingsReq,
-} from '@dailyuse/contracts/setting';
+import type { PatchUserSettingReq, ImportSettingsReq } from '@dailyuse/contracts/setting';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
 // ============ Use Case Port ============
@@ -40,7 +35,7 @@ export class SettingController {
     return this.useCases.getUserSetting(ctx);
   }
 
-  async patchUserSetting(input: PatchUserSettingReq, ctx: Context): Promise<Result<unknown>> {
+  async patchUserSetting(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = PatchUserSettingSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -52,7 +47,7 @@ export class SettingController {
     return this.useCases.patchUserSetting(parsed.data, ctx);
   }
 
-  async resetUserSetting(input: ResetUserSettingReq, ctx: Context): Promise<Result<unknown>> {
+  async resetUserSetting(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = ResetUserSettingSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -64,7 +59,7 @@ export class SettingController {
     return this.useCases.resetUserSetting(ctx, parsed.data.category);
   }
 
-  async exportSettings(input: ExportSettingsReq, ctx: Context): Promise<Result<unknown>> {
+  async exportSettings(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = ExportSettingsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -76,7 +71,7 @@ export class SettingController {
     return this.useCases.exportSettings(ctx);
   }
 
-  async importSettings(input: ImportSettingsReq, ctx: Context): Promise<Result<unknown>> {
+  async importSettings(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = ImportSettingsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

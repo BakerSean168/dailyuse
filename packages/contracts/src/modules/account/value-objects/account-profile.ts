@@ -2,8 +2,8 @@
  * 个人资料信息
  */
 
-import type { DomainDate, PersistenceDate } from '@/primitives';
-import type { TransferDate } from '@/primitives';
+import type { DomainDate, PersistenceDate } from '../../../primitives';
+import type { TransferDate } from '../../../primitives';
 
 import type { GenderType } from './gender-type';
 

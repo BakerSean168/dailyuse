@@ -10,9 +10,7 @@
  * - Instance toDTO(): RepositoryClientDTO
  */
 
-import type {
-  RepositoryClientDTO,
-} from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import type { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryId } from '../../domain-shared/value-objects/repository-id';
@@ -156,8 +154,8 @@ export class Repository extends AggregateRoot<RepositoryId> {
   // ================= DTO Conversion =================
   public toDTO(): RepositoryClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: String(this.id) as RepositoryClientDTO['id'],
+      identityId: String(this._props.identityId) as RepositoryClientDTO['identityId'],
       name: this._props.name,
       type: this._props.type,
       path: this._props.path,

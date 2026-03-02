@@ -5,7 +5,7 @@
 
 import type { NotificationChannelType, ChannelStatus } from '../value-objects';
 import type { ChannelError, ChannelErrorDTO, ChannelResponse, ChannelResponseDTO } from '../value-objects';
-import type { TransferDate, DomainDate, NotificationId, NotificationChannelId } from '@/primitives';
+import type { TransferDate, DomainDate, NotificationId, NotificationChannelId } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

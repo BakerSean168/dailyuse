@@ -59,12 +59,8 @@ export class PrismaGoalMapper {
       parentGoalId: row.parentGoalId ?? null,
       sortOrder: row.sortOrder ?? 0,
       reminderConfig: row.reminderConfig ? JSON.parse(row.reminderConfig) : null,
-      keyResults: row.keyResults
-        ? row.keyResults.map(PrismaGoalMapper.mapKeyResult)
-        : null,
-      goalReviews: row.reviews
-        ? row.reviews.map(PrismaGoalMapper.mapGoalReview)
-        : null,
+      keyResults: row.keyResults ? row.keyResults.map(PrismaGoalMapper.mapKeyResult) : null,
+      goalReviews: row.reviews ? row.reviews.map(PrismaGoalMapper.mapGoalReview) : null,
       weightSnapshots: row.keyResultWeightSnapshots
         ? row.keyResultWeightSnapshots.map(PrismaGoalMapper.mapWeightSnapshot)
         : null,
@@ -90,7 +86,7 @@ export class PrismaGoalMapper {
     });
 
     return {
-      id: row.id,
+      id: row.id as KeyResultPersistenceDTO['id'],
       goalId: row.goalId,
       title: row.title,
       description: row.description ?? null,
@@ -109,8 +105,8 @@ export class PrismaGoalMapper {
    */
   static mapGoalReview(row: PrismaGoalReview): GoalReviewPersistenceDTO {
     return {
-      id: row.id,
-      goalId: row.goalId,
+      id: row.id as GoalReviewPersistenceDTO['id'],
+      goalId: row.goalId as GoalReviewPersistenceDTO['goalId'],
       type: row.reviewType,
       rating: row.rating ?? 3,
       summary: row.content,
@@ -131,26 +127,26 @@ export class PrismaGoalMapper {
    */
   static mapWeightSnapshot(row: PrismaKeyResultWeightSnapshot): KeyResultWeightSnapshotDTO {
     return {
-      id: row.id,
-      goalId: row.goalId,
-      keyResultId: row.keyResultId,
+      id: row.id as KeyResultWeightSnapshotDTO['id'],
+      goalId: row.goalId as KeyResultWeightSnapshotDTO['goalId'],
+      keyResultId: row.keyResultId as KeyResultWeightSnapshotDTO['keyResultId'],
       oldWeight: row.oldWeight,
       newWeight: row.newWeight,
       weightDelta: row.weightDelta,
-      snapshotTime: row.snapshotTime,
+      snapshotTime:
+        row.snapshotTime instanceof Date ? row.snapshotTime.getTime() : row.snapshotTime,
       trigger: row.trigger as KeyResultWeightSnapshotDTO['trigger'],
       reason: row.reason ?? null,
-      operatorId: row.operatorId,
-      createdAt: row.createdAt,
+      operatorId: row.operatorId as KeyResultWeightSnapshotDTO['operatorId'],
+      createdAt: row.createdAt instanceof Date ? row.createdAt.getTime() : row.createdAt,
     };
   }
 
   /**
-   * Parse KeyResultPersistenceDTO.progress JSON â†?Prisma columns
+   * Parse KeyResultPersistenceDTO.progress JSON â†’ Prisma columns
    */
   static parseKeyResultProgress(kr: KeyResultPersistenceDTO) {
-    const progress =
-      typeof kr.progress === 'string' ? JSON.parse(kr.progress) : kr.progress;
+    const progress = typeof kr.progress === 'string' ? JSON.parse(kr.progress) : kr.progress;
     return {
       valueType: progress.valueType ?? 'Incremental',
       aggregationMethod: progress.aggregationMethod ?? 'Last',

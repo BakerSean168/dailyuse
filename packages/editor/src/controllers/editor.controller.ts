@@ -31,7 +31,10 @@ export interface EditorUseCases {
   updateWorkspace(id: string, data: UpdateEditorWorkspaceReq): Promise<Result<unknown>>;
   deleteWorkspace(id: string): Promise<Result<unknown>>;
   createDocument(data: CreateDocumentReq, ctx: Context): Promise<Result<unknown>>;
-  listDocuments(params: { workspaceId?: string; folderId?: string }, ctx: Context): Promise<Result<unknown>>;
+  listDocuments(
+    params: { workspaceId?: string; folderId?: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
   getDocument(id: string): Promise<Result<unknown>>;
   updateDocument(id: string, data: UpdateDocumentReq): Promise<Result<unknown>>;
   deleteDocument(id: string): Promise<Result<unknown>>;
@@ -42,7 +45,7 @@ export class EditorController {
 
   // ==================== Workspace Operations ====================
 
-  async createWorkspace(input: CreateEditorWorkspaceReq, ctx: Context): Promise<Result<unknown>> {
+  async createWorkspace(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateEditorWorkspaceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -62,7 +65,7 @@ export class EditorController {
     return this.useCases.getWorkspace(id);
   }
 
-  async updateWorkspace(id: string, input: UpdateEditorWorkspaceReq): Promise<Result<unknown>> {
+  async updateWorkspace(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateEditorWorkspaceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -80,7 +83,7 @@ export class EditorController {
 
   // ==================== Document Operations ====================
 
-  async createDocument(input: CreateDocumentReq, ctx: Context): Promise<Result<unknown>> {
+  async createDocument(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateDocumentSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -92,7 +95,10 @@ export class EditorController {
     return this.useCases.createDocument(parsed.data, ctx);
   }
 
-  async listDocuments(query: { workspaceId?: string; folderId?: string }, ctx: Context): Promise<Result<unknown>> {
+  async listDocuments(
+    query: { workspaceId?: string; folderId?: string },
+    ctx: Context,
+  ): Promise<Result<unknown>> {
     return this.useCases.listDocuments(query, ctx);
   }
 
@@ -100,7 +106,7 @@ export class EditorController {
     return this.useCases.getDocument(id);
   }
 
-  async updateDocument(id: string, input: UpdateDocumentReq): Promise<Result<unknown>> {
+  async updateDocument(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateDocumentSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

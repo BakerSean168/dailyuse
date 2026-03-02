@@ -7,7 +7,7 @@
  */
 
 import type { AuthCredentialId, CredentialType } from '../value-objects';
-import type { TransferDate } from '@/primitives';
+import type { TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

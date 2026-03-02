@@ -10,7 +10,7 @@ import type {
   DomainDate,
   TransferDate,
   PersistenceDate,
-} from '@/primitives';
+} from '../../../primitives';
 import type { TaskTemplateStatus } from '../value-objects/task-template-status';
 import type { TaskInstanceServerDTO } from './task-instance-server';
 import type {

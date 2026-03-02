@@ -5,7 +5,7 @@
 import { faker } from '@faker-js/faker';
 import type { UserSettingClientDTO } from '../modules/setting';
 import { getDefaultPreferences } from '../modules/setting';
-import type { SettingId, IdentityId } from '@/primitives/ids';
+import type { SettingId, IdentityId } from '../primitives/ids';
 
 export function createMockUserSetting(
   overrides: Partial<UserSettingClientDTO> = {},

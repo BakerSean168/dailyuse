@@ -34,7 +34,7 @@ export interface TaskForDAG {
 export function taskTemplateToDAG(template: TaskTemplateClientDTO): TaskForDAG {
   return {
     id: template.id,
-    title: template.title,
+    title: template.name,
     description: template.description,
     status: template.status,
     priorityLevel: mapPriorityScoreToLevel(template.priority),
@@ -54,7 +54,7 @@ export function taskInstanceToDAG(
 ): TaskForDAG {
   return {
     id: instance.id,
-    title: template?.title || `Task ${instance.id.slice(0, 8)}`,
+    title: template?.name || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
     priorityLevel: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
@@ -124,7 +124,7 @@ export function taskInstanceToWidget(
 ): TaskForWidget {
   return {
     id: instance.id,
-    title: template?.title || `Task ${instance.id.slice(0, 8)}`,
+    title: template?.name || `Task ${instance.id.slice(0, 8)}`,
     description: template?.description,
     status: instance.status,
     priority: template ? mapPriorityScoreToLevel(template.priority) : 'MEDIUM',
@@ -132,7 +132,7 @@ export function taskInstanceToWidget(
     scheduledTime: instance.timeConfig?.timePoint ?? null,
     dueDate: template?.dueDate ?? null,
     templateId: instance.templateId,
-    templateTitle: template?.title,
+    templateTitle: template?.name,
     instanceDate: instance.instanceDate,
   };
 }

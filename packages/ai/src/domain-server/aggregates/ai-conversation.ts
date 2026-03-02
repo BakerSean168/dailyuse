@@ -1,8 +1,5 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import type {
-  AIConversationClientDTO,
-  AIConversationServerDTO,
-} from '@dailyuse/contracts/ai';
+import type { AIConversationClientDTO, AIConversationServerDTO } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
 import { AiConversationId } from '../../domain-shared/value-objects/ai-conversation-id';
@@ -167,8 +164,8 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
 
   public toClientDTO(): AIConversationClientDTO {
     return {
-      id: String(this.id),
-      identityId: String(this._props.identityId),
+      id: String(this.id) as AIConversationClientDTO['id'],
+      identityId: String(this._props.identityId) as AIConversationClientDTO['identityId'],
       name: this._props.name,
       status: this._props.status,
       messageCount: this._props.messageCount,

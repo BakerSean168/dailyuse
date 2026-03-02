@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { GoalId, IdentityId, GoalFolderId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { GoalId, IdentityId, GoalFolderId } from '../../../primitives';
 import type { GoalClientDTO } from '../aggregates';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';

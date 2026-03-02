@@ -1,4 +1,4 @@
-import type { AiProviderConfigId } from '@/primitives';
+import type { AiProviderConfigId } from '../../../primitives';
 import type { GeneratedGoalDraft, KeyResultPreview } from './goal-generation-result.dto';
 
 export interface RefineGoalResultDTO {

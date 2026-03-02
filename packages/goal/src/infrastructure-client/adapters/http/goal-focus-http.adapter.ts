@@ -16,6 +16,8 @@ import type {
   GetFocusHistoryRes,
 } from '@dailyuse/contracts/goal';
 
+type GoalId = GetFocusHistoryReq['goalId'];
+
 export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
   private readonly baseUrl = '/goals/focus';
 
@@ -59,7 +61,7 @@ export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
     return ok(result.data.isActive);
   }
 
-  async getTodayHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>> {
+  async getTodayHistory(goalId?: GoalId): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
@@ -73,7 +75,7 @@ export class GoalFocusHttpAdapter implements IGoalFocusApiClient {
     });
   }
 
-  async getWeekHistory(goalId?: string): Promise<Result<GetFocusHistoryRes>> {
+  async getWeekHistory(goalId?: GoalId): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
     const dayOfWeek = now.getDay();
     const startOfWeek = new Date(

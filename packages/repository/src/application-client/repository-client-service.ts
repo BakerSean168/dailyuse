@@ -26,11 +26,13 @@ import type {
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
-} from '@/infrastructure-client/adapters/types';
-import { Repository } from '@/domain-client/aggregates/Repository';
-import { RepositoryId } from '@/domain-shared/value-objects/repository-id';
-import { RepositoryConfig } from '@/domain-shared/value-objects/repository-config';
-import { RepositoryStats } from '@/domain-shared/value-objects/repository-stats';
+  CreateResourceRequest,
+  UpdateResourceRequest,
+} from '../infrastructure-client/adapters/types';
+import { Repository } from '../domain-client/aggregates/Repository';
+import { RepositoryId } from '../domain-shared/value-objects/repository-id';
+import { RepositoryConfig } from '../domain-shared/value-objects/repository-config';
+import { RepositoryStats } from '../domain-shared/value-objects/repository-stats';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 // ===== DTO-to-State Mapper =====
@@ -83,10 +85,12 @@ export class RepositoryClientService {
     return this.repositoryApi.createFolder(request);
   }
 
-  async getFolderContents(folderId: string): Promise<Result<{
-    folders: FolderClientDTO[];
-    resources: ResourceClientDTO[];
-  }>> {
+  async getFolderContents(folderId: string): Promise<
+    Result<{
+      folders: FolderClientDTO[];
+      resources: ResourceClientDTO[];
+    }>
+  > {
     return this.repositoryApi.getFolderContents(folderId);
   }
 
@@ -116,8 +120,26 @@ export class RepositoryClientService {
 
   // ===== Resource Operations =====
 
+  async listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
+    return this.repositoryApi.listResources(repositoryId);
+  }
+
+  async createResource(
+    repositoryId: string,
+    request: CreateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>> {
+    return this.repositoryApi.createResource(repositoryId, request);
+  }
+
   async getResource(id: string): Promise<Result<ResourceClientDTO>> {
     return this.repositoryApi.getResource(id);
+  }
+
+  async updateResource(
+    id: string,
+    request: UpdateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>> {
+    return this.repositoryApi.updateResource(id, request);
   }
 
   async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {

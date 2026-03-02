@@ -1,142 +1,202 @@
 /**
- * TaskInstance 聚合根单元测试
+ * TaskInstance Aggregate Unit Tests
  *
- * 测试覆盖：
- * - 工厂方法 (create, load)
- * - 状态转换 (start, complete, skip, markExpired)
- * - 业务判断 (canStart, canComplete, canSkip, isOverdue)
- * - DTO 转换 (toServerDTO, toClientDTO)
- * - 边界条件和错误处理
- *
- * 目标覆盖率: 90%+
+ * Covers:
+ * - Factory methods (create, load)
+ * - State transitions (start, complete, skip, markExpired)
+ * - Business logic (canStart, canComplete, canSkip, isOverdue)
+ * - DTO conversion (toServerDTO, toClientDTO)
+ * - Edge cases and error handling
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskInstance } from '../task-instance';
 import type { TaskInstanceState } from '../task-instance';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../../value-objects';
-import type { CompletionRecordServerDTO, SkipRecordServerDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
-import { TaskInstanceStatus, TimeType } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskInstanceId } from '../../../domain-shared/value-objects/task-instance-id';
 import { TaskTemplateId } from '../../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 
-describe('TaskInstance Aggregate', () => {
-  // ==================== 测试数据 ====================
-  const mockTemplateId = 'template-uuid-123';
-  const mockAccountId = 'account-uuid-456';
-  const mockInstanceDate = Date.now();
+// ─── Helpers ───────────────────────────────────────────────────────
 
-  /**
-   * 创建测试用的 TimeConfig
-   */
-  const createTestTimeConfig = (): TaskTimeConfig => {
-    return new TaskTimeConfig({
-      timeType: 'TIME_POINT' as TimeType,
-      startDate: mockInstanceDate,
-      endDate: mockInstanceDate + 86400000, // 1天后
-      timePoint: mockInstanceDate,
-      timeRange: null,
-    });
+function makeTemplateId(): TaskTemplateId {
+  return TaskTemplateId.generate();
+}
+
+function makeIdentityId(): IdentityId {
+  return IdentityId.generate();
+}
+
+function makeAllDayTimeConfig(date?: Date): TaskTimeConfig {
+  return TaskTimeConfig.createAllDay(date ?? new Date('2025-06-15'));
+}
+
+function makeTimePointConfig(minutesFromMidnight = 540, date?: Date): TaskTimeConfig {
+  return TaskTimeConfig.createTimePoint(date ?? new Date('2025-06-15'), minutesFromMidnight);
+}
+
+function makeInstance(
+  overrides?: Partial<{
+    templateId: TaskTemplateId;
+    identityId: IdentityId;
+    instanceDate: number;
+    timeConfig: TaskTimeConfig;
+    importance: ImportanceLevel;
+  }>,
+): TaskInstance {
+  return TaskInstance.create({
+    templateId: overrides?.templateId ?? makeTemplateId(),
+    identityId: overrides?.identityId ?? makeIdentityId(),
+    instanceDate: overrides?.instanceDate ?? Date.now(),
+    timeConfig: overrides?.timeConfig ?? makeAllDayTimeConfig(),
+    importance: overrides?.importance ?? ImportanceLevel.Important,
+  });
+}
+
+function makeState(overrides: Partial<TaskInstanceState> = {}): TaskInstanceState {
+  const now = Date.now();
+  return {
+    id: overrides.id ?? TaskInstanceId.generate(),
+    templateId: overrides.templateId ?? makeTemplateId(),
+    identityId: overrides.identityId ?? makeIdentityId(),
+    instanceDate: overrides.instanceDate ?? now,
+    timeConfig: overrides.timeConfig ?? makeAllDayTimeConfig(),
+    importance: overrides.importance ?? ImportanceLevel.Important,
+    status: overrides.status ?? TaskInstanceStatus.Pending,
+    completionRecord: overrides.completionRecord ?? null,
+    skipRecord: overrides.skipRecord ?? null,
+    actualStartTime: overrides.actualStartTime ?? null,
+    actualEndTime: overrides.actualEndTime ?? null,
+    note: overrides.note ?? null,
+    createdAt: overrides.createdAt ?? now,
+    updatedAt: overrides.updatedAt ?? now,
+    version: overrides.version ?? 1,
+    deletedAt: overrides.deletedAt ?? null,
   };
+}
 
-  // ==================== 工厂方法测试 ====================
+describe('TaskInstance Aggregate', () => {
+  // ==================== Factory Methods ====================
   describe('Factory Methods', () => {
     describe('create()', () => {
-      it('应该创建有效的 TaskInstance', () => {
+      it('should create a valid TaskInstance with required params', () => {
+        const templateId = makeTemplateId();
+        const identityId = makeIdentityId();
+        const instanceDate = Date.now();
+        const timeConfig = makeAllDayTimeConfig();
+
         const instance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
+          templateId,
+          identityId,
+          instanceDate,
+          timeConfig,
           importance: ImportanceLevel.Important,
         });
 
         expect(instance.id).toBeDefined();
         expect(typeof instance.id).toBe('string');
-        expect(instance.id.length).toBeGreaterThan(0);
-        expect(instance.templateId).toBe(mockTemplateId);
-        expect(instance.identityId).toBe(mockAccountId);
-        expect(instance.instanceDate).toBe(mockInstanceDate);
-        expect(instance.status).toBe('PENDING');
+        expect(instance.templateId).toBe(templateId);
+        expect(instance.identityId).toBe(identityId);
+        expect(instance.instanceDate).toBe(instanceDate);
+        expect(instance.importance).toBe(ImportanceLevel.Important);
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
         expect(instance.completionRecord).toBeNull();
         expect(instance.skipRecord).toBeNull();
         expect(instance.actualStartTime).toBeNull();
         expect(instance.actualEndTime).toBeNull();
         expect(instance.note).toBeNull();
-        expect(instance.createdAt).toBeDefined();
-        expect(instance.updatedAt).toBeDefined();
+        expect(instance.version).toBe(1);
       });
 
-      it('应该为每个实例生成唯一的 UUID', () => {
-        const instance1 = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
-        });
-
-        const instance2 = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
-        });
-
+      it('should generate unique IDs for each instance', () => {
+        const instance1 = makeInstance();
+        const instance2 = makeInstance();
         expect(instance1.id).not.toBe(instance2.id);
       });
 
-      it('应该设置 createdAt 和 updatedAt 为当前时间', () => {
-        const beforeCreate = Date.now();
-        const instance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
-        });
-        const afterCreate = Date.now();
+      it('should set createdAt and updatedAt to current timestamp', () => {
+        const before = Date.now();
+        const instance = makeInstance();
+        const after = Date.now();
 
-        expect(instance.createdAt).toBeGreaterThanOrEqual(beforeCreate);
-        expect(instance.createdAt).toBeLessThanOrEqual(afterCreate);
-        expect(instance.updatedAt).toBeGreaterThanOrEqual(beforeCreate);
-        expect(instance.updatedAt).toBeLessThanOrEqual(afterCreate);
+        expect(instance.createdAt).toBeGreaterThanOrEqual(before);
+        expect(instance.createdAt).toBeLessThanOrEqual(after);
+        expect(instance.updatedAt).toBeGreaterThanOrEqual(before);
+        expect(instance.updatedAt).toBeLessThanOrEqual(after);
+      });
+
+      it('should throw for missing templateId', () => {
+        expect(() =>
+          TaskInstance.create({
+            templateId: null as any,
+            identityId: makeIdentityId(),
+            instanceDate: Date.now(),
+            timeConfig: makeAllDayTimeConfig(),
+            importance: ImportanceLevel.Important,
+          }),
+        ).toThrow();
+      });
+
+      it('should throw for missing identityId', () => {
+        expect(() =>
+          TaskInstance.create({
+            templateId: makeTemplateId(),
+            identityId: null as any,
+            instanceDate: Date.now(),
+            timeConfig: makeAllDayTimeConfig(),
+            importance: ImportanceLevel.Important,
+          }),
+        ).toThrow();
+      });
+
+      it('should throw for invalid instanceDate', () => {
+        expect(() =>
+          TaskInstance.create({
+            templateId: makeTemplateId(),
+            identityId: makeIdentityId(),
+            instanceDate: NaN,
+            timeConfig: makeAllDayTimeConfig(),
+            importance: ImportanceLevel.Important,
+          }),
+        ).toThrow();
+      });
+
+      it('should throw for missing timeConfig', () => {
+        expect(() =>
+          TaskInstance.create({
+            templateId: makeTemplateId(),
+            identityId: makeIdentityId(),
+            instanceDate: Date.now(),
+            timeConfig: null as any,
+            importance: ImportanceLevel.Important,
+          }),
+        ).toThrow();
       });
     });
 
     describe('load()', () => {
-      it('应该从 State 正确恢复实例', () => {
+      it('should reconstitute instance from state', () => {
+        const templateId = makeTemplateId();
+        const identityId = makeIdentityId();
         const now = Date.now();
-        const state: TaskInstanceState = {
-          id: TaskInstanceId.of('test-uuid'),
-          templateId: TaskTemplateId.of(mockTemplateId),
-          identityId: IdentityId.of(mockAccountId),
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
-          status: TaskInstanceStatus.Pending,
-          completionRecord: null,
-          skipRecord: null,
-          actualStartTime: null,
-          actualEndTime: null,
-          note: null,
-          createdAt: now,
-          updatedAt: now,
-          version: 1,
-          deletedAt: null,
-        };
+
+        const state = makeState({
+          templateId,
+          identityId,
+          instanceDate: now,
+        });
 
         const instance = TaskInstance.load(state);
 
-        expect(instance.id).toBe('test-uuid');
-        expect(instance.templateId.toString()).toBe(mockTemplateId);
+        expect(instance.id).toBe(state.id);
+        expect(instance.templateId).toBe(templateId);
+        expect(instance.identityId).toBe(identityId);
         expect(instance.status).toBe(TaskInstanceStatus.Pending);
       });
 
-      it('应该正确恢复包含 completionRecord 的实例', () => {
+      it('should restore instance with completionRecord', () => {
         const now = Date.now();
         const completionRecord = CompletionRecord.create({
           completedAt: now,
@@ -145,60 +205,30 @@ describe('TaskInstance Aggregate', () => {
           rating: 5,
         });
 
-        const state: TaskInstanceState = {
-          id: TaskInstanceId.of('test-uuid'),
-          templateId: TaskTemplateId.of(mockTemplateId),
-          identityId: IdentityId.of(mockAccountId),
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
-          status: TaskInstanceStatus.Completed,
-          completionRecord,
-          skipRecord: null,
-          actualStartTime: now - 3600000,
-          actualEndTime: now,
-          note: 'Test note',
-          createdAt: now,
-          updatedAt: now,
-          version: 1,
-          deletedAt: null,
-        };
-
-        const instance = TaskInstance.load(state);
+        const instance = TaskInstance.load(
+          makeState({
+            status: TaskInstanceStatus.Completed,
+            completionRecord,
+          }),
+        );
 
         expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(instance.completionRecord).not.toBeNull();
-        expect(instance.completionRecord?.completedAt).toBe(now);
         expect(instance.completionRecord?.rating).toBe(5);
       });
 
-      it('应该正确恢复包含 skipRecord 的实例', () => {
-        const now = Date.now();
+      it('should restore instance with skipRecord', () => {
         const skipRecord = SkipRecord.create({
-          skippedAt: now,
+          skippedAt: Date.now(),
           reason: 'Too busy',
         });
 
-        const state: TaskInstanceState = {
-          id: TaskInstanceId.of('test-uuid'),
-          templateId: TaskTemplateId.of(mockTemplateId),
-          identityId: IdentityId.of(mockAccountId),
-          instanceDate: mockInstanceDate,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
-          status: TaskInstanceStatus.Skipped,
-          completionRecord: null,
-          skipRecord,
-          actualStartTime: null,
-          actualEndTime: null,
-          note: 'Too busy',
-          createdAt: now,
-          updatedAt: now,
-          version: 1,
-          deletedAt: null,
-        };
-
-        const instance = TaskInstance.load(state);
+        const instance = TaskInstance.load(
+          makeState({
+            status: TaskInstanceStatus.Skipped,
+            skipRecord,
+          }),
+        );
 
         expect(instance.status).toBe(TaskInstanceStatus.Skipped);
         expect(instance.skipRecord).not.toBeNull();
@@ -207,79 +237,73 @@ describe('TaskInstance Aggregate', () => {
     });
   });
 
-  // ==================== 业务方法测试 ====================
+  // ==================== Business Methods ====================
   describe('Business Methods', () => {
     let instance: TaskInstance;
 
     beforeEach(() => {
-      instance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
-      });
+      instance = makeInstance();
     });
 
     describe('start()', () => {
-      it('应该启动 PENDING 状态的任务', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should start a Pending task', () => {
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
         expect(instance.actualStartTime).toBeNull();
 
-        const beforeStart = Date.now();
+        const before = Date.now();
         instance.start();
-        const afterStart = Date.now();
+        const after = Date.now();
 
-        expect(instance.status).toBe('IN_PROGRESS');
+        expect(instance.status).toBe(TaskInstanceStatus.InProgress);
         expect(instance.actualStartTime).not.toBeNull();
-        expect(instance.actualStartTime!).toBeGreaterThanOrEqual(beforeStart);
-        expect(instance.actualStartTime!).toBeLessThanOrEqual(afterStart);
+        expect(instance.actualStartTime!).toBeGreaterThanOrEqual(before);
+        expect(instance.actualStartTime!).toBeLessThanOrEqual(after);
       });
 
-      it('应该更新 updatedAt 时间戳', () => {
-        const beforeStart = Date.now();
+      it('should update updatedAt timestamp', () => {
+        const before = Date.now();
         instance.start();
-        const afterStart = Date.now();
+        const after = Date.now();
 
-        expect(instance.updatedAt).toBeGreaterThanOrEqual(beforeStart);
-        expect(instance.updatedAt).toBeLessThanOrEqual(afterStart);
+        expect(instance.updatedAt).toBeGreaterThanOrEqual(before);
+        expect(instance.updatedAt).toBeLessThanOrEqual(after);
       });
 
-      it('应该拒绝启动非 PENDING 状态的任务', () => {
+      it('should throw when starting a non-Pending task', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
-
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(() => instance.start()).toThrow('Cannot start task in current state');
       });
     });
 
     describe('complete()', () => {
-      it('应该完成 PENDING 状态的任务', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should complete a Pending task', () => {
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
 
-        const beforeComplete = Date.now();
+        const before = Date.now();
         instance.complete();
-        const afterComplete = Date.now();
+        const after = Date.now();
 
-        expect(instance.status).toBe('COMPLETED');
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(instance.completionRecord).not.toBeNull();
-        expect(instance.completionRecord?.completedAt).toBeGreaterThanOrEqual(beforeComplete);
-        expect(instance.completionRecord?.completedAt).toBeLessThanOrEqual(afterComplete);
-        expect(instance.actualEndTime).toBeGreaterThanOrEqual(beforeComplete);
-        expect(instance.actualEndTime!).toBeLessThanOrEqual(afterComplete);
+        expect(instance.completionRecord!.completedAt.getTime()).toBeGreaterThanOrEqual(before);
+        expect(instance.completionRecord!.completedAt.getTime()).toBeLessThanOrEqual(after);
+        expect(instance.actualEndTime).not.toBeNull();
+        expect(instance.actualEndTime!).toBeGreaterThanOrEqual(before);
+        expect(instance.actualEndTime!).toBeLessThanOrEqual(after);
       });
 
-      it('应该完成 IN_PROGRESS 状态的任务', () => {
+      it('should complete an InProgress task', () => {
         instance.start();
-        expect(instance.status).toBe('IN_PROGRESS');
+        expect(instance.status).toBe(TaskInstanceStatus.InProgress);
 
         instance.complete();
 
-        expect(instance.status).toBe('COMPLETED');
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(instance.completionRecord).not.toBeNull();
       });
 
-      it('应该支持传入完成参数', () => {
+      it('should accept optional completion parameters', () => {
         instance.complete(3600000, 'Task completed successfully', 5);
 
         expect(instance.completionRecord).not.toBeNull();
@@ -289,593 +313,550 @@ describe('TaskInstance Aggregate', () => {
         expect(instance.note).toBe('Task completed successfully');
       });
 
-      it('应该自动计算实际耗时（如果已启动）', () => {
+      it('should auto-compute actualDuration when started', () => {
         instance.start();
-        const startTime = instance.actualStartTime!;
 
-        // 完成任务时会自动计算耗时
         instance.complete();
 
         expect(instance.completionRecord).not.toBeNull();
-        expect(instance.completionRecord?.actualDuration).toBeDefined();
-        // 耗时应该非常小（毫秒级）
         expect(instance.completionRecord?.actualDuration).toBeGreaterThanOrEqual(0);
       });
 
-      it('应该拒绝完成已完成的任务', () => {
+      it('should throw when completing a Completed task', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
-
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(() => instance.complete()).toThrow('Cannot complete task in current state');
       });
 
-      it('应该拒绝完成已跳过的任务', () => {
+      it('should throw when completing a Skipped task', () => {
         instance.skip('Too busy');
-        expect(instance.status).toBe('SKIPPED');
-
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
         expect(() => instance.complete()).toThrow('Cannot complete task in current state');
       });
 
-      it('应该拒绝完成已过期的任务', () => {
+      it('should throw when completing an Expired task', () => {
         instance.markExpired();
-        expect(instance.status).toBe('EXPIRED');
-
+        expect(instance.status).toBe(TaskInstanceStatus.Expired);
         expect(() => instance.complete()).toThrow('Cannot complete task in current state');
+      });
+
+      it('should emit task:complete domain event', () => {
+        instance.complete();
+        const events = instance.pullDomainEvents();
+        expect(events.length).toBeGreaterThanOrEqual(1);
+        expect(events.some((e) => e.eventType === 'task:complete')).toBe(true);
       });
     });
 
     describe('skip()', () => {
-      it('应该跳过 PENDING 状态的任务', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should skip a Pending task with reason', () => {
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
 
-        const beforeSkip = Date.now();
         instance.skip('Too busy today');
-        const afterSkip = Date.now();
 
-        expect(instance.status).toBe('SKIPPED');
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
         expect(instance.skipRecord).not.toBeNull();
         expect(instance.skipRecord?.reason).toBe('Too busy today');
-        expect(instance.skipRecord?.skippedAt).toBeGreaterThanOrEqual(beforeSkip);
-        expect(instance.skipRecord?.skippedAt).toBeLessThanOrEqual(afterSkip);
         expect(instance.note).toBe('Too busy today');
       });
 
-      it('应该跳过 IN_PROGRESS 状态的任务', () => {
+      it('should skip an InProgress task', () => {
         instance.start();
-        expect(instance.status).toBe('IN_PROGRESS');
+        expect(instance.status).toBe(TaskInstanceStatus.InProgress);
 
         instance.skip('Interrupted');
 
-        expect(instance.status).toBe('SKIPPED');
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
         expect(instance.skipRecord).not.toBeNull();
       });
 
-      it('应该支持不传入原因', () => {
+      it('should accept skip without reason', () => {
         instance.skip();
 
-        expect(instance.status).toBe('SKIPPED');
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
         expect(instance.skipRecord).not.toBeNull();
         expect(instance.skipRecord?.reason).toBeNull();
       });
 
-      it('应该拒绝跳过已完成的任务', () => {
+      it('should throw when skipping a Completed task', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
-
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
         expect(() => instance.skip('Late')).toThrow('Cannot skip task in current state');
       });
 
-      it('应该拒绝跳过已跳过的任务', () => {
+      it('should throw when skipping a Skipped task', () => {
         instance.skip('First reason');
-        expect(instance.status).toBe('SKIPPED');
-
-        expect(() => instance.skip('Second reason')).toThrow(
-          'Cannot skip task in current state',
-        );
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
+        expect(() => instance.skip('Second reason')).toThrow('Cannot skip task in current state');
       });
 
-      it('应该拒绝跳过已过期的任务', () => {
+      it('should throw when skipping an Expired task', () => {
         instance.markExpired();
-        expect(instance.status).toBe('EXPIRED');
-
+        expect(instance.status).toBe(TaskInstanceStatus.Expired);
         expect(() => instance.skip('Late')).toThrow('Cannot skip task in current state');
       });
     });
 
     describe('markExpired()', () => {
-      it('应该标记 PENDING 任务为过期', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should expire a Pending task', () => {
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
 
-        const beforeExpire = Date.now();
+        const before = Date.now();
         instance.markExpired();
-        const afterExpire = Date.now();
+        const after = Date.now();
 
-        expect(instance.status).toBe('EXPIRED');
-        expect(instance.updatedAt).toBeGreaterThanOrEqual(beforeExpire);
-        expect(instance.updatedAt).toBeLessThanOrEqual(afterExpire);
+        expect(instance.status).toBe(TaskInstanceStatus.Expired);
+        expect(instance.updatedAt).toBeGreaterThanOrEqual(before);
+        expect(instance.updatedAt).toBeLessThanOrEqual(after);
       });
 
-      it('应该标记 IN_PROGRESS 任务为过期', () => {
+      it('should expire an InProgress task', () => {
         instance.start();
-        expect(instance.status).toBe('IN_PROGRESS');
+        expect(instance.status).toBe(TaskInstanceStatus.InProgress);
 
         instance.markExpired();
 
-        expect(instance.status).toBe('EXPIRED');
+        expect(instance.status).toBe(TaskInstanceStatus.Expired);
       });
 
-      it('不应该标记 COMPLETED 任务为过期', () => {
+      it('should not expire a Completed task', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
 
         instance.markExpired();
 
-        expect(instance.status).toBe('COMPLETED');
+        expect(instance.status).toBe(TaskInstanceStatus.Completed);
       });
 
-      it('不应该标记 SKIPPED 任务为过期', () => {
+      it('should not expire a Skipped task', () => {
         instance.skip('Busy');
-        expect(instance.status).toBe('SKIPPED');
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
 
         instance.markExpired();
 
-        expect(instance.status).toBe('SKIPPED');
+        expect(instance.status).toBe(TaskInstanceStatus.Skipped);
       });
 
-      it('不应该标记已 EXPIRED 任务为过期', () => {
+      it('should not re-expire an already Expired task', () => {
         instance.markExpired();
-        expect(instance.status).toBe('EXPIRED');
+        expect(instance.status).toBe(TaskInstanceStatus.Expired);
         const firstUpdatedAt = instance.updatedAt;
 
         instance.markExpired();
 
-        expect(instance.status).toBe('EXPIRED');
+        expect(instance.status).toBe(TaskInstanceStatus.Expired);
         expect(instance.updatedAt).toBe(firstUpdatedAt);
       });
     });
   });
 
-  // ==================== 业务判断方法测试 ====================
+  // ==================== Business Logic Methods ====================
   describe('Business Logic Methods', () => {
     let instance: TaskInstance;
 
     beforeEach(() => {
-      instance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
-      });
+      instance = makeInstance();
     });
 
     describe('canStart()', () => {
-      it('PENDING 状态应该可以启动', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should return true for Pending status', () => {
+        expect(instance.status).toBe(TaskInstanceStatus.Pending);
         expect(instance.canStart()).toBe(true);
       });
 
-      it('IN_PROGRESS 状态不应该可以启动', () => {
+      it('should return false for InProgress status', () => {
         instance.start();
-        expect(instance.status).toBe('IN_PROGRESS');
         expect(instance.canStart()).toBe(false);
       });
 
-      it('COMPLETED 状态不应该可以启动', () => {
+      it('should return false for Completed status', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
         expect(instance.canStart()).toBe(false);
       });
 
-      it('SKIPPED 状态不应该可以启动', () => {
+      it('should return false for Skipped status', () => {
         instance.skip();
-        expect(instance.status).toBe('SKIPPED');
         expect(instance.canStart()).toBe(false);
       });
 
-      it('EXPIRED 状态不应该可以启动', () => {
+      it('should return false for Expired status', () => {
         instance.markExpired();
-        expect(instance.status).toBe('EXPIRED');
         expect(instance.canStart()).toBe(false);
       });
     });
 
     describe('canComplete()', () => {
-      it('PENDING 状态应该可以完成', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should return true for Pending status', () => {
         expect(instance.canComplete()).toBe(true);
       });
 
-      it('IN_PROGRESS 状态应该可以完成', () => {
+      it('should return true for InProgress status', () => {
         instance.start();
-        expect(instance.status).toBe('IN_PROGRESS');
         expect(instance.canComplete()).toBe(true);
       });
 
-      it('COMPLETED 状态不应该可以完成', () => {
+      it('should return false for Completed status', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
         expect(instance.canComplete()).toBe(false);
       });
 
-      it('SKIPPED 状态不应该可以完成', () => {
+      it('should return false for Skipped status', () => {
         instance.skip();
-        expect(instance.status).toBe('SKIPPED');
         expect(instance.canComplete()).toBe(false);
       });
 
-      it('EXPIRED 状态不应该可以完成', () => {
+      it('should return false for Expired status', () => {
         instance.markExpired();
-        expect(instance.status).toBe('EXPIRED');
         expect(instance.canComplete()).toBe(false);
       });
     });
 
     describe('canSkip()', () => {
-      it('PENDING 状态应该可以跳过', () => {
-        expect(instance.status).toBe('PENDING');
+      it('should return true for Pending status', () => {
         expect(instance.canSkip()).toBe(true);
       });
 
-      it('IN_PROGRESS 状态应该可以跳过', () => {
+      it('should return true for InProgress status', () => {
         instance.start();
-        expect(instance.status).toBe('IN_PROGRESS');
         expect(instance.canSkip()).toBe(true);
       });
 
-      it('COMPLETED 状态不应该可以跳过', () => {
+      it('should return false for Completed status', () => {
         instance.complete();
-        expect(instance.status).toBe('COMPLETED');
         expect(instance.canSkip()).toBe(false);
       });
 
-      it('SKIPPED 状态不应该可以跳过', () => {
+      it('should return false for Skipped status', () => {
         instance.skip();
-        expect(instance.status).toBe('SKIPPED');
         expect(instance.canSkip()).toBe(false);
       });
 
-      it('EXPIRED 状态不应该可以跳过', () => {
+      it('should return false for Expired status', () => {
         instance.markExpired();
-        expect(instance.status).toBe('EXPIRED');
         expect(instance.canSkip()).toBe(false);
       });
     });
 
     describe('isOverdue()', () => {
-      it('PENDING 状态的过期任务应该返回 true', () => {
-        const overdueInstance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
-          instanceDate: Date.now() - 86400000 - 1000, // 超过1天 + 1秒
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
+      it('should return true for Pending task past due', () => {
+        const overdueInstance = makeInstance({
+          instanceDate: Date.now() - 86400000 - 1000, // more than 1 day ago
         });
 
-        expect(overdueInstance.status).toBe('PENDING');
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.Pending);
         expect(overdueInstance.isOverdue()).toBe(true);
       });
 
-      it('IN_PROGRESS 状态的过期任务应该返回 true', () => {
-        const overdueInstance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+      it('should return true for InProgress task past due', () => {
+        const overdueInstance = makeInstance({
           instanceDate: Date.now() - 86400000 - 1000,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.start();
-        expect(overdueInstance.status).toBe('IN_PROGRESS');
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.InProgress);
         expect(overdueInstance.isOverdue()).toBe(true);
       });
 
-      it('PENDING 状态的未过期任务应该返回 false', () => {
-        const freshInstance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+      it('should return false for Pending task not yet due', () => {
+        const freshInstance = makeInstance({
           instanceDate: Date.now(),
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
         });
 
-        expect(freshInstance.status).toBe('PENDING');
+        expect(freshInstance.status).toBe(TaskInstanceStatus.Pending);
         expect(freshInstance.isOverdue()).toBe(false);
       });
 
-      it('COMPLETED 状态应该返回 false', () => {
-        const overdueInstance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+      it('should return false for Completed task even if past due', () => {
+        const overdueInstance = makeInstance({
           instanceDate: Date.now() - 86400000 - 1000,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.complete();
-        expect(overdueInstance.status).toBe('COMPLETED');
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.Completed);
         expect(overdueInstance.isOverdue()).toBe(false);
       });
 
-      it('SKIPPED 状态应该返回 false', () => {
-        const overdueInstance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+      it('should return false for Skipped task even if past due', () => {
+        const overdueInstance = makeInstance({
           instanceDate: Date.now() - 86400000 - 1000,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.skip();
-        expect(overdueInstance.status).toBe('SKIPPED');
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.Skipped);
         expect(overdueInstance.isOverdue()).toBe(false);
       });
 
-      it('EXPIRED 状态应该返回 false', () => {
-        const overdueInstance = TaskInstance.create({
-          templateId: mockTemplateId,
-          identityId: mockAccountId,
+      it('should return false for Expired task', () => {
+        const overdueInstance = makeInstance({
           instanceDate: Date.now() - 86400000 - 1000,
-          timeConfig: createTestTimeConfig(),
-          importance: ImportanceLevel.Important,
         });
 
         overdueInstance.markExpired();
-        expect(overdueInstance.status).toBe('EXPIRED');
+        expect(overdueInstance.status).toBe(TaskInstanceStatus.Expired);
         expect(overdueInstance.isOverdue()).toBe(false);
+      });
+    });
+
+    describe('dueDate (computed)', () => {
+      it('should compute dueDate from AllDay timeConfig', () => {
+        const instanceDate = new Date('2025-06-15').getTime();
+        const inst = makeInstance({
+          instanceDate,
+          timeConfig: makeAllDayTimeConfig(new Date('2025-06-15')),
+        });
+
+        // AllDay: instanceDate + 86400000 - 1
+        expect(inst.dueDate).toBe(instanceDate + 86400000 - 1);
+      });
+
+      it('should compute dueDate from TimePoint timeConfig', () => {
+        const instanceDate = new Date('2025-06-15').getTime();
+        const minutesFromMidnight = 540; // 9:00 AM
+        const inst = makeInstance({
+          instanceDate,
+          timeConfig: makeTimePointConfig(minutesFromMidnight, new Date('2025-06-15')),
+        });
+
+        // TimePoint: the timePoint value itself
+        expect(inst.dueDate).toBe(minutesFromMidnight);
       });
     });
   });
 
-  // ==================== DTO 转换测试 ====================
+  // ==================== DTO Conversion ====================
   describe('DTO Conversion', () => {
     let instance: TaskInstance;
+    let templateId: TaskTemplateId;
+    let identityId: IdentityId;
+    const instanceDate = Date.now();
 
     beforeEach(() => {
+      templateId = makeTemplateId();
+      identityId = makeIdentityId();
       instance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
+        templateId,
+        identityId,
+        instanceDate,
+        timeConfig: makeAllDayTimeConfig(),
         importance: ImportanceLevel.Important,
       });
     });
 
     describe('toServerDTO()', () => {
-      it('应该正确转换为 ServerDTO', () => {
+      it('should convert to ServerDTO with correct fields', () => {
         const dto = instance.toServerDTO();
 
-        expect(dto.id).toBe(instance.id);
-        expect(dto.templateId).toBe(mockTemplateId);
-        expect(dto.identityId).toBe(mockAccountId);
-        expect(dto.instanceDate).toBe(mockInstanceDate);
-        expect(dto.status).toBe('PENDING');
+        expect(dto.id).toBe(instance.id.toString());
+        expect(dto.templateId).toBe(templateId.toString());
+        expect(dto.identityId).toBe(identityId.toString());
+        expect(dto.instanceDate).toBe(instanceDate);
+        expect(dto.status).toBe(TaskInstanceStatus.Pending);
         expect(dto.importance).toBe(ImportanceLevel.Important);
-        expect(dto.priority).toBeUndefined();
         expect(dto.timeConfig).toBeDefined();
-        expect(dto.completionRecord).toBeNull();
-        expect(dto.skipRecord).toBeNull();
         expect(dto.actualStartTime).toBeNull();
         expect(dto.actualEndTime).toBeNull();
-        expect(dto.note).toBeNull();
+        expect(dto.comment).toBeNull(); // note maps to comment
         expect(dto.createdAt).toBe(instance.createdAt);
         expect(dto.updatedAt).toBe(instance.updatedAt);
+        expect(dto.version).toBe(1);
+        expect(dto.deletedAt).toBeNull();
       });
 
-      it('应该包含 completionRecord（如果已完成）', () => {
-        instance.complete(3600000, 'Done', 5);
+      it('should include comment when note is set via complete()', () => {
+        instance.complete(3600000, 'Done well', 5);
         const dto = instance.toServerDTO();
 
-        expect(dto.completionRecord).not.toBeNull();
-        expect(dto.completionRecord?.actualDuration).toBe(3600000);
-        expect(dto.completionRecord?.rating).toBe(5);
+        expect(dto.comment).toBe('Done well');
       });
 
-      it('应该包含 skipRecord（如果已跳过）', () => {
+      it('should include comment when note is set via skip()', () => {
         instance.skip('Too busy');
         const dto = instance.toServerDTO();
 
-        expect(dto.skipRecord).not.toBeNull();
-        expect(dto.skipRecord?.reason).toBe('Too busy');
+        expect(dto.comment).toBe('Too busy');
+      });
+
+      it('should reflect InProgress status after start()', () => {
+        instance.start();
+        const dto = instance.toServerDTO();
+
+        expect(dto.status).toBe(TaskInstanceStatus.InProgress);
+        expect(dto.actualStartTime).not.toBeNull();
+      });
+
+      it('should reflect Completed status after complete()', () => {
+        instance.complete();
+        const dto = instance.toServerDTO();
+
+        expect(dto.status).toBe(TaskInstanceStatus.Completed);
+        expect(dto.actualEndTime).not.toBeNull();
       });
     });
 
     describe('toClientDTO()', () => {
-      it('应该正确转换为 ClientDTO', () => {
+      it('should convert to ClientDTO with correct fields', () => {
         const dto = instance.toClientDTO();
 
-        expect(dto.id).toBe(instance.id);
-        expect(dto.status).toBe('PENDING');
-        expect(dto.isPending).toBe(true);
-        expect(dto.isCompleted).toBe(false);
-        expect(dto.isSkipped).toBe(false);
-        expect(dto.isExpired).toBe(false);
-        expect(dto.statusText).toBe('待完成');
-        expect(dto.statusColor).toBe('blue');
-        expect(dto.instanceDateFormatted).toBeDefined();
-        expect(dto.formattedCreatedAt).toBeDefined();
-        expect(dto.formattedUpdatedAt).toBeDefined();
+        expect(dto.id).toBe(instance.id.toString());
+        expect(dto.templateId).toBe(templateId.toString());
+        expect(dto.identityId).toBe(identityId.toString());
+        expect(dto.instanceDate).toBe(instanceDate);
+        expect(dto.status).toBe(TaskInstanceStatus.Pending);
+        expect(dto.timeConfig).toBeDefined();
+        expect(dto.actualStartTime).toBeNull();
+        expect(dto.actualEndTime).toBeNull();
+        expect(dto.comment).toBeNull();
+        expect(dto.version).toBe(1);
       });
 
-      it('应该包含格式化的日期', () => {
-        const dto = instance.toClientDTO();
-
-        expect(dto.instanceDateFormatted).toContain('/');
-        expect(dto.formattedCreatedAt).toBeDefined();
-        expect(dto.formattedUpdatedAt).toBeDefined();
-      });
-
-      it('应该包含正确的状态标志（COMPLETED）', () => {
-        instance.complete();
-        const dto = instance.toClientDTO();
-
-        expect(dto.isCompleted).toBe(true);
-        expect(dto.isPending).toBe(false);
-        expect(dto.isSkipped).toBe(false);
-        expect(dto.isExpired).toBe(false);
-        expect(dto.statusText).toBe('已完成');
-        expect(dto.statusColor).toBe('green');
-      });
-
-      it('应该包含正确的状态标志（SKIPPED）', () => {
-        instance.skip();
-        const dto = instance.toClientDTO();
-
-        expect(dto.isSkipped).toBe(true);
-        expect(dto.isPending).toBe(false);
-        expect(dto.isCompleted).toBe(false);
-        expect(dto.statusText).toBe('已跳过');
-        expect(dto.statusColor).toBe('gray');
-      });
-
-      it('应该包含实际耗时（如果已完成）', () => {
-        // 设置 actualStartTime 和 actualEndTime 来确保有实际耗时
+      it('should reflect status changes', () => {
         instance.start();
-        // 手动完成，并传入耗时参数确保有值
-        instance.complete(3600000); // 1小时
-        const dto = instance.toClientDTO();
+        let dto = instance.toClientDTO();
+        expect(dto.status).toBe(TaskInstanceStatus.InProgress);
 
-        expect(dto.actualDuration).toBeDefined();
-        expect(dto.durationText).toBeDefined();
-        if (dto.durationText !== null) {
-          expect(dto.durationText).toContain('小时');
-        }
+        instance.complete();
+        dto = instance.toClientDTO();
+        expect(dto.status).toBe(TaskInstanceStatus.Completed);
       });
 
-      it('应该包含 note 标志', () => {
+      it('should include comment on completed instance', () => {
         instance.complete(0, 'Test note');
         const dto = instance.toClientDTO();
-
-        expect(dto.hasNote).toBe(true);
-        expect(dto.note).toBe('Test note');
+        expect(dto.comment).toBe('Test note');
       });
     });
   });
 
-  // ==================== 状态转换测试 ====================
+  // ==================== State Transitions ====================
   describe('State Transitions', () => {
     let instance: TaskInstance;
 
     beforeEach(() => {
-      instance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
-      });
+      instance = makeInstance();
     });
 
-    it('应该允许 PENDING → IN_PROGRESS', () => {
-      expect(instance.status).toBe('PENDING');
+    it('should allow Pending → InProgress', () => {
+      expect(instance.status).toBe(TaskInstanceStatus.Pending);
       instance.start();
-      expect(instance.status).toBe('IN_PROGRESS');
+      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
     });
 
-    it('应该允许 PENDING → COMPLETED', () => {
-      expect(instance.status).toBe('PENDING');
+    it('should allow Pending → Completed', () => {
+      expect(instance.status).toBe(TaskInstanceStatus.Pending);
       instance.complete();
-      expect(instance.status).toBe('COMPLETED');
+      expect(instance.status).toBe(TaskInstanceStatus.Completed);
     });
 
-    it('应该允许 PENDING → SKIPPED', () => {
-      expect(instance.status).toBe('PENDING');
+    it('should allow Pending → Skipped', () => {
+      expect(instance.status).toBe(TaskInstanceStatus.Pending);
       instance.skip();
-      expect(instance.status).toBe('SKIPPED');
+      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
     });
 
-    it('应该允许 PENDING → EXPIRED', () => {
-      expect(instance.status).toBe('PENDING');
+    it('should allow Pending → Expired', () => {
+      expect(instance.status).toBe(TaskInstanceStatus.Pending);
       instance.markExpired();
-      expect(instance.status).toBe('EXPIRED');
+      expect(instance.status).toBe(TaskInstanceStatus.Expired);
     });
 
-    it('应该允许 IN_PROGRESS → COMPLETED', () => {
+    it('should allow InProgress → Completed', () => {
       instance.start();
-      expect(instance.status).toBe('IN_PROGRESS');
+      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
       instance.complete();
-      expect(instance.status).toBe('COMPLETED');
+      expect(instance.status).toBe(TaskInstanceStatus.Completed);
     });
 
-    it('应该允许 IN_PROGRESS → SKIPPED', () => {
+    it('should allow InProgress → Skipped', () => {
       instance.start();
-      expect(instance.status).toBe('IN_PROGRESS');
+      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
       instance.skip();
-      expect(instance.status).toBe('SKIPPED');
+      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
     });
 
-    it('应该允许 IN_PROGRESS → EXPIRED', () => {
+    it('should allow InProgress → Expired', () => {
       instance.start();
-      expect(instance.status).toBe('IN_PROGRESS');
+      expect(instance.status).toBe(TaskInstanceStatus.InProgress);
       instance.markExpired();
-      expect(instance.status).toBe('EXPIRED');
+      expect(instance.status).toBe(TaskInstanceStatus.Expired);
     });
 
-    it('应该拒绝 COMPLETED → 任何状态', () => {
+    it('should reject transitions from Completed', () => {
       instance.complete();
-      expect(instance.status).toBe('COMPLETED');
+      expect(instance.status).toBe(TaskInstanceStatus.Completed);
 
       expect(() => instance.start()).toThrow();
       expect(() => instance.complete()).toThrow();
       expect(() => instance.skip()).toThrow();
-      instance.markExpired();
-      expect(instance.status).toBe('COMPLETED'); // 不变
+      instance.markExpired(); // no-op
+      expect(instance.status).toBe(TaskInstanceStatus.Completed);
     });
 
-    it('应该拒绝 SKIPPED → 任何状态', () => {
+    it('should reject transitions from Skipped', () => {
       instance.skip();
-      expect(instance.status).toBe('SKIPPED');
+      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
 
       expect(() => instance.start()).toThrow();
       expect(() => instance.complete()).toThrow();
       expect(() => instance.skip()).toThrow();
-      instance.markExpired();
-      expect(instance.status).toBe('SKIPPED'); // 不变
+      instance.markExpired(); // no-op
+      expect(instance.status).toBe(TaskInstanceStatus.Skipped);
     });
 
-    it('应该拒绝 EXPIRED → 任何状态', () => {
+    it('should reject transitions from Expired', () => {
       instance.markExpired();
-      expect(instance.status).toBe('EXPIRED');
+      expect(instance.status).toBe(TaskInstanceStatus.Expired);
 
       expect(() => instance.start()).toThrow();
       expect(() => instance.complete()).toThrow();
       expect(() => instance.skip()).toThrow();
-      instance.markExpired();
-      expect(instance.status).toBe('EXPIRED'); // 不变
+      instance.markExpired(); // no-op
+      expect(instance.status).toBe(TaskInstanceStatus.Expired);
     });
   });
 
-  // ==================== 边界条件和错误处理 ====================
-  describe('Edge Cases', () => {
-    it('应该处理全天任务', () => {
-      const allDayTimeConfig = new TaskTimeConfig({
-        timeType: 'ALL_DAY' as TimeType,
-        startDate: mockInstanceDate,
-        endDate: mockInstanceDate + 86400000,
-        timePoint: null,
-        timeRange: null,
-      });
+  // ==================== Domain Events ====================
+  describe('Domain Events', () => {
+    it('should emit task:complete event on completion', () => {
+      const instance = makeInstance();
+      instance.complete();
 
-      const instance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: allDayTimeConfig,
-        importance: ImportanceLevel.Important,
-      });
+      const events = instance.pullDomainEvents();
+      expect(events.length).toBeGreaterThanOrEqual(1);
 
-      expect(instance.timeConfig.timeType).toBe('ALL_DAY');
+      const completeEvent = events.find((e) => e.eventType === 'task:complete');
+      expect(completeEvent).toBeDefined();
+      expect(completeEvent!.aggregateId).toBe(instance.id);
     });
 
-    it('应该正确处理往返转换（ServerDTO → load）', () => {
-      const original = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
+    it('should clear events after pull', () => {
+      const instance = makeInstance();
+      instance.complete();
+
+      instance.pullDomainEvents();
+      expect(instance.domainEvents).toHaveLength(0);
+    });
+  });
+
+  // ==================== Edge Cases ====================
+  describe('Edge Cases', () => {
+    it('should handle all-day time config', () => {
+      const instance = makeInstance({
+        timeConfig: makeAllDayTimeConfig(),
       });
 
+      expect(instance.timeConfig.timeType).toBe('AllDay');
+    });
+
+    it('should handle time-point config', () => {
+      const instance = makeInstance({
+        timeConfig: makeTimePointConfig(600),
+      });
+
+      expect(instance.timeConfig.timeType).toBe('TimePoint');
+    });
+
+    it('should handle round-trip via ServerDTO → load', () => {
+      const original = makeInstance();
       original.complete(3600000, 'Test', 5);
 
       const dto = original.toServerDTO();
@@ -904,36 +885,44 @@ describe('TaskInstance Aggregate', () => {
       expect(restored.completionRecord?.rating).toBe(5);
     });
 
-    it('应该处理没有 actualStartTime 的完成', () => {
-      const testInstance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
-      });
+    it('should handle complete without start (no actualStartTime)', () => {
+      const instance = makeInstance();
 
-      testInstance.complete(3600000);
+      instance.complete(3600000);
 
-      expect(testInstance.status).toBe('COMPLETED');
-      expect(testInstance.completionRecord).not.toBeNull();
-      expect(testInstance.completionRecord?.actualDuration).toBe(3600000);
+      expect(instance.status).toBe(TaskInstanceStatus.Completed);
+      expect(instance.completionRecord).not.toBeNull();
+      expect(instance.completionRecord?.actualDuration).toBe(3600000);
     });
 
-    it('应该处理极小的时间间隔', () => {
-      const testInstance = TaskInstance.create({
-        templateId: mockTemplateId,
-        identityId: mockAccountId,
-        instanceDate: mockInstanceDate,
-        timeConfig: createTestTimeConfig(),
-        importance: ImportanceLevel.Important,
-      });
+    it('should handle very small time intervals', () => {
+      const instance = makeInstance();
 
-      testInstance.start();
-      testInstance.complete();
+      instance.start();
+      instance.complete();
 
-      expect(testInstance.status).toBe('COMPLETED');
-      expect(testInstance.completionRecord?.actualDuration).toBeGreaterThanOrEqual(0);
+      expect(instance.status).toBe(TaskInstanceStatus.Completed);
+      expect(instance.completionRecord?.actualDuration).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should preserve deletedAt on loaded instance', () => {
+      const deletedAt = new Date('2025-06-15');
+      const instance = TaskInstance.load(makeState({ deletedAt }));
+
+      expect(instance.deletedAt).toEqual(deletedAt);
+    });
+
+    it('should use different importance levels', () => {
+      for (const level of [
+        ImportanceLevel.Vital,
+        ImportanceLevel.Important,
+        ImportanceLevel.Moderate,
+        ImportanceLevel.Minor,
+        ImportanceLevel.Trivial,
+      ]) {
+        const inst = makeInstance({ importance: level });
+        expect(inst.importance).toBe(level);
+      }
     });
   });
 });

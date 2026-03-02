@@ -31,13 +31,13 @@
   },
   "dependencies": {
     "@powersync/common": "^1.47.0",
-    "@prisma/adapter-pg": "7.3.0",
-    "@prisma/client": "^7.0.0",
+    "@prisma/adapter-pg": "7.4.2",
+    "@prisma/client": "^7.4.2",
     "pg": "8.18.0"
   },
   "devDependencies": {
     "dotenv": "^16.4.0",
-    "prisma": "^7.0.0",
+    "prisma": "^7.4.2",
     "tsx": "^4.7.0",
     "typescript": "^5.9.3"
   },

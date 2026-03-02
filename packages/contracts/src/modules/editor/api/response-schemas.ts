@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
-import type { EditorWorkspaceId, DocumentId } from '@/primitives';
+import { brandedId } from '../../../primitives';
+import type { EditorWorkspaceId, DocumentId } from '../../../primitives';
 
 /**
  * Workspace Response Schema

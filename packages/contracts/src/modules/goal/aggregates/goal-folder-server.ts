@@ -3,7 +3,7 @@
  * 目标文件夹聚合根 - 服务端接口
  */
 
-import type { DomainDate, TransferDate, PersistenceDate, GoalFolderId, IdentityId } from '@/primitives';
+import type { DomainDate, TransferDate, PersistenceDate, GoalFolderId, IdentityId } from '../../../primitives';
 import type { FolderType } from '../value-objects/folder-type';
 
 // ============ DTO 定义 ============

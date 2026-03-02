@@ -8,7 +8,7 @@ import type {
   IdentityId,
   TransferDate,
   DomainDate,
-} from '@/primitives';
+} from '../../../primitives';
 import type { ControlMode } from '../value-objects/control-mode';
 import type { ReminderStatus } from '../value-objects/reminder-status';
 import type { GroupStatsClientDTO } from '../value-objects';

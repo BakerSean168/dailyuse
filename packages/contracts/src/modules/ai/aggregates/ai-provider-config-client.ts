@@ -3,7 +3,7 @@
  * 用户自定义 AI 服务提供商配置（客户端视图）
  */
 
-import type { AiProviderConfigId, IdentityId } from '@/primitives';
+import type { AiProviderConfigId, IdentityId } from '../../../primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 
 /**

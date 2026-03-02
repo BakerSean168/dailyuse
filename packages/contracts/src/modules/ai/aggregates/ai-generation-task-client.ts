@@ -3,7 +3,7 @@
  * AI生成任务聚合?- 客户端接?
  */
 
-import type { AiGenerationTaskId, IdentityId, TransferDate, DomainDate } from '@/primitives';
+import type { AiGenerationTaskId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { GenerationTaskType } from '../value-objects/generation-task-type';
 import type { TaskStatus } from '../value-objects/task-status';
 import type { AIGenerationTaskServerDTO } from './ai-generation-task-server';

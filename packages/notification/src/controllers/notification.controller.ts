@@ -44,7 +44,7 @@ export class NotificationController {
 
   // ==================== CRUD Operations ====================
 
-  async create(input: CreateNotificationReq): Promise<Result<unknown>> {
+  async create(input: unknown): Promise<Result<unknown>> {
     const parsed = CreateNotificationSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -72,7 +72,7 @@ export class NotificationController {
     return this.useCases.getNotification(id);
   }
 
-  async update(id: string, input: UpdateNotificationReq): Promise<Result<unknown>> {
+  async update(id: string, input: unknown): Promise<Result<unknown>> {
     const parsed = UpdateNotificationSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -94,7 +94,7 @@ export class NotificationController {
     return this.useCases.markAsRead(id);
   }
 
-  async batchMarkAsRead(input: MarkAsReadBatchReq): Promise<Result<unknown>> {
+  async batchMarkAsRead(input: unknown): Promise<Result<unknown>> {
     const parsed = MarkAsReadBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -106,7 +106,7 @@ export class NotificationController {
     return this.useCases.batchMarkAsRead(parsed.data);
   }
 
-  async batchDelete(input: DeleteNotificationsBatchReq): Promise<Result<unknown>> {
+  async batchDelete(input: unknown): Promise<Result<unknown>> {
     const parsed = DeleteNotificationsBatchSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -118,7 +118,7 @@ export class NotificationController {
     return this.useCases.batchDelete(parsed.data);
   }
 
-  async cleanup(input: CleanupOldNotificationsReq): Promise<Result<unknown>> {
+  async cleanup(input: unknown): Promise<Result<unknown>> {
     const parsed = CleanupOldNotificationsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

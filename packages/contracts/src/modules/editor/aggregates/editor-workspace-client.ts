@@ -3,7 +3,7 @@
  * 编辑器工作区聚合�?- 客户端接�?
  */
 
-import type { EditorWorkspaceId, EditorSessionId, IdentityId, TransferDate, DomainDate } from '@/primitives';
+import type { EditorWorkspaceId, EditorSessionId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { ProjectType } from '../value-objects/project-type';
 
 // 从值对象导入类�?

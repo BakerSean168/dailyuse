@@ -24,8 +24,6 @@ import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
   ReminderTemplateResponseSchema,
-  type CreateReminderTemplateReq,
-  type UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
 import type { ReminderController } from '../../controllers/reminder.controller';
 
@@ -79,14 +77,16 @@ export function registerReminderTemplateRoutes(
       method: 'post',
       path: '/templates',
       summary: '创建提醒模板',
-      request: { body: { content: { 'application/json': { schema: CreateReminderTemplateSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: CreateReminderTemplateSchema } } },
+      },
       responses: {
         201: successResponse(ReminderTemplateResponseSchema, '创建成功'),
         400: errorResponse('参数错误'),
       },
     },
     [auth],
-    (req, ctx) => controller.createTemplate(req.body as CreateReminderTemplateReq, ctx),
+    (req, ctx) => controller.createTemplate(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -127,10 +127,14 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.getUpcomingReminders({
-      limit: parseNumber(req.query?.limit),
-      beforeTime: parseString(req.query?.beforeTime),
-    }, ctx),
+    (req, ctx) =>
+      controller.getUpcomingReminders(
+        {
+          limit: parseNumber(req.query?.limit),
+          beforeTime: parseString(req.query?.beforeTime),
+        },
+        ctx,
+      ),
   );
 
   // GET /templates/:id
@@ -165,7 +169,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body as UpdateReminderTemplateReq),
+    (req) => controller.updateTemplate(req.params!.id, req.body),
   );
 
   // DELETE /templates/:id

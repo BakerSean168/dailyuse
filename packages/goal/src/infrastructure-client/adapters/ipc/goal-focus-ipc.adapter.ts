@@ -16,6 +16,8 @@ import type {
   GetFocusHistoryRes,
 } from '@dailyuse/contracts/goal';
 
+type GoalId = GetFocusHistoryReq['goalId'];
+
 export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
   private readonly channel = 'goal:focus';
 
@@ -23,9 +25,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
 
   // ===== Session Management =====
 
-  async startSession(
-    request: StartFocusReq,
-  ): Promise<Result<FocusSessionClientDTO>> {
+  async startSession(request: StartFocusReq): Promise<Result<FocusSessionClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:start`, request);
   }
 
@@ -37,9 +37,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     return this.ipcClient.invoke(`${this.channel}:resume`);
   }
 
-  async stopSession(
-    notes?: string,
-  ): Promise<Result<FocusSessionClientDTO | null>> {
+  async stopSession(notes?: string): Promise<Result<FocusSessionClientDTO | null>> {
     return this.ipcClient.invoke(`${this.channel}:stop`, { notes });
   }
 
@@ -49,9 +47,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     return this.ipcClient.invoke(`${this.channel}:status`);
   }
 
-  async getHistory(
-    request: GetFocusHistoryReq,
-  ): Promise<Result<GetFocusHistoryRes>> {
+  async getHistory(request: GetFocusHistoryReq): Promise<Result<GetFocusHistoryRes>> {
     return this.ipcClient.invoke(`${this.channel}:history`, request);
   }
 
@@ -63,15 +59,9 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     return ok(result.data.isActive);
   }
 
-  async getTodayHistory(
-    goalId?: string,
-  ): Promise<Result<GetFocusHistoryRes>> {
+  async getTodayHistory(goalId?: GoalId): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
-    const startOfDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-    ).getTime();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
 
     return this.getHistory({
@@ -83,9 +73,7 @@ export class GoalFocusIpcAdapter implements IGoalFocusApiClient {
     });
   }
 
-  async getWeekHistory(
-    goalId?: string,
-  ): Promise<Result<GetFocusHistoryRes>> {
+  async getWeekHistory(goalId?: GoalId): Promise<Result<GetFocusHistoryRes>> {
     const now = new Date();
     const dayOfWeek = now.getDay();
     const startOfWeek = new Date(

@@ -3,11 +3,9 @@
  * 提醒模板聚合根 - 服务端接口
  */
 
-import type { DomainDate, IdentityId, ReminderTemplateId } from '@/primitives';
-import { ImportanceLevel } from '@/shared/value-objects/importance';
-import type {
-  ReminderHistoryServerDTO,
-} from '../entities/reminder-history-server';
+import type { DomainDate, IdentityId, ReminderTemplateId } from '../../../primitives';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
+import type { ReminderHistoryServerDTO } from '../entities/reminder-history-server';
 
 // 从值对象导入类型
 import type {
@@ -89,7 +87,7 @@ export interface ReminderTemplatePersistenceDTO {
   effectivenessScore?: number | null;
   sampleSize?: number;
   lastAnalysisTime?: Date | null;
-  
+
   // Smart Frequency: Frequency Adjustment（扁平化字段）
   originalInterval?: number | null;
   adjustedInterval?: number | null;
@@ -97,9 +95,9 @@ export interface ReminderTemplatePersistenceDTO {
   adjustmentTime?: Date | null;
   isAutoAdjusted?: boolean;
   userConfirmed?: boolean;
-  
+
   smartFrequencyEnabled?: boolean;
-  
+
   version: number;
   createdAt: DomainDate;
   updatedAt: DomainDate;

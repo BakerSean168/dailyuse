@@ -10,10 +10,7 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type {
-  ScheduleTaskClientDTO,
-  ScheduleTaskServerDTO,
-} from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskId } from '../../domain-shared/value-objects/schedule-task-id';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
@@ -749,7 +746,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   public toClientDTO(includeChildren: boolean = false): ScheduleTaskClientDTO {
     return {
       id: this.id,
-      identityId: this._props.identityId,
+      identityId: this._props.identityId as ScheduleTaskClientDTO['identityId'],
       name: this._props.name,
       description: this._props.description,
       sourceModule: this._props.sourceModule,
@@ -812,7 +809,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
         executionCount: 0,
         lastExecutionStatus: null,
         lastExecutionDuration: null,
-        consecutiveFailures: 0
+        consecutiveFailures: 0,
       }),
       retryPolicy: params.retryPolicy || RetryPolicy.createDefault(),
       metadata: params.metadata || TaskMetadata.createDefault(),

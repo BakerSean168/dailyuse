@@ -14,8 +14,8 @@ export class PrismaTaskFolderMapper {
    */
   static toDTO(data: PrismaTaskFolder): TaskFolderServerDTO {
     return {
-      id: data.id,
-      identityId: data.identityId,
+      id: data.id as TaskFolderServerDTO['id'],
+      identityId: data.identityId as TaskFolderServerDTO['identityId'],
       name: data.name,
       color: data.color ?? null,
       icon: data.icon ?? null,
@@ -24,7 +24,9 @@ export class PrismaTaskFolderMapper {
       createdAt: data.createdAt instanceof Date ? data.createdAt.getTime() : data.createdAt,
       updatedAt: data.updatedAt instanceof Date ? data.updatedAt.getTime() : data.updatedAt,
       deletedAt: data.deletedAt
-        ? (data.deletedAt instanceof Date ? data.deletedAt.getTime() : data.deletedAt)
+        ? data.deletedAt instanceof Date
+          ? data.deletedAt.getTime()
+          : data.deletedAt
         : null,
     };
   }

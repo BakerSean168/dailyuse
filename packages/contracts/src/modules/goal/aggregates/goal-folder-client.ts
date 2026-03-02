@@ -3,7 +3,7 @@
  * 目标文件夹聚合根 - 客户端接口
  */
 
-import type { DomainDate, TransferDate, GoalFolderId, IdentityId } from '@/primitives';
+import type { DomainDate, TransferDate, GoalFolderId, IdentityId } from '../../../primitives';
 import type { FolderType } from '../value-objects/folder-type';
 import type { GoalFolderServerDTO } from './goal-folder-server';
 

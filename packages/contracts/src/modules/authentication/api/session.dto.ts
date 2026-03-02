@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { brandedId } from '@/primitives';
+import { brandedId } from '../../../primitives';
 import type { AuthSessionId, IdentityId } from '../value-objects';
 import type { AuthResponseDTO } from '../dtos';
 

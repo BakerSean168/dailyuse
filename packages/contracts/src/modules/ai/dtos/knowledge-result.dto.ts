@@ -2,7 +2,7 @@
  * AI Knowledge Generation DTO
  */
 
-import type { AiProviderConfigId } from '@/primitives';
+import type { AiProviderConfigId } from '../../../primitives';
 
 export interface KnowledgeGenerationResultDTO {
   content: string;

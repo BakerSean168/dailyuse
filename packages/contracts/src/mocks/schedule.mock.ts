@@ -14,7 +14,7 @@
 
 import { faker } from '@faker-js/faker';
 import type { ScheduleTaskClientDTO, ScheduleExecutionClientDTO } from '../modules/schedule';
-import type { ScheduleTaskId, IdentityId } from '@/primitives/ids';
+import type { ScheduleTaskId, IdentityId } from '../primitives/ids';
 
 export function createMockScheduleTask(
   overrides: Partial<ScheduleTaskClientDTO> = {},

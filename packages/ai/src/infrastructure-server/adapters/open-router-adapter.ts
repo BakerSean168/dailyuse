@@ -61,7 +61,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
   private readonly appName: string;
 
   constructor(config: OpenRouterConfig) {
-    super(AIProvider.CUSTOM, config.defaultModel as any);
+    super(AIProvider.Custom, config.defaultModel as any);
 
     this.modelId = config.defaultModel;
     this.timeoutMs = config.timeoutMs ?? 60000;
@@ -96,7 +96,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
-        maxOutputTokens: request.maxTokens,
+        maxTokens: request.maxTokens,
       });
 
       const result = await Promise.race([generationPromise, timeoutPromise]);
@@ -141,7 +141,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
         temperature: request.temperature ?? 0.7,
-        maxOutputTokens: request.maxTokens,
+        maxTokens: request.maxTokens,
       });
 
       let fullText = '';
@@ -188,7 +188,7 @@ export class OpenRouterAdapter extends BaseAIAdapter {
       const result = await generateText({
         model: this.openai.chat(this.modelId),
         prompt: 'Say OK',
-        maxOutputTokens: 10,
+        maxTokens: 10,
       });
       return result.text.length > 0;
     } catch {

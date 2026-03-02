@@ -30,3 +30,7 @@ export { default as AIKnowledgeGeneratorDialog } from './AIKnowledgeGeneratorDia
 // Dialogs
 export { default as CreateResourceDialog } from './dialogs/CreateResourceDialog.vue';
 export { default as CreateFolderDialog } from './dialogs/CreateFolderDialog.vue';
+export { default as BatchImportDialog } from './BatchImportDialog.vue';
+
+// Workspace components
+export { default as TypedFileTree } from './TypedFileTree.vue';

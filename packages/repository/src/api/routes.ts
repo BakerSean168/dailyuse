@@ -98,10 +98,14 @@ export function registerRepositoryRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listRepositories({
-      status: typeof req.query?.status === 'string' ? req.query.status : undefined,
-      type: typeof req.query?.type === 'string' ? req.query.type : undefined,
-    }, ctx),
+    (req, ctx) =>
+      controller.listRepositories(
+        {
+          status: typeof req.query?.status === 'string' ? req.query.status : undefined,
+          type: typeof req.query?.type === 'string' ? req.query.type : undefined,
+        },
+        ctx,
+      ),
   );
 
   // GET /:id — Get repository by ID
@@ -227,10 +231,11 @@ export function registerRepositoryRoutes(
       },
     },
     [auth],
-    (req) => controller.listResources(req.params!.repoId, {
-      folderId: typeof req.query?.folderId === 'string' ? req.query.folderId : undefined,
-      status: typeof req.query?.status === 'string' ? req.query.status : undefined,
-    }),
+    (req) =>
+      controller.listResources(req.params!.repoId, {
+        folderId: typeof req.query?.folderId === 'string' ? req.query.folderId : undefined,
+        status: typeof req.query?.status === 'string' ? req.query.status : undefined,
+      }),
   );
 
   return router;

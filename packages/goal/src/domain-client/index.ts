@@ -24,4 +24,4 @@ export * from './aggregates/index.js';
 export * from './entities/index.js';
 
 // ===== Value Objects (re-export from domain-shared) =====
-export * from '@/domain-shared';
+export * from '../domain-shared';

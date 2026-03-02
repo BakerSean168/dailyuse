@@ -18,7 +18,7 @@ import type { ImportanceLevel } from '../../../shared/index';
 import type {
   NotificationChannelServerDTO,
 } from '../entities/notification-channel-server';
-import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferDate } from '@/primitives';
+import type { IdentityId, NotificationId, PersistenceDate, DomainDate, TransferDate } from '../../../primitives';
 
 // ============ DTO 定义 ============
 

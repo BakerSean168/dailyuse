@@ -32,7 +32,6 @@ export class CreateTaskTemplate {
   async execute(
     request: CreateTaskTemplateReq,
   ): Promise<Result<{ template: TaskTemplateClientDTO; instanceCount: number }>> {
-
     const timeConfig = TaskTimeConfig.fromDTO(request.timeConfig);
     const recurrenceRule = request.recurrenceRule
       ? RecurrenceRule.fromDTO(request.recurrenceRule)
@@ -42,7 +41,7 @@ export class CreateTaskTemplate {
       : undefined;
 
     const template = TaskTemplate.create({
-      identityId: request.identityId,
+      identityId: request.identityId!,
       title: request.name,
       description: request.description ?? undefined,
       taskType: request.taskType,

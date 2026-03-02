@@ -47,6 +47,20 @@ export interface CreateFolderRequest {
   name: string;
 }
 
+export interface CreateResourceRequest {
+  name: string;
+  type: string;
+  mimeType?: string;
+  content?: string;
+  folderId?: string;
+}
+
+export interface UpdateResourceRequest {
+  name?: string;
+  content?: string;
+  metadata?: Record<string, unknown>;
+}
+
 // ============ Port Interface ============
 
 /**
@@ -61,10 +75,12 @@ export interface IRepositoryApiClient {
 
   // ===== Folder Operations =====
   createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>>;
-  getFolderContents(folderId: string): Promise<Result<{
-    folders: FolderClientDTO[];
-    resources: ResourceClientDTO[];
-  }>>;
+  getFolderContents(folderId: string): Promise<
+    Result<{
+      folders: FolderClientDTO[];
+      resources: ResourceClientDTO[];
+    }>
+  >;
   renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>>;
   moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>>;
   deleteFolder(id: string): Promise<Result<void>>;
@@ -76,7 +92,13 @@ export interface IRepositoryApiClient {
   search(request: SearchRequest): Promise<Result<SearchResponse>>;
 
   // ===== Resource Operations =====
+  listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>>;
+  createResource(
+    repositoryId: string,
+    request: CreateResourceRequest,
+  ): Promise<Result<ResourceClientDTO>>;
   getResource(id: string): Promise<Result<ResourceClientDTO>>;
+  updateResource(id: string, request: UpdateResourceRequest): Promise<Result<ResourceClientDTO>>;
   renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>>;
   moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>>;
   deleteResource(id: string): Promise<Result<void>>;

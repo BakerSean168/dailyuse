@@ -3,7 +3,7 @@
  * 编辑器标签实�?- 服务端接�?
  */
 
-import type { EditorTabId, EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate, PersistenceDate } from '@/primitives';
+import type { EditorTabId, EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabClientDTO } from './editor-tab-client';
 
