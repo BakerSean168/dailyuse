@@ -48,11 +48,12 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
       "options": {
-        "passWithNoTests": true,
-        "reportsDirectory": "../../coverage/apps/web"
+        "command": "vitest run --project web"
       }
     },
     "lint": {

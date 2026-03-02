@@ -328,7 +328,7 @@ describe('TaskTemplateController', () => {
 
       const result = await controller.deleteTemplate('tmpl_1');
 
-      expect(result).toBe(expectedResult);
+      expect(result).toEqual(expectedResult);
     });
   });
 

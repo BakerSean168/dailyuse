@@ -14,9 +14,12 @@
       "dependsOn": ["^build", "database:build"]
     },
     "test": {
-      "executor": "@nx/vite:test",
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
       "options": {
-        "reportsDirectory": "../../coverage/packages/authentication"
+        "command": "vitest run --project authentication"
       }
     }
   }

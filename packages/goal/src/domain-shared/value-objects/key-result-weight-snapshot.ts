@@ -15,7 +15,6 @@
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  KeyResultWeightSnapshot as IKeyResultWeightSnapshot,
   KeyResultWeightSnapshotDTO,
   KeyResultWeightSnapshotPersistenceDTO,
   SnapshotTrigger,
@@ -43,12 +42,49 @@ import type {
  * - operatorId: 操作人 ID
  * - createdAt: 创建时间（存储为时间戳）
  */
-export class KeyResultWeightSnapshot
-  extends ValueObject<KeyResultWeightSnapshotDTO>
-  implements IKeyResultWeightSnapshot
-{
-  private constructor(props: KeyResultWeightSnapshotDTO) {
-    super(props);
+export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshotDTO> {
+  constructor(
+    id: KeyResultWeightSnapshotId,
+    goalId: GoalId,
+    keyResultId: KeyResultId,
+    oldWeight: number,
+    newWeight: number,
+    snapshotTime: number,
+    trigger: SnapshotTrigger,
+    operatorId: IdentityId,
+    reason?: string | null,
+    createdAt?: number,
+  );
+  constructor(props: KeyResultWeightSnapshotDTO);
+  constructor(
+    idOrProps: KeyResultWeightSnapshotId | KeyResultWeightSnapshotDTO,
+    goalId?: GoalId,
+    keyResultId?: KeyResultId,
+    oldWeight?: number,
+    newWeight?: number,
+    snapshotTime?: number,
+    trigger?: SnapshotTrigger,
+    operatorId?: IdentityId,
+    reason?: string | null,
+    createdAt?: number,
+  ) {
+    if (typeof idOrProps === 'object' && idOrProps !== null && 'id' in idOrProps) {
+      super(idOrProps);
+    } else {
+      super({
+        id: idOrProps as KeyResultWeightSnapshotId,
+        goalId: goalId!,
+        keyResultId: keyResultId!,
+        oldWeight: oldWeight!,
+        newWeight: newWeight!,
+        weightDelta: newWeight! - oldWeight!,
+        snapshotTime: snapshotTime!,
+        trigger: trigger!,
+        reason: reason ?? null,
+        operatorId: operatorId!,
+        createdAt: createdAt ?? Date.now(),
+      });
+    }
   }
 
   // ================= 工厂方法 1: 标准创建 =================
@@ -76,6 +112,12 @@ export class KeyResultWeightSnapshot
   public static fromPersistenceDTO(
     dto: KeyResultWeightSnapshotPersistenceDTO,
   ): KeyResultWeightSnapshot {
+    const snapshotTimeNum =
+      typeof dto.snapshotTime === 'bigint'
+        ? Number(dto.snapshotTime)
+        : new Date(dto.snapshotTime).getTime();
+    const createdAtNum =
+      typeof dto.createdAt === 'bigint' ? Number(dto.createdAt) : new Date(dto.createdAt).getTime();
     return new KeyResultWeightSnapshot({
       id: dto.id,
       goalId: dto.goalId,
@@ -83,11 +125,11 @@ export class KeyResultWeightSnapshot
       oldWeight: dto.oldWeight,
       newWeight: dto.newWeight,
       weightDelta: dto.weightDelta,
-      snapshotTime: new Date(dto.snapshotTime).getTime(),
+      snapshotTime: snapshotTimeNum,
       trigger: dto.trigger as SnapshotTrigger,
       reason: dto.reason,
       operatorId: dto.operatorId,
-      createdAt: new Date(dto.createdAt).getTime(),
+      createdAt: createdAtNum,
     });
   }
 
@@ -150,10 +192,10 @@ export class KeyResultWeightSnapshot
   }
 
   /**
-   * 返回 DomainDate (Date) 对象
+   * 返回 TransferDate (number) 时间戳
    */
-  public get snapshotTime(): Date {
-    return new Date(this.props.snapshotTime);
+  public get snapshotTime(): number {
+    return this.props.snapshotTime;
   }
 
   public get trigger(): SnapshotTrigger {
@@ -169,10 +211,10 @@ export class KeyResultWeightSnapshot
   }
 
   /**
-   * 返回 DomainDate (Date) 对象
+   * 返回 TransferDate (number) 时间戳
    */
-  public get createdAt(): Date {
-    return new Date(this.props.createdAt);
+  public get createdAt(): number {
+    return this.props.createdAt;
   }
 
   // ================= 计算属性（Rich Logic）=================

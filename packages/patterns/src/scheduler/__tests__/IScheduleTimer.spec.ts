@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { FakeTimer, NodeTimer } from '../IScheduleTimer';
+import { FakeTimer, NodeTimer } from '../schedule-timer';
 
 describe('FakeTimer', () => {
   it('should initialize with current time', () => {

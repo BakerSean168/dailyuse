@@ -33,6 +33,15 @@
       "options": {
         "lintFilePatterns": ["packages/contracts/**/*.{ts,js}"]
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --project contracts"
+      }
     }
   }
 }

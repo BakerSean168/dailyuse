@@ -4,5 +4,15 @@
   "sourceRoot": "packages/assets/src",
   "projectType": "library",
   "tags": ["scope:shared", "type:lib", "type:assets", "layer:shared"],
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vitest run --project assets"
+      }
+    }
+  }
 }

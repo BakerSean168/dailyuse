@@ -23,14 +23,12 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "options": {
-        "command": "vitest --config vitest.config.ts",
-        "cwd": "packages/governance"
-      },
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "inputs": ["default", "^production"],
       "cache": true,
-      "parallelism": true
+      "options": {
+        "command": "vitest run --project governance"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",

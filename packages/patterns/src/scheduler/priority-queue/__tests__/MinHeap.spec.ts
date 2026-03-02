@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MinHeap, type HeapItem } from '../MinHeap';
+import { MinHeap, type HeapItem } from '../min-heap';
 
 describe('MinHeap', () => {
   it('should create an empty heap', () => {
@@ -11,24 +11,24 @@ describe('MinHeap', () => {
 
   it('should insert and extract min element', () => {
     const heap = new MinHeap<HeapItem>();
-    
+
     heap.insert({ taskId: '1', nextRunAt: 100 });
     heap.insert({ taskId: '2', nextRunAt: 50 });
     heap.insert({ taskId: '3', nextRunAt: 150 });
 
     expect(heap.size).toBe(3);
     expect(heap.peek()?.taskId).toBe('2');
-    
+
     const min = heap.extractMin();
     expect(min?.taskId).toBe('2');
     expect(heap.size).toBe(2);
-    
+
     expect(heap.peek()?.taskId).toBe('1');
   });
 
   it('should remove specific element', () => {
     const heap = new MinHeap<HeapItem>();
-    
+
     heap.insert({ taskId: '1', nextRunAt: 100 });
     heap.insert({ taskId: '2', nextRunAt: 50 });
     heap.insert({ taskId: '3', nextRunAt: 150 });
@@ -41,7 +41,7 @@ describe('MinHeap', () => {
 
   it('should update element nextRunAt', () => {
     const heap = new MinHeap<HeapItem>();
-    
+
     heap.insert({ taskId: '1', nextRunAt: 100 });
     heap.insert({ taskId: '2', nextRunAt: 50 });
     heap.insert({ taskId: '3', nextRunAt: 150 });
@@ -65,7 +65,7 @@ describe('MinHeap', () => {
 
   it('should clear heap', () => {
     const heap = new MinHeap<HeapItem>();
-    
+
     heap.insert({ taskId: '1', nextRunAt: 100 });
     heap.insert({ taskId: '2', nextRunAt: 50 });
 

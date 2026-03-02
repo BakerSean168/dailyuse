@@ -23,7 +23,7 @@ export class PrismaWeightSnapshotMapper {
    * matching Prisma DateTime columns directly.
    */
   static toPrisma(snapshot: KeyResultWeightSnapshot) {
-    const dto = snapshot.toPersistenceDTO();
+    const dto = snapshot.toDTO();
     return {
       id: dto.id as string,
       goalId: dto.goalId as string,
@@ -31,11 +31,11 @@ export class PrismaWeightSnapshotMapper {
       oldWeight: dto.oldWeight,
       newWeight: dto.newWeight,
       weightDelta: dto.weightDelta,
-      snapshotTime: dto.snapshotTime,
+      snapshotTime: BigInt(dto.snapshotTime),
       trigger: dto.trigger,
       reason: dto.reason,
       operatorId: dto.operatorId as string,
-      createdAt: dto.createdAt,
+      createdAt: new Date(dto.createdAt),
     };
   }
 

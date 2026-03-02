@@ -1,15 +1,16 @@
 /**
  * Schedule Aggregate - Unit Tests
- * 
+ *
  * Tests for conflict detection domain logic
  * Story 9.1 (EPIC-SCHEDULE-001)
  */
 
 import { Schedule } from '../aggregates/schedule';
+import { ScheduleId } from '../../domain-shared/value-objects/schedule-id';
 
 describe('Schedule Aggregate', () => {
   // ===== Test Data Fixtures =====
-  
+
   const createTestSchedule = (params: {
     id?: string;
     identityId?: string;
@@ -39,7 +40,7 @@ describe('Schedule Aggregate', () => {
         title: 'Team Meeting',
         description: 'Weekly sync',
         startTime: hour(14), // 2:00 PM
-        endTime: hour(15),   // 3:00 PM
+        endTime: hour(15), // 3:00 PM
         priority: 5,
         location: 'Conf Room A',
         attendees: ['user1', 'user2'],
@@ -52,7 +53,7 @@ describe('Schedule Aggregate', () => {
       expect(schedule.description).toBe('Weekly sync');
       expect(schedule.duration).toBe(60); // 1 hour in minutes
       expect(schedule.hasConflict).toBe(false);
-      expect(schedule.conflictingSchedules).toBeNull();
+      expect(schedule.conflictingEntries).toBeNull();
     });
 
     it('should throw error if startTime >= endTime', () => {
@@ -81,8 +82,8 @@ describe('Schedule Aggregate', () => {
       const schedule = Schedule.create({
         identityId: 'acc-123',
         title: 'Long Meeting',
-        startTime: hour(9),  // 9:00 AM
-        endTime: hour(12),   // 12:00 PM
+        startTime: hour(9), // 9:00 AM
+        endTime: hour(12), // 12:00 PM
       });
 
       expect(schedule.duration).toBe(180); // 3 hours = 180 minutes
@@ -91,7 +92,6 @@ describe('Schedule Aggregate', () => {
 
   describe('load()', () => {
     it('should load schedule from state', () => {
-      const { ScheduleId } = require('../../domain-shared/value-objects/schedule-id');
       const dto = {
         id: ScheduleId.of('sched-456'),
         identityId: 'acc-789',
@@ -125,14 +125,14 @@ describe('Schedule Aggregate', () => {
     it('should return no conflicts when schedules do not overlap', () => {
       const schedule1 = createTestSchedule({
         title: 'Morning Meeting',
-        startTime: hour(9),  // 9:00 AM
-        endTime: hour(10),   // 10:00 AM
+        startTime: hour(9), // 9:00 AM
+        endTime: hour(10), // 10:00 AM
       });
 
       const schedule2 = createTestSchedule({
         title: 'Afternoon Meeting',
         startTime: hour(14), // 2:00 PM
-        endTime: hour(15),   // 3:00 PM
+        endTime: hour(15), // 3:00 PM
       });
 
       const result = schedule1.detectConflicts([schedule2]);
@@ -158,52 +158,52 @@ describe('Schedule Aggregate', () => {
     it('should detect single conflict with correct details', () => {
       const schedule1 = createTestSchedule({
         title: 'Meeting A',
-        startTime: hour(14),   // 2:00 PM
-        endTime: hour(15.5),   // 3:30 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15.5), // 3:30 PM
       });
 
       const schedule2 = createTestSchedule({
         title: 'Meeting B',
-        startTime: hour(15),   // 3:00 PM
-        endTime: hour(16),     // 4:00 PM
+        startTime: hour(15), // 3:00 PM
+        endTime: hour(16), // 4:00 PM
       });
 
       const result = schedule1.detectConflicts([schedule2]);
 
       expect(result.hasConflict).toBe(true);
       expect(result.conflicts).toHaveLength(1);
-      
+
       const conflict = result.conflicts[0];
       expect(conflict.scheduleId).toBe(schedule2.id);
       expect(conflict.scheduleTitle).toBe('Meeting B');
-      expect(conflict.overlapStart).toBe(hour(15));  // Overlap starts at 3:00 PM
-      expect(conflict.overlapEnd).toBe(hour(15.5));  // Overlap ends at 3:30 PM
-      expect(conflict.overlapDuration).toBe(30);     // 30 minutes overlap
+      expect(conflict.overlapStart).toBe(hour(15)); // Overlap starts at 3:00 PM
+      expect(conflict.overlapEnd).toBe(hour(15.5)); // Overlap ends at 3:30 PM
+      expect(conflict.overlapDuration).toBe(30); // 30 minutes overlap
     });
 
     it('should detect multiple conflicts', () => {
       const targetSchedule = createTestSchedule({
         title: 'Long Meeting',
-        startTime: hour(14),  // 2:00 PM
-        endTime: hour(17),    // 5:00 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(17), // 5:00 PM
       });
 
       const conflict1 = createTestSchedule({
         title: 'Meeting 1',
         startTime: hour(13),
-        endTime: hour(14.5),  // Overlaps 2:00-2:30 PM
+        endTime: hour(14.5), // Overlaps 2:00-2:30 PM
       });
 
       const conflict2 = createTestSchedule({
         title: 'Meeting 2',
         startTime: hour(15),
-        endTime: hour(16),    // Overlaps 3:00-4:00 PM
+        endTime: hour(16), // Overlaps 3:00-4:00 PM
       });
 
       const conflict3 = createTestSchedule({
         title: 'Meeting 3',
         startTime: hour(16.5),
-        endTime: hour(18),    // Overlaps 4:30-5:00 PM
+        endTime: hour(18), // Overlaps 4:30-5:00 PM
       });
 
       const result = targetSchedule.detectConflicts([conflict1, conflict2, conflict3]);
@@ -257,14 +257,14 @@ describe('Schedule Aggregate', () => {
     it('should NOT overlap when schedules are adjacent (A ends when B starts)', () => {
       const scheduleA = createTestSchedule({
         title: 'Meeting A',
-        startTime: hour(14),  // 2:00 PM
-        endTime: hour(15),    // 3:00 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15), // 3:00 PM
       });
 
       const scheduleB = createTestSchedule({
         title: 'Meeting B',
-        startTime: hour(15),  // 3:00 PM (exactly when A ends)
-        endTime: hour(16),    // 4:00 PM
+        startTime: hour(15), // 3:00 PM (exactly when A ends)
+        endTime: hour(16), // 4:00 PM
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -275,13 +275,13 @@ describe('Schedule Aggregate', () => {
 
     it('should overlap when partial overlap at start', () => {
       const scheduleA = createTestSchedule({
-        startTime: hour(14),   // 2:00 PM
-        endTime: hour(15.5),   // 3:30 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15.5), // 3:30 PM
       });
 
       const scheduleB = createTestSchedule({
-        startTime: hour(15),   // 3:00 PM (starts during A)
-        endTime: hour(16),     // 4:00 PM
+        startTime: hour(15), // 3:00 PM (starts during A)
+        endTime: hour(16), // 4:00 PM
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -292,13 +292,13 @@ describe('Schedule Aggregate', () => {
 
     it('should overlap when partial overlap at end', () => {
       const scheduleA = createTestSchedule({
-        startTime: hour(15),   // 3:00 PM
-        endTime: hour(16),     // 4:00 PM
+        startTime: hour(15), // 3:00 PM
+        endTime: hour(16), // 4:00 PM
       });
 
       const scheduleB = createTestSchedule({
-        startTime: hour(14),   // 2:00 PM
-        endTime: hour(15.5),   // 3:30 PM (ends during A)
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15.5), // 3:30 PM (ends during A)
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -310,14 +310,14 @@ describe('Schedule Aggregate', () => {
     it('should overlap when schedule A completely contains schedule B', () => {
       const scheduleA = createTestSchedule({
         title: 'Long Meeting',
-        startTime: hour(14),  // 2:00 PM
-        endTime: hour(17),    // 5:00 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(17), // 5:00 PM
       });
 
       const scheduleB = createTestSchedule({
         title: 'Short Meeting',
-        startTime: hour(15),  // 3:00 PM (inside A)
-        endTime: hour(16),    // 4:00 PM (inside A)
+        startTime: hour(15), // 3:00 PM (inside A)
+        endTime: hour(16), // 4:00 PM (inside A)
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -329,14 +329,14 @@ describe('Schedule Aggregate', () => {
     it('should overlap when schedule B completely contains schedule A', () => {
       const scheduleA = createTestSchedule({
         title: 'Short Meeting',
-        startTime: hour(15),  // 3:00 PM
-        endTime: hour(16),    // 4:00 PM
+        startTime: hour(15), // 3:00 PM
+        endTime: hour(16), // 4:00 PM
       });
 
       const scheduleB = createTestSchedule({
         title: 'Long Meeting',
-        startTime: hour(14),  // 2:00 PM (contains A)
-        endTime: hour(17),    // 5:00 PM (contains A)
+        startTime: hour(14), // 2:00 PM (contains A)
+        endTime: hour(17), // 5:00 PM (contains A)
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -384,8 +384,8 @@ describe('Schedule Aggregate', () => {
       });
 
       const scheduleB = createTestSchedule({
-        startTime: hour(14),  // Same start
-        endTime: hour(15),    // Same end
+        startTime: hour(14), // Same start
+        endTime: hour(15), // Same end
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -400,13 +400,13 @@ describe('Schedule Aggregate', () => {
   describe('calculateOverlap()', () => {
     it('should calculate correct overlap duration', () => {
       const scheduleA = createTestSchedule({
-        startTime: hour(14),    // 2:00 PM
-        endTime: hour(15.5),    // 3:30 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15.5), // 3:30 PM
       });
 
       const scheduleB = createTestSchedule({
-        startTime: hour(15),    // 3:00 PM
-        endTime: hour(16),      // 4:00 PM
+        startTime: hour(15), // 3:00 PM
+        endTime: hour(16), // 4:00 PM
       });
 
       const result = scheduleA.detectConflicts([scheduleB]);
@@ -437,7 +437,7 @@ describe('Schedule Aggregate', () => {
       });
 
       const scheduleB = createTestSchedule({
-        startTime: hour(15),       // 3:00 PM
+        startTime: hour(15), // 3:00 PM
         endTime: hour(16),
       });
 
@@ -452,8 +452,8 @@ describe('Schedule Aggregate', () => {
   describe('generateSuggestions()', () => {
     it('should suggest moving earlier (before conflict)', () => {
       const targetSchedule = createTestSchedule({
-        startTime: hour(14),   // 2:00 PM
-        endTime: hour(15),     // 3:00 PM (60 min duration)
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15), // 3:00 PM (60 min duration)
       });
 
       const conflictSchedule = createTestSchedule({
@@ -471,13 +471,13 @@ describe('Schedule Aggregate', () => {
 
     it('should suggest moving later (after conflict)', () => {
       const targetSchedule = createTestSchedule({
-        startTime: hour(14),   // 2:00 PM
-        endTime: hour(15),     // 3:00 PM (60 min duration)
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(15), // 3:00 PM (60 min duration)
       });
 
       const conflictSchedule = createTestSchedule({
         startTime: hour(14.5), // 2:30 PM
-        endTime: hour(16),     // 4:00 PM
+        endTime: hour(16), // 4:00 PM
       });
 
       const result = targetSchedule.detectConflicts([conflictSchedule]);
@@ -485,17 +485,17 @@ describe('Schedule Aggregate', () => {
       const moveLaterSuggestion = result.suggestions.find((s) => s.type === 'move_later');
       expect(moveLaterSuggestion).toBeDefined();
       expect(moveLaterSuggestion!.newStartTime).toBe(hour(16)); // Start at 4:00 PM
-      expect(moveLaterSuggestion!.newEndTime).toBe(hour(17));   // End at 5:00 PM (60 min later)
+      expect(moveLaterSuggestion!.newEndTime).toBe(hour(17)); // End at 5:00 PM (60 min later)
     });
 
     it('should suggest shortening when target starts before conflict', () => {
       const targetSchedule = createTestSchedule({
-        startTime: hour(14),   // 2:00 PM
-        endTime: hour(16),     // 4:00 PM
+        startTime: hour(14), // 2:00 PM
+        endTime: hour(16), // 4:00 PM
       });
 
       const conflictSchedule = createTestSchedule({
-        startTime: hour(15),   // 3:00 PM
+        startTime: hour(15), // 3:00 PM
         endTime: hour(17),
       });
 
@@ -504,7 +504,7 @@ describe('Schedule Aggregate', () => {
       const shortenSuggestion = result.suggestions.find((s) => s.type === 'shorten');
       expect(shortenSuggestion).toBeDefined();
       expect(shortenSuggestion!.newStartTime).toBe(hour(14)); // Keep start at 2:00 PM
-      expect(shortenSuggestion!.newEndTime).toBe(hour(15));   // Shorten to end at 3:00 PM
+      expect(shortenSuggestion!.newEndTime).toBe(hour(15)); // Shorten to end at 3:00 PM
     });
 
     it('should handle multiple conflicts with earliest and latest', () => {
@@ -514,13 +514,13 @@ describe('Schedule Aggregate', () => {
       });
 
       const conflict1 = createTestSchedule({
-        startTime: hour(13),   // Earliest
+        startTime: hour(13), // Earliest
         endTime: hour(14.5),
       });
 
       const conflict2 = createTestSchedule({
         startTime: hour(16),
-        endTime: hour(18),     // Latest
+        endTime: hour(18), // Latest
       });
 
       const result = targetSchedule.detectConflicts([conflict1, conflict2]);
@@ -530,7 +530,7 @@ describe('Schedule Aggregate', () => {
 
       // Should suggest before earliest (13:00)
       expect(moveEarlier!.newEndTime).toBe(hour(13));
-      
+
       // Should suggest after latest (18:00)
       expect(moveLater!.newStartTime).toBe(hour(18));
     });
@@ -563,7 +563,7 @@ describe('Schedule Aggregate', () => {
         title: 'Team Standup',
         description: 'Daily sync',
         startTime: hour(9),
-        endTime: hour(9.25),  // 15 minutes
+        endTime: hour(9.25), // 15 minutes
         priority: 3,
         location: 'Slack',
         attendees: ['team@example.com'],
@@ -577,7 +577,7 @@ describe('Schedule Aggregate', () => {
       expect(dto.description).toBe('Daily sync');
       expect(dto.duration).toBe(15);
       expect(dto.hasConflict).toBe(false);
-      expect(dto.conflictingSchedules).toBeUndefined();
+      expect(dto.conflictingEntries).toBeUndefined();
       expect(dto.priority).toBe(3);
       expect(dto.location).toBe('Slack');
       expect(dto.attendees).toEqual(['team@example.com']);
@@ -597,7 +597,7 @@ describe('Schedule Aggregate', () => {
       expect(dto.priority).toBeUndefined();
       expect(dto.location).toBeUndefined();
       expect(dto.attendees).toBeUndefined();
-      expect(dto.conflictingSchedules).toBeUndefined();
+      expect(dto.conflictingEntries).toBeUndefined();
     });
   });
 });

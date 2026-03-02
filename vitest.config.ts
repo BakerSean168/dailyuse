@@ -14,9 +14,14 @@ import path from 'node:path';
  * Note: This configuration is now in the main vitest config file, not a separate workspace file.
  * The workspace file format has been deprecated in Vitest 3.x.
  */
-// Shared Vite plugin + resolve aliases for the task package (unit + integration projects)
-const taskResolveAtAlias = {
-  name: 'resolve-at-alias',
+/**
+ * Vite plugin to resolve @/ path alias based on which package the importer is in.
+ *
+ * Maps @/<subpath> to the correct package's src/ directory by checking the
+ * importer's file path. This supports all domain packages that use @/ imports.
+ */
+const domainResolveAtAlias = {
+  name: 'domain-resolve-at-alias',
   async resolveId(
     this: {
       resolve: (id: string, importer: string, opts: Record<string, unknown>) => Promise<unknown>;
@@ -28,14 +33,32 @@ const taskResolveAtAlias = {
     if (!source.startsWith('@/') || !importer) return null;
     const subpath = source.slice(2);
     const packagesDir = path.resolve(__dirname, 'packages');
-    let root: string;
-    if (importer.startsWith(path.resolve(packagesDir, 'contracts') + '/')) {
-      root = path.resolve(packagesDir, 'contracts/src');
-    } else if (importer.startsWith(path.resolve(packagesDir, 'task') + '/')) {
-      root = path.resolve(packagesDir, 'task/src');
-    } else {
-      root = path.resolve(packagesDir, 'task/src');
+
+    // Determine which package the importer belongs to
+    const domainPackages = [
+      'contracts',
+      'task',
+      'setting',
+      'goal',
+      'governance',
+      'reminder',
+      'ai',
+      'authentication',
+      'account',
+      'notification',
+      'editor',
+      'repository',
+      'schedule',
+    ];
+    let root: string | null = null;
+    for (const pkg of domainPackages) {
+      if (importer.startsWith(path.resolve(packagesDir, pkg) + '/')) {
+        root = path.resolve(packagesDir, pkg, 'src');
+        break;
+      }
     }
+    if (!root) return null;
+
     const resolved = path.resolve(root, subpath);
     const result = await this.resolve(resolved, importer, {
       ...options,
@@ -93,22 +116,97 @@ const taskDeepImportResolver = {
   },
 };
 
-const taskResolveAliases = [
+/**
+ * Vite plugin to resolve @dailyuse/contracts subpath imports.
+ *
+ * The contracts package has two kinds of subpaths:
+ *   - Domain modules: ./task, ./goal, ... → src/modules/<name>/index.ts
+ *   - Top-level dirs: ./result, ./shared, ./primitives, ... → src/<name>/index.ts
+ *
+ * This plugin tries src/modules/<subpath>/index.ts first, then falls back to
+ * src/<subpath>/index.ts, handling both cases without needing explicit aliases.
+ *
+ * NOTE: This plugin only runs in the main Vite server process, NOT inside
+ * Vitest fork workers (pool: 'forks'). The actual fork-worker resolution is
+ * handled by `taskResolveAliases` (resolve.alias), which IS serialized to
+ * workers. This plugin is kept as a redundant safety net for the main-thread
+ * transform pipeline.
+ */
+const contractsDeepImportResolver = {
+  name: 'contracts-deep-import-resolver',
+  enforce: 'pre' as const,
+  async resolveId(
+    this: {
+      resolve: (id: string, importer: string, opts: Record<string, unknown>) => Promise<unknown>;
+    },
+    source: string,
+    importer: string | undefined,
+    options: Record<string, unknown>,
+  ) {
+    const match = source.match(/^@dailyuse\/contracts\/(.+)/);
+    if (!match || !importer) return null;
+    const subpath = match[1];
+    const contractsSrc = path.resolve(__dirname, 'packages/contracts/src');
+
+    // Try modules dir first (domain modules like task, goal, etc.)
+    const modulesIndex = path.resolve(contractsSrc, 'modules', subpath, 'index.ts');
+    const modulesResult = await this.resolve(modulesIndex, importer, {
+      ...options,
+      skipSelf: true,
+    });
+    if (modulesResult) return modulesResult;
+
+    // Fallback to top-level dir (result, shared, primitives, response, etc.)
+    const topLevelIndex = path.resolve(contractsSrc, subpath, 'index.ts');
+    const topLevelResult = await this.resolve(topLevelIndex, importer, {
+      ...options,
+      skipSelf: true,
+    });
+    if (topLevelResult) return topLevelResult;
+
+    // Last resort: direct file
+    const directFile = path.resolve(contractsSrc, subpath + '.ts');
+    const directResult = await this.resolve(directFile, importer, {
+      ...options,
+      skipSelf: true,
+    });
+    if (directResult) return directResult;
+
+    return null;
+  },
+};
+
+/**
+ * Shared resolve aliases for ALL domain packages.
+ * Contains aliases for common workspace dependencies used by most test projects.
+ *
+ * IMPORTANT — ordering rules for Vite resolve.alias:
+ *   1. Exact-string aliases are checked first (longest match wins).
+ *   2. Regex aliases are checked in array order; first match wins.
+ *   3. For a package with subpath imports (e.g. @dailyuse/contracts/task),
+ *      the subpath regex MUST come BEFORE the bare-package alias.
+ */
+const contractsSrc = path.resolve(__dirname, './packages/contracts/src');
+
+const domainResolveAliases = [
+  // ── workspace packages (bare imports) ──
   {
     find: '@dailyuse/database',
     replacement: path.resolve(__dirname, './packages/database/src/index.ts'),
+  },
+  // ── @dailyuse/domain-shared (subpath regex BEFORE bare) ──
+  {
+    find: /^@dailyuse\/domain-shared\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/domain-shared/src/$1/index.ts'),
   },
   {
     find: '@dailyuse/domain-shared',
     replacement: path.resolve(__dirname, './packages/domain-shared/src/index.ts'),
   },
+  // ── @dailyuse/utils (subpath regex BEFORE bare) ──
   {
-    find: /^@dailyuse\/contracts\/(.+)/,
-    replacement: path.resolve(__dirname, './packages/contracts/src/modules/$1/index.ts'),
-  },
-  {
-    find: '@dailyuse/contracts',
-    replacement: path.resolve(__dirname, './packages/contracts/src'),
+    find: /^@dailyuse\/utils\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/utils/src/$1/index.ts'),
   },
   {
     find: '@dailyuse/utils',
@@ -118,6 +216,8 @@ const taskResolveAliases = [
     find: '@dailyuse/patterns',
     replacement: path.resolve(__dirname, './packages/patterns/src/index.ts'),
   },
+
+  // ── @dailyuse/test-utils (subpath regex BEFORE bare) ──
   {
     find: /^@dailyuse\/test-utils\/(.+)/,
     replacement: path.resolve(__dirname, './packages/test-utils/src/$1'),
@@ -126,6 +226,45 @@ const taskResolveAliases = [
     find: '@dailyuse/test-utils',
     replacement: path.resolve(__dirname, './packages/test-utils/src/index.ts'),
   },
+
+  // ── @dailyuse/contracts (subpath aliases BEFORE bare) ──
+  // Top-level subpaths (src/<name>/index.ts) — must be explicit because
+  // the catch-all regex below routes to src/modules/.
+  {
+    find: '@dailyuse/contracts/result',
+    replacement: path.resolve(contractsSrc, 'result/index.ts'),
+  },
+  {
+    find: '@dailyuse/contracts/shared',
+    replacement: path.resolve(contractsSrc, 'shared/index.ts'),
+  },
+  {
+    find: '@dailyuse/contracts/primitives',
+    replacement: path.resolve(contractsSrc, 'primitives/index.ts'),
+  },
+  {
+    find: '@dailyuse/contracts/electron',
+    replacement: path.resolve(contractsSrc, 'electron/index.ts'),
+  },
+  {
+    find: '@dailyuse/contracts/mocks',
+    replacement: path.resolve(contractsSrc, 'mocks/index.ts'),
+  },
+  // Catch-all: domain module subpaths → src/modules/<name>/index.ts
+  {
+    find: /^@dailyuse\/contracts\/(.+)/,
+    replacement: path.resolve(contractsSrc, 'modules/$1/index.ts'),
+  },
+  // Bare import
+  {
+    find: '@dailyuse/contracts',
+    replacement: path.resolve(contractsSrc, 'index.ts'),
+  },
+
+  // ── @dailyuse/task (subpath regex BEFORE bare) ──
+  // Included in domainResolveAliases because test-utils fixtures import
+  // @dailyuse/task/domain-shared and @dailyuse/task/domain-server, so ANY
+  // project that uses test-utils transitively needs these aliases.
   {
     find: /^@dailyuse\/task\/(.+)/,
     replacement: path.resolve(__dirname, './packages/task/src/$1/index.ts'),
@@ -135,6 +274,14 @@ const taskResolveAliases = [
     replacement: path.resolve(__dirname, './packages/task/src/index.ts'),
   },
 ];
+
+/**
+ * Task-specific resolve aliases (extends domainResolveAliases).
+ * Currently identical to domainResolveAliases since the task aliases
+ * were moved there for test-utils compatibility. Kept as a separate
+ * variable for future task-only aliases.
+ */
+const taskResolveAliases = [...domainResolveAliases];
 
 export default defineConfig({
   test: {
@@ -238,10 +385,144 @@ export default defineConfig({
           exclude: ['node_modules', 'dist', '.git', '.cache'],
         },
       },
+      // Setting unit tests
+      {
+        extends: true,
+        plugins: [domainResolveAtAlias],
+        resolve: { alias: domainResolveAliases },
+        test: {
+          name: 'setting',
+          root: './packages/setting',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+          testTimeout: 10000,
+        },
+      },
+      // Goal unit tests
+      {
+        extends: true,
+        plugins: [domainResolveAtAlias],
+        resolve: { alias: domainResolveAliases },
+        test: {
+          name: 'goal',
+          root: './packages/goal',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+          testTimeout: 10000,
+        },
+      },
+      // Governance unit tests
+      {
+        extends: true,
+        plugins: [domainResolveAtAlias],
+        resolve: { alias: domainResolveAliases },
+        test: {
+          name: 'governance',
+          root: './packages/governance',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // Reminder unit tests
+      {
+        extends: true,
+        plugins: [domainResolveAtAlias],
+        resolve: {
+          alias: [
+            ...domainResolveAliases,
+            // Reminder cross-package dependencies
+            {
+              find: '@dailyuse/schedule',
+              replacement: path.resolve(__dirname, './packages/schedule/src/index.ts'),
+            },
+            {
+              find: '@dailyuse/http-client',
+              replacement: path.resolve(__dirname, './packages/http-client/src/index.ts'),
+            },
+          ],
+        },
+        test: {
+          name: 'reminder',
+          root: './packages/reminder',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // AI unit tests
+      {
+        extends: true,
+        resolve: { alias: domainResolveAliases },
+        test: {
+          name: 'ai',
+          root: './packages/ai',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // Authentication unit tests
+      {
+        extends: true,
+        test: {
+          name: 'authentication',
+          root: './packages/authentication',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // Schedule unit tests
+      {
+        extends: true,
+        test: {
+          name: 'schedule',
+          root: './packages/schedule',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // Repository unit tests
+      {
+        extends: true,
+        test: {
+          name: 'repository',
+          root: './packages/repository',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // Patterns unit tests
+      {
+        extends: true,
+        test: {
+          name: 'patterns',
+          root: './packages/patterns',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
+      // Assets unit tests
+      {
+        extends: true,
+        test: {
+          name: 'assets',
+          root: './packages/assets',
+          environment: 'node',
+          include: ['src/**/*.{test,spec}.{js,ts}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
+        },
+      },
       // Task unit tests (fast, no DB)
       {
         extends: true,
-        plugins: [taskResolveAtAlias],
+        plugins: [contractsDeepImportResolver, domainResolveAtAlias],
         resolve: { alias: taskResolveAliases },
         test: {
           name: 'task',
@@ -261,7 +542,7 @@ export default defineConfig({
       // Task integration tests (requires Docker PostgreSQL)
       {
         extends: true,
-        plugins: [taskResolveAtAlias],
+        plugins: [contractsDeepImportResolver, domainResolveAtAlias],
         resolve: { alias: taskResolveAliases },
         test: {
           name: 'task-integration',
@@ -314,6 +595,7 @@ export default defineConfig({
             'src/test/setup.ts',
             'prisma/**/*',
             'src/**/*.integration.{test,spec}.{js,ts}',
+            'src/__tests__/smoke/**',
           ],
           testTimeout: 30000,
           // API tests use single fork to avoid database conflicts
@@ -328,7 +610,7 @@ export default defineConfig({
       // API smoke tests (Supertest → Express → real Use Cases → mock Repos)
       {
         extends: true,
-        plugins: [taskDeepImportResolver, taskResolveAtAlias],
+        plugins: [taskDeepImportResolver, domainResolveAtAlias],
         resolve: {
           alias: [
             // Deep path aliases for task controllers/routes (NOT in barrel exports)
@@ -352,10 +634,6 @@ export default defineConfig({
               replacement: path.resolve(__dirname, './packages/task/src/api/routes/index.ts'),
             },
             ...taskResolveAliases,
-            {
-              find: /^@dailyuse\/utils\/(.+)/,
-              replacement: path.resolve(__dirname, './packages/utils/src/$1/index.ts'),
-            },
           ],
         },
         test: {
@@ -365,6 +643,18 @@ export default defineConfig({
           include: ['src/__tests__/smoke/**/*.{test,spec}.{js,ts}'],
           exclude: ['node_modules', 'dist', '.git', '.cache'],
           testTimeout: 15000,
+        },
+      },
+      // app-vue unit tests
+      {
+        extends: true,
+        plugins: [vue()],
+        test: {
+          name: 'app-vue',
+          root: './packages/app-vue',
+          environment: 'happy-dom',
+          include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx,vue}'],
+          exclude: ['node_modules', 'dist', '.git', '.cache'],
         },
       },
       {

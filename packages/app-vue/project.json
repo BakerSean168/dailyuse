@@ -30,9 +30,11 @@
     },
     "test": {
       "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "inputs": ["default", "^production"],
+      "cache": true,
       "options": {
-        "command": "vitest run",
-        "cwd": "packages/app-vue"
+        "command": "vitest run --project app-vue"
       }
     }
   }
