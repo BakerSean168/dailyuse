@@ -1,6 +1,25 @@
+# =============================================================================
+# DailyUse 本地基础设施 Docker Compose
+# =============================================================================
+# 通过 profiles 区分环境，按需启动对应容器：
+#
+#   开发环境（postgres + redis + powersync）:
+#     docker compose --profile dev up -d
+#
+#   测试环境（仅 postgres，tmpfs 内存模式）:
+#     docker compose --profile test up -d
+#
+# 生产环境请使用独立的 docker-compose.prod.yml。
+# =============================================================================
+
 services:
-  # 开发数据库 - PostgreSQL 16
+  # ============================================================
+  # profile: dev
+  # ============================================================
+
+  # 开发数据库 - PostgreSQL 16，持久化存储
   postgres-dev:
+    profiles: [dev]
     image: postgres:16-alpine
     container_name: dailyuse-dev-db
     environment:
@@ -16,36 +35,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     restart: unless-stopped
 
-  # 测试数据库 - PostgreSQL 15 (使用 tmpfs，速度更快)
-  postgres-test:
-    image: postgres:15-alpine
-    container_name: dailyuse-test-db
-    environment:
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_pass
-      POSTGRES_DB: dailyuse_test
-    ports:
-      - '5433:5432'
-    tmpfs:
-      - /var/lib/postgresql/data:rw
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U test_user -d dailyuse_test']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    command:
-      - 'postgres'
-      - '-c'
-      - 'fsync=off'
-      - '-c'
-      - 'synchronous_commit=off'
-      - '-c'
-      - 'full_page_writes=off'
-
-  # Redis - 端口 6384
+  # 开发 Redis - 端口 6384，避免与系统 Redis 冲突
   redis-dev:
+    profiles: [dev]
     image: redis:7-alpine
     container_name: dailyuse-dev-redis
     ports:
@@ -54,14 +49,16 @@ services:
       - redis-dev-data:/data
     command: redis-server --appendonly yes --requirepass dailyuse123
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      test: ['CMD', 'redis-cli', '-a', 'dailyuse123', '--no-auth-warning', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
     restart: unless-stopped
 
-  # PowerSync Service - 实时同步引擎
+  # PowerSync 实时同步引擎（依赖 postgres-dev）
   powersync-dev:
+    profiles: [dev]
     image: journeyapps/powersync-service:latest
     container_name: dailyuse-dev-powersync
     ports:
@@ -73,11 +70,8 @@ services:
       - ./docker/powersync/powersync.yaml:/config/powersync.yaml
     command: ['start', '-c', '/config/powersync.yaml']
     environment:
-      # Source Postgres connection (replication)
       PS_SOURCE_URI: postgresql://dailyuse:dailyuse123@postgres-dev:5432/dailyuse
-      # Storage Postgres connection (sync bucket storage)
       PS_STORAGE_URI: postgresql://dailyuse:dailyuse123@postgres-dev:5432/dailyuse
-      # JWKS public key components (must match API's RSA key pair)
       PS_JWK_N: ${POWERSYNC_PUBLIC_KEY_N:-iPsCAeT3UnpBpzEuLxRxsnj3GCGLp8UQrv5_WGLGR4Q0nw8OX_wmYGb4pGIzcnYsjM_JkmzZZxxtdS_lT6pWcQs9UdZbSxb1XDD_nRjohdrFvFEjGrATte05qm1Aj2VzmJnowh1tBC_QhVpljjQLBhfbQupgB4H-nuD4HKuzCYQ2-lo-zr2zRVQM9MBsuSFgijPHdHdejKqCKje4VIFjz-zxygoUvxtct3Fcloz06wtURLu5qSwHVAKOgwyHz008iSEZdvm7FfK0M931PH8iZKMb_2OIXDgc_vfIcXw5fadGo3qCgb0hFTE5WK3kHYlRxTCKDPCdznsdW_ZwIwXGvQ}
       PS_JWK_E: ${POWERSYNC_PUBLIC_KEY_E:-AQAB}
       PS_JWK_KID: ${POWERSYNC_KEY_ID:-powersync-dev-d90f228f}
@@ -86,8 +80,44 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 20s
     restart: unless-stopped
 
+  # ============================================================
+  # profile: test
+  # ============================================================
+
+  # 测试数据库 - PostgreSQL 15，tmpfs 内存模式，关闭 fsync 提速
+  postgres-test:
+    profiles: [test]
+    image: postgres:15-alpine
+    container_name: dailyuse-test-db
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: dailyuse_test
+    ports:
+      - '5433:5432'
+    tmpfs:
+      - /var/lib/postgresql/data:rw
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d dailyuse_test']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+# =============================================================================
+# 持久化卷（仅 dev 使用；test 用 tmpfs，不需要卷）
+# =============================================================================
 volumes:
   postgres-dev-data:
     name: dailyuse-dev-db-data
