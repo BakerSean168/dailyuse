@@ -3,6 +3,8 @@ import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
+import wasm from 'vite-plugin-wasm';
+import topLevelAwait from 'vite-plugin-top-level-await';
 
 export default defineConfig(({ mode, command }) => {
   // Load env files from workspace root (centralized .env files)
@@ -16,6 +18,12 @@ export default defineConfig(({ mode, command }) => {
   const proxyTarget = env.PROXY_TARGET_URL || env.API_URL || 'http://localhost:3000';
 
   return {
+    worker: {
+      format: 'es',
+    },
+    optimizeDeps: {
+      exclude: ['@powersync/web', '@journeyapps/wa-sqlite']
+    },
     // Keep app root, but read env files from workspace root
     root: __dirname,
     envDir: workspaceRoot,
@@ -50,6 +58,8 @@ export default defineConfig(({ mode, command }) => {
         },
       }),
       tailwindcss(),
+      wasm(),
+      topLevelAwait()
     ].filter(Boolean),
     server: {
       port: 5173,
@@ -96,6 +106,7 @@ export default defineConfig(({ mode, command }) => {
       open: false,
     },
     build: {
+      target: 'esnext',
       sourcemap: isDev,
     },
     test: {

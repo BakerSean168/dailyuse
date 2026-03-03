@@ -31,7 +31,7 @@ export class PrismaWeightSnapshotMapper {
       oldWeight: dto.oldWeight,
       newWeight: dto.newWeight,
       weightDelta: dto.weightDelta,
-      snapshotTime: BigInt(dto.snapshotTime),
+      snapshotTime: new Date(dto.snapshotTime),
       trigger: dto.trigger,
       reason: dto.reason,
       operatorId: dto.operatorId as string,
