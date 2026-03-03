@@ -31,12 +31,6 @@ if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
 }
 
 async function startApp() {
-  // MSW mock in development
-  if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_MOCK_API === 'true') {
-    const { worker } = await import('./mocks/browser');
-    await worker.start({ onUnhandledRequest: 'bypass' });
-  }
-
   const app = createApp(App);
 
   // Pinia
