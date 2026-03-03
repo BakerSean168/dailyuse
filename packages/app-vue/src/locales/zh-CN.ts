@@ -2665,6 +2665,28 @@ export default {
     rootInstanceCard: {
       taskFallback: '任务',
     },
+
+    action: {
+      complete: '标记完成',
+      skip: '跳过',
+      start: '开始',
+    },
+
+    field: {
+      status: '状态',
+    },
+
+    instanceStatus: {
+      pending: '待处理',
+      inprogress: '进行中',
+      completed: '已完成',
+      skipped: '已跳过',
+      expired: '已过期',
+    },
+
+    status: {
+      completed: '已完成',
+    },
   },
 
   // ── Repository module ───────────────────────────────────

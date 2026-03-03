@@ -21,6 +21,7 @@ import { repositoryHandlers } from './repository.handlers';
 import { governanceHandlers } from './governance.handlers';
 import { settingHandlers } from './setting.handlers';
 import { dashboardHandlers } from './dashboard.handlers';
+import { powersyncHandlers } from './powersync.handlers';
 
 export const handlers = [
   ...goalHandlers,
@@ -34,4 +35,5 @@ export const handlers = [
   ...governanceHandlers,
   ...settingHandlers,
   ...dashboardHandlers,
+  ...powersyncHandlers,
 ];

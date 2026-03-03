@@ -2681,6 +2681,28 @@ export default {
     rootInstanceCard: {
       taskFallback: 'Task',
     },
+
+    action: {
+      complete: 'Mark Complete',
+      skip: 'Skip',
+      start: 'Start',
+    },
+
+    field: {
+      status: 'Status',
+    },
+
+    instanceStatus: {
+      pending: 'Pending',
+      inprogress: 'In Progress',
+      completed: 'Completed',
+      skipped: 'Skipped',
+      expired: 'Expired',
+    },
+
+    status: {
+      completed: 'Completed',
+    },
   },
 
   // ── Repository module ───────────────────────────────────

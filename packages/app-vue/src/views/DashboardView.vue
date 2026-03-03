@@ -17,7 +17,6 @@ import {
   Badge,
   Progress,
   Skeleton,
-  Separator,
   Button,
   ScrollArea,
 } from '@dailyuse/ui-vue-shadcn';
@@ -45,6 +44,7 @@ import {
   LegendComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import DailyTodoWidget from '../modules/task/components/widgets/DailyTodoWidget.vue';
 
 use([
   TitleComponent,
@@ -62,7 +62,6 @@ const {
   activityTimeline,
   trendDays,
   goalProgress,
-  taskBoard,
   upcomingSchedule,
   isLoading,
   error,
@@ -168,22 +167,6 @@ const trendChartOption = computed(() => ({
     },
   ],
 }));
-
-// ── Task board data ──
-const taskBoardColumns = computed(() => [
-  { label: '待办', value: taskBoard.value.todo, color: 'bg-zinc-400' },
-  { label: '进行中', value: taskBoard.value.inProgress, color: 'bg-blue-500' },
-  { label: '已完成', value: taskBoard.value.done, color: 'bg-emerald-500' },
-  { label: '逾期', value: taskBoard.value.overdue, color: 'bg-rose-500' },
-]);
-
-const taskBoardTotal = computed(
-  () =>
-    taskBoard.value.todo +
-    taskBoard.value.inProgress +
-    taskBoard.value.done +
-    taskBoard.value.overdue,
-);
 
 // ── Quick actions ──
 const quickActions = [
@@ -428,59 +411,8 @@ function navigateTo(path: string) {
             </CardContent>
           </Card>
 
-          <!-- Task Board Summary -->
-          <Card class="border-border/50">
-            <CardHeader class="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
-              <CardTitle class="text-sm font-medium text-foreground flex items-center gap-2">
-                <ListTodo class="w-4 h-4 text-muted-foreground" />
-                任务看板
-              </CardTitle>
-              <Button variant="ghost" size="sm" class="h-7 text-xs" @click="navigateTo('/tasks')">
-                查看全部
-                <ArrowRight class="w-3 h-3 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent class="px-4 pb-4">
-              <template v-if="isLoading">
-                <Skeleton class="h-[140px] w-full rounded-lg" />
-              </template>
-              <template v-else>
-                <!-- Stacked bar visual -->
-                <div class="mb-4">
-                  <div class="flex h-3 rounded-full overflow-hidden bg-muted">
-                    <div
-                      v-for="col in taskBoardColumns"
-                      :key="col.label"
-                      :class="[col.color]"
-                      :style="{
-                        width: taskBoardTotal > 0 ? `${(col.value / taskBoardTotal) * 100}%` : '0%',
-                      }"
-                      class="transition-all duration-300"
-                    />
-                  </div>
-                </div>
-                <!-- Legend -->
-                <div class="grid grid-cols-2 gap-3">
-                  <div
-                    v-for="col in taskBoardColumns"
-                    :key="col.label"
-                    class="flex items-center gap-2"
-                  >
-                    <span :class="[col.color, 'w-2.5 h-2.5 rounded-full shrink-0']" />
-                    <span class="text-xs text-muted-foreground">{{ col.label }}</span>
-                    <span class="text-xs font-semibold text-foreground ml-auto">{{
-                      col.value
-                    }}</span>
-                  </div>
-                </div>
-                <Separator class="my-3" />
-                <div class="text-center">
-                  <span class="text-xs text-muted-foreground">任务总数</span>
-                  <p class="text-xl font-bold text-foreground">{{ taskBoardTotal }}</p>
-                </div>
-              </template>
-            </CardContent>
-          </Card>
+          <!-- Daily Todo Widget -->
+          <DailyTodoWidget @view-all="navigateTo('/tasks')" />
 
           <!-- Upcoming Schedule -->
           <Card class="border-border/50">

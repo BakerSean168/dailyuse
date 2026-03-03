@@ -9,7 +9,8 @@ export { useScheduleStore } from './stores/scheduleStore';
 export type { ScheduleStoreType } from './stores/scheduleStore';
 
 // Composables
-export { useSchedule } from './composables/useSchedule';
+export { useSchedule, useCalendarView } from './composables';
+export type { CalendarEventItem } from './composables';
 
 // Routes
 export { scheduleRoutes } from './router';

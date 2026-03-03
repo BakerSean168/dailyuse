@@ -6,10 +6,20 @@
  *   - TaskTemplateHttpAdapter: /tasks/templates
  *   - TaskInstanceHttpAdapter: /tasks/templates/instances
  *   - TaskDependencyHttpAdapter: /tasks
+ *
+ * IMPORTANT: Handler order matters in MSW. More-specific paths must come
+ * before catch-all param routes. INSTANCES and TEMPLATES sub-resource handlers
+ * must appear before TEMPLATES/:id, because TEMPLATES/:id would otherwise
+ * match /tasks/templates/instances with id="instances".
  */
 
 import { http, HttpResponse } from 'msw';
-import { createMockTaskTemplate, createMockTaskTemplateList } from '@dailyuse/contracts/mocks';
+import {
+  createMockTaskTemplate,
+  createMockTaskTemplateList,
+  createMockTaskInstance,
+  createMockTaskInstanceList,
+} from '@dailyuse/contracts/mocks';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const TEMPLATES = `${API_BASE}/tasks/templates`;
@@ -17,7 +27,7 @@ const INSTANCES = `${TEMPLATES}/instances`;
 const TASKS = `${API_BASE}/tasks`;
 
 export const taskHandlers = [
-  // ============ Templates ============
+  // ============ Templates (exact paths) ============
 
   http.get(`${TEMPLATES}/by-priority`, () => {
     return HttpResponse.json({
@@ -54,19 +64,88 @@ export const taskHandlers = [
     );
   }),
 
+  // ============ Instances (must be before TEMPLATES/:id) ============
+  // TEMPLATES/:id would match /tasks/templates/instances with id="instances"
+  // so all INSTANCES routes must be registered first.
+
+  http.get(INSTANCES, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: createMockTaskInstanceList(8),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/check-expired`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Checked',
+      data: { count: 0, instances: [] },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/:id/start`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Started',
+      data: createMockTaskInstance({ id: params.id as string, status: 'InProgress' }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/:id/complete`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Completed',
+      data: createMockTaskInstance({ id: params.id as string, status: 'Completed' }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${INSTANCES}/:id/skip`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Skipped',
+      data: createMockTaskInstance({ id: params.id as string, status: 'Skipped' }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(`${INSTANCES}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: createMockTaskInstance({ id: params.id as string }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${INSTANCES}/:id`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Deleted',
+      data: { id: params.id },
+      timestamp: Date.now(),
+    });
+  }),
+
+  // ============ Template sub-resources (must be before TEMPLATES/:id) ============
+
   http.get(`${TEMPLATES}/:id/instances`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: Array.from({ length: 5 }, (_, i) => ({
-        id: `instance-${i}`,
-        templateId: params.id,
-        name: `任务实例 ${i + 1}`,
-        status: ['Completed', 'Pending', 'InProgress'][i % 3],
-        scheduledDate: Date.now() + i * 86400000,
-        createdAt: Date.now() - i * 86400000,
-      })),
+      data: createMockTaskInstanceList(5, { templateId: params.id as string }),
       timestamp: Date.now(),
     });
   }),
@@ -76,12 +155,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Generated',
-      data: Array.from({ length: 3 }, (_, i) => ({
-        id: `gen-instance-${i}`,
-        templateId: params.id,
-        status: 'Pending',
-        scheduledDate: Date.now() + i * 86400000,
-      })),
+      data: createMockTaskInstanceList(3, { templateId: params.id as string }),
       timestamp: Date.now(),
     });
   }),
@@ -136,6 +210,8 @@ export const taskHandlers = [
     });
   }),
 
+  // ============ Template CRUD catch-all (last among TEMPLATES routes) ============
+
   http.get(`${TEMPLATES}/:id`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
@@ -163,90 +239,6 @@ export const taskHandlers = [
       code: 200,
       message: 'Deleted',
       data: { id: params.id },
-      timestamp: Date.now(),
-    });
-  }),
-
-  // ============ Instances ============
-
-  http.get(INSTANCES, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: Array.from({ length: 8 }, (_, i) => ({
-        id: `instance-${i}`,
-        templateId: `template-${i % 3}`,
-        name: `任务实例 ${i + 1}`,
-        status: ['Completed', 'Pending', 'InProgress'][i % 3],
-        scheduledDate: Date.now() + i * 86400000,
-        createdAt: Date.now() - i * 86400000,
-      })),
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(`${INSTANCES}/check-expired`, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Checked',
-      data: { count: 0, instances: [] },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.get(`${INSTANCES}/:id`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: {
-        id: params.id,
-        templateId: 'template-1',
-        status: 'Pending',
-        scheduledDate: Date.now(),
-      },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.delete(`${INSTANCES}/:id`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
-      data: { id: params.id },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(`${INSTANCES}/:id/start`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Started',
-      data: { id: params.id as string, status: 'InProgress', startedAt: Date.now() },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(`${INSTANCES}/:id/complete`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Completed',
-      data: { id: params.id as string, status: 'Completed', completedAt: Date.now() },
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(`${INSTANCES}/:id/skip`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Skipped',
-      data: { id: params.id as string, status: 'Skipped', skippedAt: Date.now() },
       timestamp: Date.now(),
     });
   }),

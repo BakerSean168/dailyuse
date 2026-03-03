@@ -9,3 +9,7 @@ export { default as ScheduleEventList } from './ScheduleEventList.vue';
 export { default as ScheduleFormDemo } from './ScheduleFormDemo.vue';
 export { default as ScheduleTaskDetailDialog } from './ScheduleTaskDetailDialog.vue';
 export { default as WeekViewCalendar } from './WeekViewCalendar.vue';
+export { default as DayViewCalendar } from './DayViewCalendar.vue';
+export { default as MonthViewCalendar } from './MonthViewCalendar.vue';
+export { default as DayDetailSheet } from './DayDetailSheet.vue';
+export { default as DevScheduleDebugPanel } from './DevScheduleDebugPanel.vue';

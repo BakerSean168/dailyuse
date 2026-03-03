@@ -7,12 +7,14 @@ import { defineStore } from 'pinia';
 import type {
   ScheduleTaskClientDTO,
   ScheduleExecutionClientDTO,
+  CalendarEntryClientDTO,
 } from '@dailyuse/contracts/schedule';
 
 export interface ScheduleState {
   tasks: ScheduleTaskClientDTO[];
   executions: ScheduleExecutionClientDTO[];
   currentTask: ScheduleTaskClientDTO | null;
+  calendarEntries: CalendarEntryClientDTO[];
   isLoading: boolean;
   error: string | null;
   pagination: { page: number; pageSize: number; total: number };
@@ -24,6 +26,7 @@ export const useScheduleStore = defineStore('schedule', {
     tasks: [],
     executions: [],
     currentTask: null,
+    calendarEntries: [],
     isLoading: false,
     error: null,
     pagination: { page: 1, pageSize: 20, total: 0 },
@@ -35,7 +38,9 @@ export const useScheduleStore = defineStore('schedule', {
       this.tasks = items;
       if (total !== undefined) this.pagination.total = total;
     },
-    addTask(t: ScheduleTaskClientDTO) { this.tasks.push(t); },
+    addTask(t: ScheduleTaskClientDTO) {
+      this.tasks.push(t);
+    },
     updateTask(t: ScheduleTaskClientDTO) {
       const idx = this.tasks.findIndex((x) => x.id === t.id);
       if (idx >= 0) this.tasks[idx] = t;
@@ -43,16 +48,34 @@ export const useScheduleStore = defineStore('schedule', {
     removeTask(id: string) {
       this.tasks = this.tasks.filter((t) => t.id !== id);
     },
-    setCurrentTask(t: ScheduleTaskClientDTO | null) { this.currentTask = t; },
+    setCurrentTask(t: ScheduleTaskClientDTO | null) {
+      this.currentTask = t;
+    },
 
-    setExecutions(items: ScheduleExecutionClientDTO[]) { this.executions = items; },
+    setExecutions(items: ScheduleExecutionClientDTO[]) {
+      this.executions = items;
+    },
 
-    setLoading(v: boolean) { this.isLoading = v; },
-    setError(e: string | null) { this.error = e; },
-    setPage(p: number) { this.pagination.page = p; },
-    setInitialized(v: boolean) { this.isInitialized = v; },
+    setCalendarEntries(items: CalendarEntryClientDTO[]) {
+      this.calendarEntries = items;
+    },
 
-    reset() { this.$reset(); },
+    setLoading(v: boolean) {
+      this.isLoading = v;
+    },
+    setError(e: string | null) {
+      this.error = e;
+    },
+    setPage(p: number) {
+      this.pagination.page = p;
+    },
+    setInitialized(v: boolean) {
+      this.isInitialized = v;
+    },
+
+    reset() {
+      this.$reset();
+    },
   },
 
   persist: {

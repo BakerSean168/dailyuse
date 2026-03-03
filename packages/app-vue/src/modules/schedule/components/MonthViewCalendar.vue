@@ -73,14 +73,10 @@
               v-for="event in day.events.slice(0, 3)"
               :key="event.id"
               class="text-[10px] leading-tight px-1 py-0.5 rounded truncate cursor-pointer"
-              :class="
-                event.hasConflict
-                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                  : 'bg-primary/10 text-primary'
-              "
+              :class="eventClass(event)"
               @click.stop="$emit('event-click', event)"
             >
-              {{ event.title || event.name }}
+              {{ event.title }}
             </div>
             <div v-if="day.events.length > 3" class="text-[10px] text-muted-foreground px-1">
               +{{ day.events.length - 3 }}
@@ -97,7 +93,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { ChevronLeft, ChevronRight, Plus, Loader2 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEventItem } from '../composables/useCalendarView';
 
 interface CalendarDay {
   key: string;
@@ -105,18 +101,18 @@ interface CalendarDay {
   fullDate: string;
   isCurrentMonth: boolean;
   isToday: boolean;
-  events: ScheduleJobClientDTO[];
+  events: CalendarEventItem[];
 }
 
 interface Props {
-  schedules: ScheduleJobClientDTO[];
+  schedules: CalendarEventItem[];
   loading?: boolean;
 }
 
 interface Emits {
   (e: 'month-change', startDate: Date, endDate: Date): void;
   (e: 'create'): void;
-  (e: 'event-click', event: ScheduleJobClientDTO): void;
+  (e: 'event-click', event: CalendarEventItem): void;
   (e: 'day-click', date: Date): void;
 }
 
@@ -156,13 +152,10 @@ const calendarDays = computed<CalendarDay[]>(() => {
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
 
-  // First day of month
   const firstDay = new Date(year, month, 1);
-  // Day of week (0=Sun) -> adjust for Monday start
   let startWeekDay = firstDay.getDay();
   startWeekDay = startWeekDay === 0 ? 6 : startWeekDay - 1; // Monday=0
 
-  // Last day of month
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
 
@@ -198,7 +191,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
     });
   }
 
-  // Next month fill (to fill 6 rows = 42 cells)
+  // Next month fill (to 42 cells)
   const remaining = 42 - days.length;
   for (let d = 1; d <= remaining; d++) {
     const date = new Date(year, month + 1, d);
@@ -223,11 +216,22 @@ function toDateStr(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function getEventsForDate(dateStr: string): ScheduleJobClientDTO[] {
+function getEventsForDate(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter((event) => {
-    const eventDate = new Date(event.startTime).toISOString().split('T')[0];
-    return eventDate === dateStr;
+    return new Date(event.startTime).toISOString().split('T')[0] === dateStr;
   });
+}
+
+function eventClass(event: CalendarEventItem): string {
+  if (event.hasConflict) {
+    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+  }
+  const map: Record<CalendarEventItem['source'], string> = {
+    schedule: 'bg-primary/10 text-primary',
+    goal: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    task: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  };
+  return map[event.source];
 }
 
 function previousMonth() {

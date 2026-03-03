@@ -68,12 +68,9 @@
             <div
               v-for="event in getEventsForDay(day.date)"
               :key="event.id"
-              class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20"
+              class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20 text-white"
               :style="getEventStyle(event)"
-              :class="{
-                'bg-blue-500 text-white': !event.hasConflict,
-                'bg-orange-500 text-white': event.hasConflict,
-              }"
+              :class="eventBgClass(event)"
               @click="$emit('event-click', event)"
             >
               <div class="text-[10px] opacity-90">{{ formatEventTime(event) }}</div>
@@ -93,17 +90,17 @@ import { Card, CardContent, CardHeader } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { ChevronLeft, ChevronRight, Plus, Loader2, AlertCircle } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEventItem } from '../composables/useCalendarView';
 
 interface Props {
-  schedules: ScheduleJobClientDTO[];
+  schedules: CalendarEventItem[];
   loading?: boolean;
 }
 
 interface Emits {
   (e: 'week-change', startDate: Date, endDate: Date): void;
   (e: 'create'): void;
-  (e: 'event-click', event: ScheduleJobClientDTO): void;
+  (e: 'event-click', event: CalendarEventItem): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -176,22 +173,31 @@ function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, '0')}:00`;
 }
 
-function formatEventTime(event: ScheduleJobClientDTO): string {
-  const start = new Date(event.startTime);
-  const end = new Date(event.endTime);
-  const format = (date: Date) =>
-    `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-  return `${format(start)}-${format(end)}`;
+function formatEventTime(event: CalendarEventItem): string {
+  const fmt = (ts: number) => {
+    const d = new Date(ts);
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  };
+  return `${fmt(event.startTime)}-${fmt(event.endTime)}`;
 }
 
-function getEventsForDay(dateStr: string): ScheduleJobClientDTO[] {
+function getEventsForDay(dateStr: string): CalendarEventItem[] {
   return props.schedules.filter((event) => {
-    const eventDate = new Date(event.startTime).toISOString().split('T')[0];
-    return eventDate === dateStr;
+    return new Date(event.startTime).toISOString().split('T')[0] === dateStr;
   });
 }
 
-function getEventStyle(event: ScheduleJobClientDTO) {
+function eventBgClass(event: CalendarEventItem): string {
+  if (event.hasConflict) return 'bg-orange-500';
+  const map: Record<CalendarEventItem['source'], string> = {
+    schedule: 'bg-primary',
+    goal: 'bg-green-500',
+    task: 'bg-blue-500',
+  };
+  return map[event.source];
+}
+
+function getEventStyle(event: CalendarEventItem) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
 

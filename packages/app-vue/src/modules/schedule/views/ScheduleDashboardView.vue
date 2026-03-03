@@ -39,7 +39,7 @@
       <!-- Day View -->
       <DayViewCalendar
         v-if="activeView === 'day'"
-        :schedules="schedules as any"
+        :schedules="events"
         :loading="isLoading"
         @create="showCreateDialog = true"
         @event-click="handleEventClick"
@@ -49,7 +49,7 @@
       <!-- Week View -->
       <WeekViewCalendar
         v-else-if="activeView === 'week'"
-        :schedules="schedules as any"
+        :schedules="events"
         :loading="isLoading"
         @create="showCreateDialog = true"
         @event-click="handleEventClick"
@@ -59,7 +59,7 @@
       <!-- Month View -->
       <MonthViewCalendar
         v-else-if="activeView === 'month'"
-        :schedules="schedules as any"
+        :schedules="events"
         :loading="isLoading"
         @create="showCreateDialog = true"
         @event-click="handleEventClick"
@@ -68,7 +68,27 @@
       />
     </div>
 
+    <!-- Day Detail Sheet (slides in from right when a month-view date is clicked) -->
+    <DayDetailSheet
+      v-model:open="dayDetailOpen"
+      :date="selectedDate"
+      :events="selectedDayEvents"
+      @event-click="handleEventClick"
+      @view-in-day="switchToDayView"
+      @complete-task="handleCompleteTask"
+    />
+
+    <!-- Task Event Action Panel (bottom sheet for task events in week/day view) -->
+    <TaskEventActionPanel
+      v-model:open="taskPanelOpen"
+      :event="selectedTaskEvent"
+      @complete-task="handleCompleteTask"
+    />
+
     <CreateScheduleDialog v-model="showCreateDialog" @submit="handleCreateSchedule" />
+
+    <!-- DEV debug panel (only rendered in development) -->
+    <DevScheduleDebugPanel :tasks="scheduleTasks" />
   </div>
 </template>
 
@@ -82,13 +102,37 @@ import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import DayViewCalendar from '../components/DayViewCalendar.vue';
 import WeekViewCalendar from '../components/WeekViewCalendar.vue';
 import MonthViewCalendar from '../components/MonthViewCalendar.vue';
+import DayDetailSheet from '../components/DayDetailSheet.vue';
+import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
+import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
+import { useCalendarView } from '../composables/useCalendarView';
 import { useSchedule } from '../composables/useSchedule';
+import { useTask } from '../../task/composables/useTask';
+import type { CalendarEventItem } from '../composables/useCalendarView';
 
 const { t } = useI18n();
-const { tasks: schedules, isLoading, fetchTasks, createTask } = useSchedule();
+const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
+const { tasks: scheduleTasks, createTask } = useSchedule();
+const task = useTask();
 
 const showCreateDialog = ref(false);
 const activeView = ref<'day' | 'week' | 'month'>('week');
+
+// Day detail sheet state
+const dayDetailOpen = ref(false);
+const selectedDate = ref<Date | null>(null);
+
+// Task event action panel state
+const taskPanelOpen = ref(false);
+const selectedTaskEvent = ref<CalendarEventItem | null>(null);
+
+const selectedDayEvents = computed<CalendarEventItem[]>(() => {
+  if (!selectedDate.value) return [];
+  const dateStr = toDateStr(selectedDate.value);
+  return events.value.filter((e) => {
+    return new Date(e.startTime).toISOString().split('T')[0] === dateStr;
+  });
+});
 
 const viewTabs = computed(() => [
   { label: t('schedule.viewTabs.day'), value: 'day' as const, icon: Calendar },
@@ -96,24 +140,53 @@ const viewTabs = computed(() => [
   { label: t('schedule.viewTabs.month'), value: 'month' as const, icon: CalendarRange },
 ]);
 
-function handleEventClick(event: any) {
-  toast.info(t('schedule.weekViewPage.eventToast', { name: event.name || event.title }));
+function toDateStr(d: Date): string {
+  return d.toISOString().split('T')[0];
 }
 
-function handleDayChange(_date: Date) {
-  fetchTasks();
+function handleEventClick(event: CalendarEventItem) {
+  if (event.source === 'task') {
+    selectedTaskEvent.value = event;
+    taskPanelOpen.value = true;
+  } else {
+    toast.info(t('schedule.weekViewPage.eventToast', { name: event.title }));
+  }
 }
 
-function handleWeekChange(_start: Date, _end: Date) {
-  fetchTasks();
+async function handleCompleteTask(originalId: string) {
+  const result = await task.completeInstance(originalId);
+  if (result) {
+    // Refresh the current window after completing
+    if (windowStart.value && windowEnd.value) {
+      fetchForRange(windowStart.value, windowEnd.value);
+    }
+  }
 }
 
-function handleMonthChange(_start: Date, _end: Date) {
-  fetchTasks();
+function handleDayChange(date: Date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+  fetchForRange(start.getTime(), end.getTime());
+}
+
+function handleWeekChange(start: Date, end: Date) {
+  fetchForRange(start.getTime(), end.getTime());
+}
+
+function handleMonthChange(start: Date, end: Date) {
+  fetchForRange(start.getTime(), end.getTime());
 }
 
 function handleDayClick(date: Date) {
-  // Switch to day view for the clicked date
+  // Open day detail sheet instead of switching views
+  selectedDate.value = date;
+  dayDetailOpen.value = true;
+}
+
+function switchToDayView(date: Date) {
+  dayDetailOpen.value = false;
   activeView.value = 'day';
 }
 
@@ -126,6 +199,16 @@ async function handleCreateSchedule(data: Record<string, unknown>) {
 }
 
 onMounted(async () => {
-  await fetchTasks();
+  // Load current week by default
+  const now = new Date();
+  const weekStart = new Date(now);
+  const day = weekStart.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  weekStart.setDate(weekStart.getDate() + diff);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  await fetchForRange(weekStart.getTime(), weekEnd.getTime());
 });
 </script>

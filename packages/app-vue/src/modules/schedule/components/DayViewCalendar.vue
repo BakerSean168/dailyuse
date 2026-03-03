@@ -57,10 +57,10 @@
             :key="event.id"
             class="absolute left-1 right-1 rounded-md px-2 py-1 cursor-pointer transition-all hover:shadow-md z-20 text-white text-xs"
             :style="getEventStyle(event)"
-            :class="event.hasConflict ? 'bg-orange-500' : 'bg-primary'"
+            :class="eventBgClass(event)"
             @click="$emit('event-click', event)"
           >
-            <div class="font-medium truncate">{{ event.title || event.name }}</div>
+            <div class="font-medium truncate">{{ event.title }}</div>
             <div class="opacity-80">{{ formatEventTime(event) }}</div>
             <AlertCircle v-if="event.hasConflict" class="absolute top-1 right-1 h-3 w-3" />
           </div>
@@ -75,17 +75,17 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { ChevronLeft, ChevronRight, Plus, Loader2, AlertCircle } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEventItem } from '../composables/useCalendarView';
 
 interface Props {
-  schedules: ScheduleJobClientDTO[];
+  schedules: CalendarEventItem[];
   loading?: boolean;
 }
 
 interface Emits {
   (e: 'day-change', date: Date): void;
   (e: 'create'): void;
-  (e: 'event-click', event: ScheduleJobClientDTO): void;
+  (e: 'event-click', event: CalendarEventItem): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -111,8 +111,7 @@ const hours = computed(() => Array.from({ length: 24 }, (_, i) => i));
 const dayEvents = computed(() => {
   const dateStr = toDateStr(currentDate.value);
   return props.schedules.filter((event) => {
-    const eventDate = new Date(event.startTime).toISOString().split('T')[0];
-    return eventDate === dateStr;
+    return new Date(event.startTime).toISOString().split('T')[0] === dateStr;
   });
 });
 
@@ -135,15 +134,25 @@ function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, '0')}:00`;
 }
 
-function formatEventTime(event: ScheduleJobClientDTO): string {
-  const start = new Date(event.startTime);
-  const end = new Date(event.endTime);
-  const fmt = (d: Date) =>
-    `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  return `${fmt(start)} - ${fmt(end)}`;
+function formatEventTime(event: CalendarEventItem): string {
+  const fmt = (ts: number) => {
+    const d = new Date(ts);
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  };
+  return `${fmt(event.startTime)} - ${fmt(event.endTime)}`;
 }
 
-function getEventStyle(event: ScheduleJobClientDTO) {
+function eventBgClass(event: CalendarEventItem): string {
+  if (event.hasConflict) return 'bg-orange-500';
+  const map: Record<CalendarEventItem['source'], string> = {
+    schedule: 'bg-primary',
+    goal: 'bg-green-500',
+    task: 'bg-blue-500',
+  };
+  return map[event.source];
+}
+
+function getEventStyle(event: CalendarEventItem) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
   const startMinutes = start.getHours() * 60 + start.getMinutes();

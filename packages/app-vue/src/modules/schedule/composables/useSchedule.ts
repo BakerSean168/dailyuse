@@ -12,6 +12,7 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
   ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
+  CalendarEntryClientDTO,
 } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 
@@ -24,6 +25,7 @@ export function useSchedule() {
 
   const tasks = computed(() => store.tasks);
   const executions = computed(() => store.executions);
+  const calendarEntries = computed(() => store.calendarEntries);
   const currentTask = computed(() => store.currentTask);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
@@ -153,9 +155,66 @@ export function useSchedule() {
     fetchTasks();
   }
 
+  async function fetchCalendarEntries(
+    startTime: number,
+    endTime: number,
+  ): Promise<CalendarEntryClientDTO[]> {
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const result = await service.getSchedulesByTimeRange({ startTime, endTime });
+      if (result.ok) {
+        store.setCalendarEntries(result.data);
+        return result.data;
+      }
+      handleError(result.error.message || t('schedule.error.loadCalendarEntriesFailed'));
+      return [];
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
+  async function createCalendarEntry(data: {
+    title: string;
+    startTime: number;
+    endTime: number;
+    description?: string;
+  }) {
+    store.setError(null);
+    try {
+      const result = await service.createSchedule(data as any);
+      if (result.ok) {
+        store.setCalendarEntries([...store.calendarEntries, result.data]);
+        return result.data;
+      }
+      handleError(result.error.message || t('schedule.error.createCalendarEntryFailed'));
+      return null;
+    } catch (e: any) {
+      handleError(e?.message || t('schedule.error.createCalendarEntryFailed'));
+      return null;
+    }
+  }
+
+  async function deleteCalendarEntry(id: string) {
+    store.setError(null);
+    try {
+      const result = await service.deleteSchedule(id);
+      if (result.ok) {
+        store.setCalendarEntries(store.calendarEntries.filter((e) => e.id !== id));
+        return true;
+      }
+      handleError(result.error.message || t('schedule.error.deleteCalendarEntryFailed'));
+      return false;
+    } catch (e: any) {
+      handleError(e?.message || t('schedule.error.deleteCalendarEntryFailed'));
+      return false;
+    }
+  }
+
   return {
     tasks,
     executions,
+    calendarEntries,
     currentTask,
     isLoading,
     isSaving,
@@ -170,5 +229,8 @@ export function useSchedule() {
     resumeTask,
     fetchExecutions,
     setPage,
+    fetchCalendarEntries,
+    createCalendarEntry,
+    deleteCalendarEntry,
   };
 }

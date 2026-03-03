@@ -12,7 +12,7 @@
  */
 
 import { faker } from '@faker-js/faker';
-import type { TaskTemplateClientDTO } from '../modules/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../modules/task';
 
 // ============================================================================
 // TaskTemplateClientDTO
@@ -55,9 +55,7 @@ export function createMockTaskTemplate(
       ['work', 'personal', 'health', 'learning'],
       faker.number.int({ min: 0, max: 2 }),
     ),
-    color: faker.datatype.boolean()
-      ? faker.color.rgb({ format: 'hex', casing: 'upper' })
-      : null,
+    color: faker.datatype.boolean() ? faker.color.rgb({ format: 'hex', casing: 'upper' }) : null,
     status: faker.helpers.arrayElement(['Active', 'Paused', 'Completed', 'Deleted'] as const),
     lastGeneratedDate: null,
     generateAheadDays: null,
@@ -69,9 +67,7 @@ export function createMockTaskTemplate(
     instances: [],
     parentTaskId: null,
     startDate: startDate,
-    dueDate: faker.datatype.boolean()
-      ? faker.date.soon({ days: 14 }).getTime()
-      : null,
+    dueDate: faker.datatype.boolean() ? faker.date.soon({ days: 14 }).getTime() : null,
     completedAt: null,
     estimatedMinutes: faker.datatype.boolean()
       ? faker.helpers.arrayElement([15, 30, 45, 60, 90, 120])
@@ -95,4 +91,59 @@ export function createMockTaskTemplateList(
   overrides: Partial<TaskTemplateClientDTO> = {},
 ): TaskTemplateClientDTO[] {
   return Array.from({ length: count }, () => createMockTaskTemplate(overrides));
+}
+
+// ============================================================================
+// TaskInstanceClientDTO
+// ============================================================================
+
+/**
+ * Creates a single mock TaskInstanceClientDTO.
+ * Pass overrides to customise specific fields.
+ */
+export function createMockTaskInstance(
+  overrides: Partial<TaskInstanceClientDTO> = {},
+): TaskInstanceClientDTO {
+  const now = Date.now();
+  const instanceDate = faker.date.soon({ days: 7 }).getTime();
+
+  return {
+    id: faker.string.uuid(),
+    templateId: faker.string.uuid(),
+    identityId: faker.string.uuid(),
+    instanceDate,
+    timeConfig: {
+      timeType: 'AllDay',
+      startDate: instanceDate,
+      timePoint: null,
+      timeRange: null,
+    },
+    importance: faker.helpers.arrayElement([
+      'Vital',
+      'Important',
+      'Moderate',
+      'Minor',
+      'Trivial',
+    ] as const),
+    priority: faker.number.int({ min: 0, max: 10000 }),
+    status: faker.helpers.arrayElement(['Pending', 'InProgress', 'Completed', 'Skipped'] as const),
+    actualStartTime: null,
+    actualEndTime: null,
+    comment: null,
+    version: 1,
+    createdAt: now - faker.number.int({ min: 0, max: 7 * 24 * 60 * 60 * 1000 }),
+    updatedAt: now,
+    deletedAt: null,
+    ...overrides,
+  } as TaskInstanceClientDTO;
+}
+
+/**
+ * Creates an array of mock TaskInstanceClientDTO objects.
+ */
+export function createMockTaskInstanceList(
+  count = 5,
+  overrides: Partial<TaskInstanceClientDTO> = {},
+): TaskInstanceClientDTO[] {
+  return Array.from({ length: count }, () => createMockTaskInstance(overrides));
 }
