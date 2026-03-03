@@ -338,8 +338,12 @@ export class Resource extends Entity<ResourceId> {
       typeText: typeTextMap[this._props.type] ?? this._props.type,
       displayName,
       formattedSize,
-      createdAtText: this._props.createdAt.toLocaleString(),
-      updatedAtText: this._props.updatedAt.toLocaleString(),
+      createdAtText: isNaN(this._props.createdAt.getTime())
+        ? '-'
+        : this._props.createdAt.toLocaleString(),
+      updatedAtText: isNaN(this._props.updatedAt.getTime())
+        ? '-'
+        : this._props.updatedAt.toLocaleString(),
       extension,
       icon,
     };

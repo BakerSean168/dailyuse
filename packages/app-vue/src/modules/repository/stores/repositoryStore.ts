@@ -68,7 +68,7 @@ export const useRepositoryStore = defineStore('repository', {
         documents: [],
         other: [],
       };
-      for (const r of this.resources) {
+      for (const r of Array.isArray(this.resources) ? this.resources : []) {
         const mime = r.mimeType || '';
         const ext = r.extension || '';
         if (mime.startsWith('text/markdown') || ext === '.md') {

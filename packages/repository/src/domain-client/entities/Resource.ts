@@ -165,11 +165,11 @@ export class Resource extends Entity<ResourceId> {
   }
 
   get createdAtText(): string {
-    return this._props.createdAt.toLocaleString();
+    return isNaN(this._props.createdAt.getTime()) ? '-' : this._props.createdAt.toLocaleString();
   }
 
   get updatedAtText(): string {
-    return this._props.updatedAt.toLocaleString();
+    return isNaN(this._props.updatedAt.getTime()) ? '-' : this._props.updatedAt.toLocaleString();
   }
 
   get extension(): string {

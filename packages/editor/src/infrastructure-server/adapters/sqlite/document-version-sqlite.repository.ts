@@ -21,7 +21,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
   async findByDocumentId(documentId: string): Promise<DocumentVersion[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM document_versions WHERE document_id = ? ORDER BY version_number DESC`
+      `SELECT * FROM document_versions WHERE document_id = ? ORDER BY version_number DESC`,
     );
     const rows = stmt.all(documentId) as any[];
 
@@ -30,7 +30,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
   async findLatestByDocumentId(documentId: string): Promise<DocumentVersion | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM document_versions WHERE document_id = ? ORDER BY version_number DESC LIMIT 1`
+      `SELECT * FROM document_versions WHERE document_id = ? ORDER BY version_number DESC LIMIT 1`,
     );
     const row = stmt.get(documentId) as any;
 
@@ -44,7 +44,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     versionNumber: number,
   ): Promise<DocumentVersion | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM document_versions WHERE document_id = ? AND version_number = ? LIMIT 1`
+      `SELECT * FROM document_versions WHERE document_id = ? AND version_number = ? LIMIT 1`,
     );
     const row = stmt.get(documentId, versionNumber) as any;
 
@@ -53,9 +53,12 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     return this.rowToVersion(row);
   }
 
-  async findByChangeType(documentId: string, changeType: VersionChangeType): Promise<DocumentVersion[]> {
+  async findByChangeType(
+    documentId: string,
+    changeType: VersionChangeType,
+  ): Promise<DocumentVersion[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM document_versions WHERE document_id = ? AND change_type = ? ORDER BY version_number DESC`
+      `SELECT * FROM document_versions WHERE document_id = ? AND change_type = ? ORDER BY version_number DESC`,
     );
     const rows = stmt.all(documentId, changeType) as any[];
 
@@ -68,7 +71,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     endTime: number,
   ): Promise<DocumentVersion[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM document_versions WHERE document_id = ? AND createdAt >= ? AND createdAt <= ? ORDER BY version_number ASC`
+      `SELECT * FROM document_versions WHERE document_id = ? AND created_at >= ? AND created_at <= ? ORDER BY version_number ASC`,
     );
     const rows = stmt.all(documentId, startTime, endTime) as any[];
 
@@ -81,11 +84,11 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     const stmt = this.db.prepare(`
       INSERT INTO document_versions (
         id, document_id, version_number, change_type, content,
-        createdAt, updatedAt
+        created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         content = excluded.content,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     stmt.run(
@@ -94,8 +97,8 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       dto.versionNumber,
       dto.changeType,
       dto.contentHash,
-      new Date(dto.createdAt),
-      new Date(dto.createdAt),
+      dto.createdAt,
+      dto.createdAt,
     );
   }
 
@@ -108,11 +111,11 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     const insert = this.db.prepare(`
       INSERT INTO document_versions (
         id, document_id, version_number, change_type, content,
-        createdAt, updatedAt
+        created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         content = excluded.content,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
     const trx = this.db.transaction(() => {
       for (const version of versions) {
@@ -123,8 +126,8 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
           dto.versionNumber,
           dto.changeType,
           dto.contentHash,
-          new Date(dto.createdAt),
-          new Date(dto.createdAt),
+          dto.createdAt,
+          dto.createdAt,
         );
       }
     });
@@ -153,7 +156,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
   async deleteOlderThan(documentId: string, beforeTime: number): Promise<void> {
     const stmt = this.db.prepare(
-      `DELETE FROM document_versions WHERE document_id = ? AND createdAt < ?`
+      `DELETE FROM document_versions WHERE document_id = ? AND created_at < ?`,
     );
     stmt.run(documentId, beforeTime);
   }
@@ -171,8 +174,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       changeDescription: row.change_description ?? null,
       previousVersionId: row.previous_version_id ?? null,
       createdBy: row.created_by ?? null,
-      createdAt: new Date(row.createdAt),
+      createdAt: new Date(row.created_at),
     } as any);
   }
 }
-

@@ -264,8 +264,12 @@ export class Repository extends AggregateRoot<RepositoryId> {
       resourceCount: this._props.stats.resourceCount,
       totalSize: this._props.stats.totalSize,
       formattedSize: this._props.stats.formattedSize,
-      createdAtText: this._props.createdAt.toLocaleString(),
-      updatedAtText: this._props.updatedAt.toLocaleString(),
+      createdAtText: isNaN(this._props.createdAt.getTime())
+        ? '-'
+        : this._props.createdAt.toLocaleString(),
+      updatedAtText: isNaN(this._props.updatedAt.getTime())
+        ? '-'
+        : this._props.updatedAt.toLocaleString(),
     };
   }
 

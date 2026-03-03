@@ -20,16 +20,19 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
   async findBySessionId(sessionId: string): Promise<EditorGroup[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_groups WHERE session_id = ? ORDER BY group_index ASC`
+      `SELECT * FROM editor_groups WHERE session_id = ? ORDER BY group_index ASC`,
     );
     const rows = stmt.all(sessionId) as any[];
 
     return rows.map((row) => this.rowToGroup(row));
   }
 
-  async findBySessionIdAndGroupIndex(sessionId: string, groupIndex: number): Promise<EditorGroup | null> {
+  async findBySessionIdAndGroupIndex(
+    sessionId: string,
+    groupIndex: number,
+  ): Promise<EditorGroup | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_groups WHERE session_id = ? AND group_index = ? LIMIT 1`
+      `SELECT * FROM editor_groups WHERE session_id = ? AND group_index = ? LIMIT 1`,
     );
     const row = stmt.get(sessionId, groupIndex) as any;
 
@@ -43,20 +46,14 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_groups (
-        id, session_id, group_index, createdAt, updatedAt
+        id, session_id, group_index, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         group_index = excluded.group_index,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
-    stmt.run(
-      dto.id,
-      dto.sessionId,
-      dto.groupIndex,
-      new Date(dto.createdAt),
-      new Date(dto.updatedAt),
-    );
+    stmt.run(dto.id, dto.sessionId, dto.groupIndex, dto.createdAt, dto.updatedAt);
   }
 
   async delete(id: string): Promise<void> {
@@ -67,23 +64,17 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   async saveBatch(groups: EditorGroup[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_groups (
-        id, session_id, group_index, createdAt, updatedAt
+        id, session_id, group_index, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         group_index = excluded.group_index,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     const transaction = this.db.transaction((items: EditorGroup[]) => {
       for (const group of items) {
         const dto = group.toServerDTO();
-        insertStmt.run(
-          dto.id,
-          dto.sessionId,
-          dto.groupIndex,
-          new Date(dto.createdAt),
-          new Date(dto.updatedAt),
-        );
+        insertStmt.run(dto.id, dto.sessionId, dto.groupIndex, dto.createdAt, dto.updatedAt);
       }
     });
 
@@ -121,9 +112,8 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
       activeTabIndex: row.active_tab_index ?? -1,
       name: row.name ?? null,
       tabs: [],
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     } as any);
   }
 }
-

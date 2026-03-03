@@ -5,7 +5,10 @@
 
 import type Database from 'better-sqlite3';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
-import type { ITaskTemplateRepository, TaskFilters } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type {
+  ITaskTemplateRepository,
+  TaskFilters,
+} from '@/domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplateStatus } from '@/domain-shared/value-objects/task-template-status';
 import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
@@ -56,7 +59,8 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     const updatedAt = this.toDate(row.updated_at ?? row.updatedAt) ?? createdAt;
     const deletedAt = this.toDate(row.deleted_at ?? row.deletedAt);
     const recurrencePattern = row.recurrence_pattern ?? row.recurrencePattern ?? null;
-    const isRecurring = Number(row.is_recurring ?? row.isRecurring ?? 0) === 1 || Boolean(recurrencePattern);
+    const isRecurring =
+      Number(row.is_recurring ?? row.isRecurring ?? 0) === 1 || Boolean(recurrencePattern);
     const tags = row.tags ? JSON.parse(row.tags) : [];
 
     return TaskTemplate.load({
@@ -73,13 +77,17 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       goalId: null,
       keyResultId: null,
       checklist: [],
-      folderId: (row.folder_id ?? row.folderId) ? TaskFolderId.of(row.folder_id ?? row.folderId) : null,
+      folderId:
+        (row.folder_id ?? row.folderId) ? TaskFolderId.of(row.folder_id ?? row.folderId) : null,
       tags,
       color: row.color ?? null,
       status: this.normalizeStatus(row.status) as TaskTemplateStatus,
       lastGeneratedDate: null,
       generateAheadDays: null,
-      parentTaskId: (row.parent_task_id ?? row.parentTaskId) ? TaskTemplateId.of(row.parent_task_id ?? row.parentTaskId) : null,
+      parentTaskId:
+        (row.parent_task_id ?? row.parentTaskId)
+          ? TaskTemplateId.of(row.parent_task_id ?? row.parentTaskId)
+          : null,
       dependencyStatus: row.dependency_status ?? row.dependencyStatus ?? 'NONE',
       isBlocked: Boolean(row.is_blocked ?? row.isBlocked ?? false),
       blockingReason: row.blocking_reason ?? row.blockingReason ?? null,
@@ -135,7 +143,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       INSERT INTO task_templates (
         id, identity_id, folder_id, name, description, status,
         tags, goal_id, is_recurring, recurrence_pattern, created_at, updated_at, deleted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         identity_id = excluded.identity_id,
         folder_id = excluded.folder_id,
@@ -164,7 +172,9 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       typeof dto.createdAt === 'number' ? dto.createdAt : new Date(dto.createdAt).getTime(),
       typeof dto.updatedAt === 'number' ? dto.updatedAt : new Date(dto.updatedAt).getTime(),
       dto.deletedAt
-        ? (typeof dto.deletedAt === 'number' ? dto.deletedAt : new Date(dto.deletedAt).getTime())
+        ? typeof dto.deletedAt === 'number'
+          ? dto.deletedAt
+          : new Date(dto.deletedAt).getTime()
         : null,
     );
   }
@@ -185,7 +195,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findByIdentityId(identityId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId) as any[];
 
@@ -194,7 +204,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findByStatus(identityId: string, status: TaskTemplateStatus): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId, status) as any[];
 
@@ -203,7 +213,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId, TaskTemplateStatus.Active) as any[];
 
@@ -212,7 +222,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findByFolderId(folderId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE folder_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(folderId) as any[];
 
@@ -221,7 +231,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findByGoalId(goalId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE goal_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE goal_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(goalId) as any[];
 
@@ -231,7 +241,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   async findByTags(identityId: string, tags: string[]): Promise<TaskTemplate[]> {
     // For simplicity, we search templates that contain any of the tags
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND tags IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND tags IS NOT NULL AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId) as any[];
 
@@ -239,14 +249,15 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       .map((row) => this.mapRowToTemplate(row))
       .filter((template) => {
         const templateTagsRaw = template.toServerDTO().tags;
-        const templateTags = typeof templateTagsRaw === 'string' ? JSON.parse(templateTagsRaw) : templateTagsRaw;
+        const templateTags =
+          typeof templateTagsRaw === 'string' ? JSON.parse(templateTagsRaw) : templateTagsRaw;
         return tags.some((tag) => Array.isArray(templateTags) && templateTags.includes(tag));
       });
   }
 
   async findNeedGenerateInstances(toDate: number): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE status = ? AND deleted_at IS NULL ORDER BY updated_at ASC`
+      `SELECT * FROM task_templates WHERE status = ? AND deleted_at IS NULL ORDER BY updated_at ASC`,
     );
     const rows = stmt.all(TaskTemplateStatus.Active) as any[];
 
@@ -268,7 +279,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async softDelete(id: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ?`
+      `UPDATE task_templates SET status = ?, deleted_at = ?, updated_at = ? WHERE id = ?`,
     );
     const now = Date.now();
     stmt.run(TaskTemplateStatus.Deleted, now, now, id);
@@ -276,7 +287,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async restore(id: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ?`
+      `UPDATE task_templates SET status = ?, deleted_at = NULL, updated_at = ? WHERE id = ?`,
     );
     stmt.run(TaskTemplateStatus.Active, Date.now(), id);
   }
@@ -284,7 +295,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   async findOneTimeTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {
     const { whereSql, params } = this.buildFilterClause(filters);
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND (is_recurring = 0 OR is_recurring IS NULL) AND deleted_at IS NULL${whereSql} ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND (is_recurring = 0 OR is_recurring IS NULL) AND deleted_at IS NULL${whereSql} ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId, ...params) as any[];
     const templates = rows.map((row) => this.mapRowToTemplate(row));
@@ -301,7 +312,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   async findRecurringTasks(identityId: string, filters?: TaskFilters): Promise<TaskTemplate[]> {
     const { whereSql, params } = this.buildFilterClause(filters);
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND is_recurring = 1 AND deleted_at IS NULL${whereSql} ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND is_recurring = 1 AND deleted_at IS NULL${whereSql} ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId, ...params) as any[];
     const templates = rows.map((row) => this.mapRowToTemplate(row));
@@ -324,7 +335,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findByKeyResultId(keyResultId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all() as any[];
 
@@ -335,7 +346,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findSubtasks(parentTaskId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC`
+      `SELECT * FROM task_templates WHERE parent_task_id = ? AND deleted_at IS NULL ORDER BY created_at ASC`,
     );
     const rows = stmt.all(parentTaskId) as any[];
 
@@ -344,7 +355,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findBlockedTasks(identityId: string): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND is_blocked = 1 AND deleted_at IS NULL ORDER BY created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND is_blocked = 1 AND deleted_at IS NULL ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId) as any[];
 
@@ -353,7 +364,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async findSortedByPriority(identityId: string, limit?: number): Promise<TaskTemplate[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL ORDER BY importance ASC, created_at DESC`
+      `SELECT * FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL ORDER BY importance ASC, created_at DESC`,
     );
     const rows = stmt.all(identityId) as any[];
     const templates = rows.map((row) => this.mapRowToTemplate(row));
@@ -385,7 +396,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   async countTasks(identityId: string, filters?: TaskFilters): Promise<number> {
     const { whereSql, params } = this.buildFilterClause(filters);
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL${whereSql}`
+      `SELECT COUNT(*) as count FROM task_templates WHERE identity_id = ? AND deleted_at IS NULL${whereSql}`,
     );
     const result = stmt.get(identityId, ...params) as { count: number };
     return Number(result?.count ?? 0);
@@ -436,7 +447,9 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
           typeof dto.createdAt === 'number' ? dto.createdAt : new Date(dto.createdAt).getTime(),
           typeof dto.updatedAt === 'number' ? dto.updatedAt : new Date(dto.updatedAt).getTime(),
           dto.deletedAt
-            ? (typeof dto.deletedAt === 'number' ? dto.deletedAt : new Date(dto.deletedAt).getTime())
+            ? typeof dto.deletedAt === 'number'
+              ? dto.deletedAt
+              : new Date(dto.deletedAt).getTime()
             : null,
         );
       }
@@ -455,4 +468,3 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
     stmt.run(...ids);
   }
 }
-

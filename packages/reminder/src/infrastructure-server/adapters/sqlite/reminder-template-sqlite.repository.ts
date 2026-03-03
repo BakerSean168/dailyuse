@@ -33,7 +33,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
         group_id, importance_level, tags, color, icon, next_trigger_at, stats,
         click_rate, ignore_rate, avg_response_time, snooze_count,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
@@ -86,7 +86,10 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     );
   }
 
-  async findById(id: string, options?: { includeHistory?: boolean }): Promise<ReminderTemplate | null> {
+  async findById(
+    id: string,
+    options?: { includeHistory?: boolean },
+  ): Promise<ReminderTemplate | null> {
     const stmt = this.db.prepare(`SELECT * FROM reminder_templates WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
@@ -146,7 +149,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
 
   async softDelete(id: string): Promise<void> {
     const stmt = this.db.prepare(
-      `UPDATE reminder_templates SET status = 'DELETED', updated_at = ? WHERE id = ?`
+      `UPDATE reminder_templates SET status = 'DELETED', updated_at = ? WHERE id = ?`,
     );
     stmt.run(Date.now(), id);
   }
@@ -173,7 +176,10 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return rows.map((row) => this.rowToTemplate(row));
   }
 
-  async findByNextTriggerBefore(beforeTime: number, identityId?: string): Promise<ReminderTemplate[]> {
+  async findByNextTriggerBefore(
+    beforeTime: number,
+    identityId?: string,
+  ): Promise<ReminderTemplate[]> {
     let sql = `SELECT * FROM reminder_templates 
                WHERE status = 'ACTIVE' AND next_trigger_at IS NOT NULL AND next_trigger_at < ?`;
     const params: any[] = [beforeTime];
@@ -195,9 +201,7 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     if (ids.length === 0) return [];
 
     const placeholders = ids.map(() => '?').join(',');
-    const stmt = this.db.prepare(
-      `SELECT * FROM reminder_templates WHERE id IN (${placeholders})`
-    );
+    const stmt = this.db.prepare(`SELECT * FROM reminder_templates WHERE id IN (${placeholders})`);
     const rows = stmt.all(...ids) as any[];
 
     // 维持输入的顺序
@@ -205,7 +209,10 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     return ids.map((id) => idMap.get(id)).filter((t) => t !== undefined) as ReminderTemplate[];
   }
 
-  async count(identityId: string, options?: { status?: ReminderStatus; includeDeleted?: boolean }): Promise<number> {
+  async count(
+    identityId: string,
+    options?: { status?: ReminderStatus; includeDeleted?: boolean },
+  ): Promise<number> {
     let sql = `SELECT COUNT(*) as count FROM reminder_templates WHERE identity_id = ?`;
     const params: any[] = [identityId];
 
@@ -222,14 +229,26 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
   }
 
   private rowToTemplate(row: any): ReminderTemplate {
-    const trigger = TriggerConfig.fromDTO(typeof row.trigger === 'string' ? JSON.parse(row.trigger) : row.trigger);
-    const activeTime = ActiveTimeConfig.fromDTO(typeof row.active_time === 'string' ? JSON.parse(row.active_time) : row.active_time);
-    const notificationConfig = NotificationConfig.fromDTO(typeof row.notification_config === 'string' ? JSON.parse(row.notification_config) : row.notification_config);
+    const trigger = TriggerConfig.fromDTO(
+      typeof row.trigger === 'string' ? JSON.parse(row.trigger) : row.trigger,
+    );
+    const activeTime = ActiveTimeConfig.fromDTO(
+      typeof row.active_time === 'string' ? JSON.parse(row.active_time) : row.active_time,
+    );
+    const notificationConfig = NotificationConfig.fromDTO(
+      typeof row.notification_config === 'string'
+        ? JSON.parse(row.notification_config)
+        : row.notification_config,
+    );
     const recurrence = row.recurrence
-      ? RecurrenceConfig.fromDTO(typeof row.recurrence === 'string' ? JSON.parse(row.recurrence) : row.recurrence)
+      ? RecurrenceConfig.fromDTO(
+          typeof row.recurrence === 'string' ? JSON.parse(row.recurrence) : row.recurrence,
+        )
       : null;
     const activeHours = row.active_hours
-      ? ActiveHoursConfig.fromDTO(typeof row.active_hours === 'string' ? JSON.parse(row.active_hours) : row.active_hours)
+      ? ActiveHoursConfig.fromDTO(
+          typeof row.active_hours === 'string' ? JSON.parse(row.active_hours) : row.active_hours,
+        )
       : null;
     const tags: string[] = typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags ?? []);
 
@@ -278,4 +297,3 @@ export class SqliteReminderTemplateRepository implements IReminderTemplateReposi
     });
   }
 }
-

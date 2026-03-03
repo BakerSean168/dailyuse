@@ -657,6 +657,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   public getNextRunAtFormatted(): string {
     if (!this._props.execution.nextRunAt) return '-';
     const date = new Date(this._props.execution.nextRunAt);
+    if (isNaN(date.getTime())) return '-';
     return date.toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
@@ -674,6 +675,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
   public getLastRunAtFormatted(): string {
     if (!this._props.execution.lastRunAt) return '-';
     const date = new Date(this._props.execution.lastRunAt);
+    if (isNaN(date.getTime())) return '-';
     return date.toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',

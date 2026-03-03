@@ -24,7 +24,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async findByIdentityId(identityId: string): Promise<EditorWorkspace[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_workspaces WHERE identityId = ? ORDER BY createdAt DESC`
+      `SELECT * FROM editor_workspaces WHERE identity_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId) as any[];
 
@@ -33,7 +33,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_workspaces WHERE identityId = ? AND name = ? LIMIT 1`
+      `SELECT * FROM editor_workspaces WHERE identity_id = ? AND name = ? LIMIT 1`,
     );
     const row = stmt.get(identityId, name) as any;
 
@@ -44,7 +44,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async findActiveByIdentityId(identityId: string): Promise<EditorWorkspace | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_workspaces WHERE identityId = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
+      `SELECT * FROM editor_workspaces WHERE identity_id = ? AND is_active = 1 ORDER BY updated_at DESC LIMIT 1`,
     );
     const row = stmt.get(identityId) as any;
 
@@ -58,22 +58,15 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_workspaces (
-        id, identityId, name, is_active, createdAt, updatedAt
+        id, identity_id, name, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
-    stmt.run(
-      dto.id,
-      dto.identityId,
-      dto.name,
-      dto.isActive ? 1 : 0,
-      new Date(dto.createdAt),
-      new Date(dto.updatedAt),
-    );
+    stmt.run(dto.id, dto.identityId, dto.name, dto.isActive ? 1 : 0, dto.createdAt, dto.updatedAt);
   }
 
   async delete(id: string): Promise<void> {
@@ -84,12 +77,12 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
   async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_workspaces (
-        id, identityId, name, is_active, createdAt, updatedAt
+        id, identity_id, name, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     const transaction = this.db.transaction((items: EditorWorkspace[]) => {
@@ -100,8 +93,8 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
           dto.identityId,
           dto.name,
           dto.isActive ? 1 : 0,
-          new Date(dto.createdAt),
-          new Date(dto.updatedAt),
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -111,14 +104,14 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   async existsByName(identityId: string, name: string): Promise<boolean> {
     const stmt = this.db.prepare(
-      `SELECT 1 FROM editor_workspaces WHERE identityId = ? AND name = ? LIMIT 1`
+      `SELECT 1 FROM editor_workspaces WHERE identity_id = ? AND name = ? LIMIT 1`,
     );
     return stmt.get(identityId, name) !== undefined;
   }
 
   async countByIdentityId(identityId: string): Promise<number> {
     const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_workspaces WHERE identityId = ?`
+      `SELECT COUNT(*) as count FROM editor_workspaces WHERE identity_id = ?`,
     );
     const result = stmt.get(identityId) as { count: number };
     return result.count;
@@ -126,15 +119,19 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
   private rowToWorkspace(row: any): EditorWorkspace {
     const layoutData = row.layout
-      ? (typeof row.layout === 'string' ? JSON.parse(row.layout) : row.layout)
+      ? typeof row.layout === 'string'
+        ? JSON.parse(row.layout)
+        : row.layout
       : WorkspaceLayout.createDefault().toServerDTO();
     const settingsData = row.settings
-      ? (typeof row.settings === 'string' ? JSON.parse(row.settings) : row.settings)
+      ? typeof row.settings === 'string'
+        ? JSON.parse(row.settings)
+        : row.settings
       : WorkspaceSettings.createDefault().toServerDTO();
 
     return EditorWorkspace.load({
       id: EditorWorkspaceId.of(row.id),
-      identityId: row.identityId,
+      identityId: row.identity_id,
       name: row.name,
       description: row.description ?? null,
       projectPath: row.project_path ?? row.projectPath ?? '',
@@ -143,9 +140,9 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
       settings: WorkspaceSettings.fromDTO(settingsData),
       isActive: row.is_active === 1,
       lastActiveSessionId: row.last_active_session_id ?? null,
-      lastAccessedAt: row.lastAccessedAt ? new Date(row.lastAccessedAt) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      lastAccessedAt: row.last_accessed_at ? new Date(row.last_accessed_at) : null,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
       sessions: [],
     } as any);
   }

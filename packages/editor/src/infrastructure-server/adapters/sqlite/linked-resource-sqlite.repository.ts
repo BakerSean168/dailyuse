@@ -21,7 +21,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
   async findBySourceDocumentId(sourceDocumentId: string): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE source_document_id = ? ORDER BY createdAt DESC`
+      `SELECT * FROM linked_resources WHERE source_document_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(sourceDocumentId) as any[];
 
@@ -30,7 +30,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
   async findByTargetDocumentId(targetDocumentId: string): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE target_document_id = ? ORDER BY createdAt DESC`
+      `SELECT * FROM linked_resources WHERE target_document_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(targetDocumentId) as any[];
 
@@ -42,7 +42,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     sourceType: LinkedSourceType,
   ): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE source_document_id = ? AND source_type = ? ORDER BY createdAt DESC`
+      `SELECT * FROM linked_resources WHERE source_document_id = ? AND source_type = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(sourceDocumentId, sourceType) as any[];
 
@@ -54,7 +54,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     targetType: LinkedTargetType,
   ): Promise<LinkedResource[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM linked_resources WHERE source_document_id = ? AND target_type = ? ORDER BY createdAt DESC`
+      `SELECT * FROM linked_resources WHERE source_document_id = ? AND target_type = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(sourceDocumentId, targetType) as any[];
 
@@ -66,7 +66,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       `SELECT lr.* FROM linked_resources lr
        WHERE lr.is_valid = 0 AND lr.source_document_id IN (
          SELECT id FROM documents WHERE workspace_id = ?
-       ) ORDER BY lr.createdAt DESC`
+       ) ORDER BY lr.created_at DESC`,
     );
     const rows = stmt.all(workspaceId) as any[];
 
@@ -77,7 +77,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     const stmt = this.db.prepare(
       `SELECT * FROM linked_resources
        WHERE last_verified_at IS NULL OR last_verified_at < ?
-       ORDER BY last_verified_at ASC`
+       ORDER BY last_verified_at ASC`,
     );
     const rows = stmt.all(Date.now() - threshold) as any[];
 
@@ -90,12 +90,12 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     const stmt = this.db.prepare(`
       INSERT INTO linked_resources (
         id, source_document_id, target_document_id, source_type,
-        target_type, is_valid, last_verified_at, createdAt, updatedAt
+        target_type, is_valid, last_verified_at, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         is_valid = excluded.is_valid,
         last_verified_at = excluded.last_verified_at,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     stmt.run(
@@ -105,9 +105,9 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       dto.sourceType,
       dto.targetType,
       dto.isValid ? 1 : 0,
-      dto.lastValidatedAt ? new Date(dto.lastValidatedAt).getTime() : null,
-      new Date(dto.createdAt),
-      new Date(dto.updatedAt),
+      dto.lastValidatedAt ?? null,
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -120,12 +120,12 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     const insert = this.db.prepare(`
       INSERT INTO linked_resources (
         id, source_document_id, target_document_id, source_type,
-        target_type, is_valid, last_verified_at, createdAt, updatedAt
+        target_type, is_valid, last_verified_at, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         is_valid = excluded.is_valid,
         last_verified_at = excluded.last_verified_at,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
     const trx = this.db.transaction(() => {
       for (const resource of resources) {
@@ -137,9 +137,9 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
           dto.sourceType,
           dto.targetType,
           dto.isValid ? 1 : 0,
-          dto.lastValidatedAt ? new Date(dto.lastValidatedAt).getTime() : null,
-          new Date(dto.createdAt),
-          new Date(dto.updatedAt),
+          dto.lastValidatedAt ?? null,
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -147,11 +147,15 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
   }
 
   async deleteBySourceDocumentId(sourceDocumentId: string): Promise<void> {
-    this.db.prepare(`DELETE FROM linked_resources WHERE source_document_id = ?`).run(sourceDocumentId);
+    this.db
+      .prepare(`DELETE FROM linked_resources WHERE source_document_id = ?`)
+      .run(sourceDocumentId);
   }
 
   async deleteByTargetDocumentId(targetDocumentId: string): Promise<void> {
-    this.db.prepare(`DELETE FROM linked_resources WHERE target_document_id = ?`).run(targetDocumentId);
+    this.db
+      .prepare(`DELETE FROM linked_resources WHERE target_document_id = ?`)
+      .run(targetDocumentId);
   }
 
   async countBySourceDocumentId(sourceDocumentId: string): Promise<number> {
@@ -188,10 +192,8 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       targetAnchor: row.target_anchor ?? null,
       isValid: row.is_valid === 1,
       lastValidatedAt: row.last_verified_at ? new Date(row.last_verified_at) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     } as any);
   }
 }
-
-

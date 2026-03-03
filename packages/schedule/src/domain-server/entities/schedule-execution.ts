@@ -212,7 +212,9 @@ export class ScheduleExecution extends Entity<string> {
       updatedAt: this._createdAt.getTime(),
       deletedAt: null,
       // UI 辅助属性
-      executionTimeFormatted: this._executionTime.toLocaleString('zh-CN'),
+      executionTimeFormatted: isNaN(this._executionTime.getTime())
+        ? '-'
+        : this._executionTime.toLocaleString('zh-CN'),
       statusDisplay: this._getStatusText(),
       statusColor: this._getStatusColor(),
       durationFormatted: this._formatDuration(),
@@ -314,7 +316,7 @@ export class ScheduleExecution extends Entity<string> {
     return new ScheduleExecution({
       id: dto.id ?? generateUUID(),
       taskId: dto.taskId,
-      executionTime: new Date(dto.executionTime),
+      executionTime: dto.executionTime != null ? new Date(dto.executionTime) : new Date(0),
       status: dto.status,
       duration: dto.duration ?? null,
       result: dto.result ?? null,

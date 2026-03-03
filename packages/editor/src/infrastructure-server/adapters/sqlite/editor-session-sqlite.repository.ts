@@ -22,7 +22,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
   async findByWorkspaceId(workspaceId: string): Promise<EditorSession[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_id = ? ORDER BY createdAt DESC`
+      `SELECT * FROM editor_sessions WHERE workspace_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(workspaceId) as any[];
 
@@ -31,7 +31,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
   async findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_id = ? AND name = ? LIMIT 1`
+      `SELECT * FROM editor_sessions WHERE workspace_id = ? AND name = ? LIMIT 1`,
     );
     const row = stmt.get(workspaceId, name) as any;
 
@@ -42,7 +42,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
   async findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_sessions WHERE workspace_id = ? AND is_active = 1 ORDER BY updatedAt DESC LIMIT 1`
+      `SELECT * FROM editor_sessions WHERE workspace_id = ? AND is_active = 1 ORDER BY updated_at DESC LIMIT 1`,
     );
     const row = stmt.get(workspaceId) as any;
 
@@ -56,22 +56,15 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO editor_sessions (
-        id, workspace_id, name, is_active, createdAt, updatedAt
+        id, workspace_id, name, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
-    stmt.run(
-      dto.id,
-      dto.workspaceId,
-      dto.name,
-      dto.isActive ? 1 : 0,
-      new Date(dto.createdAt),
-      new Date(dto.updatedAt),
-    );
+    stmt.run(dto.id, dto.workspaceId, dto.name, dto.isActive ? 1 : 0, dto.createdAt, dto.updatedAt);
   }
 
   async delete(id: string): Promise<void> {
@@ -82,12 +75,12 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   async saveBatch(sessions: EditorSession[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_sessions (
-        id, workspace_id, name, is_active, createdAt, updatedAt
+        id, workspace_id, name, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         is_active = excluded.is_active,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     const transaction = this.db.transaction((items: EditorSession[]) => {
@@ -98,8 +91,8 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
           dto.workspaceId,
           dto.name,
           dto.isActive ? 1 : 0,
-          new Date(dto.createdAt),
-          new Date(dto.updatedAt),
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -139,10 +132,9 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
       isActive: row.is_active === 1,
       activeGroupIndex: row.active_group_index ?? 0,
       layout: SessionLayout.fromDTO(layout),
-      lastAccessedAt: row.lastAccessedAt ?? null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      lastAccessedAt: row.last_accessed_at ?? null,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     } as any);
   }
 }
-

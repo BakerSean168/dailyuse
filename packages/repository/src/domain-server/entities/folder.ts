@@ -1,9 +1,7 @@
 /**
  * Folder 实体实现 (Server)
  */
-import type {
-  FolderMetadataDTO,
-} from '@dailyuse/contracts/repository';
+import type { FolderMetadataDTO } from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
 import { FolderMetadata, ResourceId } from '../value-objects';
 import { BusinessRuleViolationError } from '@dailyuse/utils';
@@ -231,7 +229,7 @@ export class Folder extends Entity<ResourceId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       children: includeChildren
-        ? this._props.children?.map((c) => c.toServerDTO(true)) ?? null
+        ? (this._props.children?.map((c) => c.toServerDTO(true)) ?? null)
         : null,
     };
   }
@@ -244,11 +242,16 @@ export class Folder extends Entity<ResourceId> {
     const pathParts = this._props.path.split('/').filter((p) => p.length > 0);
 
     // 显示名称（截断过长的名称）
-    const displayName = this._props.name.length > 30 ? this._props.name.substring(0, 27) + '...' : this._props.name;
+    const displayName =
+      this._props.name.length > 30 ? this._props.name.substring(0, 27) + '...' : this._props.name;
 
     // 时间格式化
-    const formattedCreatedAt = this._props.createdAt.toLocaleString();
-    const formattedUpdatedAt = this._props.updatedAt.toLocaleString();
+    const formattedCreatedAt = isNaN(this._props.createdAt.getTime())
+      ? '-'
+      : this._props.createdAt.toLocaleString();
+    const formattedUpdatedAt = isNaN(this._props.updatedAt.getTime())
+      ? '-'
+      : this._props.updatedAt.toLocaleString();
 
     return {
       id: String(this.id),
@@ -262,7 +265,7 @@ export class Folder extends Entity<ResourceId> {
       createdAt: this._props.createdAt.getTime(),
       updatedAt: this._props.updatedAt.getTime(),
       children: includeChildren
-        ? this._props.children?.map((c) => c.toClientDTO(true)) ?? null
+        ? (this._props.children?.map((c) => c.toClientDTO(true)) ?? null)
         : null,
 
       // UI 计算字段

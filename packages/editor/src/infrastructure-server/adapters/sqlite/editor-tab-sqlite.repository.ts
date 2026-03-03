@@ -21,7 +21,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findByGroupId(groupId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_id = ? ORDER BY tab_index ASC`
+      `SELECT * FROM editor_tabs WHERE group_id = ? ORDER BY tab_index ASC`,
     );
     const rows = stmt.all(groupId) as any[];
 
@@ -30,7 +30,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findByDocumentId(documentId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE document_id = ? ORDER BY createdAt DESC`
+      `SELECT * FROM editor_tabs WHERE document_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(documentId) as any[];
 
@@ -39,7 +39,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findByGroupIdAndTabIndex(groupId: string, tabIndex: number): Promise<EditorTab | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_id = ? AND tab_index = ? LIMIT 1`
+      `SELECT * FROM editor_tabs WHERE group_id = ? AND tab_index = ? LIMIT 1`,
     );
     const row = stmt.get(groupId, tabIndex) as any;
 
@@ -50,7 +50,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findPinnedByGroupId(groupId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_id = ? AND is_pinned = 1 ORDER BY tab_index ASC`
+      `SELECT * FROM editor_tabs WHERE group_id = ? AND is_pinned = 1 ORDER BY tab_index ASC`,
     );
     const rows = stmt.all(groupId) as any[];
 
@@ -59,7 +59,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findDirtyByGroupId(groupId: string): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_id = ? AND is_dirty = 1 ORDER BY updatedAt DESC`
+      `SELECT * FROM editor_tabs WHERE group_id = ? AND is_dirty = 1 ORDER BY updated_at DESC`,
     );
     const rows = stmt.all(groupId) as any[];
 
@@ -68,7 +68,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
   async findRecentlyAccessed(groupId: string, limit: number): Promise<EditorTab[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM editor_tabs WHERE group_id = ? ORDER BY updatedAt DESC LIMIT ?`
+      `SELECT * FROM editor_tabs WHERE group_id = ? ORDER BY updated_at DESC LIMIT ?`,
     );
     const rows = stmt.all(groupId, limit) as any[];
 
@@ -81,13 +81,13 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     const stmt = this.db.prepare(`
       INSERT INTO editor_tabs (
         id, group_id, document_id, tab_index, is_pinned, is_dirty,
-        createdAt, updatedAt
+        created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         tab_index = excluded.tab_index,
         is_pinned = excluded.is_pinned,
         is_dirty = excluded.is_dirty,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     stmt.run(
@@ -97,8 +97,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
       dto.tabIndex,
       dto.isPinned ? 1 : 0,
       dto.isDirty ? 1 : 0,
-      new Date(dto.createdAt),
-      new Date(dto.updatedAt),
+      dto.createdAt,
+      dto.updatedAt,
     );
   }
 
@@ -111,13 +111,13 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     const insertStmt = this.db.prepare(`
       INSERT INTO editor_tabs (
         id, group_id, document_id, tab_index, is_pinned, is_dirty,
-        createdAt, updatedAt
+        created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         tab_index = excluded.tab_index,
         is_pinned = excluded.is_pinned,
         is_dirty = excluded.is_dirty,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     const transaction = this.db.transaction((items: EditorTab[]) => {
@@ -130,8 +130,8 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
           dto.tabIndex,
           dto.isPinned ? 1 : 0,
           dto.isDirty ? 1 : 0,
-          new Date(dto.createdAt),
-          new Date(dto.updatedAt),
+          dto.createdAt,
+          dto.updatedAt,
         );
       }
     });
@@ -150,9 +150,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
   }
 
   async countByGroupId(groupId: string): Promise<number> {
-    const stmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM editor_tabs WHERE group_id = ?`,
-    );
+    const stmt = this.db.prepare(`SELECT COUNT(*) as count FROM editor_tabs WHERE group_id = ?`);
     const result = stmt.get(groupId) as { count: number };
     return result.count;
   }
@@ -191,10 +189,9 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
       viewState,
       isPinned: row.is_pinned === 1,
       isDirty: row.is_dirty === 1,
-      lastAccessedAt: row.lastAccessedAt ? new Date(row.lastAccessedAt) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      lastAccessedAt: row.last_accessed_at ? new Date(row.last_accessed_at) : null,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
     } as any);
   }
 }
-

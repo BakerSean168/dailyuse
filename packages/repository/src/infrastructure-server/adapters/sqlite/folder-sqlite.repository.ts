@@ -29,15 +29,13 @@ export class SqliteFolderRepository implements IFolderRepository {
       folder.parentId || null,
       folder.name,
       folder.path,
-      folder.createdAt,
-      folder.updatedAt,
+      folder.createdAt.getTime(),
+      folder.updatedAt.getTime(),
     );
   }
 
   async findById(id: string): Promise<Folder | null> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM folders WHERE id = ? LIMIT 1`,
-    );
+    const stmt = this.db.prepare(`SELECT * FROM folders WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
@@ -46,18 +44,14 @@ export class SqliteFolderRepository implements IFolderRepository {
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM folders WHERE repository_id = ? ORDER BY path ASC`,
-    );
+    const stmt = this.db.prepare(`SELECT * FROM folders WHERE repository_id = ? ORDER BY path ASC`);
     const rows = stmt.all(repositoryId) as any[];
 
     return rows.map((row) => this.mapToDomain(row));
   }
 
   async findByParentId(parentId: string): Promise<Folder[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM folders WHERE parent_id = ? ORDER BY name ASC`,
-    );
+    const stmt = this.db.prepare(`SELECT * FROM folders WHERE parent_id = ? ORDER BY name ASC`);
     const rows = stmt.all(parentId) as any[];
 
     return rows.map((row) => this.mapToDomain(row));
@@ -89,7 +83,7 @@ export class SqliteFolderRepository implements IFolderRepository {
 
   async findRootFolders(repositoryId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM folders WHERE repository_id = ? AND parent_id IS NULL ORDER BY name ASC`
+      `SELECT * FROM folders WHERE repository_id = ? AND parent_id IS NULL ORDER BY name ASC`,
     );
     const rows = stmt.all(repositoryId) as any[];
 
@@ -102,9 +96,7 @@ export class SqliteFolderRepository implements IFolderRepository {
   }
 
   async exists(id: string): Promise<boolean> {
-    const stmt = this.db.prepare(
-      `SELECT 1 FROM folders WHERE id = ? LIMIT 1`
-    );
+    const stmt = this.db.prepare(`SELECT 1 FROM folders WHERE id = ? LIMIT 1`);
     return stmt.get(id) !== undefined;
   }
 
@@ -126,4 +118,3 @@ export class SqliteFolderRepository implements IFolderRepository {
     });
   }
 }
-

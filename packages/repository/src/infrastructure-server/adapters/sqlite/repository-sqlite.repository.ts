@@ -1,6 +1,6 @@
 /**
  * SQLite Repository Repository Implementation
- * Repository 鑱氬悎鏍圭殑 SQLite Repository瀹炵幇
+ * Repository 聚合根的 SQLite Repository实现
  */
 
 import type Database from 'better-sqlite3';
@@ -18,8 +18,8 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
   async save(repository: Repository): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO repositories (
-        id, identityId, name, description, type, status, config,
-        createdAt, updatedAt
+        id, identity_id, name, description, type, status, config,
+        created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
@@ -27,7 +27,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
         type = excluded.type,
         status = excluded.status,
         config = excluded.config,
-        updatedAt = excluded.updatedAt
+        updated_at = excluded.updated_at
     `);
 
     stmt.run(
@@ -38,15 +38,13 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
       repository.type,
       repository.status,
       JSON.stringify(repository.config),
-      repository.createdAt,
-      repository.updatedAt,
+      repository.createdAt.getTime(),
+      repository.updatedAt.getTime(),
     );
   }
 
   async findById(id: string): Promise<Repository | null> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE id = ? LIMIT 1`,
-    );
+    const stmt = this.db.prepare(`SELECT * FROM repositories WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
@@ -56,7 +54,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
 
     return Repository.load({
       id: RepositoryId.of(row.id),
-      identityId: IdentityId.of(row.identityId),
+      identityId: IdentityId.of(row.identity_id),
       name: row.name,
       description: row.description,
       type: row.type,
@@ -64,34 +62,38 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
       status: row.status,
       config: RepositoryConfig.fromDTO(JSON.parse(config)),
       stats: RepositoryStats.fromDTO(JSON.parse(stats)),
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
       version: row.version ?? 1,
-      deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
     });
   }
 
   async findByIdentityId(identityId: string): Promise<Repository[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE identityId = ? ORDER BY createdAt DESC`,
+      `SELECT * FROM repositories WHERE identity_id = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId) as any[];
 
     return rows.map((row) =>
       Repository.load({
         id: RepositoryId.of(row.id),
-        identityId: IdentityId.of(row.identityId),
+        identityId: IdentityId.of(row.identity_id),
         name: row.name,
         description: row.description,
         type: row.type,
         path: row.path ?? null,
         status: row.status,
-        config: RepositoryConfig.fromDTO(JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()))),
-        stats: RepositoryStats.fromDTO(JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()))),
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
+        config: RepositoryConfig.fromDTO(
+          JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO())),
+        ),
+        stats: RepositoryStats.fromDTO(
+          JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO())),
+        ),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
         version: row.version ?? 1,
-        deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
+        deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
       }),
     );
   }
@@ -105,25 +107,29 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     status: RepositoryStatus,
   ): Promise<Repository[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM repositories WHERE identityId = ? AND status = ? ORDER BY createdAt DESC`,
+      `SELECT * FROM repositories WHERE identity_id = ? AND status = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(identityId, status) as any[];
 
     return rows.map((row) =>
       Repository.load({
         id: RepositoryId.of(row.id),
-        identityId: IdentityId.of(row.identityId),
+        identityId: IdentityId.of(row.identity_id),
         name: row.name,
         description: row.description,
         type: row.type,
         path: row.path ?? null,
         status: row.status,
-        config: RepositoryConfig.fromDTO(JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO()))),
-        stats: RepositoryStats.fromDTO(JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO()))),
-        createdAt: new Date(row.createdAt),
-        updatedAt: new Date(row.updatedAt),
+        config: RepositoryConfig.fromDTO(
+          JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO())),
+        ),
+        stats: RepositoryStats.fromDTO(
+          JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO())),
+        ),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
         version: row.version ?? 1,
-        deletedAt: row.deletedAt ? new Date(row.deletedAt) : null,
+        deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
       }),
     );
   }
@@ -134,10 +140,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
   }
 
   async exists(id: string): Promise<boolean> {
-    const stmt = this.db.prepare(
-      `SELECT 1 FROM repositories WHERE id = ? LIMIT 1`,
-    );
+    const stmt = this.db.prepare(`SELECT 1 FROM repositories WHERE id = ? LIMIT 1`);
     return stmt.get(id) !== undefined;
   }
 }
-

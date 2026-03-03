@@ -9,7 +9,11 @@ import type {
   IScheduleTaskRepository,
   IScheduleTaskQueryOptions,
 } from '../../../domain-server/repositories/IScheduleTaskRepository';
-import { ScheduleTaskStatus, SourceModule, type ExecutionStatus } from '@dailyuse/contracts/schedule';
+import {
+  ScheduleTaskStatus,
+  SourceModule,
+  type ExecutionStatus,
+} from '@dailyuse/contracts/schedule';
 import { ScheduleTaskId } from '../../../domain-shared/value-objects/schedule-task-id';
 import { ScheduleConfig } from '../../../domain-server/value-objects/ScheduleConfig';
 import { ExecutionInfo } from '../../../domain-server/value-objects/ExecutionInfo';
@@ -55,11 +59,11 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
       task.enabled ? 1 : 0,
       task.schedule.cronExpression,
       task.schedule.timezone,
-      task.schedule.startDate !== null ? new Date(task.schedule.startDate) : null,
-      task.schedule.endDate !== null ? new Date(task.schedule.endDate) : null,
+      task.schedule.startDate,
+      task.schedule.endDate,
       task.schedule.maxExecutions,
-      task.execution.nextRunAt !== null ? new Date(task.execution.nextRunAt) : null,
-      task.execution.lastRunAt !== null ? new Date(task.execution.lastRunAt) : null,
+      task.execution.nextRunAt,
+      task.execution.lastRunAt,
       task.execution.executionCount,
       task.execution.lastExecutionStatus ? String(task.execution.lastExecutionStatus) : null,
       task.execution.lastExecutionDuration,
@@ -69,12 +73,14 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
       task.retryPolicy.maxRetryDelay,
       task.retryPolicy.backoffMultiplier,
       '[]',
-      typeof metadataDTO.payload === 'string' ? metadataDTO.payload : JSON.stringify(metadataDTO.payload),
+      typeof metadataDTO.payload === 'string'
+        ? metadataDTO.payload
+        : JSON.stringify(metadataDTO.payload),
       JSON.stringify(metadataDTO.tags),
       metadataDTO.priority,
       metadataDTO.timeout,
-      task.createdAt,
-      task.updatedAt,
+      task.createdAt.getTime(),
+      task.updatedAt.getTime(),
     );
   }
 
@@ -94,7 +100,7 @@ export class SqliteScheduleTaskRepository implements IScheduleTaskRepository {
 
   async findByAccountId(identityId: string): Promise<ScheduleTask[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_tasks WHERE identity_id = ? ORDER BY next_run_at ASC NULLS LAST`
+      `SELECT * FROM schedule_tasks WHERE identity_id = ? ORDER BY next_run_at ASC NULLS LAST`,
     );
     const rows = stmt.all(identityId) as any[];
 

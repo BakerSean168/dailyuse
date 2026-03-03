@@ -45,15 +45,13 @@ export class SqliteResourceRepository implements IResourceRepository {
       JSON.stringify(resource.metadata),
       JSON.stringify(resource.stats),
       resource.status,
-      resource.createdAt,
-      resource.updatedAt,
+      resource.createdAt.getTime(),
+      resource.updatedAt.getTime(),
     );
   }
 
   async findById(id: string): Promise<Resource | null> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM resources WHERE id = ? LIMIT 1`,
-    );
+    const stmt = this.db.prepare(`SELECT * FROM resources WHERE id = ? LIMIT 1`);
     const row = stmt.get(id) as any;
 
     if (!row) return null;
@@ -71,9 +69,7 @@ export class SqliteResourceRepository implements IResourceRepository {
   }
 
   async findByFolderId(folderId: string): Promise<Resource[]> {
-    const stmt = this.db.prepare(
-      `SELECT * FROM resources WHERE folder_id = ? ORDER BY name ASC`,
-    );
+    const stmt = this.db.prepare(`SELECT * FROM resources WHERE folder_id = ? ORDER BY name ASC`);
     const rows = stmt.all(folderId) as any[];
 
     return rows.map((row) => this.mapToDomain(row));
@@ -128,9 +124,12 @@ export class SqliteResourceRepository implements IResourceRepository {
       createdAt: row.created_at instanceof Date ? row.created_at : new Date(row.created_at),
       updatedAt: row.updated_at instanceof Date ? row.updated_at : new Date(row.updated_at),
       version: row.version ?? 1,
-      deletedAt: row.deleted_at ? (row.deleted_at instanceof Date ? row.deleted_at : new Date(row.deleted_at)) : null,
+      deletedAt: row.deleted_at
+        ? row.deleted_at instanceof Date
+          ? row.deleted_at
+          : new Date(row.deleted_at)
+        : null,
       externalLinks: null,
     });
   }
 }
-
