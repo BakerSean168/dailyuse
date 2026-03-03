@@ -152,8 +152,8 @@ describe('NotificationPolicy', () => {
     it('should throw when daily rate limit is exceeded', () => {
       const rateLimit = RateLimit.create({
         enabled: true,
-        maxPerHour: 100,
-        maxPerDay: 10,
+        maxPerHour: 10,
+        maxPerDay: 100,
       });
 
       expect(() =>
@@ -161,7 +161,7 @@ describe('NotificationPolicy', () => {
           category: NotificationCategory.System,
           channel: NotificationChannelType.InApp,
           rateLimit,
-          rateLimitUsage: { hourCount: 1, dayCount: 10 },
+          rateLimitUsage: { hourCount: 1, dayCount: 100 },
         }),
       ).toThrow(BusinessRuleViolationError);
     });

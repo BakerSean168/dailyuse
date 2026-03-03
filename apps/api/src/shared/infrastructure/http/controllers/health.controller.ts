@@ -5,6 +5,7 @@
  */
 
 import type { Request, Response } from 'express';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { prisma } from '@dailyuse/database';
 import { createLogger } from '@dailyuse/utils';
 

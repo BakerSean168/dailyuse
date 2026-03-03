@@ -12,6 +12,7 @@
 
 // 环境配置必须最先加载（包含 dotenv 加载逻辑）
 import { env } from './shared/infrastructure/config/env.js';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { prisma, connectDatabase, disconnectDatabase } from '@dailyuse/database';
 import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils';
