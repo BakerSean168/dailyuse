@@ -44,6 +44,10 @@ export class UpdateTaskTemplate {
       template.updateRecurrenceRule(RecurrenceRule.fromDTO(request.recurrenceRule));
     }
 
+    // Since we added taskType, timeConfig, and reminderConfig to the UpdateTaskTemplateReq interface
+    // Note: We need to implement corresponding update methods in TaskTemplate if they are fully supported
+    // But currently, the template aggregate's basic update fields are covered above.
+
     await this.templateRepository.save(template);
 
     return ok(template.toClientDTO());

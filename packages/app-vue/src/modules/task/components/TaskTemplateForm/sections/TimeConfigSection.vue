@@ -57,7 +57,7 @@
                 mode="single"
                 :selected="parseInputToDate(startDate)"
                 @update:model-value="
-                  (d) =>
+                    (d: any) =>
                     handleCalendarSelect(d, (v) => {
                       startDate = v;
                       handleDateChange();
@@ -93,7 +93,7 @@
                 mode="single"
                 :selected="parseInputToDate(timePointDate)"
                 @update:model-value="
-                  (d) =>
+                    (d: any) =>
                     handleCalendarSelect(d, (v) => {
                       timePointDate = v;
                       rebuildTimePoint();
@@ -163,7 +163,7 @@
                 mode="single"
                 :selected="parseInputToDate(timeRangeStartDate)"
                 @update:model-value="
-                  (d) =>
+                    (d: any) =>
                     handleCalendarSelect(d, (v) => {
                       timeRangeStartDate = v;
                       rebuildTimeRange();
@@ -229,7 +229,7 @@
                 mode="single"
                 :selected="parseInputToDate(timeRangeEndDate)"
                 @update:model-value="
-                  (d) =>
+                    (d: any) =>
                     handleCalendarSelect(d, (v) => {
                       timeRangeEndDate = v;
                       rebuildTimeRange();

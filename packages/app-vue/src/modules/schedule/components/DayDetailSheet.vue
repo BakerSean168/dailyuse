@@ -58,7 +58,7 @@
       </div>
 
       <SheetFooter class="mt-6">
-        <Button variant="outline" class="w-full" @click="$emit('view-in-day', date)">
+        <Button variant="outline" class="w-full" @click="date && $emit('view-in-day', date)">
           <Calendar class="mr-2 h-4 w-4" />
           {{ t('schedule.dayDetail.viewInDayView') }}
         </Button>
