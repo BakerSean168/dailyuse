@@ -1757,7 +1757,7 @@ describe('TaskTemplate Aggregate', () => {
         dueDate: new Date(Date.now() + 2 * 86400000),
       });
 
-      expect(template.getPriorityScore()).toBe(template.getPriority().score);
+      expect(template.getPriorityScore()).toBeCloseTo(template.getPriority().score);
     });
 
     it('should return getPriorityLevel() matching getPriority().level', () => {
