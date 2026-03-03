@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
+import { getCustomNotificationManager } from './custom-notification.manager';
 
 /**
  * Configuration options for displaying a notification.
@@ -53,6 +54,9 @@ export class NotificationService {
   private dndEndHour: number = 7;     // Default: Ends at 07:00
   private dndScheduleEnabled: boolean = false;
 
+  // Custom Notification Setting
+  private useCustomNotification: boolean = true; // Default to custom for now
+
   private constructor() {
     this.initDefaultIcon();
     this.initEventListeners();
@@ -78,6 +82,13 @@ export class NotificationService {
    */
   setMainWindow(window: BrowserWindow): void {
     this.mainWindow = window;
+  }
+
+  /**
+   * Sets whether to use custom notifications or native ones.
+   */
+  setUseCustomNotification(useCustom: boolean): void {
+    this.useCustomNotification = useCustom;
   }
 
   // ===== Do Not Disturb Methods =====
@@ -235,6 +246,28 @@ export class NotificationService {
         },
       });
     });
+
+    // Listen for setting changes to dynamically update notification style preference
+    eventBus.on('setting:UserSettingPatched', (eventData: { category: string; changes: Record<string, unknown> }) => {
+      if (eventData.category === 'notification' && 'useCustomNotification' in eventData.changes) {
+        this.useCustomNotification = Boolean(eventData.changes.useCustomNotification);
+        console.log(`[NotificationService] Updated useCustomNotification preference to: ${this.useCustomNotification}`);
+      }
+    });
+
+    // Also listen to full import/reset events where we might receive the full tree
+    eventBus.on('setting:SettingImported', (eventData: { preferences?: { notification?: { useCustomNotification?: boolean } } }) => {
+      if (eventData?.preferences?.notification?.useCustomNotification !== undefined) {
+        this.useCustomNotification = Boolean(eventData.preferences.notification.useCustomNotification);
+      }
+    });
+
+    // Also listen to successful login to fetch initial preferences
+    eventBus.on('auth:login_success', (eventData: { user: { settings?: { notification?: { useCustomNotification?: boolean } } } }) => {
+       if (eventData?.user?.settings?.notification?.useCustomNotification !== undefined) {
+          this.useCustomNotification = Boolean(eventData.user.settings.notification.useCustomNotification);
+       }
+    });
   }
 
   /**
@@ -258,32 +291,42 @@ export class NotificationService {
       return null;
     }
 
-    // Check system support
-    if (!Notification.isSupported()) {
-      console.warn('[NotificationService] Notifications are not supported on this system');
-      return null;
+    // We try to grab the latest setting from IPC if a user identity is known,
+    // though this might be better cached. Doing it synchronously here is impossible,
+    // so we rely on explicit sync calls or the cached value.
+    if (this.useCustomNotification) {
+      // Use Custom Notification Manager
+      const customManager = getCustomNotificationManager();
+      customManager.dispatch(options);
+      return null; // Custom notifications don't return an Electron.Notification instance
+    } else {
+      // Check system support for native notifications
+      if (!Notification.isSupported()) {
+        console.warn('[NotificationService] Notifications are not supported on this system');
+        return null;
+      }
+
+      const notification = new Notification({
+        title: options.title,
+        body: options.body,
+        icon: options.icon ? nativeImage.createFromPath(options.icon) : this.defaultIcon ?? undefined,
+        silent: options.silent ?? !options.sound,
+        urgency: options.urgency ?? 'normal',
+      });
+
+      // Handle click: focus window and navigate
+      notification.on('click', () => {
+        this.handleNotificationClick(options.data);
+      });
+
+      // Handle close
+      notification.on('close', () => {
+        console.log('[NotificationService] Notification closed:', options.title);
+      });
+
+      notification.show();
+      return notification;
     }
-
-    const notification = new Notification({
-      title: options.title,
-      body: options.body,
-      icon: options.icon ? nativeImage.createFromPath(options.icon) : this.defaultIcon ?? undefined,
-      silent: options.silent ?? !options.sound,
-      urgency: options.urgency ?? 'normal',
-    });
-
-    // Handle click: focus window and navigate
-    notification.on('click', () => {
-      this.handleNotificationClick(options.data);
-    });
-
-    // Handle close
-    notification.on('close', () => {
-      console.log('[NotificationService] Notification closed:', options.title);
-    });
-
-    notification.show();
-    return notification;
   }
 
   /**
