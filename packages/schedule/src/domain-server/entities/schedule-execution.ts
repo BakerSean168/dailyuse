@@ -19,6 +19,7 @@ import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 export interface ScheduleExecutionState {
   id: string;
   taskId: string;
+  identityId?: string;
   executionTime: Date;
   status: ExecutionStatus;
   duration: number | null;
@@ -34,6 +35,7 @@ export interface ScheduleExecutionState {
 export class ScheduleExecution extends Entity<string> {
   // ===== 私有字段 =====
   private _taskId: string;
+  private _identityId: string | undefined;
   private _executionTime: Date;
   private _status: ExecutionStatus;
   private _duration: number | null;
@@ -46,6 +48,7 @@ export class ScheduleExecution extends Entity<string> {
   private constructor(state: ScheduleExecutionState) {
     super(state.id);
     this._taskId = state.taskId;
+    this._identityId = state.identityId;
     this._executionTime = state.executionTime;
     this._status = state.status;
     this._duration = state.duration;
@@ -59,6 +62,9 @@ export class ScheduleExecution extends Entity<string> {
 
   public get taskId(): string {
     return this._taskId;
+  }
+  public get identityId(): string | undefined {
+    return this._identityId;
   }
   public get executionTime(): number {
     return this._executionTime.getTime();

@@ -23,6 +23,11 @@ export interface TaskDependencyServerDTO {
   id: string;
 
   /**
+   * 身份 ID
+   */
+  identityId: string;
+
+  /**
    * 前置任务 ID（必须先完成的任务）
    */
   predecessorTaskId: string;

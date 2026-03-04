@@ -1,6 +1,6 @@
 /**
  * Desktop App Event Listeners Initialization
- * 
+ *
  * Initializes global event listeners for the desktop application.
  * These listeners orchestrate cross-module business logic, such as updating
  * goal progress when a task is completed.
@@ -67,14 +67,11 @@ function initializeTaskToGoalProgressListener(): void {
         return;
       }
 
-      console.log(
-        `🎯 [TaskToGoalProgress] Task "${title}" completed, updating goal progress`,
-        {
-          goalId: goalBinding.goalId,
-          keyResultId: goalBinding.keyResultId,
-          incrementValue: goalBinding.incrementValue,
-        },
-      );
+      console.log(`🎯 [TaskToGoalProgress] Task "${title}" completed, updating goal progress`, {
+        goalId: goalBinding.goalId,
+        keyResultId: goalBinding.keyResultId,
+        incrementValue: goalBinding.incrementValue,
+      });
 
       // If a Key Result is specified, add a progress record
       if (goalBinding.keyResultId) {
@@ -88,11 +85,11 @@ function initializeTaskToGoalProgressListener(): void {
         }
 
         // 2. Find the target Key Result
-        const keyResult = goal.keyResults.find((kr: KeyResult) => kr.id === goalBinding.keyResultId);
+        const keyResult = goal.keyResults.find(
+          (kr: KeyResult) => kr.id === goalBinding.keyResultId,
+        );
         if (!keyResult) {
-          console.error(
-            `❌ [TaskToGoalProgress] KeyResult not found: ${goalBinding.keyResultId}`,
-          );
+          console.error(`❌ [TaskToGoalProgress] KeyResult not found: ${goalBinding.keyResultId}`);
           return;
         }
 
@@ -100,6 +97,7 @@ function initializeTaskToGoalProgressListener(): void {
         const record = GoalRecord.create({
           keyResultId: goalBinding.keyResultId,
           goalId: goalBinding.goalId,
+          identityId: event.identityId,
           value: goalBinding.incrementValue,
           note: `任务完成: ${title}`,
           recordedAt: Date.now(),

@@ -15,6 +15,7 @@ export class PrismaTaskDependencyMapper {
   static toDTO(data: PrismaTaskDependency): TaskDependencyServerDTO {
     return {
       id: data.id,
+      identityId: (data as any).identityId,
       predecessorTaskId: data.predecessorTaskId,
       successorTaskId: data.successorTaskId,
       dependencyType: data.dependencyType as DependencyType,

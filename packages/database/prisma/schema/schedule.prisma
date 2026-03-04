@@ -101,6 +101,7 @@ model ScheduleTask {
 
 model ScheduleExecution {
   id            String   @id
+  identityId    String   @map("identity_id")
   taskId        String   @map("task_id")
   executionTime DateTime @map("execution_time")
   status        String
@@ -110,8 +111,10 @@ model ScheduleExecution {
   retryCount    Int      @default(0) @map("retry_count")
   createdAt     DateTime @default(now()) @map("created_at")
 
-  task ScheduleTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  identity Account      @relation("AccountScheduleExecutions", fields: [identityId], references: [id])
+  task     ScheduleTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([taskId])
   @@map("schedule_executions")
 }

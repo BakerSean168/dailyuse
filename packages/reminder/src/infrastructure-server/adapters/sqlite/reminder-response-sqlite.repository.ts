@@ -16,9 +16,9 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     const dto = response.toServerDTO();
 
     const stmt = this.db.prepare(`
-      INSERT INTO reminder_responses (
-        id, reminder_template_id, action, response_time, timestamp
-      ) VALUES (?, ?, ?, ?, ?)
+       INSERT INTO reminder_responses (
+        id, reminder_template_id, identity_id, action, response_time, timestamp
+      ) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         action = excluded.action,
         response_time = excluded.response_time,
@@ -28,11 +28,11 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     stmt.run(
       dto.id,
       dto.reminderTemplateId,
+      dto.identityId,
       dto.action,
       dto.responseTime || null,
       dto.timestamp,
     );
-
   }
 
   async findById(id: string): Promise<ReminderResponse | null> {
@@ -140,6 +140,7 @@ export class SqliteReminderResponseRepository implements IReminderResponseReposi
     return ReminderResponse.load({
       id: ReminderResponseId.of(row.id),
       reminderTemplateId: row.reminder_template_id,
+      identityId: row.identity_id,
       action: row.action as ReminderResponseAction,
       responseTime: row.response_time ? new Date(row.response_time) : null,
       timestamp: new Date(row.timestamp),

@@ -3,14 +3,18 @@ import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalRepository } from '@/domain-server';
 import { GoalCrossModuleQueryService } from '../goal-cross-module-query-service';
 
-vi.mock('@dailyuse/utils', () => ({
-  createLogger: vi.fn().mockReturnValue({
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    debug: vi.fn(),
-  }),
-}));
+vi.mock('@dailyuse/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@dailyuse/utils')>();
+  return {
+    ...actual,
+    createLogger: vi.fn().mockReturnValue({
+      error: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn(),
+    }),
+  };
+});
 
 // ============================================================
 // Helpers

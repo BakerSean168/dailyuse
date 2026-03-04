@@ -31,7 +31,7 @@ model Account {
 
   // 关联的业务模块
   documents                       Document[]
-  documentVersions                DocumentVersion[]
+  documentVersions                DocumentVersion[]          @relation("AccountDocumentVersionChangedBy")
   editorWorkspaces                EditorWorkspace[]
   editorWorkspaceSessions         EditorWorkspaceSession[]
   editorWorkspaceSessionGroups    EditorWorkspaceSessionGroup[]
@@ -64,6 +64,25 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
+
+  // PowerSync: denormalized identity relations
+  keyResults                      KeyResult[]                @relation("AccountKeyResults")
+  goalRecords                     GoalRecord[]               @relation("AccountGoalRecords")
+  goalReviews                     GoalReview[]               @relation("AccountGoalReviews")
+  keyResultWeightSnapshots        KeyResultWeightSnapshot[]  @relation("AccountKeyResultWeightSnapshots")
+  taskDependencies                TaskDependency[]           @relation("AccountTaskDependencies")
+  taskTemplateHistory             TaskTemplateHistory[]      @relation("AccountTaskTemplateHistory")
+  scheduleExecutions              ScheduleExecution[]        @relation("AccountScheduleExecutions")
+  reminderHistory                 ReminderHistory[]          @relation("AccountReminderHistory")
+  reminderResponses               ReminderResponse[]         @relation("AccountReminderResponses")
+  notificationChannels            NotificationChannel[]      @relation("AccountNotificationChannels")
+  notificationHistory             NotificationHistory[]      @relation("AccountNotificationHistory")
+  documentVersionsByIdentity      DocumentVersion[]          @relation("AccountDocumentVersions")
+  documentLinks                   DocumentLink[]             @relation("AccountDocumentLinks")
+  aiMessages                      AiMessage[]                @relation("AccountAiMessages")
+  folders                         Folder[]                   @relation("AccountFolders")
+  resources                       Resource[]                 @relation("AccountResources")
+  repositoryResources             RepositoryResource[]       @relation("AccountRepositoryResources")
 
   @@index([emailAddress])
   @@index([phoneFullNumber])

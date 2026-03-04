@@ -15,6 +15,7 @@ import type { IStoragePort } from '../../ports/IStoragePort';
  */
 export interface CreateFolderInput {
   repositoryId: string;
+  identityId: string;
   parentId?: string | null;
   name: string;
   order?: number;
@@ -58,6 +59,7 @@ export class CreateFolder {
 
     const folder = Folder.create({
       repositoryId: input.repositoryId,
+      identityId: input.identityId,
       parentId: input.parentId,
       name: input.name,
       parentPath,
@@ -78,4 +80,3 @@ export class CreateFolder {
     return { folder: folder.toClientDTO() };
   }
 }
-

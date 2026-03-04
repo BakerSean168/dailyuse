@@ -233,7 +233,7 @@ describe('ScheduleTask Aggregate', () => {
         deletedAt: null,
       });
 
-      expect(task.id).toBe(id.value);
+      expect(task.id).toBe(id);
       expect(task.identityId).toBe('acc-789');
       expect(task.name).toBe('Loaded Task');
       expect(task.description).toBe('From DB');

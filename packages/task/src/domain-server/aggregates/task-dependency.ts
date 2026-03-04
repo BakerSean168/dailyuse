@@ -4,20 +4,16 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type {
-  TaskDependencyServerDTO,
-} from '@dailyuse/contracts/task';
+import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { TaskDependencyId } from '../../domain-shared/value-objects/task-dependency-id';
-import {
-  DependencyType,
-  DependencyStatus,
-} from '../value-objects';
+import { DependencyType, DependencyStatus } from '../value-objects';
 
 /**
  * Internal props interface for TaskDependency
  */
 export interface TaskDependencyState {
   id: TaskDependencyId;
+  identityId: string;
   predecessorTaskId: string;
   successorTaskId: string;
   dependencyType: DependencyType;
@@ -39,6 +35,10 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   }
 
   // ============ Getters ============
+
+  get identityId(): string {
+    return this._props.identityId;
+  }
 
   get predecessorTaskId(): string {
     return this._props.predecessorTaskId;
@@ -71,6 +71,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
    */
   public static create(props: {
     id?: string;
+    identityId: string;
     predecessorTaskId: string;
     successorTaskId: string;
     dependencyType?: DependencyType;
@@ -87,6 +88,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
 
     return new TaskDependency({
       id,
+      identityId: props.identityId,
       predecessorTaskId: props.predecessorTaskId,
       successorTaskId: props.successorTaskId,
       dependencyType: props.dependencyType ?? DependencyType.FinishToStart,
@@ -136,6 +138,7 @@ export class TaskDependency extends AggregateRoot<TaskDependencyId> {
   public toServerDTO(): TaskDependencyServerDTO {
     return {
       id: this.id.toString(),
+      identityId: this._props.identityId,
       predecessorTaskId: this._props.predecessorTaskId,
       successorTaskId: this._props.successorTaskId,
       dependencyType: this._props.dependencyType,

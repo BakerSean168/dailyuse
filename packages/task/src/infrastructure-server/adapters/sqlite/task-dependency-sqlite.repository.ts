@@ -4,9 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import type {
-  ITaskDependencyRepository,
-} from '@/domain-server/repositories/ITaskDependencyRepository';
+import type { ITaskDependencyRepository } from '@/domain-server/repositories/ITaskDependencyRepository';
 import type {
   CreateTaskDependencyRequest,
   TaskDependencyServerDTO,
@@ -19,6 +17,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
   private rowToDTO(row: any): TaskDependencyServerDTO {
     return {
       id: row.id,
+      identityId: row.identity_id,
       predecessorTaskId: row.predecessor_id,
       successorTaskId: row.successor_id,
       dependencyType: row.dependency_type,
@@ -56,6 +55,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
     return {
       id,
+      identityId: 'system',
       predecessorTaskId: data.predecessorTaskId,
       successorTaskId: data.successorTaskId,
       dependencyType: data.dependencyType || 'FinishToStart',
@@ -76,7 +76,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async findBySuccessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE successor_id = ? ORDER BY created_at ASC`
+      `SELECT * FROM task_dependencies WHERE successor_id = ? ORDER BY created_at ASC`,
     );
     const rows = stmt.all(taskId) as any[];
 
@@ -85,7 +85,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async findByPredecessorId(taskId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE predecessor_id = ? ORDER BY created_at ASC`
+      `SELECT * FROM task_dependencies WHERE predecessor_id = ? ORDER BY created_at ASC`,
     );
     const rows = stmt.all(taskId) as any[];
 
@@ -97,7 +97,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     successorId: string,
   ): Promise<TaskDependencyServerDTO | null> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE predecessor_id = ? AND successor_id = ? LIMIT 1`
+      `SELECT * FROM task_dependencies WHERE predecessor_id = ? AND successor_id = ? LIMIT 1`,
     );
     const row = stmt.get(predecessorId, successorId) as any;
 
@@ -117,7 +117,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       visited.add(current);
 
       const stmt = this.db.prepare(
-        `SELECT predecessor_id FROM task_dependencies WHERE successor_id = ?`
+        `SELECT predecessor_id FROM task_dependencies WHERE successor_id = ?`,
       );
       const rows = stmt.all(current) as any[];
 
@@ -143,7 +143,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
       visited.add(current);
 
       const stmt = this.db.prepare(
-        `SELECT successor_id FROM task_dependencies WHERE predecessor_id = ?`
+        `SELECT successor_id FROM task_dependencies WHERE predecessor_id = ?`,
       );
       const rows = stmt.all(current) as any[];
 
@@ -165,7 +165,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async deleteByTaskId(taskId: string): Promise<void> {
     const stmt = this.db.prepare(
-      `DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?`
+      `DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?`,
     );
     stmt.run(taskId, taskId);
   }
@@ -188,13 +188,11 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
     if (updates.length === 1) {
       // Only updatedAt, just update it
-      const stmt = this.db.prepare(
-        `UPDATE task_dependencies SET updated_at = ? WHERE id = ?`
-      );
+      const stmt = this.db.prepare(`UPDATE task_dependencies SET updated_at = ? WHERE id = ?`);
       stmt.run(Date.now(), id);
     } else {
       const stmt = this.db.prepare(
-        `UPDATE task_dependencies SET ${updates.join(', ')} WHERE id = ?`
+        `UPDATE task_dependencies SET ${updates.join(', ')} WHERE id = ?`,
       );
       stmt.run(...values);
     }
@@ -209,7 +207,7 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
 
   async findAllByIdentityId(identityId: string): Promise<TaskDependencyServerDTO[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM task_dependencies WHERE identity_id = ? ORDER BY created_at ASC`
+      `SELECT * FROM task_dependencies WHERE identity_id = ? ORDER BY created_at ASC`,
     );
     const rows = stmt.all(identityId) as any[];
 
@@ -220,4 +218,3 @@ export class SqliteTaskDependencyRepository implements ITaskDependencyRepository
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
-

@@ -1073,6 +1073,7 @@ export class Goal extends AggregateRoot<GoalId> {
       id: KeyResultWeightSnapshotId.of(KeyResultWeightSnapshotId.generate()) as any,
       goalId: this.id as any,
       keyResultId: krId as any,
+      identityId: this.identityId as any,
       oldWeight,
       newWeight,
       weightDelta: newWeight - oldWeight,

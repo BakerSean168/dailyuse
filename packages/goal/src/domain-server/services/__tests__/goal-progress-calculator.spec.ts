@@ -48,6 +48,7 @@ function addKeyResult(
   return goal.createAndAddKeyResult({
     title: params.title,
     valueType: 'NUMERIC',
+    aggregationMethod: 'Last',
     targetValue: params.targetValue,
     currentValue: params.currentValue ?? 0,
     weight: params.weight,
@@ -55,7 +56,7 @@ function addKeyResult(
 }
 
 function createMockRecord(value: number) {
-  return { value, recordedAt: new Date() } as any;
+  return { value, identityId: 'test-identity-id', recordedAt: new Date() } as any;
 }
 
 function createMockRecordRepo(

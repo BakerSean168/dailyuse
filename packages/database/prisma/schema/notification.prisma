@@ -36,6 +36,7 @@ model Notification {
 
 model NotificationChannel {
   id             String  @id
+  identityId     String  @map("identity_id")
   notificationId String  @map("notification_id")
   channelType    String  @map("channel_type")
   status         String
@@ -45,22 +46,27 @@ model NotificationChannel {
   response       String?
   retryCount     Int     @default(0) @map("retry_count")
 
+  identity     Account      @relation("AccountNotificationChannels", fields: [identityId], references: [id])
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([notificationId])
   @@map("notification_channels")
 }
 
 model NotificationHistory {
   id             String   @id
+  identityId     String   @map("identity_id")
   notificationId String   @map("notification_id")
   action         String
   details        String?
   actorId        String?  @map("actor_id")
   createdAt      DateTime @default(now()) @map("created_at")
 
+  identity     Account      @relation("AccountNotificationHistory", fields: [identityId], references: [id])
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([notificationId])
   @@map("notification_history")
 }

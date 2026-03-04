@@ -15,6 +15,7 @@ import { BusinessRuleViolationError } from '@dailyuse/utils';
 export interface FolderServerDTO {
   id: string;
   repositoryId: string;
+  identityId: string;
   parentId: string | null;
   name: string;
   path: string;
@@ -32,6 +33,7 @@ export interface FolderServerDTO {
 export interface FolderPersistenceDTO {
   id: string;
   repositoryId: string;
+  identityId: string;
   parentId: string | null;
   name: string;
   path: string;
@@ -48,6 +50,7 @@ export interface FolderPersistenceDTO {
 export interface FolderClientDTO {
   id: string;
   repositoryId: string;
+  identityId: string;
   parentId: string | null;
   name: string;
   path: string;
@@ -74,6 +77,7 @@ export interface FolderClientDTO {
 export interface FolderServer {
   readonly id: string;
   readonly repositoryId: string;
+  readonly identityId: string;
   readonly parentId: string | null;
   readonly name: string;
   readonly path: string;
@@ -98,6 +102,7 @@ export interface FolderServer {
 export interface FolderState {
   id: ResourceId;
   repositoryId: string;
+  identityId: string;
   parentId: string | null;
   name: string;
   path: string;
@@ -124,6 +129,10 @@ export class Folder extends Entity<ResourceId> {
   // ===== Getters =====
   get repositoryId(): string {
     return this._props.repositoryId;
+  }
+
+  get identityId(): string {
+    return this._props.identityId;
   }
 
   get parentId(): string | null {
@@ -220,6 +229,7 @@ export class Folder extends Entity<ResourceId> {
     return {
       id: String(this.id),
       repositoryId: this._props.repositoryId,
+      identityId: this._props.identityId,
       parentId: this._props.parentId,
       name: this._props.name,
       path: this._props.path,
@@ -256,6 +266,7 @@ export class Folder extends Entity<ResourceId> {
     return {
       id: String(this.id),
       repositoryId: this._props.repositoryId,
+      identityId: this._props.identityId,
       parentId: this._props.parentId,
       name: this._props.name,
       path: this._props.path,
@@ -282,6 +293,7 @@ export class Folder extends Entity<ResourceId> {
   // ===== 静态工厂方法 =====
   static create(params: {
     repositoryId: string;
+    identityId: string;
     parentId?: string | null;
     name: string;
     parentPath?: string | null;
@@ -303,6 +315,7 @@ export class Folder extends Entity<ResourceId> {
     return new Folder({
       id,
       repositoryId: params.repositoryId,
+      identityId: params.identityId,
       parentId: params.parentId ?? null,
       name: params.name,
       path,

@@ -20,6 +20,69 @@ import type { AuthenticatedRequest } from '../../shared/infrastructure/http/midd
 const logger = createLogger('PowerSync');
 
 /**
+ * Tables that have an `identity_id` column (mapped to `identityId` in Prisma).
+ * Used to automatically inject the authenticated user's identity on write operations.
+ *
+ * NOTE: `accounts` is NOT included — its `id` IS the identity, not a foreign key.
+ * Tables like `linked_contents`, `resource_references`, `notification_templates`,
+ * `rules`, and `rule_revisions` do not have `identityId`.
+ */
+const IDENTITY_ID_TABLES = new Set([
+  'user_settings',
+  'goals',
+  'goal_folders',
+  'goal_statistics',
+  'focus_sessions',
+  'focus_modes',
+  'key_results',
+  'goal_records',
+  'goal_reviews',
+  'key_result_weight_snapshots',
+  'task_folders',
+  'task_templates',
+  'task_instances',
+  'task_statistics',
+  'task_dependencies',
+  'task_template_history',
+  'schedules',
+  'schedule_jobs',
+  'schedule_tasks',
+  'schedule_statistics',
+  'schedule_executions',
+  'reminder_templates',
+  'reminder_groups',
+  'reminder_instances',
+  'reminder_statistics',
+  'user_reminder_preferences',
+  'reminder_history',
+  'reminder_responses',
+  'notifications',
+  'notification_preferences',
+  'notification_channels',
+  'notification_history',
+  'editor_workspaces',
+  'editor_workspace_sessions',
+  'editor_workspace_session_groups',
+  'editor_workspace_session_group_tabs',
+  'documents',
+  'document_versions',
+  'document_links',
+  'ai_conversations',
+  'ai_messages',
+  'ai_generation_tasks',
+  'ai_usage_quotas',
+  'ai_provider_configs',
+  'knowledge_generation_tasks',
+  'dashboard_configs',
+  'repositories',
+  'repository_explorers',
+  'repository_statistics',
+  'folders',
+  'resources',
+  'repository_resources',
+]);
+
+/**
  * Maps PowerSync CRUD operation table names to Prisma model delegates.
  * PowerSync sends table names as they appear in the sync rules (SQL table names).
  * We map them to the corresponding Prisma model accessor.
@@ -113,14 +176,16 @@ export const PowerSyncApiModule: IApiModule = {
         if (!config.privateKey) {
           logger.error('PowerSync private key not configured');
           return res.status(503).json({
-            success: false,
+            ok: false,
+            code: 'SERVICE_UNAVAILABLE',
             message: 'PowerSync sync is not configured',
           });
         }
 
         if (!req.identityId) {
           return res.status(401).json({
-            success: false,
+            ok: false,
+            code: 'UNAUTHORIZED',
             message: 'Authentication required',
           });
         }
@@ -140,7 +205,7 @@ export const PowerSyncApiModule: IApiModule = {
         );
 
         return res.json({
-          success: true,
+          ok: true,
           data: {
             token,
             endpoint: config.url,
@@ -150,7 +215,8 @@ export const PowerSyncApiModule: IApiModule = {
       } catch (error) {
         logger.error('Failed to generate PowerSync token', error);
         return res.status(500).json({
-          success: false,
+          ok: false,
+          code: 'INTERNAL_ERROR',
           message: 'Failed to generate sync token',
         });
       }
@@ -169,7 +235,8 @@ export const PowerSyncApiModule: IApiModule = {
 
         if (!transactions || !Array.isArray(transactions)) {
           return res.status(400).json({
-            success: false,
+            ok: false,
+            code: 'BAD_REQUEST',
             message: 'Missing or invalid transactions array',
           });
         }
@@ -195,7 +262,7 @@ export const PowerSyncApiModule: IApiModule = {
                   // Upsert — create or replace
                   const record = { ...data, id };
                   // Inject identity_id for user-owned tables
-                  if ('identityId' in (delegate.fields || {})) {
+                  if (IDENTITY_ID_TABLES.has(tableName)) {
                     record.identityId = identityId;
                   }
                   await delegate.upsert({
@@ -207,10 +274,15 @@ export const PowerSyncApiModule: IApiModule = {
                 }
 
                 case 'PATCH': {
-                  // Partial update
+                  // Partial update — also inject identity_id to prevent
+                  // clients from changing ownership of user-owned records
+                  const patchData = { ...data };
+                  if (IDENTITY_ID_TABLES.has(tableName)) {
+                    patchData.identityId = identityId;
+                  }
                   await delegate.update({
                     where: { id },
-                    data,
+                    data: patchData,
                   });
                   break;
                 }
@@ -230,11 +302,12 @@ export const PowerSyncApiModule: IApiModule = {
           }
         });
 
-        return res.json({ success: true });
+        return res.json({ ok: true });
       } catch (error) {
         logger.error('PowerSync CRUD processing failed', error);
         return res.status(500).json({
-          success: false,
+          ok: false,
+          code: 'INTERNAL_ERROR',
           message: 'Failed to process sync operations',
         });
       }
@@ -245,7 +318,7 @@ export const PowerSyncApiModule: IApiModule = {
     // =========================================================================
     psRouter.get('/schema', (_req, res) => {
       return res.json({
-        success: true,
+        ok: true,
         data: {
           powersync_url: config.url,
           configured: !!config.privateKey,

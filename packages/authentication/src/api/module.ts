@@ -14,8 +14,13 @@ import type { PrismaClient } from '@dailyuse/database';
 import { ok, fail } from '@dailyuse/contracts/result';
 import { eventBus } from '@dailyuse/utils';
 import { createEventBusAdapter } from '@dailyuse/patterns';
-import { AuthenticationContainer, AuthenticationRepositoryFactory, AuthenticationModule } from '../infrastructure-server';
+import {
+  AuthenticationContainer,
+  AuthenticationRepositoryFactory,
+  AuthenticationModule,
+} from '../infrastructure-server';
 import { UserAlreadyExistsError } from '../domain-server/services/registration';
+import { UserNotFoundError, InvalidPasswordError } from '../domain-server/services/login';
 // Commented out temporarily:
 // import {
 //   ChangePassword,
@@ -66,24 +71,25 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
     // 1. Composition Root �?create container with shared database client
     const container = AuthenticationContainer.getInstance();
     const eventBusAdapter = createEventBusAdapter(eventBus);
-    const { identityRepository, sessionRepository } = AuthenticationRepositoryFactory.createAllRepositories(
-      'prisma',
-      db as PrismaClient,
-      eventBusAdapter,
-    );
+    const { identityRepository, sessionRepository } =
+      AuthenticationRepositoryFactory.createAllRepositories(
+        'prisma',
+        db as PrismaClient,
+        eventBusAdapter,
+      );
     container.setIdentityRepository(identityRepository);
     container.setSessionRepository(sessionRepository);
     const identityRepo = container.getIdentityRepository();
     const sessionRepo = container.getSessionRepository();
     const passwordHasher = container.getPasswordHasher();
-    
+
     // Initialize token provider with configuration
     // TODO: Move these to environment variables or ConfigService
     const tokenProvider = new JwtTokenProvider(
       process.env.JWT_ACCESS_SECRET || 'your-access-secret-key',
       process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
       15 * 60 * 1000, // 15 minutes for access token
-      7 * 24 * 60 * 60 * 1000 // 7 days for refresh token
+      7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
     );
 
     // 2. Create use-case service instances via composition root
@@ -93,7 +99,7 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
       passwordHasher,
       tokenProvider,
     });
-    
+
     // Commented out temporarily:
     // const changePasswordService = new ChangePassword(identityRepo, passwordHasher);
     // const forgotPasswordService = new ForgotPassword(identityRepo);
@@ -120,9 +126,23 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
           throw err;
         }
       },
-      login: async (data, cx) => ok(await authenticationModule.login.execute(data, cx)),
-      logout: async (cx) => { await authenticationModule.logout.execute(undefined as void, cx); return ok(undefined as void); },
-      refreshToken: async (data, cx) => ok(await authenticationModule.refreshToken.execute(data, cx)),
+      login: async (data, cx) => {
+        try {
+          return ok(await authenticationModule.login.execute(data, cx));
+        } catch (err) {
+          // Security: don't distinguish "user not found" vs "wrong password"
+          if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError) {
+            return fail({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
+          }
+          throw err;
+        }
+      },
+      logout: async (cx) => {
+        await authenticationModule.logout.execute(undefined as void, cx);
+        return ok(undefined as void);
+      },
+      refreshToken: async (data, cx) =>
+        ok(await authenticationModule.refreshToken.execute(data, cx)),
       // getActiveSessions: (identityId) => getActiveSessionsService.execute(identityId),
       // revokeSession: (sessionId, identityId) => revokeSessionService.execute(sessionId, identityId),
       // revokeAllSessions: (identityId) => revokeAllSessionsService.executeForWeb(identityId),

@@ -1,7 +1,7 @@
 /**
  * RuleRevision Prisma Repository
  * 规则修订记录仓储 - Prisma实现
- * 
+ *
  * Implements IRuleRevisionRepository for read-only revision history access
  */
 
@@ -15,7 +15,7 @@ import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper'
 
 /**
  * Prisma RuleRevision Repository
- * 
+ *
  * Provides read-only access to revision history
  */
 export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
@@ -36,7 +36,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save revision: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to save revision`);
     }
   }
 
@@ -54,7 +54,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(revisions);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revisions: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find revisions`);
     }
   }
 
@@ -63,7 +63,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
    */
   async findByRuleIdAndNumber(
     ruleId: RuleId,
-    revisionNumber: number
+    revisionNumber: number,
   ): Promise<Result<RuleRevision | null>> {
     try {
       const prismaRevision = await this.prisma.ruleRevision.findUnique({
@@ -83,7 +83,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(revision);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revision: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find revision`);
     }
   }
 
@@ -98,8 +98,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(count);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to count revisions: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to count revisions`);
     }
   }
-
 }

@@ -48,7 +48,7 @@ model Account {
 
   // 关联的业务模块
   documents                       Document[]
-  documentVersions                DocumentVersion[]
+  documentVersions                DocumentVersion[]                @relation("AccountDocumentVersionChangedBy")
   editorWorkspaces                EditorWorkspace[]
   editorWorkspaceSessions         EditorWorkspaceSession[]
   editorWorkspaceSessionGroups    EditorWorkspaceSessionGroup[]
@@ -81,6 +81,25 @@ model Account {
   aiUsageQuotas                   AiUsageQuota?
   aiProviderConfigs               AiProviderConfig[]
   dashboardConfigs                DashboardConfig?
+
+  // PowerSync: denormalized identity relations
+  keyResults                 KeyResult[]               @relation("AccountKeyResults")
+  goalRecords                GoalRecord[]              @relation("AccountGoalRecords")
+  goalReviews                GoalReview[]              @relation("AccountGoalReviews")
+  keyResultWeightSnapshots   KeyResultWeightSnapshot[] @relation("AccountKeyResultWeightSnapshots")
+  taskDependencies           TaskDependency[]          @relation("AccountTaskDependencies")
+  taskTemplateHistory        TaskTemplateHistory[]     @relation("AccountTaskTemplateHistory")
+  scheduleExecutions         ScheduleExecution[]       @relation("AccountScheduleExecutions")
+  reminderHistory            ReminderHistory[]         @relation("AccountReminderHistory")
+  reminderResponses          ReminderResponse[]        @relation("AccountReminderResponses")
+  notificationChannels       NotificationChannel[]     @relation("AccountNotificationChannels")
+  notificationHistory        NotificationHistory[]     @relation("AccountNotificationHistory")
+  documentVersionsByIdentity DocumentVersion[]         @relation("AccountDocumentVersions")
+  documentLinks              DocumentLink[]            @relation("AccountDocumentLinks")
+  aiMessages                 AiMessage[]               @relation("AccountAiMessages")
+  folders                    Folder[]                  @relation("AccountFolders")
+  resources                  Resource[]                @relation("AccountResources")
+  repositoryResources        RepositoryResource[]      @relation("AccountRepositoryResources")
 
   @@index([emailAddress])
   @@index([phoneFullNumber])
@@ -116,14 +135,17 @@ model AiConversation {
 
 model AiMessage {
   id             String   @id
+  identityId     String   @map("identity_id")
   conversationId String   @map("conversation_id")
   role           String // USER, ASSISTANT, SYSTEM
   content        String   @db.Text
   tokenUsage     String?  @map("token_usage") // JSON
   createdAt      DateTime @default(now()) @map("created_at")
 
+  identity     Account        @relation("AccountAiMessages", fields: [identityId], references: [id])
   conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([conversationId])
   @@index([createdAt])
   @@map("ai_messages")
@@ -433,6 +455,7 @@ model Document {
 
 model DocumentVersion {
   id                String   @id
+  identityId        String   @map("identity_id")
   documentId        String   @map("document_id")
   versionNumber     Int      @map("version_number")
   title             String
@@ -446,8 +469,10 @@ model DocumentVersion {
   createdAt         DateTime @default(now()) @map("created_at")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  account  Account  @relation(fields: [changedBy], references: [id])
+  identity Account  @relation("AccountDocumentVersions", fields: [identityId], references: [id])
+  account  Account  @relation("AccountDocumentVersionChangedBy", fields: [changedBy], references: [id])
 
+  @@index([identityId])
   @@index([documentId, versionNumber])
   @@index([documentId, createdAt])
   @@index([changedBy])
@@ -456,6 +481,7 @@ model DocumentVersion {
 
 model DocumentLink {
   id               String    @id
+  identityId       String    @map("identity_id")
   sourceDocumentId String    @map("source_document_id")
   targetDocumentId String?   @map("target_document_id")
   linkText         String    @map("link_text")
@@ -466,9 +492,11 @@ model DocumentLink {
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
+  identity       Account   @relation("AccountDocumentLinks", fields: [identityId], references: [id])
   sourceDocument Document  @relation("source_links", fields: [sourceDocumentId], references: [id], onDelete: Cascade)
   targetDocument Document? @relation("target_links", fields: [targetDocumentId], references: [id], onDelete: SetNull)
 
+  @@index([identityId])
   @@index([sourceDocumentId])
   @@index([targetDocumentId])
   @@index([isBroken])
@@ -682,8 +710,9 @@ model GoalFolder {
 /// 衡量目标进度的具体指标（OKR 中的 KR）
 model KeyResult {
   // ============ 主键与外键 ============
-  id     String @id
-  goalId String @map("goal_id")
+  id         String @id
+  identityId String @map("identity_id")
+  goalId     String @map("goal_id")
 
   // ============ 基础信息 ============
   title       String /// KR 标题
@@ -707,11 +736,13 @@ model KeyResult {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
+  identity                 Account                   @relation("AccountKeyResults", fields: [identityId], references: [id])
   goal                     Goal                      @relation(fields: [goalId], references: [id], onDelete: Cascade)
   records                  GoalRecord[] /// 记录历史数据（一对多，级联删除）
   keyResultWeightSnapshots KeyResultWeightSnapshot[] /// 权重变更快照（一对多，级联删除）
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([goalId]) /// 按目标查询KR列表
   @@index([goalId, order]) /// 按目标查询并按顺序排序
   @@map("key_results")
@@ -722,6 +753,7 @@ model KeyResult {
 model GoalRecord {
   // ============ 主键与外键 ============
   id          String @id
+  identityId  String @map("identity_id")
   keyResultId String @map("key_result_id")
 
   // ============ 记录数据 ============
@@ -736,9 +768,11 @@ model GoalRecord {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
+  identity  Account   @relation("AccountGoalRecords", fields: [identityId], references: [id])
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([keyResultId, recordedAt]) /// 按KR查询时间序列数据（常用）
   @@index([recordedAt]) /// 按时间查询全局记录
   @@map("goal_records")
@@ -748,8 +782,9 @@ model GoalRecord {
 /// 记录目标的回顾与反思（复盘）
 model GoalReview {
   // ============ 主键与外键 ============
-  id     String @id
-  goalId String @map("goal_id")
+  id         String @id
+  identityId String @map("identity_id")
+  goalId     String @map("goal_id")
 
   // ============ 评审内容 ============
   reviewType     String  @map("review_type") /// 评审类型（weekly/monthly/milestone/completion）
@@ -767,9 +802,11 @@ model GoalReview {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
-  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  identity Account @relation("AccountGoalReviews", fields: [identityId], references: [id])
+  goal     Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([goalId, createdAt]) /// 按目标查询评审时间线（常用）
   @@index([reviewType]) /// 按评审类型分类查询
   @@map("goal_reviews")
@@ -780,6 +817,7 @@ model GoalReview {
 model KeyResultWeightSnapshot {
   // ============ 主键与外键 ============
   id          String @id
+  identityId  String @map("identity_id")
   goalId      String @map("goal_id")
   keyResultId String @map("key_result_id")
 
@@ -798,10 +836,12 @@ model KeyResultWeightSnapshot {
   createdAt DateTime @default(now()) @map("created_at")
 
   // ============ 关系映射 ============
+  identity  Account   @relation("AccountKeyResultWeightSnapshots", fields: [identityId], references: [id])
   goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([goalId, snapshotTime]) /// 按目标查询权重变更历史（常用）
   @@index([keyResultId, snapshotTime]) /// 按KR查询权重变更历史
   @@index([snapshotTime]) /// 按时间查询全局快照
@@ -1024,6 +1064,7 @@ model Notification {
 
 model NotificationChannel {
   id             String  @id
+  identityId     String  @map("identity_id")
   notificationId String  @map("notification_id")
   channelType    String  @map("channel_type")
   status         String
@@ -1033,22 +1074,27 @@ model NotificationChannel {
   response       String?
   retryCount     Int     @default(0) @map("retry_count")
 
+  identity     Account      @relation("AccountNotificationChannels", fields: [identityId], references: [id])
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([notificationId])
   @@map("notification_channels")
 }
 
 model NotificationHistory {
   id             String   @id
+  identityId     String   @map("identity_id")
   notificationId String   @map("notification_id")
   action         String
   details        String?
   actorId        String?  @map("actor_id")
   createdAt      DateTime @default(now()) @map("created_at")
 
+  identity     Account      @relation("AccountNotificationHistory", fields: [identityId], references: [id])
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([notificationId])
   @@map("notification_history")
 }
@@ -1194,6 +1240,7 @@ model ReminderInstance {
 
 model ReminderHistory {
   id                  String   @id
+  identityId          String   @map("identity_id")
   templateId          String   @map("template_id")
   triggeredAt         DateTime @map("triggered_at")
   result              String
@@ -1202,8 +1249,10 @@ model ReminderHistory {
   notificationChannel String?
   createdAt           DateTime @default(now()) @map("created_at")
 
+  identity Account          @relation("AccountReminderHistory", fields: [identityId], references: [id])
   template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([templateId])
   @@map("reminder_history")
 }
@@ -1224,14 +1273,17 @@ model ReminderStatistic {
 
 model ReminderResponse {
   id           String   @id @default(uuid())
+  identityId   String   @map("identity_id")
   templateId   String   @map("template_id")
   action       String // clicked, ignored, snoozed, dismissed, completed
   responseTime Int?     @map("response_time") // seconds
   timestamp    DateTime
   createdAt    DateTime @default(now()) @map("created_at")
 
+  identity Account          @relation("AccountReminderResponses", fields: [identityId], references: [id])
   template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([templateId, timestamp(sort: Desc)])
   @@map("reminder_responses")
 }
@@ -1300,6 +1352,7 @@ model Repository {
 
 model Folder {
   id           String   @id
+  identityId   String   @map("identity_id")
   repositoryId String   @map("repository_id")
   parentId     String?  @map("parent_id")
   name         String
@@ -1310,11 +1363,13 @@ model Folder {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  identity   Account    @relation("AccountFolders", fields: [identityId], references: [id])
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   parent     Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children   Folder[]   @relation("FolderHierarchy")
 
   @@unique([repositoryId, parentId, name])
+  @@index([identityId])
   @@index([repositoryId])
   @@index([parentId])
   @@index([path])
@@ -1323,6 +1378,7 @@ model Folder {
 
 model Resource {
   id           String    @id
+  identityId   String    @map("identity_id")
   repositoryId String    @map("repository_id")
   folderId     String?   @map("folder_id")
   name         String
@@ -1343,8 +1399,10 @@ model Resource {
   modifiedAt   DateTime? @map("modified_at")
   deletedAt    DateTime? @map("deleted_at")
 
+  identity   Account    @relation("AccountResources", fields: [identityId], references: [id])
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([repositoryId])
   @@index([folderId])
   @@index([type])
@@ -1356,6 +1414,7 @@ model Resource {
 
 model RepositoryResource {
   id           String    @id
+  identityId   String    @map("identity_id")
   repositoryId String    @map("repository_id")
   name         String
   type         String
@@ -1373,11 +1432,13 @@ model RepositoryResource {
   modifiedAt   DateTime? @map("modified_at")
 
   linkedContents LinkedContent[]
+  identity       Account             @relation("AccountRepositoryResources", fields: [identityId], references: [id])
   repository     Repository          @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   sourceRefs     ResourceReference[] @relation("SourceResourceRefs")
   targetRefs     ResourceReference[] @relation("TargetResourceRefs")
 
   @@unique([repositoryId, path])
+  @@index([identityId])
   @@index([type])
   @@map("repository_resources")
 }
@@ -1571,6 +1632,7 @@ model ScheduleTask {
 
 model ScheduleExecution {
   id            String   @id
+  identityId    String   @map("identity_id")
   taskId        String   @map("task_id")
   executionTime DateTime @map("execution_time")
   status        String
@@ -1580,8 +1642,10 @@ model ScheduleExecution {
   retryCount    Int      @default(0) @map("retry_count")
   createdAt     DateTime @default(now()) @map("created_at")
 
-  task ScheduleTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  identity Account      @relation("AccountScheduleExecutions", fields: [identityId], references: [id])
+  task     ScheduleTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([taskId])
   @@map("schedule_executions")
 }
@@ -1799,6 +1863,7 @@ model TaskInstance {
 
 model TaskDependency {
   id                String    @id
+  identityId        String    @map("identity_id")
   predecessorTaskId String    @map("predecessor_task_id")
   successorTaskId   String    @map("successor_task_id")
   dependencyType    String    @default("FINISH_TO_START") @map("dependency_type")
@@ -1808,23 +1873,28 @@ model TaskDependency {
   updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
 
+  identity        Account      @relation("AccountTaskDependencies", fields: [identityId], references: [id])
   predecessorTask TaskTemplate @relation("PredecessorTaskDeps", fields: [predecessorTaskId], references: [id], onDelete: Cascade)
   successorTask   TaskTemplate @relation("SuccessorTaskDeps", fields: [successorTaskId], references: [id], onDelete: Cascade)
 
   @@unique([predecessorTaskId, successorTaskId])
+  @@index([identityId])
   @@index([successorTaskId])
   @@map("task_dependencies")
 }
 
 model TaskTemplateHistory {
   id         String   @id
+  identityId String   @map("identity_id")
   templateId String   @map("template_id")
   action     String
   changes    String?
   createdAt  DateTime @default(now()) @map("created_at")
 
+  identity Account      @relation("AccountTaskTemplateHistory", fields: [identityId], references: [id])
   template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([templateId])
   @@map("task_template_history")
 }

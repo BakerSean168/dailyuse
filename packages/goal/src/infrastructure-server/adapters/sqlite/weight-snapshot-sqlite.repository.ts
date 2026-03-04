@@ -1,6 +1,6 @@
 /**
  * SQLite Weight Snapshot Repository Implementation
- * 权重快照�?SQLite 仓储实现
+ * 权重快照�?SQLite 仓储实现
  */
 
 import type Database from 'better-sqlite3';
@@ -17,9 +17,9 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     this.db
       .prepare(
         `INSERT INTO weight_snapshots (
-        id, goal_id, key_result_id, old_weight, new_weight, weight_delta,
+        id, goal_id, identity_id, key_result_id, old_weight, new_weight, weight_delta,
         snapshot_time, trigger, reason, operator_id, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         new_weight = excluded.new_weight,
         weight_delta = excluded.weight_delta`,
@@ -27,6 +27,7 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
       .run(
         dto.id as string,
         dto.goalId as string,
+        dto.identityId as string,
         dto.keyResultId as string,
         dto.oldWeight,
         dto.newWeight,
@@ -42,9 +43,9 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   async saveMany(snapshots: KeyResultWeightSnapshot[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO weight_snapshots (
-        id, goal_id, key_result_id, old_weight, new_weight, weight_delta,
+        id, goal_id, identity_id, key_result_id, old_weight, new_weight, weight_delta,
         snapshot_time, trigger, reason, operator_id, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         new_weight = excluded.new_weight,
         weight_delta = excluded.weight_delta
@@ -56,6 +57,7 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
         insertStmt.run(
           dto.id as string,
           dto.goalId as string,
+          dto.identityId as string,
           dto.keyResultId as string,
           dto.oldWeight,
           dto.newWeight,
@@ -103,9 +105,7 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
     const offset = (page - 1) * pageSize;
 
     const countResult = this.db
-      .prepare(
-        `SELECT COUNT(*) as total FROM weight_snapshots WHERE key_result_id = ?`,
-      )
+      .prepare(`SELECT COUNT(*) as total FROM weight_snapshots WHERE key_result_id = ?`)
       .get(keyResultId) as any;
 
     const rows = this.db
@@ -161,20 +161,17 @@ export class SqliteWeightSnapshotRepository implements IWeightSnapshotRepository
   }
 
   async deleteByGoal(goalId: string): Promise<void> {
-    this.db
-      .prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`)
-      .run(goalId);
+    this.db.prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`).run(goalId);
   }
 
   async deleteByKeyResult(keyResultId: string): Promise<void> {
-    this.db
-      .prepare(`DELETE FROM weight_snapshots WHERE key_result_id = ?`)
-      .run(keyResultId);
+    this.db.prepare(`DELETE FROM weight_snapshots WHERE key_result_id = ?`).run(keyResultId);
   }
 
   private rowToSnapshot(row: any): KeyResultWeightSnapshot {
     const dto: KeyResultWeightSnapshotPersistenceDTO = {
       id: row.id,
+      identityId: row.identity_id,
       goalId: row.goal_id,
       keyResultId: row.key_result_id,
       oldWeight: row.old_weight,

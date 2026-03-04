@@ -36,6 +36,8 @@ import {
   createHttpResponseBuilder,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
+import { isDomainError } from '../errors/DomainError';
+import { mapPrismaError } from '../errors/prisma-error-mapper';
 
 // ============================================================================
 // Types
@@ -162,24 +164,24 @@ export function expressAdapter<T>(
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
-      // Recognize DomainError (or any Error with a string `code`) and map properly
-      if (
-        err instanceof Error &&
-        'code' in err &&
-        typeof (err as Record<string, unknown>).code === 'string'
-      ) {
-        const code = (err as Record<string, unknown>).code as string;
-        const status = errorCodeToHttpStatus(code);
-        res.status(status).json(responseBuilder.error(code, err.message));
-      } else {
-        res
-          .status(500)
-          .json(
-            responseBuilder.internalError(
-              err instanceof Error ? err.message : 'Internal server error',
-            ),
-          );
+      // 1. Domain errors — safe to expose code + message (developer-crafted)
+      if (isDomainError(err)) {
+        const status = errorCodeToHttpStatus(err.code);
+        res.status(status).json(responseBuilder.error(err.code, err.message));
+        return;
       }
+
+      // 2. Prisma errors — map to safe generic messages
+      const prismaMapping = err instanceof Error ? mapPrismaError(err) : null;
+      if (prismaMapping) {
+        res
+          .status(prismaMapping.httpStatus)
+          .json(responseBuilder.error(prismaMapping.resultCode, prismaMapping.message));
+        return;
+      }
+
+      // 3. Everything else — never leak internal details
+      res.status(500).json(responseBuilder.internalError('Internal server error'));
     }
   };
 }
@@ -258,23 +260,24 @@ export function expressAdapterWithValidation<TInput, TOutput>(
         res.status(status).json(responseBuilder.fromResult(result));
       }
     } catch (err) {
-      if (
-        err instanceof Error &&
-        'code' in err &&
-        typeof (err as Record<string, unknown>).code === 'string'
-      ) {
-        const code = (err as Record<string, unknown>).code as string;
-        const status = errorCodeToHttpStatus(code);
-        res.status(status).json(responseBuilder.error(code, err.message));
-      } else {
-        res
-          .status(500)
-          .json(
-            responseBuilder.internalError(
-              err instanceof Error ? err.message : 'Internal server error',
-            ),
-          );
+      // 1. Domain errors — safe to expose code + message (developer-crafted)
+      if (isDomainError(err)) {
+        const status = errorCodeToHttpStatus(err.code);
+        res.status(status).json(responseBuilder.error(err.code, err.message));
+        return;
       }
+
+      // 2. Prisma errors — map to safe generic messages
+      const prismaMapping = err instanceof Error ? mapPrismaError(err) : null;
+      if (prismaMapping) {
+        res
+          .status(prismaMapping.httpStatus)
+          .json(responseBuilder.error(prismaMapping.resultCode, prismaMapping.message));
+        return;
+      }
+
+      // 3. Everything else — never leak internal details
+      res.status(500).json(responseBuilder.internalError('Internal server error'));
     }
   };
 }

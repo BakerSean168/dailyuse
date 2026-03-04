@@ -5,7 +5,11 @@
  * 实体：ReminderResponse（属于 ReminderTemplate 聚合上下文）
  */
 
-import type { PrismaClient, ReminderResponse as PrismaReminderResponse, Prisma } from '@dailyuse/database';
+import type {
+  PrismaClient,
+  ReminderResponse as PrismaReminderResponse,
+  Prisma,
+} from '@dailyuse/database';
 import type { IReminderResponseRepository } from '../../../domain-server/repositories/IReminderResponseRepository';
 import type { ReminderResponseAction } from '@dailyuse/contracts/reminder';
 import { ReminderResponse } from '../../../domain-server/entities/reminder-response';
@@ -29,17 +33,14 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
       create: {
         id: dto.id,
         templateId: dto.reminderTemplateId,
+        identityId: dto.identityId,
         action: dto.action,
-        responseTime: dto.responseTime != null
-          ? Math.floor(dto.responseTime / 1000)
-          : null,
+        responseTime: dto.responseTime != null ? Math.floor(dto.responseTime / 1000) : null,
         timestamp: new Date(dto.timestamp),
       },
       update: {
         action: dto.action,
-        responseTime: dto.responseTime != null
-          ? Math.floor(dto.responseTime / 1000)
-          : null,
+        responseTime: dto.responseTime != null ? Math.floor(dto.responseTime / 1000) : null,
         timestamp: new Date(dto.timestamp),
       },
     });
@@ -52,10 +53,7 @@ export class ReminderResponsePrismaRepository implements IReminderResponseReposi
     return data ? this.mapToEntity(data) : null;
   }
 
-  async findByTemplateId(
-    templateId: string,
-    limit?: number,
-  ): Promise<ReminderResponse[]> {
+  async findByTemplateId(templateId: string, limit?: number): Promise<ReminderResponse[]> {
     const data = await this.prisma.reminderResponse.findMany({
       where: { templateId },
       orderBy: { timestamp: 'desc' },

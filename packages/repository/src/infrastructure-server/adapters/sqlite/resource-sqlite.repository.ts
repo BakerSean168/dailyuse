@@ -17,10 +17,10 @@ export class SqliteResourceRepository implements IResourceRepository {
 
   async save(resource: Resource): Promise<void> {
     const stmt = this.db.prepare(`
-      INSERT INTO resources (
-        id, repository_id, folder_id, name, type, path, size,
+       INSERT INTO resources (
+        id, repository_id, identity_id, folder_id, name, type, path, size,
         content, metadata, stats, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         type = excluded.type,
@@ -36,6 +36,7 @@ export class SqliteResourceRepository implements IResourceRepository {
     stmt.run(
       String(resource.id),
       String(resource.repositoryId),
+      resource.identityId || '',
       resource.folderId ? String(resource.folderId) : null,
       resource.name,
       resource.type,
@@ -110,6 +111,7 @@ export class SqliteResourceRepository implements IResourceRepository {
     return Resource.load({
       id: ResourceId.of(row.id),
       repositoryId: RepositoryId.of(row.repository_id),
+      identityId: row.identity_id || '',
       folderId: row.folder_id ? (row.folder_id as FolderId) : null,
       type: row.type,
       name: row.name,

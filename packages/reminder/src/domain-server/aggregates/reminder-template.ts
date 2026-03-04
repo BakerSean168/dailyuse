@@ -274,6 +274,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   }): ReminderHistory {
     const history = ReminderHistory.create({
       templateId: this.id,
+      identityId: this.identityId,
       triggeredAt: params.triggeredAt,
       result: params.result,
       error: params.error,

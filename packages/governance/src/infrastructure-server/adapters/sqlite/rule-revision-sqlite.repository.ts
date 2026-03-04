@@ -11,7 +11,10 @@ import type { RuleRevision } from '../../../domain-server/entities/rule-revision
 import type { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { RuleRevisionSqliteMapper, type RuleRevisionSqliteRow } from './mappers/rule-revision-sqlite.mapper';
+import {
+  RuleRevisionSqliteMapper,
+  type RuleRevisionSqliteRow,
+} from './mappers/rule-revision-sqlite.mapper';
 
 export class RuleRevisionSqliteRepository implements IRuleRevisionRepository {
   constructor(private readonly db: Database.Database) {}
@@ -23,20 +26,30 @@ export class RuleRevisionSqliteRepository implements IRuleRevisionRepository {
   async save(revision: RuleRevision): Promise<Result<void>> {
     try {
       const row = RuleRevisionSqliteMapper.toPersistence(revision);
-      this.db.prepare(`
+      this.db
+        .prepare(
+          `
         INSERT INTO rule_revisions (
           id, rule_id, revision_number, author_id,
           changed_fields, previous_values, new_values,
           change_type, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        row.id, row.rule_id, row.revision_number, row.author_id,
-        row.changed_fields, row.previous_values, row.new_values,
-        row.change_type, row.created_at,
-      );
+      `,
+        )
+        .run(
+          row.id,
+          row.rule_id,
+          row.revision_number,
+          row.author_id,
+          row.changed_fields,
+          row.previous_values,
+          row.new_values,
+          row.change_type,
+          row.created_at,
+        );
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save revision: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to save revision`);
     }
   }
 
@@ -51,7 +64,7 @@ export class RuleRevisionSqliteRepository implements IRuleRevisionRepository {
         .all(ruleId) as RuleRevisionSqliteRow[];
       return ok(RuleRevisionSqliteMapper.toDomainMany(rows));
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revisions: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find revisions`);
     }
   }
 
@@ -65,7 +78,7 @@ export class RuleRevisionSqliteRepository implements IRuleRevisionRepository {
         .get(ruleId, revisionNumber) as RuleRevisionSqliteRow | undefined;
       return ok(row ? RuleRevisionSqliteMapper.toDomain(row) : null);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revision: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find revision`);
     }
   }
 
@@ -76,7 +89,7 @@ export class RuleRevisionSqliteRepository implements IRuleRevisionRepository {
         .get(ruleId) as { count: number };
       return ok(result.count);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to count revisions: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to count revisions`);
     }
   }
 }

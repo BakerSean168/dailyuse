@@ -104,6 +104,7 @@ const goal_folders = new Table({
 });
 
 const key_results = new Table({
+  identity_id: column.text,
   goal_id: column.text, // FK
   title: column.text,
   description: column.text,
@@ -121,6 +122,7 @@ const key_results = new Table({
 });
 
 const goal_records = new Table({
+  identity_id: column.text,
   key_result_id: column.text, // FK
   value: column.real,
   note: column.text,
@@ -132,6 +134,7 @@ const goal_records = new Table({
 });
 
 const goal_reviews = new Table({
+  identity_id: column.text,
   goal_id: column.text, // FK
   review_type: column.text,
   content: column.text,
@@ -147,6 +150,7 @@ const goal_reviews = new Table({
 });
 
 const key_result_weight_snapshots = new Table({
+  identity_id: column.text,
   goal_id: column.text, // FK
   key_result_id: column.text, // FK
   old_weight: column.real,
@@ -283,6 +287,7 @@ const task_instances = new Table({
 });
 
 const task_dependencies = new Table({
+  identity_id: column.text,
   predecessor_task_id: column.text, // FK
   successor_task_id: column.text, // FK
   dependency_type: column.text,
@@ -294,6 +299,7 @@ const task_dependencies = new Table({
 });
 
 const task_template_history = new Table({
+  identity_id: column.text,
   template_id: column.text, // FK
   action: column.text,
   changes: column.text, // JSON
@@ -402,6 +408,7 @@ const schedule_tasks = new Table({
 });
 
 const schedule_executions = new Table({
+  identity_id: column.text,
   task_id: column.text, // FK
   execution_time: column.text,
   status: column.text,
@@ -507,6 +514,7 @@ const reminder_instances = new Table({
 });
 
 const reminder_history = new Table({
+  identity_id: column.text,
   template_id: column.text, // FK
   triggered_at: column.text,
   result: column.text,
@@ -525,6 +533,7 @@ const reminder_statistics = new Table({
 });
 
 const reminder_responses = new Table({
+  identity_id: column.text,
   template_id: column.text, // FK
   action: column.text,
   response_time: column.integer,
@@ -569,6 +578,7 @@ const notifications = new Table({
 });
 
 const notification_channels = new Table({
+  identity_id: column.text,
   notification_id: column.text, // FK
   channel_type: column.text,
   status: column.text,
@@ -580,6 +590,7 @@ const notification_channels = new Table({
 });
 
 const notification_history = new Table({
+  identity_id: column.text,
   notification_id: column.text, // FK
   action: column.text,
   details: column.text,
@@ -699,6 +710,7 @@ const documents = new Table({
 });
 
 const document_versions = new Table({
+  identity_id: column.text,
   document_id: column.text, // FK
   version_number: column.integer,
   title: column.text,
@@ -713,6 +725,7 @@ const document_versions = new Table({
 });
 
 const document_links = new Table({
+  identity_id: column.text,
   source_document_id: column.text, // FK
   target_document_id: column.text, // FK
   link_text: column.text,
@@ -741,6 +754,7 @@ const ai_conversations = new Table({
 });
 
 const ai_messages = new Table({
+  identity_id: column.text,
   conversation_id: column.text, // FK
   role: column.text,
   content: column.text,
@@ -858,6 +872,7 @@ const repository_statistics = new Table({
 });
 
 const folders = new Table({
+  identity_id: column.text,
   repository_id: column.text, // FK
   parent_id: column.text, // FK (self)
   name: column.text,
@@ -870,6 +885,7 @@ const folders = new Table({
 });
 
 const resources = new Table({
+  identity_id: column.text,
   repository_id: column.text, // FK
   folder_id: column.text, // FK
   name: column.text,
@@ -892,6 +908,7 @@ const resources = new Table({
 });
 
 const repository_resources = new Table({
+  identity_id: column.text,
   repository_id: column.text, // FK
   name: column.text,
   type: column.text,

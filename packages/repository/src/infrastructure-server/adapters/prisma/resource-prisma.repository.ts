@@ -44,25 +44,11 @@ function parseStats(value: unknown): ResourceStats {
   return ResourceStats.fromDTO(value as ResourceStatsDTO);
 }
 
-function mapToDomain(data: {
-  id: string;
-  repositoryId: string;
-  folderId: string | null;
-  type: string;
-  name: string;
-  path: string;
-  size: number;
-  content: string | null;
-  metadata: unknown;
-  stats: unknown;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-}): Resource {
+function mapToDomain(data: any): Resource {
   const state: ResourceState = {
     id: ResourceId.of(data.id),
     repositoryId: RepositoryId.of(data.repositoryId),
+    identityId: data.identityId ?? '',
     folderId: data.folderId as FolderId | null,
     type: data.type as ResourceType,
     name: data.name,
@@ -100,6 +86,7 @@ export class ResourcePrismaRepository implements IResourceRepository {
       create: {
         id: dto.id,
         repositoryId: dto.repositoryId,
+        identityId: dto.identityId,
         folderId: dto.folderId,
         name: dto.name,
         type: dto.type,

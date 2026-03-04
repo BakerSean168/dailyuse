@@ -27,14 +27,17 @@ model AiConversation {
 
 model AiMessage {
   id             String   @id
+  identityId     String   @map("identity_id")
   conversationId String   @map("conversation_id")
   role           String // USER, ASSISTANT, SYSTEM
   content        String   @db.Text
   tokenUsage     String?  @map("token_usage") // JSON
   createdAt      DateTime @default(now()) @map("created_at")
 
+  identity     Account        @relation("AccountAiMessages", fields: [identityId], references: [id])
   conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([conversationId])
   @@index([createdAt])
   @@map("ai_messages")

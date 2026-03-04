@@ -27,18 +27,21 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
     successorTaskId: string;
     dependencyType?: DependencyType;
     lagDays?: number;
+    identityId: string;
   }): Promise<TaskDependencyServerDTO> {
     const entity = TaskDependency.create({
       predecessorTaskId: data.predecessorTaskId,
       successorTaskId: data.successorTaskId,
       dependencyType: data.dependencyType,
       lagDays: data.lagDays,
+      identityId: data.identityId,
     });
     const dto = entity.toServerDTO();
 
     const dependency = await this.prisma.taskDependency.create({
       data: {
         id: dto.id,
+        identityId: dto.identityId,
         predecessorTaskId: dto.predecessorTaskId,
         successorTaskId: dto.successorTaskId,
         dependencyType: String(dto.dependencyType),
@@ -147,10 +150,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
   async deleteByTaskId(taskId: string): Promise<void> {
     await this.prisma.taskDependency.deleteMany({
       where: {
-        OR: [
-          { predecessorTaskId: taskId },
-          { successorTaskId: taskId },
-        ],
+        OR: [{ predecessorTaskId: taskId }, { successorTaskId: taskId }],
       },
     });
   }
@@ -182,10 +182,7 @@ export class TaskDependencyPrismaRepository implements ITaskDependencyRepository
 
     const dependencies = await this.prisma.taskDependency.findMany({
       where: {
-        OR: [
-          { predecessorTaskId: { in: templateIds } },
-          { successorTaskId: { in: templateIds } },
-        ],
+        OR: [{ predecessorTaskId: { in: templateIds } }, { successorTaskId: { in: templateIds } }],
       },
       orderBy: { createdAt: 'asc' },
     });

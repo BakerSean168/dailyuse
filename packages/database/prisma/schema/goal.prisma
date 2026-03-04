@@ -111,8 +111,9 @@ model GoalFolder {
 /// 衡量目标进度的具体指标（OKR 中的 KR）
 model KeyResult {
   // ============ 主键与外键 ============
-  id     String @id
-  goalId String @map("goal_id")
+  id         String @id
+  identityId String @map("identity_id")
+  goalId     String @map("goal_id")
 
   // ============ 基础信息 ============
   title       String /// KR 标题
@@ -136,11 +137,13 @@ model KeyResult {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
+  identity                 Account                   @relation("AccountKeyResults", fields: [identityId], references: [id])
   goal                     Goal                      @relation(fields: [goalId], references: [id], onDelete: Cascade)
   records                  GoalRecord[] /// 记录历史数据（一对多，级联删除）
   keyResultWeightSnapshots KeyResultWeightSnapshot[] /// 权重变更快照（一对多，级联删除）
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([goalId]) /// 按目标查询KR列表
   @@index([goalId, order]) /// 按目标查询并按顺序排序
   @@map("key_results")
@@ -151,6 +154,7 @@ model KeyResult {
 model GoalRecord {
   // ============ 主键与外键 ============
   id          String @id
+  identityId  String @map("identity_id")
   keyResultId String @map("key_result_id")
 
   // ============ 记录数据 ============
@@ -165,9 +169,11 @@ model GoalRecord {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
+  identity  Account   @relation("AccountGoalRecords", fields: [identityId], references: [id])
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([keyResultId, recordedAt]) /// 按KR查询时间序列数据（常用）
   @@index([recordedAt]) /// 按时间查询全局记录
   @@map("goal_records")
@@ -177,8 +183,9 @@ model GoalRecord {
 /// 记录目标的回顾与反思（复盘）
 model GoalReview {
   // ============ 主键与外键 ============
-  id     String @id
-  goalId String @map("goal_id")
+  id         String @id
+  identityId String @map("identity_id")
+  goalId     String @map("goal_id")
 
   // ============ 评审内容 ============
   reviewType     String  @map("review_type") /// 评审类型（weekly/monthly/milestone/completion）
@@ -196,9 +203,11 @@ model GoalReview {
   deletedAt DateTime? @map("deleted_at")
 
   // ============ 关系映射 ============
-  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  identity Account @relation("AccountGoalReviews", fields: [identityId], references: [id])
+  goal     Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([goalId, createdAt]) /// 按目标查询评审时间线（常用）
   @@index([reviewType]) /// 按评审类型分类查询
   @@map("goal_reviews")
@@ -209,6 +218,7 @@ model GoalReview {
 model KeyResultWeightSnapshot {
   // ============ 主键与外键 ============
   id          String @id
+  identityId  String @map("identity_id")
   goalId      String @map("goal_id")
   keyResultId String @map("key_result_id")
 
@@ -227,10 +237,12 @@ model KeyResultWeightSnapshot {
   createdAt DateTime @default(now()) @map("created_at")
 
   // ============ 关系映射 ============
+  identity  Account   @relation("AccountKeyResultWeightSnapshots", fields: [identityId], references: [id])
   goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
   keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
 
   // ============ 索引优化 ============
+  @@index([identityId])
   @@index([goalId, snapshotTime]) /// 按目标查询权重变更历史（常用）
   @@index([keyResultId, snapshotTime]) /// 按KR查询权重变更历史
   @@index([snapshotTime]) /// 按时间查询全局快照

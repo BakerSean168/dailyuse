@@ -19,6 +19,7 @@ import type { IStoragePort } from '../../ports/IStoragePort';
  */
 export interface CreateResourceInput {
   repositoryId: string;
+  identityId: string;
   folderId?: string;
   name: string;
   type: ResourceType;
@@ -76,6 +77,7 @@ export class CreateResource {
 
     const resource = Resource.create({
       repositoryId: RepositoryId.of(input.repositoryId),
+      identityId: input.identityId,
       folderId: input.folderId ? FolderId.of(input.folderId) : null,
       name: input.name,
       type: input.type,
@@ -104,4 +106,3 @@ export class CreateResource {
     return { resource: resource.toClientDTO() };
   }
 }
-

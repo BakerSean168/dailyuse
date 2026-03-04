@@ -14,6 +14,7 @@ import type { ReminderHistoryClientDTO } from './reminder-history-client';
 export interface ReminderHistoryServerDTO {
   id: string;
   templateId: string;
+  identityId: string;
   triggeredAt: number; // epoch ms
   result: TriggerResult;
   error?: string | null;
@@ -28,6 +29,7 @@ export interface ReminderHistoryServerDTO {
 export interface ReminderHistoryPersistenceDTO {
   id: string;
   templateId: string;
+  identityId: string;
   triggeredAt: number;
   result: TriggerResult;
   error?: string | null;

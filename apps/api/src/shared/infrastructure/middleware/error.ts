@@ -5,7 +5,7 @@
  */
 
 import type { Express, Request, Response, NextFunction } from 'express';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger, isDomainError, mapPrismaError } from '@dailyuse/utils';
 import { errorCodeToHttpStatus } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ErrorHandler');
@@ -18,24 +18,43 @@ const logger = createLogger('ErrorHandler');
 export function applyErrorHandlers(app: Express): void {
   // 404 Not Found
   app.use((_req: Request, res: Response) => {
-    res.status(404).json({ code: 'NOT_FOUND', message: 'Not Found' });
+    res.status(404).json({ ok: false, code: 'NOT_FOUND', message: 'Not Found' });
   });
 
   // Global error handler (must have 4 args for Express to recognize it)
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const code: string = err?.code ?? 'INTERNAL_ERROR';
-    // Use canonical ResultCode→HTTP mapping for consistency with expressAdapter
-    const status = errorCodeToHttpStatus(code);
-
     logger.error('Express error handler caught error', err, {
-      status,
-      code,
+      code: err?.code,
       message: err?.message,
     });
 
-    res.status(status).json({
-      code,
-      message: err?.message ?? 'Internal Server Error',
+    // 1. Domain errors — safe to expose code + message
+    if (isDomainError(err)) {
+      const status = errorCodeToHttpStatus(err.code);
+      res.status(status).json({
+        ok: false,
+        code: err.code,
+        message: err.message,
+      });
+      return;
+    }
+
+    // 2. Prisma errors — map to safe generic messages
+    const prismaMapping = mapPrismaError(err);
+    if (prismaMapping) {
+      res.status(prismaMapping.httpStatus).json({
+        ok: false,
+        code: prismaMapping.resultCode,
+        message: prismaMapping.message,
+      });
+      return;
+    }
+
+    // 3. Everything else — never leak internal details
+    res.status(500).json({
+      ok: false,
+      code: 'INTERNAL_ERROR',
+      message: 'Internal server error',
     });
   });
 }

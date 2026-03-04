@@ -40,6 +40,7 @@ export interface KeyResultWeightSnapshot {
   id: KeyResultWeightSnapshotId;
   goalId: GoalId;
   keyResultId: KeyResultId;
+  identityId: IdentityId;
   oldWeight: number;
   newWeight: number;
   weightDelta: number;
@@ -60,6 +61,7 @@ export interface KeyResultWeightSnapshotDTO {
   id: KeyResultWeightSnapshotId;
   goalId: GoalId;
   keyResultId: KeyResultId;
+  identityId: IdentityId;
   oldWeight: number;
   newWeight: number;
   weightDelta: number;
@@ -80,6 +82,7 @@ export interface KeyResultWeightSnapshotPersistenceDTO {
   id: KeyResultWeightSnapshotId;
   goalId: GoalId;
   keyResultId: KeyResultId;
+  identityId: IdentityId;
   oldWeight: number;
   newWeight: number;
   weightDelta: number;

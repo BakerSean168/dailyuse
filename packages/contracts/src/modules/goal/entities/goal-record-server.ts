@@ -1,14 +1,21 @@
 /**
  * GoalRecord Entity - Server Interface
  * 目标记录实体 - 服务端接口
- * 
+ *
  * 【同步支持】
  * - deletedAt: 软删除时间戳
  * - version: 乐观锁版本号
  * - updatedAt: 最后更新时间（增量同步）
  */
 
-import type { TransferDate, PersistenceDate, DomainDate, GoalRecordId, KeyResultId } from '../../../primitives';
+import type {
+  TransferDate,
+  PersistenceDate,
+  DomainDate,
+  GoalRecordId,
+  KeyResultId,
+  IdentityId,
+} from '../../../primitives';
 
 // ============ DTO 定义 ============
 
@@ -19,7 +26,8 @@ import type { TransferDate, PersistenceDate, DomainDate, GoalRecordId, KeyResult
 export interface GoalRecordServerDTO {
   id: GoalRecordId;
   keyResultId: KeyResultId;
-  value: number;  // 本次记录的值（独立值）
+  identityId: IdentityId;
+  value: number; // 本次记录的值（独立值）
   note: string | null;
   recordedAt: TransferDate;
   version: number;
@@ -35,7 +43,7 @@ export interface GoalRecordServerDTO {
 export interface GoalRecordPersistenceDTO {
   id: GoalRecordId;
   keyResultId: KeyResultId;
-  value: number;  // 本次记录的值（独立值）
+  value: number; // 本次记录的值（独立值）
   note: string | null;
   recordedAt: PersistenceDate;
   version: number;

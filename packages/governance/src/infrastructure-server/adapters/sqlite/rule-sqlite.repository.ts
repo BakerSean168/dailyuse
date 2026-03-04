@@ -11,7 +11,10 @@
  */
 
 import type Database from 'better-sqlite3';
-import type { IRuleRepository, RuleFilter } from '../../../domain-server/repositories/i-rule-repository';
+import type {
+  IRuleRepository,
+  RuleFilter,
+} from '../../../domain-server/repositories/i-rule-repository';
 import type { Rule } from '../../../domain-server/aggregates/rule';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import type { RuleId } from '../../../domain-shared/value-objects/rule-id';
@@ -30,7 +33,9 @@ export class RuleSqliteRepository implements IRuleRepository {
   async save(rule: Rule): Promise<Result<void>> {
     try {
       const row = RuleSqliteMapper.toPersistence(rule);
-      this.db.prepare(`
+      this.db
+        .prepare(
+          `
         INSERT INTO rules (
           id, code, title, description, severity, status,
           deprecation_reason, replacement_rule_id, live_reference_location,
@@ -55,15 +60,28 @@ export class RuleSqliteRepository implements IRuleRepository {
           good_examples           = excluded.good_examples,
           bad_examples            = excluded.bad_examples,
           updated_at              = excluded.updated_at
-      `).run(
-        row.id, row.code, row.title, row.description, row.severity, row.status,
-        row.deprecation_reason, row.replacement_rule_id, row.live_reference_location,
-        row.tags, row.good_examples, row.bad_examples, row.author_id,
-        row.created_at, row.updated_at,
-      );
+      `,
+        )
+        .run(
+          row.id,
+          row.code,
+          row.title,
+          row.description,
+          row.severity,
+          row.status,
+          row.deprecation_reason,
+          row.replacement_rule_id,
+          row.live_reference_location,
+          row.tags,
+          row.good_examples,
+          row.bad_examples,
+          row.author_id,
+          row.created_at,
+          row.updated_at,
+        );
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save rule: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to save rule`);
     }
   }
 
@@ -74,7 +92,9 @@ export class RuleSqliteRepository implements IRuleRepository {
 
       const transaction = this.db.transaction(() => {
         // Upsert rule
-        this.db.prepare(`
+        this.db
+          .prepare(
+            `
           INSERT INTO rules (
             id, code, title, description, severity, status,
             deprecation_reason, replacement_rule_id, live_reference_location,
@@ -99,31 +119,54 @@ export class RuleSqliteRepository implements IRuleRepository {
             good_examples           = excluded.good_examples,
             bad_examples            = excluded.bad_examples,
             updated_at              = excluded.updated_at
-        `).run(
-          ruleRow.id, ruleRow.code, ruleRow.title, ruleRow.description, ruleRow.severity, ruleRow.status,
-          ruleRow.deprecation_reason, ruleRow.replacement_rule_id, ruleRow.live_reference_location,
-          ruleRow.tags, ruleRow.good_examples, ruleRow.bad_examples, ruleRow.author_id,
-          ruleRow.created_at, ruleRow.updated_at,
-        );
+        `,
+          )
+          .run(
+            ruleRow.id,
+            ruleRow.code,
+            ruleRow.title,
+            ruleRow.description,
+            ruleRow.severity,
+            ruleRow.status,
+            ruleRow.deprecation_reason,
+            ruleRow.replacement_rule_id,
+            ruleRow.live_reference_location,
+            ruleRow.tags,
+            ruleRow.good_examples,
+            ruleRow.bad_examples,
+            ruleRow.author_id,
+            ruleRow.created_at,
+            ruleRow.updated_at,
+          );
 
         // Insert revision（不可变，INSERT ONLY）
-        this.db.prepare(`
+        this.db
+          .prepare(
+            `
           INSERT INTO rule_revisions (
             id, rule_id, revision_number, author_id,
             changed_fields, previous_values, new_values,
             change_type, created_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          revRow.id, revRow.rule_id, revRow.revision_number, revRow.author_id,
-          revRow.changed_fields, revRow.previous_values, revRow.new_values,
-          revRow.change_type, revRow.created_at,
-        );
+        `,
+          )
+          .run(
+            revRow.id,
+            revRow.rule_id,
+            revRow.revision_number,
+            revRow.author_id,
+            revRow.changed_fields,
+            revRow.previous_values,
+            revRow.new_values,
+            revRow.change_type,
+            revRow.created_at,
+          );
       });
 
       transaction();
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save rule with revision: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to save rule with revision`);
     }
   }
 
@@ -133,29 +176,35 @@ export class RuleSqliteRepository implements IRuleRepository {
 
   async findById(id: RuleId): Promise<Result<Rule | null>> {
     try {
-      const row = this.db.prepare(`SELECT * FROM rules WHERE id = ?`).get(id) as RuleSqliteRow | undefined;
+      const row = this.db.prepare(`SELECT * FROM rules WHERE id = ?`).get(id) as
+        | RuleSqliteRow
+        | undefined;
       return ok(row ? RuleSqliteMapper.toDomain(row) : null);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by ID: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find rule by ID`);
     }
   }
 
   async findByCode(code: string): Promise<Result<Rule | null>> {
     try {
-      const row = this.db.prepare(`SELECT * FROM rules WHERE code = ?`).get(code) as RuleSqliteRow | undefined;
+      const row = this.db.prepare(`SELECT * FROM rules WHERE code = ?`).get(code) as
+        | RuleSqliteRow
+        | undefined;
       return ok(row ? RuleSqliteMapper.toDomain(row) : null);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by code: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find rule by code`);
     }
   }
 
   async findAll(filter?: RuleFilter): Promise<Result<Rule[]>> {
     try {
       const { sql, params } = buildFilterWhere(filter);
-      const rows = this.db.prepare(`SELECT * FROM rules${sql} ORDER BY updated_at DESC`).all(...params) as RuleSqliteRow[];
+      const rows = this.db
+        .prepare(`SELECT * FROM rules${sql} ORDER BY updated_at DESC`)
+        .all(...params) as RuleSqliteRow[];
       return ok(RuleSqliteMapper.toDomainMany(rows));
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rules: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find rules`);
     }
   }
 
@@ -182,7 +231,7 @@ export class RuleSqliteRepository implements IRuleRepository {
 
       return ok(RuleSqliteMapper.toDomainMany(rows));
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to search rules: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to search rules`);
     }
   }
 
@@ -198,7 +247,7 @@ export class RuleSqliteRepository implements IRuleRepository {
       }
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to delete rule: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to delete rule`);
     }
   }
 
@@ -246,7 +295,7 @@ function buildFilterWhere(filter?: RuleFilter): { sql: string; params: unknown[]
     // OR 语义：命中任意一个 tag 即返回
     const tagConditions = filter.tags.map(() => `tags LIKE ?`);
     conditions.push(`(${tagConditions.join(' OR ')})`);
-    params.push(...filter.tags.map(t => `%"${t}"%`));
+    params.push(...filter.tags.map((t) => `%"${t}"%`));
   }
 
   if (conditions.length === 0) return { sql: '', params: [] };

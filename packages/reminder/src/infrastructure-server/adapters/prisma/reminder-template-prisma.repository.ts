@@ -4,17 +4,25 @@
  *
  * 鑱氬悎鏍癸細ReminderTemplate
  * 瀛愬疄浣擄細ReminderHistory
- * 
+ *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
-import type { PrismaClient, ReminderTemplate as PrismaReminderTemplate, ReminderHistory as PrismaReminderHistory, Prisma } from '@dailyuse/database';
+import type {
+  PrismaClient,
+  ReminderTemplate as PrismaReminderTemplate,
+  ReminderHistory as PrismaReminderHistory,
+  Prisma,
+} from '@dailyuse/database';
 import type { IReminderTemplateRepository } from '../../../domain-server/repositories/IReminderTemplateRepository';
 import type { ReminderStatus } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '../../../domain-server/aggregates/reminder-template';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
-import { PrismaReminderTemplateMapper, type PrismaReminderTemplateWithHistory } from './mappers/prisma-reminder-template-mapper';
+import {
+  PrismaReminderTemplateMapper,
+  type PrismaReminderTemplateWithHistory,
+} from './mappers/prisma-reminder-template-mapper';
 
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
@@ -29,7 +37,10 @@ export class ReminderTemplatePrismaRepository
   /**
    * Prisma record 鈫?ReminderTemplate 鑱氬悎鏍?
    */
-  private mapToEntity(data: PrismaReminderTemplate, historyRecords?: PrismaReminderHistory[]): ReminderTemplate {
+  private mapToEntity(
+    data: PrismaReminderTemplate,
+    historyRecords?: PrismaReminderHistory[],
+  ): ReminderTemplate {
     return PrismaReminderTemplateMapper.toDomain(data, historyRecords);
   }
 
@@ -67,6 +78,7 @@ export class ReminderTemplatePrismaRepository
             create: {
               id: hDto.id,
               templateId: hDto.templateId,
+              identityId: String(template.identityId),
               triggeredAt: new Date(hDto.triggeredAt),
               result: hDto.result,
               error: hDto.error,
@@ -95,7 +107,9 @@ export class ReminderTemplatePrismaRepository
   ): Promise<ReminderTemplate | null> {
     const data = await this.prisma.reminderTemplate.findUnique({
       where: { id },
-      include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
+      include: options?.includeHistory
+        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        : undefined,
     });
     if (!data) return null;
     return this.mapToEntity(data, (data as PrismaReminderTemplateWithHistory).history);
@@ -112,7 +126,9 @@ export class ReminderTemplatePrismaRepository
 
     const data = await this.prisma.reminderTemplate.findMany({
       where,
-      include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
+      include: options?.includeHistory
+        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        : undefined,
       orderBy: { createdAt: 'asc' },
     });
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
@@ -129,7 +145,9 @@ export class ReminderTemplatePrismaRepository
 
     const data = await this.prisma.reminderTemplate.findMany({
       where,
-      include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
+      include: options?.includeHistory
+        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        : undefined,
       orderBy: { createdAt: 'asc' },
     });
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
@@ -181,7 +199,9 @@ export class ReminderTemplatePrismaRepository
 
     const data = await this.prisma.reminderTemplate.findMany({
       where: { id: { in: ids } },
-      include: options?.includeHistory ? { history: { orderBy: { triggeredAt: 'desc' } } } : undefined,
+      include: options?.includeHistory
+        ? { history: { orderBy: { triggeredAt: 'desc' } } }
+        : undefined,
     });
     return data.map((d: PrismaReminderTemplateWithHistory) => this.mapToEntity(d, d.history));
   }

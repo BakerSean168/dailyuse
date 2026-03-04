@@ -2,9 +2,15 @@
  * Domain errors for Goal value objects
  */
 
-export class InvalidWeightError extends Error {
+import { DomainError } from '@dailyuse/utils';
+
+export class InvalidWeightError extends DomainError {
   constructor(field: string, value: number) {
-    super(`Invalid weight value for ${field}: ${value}. Must be between 0 and 100.`);
-    this.name = 'InvalidWeightError';
+    super(
+      'VALIDATION_ERROR',
+      `Invalid weight value for ${field}: ${value}. Must be between 0 and 100.`,
+      { field, value },
+      422,
+    );
   }
 }

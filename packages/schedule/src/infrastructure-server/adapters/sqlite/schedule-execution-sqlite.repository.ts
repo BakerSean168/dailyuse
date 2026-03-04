@@ -13,9 +13,9 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
 
   async save(execution: ScheduleExecution): Promise<void> {
     const stmt = this.db.prepare(`
-      INSERT INTO schedule_executions (
-        id, task_id, execution_time, status, duration, result, error, retry_count, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       INSERT INTO schedule_executions (
+        id, task_id, identity_id, execution_time, status, duration, result, error, retry_count, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
         duration = excluded.duration,
@@ -27,6 +27,7 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     stmt.run(
       execution.id,
       execution.taskId,
+      execution.identityId || null,
       execution.executionTime,
       execution.status,
       execution.duration || null,
@@ -48,7 +49,7 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
 
   async findByTaskId(taskId: string): Promise<ScheduleExecution[]> {
     const stmt = this.db.prepare(
-      `SELECT * FROM schedule_executions WHERE task_id = ? ORDER BY execution_time DESC`
+      `SELECT * FROM schedule_executions WHERE task_id = ? ORDER BY execution_time DESC`,
     );
     const rows = stmt.all(taskId) as any[];
 
@@ -76,6 +77,7 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     return {
       id: row.id,
       taskId: row.task_id,
+      identityId: row.identity_id || undefined,
       executionTime: new Date(row.execution_time),
       status: row.status as ExecutionStatus,
       duration: row.duration || null,
@@ -86,4 +88,3 @@ export class SqliteScheduleExecutionRepository implements IScheduleExecutionRepo
     };
   }
 }
-

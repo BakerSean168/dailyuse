@@ -12,7 +12,7 @@ import { TaskTimeConfig, RecurrenceRule, TaskReminderConfig } from '@/domain-ser
 import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
 import type { TaskTemplateClientDTO, CreateTaskTemplateReq } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { eventBus } from '@dailyuse/utils';
+import { eventBus, createLogger } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -21,6 +21,7 @@ import { ok } from '@dailyuse/contracts/result';
  */
 export class CreateTaskTemplate {
   private readonly generationService: TaskInstanceGenerationService;
+  private readonly logger = createLogger('CreateTaskTemplate');
 
   constructor(
     private readonly templateRepository: ITaskTemplateRepository,
@@ -99,7 +100,7 @@ export class CreateTaskTemplate {
 
       return instances.length;
     } catch (error) {
-      console.error(`[CreateTaskTemplate] 生成初始实例失败:`, error);
+      this.logger.error('生成初始实例失败', { error });
       return 0;
     }
   }

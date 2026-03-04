@@ -1,12 +1,13 @@
 /**
  * SQLite GoalRecord Repository Implementation
- * 目标进度记录�?SQLite 仓储实现
+ * 目标进度记录�?SQLite 仓储实现
  */
 
 import type Database from 'better-sqlite3';
 import { GoalRecord } from '@/domain-server';
 import type { IGoalRecordRepository, GoalRecordQueryOptions } from '@/domain-server';
 import { GoalRecordId, KeyResultId } from '@/domain-shared';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 export class SqliteGoalRecordRepository implements IGoalRecordRepository {
   constructor(private db: Database.Database) {}
@@ -17,9 +18,9 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
     this.db
       .prepare(
         `INSERT INTO goal_records (
-        id, key_result_id, value, note, recorded_at,
+        id, key_result_id, identity_id, value, note, recorded_at,
         version, created_at, updated_at, deleted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         value = excluded.value,
         note = excluded.note,
@@ -31,6 +32,7 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
       .run(
         dto.id as string,
         dto.keyResultId as string,
+        dto.identityId as string,
         dto.value,
         dto.note,
         dto.recordedAt,
@@ -70,10 +72,7 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
     return rows.map((row) => this.rowToGoalRecord(row));
   }
 
-  async findByGoalId(
-    goalId: string,
-    options?: GoalRecordQueryOptions,
-  ): Promise<GoalRecord[]> {
+  async findByGoalId(goalId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
     // Join through key_results to find all records for a goal
     let query = `
       SELECT gr.* FROM goal_records gr
@@ -162,23 +161,20 @@ export class SqliteGoalRecordRepository implements IGoalRecordRepository {
   }
 
   async delete(recordId: string): Promise<void> {
-    this.db
-      .prepare(`DELETE FROM goal_records WHERE id = ?`)
-      .run(recordId);
+    this.db.prepare(`DELETE FROM goal_records WHERE id = ?`).run(recordId);
   }
 
   async deleteMany(recordIds: string[]): Promise<void> {
     if (recordIds.length === 0) return;
     const placeholders = recordIds.map(() => '?').join(',');
-    this.db
-      .prepare(`DELETE FROM goal_records WHERE id IN (${placeholders})`)
-      .run(...recordIds);
+    this.db.prepare(`DELETE FROM goal_records WHERE id IN (${placeholders})`).run(...recordIds);
   }
 
   private rowToGoalRecord(row: any): GoalRecord {
     return GoalRecord.load({
       id: GoalRecordId.of(row.id),
       keyResultId: KeyResultId.of(row.key_result_id),
+      identityId: row.identity_id as IdentityId,
       value: row.value,
       note: row.note ?? null,
       recordedAt: new Date(row.recorded_at),

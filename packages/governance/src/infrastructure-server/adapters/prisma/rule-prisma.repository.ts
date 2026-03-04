@@ -1,9 +1,9 @@
 /**
  * Rule Prisma Repository
  * 规则仓储 - Prisma实现
- * 
+ *
  * Implements IRuleRepository using Prisma ORM with PostgreSQL/SQLite database
- * 
+ *
  * Responsibilities:
  * - CRUD operations for Rule aggregate
  * - Query operations with filters
@@ -12,7 +12,10 @@
  */
 
 import type { Prisma, PrismaClient } from '@dailyuse/database';
-import type { IRuleRepository, RuleFilter } from '../../../domain-server/repositories/i-rule-repository';
+import type {
+  IRuleRepository,
+  RuleFilter,
+} from '../../../domain-server/repositories/i-rule-repository';
 import type { Rule } from '../../../domain-server/aggregates/rule';
 import type { RuleRevision } from '../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../domain-shared/value-objects/rule-id';
@@ -23,7 +26,7 @@ import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper'
 
 /**
  * Prisma Rule Repository
- * 
+ *
  * Uses PrismaClient for database access
  */
 export class RulePrismaRepository implements IRuleRepository {
@@ -35,7 +38,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
   /**
    * Saves rule (insert or update)
-   * 
+   *
    * Uses upsert to handle both create and update cases
    */
   async save(rule: Rule): Promise<Result<void>> {
@@ -58,7 +61,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save rule: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', 'Failed to save rule');
     }
   }
 
@@ -91,7 +94,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save rule with revision: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', 'Failed to save rule with revision');
     }
   }
 
@@ -111,7 +114,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by ID: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find rule by ID`);
     }
   }
 
@@ -131,13 +134,13 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by code: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find rule by code`);
     }
   }
 
   /**
    * Finds all rules matching filter
-   * 
+   *
    * Supports filtering by:
    * - status (single or array)
    * - severity (single value)
@@ -180,19 +183,19 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rules: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to find rules`);
     }
   }
 
   /**
    * Searches rules by keyword
-   * 
+   *
    * Searches in:
    * - code
    * - title
    * - description
    * - tags (JSON string)
-   * 
+   *
    * Returns results ordered by relevance (not implemented in MVP)
    */
   async search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>> {
@@ -240,13 +243,13 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to search rules: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to search rules`);
     }
   }
 
   /**
    * Deletes rule (hard delete)
-   * 
+   *
    * Note: In production, this should check for revisions first
    * and only allow deletion of Draft rules without revisions
    */
@@ -263,7 +266,7 @@ export class RulePrismaRepository implements IRuleRepository {
         return error('NOT_FOUND', `Rule with ID '${id}' not found`);
       }
 
-      return error('DATABASE_ERROR', `Failed to delete rule: ${err instanceof Error ? err.message : String(err)}`);
+      return error('DATABASE_ERROR', `Failed to delete rule`);
     }
   }
 
@@ -282,5 +285,4 @@ export class RulePrismaRepository implements IRuleRepository {
       return false;
     }
   }
-
 }

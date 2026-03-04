@@ -83,9 +83,9 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
     const stmt = this.db.prepare(`
       INSERT INTO document_versions (
-        id, document_id, version_number, change_type, content,
+        id, document_id, identity_id, version_number, change_type, content,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         content = excluded.content,
         updated_at = excluded.updated_at
@@ -94,6 +94,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     stmt.run(
       dto.id,
       dto.documentId,
+      dto.identityId,
       dto.versionNumber,
       dto.changeType,
       dto.contentHash,
@@ -110,9 +111,9 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
   async saveBatch(versions: DocumentVersion[]): Promise<void> {
     const insert = this.db.prepare(`
       INSERT INTO document_versions (
-        id, document_id, version_number, change_type, content,
+        id, document_id, identity_id, version_number, change_type, content,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         content = excluded.content,
         updated_at = excluded.updated_at
@@ -123,6 +124,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
         insert.run(
           dto.id,
           dto.documentId,
+          dto.identityId,
           dto.versionNumber,
           dto.changeType,
           dto.contentHash,

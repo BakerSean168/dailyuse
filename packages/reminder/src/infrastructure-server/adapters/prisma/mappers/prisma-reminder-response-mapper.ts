@@ -17,6 +17,7 @@ export class PrismaReminderResponseMapper {
     return ReminderResponse.load({
       id: ReminderResponseId.of(data.id),
       reminderTemplateId: data.templateId,
+      identityId: (data as any).identityId,
       action: data.action as ReminderResponseAction,
       // responseTime is stored as seconds in DB; convert to JS Date (milliseconds)
       responseTime: data.responseTime != null ? new Date(data.responseTime * 1000) : null,

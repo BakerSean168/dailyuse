@@ -47,6 +47,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
     id: KeyResultWeightSnapshotId,
     goalId: GoalId,
     keyResultId: KeyResultId,
+    identityId: IdentityId,
     oldWeight: number,
     newWeight: number,
     snapshotTime: number,
@@ -60,6 +61,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
     idOrProps: KeyResultWeightSnapshotId | KeyResultWeightSnapshotDTO,
     goalId?: GoalId,
     keyResultId?: KeyResultId,
+    identityId?: IdentityId,
     oldWeight?: number,
     newWeight?: number,
     snapshotTime?: number,
@@ -75,6 +77,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
         id: idOrProps as KeyResultWeightSnapshotId,
         goalId: goalId!,
         keyResultId: keyResultId!,
+        identityId: identityId!,
         oldWeight: oldWeight!,
         newWeight: newWeight!,
         weightDelta: newWeight! - oldWeight!,
@@ -122,6 +125,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
       id: dto.id,
       goalId: dto.goalId,
       keyResultId: dto.keyResultId,
+      identityId: dto.identityId,
       oldWeight: dto.oldWeight,
       newWeight: dto.newWeight,
       weightDelta: dto.weightDelta,
@@ -177,6 +181,10 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
 
   public get keyResultId(): KeyResultId {
     return this.props.keyResultId;
+  }
+
+  public get identityId(): IdentityId {
+    return this.props.identityId;
   }
 
   public get oldWeight(): number {
@@ -330,6 +338,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
       id: this.props.id,
       goalId: this.props.goalId,
       keyResultId: this.props.keyResultId,
+      identityId: this.props.identityId,
       oldWeight: this.props.oldWeight,
       newWeight: this.props.newWeight,
       weightDelta: this.props.weightDelta,
@@ -350,6 +359,7 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
       id: this.props.id,
       goalId: this.props.goalId,
       keyResultId: this.props.keyResultId,
+      identityId: this.props.identityId,
       oldWeight: this.props.oldWeight,
       newWeight: this.props.newWeight,
       weightDelta: this.props.weightDelta,

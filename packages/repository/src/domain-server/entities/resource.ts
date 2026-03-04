@@ -19,6 +19,7 @@ import { BusinessRuleViolationError } from '@dailyuse/utils';
 export interface ResourceState {
   id: ResourceId;
   repositoryId: RepositoryId;
+  identityId: string;
   folderId: FolderId | null;
   type: ResourceType;
   name: string;
@@ -52,6 +53,10 @@ export class Resource extends Entity<ResourceId> {
   // ===== Getters =====
   get repositoryId(): RepositoryId {
     return this._props.repositoryId;
+  }
+
+  get identityId(): string {
+    return this._props.identityId;
   }
 
   get folderId(): FolderId | null {
@@ -231,6 +236,7 @@ export class Resource extends Entity<ResourceId> {
     return {
       id: String(this.id),
       repositoryId: String(this._props.repositoryId),
+      identityId: this._props.identityId,
       folderId: this._props.folderId ? String(this._props.folderId) : null,
       name: this._props.name,
       type: this._props.type,
@@ -353,6 +359,7 @@ export class Resource extends Entity<ResourceId> {
 
   public static create(params: {
     repositoryId: RepositoryId;
+    identityId: string;
     folderId?: FolderId | null;
     name: string;
     type: ResourceType;
@@ -374,6 +381,7 @@ export class Resource extends Entity<ResourceId> {
     return new Resource({
       id,
       repositoryId: params.repositoryId,
+      identityId: params.identityId,
       folderId: params.folderId ?? null,
       type: params.type,
       name: params.name,

@@ -128,6 +128,7 @@ export class SqliteGoalMapper {
     return {
       id: row.id,
       goalId: row.goal_id,
+      identityId: row.identity_id,
       keyResultId: row.key_result_id,
       oldWeight: row.old_weight,
       newWeight: row.new_weight,

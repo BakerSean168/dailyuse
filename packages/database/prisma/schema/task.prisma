@@ -165,6 +165,7 @@ model TaskInstance {
 
 model TaskDependency {
   id                String    @id
+  identityId        String    @map("identity_id")
   predecessorTaskId String    @map("predecessor_task_id")
   successorTaskId   String    @map("successor_task_id")
   dependencyType    String    @default("FINISH_TO_START") @map("dependency_type")
@@ -174,23 +175,28 @@ model TaskDependency {
   updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
 
+  identity        Account      @relation("AccountTaskDependencies", fields: [identityId], references: [id])
   predecessorTask TaskTemplate @relation("PredecessorTaskDeps", fields: [predecessorTaskId], references: [id], onDelete: Cascade)
   successorTask   TaskTemplate @relation("SuccessorTaskDeps", fields: [successorTaskId], references: [id], onDelete: Cascade)
 
   @@unique([predecessorTaskId, successorTaskId])
+  @@index([identityId])
   @@index([successorTaskId])
   @@map("task_dependencies")
 }
 
 model TaskTemplateHistory {
   id         String   @id
+  identityId String   @map("identity_id")
   templateId String   @map("template_id")
   action     String
   changes    String?
   createdAt  DateTime @default(now()) @map("created_at")
 
+  identity Account      @relation("AccountTaskTemplateHistory", fields: [identityId], references: [id])
   template TaskTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([templateId])
   @@map("task_template_history")
 }

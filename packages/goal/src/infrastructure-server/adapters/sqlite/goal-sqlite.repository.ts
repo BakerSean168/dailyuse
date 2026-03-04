@@ -1,9 +1,9 @@
 /**
  * SQLite Goal Repository Implementation
- * 目标�?SQLite 仓储实现
+ * 目标�?SQLite 仓储实现
  *
- * 使用 better-sqlite3 同步 API，外�?async 包装以满足接�?
- * 事务内级联保�?Goal 聚合（KeyResult, GoalReview, WeightSnapshot�?
+ * 使用 better-sqlite3 同步 API，外�?async 包装以满足接�?
+ * 事务内级联保�?Goal 聚合（KeyResult, GoalReview, WeightSnapshot�?
  */
 
 import type Database from 'better-sqlite3';
@@ -94,14 +94,10 @@ export class SqliteGoalRepository implements IGoalRepository {
         if (currentKrIds.length > 0) {
           const placeholders = currentKrIds.map(() => '?').join(',');
           this.db
-            .prepare(
-              `DELETE FROM key_results WHERE goal_id = ? AND id NOT IN (${placeholders})`,
-            )
+            .prepare(`DELETE FROM key_results WHERE goal_id = ? AND id NOT IN (${placeholders})`)
             .run(dto.id as string, ...currentKrIds);
         } else {
-          this.db
-            .prepare(`DELETE FROM key_results WHERE goal_id = ?`)
-            .run(dto.id as string);
+          this.db.prepare(`DELETE FROM key_results WHERE goal_id = ?`).run(dto.id as string);
         }
 
         // Upsert each KR
@@ -122,7 +118,8 @@ export class SqliteGoalRepository implements IGoalRepository {
         `);
 
         for (const kr of dto.keyResults) {
-          const progress = typeof kr.progress === 'string' ? kr.progress : JSON.stringify(kr.progress);
+          const progress =
+            typeof kr.progress === 'string' ? kr.progress : JSON.stringify(kr.progress);
           krStmt.run(
             kr.id as string,
             dto.id as string,
@@ -146,14 +143,10 @@ export class SqliteGoalRepository implements IGoalRepository {
         if (currentReviewIds.length > 0) {
           const placeholders = currentReviewIds.map(() => '?').join(',');
           this.db
-            .prepare(
-              `DELETE FROM goal_reviews WHERE goal_id = ? AND id NOT IN (${placeholders})`,
-            )
+            .prepare(`DELETE FROM goal_reviews WHERE goal_id = ? AND id NOT IN (${placeholders})`)
             .run(dto.id as string, ...currentReviewIds);
         } else {
-          this.db
-            .prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`)
-            .run(dto.id as string);
+          this.db.prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`).run(dto.id as string);
         }
 
         const reviewStmt = this.db.prepare(`
@@ -202,15 +195,16 @@ export class SqliteGoalRepository implements IGoalRepository {
       if (dto.weightSnapshots && dto.weightSnapshots.length > 0) {
         const wsStmt = this.db.prepare(`
           INSERT OR IGNORE INTO weight_snapshots (
-            id, goal_id, key_result_id, old_weight, new_weight, weight_delta,
+            id, goal_id, identity_id, key_result_id, old_weight, new_weight, weight_delta,
             snapshot_time, trigger, reason, operator_id, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         for (const ws of dto.weightSnapshots) {
           wsStmt.run(
             ws.id as string,
             ws.goalId as string,
+            ws.identityId as string,
             ws.keyResultId as string,
             ws.oldWeight,
             ws.newWeight,
@@ -230,13 +224,8 @@ export class SqliteGoalRepository implements IGoalRepository {
 
   // ============ Find ============
 
-  async findById(
-    id: string,
-    options?: { includeChildren?: boolean },
-  ): Promise<Goal | null> {
-    const row = this.db
-      .prepare(`SELECT * FROM goals WHERE id = ? LIMIT 1`)
-      .get(id) as any;
+  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
+    const row = this.db.prepare(`SELECT * FROM goals WHERE id = ? LIMIT 1`).get(id) as any;
 
     if (!row) return null;
 
@@ -268,9 +257,7 @@ export class SqliteGoalRepository implements IGoalRepository {
 
     const rows = this.db.prepare(query).all(...params) as any[];
 
-    return rows.map((row) =>
-      this.rowToGoal(row, options?.includeChildren ?? false),
-    );
+    return rows.map((row) => this.rowToGoal(row, options?.includeChildren ?? false));
   }
 
   async findByFolderId(folderId: string): Promise<Goal[]> {
@@ -290,9 +277,7 @@ export class SqliteGoalRepository implements IGoalRepository {
       // CASCADE via FK will handle sub-entities, but be explicit
       this.db.prepare(`DELETE FROM goal_reviews WHERE goal_id = ?`).run(id);
       this.db.prepare(`DELETE FROM key_results WHERE goal_id = ?`).run(id);
-      this.db
-        .prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`)
-        .run(id);
+      this.db.prepare(`DELETE FROM weight_snapshots WHERE goal_id = ?`).run(id);
       this.db.prepare(`DELETE FROM goals WHERE id = ?`).run(id);
     })();
   }
@@ -300,9 +285,7 @@ export class SqliteGoalRepository implements IGoalRepository {
   // ============ Utilities ============
 
   async exists(id: string): Promise<boolean> {
-    const row = this.db
-      .prepare(`SELECT 1 FROM goals WHERE id = ? LIMIT 1`)
-      .get(id);
+    const row = this.db.prepare(`SELECT 1 FROM goals WHERE id = ? LIMIT 1`).get(id);
     return row !== undefined;
   }
 
@@ -310,31 +293,21 @@ export class SqliteGoalRepository implements IGoalRepository {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(',');
     this.db
-      .prepare(
-        `UPDATE goals SET status = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      )
+      .prepare(`UPDATE goals SET status = ?, updated_at = ? WHERE id IN (${placeholders})`)
       .run(status, Date.now(), ...ids);
   }
 
-  async batchMoveToFolder(
-    ids: string[],
-    folderId: string | null,
-  ): Promise<void> {
+  async batchMoveToFolder(ids: string[], folderId: string | null): Promise<void> {
     if (ids.length === 0) return;
     const placeholders = ids.map(() => '?').join(',');
     this.db
-      .prepare(
-        `UPDATE goals SET folder_id = ?, updated_at = ? WHERE id IN (${placeholders})`,
-      )
+      .prepare(`UPDATE goals SET folder_id = ?, updated_at = ? WHERE id IN (${placeholders})`)
       .run(folderId, Date.now(), ...ids);
   }
 
   // ============ Hierarchy ============
 
-  async isAncestor(
-    potentialAncestorId: string,
-    potentialDescendantId: string,
-  ): Promise<boolean> {
+  async isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean> {
     let currentId: string | null = potentialDescendantId;
     const visited = new Set<string>();
 
@@ -398,9 +371,7 @@ export class SqliteGoalRepository implements IGoalRepository {
 
   private loadWeightSnapshots(goalId: string) {
     const rows = this.db
-      .prepare(
-        `SELECT * FROM weight_snapshots WHERE goal_id = ? ORDER BY snapshot_time DESC`,
-      )
+      .prepare(`SELECT * FROM weight_snapshots WHERE goal_id = ? ORDER BY snapshot_time DESC`)
       .all(goalId) as any[];
 
     return rows.map(SqliteGoalMapper.mapWeightSnapshotRow);

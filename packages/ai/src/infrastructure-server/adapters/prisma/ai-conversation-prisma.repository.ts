@@ -5,7 +5,11 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { PrismaClient, AiConversation as PrismaAiConversation, AiMessage as PrismaAiMessage } from '@dailyuse/database';
+import type {
+  PrismaClient,
+  AiConversation as PrismaAiConversation,
+  AiMessage as PrismaAiMessage,
+} from '@dailyuse/database';
 import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import { Message } from '../../../domain-server/entities/message';
@@ -65,6 +69,7 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
           data: dto.messages.map((message) => ({
             id: String(message.id),
             conversationId: String(message.conversationId),
+            identityId: String(dto.identityId),
             role: message.role,
             content: message.content,
             tokenUsage:
@@ -82,7 +87,9 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
     const row = await this.prisma.aiConversation.findFirst({
       where: { id, deletedAt: null },
-      include: options?.includeChildren ? { messages: { orderBy: { createdAt: 'asc' } } } : undefined,
+      include: options?.includeChildren
+        ? { messages: { orderBy: { createdAt: 'asc' } } }
+        : undefined,
     });
 
     if (!row) {
@@ -92,10 +99,15 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     return this.toDomain(row, Boolean(options?.includeChildren));
   }
 
-  async findByIdentityId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+  async findByIdentityId(
+    identityId: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation[]> {
     const rows = await this.prisma.aiConversation.findMany({
       where: { identityId, deletedAt: null },
-      include: options?.includeChildren ? { messages: { orderBy: { createdAt: 'asc' } } } : undefined,
+      include: options?.includeChildren
+        ? { messages: { orderBy: { createdAt: 'asc' } } }
+        : undefined,
       orderBy: { updatedAt: 'desc' },
     });
 
@@ -111,7 +123,9 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
   ): Promise<AIConversation[]> {
     const rows = await this.prisma.aiConversation.findMany({
       where: { identityId, status, deletedAt: null },
-      include: options?.includeChildren ? { messages: { orderBy: { createdAt: 'asc' } } } : undefined,
+      include: options?.includeChildren
+        ? { messages: { orderBy: { createdAt: 'asc' } } }
+        : undefined,
       orderBy: { updatedAt: 'desc' },
     });
 
@@ -149,7 +163,10 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
     return count > 0;
   }
 
-  private toDomain(row: PrismaAiConversationWithMessages, includeMessages: boolean): AIConversation {
+  private toDomain(
+    row: PrismaAiConversationWithMessages,
+    includeMessages: boolean,
+  ): AIConversation {
     const messages = includeMessages
       ? (row.messages ?? []).map((message) => this.toMessageDomain(message))
       : [];

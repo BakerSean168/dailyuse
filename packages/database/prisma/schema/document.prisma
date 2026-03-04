@@ -33,6 +33,7 @@ model Document {
 
 model DocumentVersion {
   id                String   @id
+  identityId        String   @map("identity_id")
   documentId        String   @map("document_id")
   versionNumber     Int      @map("version_number")
   title             String
@@ -46,8 +47,10 @@ model DocumentVersion {
   createdAt         DateTime @default(now()) @map("created_at")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  account  Account  @relation(fields: [changedBy], references: [id])
+  identity Account  @relation("AccountDocumentVersions", fields: [identityId], references: [id])
+  account  Account  @relation("AccountDocumentVersionChangedBy", fields: [changedBy], references: [id])
 
+  @@index([identityId])
   @@index([documentId, versionNumber])
   @@index([documentId, createdAt])
   @@index([changedBy])
@@ -56,6 +59,7 @@ model DocumentVersion {
 
 model DocumentLink {
   id               String    @id
+  identityId       String    @map("identity_id")
   sourceDocumentId String    @map("source_document_id")
   targetDocumentId String?   @map("target_document_id")
   linkText         String    @map("link_text")
@@ -66,9 +70,11 @@ model DocumentLink {
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
+  identity       Account   @relation("AccountDocumentLinks", fields: [identityId], references: [id])
   sourceDocument Document  @relation("source_links", fields: [sourceDocumentId], references: [id], onDelete: Cascade)
   targetDocument Document? @relation("target_links", fields: [targetDocumentId], references: [id], onDelete: SetNull)
 
+  @@index([identityId])
   @@index([sourceDocumentId])
   @@index([targetDocumentId])
   @@index([isBroken])

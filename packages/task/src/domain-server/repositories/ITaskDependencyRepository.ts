@@ -23,6 +23,7 @@ export interface ITaskDependencyRepository {
     successorTaskId: string;
     dependencyType?: DependencyType;
     lagDays?: number;
+    identityId: string;
   }): Promise<TaskDependencyServerDTO>;
 
   /**

@@ -8,20 +8,21 @@ describe('PrismaWeightSnapshotMapper', () => {
     'snap-1',
     'goal-1',
     'kr-1',
+    'test-identity-id' as any,
     10,
     20,
     1234567890,
     'manual' as SnapshotTrigger,
     'user-1',
     'reason',
-    1234567800
+    1234567800,
   );
 
   it('should map toPrisma correctly', () => {
     const prismaData = PrismaWeightSnapshotMapper.toPrisma(domainSnapshot);
-    
+
     expect(prismaData.id).toBe('snap-1');
-    expect(prismaData.snapshotTime).toBe(BigInt(1234567890));
+    expect(prismaData.snapshotTime).toEqual(new Date(1234567890));
     expect(prismaData.reason).toBe('reason');
     expect(prismaData.createdAt).toBeInstanceOf(Date);
     expect(prismaData.createdAt.getTime()).toBe(1234567800);
@@ -32,6 +33,7 @@ describe('PrismaWeightSnapshotMapper', () => {
       id: 'snap-1',
       goalId: 'goal-1',
       keyResultId: 'kr-1',
+      identityId: 'test-identity-id',
       oldWeight: 10,
       newWeight: 20,
       weightDelta: 10,
@@ -39,7 +41,7 @@ describe('PrismaWeightSnapshotMapper', () => {
       trigger: 'manual',
       reason: 'reason',
       operatorId: 'user-1',
-      createdAt: new Date(1234567800)
+      createdAt: new Date(1234567800),
     };
 
     const domain = PrismaWeightSnapshotMapper.toDomain(prismaData);

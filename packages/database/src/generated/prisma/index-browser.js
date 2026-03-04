@@ -155,6 +155,7 @@ exports.Prisma.AiConversationScalarFieldEnum = {
 
 exports.Prisma.AiMessageScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   conversationId: 'conversationId',
   role: 'role',
   content: 'content',
@@ -320,6 +321,7 @@ exports.Prisma.DocumentScalarFieldEnum = {
 
 exports.Prisma.DocumentVersionScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   documentId: 'documentId',
   versionNumber: 'versionNumber',
   title: 'title',
@@ -335,6 +337,7 @@ exports.Prisma.DocumentVersionScalarFieldEnum = {
 
 exports.Prisma.DocumentLinkScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   sourceDocumentId: 'sourceDocumentId',
   targetDocumentId: 'targetDocumentId',
   linkText: 'linkText',
@@ -457,6 +460,7 @@ exports.Prisma.GoalFolderScalarFieldEnum = {
 
 exports.Prisma.KeyResultScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   goalId: 'goalId',
   title: 'title',
   description: 'description',
@@ -475,6 +479,7 @@ exports.Prisma.KeyResultScalarFieldEnum = {
 
 exports.Prisma.GoalRecordScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   keyResultId: 'keyResultId',
   value: 'value',
   note: 'note',
@@ -487,6 +492,7 @@ exports.Prisma.GoalRecordScalarFieldEnum = {
 
 exports.Prisma.GoalReviewScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   goalId: 'goalId',
   reviewType: 'reviewType',
   content: 'content',
@@ -503,6 +509,7 @@ exports.Prisma.GoalReviewScalarFieldEnum = {
 
 exports.Prisma.KeyResultWeightSnapshotScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   goalId: 'goalId',
   keyResultId: 'keyResultId',
   oldWeight: 'oldWeight',
@@ -625,6 +632,7 @@ exports.Prisma.NotificationScalarFieldEnum = {
 
 exports.Prisma.NotificationChannelScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   notificationId: 'notificationId',
   channelType: 'channelType',
   status: 'status',
@@ -637,6 +645,7 @@ exports.Prisma.NotificationChannelScalarFieldEnum = {
 
 exports.Prisma.NotificationHistoryScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   notificationId: 'notificationId',
   action: 'action',
   details: 'details',
@@ -749,6 +758,7 @@ exports.Prisma.ReminderInstanceScalarFieldEnum = {
 
 exports.Prisma.ReminderHistoryScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   templateId: 'templateId',
   triggeredAt: 'triggeredAt',
   result: 'result',
@@ -769,6 +779,7 @@ exports.Prisma.ReminderStatisticScalarFieldEnum = {
 
 exports.Prisma.ReminderResponseScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   templateId: 'templateId',
   action: 'action',
   responseTime: 'responseTime',
@@ -808,6 +819,7 @@ exports.Prisma.RepositoryScalarFieldEnum = {
 
 exports.Prisma.FolderScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   repositoryId: 'repositoryId',
   parentId: 'parentId',
   name: 'name',
@@ -821,6 +833,7 @@ exports.Prisma.FolderScalarFieldEnum = {
 
 exports.Prisma.ResourceScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   repositoryId: 'repositoryId',
   folderId: 'folderId',
   name: 'name',
@@ -844,6 +857,7 @@ exports.Prisma.ResourceScalarFieldEnum = {
 
 exports.Prisma.RepositoryResourceScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   repositoryId: 'repositoryId',
   name: 'name',
   type: 'type',
@@ -990,6 +1004,7 @@ exports.Prisma.ScheduleTaskScalarFieldEnum = {
 
 exports.Prisma.ScheduleExecutionScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   taskId: 'taskId',
   executionTime: 'executionTime',
   status: 'status',
@@ -1107,6 +1122,7 @@ exports.Prisma.TaskInstanceScalarFieldEnum = {
 
 exports.Prisma.TaskDependencyScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   predecessorTaskId: 'predecessorTaskId',
   successorTaskId: 'successorTaskId',
   dependencyType: 'dependencyType',
@@ -1119,6 +1135,7 @@ exports.Prisma.TaskDependencyScalarFieldEnum = {
 
 exports.Prisma.TaskTemplateHistoryScalarFieldEnum = {
   id: 'id',
+  identityId: 'identityId',
   templateId: 'templateId',
   action: 'action',
   changes: 'changes',

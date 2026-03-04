@@ -17,6 +17,7 @@ import { ReminderResponseId } from '../../domain-shared/value-objects/reminder-r
 export interface ReminderResponseState {
   id: ReminderResponseId;
   reminderTemplateId: string;
+  identityId: string;
   action: ReminderResponseAction;
   responseTime: Date | null;
   timestamp: Date;
@@ -43,9 +44,12 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
 
   // ===== Getter 属性 =====
 
-
   public get reminderTemplateId(): string {
     return this._props.reminderTemplateId;
+  }
+
+  public get identityId(): string {
+    return this._props.identityId;
   }
 
   public get action(): ReminderResponseAction {
@@ -71,6 +75,7 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
    */
   public static create(params: {
     reminderTemplateId: string;
+    identityId: string;
     action: ReminderResponseAction;
     responseTime?: number;
     timestamp?: number;
@@ -78,6 +83,7 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
     return new ReminderResponse({
       id: ReminderResponseId.generate(),
       reminderTemplateId: params.reminderTemplateId,
+      identityId: params.identityId,
       action: params.action,
       responseTime: params.responseTime != null ? new Date(params.responseTime) : null,
       timestamp: new Date(params.timestamp ?? Date.now()),
@@ -165,6 +171,7 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
     return {
       id: this.id,
       reminderTemplateId: this._props.reminderTemplateId,
+      identityId: this._props.identityId,
       action: this._props.action,
       responseTime: this._props.responseTime?.getTime() ?? null,
       timestamp: this._props.timestamp.getTime(),
@@ -188,7 +195,9 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
 
     // 响应时间文本
     let responseTimeText: string | undefined = undefined;
-    const responseTimeSec = this._props.responseTime ? Math.floor(this._props.responseTime.getTime() / 1000) : null;
+    const responseTimeSec = this._props.responseTime
+      ? Math.floor(this._props.responseTime.getTime() / 1000)
+      : null;
     if (responseTimeSec !== null) {
       if (responseTimeSec < 60) {
         responseTimeText = `${responseTimeSec}秒后响应`;
@@ -209,5 +218,4 @@ export class ReminderResponse extends Entity<ReminderResponseId> {
       responseTimeText,
     };
   }
-
 }

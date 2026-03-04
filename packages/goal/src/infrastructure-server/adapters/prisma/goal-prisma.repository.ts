@@ -5,19 +5,20 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  *
  * Mapping:
- * - Domain Goal â†?GoalPersistenceDTO â†?Prisma result
+ * - Domain Goal ï¿½?GoalPersistenceDTO ï¿½?Prisma result
  * - KeyResult progress is stored as individual columns in Prisma,
  *   but as a JSON string in the domain DTO
  * - GoalReview maps reviewTypeâ†’type, contentâ†’summary, lessonsLearnedâ†’improvements
  */
 
-import type {
-  PrismaClient,
-  Prisma,
-} from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
-import type { KeyResultPersistenceDTO, GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import type {
+  KeyResultPersistenceDTO,
+  GoalServerDTO,
+  KeyResultServerDTO,
+} from '@dailyuse/contracts/goal';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import { PrismaGoalMapper, type PrismaGoalWithRelations } from './mappers/prisma-goal-mapper';
@@ -26,11 +27,11 @@ import { persistenceDtoToGoalState } from './mappers/goal-state-mapper';
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
 // ============================================================
-// Prisma â†?Domain Mappers (delegated to PrismaGoalMapper)
+// Prisma ï¿½?Domain Mappers (delegated to PrismaGoalMapper)
 // ============================================================
 
 /**
- * Parse KeyResultPersistenceDTO.progress JSON â†?Prisma columns
+ * Parse KeyResultPersistenceDTO.progress JSON ï¿½?Prisma columns
  */
 function parseKeyResultProgressForPrisma(kr: KeyResultPersistenceDTO | KeyResultServerDTO) {
   return PrismaGoalMapper.parseKeyResultProgress(kr as KeyResultPersistenceDTO);
@@ -50,20 +51,14 @@ const GOAL_INCLUDE_KEY_RESULTS = {
 /**
  * Goal Prisma Repository
  */
-export class GoalPrismaRepository
-  extends AggregateRepositoryBase<Goal>
-  implements IGoalRepository
-{
+export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implements IGoalRepository {
   constructor(private readonly prisma: PrismaClient) {
     super(eventBusAdapter);
   }
 
   // ================= Read Operations =================
 
-  async findById(
-    id: string,
-    options?: { includeChildren?: boolean },
-  ): Promise<Goal | null> {
+  async findById(id: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
     const row = await this.prisma.goal.findUnique({
       where: { id },
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
@@ -92,7 +87,9 @@ export class GoalPrismaRepository
       include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) => Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))));
+    return rows.map((row: PrismaGoalWithRelations) =>
+      Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+    );
   }
 
   async findByFolderId(folderId: string): Promise<Goal[]> {
@@ -100,7 +97,9 @@ export class GoalPrismaRepository
       where: { folderId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) => Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))));
+    return rows.map((row: PrismaGoalWithRelations) =>
+      Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+    );
   }
 
   // ================= Write Operations =================
@@ -185,6 +184,7 @@ export class GoalPrismaRepository
             create: {
               id: kr.id as string,
               goalId: dto.id as string,
+              identityId: dto.identityId as string,
               title: kr.title,
               description: kr.description,
               valueType: progress.valueType,
@@ -230,6 +230,7 @@ export class GoalPrismaRepository
             create: {
               id: review.id as string,
               goalId: dto.id as string,
+              identityId: dto.identityId as string,
               reviewType: review.type,
               content: review.summary,
               achievements: review.achievements,
@@ -253,7 +254,7 @@ export class GoalPrismaRepository
         }
       }
 
-      // 4. Sync Weight Snapshots (insert-only â€?snapshots are immutable)
+      // 4. Sync Weight Snapshots (insert-only ï¿½?snapshots are immutable)
       if (dto.weightSnapshots && dto.weightSnapshots.length > 0) {
         for (const ws of dto.weightSnapshots) {
           // Check if snapshot already exists (idempotent)
@@ -265,6 +266,7 @@ export class GoalPrismaRepository
               data: {
                 id: ws.id as string,
                 goalId: dto.id as string,
+                identityId: dto.identityId as string,
                 keyResultId: ws.keyResultId as string,
                 oldWeight: ws.oldWeight,
                 newWeight: ws.newWeight,
@@ -310,10 +312,7 @@ export class GoalPrismaRepository
 
   // ================= Hierarchy Operations =================
 
-  async isAncestor(
-    potentialAncestorId: string,
-    potentialDescendantId: string,
-  ): Promise<boolean> {
+  async isAncestor(potentialAncestorId: string, potentialDescendantId: string): Promise<boolean> {
     let currentId: string | null = potentialDescendantId;
     const visited = new Set<string>();
 
@@ -337,6 +336,8 @@ export class GoalPrismaRepository
       include: GOAL_INCLUDE_ALL,
       orderBy: { sortOrder: 'asc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) => Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))));
+    return rows.map((row: PrismaGoalWithRelations) =>
+      Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+    );
   }
 }

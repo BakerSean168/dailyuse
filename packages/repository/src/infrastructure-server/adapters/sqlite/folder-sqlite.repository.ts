@@ -14,9 +14,9 @@ export class SqliteFolderRepository implements IFolderRepository {
 
   async save(folder: Folder): Promise<void> {
     const stmt = this.db.prepare(`
-      INSERT INTO folders (
-        id, repository_id, parent_id, name, path, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+       INSERT INTO folders (
+        id, repository_id, identity_id, parent_id, name, path, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         path = excluded.path,
@@ -26,6 +26,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     stmt.run(
       String(folder.id),
       folder.repositoryId,
+      folder.identityId || null,
       folder.parentId || null,
       folder.name,
       folder.path,
@@ -106,6 +107,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     return Folder.load({
       id: ResourceId.of(row.id),
       repositoryId: row.repository_id,
+      identityId: row.identity_id,
       parentId: row.parent_id,
       name: row.name,
       path: row.path,

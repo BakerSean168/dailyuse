@@ -102,6 +102,7 @@ model ReminderInstance {
 
 model ReminderHistory {
   id                  String   @id
+  identityId          String   @map("identity_id")
   templateId          String   @map("template_id")
   triggeredAt         DateTime @map("triggered_at")
   result              String
@@ -110,8 +111,10 @@ model ReminderHistory {
   notificationChannel String?
   createdAt           DateTime @default(now()) @map("created_at")
 
+  identity Account          @relation("AccountReminderHistory", fields: [identityId], references: [id])
   template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([templateId])
   @@map("reminder_history")
 }
@@ -132,14 +135,17 @@ model ReminderStatistic {
 
 model ReminderResponse {
   id           String   @id @default(uuid())
+  identityId   String   @map("identity_id")
   templateId   String   @map("template_id")
   action       String // clicked, ignored, snoozed, dismissed, completed
   responseTime Int?     @map("response_time") // seconds
   timestamp    DateTime
   createdAt    DateTime @default(now()) @map("created_at")
 
+  identity Account          @relation("AccountReminderResponses", fields: [identityId], references: [id])
   template ReminderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
+  @@index([identityId])
   @@index([templateId, timestamp(sort: Desc)])
   @@map("reminder_responses")
 }

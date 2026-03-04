@@ -17,6 +17,7 @@ import { ReminderHistoryId } from '../../domain-shared/value-objects/reminder-hi
 export interface ReminderHistoryState {
   id: ReminderHistoryId;
   templateId: string;
+  identityId: string;
   triggeredAt: Date;
   result: TriggerResult;
   error: string | null;
@@ -45,9 +46,12 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
 
   // ===== Getter 属性 =====
 
-
   public get templateId(): string {
     return this._props.templateId;
+  }
+
+  public get identityId(): string {
+    return this._props.identityId;
   }
 
   public get triggeredAt(): number {
@@ -82,6 +86,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
 
   public static create(params: {
     templateId: string;
+    identityId: string;
     triggeredAt?: number;
     result: TriggerResult;
     error?: string | null;
@@ -92,13 +97,12 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
     return new ReminderHistory({
       id: ReminderHistoryId.generate(),
       templateId: params.templateId,
+      identityId: params.identityId,
       triggeredAt: new Date(params.triggeredAt ?? now),
       result: params.result,
       error: params.error ?? null,
       notificationSent: params.notificationSent ?? false,
-      notificationChannels: params.notificationChannels
-        ? [...params.notificationChannels]
-        : null,
+      notificationChannels: params.notificationChannels ? [...params.notificationChannels] : null,
       createdAt: new Date(now),
     });
   }
@@ -146,6 +150,7 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
     return {
       id: this.id,
       templateId: this._props.templateId,
+      identityId: this._props.identityId,
       triggeredAt: this._props.triggeredAt.getTime(),
       result: this._props.result,
       error: this._props.error,
@@ -179,5 +184,4 @@ export class ReminderHistory extends Entity<ReminderHistoryId> {
       channelsText,
     };
   }
-
 }

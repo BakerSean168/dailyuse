@@ -88,10 +88,10 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     const dto = resource.toServerDTO();
 
     const stmt = this.db.prepare(`
-      INSERT INTO linked_resources (
-        id, source_document_id, target_document_id, source_type,
+       INSERT INTO linked_resources (
+        id, identity_id, source_document_id, target_document_id, source_type,
         target_type, is_valid, last_verified_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         is_valid = excluded.is_valid,
         last_verified_at = excluded.last_verified_at,
@@ -100,6 +100,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
     stmt.run(
       dto.id,
+      dto.identityId || '',
       dto.sourceDocumentId,
       dto.targetDocumentId,
       dto.sourceType,
@@ -118,10 +119,10 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
   async saveBatch(resources: LinkedResource[]): Promise<void> {
     const insert = this.db.prepare(`
-      INSERT INTO linked_resources (
-        id, source_document_id, target_document_id, source_type,
+       INSERT INTO linked_resources (
+        id, identity_id, source_document_id, target_document_id, source_type,
         target_type, is_valid, last_verified_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         is_valid = excluded.is_valid,
         last_verified_at = excluded.last_verified_at,
@@ -132,6 +133,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
         const dto = resource.toServerDTO();
         insert.run(
           dto.id,
+          dto.identityId || '',
           dto.sourceDocumentId,
           dto.targetDocumentId,
           dto.sourceType,

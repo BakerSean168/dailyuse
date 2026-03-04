@@ -29,11 +29,13 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalRecordId, KeyResultId } from '../../domain-shared';
 import type { GoalRecordServerDTO } from '@dailyuse/contracts/goal';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 // 内部状态接口
 export interface GoalRecordState {
   id: GoalRecordId;
   keyResultId: KeyResultId;
+  identityId: IdentityId;
   value: number;
   note: string | null;
   recordedAt: Date;
@@ -56,6 +58,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     this._props = {
       id: state.id,
       keyResultId: state.keyResultId,
+      identityId: state.identityId,
       value: state.value,
       note: state.note ?? null,
       recordedAt: state.recordedAt,
@@ -69,6 +72,10 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
   // ================= 3. 公共属性 (Getters) =================
   get keyResultId(): KeyResultId {
     return this._props.keyResultId;
+  }
+
+  get identityId(): IdentityId {
+    return this._props.identityId;
   }
 
   get value(): number {
@@ -108,6 +115,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
   public static create(params: {
     id?: GoalRecordId;
     keyResultId: KeyResultId;
+    identityId: IdentityId;
     value: number;
     note?: string;
     recordedAt?: Date;
@@ -126,6 +134,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     const record = new GoalRecord({
       id,
       keyResultId: params.keyResultId,
+      identityId: params.identityId,
       value: params.value,
       note: params.note?.trim() || null,
       recordedAt: params.recordedAt ?? new Date(now),
@@ -196,6 +205,7 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
     return {
       id: this.id,
       keyResultId: this._props.keyResultId,
+      identityId: this._props.identityId,
       value: this._props.value,
       note: this._props.note,
       recordedAt: this._props.recordedAt.getTime(),
@@ -223,5 +233,4 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
       deletedAt: this._props.deletedAt?.getTime() ?? null,
     };
   }
-
 }

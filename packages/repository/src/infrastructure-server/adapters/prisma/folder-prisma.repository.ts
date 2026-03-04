@@ -20,21 +20,11 @@ function parseMetadata(value: unknown): FolderMetadata {
   return FolderMetadata.fromDTO(value as FolderMetadataDTO);
 }
 
-function mapToDomain(data: {
-  id: string;
-  repositoryId: string;
-  parentId: string | null;
-  name: string;
-  path: string;
-  order: number;
-  isExpanded: boolean;
-  metadata: unknown;
-  createdAt: Date;
-  updatedAt: Date;
-}): Folder {
+function mapToDomain(data: any): Folder {
   const state: FolderState = {
     id: ResourceId.of(data.id),
     repositoryId: data.repositoryId,
+    identityId: data.identityId,
     parentId: data.parentId,
     name: data.name,
     path: data.path,
@@ -65,6 +55,7 @@ export class FolderPrismaRepository implements IFolderRepository {
       create: {
         id: dto.id,
         repositoryId: dto.repositoryId,
+        identityId: dto.identityId,
         parentId: dto.parentId,
         name: dto.name,
         path: dto.path,

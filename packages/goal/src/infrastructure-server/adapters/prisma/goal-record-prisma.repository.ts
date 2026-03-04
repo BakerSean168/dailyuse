@@ -54,7 +54,10 @@ export class GoalRecordPrismaRepository
   /**
    * Find records by key result ID
    */
-  async findByKeyResultId(keyResultId: string, options?: GoalRecordQueryOptions): Promise<GoalRecord[]> {
+  async findByKeyResultId(
+    keyResultId: string,
+    options?: GoalRecordQueryOptions,
+  ): Promise<GoalRecord[]> {
     const { where, orderBy, take } = this.buildQueryOptions(options);
 
     const data = await this.prisma.goalRecord.findMany({
@@ -137,6 +140,7 @@ export class GoalRecordPrismaRepository
       create: {
         id: dto.id as string,
         keyResultId: dto.keyResultId as string,
+        identityId: dto.identityId as string,
         value: dto.value,
         note: dto.note,
         recordedAt: new Date(dto.recordedAt),

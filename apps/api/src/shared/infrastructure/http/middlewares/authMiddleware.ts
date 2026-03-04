@@ -43,7 +43,8 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
-        success: false,
+        ok: false,
+        code: 'UNAUTHORIZED',
         message: '缺少认证令牌，请提供有效的Authorization header',
       });
     }
@@ -52,7 +53,8 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 
     if (!token) {
       return res.status(401).json({
-        success: false,
+        ok: false,
+        code: 'UNAUTHORIZED',
         message: '认证令牌不能为空',
       });
     }
@@ -66,7 +68,8 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       // 验证必要字段
       if (!decoded.identityId) {
         return res.status(401).json({
-          success: false,
+          ok: false,
+          code: 'UNAUTHORIZED',
           message: '无效的认证令牌：缺少用户信息',
         });
       }
@@ -74,7 +77,8 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       // 检查token是否过期
       if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
         return res.status(401).json({
-          success: false,
+          ok: false,
+          code: 'UNAUTHORIZED',
           message: '认证令牌已过期，请重新登录',
         });
       }
@@ -95,15 +99,17 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     } catch (jwtError) {
       console.error('JWT验证失败:', jwtError);
       return res.status(401).json({
-        success: false,
+        ok: false,
+        code: 'UNAUTHORIZED',
         message: '无效的认证令牌，请重新登录',
       });
     }
   } catch (error) {
     console.error('认证中间件错误:', error);
     return res.status(500).json({
-      success: false,
-      message: '认证服务异常',
+      ok: false,
+      code: 'INTERNAL_ERROR',
+      message: 'Internal server error',
     });
   }
 };

@@ -28,6 +28,7 @@ import type {
 export interface ResourceServerDTO {
   id: string;
   repositoryId: string; // 外键 - 聚合根ID
+  identityId: string;
   folderId: string | null; // 外键 - 所属文件夹
 
   name: string;

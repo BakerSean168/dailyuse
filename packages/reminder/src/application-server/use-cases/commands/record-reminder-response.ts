@@ -73,6 +73,7 @@ export class RecordReminderResponse {
 
       const response = ReminderResponse.create({
         reminderTemplateId: dto.templateId,
+        identityId: dto.identityId,
         action: dto.action,
         responseTime: dto.responseTime ?? undefined,
         timestamp: Date.now(),
@@ -88,14 +89,17 @@ export class RecordReminderResponse {
       });
 
       // 发布响应记录事件
-      eventBus.send('reminder.response.recorded' as any, {
-        responseId: savedRecord.id,
-        templateId: dto.templateId,
-        action: dto.action,
-        responseTime: dto.responseTime || null,
-        identityId: dto.identityId,
-        recordedAt: Date.now(),
-      } as any);
+      eventBus.send(
+        'reminder.response.recorded' as any,
+        {
+          responseId: savedRecord.id,
+          templateId: dto.templateId,
+          action: dto.action,
+          responseTime: dto.responseTime || null,
+          identityId: dto.identityId,
+          recordedAt: Date.now(),
+        } as any,
+      );
 
       return {
         id: savedRecord.id,
@@ -120,10 +124,7 @@ export class RecordReminderResponse {
    * @param limit - 返回记录数限制
    * @returns 响应记录列表
    */
-  async getResponsesByTemplate(
-    templateId: string,
-    limit: number = 100,
-  ): Promise<any[]> {
+  async getResponsesByTemplate(templateId: string, limit: number = 100): Promise<any[]> {
     try {
       const responses = await this.responseRepository.findByTemplateId(templateId, limit);
       return responses;
