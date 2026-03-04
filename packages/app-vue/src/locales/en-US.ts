@@ -335,7 +335,10 @@ export default {
 
     // ── Notifications ──
     notifications: {
-      title: 'Notification settings not yet implemented',
+      title: 'Notifications',
+      description: 'Configure how the application sends you notifications',
+      useCustomNotification: 'Use Custom App Notifications',
+      useCustomNotificationDescription: 'Enable to use the application\'s built-in notification style, or disable to use the operating system\'s native notifications.',
       comingSoon: 'This feature is under development. Stay tuned.',
     },
 

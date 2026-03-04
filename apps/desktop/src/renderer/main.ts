@@ -37,6 +37,14 @@ async function startApp() {
   const router = createAppRouter({
     history: createWebHashHistory(),
     isAuthenticated: () => useAuthenticationStore().isAuthenticated,
+    additionalRoutes: [
+      {
+        path: '/custom-notification',
+        name: 'custom-notification',
+        component: () => import('./CustomNotificationView.vue'),
+        meta: { requiresAuth: false, layout: 'empty' },
+      }
+    ]
   });
 
   router.beforeEach(() => {

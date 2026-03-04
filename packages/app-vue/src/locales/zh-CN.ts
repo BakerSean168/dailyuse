@@ -329,7 +329,10 @@ export default {
 
     // ── Notifications ──
     notifications: {
-      title: '通知设置功能尚未实现',
+      title: '通知',
+      description: '配置应用如何向您发送通知',
+      useCustomNotification: '使用自定义应用通知',
+      useCustomNotificationDescription: '开启后将使用应用内置风格的通知面板，关闭则使用操作系统的原生通知。',
       comingSoon: '此功能正在开发中，敬请期待。',
     },
 

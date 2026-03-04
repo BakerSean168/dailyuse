@@ -5,4 +5,6 @@ export const NotificationSchema = z.object({
   push: z.boolean().default(true),
   inApp: z.boolean().default(true),
   sound: z.boolean().default(true),
+  // Desktop-specific setting for custom notifications
+  useCustomNotification: z.boolean().default(true),
 });

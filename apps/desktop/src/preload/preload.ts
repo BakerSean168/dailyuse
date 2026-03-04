@@ -235,6 +235,12 @@ const ALLOWED_CHANNELS = [
   'notification:unread-count',
   'notification:settings:get',
   'notification:settings:update',
+  'notification:custom:receive',
+  'notification:custom:click',
+  'notification:custom:close',
+  'notification:custom:resize',
+  'notification:custom:mouse-enter',
+  'notification:custom:mouse-leave',
   // ═══════════ Dashboard (adapter-only) ═══════════
   'dashboard:get-all',
   'dashboard:get-overview',
