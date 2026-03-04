@@ -43,7 +43,7 @@ export class CustomNotificationManager {
     }
 
     const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    const { x: workAreaX, y: workAreaY, width: workAreaWidth, height: workAreaHeight } = primaryDisplay.workArea;
 
     // Fixed width for notifications, height is initially small but can grow
     const windowWidth = 360;
@@ -52,8 +52,8 @@ export class CustomNotificationManager {
     const win = new BrowserWindow({
       width: windowWidth,
       height: windowHeight,
-      x: screenWidth - windowWidth - 20, // 20px margin from right
-      y: screenHeight - windowHeight - 20, // 20px margin from bottom
+      x: workAreaX + workAreaWidth - windowWidth - 20, // 20px margin from right
+      y: workAreaY + workAreaHeight - windowHeight - 20, // 20px margin from bottom
       frame: false,
       transparent: true,
       alwaysOnTop: true,
@@ -159,13 +159,13 @@ export class CustomNotificationManager {
           this.notificationWindow.setIgnoreMouseEvents(true, { forward: true });
         } else {
           const primaryDisplay = screen.getPrimaryDisplay();
-          const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+          const { x: workAreaX, y: workAreaY, width: workAreaWidth, height: workAreaHeight } = primaryDisplay.workArea;
           const windowWidth = 360;
 
           // Reposition to stay anchored to the bottom right
           this.notificationWindow.setBounds({
-            x: screenWidth - windowWidth - 20,
-            y: screenHeight - height - 20,
+            x: workAreaX + workAreaWidth - windowWidth - 20,
+            y: workAreaY + workAreaHeight - height - 20,
             width: windowWidth,
             height: height,
           });

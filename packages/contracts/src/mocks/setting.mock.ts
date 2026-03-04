@@ -52,6 +52,7 @@ export function createMockUserSetting(
         push: faker.datatype.boolean(),
         inApp: faker.datatype.boolean(),
         sound: faker.datatype.boolean(),
+        useCustomNotification: faker.datatype.boolean(),
       },
       editor: {
         theme: faker.helpers.arrayElement(['default', 'dark', 'monokai']),
