@@ -7,9 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type {
-  ITaskTemplateApiClient,
-} from '../types';
+import type { ITaskTemplateApiClient } from '../types';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -25,7 +23,7 @@ import type {
  * HTTP 实现的任务模�?API 客户�?
  */
 export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
-  private readonly baseUrl = '/tasks/templates';
+  private readonly baseUrl = '/task-templates';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
@@ -126,6 +124,8 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
 /**
  * Factory function to create TaskTemplateHttpAdapter
  */
-export function createTaskTemplateHttpAdapter(httpClient: IResultHttpClient): TaskTemplateHttpAdapter {
+export function createTaskTemplateHttpAdapter(
+  httpClient: IResultHttpClient,
+): TaskTemplateHttpAdapter {
   return new TaskTemplateHttpAdapter(httpClient);
 }

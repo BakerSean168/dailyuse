@@ -34,6 +34,8 @@ export interface NotificationUseCases {
   updateNotification(id: string, data: UpdateNotificationReq): Promise<Result<unknown>>;
   deleteNotification(id: string): Promise<Result<unknown>>;
   markAsRead(id: string): Promise<Result<unknown>>;
+  markAllAsRead(identityId: string): Promise<Result<unknown>>;
+  getUnreadCount(identityId: string): Promise<Result<unknown>>;
   batchMarkAsRead(data: MarkAsReadBatchReq): Promise<Result<unknown>>;
   batchDelete(data: DeleteNotificationsBatchReq): Promise<Result<unknown>>;
   cleanupOldNotifications(data: CleanupOldNotificationsReq): Promise<Result<unknown>>;
@@ -92,6 +94,14 @@ export class NotificationController {
 
   async markAsRead(id: string): Promise<Result<unknown>> {
     return this.useCases.markAsRead(id);
+  }
+
+  async markAllAsRead(identityId: string): Promise<Result<unknown>> {
+    return this.useCases.markAllAsRead(identityId);
+  }
+
+  async getUnreadCount(identityId: string): Promise<Result<unknown>> {
+    return this.useCases.getUnreadCount(identityId);
   }
 
   async batchMarkAsRead(input: unknown): Promise<Result<unknown>> {

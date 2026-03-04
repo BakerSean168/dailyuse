@@ -7,9 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type {
-  ITaskInstanceApiClient,
-} from '../types';
+import type { ITaskInstanceApiClient } from '../types';
 import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceReq,
@@ -19,10 +17,10 @@ import type {
 /**
  * TaskInstanceHttpAdapter
  *
- * HTTP 实现的任务实�?API 客户�?
+ * HTTP 实现的任务实�?API 客户�?
  */
 export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
-  private readonly baseUrl = '/tasks/templates/instances';
+  private readonly baseUrl = '/task-instances';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
@@ -47,7 +45,7 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
-  // ===== Task Instance 状态管�?=====
+  // ===== Task Instance 状态管�?=====
 
   async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/start`);
@@ -69,10 +67,12 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
 
   // ===== 批量操作 =====
 
-  async checkExpiredInstances(): Promise<Result<{
-    count: number;
-    instances: TaskInstanceClientDTO[];
-  }>> {
+  async checkExpiredInstances(): Promise<
+    Result<{
+      count: number;
+      instances: TaskInstanceClientDTO[];
+    }>
+  > {
     return this.httpClient.post(`${this.baseUrl}/check-expired`);
   }
 }
@@ -80,6 +80,8 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
 /**
  * Factory function to create TaskInstanceHttpAdapter
  */
-export function createTaskInstanceHttpAdapter(httpClient: IResultHttpClient): TaskInstanceHttpAdapter {
+export function createTaskInstanceHttpAdapter(
+  httpClient: IResultHttpClient,
+): TaskInstanceHttpAdapter {
   return new TaskInstanceHttpAdapter(httpClient);
 }

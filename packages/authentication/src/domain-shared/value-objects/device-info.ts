@@ -1,4 +1,8 @@
-import type { DeviceInfoDTO, DeviceInfoPersistenceDTO, DeviceInfo as IDeviceInfo } from '@dailyuse/contracts/authentication';
+import type {
+  DeviceInfoDTO,
+  DeviceInfoPersistenceDTO,
+  DeviceInfo as IDeviceInfo,
+} from '@dailyuse/contracts/authentication';
 import { ValueObject } from '@dailyuse/utils';
 import { DeviceType } from './device-type';
 
@@ -12,7 +16,6 @@ import { DeviceType } from './device-type';
  * - 不可变性：所有修改操作都返回新实�?
  */
 export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInfo {
-
   private constructor(props: DeviceInfoDTO) {
     super(props);
   }
@@ -25,7 +28,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     this.validate(props);
     return new DeviceInfo(props);
   }
-  
+
   public static createDefault(deviceId: string): DeviceInfo {
     const now = Date.now();
     return DeviceInfo.create({
@@ -50,6 +53,12 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
    * �?DTO 恢复设备信息对象
    */
   public static fromDTO(dto: DeviceInfoDTO): DeviceInfo {
+    // If a DeviceInfo value-object instance is passed, extract its plain DTO first.
+    // Spreading a ValueObject instance only copies the `props` field (getters live
+    // on the prototype), which would produce a nested { props: {...} } structure.
+    if (dto instanceof DeviceInfo) {
+      return new DeviceInfo(dto.toDTO());
+    }
     return new DeviceInfo(dto);
   }
 
@@ -110,7 +119,11 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     }
 
     // 设备名称如果提供则不能为空字符串（null 表示未知设备，允许）
-    if (props.deviceName !== null && props.deviceName !== undefined && props.deviceName.trim().length === 0) {
+    if (
+      props.deviceName !== null &&
+      props.deviceName !== undefined &&
+      props.deviceName.trim().length === 0
+    ) {
       throw new Error('Device name cannot be empty');
     }
 
@@ -137,7 +150,10 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
       throw new Error('Invalid firstSeenAt timestamp');
     }
 
-    if (props.lastSeenAt !== undefined && (!Number.isFinite(props.lastSeenAt) || props.lastSeenAt < 0)) {
+    if (
+      props.lastSeenAt !== undefined &&
+      (!Number.isFinite(props.lastSeenAt) || props.lastSeenAt < 0)
+    ) {
       throw new Error('Invalid lastSeenAt timestamp');
     }
 
@@ -193,7 +209,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
    */
   public getAgeDescription(): string {
     const days = this.getDaysSinceFirstSeen();
-    
+
     if (days === 0) return '今天首次登录';
     if (days === 1) return '昨天首次登录';
     if (days < 7) return `${days} 天前首次登录`;
@@ -207,7 +223,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
    */
   public getLastActivityDescription(): string {
     const days = this.getDaysSinceLastSeen();
-    
+
     if (days === 0) return '今天';
     if (days === 1) return '昨天';
     if (days < 7) return `${days} 天前`;
@@ -246,7 +262,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
   public updateLastSeen(): DeviceInfo {
     return new DeviceInfo({
       ...this.props,
-      lastSeenAt: Date.now()
+      lastSeenAt: Date.now(),
     });
   }
 
@@ -257,12 +273,12 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
   public rename(newName: string): DeviceInfo {
     DeviceInfo.validate({
       ...this.props,
-      deviceName: newName
+      deviceName: newName,
     });
 
     return new DeviceInfo({
       ...this.props,
-      deviceName: newName
+      deviceName: newName,
     });
   }
 
@@ -282,7 +298,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     return {
       ...this.props,
       firstSeenAt: new Date(this.props.firstSeenAt),
-      lastSeenAt: new Date(this.props.lastSeenAt)
+      lastSeenAt: new Date(this.props.lastSeenAt),
     };
   }
 }

@@ -47,35 +47,51 @@ export function useAuth() {
   async function loginByEmail(req: LoginByEmailReq): Promise<boolean> {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.loginByEmail(req);
-    store.setLoading(false);
-    if (result.ok) {
-      handleAuthSuccess(result.data);
-      toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
-      router.push('/');
-      return true;
+    try {
+      const result = await service.loginByEmail(req);
+      store.setLoading(false);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
+        router.push('/');
+        return true;
+      }
+      const message = result.error?.message || t('auth.toast.loginFailed');
+      store.setError(message);
+      toast.error(t('auth.toast.loginFailed'), { description: message });
+      return false;
+    } catch (e) {
+      store.setLoading(false);
+      const message = t('auth.toast.loginFailed');
+      store.setError(message);
+      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      return false;
     }
-    const message = result.error.message || t('auth.toast.loginFailed');
-    store.setError(message);
-    toast.error(t('auth.toast.loginFailed'), { description: message });
-    return false;
   }
 
   async function loginByPhone(req: LoginByPhoneReq): Promise<boolean> {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.loginByPhone(req);
-    store.setLoading(false);
-    if (result.ok) {
-      handleAuthSuccess(result.data);
-      toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
-      router.push('/');
-      return true;
+    try {
+      const result = await service.loginByPhone(req);
+      store.setLoading(false);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
+        router.push('/');
+        return true;
+      }
+      const message = result.error?.message || t('auth.toast.loginFailed');
+      store.setError(message);
+      toast.error(t('auth.toast.loginFailed'), { description: message });
+      return false;
+    } catch (e) {
+      store.setLoading(false);
+      const message = t('auth.toast.loginFailed');
+      store.setError(message);
+      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      return false;
     }
-    const message = result.error.message || t('auth.toast.loginFailed');
-    store.setError(message);
-    toast.error(t('auth.toast.loginFailed'), { description: message });
-    return false;
   }
 
   // ========== 注册 ==========
@@ -83,35 +99,55 @@ export function useAuth() {
   async function registerByEmail(req: RegisterByEmailReq): Promise<boolean> {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.registerByEmail(req);
-    store.setLoading(false);
-    if (result.ok) {
-      handleAuthSuccess(result.data);
-      toast.success(t('auth.toast.registerSuccess'), { description: t('auth.toast.welcomeJoin') });
-      router.push('/');
-      return true;
+    try {
+      const result = await service.registerByEmail(req);
+      store.setLoading(false);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success(t('auth.toast.registerSuccess'), {
+          description: t('auth.toast.welcomeJoin'),
+        });
+        router.push('/');
+        return true;
+      }
+      const message = result.error?.message || t('auth.toast.registerFailed');
+      store.setError(message);
+      toast.error(t('auth.toast.registerFailed'), { description: message });
+      return false;
+    } catch (e) {
+      store.setLoading(false);
+      const message = t('auth.toast.registerFailed');
+      store.setError(message);
+      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      return false;
     }
-    const message = result.error.message || t('auth.toast.registerFailed');
-    store.setError(message);
-    toast.error(t('auth.toast.registerFailed'), { description: message });
-    return false;
   }
 
   async function registerByPhone(req: RegisterByPhoneReq): Promise<boolean> {
     store.setLoading(true);
     store.setError(null);
-    const result = await service.registerByPhone(req);
-    store.setLoading(false);
-    if (result.ok) {
-      handleAuthSuccess(result.data);
-      toast.success(t('auth.toast.registerSuccess'), { description: t('auth.toast.welcomeJoin') });
-      router.push('/');
-      return true;
+    try {
+      const result = await service.registerByPhone(req);
+      store.setLoading(false);
+      if (result.ok) {
+        handleAuthSuccess(result.data);
+        toast.success(t('auth.toast.registerSuccess'), {
+          description: t('auth.toast.welcomeJoin'),
+        });
+        router.push('/');
+        return true;
+      }
+      const message = result.error?.message || t('auth.toast.registerFailed');
+      store.setError(message);
+      toast.error(t('auth.toast.registerFailed'), { description: message });
+      return false;
+    } catch (e) {
+      store.setLoading(false);
+      const message = t('auth.toast.registerFailed');
+      store.setError(message);
+      toast.error(message, { description: e instanceof Error ? e.message : String(e) });
+      return false;
     }
-    const message = result.error.message || t('auth.toast.registerFailed');
-    store.setError(message);
-    toast.error(t('auth.toast.registerFailed'), { description: message });
-    return false;
   }
 
   // ========== 验证码 ==========

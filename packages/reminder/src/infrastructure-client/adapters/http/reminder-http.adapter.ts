@@ -29,7 +29,7 @@ import type {
  */
 export class ReminderHttpAdapter implements IReminderApiClient {
   private readonly templatesUrl = '/reminders/templates';
-  private readonly groupsUrl = '/reminder-groups';
+  private readonly groupsUrl = '/reminders/groups';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 

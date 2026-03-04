@@ -84,10 +84,16 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
     const passwordHasher = container.getPasswordHasher();
 
     // Initialize token provider with configuration
-    // TODO: Move these to environment variables or ConfigService
+    // Uses JWT_SECRET (shared with authMiddleware) for access tokens,
+    // and REFRESH_TOKEN_SECRET (falling back to JWT_SECRET) for refresh tokens.
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is required');
+    }
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || jwtSecret;
     const tokenProvider = new JwtTokenProvider(
-      process.env.JWT_ACCESS_SECRET || 'your-access-secret-key',
-      process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
+      jwtSecret,
+      refreshSecret,
       15 * 60 * 1000, // 15 minutes for access token
       7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
     );

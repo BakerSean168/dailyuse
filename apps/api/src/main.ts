@@ -33,6 +33,7 @@ import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
+import { DashboardApiModule } from './modules/dashboard/module.js';
 
 // 初始化日志系统
 initializeLogger();
@@ -73,6 +74,7 @@ async function bootstrap(): Promise<void> {
     .register(TaskApiModule) // ✅ 任务模块
     .register(GoalApiModule) // ✅ 目标模块
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
+    .register(DashboardApiModule) // ✅ 仪表盘聚合模块
     .init();
 
   // 3. 执行 InitializationManager 中的启动任务（各模块在 register 阶段注册的初始化任务）

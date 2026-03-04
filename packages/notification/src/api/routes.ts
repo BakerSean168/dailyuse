@@ -186,6 +186,34 @@ export function registerNotificationRoutes(
     (req) => controller.cleanup(req.body),
   );
 
+  // GET /unread-count — Get unread notification count (must be before /:id)
+  r.route(
+    {
+      method: 'get',
+      path: '/unread-count',
+      summary: '获取未读通知数量',
+      responses: {
+        200: successResponse(z.object({ count: z.number() }), '获取成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.getUnreadCount(ctx.identityId),
+  );
+
+  // PATCH /read-all — Mark all notifications as read (must be before /:id)
+  r.route(
+    {
+      method: 'patch',
+      path: '/read-all',
+      summary: '标记所有通知为已读',
+      responses: {
+        200: successResponse(z.object({ count: z.number() }), '操作成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.markAllAsRead(ctx.identityId),
+  );
+
   // GET /:id — Get notification by ID
   r.route(
     {
@@ -237,10 +265,10 @@ export function registerNotificationRoutes(
     (req) => controller.delete(req.params!.id),
   );
 
-  // POST /:id/read — Mark single notification as read
+  // PATCH /:id/read — Mark single notification as read
   r.route(
     {
-      method: 'post',
+      method: 'patch',
       path: '/:id/read',
       summary: '标记通知为已读',
       request: { params: z.object({ id: z.string().uuid() }) },

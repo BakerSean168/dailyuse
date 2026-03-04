@@ -159,10 +159,15 @@ export class TaskClientService {
     tags?: string[];
   }): Promise<Result<{ templates: TaskTemplate[]; total: number }>> {
     const result = await this.templateApi.getTaskTemplates(params);
-    return mapResult(result, (data) => ({
-      templates: data.templates.map((dto) => taskTemplateFromDTO(dto)),
-      total: data.total,
-    }));
+    return mapResult(result, (data) => {
+      // Server may return a flat array or { templates, total } object
+      const templates = Array.isArray(data) ? data : (data.templates ?? []);
+      const total = Array.isArray(data) ? data.length : (data.total ?? templates.length);
+      return {
+        templates: templates.map((dto) => taskTemplateFromDTO(dto)),
+        total,
+      };
+    });
   }
 
   async getTemplate(id: string): Promise<Result<TaskTemplate>> {
@@ -239,7 +244,9 @@ export class TaskClientService {
     endDate?: number;
   }): Promise<Result<TaskInstance[]>> {
     const result = await this.instanceApi.getTaskInstances(params);
-    return mapResult(result, (dtos) => dtos.map((dto) => taskInstanceFromDTO(dto)));
+    return mapResult(result, (dtos) =>
+      (Array.isArray(dtos) ? dtos : []).map((dto) => taskInstanceFromDTO(dto)),
+    );
   }
 
   async getInstance(id: string): Promise<Result<TaskInstance>> {

@@ -30,7 +30,7 @@ import type {
  * Implements IRuleApiClient using HTTP REST API calls.
  */
 export class RuleHttpAdapter implements IRuleApiClient {
-  private readonly baseUrl = '/api/governance/rules';
+  private readonly baseUrl = '/governance/rules';
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 

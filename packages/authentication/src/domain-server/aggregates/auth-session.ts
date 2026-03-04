@@ -1,6 +1,6 @@
 /**
  * AuthSession 聚合根实�?
- * 
+ *
  * 核心职责:
  * 1. 管理用户会话生命周期
  * 2. 支持多设备并发会�?
@@ -15,11 +15,7 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 
-import {
-  SessionStatus,
-  DeviceInfo,
-  AuthSessionId,
-} from '../../domain-shared';
+import { SessionStatus, DeviceInfo, AuthSessionId } from '../../domain-shared';
 
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '../services/token-provider.interface';
@@ -53,7 +49,6 @@ export interface AuthSessionState {
  * 管理用户的登录会�?
  */
 export class AuthSession extends AggregateRoot<AuthSessionId> {
-
   // ================= 1. 内部状�?(Backing Fields) =================
   private _identityId: IdentityId;
   private _deviceInfo: DeviceInfo;
@@ -150,24 +145,30 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     identityId: IdentityId;
     deviceId: string;
     tokenProvider: ITokenProvider;
-  }): {AuthSession: AuthSession, tokens: {accessToken: string, refreshToken: string}} {
+  }): { AuthSession: AuthSession; tokens: { accessToken: string; refreshToken: string } } {
+    // Use a single session ID for both the JWT token and the persisted session
+    const sessionId = AuthSessionId.generate();
 
     const tokens = params.tokenProvider.generateAuthTokens({
       identityId: params.identityId,
-      sessionId: AuthSessionId.generate(),
+      sessionId,
     });
 
     const deviceInfo = DeviceInfo.createDefault(params.deviceId);
 
     const authSession = AuthSession.create({
-      id: AuthSessionId.generate(),
+      id: sessionId,
       identityId: params.identityId,
-      deviceInfo: deviceInfo,
+      // Pass DTO (plain object), not the DeviceInfo value object itself,
+      // because AuthSession.create calls DeviceInfo.fromDTO() which spreads
+      // the argument — spreading a ValueObject instance only copies the
+      // `props` field, producing a nested { props: {...} } structure.
+      deviceInfo: deviceInfo.toDTO(),
       refreshTokenHash: params.tokenProvider.hash(tokens.refreshToken),
       expiresAt: Date.now() + REFRESH_TOKEN_DURATION_MS,
     });
 
-    return {AuthSession: authSession, tokens};
+    return { AuthSession: authSession, tokens };
   }
 
   /**
@@ -295,7 +296,6 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   }
 
-
   // ================= 6. 序列�?(Serialization) =================
 
   /**
@@ -332,5 +332,4 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       deletedAt: this._isRevoked ? Date.now() : null,
     };
   }
-
 }

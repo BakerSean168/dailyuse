@@ -181,6 +181,11 @@ export function expressAdapter<T>(
       }
 
       // 3. Everything else — never leak internal details
+      // Log the full error server-side for debugging (never sent to client)
+      console.error(
+        '[expressAdapter] Unhandled error:',
+        err instanceof Error ? (err.stack ?? err.message) : err,
+      );
       res.status(500).json(responseBuilder.internalError('Internal server error'));
     }
   };
@@ -277,6 +282,11 @@ export function expressAdapterWithValidation<TInput, TOutput>(
       }
 
       // 3. Everything else — never leak internal details
+      // Log the full error server-side for debugging (never sent to client)
+      console.error(
+        '[expressAdapterWithValidation] Unhandled error:',
+        err instanceof Error ? (err.stack ?? err.message) : err,
+      );
       res.status(500).json(responseBuilder.internalError('Internal server error'));
     }
   };

@@ -58,14 +58,20 @@ export const NotificationApiModule: NotificationApiModuleDef = {
         ok(await notificationModule.notificationService.listNotifications(query)),
       getNotification: async (id) =>
         ok(await notificationModule.notificationService.getNotification(id)),
-      updateNotification: async (_id, _data) =>
-        ok(_data),
+      updateNotification: async (_id, _data) => ok(_data),
       deleteNotification: async (id) => {
         await notificationModule.notificationService.deleteNotification(id);
         return ok(undefined);
       },
-      markAsRead: async (id) =>
-        ok(await notificationModule.notificationService.markAsRead(id)),
+      markAsRead: async (id) => ok(await notificationModule.notificationService.markAsRead(id)),
+      markAllAsRead: async (identityId) => {
+        await notificationModule.notificationService.markAllAsRead(identityId);
+        return ok({ count: 0 });
+      },
+      getUnreadCount: async (identityId) => {
+        const count = await notificationModule.notificationService.getUnreadCount(identityId);
+        return ok({ count });
+      },
       batchMarkAsRead: async (data) => {
         await notificationModule.notificationService.markAsRead(data.notificationIds?.[0]);
         return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
@@ -85,7 +91,11 @@ export const NotificationApiModule: NotificationApiModuleDef = {
     };
 
     // 3. Register routes (inject platform middleware)
-    const notificationRoutes = registerNotificationRoutes(handlers, middleware, context.openApiRegistry);
+    const notificationRoutes = registerNotificationRoutes(
+      handlers,
+      middleware,
+      context.openApiRegistry,
+    );
 
     // 4. Mount to main router
     router.use('/notifications', notificationRoutes);
