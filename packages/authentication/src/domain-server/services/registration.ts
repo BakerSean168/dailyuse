@@ -1,14 +1,15 @@
 import { eventBus } from '@dailyuse/utils';
+import { DomainError } from '@dailyuse/utils/errors';
 import type { RegisterByEmailReq } from '@dailyuse/contracts/authentication';
 import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import { PlainPassword } from '../../domain-shared';
 import type { IPasswordHasher } from '../../domain-shared';
-// 定义业务异常 (建议放在 shared 或单独的 errors 目录)
-export class UserAlreadyExistsError extends Error {
+
+// 定义业务异常 - 继承 DomainError 以便正确处理和响应
+export class UserAlreadyExistsError extends DomainError {
   constructor(identifier: string) {
-    super(`User with identifier [${identifier}] already exists.`);
-    this.name = 'UserAlreadyExistsError';
+    super('USER_ALREADY_EXISTS', `User with identifier [${identifier}] already exists.`, { identifier }, 409);
   }
 }
 
