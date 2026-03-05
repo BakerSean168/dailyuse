@@ -93,7 +93,7 @@ export class TaskTimeConfig extends ValueObject<TaskTimeConfigDTO> implements IT
    * 从 DTO 恢复值对象
    */
   public static fromDTO(dto: TaskTimeConfigDTO): TaskTimeConfig {
-    return new TaskTimeConfig(dto);
+    return TaskTimeConfig.create(dto);
   }
 
   // ================= 工厂方法 6: 从持久化 DTO 恢复 =================

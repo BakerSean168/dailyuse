@@ -131,7 +131,7 @@ function mapToViewModel(dto: TaskTemplateClientDTO): TaskTemplateViewModel {
         (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
       timePoint: dto.timeConfig?.timePoint ?? undefined,
       timeRange: dto.timeConfig?.timeRange ?? undefined,
-      startDate: dto.startDate ?? undefined,
+      startDate: dto.timeConfig?.startDate ?? undefined,
     },
     recurrenceRule: dto.recurrenceRule ?? null,
     reminderConfig: dto.reminderConfig ?? null,

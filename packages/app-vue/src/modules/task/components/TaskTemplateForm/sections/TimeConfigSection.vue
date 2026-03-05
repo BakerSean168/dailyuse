@@ -1,9 +1,3 @@
-<!--
-  TimeConfigSection.vue
-  任务模板时间配置部分
-  重构：使用新的 TaskTimeConfig 结构
-  使用 Popover+Calendar 替代 native date/time inputs 以兼容 Dialog
--->
 <template>
   <Card class="mb-4">
     <CardHeader>
@@ -17,31 +11,45 @@
           :model-value="timeType"
           @update:model-value="
             (v: string) => {
+              if (isEditMode) return;
               timeType = v as TaskTimeType;
               handleTimeTypeChange();
             }
           "
         >
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TaskTimeType.AllDay" id="time-all-day" />
+            <RadioGroupItem :value="TaskTimeType.AllDay" id="time-all-day" :disabled="isEditMode" />
             <Label for="time-all-day">{{ t('task.timeConfig.allDay') }}</Label>
           </div>
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TaskTimeType.TimePoint" id="time-point" />
+            <RadioGroupItem :value="TaskTimeType.TimePoint" id="time-point" :disabled="isEditMode" />
             <Label for="time-point">{{ t('task.timeConfig.timePoint') }}</Label>
           </div>
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TaskTimeType.TimeRange" id="time-range" />
+            <RadioGroupItem :value="TaskTimeType.TimeRange" id="time-range" :disabled="isEditMode" />
             <Label for="time-range">{{ t('task.timeConfig.timeRange') }}</Label>
           </div>
         </RadioGroup>
+        <p v-if="isEditMode" class="mt-1 text-xs text-muted-foreground">
+          {{ t('task.timeConfig.timeTypeFixedHint') }}
+        </p>
       </div>
 
       <!-- 日期范围 -->
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.startDate') }}</Label>
-          <Popover>
+          <Button
+            v-if="isEditMode"
+            variant="outline"
+            class="w-full justify-start text-left font-normal"
+            :class="{ 'text-muted-foreground': !startDate }"
+            disabled
+          >
+            <CalendarIcon class="mr-2 h-4 w-4" />
+            {{ startDate ? formatDisplayDate(startDate) : t('task.timeConfig.startDate') }}
+          </Button>
+          <Popover v-else>
             <PopoverTrigger as-child>
               <Button
                 variant="outline"
@@ -66,6 +74,9 @@
               />
             </PopoverContent>
           </Popover>
+          <p v-if="isEditMode" class="mt-1 text-xs text-muted-foreground">
+            {{ t('task.timeConfig.startDateFixedHint') }}
+          </p>
         </div>
       </div>
 
@@ -73,38 +84,6 @@
       <div v-if="timeType === TaskTimeType.TimePoint" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.specificTime') }}</Label>
-          <Popover>
-            <PopoverTrigger as-child>
-              <Button
-                variant="outline"
-                class="w-full justify-start text-left font-normal"
-                :class="{ 'text-muted-foreground': !timePointDate }"
-              >
-                <CalendarIcon class="mr-2 h-4 w-4" />
-                {{
-                  timePointDate
-                    ? formatDisplayDate(timePointDate)
-                    : t('task.timeConfig.selectDateTime')
-                }}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent class="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                :selected="parseInputToDate(timePointDate)"
-                @update:model-value="
-                  (d) =>
-                    handleCalendarSelect(d, (v) => {
-                      timePointDate = v;
-                      rebuildTimePoint();
-                    })
-                "
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div class="col-span-12 md:col-span-6">
-          <Label class="mb-1.5 block">{{ t('task.timeConfig.selectDateTime') }}</Label>
           <div class="flex gap-2 items-center">
             <Select
               :model-value="timePointHour"
@@ -136,6 +115,7 @@
               </SelectContent>
             </Select>
           </div>
+          <p class="text-xs text-muted-foreground mt-1">{{ t('task.timeConfig.enterTime') }}</p>
         </div>
       </div>
 
@@ -143,35 +123,6 @@
       <div v-if="timeType === TaskTimeType.TimeRange" class="grid grid-cols-12 gap-4 mt-4">
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.startTime') }}</Label>
-          <Popover>
-            <PopoverTrigger as-child>
-              <Button
-                variant="outline"
-                class="w-full justify-start text-left font-normal"
-                :class="{ 'text-muted-foreground': !timeRangeStartDate }"
-              >
-                <CalendarIcon class="mr-2 h-4 w-4" />
-                {{
-                  timeRangeStartDate
-                    ? formatDisplayDate(timeRangeStartDate)
-                    : t('task.timeConfig.selectStartDateTime')
-                }}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent class="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                :selected="parseInputToDate(timeRangeStartDate)"
-                @update:model-value="
-                  (d) =>
-                    handleCalendarSelect(d, (v) => {
-                      timeRangeStartDate = v;
-                      rebuildTimeRange();
-                    })
-                "
-              />
-            </PopoverContent>
-          </Popover>
           <div class="flex gap-2 items-center mt-2">
             <Select
               :model-value="timeRangeStartHour"
@@ -203,41 +154,9 @@
               </SelectContent>
             </Select>
           </div>
-          <p class="text-xs text-muted-foreground mt-1">
-            {{ t('task.timeConfig.selectStartDateTime') }}
-          </p>
         </div>
         <div class="col-span-12 md:col-span-6">
           <Label class="mb-1.5 block">{{ t('task.timeConfig.endTime') }}</Label>
-          <Popover>
-            <PopoverTrigger as-child>
-              <Button
-                variant="outline"
-                class="w-full justify-start text-left font-normal"
-                :class="{ 'text-muted-foreground': !timeRangeEndDate }"
-              >
-                <CalendarIcon class="mr-2 h-4 w-4" />
-                {{
-                  timeRangeEndDate
-                    ? formatDisplayDate(timeRangeEndDate)
-                    : t('task.timeConfig.selectEndDateTime')
-                }}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent class="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                :selected="parseInputToDate(timeRangeEndDate)"
-                @update:model-value="
-                  (d) =>
-                    handleCalendarSelect(d, (v) => {
-                      timeRangeEndDate = v;
-                      rebuildTimeRange();
-                    })
-                "
-              />
-            </PopoverContent>
-          </Popover>
           <div class="flex gap-2 items-center mt-2">
             <Select
               :model-value="timeRangeEndHour"
@@ -269,9 +188,9 @@
               </SelectContent>
             </Select>
           </div>
-          <p class="text-xs text-muted-foreground mt-1">
-            {{ t('task.timeConfig.selectEndDateTime') }}
-          </p>
+        </div>
+        <div class="col-span-12">
+          <p class="text-xs text-muted-foreground">{{ t('task.timeConfig.enterFullRange') }}</p>
         </div>
       </div>
 
@@ -314,9 +233,14 @@ import { Calendar as CalendarIcon } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: TaskTemplateViewModel;
-}>();
+  isEditMode?: boolean;
+}>(), {
+  isEditMode: false,
+});
+
+const isEditMode = props.isEditMode;
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: TaskTemplateViewModel): void;
@@ -332,18 +256,15 @@ const timeType = ref<TaskTimeType>(TaskTimeType.AllDay);
 const startDate = ref<string>(''); // YYYY-MM-DD
 const validationError = ref<string>('');
 
-// TimePoint: split into date + hour + minute
-const timePointDate = ref<string>('');
+// TimePoint: split into hour + minute
 const timePointHour = ref<string>('00');
 const timePointMinute = ref<string>('00');
 
-// TimeRange start: split into date + hour + minute
-const timeRangeStartDate = ref<string>('');
+// TimeRange start: split into hour + minute
 const timeRangeStartHour = ref<string>('00');
 const timeRangeStartMinute = ref<string>('00');
 
-// TimeRange end: split into date + hour + minute
-const timeRangeEndDate = ref<string>('');
+// TimeRange end: split into hour + minute
 const timeRangeEndHour = ref<string>('00');
 const timeRangeEndMinute = ref<string>('00');
 
@@ -389,19 +310,6 @@ const formatDateToInput = (timestamp: number): string => {
 };
 
 /**
- * 格式化时间戳为 input[type=datetime-local] 格式
- */
-const formatDateTimeToInput = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
-
-/**
  * 解析日期字符串为时间戳
  */
 const parseDateInput = (dateStr: string): number | null => {
@@ -441,13 +349,10 @@ const initializeFormData = () => {
   if (!config) {
     timeType.value = TaskTimeType.AllDay;
     startDate.value = '';
-    timePointDate.value = '';
     timePointHour.value = '00';
     timePointMinute.value = '00';
-    timeRangeStartDate.value = '';
     timeRangeStartHour.value = '00';
     timeRangeStartMinute.value = '00';
-    timeRangeEndDate.value = '';
     timeRangeEndHour.value = '00';
     timeRangeEndMinute.value = '00';
     return;
@@ -461,19 +366,16 @@ const initializeFormData = () => {
 
   if (config.timeType === TaskTimeType.TimePoint && config.timePoint != null) {
     const parts = splitMinutes(config.timePoint);
-    timePointDate.value = startDate.value;
     timePointHour.value = parts.hour;
     timePointMinute.value = parts.minute;
   }
 
   if (config.timeType === TaskTimeType.TimeRange && config.timeRange) {
     const startParts = splitMinutes(config.timeRange.start);
-    timeRangeStartDate.value = startDate.value;
     timeRangeStartHour.value = startParts.hour;
     timeRangeStartMinute.value = startParts.minute;
 
     const endParts = splitMinutes(config.timeRange.end);
-    timeRangeEndDate.value = startDate.value;
     timeRangeEndHour.value = endParts.hour;
     timeRangeEndMinute.value = endParts.minute;
   }
@@ -510,7 +412,7 @@ const rebuildTimePoint = () => {
   try {
     validationError.value = '';
     const parsedTime = combineTimeParts(timePointHour.value, timePointMinute.value);
-    const parsedStartDate = parseDateInput(timePointDate.value || startDate.value);
+    const parsedStartDate = parseDateInput(startDate.value);
 
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,
@@ -539,7 +441,13 @@ const rebuildTimeRange = () => {
     validationError.value = '';
     const parsedStart = combineTimeParts(timeRangeStartHour.value, timeRangeStartMinute.value);
     const parsedEnd = combineTimeParts(timeRangeEndHour.value, timeRangeEndMinute.value);
-    const parsedStartDate = parseDateInput(timeRangeStartDate.value || startDate.value);
+    const parsedStartDate = parseDateInput(startDate.value);
+
+    if (parsedEnd <= parsedStart) {
+      validationError.value = t('task.timeConfig.endBeforeStart');
+      emit('update:validation', false);
+      return;
+    }
 
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,
@@ -570,6 +478,17 @@ const handleTimeTypeChange = () => {
   try {
     validationError.value = '';
 
+    if (timeType.value === TaskTimeType.TimePoint) {
+      timePointHour.value = '00';
+      timePointMinute.value = '00';
+    }
+    if (timeType.value === TaskTimeType.TimeRange) {
+      timeRangeStartHour.value = '00';
+      timeRangeStartMinute.value = '00';
+      timeRangeEndHour.value = '00';
+      timeRangeEndMinute.value = '00';
+    }
+
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,
       timeConfig: {
@@ -579,8 +498,14 @@ const handleTimeTypeChange = () => {
     };
     emit('update:modelValue', updated);
 
-    // 更新表单显示
-    initializeFormData();
+    if (timeType.value === TaskTimeType.TimePoint) {
+      rebuildTimePoint();
+      return;
+    }
+    if (timeType.value === TaskTimeType.TimeRange) {
+      rebuildTimeRange();
+      return;
+    }
 
     // 验证通过
     emit('update:validation', true);

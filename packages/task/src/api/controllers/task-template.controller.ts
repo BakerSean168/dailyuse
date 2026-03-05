@@ -157,6 +157,7 @@ export class TaskTemplateController {
     return await this.useCases.updateTemplate.execute(id, {
       name: parsed.data.name,
       description: parsed.data.description,
+      timeConfig: parsed.data.timeConfig,
       recurrenceRule: parsed.data.recurrenceRule,
       importance: parsed.data.importance,
       folderId: parsed.data.folderId,

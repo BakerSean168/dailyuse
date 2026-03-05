@@ -67,6 +67,24 @@
               </p>
               <p class="text-sm">{{ formatDate(currentTemplate.updatedAt) }}</p>
             </div>
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.templateStartDate') }}
+              </p>
+              <p class="text-sm">{{ formatDate(currentTemplate.timeConfig?.startDate) }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.timeType') }}
+              </p>
+              <p class="text-sm">{{ getTimeTypeLabel(currentTemplate.timeConfig?.timeType) }}</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="text-sm font-medium text-muted-foreground">
+                {{ t('task.detail.timeValue') }}
+              </p>
+              <p class="text-sm">{{ getTimeValueDisplay(currentTemplate.timeConfig) }}</p>
+            </div>
             <div v-if="currentTemplate.description" class="sm:col-span-2">
               <p class="text-sm font-medium text-muted-foreground">
                 {{ t('task.detail.description') }}
@@ -204,7 +222,7 @@ const editViewModel = computed<TaskTemplateViewModel | null>(() => {
         (dto.timeConfig?.timeType as TaskTemplateViewModel['timeConfig']['timeType']),
       timePoint: dto.timeConfig?.timePoint ?? undefined,
       timeRange: dto.timeConfig?.timeRange ?? undefined,
-      startDate: dto.startDate ?? undefined,
+      startDate: dto.timeConfig?.startDate ?? undefined,
     },
     recurrenceRule: dto.recurrenceRule ?? null,
     reminderConfig: dto.reminderConfig ?? null,
@@ -242,6 +260,41 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
 function formatDate(ts?: number | null): string {
   if (!ts) return '-';
   return new Date(ts).toLocaleDateString(locale.value);
+}
+
+function formatMinuteOfDay(minutes?: number | null): string {
+  if (minutes == null) return '-';
+  const safe = Math.max(0, Math.min(1439, minutes));
+  const hour = Math.floor(safe / 60);
+  const minute = safe % 60;
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function getTimeTypeLabel(type?: string | null): string {
+  switch (type) {
+    case 'AllDay':
+      return t('task.timeConfig.allDay');
+    case 'TimePoint':
+      return t('task.timeConfig.timePoint');
+    case 'TimeRange':
+      return t('task.timeConfig.timeRange');
+    default:
+      return '-';
+  }
+}
+
+function getTimeValueDisplay(timeConfig?: {
+  timeType?: string;
+  timePoint?: number | null;
+  timeRange?: { start: number; end: number } | null;
+} | null): string {
+  if (!timeConfig) return '-';
+  if (timeConfig.timeType === 'AllDay') return t('task.timeConfig.allDay');
+  if (timeConfig.timeType === 'TimePoint') return formatMinuteOfDay(timeConfig.timePoint);
+  if (timeConfig.timeType === 'TimeRange' && timeConfig.timeRange) {
+    return `${formatMinuteOfDay(timeConfig.timeRange.start)} - ${formatMinuteOfDay(timeConfig.timeRange.end)}`;
+  }
+  return '-';
 }
 
 onMounted(async () => {

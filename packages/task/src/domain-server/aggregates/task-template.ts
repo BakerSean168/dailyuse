@@ -650,6 +650,30 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   /**
+   * 更新时间配置
+   */
+  public updateTimeConfig(newTimeConfig: TaskTimeConfig | null): void {
+    const oldTimeConfig = this._props.timeConfig?.toDTO() ?? null;
+    this._props.timeConfig = newTimeConfig;
+    this._props.updatedAt = new Date();
+
+    this.addHistory('time_config_updated', {
+      oldTimeConfig,
+      newTimeConfig: newTimeConfig?.toDTO() ?? null,
+    });
+
+    this.addDomainEvent('task_template.schedule_time_changed', {
+      taskTemplate: this.toServerDTO(),
+      oldStartDate: this._props.startDate,
+      oldDueDate: this._props.dueDate,
+      newStartDate: this._props.startDate,
+      newDueDate: this._props.dueDate,
+      oldTimeConfig,
+      newTimeConfig: newTimeConfig?.toDTO() ?? null,
+    });
+  }
+
+  /**
    * �����ظ����� (RECURRING)
    */
   public updateRecurrenceRule(newRule: RecurrenceRule): void {

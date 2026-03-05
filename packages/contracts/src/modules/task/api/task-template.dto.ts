@@ -43,6 +43,7 @@ export const UpdateTaskTemplateSchema = z.object({
   templateId: z.string().optional(),
   name: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
+  timeConfig: TaskTimeConfigSchema.optional().nullable(),
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   importance: z.custom<ImportanceLevel>().openapi({ type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: '重要程度' }).optional(),
   folderId: brandedId<TaskFolderId>().optional().nullable(),

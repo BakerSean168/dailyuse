@@ -26,6 +26,7 @@
 
       <TimeConfigSection
         :model-value="taskTemplateBeingEdited!"
+        :is-edit-mode="isEditMode"
         @update:validation="updateTimeValidation"
         @update:model-value="handleTemplateUpdate"
       />
