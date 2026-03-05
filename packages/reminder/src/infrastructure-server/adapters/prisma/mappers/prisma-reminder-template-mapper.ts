@@ -133,6 +133,7 @@ export class PrismaReminderTemplateMapper {
     return ReminderHistory.load({
       id: ReminderHistoryId.of(h.id),
       templateId: h.templateId,
+      identityId: h.identityId,
       triggeredAt: h.triggeredAt,
       result: h.result as TriggerResult,
       error: h.error ?? null,

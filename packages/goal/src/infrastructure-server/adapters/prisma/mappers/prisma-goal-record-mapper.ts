@@ -7,6 +7,7 @@
 import type { GoalRecord as PrismaGoalRecord } from '@dailyuse/database';
 import { GoalRecord } from '@/domain-server';
 import { GoalRecordId, KeyResultId } from '@/domain-shared';
+import { IdentityId } from '@dailyuse/domain-shared';
 
 export class PrismaGoalRecordMapper {
   /**
@@ -16,7 +17,7 @@ export class PrismaGoalRecordMapper {
     return GoalRecord.load({
       id: GoalRecordId.of(data.id),
       keyResultId: KeyResultId.of(data.keyResultId),
-      identityId: (data as any).identityId,
+      identityId: IdentityId.of(data.identityId),
       value: data.value,
       note: data.note ?? null,
       recordedAt: data.recordedAt,

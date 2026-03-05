@@ -3,6 +3,14 @@ import type { IDomainEvent } from '@dailyuse/contracts/shared';
 
 const logger = new Logger('TaskEventHandler');
 
+/**
+ * Extended domain event interface for task events that carry identityId.
+ * Standard IDomainEvent omits identityId; task events include it for routing.
+ */
+interface TaskDomainEvent extends IDomainEvent {
+  identityId?: string;
+}
+
 // Cast eventBus to any for custom event types not in AppEventRegistry
 const customEventBus = eventBus as any;
 
@@ -68,7 +76,7 @@ export class TaskEventHandler {
    * 处理任务实例生成事件
    */
   private static async handleTaskInstancesGenerated(event: IDomainEvent): Promise<void> {
-    const eventData = event as any;
+    const eventData = event as TaskDomainEvent;
     const identityId = eventData.identityId ?? eventData.payload?.identityId;
 
     if (!identityId) {
@@ -95,7 +103,7 @@ export class TaskEventHandler {
    * 处理任务模板创建事件
    */
   private static async handleTaskTemplateCreated(event: IDomainEvent): Promise<void> {
-    const { identityId, payload } = event as any;
+    const { identityId, payload } = event as TaskDomainEvent;
 
     if (!identityId) {
       return;
@@ -124,7 +132,7 @@ export class TaskEventHandler {
    * 处理任务实例完成事件
    */
   private static async handleTaskInstanceCompleted(event: IDomainEvent): Promise<void> {
-    const { identityId, payload } = event as any;
+    const { identityId, payload } = event as TaskDomainEvent;
 
     if (!identityId) {
       return;

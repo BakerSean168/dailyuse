@@ -3,6 +3,10 @@
  *
  * Prisma implementation of INotificationPreferenceRepository.
  * Supports both PostgreSQL (API) and SQLite (Desktop).
+ *
+ * TODO(identityId): When implementing, ensure all toDomain mappers propagate
+ * identityId from Prisma rows to domain entities. See reminder/task/goal modules
+ * for reference patterns (e.g., `identityId: data.identityId`).
  */
 
 import type { PrismaClient } from '@dailyuse/database';

@@ -116,7 +116,7 @@ export function registerGoalCrudRoutes(
       const folderId = (req.query?.folderId ?? req.query?.dirId) as string | undefined;
 
       return controller.list({
-        identityId: ctx.identityId as any,
+        identityId: ctx.identityId,
         status: parseStringArray(req.query?.status) as any,
         importance: parseStringArray(req.query?.importance) as any,
         category: req.query?.category as string | undefined,

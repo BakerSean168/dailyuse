@@ -19,7 +19,7 @@ export class PrismaScheduleExecutionMapper {
     return ScheduleExecution.load({
       id: data.id,
       taskId: data.taskId,
-      identityId: (data as any).identityId,
+      identityId: data.identityId,
       executionTime: data.executionTime,
       status: data.status as ExecutionStatus,
       duration: data.duration ?? null,

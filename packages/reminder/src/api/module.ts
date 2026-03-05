@@ -116,7 +116,7 @@ export const ReminderApiModule: ReminderApiModuleDef = {
             params.beforeTime
               ? new Date(params.beforeTime as string | number).getTime()
               : Date.now(),
-            ctx.identityId as any,
+            ctx.identityId,
           ),
         ),
       getTemplate: async (id) => ok(await reminderModule.reminderTemplateRepository.findById(id)),
