@@ -73,6 +73,13 @@ export const GoalApiModule: GoalApiModuleDef = {
       updateKeyResultProgress: goalModule.updateKeyResultProgress,
       deleteKeyResult: goalModule.deleteKeyResult,
       addReview: goalModule.addReview,
+      listReviews: goalModule.listReviews,
+      updateReview: goalModule.updateReview,
+      deleteReview: goalModule.deleteReview,
+      createRecord: goalModule.createRecord,
+      listRecords: goalModule.listRecords,
+      deleteRecord: goalModule.deleteRecord,
+      completeGoal: goalModule.completeGoal,
     };
 
     // 4. 注册路由（同时注册 OpenAPI 文档）

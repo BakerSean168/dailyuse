@@ -19,6 +19,7 @@ import type { GoalFolderUseCases } from '../../controllers/goal-folder.controlle
 import { registerGoalCrudRoutes } from './goal.routes';
 import { registerKeyResultRoutes } from './key-result.routes';
 import { registerReviewRoutes } from './review.routes';
+import { registerRecordRoutes } from './goal-record.routes';
 import { registerGoalFolderRoutes } from './goal-folder.routes';
 
 // ============ Types ============
@@ -47,12 +48,14 @@ export function registerGoalRoutes(
   const crudRouter = registerGoalCrudRoutes(controller, middleware, openApiRegistry);
   const keyResultRouter = registerKeyResultRoutes(controller, middleware, openApiRegistry);
   const reviewRouter = registerReviewRoutes(controller, middleware, openApiRegistry);
+  const recordRouter = registerRecordRoutes(controller, middleware, openApiRegistry);
 
   // Merge all into a single parent router
   const router = Router();
   router.use(crudRouter);
   router.use(keyResultRouter);
   router.use(reviewRouter);
+  router.use(recordRouter);
 
   return router;
 }

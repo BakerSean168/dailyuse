@@ -32,6 +32,8 @@ import {
   ScheduleTaskResponseSchema,
   BatchOperationResponseSchema,
 } from '@dailyuse/contracts/schedule';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { ScheduleTaskId } from '@dailyuse/contracts/primitives';
 import { ScheduleController } from '../controllers/schedule.controller';
 import type { ScheduleUseCases } from '../controllers/schedule.controller';
 
@@ -97,6 +99,40 @@ export function registerScheduleRoutes(
     (req) => controller.batchOperation(req.body),
   );
 
+  // POST /tasks/batch/delete — Batch delete tasks (must be before /tasks/:id)
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/batch/delete',
+      summary: '批量删除调度任务',
+      request: {
+        body: {
+          content: { 'application/json': { schema: z.object({ taskIds: z.array(z.string()).min(1) }) } },
+        },
+      },
+      responses: {
+        200: successResponse(z.object({ deleted: z.number() }), '删除成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req) => controller.batchDeleteTasks(req.body),
+  );
+
+  // GET /tasks/due — Get due tasks (must be before /tasks/:id)
+  r.route(
+    {
+      method: 'get',
+      path: '/tasks/due',
+      summary: '获取待执行的调度任务',
+      responses: {
+        200: successResponse(z.array(ScheduleTaskResponseSchema), '获取成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.getDueTasks(ctx),
+  );
+
   // POST /tasks — Create schedule task
   r.route(
     {
@@ -151,7 +187,7 @@ export function registerScheduleRoutes(
       method: 'get',
       path: '/tasks/:id',
       summary: '获取调度任务详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ScheduleTaskId>() }) },
       responses: {
         200: successResponse(ScheduleTaskResponseSchema, '获取成功'),
         404: errorResponse('任务不存在'),
@@ -168,7 +204,7 @@ export function registerScheduleRoutes(
       path: '/tasks/:id',
       summary: '更新调度任务',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ScheduleTaskId>() }),
         body: { content: { 'application/json': { schema: UpdateScheduleTaskRequestSchema } } },
       },
       responses: {
@@ -186,7 +222,7 @@ export function registerScheduleRoutes(
       method: 'delete',
       path: '/tasks/:id',
       summary: '删除调度任务',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ScheduleTaskId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('任务不存在'),
@@ -202,7 +238,7 @@ export function registerScheduleRoutes(
       method: 'post',
       path: '/tasks/:id/pause',
       summary: '暂停调度任务',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ScheduleTaskId>() }) },
       responses: {
         200: successResponse(ScheduleTaskResponseSchema, '暂停成功'),
         404: errorResponse('任务不存在'),
@@ -218,7 +254,7 @@ export function registerScheduleRoutes(
       method: 'post',
       path: '/tasks/:id/resume',
       summary: '恢复调度任务',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ScheduleTaskId>() }) },
       responses: {
         200: successResponse(ScheduleTaskResponseSchema, '恢复成功'),
         404: errorResponse('任务不存在'),
@@ -234,7 +270,7 @@ export function registerScheduleRoutes(
       method: 'post',
       path: '/tasks/:id/trigger',
       summary: '手动触发调度任务',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ScheduleTaskId>() }) },
       responses: {
         200: successResponse(ScheduleTaskResponseSchema, '触发成功'),
         404: errorResponse('任务不存在'),
@@ -242,6 +278,60 @@ export function registerScheduleRoutes(
     },
     [auth],
     (req) => controller.triggerTask(req.params!.id),
+  );
+
+  // POST /tasks/:id/complete — Complete task
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/:id/complete',
+      summary: '完成调度任务',
+      request: { params: z.object({ id: brandedId<ScheduleTaskId>() }) },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '完成成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.completeTask(req.params!.id),
+  );
+
+  // POST /tasks/:id/cancel — Cancel task
+  r.route(
+    {
+      method: 'post',
+      path: '/tasks/:id/cancel',
+      summary: '取消调度任务',
+      request: {
+        params: z.object({ id: brandedId<ScheduleTaskId>() }),
+        body: { content: { 'application/json': { schema: z.object({ reason: z.string().optional() }) } } },
+      },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '取消成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.cancelTask(req.params!.id, req.body),
+  );
+
+  // PATCH /tasks/:id/metadata — Update task metadata
+  r.route(
+    {
+      method: 'patch',
+      path: '/tasks/:id/metadata',
+      summary: '更新调度任务元数据',
+      request: {
+        params: z.object({ id: brandedId<ScheduleTaskId>() }),
+        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+      },
+      responses: {
+        200: successResponse(ScheduleTaskResponseSchema, '更新成功'),
+        404: errorResponse('任务不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.updateTaskMetadata(req.params!.id, req.body),
   );
 
   return router;

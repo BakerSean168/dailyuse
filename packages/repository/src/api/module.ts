@@ -10,7 +10,7 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, fail } from '@dailyuse/contracts/result';
 import { RepositoryModule } from '../infrastructure-server';
 import { RepositoryContainer } from '../infrastructure-server/di/repository-container-v2';
 import {
@@ -18,15 +18,24 @@ import {
   GetRepository,
   ListRepositories,
   UpdateRepositoryConfig,
+  UpdateRepositoryStats,
   DeleteRepository,
   ArchiveRepository,
   ActivateRepository,
   GetResource,
   ListResources,
+  CreateFolder,
+  GetFolder,
+  GetFolderTree,
+  RenameFolder,
+  MoveFolder,
+  DeleteFolder,
 } from '../application-server';
+import type { IStoragePort } from '../application-server/ports/IStoragePort';
 import {
   registerRepositoryRoutes,
   registerResourceRoutes,
+  registerFolderRoutes,
 } from './routes';
 import type { RepositoryUseCases } from '../controllers/repository.controller';
 import { registerRepositoryInitializationTasks } from './initialization';
@@ -67,6 +76,40 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     const activateRepository = new ActivateRepository(repositoryModule.repositoryRepository);
     const getResource = new GetResource(repositoryModule.resourceRepository);
     const listResources = new ListResources(repositoryModule.resourceRepository);
+    const updateRepositoryStats = new UpdateRepositoryStats(repositoryModule.repositoryRepository);
+
+    // No-op storage port for folder operations (file system operations deferred)
+    const noopStoragePort: IStoragePort = {
+      write: async () => {},
+      move: async () => {},
+      delete: async () => {},
+    };
+
+    const createFolder = new CreateFolder(
+      repositoryModule.folderRepository,
+      repositoryModule.repositoryRepository,
+      noopStoragePort,
+    );
+    const getFolder = new GetFolder(repositoryModule.folderRepository);
+    const getFolderTree = new GetFolderTree(repositoryModule.folderRepository);
+    const renameFolder = new RenameFolder(
+      repositoryModule.folderRepository,
+      repositoryModule.resourceRepository,
+      repositoryModule.repositoryRepository,
+      noopStoragePort,
+    );
+    const moveFolder = new MoveFolder(
+      repositoryModule.folderRepository,
+      repositoryModule.resourceRepository,
+      repositoryModule.repositoryRepository,
+      noopStoragePort,
+    );
+    const deleteFolder = new DeleteFolder(
+      repositoryModule.folderRepository,
+      repositoryModule.resourceRepository,
+      repositoryModule.repositoryRepository,
+      noopStoragePort,
+    );
 
     // 3. Wire route handlers to use cases
     const handlers: RepositoryUseCases = {
@@ -141,15 +184,56 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         await repositoryModule.resourceRepository.save(resource);
         return ok(undefined);
       },
+
+      // Repository stats
+      updateRepositoryStats: async (id, data) => {
+        const result = await updateRepositoryStats.execute({ id, stats: data as any });
+        return ok(result.repository);
+      },
+
+      // Folder CRUD
+      createFolder: async (data, ctx) => {
+        const result = await createFolder.execute({
+          repositoryId: data.repositoryId,
+          identityId: ctx.identityId,
+          name: data.name,
+          parentId: data.parentId,
+          order: data.order,
+        });
+        return ok(result.folder);
+      },
+      getFolderTree: async (repositoryId) => {
+        const result = await getFolderTree.execute({ repositoryId });
+        return ok(result.folders);
+      },
+      getFolder: async (id) => {
+        const result = await getFolder.execute({ id });
+        if (!result.folder) return fail({ code: 'NOT_FOUND', message: `Folder not found: ${id}` });
+        return ok(result.folder);
+      },
+      renameFolder: async (id, newName) => {
+        const result = await renameFolder.execute({ id, newName });
+        return ok(result.folder);
+      },
+      moveFolder: async (id, newParentId) => {
+        const result = await moveFolder.execute({ id, newParentId });
+        return ok(result.folder);
+      },
+      deleteFolder: async (id) => {
+        await deleteFolder.execute({ id });
+        return ok(undefined);
+      },
     };
 
     // 4. Register routes
     const repositoryRoutes = registerRepositoryRoutes(handlers, middleware, context.openApiRegistry);
     const resourceRoutes = registerResourceRoutes(handlers, middleware, context.openApiRegistry);
+    const folderRoutes = registerFolderRoutes(handlers, middleware, context.openApiRegistry);
 
     // 5. Mount sub-API routes
     router.use('/repositories', repositoryRoutes);
     router.use('/resources', resourceRoutes);
+    router.use('/folders', folderRoutes);
 
     // 6. Register initialization tasks
     registerRepositoryInitializationTasks();

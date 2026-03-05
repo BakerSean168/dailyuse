@@ -24,6 +24,8 @@ import {
   UpdateDocumentSchema,
   DocumentResponseSchema,
 } from '@dailyuse/contracts/editor';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { DocumentId, EditorWorkspaceId, FolderId } from '@dailyuse/contracts/primitives';
 import type { EditorController } from '../../controllers/editor.controller';
 
 // ============ Types ============
@@ -74,8 +76,8 @@ export function registerDocumentRoutes(
       summary: '获取文档列表',
       request: {
         query: z.object({
-          workspaceId: z.string().uuid().optional(),
-          folderId: z.string().uuid().optional(),
+          workspaceId: brandedId<EditorWorkspaceId>().optional(),
+          folderId: brandedId<FolderId>().optional(),
         }),
       },
       responses: {
@@ -99,7 +101,7 @@ export function registerDocumentRoutes(
       method: 'get',
       path: '/documents/:id',
       summary: '获取文档详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<DocumentId>() }) },
       responses: {
         200: successResponse(DocumentResponseSchema, '获取成功'),
         404: errorResponse('文档不存在'),
@@ -116,7 +118,7 @@ export function registerDocumentRoutes(
       path: '/documents/:id',
       summary: '更新文档',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<DocumentId>() }),
         body: { content: { 'application/json': { schema: UpdateDocumentSchema } } },
       },
       responses: {
@@ -134,7 +136,7 @@ export function registerDocumentRoutes(
       method: 'delete',
       path: '/documents/:id',
       summary: '删除文档',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<DocumentId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('文档不存在'),

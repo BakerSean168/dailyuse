@@ -33,6 +33,8 @@ import {
 import type { ListRulesQuery, SearchRulesQuery } from '../contracts';
 import { GovernanceController } from '../controllers/governance.controller';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { RuleId, RuleRevisionId } from '@dailyuse/contracts/primitives';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -76,7 +78,7 @@ function parseStringArray(value: unknown): string[] | undefined {
 // ============ Response Schemas ============
 
 const RuleResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: brandedId<RuleId>(),
   code: z.string(),
   title: z.string(),
   description: z.string(),
@@ -87,8 +89,8 @@ const RuleResponseSchema = z.object({
 });
 
 const RuleRevisionResponseSchema = z.object({
-  id: z.string().uuid(),
-  ruleId: z.string().uuid(),
+  id: brandedId<RuleRevisionId>(),
+  ruleId: brandedId<RuleId>(),
   version: z.number(),
   createdAt: z.number(),
 });
@@ -135,7 +137,7 @@ export function registerGovernanceCrudRoutes(
       path: '/:id',
       summary: '更新规则',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<RuleId>() }),
         body: { content: { 'application/json': { schema: UpdateRuleSchema } } },
       },
       responses: {
@@ -165,7 +167,7 @@ export function registerGovernanceCrudRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除规则',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RuleId>() }) },
       responses: {
         200: successResponse(z.object({ success: z.boolean() }), '删除成功'),
         404: errorResponse('规则不存在'),
@@ -234,7 +236,7 @@ export function registerGovernanceCrudRoutes(
       path: '/:id/revisions',
       summary: '获取规则修订历史',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<RuleId>() }),
         query: GetRuleRevisionsQuerySchema.omit({ ruleId: true }),
       },
       responses: {
@@ -261,7 +263,7 @@ export function registerGovernanceCrudRoutes(
       method: 'get',
       path: '/:id',
       summary: '按 ID 获取规则',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RuleId>() }) },
       responses: {
         200: successResponse(RuleResponseSchema, '获取成功'),
         404: errorResponse('规则不存在'),

@@ -5,6 +5,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { GoalId } from '../../../primitives';
 import type { GoalReviewServerDTO } from '../entities';
 import { ReviewType } from '../value-objects/review-type';
 
@@ -16,7 +18,7 @@ import { ReviewType } from '../value-objects/review-type';
  * 创建复盘 Schema
  */
 export const CreateGoalReviewSchema = z.object({
-  goalId: z.string().uuid('目标 UUID 无效'),
+  goalId: brandedId<GoalId>(),
   title: z.string().min(1, '复盘标题不能为空').max(256),
   content: z.string().min(1, '复盘内容不能为空').max(10000),
   reviewType: z.enum(ReviewType),
@@ -73,7 +75,7 @@ export type DeleteGoalReviewRes = GoalReviewServerDTO;
  * 查询复盘列表
  */
 export const GetGoalReviewsSchema = z.object({
-  goalId: z.string().uuid('目标 UUID 无效'),
+  goalId: brandedId<GoalId>(),
 });
 
 export type GetGoalReviewsReq = z.infer<typeof GetGoalReviewsSchema>;

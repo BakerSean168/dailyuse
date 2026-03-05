@@ -15,6 +15,7 @@ import { RepositoryController } from '../../controllers/repository.controller';
 import type { RepositoryUseCases } from '../../controllers/repository.controller';
 import { registerRepositoryCrudRoutes } from './repository.routes';
 import { registerStandaloneResourceRoutes } from './resource.routes';
+import { registerNestedFolderRoutes, registerStandaloneFolderRoutes } from './folder.routes';
 
 // ============ Types ============
 
@@ -37,7 +38,14 @@ export function registerRepositoryRoutes(
   openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const controller = new RepositoryController(handlers);
-  return registerRepositoryCrudRoutes(controller, middleware, openApiRegistry);
+  const crudRouter = registerRepositoryCrudRoutes(controller, middleware, openApiRegistry);
+  const nestedFolderRouter = registerNestedFolderRoutes(controller, middleware, openApiRegistry);
+
+  // Merge repository CRUD + nested folder routes
+  const router = Router();
+  router.use(crudRouter);
+  router.use(nestedFolderRouter);
+  return router;
 }
 
 /**
@@ -53,4 +61,16 @@ export function registerResourceRoutes(
 ): Router {
   const controller = new RepositoryController(handlers);
   return registerStandaloneResourceRoutes(controller, middleware, openApiRegistry);
+}
+
+/**
+ * Register standalone folder routes (mounted at /folders).
+ */
+export function registerFolderRoutes(
+  handlers: RepositoryUseCases,
+  middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
+): Router {
+  const controller = new RepositoryController(handlers);
+  return registerStandaloneFolderRoutes(controller, middleware, openApiRegistry);
 }

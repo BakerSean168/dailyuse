@@ -24,6 +24,7 @@ import type { ListTaskInstancesByStatus } from '../../application-server/use-cas
 import type { ListTaskInstancesByTemplate } from '../../application-server/use-cases/queries/list-task-instances-by-template';
 import type { SkipTaskInstance } from '../../application-server/use-cases/commands/skip-task-instance';
 import type { StartTaskInstance } from '../../application-server/use-cases/commands/start-task-instance';
+import type { CheckExpiredInstances } from '../../application-server/use-cases/commands/check-expired-instances';
 
 export interface TaskInstanceUseCases {
   getTaskInstance: GetTaskInstance;
@@ -35,6 +36,7 @@ export interface TaskInstanceUseCases {
   skip: SkipTaskInstance;
   start: StartTaskInstance;
   deleteInstance: DeleteTaskInstance;
+  checkExpired: CheckExpiredInstances;
 }
 
 /**
@@ -143,5 +145,12 @@ export class TaskInstanceController {
    */
   async deleteInstance(id: string): Promise<Result<void>> {
     return await this.useCases.deleteInstance.execute(id);
+  }
+
+  /**
+   * Check and mark expired instances
+   */
+  async checkExpired(identityId: string): Promise<Result<TaskInstanceClientDTO[]>> {
+    return await this.useCases.checkExpired.execute(identityId);
   }
 }

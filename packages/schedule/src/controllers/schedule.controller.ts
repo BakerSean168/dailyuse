@@ -31,6 +31,11 @@ export interface ScheduleUseCases {
   pauseTask(id: string): Promise<Result<unknown>>;
   resumeTask(id: string): Promise<Result<unknown>>;
   triggerTask(id: string): Promise<Result<unknown>>;
+  completeTask(id: string): Promise<Result<unknown>>;
+  cancelTask(id: string, reason: string): Promise<Result<unknown>>;
+  getDueTasks(ctx: Context): Promise<Result<unknown>>;
+  batchDeleteTasks(ids: string[]): Promise<Result<unknown>>;
+  updateTaskMetadata(id: string, metadata: Record<string, unknown>): Promise<Result<unknown>>;
 }
 
 export class ScheduleController {
@@ -94,6 +99,34 @@ export class ScheduleController {
 
   async triggerTask(id: string): Promise<Result<unknown>> {
     return this.useCases.triggerTask(id);
+  }
+
+  async completeTask(id: string): Promise<Result<unknown>> {
+    return this.useCases.completeTask(id);
+  }
+
+  async cancelTask(id: string, input: unknown): Promise<Result<unknown>> {
+    const reason = (input as any)?.reason ?? 'User cancelled';
+    return this.useCases.cancelTask(id, reason);
+  }
+
+  async getDueTasks(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getDueTasks(ctx);
+  }
+
+  async batchDeleteTasks(input: unknown): Promise<Result<unknown>> {
+    const ids = (input as any)?.taskIds;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return fail({ code: 'VALIDATION_ERROR', message: 'taskIds must be a non-empty array' });
+    }
+    return this.useCases.batchDeleteTasks(ids);
+  }
+
+  async updateTaskMetadata(id: string, input: unknown): Promise<Result<unknown>> {
+    if (!input || typeof input !== 'object') {
+      return fail({ code: 'VALIDATION_ERROR', message: 'metadata must be an object' });
+    }
+    return this.useCases.updateTaskMetadata(id, input as Record<string, unknown>);
   }
 
   // ==================== Batch Operations ====================

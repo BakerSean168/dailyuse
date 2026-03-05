@@ -12,6 +12,7 @@ import {
   DeleteGoal,
   ArchiveGoal,
   ActivateGoal,
+  CompleteGoal,
   SearchGoals,
   ListGoalFolders,
   CreateGoalFolder,
@@ -23,6 +24,12 @@ import {
   UpdateGoalKeyResultProgress,
   DeleteGoalKeyResult,
   AddGoalReview,
+  ListGoalReviews,
+  UpdateGoalReview,
+  DeleteGoalReview,
+  CreateGoalRecord,
+  ListGoalRecords,
+  DeleteGoalRecord,
 } from '../application-server';
 import { GoalContainer } from './di/goal-container';
 
@@ -60,6 +67,13 @@ export class GoalModule {
   public readonly updateKeyResultProgress: UpdateGoalKeyResultProgress;
   public readonly deleteKeyResult: DeleteGoalKeyResult;
   public readonly addReview: AddGoalReview;
+  public readonly listReviews: ListGoalReviews;
+  public readonly updateReview: UpdateGoalReview;
+  public readonly deleteReview: DeleteGoalReview;
+  public readonly createRecord: CreateGoalRecord;
+  public readonly listRecords: ListGoalRecords;
+  public readonly deleteRecord: DeleteGoalRecord;
+  public readonly completeGoal: CompleteGoal;
 
   constructor(repositories: GoalModuleRepositories) {
     const container = GoalContainer.getInstance();
@@ -95,5 +109,12 @@ export class GoalModule {
     this.updateKeyResultProgress = new UpdateGoalKeyResultProgress(this.goalRepository, this.goalPolicy);
     this.deleteKeyResult = new DeleteGoalKeyResult(this.goalRepository, this.goalPolicy);
     this.addReview = new AddGoalReview(this.goalRepository, this.goalPolicy);
+    this.listReviews = new ListGoalReviews(this.goalRepository);
+    this.updateReview = new UpdateGoalReview(this.goalRepository, this.goalPolicy);
+    this.deleteReview = new DeleteGoalReview(this.goalRepository, this.goalPolicy);
+    this.createRecord = new CreateGoalRecord(this.goalRepository, this.goalRecordRepository);
+    this.listRecords = new ListGoalRecords(this.goalRecordRepository);
+    this.deleteRecord = new DeleteGoalRecord(this.goalRecordRepository);
+    this.completeGoal = new CompleteGoal(this.goalRepository, this.goalPolicy);
   }
 }

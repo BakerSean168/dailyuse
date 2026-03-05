@@ -10,8 +10,8 @@
  *   PUT    /:id             — Update notification (UpdateNotificationSchema)
  *   DELETE /:id             — Delete notification
  *   POST   /:id/read        — Mark single notification as read
- *   POST   /batch/read      — Batch mark as read (MarkAsReadBatchSchema)
- *   POST   /batch/delete    — Batch delete (DeleteNotificationsBatchSchema)
+ *   POST   /batch-read      — Batch mark as read (MarkAsReadBatchSchema)
+ *   POST   /batch-delete    — Batch delete (DeleteNotificationsBatchSchema)
  *   POST   /cleanup         — Cleanup old notifications (CleanupOldNotificationsSchema)
  */
 
@@ -24,6 +24,8 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { NotificationId } from '@dailyuse/contracts/primitives';
 import {
   CreateNotificationSchema,
   UpdateNotificationSchema,
@@ -134,11 +136,11 @@ export function registerNotificationRoutes(
       }),
   );
 
-  // POST /batch/read — Batch mark as read (must be before /:id)
+  // POST /batch-read — Batch mark as read (must be before /:id)
   r.route(
     {
       method: 'post',
-      path: '/batch/read',
+      path: '/batch-read',
       summary: '批量标记为已读',
       request: { body: { content: { 'application/json': { schema: MarkAsReadBatchSchema } } } },
       responses: {
@@ -150,11 +152,11 @@ export function registerNotificationRoutes(
     (req) => controller.batchMarkAsRead(req.body),
   );
 
-  // POST /batch/delete — Batch delete (must be before /:id)
+  // POST /batch-delete — Batch delete (must be before /:id)
   r.route(
     {
       method: 'post',
-      path: '/batch/delete',
+      path: '/batch-delete',
       summary: '批量删除通知',
       request: {
         body: { content: { 'application/json': { schema: DeleteNotificationsBatchSchema } } },
@@ -220,7 +222,7 @@ export function registerNotificationRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取通知详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<NotificationId>() }) },
       responses: {
         200: successResponse(NotificationResponseSchema, '获取成功'),
         404: errorResponse('通知不存在'),
@@ -237,7 +239,7 @@ export function registerNotificationRoutes(
       path: '/:id',
       summary: '更新通知',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<NotificationId>() }),
         body: { content: { 'application/json': { schema: UpdateNotificationSchema } } },
       },
       responses: {
@@ -255,7 +257,7 @@ export function registerNotificationRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除通知',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<NotificationId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('通知不存在'),
@@ -271,7 +273,7 @@ export function registerNotificationRoutes(
       method: 'patch',
       path: '/:id/read',
       summary: '标记通知为已读',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<NotificationId>() }) },
       responses: {
         200: successResponse(NotificationResponseSchema, '操作成功'),
         404: errorResponse('通知不存在'),

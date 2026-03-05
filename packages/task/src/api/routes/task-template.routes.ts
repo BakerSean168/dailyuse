@@ -17,7 +17,12 @@ import {
   CreateTaskTemplateSchema,
   UpdateTaskTemplateSchema,
   TaskTemplateResponseSchema,
+  GenerateInstancesSchema,
+  BindToGoalSchema,
+  TaskInstanceResponseSchema,
 } from '@dailyuse/contracts/task';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 
 // ============ Types ============
@@ -87,13 +92,35 @@ export function registerTaskTemplateRoutes(
     }),
   );
 
+  // GET /by-priority — List templates sorted by priority (must be before /:id)
+  r.route(
+    {
+      method: 'get',
+      path: '/by-priority',
+      summary: '按优先级获取任务模板',
+      request: {
+        query: z.object({
+          limit: z.string().optional(),
+        }),
+      },
+      responses: {
+        200: successResponse(z.array(TaskTemplateResponseSchema), '获取成功'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.listByPriority(
+      ctx.identityId,
+      req.query?.limit ? Number(req.query.limit) : undefined,
+    ),
+  );
+
   // GET /:id — Get template by ID
   r.route(
     {
       method: 'get',
       path: '/:id',
       summary: '获取任务模板详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '获取成功'),
         404: errorResponse('模板不存在'),
@@ -111,7 +138,7 @@ export function registerTaskTemplateRoutes(
       path: '/:id',
       summary: '更新任务模板',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<TaskTemplateId>() }),
         body: { content: { 'application/json': { schema: UpdateTaskTemplateSchema } } },
       },
       responses: {
@@ -129,7 +156,7 @@ export function registerTaskTemplateRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除任务模板',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('模板不存在'),
@@ -145,7 +172,7 @@ export function registerTaskTemplateRoutes(
       method: 'post',
       path: '/:id/activate',
       summary: '激活任务模板',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '激活成功'),
         404: errorResponse('模板不存在'),
@@ -161,7 +188,7 @@ export function registerTaskTemplateRoutes(
       method: 'post',
       path: '/:id/pause',
       summary: '暂停任务模板',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '暂停成功'),
         404: errorResponse('模板不存在'),
@@ -177,7 +204,7 @@ export function registerTaskTemplateRoutes(
       method: 'post',
       path: '/:id/archive',
       summary: '归档任务模板',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
       responses: {
         200: successResponse(TaskTemplateResponseSchema, '归档成功'),
         404: errorResponse('模板不存在'),
@@ -185,6 +212,79 @@ export function registerTaskTemplateRoutes(
     },
     [auth],
     (req) => controller.archiveTemplate(req.params!.id),
+  );
+
+  // POST /:id/generate-instances — Generate instances for template
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/generate-instances',
+      summary: '为模板生成任务实例',
+      request: {
+        params: z.object({ id: brandedId<TaskTemplateId>() }),
+        body: { content: { 'application/json': { schema: GenerateInstancesSchema } } },
+      },
+      responses: {
+        200: successResponse(z.array(TaskInstanceResponseSchema), '生成成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.generateInstances(req.params!.id, req.body),
+  );
+
+  // GET /:id/instances — Get instances by template ID
+  r.route(
+    {
+      method: 'get',
+      path: '/:id/instances',
+      summary: '获取模板的任务实例列表',
+      request: {
+        params: z.object({ id: brandedId<TaskTemplateId>() }),
+      },
+      responses: {
+        200: successResponse(z.array(TaskInstanceResponseSchema), '获取成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getInstancesByTemplate(req.params!.id),
+    { requireAuth: false },
+  );
+
+  // POST /:id/bind-goal — Bind template to goal
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/bind-goal',
+      summary: '绑定任务模板到目标',
+      request: {
+        params: z.object({ id: brandedId<TaskTemplateId>() }),
+        body: { content: { 'application/json': { schema: BindToGoalSchema } } },
+      },
+      responses: {
+        200: successResponse(TaskTemplateResponseSchema, '绑定成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.bindToGoal(req.params!.id, req.body),
+  );
+
+  // POST /:id/unbind-goal — Unbind template from goal
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/unbind-goal',
+      summary: '解除任务模板与目标的绑定',
+      request: { params: z.object({ id: brandedId<TaskTemplateId>() }) },
+      responses: {
+        200: successResponse(TaskTemplateResponseSchema, '解绑成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.unbindFromGoal(req.params!.id),
   );
 
   return router;

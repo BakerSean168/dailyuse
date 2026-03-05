@@ -29,6 +29,8 @@ import {
   ReminderGroupResponseSchema,
   ReminderBatchResultSchema,
 } from '@dailyuse/contracts/reminder';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { ReminderGroupId } from '@dailyuse/contracts/primitives';
 import type { ReminderController } from '../../controllers/reminder.controller';
 
 // ============ Types ============
@@ -93,7 +95,7 @@ export function registerReminderGroupRoutes(
       method: 'get',
       path: '/groups/:id',
       summary: '获取提醒分组详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ReminderGroupId>() }) },
       responses: {
         200: successResponse(ReminderGroupResponseSchema, '获取成功'),
         404: errorResponse('分组不存在'),
@@ -110,7 +112,7 @@ export function registerReminderGroupRoutes(
       path: '/groups/:id',
       summary: '更新提醒分组',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ReminderGroupId>() }),
         body: { content: { 'application/json': { schema: UpdateReminderGroupSchema } } },
       },
       responses: {
@@ -128,7 +130,7 @@ export function registerReminderGroupRoutes(
       method: 'delete',
       path: '/groups/:id',
       summary: '删除提醒分组',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ReminderGroupId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('分组不存在'),
@@ -147,7 +149,7 @@ export function registerReminderGroupRoutes(
       path: '/groups/:id/control-mode',
       summary: '切换分组控制模式',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ReminderGroupId>() }),
         body: { content: { 'application/json': { schema: SwitchGroupControlModeSchema } } },
       },
       responses: {
@@ -166,7 +168,7 @@ export function registerReminderGroupRoutes(
       path: '/groups/:id/batch',
       summary: '批量操作分组模板',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ReminderGroupId>() }),
         body: { content: { 'application/json': { schema: BatchGroupTemplatesSchema } } },
       },
       responses: {
@@ -176,6 +178,22 @@ export function registerReminderGroupRoutes(
     },
     [auth],
     (req) => controller.batchGroupTemplates(req.params!.id, req.body),
+  );
+
+  // POST /groups/:id/toggle
+  r.route(
+    {
+      method: 'post',
+      path: '/groups/:id/toggle',
+      summary: '切换分组启用/暂停（级联模板）',
+      request: { params: z.object({ id: brandedId<ReminderGroupId>() }) },
+      responses: {
+        200: successResponse(ReminderGroupResponseSchema, '切换成功'),
+        404: errorResponse('分组不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.toggleGroup(req.params!.id),
   );
 
   return router;

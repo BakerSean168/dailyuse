@@ -30,6 +30,8 @@ import {
   RepositoryResponseSchema,
   ResourceResponseSchema,
 } from '@dailyuse/contracts/repository';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { RepositoryId, FolderId } from '@dailyuse/contracts/primitives';
 import type { RepositoryController } from '../../controllers/repository.controller';
 
 // ============ Types ============
@@ -105,7 +107,7 @@ export function registerRepositoryCrudRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取仓库详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(RepositoryResponseSchema, '获取成功'),
         404: errorResponse('仓库不存在'),
@@ -122,7 +124,7 @@ export function registerRepositoryCrudRoutes(
       path: '/:id',
       summary: '更新仓库',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<RepositoryId>() }),
         body: { content: { 'application/json': { schema: UpdateRepositorySchema } } },
       },
       responses: {
@@ -140,7 +142,7 @@ export function registerRepositoryCrudRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除仓库',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('仓库不存在'),
@@ -156,7 +158,7 @@ export function registerRepositoryCrudRoutes(
       method: 'post',
       path: '/:id/archive',
       summary: '归档仓库',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(RepositoryResponseSchema, '归档成功'),
         404: errorResponse('仓库不存在'),
@@ -172,7 +174,7 @@ export function registerRepositoryCrudRoutes(
       method: 'post',
       path: '/:id/activate',
       summary: '激活仓库',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(RepositoryResponseSchema, '激活成功'),
         404: errorResponse('仓库不存在'),
@@ -191,7 +193,7 @@ export function registerRepositoryCrudRoutes(
       path: '/:repoId/resources',
       summary: '创建资源',
       request: {
-        params: z.object({ repoId: z.string().uuid() }),
+        params: z.object({ repoId: brandedId<RepositoryId>() }),
         body: { content: { 'application/json': { schema: CreateResourceSchema } } },
       },
       responses: {
@@ -211,9 +213,9 @@ export function registerRepositoryCrudRoutes(
       path: '/:repoId/resources',
       summary: '获取资源列表',
       request: {
-        params: z.object({ repoId: z.string().uuid() }),
+        params: z.object({ repoId: brandedId<RepositoryId>() }),
         query: z.object({
-          folderId: z.string().uuid().optional(),
+          folderId: brandedId<FolderId>().optional(),
           status: z.string().optional(),
         }),
       },
@@ -227,6 +229,25 @@ export function registerRepositoryCrudRoutes(
         folderId: typeof req.query?.folderId === 'string' ? req.query.folderId : undefined,
         status: typeof req.query?.status === 'string' ? req.query.status : undefined,
       }),
+  );
+
+  // PUT /:id/stats — Update repository stats
+  r.route(
+    {
+      method: 'put',
+      path: '/:id/stats',
+      summary: '更新仓库统计信息',
+      request: {
+        params: z.object({ id: brandedId<RepositoryId>() }),
+        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+      },
+      responses: {
+        200: successResponse(RepositoryResponseSchema, '更新成功'),
+        404: errorResponse('仓库不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.updateRepositoryStats(req.params!.id, req.body),
   );
 
   return router;

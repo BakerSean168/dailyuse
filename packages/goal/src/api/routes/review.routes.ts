@@ -12,9 +12,9 @@ import {
   successResponse,
   errorResponse,
 } from '@dailyuse/utils/result';
-import { CreateGoalReviewSchema, GoalReviewClientDTOSchema } from '@dailyuse/contracts/goal';
+import { CreateGoalReviewSchema, UpdateGoalReviewSchema, GoalReviewClientDTOSchema } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
-import type { GoalId } from '@dailyuse/contracts/primitives';
+import type { GoalId, GoalReviewId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
 
 // ============ Types ============
@@ -58,6 +58,73 @@ export function registerReviewRoutes(
     [auth],
     (req) => controller.addReview(req.params!.id, req.body),
     { successStatus: 201 },
+  );
+
+  // GET /:id/reviews — 获取目标复盘列表
+  r.route(
+    {
+      method: 'get',
+      path: '/:id/reviews',
+      summary: '获取目标复盘列表',
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+      },
+      responses: {
+        200: successResponse(
+          z.object({
+            data: z.array(GoalReviewClientDTOSchema),
+            total: z.number(),
+          }),
+          '查询成功',
+        ),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.listReviews(req.params!.id),
+  );
+
+  // PUT /:id/reviews/:reviewId — 更新复盘
+  r.route(
+    {
+      method: 'put',
+      path: '/:id/reviews/:reviewId',
+      summary: '更新目标复盘',
+      request: {
+        params: z.object({
+          id: brandedId<GoalId>(),
+          reviewId: brandedId<GoalReviewId>(),
+        }),
+        body: { content: { 'application/json': { schema: UpdateGoalReviewSchema } } },
+      },
+      responses: {
+        200: successResponse(GoalReviewClientDTOSchema, '更新成功'),
+        404: errorResponse('目标或复盘不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.updateReview(req.params!.id, req.params!.reviewId, req.body),
+  );
+
+  // DELETE /:id/reviews/:reviewId — 删除复盘
+  r.route(
+    {
+      method: 'delete',
+      path: '/:id/reviews/:reviewId',
+      summary: '删除目标复盘',
+      request: {
+        params: z.object({
+          id: brandedId<GoalId>(),
+          reviewId: brandedId<GoalReviewId>(),
+        }),
+      },
+      responses: {
+        200: successResponse(z.object({ success: z.boolean() }), '删除成功'),
+        404: errorResponse('目标或复盘不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.deleteReview(req.params!.id, req.params!.reviewId),
   );
 
   return router;

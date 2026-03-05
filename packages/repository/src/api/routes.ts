@@ -37,8 +37,11 @@ import {
   RepositoryResponseSchema,
   ResourceResponseSchema,
 } from '@dailyuse/contracts/repository';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { RepositoryId, ResourceId, FolderId } from '@dailyuse/contracts/primitives';
 import { RepositoryController } from '../controllers/repository.controller';
 import type { RepositoryUseCases } from '../controllers/repository.controller';
+import { registerNestedFolderRoutes, registerStandaloneFolderRoutes } from './routes/folder.routes';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
@@ -114,7 +117,7 @@ export function registerRepositoryRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取仓库详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(RepositoryResponseSchema, '获取成功'),
         404: errorResponse('仓库不存在'),
@@ -131,7 +134,7 @@ export function registerRepositoryRoutes(
       path: '/:id',
       summary: '更新仓库',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<RepositoryId>() }),
         body: { content: { 'application/json': { schema: UpdateRepositorySchema } } },
       },
       responses: {
@@ -149,7 +152,7 @@ export function registerRepositoryRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除仓库',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('仓库不存在'),
@@ -165,7 +168,7 @@ export function registerRepositoryRoutes(
       method: 'post',
       path: '/:id/archive',
       summary: '归档仓库',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(RepositoryResponseSchema, '归档成功'),
         404: errorResponse('仓库不存在'),
@@ -181,7 +184,7 @@ export function registerRepositoryRoutes(
       method: 'post',
       path: '/:id/activate',
       summary: '激活仓库',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<RepositoryId>() }) },
       responses: {
         200: successResponse(RepositoryResponseSchema, '激活成功'),
         404: errorResponse('仓库不存在'),
@@ -200,7 +203,7 @@ export function registerRepositoryRoutes(
       path: '/:repoId/resources',
       summary: '创建资源',
       request: {
-        params: z.object({ repoId: z.string().uuid() }),
+        params: z.object({ repoId: brandedId<RepositoryId>() }),
         body: { content: { 'application/json': { schema: CreateResourceSchema } } },
       },
       responses: {
@@ -220,9 +223,9 @@ export function registerRepositoryRoutes(
       path: '/:repoId/resources',
       summary: '获取资源列表',
       request: {
-        params: z.object({ repoId: z.string().uuid() }),
+        params: z.object({ repoId: brandedId<RepositoryId>() }),
         query: z.object({
-          folderId: z.string().uuid().optional(),
+          folderId: brandedId<FolderId>().optional(),
           status: z.string().optional(),
         }),
       },
@@ -266,7 +269,7 @@ export function registerResourceRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取资源详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ResourceId>() }) },
       responses: {
         200: successResponse(ResourceResponseSchema, '获取成功'),
         404: errorResponse('资源不存在'),
@@ -283,7 +286,7 @@ export function registerResourceRoutes(
       path: '/:id',
       summary: '更新资源',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ResourceId>() }),
         body: { content: { 'application/json': { schema: UpdateResourceSchema } } },
       },
       responses: {
@@ -301,7 +304,7 @@ export function registerResourceRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除资源',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ResourceId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('资源不存在'),
@@ -312,4 +315,17 @@ export function registerResourceRoutes(
   );
 
   return router;
+}
+
+/**
+ * Standalone folder routes (not nested under /repositories).
+ * Mounted at /folders by the module.
+ */
+export function registerFolderRoutes(
+  handlers: RepositoryUseCases,
+  middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
+): Router {
+  const controller = new RepositoryController(handlers);
+  return registerStandaloneFolderRoutes(controller, middleware, openApiRegistry);
 }

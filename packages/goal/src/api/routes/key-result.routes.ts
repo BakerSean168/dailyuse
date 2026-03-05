@@ -45,6 +45,26 @@ export function registerKeyResultRoutes(
     defaultSecurity: [{ bearerAuth: [] }],
   });
 
+  // ==================== Key Result CRUD ====================
+
+  // GET /:id/key-results — 获取关键结果列表
+  r.route(
+    {
+      method: 'get',
+      path: '/:id/key-results',
+      summary: '获取关键结果列表',
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+      },
+      responses: {
+        200: successResponse(z.array(KeyResultClientDTOSchema), '获取成功'),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getKeyResults(req.params!.id),
+  );
+
   // POST /:id/key-results — 添加关键结果
   r.route(
     {

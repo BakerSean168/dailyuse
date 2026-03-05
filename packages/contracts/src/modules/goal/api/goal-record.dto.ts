@@ -5,6 +5,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { GoalId, KeyResultId } from '../../../primitives';
 import type { GoalRecordClientDTO } from '../aggregates';
 
 // ============================================================================
@@ -15,7 +17,7 @@ import type { GoalRecordClientDTO } from '../aggregates';
  * 创建目标记录 Schema
  */
 export const CreateGoalRecordSchema = z.object({
-  keyResultId: z.string().uuid('关键结果 UUID 无效'),
+  keyResultId: brandedId<KeyResultId>(),
   value: z.number().min(0, '记录值不能为负数'),
   note: z.string().max(500).optional(),
 });
@@ -31,8 +33,8 @@ export type CreateGoalRecordRes = GoalRecordClientDTO;
  * 查询目标记录
  */
 export const GetGoalRecordsSchema = z.object({
-  goalId: z.string().uuid('目标 UUID 无效').optional(),
-  keyResultId: z.string().uuid('关键结果 UUID 无效').optional(),
+  goalId: brandedId<GoalId>().optional(),
+  keyResultId: brandedId<KeyResultId>().optional(),
   limit: z.number().int().min(1).max(100).default(20).optional(),
   offset: z.number().int().min(0).default(0).optional(),
 });

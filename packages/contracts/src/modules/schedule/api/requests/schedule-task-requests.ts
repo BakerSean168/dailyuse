@@ -60,7 +60,7 @@ const TaskMetadataSchema = z.object({
 export const CreateScheduleTaskRequestSchema = z.object({
   name: z.string().min(1).max(200),
   sourceModule: z.enum(SourceModule),
-  sourceEntityId: z.string().uuid(),
+  sourceEntityId: brandedId<string>(),
   schedule: ScheduleConfigSchema,
   description: z.string().max(2000).optional(),
   metadata: TaskMetadataSchema.partial().optional(),
@@ -94,7 +94,7 @@ export const UpdateTaskMetadataRequestSchema = z.object({
 
 export const ScheduleTaskQueryParamsSchema = z.object({
   sourceModule: z.enum(SourceModule).optional(),
-  sourceEntityId: z.string().uuid().optional(),
+  sourceEntityId: brandedId<string>().optional(),
   status: z.enum(ScheduleTaskStatus).optional(),
   enabled: z.boolean().optional(),
   search: z.string().optional(),

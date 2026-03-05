@@ -25,6 +25,8 @@ import {
   UpdateReminderTemplateSchema,
   ReminderTemplateResponseSchema,
 } from '@dailyuse/contracts/reminder';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
 import type { ReminderController } from '../../controllers/reminder.controller';
 
 // ============ Helpers ============
@@ -143,7 +145,7 @@ export function registerReminderTemplateRoutes(
       method: 'get',
       path: '/templates/:id',
       summary: '获取提醒模板详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
         200: successResponse(ReminderTemplateResponseSchema, '获取成功'),
         404: errorResponse('模板不存在'),
@@ -160,7 +162,7 @@ export function registerReminderTemplateRoutes(
       path: '/templates/:id',
       summary: '更新提醒模板',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ReminderTemplateId>() }),
         body: { content: { 'application/json': { schema: UpdateReminderTemplateSchema } } },
       },
       responses: {
@@ -178,7 +180,7 @@ export function registerReminderTemplateRoutes(
       method: 'delete',
       path: '/templates/:id',
       summary: '删除提醒模板',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('模板不存在'),
@@ -186,6 +188,198 @@ export function registerReminderTemplateRoutes(
     },
     [auth],
     (req) => controller.deleteTemplate(req.params!.id),
+  );
+
+  // ==================== Template Actions ====================
+
+  // POST /templates/:id/enable
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/enable',
+      summary: '启用提醒模板',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(ReminderTemplateResponseSchema, '启用成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.enableTemplate(req.params!.id),
+  );
+
+  // POST /templates/:id/pause
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/pause',
+      summary: '暂停提醒模板',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(ReminderTemplateResponseSchema, '暂停成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.pauseTemplate(req.params!.id),
+  );
+
+  // POST /templates/:id/toggle
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/toggle',
+      summary: '切换提醒模板启用/暂停状态',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(ReminderTemplateResponseSchema, '切换成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.toggleTemplate(req.params!.id),
+  );
+
+  // POST /templates/:id/move
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/move',
+      summary: '移动提醒模板到其他分组',
+      request: {
+        params: z.object({ id: brandedId<ReminderTemplateId>() }),
+        body: { content: { 'application/json': { schema: z.object({ groupId: z.string() }) } } },
+      },
+      responses: {
+        200: successResponse(ReminderTemplateResponseSchema, '移动成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.moveTemplate(req.params!.id, req.body),
+  );
+
+  // GET /templates/:id/history
+  r.route(
+    {
+      method: 'get',
+      path: '/templates/:id/history',
+      summary: '获取提醒模板触发历史',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(z.array(z.object({}).passthrough()), '获取成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getTemplateHistory(req.params!.id),
+  );
+
+  // ==================== Response Routes ====================
+
+  // POST /templates/:id/response
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/response',
+      summary: '记录提醒响应',
+      request: {
+        params: z.object({ id: brandedId<ReminderTemplateId>() }),
+        body: { content: { 'application/json': { schema: z.object({ action: z.string(), note: z.string().optional() }) } } },
+      },
+      responses: {
+        201: successResponse(z.object({}).passthrough(), '记录成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.recordResponse(req.params!.id, req.body),
+    { successStatus: 201 },
+  );
+
+  // GET /templates/:id/responses
+  r.route(
+    {
+      method: 'get',
+      path: '/templates/:id/responses',
+      summary: '获取提醒响应历史',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(z.array(z.object({}).passthrough()), '获取成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getTemplateResponses(req.params!.id),
+  );
+
+  // GET /templates/:id/responses/stats
+  r.route(
+    {
+      method: 'get',
+      path: '/templates/:id/responses/stats',
+      summary: '获取提醒响应统计',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '获取成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getResponseStats(req.params!.id),
+  );
+
+  // ==================== Frequency Analysis Routes ====================
+
+  // GET /templates/:id/frequency-analysis
+  r.route(
+    {
+      method: 'get',
+      path: '/templates/:id/frequency-analysis',
+      summary: '分析提醒频率效果',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '分析成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.analyzeFrequency(req.params!.id),
+  );
+
+  // POST /templates/:id/frequency-adjustment
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/frequency-adjustment',
+      summary: '应用频率调整',
+      request: {
+        params: z.object({ id: brandedId<ReminderTemplateId>() }),
+        body: { content: { 'application/json': { schema: z.object({ action: z.string(), customInterval: z.number().optional() }) } } },
+      },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '调整成功'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.adjustFrequency(req.params!.id, req.body),
+  );
+
+  // POST /templates/:id/frequency-adjustment/reject
+  r.route(
+    {
+      method: 'post',
+      path: '/templates/:id/frequency-adjustment/reject',
+      summary: '拒绝频率调整建议',
+      request: { params: z.object({ id: brandedId<ReminderTemplateId>() }) },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '已拒绝'),
+        404: errorResponse('模板不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.rejectFrequencyAdjustment(req.params!.id),
   );
 
   return router;

@@ -5,12 +5,16 @@ export * from './archive-goal';
 export * from './complete-goal';
 export * from './create-goal';
 export * from './create-goal-folder';
+export * from './create-goal-record';
 export * from './delete-goal';
 export * from './delete-goal-folder';
 export * from './delete-goal-key-result';
+export * from './delete-goal-record';
+export * from './delete-goal-review';
 export * from './permanently-delete-goal';
 export * from './update-goal';
 export * from './update-goal-folder';
 export * from './update-goal-key-result';
 export * from './update-goal-key-result-progress';
+export * from './update-goal-review';
 

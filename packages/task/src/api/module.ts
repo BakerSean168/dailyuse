@@ -15,6 +15,7 @@ import { TaskModule } from '../infrastructure-server/task.module';
 import { TaskContainer } from '../infrastructure-server/di/task-container';
 import { TaskTemplateController } from './controllers/task-template.controller';
 import { TaskInstanceController } from './controllers/task-instance.controller';
+import { TaskDependencyController } from './controllers/task-dependency.controller';
 import { registerTaskRoutes } from './routes';
 import { registerTaskInitializationTasks } from './initialization';
 
@@ -66,6 +67,11 @@ export const TaskApiModule: TaskApiModuleDef = {
         activateTemplate: taskModule.activateTaskTemplate,
         pauseTemplate: taskModule.pauseTaskTemplate,
         archiveTemplate: taskModule.archiveTaskTemplate,
+        listByPriority: taskModule.listTaskTemplatesByPriority,
+        generateInstances: taskModule.generateTaskInstances,
+        bindToGoal: taskModule.bindTaskToGoal,
+        unbindFromGoal: taskModule.unbindTaskFromGoal,
+        listInstancesByTemplate: taskModule.listTaskInstancesByTemplate,
       },
     );
     const instanceController = new TaskInstanceController({
@@ -78,6 +84,15 @@ export const TaskApiModule: TaskApiModuleDef = {
       skip: taskModule.skipTaskInstance,
       start: taskModule.startTaskInstance,
       deleteInstance: taskModule.deleteTaskInstance,
+      checkExpired: taskModule.checkExpiredInstances,
+    });
+    const dependencyController = new TaskDependencyController({
+      createDependency: taskModule.createTaskDependency,
+      deleteDependency: taskModule.deleteTaskDependency,
+      updateDependency: taskModule.updateTaskDependency,
+      listDependencies: taskModule.listTaskDependencies,
+      getDependencyChain: taskModule.getDependencyChain,
+      validateDependency: taskModule.validateTaskDependency,
     });
 
     // 3. Register routes (inject platform middleware)
@@ -85,6 +100,7 @@ export const TaskApiModule: TaskApiModuleDef = {
       {
         templateController,
         instanceController,
+        dependencyController,
       },
       middleware,
       router,

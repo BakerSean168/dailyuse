@@ -10,7 +10,7 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, fail } from '@dailyuse/contracts/result';
 import { ReminderModule } from '../infrastructure-server';
 import { ReminderContainer } from '../infrastructure-server/di/reminder-container';
 import { registerReminderRoutes } from './routes';
@@ -18,6 +18,10 @@ import type { ReminderUseCases } from '../controllers/reminder.controller';
 import { registerReminderInitializationTasks } from './initialization';
 import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
 import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
+import { ReminderDomainService } from '../domain-server/services/ReminderDomainService';
+import { RecordReminderResponse } from '../application-server/use-cases/commands/record-reminder-response';
+import { AnalyzeReminderFrequency } from '../application-server/use-cases/queries/analyze-reminder-frequency';
+import { AdjustReminderFrequency } from '../application-server/use-cases/commands/adjust-reminder-frequency';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export interface ReminderApiModuleContext {
@@ -45,6 +49,22 @@ export const ReminderApiModule: ReminderApiModuleDef = {
 
     // 1. Composition Root — initialize repositories via ReminderModule
     const reminderModule = new ReminderModule('prisma', db as PrismaClient);
+
+    // Initialize application services
+    const reminderDomainService = new ReminderDomainService(
+      reminderModule.reminderTemplateRepository,
+      reminderModule.reminderGroupRepository,
+    );
+    const recordReminderResponse = new RecordReminderResponse(
+      reminderModule.reminderResponseRepository,
+    );
+    const analyzeReminderFrequency = new AnalyzeReminderFrequency(
+      reminderModule.reminderTemplateRepository,
+      reminderModule.reminderResponseRepository,
+    );
+    const adjustReminderFrequency = new AdjustReminderFrequency(
+      reminderModule.reminderTemplateRepository,
+    );
 
     // 2. Wire route handlers directly to repositories
     const handlers: ReminderUseCases = {
@@ -188,6 +208,118 @@ export const ReminderApiModule: ReminderApiModuleDef = {
           successCount++;
         }
         return ok({ successCount, failedCount: 0 });
+      },
+
+      // Template Actions
+      enableTemplate: async (id) => {
+        const template = await reminderModule.reminderTemplateRepository.findById(id);
+        if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+        template.enable();
+        await reminderModule.reminderTemplateRepository.save(template);
+        return ok(template.toClientDTO());
+      },
+      pauseTemplate: async (id) => {
+        const template = await reminderModule.reminderTemplateRepository.findById(id);
+        if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+        template.pause();
+        await reminderModule.reminderTemplateRepository.save(template);
+        return ok(template.toClientDTO());
+      },
+      toggleTemplate: async (id) => {
+        const template = await reminderModule.reminderTemplateRepository.findById(id);
+        if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+        template.toggle();
+        await reminderModule.reminderTemplateRepository.save(template);
+        return ok(template.toClientDTO());
+      },
+      moveTemplate: async (id, groupId) => {
+        const result = await reminderDomainService.assignTemplateToGroup(id, groupId);
+        return ok(result);
+      },
+      getTemplateHistory: async (id) => {
+        const template = await reminderModule.reminderTemplateRepository.findById(id, { includeHistory: true } as any);
+        if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+        const history = template.getAllHistory ? template.getAllHistory() : [];
+        return ok(history);
+      },
+
+      // Response Operations
+      recordResponse: async (templateId, data) => {
+        const result = await recordReminderResponse.execute({
+          templateId,
+          action: data.action as any,
+          identityId: '', // filled by context upstream if needed
+        });
+        return ok(result);
+      },
+      getTemplateResponses: async (templateId) => {
+        const responses = await recordReminderResponse.getResponsesByTemplate(templateId);
+        return ok(responses);
+      },
+      getResponseStats: async (templateId) => {
+        const stats = await recordReminderResponse.getResponseStats(templateId);
+        return ok(stats);
+      },
+
+      // Frequency Analysis
+      analyzeFrequency: async (templateId) => {
+        const result = await analyzeReminderFrequency.execute(templateId);
+        return ok(result);
+      },
+      adjustFrequency: async (templateId, data) => {
+        const result = await adjustReminderFrequency.execute({
+          templateId,
+          newInterval: data.customInterval ?? 0,
+          reason: data.action,
+          identityId: '',
+        });
+        return ok(result);
+      },
+      rejectFrequencyAdjustment: async (templateId) => {
+        await adjustReminderFrequency.reject(templateId, '');
+        return ok({ success: true });
+      },
+
+      // Group Actions
+      toggleGroup: async (id) => {
+        const result = await reminderDomainService.toggleGroupAndTemplates(id);
+        return ok(result);
+      },
+
+      // Preferences
+      getPreferences: async (ctx) => {
+        const prefs = await reminderModule.userReminderPreferenceRepository.findByIdentityId(ctx.identityId);
+        return ok(prefs);
+      },
+      updatePreferences: async (data, ctx) => {
+        const existing = await reminderModule.userReminderPreferenceRepository.findByIdentityId(ctx.identityId);
+        if (!existing) {
+          // Create default preferences with the update data
+          const { UserReminderPreferences } = await import('../domain-server/aggregates/user-reminder-preferences');
+          const prefs = UserReminderPreferences.create({ identityId: ctx.identityId });
+          if (data.bestTimeSlots || data.worstTimeSlots) {
+            prefs.updateTimeSlots(
+              (data.bestTimeSlots as any) ?? [],
+              (data.worstTimeSlots as any) ?? [],
+            );
+          }
+          if (data.globalSmartFrequencyEnabled !== undefined) {
+            prefs.toggleGlobalSmartFrequency(!!data.globalSmartFrequencyEnabled);
+          }
+          await reminderModule.userReminderPreferenceRepository.save(prefs);
+          return ok(prefs.toClientDTO());
+        }
+        if (data.bestTimeSlots || data.worstTimeSlots) {
+          existing.updateTimeSlots(
+            (data.bestTimeSlots as any) ?? [],
+            (data.worstTimeSlots as any) ?? [],
+          );
+        }
+        if (data.globalSmartFrequencyEnabled !== undefined) {
+          existing.toggleGlobalSmartFrequency(!!data.globalSmartFrequencyEnabled);
+        }
+        await reminderModule.userReminderPreferenceRepository.save(existing);
+        return ok(existing.toClientDTO());
       },
     };
 

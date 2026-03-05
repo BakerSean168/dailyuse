@@ -24,6 +24,8 @@ import {
   UpdateEditorWorkspaceSchema,
   WorkspaceResponseSchema,
 } from '@dailyuse/contracts/editor';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { EditorWorkspaceId } from '@dailyuse/contracts/primitives';
 import type { EditorController } from '../../controllers/editor.controller';
 
 // ============ Types ============
@@ -88,7 +90,7 @@ export function registerWorkspaceRoutes(
       method: 'get',
       path: '/workspaces/:id',
       summary: '获取工作区详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<EditorWorkspaceId>() }) },
       responses: {
         200: successResponse(WorkspaceResponseSchema, '获取成功'),
         404: errorResponse('工作区不存在'),
@@ -105,7 +107,7 @@ export function registerWorkspaceRoutes(
       path: '/workspaces/:id',
       summary: '更新工作区',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<EditorWorkspaceId>() }),
         body: { content: { 'application/json': { schema: UpdateEditorWorkspaceSchema } } },
       },
       responses: {
@@ -123,7 +125,7 @@ export function registerWorkspaceRoutes(
       method: 'delete',
       path: '/workspaces/:id',
       summary: '删除工作区',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<EditorWorkspaceId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('工作区不存在'),

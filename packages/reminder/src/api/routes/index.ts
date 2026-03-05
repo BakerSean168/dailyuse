@@ -15,6 +15,7 @@ import { ReminderController } from '../../controllers/reminder.controller';
 import type { ReminderUseCases } from '../../controllers/reminder.controller';
 import { registerReminderTemplateRoutes } from './reminder-template.routes';
 import { registerReminderGroupRoutes } from './reminder-group.routes';
+import { registerReminderPreferencesRoutes } from './reminder-preferences.routes';
 
 // ============ Types ============
 
@@ -41,11 +42,13 @@ export function registerReminderRoutes(
   // Each sub-route file returns its own Router
   const templateRouter = registerReminderTemplateRoutes(controller, middleware, openApiRegistry);
   const groupRouter = registerReminderGroupRoutes(controller, middleware, openApiRegistry);
+  const preferencesRouter = registerReminderPreferencesRoutes(controller, middleware, openApiRegistry);
 
   // Merge all into a single parent router
   const router = Router();
   router.use(templateRouter);
   router.use(groupRouter);
+  router.use(preferencesRouter);
 
   return router;
 }

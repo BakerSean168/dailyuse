@@ -34,6 +34,13 @@ export {
   DeleteGoalKeyResult,
   // Review Services
   AddGoalReview,
+  ListGoalReviews,
+  UpdateGoalReview,
+  DeleteGoalReview,
+  // Record Services
+  CreateGoalRecord,
+  ListGoalRecords,
+  DeleteGoalRecord,
 } from './use-cases';
 
 // ============================================================

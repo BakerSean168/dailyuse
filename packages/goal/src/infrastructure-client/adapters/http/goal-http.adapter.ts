@@ -6,6 +6,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IGoalApiClient, IResultHttpClient } from '../types';
+import type { GoalId } from '@dailyuse/contracts/primitives';
 import type {
   GoalClientDTO,
   KeyResultClientDTO,
@@ -108,7 +109,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     goalId: string,
     request: Omit<AddKeyResultReq, 'goalId'>,
   ): Promise<Result<KeyResultClientDTO>> {
-    const backendRequest: AddKeyResultReq = { goalId, ...request };
+    const backendRequest: AddKeyResultReq = { goalId: goalId as GoalId, ...request };
     return this.httpClient.post(
       `${this.baseUrl}/${goalId}/key-results`,
       backendRequest,

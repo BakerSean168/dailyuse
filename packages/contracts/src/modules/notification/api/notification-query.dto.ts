@@ -27,7 +27,7 @@ export const NotificationQuerySchema = z.object({
   status: z.enum(NotificationStatus).optional(),
   isRead: z.boolean().optional(),
   relatedEntityType: z.enum(RelatedEntityType).optional(),
-  relatedEntityId: z.string().uuid().optional(),
+  relatedEntityId: brandedId<string>().optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
   keyword: z.string().optional(),

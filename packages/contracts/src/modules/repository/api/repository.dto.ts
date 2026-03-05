@@ -4,7 +4,8 @@
  */
 
 import { z } from 'zod';
-import { openApiJsonValue } from '../../../primitives';
+import { brandedId, openApiJsonValue } from '../../../primitives';
+import type { RepositoryId, FolderId } from '../../../primitives';
 
 // ==================== Repository Schemas ====================
 
@@ -29,12 +30,12 @@ export type UpdateRepositoryReq = z.infer<typeof UpdateRepositorySchema>;
 // ==================== Resource Schemas ====================
 
 export const CreateResourceSchema = z.object({
-  repositoryId: z.string().uuid().describe('所属仓库 ID'),
+  repositoryId: brandedId<RepositoryId>().describe('所属仓库 ID'),
   name: z.string().min(1).max(255).describe('资源名称'),
   type: z.string().min(1).max(100).describe('资源类型'),
   mimeType: z.string().max(200).optional().describe('MIME 类型'),
   content: z.string().optional().describe('资源内容'),
-  folderId: z.string().uuid().optional().describe('文件夹 ID'),
+  folderId: brandedId<FolderId>().optional().describe('文件夹 ID'),
 });
 
 export type CreateResourceReq = z.infer<typeof CreateResourceSchema>;

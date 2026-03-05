@@ -5,6 +5,8 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '../../../primitives';
+import type { GoalId, KeyResultId } from '../../../primitives';
 import type { KeyResultServerDTO } from '../entities';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
@@ -17,7 +19,7 @@ import { KeyResultCalculationMethod } from '../value-objects/key-result-calculat
  * 添加关键结果 Schema
  */
 export const AddKeyResultSchema = z.object({
-  goalId: z.string().uuid('目标 UUID 无效'),
+  goalId: brandedId<GoalId>(),
   title: z.string().min(1, '关键结果标题不能为空').max(256),
   description: z.string().max(2000).optional(),
   valueType: z.enum(KeyResultValueType),
@@ -58,7 +60,7 @@ export type UpdateKeyResultRes = KeyResultServerDTO;
  * 获取关键结果列表
  */
 export const GetKeyResultsSchema = z.object({
-  goalId: z.string().uuid('目标 UUID 无效'),
+  goalId: brandedId<GoalId>(),
 });
 
 export type GetKeyResultsReq = z.infer<typeof GetKeyResultsSchema>;
@@ -76,7 +78,7 @@ export interface GetKeyResultsRes {
  * 更新关键结果进度 Schema
  */
 export const UpdateKeyResultProgressSchema = z.object({
-  keyResultId: z.string().uuid('关键结果 UUID 无效'),
+  keyResultId: brandedId<KeyResultId>(),
   newValue: z.number().min(0, '新值不能为负数'),
   note: z.string().max(500).optional(),
 });

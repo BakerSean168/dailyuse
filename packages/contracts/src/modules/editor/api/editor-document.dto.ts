@@ -4,11 +4,12 @@
  */
 
 import { z } from 'zod';
-import { openApiJsonValue } from '../../../primitives';
+import { brandedId, openApiJsonValue } from '../../../primitives';
+import type { EditorWorkspaceId } from '../../../primitives';
 import { DocumentLanguage } from '../value-objects/document-language';
 
 export const CreateDocumentSchema = z.object({
-  workspaceId: z.string().uuid().describe('所属工作区 ID'),
+  workspaceId: brandedId<EditorWorkspaceId>().describe('所属工作区 ID'),
   path: z.string().min(1).max(1000).describe('文档路径'),
   name: z.string().min(1).max(255).describe('文档名称'),
   language: z.enum(DocumentLanguage).describe('文档语言/格式'),

@@ -159,5 +159,78 @@ export function registerScheduleEventRoutes(
     (req) => controller.delete(req.params!.id),
   );
 
+  // ==================== Conflict Detection Routes ====================
+
+  // POST /conflicts/detect — 检测冲突（传入日程 DTO）
+  r.route(
+    {
+      method: 'post',
+      path: '/conflicts/detect',
+      summary: '检测日程冲突',
+      request: {
+        body: { content: { 'application/json': { schema: z.object({}).passthrough() } } },
+      },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '检测完成'),
+      },
+    },
+    [auth],
+    (req) => controller.detectConflicts(req.body),
+  );
+
+  // POST /with-conflict-detection — 创建日程并检测冲突
+  r.route(
+    {
+      method: 'post',
+      path: '/with-conflict-detection',
+      summary: '创建日程事件（带冲突检测）',
+      request: {
+        body: { content: { 'application/json': { schema: CreateScheduleRequestSchema } } },
+      },
+      responses: {
+        201: successResponse(z.object({}).passthrough(), '创建成功（含冲突信息）'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.createWithConflictDetection(req.body, ctx),
+    { successStatus: 201 },
+  );
+
+  // GET /:id/conflicts — 获取指定日程的冲突
+  r.route(
+    {
+      method: 'get',
+      path: '/:id/conflicts',
+      summary: '获取日程事件冲突',
+      request: { params: z.object({ id: brandedId<ScheduleId>() }) },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '获取成功'),
+        404: errorResponse('日程不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getConflicts(req.params!.id),
+  );
+
+  // POST /:id/resolve-conflict — 解决日程冲突
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/resolve-conflict',
+      summary: '解决日程冲突',
+      request: {
+        params: z.object({ id: brandedId<ScheduleId>() }),
+        body: { content: { 'application/json': { schema: z.object({ strategy: z.enum(['reschedule', 'acknowledge']), startTime: z.unknown().optional(), endTime: z.unknown().optional() }) } } },
+      },
+      responses: {
+        200: successResponse(z.object({}).passthrough(), '冲突已解决'),
+        404: errorResponse('日程不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.resolveConflict(req.params!.id, req.body),
+  );
+
   return router;
 }

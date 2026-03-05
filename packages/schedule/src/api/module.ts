@@ -12,8 +12,9 @@
 import { Router } from 'express';
 import type { Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, fail } from '@dailyuse/contracts/result';
 import { ScheduleModule, ScheduleContainer } from '../infrastructure-server';
+import { ScheduleConflictDetectionService } from '../application-server/services/schedule-conflict-detection-service';
 import { registerScheduleRoutes } from './routes';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
 import { ScheduleEventController } from '../controllers/schedule-event.controller';
@@ -95,14 +96,54 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
       resumeTask: async (id) => ok(await scheduleModule.resumeScheduleTask.execute(id)),
       triggerTask: async (id) => ok(await scheduleModule.triggerScheduleTask.execute(id)),
       getTask: async (id) => ok(await scheduleModule.getScheduleTask.execute(id)),
+
+      completeTask: async (id) => {
+        const task = await scheduleModule.scheduleTaskRepository.findById(id as any);
+        if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
+        task.complete();
+        await scheduleModule.scheduleTaskRepository.save(task);
+        return ok(task.toServerDTO());
+      },
+      cancelTask: async (id, reason) => {
+        const task = await scheduleModule.scheduleTaskRepository.findById(id as any);
+        if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
+        task.cancel(reason);
+        await scheduleModule.scheduleTaskRepository.save(task);
+        return ok(task.toServerDTO());
+      },
+      getDueTasks: async () => {
+        const tasks = await scheduleModule.scheduleTaskRepository.findDueTasksForExecution(new Date());
+        return ok(tasks.map((t: any) => t.toServerDTO()));
+      },
+      batchDeleteTasks: async (ids) => {
+        const results = { success: [] as string[], failed: [] as { id: string; error: string }[] };
+        for (const id of ids) {
+          try {
+            await scheduleModule.deleteScheduleTask.execute(id);
+            results.success.push(id);
+          } catch (err) {
+            results.failed.push({ id, error: err instanceof Error ? err.message : 'Unknown error' });
+          }
+        }
+        return ok(results);
+      },
+      updateTaskMetadata: async (id, metadata) => {
+        const task = await scheduleModule.scheduleTaskRepository.findById(id as any);
+        if (!task) return fail({ code: 'NOT_FOUND', message: '任务不存在' });
+        task.updateMetadata(metadata);
+        await scheduleModule.scheduleTaskRepository.save(task);
+        return ok(task.toServerDTO());
+      },
     };
 
     // 3. Register routes
     const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
 
     // 3b. Register schedule event routes (calendar entries)
+    const conflictDetectionService = new ScheduleConflictDetectionService(scheduleModule.scheduleRepository);
     const eventController = new ScheduleEventController({
       scheduleEventService: scheduleModule.scheduleEventService,
+      conflictDetectionService,
     });
     const eventRoutes = registerScheduleEventRoutes(eventController, middleware, context.openApiRegistry);
 

@@ -31,6 +31,17 @@ import { ListTaskInstancesByTemplate } from '../application-server/use-cases/que
 import { ListTaskInstancesByStatus } from '../application-server/use-cases/queries/list-task-instances-by-status';
 import { StartTaskInstance } from '../application-server/use-cases/commands/start-task-instance';
 import { DeleteTaskInstance } from '../application-server/use-cases/commands/delete-task-instance';
+import { GenerateTaskInstances } from '../application-server/use-cases/commands/generate-task-instances';
+import { BindTaskToGoal } from '../application-server/use-cases/commands/bind-task-to-goal';
+import { UnbindTaskFromGoal } from '../application-server/use-cases/commands/unbind-task-from-goal';
+import { CheckExpiredInstances } from '../application-server/use-cases/commands/check-expired-instances';
+import { CreateTaskDependency } from '../application-server/use-cases/commands/create-task-dependency';
+import { DeleteTaskDependency } from '../application-server/use-cases/commands/delete-task-dependency';
+import { UpdateTaskDependency } from '../application-server/use-cases/commands/update-task-dependency';
+import { ListTaskTemplatesByPriority } from '../application-server/use-cases/queries/list-task-templates-by-priority';
+import { ListTaskDependencies } from '../application-server/use-cases/queries/list-task-dependencies';
+import { GetDependencyChain } from '../application-server/use-cases/queries/get-dependency-chain';
+import { ValidateTaskDependency } from '../application-server/use-cases/queries/validate-task-dependency';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -61,6 +72,17 @@ export class TaskModule {
   public readonly skipTaskInstance: SkipTaskInstance;
   public readonly startTaskInstance: StartTaskInstance;
   public readonly deleteTaskInstance: DeleteTaskInstance;
+  public readonly generateTaskInstances: GenerateTaskInstances;
+  public readonly bindTaskToGoal: BindTaskToGoal;
+  public readonly unbindTaskFromGoal: UnbindTaskFromGoal;
+  public readonly checkExpiredInstances: CheckExpiredInstances;
+  public readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
+  public readonly createTaskDependency: CreateTaskDependency;
+  public readonly deleteTaskDependency: DeleteTaskDependency;
+  public readonly updateTaskDependency: UpdateTaskDependency;
+  public readonly listTaskDependencies: ListTaskDependencies;
+  public readonly getDependencyChain: GetDependencyChain;
+  public readonly validateTaskDependency: ValidateTaskDependency;
 
   constructor(
     dataSourceType: 'prisma' | 'sqlite',
@@ -131,5 +153,19 @@ export class TaskModule {
     this.skipTaskInstance = new SkipTaskInstance(this.taskInstanceRepository);
     this.startTaskInstance = new StartTaskInstance(this.taskInstanceRepository);
     this.deleteTaskInstance = new DeleteTaskInstance(this.taskInstanceRepository);
+    this.generateTaskInstances = new GenerateTaskInstances(
+      this.taskTemplateRepository,
+      this.taskInstanceRepository,
+    );
+    this.bindTaskToGoal = new BindTaskToGoal(this.taskTemplateRepository);
+    this.unbindTaskFromGoal = new UnbindTaskFromGoal(this.taskTemplateRepository);
+    this.checkExpiredInstances = new CheckExpiredInstances(this.taskInstanceRepository);
+    this.listTaskTemplatesByPriority = new ListTaskTemplatesByPriority(this.taskTemplateRepository);
+    this.createTaskDependency = new CreateTaskDependency(this.taskDependencyRepository);
+    this.deleteTaskDependency = new DeleteTaskDependency(this.taskDependencyRepository);
+    this.updateTaskDependency = new UpdateTaskDependency(this.taskDependencyRepository);
+    this.listTaskDependencies = new ListTaskDependencies(this.taskDependencyRepository);
+    this.getDependencyChain = new GetDependencyChain(this.taskDependencyRepository);
+    this.validateTaskDependency = new ValidateTaskDependency(this.taskDependencyRepository);
   }
 }

@@ -19,6 +19,10 @@ import {
   QueryGoalsSchema,
   GoalClientDTOSchema,
   QueryGoalsResSchema,
+  GoalRecordClientDTOSchema,
+  GoalReviewClientDTOSchema,
+  KeyResultClientDTOSchema,
+  GetGoalAggregateResSchema,
 } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
@@ -242,6 +246,127 @@ export function registerGoalCrudRoutes(
     },
     [auth],
     (req) => controller.activate(req.params!.id),
+  );
+
+  // POST /:id/complete — 完成目标
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/complete',
+      summary: '完成目标',
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      responses: {
+        200: successResponse(GoalClientDTOSchema, '完成成功'),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.complete(req.params!.id),
+  );
+
+  // GET /:id/aggregate — 获取目标聚合视图
+  r.route(
+    {
+      method: 'get',
+      path: '/:id/aggregate',
+      summary: '获取目标聚合视图',
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      responses: {
+        200: successResponse(GetGoalAggregateResSchema, '获取成功'),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getAggregate(req.params!.id),
+  );
+
+  // GET /:id/progress-breakdown — 获取进度分解
+  r.route(
+    {
+      method: 'get',
+      path: '/:id/progress-breakdown',
+      summary: '获取目标进度分解',
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
+      responses: {
+        200: successResponse(
+          z.object({
+            goalId: z.string(),
+            keyResults: z.array(z.object({
+              keyResultId: z.string(),
+              title: z.string(),
+              weight: z.number(),
+              progress: z.any(),
+            })),
+            overallProgress: z.number(),
+          }),
+          '获取成功',
+        ),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.getProgressBreakdown(req.params!.id),
+  );
+
+  // POST /:id/clone — 克隆目标
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/clone',
+      summary: '克隆目标',
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+        body: {
+          content: {
+            'application/json': {
+              schema: z.object({
+                name: z.string().optional(),
+                description: z.string().optional(),
+                includeKeyResults: z.boolean().optional(),
+                includeRecords: z.boolean().optional(),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        201: successResponse(GoalClientDTOSchema, '克隆成功'),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.cloneGoal(req.params!.id, req.body, ctx),
+    { successStatus: 201 },
+  );
+
+  // PUT /:id/key-results/batch-weight — 批量更新关键结果权重
+  r.route(
+    {
+      method: 'put',
+      path: '/:id/key-results/batch-weight',
+      summary: '批量更新关键结果权重',
+      request: {
+        params: z.object({ id: brandedId<GoalId>() }),
+        body: {
+          content: {
+            'application/json': {
+              schema: z.object({
+                updates: z.array(z.object({
+                  keyResultId: z.string(),
+                  weight: z.number().int().min(1).max(5),
+                })),
+              }),
+            },
+          },
+        },
+      },
+      responses: {
+        200: successResponse(GoalClientDTOSchema, '更新成功'),
+        404: errorResponse('目标不存在'),
+      },
+    },
+    [auth],
+    (req) => controller.batchUpdateKeyResultWeights(req.params!.id, req.body?.updates ?? []),
   );
 
   return router;

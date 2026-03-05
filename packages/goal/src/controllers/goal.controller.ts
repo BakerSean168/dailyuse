@@ -11,7 +11,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { fail, ok } from '@dailyuse/contracts/result';
 import {
   CreateGoalSchema,
   UpdateGoalSchema,
@@ -20,6 +20,9 @@ import {
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
   CreateGoalReviewSchema,
+  CreateGoalRecordSchema,
+  UpdateGoalReviewSchema,
+  GetGoalRecordsSchema,
 } from '@dailyuse/contracts/goal';
 import type {
   CreateGoalReq,
@@ -46,6 +49,13 @@ import type {
   UpdateGoalKeyResultProgress,
   DeleteGoalKeyResult,
   AddGoalReview,
+  ListGoalReviews,
+  UpdateGoalReview,
+  DeleteGoalReview,
+  CreateGoalRecord,
+  ListGoalRecords,
+  DeleteGoalRecord,
+  CompleteGoal,
 } from '../application-server';
 
 // ============ Use Case Port ============
@@ -58,12 +68,19 @@ export interface GoalUseCases {
   deleteGoal: DeleteGoal;
   archiveGoal: ArchiveGoal;
   activateGoal: ActivateGoal;
+  completeGoal: CompleteGoal;
   searchGoals: SearchGoals;
   addKeyResult: AddGoalKeyResult;
   updateKeyResult: UpdateGoalKeyResult;
   updateKeyResultProgress: UpdateGoalKeyResultProgress;
   deleteKeyResult: DeleteGoalKeyResult;
   addReview: AddGoalReview;
+  listReviews: ListGoalReviews;
+  updateReview: UpdateGoalReview;
+  deleteReview: DeleteGoalReview;
+  createRecord: CreateGoalRecord;
+  listRecords: ListGoalRecords;
+  deleteRecord: DeleteGoalRecord;
 }
 
 /**
@@ -141,7 +158,102 @@ export class GoalController {
     return this.useCases.activateGoal.execute(id);
   }
 
+  async complete(id: string): Promise<Result<unknown>> {
+    try {
+      const result = await this.useCases.completeGoal.execute(id);
+      return ok(result.goal);
+    } catch (e: any) {
+      return fail({ code: 'INTERNAL_ERROR', message: e.message ?? 'Failed to complete goal' });
+    }
+  }
+
+  async getAggregate(goalId: string): Promise<Result<unknown>> {
+    const goalResult = await this.useCases.getGoal.execute(goalId, true);
+    if (!goalResult.ok) return goalResult;
+
+    const goal = goalResult.data as unknown as Record<string, unknown>;
+    const recordsResult = await this.useCases.listRecords.execute({ goalId });
+    const records = recordsResult.ok ? (recordsResult.data as any).data : [];
+    const reviews = (goal.reviews as unknown[]) ?? [];
+    const keyResults = (goal.keyResults as unknown[]) ?? [];
+
+    return ok({
+      goal: goalResult.data,
+      keyResults,
+      records,
+      reviews,
+      statistics: {
+        totalKeyResults: keyResults.length,
+        completedKeyResults: 0,
+        totalRecords: records.length,
+        totalReviews: reviews.length,
+        overallProgress: 0,
+      },
+    });
+  }
+
+  async getProgressBreakdown(goalId: string): Promise<Result<unknown>> {
+    const goalResult = await this.useCases.getGoal.execute(goalId, true);
+    if (!goalResult.ok) return goalResult;
+
+    const goal = goalResult.data as unknown as Record<string, unknown>;
+    const keyResults = ((goal.keyResults as any[]) ?? []).map((kr: any) => ({
+      keyResultId: kr.id,
+      title: kr.title,
+      weight: kr.weight,
+      progress: kr.progress,
+    }));
+
+    return ok({
+      goalId,
+      keyResults,
+      overallProgress: 0,
+    });
+  }
+
+  async cloneGoal(
+    goalId: string,
+    params: { name?: string; description?: string; includeKeyResults?: boolean; includeRecords?: boolean },
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    // Get original goal
+    const goalResult = await this.useCases.getGoal.execute(goalId, true);
+    if (!goalResult.ok) return goalResult;
+
+    const original = goalResult.data as unknown as Record<string, unknown>;
+    const createData = {
+      name: params.name ?? `${original.name} (Copy)`,
+      description: params.description ?? (original.description as string | undefined),
+      status: 'Active',
+      importance: original.importance,
+      category: original.category,
+      tags: original.tags,
+    };
+
+    return this.useCases.createGoal.execute(createData as any, ctx);
+  }
+
+  async batchUpdateKeyResultWeights(
+    goalId: string,
+    updates: Array<{ keyResultId: string; weight: number }>,
+  ): Promise<Result<unknown>> {
+    // Update weights one by one
+    for (const { keyResultId, weight } of updates) {
+      const result = await this.useCases.updateKeyResult.execute(goalId, keyResultId, { weight });
+      if (!result.ok) return result;
+    }
+    // Return updated goal
+    return this.useCases.getGoal.execute(goalId, true);
+  }
+
   // ==================== Key Results ====================
+
+  async getKeyResults(goalId: string): Promise<Result<unknown>> {
+    const result = await this.useCases.getGoal.execute(goalId, true);
+    if (!result.ok) return result;
+    const goal = result.data as unknown as Record<string, unknown>;
+    return ok((goal.keyResults as unknown[]) ?? []);
+  }
 
   async addKeyResult(goalId: string, input: unknown): Promise<Result<unknown>> {
     const parsed = AddKeyResultSchema.safeParse({
@@ -235,5 +347,87 @@ export class GoalController {
       challenges: parsed.data.challenges,
       nextActions: parsed.data.nextActions,
     });
+  }
+
+  // ==================== Reviews - List / Update / Delete ====================
+
+  async listReviews(goalId: string): Promise<Result<unknown>> {
+    return this.useCases.listReviews.execute(goalId);
+  }
+
+  async updateReview(goalId: string, reviewId: string, input: unknown): Promise<Result<unknown>> {
+    const parsed = UpdateGoalReviewSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.updateReview.execute(goalId, reviewId, {
+      title: parsed.data.title,
+      content: parsed.data.content,
+      rating: parsed.data.rating,
+      achievements: parsed.data.achievements,
+      challenges: parsed.data.challenges,
+      nextActions: parsed.data.nextActions,
+    });
+  }
+
+  async deleteReview(goalId: string, reviewId: string): Promise<Result<unknown>> {
+    return this.useCases.deleteReview.execute(goalId, reviewId);
+  }
+
+  // ==================== Records ====================
+
+  async createRecord(
+    goalId: string,
+    keyResultId: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    const parsed = CreateGoalRecordSchema.safeParse({
+      ...(input as Record<string, unknown>),
+      keyResultId,
+    });
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.createRecord.execute(goalId, keyResultId, {
+      value: parsed.data.value,
+      note: parsed.data.note,
+    }, ctx.identityId);
+  }
+
+  async listRecordsByGoal(
+    goalId: string,
+    params?: { limit?: number; offset?: number },
+  ): Promise<Result<unknown>> {
+    return this.useCases.listRecords.execute({
+      goalId,
+      limit: params?.limit,
+      offset: params?.offset,
+    });
+  }
+
+  async listRecordsByKeyResult(
+    goalId: string,
+    keyResultId: string,
+    params?: { limit?: number; offset?: number },
+  ): Promise<Result<unknown>> {
+    return this.useCases.listRecords.execute({
+      goalId,
+      keyResultId,
+      limit: params?.limit,
+      offset: params?.offset,
+    });
+  }
+
+  async deleteRecord(recordId: string): Promise<Result<unknown>> {
+    return this.useCases.deleteRecord.execute(recordId);
   }
 }

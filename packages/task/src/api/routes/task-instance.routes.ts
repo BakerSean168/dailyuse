@@ -18,6 +18,8 @@ import {
   SkipTaskInstanceSchema,
   TaskInstanceResponseSchema,
 } from '@dailyuse/contracts/task';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { TaskInstanceId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
 
 // ============ Types ============
@@ -67,6 +69,20 @@ export function registerTaskInstanceRoutes(
     ),
   );
 
+  // POST /check-expired — Check and mark expired instances
+  r.route(
+    {
+      method: 'post',
+      path: '/check-expired',
+      summary: '检查并标记过期任务实例',
+      responses: {
+        200: successResponse(z.array(TaskInstanceResponseSchema), '检查完成'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.checkExpired(ctx.identityId),
+  );
+
   // GET / — List instances
   r.route(
     {
@@ -96,7 +112,7 @@ export function registerTaskInstanceRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取任务实例详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
       responses: {
         200: successResponse(TaskInstanceResponseSchema, '获取成功'),
         404: errorResponse('实例不存在'),
@@ -114,7 +130,7 @@ export function registerTaskInstanceRoutes(
       path: '/:id/complete',
       summary: '完成任务实例',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<TaskInstanceId>() }),
         body: { content: { 'application/json': { schema: CompleteTaskInstanceSchema } } },
       },
       responses: {
@@ -133,7 +149,7 @@ export function registerTaskInstanceRoutes(
       path: '/:id/skip',
       summary: '跳过任务实例',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<TaskInstanceId>() }),
         body: { content: { 'application/json': { schema: SkipTaskInstanceSchema } } },
       },
       responses: {
@@ -151,7 +167,7 @@ export function registerTaskInstanceRoutes(
       method: 'post',
       path: '/:id/start',
       summary: '开始任务实例',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
       responses: {
         200: successResponse(TaskInstanceResponseSchema, '开始成功'),
         404: errorResponse('实例不存在'),
@@ -167,7 +183,7 @@ export function registerTaskInstanceRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除任务实例',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<TaskInstanceId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('实例不存在'),

@@ -9,8 +9,10 @@ import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
+import type { TaskDependencyController } from '../controllers/task-dependency.controller';
 import { registerTaskTemplateRoutes } from './task-template.routes';
 import { registerTaskInstanceRoutes } from './task-instance.routes';
+import { registerTaskDependencyRoutes } from './task-dependency.routes';
 
 // ============ Types ============
 
@@ -22,6 +24,7 @@ interface PlatformMiddleware {
 interface TaskControllers {
   templateController: TaskTemplateController;
   instanceController: TaskInstanceController;
+  dependencyController: TaskDependencyController;
 }
 
 // ============ Route Registration ============
@@ -50,4 +53,12 @@ export function registerTaskRoutes(
     openApiRegistry,
   );
   rootRouter.use('/task-instances', instanceRouter);
+
+  // Task Dependencies: /api/tasks (sub-paths /:taskId/dependencies, /dependencies/:id)
+  const dependencyRouter = registerTaskDependencyRoutes(
+    controllers.dependencyController,
+    middleware,
+    openApiRegistry,
+  );
+  rootRouter.use('/tasks', dependencyRouter);
 }

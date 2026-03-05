@@ -19,6 +19,8 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import { UpdateResourceSchema, ResourceResponseSchema } from '@dailyuse/contracts/repository';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { ResourceId } from '@dailyuse/contracts/primitives';
 import type { RepositoryController } from '../../controllers/repository.controller';
 
 // ============ Types ============
@@ -50,7 +52,7 @@ export function registerStandaloneResourceRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取资源详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ResourceId>() }) },
       responses: {
         200: successResponse(ResourceResponseSchema, '获取成功'),
         404: errorResponse('资源不存在'),
@@ -67,7 +69,7 @@ export function registerStandaloneResourceRoutes(
       path: '/:id',
       summary: '更新资源',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<ResourceId>() }),
         body: { content: { 'application/json': { schema: UpdateResourceSchema } } },
       },
       responses: {
@@ -85,7 +87,7 @@ export function registerStandaloneResourceRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除资源',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<ResourceId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('资源不存在'),

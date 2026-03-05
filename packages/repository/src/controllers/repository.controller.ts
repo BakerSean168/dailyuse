@@ -36,6 +36,7 @@ export interface RepositoryUseCases {
   deleteRepository(id: string): Promise<Result<unknown>>;
   archiveRepository(id: string): Promise<Result<unknown>>;
   activateRepository(id: string): Promise<Result<unknown>>;
+  updateRepositoryStats(id: string, data: Record<string, unknown>): Promise<Result<unknown>>;
   // Resource CRUD
   createResource(data: CreateResourceZodReq & { repositoryId: string }): Promise<Result<unknown>>;
   listResources(
@@ -45,6 +46,13 @@ export interface RepositoryUseCases {
   getResource(id: string): Promise<Result<unknown>>;
   updateResource(id: string, data: UpdateResourceZodReq): Promise<Result<unknown>>;
   deleteResource(id: string): Promise<Result<unknown>>;
+  // Folder CRUD
+  createFolder(data: { repositoryId: string; name: string; parentId?: string; order?: number }, ctx: Context): Promise<Result<unknown>>;
+  getFolderTree(repositoryId: string): Promise<Result<unknown>>;
+  getFolder(id: string): Promise<Result<unknown>>;
+  renameFolder(id: string, newName: string): Promise<Result<unknown>>;
+  moveFolder(id: string, newParentId: string | null): Promise<Result<unknown>>;
+  deleteFolder(id: string): Promise<Result<unknown>>;
 }
 
 export class RepositoryController {
@@ -112,7 +120,7 @@ export class RepositoryController {
     }
     return this.useCases.createResource({
       ...parsed.data,
-      repositoryId: repoId,
+      repositoryId: repoId as any,
     });
   }
 
@@ -141,5 +149,57 @@ export class RepositoryController {
 
   async deleteResource(id: string): Promise<Result<unknown>> {
     return this.useCases.deleteResource(id);
+  }
+
+  // ==================== Repository Stats ====================
+
+  async updateRepositoryStats(id: string, input: unknown): Promise<Result<unknown>> {
+    if (!input || typeof input !== 'object') {
+      return fail({ code: 'VALIDATION_ERROR', message: 'stats object is required' });
+    }
+    return this.useCases.updateRepositoryStats(id, input as Record<string, unknown>);
+  }
+
+  // ==================== Folder Operations ====================
+
+  async createFolder(repoId: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
+    const name = (input as any)?.name;
+    if (!name || typeof name !== 'string') {
+      return fail({ code: 'VALIDATION_ERROR', message: 'name is required' });
+    }
+    return this.useCases.createFolder(
+      {
+        repositoryId: repoId,
+        name,
+        parentId: (input as any)?.parentId,
+        order: (input as any)?.order,
+      },
+      ctx,
+    );
+  }
+
+  async getFolderTree(repositoryId: string): Promise<Result<unknown>> {
+    return this.useCases.getFolderTree(repositoryId);
+  }
+
+  async getFolder(id: string): Promise<Result<unknown>> {
+    return this.useCases.getFolder(id);
+  }
+
+  async renameFolder(id: string, input: unknown): Promise<Result<unknown>> {
+    const newName = (input as any)?.name;
+    if (!newName || typeof newName !== 'string') {
+      return fail({ code: 'VALIDATION_ERROR', message: 'name is required' });
+    }
+    return this.useCases.renameFolder(id, newName);
+  }
+
+  async moveFolder(id: string, input: unknown): Promise<Result<unknown>> {
+    const newParentId = (input as any)?.parentId ?? null;
+    return this.useCases.moveFolder(id, newParentId);
+  }
+
+  async deleteFolder(id: string): Promise<Result<unknown>> {
+    return this.useCases.deleteFolder(id);
   }
 }
