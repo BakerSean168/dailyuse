@@ -8,6 +8,7 @@
  * 2. HTTP 4xx/5xx / 网络异常 → `Result.fail`
  * 3. 成功响应 → 自动剥离 HttpResponse 信封 → `Result.ok(data)`
  * 4. 泛型安全，IDE 可精确推断 data 类型
+ * 5. 401 自动 Token 刷新 + 登出处理
  *
  * @module @dailyuse/http-client
  *
@@ -23,11 +24,11 @@
  * ```
  */
 
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Result, ResultError } from '@dailyuse/contracts/result';
 import { ok, fail, ResultCode, fromHttpResponse } from '@dailyuse/contracts/result';
 import type { HttpResponse } from '@dailyuse/contracts/result';
-import type { AxiosHttpClientConfig } from './types';
+import type { AxiosHttpClientConfig, TokenRefreshHandler } from './types';
 import { createAxiosInstance } from './axios-instance';
 
 // ============================================================================
@@ -40,11 +41,15 @@ import { createAxiosInstance } from './axios-instance';
  * 所有方法返回 `Promise<Result<T>>`，**永不抛出异常**。
  * 无论是 HTTP 错误、网络断开还是超时，都统一为 `Result.fail`。
  *
+ * 支持 401 自动 Token 刷新和登出回调。
+ *
  * @example
  * ```ts
  * const client = new ResultHttpClient({
  *   baseURL: '/api/v1',
  *   tokenProvider: { getAccessToken: () => authStore.token },
+ *   onTokenRefresh: async () => { ... },
+ *   onUnauthorized: () => { ... },
  * });
  *
  * // 在 Store 或 Composable 中
@@ -62,10 +67,25 @@ import { createAxiosInstance } from './axios-instance';
 export class ResultHttpClient {
   private readonly axios: AxiosInstance;
   private readonly enableLogging: boolean;
+  private readonly onTokenRefresh?: TokenRefreshHandler;
+  private readonly onUnauthorized?: () => void;
+
+  /** 是否正在刷新 Token（防止并发刷新） */
+  private isRefreshing = false;
+  /** 排队等待 Token 刷新的请求 */
+  private refreshQueue: Array<{
+    resolve: (token: string) => void;
+    reject: (err: unknown) => void;
+  }> = [];
 
   constructor(config: AxiosHttpClientConfig = {}) {
     this.axios = createAxiosInstance(config);
     this.enableLogging = config.enableLogging ?? false;
+    this.onTokenRefresh = config.onTokenRefresh;
+    this.onUnauthorized = config.onUnauthorized;
+    
+    // 设置 401 响应拦截器
+    this.setupResponseInterceptor();
   }
 
   // ────────────────────────────────────────
@@ -123,6 +143,88 @@ export class ResultHttpClient {
   /** 获取底层 Axios 实例 */
   getAxiosInstance(): AxiosInstance {
     return this.axios;
+  }
+
+  // ────────────────────────────────────────
+  // 响应拦截器 — 401 Token 刷新处理
+  // ────────────────────────────────────────
+
+  /**
+   * 设置 401 响应拦截器
+   * 
+   * 当收到 401 时，尝试用 refreshToken 刷新 accessToken
+   * 如果刷新成功，重试原请求
+   * 如果刷新失败，调用 onUnauthorized 回调（通常用于导航到登录页）
+   */
+  private setupResponseInterceptor(): void {
+    this.axios.interceptors.response.use(
+      (response) => response,
+      async (error: any) => {
+        const { response, config: originalConfig } = error;
+
+        // 401 自动刷新 Token + 重试
+        if (response?.status === 401 && this.onTokenRefresh && !originalConfig._retried) {
+          return this.handleTokenRefresh(originalConfig);
+        }
+
+        // 其他错误直接抛出，交给 execute 方法的 catch 处理
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  /**
+   * 处理 401 自动刷新 Token
+   */
+  private async handleTokenRefresh(originalConfig: InternalAxiosRequestConfig & { _retried?: boolean }): Promise<any> {
+    if (this.isRefreshing) {
+      // 已在刷新中 → 排队等待
+      return new Promise((resolve, reject) => {
+        this.refreshQueue.push({ resolve, reject });
+      }).then((newToken) => {
+        originalConfig.headers.Authorization = `Bearer ${newToken}`;
+        return this.axios.request(originalConfig);
+      });
+    }
+
+    this.isRefreshing = true;
+    originalConfig._retried = true;
+
+    try {
+      const newToken = await this.onTokenRefresh!();
+
+      if (!newToken) {
+        // 刷新失败 → 通知登出
+        this.drainRefreshQueue(new Error('Token 刷新失败'));
+        this.onUnauthorized?.();
+        return Promise.reject(new Error('Token 刷新失败'));
+      }
+
+      // 刷新成功 → 重试原请求 + 放行排队请求
+      originalConfig.headers.Authorization = `Bearer ${newToken}`;
+      this.drainRefreshQueue(null, newToken);
+      return this.axios.request(originalConfig);
+    } catch (refreshError) {
+      this.drainRefreshQueue(refreshError);
+      this.onUnauthorized?.();
+      return Promise.reject(refreshError);
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  /**
+   * 清空刷新队列
+   */
+  private drainRefreshQueue(error: unknown, token?: string): void {
+    for (const pending of this.refreshQueue) {
+      if (error) {
+        pending.reject(error);
+      } else {
+        pending.resolve(token!);
+      }
+    }
+    this.refreshQueue = [];
   }
 
   // ────────────────────────────────────────

@@ -25,6 +25,7 @@ import { shallowRef } from 'vue';
 
 import { PowerSyncAppSchema } from '@dailyuse/database/powersync';
 import { useAuthenticationStore } from '@dailyuse/app-vue';
+import { resultHttpClient } from './http';
 
 // ──────────────────────────────────────────────
 // Module state
@@ -59,46 +60,54 @@ function getApiBaseUrl(): string {
 class WebPowerSyncConnector implements PowerSyncBackendConnector {
   /**
    * Fetches a short-lived RS256 JWT from the API.
-   * Uses the existing HS256 access token from the Pinia auth store.
+   * 
+   * 使用 resultHttpClient 而不是 fetch，以便自动处理 401 token 刷新：
+   * - 如果 accessToken 过期，会自动调用 onTokenRefresh 刷新
+   * - 如果刷新失败，会调用 onUnauthorized() 导航到登录页
    */
   async fetchCredentials(): Promise<PowerSyncCredentials> {
     const authStore = useAuthenticationStore();
-    const accessToken = authStore.accessToken;
 
-    if (!accessToken) {
+    // 确保有 accessToken
+    if (!authStore.accessToken) {
       throw new Error('[PowerSync] No access token — user is not authenticated');
     }
 
-    const response = await fetch(`${getApiBaseUrl()}/powersync/token`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // 使用 resultHttpClient 获取 PowerSync token
+    // 这样可以自动处理 401 和 token 刷新
+    const result = await resultHttpClient.get<{
+      token: string;
+      endpoint: string;
+      expiresIn: number;
+    }>('/powersync/token');
 
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`[PowerSync] Failed to fetch credentials: ${response.status} ${body}`);
+    if (!result.ok) {
+      // 虽然 resultHttpClient 已处理 401，但如果仍然失败（如网络错误），则抛出
+      throw new Error(
+        `[PowerSync] Failed to fetch credentials: ${result.error.code} ${result.error.message}`
+      );
     }
 
-    const data = (await response.json()) as { token: string; expiresAt: string };
+    // 计算 expiresAt：现在 + expiresIn 秒
+    const expiresAt = new Date();
+    expiresAt.setSeconds(expiresAt.getSeconds() + result.data.expiresIn);
 
     return {
-      endpoint: getPowerSyncServiceUrl(),
-      token: data.token,
-      expiresAt: new Date(data.expiresAt),
+      endpoint: result.data.endpoint,
+      token: result.data.token,
+      expiresAt,
     };
   }
 
   /**
    * Uploads local CRUD operations to the backend.
+   * 
+   * 使用 resultHttpClient 处理 401 自动 token 刷新。
    */
   async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
     const authStore = useAuthenticationStore();
-    const accessToken = authStore.accessToken;
 
-    if (!accessToken) {
+    if (!authStore.accessToken) {
       throw new Error('[PowerSync] No access token — cannot upload data');
     }
 
@@ -106,25 +115,23 @@ class WebPowerSyncConnector implements PowerSyncBackendConnector {
 
     while ((transaction = await database.getNextCrudTransaction()) !== null) {
       try {
+        // 构建后端期望的格式：{ transactions: [{ ops: [...] }] }
         const ops = transaction.crud.map((op) => ({
-          table: op.table,
-          op: op.op,
+          op: op.op,      // 'PUT' | 'PATCH' | 'DELETE'
+          type: op.table,  // 表名
           id: op.id,
           data: op.opData,
         }));
 
-        const response = await fetch(`${getApiBaseUrl()}/powersync/crud`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ operations: ops }),
-        });
+        const result = await resultHttpClient.put<{ success: boolean }>(
+          '/powersync/crud',
+          { transactions: [{ ops }] }  // 后端期望的格式
+        );
 
-        if (!response.ok) {
-          const body = await response.text().catch(() => '');
-          throw new Error(`[PowerSync] CRUD upload failed: ${response.status} ${body}`);
+        if (!result.ok) {
+          throw new Error(
+            `[PowerSync] CRUD upload failed: ${result.error.code} ${result.error.message}`
+          );
         }
 
         await transaction.complete();

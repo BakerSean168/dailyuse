@@ -26,7 +26,7 @@ export const envSchema = z.object({
 
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
-  API_HOST: z.string().default('0.0.0.0'),
+  API_HOST: z.string().default('localhost'),
 
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 
