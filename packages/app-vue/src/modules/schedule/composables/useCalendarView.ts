@@ -7,9 +7,7 @@
 
 import { computed, ref } from 'vue';
 import { useSchedule } from './useSchedule';
-import { useGoal } from '../../goal/composables/useGoal';
 import { useTask } from '../../task/composables/useTask';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 // ============ 统一内部事件类型 ============
@@ -19,7 +17,7 @@ export interface CalendarEventItem {
   title: string;
   startTime: number; // ms timestamp
   endTime: number; // ms timestamp
-  source: 'schedule' | 'goal' | 'task';
+  source: 'schedule' | 'task';
   hasConflict?: boolean;
   originalId: string;
   /** 仅当 source === 'task' 时存在，对应 TaskInstanceStatus 值 */
@@ -27,29 +25,6 @@ export interface CalendarEventItem {
 }
 
 // ============ 转换工具函数 ============
-
-/** Goal → CalendarEventItem（用 startDate 和 targetDate） */
-function goalToEvents(goals: GoalClientDTO[]): CalendarEventItem[] {
-  const events: CalendarEventItem[] = [];
-  for (const goal of goals) {
-    if (!goal.targetDate) continue;
-    const endTime = Number(goal.targetDate);
-    if (!isFinite(endTime)) continue;
-    // startDate 不存在时使用 targetDate 当天 00:00
-    const rawStart = goal.startDate ? Number(goal.startDate) : endTime;
-    const startTime = isFinite(rawStart) ? rawStart : endTime;
-    events.push({
-      id: `goal-${goal.id}`,
-      title: goal.name,
-      startTime,
-      endTime,
-      source: 'goal',
-      hasConflict: false,
-      originalId: goal.id,
-    });
-  }
-  return events;
-}
 
 /** TaskInstance → CalendarEventItem（用 instanceDate + timeRange 分钟偏移） */
 function taskInstancesToEvents(
@@ -99,7 +74,6 @@ function taskInstancesToEvents(
 
 export function useCalendarView() {
   const schedule = useSchedule();
-  const goal = useGoal();
   const task = useTask();
 
   /** Currently displayed time window (set when calendar navigation changes) */
@@ -120,9 +94,6 @@ export function useCalendarView() {
       originalId: entry.id,
     }));
 
-    const goalsRaw = goal.goals.value;
-    const goalEvents = goalToEvents(Array.isArray(goalsRaw) ? goalsRaw : []);
-
     const instancesRaw = task.instances.value;
     const templatesRaw = task.templates.value;
     const taskEvents = taskInstancesToEvents(
@@ -130,14 +101,12 @@ export function useCalendarView() {
       Array.isArray(templatesRaw) ? templatesRaw : [],
     );
 
-    return [...scheduleEvents, ...goalEvents, ...taskEvents].sort(
+    return [...scheduleEvents, ...taskEvents].sort(
       (a, b) => a.startTime - b.startTime,
     );
   });
 
-  const isLoading = computed(
-    () => schedule.isLoading.value || goal.isLoading.value || task.isLoading.value,
-  );
+  const isLoading = computed(() => schedule.isLoading.value || task.isLoading.value);
 
   /** Fetch all data for the given time window (ms timestamps) */
   async function fetchForRange(startTime: number, endTime: number) {
@@ -146,7 +115,6 @@ export function useCalendarView() {
 
     await Promise.all([
       schedule.fetchCalendarEntries(startTime, endTime),
-      goal.fetchGoals(),
       task.fetchInstances(),
       task.fetchTemplates(),
     ]);

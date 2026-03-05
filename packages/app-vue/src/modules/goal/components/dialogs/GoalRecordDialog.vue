@@ -37,7 +37,7 @@
               step="0.1"
             />
             <Badge variant="secondary" class="absolute right-3 font-medium">
-              {{ t('goal.recordDialog.unit') }}
+              {{ currentKeyResultUnit || t('goal.recordDialog.unit') }}
             </Badge>
           </div>
           <p v-if="validationError" class="text-xs text-destructive">{{ validationError }}</p>
@@ -114,6 +114,12 @@ const localRecord = ref({
 });
 
 const isEditing = computed(() => !!propRecord.value);
+
+const currentKeyResultUnit = computed(() => {
+  const currentGoal = goals.value.find((g: any) => g.id === propGoalId.value);
+  const currentKeyResult = currentGoal?.keyResults?.find((kr: any) => kr.id === propKeyResultId.value);
+  return currentKeyResult?.progress?.unit ?? '';
+});
 
 const valueRules = computed(() => [
   (v: number) => !!v || t('goal.recordDialog.valueRequired'),

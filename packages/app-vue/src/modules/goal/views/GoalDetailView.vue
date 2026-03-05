@@ -6,6 +6,9 @@
       </Button>
       <Separator orientation="vertical" class="h-6" />
       <h2 class="text-lg font-semibold">{{ goal?.name || t('goal.detail.title') }}</h2>
+      <Button class="ml-auto" size="sm" @click="handleCreateReview">
+        <Plus class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.create') }}
+      </Button>
     </div>
 
     <ScrollArea v-if="goal" class="flex-1">
@@ -201,7 +204,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ArrowLeft, Plus, ChevronDown, ChevronUp } from 'lucide-vue-next';
 import {
@@ -224,6 +227,7 @@ import { useGoal } from '../composables/useGoal';
 import KeyResultDialog from '../components/dialogs/KeyResultDialog.vue';
 
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
 const goalId = route.params.id as string;
 
@@ -244,6 +248,10 @@ const expandedRecordId = ref<string | null>(null);
 
 function handleOpenAddKR() {
   keyResultDialogRef.value?.openForCreateKeyResult(goalId);
+}
+
+function handleCreateReview() {
+  router.push(`/goals/${goalId}/review/create`);
 }
 
 async function handleSaveKR(payload: {

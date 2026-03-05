@@ -220,11 +220,11 @@ function openEditDialog() {
 
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
+  const taskType: 'ONE_TIME' | 'RECURRING' = vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME';
   const result = await updateTemplate(id, {
     name: vm.title,
     description: vm.description ?? null,
-    taskType:
-      (vm.taskType as 'ONE_TIME' | 'RECURRING') ?? (vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME'),
+    taskType,
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     reminderConfig: vm.reminderConfig ?? null,

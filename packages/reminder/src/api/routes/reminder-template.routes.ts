@@ -99,7 +99,13 @@ export function registerReminderTemplateRoutes(
       path: '/templates',
       summary: '获取提醒模板列表',
       responses: {
-        200: successResponse(z.array(ReminderTemplateResponseSchema), '获取成功'),
+        200: successResponse(
+          z.object({
+            templates: z.array(ReminderTemplateResponseSchema),
+            total: z.number(),
+          }),
+          '获取成功',
+        ),
       },
     },
     [auth],

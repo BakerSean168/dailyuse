@@ -111,7 +111,12 @@
         <div class="space-y-4 py-4">
           <div class="space-y-2">
             <Label>{{ t('goal.krDetail.incrementValue') }}</Label>
-            <Input v-model.number="newRecord.value" type="number" placeholder="0" />
+            <div class="relative flex items-center">
+              <Input v-model.number="newRecord.value" type="number" placeholder="0" class="pr-16" />
+              <Badge v-if="keyResultUnit" variant="secondary" class="absolute right-3 font-medium">
+                {{ keyResultUnit }}
+              </Badge>
+            </div>
           </div>
           <div class="space-y-2">
             <Label>{{ t('goal.krDetail.remarks') }}</Label>
@@ -183,6 +188,8 @@ const keyResult = computed(() => {
   const list = keyResults.value ?? [];
   return list.find((kr) => kr.id === krId) ?? null;
 });
+
+const keyResultUnit = computed(() => keyResult.value?.progress?.unit ?? '');
 
 const progressPercent = computed(() => {
   if (!keyResult.value?.progress) return 0;

@@ -8,7 +8,6 @@ import type { IAuthSessionRepository } from '@/domain-server';
 import type { IAuthIdentityRepository } from '@/domain-server';
 import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
 import { createLogger } from '@dailyuse/utils';
 
@@ -31,17 +30,24 @@ export class RefreshToken {
     logger.info('[RefreshToken] Starting token refresh', { identityId: cx.identityId });
 
     try {
-      // 1. 查找当前用户的活跃会�?
-      const sessions = await this.sessionRepository.findByIdentityId(IdentityId.of(cx.identityId));
-      
-      // 2. 验证 refresh token 并找到对应的会话
-      const refreshTokenHash = this.tokenProvider.hash(input.refreshToken);
-      const session = sessions.find(s => 
-        s.isValid() && s.refreshTokenHash === refreshTokenHash
-      );
+      // 1. 验证 refresh token 并解析 payload
+      const verifyResult = this.tokenProvider.verifyRefreshToken(input.refreshToken);
+      if (!verifyResult.ok) {
+        throw new Error(verifyResult.error.message || 'Invalid or expired refresh token');
+      }
 
-      if (!session) {
+      const { identityId: tokenIdentityId, sessionId: tokenSessionId } = verifyResult.data;
+
+      // 2. 根据 payload 查找并校验会话
+      const session = await this.sessionRepository.findById(tokenSessionId as any);
+      const refreshTokenHash = this.tokenProvider.hash(input.refreshToken);
+
+      if (!session || !session.isValid() || session.refreshTokenHash !== refreshTokenHash) {
         throw new Error('Invalid refresh token or session expired');
+      }
+
+      if (String(session.identityId) !== String(tokenIdentityId)) {
+        throw new Error('Refresh token does not match session identity');
       }
 
       // 3. 更新会话活跃时间（滑动窗口）
@@ -66,7 +72,7 @@ export class RefreshToken {
       }
 
       logger.info('[RefreshToken] Token refresh successful', {
-        identityId: cx.identityId,
+        identityId: tokenIdentityId,
         sessionId: session.id
       });
 

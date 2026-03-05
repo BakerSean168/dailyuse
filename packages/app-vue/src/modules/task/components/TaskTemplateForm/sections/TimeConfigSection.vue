@@ -410,22 +410,26 @@ const parseDateInput = (dateStr: string): number | null => {
 };
 
 /**
- * Combine date string (YYYY-MM-DD) + hour + minute into a timestamp
+ * Combine hour + minute into minute-of-day (0-1439)
  */
-function combineDateTimeParts(dateStr: string, hour: string, minute: string): number | null {
-  if (!dateStr) return null;
-  return new Date(`${dateStr}T${hour}:${minute}:00`).getTime();
+function combineTimeParts(hour: string, minute: string): number {
+  const h = Number(hour);
+  const m = Number(minute);
+  if (!Number.isInteger(h) || h < 0 || h > 23) return 0;
+  if (!Number.isInteger(m) || m < 0 || m > 59) return 0;
+  return h * 60 + m;
 }
 
 /**
- * Split a timestamp into date / hour / minute parts
+ * Split minute-of-day into hour / minute parts
  */
-function splitTimestamp(ts: number): { date: string; hour: string; minute: string } {
-  const d = new Date(ts);
+function splitMinutes(minutes: number): { hour: string; minute: string } {
+  const normalized = Number.isFinite(minutes) ? Math.max(0, Math.min(1439, minutes)) : 0;
+  const h = Math.floor(normalized / 60);
+  const m = normalized % 60;
   return {
-    date: formatDateToYMD(d),
-    hour: String(d.getHours()).padStart(2, '0'),
-    minute: String(d.getMinutes()).padStart(2, '0'),
+    hour: String(h).padStart(2, '0'),
+    minute: String(m).padStart(2, '0'),
   };
 }
 
@@ -455,21 +459,21 @@ const initializeFormData = () => {
     startDate.value = formatDateToInput(config.startDate);
   }
 
-  if (config.timeType === TaskTimeType.TimePoint && config.timePoint) {
-    const parts = splitTimestamp(config.timePoint);
-    timePointDate.value = parts.date;
+  if (config.timeType === TaskTimeType.TimePoint && config.timePoint != null) {
+    const parts = splitMinutes(config.timePoint);
+    timePointDate.value = startDate.value;
     timePointHour.value = parts.hour;
     timePointMinute.value = parts.minute;
   }
 
   if (config.timeType === TaskTimeType.TimeRange && config.timeRange) {
-    const startParts = splitTimestamp(config.timeRange.start);
-    timeRangeStartDate.value = startParts.date;
+    const startParts = splitMinutes(config.timeRange.start);
+    timeRangeStartDate.value = startDate.value;
     timeRangeStartHour.value = startParts.hour;
     timeRangeStartMinute.value = startParts.minute;
 
-    const endParts = splitTimestamp(config.timeRange.end);
-    timeRangeEndDate.value = endParts.date;
+    const endParts = splitMinutes(config.timeRange.end);
+    timeRangeEndDate.value = startDate.value;
     timeRangeEndHour.value = endParts.hour;
     timeRangeEndMinute.value = endParts.minute;
   }
@@ -505,17 +509,15 @@ const handleDateChange = () => {
 const rebuildTimePoint = () => {
   try {
     validationError.value = '';
-    const parsedTime = combineDateTimeParts(
-      timePointDate.value,
-      timePointHour.value,
-      timePointMinute.value,
-    );
+    const parsedTime = combineTimeParts(timePointHour.value, timePointMinute.value);
+    const parsedStartDate = parseDateInput(timePointDate.value || startDate.value);
 
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,
       timeConfig: {
         ...(props.modelValue.timeConfig || {}),
         timeType: TaskTimeType.TimePoint,
+        startDate: parsedStartDate,
         timePoint: parsedTime,
       } as any,
     };
@@ -535,25 +537,19 @@ const rebuildTimePoint = () => {
 const rebuildTimeRange = () => {
   try {
     validationError.value = '';
-    const parsedStart = combineDateTimeParts(
-      timeRangeStartDate.value,
-      timeRangeStartHour.value,
-      timeRangeStartMinute.value,
-    );
-    const parsedEnd = combineDateTimeParts(
-      timeRangeEndDate.value,
-      timeRangeEndHour.value,
-      timeRangeEndMinute.value,
-    );
+    const parsedStart = combineTimeParts(timeRangeStartHour.value, timeRangeStartMinute.value);
+    const parsedEnd = combineTimeParts(timeRangeEndHour.value, timeRangeEndMinute.value);
+    const parsedStartDate = parseDateInput(timeRangeStartDate.value || startDate.value);
 
     const updated: TaskTemplateViewModel = {
       ...props.modelValue,
       timeConfig: {
         ...(props.modelValue.timeConfig || {}),
         timeType: TaskTimeType.TimeRange,
+        startDate: parsedStartDate,
         timeRange: {
-          start: parsedStart ?? 0,
-          end: parsedEnd ?? 0,
+          start: parsedStart,
+          end: parsedEnd,
         },
       } as any,
     };

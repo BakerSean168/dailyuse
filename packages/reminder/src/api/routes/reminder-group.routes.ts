@@ -82,7 +82,13 @@ export function registerReminderGroupRoutes(
       path: '/groups',
       summary: '获取提醒分组列表',
       responses: {
-        200: successResponse(z.array(ReminderGroupResponseSchema), '获取成功'),
+        200: successResponse(
+          z.object({
+            groups: z.array(ReminderGroupResponseSchema),
+            total: z.number(),
+          }),
+          '获取成功',
+        ),
       },
     },
     [auth],

@@ -29,6 +29,56 @@ import type {
   ReminderGroupsResponse,
 } from '../infrastructure-client/adapters/types';
 
+function normalizeTemplatesResponse(input: unknown): ReminderTemplatesResponse {
+  if (Array.isArray(input)) {
+    return {
+      templates: input as ReminderTemplateClientDTO[],
+      total: input.length,
+      page: 1,
+      pageSize: input.length,
+      hasMore: false,
+    };
+  }
+
+  const raw = (input ?? {}) as Partial<ReminderTemplatesResponse> & {
+    data?: ReminderTemplateClientDTO[];
+  };
+  const templates = raw.templates ?? raw.data ?? [];
+
+  return {
+    templates,
+    total: raw.total ?? templates.length,
+    page: raw.page ?? 1,
+    pageSize: raw.pageSize ?? templates.length,
+    hasMore: raw.hasMore ?? false,
+  };
+}
+
+function normalizeGroupsResponse(input: unknown): ReminderGroupsResponse {
+  if (Array.isArray(input)) {
+    return {
+      groups: input as ReminderGroupClientDTO[],
+      total: input.length,
+      page: 1,
+      pageSize: input.length,
+      hasMore: false,
+    };
+  }
+
+  const raw = (input ?? {}) as Partial<ReminderGroupsResponse> & {
+    data?: ReminderGroupClientDTO[];
+  };
+  const groups = raw.groups ?? raw.data ?? [];
+
+  return {
+    groups,
+    total: raw.total ?? groups.length,
+    page: raw.page ?? 1,
+    pageSize: raw.pageSize ?? groups.length,
+    hasMore: raw.hasMore ?? false,
+  };
+}
+
 export class ReminderClientService {
   constructor(
     private readonly reminderApi: IReminderApiClient,
@@ -45,7 +95,11 @@ export class ReminderClientService {
   }
 
   async getReminderTemplates(params?: { page?: number; limit?: number }): Promise<Result<ReminderTemplatesResponse>> {
-    return this.reminderApi.getReminderTemplates(params);
+    const result = await this.reminderApi.getReminderTemplates(params);
+    if (!result.ok) {
+      return result;
+    }
+    return { ...result, data: normalizeTemplatesResponse(result.data as unknown) };
   }
 
   async getUserTemplates(identityId: string): Promise<Result<ReminderTemplateClientDTO[]>> {
@@ -91,7 +145,11 @@ export class ReminderClientService {
   }
 
   async getReminderGroups(params?: { page?: number; limit?: number }): Promise<Result<ReminderGroupsResponse>> {
-    return this.reminderApi.getReminderGroups(params);
+    const result = await this.reminderApi.getReminderGroups(params);
+    if (!result.ok) {
+      return result;
+    }
+    return { ...result, data: normalizeGroupsResponse(result.data as unknown) };
   }
 
   async getUserReminderGroups(identityId: string): Promise<Result<ReminderGroupClientDTO[]>> {

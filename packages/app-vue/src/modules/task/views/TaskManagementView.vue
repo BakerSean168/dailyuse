@@ -159,12 +159,11 @@ function handleCreate() {
 }
 
 async function handleSaveCreate(template: TaskTemplateViewModel) {
+  const taskType: 'ONE_TIME' | 'RECURRING' = template.recurrenceRule ? 'RECURRING' : 'ONE_TIME';
   const result = await createTemplate({
     name: template.title,
     description: template.description ?? null,
-    taskType:
-      (template.taskType as 'ONE_TIME' | 'RECURRING') ??
-      (template.recurrenceRule ? 'RECURRING' : 'ONE_TIME'),
+    taskType,
     timeConfig: template.timeConfig as any,
     recurrenceRule: template.recurrenceRule ?? null,
     reminderConfig: template.reminderConfig ?? null,
@@ -192,11 +191,11 @@ function handleEdit(templateId: string) {
 }
 
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
+  const taskType: 'ONE_TIME' | 'RECURRING' = vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME';
   const result = await updateTemplate(vm.id, {
     name: vm.title,
     description: vm.description ?? null,
-    taskType:
-      (vm.taskType as 'ONE_TIME' | 'RECURRING') ?? (vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME'),
+    taskType,
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
     reminderConfig: vm.reminderConfig ?? null,

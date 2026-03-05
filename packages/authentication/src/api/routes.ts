@@ -110,15 +110,15 @@ export function registerAuthenticationRoutes(
       method: 'post',
       path: '/refresh',
       summary: '刷新访问令牌',
-      security: [{ bearerAuth: [] }],
       request: { body: { content: { 'application/json': { schema: RefreshTokenSchema } } } },
       responses: {
         200: successResponse(AuthResponseSchema, '刷新成功'),
         401: errorResponse('令牌无效或已过期'),
       },
     },
-    [auth],
+    [],
     (req, ctx) => controller.refreshToken(req.body, ctx),
+    { requireAuth: false },
   );
 
   return router;

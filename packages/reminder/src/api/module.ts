@@ -97,8 +97,19 @@ export const ReminderApiModule: ReminderApiModuleDef = {
         await reminderModule.reminderTemplateRepository.save(template);
         return ok(template.toClientDTO());
       },
-      listTemplates: async (ctx) =>
-        ok(await reminderModule.reminderTemplateRepository.findByIdentityId(ctx.identityId)),
+      listTemplates: async (ctx) => {
+        const templates = await reminderModule.reminderTemplateRepository.findByIdentityId(
+          ctx.identityId,
+        );
+        const data = templates.map((t) => t.toClientDTO());
+        return ok({
+          templates: data,
+          total: data.length,
+          page: 1,
+          pageSize: data.length,
+          hasMore: false,
+        });
+      },
       getUpcomingReminders: async (params, ctx) =>
         ok(
           await reminderModule.reminderTemplateRepository.findByNextTriggerBefore(
@@ -153,8 +164,17 @@ export const ReminderApiModule: ReminderApiModuleDef = {
         await reminderModule.reminderGroupRepository.save(group);
         return ok(group.toClientDTO());
       },
-      listGroups: async (ctx) =>
-        ok(await reminderModule.reminderGroupRepository.findByIdentityId(ctx.identityId)),
+      listGroups: async (ctx) => {
+        const groups = await reminderModule.reminderGroupRepository.findByIdentityId(ctx.identityId);
+        const data = groups.map((g) => g.toClientDTO());
+        return ok({
+          groups: data,
+          total: data.length,
+          page: 1,
+          pageSize: data.length,
+          hasMore: false,
+        });
+      },
       getGroup: async (id) => ok(await reminderModule.reminderGroupRepository.findById(id)),
       updateGroup: async (id, data) => {
         const existing = await reminderModule.reminderGroupRepository.findById(id);

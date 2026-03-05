@@ -298,11 +298,13 @@ const recurrenceEnabled = computed({
       };
       updateTemplate((template) => {
         (template as any).recurrenceRule = defaultRule;
+        (template as any).taskType = 'RECURRING';
       });
     } else if (!value) {
       // 禁用重复：清空规则
       updateTemplate((template) => {
         (template as any).recurrenceRule = null;
+        (template as any).taskType = 'ONE_TIME';
       });
     }
   },
