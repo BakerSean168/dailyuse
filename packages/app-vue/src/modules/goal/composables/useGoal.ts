@@ -65,27 +65,11 @@ export function useGoal() {
         limit: store.pagination.pageSize,
       };
 
-      console.log('[useGoal.fetchGoals] request params', {
-        searchQuery,
-        ...params,
-      });
-
       const result = searchQuery
         ? await service.searchGoals({ query: searchQuery, ...params })
         : await service.listGoals(params);
 
       if (result.ok) {
-        const preview = (result.data.goals ?? []).slice(0, 5).map((g: Goal) => {
-          const dto = g.toDTO();
-          return {
-            id: dto.id,
-            keyResultsLen: dto.keyResults?.length ?? 0,
-            totalKeyResults: (dto as GoalClientDTO & { totalKeyResults?: number }).totalKeyResults,
-            completedKeyResults: (dto as GoalClientDTO & { completedKeyResults?: number }).completedKeyResults,
-          };
-        });
-        console.log('[useGoal.fetchGoals] response preview', preview);
-
         store.setGoals(
           (result.data.goals ?? []).map((g: Goal) => g.toDTO()),
           result.data.pagination?.total ?? 0,

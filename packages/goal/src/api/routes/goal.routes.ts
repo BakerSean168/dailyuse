@@ -115,13 +115,6 @@ export function registerGoalCrudRoutes(
       const pageSize = parseNumber(req.query?.pageSize) ?? parseNumber(req.query?.limit);
       const folderId = (req.query?.folderId ?? req.query?.dirId) as string | undefined;
 
-      console.log('[goal.routes:list] query normalized', {
-        raw: req.query,
-        includeKeyResults,
-        pageSize,
-        folderId,
-      });
-
       return controller.list({
         identityId: ctx.identityId as any,
         status: parseStringArray(req.query?.status) as any,

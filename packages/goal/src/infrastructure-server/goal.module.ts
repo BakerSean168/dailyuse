@@ -112,7 +112,11 @@ export class GoalModule {
     this.listReviews = new ListGoalReviews(this.goalRepository);
     this.updateReview = new UpdateGoalReview(this.goalRepository, this.goalPolicy);
     this.deleteReview = new DeleteGoalReview(this.goalRepository, this.goalPolicy);
-    this.createRecord = new CreateGoalRecord(this.goalRepository, this.goalRecordRepository);
+    this.createRecord = new CreateGoalRecord(
+      this.goalRepository,
+      this.goalRecordRepository,
+      this.goalProgressCalculator,
+    );
     this.listRecords = new ListGoalRecords(this.goalRecordRepository);
     this.deleteRecord = new DeleteGoalRecord(this.goalRecordRepository);
     this.completeGoal = new CompleteGoal(this.goalRepository, this.goalPolicy);

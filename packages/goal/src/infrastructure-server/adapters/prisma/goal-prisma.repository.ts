@@ -91,14 +91,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
         orderBy: { createdAt: 'desc' },
       });
 
-      console.log('[GoalPrismaRepository] findByIdentityId includeChildren=true', {
-        count: rows.length,
-        sample: rows.slice(0, 3).map((row) => ({
-          id: row.id,
-          keyResults: row.keyResults?.length ?? 0,
-        })),
-      });
-
       return rows.map((row: PrismaGoalWithRelations) =>
         Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
       );
@@ -116,14 +108,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
         },
       },
       orderBy: { createdAt: 'desc' },
-    });
-
-    console.log('[GoalPrismaRepository] findByIdentityId includeChildren=false base rows', {
-      count: rows.length,
-      sample: rows.slice(0, 3).map((row) => ({
-        id: row.id,
-        totalKeyResults: row._count?.keyResults ?? 0,
-      })),
     });
 
     const goalIds = rows.map((row) => row.id);
@@ -147,12 +131,6 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
           completedMap.set(kr.goalId, (completedMap.get(kr.goalId) ?? 0) + 1);
         }
       }
-
-      console.log('[GoalPrismaRepository] completed KR map', {
-        goals: goalIds.length,
-        keyResultRows: keyResultRows.length,
-        completedEntries: Array.from(completedMap.entries()).slice(0, 5),
-      });
     }
 
     return rows.map((row) => {

@@ -9,6 +9,7 @@
 
 import type { IGoalRepository, IGoalRecordRepository } from '@/domain-server';
 import { GoalRecord } from '@/domain-server';
+import type { GoalProgressCalculator } from '@/domain-server';
 import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
@@ -18,6 +19,7 @@ export class CreateGoalRecord {
   constructor(
     private readonly goalRepository: IGoalRepository,
     private readonly goalRecordRepository: IGoalRecordRepository,
+    private readonly goalProgressCalculator: GoalProgressCalculator,
   ) {}
 
   async execute(
@@ -51,6 +53,15 @@ export class CreateGoalRecord {
 
     // 4. 持久化
     await this.goalRecordRepository.save(record);
+
+    // 5. 根据历史记录重算并同步 KR 当前值
+    const progressResult = await this.goalProgressCalculator.recalculateKeyResultProgress(
+      goal,
+      keyResultId,
+    );
+    if (progressResult.changed) {
+      await this.goalRepository.save(goal);
+    }
 
     return ok(record.toClientDTO(goalId));
   }

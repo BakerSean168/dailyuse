@@ -272,18 +272,6 @@ export class SqliteGoalRepository implements IGoalRepository {
 
     const rows = this.db.prepare(query).all(...params) as any[];
 
-    console.log('[GoalSqliteRepository] findByIdentityId', {
-      includeChildren: options?.includeChildren ?? false,
-      status: options?.status,
-      folderId: options?.folderId,
-      count: rows.length,
-      sample: rows.slice(0, 5).map((row) => ({
-        id: row.id,
-        total_key_results: row.total_key_results,
-        completed_key_results: row.completed_key_results,
-      })),
-    });
-
     return rows.map((row) => this.rowToGoal(row, options?.includeChildren ?? false));
   }
 
