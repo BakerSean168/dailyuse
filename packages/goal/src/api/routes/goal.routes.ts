@@ -20,6 +20,8 @@ import {
   GoalClientDTOSchema,
   QueryGoalsResSchema,
 } from '@dailyuse/contracts/goal';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
 
 // ============ Helpers ============
@@ -151,7 +153,7 @@ export function registerGoalCrudRoutes(
       method: 'get',
       path: '/:id',
       summary: '获取目标详情',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
       responses: {
         200: successResponse(GoalClientDTOSchema, '获取成功'),
         404: errorResponse('目标不存在'),
@@ -169,7 +171,7 @@ export function registerGoalCrudRoutes(
       path: '/:id',
       summary: '更新目标',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<GoalId>() }),
         body: { content: { 'application/json': { schema: UpdateGoalSchema } } },
       },
       responses: {
@@ -198,7 +200,7 @@ export function registerGoalCrudRoutes(
       method: 'delete',
       path: '/:id',
       summary: '删除目标',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
       responses: {
         200: successResponse(z.null(), '删除成功'),
         404: errorResponse('目标不存在'),
@@ -216,7 +218,7 @@ export function registerGoalCrudRoutes(
       method: 'post',
       path: '/:id/archive',
       summary: '归档目标',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
       responses: {
         200: successResponse(GoalClientDTOSchema, '归档成功'),
         404: errorResponse('目标不存在'),
@@ -232,7 +234,7 @@ export function registerGoalCrudRoutes(
       method: 'post',
       path: '/:id/activate',
       summary: '激活目标',
-      request: { params: z.object({ id: z.string().uuid() }) },
+      request: { params: z.object({ id: brandedId<GoalId>() }) },
       responses: {
         200: successResponse(GoalClientDTOSchema, '激活成功'),
         404: errorResponse('目标不存在'),

@@ -14,9 +14,12 @@ import { Router, type RequestHandler } from 'express';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 import { GoalController } from '../../controllers/goal.controller';
 import type { GoalUseCases } from '../../controllers/goal.controller';
+import { GoalFolderController } from '../../controllers/goal-folder.controller';
+import type { GoalFolderUseCases } from '../../controllers/goal-folder.controller';
 import { registerGoalCrudRoutes } from './goal.routes';
 import { registerKeyResultRoutes } from './key-result.routes';
 import { registerReviewRoutes } from './review.routes';
+import { registerGoalFolderRoutes } from './goal-folder.routes';
 
 // ============ Types ============
 
@@ -52,4 +55,18 @@ export function registerGoalRoutes(
   router.use(reviewRouter);
 
   return router;
+}
+
+/**
+ * Register all goal-folder routes.
+ *
+ * The caller mounts the returned Router on `/goal-folders`.
+ */
+export function registerGoalFolderRoutes_(
+  handlers: GoalFolderUseCases,
+  middleware: PlatformMiddleware,
+  openApiRegistry?: OpenApiRegistryLike | null,
+): Router {
+  const controller = new GoalFolderController(handlers);
+  return registerGoalFolderRoutes(controller, middleware, openApiRegistry);
 }

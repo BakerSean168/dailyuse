@@ -193,3 +193,88 @@ export type RuleRevisionId = string & { readonly __brand: 'RuleRevisionId' };
 
 /** 代码片段 ID */
 export type CodeSnippetId = string & { readonly __brand: 'CodeSnippetId' };
+
+// ==========================================
+// ID Prefix Constants
+// 运行时前缀常量，与 createIdType() 调用保持同步
+// ==========================================
+
+/**
+ * 所有 branded ID 的运行时前缀映射。
+ * 用于 Zod schema 校验 `{Prefix}_{uuid}` 格式。
+ *
+ * 注意：值必须与各模块 `createIdType(prefix)` 调用中的 prefix 参数完全一致。
+ */
+export const ID_PREFIXES = {
+  // === 共享 ===
+  IdentityId: 'IdentityId',
+
+  // === Authentication ===
+  AuthCredentialId: 'AuthCredentialId',
+  AuthSessionId: 'AuthSessionId',
+
+  // === Goal ===
+  GoalId: 'IGoalId',
+  GoalFolderId: 'IGoalFolderId',
+  KeyResultId: 'IKeyResultId',
+  GoalRecordId: 'IGoalRecordId',
+  GoalReviewId: 'IGoalReviewId',
+  FocusSessionId: 'IFocusSessionId',
+  KeyResultWeightSnapshotId: 'IKeyResultWeightSnapshotId',
+
+  // === Task ===
+  TaskTemplateId: 'ITaskTemplateId',
+  TaskInstanceId: 'ITaskInstanceId',
+  TaskDependencyId: 'ITaskDependencyId',
+  SubtaskId: 'ISubtaskId',
+  TaskFolderId: 'ITaskFolderId',
+
+  // === Reminder ===
+  ReminderTemplateId: 'IReminderTemplateId',
+  ReminderGroupId: 'IReminderGroupId',
+  ReminderInstanceId: 'IReminderInstanceId',
+  ReminderHistoryId: 'IReminderHistoryId',
+  ReminderResponseId: 'IReminderResponseId',
+
+  // === Schedule ===
+  ScheduleId: 'IScheduleId',
+  ScheduleTaskId: 'IScheduleTaskId',
+  ScheduleExecutionId: 'IScheduleExecutionId',
+  ScheduleStatisticId: 'IScheduleStatisticId',
+
+  // === Repository ===
+  RepositoryId: 'IRepositoryId',
+  ResourceId: 'IResourceId',
+  FolderId: 'IFolderId',
+  DocumentId: 'IDocumentId',
+
+  // === Setting ===
+  SettingId: 'ISettingId',
+
+  // === Notification ===
+  NotificationId: 'INotificationId',
+  NotificationChannelId: 'INotificationChannelId',
+  NotificationPreferenceId: 'INotificationPreferenceId',
+  NotificationTemplateId: 'INotificationTemplateId',
+  NotificationHistoryId: 'NotificationHistoryId',
+
+  // === AI ===
+  AiConversationId: 'IAiConversationId',
+  AiMessageId: 'IAiMessageId',
+  AiGenerationTaskId: 'IAiGenerationTaskId',
+  AiProviderConfigId: 'IAiProviderConfigId',
+  AiUsageQuotaId: 'IAiUsageQuotaId',
+
+  // === Editor ===
+  EditorWorkspaceId: 'IEditorWorkspaceId',
+  EditorSessionId: 'IEditorSessionId',
+  EditorGroupId: 'IEditorGroupId',
+  EditorTabId: 'IEditorTabId',
+
+  // === Governance ===
+  RuleId: 'RuleId',
+  RuleRevisionId: 'RuleRevisionId',
+} as const;
+
+export type IdPrefixKey = keyof typeof ID_PREFIXES;
+export type IdPrefixValue = (typeof ID_PREFIXES)[IdPrefixKey];

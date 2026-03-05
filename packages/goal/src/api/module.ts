@@ -18,7 +18,7 @@ import {
   GoalModule,
 } from '../infrastructure-server';
 import { GoalContainer } from '../infrastructure-server/di/goal-container';
-import { registerGoalRoutes } from './routes/index';
+import { registerGoalRoutes, registerGoalFolderRoutes_ } from './routes/index';
 import { registerGoalInitializationTasks } from './initialization';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 
@@ -78,6 +78,17 @@ export const GoalApiModule: GoalApiModuleDef = {
     // 4. 注册路由（同时注册 OpenAPI 文档）
     const goalRoutes = registerGoalRoutes(handlers, middleware, context.openApiRegistry);
     router.use('/goals', goalRoutes);
+
+    // 4b. 注册文件夹路由
+    const folderHandlers = {
+      createGoalFolder: goalModule.createGoalFolder,
+      getGoalFolder: goalModule.getGoalFolder,
+      listGoalFolders: goalModule.listGoalFolders,
+      updateGoalFolder: goalModule.updateGoalFolder,
+      deleteGoalFolder: goalModule.deleteGoalFolder,
+    };
+    const folderRoutes = registerGoalFolderRoutes_(folderHandlers, middleware, context.openApiRegistry);
+    router.use('/goal-folders', folderRoutes);
 
     // 5. 注册初始化任务
     registerGoalInitializationTasks();

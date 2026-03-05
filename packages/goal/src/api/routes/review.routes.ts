@@ -13,6 +13,8 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import { CreateGoalReviewSchema, GoalReviewClientDTOSchema } from '@dailyuse/contracts/goal';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
 
 // ============ Types ============
@@ -45,7 +47,7 @@ export function registerReviewRoutes(
       path: '/:id/reviews',
       summary: '添加目标复盘',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<GoalId>() }),
         body: { content: { 'application/json': { schema: CreateGoalReviewSchema } } },
       },
       responses: {

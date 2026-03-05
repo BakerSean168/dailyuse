@@ -18,6 +18,8 @@ import {
   UpdateKeyResultProgressSchema,
   KeyResultClientDTOSchema,
 } from '@dailyuse/contracts/goal';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
 
 // ============ Types ============
@@ -50,7 +52,7 @@ export function registerKeyResultRoutes(
       path: '/:id/key-results',
       summary: '添加关键结果',
       request: {
-        params: z.object({ id: z.string().uuid() }),
+        params: z.object({ id: brandedId<GoalId>() }),
         body: { content: { 'application/json': { schema: AddKeyResultSchema } } },
       },
       responses: {
@@ -70,7 +72,7 @@ export function registerKeyResultRoutes(
       path: '/:id/key-results/:krId',
       summary: '更新关键结果',
       request: {
-        params: z.object({ id: z.string().uuid(), krId: z.string().uuid() }),
+        params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
         body: { content: { 'application/json': { schema: UpdateKeyResultSchema } } },
       },
       responses: {
@@ -89,7 +91,7 @@ export function registerKeyResultRoutes(
       path: '/:id/key-results/:krId/progress',
       summary: '更新关键结果进度',
       request: {
-        params: z.object({ id: z.string().uuid(), krId: z.string().uuid() }),
+        params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
         body: { content: { 'application/json': { schema: UpdateKeyResultProgressSchema } } },
       },
       responses: {
@@ -108,7 +110,7 @@ export function registerKeyResultRoutes(
       path: '/:id/key-results/:krId',
       summary: '删除关键结果',
       request: {
-        params: z.object({ id: z.string().uuid(), krId: z.string().uuid() }),
+        params: z.object({ id: brandedId<GoalId>(), krId: brandedId<KeyResultId>() }),
       },
       responses: {
         200: successResponse(z.null(), '删除成功'),

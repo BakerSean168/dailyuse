@@ -9,6 +9,28 @@ import jwt from 'jsonwebtoken';
 import { getJwtConfig } from '../../config/env.js';
 
 /**
+ * JWT Token 载荷接口
+ */
+interface TokenPayload {
+  identityId: string;
+  sessionId?: string;
+  type?: string;
+  exp?: number;
+}
+
+/**
+ * Branded ID 验证正则表达式
+ * 支持格式：
+ * - 带前缀：IdentityId_7e92ca52-b331-4cbb-9ecc-2b1f1471c370
+ * - 纯 UUID：7e92ca52-b331-4cbb-9ecc-2b1f1471c370
+ */
+const BRANDED_ID_REGEX = /^([A-Za-z]+_)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidIdentityId(value: unknown): boolean {
+  return typeof value === 'string' && BRANDED_ID_REGEX.test(value);
+}
+
+/**
  * 扩展的请求接口，包含用户认证信息。
  *
  * @remarks
@@ -63,7 +85,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     const { secret } = getJwtConfig();
 
     try {
-      const decoded = jwt.verify(token, secret) as any;
+      const decoded = jwt.verify(token, secret) as TokenPayload;
 
       // 验证必要字段
       if (!decoded.identityId) {
@@ -71,6 +93,15 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
           ok: false,
           code: 'UNAUTHORIZED',
           message: '无效的认证令牌：缺少用户信息',
+        });
+      }
+
+      // 验证 identityId 格式（支持带前缀的品牌化 ID）
+      if (!isValidIdentityId(decoded.identityId)) {
+        return res.status(401).json({
+          ok: false,
+          code: 'UNAUTHORIZED',
+          message: '无效的认证令牌：身份ID 格式不符合要求',
         });
       }
 
