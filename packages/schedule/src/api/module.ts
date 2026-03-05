@@ -15,6 +15,8 @@ import type { PrismaClient } from '@dailyuse/database';
 import { ok } from '@dailyuse/contracts/result';
 import { ScheduleModule, ScheduleContainer } from '../infrastructure-server';
 import { registerScheduleRoutes } from './routes';
+import { registerScheduleEventRoutes } from './schedule-event.routes';
+import { ScheduleEventController } from '../controllers/schedule-event.controller';
 import type { ScheduleUseCases } from '../controllers/schedule.controller';
 import { registerScheduleInitializationTasks } from './initialization';
 
@@ -98,8 +100,15 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
     // 3. Register routes
     const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
 
+    // 3b. Register schedule event routes (calendar entries)
+    const eventController = new ScheduleEventController({
+      scheduleEventService: scheduleModule.scheduleEventService,
+    });
+    const eventRoutes = registerScheduleEventRoutes(eventController, middleware, context.openApiRegistry);
+
     // 4. Mount onto API router
     router.use('/schedules', scheduleRoutes);
+    router.use('/schedules/events', eventRoutes);
 
     // 5. Register initialization tasks (event handlers)
     registerScheduleInitializationTasks();

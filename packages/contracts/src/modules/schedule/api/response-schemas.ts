@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { ScheduleTaskId } from '../../../primitives';
+import type { ScheduleTaskId, ScheduleId, IdentityId } from '../../../primitives';
 
 /**
  * ScheduleTask Response Schema
@@ -18,6 +18,26 @@ export const ScheduleTaskResponseSchema = z.object({
   sourceEntityId: z.string(),
   status: z.string(),
   enabled: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+/**
+ * CalendarEntry (Schedule Event) Response Schema
+ */
+export const CalendarEntryResponseSchema = z.object({
+  id: z.string(),
+  identityId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  startTime: z.number(),
+  endTime: z.number(),
+  duration: z.number(),
+  hasConflict: z.boolean(),
+  conflictingEntries: z.array(z.string()).optional(),
+  priority: z.number().optional(),
+  location: z.string().optional(),
+  attendees: z.array(z.string()).optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });
