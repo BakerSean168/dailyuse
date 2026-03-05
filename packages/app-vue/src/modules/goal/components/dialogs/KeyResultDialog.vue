@@ -7,6 +7,9 @@
           <Target class="h-5 w-5 text-primary" />
           {{ isEditing ? t('goal.krDialog.updateTitle') : t('goal.krDialog.createTitle') }}
         </DialogTitle>
+        <DialogDescription class="sr-only">
+          {{ t('goal.krDialog.descriptionText') }}
+        </DialogDescription>
       </DialogHeader>
 
       <Separator />
@@ -76,6 +79,26 @@
             {{ t('goal.krDialog.advancedConfig') }}
           </h3>
           <div class="grid grid-cols-12 gap-4">
+            <!-- 值类型 -->
+            <div class="col-span-6 grid gap-2">
+              <Label>{{ t('goal.krDialog.valueType') }}</Label>
+              <Select v-model="localKeyResult.progress.valueType">
+                <SelectTrigger>
+                  <SelectValue :placeholder="t('goal.krDialog.selectValueType')" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="type in valueTypes"
+                    :key="type.value"
+                    :value="type.value"
+                  >
+                    {{ type.title }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p class="text-xs text-muted-foreground">{{ t('goal.krDialog.valueTypeHint') }}</p>
+            </div>
+
             <!-- 计算方法 -->
             <div class="col-span-6 grid gap-2">
               <Label>{{ t('goal.krDialog.calcMethod') }}</Label>
@@ -161,11 +184,13 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { KeyResultValueType, KeyResultCalculationMethod } from '@dailyuse/contracts/goal';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -185,13 +210,9 @@ import { Target, Loader2 } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
-const AggregationMethod = {
-  SUM: 'SUM',
-  AVERAGE: 'AVERAGE',
-  MAX: 'MAX',
-  MIN: 'MIN',
-  LAST: 'LAST',
-} as const;
+// Use the correct enum values from contracts
+const ValueType = KeyResultValueType;
+const AggregationMethod = KeyResultCalculationMethod;
 
 type EditableKeyResult = {
   id?: KeyResultClientDTO['id'];
@@ -220,15 +241,14 @@ const emit = defineEmits<{
   ];
   cancel: [];
 }>();
-
 const createDraftKeyResult = (): EditableKeyResult => ({
   title: '',
   description: null,
   weight: 1,
   order: 0,
   progress: {
-    valueType: 'NUMBER',
-    aggregationMethod: AggregationMethod.SUM,
+    valueType: ValueType.Incremental,
+    aggregationMethod: AggregationMethod.Sum,
     initialValue: 0,
     targetValue: 100,
     currentValue: 0,
@@ -292,7 +312,7 @@ const keyResultCurrentValue = computed({
 });
 
 const keyResultCalculationMethod = computed({
-  get: () => localKeyResult.value.progress.aggregationMethod || 'SUM',
+  get: () => localKeyResult.value.progress.aggregationMethod || AggregationMethod.Sum,
   set: (val: string) => {
     localKeyResult.value.progress.aggregationMethod = val;
   },
@@ -306,11 +326,18 @@ const keyResultWeight = computed({
 });
 
 const calculationMethods = computed(() => [
-  { title: t('goal.krDialog.calcCumulative'), value: AggregationMethod.SUM },
-  { title: t('goal.krDialog.calcAverage'), value: AggregationMethod.AVERAGE },
-  { title: t('goal.krDialog.calcMax'), value: AggregationMethod.MAX },
-  { title: t('goal.krDialog.calcMin'), value: AggregationMethod.MIN },
-  { title: t('goal.krDialog.calcLatest'), value: AggregationMethod.LAST },
+  { title: t('goal.krDialog.calcCumulative'), value: AggregationMethod.Sum },
+  { title: t('goal.krDialog.calcAverage'), value: AggregationMethod.Average },
+  { title: t('goal.krDialog.calcMax'), value: AggregationMethod.Max },
+  { title: t('goal.krDialog.calcMin'), value: AggregationMethod.Min },
+  { title: t('goal.krDialog.calcLatest'), value: AggregationMethod.Last },
+]);
+
+const valueTypes = computed(() => [
+  { title: t('goal.krDialog.valueTypeIncremental'), value: ValueType.Incremental },
+  { title: t('goal.krDialog.valueTypeAbsolute'), value: ValueType.Absolute },
+  { title: t('goal.krDialog.valueTypePercentage'), value: ValueType.Percentage },
+  { title: t('goal.krDialog.valueTypeBinary'), value: ValueType.Binary },
 ]);
 
 const progressColor = computed(() => {

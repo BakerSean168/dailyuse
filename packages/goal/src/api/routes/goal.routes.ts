@@ -109,14 +109,26 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.list({
+    (req, ctx) => {
+      const includeKeyResults =
+        parseBoolean(req.query?.includeKeyResults) ?? parseBoolean(req.query?.includeChildren);
+      const pageSize = parseNumber(req.query?.pageSize) ?? parseNumber(req.query?.limit);
+      const folderId = (req.query?.folderId ?? req.query?.dirId) as string | undefined;
+
+      console.log('[goal.routes:list] query normalized', {
+        raw: req.query,
+        includeKeyResults,
+        pageSize,
+        folderId,
+      });
+
+      return controller.list({
         identityId: ctx.identityId as any,
         status: parseStringArray(req.query?.status) as any,
         importance: parseStringArray(req.query?.importance) as any,
         category: req.query?.category as string | undefined,
         tags: parseStringArray(req.query?.tags),
-        folderId: req.query?.folderId as any,
+        folderId: folderId as any,
         keyword: req.query?.keyword as string | undefined,
         startDate: parseNumber(req.query?.startDate),
         endDate: parseNumber(req.query?.endDate),
@@ -128,10 +140,11 @@ export function registerGoalCrudRoutes(
           | undefined,
         sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
         page: parseNumber(req.query?.page),
-        pageSize: parseNumber(req.query?.pageSize),
-        includeKeyResults: parseBoolean(req.query?.includeKeyResults),
+        pageSize,
+        includeKeyResults,
         includeReviews: parseBoolean(req.query?.includeReviews),
-      }),
+      });
+    },
   );
 
   // GET /search — 搜索目标
@@ -335,7 +348,17 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.cloneGoal(req.params!.id, req.body, ctx),
+    (req, ctx) =>
+      controller.cloneGoal(
+        req.params!.id,
+        (req.body ?? {}) as {
+          name?: string;
+          description?: string;
+          includeKeyResults?: boolean;
+          includeRecords?: boolean;
+        },
+        ctx,
+      ),
     { successStatus: 201 },
   );
 
@@ -366,7 +389,14 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.batchUpdateKeyResultWeights(req.params!.id, req.body?.updates ?? []),
+    (req) =>
+      controller.batchUpdateKeyResultWeights(
+        req.params!.id,
+        (
+          (req.body as { updates?: Array<{ keyResultId: string; weight: number }> } | undefined)
+            ?.updates ?? []
+        ),
+      ),
   );
 
   return router;

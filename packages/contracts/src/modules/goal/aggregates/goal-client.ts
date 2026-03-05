@@ -58,4 +58,8 @@ export interface GoalClientDTO {
   // 子实体DTO
   keyResults: KeyResultClientDTO[] | null;
   reviews: GoalReviewClientDTO[] | null;
+
+  // 关键结果摘要（用于列表轻量展示）
+  totalKeyResults?: number;
+  completedKeyResults?: number;
 }

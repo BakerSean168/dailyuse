@@ -1,7 +1,7 @@
 /**
  * Goal State Mapper
  *
- * Converts GoalPersistenceDTO â†?GoalState for domain reconstruction.
+ * Converts GoalPersistenceDTO ï¿½?GoalState for domain reconstruction.
  * Shared by Prisma and SQLite mappers.
  */
 
@@ -105,5 +105,7 @@ export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
     keyResults,
     goalReviews,
     weightSnapshots,
+    totalKeyResults: dto.totalKeyResults,
+    completedKeyResults: dto.completedKeyResults,
   };
 }

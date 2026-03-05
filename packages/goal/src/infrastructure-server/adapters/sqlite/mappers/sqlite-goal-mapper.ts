@@ -77,6 +77,8 @@ export class SqliteGoalMapper {
       keyResults: children?.keyResults ?? null,
       goalReviews: children?.goalReviews ?? null,
       weightSnapshots: children?.weightSnapshots ?? null,
+      totalKeyResults: row.total_key_results ?? undefined,
+      completedKeyResults: row.completed_key_results ?? undefined,
     };
   }
 

@@ -179,7 +179,10 @@ const {
   createRecord,
 } = useGoal();
 
-const keyResult = computed(() => keyResults.value.find((kr) => kr.id === krId) ?? null);
+const keyResult = computed(() => {
+  const list = keyResults.value ?? [];
+  return list.find((kr) => kr.id === krId) ?? null;
+});
 
 const progressPercent = computed(() => {
   if (!keyResult.value?.progress) return 0;

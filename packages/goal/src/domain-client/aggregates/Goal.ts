@@ -44,6 +44,8 @@ export interface GoalState {
   deletedAt: Date | null;
   keyResults: KeyResult[] | null;
   reviews: GoalReview[] | null;
+  totalKeyResults?: number;
+  completedKeyResults?: number;
 }
 
 export class Goal extends AggregateRoot<GoalId> {
@@ -166,7 +168,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
   // ================= DTO Conversion =================
   public toDTO(): GoalClientDTO {
-    return {
+    const dto: GoalClientDTO = {
       id: String(this._props.id) as GoalClientDTO['id'],
       identityId: String(this._props.identityId) as GoalClientDTO['identityId'],
       name: this._props.name,
@@ -198,5 +200,13 @@ export class Goal extends AggregateRoot<GoalId> {
       keyResults: this._props.keyResults?.map((kr) => (kr as KeyResult).toDTO()) ?? null,
       reviews: this._props.reviews?.map((r) => (r as GoalReview).toDTO()) ?? null,
     };
+
+    return {
+      ...dto,
+      totalKeyResults: this._props.totalKeyResults ?? (this._props.keyResults?.length ?? 0),
+      completedKeyResults:
+        this._props.completedKeyResults ??
+        (this._props.keyResults?.filter((kr) => (kr as KeyResult).progressPercentage >= 100).length ?? 0),
+    } as GoalClientDTO;
   }
 }

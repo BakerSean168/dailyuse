@@ -147,9 +147,12 @@ const menuActions = computed<MenuAction[]>(() => [
 // ========== Derived fields from GoalClientDTO ==========
 const krs = computed(() => props.goal.keyResults ?? []);
 
-const totalKRCount = computed(() => krs.value.length);
+const totalKRCount = computed(() => props.goal.totalKeyResults ?? krs.value.length);
 
 const completedKRCount = computed(() => {
+  if (typeof props.goal.completedKeyResults === 'number') {
+    return props.goal.completedKeyResults;
+  }
   return krs.value.filter((kr: any) => {
     if (!kr.progress) return false;
     return kr.progress.currentValue >= kr.progress.targetValue;

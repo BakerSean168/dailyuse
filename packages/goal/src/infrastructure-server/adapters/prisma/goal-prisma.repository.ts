@@ -77,19 +77,90 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       folderId?: string;
     },
   ): Promise<Goal[]> {
+    const where = {
+      identityId,
+      deletedAt: null,
+      ...(options?.status && { status: options.status }),
+      ...(options?.folderId && { folderId: options.folderId }),
+    };
+
+    if (options?.includeChildren) {
+      const rows = await this.prisma.goal.findMany({
+        where,
+        include: GOAL_INCLUDE_ALL,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      console.log('[GoalPrismaRepository] findByIdentityId includeChildren=true', {
+        count: rows.length,
+        sample: rows.slice(0, 3).map((row) => ({
+          id: row.id,
+          keyResults: row.keyResults?.length ?? 0,
+        })),
+      });
+
+      return rows.map((row: PrismaGoalWithRelations) =>
+        Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
+      );
+    }
+
     const rows = await this.prisma.goal.findMany({
-      where: {
-        identityId,
-        deletedAt: null,
-        ...(options?.status && { status: options.status }),
-        ...(options?.folderId && { folderId: options.folderId }),
+      where,
+      include: {
+        _count: {
+          select: {
+            keyResults: {
+              where: { deletedAt: null },
+            },
+          },
+        },
       },
-      include: options?.includeChildren ? GOAL_INCLUDE_ALL : undefined,
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row: PrismaGoalWithRelations) =>
-      Goal.load(persistenceDtoToGoalState(PrismaGoalMapper.toDomainDTO(row))),
-    );
+
+    console.log('[GoalPrismaRepository] findByIdentityId includeChildren=false base rows', {
+      count: rows.length,
+      sample: rows.slice(0, 3).map((row) => ({
+        id: row.id,
+        totalKeyResults: row._count?.keyResults ?? 0,
+      })),
+    });
+
+    const goalIds = rows.map((row) => row.id);
+    const completedMap = new Map<string, number>();
+
+    if (goalIds.length > 0) {
+      const keyResultRows = await this.prisma.keyResult.findMany({
+        where: {
+          goalId: { in: goalIds },
+          deletedAt: null,
+        },
+        select: {
+          goalId: true,
+          currentValue: true,
+          targetValue: true,
+        },
+      });
+
+      for (const kr of keyResultRows) {
+        if ((kr.currentValue ?? 0) >= (kr.targetValue ?? 0)) {
+          completedMap.set(kr.goalId, (completedMap.get(kr.goalId) ?? 0) + 1);
+        }
+      }
+
+      console.log('[GoalPrismaRepository] completed KR map', {
+        goals: goalIds.length,
+        keyResultRows: keyResultRows.length,
+        completedEntries: Array.from(completedMap.entries()).slice(0, 5),
+      });
+    }
+
+    return rows.map((row) => {
+      const dto = PrismaGoalMapper.toDomainDTO(row as unknown as PrismaGoalWithRelations);
+      dto.totalKeyResults = row._count?.keyResults ?? 0;
+      dto.completedKeyResults = completedMap.get(row.id) ?? 0;
+      return Goal.load(persistenceDtoToGoalState(dto));
+    });
   }
 
   async findByFolderId(folderId: string): Promise<Goal[]> {

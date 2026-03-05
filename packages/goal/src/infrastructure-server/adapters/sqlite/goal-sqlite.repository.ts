@@ -240,22 +240,49 @@ export class SqliteGoalRepository implements IGoalRepository {
       folderId?: string;
     },
   ): Promise<Goal[]> {
-    let query = `SELECT * FROM goals WHERE identity_id = ? AND deleted_at IS NULL`;
+    let query = `
+      SELECT
+        g.*,
+        (
+          SELECT COUNT(*)
+          FROM key_results kr
+          WHERE kr.goal_id = g.id AND kr.deleted_at IS NULL
+        ) AS total_key_results,
+        (
+          SELECT COUNT(*)
+          FROM key_results kr
+          WHERE kr.goal_id = g.id AND kr.deleted_at IS NULL AND kr.current_value >= kr.target_value
+        ) AS completed_key_results
+      FROM goals g
+      WHERE g.identity_id = ? AND g.deleted_at IS NULL
+    `;
     const params: any[] = [identityId];
 
     if (options?.status) {
-      query += ` AND status = ?`;
+      query += ` AND g.status = ?`;
       params.push(options.status);
     }
 
     if (options?.folderId) {
-      query += ` AND folder_id = ?`;
+      query += ` AND g.folder_id = ?`;
       params.push(options.folderId);
     }
 
-    query += ` ORDER BY sort_order ASC, created_at DESC`;
+    query += ` ORDER BY g.sort_order ASC, g.created_at DESC`;
 
     const rows = this.db.prepare(query).all(...params) as any[];
+
+    console.log('[GoalSqliteRepository] findByIdentityId', {
+      includeChildren: options?.includeChildren ?? false,
+      status: options?.status,
+      folderId: options?.folderId,
+      count: rows.length,
+      sample: rows.slice(0, 5).map((row) => ({
+        id: row.id,
+        total_key_results: row.total_key_results,
+        completed_key_results: row.completed_key_results,
+      })),
+    });
 
     return rows.map((row) => this.rowToGoal(row, options?.includeChildren ?? false));
   }

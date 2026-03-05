@@ -130,6 +130,7 @@ export class PrismaGoalMapper {
       id: row.id as KeyResultWeightSnapshotDTO['id'],
       goalId: row.goalId as KeyResultWeightSnapshotDTO['goalId'],
       keyResultId: row.keyResultId as KeyResultWeightSnapshotDTO['keyResultId'],
+      identityId: row.identityId as KeyResultWeightSnapshotDTO['identityId'],
       oldWeight: row.oldWeight,
       newWeight: row.newWeight,
       weightDelta: row.weightDelta,

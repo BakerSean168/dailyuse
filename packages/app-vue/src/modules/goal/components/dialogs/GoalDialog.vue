@@ -288,119 +288,33 @@
         <TabsContent value="keyresults" class="flex-1 overflow-y-auto px-6 pb-2 mt-0">
           <div class="grid gap-4 py-4">
             <!-- Existing KR list -->
-            <div v-if="krList.length > 0" class="grid gap-3">
+            <div v-if="activeKrList.length > 0" class="grid gap-3">
               <div
-                v-for="(kr, index) in krList"
+                v-for="(kr, index) in activeKrList"
                 :key="kr._localId"
                 class="rounded-lg border bg-card p-4 grid gap-3"
               >
-                <!-- KR header: title + delete -->
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-medium text-muted-foreground w-5 shrink-0">
                     {{ index + 1 }}.
                   </span>
-                  <Input
-                    v-model="kr.title"
-                    :placeholder="t('goal.dialog.krTitle')"
-                    class="h-8 flex-1"
-                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">{{ kr.title || t('goal.dialog.krTitle') }}</p>
+                    <p class="text-xs text-muted-foreground mt-1">
+                      {{ kr.valueType }} · {{ kr.currentValue }} / {{ kr.targetValue }} · {{ t('goal.dialog.krWeight') }} {{ kr.weight }}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0" @click="editKr(kr._localId)">
+                    <Pencil class="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     class="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
-                    @click="removeKr(index)"
+                    @click="removeKr(kr._localId)"
                   >
                     <Trash2 class="h-4 w-4" />
                   </Button>
-                </div>
-
-                <!-- KR details grid -->
-                <div class="grid grid-cols-2 gap-3 pl-7">
-                  <!-- Value Type -->
-                  <div class="grid gap-1">
-                    <Label class="text-xs text-muted-foreground">{{
-                      t('goal.dialog.krValueType')
-                    }}</Label>
-                    <Select v-model="kr.valueType">
-                      <SelectTrigger class="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Incremental">{{
-                          t('goal.dialog.krValueIncremental')
-                        }}</SelectItem>
-                        <SelectItem value="Absolute">{{
-                          t('goal.dialog.krValueAbsolute')
-                        }}</SelectItem>
-                        <SelectItem value="Percentage">{{
-                          t('goal.dialog.krValuePercentage')
-                        }}</SelectItem>
-                        <SelectItem value="Binary">{{ t('goal.dialog.krValueBinary') }}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <!-- Weight (1-5) -->
-                  <div class="grid gap-1">
-                    <Label class="text-xs text-muted-foreground">{{
-                      t('goal.dialog.krWeight')
-                    }}</Label>
-                    <Input
-                      v-model.number="kr.weight"
-                      type="number"
-                      min="1"
-                      max="5"
-                      step="1"
-                      :placeholder="t('goal.dialog.krWeightPlaceholder')"
-                      class="h-8"
-                    />
-                  </div>
-
-                  <!-- Initial Value (hidden for Binary) -->
-                  <template v-if="kr.valueType !== 'Binary'">
-                    <div class="grid gap-1">
-                      <Label class="text-xs text-muted-foreground">{{
-                        t('goal.dialog.krInitialValue')
-                      }}</Label>
-                      <Input
-                        v-model.number="kr.initialValue"
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        class="h-8"
-                      />
-                    </div>
-
-                    <div class="grid gap-1">
-                      <Label class="text-xs text-muted-foreground">{{
-                        t('goal.dialog.krTargetValue')
-                      }}</Label>
-                      <Input
-                        v-model.number="kr.targetValue"
-                        type="number"
-                        min="0"
-                        placeholder="100"
-                        class="h-8"
-                      />
-                    </div>
-
-                    <!-- Unit -->
-                    <div class="grid gap-1 col-span-2">
-                      <Label class="text-xs text-muted-foreground">{{
-                        t('goal.dialog.krUnit')
-                      }}</Label>
-                      <Input
-                        v-model="kr.unit"
-                        :placeholder="t('goal.dialog.krUnitPlaceholder')"
-                        class="h-8"
-                      />
-                    </div>
-                  </template>
-                </div>
-
-                <!-- Deleted badge for existing KRs marked for removal -->
-                <div v-if="kr._markedForDelete" class="pl-7">
-                  <span class="text-xs text-destructive">{{ t('goal.dialog.krDeletedHint') }}</span>
                 </div>
               </div>
             </div>
@@ -432,6 +346,8 @@
       </DialogFooter>
     </DialogContent>
   </Dialog>
+
+  <KeyResultDialog ref="keyResultDialogRef" @save="handleSaveKr" />
 </template>
 
 <script setup lang="ts">
@@ -471,12 +387,14 @@ import {
   Lightbulb,
   Settings2,
   Plus,
+  Pencil,
   Trash2,
   Target,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { useGoal } from '../../composables/useGoal';
 import { TagInput } from '../../../governance/components';
+import KeyResultDialog from './KeyResultDialog.vue';
 import type {
   CreateGoalReq,
   UpdateGoalReq,
@@ -567,9 +485,11 @@ interface LocalKr {
 
   title: string;
   valueType: string;
+  calculationMethod: string;
   weight: number;
   initialValue: number;
   targetValue: number;
+  currentValue: number;
   unit: string;
 }
 
@@ -583,10 +503,12 @@ function makeEmptyKr(): LocalKr {
     _localId: _localIdCounter++,
     _markedForDelete: false,
     title: '',
-    valueType: 'Absolute',
+    valueType: 'Incremental',
+    calculationMethod: 'Sum',
     weight: 1,
     initialValue: 0,
     targetValue: 100,
+    currentValue: 0,
     unit: '',
   };
 }
@@ -598,25 +520,112 @@ function krFromDTO(dto: KeyResultClientDTO): LocalKr {
     _markedForDelete: false,
     title: dto.title,
     valueType: dto.progress.valueType,
+    calculationMethod: dto.progress.aggregationMethod,
     weight: dto.weight,
     initialValue: dto.progress.initialValue,
     targetValue: dto.progress.targetValue,
+    currentValue: dto.progress.currentValue,
     unit: dto.progress.unit ?? '',
   };
 }
 
-function addKr() {
-  krList.value.push(makeEmptyKr());
+const activeKrList = computed(() => krList.value.filter((kr) => !kr._markedForDelete));
+
+const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
+
+function buildKrDto(kr: LocalKr): KeyResultClientDTO {
+  const now = Date.now();
+  return {
+    id: (kr._existingId ?? `tmp-${kr._localId}`) as KeyResultClientDTO['id'],
+    title: kr.title,
+    description: null,
+    progress: {
+      valueType: kr.valueType as KeyResultClientDTO['progress']['valueType'],
+      aggregationMethod: kr.calculationMethod as KeyResultClientDTO['progress']['aggregationMethod'],
+      initialValue: kr.initialValue,
+      targetValue: kr.targetValue,
+      currentValue: kr.currentValue,
+      unit: kr.unit || null,
+    },
+    weight: kr.weight,
+    order: 0,
+    version: 1,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+  };
 }
 
-function removeKr(index: number) {
-  const kr = krList.value[index];
+function addKr() {
+  const goalId = props.goal?.id ?? '__draft_goal_id__';
+  keyResultDialogRef.value?.openForCreateKeyResult(goalId);
+}
+
+function editKr(localId: number) {
+  const kr = krList.value.find((item) => item._localId === localId);
+  if (!kr) return;
+  const goalId = props.goal?.id ?? '__draft_goal_id__';
+  keyResultDialogRef.value?.openForUpdateKeyResult(goalId, buildKrDto(kr));
+}
+
+function removeKr(localId: number) {
+  const kr = krList.value.find((item) => item._localId === localId);
+  if (!kr) return;
   if (kr._existingId) {
     // Mark existing KR for deletion instead of removing from list immediately
     kr._markedForDelete = true;
   } else {
-    krList.value.splice(index, 1);
+    krList.value = krList.value.filter((item) => item._localId !== localId);
   }
+}
+
+function handleSaveKr(payload: {
+  keyResult: {
+    id?: string;
+    title: string;
+    weight: number;
+    progress: {
+      valueType: string;
+      aggregationMethod: string;
+      initialValue: number;
+      targetValue: number;
+      currentValue: number;
+      unit: string | null;
+    };
+  };
+  isEditing: boolean;
+}) {
+  const data = payload.keyResult;
+  const existing = payload.isEditing
+    ? krList.value.find((item) => item._existingId === data.id || `tmp-${item._localId}` === data.id)
+    : null;
+
+  if (existing) {
+    existing.title = data.title;
+    existing.valueType = data.progress.valueType;
+    existing.calculationMethod = data.progress.aggregationMethod;
+    existing.weight = data.weight;
+    existing.initialValue = data.progress.initialValue;
+    existing.targetValue = data.progress.targetValue;
+    existing.currentValue = data.progress.currentValue;
+    existing.unit = data.progress.unit ?? '';
+    existing._markedForDelete = false;
+    return;
+  }
+
+  krList.value.push({
+    _existingId: undefined,
+    _localId: _localIdCounter++,
+    _markedForDelete: false,
+    title: data.title,
+    valueType: data.progress.valueType,
+    calculationMethod: data.progress.aggregationMethod,
+    weight: data.weight,
+    initialValue: data.progress.initialValue,
+    targetValue: data.progress.targetValue,
+    currentValue: data.progress.currentValue,
+    unit: data.progress.unit ?? '',
+  });
 }
 
 // ── Form State ─────────────────────────────────────────────────────────
@@ -721,7 +730,7 @@ function prefillFromGoal(goal: GoalClientDTO) {
 
 // Populate KR list from store keyResults
 function populateKrList() {
-  krList.value = keyResults.value.map(krFromDTO);
+  krList.value = (keyResults.value ?? []).map(krFromDTO);
 }
 
 // ── Watchers ───────────────────────────────────────────────────────────
@@ -819,12 +828,12 @@ async function saveKrs(goalId: string): Promise<boolean> {
     } else {
       // Create new KR
       const req: AddKeyResultReq = {
-        goalId,
+        goalId: goalId as GoalId,
         title: kr.title.trim(),
         valueType: kr.valueType as AddKeyResultReq['valueType'],
-        calculationMethod: kr.valueType === 'Incremental' ? 'Sum' : 'Last',
+        calculationMethod: kr.calculationMethod as AddKeyResultReq['calculationMethod'],
         targetValue: kr.valueType === 'Binary' ? 1 : kr.targetValue,
-        currentValue: 0,
+        currentValue: kr.currentValue,
         weight: kr.weight,
       };
 

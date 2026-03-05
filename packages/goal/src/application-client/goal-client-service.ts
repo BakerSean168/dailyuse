@@ -29,6 +29,7 @@ import type {
   GoalClientDTO,
   GoalFolderClientDTO,
   KeyResultClientDTO,
+  KeyResultServerDTO,
   GoalRecordClientDTO,
   QueryGoalsRes,
   GetKeyResultsRes,
@@ -64,6 +65,11 @@ import { IdentityId } from '@dailyuse/domain-shared/shared';
 // ===== DTO-to-State Mappers =====
 
 function goalFromDTO(dto: GoalClientDTO): Goal {
+  const dtoWithSummary = dto as GoalClientDTO & {
+    totalKeyResults?: number;
+    completedKeyResults?: number;
+  };
+
   return Goal.load({
     id: GoalId.of(dto.id),
     identityId: IdentityId.of(dto.identityId),
@@ -91,6 +97,8 @@ function goalFromDTO(dto: GoalClientDTO): Goal {
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
     keyResults: dto.keyResults?.map((kr) => keyResultFromDTO(kr)) ?? null,
     reviews: dto.reviews?.map((r) => goalReviewFromDTO(r)) ?? null,
+    totalKeyResults: dtoWithSummary.totalKeyResults,
+    completedKeyResults: dtoWithSummary.completedKeyResults,
   });
 }
 
@@ -127,6 +135,21 @@ function keyResultFromDTO(dto: KeyResultClientDTO): KeyResult {
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
     deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+  });
+}
+
+function keyResultFromServerDTO(dto: KeyResultServerDTO): KeyResult {
+  return keyResultFromDTO({
+    id: dto.id,
+    title: dto.title,
+    description: dto.description,
+    progress: dto.progress,
+    weight: dto.weight,
+    order: dto.sortOrder,
+    version: dto.version,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    deletedAt: dto.deletedAt,
   });
 }
 
@@ -275,7 +298,7 @@ export class GoalClientService {
   async getKeyResults(goalId: string): Promise<Result<{ keyResults: KeyResult[] }>> {
     const result = await this.goalApi.getKeyResultsByGoal(goalId);
     return mapResult(result, (data: GetKeyResultsRes) => ({
-      keyResults: data.data.map((dto) => keyResultFromDTO(dto as any)),
+      keyResults: (data?.data ?? []).map((dto) => keyResultFromServerDTO(dto)),
     }));
   }
 
@@ -298,7 +321,7 @@ export class GoalClientService {
   ): Promise<Result<{ keyResults: KeyResult[] }>> {
     const result = await this.goalApi.batchUpdateKeyResultWeights(goalId, { updates });
     return mapResult(result, (data: GetKeyResultsRes) => ({
-      keyResults: data.data.map((dto) => keyResultFromDTO(dto as any)),
+      keyResults: data.data.map((dto) => keyResultFromServerDTO(dto)),
     }));
   }
 
@@ -378,7 +401,7 @@ export class GoalClientService {
   async getGoalReviews(goalId: string): Promise<Result<{ reviews: GoalReview[] }>> {
     const result = await this.goalApi.getGoalReviewsByGoal(goalId);
     return mapResult(result, (data: GetGoalReviewsRes) => ({
-      reviews: data.data.map((dto) => goalReviewFromDTO(dto as any)),
+      reviews: data.data.map((dto) => goalReviewFromDTO(dto as GoalReviewClientDTO)),
     }));
   }
 

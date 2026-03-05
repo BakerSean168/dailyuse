@@ -252,7 +252,11 @@ export class GoalController {
     const result = await this.useCases.getGoal.execute(goalId, true);
     if (!result.ok) return result;
     const goal = result.data as unknown as Record<string, unknown>;
-    return ok((goal.keyResults as unknown[]) ?? []);
+    const keyResults = (goal.keyResults as unknown[]) ?? [];
+    return ok({
+      data: keyResults,
+      total: keyResults.length,
+    });
   }
 
   async addKeyResult(goalId: string, input: unknown): Promise<Result<unknown>> {

@@ -92,6 +92,8 @@ export interface GoalPersistenceDTO {
   keyResults: KeyResultPersistenceDTO[] | null;
   goalReviews: GoalReviewPersistenceDTO[] | null;
   weightSnapshots: KeyResultWeightSnapshotDTO[] | null;
+  totalKeyResults?: number;
+  completedKeyResults?: number;
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;

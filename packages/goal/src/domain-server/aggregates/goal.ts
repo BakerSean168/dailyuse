@@ -110,6 +110,8 @@ export interface GoalState {
   keyResults: KeyResult[];
   goalReviews: GoalReview[];
   weightSnapshots: KeyResultWeightSnapshot[];
+  totalKeyResults?: number;
+  completedKeyResults?: number;
 
   // === Versioning ===
   version: number;
@@ -1308,6 +1310,10 @@ export class Goal extends AggregateRoot<GoalId> {
     const daysRemaining = this._props.targetDate
       ? Math.ceil((this._props.targetDate.getTime() - now.getTime()) / DAY_MS)
       : null;
+    const computedTotal = this._props.keyResults.length;
+    const computedCompleted = this._props.keyResults.filter((kr) => kr.isCompleted()).length;
+    const totalKeyResults = this._props.totalKeyResults ?? computedTotal;
+    const completedKeyResults = this._props.completedKeyResults ?? computedCompleted;
 
     return {
       id: this.id,
@@ -1342,6 +1348,8 @@ export class Goal extends AggregateRoot<GoalId> {
         includeChildren && this._props.goalReviews.length > 0
           ? this._props.goalReviews.map((r) => r.toClientDTO())
           : null,
+      totalKeyResults,
+      completedKeyResults,
     };
   }
 

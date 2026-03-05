@@ -145,6 +145,8 @@ export const GoalClientDTOSchema: z.ZodType<GoalClientDTO> = z.object({
   version: z.number(),
   keyResults: z.array(KeyResultClientDTOSchema).nullable(),
   reviews: z.array(GoalReviewClientDTOSchema).nullable(),
+  totalKeyResults: z.number().optional(),
+  completedKeyResults: z.number().optional(),
 });
 
 /**

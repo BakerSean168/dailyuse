@@ -286,7 +286,8 @@ function toggleRecordDetail(recordId: string) {
 }
 
 function getKeyResultTitle(keyResultId: string): string {
-  const kr = keyResults.value.find((k) => k.id === keyResultId);
+  const krs = keyResults.value ?? [];
+  const kr = krs.find((k) => k.id === keyResultId);
   return kr?.title ?? keyResultId;
 }
 
