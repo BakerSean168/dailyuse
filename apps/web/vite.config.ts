@@ -6,6 +6,24 @@ import path from 'node:path';
 import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
+/**
+ * Vite Configuration for Web App
+ * 
+ * ────────────────────────────────────────────────────────────────
+ * Tailwind CSS 4 Configuration
+ * ────────────────────────────────────────────────────────────────
+ * 
+ * Tailwind 4 is CSS-first and no longer requires a config file.
+ * All theme definitions are in: packages/ui-core/src/styles/theme.css
+ * 
+ * The @tailwindcss/vite plugin:
+ * - Processes @tailwindcss directives at build time
+ * - Applies @theme definitions from theme.css
+ * - Scans @source directories for CSS class discovery
+ * 
+ * No tailwind.config.js needed — all configuration is CSS-based.
+ */
+
 export default defineConfig(({ mode, command }) => {
   // Load env files from workspace root (centralized .env files)
   const workspaceRoot = path.resolve(__dirname, '../..');
@@ -57,6 +75,7 @@ export default defineConfig(({ mode, command }) => {
           },
         },
       }),
+      // Tailwind CSS 4 plugin — handles CSS-first configuration
       tailwindcss(),
       wasm(),
       topLevelAwait()

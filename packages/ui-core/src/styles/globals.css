@@ -1,1 +1,9 @@
+/**
+ * Design System Global Styles
+ * 
+ * Combines theme definitions, color variables, animations, and utilities
+ * for use across all projects (Web, Desktop, etc.)
+ * 
+ * No need to import separately — this is the single source of truth.
+ */
 @import "./theme.css";

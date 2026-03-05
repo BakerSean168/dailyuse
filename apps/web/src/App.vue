@@ -57,11 +57,4 @@ watch(
 :root {
   color-scheme: light dark;
 }
-
-html,
-body,
-#app {
-  height: 100%;
-  margin: 0;
-}
 </style>

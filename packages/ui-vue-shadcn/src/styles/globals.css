@@ -1,7 +1,5 @@
 /**
  * @dailyuse/ui-vue-shadcn - Global Styles
- *
- * 此文件引用 ui-core 的全局 CSS 变量。
- * shadcn-vue CLI 配置指向此文件。
- */
-@import '../../../ui-core/src/styles/globals.css';
+ * 
+ * Imports the shared design system from @dailyuse/ui-core.
+ * No local theme definitions — all theming is centralized in ui-core.
