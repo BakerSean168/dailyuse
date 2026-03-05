@@ -3,7 +3,8 @@
  */
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
-import { RecurrenceRule, TaskTimeConfig } from '@/domain-server/value-objects';
+import { RecurrenceRule } from '../../../domain-shared/value-objects/recurrence-rule';
+import { TaskTimeConfig } from '../../../domain-shared/value-objects/task-time-config';
 import type { UpdateTaskTemplateReq, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';

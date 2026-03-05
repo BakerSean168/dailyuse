@@ -6,6 +6,7 @@
  */
 
 import { computed, ref } from 'vue';
+import { startOfDay } from 'date-fns';
 import { useSchedule } from './useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
@@ -36,6 +37,7 @@ function taskInstancesToEvents(
   for (const inst of instances) {
     const baseTs = Number(inst.instanceDate);
     if (!isFinite(baseTs)) continue;
+    const dayBaseTs = startOfDay(new Date(baseTs)).getTime();
 
     const timeRange = inst.timeConfig?.timeRange;
     let startTime: number;
@@ -43,16 +45,16 @@ function taskInstancesToEvents(
 
     if (timeRange && typeof timeRange.start === 'number' && typeof timeRange.end === 'number') {
       // timeRange.start / end are minute offsets from midnight
-      startTime = baseTs + timeRange.start * 60 * 1000;
-      endTime = baseTs + timeRange.end * 60 * 1000;
+      startTime = dayBaseTs + timeRange.start * 60 * 1000;
+      endTime = dayBaseTs + timeRange.end * 60 * 1000;
     } else if (inst.timeConfig?.timePoint != null) {
       // single time point — use 30-minute slot
-      startTime = baseTs + inst.timeConfig.timePoint * 60 * 1000;
+      startTime = dayBaseTs + inst.timeConfig.timePoint * 60 * 1000;
       endTime = startTime + 30 * 60 * 1000;
     } else {
       // all-day task: use day start + 1 hr window
-      startTime = baseTs;
-      endTime = baseTs + 60 * 60 * 1000;
+      startTime = dayBaseTs;
+      endTime = dayBaseTs + 60 * 60 * 1000;
     }
 
     const template = templateMap.get(inst.templateId);

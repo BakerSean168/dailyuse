@@ -14,6 +14,7 @@ import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-
 import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
+import { startOfDay } from 'date-fns';
 
 // TaskType is a simple string literal type, not exported from domain-shared
 type TaskType = 'ONE_TIME' | 'RECURRING';
@@ -86,6 +87,7 @@ export interface TaskTemplateState {
  */
 export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   private _props: Omit<TaskTemplateState, 'id'>;
+  private static readonly DAY_MS = 86400000;
 
   // ===== 子实体集 =====
   private _history: TaskTemplateHistory[];
@@ -303,16 +305,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       // ��������ֻҪ�� startDate ������ʵ�������������ڷ�Χ��
       // ԭ�򣺵������������δ����Զ�����ڣ��û���Ȼ��Ҫ��??
       if (this._props.timeConfig?.startDate) {
+        const targetDay = TaskTemplate.startOfLocalDay(this._props.timeConfig.startDate.getTime());
         // ����Ƿ��Ѿ����ɹ��������ظ����ɣ�?
         const alreadyGenerated = this._instances.some(
-          (inst) => inst.instanceDate === this._props.timeConfig!.startDate?.getTime(),
+          (inst) => TaskTemplate.startOfLocalDay(inst.instanceDate) === targetDay,
         );
 
         if (!alreadyGenerated) {
           const instance = TaskInstance.create({
             templateId: this.id,
             identityId: this._props.identityId,
-            instanceDate: this._props.timeConfig.startDate.getTime(),
+            instanceDate: targetDay,
             timeConfig: this._props.timeConfig,
             importance: this._props.importance,
           });
@@ -321,9 +324,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
         }
       }
     } else if (this._props.taskType === TaskType.RECURRING && this._props.recurrenceRule && this._props.timeConfig) {
-      // �ظ����񣺸����ظ��������ɶ��ʵ�������������ڷ�Χ��??
-      let currentDate = fromDate;
-      while (currentDate <= toDate) {
+      const fromDay = TaskTemplate.startOfLocalDay(fromDate);
+      const endDate = TaskTemplate.startOfLocalDay(toDate);
+      let currentDate = fromDay;
+
+      while (currentDate <= endDate) {
         if (this.shouldGenerateInstance(currentDate)) {
           const instance = TaskInstance.create({
             templateId: this.id,
@@ -335,8 +340,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
           instances.push(instance);
           this._instances.push(instance);
         }
-        // �ƶ�����һ??
-        currentDate += 86400000;
+        // Move to next day
+        currentDate += TaskTemplate.DAY_MS;
       }
     }
 
@@ -352,11 +357,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ��ȡָ�����ڵ�����ʵ??
    */
   public getInstanceForDate(date: number): TaskInstance | null {
+    const targetDay = TaskTemplate.startOfLocalDay(date);
     return (
       this._instances.find((i) => {
-        const instanceDay = new Date(i.instanceDate).setHours(0, 0, 0, 0);
-        const targetDay = new Date(date).setHours(0, 0, 0, 0);
-        return instanceDay === targetDay;
+        return TaskTemplate.startOfLocalDay(i.instanceDate) === targetDay;
       }) ?? null
     );
   }
@@ -377,14 +381,26 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       return false;
     }
 
+    const candidateDay = TaskTemplate.startOfLocalDay(date);
+
+    if (this._props.timeConfig?.startDate) {
+      const templateStartDay = TaskTemplate.startOfLocalDay(this._props.timeConfig.startDate.getTime());
+      if (candidateDay < templateStartDay) {
+        return false;
+      }
+    }
+
     // ����Ƿ����ظ��������Ч��??
-    if (this._props.recurrenceRule.endDate && date > this._props.recurrenceRule.endDate.getTime()) {
+    if (
+      this._props.recurrenceRule.endDate &&
+      candidateDay > TaskTemplate.startOfLocalDay(this._props.recurrenceRule.endDate.getTime())
+    ) {
       return false;
     }
 
     // ����??
     const rule = this._props.recurrenceRule;
-    const dateObj = new Date(date);
+    const dateObj = new Date(candidateDay);
 
     switch (rule.frequency) {
       case RecurrenceFrequency.Daily:
@@ -1598,6 +1614,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     if (start > due) {
       throw new InvalidDateRangeError(start, due);
     }
+  }
+
+  private static startOfLocalDay(value: number): number {
+    return startOfDay(new Date(value)).getTime();
   }
 
   // ===== �������� =====

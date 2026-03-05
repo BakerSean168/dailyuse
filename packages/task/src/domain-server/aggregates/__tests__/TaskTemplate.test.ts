@@ -945,7 +945,7 @@ describe('TaskTemplate Aggregate', () => {
         const instances = template.generateInstances(from, to);
 
         // Should only include Wed and Fri
-        const instanceDays = instances.map((i) => new Date(i.instanceDate).getUTCDay());
+        const instanceDays = instances.map((i) => new Date(i.instanceDate).getDay());
         instanceDays.forEach((day) => {
           expect([DayOfWeek.Wednesday, DayOfWeek.Friday]).toContain(day);
         });
@@ -967,6 +967,27 @@ describe('TaskTemplate Aggregate', () => {
 
         expect(template.lastGeneratedDate).not.toBeNull();
         expect(template.lastGeneratedDate!.getTime()).toBe(to);
+      });
+
+      it('should normalize generated instanceDate to day start for non-midnight fromDate', () => {
+        const startDate = new Date('2025-06-15T00:00:00.000Z');
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: 'RECURRING',
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeTimePointConfig(23 * 60, startDate),
+            recurrenceRule: makeDailyRule(),
+          }),
+        );
+
+        const from = new Date('2025-06-15T10:35:00.000Z').getTime();
+        const to = new Date('2025-06-15T23:59:59.000Z').getTime();
+        const instances = template.generateInstances(from, to);
+
+        expect(instances.length).toBe(1);
+        const dayStart = new Date(from);
+        dayStart.setHours(0, 0, 0, 0);
+        expect(instances[0].instanceDate).toBe(dayStart.getTime());
       });
     });
 
@@ -1036,6 +1057,24 @@ describe('TaskTemplate Aggregate', () => {
         );
 
         expect(template.shouldGenerateInstance(Date.now())).toBe(false);
+      });
+
+      it('should return false before recurring startDate day', () => {
+        const startDate = new Date('2025-06-15T00:00:00.000Z');
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: 'RECURRING',
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeDailyRule(),
+          }),
+        );
+
+        const dayBefore = new Date('2025-06-14T12:00:00.000Z').getTime();
+        const startDay = new Date('2025-06-15T12:00:00.000Z').getTime();
+
+        expect(template.shouldGenerateInstance(dayBefore)).toBe(false);
+        expect(template.shouldGenerateInstance(startDay)).toBe(true);
       });
 
       it('should return false when no recurrence rule', () => {
