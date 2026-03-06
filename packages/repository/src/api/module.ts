@@ -195,7 +195,7 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         }
 
         if (data.name !== undefined) {
-          currentResource.updateName(data.name);
+          currentResource.rename(data.name);
         }
 
         if (data.metadata !== undefined) {

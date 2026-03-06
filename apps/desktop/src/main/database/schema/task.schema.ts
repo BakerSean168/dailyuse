@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { TASK_MODULE_SCHEMA } from '@dailyuse/task/infrastructure-server';
+import { TASK_MODULE_SCHEMA } from '@dailyuse/task/schema';
 
 /**
  * @function initializeTaskTables

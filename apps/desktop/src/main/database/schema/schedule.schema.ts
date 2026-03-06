@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { SCHEDULE_MODULE_SCHEMA } from '@dailyuse/schedule/infrastructure-server';
+import { SCHEDULE_MODULE_SCHEMA } from '@dailyuse/schedule/schema';
 
 /**
  * @function initializeScheduleTables

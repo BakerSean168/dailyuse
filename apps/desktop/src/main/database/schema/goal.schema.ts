@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { GOAL_MODULE_SCHEMA } from '@dailyuse/goal/infrastructure-server';
+import { GOAL_MODULE_SCHEMA } from '@dailyuse/goal/schema';
 
 /**
  * @function initializeGoalTables

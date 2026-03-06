@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { REPOSITORY_MODULE_SCHEMA } from '@dailyuse/repository/infrastructure-server';
+import { REPOSITORY_MODULE_SCHEMA } from '@dailyuse/repository/schema';
 
 /**
  * @function initializeRepositoryTables

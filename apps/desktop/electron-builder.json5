@@ -9,9 +9,9 @@
     "buildResources": "build" // 添加资源目录配置
   },
   "files": [
-    "dist",
-    "dist-electron",
-    "package.json" // 添加 package.json
+    "dist/**/*",
+    "dist-electron/**/*",
+    "package.json"
   ],
   "mac": {
     "target": [
@@ -64,5 +64,6 @@
     "provider": "github",
     "releaseType": "release" // 配置发布选项
   },
-  "generateUpdatesFilesForAllChannels": true // 为所有渠道生成更新文件
+  "generateUpdatesFilesForAllChannels": true, // 为所有渠道生成更新文件
+  "npmRebuild": false // 禁用自动原生模块重编译，由 package/dist 命令显式重编译 better-sqlite3
 }

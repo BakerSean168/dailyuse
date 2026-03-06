@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { REMINDER_MODULE_SCHEMA } from '@dailyuse/reminder/infrastructure-server';
+import { REMINDER_MODULE_SCHEMA } from '@dailyuse/reminder/schema';
 
 /**
  * @function initializeReminderTables

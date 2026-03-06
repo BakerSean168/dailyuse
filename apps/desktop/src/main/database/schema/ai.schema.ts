@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { AI_MODULE_SCHEMA } from '@dailyuse/ai/infrastructure-server';
+import { AI_MODULE_SCHEMA } from '@dailyuse/ai/schema';
 
 /**
  * @function initializeAITables

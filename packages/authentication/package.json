@@ -39,6 +39,10 @@
     "./electron-entry": {
       "types": "./dist/electron-entry/index.d.ts",
       "import": "./dist/electron-entry/index.js"
+    },
+    "./sqlite": {
+      "types": "./dist/sqlite.d.ts",
+      "import": "./dist/sqlite.js"
     }
   },
   "scripts": {

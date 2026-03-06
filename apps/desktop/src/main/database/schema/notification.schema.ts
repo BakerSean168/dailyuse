@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { NOTIFICATION_MODULE_SCHEMA } from '@dailyuse/notification/infrastructure-server';
+import { NOTIFICATION_MODULE_SCHEMA } from '@dailyuse/notification/schema';
 
 /**
  * @function initializeNotificationTables

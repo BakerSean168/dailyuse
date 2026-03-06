@@ -5,11 +5,13 @@ import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 
-// Native modules — must be externalized
-const nativeModules = ['better-sqlite3', 'electron'];
+// Native modules — must be externalized (cannot be bundled by Vite)
+const nativeModules = ['better-sqlite3', 'electron', 'argon2'];
 
-// Main process external: native + all workspace packages
-const electronMainExternal = [...nativeModules, /^@dailyuse\//];
+// Main process external: only native modules
+// All @dailyuse/* workspace packages are now bundled into main.js
+// so electron-builder doesn't need to search the pnpm monorepo
+const electronMainExternal = [...nativeModules];
 
 // Workspace packages to exclude from optimizeDeps
 const workspacePkgs = [

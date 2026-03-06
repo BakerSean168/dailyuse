@@ -12,6 +12,7 @@ export default defineConfig({
     'src/infrastructure-client/index.ts',
     'src/api/index.ts',
     'src/electron-entry/index.ts',
+    'src/schema.ts',
   ],
   format: ['esm'],
   dts: true,

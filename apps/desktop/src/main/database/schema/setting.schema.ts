@@ -4,7 +4,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { SETTING_MODULE_SCHEMA } from '@dailyuse/setting/infrastructure-server';
+import { SETTING_MODULE_SCHEMA } from '@dailyuse/setting/schema';
 
 /**
  * @function initializeSettingTables
