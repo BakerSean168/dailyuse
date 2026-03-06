@@ -13,6 +13,7 @@ import { RepositoryId } from '../../../domain-shared/value-objects/repository-id
 import { FolderId } from '../../../domain-shared/value-objects/folder-id';
 import { StoragePolicy } from '../../../domain-server/services/StoragePolicy';
 import type { IStoragePort } from '../../ports/IStoragePort';
+import matter from 'gray-matter';
 
 /**
  * Create Resource Input
@@ -63,6 +64,8 @@ export class CreateResource {
     }
 
     const contentBytes = input.content ? Buffer.byteLength(input.content, 'utf8') : 0;
+
+    let metadataOverrides = {};
     if (input.type === ResourceType.FILE) {
       this.policy.assertExtensionAllowed(input.name, {
         forbiddenExtensions: input.forbiddenExtensions,
@@ -73,6 +76,22 @@ export class CreateResource {
       this.policy.assertQuotaWithinLimit(repository.stats.totalSize, contentBytes, {
         maxTotalBytes: input.maxTotalBytes,
       });
+
+      if (input.name.endsWith('.md') && input.content) {
+        try {
+          const parsed = matter(input.content);
+          if (parsed.data) {
+            metadataOverrides = {
+              tags: Array.isArray(parsed.data.tags)
+                ? parsed.data.tags.map(String)
+                : (typeof parsed.data.tags === 'string' ? [parsed.data.tags] : []),
+              thumbnail: parsed.data.thumbnail ?? parsed.data.cover ?? null,
+            };
+          }
+        } catch (e) {
+          // ignore parsing errors
+        }
+      }
     }
 
     const resource = Resource.create({
@@ -84,6 +103,7 @@ export class CreateResource {
       path: input.path,
       content: input.content ?? null,
       size: input.type === ResourceType.FILE ? contentBytes : null,
+      metadata: metadataOverrides,
       allowedExtensions: null,
     });
 

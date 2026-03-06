@@ -9,6 +9,7 @@ import type { IRepositoryRepository } from '../../../domain-server/repositories/
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { StoragePolicy } from '../../../domain-server/services/StoragePolicy';
 import type { IStoragePort } from '../../ports/IStoragePort';
+import matter from 'gray-matter';
 
 /**
  * Update Resource Content Input
@@ -68,9 +69,27 @@ export class UpdateResourceContent {
       isFolder: false,
     });
 
+    let metadataOverrides = {};
+    if (resource.name.endsWith('.md')) {
+      try {
+        const parsed = matter(input.content);
+        if (parsed.data) {
+          metadataOverrides = {
+            tags: Array.isArray(parsed.data.tags)
+              ? parsed.data.tags.map(String)
+              : (typeof parsed.data.tags === 'string' ? [parsed.data.tags] : []),
+            thumbnail: parsed.data.thumbnail ?? parsed.data.cover ?? null,
+          };
+        }
+      } catch (e) {
+        // ignore parsing errors
+      }
+    }
+
     resource.updateContent({
       content: input.content,
       size: newSize,
+      metadata: metadataOverrides,
     });
     await this.resourceRepository.save(resource);
 

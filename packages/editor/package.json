@@ -42,13 +42,13 @@
   },
   "scripts": {},
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "zod": "^4.3.6",
-    "express": "^5.1.0"
+    "better-sqlite3": "^12.6.2",
+    "express": "^5.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",

@@ -30,8 +30,11 @@ import {
   RenameFolder,
   MoveFolder,
   DeleteFolder,
+  CreateResource,
+  UpdateResourceContent,
 } from '../application-server';
 import type { IStoragePort } from '../application-server/ports/IStoragePort';
+import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
 import {
   registerRepositoryRoutes,
   registerResourceRoutes,
@@ -78,17 +81,25 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     const listResources = new ListResources(repositoryModule.resourceRepository);
     const updateRepositoryStats = new UpdateRepositoryStats(repositoryModule.repositoryRepository);
 
-    // No-op storage port for folder operations (file system operations deferred)
-    const noopStoragePort: IStoragePort = {
-      write: async () => {},
-      move: async () => {},
-      delete: async () => {},
-    };
+    // Create an instance of FsStorageAdapter, using a temp or configured path
+    const storageBaseDir = process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';
+    const storagePort: IStoragePort = new FsStorageAdapter(storageBaseDir);
+
+    const createResourceUseCases = new CreateResource(
+      repositoryModule.resourceRepository,
+      repositoryModule.repositoryRepository,
+      storagePort,
+    );
+    const updateResourceContent = new UpdateResourceContent(
+      repositoryModule.resourceRepository,
+      repositoryModule.repositoryRepository,
+      storagePort,
+    );
 
     const createFolder = new CreateFolder(
       repositoryModule.folderRepository,
       repositoryModule.repositoryRepository,
-      noopStoragePort,
+      storagePort,
     );
     const getFolder = new GetFolder(repositoryModule.folderRepository);
     const getFolderTree = new GetFolderTree(repositoryModule.folderRepository);
@@ -96,19 +107,19 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
       repositoryModule.folderRepository,
       repositoryModule.resourceRepository,
       repositoryModule.repositoryRepository,
-      noopStoragePort,
+      storagePort,
     );
     const moveFolder = new MoveFolder(
       repositoryModule.folderRepository,
       repositoryModule.resourceRepository,
       repositoryModule.repositoryRepository,
-      noopStoragePort,
+      storagePort,
     );
     const deleteFolder = new DeleteFolder(
       repositoryModule.folderRepository,
       repositoryModule.resourceRepository,
       repositoryModule.repositoryRepository,
-      noopStoragePort,
+      storagePort,
     );
 
     // 3. Wire route handlers to use cases
@@ -158,10 +169,18 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
 
       // Resource CRUD — direct repository access (resource use cases require IStoragePort)
       createResource: async (data) => {
-        const repository = await repositoryModule.repositoryRepository.findById(data.repositoryId);
-        if (!repository) throw new Error(`Repository not found: ${data.repositoryId}`);
-        // TODO: Wire CreateResource use case when IStoragePort adapter is available
-        throw new Error('Resource creation requires storage port configuration');
+        const result = await createResourceUseCases.execute({
+          repositoryId: data.repositoryId,
+          // Since the controller doesn't pass ctx here in the current interface,
+          // we use a default or fallback identityId.
+          identityId: 'api-user',
+          folderId: data.folderId,
+          name: data.name,
+          type: data.type as any,
+          path: `/${data.name}`, // basic path fallback
+          content: data.content,
+        });
+        return ok(result.resource);
       },
       listResources: async (repositoryId) => {
         const result = await listResources.execute({ repositoryId });
@@ -171,11 +190,19 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         const result = await getResource.execute({ id });
         return ok(result.resource);
       },
-      updateResource: async (id) => {
-        // TODO: Wire UpdateResourceContent use case when IStoragePort adapter is available
-        const result = await getResource.execute({ id });
-        if (!result.resource) throw new Error(`Resource not found: ${id}`);
-        return ok(result.resource);
+      updateResource: async (id, data) => {
+        if (data.content !== undefined) {
+          const result = await updateResourceContent.execute({
+            id,
+            content: data.content,
+          });
+          return ok(result.resource);
+        } else {
+          // fallback if just metadata or name update is requested but not supported yet
+          const result = await getResource.execute({ id });
+          if (!result.resource) throw new Error(`Resource not found: ${id}`);
+          return ok(result.resource);
+        }
       },
       deleteResource: async (id) => {
         const resource = await repositoryModule.resourceRepository.findById(id);
