@@ -202,7 +202,7 @@ export function registerRepositoryCrudRoutes(
       },
     },
     [auth],
-    (req) => controller.createResource(req.params!.repoId, req.body),
+    (req) => controller.createResource(req.params!.repoId, req.body, { identityId: req.user?.id || 'api-user' }),
     { successStatus: 201 },
   );
 

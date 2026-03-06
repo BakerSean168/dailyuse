@@ -41,7 +41,7 @@ describe('TaskDependencyPrismaRepository', () => {
       const tA = await seedTemplateRaw({ identityId, name: 'Task A' });
       const tB = await seedTemplateRaw({ identityId, name: 'Task B' });
 
-      const dep = await repo.create({
+      const dep = await repo.create({ identityId,
         predecessorTaskId: tA.id,
         successorTaskId: tB.id,
       });
@@ -60,7 +60,7 @@ describe('TaskDependencyPrismaRepository', () => {
       const tA = await seedTemplateRaw({ identityId, name: 'Task A' });
       const tB = await seedTemplateRaw({ identityId, name: 'Task B' });
 
-      const dep = await repo.create({
+      const dep = await repo.create({ identityId,
         predecessorTaskId: tA.id,
         successorTaskId: tB.id,
         dependencyType: 'StartToStart' as any,
@@ -81,8 +81,8 @@ describe('TaskDependencyPrismaRepository', () => {
       const tC = await seedTemplateRaw({ identityId, name: 'C' });
 
       // A → C and B → C
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tC.id });
-      await repo.create({ predecessorTaskId: tB.id, successorTaskId: tC.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tC.id });
+      await repo.create({ identityId, predecessorTaskId: tB.id, successorTaskId: tC.id });
 
       const deps = await repo.findBySuccessorId(tC.id);
       expect(deps).toHaveLength(2);
@@ -96,8 +96,8 @@ describe('TaskDependencyPrismaRepository', () => {
       const tC = await seedTemplateRaw({ identityId, name: 'C' });
 
       // A → B and A → C
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tC.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tC.id });
 
       const deps = await repo.findByPredecessorId(tA.id);
       expect(deps).toHaveLength(2);
@@ -111,7 +111,7 @@ describe('TaskDependencyPrismaRepository', () => {
       const tA = await seedTemplateRaw({ identityId, name: 'A' });
       const tB = await seedTemplateRaw({ identityId, name: 'B' });
 
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
 
       const found = await repo.findByPredecessorAndSuccessorId(tA.id, tB.id);
       expect(found).not.toBeNull();
@@ -131,9 +131,9 @@ describe('TaskDependencyPrismaRepository', () => {
       const tC = await seedTemplateRaw({ identityId, name: 'C' });
       const tD = await seedTemplateRaw({ identityId, name: 'D' });
 
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
-      await repo.create({ predecessorTaskId: tB.id, successorTaskId: tC.id });
-      await repo.create({ predecessorTaskId: tC.id, successorTaskId: tD.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tB.id, successorTaskId: tC.id });
+      await repo.create({ identityId, predecessorTaskId: tC.id, successorTaskId: tD.id });
 
       const predecessors = await repo.findAllPredecessorIds(tD.id);
       expect(predecessors.sort()).toEqual([tA.id, tB.id, tC.id].sort());
@@ -153,8 +153,8 @@ describe('TaskDependencyPrismaRepository', () => {
       const tB = await seedTemplateRaw({ identityId, name: 'B' });
       const tC = await seedTemplateRaw({ identityId, name: 'C' });
 
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
-      await repo.create({ predecessorTaskId: tB.id, successorTaskId: tC.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tB.id, successorTaskId: tC.id });
 
       const successors = await repo.findAllSuccessorIds(tA.id);
       expect(successors.sort()).toEqual([tB.id, tC.id].sort());
@@ -171,10 +171,10 @@ describe('TaskDependencyPrismaRepository', () => {
       const tC = await seedTemplateRaw({ identityId, name: 'C' });
       const tD = await seedTemplateRaw({ identityId, name: 'D' });
 
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tC.id });
-      await repo.create({ predecessorTaskId: tB.id, successorTaskId: tD.id });
-      await repo.create({ predecessorTaskId: tC.id, successorTaskId: tD.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tC.id });
+      await repo.create({ identityId, predecessorTaskId: tB.id, successorTaskId: tD.id });
+      await repo.create({ identityId, predecessorTaskId: tC.id, successorTaskId: tD.id });
 
       const successors = await repo.findAllSuccessorIds(tA.id);
       expect(successors.sort()).toEqual([tB.id, tC.id, tD.id].sort());
@@ -191,7 +191,7 @@ describe('TaskDependencyPrismaRepository', () => {
       const tA = await seedTemplateRaw({ identityId, name: 'A' });
       const tB = await seedTemplateRaw({ identityId, name: 'B' });
 
-      const dep = await repo.create({
+      const dep = await repo.create({ identityId,
         predecessorTaskId: tA.id,
         successorTaskId: tB.id,
       });
@@ -213,7 +213,7 @@ describe('TaskDependencyPrismaRepository', () => {
       const tA = await seedTemplateRaw({ identityId, name: 'A' });
       const tB = await seedTemplateRaw({ identityId, name: 'B' });
 
-      const dep = await repo.create({
+      const dep = await repo.create({ identityId,
         predecessorTaskId: tA.id,
         successorTaskId: tB.id,
       });
@@ -228,8 +228,8 @@ describe('TaskDependencyPrismaRepository', () => {
       const tC = await seedTemplateRaw({ identityId, name: 'C' });
 
       // A → B and C → A
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
-      await repo.create({ predecessorTaskId: tC.id, successorTaskId: tA.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tC.id, successorTaskId: tA.id });
 
       await repo.deleteByTaskId(tA.id);
 
@@ -246,7 +246,7 @@ describe('TaskDependencyPrismaRepository', () => {
       const tA = await seedTemplateRaw({ identityId, name: 'A' });
       const tB = await seedTemplateRaw({ identityId, name: 'B' });
 
-      await repo.create({ predecessorTaskId: tA.id, successorTaskId: tB.id });
+      await repo.create({ identityId, predecessorTaskId: tA.id, successorTaskId: tB.id });
 
       const results = await repo.findAllByIdentityId(identityId);
       expect(results).toHaveLength(1);

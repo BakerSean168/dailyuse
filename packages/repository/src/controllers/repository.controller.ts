@@ -38,7 +38,7 @@ export interface RepositoryUseCases {
   activateRepository(id: string): Promise<Result<unknown>>;
   updateRepositoryStats(id: string, data: Record<string, unknown>): Promise<Result<unknown>>;
   // Resource CRUD
-  createResource(data: CreateResourceZodReq & { repositoryId: string }): Promise<Result<unknown>>;
+  createResource(data: CreateResourceZodReq & { repositoryId: string }, ctx: Context): Promise<Result<unknown>>;
   listResources(
     repositoryId: string,
     filters: { folderId?: string; status?: string },
@@ -109,7 +109,7 @@ export class RepositoryController {
 
   // ==================== Resource Operations ====================
 
-  async createResource(repoId: string, input: unknown): Promise<Result<unknown>> {
+  async createResource(repoId: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateResourceSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -121,7 +121,7 @@ export class RepositoryController {
     return this.useCases.createResource({
       ...parsed.data,
       repositoryId: repoId as any,
-    });
+    }, ctx);
   }
 
   async listResources(

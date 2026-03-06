@@ -57,6 +57,7 @@
     "@dailyuse/utils": "workspace:*",
     "better-sqlite3": "^12.5.0",
     "express": "^5.1.0",
+    "gray-matter": "4.0.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

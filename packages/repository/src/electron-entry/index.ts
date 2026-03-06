@@ -5,9 +5,13 @@
  */
 
 import { ipcMain } from 'electron';
+import * as path from 'path';
+import { app } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { RepositoryModule } from '../infrastructure-server';
 import { RepositoryContainer } from '../infrastructure-server/di/repository-container-v2';
+import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
+import { CreateResource, UpdateResourceContent } from '../application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RepositoryElectron');
@@ -42,6 +46,12 @@ export const RepositoryElectronModule: IElectronModule = {
     const resourceRepo = mod.resourceRepository;
     const folderRepo = mod.folderRepository;
 
+    const storageBaseDir = path.join(app.getPath('userData'), 'repository-storage');
+    const storagePort = new FsStorageAdapter(storageBaseDir);
+
+    const createResource = new CreateResource(resourceRepo, repoRepo, storagePort);
+    const updateResourceContent = new UpdateResourceContent(resourceRepo, repoRepo, storagePort);
+
     // Repository CRUD
     ipcMain.handle(Ch.LIST, (_, params) => repoRepo.findByIdentityId(params?.identityId ?? params));
     ipcMain.handle(Ch.GET, (_, id) => repoRepo.findById(id));
@@ -55,8 +65,28 @@ export const RepositoryElectronModule: IElectronModule = {
       (_, params) => resourceRepo.findByRepositoryId(params?.repositoryId ?? params),
     );
     ipcMain.handle(Ch.RESOURCE_GET, (_, id) => resourceRepo.findById(id));
-    ipcMain.handle(Ch.RESOURCE_CREATE, (_, dto) => resourceRepo.save(dto));
-    ipcMain.handle(Ch.RESOURCE_UPDATE, (_, dto) => resourceRepo.save(dto));
+    ipcMain.handle(Ch.RESOURCE_CREATE, async (_, dto) => {
+      const result = await createResource.execute({
+        repositoryId: dto.repositoryId,
+        identityId: dto.identityId || 'local-user', // Electron default
+        folderId: dto.folderId,
+        name: dto.name,
+        type: dto.type as any,
+        path: dto.path || `/${dto.name}`,
+        content: dto.content,
+      });
+      return result.resource;
+    });
+    ipcMain.handle(Ch.RESOURCE_UPDATE, async (_, dto) => {
+      if (dto.content !== undefined) {
+        const result = await updateResourceContent.execute({
+          id: dto.id,
+          content: dto.content,
+        });
+        return result.resource;
+      }
+      return resourceRepo.save(dto);
+    });
     ipcMain.handle(Ch.RESOURCE_DELETE, (_, id) => resourceRepo.delete(id));
 
     // Folder CRUD
