@@ -23,6 +23,7 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
+import { connectPowerSync, shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
 import { getTokenManager } from '../modules/authentication/infrastructure';
@@ -133,6 +134,11 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   let win: BrowserWindow;
 
   if (shouldShowMainWindow) {
+    // Cold-start auto-connect PowerSync (fire-and-forget; UI can proceed)
+    connectPowerSync().catch((err) =>
+      console.error('[Lifecycle] PowerSync cold-start connect failed:', err),
+    );
+
     // 直接进入主窗口
     win = windowManager.createMainWindow();
     mainWindow = win;
@@ -197,9 +203,11 @@ async function handleBeforeQuit(): Promise<void> {
   // Stop scheduled tasks
   stopMemoryCleanup();
 
-  // Note: PowerSync sync database now runs in the renderer process
-  // (@powersync/web). It disconnects automatically when the renderer
-  // window closes or on explicit logout. No main-process cleanup needed.
+  // Gracefully shut down PowerSync (preserves local sync cache for next cold start).
+  // On logout, disconnectPowerSync() is called instead, which wipes the data.
+  await shutdownPowerSync().catch((err) =>
+    console.error('[Lifecycle] PowerSync shutdown failed during quit:', err),
+  );
 
   // Cleanup desktop feature resources
   await cleanupDesktopFeatures();

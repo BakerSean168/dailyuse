@@ -4,7 +4,6 @@ export * from './di/types';
 export * from './di/navigation';
 
 // ── Plugins ──
-export * from './plugins/powersync';
 export * from './plugins/i18n';
 
 // ── Locales ──

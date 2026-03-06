@@ -1,24 +1,18 @@
 /**
  * Web App Entry Point
  *
- * 薄壳：Vue 3 + Pinia + app-vue Router + Platform DI + PowerSync
+ * 薄壳：Vue 3 + Pinia + app-vue Router + Platform DI
  */
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHistory } from 'vue-router';
-import {
-  createAppRouter,
-  useAuthenticationStore,
-  createPowerSyncVuePlugin,
-  createI18nPlugin,
-} from '@dailyuse/app-vue';
+import { createAppRouter, useAuthenticationStore, createI18nPlugin } from '@dailyuse/app-vue';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
 import App from './App.vue';
 import { installWebServices } from './platform/di';
-import { powerSyncDbRef } from './platform/powersync';
 import './styles/index.css';
 
 // Polyfill crypto.randomUUID for non-secure contexts
@@ -62,9 +56,6 @@ async function startApp() {
 
   // Platform DI — HTTP-backed services + navigation
   app.use(installWebServices);
-
-  // PowerSync — reactive sync database (ref starts null, set after auth in App.vue)
-  app.use(createPowerSyncVuePlugin(powerSyncDbRef));
 
   app.mount('#app');
 }

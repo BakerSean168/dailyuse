@@ -14,7 +14,6 @@
  */
 
 import { initializeDatabase, startMemoryCleanup } from './database';
-import { registerPowerSyncIpcHandlers } from './database/powersync';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
@@ -85,13 +84,6 @@ async function initializeApp(): Promise<void> {
   startMemoryCleanup();
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
-
-  // 5. PowerSync — register IPC handlers for renderer-side @powersync/web.
-  //    The renderer owns the sync database (wa-sqlite/WASM); the main process
-  //    only proxies credential fetching and CRUD uploads via IPC because it
-  //    owns the HS256 access token (TokenManager + safeStorage).
-  registerPowerSyncIpcHandlers();
-  console.log('[App] PowerSync IPC handlers registered');
 
   const initTime = performance.now() - startTime;
   console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);

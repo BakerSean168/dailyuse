@@ -5,7 +5,6 @@
  * Same global overlays as the web app, plus a custom
  * frameless titlebar for the desktop window.
  */
-import { watch } from 'vue';
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
   GlobalConfirmDialog,
@@ -13,26 +12,10 @@ import {
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
-  useAuthenticationStore,
 } from '@dailyuse/app-vue';
 import TitleBar from './platform/TitleBar.vue';
-import { connectDesktopPowerSync, disconnectDesktopPowerSync } from './platform/powersync';
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
-
-// ── PowerSync lifecycle: connect/disconnect on auth state changes ──
-const authStore = useAuthenticationStore();
-watch(
-  () => authStore.isAuthenticated,
-  async (isAuth) => {
-    if (isAuth) {
-      await connectDesktopPowerSync();
-    } else {
-      await disconnectDesktopPowerSync();
-    }
-  },
-  { immediate: true },
-);
 </script>
 
 <template>

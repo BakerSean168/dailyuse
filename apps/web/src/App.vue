@@ -8,7 +8,6 @@
  * 3. 全局辅助交互 (GlobalCommandPalette, GlobalSheet, GlobalProgressBar)
  * 4. 错误兜底系统 (GlobalErrorBoundary)
  */
-import { watch } from 'vue';
 import { Toaster, TooltipProvider } from '@dailyuse/ui-vue-shadcn';
 import {
   GlobalConfirmDialog,
@@ -16,23 +15,7 @@ import {
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
-  useAuthenticationStore,
 } from '@dailyuse/app-vue';
-import { connectWebPowerSync, disconnectWebPowerSync } from './platform/powersync';
-
-// ── PowerSync lifecycle: connect/disconnect on auth state changes ──
-const authStore = useAuthenticationStore();
-watch(
-  () => authStore.isAuthenticated,
-  async (isAuth) => {
-    if (isAuth) {
-      await connectWebPowerSync();
-    } else {
-      await disconnectWebPowerSync();
-    }
-  },
-  { immediate: true },
-);
 </script>
 
 <template>

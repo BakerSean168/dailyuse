@@ -45,19 +45,6 @@ import { createNotificationIpcAdapters } from '@dailyuse/notification/infrastruc
 import { createSettingIpcAdapters } from '@dailyuse/setting/infrastructure-client';
 import { createGovernanceIpcAdapters } from '@dailyuse/governance/infrastructure-client';
 
-// ── Service Classes ──
-import { AccountClientService } from '@dailyuse/account/application-client';
-import { AuthClientService } from '@dailyuse/authentication/application-client';
-import { GoalClientService } from '@dailyuse/goal/application-client';
-import { TaskClientService } from '@dailyuse/task/application-client';
-import { ScheduleClientService } from '@dailyuse/schedule/application-client';
-import { ReminderClientService } from '@dailyuse/reminder/application-client';
-import { RepositoryClientService } from '@dailyuse/repository/application-client';
-import { NotificationClientService } from '@dailyuse/notification/application-client';
-import { SettingClientService } from '@dailyuse/setting/application-client';
-
-import { disconnectDesktopPowerSync } from './powersync';
-
 /**
  * Vue plugin that instantiates all domain services with IPC transport
  * and provides them to the app's inject() context.
@@ -113,8 +100,6 @@ export function installIpcServices(app: App): void {
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
   app.provide(LOGOUT_HANDLER_KEY, async () => {
-    // Disconnect PowerSync before clearing auth state
-    await disconnectDesktopPowerSync();
     const authStore = useAuthenticationStore();
     authStore.reset();
     // Desktop: transition to login window via IPC

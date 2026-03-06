@@ -25,7 +25,7 @@ import type {
   PowerSyncCredentials,
   CrudTransaction,
 } from '@powersync/common';
-import { app, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import fs from 'fs';
 
@@ -172,22 +172,45 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
   const connector = new DesktopPowerSyncConnector();
   await powerSyncDb.connect(connector);
 
+  // Start broadcasting table changes to renderer windows
+  startChangeBroadcast(powerSyncDb);
+
   console.log('[PowerSync] Connected to PowerSync Service');
   return powerSyncDb;
 }
 
 /**
  * Disconnects and cleans up the PowerSync database.
- * Call this on logout or app shutdown.
+ * Wipes the local sync data — use on LOGOUT only.
  */
 export async function disconnectPowerSync(): Promise<void> {
   if (!powerSyncDb) return;
 
   try {
+    // Stop broadcasting before disconnecting
+    stopChangeBroadcast();
     await powerSyncDb.disconnectAndClear();
     console.log('[PowerSync] Disconnected and cleared');
   } catch (error) {
     console.error('[PowerSync] Error during disconnect:', error);
+  } finally {
+    powerSyncDb = null;
+  }
+}
+
+/**
+ * Gracefully shuts down the PowerSync database WITHOUT wiping local data.
+ * Use on app quit to preserve the sync cache for the next cold start.
+ */
+export async function shutdownPowerSync(): Promise<void> {
+  if (!powerSyncDb) return;
+
+  try {
+    stopChangeBroadcast();
+    await powerSyncDb.disconnect();
+    console.log('[PowerSync] Shut down gracefully (data preserved)');
+  } catch (error) {
+    console.error('[PowerSync] Error during shutdown:', error);
   } finally {
     powerSyncDb = null;
   }
@@ -201,76 +224,46 @@ export function getPowerSyncDatabase(): PowerSyncDatabase | null {
 }
 
 // ──────────────────────────────────────────────
-// IPC Handlers for Renderer-side PowerSync
+// Change Broadcast
 // ──────────────────────────────────────────────
-// The renderer runs @powersync/web (wa-sqlite) and needs:
-//   1. PowerSync credentials (RS256 JWT + endpoint) — fetched by main
-//      process because it owns the HS256 access token via TokenManager.
-//   2. CRUD upload proxy — main process forwards ops to the API because
-//      the renderer has no direct API URL config.
+
+/** Unsubscribe handle returned by onChange; stored so we can tear it down. */
+let onChangeDispose: (() => void) | null = null;
 
 /**
- * Registers IPC handlers that the renderer's PowerSync connector invokes.
- * Call this once during app initialisation (before any window is created).
+ * Starts listening for table changes on the PowerSync database and
+ * broadcasts `db:changed` events to all renderer windows.
+ *
+ * The event payload is `{ tables: string[] }` — table names only.
+ * Renderers re-fetch affected data via their existing IPC adapters.
  */
-export function registerPowerSyncIpcHandlers(): void {
-  const apiBaseUrl = getApiBaseUrl();
+function startChangeBroadcast(db: PowerSyncDatabase): void {
+  if (onChangeDispose) return; // already listening
 
-  // ── Fetch credentials ──
-  ipcMain.handle('powersync:fetch-credentials', async () => {
-    const tokenManager = getTokenManager();
-    const accessToken = await tokenManager.getAccessToken();
+  onChangeDispose = db.onChange({
+    onChange: (event) => {
+      const tables = event.changedTables;
+      if (tables.length === 0) return;
 
-    if (!accessToken) {
-      throw new Error('[PowerSync] No valid access token — user is not authenticated');
-    }
-
-    const response = await fetch(`${apiBaseUrl}/powersync/token`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`[PowerSync] Failed to fetch credentials: ${response.status} ${body}`);
-    }
-
-    const data = (await response.json()) as { token: string; expiresAt: string };
-
-    return {
-      endpoint: getPowerSyncServiceUrl(),
-      token: data.token,
-      expiresAt: data.expiresAt,
-    };
-  });
-
-  // ── CRUD upload proxy ──
-  ipcMain.handle(
-    'powersync:upload-crud',
-    async (_, operations: Array<{ table: string; op: string; id: string; data: unknown }>) => {
-      const tokenManager = getTokenManager();
-      const accessToken = await tokenManager.getAccessToken();
-
-      if (!accessToken) {
-        throw new Error('[PowerSync] No valid access token — cannot upload data');
-      }
-
-      const response = await fetch(`${apiBaseUrl}/powersync/crud`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ operations }),
-      });
-
-      if (!response.ok) {
-        const body = await response.text().catch(() => '');
-        throw new Error(`[PowerSync] CRUD upload failed: ${response.status} ${body}`);
+      // Broadcast to every open BrowserWindow
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+          win.webContents.send('db:changed', { tables });
+        }
       }
     },
-  );
+  });
+
+  console.log('[PowerSync] Change broadcast started');
+}
+
+/**
+ * Stops the change broadcast listener.
+ */
+function stopChangeBroadcast(): void {
+  if (onChangeDispose) {
+    onChangeDispose();
+    onChangeDispose = null;
+    console.log('[PowerSync] Change broadcast stopped');
+  }
 }

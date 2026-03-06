@@ -11,17 +11,12 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHashHistory } from 'vue-router';
 
-import {
-  createAppRouter,
-  useAuthenticationStore,
-  createPowerSyncVuePlugin,
-} from '@dailyuse/app-vue';
+import { createAppRouter, useAuthenticationStore } from '@dailyuse/app-vue';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
 import App from './App.vue';
 import { installIpcServices } from './platform/di';
 import { initElectronFeatures } from './platform/electron';
-import { powerSyncDbRef } from './platform/powersync';
 
 import './styles/index.css';
 
@@ -43,8 +38,8 @@ async function startApp() {
         name: 'custom-notification',
         component: () => import('./CustomNotificationView.vue'),
         meta: { requiresAuth: false, layout: 'empty' },
-      }
-    ]
+      },
+    ],
   });
 
   router.beforeEach(() => {
@@ -61,9 +56,6 @@ async function startApp() {
 
   // DI — inject IPC-backed service instances
   app.use(installIpcServices);
-
-  // PowerSync — reactive sync database (ref starts null, set after auth in App.vue)
-  app.use(createPowerSyncVuePlugin(powerSyncDbRef));
 
   // Electron-specific features
   initElectronFeatures(app);
