@@ -168,12 +168,10 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
       },
 
       // Resource CRUD — direct repository access (resource use cases require IStoragePort)
-      createResource: async (data) => {
+      createResource: async (data, ctx) => {
         const result = await createResourceUseCases.execute({
           repositoryId: data.repositoryId,
-          // Since the controller doesn't pass ctx here in the current interface,
-          // we use a default or fallback identityId.
-          identityId: 'api-user',
+          identityId: ctx.identityId || 'api-user',
           folderId: data.folderId,
           name: data.name,
           type: data.type as any,
@@ -191,18 +189,30 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         return ok(result.resource);
       },
       updateResource: async (id, data) => {
+        let currentResource = await repositoryModule.resourceRepository.findById(id);
+        if (!currentResource) {
+          throw new Error(`Resource not found: ${id}`);
+        }
+
+        if (data.name !== undefined) {
+          currentResource.updateName(data.name);
+        }
+
+        if (data.metadata !== undefined) {
+          currentResource.updateMetadata(data.metadata);
+        }
+
+        await repositoryModule.resourceRepository.save(currentResource);
+
         if (data.content !== undefined) {
           const result = await updateResourceContent.execute({
             id,
             content: data.content,
           });
           return ok(result.resource);
-        } else {
-          // fallback if just metadata or name update is requested but not supported yet
-          const result = await getResource.execute({ id });
-          if (!result.resource) throw new Error(`Resource not found: ${id}`);
-          return ok(result.resource);
         }
+
+        return ok(currentResource.toClientDTO());
       },
       deleteResource: async (id) => {
         const resource = await repositoryModule.resourceRepository.findById(id);

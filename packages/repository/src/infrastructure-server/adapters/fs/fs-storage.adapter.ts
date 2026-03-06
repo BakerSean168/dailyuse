@@ -21,8 +21,11 @@ export class FsStorageAdapter implements IStoragePort {
   }
 
   private getAbsolutePath(repositoryId: string, itemPath: string): string {
-    const fullPath = path.resolve(this.baseDir, repositoryId, itemPath.replace(/^\//, ''));
-    if (!fullPath.startsWith(path.resolve(this.baseDir, repositoryId))) {
+    const baseRepoDir = path.resolve(this.baseDir, repositoryId);
+    const fullPath = path.resolve(baseRepoDir, itemPath.replace(/^\//, ''));
+
+    // Ensure the resolved path exactly falls within the expected repository directory
+    if (!fullPath.startsWith(baseRepoDir + path.sep) && fullPath !== baseRepoDir) {
       throw new Error(`Storage error: Invalid path traversal detected: ${itemPath}`);
     }
     return fullPath;

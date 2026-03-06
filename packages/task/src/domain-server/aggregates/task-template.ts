@@ -23,6 +23,7 @@ const TaskType = {
   RECURRING: 'RECURRING' as const,
 };
 import { AggregateRoot } from '@dailyuse/utils';
+import { addDays } from 'date-fns';
 import { calculateTaskPriority } from '../services/priority-calculator.service';
 import {
   TaskTimeConfig,
@@ -341,7 +342,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
           this._instances.push(instance);
         }
         // Move to next day
-        currentDate += TaskTemplate.DAY_MS;
+        currentDate = addDays(new Date(currentDate), 1).getTime();
       }
     }
 
