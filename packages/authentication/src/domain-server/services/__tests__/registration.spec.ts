@@ -64,12 +64,12 @@ describe('RegistrationService', () => {
 
       // Email should be stored as an identifier
       expect(identity.identifiers).toHaveLength(1);
-      expect(identity.identifiers[0].type).toBe('EMAIL');
+      expect(identity.identifiers[0].type).toBe('Email');
       expect(identity.identifiers[0].value).toBe('new@example.com');
 
       // Password credential should exist
       expect(identity.credentials).toHaveLength(1);
-      expect(identity.credentials[0].type).toBe('PASSWORD');
+      expect(identity.credentials[0].type).toBe('Password');
 
       // Should have been persisted
       expect(identityRepo.save).toHaveBeenCalledTimes(1);
@@ -136,17 +136,17 @@ describe('RegistrationService', () => {
 
       const createdEvent = events.find((e) => e.eventType === 'auth:identity-created');
       expect(createdEvent).toBeDefined();
-      expect((createdEvent!.payload as any).createMethod).toBe('EMAIL');
+      expect((createdEvent!.payload as any).createMethod).toBe('Email');
       expect((createdEvent!.payload as any).email).toBe('new@example.com');
     });
 
-    it('should create identity with UNVERIFIED status', async () => {
+    it('should create identity with Unverified status', async () => {
       const identity = await service.registerByEmail({
         email: 'new@example.com',
         password: 'StrongP@ss1',
       });
 
-      expect(identity.status).toBe('UNVERIFIED');
+      expect(identity.status).toBe('Unverified');
     });
 
     it('should create identity with zero failed login attempts', async () => {

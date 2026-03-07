@@ -5,6 +5,8 @@ import type {
   GoalCompletedEvent,
   GoalArchivedEvent,
   GoalDeletedEvent,
+  GoalScheduleTimeChangedEvent,
+  GoalReminderConfigChangedEvent,
   KeyResultAddedEvent,
   KeyResultUpdatedEvent,
   KeyResultDeletedEvent,
@@ -22,14 +24,14 @@ import type {
 
 /**
  * Goal Module - Event Map
- * 
+ *
  * Event Naming Convention: goal:<action>
  * Maps event names to their payload types for type-safe event handling
  */
 
 export type GoalEventMap = {
   // ============ Goal Events ============
-  
+
   /**
    * Goal created event
    * Triggered when a new goal is created
@@ -65,6 +67,18 @@ export type GoalEventMap = {
    * Triggered when goal is deleted
    */
   'goal:delete': GoalDeletedEvent;
+
+  /**
+   * Goal schedule time changed event
+   * Triggered when goal time range changes
+   */
+  'goal:schedule-time-changed': GoalScheduleTimeChangedEvent;
+
+  /**
+   * Goal reminder config changed event
+   * Triggered when goal reminder config changes
+   */
+  'goal:reminder-config-changed': GoalReminderConfigChangedEvent;
 
   // ============ KeyResult Events ============
 

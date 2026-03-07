@@ -128,8 +128,8 @@ export class SqliteAuthIdentityMapper {
     oauthRows: AuthOAuthBindingRow[],
   ): AuthIdentity {
     const identifiers = identifierRows.map((r) => {
-      if (r.type === 'EMAIL') return EmailIdentifier.create(r.value, r.is_verified === 1);
-      if (r.type === 'PHONE') return PhoneIdentifier.create(r.value, r.is_verified === 1);
+      if (r.type === 'Email') return EmailIdentifier.create(r.value, r.is_verified === 1);
+      if (r.type === 'Phone') return PhoneIdentifier.create(r.value, r.is_verified === 1);
       throw new Error(`Unknown identifier type: ${r.type}`);
     });
 
@@ -147,7 +147,7 @@ export class SqliteAuthIdentityMapper {
     );
 
     const credentials = credentialRows.map((r) => {
-      if (r.type === CredentialType.PASSWORD || r.type === 'PASSWORD') {
+      if (r.type === CredentialType.Password) {
         const hashStr = r.password_hash ?? '';
         const parts = hashStr.split('$');
         const salt = parts.length >= 6 ? parts[4] : '';
@@ -158,7 +158,7 @@ export class SqliteAuthIdentityMapper {
           hashedPassword: HashedPassword.fromDTO({
             hash: hashStr,
             salt,
-            algorithm: PasswordAlgorithm.ARGON2 as string as IHashedPassword['algorithm'],
+            algorithm: PasswordAlgorithm.Argon2 as string as IHashedPassword['algorithm'],
             createdAt: r.password_last_changed_at ?? r.created_at,
           }),
           passwordLastChangedAt: new Date(r.password_last_changed_at ?? r.created_at),
@@ -206,7 +206,7 @@ export class SqliteAuthIdentityMapper {
       identifiers: dto.identifiers.map((i: AuthIdentifierDTO) => ({
         identity_id: identityId,
         type: i.type,
-        value: i.type === 'PHONE' ? (i.value as { value: string }).value : (i.value as string),
+        value: i.type === 'Phone' ? (i.value as { value: string }).value : (i.value as string),
         is_verified: i.isVerified ? 1 : 0,
       })),
       credentials: dto.credentials.map((c: AuthCredentialServerDTO) => {
@@ -220,7 +220,7 @@ export class SqliteAuthIdentityMapper {
           created_at: c.createdAt,
           last_used_at: c.lastUsedAt,
         };
-        if (c.type === CredentialType.PASSWORD || c.type === 'PASSWORD') {
+        if (c.type === CredentialType.Password) {
           const p = c as PasswordCredentialServerDTO;
           base.password_hash = p.hashedPassword.hash;
           base.password_last_changed_at = p.passwordLastChangedAt;

@@ -203,7 +203,7 @@ describe('CreateTaskTemplate', () => {
       await useCase.execute(request);
 
       expect(eventBus.send).toHaveBeenCalledWith(
-        'task.instances.generated',
+        'task:instances:generated',
         expect.objectContaining({
           payload: expect.objectContaining({
             instanceCount: 5,

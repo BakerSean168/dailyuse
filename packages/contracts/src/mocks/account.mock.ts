@@ -23,14 +23,12 @@ import type { IdentityId } from '../primitives/ids';
  * Creates a single mock AccountClientDTO.
  * Pass overrides to customise specific fields.
  */
-export function createMockAccount(
-  overrides: Partial<AccountClientDTO> = {},
-): AccountClientDTO {
+export function createMockAccount(overrides: Partial<AccountClientDTO> = {}): AccountClientDTO {
   const now = Date.now();
 
   return {
     id: faker.string.uuid() as IdentityId,
-    status: 'ACTIVE',
+    status: 'Active',
     profile: {
       nickname: faker.internet.username(),
       realName: faker.datatype.boolean() ? faker.person.fullName() : null,

@@ -22,14 +22,14 @@ export class CreateReminderTemplate {
   constructor(
     private readonly templateRepository: IReminderTemplateRepository,
     private readonly groupRepository: IReminderGroupRepository,
-  ) {
-  }
+  ) {}
 
-  async execute(identityId: string, input: CreateReminderTemplateReq): Promise<ReminderTemplateClientDTO> {
+  async execute(
+    identityId: string,
+    input: CreateReminderTemplateReq,
+  ): Promise<ReminderTemplateClientDTO> {
     const policy = new ReminderPolicy();
-    const group = input.groupId
-      ? await this.groupRepository.findById(input.groupId)
-      : null;
+    const group = input.groupId ? await this.groupRepository.findById(input.groupId) : null;
 
     if (input.groupId && !group) {
       throw new Error(`Invalid groupId: ${input.groupId}`);
@@ -73,10 +73,13 @@ export class CreateReminderTemplate {
     const events = template.pullDomainEvents();
     for (const event of events) {
       const payload = event.payload as Record<string, unknown>;
-      eventBus.send(event.eventType as any, {
-        ...payload,
-        reminderData: template.toServerDTO(),
-      } as any);
+      eventBus.send(
+        event.eventType as any,
+        {
+          ...payload,
+          reminderData: template.toServerDTO(),
+        } as any,
+      );
     }
 
     return template.toClientDTO();

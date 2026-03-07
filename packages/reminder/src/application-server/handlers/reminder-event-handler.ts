@@ -69,56 +69,86 @@ export class ReminderEventHandler {
 
     const bus = eventBus as any;
 
-    bus.on('reminder.template.created', async (event: ReminderBusEvent<ReminderTemplateCreatedPayload>) => {
-      await templateCreatedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:template:created',
+      async (event: ReminderBusEvent<ReminderTemplateCreatedPayload>) => {
+        await templateCreatedHandler.handle(event);
+      },
+    );
 
-    bus.on('reminder.template.updated', async (event: ReminderBusEvent<ReminderTemplateUpdatedPayload>) => {
-      await templateUpdatedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:template:updated',
+      async (event: ReminderBusEvent<ReminderTemplateUpdatedPayload>) => {
+        await templateUpdatedHandler.handle(event);
+      },
+    );
 
-    bus.on('reminder.template.enabled', async (event: ReminderBusEvent<ReminderTemplateEnabledPayload>) => {
-      await templateEnabledHandler.handle(event);
-    });
+    bus.on(
+      'reminder:template:enabled',
+      async (event: ReminderBusEvent<ReminderTemplateEnabledPayload>) => {
+        await templateEnabledHandler.handle(event);
+      },
+    );
 
-    bus.on('reminder.template.paused', async (event: ReminderBusEvent<ReminderTemplatePausedPayload>) => {
-      await templatePausedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:template:paused',
+      async (event: ReminderBusEvent<ReminderTemplatePausedPayload>) => {
+        await templatePausedHandler.handle(event);
+      },
+    );
 
-    bus.on('reminder.template.deleted', async (event: ReminderBusEvent<ReminderTemplateDeletedPayload>) => {
-      await templateDeletedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:template:deleted',
+      async (event: ReminderBusEvent<ReminderTemplateDeletedPayload>) => {
+        await templateDeletedHandler.handle(event);
+      },
+    );
 
-    bus.on('reminder.template.moved', async (event: ReminderBusEvent<ReminderTemplateMovedPayload>) => {
-      await templateMovedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:template:moved',
+      async (event: ReminderBusEvent<ReminderTemplateMovedPayload>) => {
+        await templateMovedHandler.handle(event);
+      },
+    );
 
-    bus.on('ReminderGroupCreated', async (event: ReminderBusEvent<ReminderGroupCreatedPayload>) => {
-      await groupCreatedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:group:created',
+      async (event: ReminderBusEvent<ReminderGroupCreatedPayload>) => {
+        await groupCreatedHandler.handle(event);
+      },
+    );
 
-    bus.on('ReminderGroupUpdated', async (event: ReminderBusEvent<ReminderGroupUpdatedPayload>) => {
-      await groupUpdatedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:group:updated',
+      async (event: ReminderBusEvent<ReminderGroupUpdatedPayload>) => {
+        await groupUpdatedHandler.handle(event);
+      },
+    );
 
-    bus.on('ReminderGroupEnabled', async (event: ReminderBusEvent<ReminderGroupEnabledPayload>) => {
-      await groupEnabledHandler.handle(event);
-    });
+    bus.on(
+      'reminder:group:enabled',
+      async (event: ReminderBusEvent<ReminderGroupEnabledPayload>) => {
+        await groupEnabledHandler.handle(event);
+      },
+    );
 
-    bus.on('ReminderGroupPaused', async (event: ReminderBusEvent<ReminderGroupPausedPayload>) => {
+    bus.on('reminder:group:paused', async (event: ReminderBusEvent<ReminderGroupPausedPayload>) => {
       await groupPausedHandler.handle(event);
     });
 
     bus.on(
-      'ReminderGroupControlModeSwitched',
+      'reminder:group:control-mode-switched',
       async (event: ReminderBusEvent<ReminderGroupControlModeSwitchedPayload>) => {
         await groupControlModeSwitchedHandler.handle(event);
       },
     );
 
-    bus.on('ReminderGroupDeleted', async (event: ReminderBusEvent<ReminderGroupDeletedPayload>) => {
-      await groupDeletedHandler.handle(event);
-    });
+    bus.on(
+      'reminder:group:deleted',
+      async (event: ReminderBusEvent<ReminderGroupDeletedPayload>) => {
+        await groupDeletedHandler.handle(event);
+      },
+    );
 
     this.isInitialized = true;
     logger.info('[ReminderEventHandler] Reminder event listeners initialized');

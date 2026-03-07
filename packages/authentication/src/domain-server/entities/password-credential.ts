@@ -1,28 +1,22 @@
 /**
  * PasswordCredential 实体实现
  * 密码凭证 - Server 端持有哈希值
- * 
+ *
  * Server 可以看到哈希值和盐值
  * 绝对不能序列化给 Client
  */
 
-import type {
-  PasswordCredentialServerDTO,
-} from '@dailyuse/contracts/authentication';
+import type { PasswordCredentialServerDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
-import {
-  CredentialStatus,
-  HashedPassword,
-  type AuthCredentialId,
-} from '../../domain-shared';
+import { CredentialStatus, HashedPassword, type AuthCredentialId } from '../../domain-shared';
 
 import type { IPasswordHasher } from '../../domain-shared';
 
 /** Domain state for PasswordCredential entity */
 export interface PasswordCredentialState {
   id: AuthCredentialId;
-  status: typeof CredentialStatus.ACTIVE;
+  status: typeof CredentialStatus.Active;
   hashedPassword: HashedPassword;
   passwordLastChangedAt: Date;
   createdAt: Date;
@@ -33,16 +27,15 @@ export interface PasswordCredentialState {
  * 密码凭证实体
  */
 export class PasswordCredential extends Entity<AuthCredentialId> {
-
   // ================= 1. 内部状态 =================
-  private _status: typeof CredentialStatus.ACTIVE;
+  private _status: typeof CredentialStatus.Active;
   private _hashedPassword: HashedPassword;
   private _passwordLastChangedAt: Date;
   private _createdAt: Date;
   private _lastUsedAt: Date | null;
 
   // 只读类型标识
-  public readonly type = 'PASSWORD';
+  public readonly type = 'Password';
 
   // ================= 2. 构造函数 =================
   private constructor(state: PasswordCredentialState) {
@@ -56,7 +49,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> {
   }
 
   // ================= 3. Getters =================
-  get status(): typeof CredentialStatus.ACTIVE {
+  get status(): typeof CredentialStatus.Active {
     return this._status;
   }
 
@@ -88,7 +81,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> {
     const now = new Date();
     return new PasswordCredential({
       id: params.id,
-      status: CredentialStatus.ACTIVE,
+      status: CredentialStatus.Active,
       hashedPassword: params.hashedPassword,
       passwordLastChangedAt: now,
       createdAt: now,
@@ -139,7 +132,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> {
       return; // 幂等
     }
 
-    this._status = CredentialStatus.SUSPENDED;
+    this._status = CredentialStatus.Suspended;
   }
 
   /**
@@ -154,7 +147,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> {
       throw new Error('Cannot activate a revoked credential');
     }
 
-    this._status = CredentialStatus.ACTIVE;
+    this._status = CredentialStatus.Active;
   }
 
   /**
@@ -165,7 +158,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> {
       return; // 幂等
     }
 
-    this._status = CredentialStatus.REVOKED;
+    this._status = CredentialStatus.Revoked;
   }
 
   /**
@@ -191,7 +184,7 @@ export class PasswordCredential extends Entity<AuthCredentialId> {
   public toServerDTO(): PasswordCredentialServerDTO {
     return {
       id: this.id,
-      type: 'PASSWORD',
+      type: 'Password',
       status: this._status,
       hashedPassword: this._hashedPassword.toDTO(),
       passwordLastChangedAt: this._passwordLastChangedAt.getTime(),

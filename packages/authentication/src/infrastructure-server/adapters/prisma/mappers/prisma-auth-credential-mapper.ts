@@ -1,11 +1,11 @@
 /**
  * Prisma AuthCredential Sub-Mapper
  *
- * 子表映射器：处理 auth_credentials �?�?AuthCredentialServerDTO
+ * 子表映射器：处理 auth_credentials �?�?AuthCredentialServerDTO
  *
- * 职责�?
- * - DB Row �?AuthCredentialServerDTO (读数�?
- * - AuthCredentialServerDTO �?Prisma CreateInput (写数�?
+ * 职责�?
+ * - DB Row �?AuthCredentialServerDTO (读数�?
+ * - AuthCredentialServerDTO �?Prisma CreateInput (写数�?
  */
 
 import type { Prisma } from '@dailyuse/database';
@@ -21,11 +21,11 @@ import type { PrismaAuthCredentialRow } from '../../../types';
 
 export class PrismaAuthCredentialMapper {
   /**
-   * Row �?Domain DTO (读数�?
+   * Row �?Domain DTO (读数�?
    *
-   * �?Prisma 行数据转换为领域层认识的 ServerDTO�?
-   * - 数据库的 passwordHash 字段 �?领域�?hashedPassword
-   * - Date �?number (timestamp)
+   * �?Prisma 行数据转换为领域层认识的 ServerDTO�?
+   * - 数据库的 passwordHash 字段 �?领域�?hashedPassword
+   * - Date �?number (timestamp)
    */
   static toDomainDTO(row: PrismaAuthCredentialRow): AuthCredentialServerDTO {
     const base = {
@@ -35,7 +35,7 @@ export class PrismaAuthCredentialMapper {
       lastUsedAt: row.lastUsedAt?.getTime() ?? null,
     };
 
-    if (row.type === CredentialType.PASSWORD || row.type === 'PASSWORD') {
+    if (row.type === CredentialType.Password) {
       // Parse Argon2 hash string into structured HashedPassword DTO
       // Format: $argon2id$v=19$m=65536,t=3,p=4$salt$hash
       const hashStr = row.passwordHash ?? '';
@@ -45,13 +45,13 @@ export class PrismaAuthCredentialMapper {
       const hashedPassword: HashedPassword = {
         hash: hashStr,
         salt,
-        algorithm: PasswordAlgorithm.ARGON2 as string as HashedPassword['algorithm'],
+        algorithm: PasswordAlgorithm.Argon2 as string as HashedPassword['algorithm'],
         createdAt: row.passwordLastChangedAt?.getTime() ?? row.createdAt.getTime(),
       };
 
       const result: PasswordCredentialServerDTO = {
         ...base,
-        type: CredentialType.PASSWORD as 'PASSWORD',
+        type: CredentialType.Password as 'Password',
         hashedPassword,
         passwordLastChangedAt: row.passwordLastChangedAt?.getTime() ?? row.createdAt.getTime(),
       };
@@ -62,11 +62,11 @@ export class PrismaAuthCredentialMapper {
   }
 
   /**
-   * Domain DTO �?Prisma CreateInput (写数�?
+   * Domain DTO �?Prisma CreateInput (写数�?
    *
-   * 将领域层�?ServerDTO 转换�?Prisma 写入格式�?
-   * - hashedPassword �?passwordHash
-   * - timestamp (number) �?Date
+   * 将领域层�?ServerDTO 转换�?Prisma 写入格式�?
+   * - hashedPassword �?passwordHash
+   * - timestamp (number) �?Date
    */
   static toPrismaCreate(
     cred: AuthCredentialServerDTO,
@@ -81,7 +81,7 @@ export class PrismaAuthCredentialMapper {
       lastUsedAt: cred.lastUsedAt ? new Date(cred.lastUsedAt) : null,
     };
 
-    if (cred.type === CredentialType.PASSWORD || cred.type === 'PASSWORD') {
+    if (cred.type === CredentialType.Password) {
       const p = cred as PasswordCredentialServerDTO;
       row.passwordHash = p.hashedPassword.hash;
       row.passwordLastChangedAt = new Date(p.passwordLastChangedAt);

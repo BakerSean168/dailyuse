@@ -7,9 +7,7 @@ const logger = new Logger('TaskEventHandler');
  * Extended domain event interface for task events that carry identityId.
  * Standard IDomainEvent omits identityId; task events include it for routing.
  */
-interface TaskDomainEvent extends IDomainEvent {
-  identityId?: string;
-}
+type TaskDomainEvent = IDomainEvent<any> & { identityId?: string };
 
 // Cast eventBus to any for custom event types not in AppEventRegistry
 const customEventBus = eventBus as any;
@@ -38,33 +36,33 @@ export class TaskEventHandler {
     /**
      * 监听 Task 实例生成事件
      */
-    customEventBus.on('task.instances.generated', async (event: IDomainEvent) => {
+    customEventBus.on('task:instances:generated', async (event: IDomainEvent) => {
       try {
         await this.handleTaskInstancesGenerated(event);
       } catch (error) {
-        logger.error('[TaskEventHandler] Error handling task.instances.generated:', error);
+        logger.error('[TaskEventHandler] Error handling task:instances:generated:', error);
       }
     });
 
     /**
      * 监听 Task 模板创建事件
      */
-    customEventBus.on('task.template.created', async (event: IDomainEvent) => {
+    customEventBus.on('task:template:created', async (event: IDomainEvent) => {
       try {
         await this.handleTaskTemplateCreated(event);
       } catch (error) {
-        logger.error('[TaskEventHandler] Error handling task.template.created:', error);
+        logger.error('[TaskEventHandler] Error handling task:template:created:', error);
       }
     });
 
     /**
      * 监听 Task 实例完成事件
      */
-    customEventBus.on('task.instance.completed', async (event: IDomainEvent) => {
+    customEventBus.on('task:instance:completed', async (event: IDomainEvent) => {
       try {
         await this.handleTaskInstanceCompleted(event);
       } catch (error) {
-        logger.error('[TaskEventHandler] Error handling task.instance.completed:', error);
+        logger.error('[TaskEventHandler] Error handling task:instance:completed:', error);
       }
     });
 
@@ -80,7 +78,7 @@ export class TaskEventHandler {
     const identityId = eventData.identityId ?? eventData.payload?.identityId;
 
     if (!identityId) {
-      logger.error('[TaskEventHandler] Missing identityId in task.instances.generated event');
+      logger.error('[TaskEventHandler] Missing identityId in task:instances:generated event');
       return;
     }
 
@@ -138,9 +136,10 @@ export class TaskEventHandler {
       return;
     }
 
+    const instanceId = (payload as any)?.instanceId ?? (payload as any)?.taskInstanceId;
     logger.info('✅ [TaskEventHandler] Task instance completed', {
       identityId,
-      instanceId: payload.instanceId,
+      instanceId,
     });
 
     // TODO: 推送给前端 - 应该通过事件总线由 infrastructure 层处理
@@ -165,9 +164,9 @@ export class TaskEventHandler {
       return;
     }
 
-    customEventBus.off('task.instances.generated');
-    customEventBus.off('task.template.created');
-    customEventBus.off('task.instance.completed');
+    customEventBus.off('task:instances:generated');
+    customEventBus.off('task:template:created');
+    customEventBus.off('task:instance:completed');
 
     this.isInitialized = false;
     console.log('🔄 [TaskEventHandler] Event listeners reset');

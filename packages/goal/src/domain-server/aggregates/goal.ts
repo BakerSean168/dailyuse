@@ -517,9 +517,19 @@ export class Goal extends AggregateRoot<GoalId> {
         this.refreshPriority();
       }
 
+      const changeKeys = Object.keys(params);
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        changes: Object.keys(params),
+        changes: changeKeys,
       });
+
+      this.addDomainEvent<GoalEventMap['goal:schedule-time-changed']>(
+        'goal:schedule-time-changed',
+        {
+          identityId: this._props.identityId,
+          goal: this.toServerDTO(true),
+          changes: changeKeys,
+        },
+      );
     }
   }
 
@@ -698,6 +708,9 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.updatedAt = now;
 
     this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+    this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
+      isSoftDelete: true,
+    });
   }
 
   /**
@@ -745,6 +758,14 @@ export class Goal extends AggregateRoot<GoalId> {
   public updateReminderConfig(config: GoalReminderConfigDTO | null): void {
     this._props.reminderConfig = config ? GoalReminderConfig.fromDTO(config) : null;
     this._props.updatedAt = new Date();
+    this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+      'goal:reminder-config-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: ['reminderConfig'],
+      },
+    );
   }
 
   /**
@@ -754,6 +775,14 @@ export class Goal extends AggregateRoot<GoalId> {
     if (this._props.reminderConfig) {
       this._props.reminderConfig = this._props.reminderConfig.setEnabled(true);
       this._props.updatedAt = new Date();
+      this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+        'goal:reminder-config-changed',
+        {
+          identityId: this._props.identityId,
+          goal: this.toServerDTO(true),
+          changes: ['reminderConfig', 'enabled'],
+        },
+      );
     }
   }
 
@@ -764,6 +793,14 @@ export class Goal extends AggregateRoot<GoalId> {
     if (this._props.reminderConfig) {
       this._props.reminderConfig = this._props.reminderConfig.setEnabled(false);
       this._props.updatedAt = new Date();
+      this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+        'goal:reminder-config-changed',
+        {
+          identityId: this._props.identityId,
+          goal: this.toServerDTO(true),
+          changes: ['reminderConfig', 'enabled'],
+        },
+      );
     }
   }
 
@@ -776,6 +813,14 @@ export class Goal extends AggregateRoot<GoalId> {
     }
     this._props.reminderConfig = this._props.reminderConfig.addTrigger(trigger);
     this._props.updatedAt = new Date();
+    this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+      'goal:reminder-config-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: ['reminderConfig', 'triggers'],
+      },
+    );
   }
 
   /**
@@ -787,6 +832,14 @@ export class Goal extends AggregateRoot<GoalId> {
     }
     this._props.reminderConfig = this._props.reminderConfig.removeTrigger(type, value);
     this._props.updatedAt = new Date();
+    this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+      'goal:reminder-config-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: ['reminderConfig', 'triggers'],
+      },
+    );
   }
 
   // ================= 4. 关键结果管理 (KeyResult Management) =================

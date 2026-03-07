@@ -1,5 +1,9 @@
 import { ValueObject } from '@dailyuse/utils';
-import type { HashedPasswordDTO, HashedPasswordPersistenceDTO, HashedPassword as IHashedPassword } from '@dailyuse/contracts/authentication';
+import type {
+  HashedPasswordDTO,
+  HashedPasswordPersistenceDTO,
+  HashedPassword as IHashedPassword,
+} from '@dailyuse/contracts/authentication';
 import { PasswordAlgorithm } from './password-algorithm';
 import { PlainPassword } from './plain-password';
 import type { IPasswordHasher } from '../services/i-password-hasher.service';
@@ -18,7 +22,6 @@ import type { IPasswordHasher } from '../services/i-password-hasher.service';
  * - 不可变性：所有修改操作都返回新实�?
  */
 export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IHashedPassword {
-
   private constructor(props: HashedPasswordDTO) {
     super(props);
   }
@@ -27,10 +30,13 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
    * 🏭 异步工厂：从原始密码创建 (Raw -> Hashed)
    * 这里是唯一发生加密计算的地�?
    */
-  public static async create(rawPassword: PlainPassword, hasher: IPasswordHasher): Promise<HashedPassword> {
+  public static async create(
+    rawPassword: PlainPassword,
+    hasher: IPasswordHasher,
+  ): Promise<HashedPassword> {
     // 1. 执行耗时的哈希算�?
     const hashString = await hasher.hash(rawPassword.value);
-    
+
     // 2. �?PHC 格式哈希中提取盐�?
     // 格式: $argon2id$v=19$m=65536,t=3,p=4$salt$hash
     const parts = hashString.split('$');
@@ -38,13 +44,13 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
       throw new Error('Invalid argon2 hash format');
     }
     const salt = parts[4]; // base64 编码的盐
-    
+
     // 3. 返回包装好的值对�?
     return new HashedPassword({
       hash: hashString,
       salt,
-      algorithm: PasswordAlgorithm.ARGON2, // 使用 ARGON2 算法
-      createdAt: Date.now()
+      algorithm: PasswordAlgorithm.Argon2, // 使用 Argon2 算法
+      createdAt: Date.now(),
     });
   }
 
@@ -61,7 +67,7 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
       hash: dto.hash,
       salt: dto.salt,
       algorithm: dto.algorithm,
-      createdAt: dto.createdAt.getTime()
+      createdAt: dto.createdAt.getTime(),
     });
   }
 
@@ -74,8 +80,8 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
     return new HashedPassword({
       hash: '',
       salt: '',
-      algorithm: PasswordAlgorithm.ARGON2,
-      createdAt: Date.now()
+      algorithm: PasswordAlgorithm.Argon2,
+      createdAt: Date.now(),
     });
   }
 
@@ -95,8 +101,6 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
   public get createdAt(): number {
     return this.props.createdAt;
   }
-
-  
 
   // ================= 内部逻辑 =================
   /**
@@ -176,19 +180,23 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
    * 场景：用户修改密�?
    * @throws 当新哈希值不合法�?
    */
-  public updateHash(newHash: string, newSalt: string, algorithm: typeof this.props.algorithm): HashedPassword {
+  public updateHash(
+    newHash: string,
+    newSalt: string,
+    algorithm: typeof this.props.algorithm,
+  ): HashedPassword {
     HashedPassword.validate({
       hash: newHash,
       salt: newSalt,
       algorithm,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     });
 
     return new HashedPassword({
       hash: newHash,
       salt: newSalt,
       algorithm,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     });
   }
 
@@ -203,7 +211,7 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
   // ================= 序列�? API / Client =================
   /**
    * ⚠️ 转换�?DTO
-   * 
+   *
    * 警告：此方法返回�?DTO 包含敏感信息
    * 绝对不能发送到客户端！
    * 仅供 Server 端内部使�?
@@ -215,7 +223,7 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
   // ================= 序列�? Persistence =================
   /**
    * 转换为持久化格式（数据库存储�?
-   * 
+   *
    * �?DTO 中的 number 类型 timestamp 转换�?Date 对象
    * 用于 ORM 映射
    */
@@ -224,7 +232,7 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
       hash: this.props.hash,
       salt: this.props.salt,
       algorithm: this.props.algorithm,
-      createdAt: new Date(this.props.createdAt)
+      createdAt: new Date(this.props.createdAt),
     };
   }
 }

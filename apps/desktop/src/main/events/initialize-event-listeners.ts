@@ -8,7 +8,7 @@
  * @module events/initialize-event-listeners
  */
 
-import { eventBus, type DomainEvent } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
 import { getGoalRepository } from '@dailyuse/goal/electron-entry';
 import { GoalRecord, type KeyResult } from '@dailyuse/goal/domain-server';
 
@@ -36,15 +36,17 @@ export async function initializeEventListeners(): Promise<void> {
 }
 
 /**
- * Registers a listener for the 'task.instance.completed' event.
+ * Registers a listener for the 'task:instance:completed' event.
  * Automatically updates the associated Goal's Key Result progress when a task is finished.
  */
 function initializeTaskToGoalProgressListener(): void {
-  eventBus.on('task.instance.completed', async (event: DomainEvent) => {
+  const bus = eventBus as any;
+  bus.on('task:instance:completed', async (event: any) => {
     try {
-      if (!event.identityId) {
+      const identityId = event.identityId as string | undefined;
+      if (!identityId) {
         console.error(
-          '❌ [TaskToGoalProgress] Missing identityId in task.instance.completed event',
+          '❌ [TaskToGoalProgress] Missing identityId in task:instance:completed event',
         );
         return;
       }
@@ -95,12 +97,11 @@ function initializeTaskToGoalProgressListener(): void {
 
         // 3. Create a new GoalRecord entity
         const record = GoalRecord.create({
-          keyResultId: goalBinding.keyResultId,
-          goalId: goalBinding.goalId,
-          identityId: event.identityId,
+          keyResultId: goalBinding.keyResultId as any,
+          identityId: identityId as any,
           value: goalBinding.incrementValue,
           note: `任务完成: ${title}`,
-          recordedAt: Date.now(),
+          recordedAt: new Date(),
         });
 
         // 4. Add record to Key Result (triggers recalculation of current value)
@@ -119,7 +120,7 @@ function initializeTaskToGoalProgressListener(): void {
         );
       }
     } catch (error) {
-      console.error('❌ [TaskToGoalProgress] Error handling task.instance.completed:', error);
+      console.error('❌ [TaskToGoalProgress] Error handling task:instance:completed:', error);
     }
   });
 
@@ -132,6 +133,7 @@ function initializeTaskToGoalProgressListener(): void {
  */
 export function resetEventListeners(): void {
   console.log('🔄 [EventListeners] Resetting event listeners...');
-  eventBus.off('task.instance.completed');
+  const bus = eventBus as any;
+  bus.off('task:instance:completed');
   isInitialized = false;
 }

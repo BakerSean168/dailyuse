@@ -156,7 +156,7 @@ describe('Register (Application Command)', () => {
       );
 
       expect(result.identity.identifiers).toHaveLength(1);
-      expect(result.identity.identifiers[0].type).toBe('EMAIL');
+      expect(result.identity.identifiers[0].type).toBe('Email');
     });
 
     it('should return session marked as current', async () => {

@@ -9,7 +9,7 @@ export const AUTHENTICATION_MODULE_SCHEMA = `
 -- ─── auth_identities (aggregate root) ───
 CREATE TABLE IF NOT EXISTS auth_identities (
   id                    TEXT PRIMARY KEY,
-  status                TEXT NOT NULL DEFAULT 'UNVERIFIED',
+  status                TEXT NOT NULL DEFAULT 'Unverified',
   failed_login_attempts INTEGER NOT NULL DEFAULT 0,
   last_failed_attempt   INTEGER,
   locked_until          INTEGER,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS auth_credentials (
   id                      TEXT PRIMARY KEY,
   identity_id             TEXT NOT NULL,
   type                    TEXT NOT NULL,
-  status                  TEXT NOT NULL DEFAULT 'ACTIVE',
+  status                  TEXT NOT NULL DEFAULT 'Active',
   password_hash           TEXT,
   password_last_changed_at INTEGER,
   created_at              INTEGER NOT NULL,

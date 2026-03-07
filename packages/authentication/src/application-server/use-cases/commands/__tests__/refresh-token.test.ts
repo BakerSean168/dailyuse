@@ -95,7 +95,7 @@ function buildActiveSession(
     identityId,
     deviceInfo: DeviceInfo.createDefault('test-device'),
     refreshTokenHash,
-    status: SessionStatus.ACTIVE,
+    status: SessionStatus.Active,
     createdAt: new Date(),
     expiresAt: new Date(Date.now() + REFRESH_TOKEN_DURATION_MS),
     lastActiveAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago, past sliding window
@@ -196,7 +196,7 @@ describe('RefreshToken (Application Command)', () => {
         identityId,
         deviceInfo: DeviceInfo.createDefault('test-device'),
         refreshTokenHash: 'matching-hash',
-        status: SessionStatus.ACTIVE,
+        status: SessionStatus.Active,
         createdAt: new Date(Date.now() - 2 * REFRESH_TOKEN_DURATION_MS),
         expiresAt: new Date(Date.now() - 1000), // expired
         lastActiveAt: new Date(Date.now() - REFRESH_TOKEN_DURATION_MS),
@@ -218,7 +218,7 @@ describe('RefreshToken (Application Command)', () => {
         identityId,
         deviceInfo: DeviceInfo.createDefault('test-device'),
         refreshTokenHash: 'matching-hash',
-        status: SessionStatus.REVOKED,
+        status: SessionStatus.Revoked,
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + REFRESH_TOKEN_DURATION_MS),
         lastActiveAt: new Date(),

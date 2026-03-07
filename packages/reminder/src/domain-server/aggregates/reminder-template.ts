@@ -252,7 +252,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     template._props.nextTriggerAt = template.calculateNextTrigger();
 
     // 发布创建事件
-    template.addDomainEvent('reminder.template.created', {
+    template.addDomainEvent('reminder:template:created', {
       templateId: id as string,
       identityId: params.identityId,
       title: params.title,
@@ -377,7 +377,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(now);
 
     // 发布更新事件
-    this.addDomainEvent('reminder.template.updated', {
+    this.addDomainEvent('reminder:template:updated', {
       template: this.toServerDTO(),
       updates: Object.keys(updates),
       identityId: this._props.identityId,
@@ -404,7 +404,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = true;
 
     // 发布启用事件
-    this.addDomainEvent('reminder.template.enabled', {
+    this.addDomainEvent('reminder:template:enabled', {
       templateId: this.id,
       activatedAt: now,
       identityId: this._props.identityId,
@@ -425,7 +425,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.effectiveEnabled = false;
 
     // 发布暂停事件
-    this.addDomainEvent('reminder.template.paused', {
+    this.addDomainEvent('reminder:template:paused', {
       templateId: this.id,
       identityId: this._props.identityId,
     });
@@ -462,7 +462,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     // 应用层需要调用 setEffectiveEnabled 来更新
 
     // 发布移动事件
-    this.addDomainEvent('reminder.template.moved', {
+    this.addDomainEvent('reminder:template:moved', {
       templateId: this.id,
       oldGroupId,
       newGroupId: targetGroupId,
@@ -558,11 +558,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(now);
 
     // 发布触发事件
-    this.addDomainEvent('reminder.template.triggered', {
+    this.addDomainEvent('reminder:triggered', {
       templateId: this.id,
       triggeredAt: now,
       nextTriggerAt: this._props.nextTriggerAt,
       identityId: this._props.identityId,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -602,7 +603,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(Date.now());
 
     // 发布删除事件
-    this.addDomainEvent('reminder.template.deleted', {
+    this.addDomainEvent('reminder:template:deleted', {
       templateId: this.id,
       templateTitle: this._props.title,
       identityId: this._props.identityId,

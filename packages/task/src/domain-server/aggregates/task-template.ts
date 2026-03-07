@@ -637,7 +637,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
-    this.addDomainEvent('task_template.schedule_time_changed', {
+    this.addDomainEvent('task:template:schedule-time-changed', {
       taskTemplate: this.toServerDTO(),
       oldStartDate: oldStartDate,
       oldDueDate: this._props.dueDate,
@@ -665,7 +665,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
-    this.addDomainEvent('task_template.schedule_time_changed', {
+    this.addDomainEvent('task:template:schedule-time-changed', {
       taskTemplate: this.toServerDTO(),
       oldStartDate: this._props.startDate,
       oldDueDate: oldDueDate,
@@ -687,7 +687,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newTimeConfig: newTimeConfig?.toDTO() ?? null,
     });
 
-    this.addDomainEvent('task_template.schedule_time_changed', {
+    this.addDomainEvent('task:template:schedule-time-changed', {
       taskTemplate: this.toServerDTO(),
       oldStartDate: this._props.startDate,
       oldDueDate: this._props.dueDate,
@@ -717,7 +717,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newRule: newRule.toDTO(),
     });
 
-    this.addDomainEvent('task_template.recurrence_changed', {
+    this.addDomainEvent('task:template:recurrence-changed', {
       taskTemplate: this.toServerDTO(),
       oldRecurrenceRule: oldRuleDTO,
       newRecurrenceRule: newRule.toDTO(),
@@ -787,7 +787,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       endConditionType,
     });
 
-    this.addDomainEvent('task_template.recurrence_changed', {
+    this.addDomainEvent('task:template:recurrence-changed', {
       taskTemplate: this.toServerDTO(),
       oldRecurrenceRule: oldRuleDTO,
       newRecurrenceRule: updatedRule.toDTO(),

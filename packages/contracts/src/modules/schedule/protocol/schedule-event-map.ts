@@ -16,12 +16,12 @@ import type {
  */
 
 export type ScheduleEventMap = {
-  'schedule:task-create': ScheduleTaskCreatedEvent;
-  'schedule:task-pause': ScheduleTaskPausedEvent;
-  'schedule:task-resume': ScheduleTaskResumedEvent;
-  'schedule:task-complete': ScheduleTaskCompletedEvent;
-  'schedule:task-cancel': ScheduleTaskCancelledEvent;
-  'schedule:task-fail': ScheduleTaskFailedEvent;
-  'schedule:task-execute': ScheduleTaskExecutedEvent;
-  'schedule:task-schedule-update': ScheduleTaskScheduleUpdatedEvent;
+  'schedule:task:created': ScheduleTaskCreatedEvent;
+  'schedule:task:paused': ScheduleTaskPausedEvent;
+  'schedule:task:resumed': ScheduleTaskResumedEvent;
+  'schedule:task:completed': ScheduleTaskCompletedEvent;
+  'schedule:task:cancelled': ScheduleTaskCancelledEvent;
+  'schedule:task:failed': ScheduleTaskFailedEvent;
+  'schedule:task:executed': ScheduleTaskExecutedEvent;
+  'schedule:task:schedule-updated': ScheduleTaskScheduleUpdatedEvent;
 };

@@ -34,7 +34,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     return DeviceInfo.create({
       deviceId,
       deviceFingerprint: '',
-      deviceType: DeviceType.BROWSER,
+      deviceType: DeviceType.Browser,
       deviceName: null,
       os: null,
       osVersion: null,

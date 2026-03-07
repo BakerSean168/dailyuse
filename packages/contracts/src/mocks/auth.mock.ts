@@ -22,9 +22,7 @@ import type { IdentityId } from '../primitives/ids';
 /**
  * Creates a mock AuthResponseDTO (login/register response).
  */
-export function createMockAuthResponse(
-  overrides: Partial<AuthResponseDTO> = {},
-): AuthResponseDTO {
+export function createMockAuthResponse(overrides: Partial<AuthResponseDTO> = {}): AuthResponseDTO {
   const now = Date.now();
   const identityId = faker.string.uuid() as IdentityId;
 
@@ -33,13 +31,13 @@ export function createMockAuthResponse(
     refreshToken: faker.string.alphanumeric(64),
     identity: {
       id: identityId,
-      status: 'ACTIVE',
+      status: 'Active',
       failedLoginAttempts: 0,
       lastFailedAttempt: null,
       lockedUntil: null,
       identifiers: [
         {
-          type: 'EMAIL' as const,
+          type: 'Email' as const,
           value: faker.internet.email(),
           isVerified: true,
         },
@@ -47,7 +45,7 @@ export function createMockAuthResponse(
       credentials: [
         {
           id: faker.string.uuid() as unknown as any,
-          type: 'PASSWORD' as const,
+          type: 'Password' as const,
           displayName: 'Password',
           lastUsedAt: now,
           isPrimary: true,
@@ -72,7 +70,7 @@ export function createMockAuthResponse(
       deviceInfo: {
         deviceId: faker.string.uuid(),
         deviceFingerprint: faker.string.alphanumeric(32),
-        deviceType: 'BROWSER' as const,
+        deviceType: 'Browser' as const,
         deviceName: null,
         os: null,
         osVersion: null,

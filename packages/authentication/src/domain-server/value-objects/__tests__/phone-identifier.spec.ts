@@ -8,7 +8,7 @@ describe('PhoneIdentifier', () => {
   describe('create', () => {
     it('should create a phone identifier with valid number', () => {
       const identifier = PhoneIdentifier.create('13800138000');
-      expect(identifier.type).toBe('PHONE');
+      expect(identifier.type).toBe('Phone');
       expect(identifier.value).toBe('13800138000');
       expect(identifier.isVerified).toBe(false);
     });
@@ -57,14 +57,14 @@ describe('PhoneIdentifier', () => {
       const identifier = PhoneIdentifier.create('13800138000', true);
       const dto = identifier.toDTO();
       expect(dto).toEqual({
-        type: 'PHONE',
+        type: 'Phone',
         value: { value: '13800138000' },
         isVerified: true,
       });
     });
 
     it('should deserialize from DTO', () => {
-      const dto = { type: 'PHONE' as const, value: { value: '13800138000' }, isVerified: true };
+      const dto = { type: 'Phone' as const, value: { value: '13800138000' }, isVerified: true };
       const identifier = PhoneIdentifier.fromDTO(dto);
       expect(identifier.value).toBe('13800138000');
       expect(identifier.isVerified).toBe(true);

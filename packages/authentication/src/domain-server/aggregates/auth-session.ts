@@ -37,7 +37,7 @@ export interface AuthSessionState {
   identityId: IdentityId;
   deviceInfo: DeviceInfo;
   refreshTokenHash: string | undefined;
-  status: typeof SessionStatus.ACTIVE;
+  status: typeof SessionStatus.Active;
   createdAt: Date;
   expiresAt: Date;
   lastActiveAt: Date;
@@ -53,7 +53,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   private _identityId: IdentityId;
   private _deviceInfo: DeviceInfo;
   private _refreshTokenHash: string | undefined;
-  private _status: typeof SessionStatus.ACTIVE;
+  private _status: typeof SessionStatus.Active;
   private _createdAt: Date;
   private _expiresAt: Date;
   private _lastActiveAt: Date;
@@ -86,7 +86,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     return this._refreshTokenHash;
   }
 
-  get status(): typeof SessionStatus.ACTIVE {
+  get status(): typeof SessionStatus.Active {
     return this._status;
   }
 
@@ -125,7 +125,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       identityId: params.identityId,
       deviceInfo: DeviceInfo.fromDTO(params.deviceInfo),
       refreshTokenHash: params.refreshTokenHash,
-      status: SessionStatus.ACTIVE,
+      status: SessionStatus.Active,
       createdAt: now,
       expiresAt: new Date(params.expiresAt),
       lastActiveAt: now,
@@ -254,7 +254,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     }
 
     this._isRevoked = true;
-    this._status = SessionStatus.REVOKED;
+    this._status = SessionStatus.Revoked;
 
     this.addDomainEvent<AuthEventMap['auth:session-revoked']>('auth:session-revoked', {
       identityId: this._identityId,
@@ -269,7 +269,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
       return; // 幂等
     }
 
-    this._status = SessionStatus.EXPIRED;
+    this._status = SessionStatus.Expired;
   }
 
   /**

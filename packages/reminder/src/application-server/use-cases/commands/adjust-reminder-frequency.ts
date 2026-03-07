@@ -70,14 +70,17 @@ export class AdjustReminderFrequency {
     await this.templateRepository.save(template);
 
     // Publish event
-    eventBus.send('reminder.frequency.adjusted' as any, {
-      templateId: request.templateId,
-      originalInterval,
-      adjustedInterval: request.newInterval,
-      reason: request.reason,
-      identityId: request.identityId,
-      adjustedAt: Date.now(),
-    } as any);
+    eventBus.send(
+      'reminder:frequency:adjusted' as any,
+      {
+        templateId: request.templateId,
+        originalInterval,
+        adjustedInterval: request.newInterval,
+        reason: request.reason,
+        identityId: request.identityId,
+        adjustedAt: Date.now(),
+      } as any,
+    );
 
     return {
       templateId: request.templateId,
@@ -101,10 +104,13 @@ export class AdjustReminderFrequency {
       throw new Error(`Template ${templateId} not found`);
     }
 
-    eventBus.send('reminder.frequency.adjustment.rejected' as any, {
-      templateId,
-      identityId,
-      rejectedAt: Date.now(),
-    } as any);
+    eventBus.send(
+      'reminder:frequency:adjustment-rejected' as any,
+      {
+        templateId,
+        identityId,
+        rejectedAt: Date.now(),
+      } as any,
+    );
   }
 }

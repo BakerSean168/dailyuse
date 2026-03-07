@@ -10,7 +10,7 @@ export type DeviceType = IDeviceType & { readonly __brand: unique symbol };
 /**
  * 合法值集�?- Single Source of Truth
  */
-const VALUES: IDeviceType[] = ['BROWSER', 'MOBILE', 'DESKTOP', 'TABLET'];
+const VALUES: IDeviceType[] = ['Desktop', 'Mobile', 'Tablet', 'Browser', 'Api', 'Unknown'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
@@ -18,10 +18,12 @@ const VALUES: IDeviceType[] = ['BROWSER', 'MOBILE', 'DESKTOP', 'TABLET'];
 export const DeviceType = {
   // ================= 常量定义 =================
 
-  BROWSER: 'BROWSER' as DeviceType,
-  MOBILE: 'MOBILE' as DeviceType,
-  DESKTOP: 'DESKTOP' as DeviceType,
-  TABLET: 'TABLET' as DeviceType,
+  Desktop: 'Desktop' as DeviceType,
+  Mobile: 'Mobile' as DeviceType,
+  Tablet: 'Tablet' as DeviceType,
+  Browser: 'Browser' as DeviceType,
+  Api: 'Api' as DeviceType,
+  Unknown: 'Unknown' as DeviceType,
 
   // ================= 工厂方法 =================
 
@@ -57,28 +59,28 @@ export const DeviceType = {
    * 是否是手机设备（iOS �?Android�?
    */
   isMobile(type: DeviceType): boolean {
-    return type === this.MOBILE;
+    return type === this.Mobile;
   },
 
   /**
    * 是否是网页端
    */
   isBrowser(type: DeviceType): boolean {
-    return type === this.BROWSER;
+    return type === this.Browser;
   },
 
   /**
    * 是否是桌面应�?
    */
   isDesktop(type: DeviceType): boolean {
-    return type === this.DESKTOP;
+    return type === this.Desktop;
   },
 
   /**
    * 是否是平板设�?
    */
   isTablet(type: DeviceType): boolean {
-    return type === this.TABLET;
+    return type === this.Tablet;
   },
 
   /**
@@ -87,5 +89,4 @@ export const DeviceType = {
   isSmallScreen(type: DeviceType): boolean {
     return this.isMobile(type) || this.isTablet(type);
   },
-
 };

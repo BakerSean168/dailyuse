@@ -44,7 +44,7 @@ export class PauseTaskTemplate {
 
     // 3. 鍙戝竷鏆傚仠浜嬩欢
     try {
-      eventBus.send('task.template.paused' as any, {
+      eventBus.send('task:template:paused' as any, {
         taskTemplateId: template.id,
         identityId: template.identityId,
         pausedAt: Date.now(),

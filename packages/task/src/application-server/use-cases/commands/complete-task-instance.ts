@@ -24,7 +24,10 @@ export class CompleteTaskInstance {
     private readonly templateRepository: ITaskTemplateRepository,
   ) {}
 
-  async execute(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstanceOperationRes>> {
+  async execute(
+    id: string,
+    request?: CompleteTaskInstanceReq,
+  ): Promise<Result<TaskInstanceOperationRes>> {
     const instance = await this.instanceRepository.findById(id);
     if (!instance) {
       return error('NOT_FOUND', `TaskInstance ${id} not found`);
@@ -60,7 +63,7 @@ export class CompleteTaskInstance {
       const completedAt = instance.completionRecord?.completedAt || Date.now();
 
       const event: TaskInstanceCompletedEvent = {
-        eventType: 'task.instance.completed',
+        eventType: 'task:instance:completed',
         payload: {
           taskInstanceId: instance.id,
           taskTemplateId: instance.templateId,
@@ -77,10 +80,9 @@ export class CompleteTaskInstance {
         },
       };
 
-      eventBus.send('task.instance.completed' as any, event.payload as any);
+      eventBus.send('task:instance:completed' as any, event.payload as any);
     } catch (error) {
       console.error('�?[CompleteTaskInstance] Failed to publish event', error);
     }
   }
 }
-

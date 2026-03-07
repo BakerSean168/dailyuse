@@ -47,7 +47,7 @@ function buildExpiredSession(identityId: IdentityId): AuthSession {
     identityId,
     deviceInfo: DeviceInfo.createDefault('test-device'),
     refreshTokenHash: 'hash-abc',
-    status: SessionStatus.EXPIRED,
+    status: SessionStatus.Expired,
     createdAt: new Date(Date.now() - 2 * REFRESH_TOKEN_DURATION_MS),
     expiresAt: new Date(Date.now() - REFRESH_TOKEN_DURATION_MS),
     lastActiveAt: new Date(Date.now() - 2 * REFRESH_TOKEN_DURATION_MS),

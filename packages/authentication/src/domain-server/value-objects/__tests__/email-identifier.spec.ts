@@ -8,7 +8,7 @@ describe('EmailIdentifier', () => {
   describe('create', () => {
     it('should create an email identifier with valid email', () => {
       const identifier = EmailIdentifier.create('test@example.com');
-      expect(identifier.type).toBe('EMAIL');
+      expect(identifier.type).toBe('Email');
       expect(identifier.value).toBe('test@example.com');
       expect(identifier.isVerified).toBe(false);
     });
@@ -57,14 +57,14 @@ describe('EmailIdentifier', () => {
       const identifier = EmailIdentifier.create('test@example.com', true);
       const dto = identifier.toDTO();
       expect(dto).toEqual({
-        type: 'EMAIL',
+        type: 'Email',
         value: 'test@example.com',
         isVerified: true,
       });
     });
 
     it('should deserialize from DTO', () => {
-      const dto = { type: 'EMAIL' as const, value: 'test@example.com', isVerified: true };
+      const dto = { type: 'Email' as const, value: 'test@example.com', isVerified: true };
       const identifier = EmailIdentifier.fromDTO(dto);
       expect(identifier.value).toBe('test@example.com');
       expect(identifier.isVerified).toBe(true);
