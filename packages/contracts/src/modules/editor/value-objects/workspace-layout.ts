@@ -9,9 +9,9 @@
  * 工作区布局 - Server 接口
  */
 export interface IWorkspaceLayoutServer {
-  sidebarPosition: 'left' | 'right';
+  sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
-  panelPosition: 'bottom' | 'right';
+  panelPosition: 'Bottom' | 'Right';
   panelHeight: number;
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
@@ -33,9 +33,9 @@ export interface IWorkspaceLayoutServer {
  * 工作区布局 - Client 接口
  */
 export interface IWorkspaceLayoutClient {
-  sidebarPosition: 'left' | 'right';
+  sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
-  panelPosition: 'bottom' | 'right';
+  panelPosition: 'Bottom' | 'Right';
   panelHeight: number;
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
@@ -51,9 +51,9 @@ export interface IWorkspaceLayoutClient {
  * Workspace Layout Server DTO
  */
 export interface WorkspaceLayoutServerDTO {
-  sidebarPosition: 'left' | 'right';
+  sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
-  panelPosition: 'bottom' | 'right';
+  panelPosition: 'Bottom' | 'Right';
   panelHeight: number;
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
@@ -63,9 +63,9 @@ export interface WorkspaceLayoutServerDTO {
  * Workspace Layout Client DTO
  */
 export interface WorkspaceLayoutClientDTO {
-  sidebarPosition: 'left' | 'right';
+  sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
-  panelPosition: 'bottom' | 'right';
+  panelPosition: 'Bottom' | 'Right';
   panelHeight: number;
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
@@ -75,9 +75,9 @@ export interface WorkspaceLayoutClientDTO {
  * Workspace Layout Persistence DTO
  */
 export interface WorkspaceLayoutPersistenceDTO {
-  sidebar_position: 'left' | 'right';
+  sidebar_position: 'Left' | 'Right';
   sidebar_width: number;
-  panel_position: 'bottom' | 'right';
+  panel_position: 'Bottom' | 'Right';
   panel_height: number;
   is_sidebar_visible: boolean;
   is_panel_visible: boolean;
@@ -91,9 +91,9 @@ export type WorkspaceLayoutClient = IWorkspaceLayoutClient;
 // ============ 默认�?============
 
 export const DEFAULT_WORKSPACE_LAYOUT: WorkspaceLayoutServerDTO = {
-  sidebarPosition: 'left',
+  sidebarPosition: 'Left',
   sidebarWidth: 300,
-  panelPosition: 'bottom',
+  panelPosition: 'Bottom',
   panelHeight: 200,
   isSidebarVisible: true,
   isPanelVisible: false,

@@ -1,10 +1,10 @@
 export const OAuthProvider = {
-    GOOGLE: 'GOOGLE',
-    FACEBOOK: 'FACEBOOK',
-    GITHUB: 'GITHUB',
-    APPLE: 'APPLE',
-    WECHAT: 'WECHAT',
-    WEIBO: 'WEIBO'
+  Google: 'Google',
+  Facebook: 'Facebook',
+  Github: 'Github',
+  Apple: 'Apple',
+  Wechat: 'Wechat',
+  Weibo: 'Weibo',
 } as const;
 
-export type OAuthProvider = typeof OAuthProvider[keyof typeof OAuthProvider];
+export type OAuthProvider = (typeof OAuthProvider)[keyof typeof OAuthProvider];

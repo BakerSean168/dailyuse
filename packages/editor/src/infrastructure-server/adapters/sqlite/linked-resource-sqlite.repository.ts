@@ -6,6 +6,7 @@ import type Database from 'better-sqlite3';
 import { LinkedResource } from '../../../domain-server/entities/linked-resource';
 import type { ILinkedResourceRepository } from '../../../domain-server/repositories/ILinkedResourceRepository';
 import type { LinkedSourceType, LinkedTargetType } from '@dailyuse/contracts/editor';
+import { LinkedResourceSqliteMapper } from './mappers/linked-resource-sqlite.mapper';
 
 export class SqliteLinkedResourceRepository implements ILinkedResourceRepository {
   constructor(private db: Database.Database) {}
@@ -16,7 +17,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
 
     if (!row) return null;
 
-    return this.rowToResource(row);
+    return LinkedResourceSqliteMapper.toDomain(row);
   }
 
   async findBySourceDocumentId(sourceDocumentId: string): Promise<LinkedResource[]> {
@@ -25,7 +26,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     );
     const rows = stmt.all(sourceDocumentId) as any[];
 
-    return rows.map((row) => this.rowToResource(row));
+    return rows.map((row) => LinkedResourceSqliteMapper.toDomain(row));
   }
 
   async findByTargetDocumentId(targetDocumentId: string): Promise<LinkedResource[]> {
@@ -34,7 +35,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     );
     const rows = stmt.all(targetDocumentId) as any[];
 
-    return rows.map((row) => this.rowToResource(row));
+    return rows.map((row) => LinkedResourceSqliteMapper.toDomain(row));
   }
 
   async findBySourceType(
@@ -46,7 +47,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     );
     const rows = stmt.all(sourceDocumentId, sourceType) as any[];
 
-    return rows.map((row) => this.rowToResource(row));
+    return rows.map((row) => LinkedResourceSqliteMapper.toDomain(row));
   }
 
   async findByTargetType(
@@ -58,7 +59,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     );
     const rows = stmt.all(sourceDocumentId, targetType) as any[];
 
-    return rows.map((row) => this.rowToResource(row));
+    return rows.map((row) => LinkedResourceSqliteMapper.toDomain(row));
   }
 
   async findInvalid(workspaceId: string): Promise<LinkedResource[]> {
@@ -70,7 +71,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     );
     const rows = stmt.all(workspaceId) as any[];
 
-    return rows.map((row) => this.rowToResource(row));
+    return rows.map((row) => LinkedResourceSqliteMapper.toDomain(row));
   }
 
   async findNeedingValidation(threshold: number): Promise<LinkedResource[]> {
@@ -81,7 +82,7 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
     );
     const rows = stmt.all(Date.now() - threshold) as any[];
 
-    return rows.map((row) => this.rowToResource(row));
+    return rows.map((row) => LinkedResourceSqliteMapper.toDomain(row));
   }
 
   async save(resource: LinkedResource): Promise<void> {
@@ -177,25 +178,5 @@ export class SqliteLinkedResourceRepository implements ILinkedResourceRepository
       )
       .get(workspaceId) as { cnt: number };
     return row.cnt;
-  }
-
-  private rowToResource(row: any): LinkedResource {
-    return LinkedResource.load({
-      id: row.id,
-      workspaceId: row.workspace_id ?? '',
-      identityId: row.identityId ?? row.identity_id ?? '',
-      sourceDocumentId: row.source_document_id,
-      sourceType: row.source_type,
-      sourceLine: row.source_line ?? null,
-      sourceColumn: row.source_column ?? null,
-      targetPath: row.target_path ?? '',
-      targetType: row.target_type,
-      targetDocumentId: row.target_document_id,
-      targetAnchor: row.target_anchor ?? null,
-      isValid: row.is_valid === 1,
-      lastValidatedAt: row.last_verified_at ? new Date(row.last_verified_at) : null,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    } as any);
   }
 }

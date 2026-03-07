@@ -10,7 +10,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import type { IRepositoryContentPort } from '../application-server';
-import { EditorContainer } from '../infrastructure-server';
+import { EditorContainer } from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('EditorElectron');
@@ -55,9 +55,8 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       const workspaceRepo = container.getEditorWorkspaceRepository();
 
       // IPC Handlers
-      ipcMain.handle(
-        Ch.DOCUMENT_LIST,
-        (_, params) => workspaceRepo.findByIdentityId(params?.identityId ?? params),
+      ipcMain.handle(Ch.DOCUMENT_LIST, (_, params) =>
+        workspaceRepo.findByIdentityId(params?.identityId ?? params),
       );
       ipcMain.handle(Ch.DOCUMENT_GET, (_, id) => workspaceRepo.findById(id));
       ipcMain.handle(Ch.GET_CONTENT, (_, resourceId) => contentPort.getContent(resourceId));

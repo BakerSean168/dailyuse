@@ -1,9 +1,9 @@
 /**
  * Priority Calculator
- * 
+ *
  * 优先级计算工具
  * 基于重要性（ImportanceLevel）和紧急性（UrgencyLevel）计算优先级权重
- * 
+ *
  * 适用于：Goal、Task 等需要优先级排序的实体
  */
 
@@ -65,7 +65,7 @@ export interface PriorityCalculationResult {
 
 /**
  * 计算优先级权重
- * 
+ *
  * 计算逻辑：
  * 1. 基础权重 = 重要性权重 + 紧急性权重 (2-10)
  * 2. 时间权重 = 基于截止时间的额外权重 (0-5)
@@ -76,7 +76,7 @@ export interface PriorityCalculationResult {
  *    - 距离截止不到30天：+1
  * 3. 最终权重 = 基础权重 + 时间权重
  * 4. 优先级分数 = (最终权重 / 15) * 100
- * 
+ *
  * @example
  * ```ts
  * const result = calculatePriority({
@@ -84,20 +84,12 @@ export interface PriorityCalculationResult {
  *   urgency: 'high',
  *   dueDate: Date.now() + 86400000, // 明天
  * });
- * console.log(result.level); // 'HIGH'
+ * console.log(result.level); // 'High'
  * console.log(result.score); // 86.67
  * ```
  */
-export function calculatePriority(
-  options: PriorityCalculationOptions,
-): PriorityCalculationResult {
-  const {
-    importance,
-    urgency,
-    dueDate,
-    currentTime = Date.now(),
-    considerTime = true,
-  } = options;
+export function calculatePriority(options: PriorityCalculationOptions): PriorityCalculationResult {
+  const { importance, urgency, dueDate, currentTime = Date.now(), considerTime = true } = options;
 
   // 1. 计算基础权重
   const importanceWeight = IMPORTANCE_WEIGHTS[importance] || 0;

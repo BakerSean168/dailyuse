@@ -1,8 +1,8 @@
 /**
  * RuleTag 值对象
- * 
+ *
  * 【规范说明：Class 类型值对象 - 参考 domain-shared-class-value-object-spec.md】
- * 
+ *
  * 规则标签：用于规则分类和检索
  * - 自动规范化为 lowercase-kebab-case
  * - 防止标签碎片化（" DDD " vs "ddd" vs "DDD"）
@@ -12,10 +12,7 @@
 import { ValueObject } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type {
-  RuleTagDTO,
-  RuleTagPersistenceDTO,
-} from '../../contracts/value-objects/rule-tag';
+import type { RuleTagDTO, RuleTagPersistenceDTO } from '../../contracts/value-objects/rule-tag';
 
 /**
  * 内部 Props 接口
@@ -27,7 +24,7 @@ interface RuleTagProps {
 
 /**
  * RuleTag 值对象实现
- * 
+ *
  * 包含：
  * - value: 标签值（自动规范化为 lowercase-kebab-case）
  */
@@ -39,7 +36,7 @@ export class RuleTag extends ValueObject<RuleTagProps> {
   // ================= 工厂方法 1: 标准创建（带规范化）=================
   /**
    * 创建新的标签（自动规范化）
-   * 
+   *
    * @param raw - 原始标签输入（会自动规范化）
    * @example
    *   " My Tag " -> "my-tag"
@@ -51,7 +48,7 @@ export class RuleTag extends ValueObject<RuleTagProps> {
 
     const props: RuleTagProps = { value: normalized };
 
-    const validationResult = this.validate(props);
+    const validationResult = RuleTag.validate(props);
     if (!validationResult.ok) {
       return error(
         validationResult.error.code,
@@ -93,7 +90,7 @@ export class RuleTag extends ValueObject<RuleTagProps> {
     if (!/^[a-z0-9-]+$/.test(props.value)) {
       return error(
         'VALIDATION_ERROR',
-        'Tag must contain only lowercase letters, numbers, and hyphens'
+        'Tag must contain only lowercase letters, numbers, and hyphens',
       );
     }
 

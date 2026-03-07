@@ -5,6 +5,7 @@
 import type Database from 'better-sqlite3';
 import { SearchEngine } from '../../../domain-server/entities/search-engine';
 import type { ISearchEngineRepository } from '../../../domain-server/repositories/ISearchEngineRepository';
+import { SearchEngineSqliteMapper } from './mappers/search-engine-sqlite.mapper';
 
 export class SqliteSearchEngineRepository implements ISearchEngineRepository {
   constructor(private db: Database.Database) {}
@@ -15,7 +16,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     if (!row) return null;
 
-    return this.rowToSearchEngine(row);
+    return SearchEngineSqliteMapper.toDomain(row);
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<SearchEngine | null> {
@@ -24,7 +25,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
 
     if (!row) return null;
 
-    return this.rowToSearchEngine(row);
+    return SearchEngineSqliteMapper.toDomain(row);
   }
 
   async findIndexing(): Promise<SearchEngine[]> {
@@ -33,7 +34,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     );
     const rows = stmt.all() as any[];
 
-    return rows.map((row) => this.rowToSearchEngine(row));
+    return rows.map((row) => SearchEngineSqliteMapper.toDomain(row));
   }
 
   async findOutdated(threshold: number): Promise<SearchEngine[]> {
@@ -42,7 +43,7 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
     );
     const rows = stmt.all(Date.now() - threshold) as any[];
 
-    return rows.map((row) => this.rowToSearchEngine(row));
+    return rows.map((row) => SearchEngineSqliteMapper.toDomain(row));
   }
 
   async save(engine: SearchEngine): Promise<void> {
@@ -91,23 +92,5 @@ export class SqliteSearchEngineRepository implements ISearchEngineRepository {
       .prepare(`SELECT COUNT(*) as cnt FROM search_engines WHERE is_indexing = 1`)
       .get() as { cnt: number };
     return row.cnt;
-  }
-
-  private rowToSearchEngine(row: any): SearchEngine {
-    return SearchEngine.load({
-      id: row.id,
-      workspaceId: row.workspace_id,
-      identityId: row.identityId ?? row.identity_id ?? '',
-      name: row.name ?? '',
-      description: row.description ?? null,
-      indexPath: row.index_path ?? '',
-      indexedDocumentCount: row.indexed_document_count ?? 0,
-      totalDocumentCount: row.total_document_count ?? 0,
-      lastIndexedAt: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      isIndexing: row.is_indexing === 1,
-      indexProgress: row.index_progress ?? null,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    } as any);
   }
 }

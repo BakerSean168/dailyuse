@@ -2,28 +2,32 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { IdentityId, TaskFolderId, GoalId, KeyResultId } from '../../../primitives';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
-import type {
-  TaskTemplateClientDTO,
-  TaskInstanceClientDTO,
-} from '../aggregates';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../aggregates';
+import { TaskType } from '../value-objects';
 import type { RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
 import type { TaskTimeConfigDTO } from '../value-objects';
 
-export const TaskTimeConfigSchema = z.custom<TaskTimeConfigDTO>().openapi({ type: 'object', description: '任务时间配置' });
+export const TaskTimeConfigSchema = z
+  .custom<TaskTimeConfigDTO>()
+  .openapi({ type: 'object', description: '任务时间配置' });
 
 export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
 
-export const RecurrenceConfigSchema = z.custom<RecurrenceRuleDTO>().openapi({ type: 'object', description: '循环规则配置' });
+export const RecurrenceConfigSchema = z
+  .custom<RecurrenceRuleDTO>()
+  .openapi({ type: 'object', description: '循环规则配置' });
 
 export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;
 
-export const TaskReminderConfigSchema = z.custom<TaskReminderConfigDTO>().openapi({ type: 'object', description: '任务提醒配置' });
+export const TaskReminderConfigSchema = z
+  .custom<TaskReminderConfigDTO>()
+  .openapi({ type: 'object', description: '任务提醒配置' });
 
 export const CreateTaskTemplateSchema = z.object({
   identityId: brandedId<IdentityId>().optional(),
   name: z.string().min(1, '标题不能为空'),
   description: z.string().optional().nullable(),
-  taskType: z.enum(['ONE_TIME', 'RECURRING']).default('RECURRING'),
+  taskType: z.enum([TaskType.OneTime, TaskType.Recurring]).default(TaskType.Recurring),
   timeConfig: TaskTimeConfigSchema,
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
   reminderConfig: TaskReminderConfigSchema.optional().nullable(),
@@ -45,7 +49,14 @@ export const UpdateTaskTemplateSchema = z.object({
   description: z.string().optional().nullable(),
   timeConfig: TaskTimeConfigSchema.optional().nullable(),
   recurrenceRule: RecurrenceConfigSchema.optional().nullable(),
-  importance: z.custom<ImportanceLevel>().openapi({ type: 'string', enum: ['low', 'medium', 'high', 'critical'], description: '重要程度' }).optional(),
+  importance: z
+    .custom<ImportanceLevel>()
+    .openapi({
+      type: 'string',
+      enum: ['low', 'medium', 'high', 'critical'],
+      description: '重要程度',
+    })
+    .optional(),
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),

@@ -223,8 +223,8 @@ export class Goal extends AggregateRoot<GoalId> {
   /**
    * 📊 计算属性：优先级级别
    */
-  get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-    return mapPriorityToLevel(this._props.priority);
+  get priorityLevel(): 'Critical' | 'High' | 'Medium' | 'Low' {
+    return mapPriorityToLevel(this._props.priority) as 'Critical' | 'High' | 'Medium' | 'Low';
   }
 
   /**
@@ -396,7 +396,7 @@ export class Goal extends AggregateRoot<GoalId> {
       feasibilityAnalysis: params.feasibilityAnalysis?.trim() || null,
       motivation: params.motivation?.trim() || null,
       status: GoalStatus.Active,
-      importance: params.importance ?? ('MEDIUM' as ImportanceLevel),
+      importance: params.importance ?? ImportanceLevel.Moderate,
       priority: 0,
       category: params.category?.trim() || null,
       tags: params.tags ?? [],
@@ -568,7 +568,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public extendTargetDate(extensionDays: number): void {
     if (extensionDays <= 0) {
-      throw new GoalInvalidDateModificationError('extend', extensionDays);
+      throw new GoalInvalidDateModificationError('Extend', extensionDays);
     }
     if (!this._props.targetDate) {
       throw new GoalTargetDateNotSetError();
@@ -586,7 +586,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public shortenTargetDate(shortenDays: number): void {
     if (shortenDays <= 0) {
-      throw new GoalInvalidDateModificationError('shorten', shortenDays);
+      throw new GoalInvalidDateModificationError('Shorten', shortenDays);
     }
     if (!this._props.targetDate) {
       throw new GoalTargetDateNotSetError();
@@ -827,7 +827,7 @@ export class Goal extends AggregateRoot<GoalId> {
         currentValue: params.currentValue ?? 0,
         targetValue: params.targetValue,
         valueType: params.valueType as any,
-        aggregationMethod: (params.aggregationMethod || 'LAST') as any,
+        aggregationMethod: (params.aggregationMethod || 'Last') as any,
         unit: params.unit ?? null,
       },
       weight: params.weight,
@@ -1021,7 +1021,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
     return {
       totalProgress,
-      calculationMode: 'weighted_average' as const,
+      calculationMode: 'WeightedAverage' as const,
       krContributions: this._props.keyResults.map((kr) => {
         const krProgress = kr.calculatePercentage();
         const contribution =

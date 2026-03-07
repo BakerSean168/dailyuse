@@ -1,11 +1,11 @@
 /**
  * Task提醒调度处理器
- * 
+ *
  * 职责：
  * - 监听 ScheduleTaskTriggered 事件
  * - 检查当天的 TaskInstance
  * - 发送提醒通知
- * 
+ *
  * 设计策略（方案 C）：
  * - 不创建 ReminderTemplate（避免资源浪费）
  * - 使用 ScheduleTask 的 cron 触发
@@ -15,8 +15,7 @@
 
 import type { IDomainEvent } from '@dailyuse/contracts/shared';
 import type { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
-
-type TaskType = 'ONE_TIME' | 'RECURRING';
+import type { TaskType } from '@dailyuse/contracts/modules/task';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 
 interface ScheduleTaskTriggeredPayload {
@@ -63,7 +62,7 @@ export class TaskReminderScheduleHandler {
       today.setHours(0, 0, 0, 0);
       const dayStart = today.getTime();
       const dayEnd = dayStart + 24 * 60 * 60 * 1000 - 1;
-      
+
       const instances = await this.taskInstanceRepository.findByTemplateIdAndDateRange(
         templateId,
         dayStart,
@@ -71,13 +70,17 @@ export class TaskReminderScheduleHandler {
       );
 
       if (instances.length === 0) {
-        console.warn(`[TaskReminderScheduleHandler] 未找到今天的任务实例: template=${templateId}, date=${new Date(today).toISOString()}`);
+        console.warn(
+          `[TaskReminderScheduleHandler] 未找到今天的任务实例: template=${templateId}, date=${new Date(today).toISOString()}`,
+        );
         return;
       }
 
       const instance = instances[0];
       const taskTitle = metadata?.payload?.taskTitle ?? instance.templateId;
-      console.log(`[TaskReminderScheduleHandler] 找到今天的任务实例: ${instance.id}, title="${taskTitle}"`);
+      console.log(
+        `[TaskReminderScheduleHandler] 找到今天的任务实例: ${instance.id}, title="${taskTitle}"`,
+      );
 
       // 2. 获取提醒配置
       const reminderTriggers = metadata?.payload?.reminderTriggers;
@@ -88,7 +91,7 @@ export class TaskReminderScheduleHandler {
 
       // 3. 发送提醒通知
       await this.sendReminderNotification(instance, reminderTriggers);
-      
+
       console.log(`✅ [TaskReminderScheduleHandler] 提醒发送成功: instance=${instance.id}`);
     } catch (error) {
       console.error(`❌ [TaskReminderScheduleHandler] 处理失败:`, error);
@@ -97,7 +100,7 @@ export class TaskReminderScheduleHandler {
 
   /**
    * 发送提醒通知
-   * 
+   *
    * @param instance 任务实例
    * @param triggers 提醒触发器配置
    */
@@ -108,7 +111,7 @@ export class TaskReminderScheduleHandler {
       relativeValue?: number;
       relativeUnit?: ReminderTimeUnit;
       absoluteTime?: number;
-    }>
+    }>,
   ): Promise<void> {
     // 获取第一个触发器（简化处理，后续可以支持多个）
     const trigger = triggers[0];
@@ -127,7 +130,9 @@ export class TaskReminderScheduleHandler {
     // 检查是否已经到达提醒时间
     const now = Date.now();
     if (reminderTime > now) {
-      console.log(`[TaskReminderScheduleHandler] 提醒时间未到，跳过: reminderTime=${new Date(reminderTime).toISOString()}, now=${new Date(now).toISOString()}`);
+      console.log(
+        `[TaskReminderScheduleHandler] 提醒时间未到，跳过: reminderTime=${new Date(reminderTime).toISOString()}, now=${new Date(now).toISOString()}`,
+      );
       return;
     }
 

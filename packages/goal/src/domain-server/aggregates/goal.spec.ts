@@ -25,7 +25,7 @@ function createTestGoal(opts?: { name?: string }): Goal {
     color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'MEDIUM' as any,
+    importance: 'Moderate' as any,
     category: null,
     tags: [],
     startDate: null,
@@ -162,14 +162,14 @@ describe('Goal.calculateProgress()', () => {
 // ============================================================
 
 describe('Goal.getProgressBreakdown()', () => {
-  it('should return breakdown with calculation mode "weighted_average"', () => {
+  it('should return breakdown with calculation mode "WeightedAverage"', () => {
     const goal = createTestGoal();
     addKeyResult(goal, { title: 'KR1', targetValue: 100, currentValue: 50, weight: 3 });
     addKeyResult(goal, { title: 'KR2', targetValue: 100, currentValue: 100, weight: 2 });
 
     const breakdown = goal.getProgressBreakdown();
 
-    expect(breakdown.calculationMode).toBe('weighted_average');
+    expect(breakdown.calculationMode).toBe('WeightedAverage');
     // (50*3 + 100*2) / (3+2) = (150 + 200) / 5 = 70
     expect(breakdown.totalProgress).toBe(70);
     expect(breakdown.krContributions).toHaveLength(2);

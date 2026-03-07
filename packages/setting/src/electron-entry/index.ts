@@ -6,8 +6,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { SettingModule } from '../infrastructure-server';
-import { SettingContainer } from '../infrastructure-server/di/setting-container';
+import { SettingSqliteModule, SettingContainer } from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SettingElectron');
@@ -27,7 +26,7 @@ export const SettingElectronModule: IElectronModule = {
   name: 'Setting',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new SettingModule('sqlite', ctx.db);
+    const mod = new SettingSqliteModule(ctx.db);
 
     const resolveIdentityId = (payload: unknown): string => {
       if (typeof payload === 'string') return payload;
@@ -38,7 +37,9 @@ export const SettingElectronModule: IElectronModule = {
       return '';
     };
 
-    ipcMain.handle(Ch.GET_ALL, (_, params) => mod.getUserSetting.execute(resolveIdentityId(params)));
+    ipcMain.handle(Ch.GET_ALL, (_, params) =>
+      mod.getUserSetting.execute(resolveIdentityId(params)),
+    );
     ipcMain.handle(Ch.GET, (_, params) => mod.getUserSetting.execute(resolveIdentityId(params)));
     ipcMain.handle(Ch.PATCH, (_, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
@@ -48,7 +49,10 @@ export const SettingElectronModule: IElectronModule = {
       return mod.patchUserSetting.execute(identityId, category as any, patch);
     });
     ipcMain.handle(Ch.RESET, (_, params) => {
-      const payload = (params && typeof params === 'object' ? params : {}) as Record<string, unknown>;
+      const payload = (params && typeof params === 'object' ? params : {}) as Record<
+        string,
+        unknown
+      >;
       const category = typeof payload.category === 'string' ? payload.category : undefined;
       return mod.resetUserSetting.execute(resolveIdentityId(params), category);
     });
@@ -57,7 +61,7 @@ export const SettingElectronModule: IElectronModule = {
       return mod.importSettings.execute(
         resolveIdentityId(dto),
         (payload.data as Record<string, unknown>) ?? payload,
-        (payload.options as { merge?: boolean; validate?: boolean } | undefined),
+        payload.options as { merge?: boolean; validate?: boolean } | undefined,
       );
     });
     ipcMain.handle(Ch.EXPORT, (_, params) => mod.exportSettings.execute(resolveIdentityId(params)));

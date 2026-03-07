@@ -22,7 +22,7 @@ function createTestGoal(opts?: { name?: string }): Goal {
     color: '#3B82F6',
     feasibilityAnalysis: null,
     motivation: null,
-    importance: 'MEDIUM' as any,
+    importance: 'Moderate' as any,
     category: null,
     tags: [],
     startDate: null,

@@ -5,9 +5,9 @@
 
 // ============ 接口定义 ============
 export const SessionSplitType = {
-  Horizontal: 'horizontal',
-  Vertical: 'vertical',
-  Grid: 'grid',
+  Horizontal: 'Horizontal',
+  Vertical: 'Vertical',
+  Grid: 'Grid',
 } as const;
 
 export type SessionSplitType = (typeof SessionSplitType)[keyof typeof SessionSplitType];
@@ -83,7 +83,7 @@ export type SessionLayoutClient = ISessionLayoutClient;
 // ============ 默认�?============
 
 export const DEFAULT_SESSION_LAYOUT: SessionLayoutServerDTO = {
-  splitType: 'horizontal',
+  splitType: 'Horizontal',
   groupCount: 1,
   activeGroupIndex: 0,
 };

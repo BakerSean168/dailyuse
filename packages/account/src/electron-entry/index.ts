@@ -12,8 +12,11 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { ElectronAccountRepository, AccountModule } from '../infrastructure-server';
-import { AccountContainer } from '../infrastructure-server/di/account-container';
+import {
+  ElectronAccountRepository,
+  AccountModule,
+  AccountContainer,
+} from '../infrastructure-server/sqlite';
 import { registerAccountEventListeners } from '../application-server/handlers';
 import { createLogger } from '@dailyuse/utils';
 
@@ -41,13 +44,9 @@ export const AccountElectronModule: IElectronModule = {
     registerAccountEventListeners(accountRepository);
 
     // 3. IPC Handlers — delegate to AccountModule use cases
-    ipcMain.handle(Ch.LIST, (_event, params) =>
-      accountModule.accountRepository.findAll(params),
-    );
+    ipcMain.handle(Ch.LIST, (_event, params) => accountModule.accountRepository.findAll(params));
 
-    ipcMain.handle(Ch.GET, (_event, id: string) =>
-      accountModule.getProfile.execute(id),
-    );
+    ipcMain.handle(Ch.GET, (_event, id: string) => accountModule.getProfile.execute(id));
 
     ipcMain.handle(Ch.GET_CURRENT, (_event, accountId: string) =>
       accountModule.getProfile.execute(accountId),

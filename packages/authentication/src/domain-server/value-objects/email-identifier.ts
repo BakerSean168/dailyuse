@@ -1,13 +1,11 @@
 /**
  * EmailIdentifier 值对象
- * 
+ *
  * 邮箱标识符 - 用于"查找用户"
  * 不可变，以值定义身份
  */
 
-import type {
-  EmailIdentifierDTO,
-} from '@dailyuse/contracts/authentication';
+import type { EmailIdentifierDTO } from '@dailyuse/contracts/authentication';
 
 import { EmailAddress } from '../../domain-shared';
 
@@ -15,11 +13,11 @@ import { EmailAddress } from '../../domain-shared';
  * 邮箱标识符值对象
  */
 export class EmailIdentifier {
-  readonly type = 'EMAIL' as const;
+  readonly type = 'Email' as const;
 
   private constructor(
     private readonly _value: EmailAddress,
-    private readonly _isVerified: boolean
+    private readonly _isVerified: boolean,
   ) {}
 
   // ================= 工厂方法 =================
@@ -84,7 +82,7 @@ export class EmailIdentifier {
 
   public toDTO(): EmailIdentifierDTO {
     return {
-      type: 'EMAIL',
+      type: 'Email',
       value: this._value.value,
       isVerified: this._isVerified,
     };

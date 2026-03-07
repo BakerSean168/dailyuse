@@ -20,7 +20,7 @@ export interface KnowledgeGenerationTask {
   completedAt?: number;
 }
 
-export type KnowledgeGenerationTaskStatus = 'PENDING' | 'GENERATING' | 'COMPLETED' | 'FAILED';
+export type KnowledgeGenerationTaskStatus = 'Pending' | 'Generating' | 'Completed' | 'Failed';
 
 /**
  * Factory function to create a new task
@@ -40,7 +40,7 @@ export function createKnowledgeGenerationTask(params: {
     documentCount: params.documentCount,
     targetAudience: params.targetAudience,
     folderPath: params.folderPath,
-    status: 'PENDING',
+    status: 'Pending',
     progress: 0,
     generatedDocumentIds: [],
     createdAt: Date.now(),
@@ -58,7 +58,7 @@ export function updateTaskProgress(
   return {
     ...task,
     progress: Math.min(progress, 100),
-    status: 'GENERATING',
+    status: 'Generating',
   };
 }
 
@@ -71,7 +71,7 @@ export function completeTask(
 ): KnowledgeGenerationTask {
   return {
     ...task,
-    status: 'COMPLETED',
+    status: 'Completed',
     progress: 100,
     generatedDocumentIds: documentIds,
     completedAt: Date.now(),
@@ -84,7 +84,7 @@ export function completeTask(
 export function failTask(task: KnowledgeGenerationTask, error: string): KnowledgeGenerationTask {
   return {
     ...task,
-    status: 'FAILED',
+    status: 'Failed',
     error,
     completedAt: Date.now(),
   };

@@ -10,8 +10,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { TaskModule } from '../infrastructure-server';
-import { TaskContainer } from '../infrastructure-server/di/task-container';
+import { TaskSqliteModule, TaskContainer } from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('TaskElectron');
@@ -40,7 +39,7 @@ export const TaskElectronModule: IElectronModule = {
 
   register(ctx: IElectronModuleContext): void {
     // 1. Composition Root — TaskModule wires repos + use cases internally
-    const taskModule = new TaskModule('sqlite', ctx.db);
+    const taskModule = new TaskSqliteModule(ctx.db);
 
     // 2. IPC Handlers — delegate to TaskModule use cases
     ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => taskModule.listTaskTemplates.execute(params));
@@ -61,7 +60,9 @@ export const TaskElectronModule: IElectronModule = {
       taskModule.activateTaskTemplate.execute(payload?.id ?? payload),
     );
 
-    ipcMain.handle(Ch.INSTANCE_LIST, (_, params) => taskModule.listTaskInstancesByAccount.execute(params));
+    ipcMain.handle(Ch.INSTANCE_LIST, (_, params) =>
+      taskModule.listTaskInstancesByAccount.execute(params),
+    );
     ipcMain.handle(Ch.INSTANCE_GET, (_, id) => taskModule.getTaskInstance.execute(id));
     ipcMain.handle(Ch.INSTANCE_CREATE, (_, dto) => taskModule.startTaskInstance.execute(dto));
     ipcMain.handle(Ch.INSTANCE_DELETE, (_, id) => taskModule.deleteTaskInstance.execute(id));

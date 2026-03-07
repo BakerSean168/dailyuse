@@ -10,4 +10,4 @@ export { SqliteEditorTabRepository } from './editor-tab-sqlite.repository';
 export { SqliteEditorSessionRepository } from './editor-session-sqlite.repository';
 export { SqliteLinkedResourceRepository } from './linked-resource-sqlite.repository';
 export { SqliteSearchEngineRepository } from './search-engine-sqlite.repository';
-
+export * from './mappers';

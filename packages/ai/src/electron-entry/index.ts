@@ -6,8 +6,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AIModule } from '../infrastructure-server';
-import { AIContainer } from '../infrastructure-server/di/ai-container';
+import { AISqliteModule, AIContainer } from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AIElectron');
@@ -34,7 +33,7 @@ export const AIElectronModule: IElectronModule = {
   name: 'AI',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new AIModule('sqlite', ctx.db);
+    const mod = new AISqliteModule(ctx.db);
 
     const chatSvc = mod.chatService;
     const convSvc = mod.conversationService;
@@ -53,7 +52,9 @@ export const AIElectronModule: IElectronModule = {
       }
       return convSvc.getConversation(payload.conversationId, payload.includeMessages);
     });
-    ipcMain.handle(Ch.CONVERSATION_CREATE, (_, dto) => convSvc.createConversation(dto.identityId, dto.title));
+    ipcMain.handle(Ch.CONVERSATION_CREATE, (_, dto) =>
+      convSvc.createConversation(dto.identityId, dto.title),
+    );
     ipcMain.handle(Ch.CONVERSATION_DELETE, (_, id) => convSvc.deleteConversation(id));
     ipcMain.handle(Ch.CONVERSATION_CLEAR, (_, id) => convSvc.deleteConversation(id));
     ipcMain.handle(Ch.ANALYZE_TASK, (_, dto) => genSvc.summarizeText(dto));

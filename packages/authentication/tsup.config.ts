@@ -8,6 +8,7 @@ export default defineConfig({
     'src/application-server/index.ts',
     'src/application-client/index.ts',
     'src/infrastructure-server/index.ts',
+    'src/infrastructure-server/sqlite.ts',
     'src/infrastructure-client/index.ts',
     'src/api/index.ts',
     'src/electron-entry/index.ts',

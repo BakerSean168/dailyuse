@@ -12,14 +12,14 @@ import type { TransferDate, DomainDate, PersistenceDate } from '../../primitives
  */
 export interface ScheduleConfig {
   // 模式：固定时间点 vs Cron 周期
-  mode: 'FIXED' | 'CRON';
+  mode: ScheduleMode;
   datetime?: DomainDate; // ISO String (for FIXED)
   cronExpression?: string; // (for CRON)
   timezone?: string; // 时区 (非常重要)
 }
 export interface ScheduleConfigDTO {
   // 模式：固定时间点 vs Cron 周期
-  mode: 'FIXED' | 'CRON';
+  mode: ScheduleMode;
 
   // 具体的触发值
   datetime?: TransferDate; // ISO String (for FIXED)
@@ -31,7 +31,7 @@ export interface ScheduleConfigDTO {
 
 export interface ScheduleConfigPersistenceDTO {
   // 模式：固定时间点 vs Cron 周期
-  mode: 'FIXED' | 'CRON';
+  mode: ScheduleMode;
 
   // 具体的触发值
   datetime?: PersistenceDate; // ISO String (for FIXED)
@@ -40,3 +40,10 @@ export interface ScheduleConfigPersistenceDTO {
   // 时区 (非常重要)
   timezone?: string;
 }
+
+export const ScheduleMode = {
+  Fixed: 'Fixed',
+  Cron: 'Cron',
+} as const;
+
+export type ScheduleMode = (typeof ScheduleMode)[keyof typeof ScheduleMode];

@@ -6,8 +6,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { NotificationModule } from '../infrastructure-server';
-import { NotificationContainer } from '../infrastructure-server/di/notification-container';
+import { NotificationSqliteModule, NotificationContainer } from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('NotificationElectron');
@@ -31,7 +30,7 @@ export const NotificationElectronModule: IElectronModule = {
   name: 'Notification',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new NotificationModule('sqlite', ctx.db);
+    const mod = new NotificationSqliteModule(ctx.db);
 
     const svc = mod.notificationService;
     const templateSvc = mod.notificationTemplateService;
@@ -44,8 +43,12 @@ export const NotificationElectronModule: IElectronModule = {
     ipcMain.handle(Ch.DELETE, (_, id) => svc.deleteNotification(id));
     ipcMain.handle(Ch.CLEAR_ALL, (_, identityId) => svc.clearAll(identityId));
     ipcMain.handle(Ch.GET_UNREAD_COUNT, (_, identityId) => svc.getUnreadCount(identityId));
-    ipcMain.handle(Ch.SETTINGS_GET, (_, identityId) => mod.notificationChannelService.getPreferences(identityId));
-    ipcMain.handle(Ch.SETTINGS_UPDATE, (_, dto) => mod.notificationChannelService.updatePreferences(dto));
+    ipcMain.handle(Ch.SETTINGS_GET, (_, identityId) =>
+      mod.notificationChannelService.getPreferences(identityId),
+    );
+    ipcMain.handle(Ch.SETTINGS_UPDATE, (_, dto) =>
+      mod.notificationChannelService.updatePreferences(dto),
+    );
 
     logger.info('Notification module registered');
   },

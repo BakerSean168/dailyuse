@@ -3,12 +3,9 @@
  */
 
 import type Database from 'better-sqlite3';
-import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
-import { EditorWorkspaceId } from '../../../domain-shared';
-import { WorkspaceLayout } from '../../../domain-shared/value-objects/workspace-layout';
-import { WorkspaceSettings } from '../../../domain-shared/value-objects/workspace-settings';
-import { ProjectType } from '@dailyuse/contracts/editor';
+import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
+import { EditorWorkspaceSqliteMapper } from './mappers/editor-workspace-sqlite.mapper';
 
 export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceRepository {
   constructor(private db: Database.Database) {}
@@ -19,7 +16,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
     if (!row) return null;
 
-    return this.rowToWorkspace(row);
+    return EditorWorkspaceSqliteMapper.toDomain(row);
   }
 
   async findByIdentityId(identityId: string): Promise<EditorWorkspace[]> {
@@ -28,7 +25,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     );
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) => this.rowToWorkspace(row));
+    return rows.map((row) => EditorWorkspaceSqliteMapper.toDomain(row));
   }
 
   async findByIdentityIdAndName(identityId: string, name: string): Promise<EditorWorkspace | null> {
@@ -39,7 +36,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
     if (!row) return null;
 
-    return this.rowToWorkspace(row);
+    return EditorWorkspaceSqliteMapper.toDomain(row);
   }
 
   async findActiveByIdentityId(identityId: string): Promise<EditorWorkspace | null> {
@@ -50,7 +47,7 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
 
     if (!row) return null;
 
-    return this.rowToWorkspace(row);
+    return EditorWorkspaceSqliteMapper.toDomain(row);
   }
 
   async save(workspace: EditorWorkspace): Promise<void> {
@@ -115,35 +112,5 @@ export class SqliteEditorWorkspaceRepository implements IEditorWorkspaceReposito
     );
     const result = stmt.get(identityId) as { count: number };
     return result.count;
-  }
-
-  private rowToWorkspace(row: any): EditorWorkspace {
-    const layoutData = row.layout
-      ? typeof row.layout === 'string'
-        ? JSON.parse(row.layout)
-        : row.layout
-      : WorkspaceLayout.createDefault().toServerDTO();
-    const settingsData = row.settings
-      ? typeof row.settings === 'string'
-        ? JSON.parse(row.settings)
-        : row.settings
-      : WorkspaceSettings.createDefault().toServerDTO();
-
-    return EditorWorkspace.load({
-      id: EditorWorkspaceId.of(row.id),
-      identityId: row.identity_id,
-      name: row.name,
-      description: row.description ?? null,
-      projectPath: row.project_path ?? row.projectPath ?? '',
-      projectType: (row.project_type ?? row.projectType ?? ProjectType.Other) as ProjectType,
-      layout: WorkspaceLayout.fromDTO(layoutData),
-      settings: WorkspaceSettings.fromDTO(settingsData),
-      isActive: row.is_active === 1,
-      lastActiveSessionId: row.last_active_session_id ?? null,
-      lastAccessedAt: row.last_accessed_at ? new Date(row.last_accessed_at) : null,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      sessions: [],
-    } as any);
   }
 }

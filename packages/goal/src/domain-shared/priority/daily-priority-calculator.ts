@@ -56,7 +56,7 @@ const IMPORTANCE_SCORES: Record<ImportanceLevel, number> = {
 /**
  * 优先级级别定义
  */
-export type PriorityLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+export type PriorityLevel = 'Critical' | 'High' | 'Medium' | 'Low';
 
 /**
  * 优先级计算结果
@@ -69,7 +69,7 @@ export interface PriorityCalculationResult {
   /** 优先级显示文本 */
   text: string;
   /** 时间状态 */
-  timeStatus: 'overdue' | 'today' | 'tomorrow' | 'this_week' | 'future' | 'no_deadline';
+  timeStatus: 'Overdue' | 'Today' | 'Tomorrow' | 'ThisWeek' | 'Future' | 'NoDeadline';
   /** 剩余天数（负数表示已过期） */
   daysRemaining: number | null;
 }
@@ -197,21 +197,21 @@ export class DailyPriorityCalculator {
     daysRemaining: number | null,
   ): PriorityCalculationResult['timeStatus'] {
     if (daysRemaining === null) {
-      return 'no_deadline';
+      return 'NoDeadline';
     }
     if (daysRemaining < 0) {
-      return 'overdue';
+      return 'Overdue';
     }
     if (daysRemaining === 0) {
-      return 'today';
+      return 'Today';
     }
     if (daysRemaining === 1) {
-      return 'tomorrow';
+      return 'Tomorrow';
     }
     if (daysRemaining <= 7) {
-      return 'this_week';
+      return 'ThisWeek';
     }
-    return 'future';
+    return 'Future';
   }
 
   /**
@@ -223,18 +223,18 @@ export class DailyPriorityCalculator {
   public static mapScoreToLevel(score: number): PriorityLevel {
     // 已过期或今天到期
     if (score >= 5000) {
-      return 'CRITICAL';
+      return 'Critical';
     }
     // 明天或本周早期
     if (score >= 1500) {
-      return 'HIGH';
+      return 'High';
     }
     // 本周后期
     if (score >= 500) {
-      return 'MEDIUM';
+      return 'Medium';
     }
     // 未来或无期限
-    return 'LOW';
+    return 'Low';
   }
 
   /**
@@ -246,10 +246,10 @@ export class DailyPriorityCalculator {
   public static mapScoreToText(score: number): string {
     const level = this.mapScoreToLevel(score);
     const textMap: Record<PriorityLevel, string> = {
-      CRITICAL: '紧急',
-      HIGH: '高',
-      MEDIUM: '中',
-      LOW: '低',
+      Critical: '紧急',
+      High: '高',
+      Medium: '中',
+      Low: '低',
     };
     return textMap[level];
   }

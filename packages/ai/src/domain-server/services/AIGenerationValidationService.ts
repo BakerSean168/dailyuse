@@ -82,7 +82,7 @@ export class AIGenerationValidationService {
       }
       if (!task.priority) {
         errors.push(`Task[${index}] missing priority`);
-      } else if (!['HIGH', 'MEDIUM', 'LOW'].includes(task.priority)) {
+      } else if (!['High', 'Medium', 'Low'].includes(task.priority)) {
         errors.push(`Task[${index}] invalid priority: ${task.priority}`);
       }
       if (!Array.isArray(task.dependencies)) {

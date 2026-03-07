@@ -250,6 +250,11 @@ const domainResolveAliases = [
     find: '@dailyuse/contracts/mocks',
     replacement: path.resolve(contractsSrc, 'mocks/index.ts'),
   },
+  // Explicit modules prefix support (e.g. @dailyuse/contracts/modules/task)
+  {
+    find: /^@dailyuse\/contracts\/modules\/(.+)/,
+    replacement: path.resolve(contractsSrc, 'modules/$1/index.ts'),
+  },
   // Catch-all: domain module subpaths → src/modules/<name>/index.ts
   {
     find: /^@dailyuse\/contracts\/(.+)/,
@@ -322,42 +327,6 @@ export default defineConfig({
           environment: 'node',
           include: ['src/**/*.{test,spec}.{js,ts}'],
           exclude: ['node_modules', 'dist', '.git', '.cache'],
-        },
-      },
-      {
-        extends: true,
-        test: {
-          name: 'domain-server',
-          root: './packages/domain-server',
-          environment: 'node',
-          setupFiles: ['./src/test/setup.ts'],
-          include: ['src/**/*.{test,spec}.{js,ts}'],
-          exclude: ['node_modules', 'dist', '.git', '.cache', 'src/test/setup.ts'],
-          testTimeout: 10000,
-          pool: 'forks',
-          poolOptions: {
-            forks: {
-              singleFork: false,
-            },
-          },
-        },
-      },
-      {
-        extends: true,
-        test: {
-          name: 'domain-client',
-          root: './packages/domain-client',
-          environment: 'happy-dom',
-          setupFiles: ['./src/test/setup.ts'],
-          include: ['src/**/*.{test,spec}.{js,ts}'],
-          exclude: ['node_modules', 'dist', '.git', '.cache', 'src/test/setup.ts'],
-          testTimeout: 5000,
-          pool: 'forks',
-          poolOptions: {
-            forks: {
-              singleFork: false,
-            },
-          },
         },
       },
       {
@@ -481,6 +450,8 @@ export default defineConfig({
       // Authentication unit tests
       {
         extends: true,
+        plugins: [domainResolveAtAlias],
+        resolve: { alias: domainResolveAliases },
         test: {
           name: 'authentication',
           root: './packages/authentication',
@@ -589,7 +560,6 @@ export default defineConfig({
         resolve: {
           alias: {
             '@': path.resolve(__dirname, './apps/api/src'),
-            '@dailyuse/domain-server': path.resolve(__dirname, './packages/domain-server/src'),
             '@dailyuse/contracts': path.resolve(__dirname, './packages/contracts/src'),
             '@dailyuse/utils': path.resolve(__dirname, './packages/utils/src'),
           },
@@ -686,7 +656,6 @@ export default defineConfig({
         resolve: {
           alias: {
             '@': path.resolve(__dirname, './apps/web/src'),
-            '@dailyuse/domain-client': path.resolve(__dirname, './packages/domain-client/src'),
             '@dailyuse/contracts': path.resolve(__dirname, './packages/contracts/src'),
             '@dailyuse/utils': path.resolve(__dirname, './packages/utils/src'),
           },

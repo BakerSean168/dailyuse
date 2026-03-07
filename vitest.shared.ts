@@ -46,8 +46,6 @@ export function createSharedConfig(options: SharedConfigOptions) {
   const baseAliases = {
     '@': path.resolve(projectRoot, './src'),
     '@dailyuse/contracts': path.resolve(projectRoot, '../../packages/contracts/src'),
-    '@dailyuse/domain-server': path.resolve(projectRoot, '../../packages/domain-server/src'),
-    '@dailyuse/domain-client': path.resolve(projectRoot, '../../packages/domain-client/src'),
     '@dailyuse/utils': path.resolve(projectRoot, '../../packages/utils/src'),
     ...aliases,
   };

@@ -6,6 +6,7 @@ import type Database from 'better-sqlite3';
 import { DocumentVersion } from '../../../domain-server/entities/document-version';
 import type { IDocumentVersionRepository } from '../../../domain-server/repositories/IDocumentVersionRepository';
 import type { VersionChangeType } from '@dailyuse/contracts/editor';
+import { DocumentVersionSqliteMapper } from './mappers/document-version-sqlite.mapper';
 
 export class SqliteDocumentVersionRepository implements IDocumentVersionRepository {
   constructor(private db: Database.Database) {}
@@ -16,7 +17,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
     if (!row) return null;
 
-    return this.rowToVersion(row);
+    return DocumentVersionSqliteMapper.toDomain(row);
   }
 
   async findByDocumentId(documentId: string): Promise<DocumentVersion[]> {
@@ -25,7 +26,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     );
     const rows = stmt.all(documentId) as any[];
 
-    return rows.map((row) => this.rowToVersion(row));
+    return rows.map((row) => DocumentVersionSqliteMapper.toDomain(row));
   }
 
   async findLatestByDocumentId(documentId: string): Promise<DocumentVersion | null> {
@@ -36,7 +37,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
     if (!row) return null;
 
-    return this.rowToVersion(row);
+    return DocumentVersionSqliteMapper.toDomain(row);
   }
 
   async findByDocumentIdAndVersionNumber(
@@ -50,7 +51,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
 
     if (!row) return null;
 
-    return this.rowToVersion(row);
+    return DocumentVersionSqliteMapper.toDomain(row);
   }
 
   async findByChangeType(
@@ -62,7 +63,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     );
     const rows = stmt.all(documentId, changeType) as any[];
 
-    return rows.map((row) => this.rowToVersion(row));
+    return rows.map((row) => DocumentVersionSqliteMapper.toDomain(row));
   }
 
   async findByTimeRange(
@@ -75,7 +76,7 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
     );
     const rows = stmt.all(documentId, startTime, endTime) as any[];
 
-    return rows.map((row) => this.rowToVersion(row));
+    return rows.map((row) => DocumentVersionSqliteMapper.toDomain(row));
   }
 
   async save(version: DocumentVersion): Promise<void> {
@@ -161,22 +162,5 @@ export class SqliteDocumentVersionRepository implements IDocumentVersionReposito
       `DELETE FROM document_versions WHERE document_id = ? AND created_at < ?`,
     );
     stmt.run(documentId, beforeTime);
-  }
-
-  private rowToVersion(row: any): DocumentVersion {
-    return DocumentVersion.load({
-      id: row.id,
-      documentId: row.document_id,
-      workspaceId: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      versionNumber: row.version_number,
-      changeType: row.change_type as VersionChangeType,
-      contentHash: row.content_hash ?? row.contentHash ?? '',
-      contentDiff: row.content_diff ?? null,
-      changeDescription: row.change_description ?? null,
-      previousVersionId: row.previous_version_id ?? null,
-      createdBy: row.created_by ?? null,
-      createdAt: new Date(row.created_at),
-    } as any);
   }
 }

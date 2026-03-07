@@ -1,6 +1,6 @@
 /**
  * WorkspaceLayout 值对象
- * 
+ *
  * 工作区布局：侧边栏位置/宽度、面板位置/高度、可见性
  * 不可变性（所有修改返回新实例）
  */
@@ -12,29 +12,31 @@ import type {
   WorkspaceLayoutPersistenceDTO,
 } from '@dailyuse/contracts/editor';
 
-type SidebarPosition = 'left' | 'right';
-type PanelPosition = 'bottom' | 'right';
+type SidebarPosition = 'Left' | 'Right';
+type PanelPosition = 'Bottom' | 'Right';
 
 /**
  * WorkspaceLayout 值对象实现
  */
-export class WorkspaceLayout extends ValueObject<WorkspaceLayoutServerDTO> implements IWorkspaceLayoutServer {
-
+export class WorkspaceLayout
+  extends ValueObject<WorkspaceLayoutServerDTO>
+  implements IWorkspaceLayoutServer
+{
   private constructor(props: WorkspaceLayoutServerDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
-  
+
   public static create(props: WorkspaceLayoutServerDTO): WorkspaceLayout {
     return new WorkspaceLayout(props);
   }
 
   public static createDefault(): WorkspaceLayout {
     return new WorkspaceLayout({
-      sidebarPosition: 'left',
+      sidebarPosition: 'Left',
       sidebarWidth: 300,
-      panelPosition: 'bottom',
+      panelPosition: 'Bottom',
       panelHeight: 200,
       isSidebarVisible: true,
       isPanelVisible: false,
@@ -84,9 +86,7 @@ export class WorkspaceLayout extends ValueObject<WorkspaceLayoutServerDTO> imple
 
   // ================= 行为方法 =================
 
-  public with(
-    updates: Partial<WorkspaceLayoutServerDTO>,
-  ): WorkspaceLayout {
+  public with(updates: Partial<WorkspaceLayoutServerDTO>): WorkspaceLayout {
     return new WorkspaceLayout({ ...this.props, ...updates });
   }
 
@@ -107,21 +107,21 @@ export class WorkspaceLayout extends ValueObject<WorkspaceLayoutServerDTO> imple
   }
 
   public moveSidebarToLeft(): WorkspaceLayout {
-    return this.with({ sidebarPosition: 'left' });
+    return this.with({ sidebarPosition: 'Left' });
   }
 
   public moveSidebarToRight(): WorkspaceLayout {
-    return this.with({ sidebarPosition: 'right' });
+    return this.with({ sidebarPosition: 'Right' });
   }
 
   // ================= 计算属性 =================
 
   public get isSidebarOnLeft(): boolean {
-    return this.props.sidebarPosition === 'left';
+    return this.props.sidebarPosition === 'Left';
   }
 
   public get isPanelOnBottom(): boolean {
-    return this.props.panelPosition === 'bottom';
+    return this.props.panelPosition === 'Bottom';
   }
 
   // ================= 序列化 =================

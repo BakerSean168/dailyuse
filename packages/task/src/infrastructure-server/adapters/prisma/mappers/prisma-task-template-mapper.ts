@@ -9,6 +9,7 @@ import type { TaskTemplate as PrismaTaskTemplate } from '@dailyuse/database';
 import { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { RecurrenceFrequency } from '@dailyuse/contracts/task';
+import { TaskType } from '@dailyuse/contracts/modules/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
@@ -96,7 +97,7 @@ export class PrismaTaskTemplateMapper {
       identityId: IdentityId.of(data.identityId),
       title: data.name,
       description: data.description,
-      taskType: recurrenceRule ? 'RECURRING' : 'ONE_TIME',
+      taskType: recurrenceRule ? TaskType.Recurring : TaskType.OneTime,
       timeConfig,
       recurrenceRule,
       reminderConfig,

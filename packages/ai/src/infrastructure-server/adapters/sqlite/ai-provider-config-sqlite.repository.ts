@@ -5,6 +5,7 @@
 import type Database from 'better-sqlite3';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import { AiProviderConfigSqliteMapper } from './mappers/ai-provider-config-sqlite.mapper';
 
 export class SqliteAIProviderConfigRepository implements IAIProviderConfigRepository {
   constructor(private db: Database.Database) {}
@@ -52,59 +53,72 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
 
   async findById(id: string): Promise<AIProviderConfigServerDTO | null> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_provider_configs
         WHERE id = ? AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(id) as any;
 
-    return row ? this.rowToDTO(row) : null;
+    return row ? AiProviderConfigSqliteMapper.toDTO(row) : null;
   }
 
   async findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
     const rows = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_provider_configs
         WHERE identity_id = ? AND deleted_at IS NULL
         ORDER BY priority ASC, created_at ASC
-      `)
+      `,
+      )
       .all(identityId) as any[];
 
-    return rows.map((row) => this.rowToDTO(row));
+    return rows.map((row) => AiProviderConfigSqliteMapper.toDTO(row));
   }
 
   async findDefaultByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_provider_configs
         WHERE identity_id = ? AND is_default = 1 AND is_active = 1 AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(identityId) as any;
 
-    return row ? this.rowToDTO(row) : null;
+    return row ? AiProviderConfigSqliteMapper.toDTO(row) : null;
   }
 
-  async findByIdentityIdAndName(identityId: string, name: string): Promise<AIProviderConfigServerDTO | null> {
+  async findByIdentityIdAndName(
+    identityId: string,
+    name: string,
+  ): Promise<AIProviderConfigServerDTO | null> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_provider_configs
         WHERE identity_id = ? AND name = ? AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(identityId, name) as any;
 
-    return row ? this.rowToDTO(row) : null;
+    return row ? AiProviderConfigSqliteMapper.toDTO(row) : null;
   }
 
   async delete(id: string): Promise<void> {
     this.db
-      .prepare(`
+      .prepare(
+        `
         UPDATE ai_provider_configs
         SET is_default = 0, deleted_at = ?, updated_at = ?
         WHERE id = ?
-      `)
+      `,
+      )
       .run(Date.now(), Date.now(), id);
   }
 
@@ -117,42 +131,13 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
 
   async clearDefaultForIdentity(identityId: string): Promise<void> {
     this.db
-      .prepare(`
+      .prepare(
+        `
         UPDATE ai_provider_configs
         SET is_default = 0, updated_at = ?
         WHERE identity_id = ? AND deleted_at IS NULL
-      `)
+      `,
+      )
       .run(Date.now(), identityId);
-  }
-
-  private rowToDTO(row: any): AIProviderConfigServerDTO {
-    return {
-      id: row.id,
-      identityId: row.identity_id,
-      name: row.name,
-      providerType: row.provider_type,
-      baseUrl: row.base_url,
-      apiKey: row.api_key_encrypted,
-      defaultModel: row.default_model,
-      availableModels: this.parseModels(row.available_models),
-      isActive: row.is_active === 1,
-      isDefault: row.is_default === 1,
-      priority: row.priority ?? 100,
-      version: row.version ?? 1,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: row.deleted_at,
-    };
-  }
-
-  private parseModels(value: string | null): any[] {
-    if (!value) return [];
-
-    try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
   }
 }

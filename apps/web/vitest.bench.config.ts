@@ -18,7 +18,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@dailyuse/domain-client': path.resolve(__dirname, '../../packages/domain-client/src'),
       '@dailyuse/contracts': path.resolve(__dirname, '../../packages/contracts/src'),
     },
   },

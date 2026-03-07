@@ -4,13 +4,12 @@
 
 import type Database from 'better-sqlite3';
 import type { IAIGenerationTaskRepository } from '../../../domain-server/repositories/IAIGenerationTaskRepository';
-import {
-  AIModel,
-  AIProvider,
+import type {
   GenerationTaskType,
-  type AIGenerationTaskServerDTO,
-  type TaskStatus,
+  AIGenerationTaskServerDTO,
+  TaskStatus,
 } from '@dailyuse/contracts/ai';
+import { AiGenerationTaskSqliteMapper } from './mappers/ai-generation-task-sqlite.mapper';
 
 export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskRepository {
   constructor(private db: Database.Database) {}
@@ -80,7 +79,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
 
     if (!row) return null;
 
-    return this.rowToDTO(row);
+    return AiGenerationTaskSqliteMapper.toDTO(row);
   }
 
   async findByIdentityId(identityId: string): Promise<AIGenerationTaskServerDTO[]> {
@@ -91,7 +90,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     `);
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) => this.rowToDTO(row));
+    return rows.map((row) => AiGenerationTaskSqliteMapper.toDTO(row));
   }
 
   async findByTaskType(
@@ -105,7 +104,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     `);
     const rows = stmt.all(identityId, taskType) as any[];
 
-    return rows.map((row) => this.rowToDTO(row));
+    return rows.map((row) => AiGenerationTaskSqliteMapper.toDTO(row));
   }
 
   async findByStatus(identityId: string, status: TaskStatus): Promise<AIGenerationTaskServerDTO[]> {
@@ -116,7 +115,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     `);
     const rows = stmt.all(identityId, status) as any[];
 
-    return rows.map((row) => this.rowToDTO(row));
+    return rows.map((row) => AiGenerationTaskSqliteMapper.toDTO(row));
   }
 
   async delete(id: string): Promise<void> {
@@ -124,7 +123,11 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     stmt.run(Date.now(), id);
   }
 
-  async findRecent(identityId: string, limit: number, offset?: number): Promise<AIGenerationTaskServerDTO[]> {
+  async findRecent(
+    identityId: string,
+    limit: number,
+    offset?: number,
+  ): Promise<AIGenerationTaskServerDTO[]> {
     const limitVal = Math.max(1, limit);
     const offsetVal = Math.max(0, offset || 0);
     const stmt = this.db.prepare(`
@@ -135,7 +138,7 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
     `);
     const rows = stmt.all(identityId, limitVal, offsetVal) as any[];
 
-    return rows.map((row) => this.rowToDTO(row));
+    return rows.map((row) => AiGenerationTaskSqliteMapper.toDTO(row));
   }
 
   async exists(id: string): Promise<boolean> {
@@ -145,50 +148,5 @@ export class SqliteAIGenerationTaskRepository implements IAIGenerationTaskReposi
       LIMIT 1
     `);
     return stmt.get(id) !== undefined;
-  }
-
-  private rowToDTO(row: any): AIGenerationTaskServerDTO {
-    const parsedInput = row.input_data ? this.parseJson<any>(row.input_data, {}) : {};
-    const inputData = parsedInput?.data ?? parsedInput ?? {};
-    const inputMeta = parsedInput?.meta ?? {};
-    const completedAt = row.completed_at ?? null;
-    const processingStartedAt =
-      typeof inputMeta.processingStartedAt === 'number'
-        ? inputMeta.processingStartedAt
-        : completedAt != null && typeof row.processing_ms === 'number'
-          ? completedAt - row.processing_ms
-          : null;
-
-    return {
-      id: row.id,
-      identityId: row.identity_id,
-      conversationId: inputMeta.conversationId ?? null,
-      type: row.task_type,
-      status: row.status,
-      provider: inputMeta.provider ?? AIProvider.OpenAI,
-      model: inputMeta.model ?? AIModel.Gpt4Turbo,
-      input: inputData,
-      result: this.parseJson(row.output_data, null),
-      tokenUsage: this.parseJson(row.token_usage, null),
-      errorMessage: row.error_message ?? null,
-      retryCount: row.retry_count ?? 0,
-      maxRetries: inputMeta.maxRetries ?? 3,
-      processingStartedAt,
-      processingCompletedAt: completedAt,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-  }
-
-  private parseJson<T>(value: string | null, fallback: T): T {
-    if (!value) {
-      return fallback;
-    }
-
-    try {
-      return JSON.parse(value) as T;
-    } catch {
-      return fallback;
-    }
   }
 }

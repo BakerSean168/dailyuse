@@ -7,71 +7,9 @@
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
-import { Repository, type RepositoryState } from '../../../domain-server/aggregates/repository';
+import { Repository } from '../../../domain-server/aggregates/repository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
-import type {
-  RepositoryConfigDTO,
-  RepositoryStatsDTO,
-  RepositoryType,
-} from '@dailyuse/contracts/repository';
-import { RepositoryConfig } from '../../../domain-shared/value-objects/repository-config';
-import { RepositoryId } from '../../../domain-shared/value-objects/repository-id';
-import { RepositoryStats } from '../../../domain-shared/value-objects/repository-stats';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-
-function normalizeRepositoryStatus(status: string): RepositoryStatus {
-  if (status === 'ACTIVE') return 'Active';
-  if (status === 'ARCHIVED') return 'Archived';
-  if (status === 'DELETED') return 'Deleted';
-  return status as RepositoryStatus;
-}
-
-function parseConfig(value: unknown): RepositoryConfig {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return RepositoryConfig.createDefault();
-  }
-  return RepositoryConfig.fromDTO(value as RepositoryConfigDTO);
-}
-
-function parseStats(value: unknown): RepositoryStats {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return RepositoryStats.createEmpty();
-  }
-  return RepositoryStats.fromDTO(value as RepositoryStatsDTO);
-}
-
-function mapToDomain(data: {
-  id: string;
-  identityId: string;
-  name: string;
-  type: string;
-  path: string;
-  description: string | null;
-  config: unknown;
-  stats: unknown;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  version: number;
-  deletedAt: Date | null;
-}): Repository {
-  const state: RepositoryState = {
-    id: RepositoryId.of(data.id),
-    identityId: IdentityId.of(data.identityId),
-    name: data.name,
-    type: data.type as RepositoryType,
-    path: data.path || null,
-    description: data.description,
-    config: parseConfig(data.config),
-    stats: parseStats(data.stats),
-    status: normalizeRepositoryStatus(data.status),
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    version: data.version ?? 1,
-    deletedAt: data.deletedAt,
-  };
-  return Repository.load(state);
-}
+import { RepositoryPrismaMapper } from './mappers/repository-prisma.mapper';
 
 /**
  * Repository Prisma Repository
@@ -118,7 +56,7 @@ export class RepositoryPrismaRepository implements IRepositoryRepository {
 
   async findById(id: string): Promise<Repository | null> {
     const data = await this.prisma.repository.findUnique({ where: { id } });
-    return data ? mapToDomain(data) : null;
+    return data ? RepositoryPrismaMapper.toDomain(data) : null;
   }
 
   async findByIdentityId(identityId: string): Promise<Repository[]> {
@@ -126,15 +64,18 @@ export class RepositoryPrismaRepository implements IRepositoryRepository {
       where: { identityId },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(mapToDomain);
+    return RepositoryPrismaMapper.toDomainList(rows);
   }
 
-  async findByIdentityIdAndStatus(identityId: string, status: RepositoryStatus): Promise<Repository[]> {
+  async findByIdentityIdAndStatus(
+    identityId: string,
+    status: RepositoryStatus,
+  ): Promise<Repository[]> {
     const rows = await this.prisma.repository.findMany({
       where: { identityId, status },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(mapToDomain);
+    return RepositoryPrismaMapper.toDomainList(rows);
   }
 
   async delete(id: string): Promise<void> {

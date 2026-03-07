@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ok, fail, isOk } from '@dailyuse/contracts/result';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { TaskType } from '@dailyuse/contracts/modules/task';
 import { TaskTemplateController, type TaskTemplateUseCases } from '../task-template.controller';
 
 // ---------------------------------------------------------------------------
@@ -23,7 +24,7 @@ function createMockUseCases(): TaskTemplateUseCases {
 const FAKE_TEMPLATE_DTO: TaskTemplateClientDTO = {
   id: 'tmpl_abc123',
   name: 'Test Template',
-  taskType: 'RECURRING',
+  taskType: TaskType.Recurring,
   status: 'Active',
   importance: 'Moderate',
   tags: [],
@@ -33,7 +34,7 @@ const FAKE_TEMPLATE_DTO: TaskTemplateClientDTO = {
 
 const VALID_CREATE_INPUT = {
   name: 'My Task',
-  taskType: 'ONE_TIME',
+  taskType: TaskType.OneTime,
   timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null },
   importance: 'Moderate',
 };
@@ -84,7 +85,7 @@ describe('TaskTemplateController', () => {
       const args = (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.identityId).toBe('identity-1');
       expect(args.name).toBe('My Task');
-      expect(args.taskType).toBe('ONE_TIME');
+      expect(args.taskType).toBe(TaskType.OneTime);
       expect(args.importance).toBe('Moderate');
     });
 
@@ -119,7 +120,7 @@ describe('TaskTemplateController', () => {
 
     it('should reject missing name field', async () => {
       const result = await controller.createTemplate(
-        { taskType: 'ONE_TIME', timeConfig: { timeType: 'AllDay' }, importance: 'Moderate' },
+        { taskType: TaskType.OneTime, timeConfig: { timeType: 'AllDay' }, importance: 'Moderate' },
         'identity-1',
       );
       expect(isOk(result)).toBe(false);

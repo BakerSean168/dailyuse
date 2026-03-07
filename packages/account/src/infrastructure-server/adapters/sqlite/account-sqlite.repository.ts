@@ -1,19 +1,10 @@
 import type Database from 'better-sqlite3';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
-import type { AccountState } from '../../../domain-server';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import {
-  AccountProfile,
-  AccountSettings,
-  ContactEmail,
-  AccountStatus,
-} from '../../../domain-shared';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
+import { AccountSqliteMapper } from './mappers/account-sqlite.mapper';
 
-const logger = createLogger('SqliteAccountRepository');
-
-type AccountRow = {
+export type AccountRow = {
   id: string;
   username: string;
   email: string | null;
@@ -30,8 +21,9 @@ export class SqliteAccountRepository implements IAccountRepository {
   constructor(private readonly db: Database.Database) {}
 
   async save(account: Account, _tx?: unknown): Promise<void> {
-    this.db.prepare(
-      `
+    this.db
+      .prepare(
+        `
       INSERT INTO accounts (
         id,
         username,
@@ -65,7 +57,8 @@ export class SqliteAccountRepository implements IAccountRepository {
         status = excluded.status,
         updated_at = excluded.updated_at
       `,
-    ).run(this.toRowParams(account));
+      )
+      .run(this.toRowParams(account));
 
     const domainEvents = account.pullDomainEvents();
     for (const evt of domainEvents) {
@@ -74,20 +67,24 @@ export class SqliteAccountRepository implements IAccountRepository {
   }
 
   async findById(id: string, _tx?: unknown): Promise<Account | null> {
-    const row = this.db.prepare('SELECT * FROM accounts WHERE id = ?').get(id) as AccountRow | undefined;
-    return row ? this.mapToDomain(row) : null;
+    const row = this.db.prepare('SELECT * FROM accounts WHERE id = ?').get(id) as
+      | AccountRow
+      | undefined;
+    return row ? AccountSqliteMapper.toDomain(row) : null;
   }
 
   async findByUsername(username: string, _tx?: unknown): Promise<Account | null> {
-    const row = this.db
-      .prepare('SELECT * FROM accounts WHERE username = ?')
-      .get(username) as AccountRow | undefined;
-    return row ? this.mapToDomain(row) : null;
+    const row = this.db.prepare('SELECT * FROM accounts WHERE username = ?').get(username) as
+      | AccountRow
+      | undefined;
+    return row ? AccountSqliteMapper.toDomain(row) : null;
   }
 
   async findByEmail(email: string, _tx?: unknown): Promise<Account | null> {
-    const row = this.db.prepare('SELECT * FROM accounts WHERE email = ?').get(email) as AccountRow | undefined;
-    return row ? this.mapToDomain(row) : null;
+    const row = this.db.prepare('SELECT * FROM accounts WHERE email = ?').get(email) as
+      | AccountRow
+      | undefined;
+    return row ? AccountSqliteMapper.toDomain(row) : null;
   }
 
   async findByPhone(_phoneNumber: string, _tx?: unknown): Promise<Account | null> {
@@ -131,14 +128,16 @@ export class SqliteAccountRepository implements IAccountRepository {
 
     const rows = hasStatus
       ? (this.db
-          .prepare('SELECT * FROM accounts WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?')
+          .prepare(
+            'SELECT * FROM accounts WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+          )
           .all(status, pageSize, offset) as AccountRow[])
       : (this.db
           .prepare('SELECT * FROM accounts ORDER BY created_at DESC LIMIT ? OFFSET ?')
           .all(pageSize, offset) as AccountRow[]);
 
     return {
-      accounts: rows.map((row) => this.mapToDomain(row)),
+      accounts: rows.map((row) => AccountSqliteMapper.toDomain(row)),
       total: totalRow.count,
     };
   }
@@ -165,47 +164,10 @@ export class SqliteAccountRepository implements IAccountRepository {
       avatar_url: profileDTO.avatarUrl,
       locale: settingsDTO.language,
       timezone: settingsDTO.timezone,
-      status: this.normalizeStatus(account.status.toString()),
+      status: this.mapStatusFilter(account.status.toString() as any),
       created_at: account.createdAt.getTime(),
       updated_at: account.updatedAt.getTime(),
     };
-  }
-
-  private mapToDomain(row: AccountRow): Account {
-    const status = this.normalizeStatus(row.status);
-    const email = row.email ?? `${row.id}@local.dailyuse`;
-
-    const state: AccountState = {
-      id: IdentityId.of(row.id),
-      status: AccountStatus.of(status),
-      profile: AccountProfile.fromPersistenceDTO({
-        nickname: row.username,
-        realName: row.display_name,
-        avatarUrl: row.avatar_url,
-        bio: null,
-        gender: 'PREFER_NOT_TO_SAY',
-        birthday: null,
-      }),
-      settings: AccountSettings.fromPersistenceDTO({
-        theme: 'SYSTEM',
-        language: (row.locale as any) || 'zh-CN',
-        timezone: row.timezone || 'Asia/Shanghai',
-        notificationEnabled: true,
-      }),
-      email: ContactEmail.fromPersistenceDTO({
-        address: email,
-        isVerified: false,
-        verifiedAt: null,
-        isPrimary: true,
-      }),
-      phone: null,
-      version: 1,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: null,
-    };
-
-    return Account.load(state);
   }
 
   private buildUsername(account: Account): string {
@@ -219,21 +181,16 @@ export class SqliteAccountRepository implements IAccountRepository {
       return fromEmail.slice(0, 20);
     }
 
-    const fallback = `u_${account.id.toString().replace(/[^a-zA-Z0-9]/g, '').slice(0, 18)}`;
+    const fallback = `u_${account.id
+      .toString()
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .slice(0, 18)}`;
     return fallback.length >= 2 ? fallback : `u_${Date.now()}`;
   }
 
-  private normalizeStatus(status: string | null | undefined): 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED' {
-    if (status === 'SUSPENDED') {
-      return 'SUSPENDED';
-    }
-    if (status === 'DEACTIVATED' || status === 'DELETED' || status === 'INACTIVE') {
-      return 'DEACTIVATED';
-    }
-    return 'ACTIVE';
-  }
-
-  private mapStatusFilter(status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED' | undefined): string {
+  private mapStatusFilter(
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'DELETED' | undefined,
+  ): string {
     if (status === 'SUSPENDED') {
       return 'SUSPENDED';
     }

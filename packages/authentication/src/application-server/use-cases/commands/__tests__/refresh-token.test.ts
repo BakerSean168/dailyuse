@@ -61,8 +61,8 @@ const createMockSessionRepo = (
 const createMockTokenProvider = (refreshTokenHashReturn = 'matching-hash'): ITokenProvider => ({
   generateAccessToken: vi.fn().mockReturnValue('new-access-token'),
   generateRefreshToken: vi.fn().mockReturnValue('new-refresh-token'),
-  verifyAccessToken: vi.fn().mockReturnValue({ ok: true, value: {} }),
-  verifyRefreshToken: vi.fn().mockReturnValue({ ok: true, value: {} }),
+  verifyAccessToken: vi.fn().mockReturnValue({ ok: true, data: {} }),
+  verifyRefreshToken: vi.fn().mockReturnValue({ ok: true, data: {} }),
   generateAuthTokens: vi.fn().mockReturnValue({
     accessToken: 'new-access-token',
     refreshToken: 'new-refresh-token',
@@ -70,6 +70,17 @@ const createMockTokenProvider = (refreshTokenHashReturn = 'matching-hash'): ITok
   }),
   hash: vi.fn().mockReturnValue(refreshTokenHashReturn),
 });
+
+function setTokenPayload(
+  provider: ITokenProvider,
+  identityId: IdentityId,
+  sessionId: AuthSessionId,
+): void {
+  (provider.verifyRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue({
+    ok: true,
+    data: { identityId, sessionId },
+  });
+}
 
 function createContext(identityId = 'IdentityId_test-user-001'): Context {
   return { identityId, deviceId: 'test-device-001' };
@@ -123,7 +134,8 @@ describe('RefreshToken (Application Command)', () => {
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
 
       const result = await useCase.execute(
@@ -142,7 +154,8 @@ describe('RefreshToken (Application Command)', () => {
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
 
       await useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId));
@@ -155,7 +168,8 @@ describe('RefreshToken (Application Command)', () => {
     it('should throw when no matching session found', async () => {
       const identityId = IdentityId.of('IdentityId_test-user-001');
       // No sessions at all
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      setTokenPayload(tokenProvider, identityId, AuthSessionId.generate());
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
       await expect(
         useCase.execute({ refreshToken: 'invalid-token' }, createContext(identityId)),
@@ -167,7 +181,8 @@ describe('RefreshToken (Application Command)', () => {
       // Session has a different hash
       const session = buildActiveSession(identityId, 'different-hash');
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
 
       await expect(
         useCase.execute({ refreshToken: 'token-with-wrong-hash' }, createContext(identityId)),
@@ -188,9 +203,8 @@ describe('RefreshToken (Application Command)', () => {
         isRevoked: false,
       });
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([
-        expiredSession,
-      ]);
+      setTokenPayload(tokenProvider, identityId, expiredSession.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(expiredSession);
 
       await expect(
         useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId)),
@@ -211,9 +225,8 @@ describe('RefreshToken (Application Command)', () => {
         isRevoked: true,
       });
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([
-        revokedSession,
-      ]);
+      setTokenPayload(tokenProvider, identityId, revokedSession.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(revokedSession);
 
       await expect(
         useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId)),
@@ -224,7 +237,8 @@ describe('RefreshToken (Application Command)', () => {
       const identityId = IdentityId.of('IdentityId_test-user-001');
       const session = buildActiveSession(identityId, 'matching-hash');
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
       await expect(
@@ -237,7 +251,8 @@ describe('RefreshToken (Application Command)', () => {
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
 
       await useCase.execute({ refreshToken: 'old-refresh-token' }, createContext(identityId));
@@ -253,7 +268,8 @@ describe('RefreshToken (Application Command)', () => {
       const session = buildActiveSession(identityId, 'matching-hash');
       const identity = await buildIdentity();
 
-      (sessionRepo.findByIdentityId as ReturnType<typeof vi.fn>).mockResolvedValue([session]);
+      setTokenPayload(tokenProvider, identityId, session.id);
+      (sessionRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(session);
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
 
       const result = await useCase.execute(

@@ -1,7 +1,7 @@
 export const CredentialType = {
-  PASSWORD: 'PASSWORD',
-  MAGIC_LINK: 'MAGIC_LINK',
-  OAUTH: 'OAUTH',
-  PHONE: 'PHONE',
+  Password: 'Password',
+  MagicLink: 'MagicLink',
+  OAuth: 'OAuth',
+  Phone: 'Phone',
 } as const;
 export type CredentialType = (typeof CredentialType)[keyof typeof CredentialType];

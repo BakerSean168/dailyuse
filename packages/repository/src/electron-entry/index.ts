@@ -8,8 +8,7 @@ import { ipcMain } from 'electron';
 import * as path from 'path';
 import { app } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { RepositoryModule } from '../infrastructure-server';
-import { RepositoryContainer } from '../infrastructure-server/di/repository-container-v2';
+import { RepositorySqliteModule, RepositoryContainer } from '../infrastructure-server/sqlite';
 import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
 import { CreateResource, UpdateResourceContent } from '../application-server';
 import { createLogger } from '@dailyuse/utils';
@@ -40,7 +39,7 @@ export const RepositoryElectronModule: IElectronModule = {
   name: 'Repository',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new RepositoryModule('sqlite', ctx.db);
+    const mod = new RepositorySqliteModule(ctx.db);
 
     const repoRepo = mod.repositoryRepository;
     const resourceRepo = mod.resourceRepository;
@@ -60,9 +59,8 @@ export const RepositoryElectronModule: IElectronModule = {
     ipcMain.handle(Ch.DELETE, (_, id) => repoRepo.delete(id));
 
     // Resource CRUD
-    ipcMain.handle(
-      Ch.RESOURCE_LIST,
-      (_, params) => resourceRepo.findByRepositoryId(params?.repositoryId ?? params),
+    ipcMain.handle(Ch.RESOURCE_LIST, (_, params) =>
+      resourceRepo.findByRepositoryId(params?.repositoryId ?? params),
     );
     ipcMain.handle(Ch.RESOURCE_GET, (_, id) => resourceRepo.findById(id));
     ipcMain.handle(Ch.RESOURCE_CREATE, async (_, dto) => {
@@ -90,9 +88,8 @@ export const RepositoryElectronModule: IElectronModule = {
     ipcMain.handle(Ch.RESOURCE_DELETE, (_, id) => resourceRepo.delete(id));
 
     // Folder CRUD
-    ipcMain.handle(
-      Ch.FOLDER_LIST,
-      (_, params) => folderRepo.findByRepositoryId(params?.repositoryId ?? params),
+    ipcMain.handle(Ch.FOLDER_LIST, (_, params) =>
+      folderRepo.findByRepositoryId(params?.repositoryId ?? params),
     );
     ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => folderRepo.save(dto));
     ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => folderRepo.save(dto));

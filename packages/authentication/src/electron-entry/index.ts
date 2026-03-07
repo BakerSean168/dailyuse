@@ -16,7 +16,7 @@ import {
   Argon2Hasher,
   AuthenticationModule,
   AuthenticationContainer,
-} from '../infrastructure-server';
+} from '../infrastructure-server/sqlite';
 import { JwtTokenProvider } from '../infrastructure-server/services/jwt-token-provider';
 import { AuthenticationController } from '../controllers/auth.controller';
 import type { AuthenticationUseCases } from '../controllers/auth.controller';
@@ -52,12 +52,14 @@ export const AuthenticationElectronModule: IElectronModule = {
     const accessSecret = process.env.JWT_ACCESS_SECRET || 'desktop-access-secret-key';
     const refreshSecret = process.env.JWT_REFRESH_SECRET || 'desktop-refresh-secret-key';
     if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
-      logger.warn('JWT secrets not configured via environment variables — using defaults (development only)');
+      logger.warn(
+        'JWT secrets not configured via environment variables — using defaults (development only)',
+      );
     }
     const tokenProvider = new JwtTokenProvider(
       accessSecret,
       refreshSecret,
-      15 * 60 * 1000,        // 15 minutes access token
+      15 * 60 * 1000, // 15 minutes access token
       7 * 24 * 60 * 60 * 1000, // 7 days refresh token
     );
 
@@ -98,9 +100,7 @@ export const AuthenticationElectronModule: IElectronModule = {
       controller.login(data, { ...electronContext, deviceId: 'electron-app' }),
     );
 
-    ipcMain.handle(Ch.REGISTER, (_event, data) =>
-      controller.register(data, electronContext),
-    );
+    ipcMain.handle(Ch.REGISTER, (_event, data) => controller.register(data, electronContext));
 
     ipcMain.handle(Ch.LOGOUT, (_event, cx?: Partial<Context>) =>
       controller.logout({ ...electronContext, ...cx }),

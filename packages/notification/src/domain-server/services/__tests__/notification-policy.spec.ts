@@ -152,7 +152,7 @@ describe('NotificationPolicy', () => {
     it('should throw when daily rate limit is exceeded', () => {
       const rateLimit = RateLimit.create({
         enabled: true,
-        maxPerHour: 100,
+        maxPerHour: 10,
         maxPerDay: 10,
       });
 

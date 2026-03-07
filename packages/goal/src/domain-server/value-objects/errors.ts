@@ -35,12 +35,12 @@ export class GoalInvalidDateRangeError extends DomainError {
  */
 export class GoalInvalidDateModificationError extends DomainError {
   constructor(
-    public readonly operation: 'extend' | 'shorten',
+    public readonly operation: 'Extend' | 'Shorten',
     public readonly days: number,
   ) {
     super(
       'goal_invalid_date_modification',
-      `无效的日期${operation === 'extend' ? '延长' : '缩短'}操作：天数 ${days} 必须为正数`,
+      `无效的日期${operation === 'Extend' ? '延长' : '缩短'}操作：天数 ${days} 必须为正数`,
     );
   }
 }

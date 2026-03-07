@@ -4,13 +4,10 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Repository, type RepositoryState } from '../../../domain-server/aggregates/repository';
+import { Repository } from '../../../domain-server/aggregates/repository';
 import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import type { RepositoryStatus } from '@dailyuse/contracts/repository';
-import { RepositoryId } from '../../../domain-shared/value-objects/repository-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import { RepositoryConfig } from '../../../domain-shared/value-objects/repository-config';
-import { RepositoryStats } from '../../../domain-shared/value-objects/repository-stats';
+import { RepositorySqliteMapper } from './mappers/repository-sqlite.mapper';
 
 export class SqliteRepositoryRepository implements IRepositoryRepository {
   constructor(private db: Database.Database) {}
@@ -49,24 +46,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
 
     if (!row) return null;
 
-    const config = row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO());
-    const stats = row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO());
-
-    return Repository.load({
-      id: RepositoryId.of(row.id),
-      identityId: IdentityId.of(row.identity_id),
-      name: row.name,
-      description: row.description,
-      type: row.type,
-      path: row.path ?? null,
-      status: row.status,
-      config: RepositoryConfig.fromDTO(JSON.parse(config)),
-      stats: RepositoryStats.fromDTO(JSON.parse(stats)),
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      version: row.version ?? 1,
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-    });
+    return RepositorySqliteMapper.toDomain(row);
   }
 
   async findByIdentityId(identityId: string): Promise<Repository[]> {
@@ -75,27 +55,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     );
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) =>
-      Repository.load({
-        id: RepositoryId.of(row.id),
-        identityId: IdentityId.of(row.identity_id),
-        name: row.name,
-        description: row.description,
-        type: row.type,
-        path: row.path ?? null,
-        status: row.status,
-        config: RepositoryConfig.fromDTO(
-          JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO())),
-        ),
-        stats: RepositoryStats.fromDTO(
-          JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO())),
-        ),
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        version: row.version ?? 1,
-        deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-      }),
-    );
+    return rows.map((row) => RepositorySqliteMapper.toDomain(row));
   }
 
   async findByAccountId(identityId: string): Promise<Repository[]> {
@@ -111,27 +71,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
     );
     const rows = stmt.all(identityId, status) as any[];
 
-    return rows.map((row) =>
-      Repository.load({
-        id: RepositoryId.of(row.id),
-        identityId: IdentityId.of(row.identity_id),
-        name: row.name,
-        description: row.description,
-        type: row.type,
-        path: row.path ?? null,
-        status: row.status,
-        config: RepositoryConfig.fromDTO(
-          JSON.parse(row.config ?? JSON.stringify(RepositoryConfig.createDefault().toDTO())),
-        ),
-        stats: RepositoryStats.fromDTO(
-          JSON.parse(row.stats ?? JSON.stringify(RepositoryStats.createEmpty().toDTO())),
-        ),
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
-        version: row.version ?? 1,
-        deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-      }),
-    );
+    return rows.map((row) => RepositorySqliteMapper.toDomain(row));
   }
 
   async delete(id: string): Promise<void> {

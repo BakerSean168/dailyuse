@@ -7,67 +7,8 @@
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IResourceRepository } from '../../../domain-server/repositories/IResourceRepository';
-import { Resource, type ResourceState } from '../../../domain-server/entities/resource';
-import { ResourceId } from '../../../domain-shared/value-objects/resource-id';
-import { RepositoryId } from '../../../domain-shared/value-objects/repository-id';
-import type { FolderId } from '@dailyuse/contracts/primitives';
-import { ResourceMetadata } from '../../../domain-shared/value-objects/resource-metadata';
-import { ResourceStats } from '../../../domain-shared/value-objects/resource-stats';
-import type {
-  ResourceMetadataDTO,
-  ResourceStatus,
-  ResourceStatsDTO,
-  ResourceType,
-  ExternalLink,
-} from '@dailyuse/contracts/repository';
-
-function normalizeResourceStatus(status: string): ResourceStatus {
-  if (status === 'ACTIVE') return 'Active';
-  if (status === 'ARCHIVED') return 'Archived';
-  if (status === 'DELETED') return 'Deleted';
-  if (status === 'DRAFT') return 'Draft';
-  return status as ResourceStatus;
-}
-
-function parseMetadata(value: unknown): ResourceMetadata {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return ResourceMetadata.createEmpty();
-  }
-  return ResourceMetadata.fromDTO(value as ResourceMetadataDTO);
-}
-
-function parseStats(value: unknown): ResourceStats {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return ResourceStats.createEmpty();
-  }
-  return ResourceStats.fromDTO(value as ResourceStatsDTO);
-}
-
-function mapToDomain(data: any): Resource {
-  const state: ResourceState = {
-    id: ResourceId.of(data.id),
-    repositoryId: RepositoryId.of(data.repositoryId),
-    identityId: data.identityId ?? '',
-    folderId: data.folderId as FolderId | null,
-    type: data.type as ResourceType,
-    name: data.name,
-    path: data.path,
-    mimeType: null,
-    size: data.size,
-    content: data.content,
-    childrenCount: null,
-    metadata: parseMetadata(data.metadata),
-    stats: parseStats(data.stats),
-    status: normalizeResourceStatus(data.status),
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    version: 1,
-    deletedAt: data.deletedAt,
-    externalLinks: null as ExternalLink[] | null,
-  };
-
-  return Resource.load(state);
-}
+import { Resource } from '../../../domain-server/entities/resource';
+import { ResourcePrismaMapper } from './mappers/resource-prisma.mapper';
 
 /**
  * Resource Prisma Repository
@@ -120,7 +61,7 @@ export class ResourcePrismaRepository implements IResourceRepository {
 
   async findById(id: string): Promise<Resource | null> {
     const data = await this.prisma.resource.findUnique({ where: { id } });
-    return data ? mapToDomain(data) : null;
+    return data ? ResourcePrismaMapper.toDomain(data) : null;
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
@@ -128,7 +69,7 @@ export class ResourcePrismaRepository implements IResourceRepository {
       where: { repositoryId },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(mapToDomain);
+    return ResourcePrismaMapper.toDomainList(rows);
   }
 
   async findByFolderId(folderId: string): Promise<Resource[]> {
@@ -136,7 +77,7 @@ export class ResourcePrismaRepository implements IResourceRepository {
       where: { folderId },
       orderBy: { name: 'asc' },
     });
-    return rows.map(mapToDomain);
+    return ResourcePrismaMapper.toDomainList(rows);
   }
 
   async findByIdentityId(identityId: string): Promise<Resource[]> {
@@ -144,7 +85,7 @@ export class ResourcePrismaRepository implements IResourceRepository {
       where: { repository: { identityId } },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(mapToDomain);
+    return ResourcePrismaMapper.toDomainList(rows);
   }
 
   async existsByPath(repositoryId: string, path: string): Promise<boolean> {

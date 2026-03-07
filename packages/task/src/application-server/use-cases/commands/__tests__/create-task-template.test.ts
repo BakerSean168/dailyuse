@@ -6,6 +6,7 @@ import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITask
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskType } from '@dailyuse/contracts/modules/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { CreateTaskTemplate } from '../create-task-template';
 
@@ -41,7 +42,7 @@ describe('CreateTaskTemplate', () => {
     return {
       identityId: anIdentityId(),
       name: 'Test Task',
-      taskType: 'ONE_TIME',
+      taskType: TaskType.OneTime,
       timeConfig: {
         timeType: 'AllDay',
         startDate: Date.now(),
@@ -69,7 +70,7 @@ describe('CreateTaskTemplate', () => {
   });
 
   it('should create a one-time task template', async () => {
-    const request = aCreateRequest({ name: 'Buy groceries', taskType: 'ONE_TIME' });
+    const request = aCreateRequest({ name: 'Buy groceries', taskType: TaskType.OneTime });
 
     const result = await useCase.execute(request);
 
@@ -91,7 +92,7 @@ describe('CreateTaskTemplate', () => {
   it('should create a recurring task template', async () => {
     const request = aCreateRequest({
       name: 'Daily standup',
-      taskType: 'RECURRING',
+      taskType: TaskType.Recurring,
       recurrenceRule: {
         frequency: 'Daily',
         interval: 1,
@@ -152,7 +153,7 @@ describe('CreateTaskTemplate', () => {
       const fakeInstances = [{}, {}, {}];
       mockGenerateInstances.mockReturnValue(fakeInstances);
       const request = aCreateRequest({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         recurrenceRule: {
           frequency: 'Daily',
           interval: 1,

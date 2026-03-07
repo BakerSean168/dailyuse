@@ -1,6 +1,6 @@
 /**
  * Task Module Value Objects - Domain Server
- * 
+ *
  * 从 @dailyuse/domain-shared 重新导出值对象
  * 并导出领域服务器特有的错误类
  */
@@ -20,8 +20,8 @@ export {
   TaskTimeType,
 } from '../../domain-shared/value-objects';
 
-// 从 contracts 重新导出 DependencyType 和 DependencyStatus
-export { DependencyType, DependencyStatus } from '@dailyuse/contracts/task';
+// 从 contracts 重新导出 DependencyType/DependencyStatus/TaskType
+export { DependencyType, DependencyStatus, TaskType } from '@dailyuse/contracts/task';
 
 // Class Value Objects
 export {

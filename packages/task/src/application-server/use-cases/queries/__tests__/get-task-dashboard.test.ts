@@ -4,6 +4,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate, anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { TaskType } from '@dailyuse/contracts/modules/task';
 import { GetTaskDashboard } from '../get-task-dashboard';
 
 describe('GetTaskDashboard', () => {
@@ -96,12 +97,12 @@ describe('GetTaskDashboard', () => {
     const now = Date.now();
     const recentTask = aLoadedTaskTemplate({
       status: TaskTemplateStatus.Archived,
-      taskType: 'ONE_TIME',
+      taskType: TaskType.OneTime,
       updatedAt: new Date(now - 1 * 24 * 60 * 60 * 1000), // 1 day ago
     });
     const oldTask = aLoadedTaskTemplate({
       status: TaskTemplateStatus.Archived,
-      taskType: 'ONE_TIME',
+      taskType: TaskType.OneTime,
       updatedAt: new Date(now - 10 * 24 * 60 * 60 * 1000), // 10 days ago
     });
     vi.mocked(templateRepo.findOneTimeTasks).mockResolvedValue([recentTask, oldTask]);

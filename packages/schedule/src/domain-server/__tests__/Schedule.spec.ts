@@ -463,7 +463,7 @@ describe('Schedule Aggregate', () => {
 
       const result = targetSchedule.detectConflicts([conflictSchedule]);
 
-      const moveEarlierSuggestion = result.suggestions.find((s) => s.type === 'move_earlier');
+      const moveEarlierSuggestion = result.suggestions.find((s) => s.type === 'MoveEarlier');
       expect(moveEarlierSuggestion).toBeDefined();
       expect(moveEarlierSuggestion!.newEndTime).toBe(hour(14.5)); // End at 2:30 PM
       expect(moveEarlierSuggestion!.newStartTime).toBe(hour(13.5)); // Start at 1:30 PM (60 min before)
@@ -482,7 +482,7 @@ describe('Schedule Aggregate', () => {
 
       const result = targetSchedule.detectConflicts([conflictSchedule]);
 
-      const moveLaterSuggestion = result.suggestions.find((s) => s.type === 'move_later');
+      const moveLaterSuggestion = result.suggestions.find((s) => s.type === 'MoveLater');
       expect(moveLaterSuggestion).toBeDefined();
       expect(moveLaterSuggestion!.newStartTime).toBe(hour(16)); // Start at 4:00 PM
       expect(moveLaterSuggestion!.newEndTime).toBe(hour(17)); // End at 5:00 PM (60 min later)
@@ -501,7 +501,7 @@ describe('Schedule Aggregate', () => {
 
       const result = targetSchedule.detectConflicts([conflictSchedule]);
 
-      const shortenSuggestion = result.suggestions.find((s) => s.type === 'shorten');
+      const shortenSuggestion = result.suggestions.find((s) => s.type === 'Shorten');
       expect(shortenSuggestion).toBeDefined();
       expect(shortenSuggestion!.newStartTime).toBe(hour(14)); // Keep start at 2:00 PM
       expect(shortenSuggestion!.newEndTime).toBe(hour(15)); // Shorten to end at 3:00 PM
@@ -525,8 +525,8 @@ describe('Schedule Aggregate', () => {
 
       const result = targetSchedule.detectConflicts([conflict1, conflict2]);
 
-      const moveEarlier = result.suggestions.find((s) => s.type === 'move_earlier');
-      const moveLater = result.suggestions.find((s) => s.type === 'move_later');
+      const moveEarlier = result.suggestions.find((s) => s.type === 'MoveEarlier');
+      const moveLater = result.suggestions.find((s) => s.type === 'MoveLater');
 
       // Should suggest before earliest (13:00)
       expect(moveEarlier!.newEndTime).toBe(hour(13));
@@ -549,8 +549,8 @@ describe('Schedule Aggregate', () => {
       const result = targetSchedule.detectConflicts([conflictSchedule]);
 
       expect(result.suggestions.length).toBeGreaterThanOrEqual(2);
-      expect(result.suggestions.some((s) => s.type === 'move_earlier')).toBe(true);
-      expect(result.suggestions.some((s) => s.type === 'move_later')).toBe(true);
+      expect(result.suggestions.some((s) => s.type === 'MoveEarlier')).toBe(true);
+      expect(result.suggestions.some((s) => s.type === 'MoveLater')).toBe(true);
     });
   });
 

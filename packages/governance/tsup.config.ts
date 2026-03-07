@@ -11,6 +11,7 @@ export default defineConfig({
     'src/application-server/index.ts',
     'src/application-client/index.ts',
     'src/infrastructure-server/index.ts',
+    'src/infrastructure-server/sqlite.ts',
     'src/infrastructure-client/index.ts',
     'src/electron-entry/index.ts',
   ],
@@ -18,5 +19,11 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['@dailyuse/utils', '@dailyuse/contracts', '@dailyuse/http-client', '@dailyuse/database', 'express'],
+  external: [
+    '@dailyuse/utils',
+    '@dailyuse/contracts',
+    '@dailyuse/http-client',
+    '@dailyuse/database',
+    'express',
+  ],
 });
