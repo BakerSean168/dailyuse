@@ -473,6 +473,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       status,
       duration,
       payload: this._props.metadata.toServerDTO().payload,
+      identityId: this._props.identityId,
     });
 
     return execution;

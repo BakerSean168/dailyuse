@@ -1207,24 +1207,7 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-exports.AuthIdentityStatus = exports.$Enums.AuthIdentityStatus = {
-  ACTIVE: 'ACTIVE',
-  LOCKED: 'LOCKED',
-  DISABLED: 'DISABLED',
-  UNVERIFIED: 'UNVERIFIED'
-};
 
-exports.CredentialType = exports.$Enums.CredentialType = {
-  PASSWORD: 'PASSWORD',
-  MAGIC_LINK: 'MAGIC_LINK'
-};
-
-exports.CredentialStatus = exports.$Enums.CredentialStatus = {
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  EXPIRED: 'EXPIRED',
-  REVOKED: 'REVOKED'
-};
 
 exports.Prisma.ModelName = {
   Account: 'Account',

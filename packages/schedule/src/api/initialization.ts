@@ -10,6 +10,7 @@ import {
   type InitializationTask,
   createLogger,
 } from '@dailyuse/utils';
+import { ScheduleEventPublisher } from '../application-server/use-cases/schedule-event-publisher';
 
 const logger = createLogger('ScheduleInit');
 
@@ -18,6 +19,7 @@ const scheduleEventHandlersInitTask: InitializationTask = {
   phase: InitializationPhase.APP_STARTUP,
   priority: 20,
   initialize: async () => {
+    await ScheduleEventPublisher.initialize();
     logger.info('[Schedule] Event handlers initialized');
   },
   cleanup: async () => {

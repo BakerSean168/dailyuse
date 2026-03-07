@@ -13,3 +13,6 @@ export * from './conversation.dto';
 export * from './message.dto';
 export * from './generation-task.dto';
 export * from './quota.dto';
+
+// Response schemas
+export * from './response-schemas';

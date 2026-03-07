@@ -2,12 +2,12 @@ import type { AccountStatus as IAccountStatus } from '@dailyuse/contracts/accoun
 
 export type AccountStatus = IAccountStatus & { readonly __brand: unique symbol };
 
-const VALUES: IAccountStatus[] = ['ACTIVE', 'SUSPENDED', 'DEACTIVATED'];
+const VALUES: IAccountStatus[] = ['Active', 'Suspended', 'Deactivated'];
 
 export const AccountStatus = {
-  ACTIVE: 'ACTIVE' as AccountStatus,
-  SUSPENDED: 'SUSPENDED' as AccountStatus,
-  DEACTIVATED: 'DEACTIVATED' as AccountStatus,
+  Active: 'Active' as AccountStatus,
+  Suspended: 'Suspended' as AccountStatus,
+  Deactivated: 'Deactivated' as AccountStatus,
 
   of(value: string): AccountStatus {
     if (!this.isValid(value)) {
@@ -24,12 +24,22 @@ export const AccountStatus = {
     return VALUES as AccountStatus[];
   },
 
-  isActive(status: AccountStatus): boolean { return status === this.ACTIVE; },
-  isSuspended(status: AccountStatus): boolean { return status === this.SUSPENDED; },
-  isDeactivated(status: AccountStatus): boolean { return status === this.DEACTIVATED; },
-  canLogin(status: AccountStatus): boolean { return status === this.ACTIVE; },
-  canBeSuspended(status: AccountStatus): boolean { return status === this.ACTIVE; },
+  isActive(status: AccountStatus): boolean {
+    return status === this.Active;
+  },
+  isSuspended(status: AccountStatus): boolean {
+    return status === this.Suspended;
+  },
+  isDeactivated(status: AccountStatus): boolean {
+    return status === this.Deactivated;
+  },
+  canLogin(status: AccountStatus): boolean {
+    return status === this.Active;
+  },
+  canBeSuspended(status: AccountStatus): boolean {
+    return status === this.Active;
+  },
   canBeActivated(status: AccountStatus): boolean {
-    return status === this.SUSPENDED || status === this.DEACTIVATED;
+    return status === this.Suspended || status === this.Deactivated;
   },
 };

@@ -19,7 +19,12 @@
       // This ensures di/types.ts inline import() expressions degrade the same way
       // as in the web app, avoiding dist-vs-source type identity conflicts.
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
-      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/src/index.ts"]
+      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/src/index.ts"],
+      "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/notification": [
+        "../../packages/contracts/src/modules/notification/index.ts"
+      ],
+      "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"]
     }
   },
 

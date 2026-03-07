@@ -10,7 +10,6 @@ import type {
   IAIUsageQuotaRepository,
 } from '../domain-server';
 import { AIGenerationValidationService } from '../domain-server/services/AIGenerationValidationService';
-import { AIAdapterFactory } from './adapters/a-i-adapter-factory';
 import { AIContainer } from './di/ai-container';
 import {
   SqliteAIConversationRepository,
@@ -31,7 +30,9 @@ import {
   AIProviderConfigService,
   AIGenerationApplicationService,
   AIChatApplicationService,
+  GoalGenerationApplicationService,
 } from '../application-server/use-cases';
+import { QuotaEnforcementService } from '../domain-server/services/QuotaEnforcementService';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -53,6 +54,7 @@ export class AISqliteModule {
   public readonly providerConfigService: AIProviderConfigService;
   public readonly generationService: AIGenerationApplicationService;
   public readonly chatService: AIChatApplicationService;
+  public readonly goalGenerationService: GoalGenerationApplicationService;
 
   constructor(dbConnection: BetterSQLiteDB) {
     const conversationRepository = new SqliteAIConversationRepository(dbConnection);
@@ -84,28 +86,31 @@ export class AISqliteModule {
     );
     this.getQuota = new GetQuota(this.usageQuotaRepository);
     this.conversationService = new AIConversationService(this.conversationRepository);
-    this.providerConfigService = new AIProviderConfigService(
-      this.providerConfigRepository,
-      (config: any) => AIAdapterFactory.createFromConfig(config),
-    );
+    this.providerConfigService = new AIProviderConfigService(this.providerConfigRepository);
 
     const validationService = new AIGenerationValidationService();
-    const defaultAdapter = AIAdapterFactory.getDefaultAdapter();
-    const quotaEnforcementService = {
-      enforceQuota: async () => ({ allowed: true, remaining: 1000 }),
-    } as any;
+    const quotaEnforcementService = new QuotaEnforcementService(this.usageQuotaRepository);
 
     this.generationService = new AIGenerationApplicationService(
       validationService,
       this.conversationRepository,
       this.usageQuotaRepository,
       quotaEnforcementService,
-      defaultAdapter,
       this.providerConfigRepository,
       this.generationTaskRepository,
     );
 
-    this.chatService = new AIChatApplicationService(this.conversationRepository, defaultAdapter);
+    this.goalGenerationService = new GoalGenerationApplicationService(
+      validationService,
+      this.providerConfigRepository,
+      this.usageQuotaRepository,
+      quotaEnforcementService,
+    );
+
+    this.chatService = new AIChatApplicationService(
+      this.conversationRepository,
+      this.providerConfigRepository,
+    );
   }
 }
 

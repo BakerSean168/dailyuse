@@ -16,9 +16,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { eventBus } from '@dailyuse/utils';
-// ScheduleTaskEventTypes is not exported from @dailyuse/contracts/schedule (pre-existing gap).
-// Define locally until the contract is formalised.
-const ScheduleTaskEventTypes = { EXECUTED: 'schedule:task:executed' } as const;
+import type { NotificationDispatchDesktopEvent } from '@dailyuse/contracts/notification';
 import { getCustomNotificationManager } from './custom-notification.manager';
 
 /**
@@ -215,33 +213,16 @@ export class NotificationService {
    * Initializes internal event listeners for system events (reminders, schedules).
    */
   private initEventListeners(): void {
-    // Listen for reminder triggers
     eventBus.on(
-      'reminder.triggered',
-      (data: { id: string; title: string; body?: string; templateId: string }) => {
+      'notification:dispatch_desktop' as any,
+      (event: NotificationDispatchDesktopEvent) => {
         this.showNotification({
-          title: data.title,
-          body: data.body || '',
-          data: {
-            type: 'reminder',
-            id: data.id,
-            templateId: data.templateId,
-          },
-        });
-      },
-    );
-
-    // Listen for schedule triggers
-    eventBus.on(
-      ScheduleTaskEventTypes.EXECUTED,
-      (data: { id: string; name: string; description?: string }) => {
-        this.showNotification({
-          title: `调度任务: ${data.name}`,
-          body: data.description || '任务已执行',
-          data: {
-            type: 'schedule',
-            id: data.id,
-          },
+          title: event.title,
+          body: event.body ?? '',
+          icon: event.icon ?? undefined,
+          silent: event.silent,
+          sound: event.sound?.enabled ?? true,
+          data: event.data,
         });
       },
     );
@@ -260,30 +241,22 @@ export class NotificationService {
     );
 
     // Also listen to full import/reset events where we might receive the full tree
-    eventBus.on(
-      'setting:SettingImported',
-      (eventData: { preferences?: { notification?: { useCustomNotification?: boolean } } }) => {
-        if (eventData?.preferences?.notification?.useCustomNotification !== undefined) {
-          this.useCustomNotification = Boolean(
-            eventData.preferences.notification.useCustomNotification,
-          );
-        }
-      },
-    );
+    eventBus.on('setting:SettingImported' as any, (eventData: any) => {
+      if (eventData?.preferences?.notification?.useCustomNotification !== undefined) {
+        this.useCustomNotification = Boolean(
+          eventData.preferences.notification.useCustomNotification,
+        );
+      }
+    });
 
     // Also listen to successful login to fetch initial preferences
-    eventBus.on(
-      'auth:login_success',
-      (eventData: {
-        user: { settings?: { notification?: { useCustomNotification?: boolean } } };
-      }) => {
-        if (eventData?.user?.settings?.notification?.useCustomNotification !== undefined) {
-          this.useCustomNotification = Boolean(
-            eventData.user.settings.notification.useCustomNotification,
-          );
-        }
-      },
-    );
+    eventBus.on('auth:login_success' as any, (eventData: any) => {
+      if (eventData?.user?.settings?.notification?.useCustomNotification !== undefined) {
+        this.useCustomNotification = Boolean(
+          eventData.user.settings.notification.useCustomNotification,
+        );
+      }
+    });
   }
 
   /**

@@ -154,7 +154,7 @@ export function useAuth() {
 
   async function sendSmsCode(
     phoneNumber: string,
-    purpose: SendSmsCodeReq['purpose'] = 'LOGIN',
+    purpose: SendSmsCodeReq['purpose'] = 'Login',
   ): Promise<boolean> {
     const result = await service.sendSmsCode({ phoneNumber, purpose });
     if (result.ok) {

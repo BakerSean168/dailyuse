@@ -8,7 +8,7 @@ import type {
 
 /**
  * AI Module - Event Map
- * 
+ *
  * Event Naming Convention: ai:<action>
  * Maps event names to their payload types for type-safe event handling
  */
@@ -18,13 +18,13 @@ export type AIEventMap = {
    * AI quota created event
    * Triggered when user AI quota is created
    */
-  'ai:quota-create': AIQuotaCreatedEvent;
+  'ai:quota-created': AIQuotaCreatedEvent;
 
   /**
    * AI quota consumed event
    * Triggered when user consumes AI tokens
    */
-  'ai:quota-consume': AIQuotaConsumedEvent;
+  'ai:quota-consumed': AIQuotaConsumedEvent;
 
   /**
    * AI quota reset event
@@ -36,11 +36,11 @@ export type AIEventMap = {
    * AI quota exceeded event
    * Triggered when user quota is exceeded
    */
-  'ai:quota-exceed': AIQuotaExceededEvent;
+  'ai:quota-exceeded': AIQuotaExceededEvent;
 
   /**
    * AI quota limit updated event
    * Triggered when quota limit is updated
    */
-  'ai:quota-limit-update': AIQuotaLimitUpdatedEvent;
+  'ai:quota-limit-updated': AIQuotaLimitUpdatedEvent;
 };

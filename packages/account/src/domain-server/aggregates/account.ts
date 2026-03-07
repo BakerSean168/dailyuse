@@ -76,7 +76,7 @@ export class Account extends AggregateRoot<IdentityId> {
     const now = new Date();
     const state: AccountState = {
       id: params.id,
-      status: AccountStatus.ACTIVE,
+      status: AccountStatus.Active,
       profile: AccountProfile.createDefault(params.email),
       settings: AccountSettings.createDefault(),
       email: ContactEmail.create({
@@ -129,14 +129,14 @@ export class Account extends AggregateRoot<IdentityId> {
   }
 
   public close(): void {
-    if (this._props.status === AccountStatus.DEACTIVATED) {
+    if (this._props.status === AccountStatus.Deactivated) {
       throw new Error('Account is already closed.');
     }
-    if (this._props.status === AccountStatus.SUSPENDED) {
+    if (this._props.status === AccountStatus.Suspended) {
       throw new Error('Cannot close a suspended account. Please contact support.');
     }
 
-    this._props.status = AccountStatus.DEACTIVATED;
+    this._props.status = AccountStatus.Deactivated;
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:close']>('account:close', {

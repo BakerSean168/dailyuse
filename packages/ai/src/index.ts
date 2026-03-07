@@ -44,3 +44,6 @@ export * from './application-server';
 // ================= Infrastructure Layer =================
 export * from './infrastructure-server';
 export * from './infrastructure-client';
+
+// ================= API Layer =================
+export * from './api';

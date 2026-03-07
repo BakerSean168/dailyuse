@@ -25,12 +25,12 @@ describe('UpdateAccountSettingsUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    const result = await useCase.execute(account.id.toString(), { theme: 'DARK' });
+    const result = await useCase.execute(account.id.toString(), { theme: 'Dark' });
 
     expect(result.success).toBe(true);
     // Bug fix verification: settings written back to aggregate
     expect(account.settings.isDarkTheme()).toBe(true);
-    expect(result.settings.theme).toBe('DARK');
+    expect(result.settings.theme).toBe('Dark');
   });
 
   it('should update language', async () => {
@@ -80,14 +80,14 @@ describe('UpdateAccountSettingsUseCase', () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
     const result = await useCase.execute(account.id.toString(), {
-      theme: 'LIGHT',
+      theme: 'Light',
       language: 'ja-JP',
       timezone: 'Asia/Tokyo',
       notificationEnabled: false,
     });
 
     expect(result.success).toBe(true);
-    expect(result.settings.theme).toBe('LIGHT');
+    expect(result.settings.theme).toBe('Light');
     expect(result.settings.language).toBe('ja-JP');
     expect(result.settings.timezone).toBe('Asia/Tokyo');
     expect(result.settings.notificationEnabled).toBe(false);
@@ -96,7 +96,7 @@ describe('UpdateAccountSettingsUseCase', () => {
   it('should throw when account not found', async () => {
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-    await expect(useCase.execute('missing', { theme: 'DARK' })).rejects.toThrow(
+    await expect(useCase.execute('missing', { theme: 'Dark' })).rejects.toThrow(
       'Account not found',
     );
   });
@@ -105,7 +105,7 @@ describe('UpdateAccountSettingsUseCase', () => {
     const account = anAccount();
     (repo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(account);
 
-    await useCase.execute(account.id.toString(), { theme: 'DARK' });
+    await useCase.execute(account.id.toString(), { theme: 'Dark' });
 
     expect(repo.save).toHaveBeenCalledWith(account);
   });

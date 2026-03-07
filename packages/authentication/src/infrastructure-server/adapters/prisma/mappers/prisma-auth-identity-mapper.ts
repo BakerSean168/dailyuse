@@ -16,7 +16,6 @@
  * - PersistenceDTO 已移除，mapper 直接�?DB Row �?ServerDTO 之间转换
  */
 
-import type { AuthIdentityStatus } from '@dailyuse/database';
 import type {
   AuthIdentityServerDTO,
   AuthIdentifierDTO,
@@ -53,7 +52,7 @@ export { PrismaOAuthBindingMapper } from './prisma-oauth-binding-mapper';
 export interface AuthIdentityPrismaWriteData {
   identity: {
     id: string;
-    status: AuthIdentityStatus;
+    status: string;
     failedLoginAttempts: number;
     lastFailedAttempt: Date | null;
     lockedUntil: Date | null;
@@ -142,7 +141,7 @@ export class PrismaAuthIdentityMapper {
   static toServerDTO(row: PrismaAuthIdentityWithRelations): AuthIdentityServerDTO {
     return {
       id: IdentityId.of(row.id),
-      status: row.status,
+      status: AuthIdentityStatusVO.of(row.status),
       failedLoginAttempts: row.failedLoginAttempts,
       lastFailedAttempt: row.lastFailedAttempt?.getTime() ?? null,
       lockedUntil: row.lockedUntil?.getTime() ?? null,
@@ -174,7 +173,7 @@ export class PrismaAuthIdentityMapper {
     return {
       identity: {
         id: dto.id,
-        status: dto.status as AuthIdentityStatus,
+        status: AuthIdentityStatusVO.of(dto.status),
         failedLoginAttempts: dto.failedLoginAttempts,
         lastFailedAttempt: dto.lastFailedAttempt ? new Date(dto.lastFailedAttempt) : null,
         lockedUntil: dto.lockedUntil ? new Date(dto.lockedUntil) : null,

@@ -16,7 +16,11 @@ import type {
   CredentialStatus,
   AuthCredentialId,
 } from '@dailyuse/contracts/authentication';
-import { CredentialType, PasswordAlgorithm } from '../../../../domain-shared';
+import {
+  CredentialType,
+  CredentialStatus as CredentialStatusVO,
+  PasswordAlgorithm,
+} from '../../../../domain-shared';
 import type { PrismaAuthCredentialRow } from '../../../types';
 
 export class PrismaAuthCredentialMapper {
@@ -30,7 +34,7 @@ export class PrismaAuthCredentialMapper {
   static toDomainDTO(row: PrismaAuthCredentialRow): AuthCredentialServerDTO {
     const base = {
       id: row.id as AuthCredentialId,
-      status: row.status as CredentialStatus,
+      status: CredentialStatusVO.of(row.status) as unknown as CredentialStatus,
       createdAt: row.createdAt.getTime(),
       lastUsedAt: row.lastUsedAt?.getTime() ?? null,
     };
@@ -75,8 +79,8 @@ export class PrismaAuthCredentialMapper {
     const row: Prisma.AuthCredentialUncheckedCreateInput = {
       id: cred.id,
       identityId,
-      type: cred.type,
-      status: cred.status,
+      type: cred.type as unknown as Prisma.AuthCredentialUncheckedCreateInput['type'],
+      status: cred.status as unknown as Prisma.AuthCredentialUncheckedCreateInput['status'],
       createdAt: new Date(cred.createdAt),
       lastUsedAt: cred.lastUsedAt ? new Date(cred.lastUsedAt) : null,
     };

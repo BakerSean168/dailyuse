@@ -13,11 +13,11 @@ describe('CheckAvailabilityUseCase', () => {
     useCase = new CheckAvailabilityUseCase(repo);
   });
 
-  describe('EMAIL type', () => {
+  describe('Email type', () => {
     it('should return available=true when email does not exist', async () => {
       (repo.existsByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
-      const result = await useCase.execute({ type: 'EMAIL', value: 'new@example.com' });
+      const result = await useCase.execute({ type: 'Email', value: 'new@example.com' });
 
       expect(result.available).toBe(true);
       expect(repo.existsByEmail).toHaveBeenCalledWith('new@example.com');
@@ -26,17 +26,17 @@ describe('CheckAvailabilityUseCase', () => {
     it('should return available=false when email already exists', async () => {
       (repo.existsByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(true);
 
-      const result = await useCase.execute({ type: 'EMAIL', value: 'taken@example.com' });
+      const result = await useCase.execute({ type: 'Email', value: 'taken@example.com' });
 
       expect(result.available).toBe(false);
     });
   });
 
-  describe('NICKNAME type', () => {
+  describe('Nickname type', () => {
     it('should return available=true when username does not exist', async () => {
       (repo.existsByUsername as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
-      const result = await useCase.execute({ type: 'NICKNAME', value: 'newuser' });
+      const result = await useCase.execute({ type: 'Nickname', value: 'newuser' });
 
       expect(result.available).toBe(true);
       expect(repo.existsByUsername).toHaveBeenCalledWith('newuser');
@@ -45,7 +45,7 @@ describe('CheckAvailabilityUseCase', () => {
     it('should return available=false when username already exists', async () => {
       (repo.existsByUsername as ReturnType<typeof vi.fn>).mockResolvedValue(true);
 
-      const result = await useCase.execute({ type: 'NICKNAME', value: 'takenuser' });
+      const result = await useCase.execute({ type: 'Nickname', value: 'takenuser' });
 
       expect(result.available).toBe(false);
     });

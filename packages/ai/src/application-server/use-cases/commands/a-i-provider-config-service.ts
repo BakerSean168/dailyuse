@@ -21,10 +21,7 @@ const logger = createLogger('AIProviderConfigService');
  * AI Provider Config Application Service
  */
 export class AIProviderConfigService {
-  constructor(
-    private readonly providerConfigRepository: any,
-    private readonly adapterFactory: any,
-  ) {}
+  constructor(private readonly providerConfigRepository: any) {}
 
   /**
    * Create AI provider configuration
@@ -105,9 +102,7 @@ export class AIProviderConfigService {
   /**
    * Test AI provider connection
    */
-  async testConnection(
-    request: TestAIProviderReq,
-  ): Promise<TestAIProviderRes> {
+  async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
     logger.info('Testing connection');
     return {
       ok: true,

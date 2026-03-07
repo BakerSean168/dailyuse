@@ -140,8 +140,8 @@ export class Resource extends Entity<ResourceId> {
 
   get typeText(): string {
     const typeTextMap: Record<ResourceType, string> = {
-      FILE: '文件',
-      FOLDER: '文件夹',
+      File: '文件',
+      Folder: '文件夹',
     };
     return typeTextMap[this._props.type] ?? this._props.type;
   }
@@ -149,7 +149,7 @@ export class Resource extends Entity<ResourceId> {
   get displayName(): string {
     // Remove extension from filename for display
     const lastDotIndex = this._props.name.lastIndexOf('.');
-    if (lastDotIndex > 0 && this._props.type === 'FILE') {
+    if (lastDotIndex > 0 && this._props.type === 'File') {
       return this._props.name.substring(0, lastDotIndex);
     }
     return this._props.name;
@@ -182,7 +182,7 @@ export class Resource extends Entity<ResourceId> {
 
   get icon(): string {
     // Return Material Design icon name based on type and extension
-    if (this._props.type === 'FOLDER') {
+    if (this._props.type === 'Folder') {
       return 'mdi-folder';
     }
     const ext = this.extension.toLowerCase();

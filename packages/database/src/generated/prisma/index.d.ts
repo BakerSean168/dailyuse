@@ -344,51 +344,6 @@ export type TaskTemplateHistory = $Result.DefaultSelection<Prisma.$TaskTemplateH
 export type TaskStatistic = $Result.DefaultSelection<Prisma.$TaskStatisticPayload>
 
 /**
- * Enums
- */
-export namespace $Enums {
-  export const AuthIdentityStatus: {
-  ACTIVE: 'ACTIVE',
-  LOCKED: 'LOCKED',
-  DISABLED: 'DISABLED',
-  UNVERIFIED: 'UNVERIFIED'
-};
-
-export type AuthIdentityStatus = (typeof AuthIdentityStatus)[keyof typeof AuthIdentityStatus]
-
-
-export const CredentialType: {
-  PASSWORD: 'PASSWORD',
-  MAGIC_LINK: 'MAGIC_LINK'
-};
-
-export type CredentialType = (typeof CredentialType)[keyof typeof CredentialType]
-
-
-export const CredentialStatus: {
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  EXPIRED: 'EXPIRED',
-  REVOKED: 'REVOKED'
-};
-
-export type CredentialStatus = (typeof CredentialStatus)[keyof typeof CredentialStatus]
-
-}
-
-export type AuthIdentityStatus = $Enums.AuthIdentityStatus
-
-export const AuthIdentityStatus: typeof $Enums.AuthIdentityStatus
-
-export type CredentialType = $Enums.CredentialType
-
-export const CredentialType: typeof $Enums.CredentialType
-
-export type CredentialStatus = $Enums.CredentialStatus
-
-export const CredentialStatus: typeof $Enums.CredentialStatus
-
-/**
  * ##  Prisma Client ʲˢ
  *
  * Type-safe database client for TypeScript & Node.js
@@ -18545,7 +18500,7 @@ export namespace Prisma {
 
   export type AuthIdentityMinAggregateOutputType = {
     id: string | null
-    status: $Enums.AuthIdentityStatus | null
+    status: string | null
     failedLoginAttempts: number | null
     lastFailedAttempt: Date | null
     lockedUntil: Date | null
@@ -18557,7 +18512,7 @@ export namespace Prisma {
 
   export type AuthIdentityMaxAggregateOutputType = {
     id: string | null
-    status: $Enums.AuthIdentityStatus | null
+    status: string | null
     failedLoginAttempts: number | null
     lastFailedAttempt: Date | null
     lockedUntil: Date | null
@@ -18716,7 +18671,7 @@ export namespace Prisma {
 
   export type AuthIdentityGroupByOutputType = {
     id: string
-    status: $Enums.AuthIdentityStatus
+    status: string
     failedLoginAttempts: number
     lastFailedAttempt: Date | null
     lockedUntil: Date | null
@@ -18822,7 +18777,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      status: $Enums.AuthIdentityStatus
+      status: string
       failedLoginAttempts: number
       lastFailedAttempt: Date | null
       lockedUntil: Date | null
@@ -19259,7 +19214,7 @@ export namespace Prisma {
    */
   interface AuthIdentityFieldRefs {
     readonly id: FieldRef<"AuthIdentity", 'String'>
-    readonly status: FieldRef<"AuthIdentity", 'AuthIdentityStatus'>
+    readonly status: FieldRef<"AuthIdentity", 'String'>
     readonly failedLoginAttempts: FieldRef<"AuthIdentity", 'Int'>
     readonly lastFailedAttempt: FieldRef<"AuthIdentity", 'DateTime'>
     readonly lockedUntil: FieldRef<"AuthIdentity", 'DateTime'>
@@ -21997,8 +21952,8 @@ export namespace Prisma {
   export type AuthCredentialMinAggregateOutputType = {
     id: string | null
     identityId: string | null
-    type: $Enums.CredentialType | null
-    status: $Enums.CredentialStatus | null
+    type: string | null
+    status: string | null
     passwordHash: string | null
     passwordLastChangedAt: Date | null
     version: number | null
@@ -22010,8 +21965,8 @@ export namespace Prisma {
   export type AuthCredentialMaxAggregateOutputType = {
     id: string | null
     identityId: string | null
-    type: $Enums.CredentialType | null
-    status: $Enums.CredentialStatus | null
+    type: string | null
+    status: string | null
     passwordHash: string | null
     passwordLastChangedAt: Date | null
     version: number | null
@@ -22172,8 +22127,8 @@ export namespace Prisma {
   export type AuthCredentialGroupByOutputType = {
     id: string
     identityId: string
-    type: $Enums.CredentialType
-    status: $Enums.CredentialStatus
+    type: string
+    status: string
     passwordHash: string | null
     passwordLastChangedAt: Date | null
     version: number
@@ -22275,8 +22230,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       identityId: string
-      type: $Enums.CredentialType
-      status: $Enums.CredentialStatus
+      type: string
+      status: string
       passwordHash: string | null
       passwordLastChangedAt: Date | null
       version: number
@@ -22709,8 +22664,8 @@ export namespace Prisma {
   interface AuthCredentialFieldRefs {
     readonly id: FieldRef<"AuthCredential", 'String'>
     readonly identityId: FieldRef<"AuthCredential", 'String'>
-    readonly type: FieldRef<"AuthCredential", 'CredentialType'>
-    readonly status: FieldRef<"AuthCredential", 'CredentialStatus'>
+    readonly type: FieldRef<"AuthCredential", 'String'>
+    readonly status: FieldRef<"AuthCredential", 'String'>
     readonly passwordHash: FieldRef<"AuthCredential", 'String'>
     readonly passwordLastChangedAt: FieldRef<"AuthCredential", 'DateTime'>
     readonly version: FieldRef<"AuthCredential", 'Int'>
@@ -88230,48 +88185,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'AuthIdentityStatus'
-   */
-  export type EnumAuthIdentityStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthIdentityStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'AuthIdentityStatus[]'
-   */
-  export type ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthIdentityStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'CredentialType'
-   */
-  export type EnumCredentialTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialType'>
-    
-
-
-  /**
-   * Reference to a field of type 'CredentialType[]'
-   */
-  export type ListEnumCredentialTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialType[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'CredentialStatus'
-   */
-  export type EnumCredentialStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'CredentialStatus[]'
-   */
-  export type ListEnumCredentialStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialStatus[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -89178,7 +89091,7 @@ export namespace Prisma {
     OR?: AuthIdentityWhereInput[]
     NOT?: AuthIdentityWhereInput | AuthIdentityWhereInput[]
     id?: StringFilter<"AuthIdentity"> | string
-    status?: EnumAuthIdentityStatusFilter<"AuthIdentity"> | $Enums.AuthIdentityStatus
+    status?: StringFilter<"AuthIdentity"> | string
     failedLoginAttempts?: IntFilter<"AuthIdentity"> | number
     lastFailedAttempt?: DateTimeNullableFilter<"AuthIdentity"> | Date | string | null
     lockedUntil?: DateTimeNullableFilter<"AuthIdentity"> | Date | string | null
@@ -89215,7 +89128,7 @@ export namespace Prisma {
     AND?: AuthIdentityWhereInput | AuthIdentityWhereInput[]
     OR?: AuthIdentityWhereInput[]
     NOT?: AuthIdentityWhereInput | AuthIdentityWhereInput[]
-    status?: EnumAuthIdentityStatusFilter<"AuthIdentity"> | $Enums.AuthIdentityStatus
+    status?: StringFilter<"AuthIdentity"> | string
     failedLoginAttempts?: IntFilter<"AuthIdentity"> | number
     lastFailedAttempt?: DateTimeNullableFilter<"AuthIdentity"> | Date | string | null
     lockedUntil?: DateTimeNullableFilter<"AuthIdentity"> | Date | string | null
@@ -89252,7 +89165,7 @@ export namespace Prisma {
     OR?: AuthIdentityScalarWhereWithAggregatesInput[]
     NOT?: AuthIdentityScalarWhereWithAggregatesInput | AuthIdentityScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"AuthIdentity"> | string
-    status?: EnumAuthIdentityStatusWithAggregatesFilter<"AuthIdentity"> | $Enums.AuthIdentityStatus
+    status?: StringWithAggregatesFilter<"AuthIdentity"> | string
     failedLoginAttempts?: IntWithAggregatesFilter<"AuthIdentity"> | number
     lastFailedAttempt?: DateTimeNullableWithAggregatesFilter<"AuthIdentity"> | Date | string | null
     lockedUntil?: DateTimeNullableWithAggregatesFilter<"AuthIdentity"> | Date | string | null
@@ -89405,8 +89318,8 @@ export namespace Prisma {
     NOT?: AuthCredentialWhereInput | AuthCredentialWhereInput[]
     id?: StringFilter<"AuthCredential"> | string
     identityId?: StringFilter<"AuthCredential"> | string
-    type?: EnumCredentialTypeFilter<"AuthCredential"> | $Enums.CredentialType
-    status?: EnumCredentialStatusFilter<"AuthCredential"> | $Enums.CredentialStatus
+    type?: StringFilter<"AuthCredential"> | string
+    status?: StringFilter<"AuthCredential"> | string
     passwordHash?: StringNullableFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
     version?: IntFilter<"AuthCredential"> | number
@@ -89436,8 +89349,8 @@ export namespace Prisma {
     OR?: AuthCredentialWhereInput[]
     NOT?: AuthCredentialWhereInput | AuthCredentialWhereInput[]
     identityId?: StringFilter<"AuthCredential"> | string
-    type?: EnumCredentialTypeFilter<"AuthCredential"> | $Enums.CredentialType
-    status?: EnumCredentialStatusFilter<"AuthCredential"> | $Enums.CredentialStatus
+    type?: StringFilter<"AuthCredential"> | string
+    status?: StringFilter<"AuthCredential"> | string
     passwordHash?: StringNullableFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
     version?: IntFilter<"AuthCredential"> | number
@@ -89471,8 +89384,8 @@ export namespace Prisma {
     NOT?: AuthCredentialScalarWhereWithAggregatesInput | AuthCredentialScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"AuthCredential"> | string
     identityId?: StringWithAggregatesFilter<"AuthCredential"> | string
-    type?: EnumCredentialTypeWithAggregatesFilter<"AuthCredential"> | $Enums.CredentialType
-    status?: EnumCredentialStatusWithAggregatesFilter<"AuthCredential"> | $Enums.CredentialStatus
+    type?: StringWithAggregatesFilter<"AuthCredential"> | string
+    status?: StringWithAggregatesFilter<"AuthCredential"> | string
     passwordHash?: StringNullableWithAggregatesFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableWithAggregatesFilter<"AuthCredential"> | Date | string | null
     version?: IntWithAggregatesFilter<"AuthCredential"> | number
@@ -96029,7 +95942,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -96046,7 +95959,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedCreateInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -96063,7 +95976,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96080,7 +95993,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96097,7 +96010,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateManyInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -96109,7 +96022,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96121,7 +96034,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96278,8 +96191,8 @@ export namespace Prisma {
 
   export type AuthCredentialCreateInput = {
     id?: string
-    type: $Enums.CredentialType
-    status?: $Enums.CredentialStatus
+    type: string
+    status?: string
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
     version?: number
@@ -96292,8 +96205,8 @@ export namespace Prisma {
   export type AuthCredentialUncheckedCreateInput = {
     id?: string
     identityId: string
-    type: $Enums.CredentialType
-    status?: $Enums.CredentialStatus
+    type: string
+    status?: string
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
     version?: number
@@ -96304,8 +96217,8 @@ export namespace Prisma {
 
   export type AuthCredentialUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -96318,8 +96231,8 @@ export namespace Prisma {
   export type AuthCredentialUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -96331,8 +96244,8 @@ export namespace Prisma {
   export type AuthCredentialCreateManyInput = {
     id?: string
     identityId: string
-    type: $Enums.CredentialType
-    status?: $Enums.CredentialStatus
+    type: string
+    status?: string
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
     version?: number
@@ -96343,8 +96256,8 @@ export namespace Prisma {
 
   export type AuthCredentialUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -96356,8 +96269,8 @@ export namespace Prisma {
   export type AuthCredentialUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     identityId?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -103840,13 +103753,6 @@ export namespace Prisma {
     id?: SortOrder
   }
 
-  export type EnumAuthIdentityStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.AuthIdentityStatus | EnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAuthIdentityStatusFilter<$PrismaModel> | $Enums.AuthIdentityStatus
-  }
-
   export type AuthIdentifierListRelationFilter = {
     every?: AuthIdentifierWhereInput
     some?: AuthIdentifierWhereInput
@@ -103943,16 +103849,6 @@ export namespace Prisma {
     version?: SortOrder
   }
 
-  export type EnumAuthIdentityStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AuthIdentityStatus | EnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAuthIdentityStatusWithAggregatesFilter<$PrismaModel> | $Enums.AuthIdentityStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAuthIdentityStatusFilter<$PrismaModel>
-    _max?: NestedEnumAuthIdentityStatusFilter<$PrismaModel>
-  }
-
   export type AuthIdentifierIdentityIdTypeValueCompoundUniqueInput = {
     identityId: string
     type: string
@@ -104027,20 +103923,6 @@ export namespace Prisma {
     lastUsedAt?: SortOrder
   }
 
-  export type EnumCredentialTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialType | EnumCredentialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialTypeFilter<$PrismaModel> | $Enums.CredentialType
-  }
-
-  export type EnumCredentialStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialStatus | EnumCredentialStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialStatusFilter<$PrismaModel> | $Enums.CredentialStatus
-  }
-
   export type AuthCredentialCountOrderByAggregateInput = {
     id?: SortOrder
     identityId?: SortOrder
@@ -104086,26 +103968,6 @@ export namespace Prisma {
 
   export type AuthCredentialSumOrderByAggregateInput = {
     version?: SortOrder
-  }
-
-  export type EnumCredentialTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialType | EnumCredentialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialTypeWithAggregatesFilter<$PrismaModel> | $Enums.CredentialType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCredentialTypeFilter<$PrismaModel>
-    _max?: NestedEnumCredentialTypeFilter<$PrismaModel>
-  }
-
-  export type EnumCredentialStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialStatus | EnumCredentialStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialStatusWithAggregatesFilter<$PrismaModel> | $Enums.CredentialStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCredentialStatusFilter<$PrismaModel>
-    _max?: NestedEnumCredentialStatusFilter<$PrismaModel>
   }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -109932,10 +109794,6 @@ export namespace Prisma {
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[]
   }
 
-  export type EnumAuthIdentityStatusFieldUpdateOperationsInput = {
-    set?: $Enums.AuthIdentityStatus
-  }
-
   export type AuthIdentifierUpdateManyWithoutIdentityNestedInput = {
     create?: XOR<AuthIdentifierCreateWithoutIdentityInput, AuthIdentifierUncheckedCreateWithoutIdentityInput> | AuthIdentifierCreateWithoutIdentityInput[] | AuthIdentifierUncheckedCreateWithoutIdentityInput[]
     connectOrCreate?: AuthIdentifierCreateOrConnectWithoutIdentityInput | AuthIdentifierCreateOrConnectWithoutIdentityInput[]
@@ -110108,14 +109966,6 @@ export namespace Prisma {
     create?: XOR<AuthIdentityCreateWithoutCredentialsInput, AuthIdentityUncheckedCreateWithoutCredentialsInput>
     connectOrCreate?: AuthIdentityCreateOrConnectWithoutCredentialsInput
     connect?: AuthIdentityWhereUniqueInput
-  }
-
-  export type EnumCredentialTypeFieldUpdateOperationsInput = {
-    set?: $Enums.CredentialType
-  }
-
-  export type EnumCredentialStatusFieldUpdateOperationsInput = {
-    set?: $Enums.CredentialStatus
   }
 
   export type AuthIdentityUpdateOneRequiredWithoutCredentialsNestedInput = {
@@ -113147,57 +112997,6 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
-
-  export type NestedEnumAuthIdentityStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.AuthIdentityStatus | EnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAuthIdentityStatusFilter<$PrismaModel> | $Enums.AuthIdentityStatus
-  }
-
-  export type NestedEnumAuthIdentityStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AuthIdentityStatus | EnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AuthIdentityStatus[] | ListEnumAuthIdentityStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAuthIdentityStatusWithAggregatesFilter<$PrismaModel> | $Enums.AuthIdentityStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAuthIdentityStatusFilter<$PrismaModel>
-    _max?: NestedEnumAuthIdentityStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumCredentialTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialType | EnumCredentialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialTypeFilter<$PrismaModel> | $Enums.CredentialType
-  }
-
-  export type NestedEnumCredentialStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialStatus | EnumCredentialStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialStatusFilter<$PrismaModel> | $Enums.CredentialStatus
-  }
-
-  export type NestedEnumCredentialTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialType | EnumCredentialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialType[] | ListEnumCredentialTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialTypeWithAggregatesFilter<$PrismaModel> | $Enums.CredentialType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCredentialTypeFilter<$PrismaModel>
-    _max?: NestedEnumCredentialTypeFilter<$PrismaModel>
-  }
-
-  export type NestedEnumCredentialStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CredentialStatus | EnumCredentialStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CredentialStatus[] | ListEnumCredentialStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumCredentialStatusWithAggregatesFilter<$PrismaModel> | $Enums.CredentialStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCredentialStatusFilter<$PrismaModel>
-    _max?: NestedEnumCredentialStatusFilter<$PrismaModel>
-  }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -113283,7 +113082,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateWithoutAccountsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -113299,7 +113098,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedCreateWithoutAccountsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -115535,7 +115334,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateWithoutAccountsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -115551,7 +115350,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateWithoutAccountsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -119399,8 +119198,8 @@ export namespace Prisma {
 
   export type AuthCredentialCreateWithoutIdentityInput = {
     id?: string
-    type: $Enums.CredentialType
-    status?: $Enums.CredentialStatus
+    type: string
+    status?: string
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
     version?: number
@@ -119411,8 +119210,8 @@ export namespace Prisma {
 
   export type AuthCredentialUncheckedCreateWithoutIdentityInput = {
     id?: string
-    type: $Enums.CredentialType
-    status?: $Enums.CredentialStatus
+    type: string
+    status?: string
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
     version?: number
@@ -119708,8 +119507,8 @@ export namespace Prisma {
     NOT?: AuthCredentialScalarWhereInput | AuthCredentialScalarWhereInput[]
     id?: StringFilter<"AuthCredential"> | string
     identityId?: StringFilter<"AuthCredential"> | string
-    type?: EnumCredentialTypeFilter<"AuthCredential"> | $Enums.CredentialType
-    status?: EnumCredentialStatusFilter<"AuthCredential"> | $Enums.CredentialStatus
+    type?: StringFilter<"AuthCredential"> | string
+    status?: StringFilter<"AuthCredential"> | string
     passwordHash?: StringNullableFilter<"AuthCredential"> | string | null
     passwordLastChangedAt?: DateTimeNullableFilter<"AuthCredential"> | Date | string | null
     version?: IntFilter<"AuthCredential"> | number
@@ -119797,7 +119596,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateWithoutIdentifiersInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -119813,7 +119612,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedCreateWithoutIdentifiersInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -119845,7 +119644,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateWithoutIdentifiersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -119861,7 +119660,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateWithoutIdentifiersInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -119877,7 +119676,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateWithoutOauthBindingsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -119893,7 +119692,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedCreateWithoutOauthBindingsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -119925,7 +119724,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateWithoutOauthBindingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -119941,7 +119740,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateWithoutOauthBindingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -119957,7 +119756,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateWithoutCredentialsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -119973,7 +119772,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedCreateWithoutCredentialsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -120005,7 +119804,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateWithoutCredentialsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -120021,7 +119820,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateWithoutCredentialsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -120037,7 +119836,7 @@ export namespace Prisma {
 
   export type AuthIdentityCreateWithoutSessionsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -120053,7 +119852,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedCreateWithoutSessionsInput = {
     id?: string
-    status?: $Enums.AuthIdentityStatus
+    status?: string
     failedLoginAttempts?: number
     lastFailedAttempt?: Date | string | null
     lockedUntil?: Date | string | null
@@ -120085,7 +119884,7 @@ export namespace Prisma {
 
   export type AuthIdentityUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -120101,7 +119900,7 @@ export namespace Prisma {
 
   export type AuthIdentityUncheckedUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAuthIdentityStatusFieldUpdateOperationsInput | $Enums.AuthIdentityStatus
+    status?: StringFieldUpdateOperationsInput | string
     failedLoginAttempts?: IntFieldUpdateOperationsInput | number
     lastFailedAttempt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -143289,8 +143088,8 @@ export namespace Prisma {
 
   export type AuthCredentialCreateManyIdentityInput = {
     id?: string
-    type: $Enums.CredentialType
-    status?: $Enums.CredentialStatus
+    type: string
+    status?: string
     passwordHash?: string | null
     passwordLastChangedAt?: Date | string | null
     version?: number
@@ -143395,8 +143194,8 @@ export namespace Prisma {
 
   export type AuthCredentialUpdateWithoutIdentityInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -143407,8 +143206,8 @@ export namespace Prisma {
 
   export type AuthCredentialUncheckedUpdateWithoutIdentityInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -143419,8 +143218,8 @@ export namespace Prisma {
 
   export type AuthCredentialUncheckedUpdateManyWithoutIdentityInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: EnumCredentialTypeFieldUpdateOperationsInput | $Enums.CredentialType
-    status?: EnumCredentialStatusFieldUpdateOperationsInput | $Enums.CredentialStatus
+    type?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     passwordLastChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number

@@ -217,11 +217,11 @@ export class Resource extends Entity<ResourceId> {
   }
 
   public isFolder(): boolean {
-    return this._props.type === ResourceType.FOLDER;
+    return this._props.type === ResourceType.Folder;
   }
 
   public isFile(): boolean {
-    return this._props.type === ResourceType.FILE;
+    return this._props.type === ResourceType.File;
   }
 
   public getExtension(): string {
@@ -271,12 +271,12 @@ export class Resource extends Entity<ResourceId> {
     };
 
     const typeTextMap: Record<ResourceType, string> = {
-      FILE: '文件',
-      FOLDER: '文件夹',
+      File: '文件',
+      Folder: '文件夹',
     };
 
     const displayName =
-      this._props.type === ResourceType.FILE && extension
+      this._props.type === ResourceType.File && extension
         ? this._props.name.slice(0, -extension.length)
         : this._props.name;
 
@@ -313,7 +313,7 @@ export class Resource extends Entity<ResourceId> {
     };
 
     const icon =
-      this._props.type === ResourceType.FOLDER ? 'mdi-folder' : (iconMap[extension] ?? 'mdi-file');
+      this._props.type === ResourceType.Folder ? 'mdi-folder' : (iconMap[extension] ?? 'mdi-file');
 
     return {
       id: String(this.id) as import('@dailyuse/contracts/repository').ResourceClientDTO['id'],
@@ -371,7 +371,7 @@ export class Resource extends Entity<ResourceId> {
     allowedExtensions?: string[] | null;
   }): Resource {
     Resource.assertValidName(params.name);
-    if (params.type === ResourceType.FILE && params.allowedExtensions?.length) {
+    if (params.type === ResourceType.File && params.allowedExtensions?.length) {
       Resource.assertExtensionAllowed(params.name, params.allowedExtensions);
     }
 
@@ -389,7 +389,7 @@ export class Resource extends Entity<ResourceId> {
       mimeType: params.mimeType ?? null,
       size: params.size ?? null,
       content: params.content ?? null,
-      childrenCount: params.type === ResourceType.FOLDER ? 0 : null,
+      childrenCount: params.type === ResourceType.Folder ? 0 : null,
       metadata: params.metadata
         ? ResourceMetadata.create({
             tags: params.metadata.tags ?? [],

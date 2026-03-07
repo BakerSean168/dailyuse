@@ -2,12 +2,12 @@ import type { HiddenGoalsMode as IHiddenGoalsMode } from '@dailyuse/contracts/go
 
 export type HiddenGoalsMode = IHiddenGoalsMode & { readonly __brand: unique symbol };
 
-const VALUES: IHiddenGoalsMode[] = ['hide', 'dim', 'collapse'];
+const VALUES: IHiddenGoalsMode[] = ['Hide', 'Dim', 'Collapse'];
 
 export const HiddenGoalsMode = {
-  Hide: 'hide' as HiddenGoalsMode,
-  Dim: 'dim' as HiddenGoalsMode,
-  Collapse: 'collapse' as HiddenGoalsMode,
+  Hide: 'Hide' as HiddenGoalsMode,
+  Dim: 'Dim' as HiddenGoalsMode,
+  Collapse: 'Collapse' as HiddenGoalsMode,
 
   of(value: string): HiddenGoalsMode {
     if (!this.isValid(value)) {

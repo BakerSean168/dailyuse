@@ -30,7 +30,7 @@ describe('IdentityCreatedHandler', () => {
     return {
       payload: {
         identityId: IdentityId.generate() as any,
-        createMethod: 'EMAIL',
+        createMethod: 'Email',
         email: 'newuser@example.com',
         ...overrides,
       },
@@ -46,7 +46,7 @@ describe('IdentityCreatedHandler', () => {
     handler = new IdentityCreatedHandler(repo);
   });
 
-  it('should create account when identity is created via EMAIL', async () => {
+  it('should create account when identity is created via Email', async () => {
     const event = anEvent({ email: 'test@example.com' });
 
     await handler.handle(event);
@@ -74,9 +74,9 @@ describe('IdentityCreatedHandler', () => {
     expect(repo.save).not.toHaveBeenCalled();
   });
 
-  it('should throw when no email provided for OAUTH creation', async () => {
+  it('should throw when no email provided for Oauth creation', async () => {
     const event = anEvent({
-      createMethod: 'OAUTH',
+      createMethod: 'Oauth',
       email: undefined,
       oauthProvider: 'google',
     });
@@ -84,9 +84,9 @@ describe('IdentityCreatedHandler', () => {
     await expect(handler.handle(event)).rejects.toThrow('Email is required');
   });
 
-  it('should throw when no email provided for PHONE creation', async () => {
+  it('should throw when no email provided for Phone creation', async () => {
     const event = anEvent({
-      createMethod: 'PHONE',
+      createMethod: 'Phone',
       email: undefined,
       phoneNumber: '13800138000',
     });
@@ -96,7 +96,7 @@ describe('IdentityCreatedHandler', () => {
 
   it('should throw when no email provided at all', async () => {
     const event = anEvent({
-      createMethod: 'EMAIL',
+      createMethod: 'Email',
       email: undefined,
     });
 

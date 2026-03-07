@@ -11,18 +11,18 @@ const mockConflicts: ConflictDetectionResult = {
       overlapStart: Date.now(),
       overlapEnd: Date.now() + 45 * 60 * 1000,
       overlapDuration: 45 * 60 * 1000,
-      severity: 'moderate',
+      severity: 'Moderate',
     },
   ],
   suggestions: [
     {
-      type: 'move_later',
+      type: 'MoveLater',
       newStartTime: Date.now() + 60 * 60 * 1000,
       newEndTime: Date.now() + 2 * 60 * 60 * 1000,
       description: 'Move to 1 hour later',
     },
     {
-      type: 'shorten',
+      type: 'Shorten',
       newStartTime: Date.now(),
       newEndTime: Date.now() + 30 * 60 * 1000,
       description: 'Shorten to 30 minutes',
@@ -39,7 +39,7 @@ const severeConflicts: ConflictDetectionResult = {
       overlapStart: Date.now(),
       overlapEnd: Date.now() + 90 * 60 * 1000,
       overlapDuration: 90 * 60 * 1000,
-      severity: 'severe',
+      severity: 'Severe',
     },
     {
       scheduleId: 'sched-3',
@@ -47,12 +47,12 @@ const severeConflicts: ConflictDetectionResult = {
       overlapStart: Date.now() + 30 * 60 * 1000,
       overlapEnd: Date.now() + 120 * 60 * 1000,
       overlapDuration: 90 * 60 * 1000,
-      severity: 'severe',
+      severity: 'Severe',
     },
   ],
   suggestions: [
     {
-      type: 'move_earlier',
+      type: 'MoveEarlier',
       newStartTime: Date.now() - 3 * 60 * 60 * 1000,
       newEndTime: Date.now() - 2 * 60 * 60 * 1000,
       description: 'Move 3 hours earlier',

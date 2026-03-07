@@ -207,6 +207,7 @@ export interface ScheduleTaskExecutedEvent {
     executionId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
+    identityId: string;
     status: ExecutionStatus;
     duration: number;
     payload: Record<string, unknown>; // 传递给业务模块的数据

@@ -26,14 +26,14 @@ const FAKE_ACCOUNT_DTO = {
   status: 'ACTIVE',
   profile: {
     nickname: 'TestUser',
-    gender: 'PREFER_NOT_TO_SAY',
+    gender: 'PreferNotToSay',
     realName: null,
     avatarUrl: null,
     bio: null,
     birthday: null,
   },
   settings: {
-    theme: 'SYSTEM',
+    theme: 'System',
     language: 'zh-CN',
     timezone: 'Asia/Shanghai',
     notificationEnabled: true,
@@ -140,13 +140,13 @@ describe('AccountController', () => {
       );
 
       const result = await controller.checkAvailability({
-        type: 'EMAIL',
+        type: 'Email',
         value: 'test@example.com',
       });
 
       expect(isOk(result)).toBe(true);
       expect(useCases.checkAvailability).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'EMAIL', value: 'test@example.com' }),
+        expect.objectContaining({ type: 'Email', value: 'test@example.com' }),
       );
     });
 
@@ -172,7 +172,7 @@ describe('AccountController', () => {
     });
 
     it('should return VALIDATION_ERROR for missing value', async () => {
-      const result = await controller.checkAvailability({ type: 'EMAIL' });
+      const result = await controller.checkAvailability({ type: 'Email' });
 
       expect(isOk(result)).toBe(false);
     });

@@ -14,7 +14,7 @@ import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskType } from '@dailyuse/contracts/modules/task';
+import { TaskType } from '@dailyuse/contracts/task';
 
 export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   constructor(private db: Database.Database) {}

@@ -1,6 +1,6 @@
 /**
  * AI Goal Generation Operations
- * 
+ *
  * This file contains DTOs for AI-powered goal generation.
  * Uses AI to generate SMART goals based on user input.
  */

@@ -25,7 +25,6 @@ export class AIGenerationApplicationService {
     private readonly conversationRepository: any,
     private readonly quotaRepository: any,
     private readonly quotaEnforcementService: any,
-    private readonly adapterFactory: any,
     private readonly providerConfigRepository: any,
     private readonly knowledgeTaskRepository?: any,
   ) {}

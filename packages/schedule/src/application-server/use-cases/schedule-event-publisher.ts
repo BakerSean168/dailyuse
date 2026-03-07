@@ -392,13 +392,6 @@ export class ScheduleEventPublisher {
      */
     this.onAny('schedule:task:created', async (event: any) => {
       try {
-        if (!event.identityId) {
-          console.error(
-            '❌ [ScheduleEventPublisher] Missing identityId in schedule:task:created event',
-          );
-          return;
-        }
-
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule:task:created for ${event.aggregateId}`,
         );
@@ -412,13 +405,6 @@ export class ScheduleEventPublisher {
      */
     this.onAny('schedule:task:executed', async (event: any) => {
       try {
-        if (!event.identityId) {
-          console.error(
-            '❌ [ScheduleEventPublisher] Missing identityId in schedule:task:executed event',
-          );
-          return;
-        }
-
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule:task:executed for ${event.aggregateId}`,
         );
@@ -432,13 +418,6 @@ export class ScheduleEventPublisher {
      */
     this.onAny('schedule:task:failed', async (event: any) => {
       try {
-        if (!event.identityId) {
-          console.error(
-            '❌ [ScheduleEventPublisher] Missing identityId in schedule:task:failed event',
-          );
-          return;
-        }
-
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule:task:failed for ${event.aggregateId}`,
         );
@@ -452,13 +431,6 @@ export class ScheduleEventPublisher {
      */
     this.onAny('schedule:task:completed', async (event: any) => {
       try {
-        if (!event.identityId) {
-          console.error(
-            '❌ [ScheduleEventPublisher] Missing identityId in schedule:task:completed event',
-          );
-          return;
-        }
-
         console.log(
           `✅ [ScheduleEventPublisher] Handled schedule:task:completed for ${event.aggregateId}`,
         );
@@ -865,7 +837,10 @@ export class ScheduleEventPublisher {
     );
 
     for (const event of events) {
-      this.sendAny(event.eventType, event.payload);
+      this.sendAny(event.eventType, {
+        ...event,
+        payload: event.payload,
+      });
     }
   }
 

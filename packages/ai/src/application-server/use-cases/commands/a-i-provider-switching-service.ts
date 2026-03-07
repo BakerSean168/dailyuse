@@ -6,18 +6,9 @@
  */
 
 import { createLogger } from '@dailyuse/utils';
+import type { FailoverResultDTO } from '@dailyuse/contracts/ai';
 
 const logger = createLogger('AIProviderSwitchingService');
-
-/**
- * Failover result
- */
-export interface FailoverResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  attemptedProviders: string[];
-}
 
 /**
  * AI Provider Switching Service
@@ -41,7 +32,7 @@ export class AIProviderSwitchingService {
   /**
    * Try multiple providers with failover
    */
-  async executeWithFailover<T>(params: any): Promise<FailoverResult<T>> {
+  async executeWithFailover<T>(params: any): Promise<FailoverResultDTO<T>> {
     logger.info('Executing with failover');
     return {
       success: true,
@@ -68,7 +59,7 @@ export class AIProviderSwitchingService {
   /**
    * Stream with failover
    */
-  async streamWithFailover(params: any): Promise<FailoverResult<any>> {
+  async streamWithFailover(params: any): Promise<FailoverResultDTO<any>> {
     logger.info('Streaming with failover');
     return {
       success: true,

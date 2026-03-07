@@ -23,7 +23,7 @@ const mockProfile = {
   realName: 'John Doe',
   avatarUrl: null,
   bio: '一个热爱编程和生活的全栈开发者。',
-  gender: 'MALE' as const,
+  gender: 'Male' as const,
   birthday: new Date('1995-06-15').getTime(),
 };
 
@@ -40,7 +40,7 @@ export const EmptyProfile: Story = {
       realName: null,
       avatarUrl: null,
       bio: null,
-      gender: 'PREFER_NOT_TO_SAY' as const,
+      gender: 'PreferNotToSay' as const,
       birthday: null,
     },
   },

@@ -9,12 +9,12 @@ export class CheckAvailabilityUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}
 
   async execute(request: CheckAvailabilityReq): Promise<CheckAvailabilityRes> {
-    if (request.type === 'EMAIL') {
+    if (request.type === 'Email') {
       const exists = await this.accountRepository.existsByEmail(request.value);
       return { available: !exists };
     }
 
-    if (request.type === 'NICKNAME') {
+    if (request.type === 'Nickname') {
       // Nickname uniqueness check �?use findByUsername as proxy
       const exists = await this.accountRepository.existsByUsername(request.value);
       return { available: !exists };

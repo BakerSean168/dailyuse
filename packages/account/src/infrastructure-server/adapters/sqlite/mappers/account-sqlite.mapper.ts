@@ -23,11 +23,11 @@ export class AccountSqliteMapper {
         realName: row.display_name,
         avatarUrl: row.avatar_url,
         bio: null,
-        gender: 'PREFER_NOT_TO_SAY',
+        gender: 'PreferNotToSay',
         birthday: null,
       }),
       settings: AccountSettings.fromPersistenceDTO({
-        theme: 'SYSTEM',
+        theme: 'System',
         language: (row.locale as any) || 'zh-CN',
         timezone: row.timezone || 'Asia/Shanghai',
         notificationEnabled: true,
