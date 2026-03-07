@@ -51,4 +51,5 @@ export { TaskScheduleMode } from './task-schedule-mode';
 export { TaskTemplateStatus } from './task-template-status';
 export { TaskInstanceStatus } from './task-instance-status';
 export { TaskTimeType } from './task-time-type';
+export { TaskType } from './task-type';
 export type { ChecklistItemDefinition, ChecklistItemDefinitionDTO } from './checklist-item-definition';

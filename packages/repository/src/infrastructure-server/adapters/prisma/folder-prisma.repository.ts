@@ -5,8 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import { Prisma } from '@dailyuse/database';
+import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 import { Folder, type FolderState } from '../../../domain-server/entities/folder';
 import { ResourceId } from '../../../domain-shared/value-objects/resource-id';

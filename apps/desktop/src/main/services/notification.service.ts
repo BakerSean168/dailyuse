@@ -16,7 +16,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
 import { getCustomNotificationManager } from './custom-notification.manager';
 
 /**
@@ -232,7 +231,7 @@ export class NotificationService {
     });
 
     // Listen for schedule triggers
-    eventBus.on(ScheduleTaskEventTypes.EXECUTED, (data: {
+    eventBus.on('schedule:task-execute', (data: {
       id: string;
       name: string;
       description?: string;

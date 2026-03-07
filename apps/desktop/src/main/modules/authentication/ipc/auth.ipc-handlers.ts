@@ -11,6 +11,7 @@
  * - 支持 TokenManager 和 SessionManager 集成
  */
 
+import { ipcMain } from 'electron';
 import { createLogger } from '@dailyuse/utils';
 import { createModuleIpcHandlers } from '../../../utils';
 import type { IpcResult, CountResult } from '@dailyuse/contracts/result';
@@ -465,9 +466,10 @@ export function registerAuthIpcHandlers(): void {
  * 注销 Auth 模块的 IPC 处理器
  */
 export function unregisterAuthIpcHandlers(): void {
-  const { removeIpcHandlers } = require('../../../utils');
   logger.info('Unregistering Auth IPC handlers...');
-  removeIpcHandlers(getChannels());
+  for (const ch of getChannels()) {
+    ipcMain.removeHandler(ch);
+  }
 
   // 清理服务
   if (service) {

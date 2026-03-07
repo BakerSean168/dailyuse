@@ -20,6 +20,7 @@
  */
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
+import { getApiBaseUrl } from '../../../utils/api-config';
 import type {
   IAuthSessionRepository,
   IAuthCredentialRepository,
@@ -270,7 +271,6 @@ export class AuthDesktopApplicationService {
 
     try {
       // 使用 API 服务器进行在线注册
-      const { getApiBaseUrl } = require('../../../utils/api-config');
       const apiBaseUrl = getApiBaseUrl();
 
       this.logger.info('Calling register API', { apiBaseUrl });

@@ -8,10 +8,13 @@ import tailwindcss from '@tailwindcss/vite';
 // Native modules — must be externalized (cannot be bundled by Vite)
 const nativeModules = ['better-sqlite3', 'electron', 'argon2'];
 
-// Main process external: only native modules
-// All @dailyuse/* workspace packages are now bundled into main.js
+// Modules with CJS-only generated code that Rollup cannot bundle as ESM
+const cjsOnlyModules = ['@dailyuse/database'];
+
+// Main process external: native modules + CJS-only modules
+// All other @dailyuse/* workspace packages are bundled into main.js
 // so electron-builder doesn't need to search the pnpm monorepo
-const electronMainExternal = [...nativeModules];
+const electronMainExternal = [...nativeModules, ...cjsOnlyModules];
 
 // Workspace packages to exclude from optimizeDeps
 const workspacePkgs = [

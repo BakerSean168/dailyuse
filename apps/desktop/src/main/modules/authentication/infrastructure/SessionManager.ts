@@ -12,6 +12,7 @@
  * - 设备指纹管理
  */
 
+import crypto from 'node:crypto';
 import { app } from 'electron';
 import { machineIdSync } from 'node-machine-id';
 import * as os from 'os';
@@ -650,7 +651,6 @@ export class SessionManager {
    * 生成设备指纹
    */
   private generateFingerprint(machineId: string, platform: string, hostname: string): string {
-    const crypto = require('crypto');
     const data = `${machineId}-${platform}-${hostname}`;
     return crypto.createHash('sha256').update(data).digest('hex');
   }

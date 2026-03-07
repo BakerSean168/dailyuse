@@ -5,7 +5,7 @@
  * Handles JSON serialization for layout/settings and Date conversions.
  */
 
-import { Prisma, type EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
+import type { Prisma, EditorWorkspace as PrismaEditorWorkspace } from '@dailyuse/database';
 import type { ProjectType } from '@dailyuse/contracts/editor';
 import { EditorWorkspace } from '@/domain-server/aggregates/editor-workspace';
 import { EditorWorkspaceId } from '@/domain-shared';
@@ -14,7 +14,7 @@ import { WorkspaceSettings } from '@/domain-shared/value-objects/workspace-setti
 
 export class PrismaEditorWorkspaceMapper {
   /**
-   * Prisma EditorWorkspace â†?Domain EditorWorkspace aggregate
+   * Prisma EditorWorkspace ï¿½?Domain EditorWorkspace aggregate
    */
   static toDomain(data: PrismaEditorWorkspace): EditorWorkspace {
     const layoutData = typeof data.layout === 'string' ? JSON.parse(data.layout as string) : data.layout;
@@ -39,7 +39,7 @@ export class PrismaEditorWorkspaceMapper {
   }
 
   /**
-   * Domain EditorWorkspace â†?Prisma write data
+   * Domain EditorWorkspace ï¿½?Prisma write data
    */
   static toPersistence(workspace: EditorWorkspace): Prisma.EditorWorkspaceUncheckedCreateInput {
     const dto = workspace.toServerDTO();
@@ -60,7 +60,7 @@ export class PrismaEditorWorkspaceMapper {
   }
 
   /**
-   * Batch conversion: Prisma â†?Domain
+   * Batch conversion: Prisma ï¿½?Domain
    */
   static toDomainList(rows: PrismaEditorWorkspace[]): EditorWorkspace[] {
     return rows.map((row) => PrismaEditorWorkspaceMapper.toDomain(row));

@@ -114,12 +114,13 @@ import {
   SelectContent,
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
+import type { GoalId } from '@dailyuse/contracts/goal';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const goalId = (route.params.goalId as string) || (route.params.id as string);
+const goalId = ((route.params.goalId as string) || (route.params.id as string)) as GoalId;
 
 const { createReview, isSaving } = useGoal();
 

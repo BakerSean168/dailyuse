@@ -500,27 +500,18 @@ importers:
       '@electron/rebuild':
         specifier: ^4.0.1
         version: 4.0.3
-      '@eslint/css':
-        specifier: ^0.10.0
-        version: 0.10.0
       '@eslint/js':
         specifier: ^9.32.0
         version: 9.39.1
       '@eslint/markdown':
         specifier: ^7.1.0
         version: 7.5.1
-      '@journeyapps/wa-sqlite':
-        specifier: ^1.5.0
-        version: 1.5.0
       '@powersync/common':
         specifier: ^1.47.0
         version: 1.47.0
       '@powersync/node':
         specifier: ^0.17.1
         version: 0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.5.0)
-      '@powersync/web':
-        specifier: ^1.34.0
-        version: 1.34.0(@journeyapps/wa-sqlite@1.5.0)(@powersync/common@1.47.0)
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -668,15 +659,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@journeyapps/wa-sqlite':
-        specifier: ^1.5.0
-        version: 1.5.0
-      '@powersync/common':
-        specifier: ^1.47.0
-        version: 1.47.0
-      '@powersync/web':
-        specifier: ^1.34.0
-        version: 1.34.0(@journeyapps/wa-sqlite@1.5.0)(@powersync/common@1.47.0)
       '@vueuse/core':
         specifier: 14.1.0
         version: 14.1.0(vue@3.5.25(typescript@5.9.3))
@@ -720,12 +702,6 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.18)
-      vite-plugin-top-level-await:
-        specifier: 1.6.0
-        version: 1.6.0(@swc/helpers@0.5.17)(rollup@4.57.1)(vite@7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))
-      vite-plugin-wasm:
-        specifier: 3.5.0
-        version: 3.5.0(vite@7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2))
       vue-tsc:
         specifier: ^2.1.10
         version: 2.2.12(typescript@5.9.3)
@@ -857,12 +833,6 @@ importers:
       '@internationalized/date':
         specifier: ^3.11.0
         version: 3.11.0
-      '@powersync/common':
-        specifier: ^1.47.0
-        version: 1.47.0
-      '@powersync/vue':
-        specifier: 0.4.2
-        version: 0.4.2(@powersync/common@1.47.0)(vue@3.5.25(typescript@5.9.3))
       '@vueuse/core':
         specifier: 14.1.0
         version: 14.1.0(vue@3.5.25(typescript@5.9.3))
@@ -2981,24 +2951,8 @@ packages:
     resolution: {integrity: sha512-gBrxN88gOIf3R7ja5K9slwNayVcZgK6SOUORm2uBzTeIEfeVaIhOpCtTox3P6R7o2jLFwLFTLnC7kU/RGcYEgw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/core@0.14.0':
-    resolution: {integrity: sha512-qIbV0/JZr7iSDjqAc60IqbLdsj9GDt16xQtWD+B78d/HAlvysGdZZ6rpJHGAc2T0FQx1X6thsSPdnoiGKdNtdg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/core@0.15.2':
-    resolution: {integrity: sha512-78Md3/Rrxh83gCxoUc0EiciuOHsIITzLy53m3d9UyiW8y9Dj2D29FeETqyKA+BRK76tnTp6RXWb3pCay8Oyomg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@eslint/core@0.17.0':
     resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/css-tree@3.6.8':
-    resolution: {integrity: sha512-s0f40zY7dlMp8i0Jf0u6l/aSswS0WRAgkhgETgiCJRcxIWb4S/Sp9uScKHWbkM3BnoFLbJbmOYk5AZUDFVxaLA==}
-    engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
-
-  '@eslint/css@0.10.0':
-    resolution: {integrity: sha512-pHoYRWS08oeU0qVez1pZCcbqHzoJnM5VMtrxH2nWDJ0ukq9DkwWV1BTY+PWK+eWBbndN9W0O9WjJTyAHsDoPOg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/eslintrc@2.1.4':
@@ -3027,10 +2981,6 @@ packages:
 
   '@eslint/object-schema@2.1.7':
     resolution: {integrity: sha512-VtAOaymWVfZcmZbp6E2mympDIHvyjXs/12LqWYjVw6qjrfF+VK+fyG33kChz3nnK+SU5/NeHOqrTEHS8sXO3OA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/plugin-kit@0.3.5':
-    resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/plugin-kit@0.4.1':
@@ -3178,9 +3128,6 @@ packages:
   '@jest/schemas@30.0.5':
     resolution: {integrity: sha512-DmdYgtezMkh3cpU8/1uyXakv3tJRcmcXxBOcO0tbaozPwpmh4YMsnWrQm9ZmZMfa5ocbxzbFk6O4bDPEc/iAnA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
-
-  '@journeyapps/wa-sqlite@1.5.0':
-    resolution: {integrity: sha512-oASXW/9Ktbhn6kJjxCJzRKxNnlOyj7GKBLF/59dkz1kbOLw7kAXBTwWTUvqfT97OEshtrK/J8bJUYbpggdCZ9Q==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -3702,19 +3649,6 @@ packages:
       better-sqlite3:
         optional: true
 
-  '@powersync/vue@0.4.2':
-    resolution: {integrity: sha512-B94NsQ9vPWqsC17WYDOkFqx8cxCmB7mUDIeSNARDBct8c+b6+ZmsJAi25tiDfPXlx/0YvseHqqsv3b/Qhfz87g==}
-    peerDependencies:
-      '@powersync/common': ^1.47.0
-      vue: '*'
-
-  '@powersync/web@1.34.0':
-    resolution: {integrity: sha512-hpfok3vdWFYMKsTjX2JlfS/jTBVUoIfZqsNXMRQnZmFWGb9qsy/G1u2w3S0Q6EYQQspZBPMa4oeFKOya6z7EXw==}
-    hasBin: true
-    peerDependencies:
-      '@journeyapps/wa-sqlite': ^1.5.0
-      '@powersync/common': ^1.47.0
-
   '@prisma/adapter-pg@7.4.2':
     resolution: {integrity: sha512-oUo2Zhe9Tf6YwVL8kLPuOLTK1Z2pwi/Ua77t2PuGyBan2w7shRKqHvYK+3XXmRH9RWhPJ4SMtHZKpNo6Ax/4bQ==}
 
@@ -3780,15 +3714,6 @@ packages:
 
   '@rolldown/pluginutils@1.0.0-rc.2':
     resolution: {integrity: sha512-izyXV/v+cHiRfozX62W9htOAvwMo4/bXKDrQ+vom1L1qRuexPock/7VZDAhnpHCLNejd3NJ6hiab+tO0D44Rgw==}
-
-  '@rollup/plugin-virtual@3.0.2':
-    resolution: {integrity: sha512-10monEYsBp3scM4/ND4LNH5Rxvh3e/cVeL3jWTgZ2SrQ+BmUoQcopVQvnaMcOnykb1VkxUFuDAN+0FnpTFRy2A==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
 
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
@@ -4240,9 +4165,6 @@ packages:
 
   '@swc/types@0.1.25':
     resolution: {integrity: sha512-iAoY/qRhNH8a/hBvm3zKj9qQ4oc2+3w1unPJa2XvTK3XjeLXtzcCingVPw/9e5mn1+0yPqxcBGp9Jf0pkfMb1g==}
-
-  '@swc/wasm@1.15.18':
-    resolution: {integrity: sha512-zeSORFArxqUwfVMTRHu8AN9k9LlfSn0CKDSzLhJDITpgLoS0xpnocxsgMjQjUcVYDgO47r9zLP49HEjH/iGsFg==}
 
   '@szmarczak/http-timer@4.0.6':
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
@@ -8828,9 +8750,6 @@ packages:
   mdn-data@2.12.2:
     resolution: {integrity: sha512-IEn+pegP1aManZuckezWCO+XZQDplx1366JoVhTpMpBB1sPey/SbveZQUosKiKiGYjg1wH4pMlNgXbCiYgihQA==}
 
-  mdn-data@2.23.0:
-    resolution: {integrity: sha512-786vq1+4079JSeu2XdcDjrhi/Ry7BWtjDl9WtGPWLiIHb2T66GvIVflZTBoSNZ5JqTtJGYEVMuFA/lbQlMOyDQ==}
-
   mdurl@2.0.0:
     resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
@@ -11523,10 +11442,6 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
-  uuid@10.0.0:
-    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
-    hasBin: true
-
   uuid@13.0.0:
     resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
     hasBin: true
@@ -11606,16 +11521,6 @@ packages:
     peerDependenciesMeta:
       vite-plugin-electron-renderer:
         optional: true
-
-  vite-plugin-top-level-await@1.6.0:
-    resolution: {integrity: sha512-bNhUreLamTIkoulCR9aDXbTbhLk6n1YE8NJUTTxl5RYskNRtzOR0ASzSjBVRtNdjIfngDXo11qOsybGLNsrdww==}
-    peerDependencies:
-      vite: ^7.3.1
-
-  vite-plugin-wasm@3.5.0:
-    resolution: {integrity: sha512-X5VWgCnqiQEGb+omhlBVsvTfxikKtoOgAzQ95+BZ8gQ+VfMHIjSHr0wyvXFQCa0eKQ0fKyaL0kWcEnYqBac4lQ==}
-    peerDependencies:
-      vite: ^7.3.1
 
   vite@7.3.1:
     resolution: {integrity: sha512-w+N7Hifpc3gRjZ63vYBXA56dvvRlNWRczTdmCBBa+CotUzAPf5b7YMdMR/8CQoeYE5LX3W4wj6RYTgonm1b9DA==}
@@ -13542,28 +13447,9 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
 
-  '@eslint/core@0.14.0':
-    dependencies:
-      '@types/json-schema': 7.0.15
-
-  '@eslint/core@0.15.2':
-    dependencies:
-      '@types/json-schema': 7.0.15
-
   '@eslint/core@0.17.0':
     dependencies:
       '@types/json-schema': 7.0.15
-
-  '@eslint/css-tree@3.6.8':
-    dependencies:
-      mdn-data: 2.23.0
-      source-map-js: 1.2.1
-
-  '@eslint/css@0.10.0':
-    dependencies:
-      '@eslint/core': 0.14.0
-      '@eslint/css-tree': 3.6.8
-      '@eslint/plugin-kit': 0.3.5
 
   '@eslint/eslintrc@2.1.4':
     dependencies:
@@ -13614,11 +13500,6 @@ snapshots:
       - supports-color
 
   '@eslint/object-schema@2.1.7': {}
-
-  '@eslint/plugin-kit@0.3.5':
-    dependencies:
-      '@eslint/core': 0.15.2
-      levn: 0.4.1
 
   '@eslint/plugin-kit@0.4.1':
     dependencies:
@@ -13756,8 +13637,6 @@ snapshots:
   '@jest/schemas@30.0.5':
     dependencies:
       '@sinclair/typebox': 0.34.41
-
-  '@journeyapps/wa-sqlite@1.5.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -14410,20 +14289,6 @@ snapshots:
     optionalDependencies:
       better-sqlite3: 12.5.0
 
-  '@powersync/vue@0.4.2(@powersync/common@1.47.0)(vue@3.5.25(typescript@5.9.3))':
-    dependencies:
-      '@powersync/common': 1.47.0
-      vue: 3.5.25(typescript@5.9.3)
-
-  '@powersync/web@1.34.0(@journeyapps/wa-sqlite@1.5.0)(@powersync/common@1.47.0)':
-    dependencies:
-      '@journeyapps/wa-sqlite': 1.5.0
-      '@powersync/common': 1.47.0
-      async-mutex: 0.5.0
-      bson: 6.10.4
-      comlink: 4.4.2
-      commander: 12.1.0
-
   '@prisma/adapter-pg@7.4.2':
     dependencies:
       '@prisma/driver-adapter-utils': 7.4.2
@@ -14516,10 +14381,6 @@ snapshots:
       vue: 3.5.25(typescript@5.9.3)
 
   '@rolldown/pluginutils@1.0.0-rc.2': {}
-
-  '@rollup/plugin-virtual@3.0.2(rollup@4.57.1)':
-    optionalDependencies:
-      rollup: 4.57.1
 
   '@rollup/pluginutils@5.3.0(rollup@4.57.1)':
     dependencies:
@@ -14888,8 +14749,6 @@ snapshots:
   '@swc/types@0.1.25':
     dependencies:
       '@swc/counter': 0.1.3
-
-  '@swc/wasm@1.15.18': {}
 
   '@szmarczak/http-timer@4.0.6':
     dependencies:
@@ -20611,8 +20470,6 @@ snapshots:
 
   mdn-data@2.12.2: {}
 
-  mdn-data@2.23.0: {}
-
   mdurl@2.0.0: {}
 
   media-typer@0.3.0: {}
@@ -23753,8 +23610,6 @@ snapshots:
 
   utils-merge@1.0.1: {}
 
-  uuid@10.0.0: {}
-
   uuid@13.0.0: {}
 
   uuid@8.3.2: {}
@@ -23896,21 +23751,6 @@ snapshots:
   vite-plugin-electron@0.29.0(vite-plugin-electron-renderer@0.14.6):
     optionalDependencies:
       vite-plugin-electron-renderer: 0.14.6
-
-  vite-plugin-top-level-await@1.6.0(@swc/helpers@0.5.17)(rollup@4.57.1)(vite@7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)):
-    dependencies:
-      '@rollup/plugin-virtual': 3.0.2(rollup@4.57.1)
-      '@swc/core': 1.15.18(@swc/helpers@0.5.17)
-      '@swc/wasm': 1.15.18
-      uuid: 10.0.0
-      vite: 7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
-    transitivePeerDependencies:
-      - '@swc/helpers'
-      - rollup
-
-  vite-plugin-wasm@3.5.0(vite@7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)):
-    dependencies:
-      vite: 7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)
 
   vite@7.3.1(@types/node@22.13.14)(jiti@2.4.2)(lightningcss@1.30.2)(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
