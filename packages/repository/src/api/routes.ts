@@ -212,7 +212,7 @@ export function registerRepositoryRoutes(
       },
     },
     [auth],
-    (req) => controller.createResource(req.params!.repoId, req.body),
+    (req) => controller.createResource(req.params!.repoId, req.body, { identityId: (req as any).user?.identityId || 'api-user' } as any),
     { successStatus: 201 },
   );
 

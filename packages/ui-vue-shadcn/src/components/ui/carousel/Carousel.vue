@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { EmblaCarouselType } from 'embla-carousel';
+
 import type { CarouselEmits, CarouselProps, WithClassAsProps } from './interface'
 import { cn } from '@/lib/utils'
 import { useProvideCarousel } from './useCarousel'
