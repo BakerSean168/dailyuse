@@ -101,12 +101,8 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Target, EyeOff, FolderX, Eye, Loader2 } from 'lucide-vue-next';
-import type {
-  FocusModeClientDTO,
-  ActivateFocusModeRequest,
-  HiddenGoalsMode,
-} from '@dailyuse/contracts/goal';
-import type { GoalId } from '@dailyuse/contracts/primitives';
+import type { FocusModeClientDTO, ActivateFocusModeRequest } from '@dailyuse/contracts/goal';
+import { GoalId, HiddenGoalsMode } from '@dailyuse/goal/domain-shared';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
   Dialog,
@@ -146,10 +142,10 @@ const { t } = useI18n();
 
 const isLoading = ref(false);
 const formData = ref({
-  focusedGoalIds: [] as string[],
+  focusedGoalIds: [] as GoalId[],
   startTime: new Date().toISOString().slice(0, 16),
   endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-  hiddenGoalsMode: 'hide' as HiddenGoalsMode,
+  hiddenGoalsMode: HiddenGoalsMode.Hide,
 });
 
 const isOpen = computed({
@@ -172,19 +168,19 @@ const isFormValid = computed(() => {
 
 const hiddenModeOptions = computed(() => [
   {
-    value: 'hide' as const,
+    value: HiddenGoalsMode.Hide,
     label: t('goal.focusMode.activateDialog.modeHide'),
     description: t('goal.focusMode.activateDialog.modeHideDesc'),
     icon: EyeOff,
   },
   {
-    value: 'dim' as const,
+    value: HiddenGoalsMode.Dim,
     label: t('goal.focusMode.activateDialog.modeDim'),
     description: t('goal.focusMode.activateDialog.modeDimDesc'),
     icon: FolderX,
   },
   {
-    value: 'collapse' as const,
+    value: HiddenGoalsMode.Collapse,
     label: t('goal.focusMode.activateDialog.modeFold'),
     description: t('goal.focusMode.activateDialog.modeFoldDesc'),
     icon: Eye,
@@ -197,7 +193,7 @@ const handleSubmit = async () => {
   try {
     isLoading.value = true;
     const request: ActivateFocusModeRequest = {
-      focusedGoalIds: formData.value.focusedGoalIds as GoalId[],
+      focusedGoalIds: formData.value.focusedGoalIds,
       endTime: new Date(formData.value.endTime).getTime(),
       hiddenGoalsMode: formData.value.hiddenGoalsMode,
     };
@@ -227,7 +223,7 @@ const resetForm = () => {
     focusedGoalIds: [],
     startTime: new Date().toISOString().slice(0, 16),
     endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-    hiddenGoalsMode: 'hide',
+    hiddenGoalsMode: HiddenGoalsMode.Hide,
   };
 };
 

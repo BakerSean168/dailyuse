@@ -93,7 +93,7 @@ export interface TaskTemplateViewModel {
   instanceCount?: number;
   completionRate?: number;
   formattedCreatedAt?: string;
-  /** 'ONE_TIME' | 'RECURRING' — maps to CreateTaskTemplateReq.taskType */
+  /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */
   taskType?: string;
   /** Folder ID for organising task templates */
   folderId?: string | null;

@@ -14,7 +14,7 @@
           {{ t('schedule.calendar.today') }}
         </Button>
       </div>
-      <Button size="sm" @click="$emit('create')">
+      <Button size="sm" @click="emit('create')">
         <Plus class="mr-2 h-4 w-4" />
         {{ t('schedule.calendar.createSchedule') }}
       </Button>
@@ -58,7 +58,7 @@
             class="absolute left-1 right-1 rounded-md px-2 py-1 cursor-pointer transition-all hover:shadow-md z-20 text-white text-xs"
             :style="getEventStyle(event)"
             :class="eventBgClass(event)"
-            @click="$emit('event-click', event)"
+            @click="emit('event-click', event)"
           >
             <div class="font-medium truncate">{{ event.title }}</div>
             <div class="opacity-80">{{ formatEventTime(event) }}</div>
@@ -82,17 +82,15 @@ interface Props {
   loading?: boolean;
 }
 
-interface Emits {
-  (e: 'day-change', date: Date): void;
-  (e: 'create'): void;
-  (e: 'event-click', event: CalendarEventItem): void;
-}
-
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
 });
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  (e: 'day-change', date: Date): void;
+  (e: 'create'): void;
+  (e: 'event-click', event: CalendarEventItem): void;
+}>();
 const { t, locale } = useI18n();
 
 const currentDate = ref<Date>(new Date());

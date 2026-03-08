@@ -269,6 +269,15 @@ import type {
   ResourceBookmarkClientDTO,
 } from '@dailyuse/contracts/repository';
 
+const props = withDefaults(
+  defineProps<{
+    initialSidebarMode?: 'files' | 'search' | 'bookmarks';
+  }>(),
+  {
+    initialSidebarMode: 'files',
+  },
+);
+
 const { t } = useI18n();
 const store = useRepositoryStore();
 const {
@@ -336,6 +345,7 @@ const openTabs = computed<ResourceTab[]>(
 
 // ── Lifecycle ──
 onMounted(async () => {
+  store.setSidebarMode(props.initialSidebarMode);
   await initRepository();
   if (repositoryId.value) {
     await fetchResources();

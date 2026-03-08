@@ -90,7 +90,7 @@
 
         <!-- DAG 图表 -->
         <div v-else ref="containerRef" class="dag-container" :class="{ compact: compact }">
-          <v-chart
+          <VChartComponent
             ref="chartRef"
             class="chart"
             :option="dagOption"
@@ -133,6 +133,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import type { DefineComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { use } from 'echarts/core';
 import { GraphChart } from 'echarts/charts';
@@ -176,7 +177,8 @@ const emit = defineEmits<{
 
 const { getGoalAggregateView } = useGoal();
 const { t } = useI18n();
-const chartRef = ref<any>(null);
+const VChartComponent = VChart as unknown as DefineComponent<Record<string, unknown>, {}, any>;
+const chartRef = ref<unknown>(null);
 const exportDialog = ref<any>(null);
 const containerRef = ref<HTMLElement>();
 const layoutType = ref<'force' | 'hierarchical'>('force');
@@ -467,13 +469,16 @@ const handleNodeClick = (params: any) => {
 // 监听拖拽事件保存坐标
 watch(chartRef, (chart) => {
   if (chart && layoutType.value === 'force') {
-    const instance = chart.chart;
+    const instance = chart.chart as unknown as
+      | { on: (name: string, cb: (params: any) => void) => void; getOption: () => any }
+      | undefined;
+    if (!instance) return;
     instance.on('graphRoam', (params: any) => {
       if (params.type === 'graphRoam') {
         // 延迟保存以避免频繁写入
         setTimeout(() => {
-          const option = instance.getOption();
-          const series = option.series?.[0];
+          const option = instance.getOption() as any;
+          const series = option.series?.[0] as any;
           if (series?.data) {
             const positions = series.data.map((node: any) => ({
               id: node.id,
@@ -486,8 +491,8 @@ watch(chartRef, (chart) => {
 
         // 视口同步：发送缩放和平移事件
         if (props.syncViewport && !isUpdatingViewport.value) {
-          const option = instance.getOption();
-          const series = option.series?.[0];
+          const option = instance.getOption() as any;
+          const series = option.series?.[0] as any;
           if (series) {
             const zoom = series.zoom || 1;
             const center = series.center || [0, 0];
@@ -599,15 +604,18 @@ const updateViewport = (viewport: { zoom: number; center: [number, number] }) =>
   isUpdatingViewport.value = true;
 
   try {
-    const instance = chartRef.value.chart;
-    const currentOption = instance.getOption();
+    const instance = (chartRef.value as any)?.chart as
+      | { getOption: () => any; setOption: (option: any, opts?: any) => void }
+      | undefined;
+    if (!instance) return;
+    const currentOption = instance.getOption() as any;
 
     // 更新图表配置
     instance.setOption(
       {
         series: [
           {
-            ...currentOption.series[0],
+            ...(currentOption.series?.[0] ?? {}),
             zoom: viewport.zoom,
             center: viewport.center,
           },

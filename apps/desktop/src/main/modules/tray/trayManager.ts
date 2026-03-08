@@ -7,12 +7,7 @@
  */
 
 import { Tray, Menu, app, nativeImage, type BrowserWindow } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// ESM compatibility for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { resolveAssetPath } from '../../utils/asset-path';
 
 /**
  * @class TrayManager
@@ -33,9 +28,8 @@ export class TrayManager {
    * @param {BrowserWindow} mainWindow - The main application window.
    */
   constructor(private mainWindow: BrowserWindow) {
-    // TODO: Use correct icon paths
-    this.iconPath = path.join(__dirname, '../../resources/icon.png');
-    this.transparentIconPath = path.join(__dirname, '../../resources/icon_transparent.png');
+    this.iconPath = resolveAssetPath('images/logos/DailyUse-32.png');
+    this.transparentIconPath = resolveAssetPath('images/logos/DailyUse-16.png');
     this.init();
   }
 

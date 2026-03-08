@@ -64,6 +64,7 @@ import {
 import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
+import { TaskType } from '@dailyuse/contracts/task';
 
 const { t } = useI18n();
 
@@ -90,24 +91,25 @@ function createBlankTemplate(): TaskTemplateViewModel {
     reminderConfig: null,
     instanceCount: 0,
     completionRate: 0,
-    taskType: 'RECURRING',
+    taskType: TaskType.Recurring,
     folderId: null,
     color: null,
   };
 }
 
-interface Props {
-  modelValue: boolean;
-  template?: TaskTemplateViewModel | null;
-  mode?: 'create' | 'edit';
-  saving?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  template: null,
-  mode: 'create',
-  saving: false,
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean;
+    template?: TaskTemplateViewModel | null;
+    mode?: 'create' | 'edit';
+    saving?: boolean;
+  }>(),
+  {
+    template: null,
+    mode: 'create',
+    saving: false,
+  },
+);
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;

@@ -5,6 +5,16 @@
   "projectType": "library",
   "tags": ["scope:shared", "type:lib", "type:assets", "layer:shared"],
   "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "command": "vite build",
+        "cwd": "packages/assets"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

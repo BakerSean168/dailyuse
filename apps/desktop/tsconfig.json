@@ -24,7 +24,12 @@
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
       ],
-      "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"]
+      "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"],
+      "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
+      "@dailyuse/assets/*": [
+        "../../packages/assets/src/*/index.ts",
+        "../../packages/assets/src/*.ts"
+      ]
     }
   },
 

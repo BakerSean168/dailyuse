@@ -523,12 +523,12 @@ import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 
 const { t, locale } = useI18n();
 
-interface ReminderGroup {
+export interface ReminderGroup {
   id: string;
   name: string;
 }
 
-interface Props {
+export interface Props {
   template?: ReminderTemplateClientDTO | null;
   groupOptions?: ReminderGroup[];
 }

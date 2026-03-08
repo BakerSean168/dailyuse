@@ -25,6 +25,7 @@
     "affected:lint": "nx affected --target=lint"
   },
   "dependencies": {
+    "@dailyuse/assets": "workspace:*",
     "better-sqlite3": "^12.5.0",
     "date-fns": "^4.1.0",
     "gray-matter": "4.0.3"

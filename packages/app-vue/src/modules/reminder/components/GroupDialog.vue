@@ -214,7 +214,7 @@ import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
 
-interface ReminderGroup {
+export interface ReminderGroup {
   id?: string;
   name: string;
   description?: string | null;
@@ -224,7 +224,7 @@ interface ReminderGroup {
   order?: number;
 }
 
-interface Props {
+export interface Props {
   group?: ReminderGroup | null;
 }
 

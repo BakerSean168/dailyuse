@@ -59,7 +59,7 @@
                     mode="single"
                     :selected="parseToDate(formData.startDate)"
                     @update:model-value="
-                      (d) =>
+                      (d: Date | undefined) =>
                         handleCalendarSelect(d, (v) => {
                           formData.startDate = v;
                         })
@@ -128,7 +128,7 @@
                     mode="single"
                     :selected="parseToDate(formData.endDate)"
                     @update:model-value="
-                      (d) =>
+                      (d: Date | undefined) =>
                         handleCalendarSelect(d, (v) => {
                           formData.endDate = v;
                         })

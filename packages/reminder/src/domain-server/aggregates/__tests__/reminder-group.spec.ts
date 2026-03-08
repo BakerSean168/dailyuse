@@ -85,7 +85,7 @@ describe('ReminderGroup aggregate', () => {
       });
       const events = group.pullDomainEvents();
       expect(events.length).toBeGreaterThanOrEqual(1);
-      const createdEvent = events.find((e) => e.eventType === 'ReminderGroupCreated');
+      const createdEvent = events.find((e) => e.eventType === 'reminder:group:created');
       expect(createdEvent).toBeDefined();
     });
 
@@ -282,7 +282,7 @@ describe('ReminderGroup aggregate', () => {
       const group = ReminderGroup.load(makeGroupState());
       group.softDelete();
       const events = group.pullDomainEvents();
-      expect(events.some((e) => e.eventType === 'ReminderGroupDeleted')).toBe(true);
+      expect(events.some((e) => e.eventType === 'reminder:group:deleted')).toBe(true);
     });
   });
 

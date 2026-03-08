@@ -158,9 +158,14 @@ import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
 import TemplateDesktopCard from '../components/TemplateDesktopCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
-import GroupDialog from '../components/GroupDialog.vue';
+import GroupDialog, {
+  type ReminderGroup as ReminderGroupDialogGroup,
+} from '../components/GroupDialog.vue';
 import { useReminder } from '../composables/useReminder';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderGroupClientDTO,
+  ReminderTemplateClientDTO,
+} from '@dailyuse/contracts/reminder';
 
 const {
   templates,
@@ -180,13 +185,12 @@ const { t } = useI18n();
 
 const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
-const showGroupDialog = ref(false);
 const selectedTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
-const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard> | null>(null);
-const templateDialogRef = ref<InstanceType<typeof TemplateDialog> | null>(null);
-const groupDialogRef = ref<InstanceType<typeof GroupDialog> | null>(null);
-const editingGroup = ref<any>(null);
+const templateCardRef = ref<any>(null);
+const templateDialogRef = ref<any>(null);
+const groupDialogRef = ref<any>(null);
+const editingGroup = ref<ReminderGroupClientDTO | null>(null);
 
 const filteredTemplates = computed(() => {
   let result = templates.value;
@@ -260,7 +264,6 @@ async function handleUpdateTemplate(id: string, data: Record<string, unknown>) {
 async function handleSaveGroup(data: Record<string, unknown>) {
   const result = await createGroup(data as any);
   if (result) {
-    showGroupDialog.value = false;
     toast.success(t('reminder.toast.groupCreated'));
   }
 }
@@ -274,7 +277,7 @@ async function handleUpdateGroup(id: string, data: Record<string, unknown>) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getGroupActions(group: any): MenuAction[] {
+function getGroupActions(group: ReminderGroupDialogGroup): MenuAction[] {
   return [
     {
       key: 'edit',
@@ -294,14 +297,15 @@ function getGroupActions(group: any): MenuAction[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleEditGroup(group: any) {
-  editingGroup.value = group;
+function handleEditGroup(group: ReminderGroupDialogGroup) {
+  editingGroup.value = group as ReminderGroupClientDTO;
   groupDialogRef.value?.openForEdit(group);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleDeleteGroup(group: any) {
+async function handleDeleteGroup(group: ReminderGroupDialogGroup) {
   if (!window.confirm(t('reminder.group.confirmDelete'))) return;
+  if (!group.id) return;
   const ok = await deleteGroup(group.id);
   if (ok) {
     if (selectedGroupId.value === group.id) selectedGroupId.value = null;

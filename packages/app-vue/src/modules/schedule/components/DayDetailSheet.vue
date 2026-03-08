@@ -1,5 +1,5 @@
 <template>
-  <Sheet :open="open" @update:open="$emit('update:open', $event)">
+  <Sheet :open="open" @update:open="emit('update:open', $event)">
     <SheetContent side="right" class="w-96 overflow-y-auto">
       <SheetHeader>
         <SheetTitle>{{ dateTitle }}</SheetTitle>
@@ -17,7 +17,7 @@
           v-for="event in events"
           :key="event.id"
           class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-          @click="$emit('event-click', event)"
+          @click="emit('event-click', event)"
         >
           <!-- Source indicator dot -->
           <div
@@ -50,7 +50,7 @@
             v-if="event.source === 'task' && event.instanceStatus !== 'Completed'"
             class="ml-1 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-green-100 hover:text-green-600 transition-colors"
             :title="t('task.action.complete')"
-            @click.stop="$emit('complete-task', event.originalId)"
+            @click.stop="emit('complete-task', event.originalId)"
           >
             <CheckCircle2 class="h-4 w-4" />
           </button>
@@ -58,7 +58,7 @@
       </div>
 
       <SheetFooter class="mt-6">
-        <Button variant="outline" class="w-full" @click="$emit('view-in-day', date)">
+        <Button variant="outline" class="w-full" @click="emit('view-in-day', date)">
           <Calendar class="mr-2 h-4 w-4" />
           {{ t('schedule.dayDetail.viewInDayView') }}
         </Button>
@@ -88,15 +88,13 @@ interface Props {
   events: CalendarEventItem[];
 }
 
-interface Emits {
+const props = defineProps<Props>();
+const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;
   (e: 'event-click', event: CalendarEventItem): void;
-  (e: 'view-in-day', date: Date): void;
+  (e: 'view-in-day', date: Date | null): void;
   (e: 'complete-task', originalId: string): void;
-}
-
-const props = defineProps<Props>();
-defineEmits<Emits>();
+}>();
 
 const { t, locale } = useI18n();
 

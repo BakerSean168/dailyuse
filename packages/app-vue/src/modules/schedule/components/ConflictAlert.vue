@@ -50,7 +50,11 @@ import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, X } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
+import {
+  ConflictSuggestionType,
+  type ConflictDetectionResult,
+  type ConflictSuggestion,
+} from '@dailyuse/contracts/schedule';
 
 interface Props {
   conflictResult: ConflictDetectionResult | null;
@@ -94,11 +98,11 @@ function formatSuggestion(suggestion: ConflictSuggestion): string {
   });
 
   switch (suggestion.type) {
-    case 'move_earlier':
+    case ConflictSuggestionType.MoveEarlier:
       return t('schedule.conflictAlert.advanceTo', { start: startTime, end: endTime });
-    case 'move_later':
+    case ConflictSuggestionType.MoveLater:
       return t('schedule.conflictAlert.delayTo', { start: startTime, end: endTime });
-    case 'shorten':
+    case ConflictSuggestionType.Shorten:
       return t('schedule.conflictAlert.shortenTo', { start: startTime, end: endTime });
     default:
       return '';

@@ -52,7 +52,7 @@ export { PrismaOAuthBindingMapper } from './prisma-oauth-binding-mapper';
 export interface AuthIdentityPrismaWriteData {
   identity: {
     id: string;
-    status: string;
+    status: AuthIdentityStatusVO;
     failedLoginAttempts: number;
     lastFailedAttempt: Date | null;
     lockedUntil: Date | null;

@@ -69,12 +69,12 @@ describe('AccountProfile', () => {
   describe('createDefault', () => {
     it('should derive nickname from email local part', () => {
       const profile = AccountProfile.createDefault('john.doe@example.com');
-      expect(profile.nickname).toBe('john.doe@e');
+      expect(profile.nickname).toBe('john.doe');
     });
 
     it('should truncate long email local part to 10 characters', () => {
       const profile = AccountProfile.createDefault('areallylongemail@example.com');
-      expect(profile.nickname).toBe('areallylo');
+      expect(profile.nickname).toBe('areallylon');
     });
 
     it('should set default gender as PreferNotToSay', () => {

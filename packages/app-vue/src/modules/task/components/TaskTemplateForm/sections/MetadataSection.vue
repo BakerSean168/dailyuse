@@ -16,8 +16,10 @@
               <SelectValue :placeholder="t('task.metadata.selectType')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ONE_TIME">{{ t('task.metadata.oneTime') }}</SelectItem>
-              <SelectItem value="RECURRING">{{ t('task.metadata.recurring') }}</SelectItem>
+              <SelectItem :value="TaskType.OneTime">{{ t('task.metadata.oneTime') }}</SelectItem>
+              <SelectItem :value="TaskType.Recurring">{{
+                t('task.metadata.recurring')
+              }}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -153,6 +155,7 @@ import {
 import { Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskType } from '@dailyuse/contracts/task';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -246,8 +249,8 @@ const importance = computed({
 
 // 任务类型
 const taskType = computed({
-  get: () => props.modelValue.taskType ?? 'RECURRING',
-  set: (value: string) => {
+  get: () => props.modelValue.taskType ?? TaskType.Recurring,
+  set: (value: TaskType) => {
     updateTemplate((template) => {
       template.taskType = value;
     });

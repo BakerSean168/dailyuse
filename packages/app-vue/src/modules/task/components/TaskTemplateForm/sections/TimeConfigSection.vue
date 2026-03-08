@@ -22,11 +22,19 @@
             <Label for="time-all-day">{{ t('task.timeConfig.allDay') }}</Label>
           </div>
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TaskTimeType.TimePoint" id="time-point" :disabled="isEditMode" />
+            <RadioGroupItem
+              :value="TaskTimeType.TimePoint"
+              id="time-point"
+              :disabled="isEditMode"
+            />
             <Label for="time-point">{{ t('task.timeConfig.timePoint') }}</Label>
           </div>
           <div class="flex items-center space-x-2">
-            <RadioGroupItem :value="TaskTimeType.TimeRange" id="time-range" :disabled="isEditMode" />
+            <RadioGroupItem
+              :value="TaskTimeType.TimeRange"
+              id="time-range"
+              :disabled="isEditMode"
+            />
             <Label for="time-range">{{ t('task.timeConfig.timeRange') }}</Label>
           </div>
         </RadioGroup>
@@ -65,7 +73,7 @@
                 mode="single"
                 :selected="parseInputToDate(startDate)"
                 @update:model-value="
-                  (d) =>
+                  (d: Date | undefined) =>
                     handleCalendarSelect(d, (v) => {
                       startDate = v;
                       handleDateChange();
@@ -233,12 +241,15 @@ import { Calendar as CalendarIcon } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<{
-  modelValue: TaskTemplateViewModel;
-  isEditMode?: boolean;
-}>(), {
-  isEditMode: false,
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: TaskTemplateViewModel;
+    isEditMode?: boolean;
+  }>(),
+  {
+    isEditMode: false,
+  },
+);
 
 const isEditMode = props.isEditMode;
 

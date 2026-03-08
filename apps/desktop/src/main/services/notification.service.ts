@@ -9,15 +9,13 @@
  */
 
 import { Notification, nativeImage, BrowserWindow } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// ESM compatibility for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { eventBus } from '@dailyuse/utils';
 import type { NotificationDispatchDesktopEvent } from '@dailyuse/contracts/notification';
 import { getCustomNotificationManager } from './custom-notification.manager';
+import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
+import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
 
 /**
  * Configuration options for displaying a notification.
@@ -201,8 +199,7 @@ export class NotificationService {
    */
   private initDefaultIcon(): void {
     try {
-      // Attempt to load the app icon
-      const iconPath = path.join(__dirname, '../assets/icon.png');
+      const iconPath = resolveAssetPath('images/logos/DailyUse-128.png');
       this.defaultIcon = nativeImage.createFromPath(iconPath);
     } catch (err) {
       console.warn('[NotificationService] Failed to load default icon:', err);
@@ -299,7 +296,7 @@ export class NotificationService {
         title: options.title,
         body: options.body,
         icon: options.icon
-          ? nativeImage.createFromPath(options.icon)
+          ? nativeImage.createFromPath(this.resolveNotificationIconPath(options.icon))
           : (this.defaultIcon ?? undefined),
         silent: options.silent ?? !options.sound,
         urgency: options.urgency ?? 'normal',
@@ -339,6 +336,28 @@ export class NotificationService {
         this.mainWindow.webContents.send('notification:clicked', data);
       }
     }
+  }
+
+  private resolveNotificationIconPath(icon: string): string {
+    const manifestMatch = resolveAssetPathFromKey('images', icon as AssetImageKey, assetManifest);
+
+    if (manifestMatch) {
+      return manifestMatch;
+    }
+
+    if (icon.startsWith('file://')) {
+      return fileURLToPath(new URL(icon));
+    }
+
+    if (path.isAbsolute(icon)) {
+      return icon;
+    }
+
+    if (icon.startsWith('images/') || icon.startsWith('audio/') || icon.startsWith('fonts/')) {
+      return resolveAssetPath(icon);
+    }
+
+    return icon;
   }
 
   /**

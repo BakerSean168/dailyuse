@@ -18,7 +18,7 @@ export interface CalendarEventItem {
   title: string;
   startTime: number; // ms timestamp
   endTime: number; // ms timestamp
-  source: 'schedule' | 'task';
+  source: 'schedule' | 'task' | 'goal';
   hasConflict?: boolean;
   originalId: string;
   /** 仅当 source === 'task' 时存在，对应 TaskInstanceStatus 值 */
@@ -103,9 +103,7 @@ export function useCalendarView() {
       Array.isArray(templatesRaw) ? templatesRaw : [],
     );
 
-    return [...scheduleEvents, ...taskEvents].sort(
-      (a, b) => a.startTime - b.startTime,
-    );
+    return [...scheduleEvents, ...taskEvents].sort((a, b) => a.startTime - b.startTime);
   });
 
   const isLoading = computed(() => schedule.isLoading.value || task.isLoading.value);

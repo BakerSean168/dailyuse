@@ -4,13 +4,24 @@
  * 所有通知音效的统一导出
  */
 
+export const audioAssetPaths = {
+  alertSound: './notifications/alert.wav',
+  defaultSound: './notifications/default.wav',
+  errorSound: './notifications/error.wav',
+  notificationSound: './notifications/notification.wav',
+  reminderSound: './notifications/reminder.wav',
+  successSound: './notifications/success.wav',
+} as const;
+
+export type AudioAssetKey = keyof typeof audioAssetPaths;
+
 // 通知音效
-export const alertSound = new URL('./notifications/alert.wav', import.meta.url).href;
-export const defaultSound = new URL('./notifications/default.wav', import.meta.url).href;
-export const errorSound = new URL('./notifications/error.wav', import.meta.url).href;
-export const notificationSound = new URL('./notifications/notification.wav', import.meta.url).href;
-export const reminderSound = new URL('./notifications/reminder.wav', import.meta.url).href;
-export const successSound = new URL('./notifications/success.wav', import.meta.url).href;
+export const alertSound = new URL(audioAssetPaths.alertSound, import.meta.url).href;
+export const defaultSound = new URL(audioAssetPaths.defaultSound, import.meta.url).href;
+export const errorSound = new URL(audioAssetPaths.errorSound, import.meta.url).href;
+export const notificationSound = new URL(audioAssetPaths.notificationSound, import.meta.url).href;
+export const reminderSound = new URL(audioAssetPaths.reminderSound, import.meta.url).href;
+export const successSound = new URL(audioAssetPaths.successSound, import.meta.url).href;
 
 // 导出所有音效作为对象（可选）
 export const sounds = {

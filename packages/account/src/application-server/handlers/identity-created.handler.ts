@@ -10,7 +10,7 @@ import { Account } from '../../domain-server';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
-import { IdentityCreateMethod } from '@dailyuse/contracts/authentication/domain/events';
+import { IdentityCreateMethod } from '@dailyuse/contracts/authentication';
 
 const logger = createLogger('IdentityCreatedHandler');
 

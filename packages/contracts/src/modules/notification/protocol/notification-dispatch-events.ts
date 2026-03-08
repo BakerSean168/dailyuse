@@ -1,6 +1,8 @@
 import type { NotificationCategory, NotificationType } from '../value-objects';
 import type { ImportanceLevel, UrgencyLevel } from '../../../shared';
 
+export type AssetImageKey = string;
+
 export interface NotificationDispatchBase {
   id: string;
   identityId: string;
@@ -18,7 +20,7 @@ export interface NotificationDispatchBase {
 }
 
 export interface NotificationDispatchDesktopEvent extends NotificationDispatchBase {
-  icon?: string | null;
+  icon?: AssetImageKey | string | null;
   silent?: boolean;
 }
 

@@ -43,3 +43,6 @@ export {
   invalidatesCache,
   registerCacheIpcHandlers,
 } from './ipc-cache';
+
+// Assets
+export { resolveAssetPath } from './asset-path';

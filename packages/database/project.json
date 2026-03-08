@@ -13,10 +13,7 @@
         "cwd": "packages/database",
         "command": "prisma generate --config ./prisma/prisma.config.ts"
       },
-      "inputs": [
-        "{projectRoot}/prisma/schema.prisma",
-        "{projectRoot}/prisma/prisma.config.ts"
-      ],
+      "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts"],
       "cache": true
     },
     "prisma-generate": {
@@ -26,10 +23,7 @@
         "cwd": "packages/database",
         "command": "prisma generate --config ./prisma/prisma.config.ts"
       },
-      "inputs": [
-        "{projectRoot}/prisma/schema.prisma",
-        "{projectRoot}/prisma/prisma.config.ts"
-      ],
+      "inputs": ["{projectRoot}/prisma/schema/**/*", "{projectRoot}/prisma/prisma.config.ts"],
       "cache": true
     },
     "prisma-migrate": {

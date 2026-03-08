@@ -34,6 +34,7 @@
       ],
       "@dailyuse/contracts/modules/*": ["packages/contracts/src/modules/*/index.ts"],
       "@dailyuse/assets": ["packages/assets/src/index.ts"],
+      "@dailyuse/assets/*": ["packages/assets/src/*/index.ts", "packages/assets/src/*.ts"],
 
       // ✅ 领域层包（分层架构）
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],

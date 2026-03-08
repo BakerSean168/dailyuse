@@ -44,11 +44,13 @@ const workspacePkgs = [
   '@dailyuse/app-vue',
   '@dailyuse/ui-vue-shadcn',
   '@dailyuse/ipc-client',
+  '@dailyuse/assets',
 ];
 
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
+    conditions: ['import', 'module', 'default'],
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@main': path.resolve(__dirname, './src/main'),
