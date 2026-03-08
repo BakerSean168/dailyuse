@@ -12,6 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { NotificationOptions } from './notification.service';
 import { getWindowManager } from '../lifecycle/WindowManager';
+import { resolvePreloadPath } from '../utils/resolve-preload-path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +22,7 @@ export class CustomNotificationManager {
   private notificationWindow: BrowserWindow | null = null;
   private isDev = process.env.NODE_ENV === 'development';
   private devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
-  private preloadPath = path.join(__dirname, '../preload.cjs');
+  private preloadPath = resolvePreloadPath(__dirname);
 
   private notificationQueue: Array<NotificationOptions & { id: string }> = [];
   private isWaitingForReady: boolean = false;

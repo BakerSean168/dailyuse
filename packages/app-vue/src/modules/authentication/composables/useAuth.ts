@@ -29,6 +29,26 @@ export function useAuth() {
   const service = useStrictInject(AUTH_SERVICE_KEY, 'AuthService');
   const { t } = useI18n();
 
+  const hasDesktopWindowBridge = () =>
+    typeof window !== 'undefined' && typeof window.electronAPI?.invoke === 'function';
+
+  async function completeAuthSuccess(
+    data: AuthResponseDTO,
+    title: string,
+    description: string,
+  ): Promise<boolean> {
+    handleAuthSuccess(data);
+    toast.success(title, { description });
+
+    if (hasDesktopWindowBridge()) {
+      await window.electronAPI!.invoke('window:transition-to-main');
+      return true;
+    }
+
+    await router.push('/');
+    return true;
+  }
+
   // ========== Computed State ==========
   const isAuthenticated = computed(() => store.isAuthenticated);
   const isLoading = computed(() => store.isLoading);
@@ -49,12 +69,12 @@ export function useAuth() {
     store.setError(null);
     try {
       const result = await service.loginByEmail(req);
-      store.setLoading(false);
       if (result.ok) {
-        handleAuthSuccess(result.data);
-        toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
-        router.push('/');
-        return true;
+        return await completeAuthSuccess(
+          result.data,
+          t('auth.toast.loginSuccess'),
+          t('auth.toast.welcomeBack'),
+        );
       }
       const message = result.error?.message || t('auth.toast.loginFailed');
       store.setError(message);
@@ -66,6 +86,8 @@ export function useAuth() {
       store.setError(message);
       toast.error(message, { description: e instanceof Error ? e.message : String(e) });
       return false;
+    } finally {
+      store.setLoading(false);
     }
   }
 
@@ -74,12 +96,12 @@ export function useAuth() {
     store.setError(null);
     try {
       const result = await service.loginByPhone(req);
-      store.setLoading(false);
       if (result.ok) {
-        handleAuthSuccess(result.data);
-        toast.success(t('auth.toast.loginSuccess'), { description: t('auth.toast.welcomeBack') });
-        router.push('/');
-        return true;
+        return await completeAuthSuccess(
+          result.data,
+          t('auth.toast.loginSuccess'),
+          t('auth.toast.welcomeBack'),
+        );
       }
       const message = result.error?.message || t('auth.toast.loginFailed');
       store.setError(message);
@@ -91,6 +113,8 @@ export function useAuth() {
       store.setError(message);
       toast.error(message, { description: e instanceof Error ? e.message : String(e) });
       return false;
+    } finally {
+      store.setLoading(false);
     }
   }
 
@@ -101,14 +125,12 @@ export function useAuth() {
     store.setError(null);
     try {
       const result = await service.registerByEmail(req);
-      store.setLoading(false);
       if (result.ok) {
-        handleAuthSuccess(result.data);
-        toast.success(t('auth.toast.registerSuccess'), {
-          description: t('auth.toast.welcomeJoin'),
-        });
-        router.push('/');
-        return true;
+        return await completeAuthSuccess(
+          result.data,
+          t('auth.toast.registerSuccess'),
+          t('auth.toast.welcomeJoin'),
+        );
       }
       const message = result.error?.message || t('auth.toast.registerFailed');
       store.setError(message);
@@ -120,6 +142,8 @@ export function useAuth() {
       store.setError(message);
       toast.error(message, { description: e instanceof Error ? e.message : String(e) });
       return false;
+    } finally {
+      store.setLoading(false);
     }
   }
 
@@ -128,14 +152,12 @@ export function useAuth() {
     store.setError(null);
     try {
       const result = await service.registerByPhone(req);
-      store.setLoading(false);
       if (result.ok) {
-        handleAuthSuccess(result.data);
-        toast.success(t('auth.toast.registerSuccess'), {
-          description: t('auth.toast.welcomeJoin'),
-        });
-        router.push('/');
-        return true;
+        return await completeAuthSuccess(
+          result.data,
+          t('auth.toast.registerSuccess'),
+          t('auth.toast.welcomeJoin'),
+        );
       }
       const message = result.error?.message || t('auth.toast.registerFailed');
       store.setError(message);
@@ -147,6 +169,8 @@ export function useAuth() {
       store.setError(message);
       toast.error(message, { description: e instanceof Error ? e.message : String(e) });
       return false;
+    } finally {
+      store.setLoading(false);
     }
   }
 
@@ -196,7 +220,11 @@ export function useAuth() {
     } finally {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
-      router.push('/auth');
+      if (hasDesktopWindowBridge()) {
+        await window.electronAPI!.invoke('window:transition-to-login');
+      } else {
+        await router.push('/auth');
+      }
     }
   }
 

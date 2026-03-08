@@ -374,6 +374,10 @@ const ALLOWED_CHANNELS = [
   // ═══════════ Window Management ═══════════
   'window:transition-to-main',
   'window:transition-to-login',
+  'window:minimize',
+  'window:toggle-maximize',
+  'window:close',
+  'window:get-state',
   'window:minimize-login',
   'window:close-login',
 ] as const;

@@ -5,7 +5,7 @@
  * Shadcn UI + Tailwind CSS (Linear Style).
  * Platform-agnostic: uses injected useAuth composable via DI.
  */
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   Card,
   CardContent,
@@ -32,13 +32,26 @@ const password = ref('');
 const regEmail = ref('');
 const regPassword = ref('');
 const confirmPassword = ref('');
+const authAction = ref<'login' | 'register' | null>(null);
+
+const authLoadingMessage = computed(() => {
+  if (authAction.value === 'register') {
+    return '正在创建账户并启动主窗口...';
+  }
+  return '正在登录并启动主窗口...';
+});
 
 const handleLogin = async () => {
   if (!email.value || !password.value) {
     toast.error('请填写邮箱和密码');
     return;
   }
-  await loginByEmail({ email: email.value, password: password.value });
+
+  authAction.value = 'login';
+  const success = await loginByEmail({ email: email.value, password: password.value });
+  if (!success) {
+    authAction.value = null;
+  }
 };
 
 const handleRegister = async () => {
@@ -50,7 +63,12 @@ const handleRegister = async () => {
     toast.error('两次密码不一致');
     return;
   }
-  await registerByEmail({ email: regEmail.value, password: regPassword.value });
+
+  authAction.value = 'register';
+  const success = await registerByEmail({ email: regEmail.value, password: regPassword.value });
+  if (!success) {
+    authAction.value = null;
+  }
 };
 
 const handleSocialLogin = (provider: string) => {
@@ -99,7 +117,7 @@ const handleSocialLogin = (provider: string) => {
                 </div>
                 <Input id="password" type="password" v-model="password" />
               </div>
-              <Button class="w-full" :disabled="isLoading" @click="handleLogin">
+              <Button class="w-full" type="button" :disabled="isLoading" @click="handleLogin">
                 <template v-if="isLoading">Loading...</template>
                 <template v-else>Sign In</template>
               </Button>
@@ -120,7 +138,7 @@ const handleSocialLogin = (provider: string) => {
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <Input id="confirm-password" type="password" v-model="confirmPassword" />
               </div>
-              <Button class="w-full" :disabled="isLoading" @click="handleRegister">
+              <Button class="w-full" type="button" :disabled="isLoading" @click="handleRegister">
                 <template v-if="isLoading">Loading...</template>
                 <template v-else>Create Account</template>
               </Button>
@@ -152,5 +170,16 @@ const handleSocialLogin = (provider: string) => {
         By clicking continue, you agree to our Terms of Service and Privacy Policy.
       </CardFooter>
     </Card>
+
+    <div
+      v-if="isLoading"
+      class="absolute inset-0 z-20 flex items-center justify-center bg-background/88 backdrop-blur-sm"
+    >
+      <div class="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/90 px-6 py-5 shadow-xl">
+        <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary/25 border-t-primary"></div>
+        <div class="text-sm font-medium text-foreground">{{ authLoadingMessage }}</div>
+        <div class="text-xs text-muted-foreground">认证成功后将自动切换到主窗口</div>
+      </div>
+    </div>
   </div>
 </template>

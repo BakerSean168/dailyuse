@@ -27,6 +27,7 @@ import { connectPowerSync, shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
 import { getTokenManager } from '../modules/authentication/infrastructure';
+import { resolvePreloadPath } from '../utils/resolve-preload-path';
 
 // ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -45,7 +46,7 @@ let mainWindow: BrowserWindow | null = null;
  */
 export function createMainWindow(): BrowserWindow {
   // Resolve preload script path correctly in both dev and production
-  const preloadPath = path.join(__dirname, 'preload.cjs');
+  const preloadPath = resolvePreloadPath(__dirname);
 
   mainWindow = new BrowserWindow({
     width: 1200,

@@ -31,7 +31,14 @@ const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
   </GlobalErrorBoundary>
 
   <!-- Global overlays -->
-  <Toaster position="top-right" :duration="3000" rich-colors />
+  <Toaster
+    class="desktop-toaster"
+    position="top-center"
+    :duration="3000"
+    :offset="{ top: 44, left: 16, right: 16 }"
+    :mobile-offset="{ top: 44, left: 16, right: 16 }"
+    rich-colors
+  />
   <GlobalConfirmDialog />
   <GlobalSheet />
   <GlobalCommandPalette />
@@ -52,5 +59,9 @@ body,
 /* Offset content below the fixed titlebar */
 .has-titlebar {
   padding-top: 32px;
+}
+
+.desktop-toaster {
+  z-index: 12000;
 }
 </style>

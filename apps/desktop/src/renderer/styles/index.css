@@ -5,6 +5,7 @@
  */
 @import 'tailwindcss';
 @import '../../../../../packages/ui-core/src/styles/globals.css';
+@import 'vue-sonner/style.css';
 @source "../../../../../packages/ui-core/src";
 @source "../../../../../packages/ui-vue-shadcn/src";
 @source "../../../../../packages/app-vue/src";

@@ -11,7 +11,13 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHashHistory } from 'vue-router';
 
-import { createAppRouter, useAuthenticationStore } from '@dailyuse/app-vue';
+import {
+  createAppRouter,
+  useAuthenticationStore,
+  createI18nPlugin,
+  registerNotificationInitializationTasks,
+} from '@dailyuse/app-vue';
+import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
 import App from './App.vue';
@@ -20,13 +26,77 @@ import { initElectronFeatures } from './platform/electron';
 
 import './styles/index.css';
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.stack ?? error.message;
+  }
+
+  return String(error);
+}
+
+function renderStartupError(error: unknown): void {
+  console.error('[DesktopRenderer] Unhandled renderer error', error);
+
+  const mountTarget = document.querySelector('#app');
+  if (!mountTarget) {
+    return;
+  }
+
+  mountTarget.innerHTML = `
+    <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:24px;background:#111827;color:#f9fafb;font-family:system-ui,sans-serif;">
+      <div style="max-width:720px;">
+        <h1 style="margin:0 0 12px;font-size:20px;">Desktop renderer failed</h1>
+        <pre style="white-space:pre-wrap;word-break:break-word;background:#1f2937;padding:12px;border-radius:8px;overflow:auto;">${escapeHtml(
+          formatError(error),
+        )}</pre>
+      </div>
+    </div>
+  `;
+}
+
+function ensureElectronBridgeAvailable(): void {
+  if (window.electronAPI) {
+    return;
+  }
+
+  throw new Error(
+    'Electron preload bridge is unavailable. Check BrowserWindow.webPreferences.preload and preload path resolution.',
+  );
+}
+
 async function startApp() {
   const app = createApp(App);
+
+  app.config.errorHandler = (error) => {
+    renderStartupError(error);
+  };
+
+  window.addEventListener('error', (event) => {
+    renderStartupError(event.error ?? event.message);
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    renderStartupError(event.reason);
+  });
+
+  ensureElectronBridgeAvailable();
 
   // Pinia
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);
   app.use(pinia);
+
+  // I18n — required before any app-vue composable or global component uses useI18n()
+  app.use(createI18nPlugin('zh-CN'));
 
   // Router (Hash mode for Electron file:// protocol)
   const router = createAppRouter({
@@ -57,6 +127,9 @@ async function startApp() {
   // DI — inject IPC-backed service instances
   app.use(installIpcServices);
 
+  registerNotificationInitializationTasks();
+  await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
+
   // Electron-specific features
   initElectronFeatures(app);
 
@@ -64,19 +137,5 @@ async function startApp() {
 }
 
 startApp().catch((error) => {
-  console.error('[DesktopRenderer] Failed to start app', error);
-
-  const mountTarget = document.querySelector('#app');
-  if (mountTarget) {
-    mountTarget.innerHTML = `
-      <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:24px;background:#111827;color:#f9fafb;font-family:system-ui,sans-serif;">
-        <div style="max-width:640px;">
-          <h1 style="margin:0 0 12px;font-size:20px;">Desktop renderer failed to start</h1>
-          <pre style="white-space:pre-wrap;word-break:break-word;background:#1f2937;padding:12px;border-radius:8px;overflow:auto;">${String(
-            error instanceof Error ? error.stack ?? error.message : error,
-          )}</pre>
-        </div>
-      </div>
-    `;
-  }
+  renderStartupError(error);
 });

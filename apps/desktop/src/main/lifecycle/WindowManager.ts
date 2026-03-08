@@ -15,6 +15,7 @@ import { BrowserWindow, screen, ipcMain, app } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createLogger } from '@dailyuse/utils';
+import { hasResolvedPreload, resolvePreloadPath } from '../utils/resolve-preload-path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,13 +67,22 @@ export class WindowManager {
   private isTransitioning = false;
 
   private constructor(config: WindowManagerConfig = {}) {
-    const preloadPath = config.preloadPath || path.join(__dirname, '../preload.cjs');
+    const preloadPath = config.preloadPath || resolvePreloadPath(__dirname);
     
     this.config = {
       preloadPath,
       devServerUrl: config.devServerUrl || process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173',
       isDev: config.isDev ?? process.env.NODE_ENV === 'development',
     };
+
+    if (!hasResolvedPreload(__dirname)) {
+      logger.error('Resolved preload script does not exist', {
+        preloadPath: this.config.preloadPath,
+        currentDir: __dirname,
+      });
+    } else {
+      logger.info('Resolved preload script', { preloadPath: this.config.preloadPath });
+    }
 
     this.registerIpcHandlers();
   }
@@ -103,6 +113,8 @@ export class WindowManager {
    * 创建登录窗口
    */
   createLoginWindow(options: LoginWindowOptions = {}): BrowserWindow {
+    void options;
+
     if (this.loginWindow && !this.loginWindow.isDestroyed()) {
       this.loginWindow.focus();
       return this.loginWindow;
@@ -139,6 +151,8 @@ export class WindowManager {
       show: false,
     });
 
+    this.attachWindowDiagnostics(this.loginWindow, 'login');
+
     // 准备好后显示
     this.loginWindow.once('ready-to-show', () => {
       this.loginWindow?.show();
@@ -147,6 +161,10 @@ export class WindowManager {
 
     // app-vue exposes the authentication shell at /auth, not /login.
     this.loadWindowContent(this.loginWindow, '/auth');
+
+    if (this.config.isDev) {
+      this.loginWindow.webContents.openDevTools({ mode: 'detach' });
+    }
 
     // 窗口关闭事件
     this.loginWindow.on('closed', () => {
@@ -185,6 +203,8 @@ export class WindowManager {
       titleBarStyle: 'hiddenInset',
       show: false,
     });
+
+    this.attachWindowDiagnostics(this.mainWindow, 'main');
 
     // 准备好后显示
     this.mainWindow.once('ready-to-show', () => {
@@ -327,17 +347,69 @@ export class WindowManager {
       const hash = route === '/' ? '' : `#${route}`;
       const url = `${this.config.devServerUrl}${hash}`;
       logger.debug('Loading dev URL', { url, route });
-      window.loadURL(url);
+      void window.loadURL(url).catch((error) => {
+        logger.error('Failed to load dev URL', { route, url, error });
+      });
     } else {
       // 生产模式：加载打包的 HTML
       const htmlPath = path.join(__dirname, '../../renderer/index.html');
       if (route === '/') {
-        window.loadFile(htmlPath);
+        void window.loadFile(htmlPath).catch((error) => {
+          logger.error('Failed to load renderer HTML file', { route, htmlPath, error });
+        });
       } else {
         // 注意：hash 参数会自动添加 #
-        window.loadFile(htmlPath, { hash: route });
+        void window.loadFile(htmlPath, { hash: route }).catch((error) => {
+          logger.error('Failed to load renderer HTML file with route', {
+            route,
+            htmlPath,
+            error,
+          });
+        });
       }
     }
+  }
+
+  private attachWindowDiagnostics(window: BrowserWindow, windowType: WindowType): void {
+    window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+      logger.error('Window failed to load content', {
+        windowType,
+        errorCode,
+        errorDescription,
+        validatedURL,
+      });
+    });
+
+    window.webContents.on('render-process-gone', (_event, details) => {
+      logger.error('Renderer process exited unexpectedly', {
+        windowType,
+        reason: details.reason,
+        exitCode: details.exitCode,
+      });
+    });
+
+    window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+      logger.info('Renderer console message', {
+        windowType,
+        level,
+        message,
+        line,
+        sourceId,
+      });
+    });
+  }
+
+  private getWindowForSender(webContentsId?: number): BrowserWindow | null {
+    if (typeof webContentsId === 'number') {
+      const senderWindow = BrowserWindow.getAllWindows().find(
+        (window) => window.webContents.id === webContentsId,
+      );
+      if (senderWindow) {
+        return senderWindow;
+      }
+    }
+
+    return this.getActiveWindow();
   }
 
   /**
@@ -354,6 +426,48 @@ export class WindowManager {
     ipcMain.handle('window:transition-to-login', async () => {
       await this.transitionToLoginWindow();
       return { success: true };
+    });
+
+    ipcMain.handle('window:minimize', (event) => {
+      this.getWindowForSender(event.sender.id)?.minimize();
+      return { success: true };
+    });
+
+    ipcMain.handle('window:toggle-maximize', (event) => {
+      const senderWindow = this.getWindowForSender(event.sender.id);
+      if (!senderWindow) {
+        return { success: false };
+      }
+
+      if (senderWindow.isMaximized()) {
+        senderWindow.unmaximize();
+      } else {
+        senderWindow.maximize();
+      }
+
+      return { success: true, isMaximized: senderWindow.isMaximized() };
+    });
+
+    ipcMain.handle('window:close', (event) => {
+      this.getWindowForSender(event.sender.id)?.close();
+      return { success: true };
+    });
+
+    ipcMain.handle('window:get-state', (event) => {
+      const senderWindow = this.getWindowForSender(event.sender.id);
+      if (!senderWindow) {
+        return {
+          isMaximized: false,
+          isMinimized: false,
+          isFocused: false,
+        };
+      }
+
+      return {
+        isMaximized: senderWindow.isMaximized(),
+        isMinimized: senderWindow.isMinimized(),
+        isFocused: senderWindow.isFocused(),
+      };
     });
 
     // 最小化登录窗口
