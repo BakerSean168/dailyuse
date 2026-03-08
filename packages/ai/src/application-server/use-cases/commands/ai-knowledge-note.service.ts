@@ -1,16 +1,14 @@
 import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '@dailyuse/contracts/ai';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
 import { OpenAICompatibleGateway } from '../../../infrastructure-server/gateways/openai-compatible.gateway';
-import { DefaultRepositoryResolver } from '../../../infrastructure-server/services/default-repository-resolver';
 import { AIKnowledgeNotePathResolver } from '../../../infrastructure-server/services/ai-knowledge-note-path-resolver';
-import type { RepositoryResourceWriter } from '../../../infrastructure-server/services/repository-resource-writer';
+import type { IKnowledgeNotePersistencePort } from '../../ports';
 
 export class AIKnowledgeNoteService {
   constructor(
     private readonly providerConfigRepository: IAIProviderConfigRepository,
     private readonly gateway: OpenAICompatibleGateway,
-    private readonly repositoryResolver: DefaultRepositoryResolver,
-    private readonly resourceWriter: RepositoryResourceWriter,
+    private readonly persistencePort: IKnowledgeNotePersistencePort,
     private readonly getKnowledgeNoteSubpath: (identityId: string) => Promise<string>,
     private readonly pathResolver: AIKnowledgeNotePathResolver,
   ) {}
@@ -21,7 +19,6 @@ export class AIKnowledgeNoteService {
   ): Promise<CreateKnowledgeNoteRes> {
     const startedAt = Date.now();
     const provider = await this.resolveProvider(identityId, request.providerId);
-    const repository = await this.repositoryResolver.resolve(identityId);
     const subpath = request.targetSubpath ?? (await this.getKnowledgeNoteSubpath(identityId));
     const pathInfo = this.pathResolver.resolve(subpath, request.title ?? request.topic);
 
@@ -43,16 +40,15 @@ export class AIKnowledgeNoteService {
       ],
     });
 
-    const resource = await this.resourceWriter.createMarkdownNote({
-      repositoryId: String(repository.id),
+    const persisted = await this.persistencePort.createKnowledgeNote({
       identityId,
-      fileName: pathInfo.fileName,
       path: pathInfo.path,
+      fileName: pathInfo.fileName,
       content: completion.content,
     });
 
     return {
-      resource: resource.resource,
+      resource: persisted.resource,
       resolvedPath: pathInfo.path,
       tokenUsage: completion.usage,
       providerId: provider.id,

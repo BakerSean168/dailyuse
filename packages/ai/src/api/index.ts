@@ -2,5 +2,5 @@
  * AI API Module Exports
  */
 
-export { AIApiModule } from './module';
+export { createAIApiModule } from './module';
 export type { AIApiModuleContext } from './module';

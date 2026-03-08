@@ -1,5 +1,6 @@
 export * from './a-i-chat-application-service';
 export * from './a-i-conversation-service';
+export * from './ai-knowledge-note.service';
 export * from './a-i-provider-config-service';
 export * from './create-conversation';
 export * from './delete-conversation';

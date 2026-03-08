@@ -31,16 +31,31 @@ import { RepositoryApiModule } from '@dailyuse/repository/api';
 import { ScheduleApiModule } from '@dailyuse/schedule/api';
 import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
-import { AIApiModule } from '@dailyuse/ai/api';
+import { createAIApiModule } from '@dailyuse/ai/api';
+import { SettingModule } from '@dailyuse/setting';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
+import { RepositoryKnowledgeNotePersistenceAdapter } from './modules/ai/repository-knowledge-note-persistence.adapter';
 
 // 初始化日志系统
 initializeLogger();
 const logger = createLogger('API');
 
 let bootstrapper: ApiBootstrapper | null = null;
+
+const AIApiModule = createAIApiModule({
+  createKnowledgeNotePersistence: (context) =>
+    new RepositoryKnowledgeNotePersistenceAdapter(
+      context.db,
+      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
+    ),
+  getKnowledgeNoteSubpath: async (identityId, context) => {
+    const settingModule = new SettingModule('prisma', context.db);
+    const setting = await settingModule.getUserSetting.execute(identityId);
+    return setting.preferences.ai.knowledgeNoteSubpath;
+  },
+});
 
 async function bootstrap(): Promise<void> {
   logger.info('Starting DailyUse API server...', {

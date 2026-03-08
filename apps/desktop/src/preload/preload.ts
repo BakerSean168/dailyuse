@@ -337,6 +337,8 @@ const ALLOWED_CHANNELS = [
 
   // ═══════════ PowerSync (main-process sync → renderer notification) ═══════════
   'db:changed',
+  'tray:action',
+  'shortcut:triggered',
 
   // ═══════════ Window Management ═══════════
   'window:transition-to-main',

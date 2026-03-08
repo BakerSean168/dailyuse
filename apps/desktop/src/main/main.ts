@@ -27,12 +27,18 @@ import { ScheduleElectronModule } from '@dailyuse/schedule/electron-entry';
 import { ReminderElectronModule } from '@dailyuse/reminder/electron-entry';
 import { NotificationElectronModule } from '@dailyuse/notification/electron-entry';
 import { SettingElectronModule } from '@dailyuse/setting/electron-entry';
-import { AIElectronModule } from '@dailyuse/ai/electron-entry';
+import { createAIElectronModule } from '@dailyuse/ai/electron-entry';
 import { RepositoryElectronModule } from '@dailyuse/repository/electron-entry';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { DesktopAuthElectronModule } from './modules/authentication/desktop-auth.electron-module';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
+import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
+
+const AIElectronModule = createAIElectronModule({
+  createKnowledgeNotePersistence: (context) =>
+    new DesktopKnowledgeNotePersistenceAdapter(context.db),
+});
 
 /** Kept as module-level for graceful shutdown access. */
 let bootstrapper: ElectronBootstrapper | null = null;
