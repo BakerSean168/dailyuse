@@ -288,6 +288,9 @@ importers:
       '@dailyuse/account':
         specifier: workspace:*
         version: link:../../packages/account
+      '@dailyuse/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@dailyuse/authentication':
         specifier: workspace:*
         version: link:../../packages/authentication
@@ -769,6 +772,12 @@ importers:
       '@dailyuse/http-client':
         specifier: workspace:*
         version: link:../http-client
+      '@dailyuse/repository':
+        specifier: workspace:*
+        version: link:../repository
+      '@dailyuse/setting':
+        specifier: workspace:*
+        version: link:../setting
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
@@ -800,6 +809,9 @@ importers:
       '@dailyuse/account':
         specifier: workspace:*
         version: link:../account
+      '@dailyuse/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@dailyuse/authentication':
         specifier: workspace:*
         version: link:../authentication
