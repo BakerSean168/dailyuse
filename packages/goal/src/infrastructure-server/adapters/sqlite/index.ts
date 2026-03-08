@@ -10,3 +10,4 @@ export { SqliteFocusSessionRepository } from './focus-session-sqlite.repository'
 export { SqliteWeightSnapshotRepository } from './weight-snapshot-sqlite.repository';
 export { SqliteGoalRecordRepository } from './goal-record-sqlite.repository';
 export { GOAL_MODULE_SCHEMA } from './schema';
+export * from './mappers';

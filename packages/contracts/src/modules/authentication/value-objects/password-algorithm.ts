@@ -2,8 +2,8 @@
  * 密码哈希算法
  */
 export const PasswordAlgorithm = {
-  BCRYPT: 'BCRYPT',
-  ARGON2: 'ARGON2',
-  SCRYPT: 'SCRYPT',
+  Bcrypt: 'Bcrypt',
+  Argon2: 'Argon2',
+  Scrypt: 'Scrypt',
 } as const;
 export type PasswordAlgorithm = (typeof PasswordAlgorithm)[keyof typeof PasswordAlgorithm];

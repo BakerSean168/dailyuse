@@ -1,6 +1,6 @@
 /**
  * SessionLayout 值对象
- * 
+ *
  * 会话布局：分割类型、分组数量、活动分组索引
  * 不可变性（所有修改返回新实例）
  */
@@ -12,26 +12,28 @@ import type {
   SessionLayoutPersistenceDTO,
 } from '@dailyuse/contracts/editor';
 
-type SplitType = 'horizontal' | 'vertical' | 'grid';
+type SplitType = 'Horizontal' | 'Vertical' | 'Grid';
 
 /**
  * SessionLayout 值对象实现
  */
-export class SessionLayout extends ValueObject<SessionLayoutServerDTO> implements ISessionLayoutServer {
-
+export class SessionLayout
+  extends ValueObject<SessionLayoutServerDTO>
+  implements ISessionLayoutServer
+{
   private constructor(props: SessionLayoutServerDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
-  
+
   public static create(props: SessionLayoutServerDTO): SessionLayout {
     return new SessionLayout(props);
   }
 
   public static createDefault(): SessionLayout {
     return new SessionLayout({
-      splitType: 'horizontal',
+      splitType: 'Horizontal',
       groupCount: 1,
       activeGroupIndex: 0,
     });
@@ -73,9 +75,7 @@ export class SessionLayout extends ValueObject<SessionLayoutServerDTO> implement
 
   // ================= 行为方法 =================
 
-  public with(
-    updates: Partial<SessionLayoutServerDTO>,
-  ): SessionLayout {
+  public with(updates: Partial<SessionLayoutServerDTO>): SessionLayout {
     return new SessionLayout({ ...this.props, ...updates });
   }
 
@@ -106,15 +106,15 @@ export class SessionLayout extends ValueObject<SessionLayoutServerDTO> implement
   }
 
   public get isHorizontalSplit(): boolean {
-    return this.props.splitType === 'horizontal';
+    return this.props.splitType === 'Horizontal';
   }
 
   public get isVerticalSplit(): boolean {
-    return this.props.splitType === 'vertical';
+    return this.props.splitType === 'Vertical';
   }
 
   public get isGridLayout(): boolean {
-    return this.props.splitType === 'grid';
+    return this.props.splitType === 'Grid';
   }
 
   // ================= 序列化 =================

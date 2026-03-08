@@ -2,7 +2,7 @@ import type { ResourceType as IResourceType } from '@dailyuse/contracts/reposito
 
 /**
  * 📝 资源类型 - 仓储中资源的类型
- * 
+ *
  * Branded Type：运行时为 string，编译时具有类型安全性
  * 零序列化成本，内存开销极小
  */
@@ -12,16 +12,16 @@ export type ResourceType = IResourceType & { readonly __brand: unique symbol };
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: IResourceType[] = ['FILE', 'FOLDER'];
+const VALUES: IResourceType[] = ['File', 'Folder'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
  */
 export const ResourceType = {
   // ================= 常量定义 =================
-  
-  FILE: 'FILE' as ResourceType,
-  FOLDER: 'FOLDER' as ResourceType,
+
+  File: 'File' as ResourceType,
+  Folder: 'Folder' as ResourceType,
 
   // ================= 工厂方法 =================
 
@@ -50,13 +50,13 @@ export const ResourceType = {
    * 判断是否为文件
    */
   isFile(value: ResourceType): boolean {
-    return value === 'FILE';
+    return value === 'File';
   },
 
   /**
    * 判断是否为文件夹
    */
   isFolder(value: ResourceType): boolean {
-    return value === 'FOLDER';
+    return value === 'Folder';
   },
 };

@@ -20,9 +20,9 @@ import type {
  * 隐藏目标模式
  */
 export const HiddenGoalsMode = {
-  HIDE: 'hide',
-  DIM: 'dim',
-  COLLAPSE: 'collapse',
+  Hide: 'Hide',
+  Dim: 'Dim',
+  Collapse: 'Collapse',
 } as const;
 
 export type HiddenGoalsMode = (typeof HiddenGoalsMode)[keyof typeof HiddenGoalsMode];

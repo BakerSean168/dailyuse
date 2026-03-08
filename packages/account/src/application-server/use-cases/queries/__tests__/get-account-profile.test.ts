@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import type { IAccountRepository } from '@/domain-server/repositories/i-account-repository';
 import { Account } from '@/domain-server/aggregates/account';
+import { AccountStatus } from '@dailyuse/contracts/account';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { GetAccountProfileUseCase } from '../get-account-profile';
 
@@ -27,7 +28,7 @@ describe('GetAccountProfileUseCase', () => {
 
     expect(result).not.toBeNull();
     expect(result!.email.address).toBe('get@example.com');
-    expect(result!.status).toBe('ACTIVE');
+    expect(result!.status).toBe(AccountStatus.Active);
   });
 
   it('should return null when account not found', async () => {

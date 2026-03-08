@@ -134,14 +134,14 @@ describe('PauseTaskTemplate', () => {
   });
 
   describe('event publishing', () => {
-    it('should publish task.template.paused event', async () => {
+    it('should publish task:template:paused event', async () => {
       const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
       vi.mocked(templateRepo.findById).mockResolvedValue(template);
 
       await useCase.execute(template.id, 'Taking a break');
 
       expect(eventBus.send).toHaveBeenCalledWith(
-        'task.template.paused',
+        'task:template:paused',
         expect.objectContaining({
           taskTemplateId: template.id,
           identityId: template.identityId,
@@ -158,7 +158,7 @@ describe('PauseTaskTemplate', () => {
       await useCase.execute(template.id);
 
       expect(eventBus.send).toHaveBeenCalledWith(
-        'task.template.paused',
+        'task:template:paused',
         expect.objectContaining({
           reason: expect.any(String),
         }),

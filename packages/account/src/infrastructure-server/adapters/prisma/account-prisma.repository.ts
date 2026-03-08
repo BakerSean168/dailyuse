@@ -3,22 +3,14 @@
  *
  * Prisma implementation of IAccountRepository.
  * Receives PrismaClient via constructor injection from @dailyuse/database.
- * 
+ *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
 
 import type { PrismaClient, Account as PrismaAccount } from '@dailyuse/database';
 import type { IAccountRepository } from '../../../domain-server';
 import { Account } from '../../../domain-server';
-import type { AccountState } from '../../../domain-server';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
-import {
-  AccountProfile,
-  AccountSettings,
-  ContactEmail,
-  AccountStatus,
-  ContactPhone,
-} from '../../../domain-shared';
+import { AccountPrismaMapper } from './mappers/account-prisma.mapper';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
@@ -90,7 +82,7 @@ export class PrismaAccountRepository
     const client = (tx || this.prisma) as any;
     const row = await client.account.findUnique({ where: { id } });
     if (!row) return null;
-    return this.mapToDomain(row);
+    return AccountPrismaMapper.toDomain(row);
   }
 
   async findByUsername(username: string, tx?: unknown): Promise<Account | null> {
@@ -101,21 +93,21 @@ export class PrismaAccountRepository
       take: 1,
     });
     if (!rows || rows.length === 0) return null;
-    return this.mapToDomain(rows[0]);
+    return AccountPrismaMapper.toDomain(rows[0]);
   }
 
   async findByEmail(email: string, tx?: unknown): Promise<Account | null> {
     const client = (tx || this.prisma) as any;
     const row = await client.account.findFirst({ where: { emailAddress: email } });
     if (!row) return null;
-    return this.mapToDomain(row);
+    return AccountPrismaMapper.toDomain(row);
   }
 
   async findByPhone(phoneNumber: string, tx?: unknown): Promise<Account | null> {
     const client = (tx || this.prisma) as any;
     const row = await client.account.findFirst({ where: { phoneNumber } });
     if (!row) return null;
-    return this.mapToDomain(row);
+    return AccountPrismaMapper.toDomain(row);
   }
 
   async existsByUsername(username: string, tx?: unknown): Promise<boolean> {
@@ -153,36 +145,7 @@ export class PrismaAccountRepository
       client.account.count({ where }),
     ]);
 
-    const accounts = rows.map((row: PrismaAccount) => this.mapToDomain(row));
+    const accounts = rows.map((row: PrismaAccount) => AccountPrismaMapper.toDomain(row));
     return { accounts, total };
-  }
-
-  private mapToDomain(row: PrismaAccount): Account {
-    const state: AccountState = {
-      id: IdentityId.of(row.id),
-      status: AccountStatus.of(row.status),
-      profile: AccountProfile.fromPersistenceDTO(row.profile as any),
-      settings: AccountSettings.fromPersistenceDTO(row.settings as any),
-      email: ContactEmail.fromPersistenceDTO({
-        address: row.emailAddress,
-        isVerified: row.emailIsVerified,
-        verifiedAt: row.emailVerifiedAt,
-        isPrimary: row.emailIsPrimary,
-      }),
-      phone: row.phoneNumber
-        ? ContactPhone.fromPersistenceDTO({
-            fullNumber: row.phoneFullNumber as string,
-            countryCode: row.phoneCountryCode as string,
-            number: row.phoneNumber,
-            isVerified: row.phoneIsVerified as boolean,
-            verifiedAt: row.phoneVerifiedAt,
-          })
-        : null,
-      version: row.version,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      deletedAt: row.deletedAt,
-    };
-    return Account.load(state);
   }
 }

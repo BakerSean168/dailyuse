@@ -7,7 +7,9 @@ import type {
   TaskTemplateServerDTO,
   TaskEventMap,
 } from '@dailyuse/contracts/task';
-import { RecurrenceFrequency, RecurrenceEndConditionType, TaskTimeType as TimeType, TaskInstanceStatus, TaskType } from '@dailyuse/contracts/task';
+import { RecurrenceFrequency, RecurrenceEndConditionType } from '@dailyuse/contracts/task';
+import { TaskTimeType as TimeType, TaskInstanceStatus } from '../../domain-shared/value-objects';
+import { DependencyStatus, TaskType } from '../value-objects';
 import { ImportanceLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
@@ -68,7 +70,7 @@ export interface TaskTemplateState {
   estimatedMinutes: number | null;
   actualMinutes: number | null;
   note: string | null;
-  dependencyStatus: string;
+  dependencyStatus: DependencyStatus;
   isBlocked: boolean;
   blockingReason: string | null;
   createdAt: Date;
@@ -114,7 +116,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: rest.estimatedMinutes ?? null,
       actualMinutes: rest.actualMinutes ?? null,
       note: rest.note ?? null,
-      dependencyStatus: rest.dependencyStatus ?? 'NONE',
+      dependencyStatus: rest.dependencyStatus ?? DependencyStatus.None,
       isBlocked: rest.isBlocked ?? false,
       blockingReason: rest.blockingReason ?? null,
       deletedAt: rest.deletedAt ?? null,
@@ -233,7 +235,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.note;
   }
 
-  public get dependencyStatus(): string {
+  public get dependencyStatus(): DependencyStatus {
     return this._props.dependencyStatus;
   }
 
@@ -318,7 +320,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
           this._instances.push(instance);
         }
       }
-    } else if (this._props.taskType === TaskType.Recurring && this._props.recurrenceRule && this._props.timeConfig) {
+    } else if (
+      this._props.taskType === TaskType.Recurring &&
+      this._props.recurrenceRule &&
+      this._props.timeConfig
+    ) {
       const fromDay = TaskTemplate.startOfLocalDay(fromDate);
       const endDate = TaskTemplate.startOfLocalDay(toDate);
       let currentDate = fromDay;
@@ -368,7 +374,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       return false;
     }
 
-    if (this._props.taskType === 'OneTime') {
+    if (this._props.taskType === TaskType.OneTime) {
       return false; // ���������ڴ���??
     }
 
@@ -379,7 +385,9 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     const candidateDay = TaskTemplate.startOfLocalDay(date);
 
     if (this._props.timeConfig?.startDate) {
-      const templateStartDay = TaskTemplate.startOfLocalDay(this._props.timeConfig.startDate.getTime());
+      const templateStartDay = TaskTemplate.startOfLocalDay(
+        this._props.timeConfig.startDate.getTime(),
+      );
       if (candidateDay < templateStartDay) {
         return false;
       }
@@ -495,7 +503,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.deletedAt = new Date();
     this._props.updatedAt = new Date();
     this.addHistory('Deleted');
-    
+
     // ?? ���������¼�
     this.addDomainEvent<TaskEventMap['task:delete']>('task:delete', {
       isSoftDelete: true,
@@ -558,7 +566,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
 
     if (this._props.taskType === TaskType.OneTime) {
-      if (this._props.timeConfig?.startDate && this._props.timeConfig.startDate.getTime() > afterDate) {
+      if (
+        this._props.timeConfig?.startDate &&
+        this._props.timeConfig.startDate.getTime() > afterDate
+      ) {
         return this._props.timeConfig.startDate.getTime();
       }
       return null;
@@ -589,7 +600,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.title = newTitle.trim();
     this._props.updatedAt = new Date();
     this.addHistory('title_updated', { oldTitle, newTitle: this._props.title });
-    
+
     // ?? ���������¼�
     this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
       changes: ['title'],
@@ -603,14 +614,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     const oldDescription = this._props.description;
     this._props.description = newDescription ? newDescription.trim() : null;
     this._props.updatedAt = new Date();
-    this.addHistory('description_updated', { oldDescription, newDescription: this._props.description });
+    this.addHistory('description_updated', {
+      oldDescription,
+      newDescription: this._props.description,
+    });
   }
 
   /**
    * ���¿�ʼʱ??(OneTime)
    */
   public updateStartDate(newStartDate: Date | null): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks have start dates', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -623,7 +637,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
-    this.addDomainEvent('task_template.schedule_time_changed', {
+    this.addDomainEvent('task:template:schedule-time-changed', {
       taskTemplate: this.toServerDTO(),
       oldStartDate: oldStartDate,
       oldDueDate: this._props.dueDate,
@@ -651,7 +665,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
-    this.addDomainEvent('task_template.schedule_time_changed', {
+    this.addDomainEvent('task:template:schedule-time-changed', {
       taskTemplate: this.toServerDTO(),
       oldStartDate: this._props.startDate,
       oldDueDate: oldDueDate,
@@ -673,7 +687,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newTimeConfig: newTimeConfig?.toDTO() ?? null,
     });
 
-    this.addDomainEvent('task_template.schedule_time_changed', {
+    this.addDomainEvent('task:template:schedule-time-changed', {
       taskTemplate: this.toServerDTO(),
       oldStartDate: this._props.startDate,
       oldDueDate: this._props.dueDate,
@@ -688,7 +702,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * �����ظ����� (Recurring)
    */
   public updateRecurrenceRule(newRule: RecurrenceRule): void {
-    if (this._props.taskType !== 'Recurring') {
+    if (this._props.taskType !== TaskType.Recurring) {
       throw new InvalidTaskTemplateStateError('Only Recurring tasks have recurrence rules.', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -703,7 +717,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newRule: newRule.toDTO(),
     });
 
-    this.addDomainEvent('task_template.recurrence_changed', {
+    this.addDomainEvent('task:template:recurrence-changed', {
       taskTemplate: this.toServerDTO(),
       oldRecurrenceRule: oldRuleDTO,
       newRecurrenceRule: newRule.toDTO(),
@@ -773,7 +787,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       endConditionType,
     });
 
-    this.addDomainEvent('task_template.recurrence_changed', {
+    this.addDomainEvent('task:template:recurrence-changed', {
       taskTemplate: this.toServerDTO(),
       oldRecurrenceRule: oldRuleDTO,
       newRecurrenceRule: updatedRule.toDTO(),
@@ -814,7 +828,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ���±�ע (OneTime)
    */
   public updateNote(newNote: string | null): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks have notes', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -831,7 +845,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ����Ԥ��ʱ�� (OneTime)
    */
   public updateEstimatedTime(estimatedMinutes: number): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks have estimated time', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -961,7 +975,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * �󶨵�Ŀ??(OneTime) - �°汾֧�����ֶ�
    */
   public linkToGoal(goalId: string, keyResultId?: string): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks can be linked to goals', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -985,7 +999,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ���Ŀ������?(OneTime)
    */
   public unlinkFromGoal(): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks can be unlinked from goals', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -1013,7 +1027,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ��������??
    */
   public addSubtask(subtaskId: string): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks can have subtasks', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -1029,7 +1043,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * �Ƴ�����??
    */
   public removeSubtask(subtaskId: string): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks can have subtasks', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -1119,19 +1133,16 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ���Ϊ������?
    */
   public markAsBlocked(reason: string, dependencyTaskId?: string): void {
-    if (this._props.taskType !== 'OneTime') {
-      throw new InvalidTaskTemplateStateError(
-        'Only OneTime tasks can be blocked by dependencies',
-        {
-          templateId: this.id,
-          currentStatus: this._props.status,
-          attemptedAction: 'markAsBlocked',
-        },
-      );
+    if (this._props.taskType !== TaskType.OneTime) {
+      throw new InvalidTaskTemplateStateError('Only OneTime tasks can be blocked by dependencies', {
+        templateId: this.id,
+        currentStatus: this._props.status,
+        attemptedAction: 'markAsBlocked',
+      });
     }
     this._props.isBlocked = true;
     this._props.blockingReason = reason;
-    this._props.dependencyStatus = 'BLOCKED';
+    this._props.dependencyStatus = DependencyStatus.Blocked;
     this._props.updatedAt = new Date();
     this.addHistory('marked_as_blocked', { reason, dependencyTaskId });
   }
@@ -1140,7 +1151,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
    * ���Ϊ��??(�����������?
    */
   public markAsReady(): void {
-    if (this._props.taskType !== 'OneTime') {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks can have dependency status', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -1149,7 +1160,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     }
     this._props.isBlocked = false;
     this._props.blockingReason = null;
-    this._props.dependencyStatus = 'READY';
+    this._props.dependencyStatus = DependencyStatus.Ready;
     this._props.updatedAt = new Date();
     this.addHistory('marked_as_ready');
   }
@@ -1157,8 +1168,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   /**
    * ��������״??
    */
-  public updateDependencyStatus(status: 'Pending' | 'READY' | 'BLOCKED'): void {
-    if (this._props.taskType !== 'OneTime') {
+  public updateDependencyStatus(status: DependencyStatus): void {
+    if (this._props.taskType !== TaskType.OneTime) {
       throw new InvalidTaskTemplateStateError('Only OneTime tasks can have dependency status', {
         templateId: this.id,
         currentStatus: this._props.status,
@@ -1274,7 +1285,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       importance: this._props.importance,
-      priority: this._props.taskType === 'OneTime' ? this.getPriority().score : undefined,
+      priority: this._props.taskType === TaskType.OneTime ? this.getPriority().score : undefined,
       goalBinding: this._props.goalBinding?.toDTO() ?? null,
       checklist: this._props.checklist.map((c) => c.toDTO()),
       folderId: this._props.folderId,
@@ -1296,20 +1307,29 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
   }
 
   public toClientDTO(includeChildren: boolean = false): TaskTemplateClientDTO {
-    const completedCount = this._instances.filter((i) => i.status === 'Completed').length;
-    const pendingCount = this._instances.filter((i) => i.status === 'Pending').length;
+    const completedCount = this._instances.filter(
+      (i) => i.status === TaskInstanceStatus.Completed,
+    ).length;
+    const pendingCount = this._instances.filter(
+      (i) => i.status === TaskInstanceStatus.Pending,
+    ).length;
     const totalCount = this._instances.length;
     const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
     // OneTime ��������ȼ�����?
-    const priority = this._props.taskType === 'OneTime' ? this.getPriority() : undefined;
+    const priority = this._props.taskType === TaskType.OneTime ? this.getPriority() : undefined;
 
     return {
       id: this.id,
       identityId: this._props.identityId,
       name: this._props.title,
       description: this._props.description,
-      timeConfig: this._props.timeConfig?.toDTO() ?? { timeType: 'AllDay', startDate: null, timePoint: null, timeRange: null },
+      timeConfig: this._props.timeConfig?.toDTO() ?? {
+        timeType: TimeType.AllDay,
+        startDate: null,
+        timePoint: null,
+        timeRange: null,
+      },
       recurrenceRule: this._props.recurrenceRule?.toDTO() ?? null,
       reminderConfig: this._props.reminderConfig?.toDTO() ?? null,
       importance: this._props.importance,
@@ -1409,7 +1429,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: params.estimatedMinutes || null,
       actualMinutes: null,
       note: params.note || null,
-      dependencyStatus: 'Pending',
+      dependencyStatus: DependencyStatus.Waiting,
       isBlocked: false,
       blockingReason: null,
       createdAt: now,
@@ -1418,7 +1438,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       version: 1,
     });
 
-    template.addHistory('created', { taskType: 'OneTime' });
+    template.addHistory('created', { taskType: TaskType.OneTime });
     return template;
   }
 
@@ -1476,7 +1496,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: null,
       actualMinutes: null,
       note: null,
-      dependencyStatus: 'NONE',
+      dependencyStatus: DependencyStatus.None,
       isBlocked: false,
       blockingReason: null,
       tags: params.tags ?? [],
@@ -1489,7 +1509,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       version: 1,
     });
 
-    template.addHistory('created', { taskType: 'Recurring' });
+    template.addHistory('created', { taskType: TaskType.Recurring });
     return template;
   }
 
@@ -1563,7 +1583,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       estimatedMinutes: null,
       actualMinutes: null,
       note: null,
-      dependencyStatus: 'NONE',
+      dependencyStatus: DependencyStatus.None,
       isBlocked: false,
       blockingReason: null,
       tags: params.tags ?? [],
@@ -1577,12 +1597,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     });
 
     template.addHistory('created');
-    
+
     template.addDomainEvent<TaskEventMap['task:create']>('task:create', {
       templateId: template.id,
       goalId: null,
     });
-    
+
     return template;
   }
 

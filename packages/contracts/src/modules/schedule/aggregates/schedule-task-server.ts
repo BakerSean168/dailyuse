@@ -4,9 +4,7 @@
  */
 
 import type { ScheduleTaskClientDTO } from './schedule-task-client';
-import type {
-  ScheduleExecutionServerDTO,
-} from '../entities/schedule-execution-server';
+import type { ScheduleExecutionServerDTO } from '../entities/schedule-execution-server';
 import type {
   ScheduleTaskStatus,
   SourceModule,
@@ -108,7 +106,7 @@ export interface ScheduleTaskPersistenceDTO {
  * 任务创建事件
  */
 export interface ScheduleTaskCreatedEvent {
-  type: 'schedule.task.created';
+  type: 'schedule:task:created';
   aggregateId: string; // taskId
   timestamp: Date; // epoch ms
   payload: {
@@ -125,7 +123,7 @@ export interface ScheduleTaskCreatedEvent {
  * 任务暂停事件
  */
 export interface ScheduleTaskPausedEvent {
-  type: 'schedule.task.paused';
+  type: 'schedule:task:paused';
   aggregateId: string;
   timestamp: Date;
   payload: {
@@ -140,7 +138,7 @@ export interface ScheduleTaskPausedEvent {
  * 任务恢复事件
  */
 export interface ScheduleTaskResumedEvent {
-  type: 'schedule.task.resumed';
+  type: 'schedule:task:resumed';
   aggregateId: string;
   timestamp: Date;
   payload: {
@@ -155,7 +153,7 @@ export interface ScheduleTaskResumedEvent {
  * 任务完成事件
  */
 export interface ScheduleTaskCompletedEvent {
-  type: 'schedule.task.completed';
+  type: 'schedule:task:completed';
   aggregateId: string;
   timestamp: Date;
   payload: {
@@ -170,7 +168,7 @@ export interface ScheduleTaskCompletedEvent {
  * 任务取消事件
  */
 export interface ScheduleTaskCancelledEvent {
-  type: 'schedule.task.cancelled';
+  type: 'schedule:task:cancelled';
   aggregateId: string;
   timestamp: Date;
   payload: {
@@ -185,7 +183,7 @@ export interface ScheduleTaskCancelledEvent {
  * 任务失败事件
  */
 export interface ScheduleTaskFailedEvent {
-  type: 'schedule.task.failed';
+  type: 'schedule:task:failed';
   aggregateId: string;
   timestamp: Date;
   payload: {
@@ -201,7 +199,7 @@ export interface ScheduleTaskFailedEvent {
  * 任务执行事件（核心集成事件）
  */
 export interface ScheduleTaskExecutedEvent {
-  type: 'schedule.task.executed';
+  type: 'schedule:task:executed';
   aggregateId: string;
   timestamp: Date;
   payload: {
@@ -209,6 +207,7 @@ export interface ScheduleTaskExecutedEvent {
     executionId: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
+    identityId: string;
     status: ExecutionStatus;
     duration: number;
     payload: Record<string, unknown>; // 传递给业务模块的数据
@@ -219,7 +218,7 @@ export interface ScheduleTaskExecutedEvent {
  * 任务调度配置更新事件
  */
 export interface ScheduleTaskScheduleUpdatedEvent {
-  type: 'schedule.task.schedule.updated';
+  type: 'schedule:task:schedule-updated';
   aggregateId: string;
   timestamp: Date;
   payload: {

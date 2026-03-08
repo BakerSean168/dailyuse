@@ -4,10 +4,9 @@
 
 import type Database from 'better-sqlite3';
 import { Document } from '../../../domain-server/entities/document';
-import { DocumentMetadata } from '../../../domain-shared/value-objects/document-metadata';
 import type { IDocumentRepository } from '../../../domain-server/repositories/IDocumentRepository';
 import type { IndexStatus } from '@dailyuse/contracts/editor';
-import { DocumentLanguage } from '@dailyuse/contracts/editor';
+import { DocumentSqliteMapper } from './mappers/document-sqlite.mapper';
 
 export class SqliteDocumentRepository implements IDocumentRepository {
   constructor(private db: Database.Database) {}
@@ -18,7 +17,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
     if (!row) return null;
 
-    return this.rowToDocument(row);
+    return DocumentSqliteMapper.toDomain(row);
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
@@ -27,7 +26,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     );
     const rows = stmt.all(workspaceId) as any[];
 
-    return rows.map((row) => this.rowToDocument(row));
+    return rows.map((row) => DocumentSqliteMapper.toDomain(row));
   }
 
   async findByPath(workspaceId: string, path: string): Promise<Document | null> {
@@ -38,7 +37,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
 
     if (!row) return null;
 
-    return this.rowToDocument(row);
+    return DocumentSqliteMapper.toDomain(row);
   }
 
   async findByContentHash(contentHash: string): Promise<Document[]> {
@@ -47,7 +46,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     );
     const rows = stmt.all(contentHash) as any[];
 
-    return rows.map((row) => this.rowToDocument(row));
+    return rows.map((row) => DocumentSqliteMapper.toDomain(row));
   }
 
   async findDocumentsNeedingIndex(workspaceId: string): Promise<Document[]> {
@@ -56,7 +55,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     );
     const rows = stmt.all(workspaceId) as any[];
 
-    return rows.map((row) => this.rowToDocument(row));
+    return rows.map((row) => DocumentSqliteMapper.toDomain(row));
   }
 
   async findByIndexStatus(workspaceId: string, status: IndexStatus): Promise<Document[]> {
@@ -65,7 +64,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     );
     const rows = stmt.all(workspaceId, status) as any[];
 
-    return rows.map((row) => this.rowToDocument(row));
+    return rows.map((row) => DocumentSqliteMapper.toDomain(row));
   }
 
   async findRecentlyModified(workspaceId: string, limit: number): Promise<Document[]> {
@@ -74,7 +73,7 @@ export class SqliteDocumentRepository implements IDocumentRepository {
     );
     const rows = stmt.all(workspaceId, limit) as any[];
 
-    return rows.map((row) => this.rowToDocument(row));
+    return rows.map((row) => DocumentSqliteMapper.toDomain(row));
   }
 
   async save(document: Document): Promise<void> {
@@ -161,24 +160,5 @@ export class SqliteDocumentRepository implements IDocumentRepository {
       )
       .get(workspaceId) as { cnt: number };
     return row.cnt;
-  }
-
-  private rowToDocument(row: any): Document {
-    return Document.load({
-      id: row.id,
-      workspaceId: row.workspace_id,
-      identityId: row.identityId ?? row.identity_id ?? row.workspace_id,
-      path: row.path,
-      name: row.name ?? row.path?.split('/').pop() ?? '',
-      language: row.language ?? DocumentLanguage.Other,
-      content: row.content ?? '',
-      contentHash: row.content_hash,
-      metadata: DocumentMetadata.createEmpty(),
-      indexStatus: row.index_status as IndexStatus,
-      lastIndexedAt: row.last_indexed_at ? new Date(row.last_indexed_at) : null,
-      lastModifiedAt: row.last_modified_at ? new Date(row.last_modified_at) : null,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    } as any);
   }
 }

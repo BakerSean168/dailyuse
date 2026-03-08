@@ -1,13 +1,11 @@
 /**
  * PhoneIdentifier 值对象
- * 
+ *
  * 手机号标识符 - 用于"查找用户"
  * 不可变，以值定义身份
  */
 
-import type {
-  PhoneIdentifierDTO,
-} from '@dailyuse/contracts/authentication';
+import type { PhoneIdentifierDTO } from '@dailyuse/contracts/authentication';
 
 import { PhoneNumber } from '../../domain-shared';
 
@@ -15,11 +13,11 @@ import { PhoneNumber } from '../../domain-shared';
  * 手机号标识符值对象
  */
 export class PhoneIdentifier {
-  readonly type = 'PHONE' as const;
+  readonly type = 'Phone' as const;
 
   private constructor(
     private readonly _value: PhoneNumber,
-    private readonly _isVerified: boolean
+    private readonly _isVerified: boolean,
   ) {}
 
   // ================= 工厂方法 =================
@@ -84,7 +82,7 @@ export class PhoneIdentifier {
 
   public toDTO(): PhoneIdentifierDTO {
     return {
-      type: 'PHONE',
+      type: 'Phone',
       value: this._value.toDTO(),
       isVerified: this._isVerified,
     };

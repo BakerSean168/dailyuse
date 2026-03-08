@@ -3,11 +3,12 @@
  * 目标值对象导出
  */
 
-export type {
-  GoalMetadata,
-  GoalMetadataDTO,
-  GoalMetadataPersistenceDTO,
-} from './goal-metadata';
+export type { GoalMetadata, GoalMetadataDTO, GoalMetadataPersistenceDTO } from './goal-metadata';
+
+export type { GoalId } from './goal-id';
+export type { GoalFolderId } from './goal-folder-id';
+export type { KeyResultId } from './key-result-id';
+export type { FocusSessionId } from './focus-session-id';
 
 export type {
   GoalTimeRange,
@@ -41,10 +42,7 @@ export type {
   KeyResultWeightSnapshotPersistenceDTO,
 } from './key-result-weight-snapshot';
 
-export type {
-  ProgressBreakdown,
-  ProgressBreakdownResponse,
-} from './progress-breakdown';
+export type { ProgressBreakdown, ProgressBreakdownResponse } from './progress-breakdown';
 
 export { HiddenGoalsMode } from './focus-mode';
 export type {

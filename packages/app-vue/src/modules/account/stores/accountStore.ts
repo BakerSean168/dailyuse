@@ -37,7 +37,7 @@ export const useAccountStore = defineStore('account', {
 
     getAccountStatus: (state) => state.currentAccount?.status ?? null,
 
-    isActiveAccount: (state) => state.currentAccount?.status === AccountStatus.ACTIVE,
+    isActiveAccount: (state) => state.currentAccount?.status === AccountStatus.Active,
 
     // ========== 资料 ==========
     getNickname: (state) => state.currentAccount?.profile?.nickname ?? null,

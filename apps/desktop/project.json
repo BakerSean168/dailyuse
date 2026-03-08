@@ -12,7 +12,7 @@
         "{workspaceRoot}/apps/desktop/dist-electron"
       ],
       "defaultConfiguration": "production",
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "assets:build"],
       "options": {
         "command": "vite build",
         "cwd": "apps/desktop"
@@ -44,10 +44,7 @@
     "package": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "npx @electron/rebuild -f -o better-sqlite3",
-          "electron-builder --dir"
-        ],
+        "commands": ["npx @electron/rebuild -f -o better-sqlite3", "electron-builder --dir"],
         "cwd": "apps/desktop",
         "parallel": false
       }
@@ -55,10 +52,7 @@
     "dist": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "npx @electron/rebuild -f -o better-sqlite3",
-          "electron-builder"
-        ],
+        "commands": ["npx @electron/rebuild -f -o better-sqlite3", "electron-builder"],
         "cwd": "apps/desktop",
         "parallel": false
       }

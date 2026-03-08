@@ -4,10 +4,10 @@ import type { CredentialType as ICredentialType } from '@dailyuse/contracts/auth
  * 🔑 凭证类型 - 认证方式标识
  *
  * 重构后仅保留真正的凭证类型：
- * - PASSWORD: 密码凭证
- * - MAGIC_LINK: 魔法链接凭证 (未来扩展)
- * 
- * 原 OAUTH 和 PHONE 类型已迁移为标识符 (Identifier)
+ * - Password: 密码凭证
+ * - MagicLink: 魔法链接凭证 (未来扩展)
+ *
+ * 原 Oauth 和 Phone 类型已迁移为标识符 (Identifier)
  *
  * Branded Type：运行时是 string，编译时具有类型安全性
  * 零序列化成本，内存开销极小
@@ -18,7 +18,7 @@ export type CredentialType = ICredentialType & { readonly __brand: unique symbol
  * 合法值集合 - Single Source of Truth
  * 用于校验和遍历
  */
-const VALUES: ICredentialType[] = ['PASSWORD', 'MAGIC_LINK'];
+const VALUES: ICredentialType[] = ['Password', 'MagicLink'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
@@ -27,8 +27,8 @@ const VALUES: ICredentialType[] = ['PASSWORD', 'MAGIC_LINK'];
 export const CredentialType = {
   // ================= 常量定义 =================
 
-  PASSWORD: 'PASSWORD' as CredentialType,
-  MAGIC_LINK: 'MAGIC_LINK' as CredentialType,
+  Password: 'Password' as CredentialType,
+  MagicLink: 'MagicLink' as CredentialType,
 
   // ================= 工厂方法 =================
 
@@ -68,14 +68,14 @@ export const CredentialType = {
    * 是否是基于密码的认证方式
    */
   isPasswordBased(type: CredentialType): boolean {
-    return type === this.PASSWORD;
+    return type === this.Password;
   },
 
   /**
    * 是否是魔法链接认证方式
    */
   isMagicLink(type: CredentialType): boolean {
-    return type === this.MAGIC_LINK;
+    return type === this.MagicLink;
   },
 
   /**

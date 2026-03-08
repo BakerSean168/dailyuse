@@ -14,6 +14,7 @@ import { TaskTemplateId } from '@/domain-shared/value-objects/task-template-id';
 import { TaskFolderId } from '@/domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { TaskType } from '@dailyuse/contracts/task';
 
 export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
   constructor(private db: Database.Database) {}
@@ -68,7 +69,7 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       identityId: IdentityId.of(row.identity_id ?? row.identityId),
       title: row.name,
       description: row.description ?? null,
-      taskType: isRecurring ? 'RECURRING' : 'ONE_TIME',
+      taskType: isRecurring ? TaskType.Recurring : TaskType.OneTime,
       timeConfig: null,
       recurrenceRule: null,
       reminderConfig: null,

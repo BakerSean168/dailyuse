@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { notificationSound, reminderSound } from '@dailyuse/assets/audio';
 
 interface CustomNotification {
   id: string;
@@ -8,6 +9,10 @@ interface CustomNotification {
   icon?: string;
   urgency?: 'normal' | 'critical' | 'low';
   data?: Record<string, unknown>;
+  sound?: {
+    enabled: boolean;
+    name?: string | null;
+  } | null;
   timeoutId?: number;
 }
 
@@ -20,12 +25,33 @@ function handleReceiveNotification(data: CustomNotification) {
   // If we already have one with this ID, ignore
   if (notifications.value.some((n) => n.id === data.id)) return;
 
+  const soundEnabled = data.sound?.enabled ?? true;
+  if (soundEnabled) {
+    if (data.sound?.name && typeof data.sound.name === 'string') {
+      void playNotificationSound(data.sound.name);
+    } else if (data.data?.type && data.data.type === 'reminder') {
+      void playNotificationSound(reminderSound);
+    } else {
+      void playNotificationSound(notificationSound);
+    }
+  }
+
   // Add timeout for auto dismiss
   const timeoutId = window.setTimeout(() => {
     removeNotification(data.id);
   }, AUTO_DISMISS_MS);
 
   notifications.value.push({ ...data, timeoutId });
+}
+
+async function playNotificationSound(src: string) {
+  try {
+    const audio = new Audio(src);
+    audio.volume = 0.6;
+    await audio.play();
+  } catch (error) {
+    console.warn('[CustomNotificationView] Failed to play notification sound', error);
+  }
 }
 
 function removeNotification(id: string) {
@@ -40,7 +66,11 @@ function removeNotification(id: string) {
 function handleClick(notification: CustomNotification) {
   removeNotification(notification.id);
   // Type casting electronAPI because it's injected via contextBridge but not fully typed in this standalone component context
-  (window as any).electronAPI.invoke('notification:custom:click', notification.id, notification.data);
+  (window as any).electronAPI.invoke(
+    'notification:custom:click',
+    notification.id,
+    notification.data,
+  );
 }
 
 function handleClose(notification: CustomNotification) {
@@ -66,7 +96,7 @@ watch(
   async () => {
     updateWindowBounds();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function handleMouseEnter() {
@@ -98,12 +128,9 @@ onUnmounted(() => {
   <div
     ref="containerRef"
     class="flex flex-col gap-2 p-2 pointer-events-none"
-    style="width: 100%; min-height: 10px;"
+    style="width: 100%; min-height: 10px"
   >
-    <TransitionGroup
-      name="notification-list"
-      @after-leave="updateWindowBounds"
-    >
+    <TransitionGroup name="notification-list" @after-leave="updateWindowBounds">
       <div
         v-for="notification in notifications"
         :key="notification.id"
@@ -133,7 +160,17 @@ onUnmounted(() => {
           @click.stop="handleClose(notification)"
           class="absolute top-3 right-3 text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>

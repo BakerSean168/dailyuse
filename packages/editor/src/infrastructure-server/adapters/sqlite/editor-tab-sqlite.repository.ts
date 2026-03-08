@@ -4,8 +4,8 @@
 
 import type Database from 'better-sqlite3';
 import { EditorTab } from '../../../domain-server/entities/editor-tab';
-import { TabType } from '@dailyuse/contracts/editor';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
+import { EditorTabSqliteMapper } from './mappers/editor-tab-sqlite.mapper';
 
 export class SqliteEditorTabRepository implements IEditorTabRepository {
   constructor(private db: Database.Database) {}
@@ -16,7 +16,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
     if (!row) return null;
 
-    return this.rowToTab(row);
+    return EditorTabSqliteMapper.toDomain(row);
   }
 
   async findByGroupId(groupId: string): Promise<EditorTab[]> {
@@ -25,7 +25,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     );
     const rows = stmt.all(groupId) as any[];
 
-    return rows.map((row) => this.rowToTab(row));
+    return rows.map((row) => EditorTabSqliteMapper.toDomain(row));
   }
 
   async findByDocumentId(documentId: string): Promise<EditorTab[]> {
@@ -34,7 +34,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     );
     const rows = stmt.all(documentId) as any[];
 
-    return rows.map((row) => this.rowToTab(row));
+    return rows.map((row) => EditorTabSqliteMapper.toDomain(row));
   }
 
   async findByGroupIdAndTabIndex(groupId: string, tabIndex: number): Promise<EditorTab | null> {
@@ -45,7 +45,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
 
     if (!row) return null;
 
-    return this.rowToTab(row);
+    return EditorTabSqliteMapper.toDomain(row);
   }
 
   async findPinnedByGroupId(groupId: string): Promise<EditorTab[]> {
@@ -54,7 +54,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     );
     const rows = stmt.all(groupId) as any[];
 
-    return rows.map((row) => this.rowToTab(row));
+    return rows.map((row) => EditorTabSqliteMapper.toDomain(row));
   }
 
   async findDirtyByGroupId(groupId: string): Promise<EditorTab[]> {
@@ -63,7 +63,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     );
     const rows = stmt.all(groupId) as any[];
 
-    return rows.map((row) => this.rowToTab(row));
+    return rows.map((row) => EditorTabSqliteMapper.toDomain(row));
   }
 
   async findRecentlyAccessed(groupId: string, limit: number): Promise<EditorTab[]> {
@@ -72,7 +72,7 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     );
     const rows = stmt.all(groupId, limit) as any[];
 
-    return rows.map((row) => this.rowToTab(row));
+    return rows.map((row) => EditorTabSqliteMapper.toDomain(row));
   }
 
   async save(tab: EditorTab): Promise<void> {
@@ -169,29 +169,5 @@ export class SqliteEditorTabRepository implements IEditorTabRepository {
     );
     const result = stmt.get(groupId) as { maxIndex: number | null };
     return result.maxIndex ?? -1;
-  }
-
-  private rowToTab(row: any): EditorTab {
-    const viewState = row.view_state
-      ? JSON.parse(row.view_state)
-      : { scrollTop: 0, scrollLeft: 0, cursorPosition: { line: 0, column: 0 }, selections: [] };
-
-    return EditorTab.load({
-      id: row.id,
-      groupId: row.group_id,
-      sessionId: row.session_id,
-      workspaceId: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      documentId: row.document_id,
-      tabIndex: row.tab_index,
-      tabType: (row.tab_type ?? row.tabType ?? TabType.Document) as any,
-      name: row.name ?? 'Untitled',
-      viewState,
-      isPinned: row.is_pinned === 1,
-      isDirty: row.is_dirty === 1,
-      lastAccessedAt: row.last_accessed_at ? new Date(row.last_accessed_at) : null,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    } as any);
   }
 }

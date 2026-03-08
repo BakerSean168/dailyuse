@@ -2,7 +2,7 @@
  * PrismaAuthIdentityRepository
  *
  * Prisma implementation of IAuthIdentityRepository.
- * 映射逻辑委托�?PrismaAuthIdentityMapper�?
+ * 映射逻辑委托�?PrismaAuthIdentityMapper�?
  *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */
@@ -100,7 +100,7 @@ export class PrismaAuthIdentityRepository
 
   async findByEmail(email: string): Promise<AuthIdentity | null> {
     const identifier = await this.prisma.authIdentifier.findFirst({
-      where: { type: 'EMAIL', value: email },
+      where: { type: 'Email', value: email },
     });
     if (!identifier) return null;
     return this.findById(identifier.identityId);
@@ -108,7 +108,7 @@ export class PrismaAuthIdentityRepository
 
   async findByPhone(phoneNumber: string): Promise<AuthIdentity | null> {
     const identifier = await this.prisma.authIdentifier.findFirst({
-      where: { type: 'PHONE', value: phoneNumber },
+      where: { type: 'Phone', value: phoneNumber },
     });
     if (!identifier) return null;
     return this.findById(identifier.identityId);
@@ -127,14 +127,14 @@ export class PrismaAuthIdentityRepository
 
   async existsByEmail(email: string): Promise<boolean> {
     const count = await this.prisma.authIdentifier.count({
-      where: { type: 'EMAIL', value: email },
+      where: { type: 'Email', value: email },
     });
     return count > 0;
   }
 
   async existsByPhone(phoneNumber: string): Promise<boolean> {
     const count = await this.prisma.authIdentifier.count({
-      where: { type: 'PHONE', value: phoneNumber },
+      where: { type: 'Phone', value: phoneNumber },
     });
     return count > 0;
   }

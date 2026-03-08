@@ -78,8 +78,8 @@ export class ListTaskTemplates {
           await this.instanceRepository.saveMany(instances);
           await this.templateRepository.save(template);
 
-          eventBus.send('task.instances.generated' as any, {
-            eventType: 'task_template.instances_generated',
+          eventBus.send('task:instances:generated' as any, {
+            eventType: 'task:instances:generated',
             aggregateId: template.id,
             identityId: template.identityId,
             payload: {
@@ -95,4 +95,3 @@ export class ListTaskTemplates {
     }
   }
 }
-

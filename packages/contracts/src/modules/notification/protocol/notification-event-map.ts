@@ -6,10 +6,14 @@ import type {
   NotificationStatusChangedEvent,
   NotificationChannelFailedEvent,
 } from '../domain/events';
+import type {
+  NotificationDispatchDesktopEvent,
+  NotificationDispatchInAppEvent,
+} from './notification-dispatch-events';
 
 /**
  * Notification Module - Event Map
- * 
+ *
  * Event Naming Convention: notification:<action>
  * Maps event names to their payload types for type-safe event handling
  */
@@ -50,5 +54,16 @@ export type NotificationEventMap = {
    * Triggered when notification fails to send through channel
    */
   'notification:channel-failed': NotificationChannelFailedEvent;
-};
 
+  /**
+   * Notification dispatch event (desktop)
+   * Triggered when notification should be rendered on desktop
+   */
+  'notification:dispatch_desktop': NotificationDispatchDesktopEvent;
+
+  /**
+   * Notification dispatch event (in-app)
+   * Triggered when notification should be rendered in app
+   */
+  'notification:dispatch_in_app': NotificationDispatchInAppEvent;
+};

@@ -1,6 +1,6 @@
 /**
  * ConflictDetectionResult 值对象
- * 
+ *
  * 冲突检测结果：是否有冲突、冲突详情、解决建议
  * 这是一个简单的只读值对象
  */
@@ -15,11 +15,11 @@ interface ConflictDetail {
   readonly overlapStart: number;
   readonly overlapEnd: number;
   readonly overlapDuration: number;
-  readonly severity?: 'minor' | 'moderate' | 'severe';
+  readonly severity?: 'Minor' | 'Moderate' | 'Severe';
 }
 
 interface ConflictSuggestion {
-  readonly type: 'move_earlier' | 'move_later' | 'shorten';
+  readonly type: 'MoveEarlier' | 'MoveLater' | 'Shorten';
   readonly newStartTime: number;
   readonly newEndTime: number;
   readonly description?: string;
@@ -34,14 +34,16 @@ interface ConflictDetectionResultDTO {
 /**
  * ConflictDetectionResult 值对象实现
  */
-export class ConflictDetectionResult extends ValueObject<ConflictDetectionResultDTO> implements IConflictDetectionResult {
-
+export class ConflictDetectionResult
+  extends ValueObject<ConflictDetectionResultDTO>
+  implements IConflictDetectionResult
+{
   private constructor(props: ConflictDetectionResultDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
-  
+
   public static create(props: ConflictDetectionResultDTO): ConflictDetectionResult {
     return new ConflictDetectionResult(props);
   }
@@ -94,7 +96,7 @@ export class ConflictDetectionResult extends ValueObject<ConflictDetectionResult
   }
 
   public get conflictingScheduleIds(): string[] {
-    return this.props.conflicts.map(c => c.scheduleId);
+    return this.props.conflicts.map((c) => c.scheduleId);
   }
 
   // ================= 序列化 =================

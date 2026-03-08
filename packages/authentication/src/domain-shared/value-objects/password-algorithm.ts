@@ -11,7 +11,7 @@ export type PasswordAlgorithm = IPasswordAlgorithm & { readonly __brand: unique 
  * 合法值集�?- Single Source of Truth
  * 注意：bcrypt �?argon2 是业界推荐的现代密码哈希算法
  */
-const VALUES: IPasswordAlgorithm[] = ['BCRYPT', 'ARGON2', 'SCRYPT'];
+const VALUES: IPasswordAlgorithm[] = ['Bcrypt', 'Argon2', 'Scrypt'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
@@ -19,9 +19,9 @@ const VALUES: IPasswordAlgorithm[] = ['BCRYPT', 'ARGON2', 'SCRYPT'];
 export const PasswordAlgorithm = {
   // ================= 常量定义 =================
 
-  BCRYPT: 'BCRYPT' as PasswordAlgorithm,
-  ARGON2: 'ARGON2' as PasswordAlgorithm,
-  SCRYPT: 'SCRYPT' as PasswordAlgorithm,
+  Bcrypt: 'Bcrypt' as PasswordAlgorithm,
+  Argon2: 'Argon2' as PasswordAlgorithm,
+  Scrypt: 'Scrypt' as PasswordAlgorithm,
 
   // ================= 工厂方法 =================
 
@@ -57,21 +57,21 @@ export const PasswordAlgorithm = {
    * 是否�?bcrypt 算法
    */
   isBcrypt(algo: PasswordAlgorithm): boolean {
-    return algo === this.BCRYPT;
+    return algo === this.Bcrypt;
   },
 
   /**
    * 是否�?argon2 算法
    */
   isArgon2(algo: PasswordAlgorithm): boolean {
-    return algo === this.ARGON2;
+    return algo === this.Argon2;
   },
 
   /**
    * 是否�?Scrypt 算法
    */
   isScrypt(algo: PasswordAlgorithm): boolean {
-    return algo === this.SCRYPT;
+    return algo === this.Scrypt;
   },
 
   /**
@@ -95,9 +95,9 @@ export const PasswordAlgorithm = {
    */
   getRecommendedCost(algo: PasswordAlgorithm): number {
     const map: Record<IPasswordAlgorithm, number> = {
-      'BCRYPT': 12,         // bcrypt rounds
-      'ARGON2': 3,          // argon2 iterations
-      'SCRYPT': 100000      // Scrypt iterations
+      Bcrypt: 12, // bcrypt rounds
+      Argon2: 3, // argon2 iterations
+      Scrypt: 100000, // Scrypt iterations
     };
     return map[algo as IPasswordAlgorithm] ?? 100000;
   },

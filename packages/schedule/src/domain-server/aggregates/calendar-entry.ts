@@ -170,18 +170,18 @@ export class CalendarEntry extends AggregateRoot<ScheduleId> {
     if (earliest) {
       const newEndTime = earliest.startTime;
       const newStartTime = newEndTime - (this._props.endTime - this._props.startTime);
-      suggestions.push({ type: 'move_earlier', newStartTime, newEndTime });
+      suggestions.push({ type: 'MoveEarlier', newStartTime, newEndTime });
     }
 
     if (latest) {
       const newStartTime = latest.endTime;
       const newEndTime = newStartTime + (this._props.endTime - this._props.startTime);
-      suggestions.push({ type: 'move_later', newStartTime, newEndTime });
+      suggestions.push({ type: 'MoveLater', newStartTime, newEndTime });
     }
 
     if (earliest && this._props.startTime < earliest.startTime) {
       suggestions.push({
-        type: 'shorten',
+        type: 'Shorten',
         newStartTime: this._props.startTime,
         newEndTime: earliest.startTime,
       });

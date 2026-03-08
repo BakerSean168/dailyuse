@@ -18,10 +18,18 @@
               <SelectValue :placeholder="t('goal.reviewCreation.selectType')" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Weekly">{{ t('goal.reviewCreation.weekly') }}</SelectItem>
-              <SelectItem value="Monthly">{{ t('goal.reviewCreation.monthly') }}</SelectItem>
-              <SelectItem value="Quarterly">{{ t('goal.reviewCreation.quarterly') }}</SelectItem>
-              <SelectItem value="Final">{{ t('goal.reviewCreation.final') }}</SelectItem>
+              <SelectItem :value="ReviewType.Weekly">{{
+                t('goal.reviewCreation.weekly')
+              }}</SelectItem>
+              <SelectItem :value="ReviewType.Monthly">{{
+                t('goal.reviewCreation.monthly')
+              }}</SelectItem>
+              <SelectItem :value="ReviewType.Quarterly">{{
+                t('goal.reviewCreation.quarterly')
+              }}</SelectItem>
+              <SelectItem :value="ReviewType.Final">{{
+                t('goal.reviewCreation.final')
+              }}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -114,18 +122,18 @@ import {
   SelectContent,
   SelectItem,
 } from '@dailyuse/ui-vue-shadcn';
-import type { GoalId } from '@dailyuse/contracts/goal';
+import { GoalId, ReviewType } from '@dailyuse/goal/domain-shared';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const goalId = ((route.params.goalId as string) || (route.params.id as string)) as GoalId;
+const goalId = GoalId.of((route.params.goalId as string) || (route.params.id as string));
 
 const { createReview, isSaving } = useGoal();
 
 const form = reactive({
-  reviewType: 'Weekly' as 'Weekly' | 'Monthly' | 'Quarterly' | 'Annual' | 'Adhoc' | 'Final',
+  reviewType: ReviewType.Weekly,
   rating: 7,
   title: '',
   content: '',

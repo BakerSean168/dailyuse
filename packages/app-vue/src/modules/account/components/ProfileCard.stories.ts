@@ -23,7 +23,7 @@ const mockProfile = {
   realName: 'John Doe',
   avatarUrl: null,
   bio: '一个热爱编程和生活的全栈开发者，喜欢用代码创造有趣的产品。',
-  gender: 'MALE' as const,
+  gender: 'Male' as const,
   birthday: new Date('1995-06-15').getTime(),
 };
 
@@ -49,7 +49,7 @@ export const MinimalProfile: Story = {
       realName: null,
       avatarUrl: null,
       bio: null,
-      gender: 'PREFER_NOT_TO_SAY' as const,
+      gender: 'PreferNotToSay' as const,
       birthday: null,
     },
   },
@@ -75,7 +75,7 @@ export const FemaleProfile: Story = {
       ...mockProfile,
       nickname: 'JaneDoe',
       realName: 'Jane Doe',
-      gender: 'FEMALE' as const,
+      gender: 'Female' as const,
       bio: '设计师 & 前端开发，追求极致的用户体验。',
       birthday: new Date('1998-03-20').getTime(),
     },

@@ -1,11 +1,11 @@
 /**
  * Prisma AuthIdentifier Sub-Mapper
  *
- * 子表映射器：处理 auth_identifiers �?�?AuthIdentifierDTO 值对�?
+ * 子表映射器：处理 auth_identifiers �?�?AuthIdentifierDTO 值对�?
  *
- * 职责�?
- * - DB Row �?AuthIdentifierDTO (读数�?
- * - AuthIdentifierDTO �?Prisma CreateInput (写数�?
+ * 职责�?
+ * - DB Row �?AuthIdentifierDTO (读数�?
+ * - AuthIdentifierDTO �?Prisma CreateInput (写数�?
  */
 
 import type { Prisma } from '@dailyuse/database';
@@ -14,19 +14,19 @@ import type { PrismaAuthIdentifierRow } from '../../../types';
 
 export class PrismaAuthIdentifierMapper {
   /**
-   * Row �?Domain DTO (读数�?
+   * Row �?Domain DTO (读数�?
    */
   static toDomainDTO(row: PrismaAuthIdentifierRow): AuthIdentifierDTO {
-    if (row.type === 'EMAIL') {
+    if (row.type === 'Email') {
       return {
-        type: 'EMAIL',
+        type: 'Email',
         value: row.value,
         isVerified: row.isVerified ?? false,
       };
     }
-    if (row.type === 'PHONE') {
+    if (row.type === 'Phone') {
       return {
-        type: 'PHONE',
+        type: 'Phone',
         value: { value: row.value },
         isVerified: row.isVerified ?? false,
       };
@@ -35,7 +35,7 @@ export class PrismaAuthIdentifierMapper {
   }
 
   /**
-   * Domain DTO �?Prisma CreateInput (写数�?
+   * Domain DTO �?Prisma CreateInput (写数�?
    */
   static toPrismaCreate(
     identifier: AuthIdentifierDTO,
@@ -45,7 +45,7 @@ export class PrismaAuthIdentifierMapper {
       identityId,
       type: identifier.type,
       value:
-        identifier.type === 'PHONE'
+        identifier.type === 'Phone'
           ? (identifier.value as { value: string }).value
           : (identifier.value as string),
       isVerified: identifier.isVerified,

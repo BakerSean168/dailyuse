@@ -25,12 +25,12 @@ describe('Account', () => {
   describe('create', () => {
     it('should create an account with ACTIVE status', () => {
       const account = anAccount();
-      expect(account.status).toBe(AccountStatus.ACTIVE);
+      expect(account.status).toBe(AccountStatus.Active);
     });
 
     it('should set default profile from email', () => {
       const account = anAccount({ email: 'john.doe@example.com' });
-      expect(account.profile.nickname).toBe('john.doe@e');
+      expect(account.profile.nickname).toBe('john.doe');
     });
 
     it('should set default settings', () => {
@@ -108,7 +108,7 @@ describe('Account', () => {
     it('should change status to DEACTIVATED', () => {
       const account = anAccount();
       account.close();
-      expect(account.status).toBe(AccountStatus.DEACTIVATED);
+      expect(account.status).toBe(AccountStatus.Deactivated);
     });
 
     it('should emit account:close domain event', () => {
@@ -133,14 +133,16 @@ describe('Account', () => {
         profile: anAccount().profile,
         email: anAccount().email,
         settings: anAccount().settings,
-        status: AccountStatus.SUSPENDED,
+        status: AccountStatus.Suspended,
         phone: null,
         version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
       });
-      expect(() => account.close()).toThrow('Cannot close a suspended account');
+      expect(() => account.close()).toThrow(
+        'Cannot close a suspended account. Please contact support.',
+      );
     });
 
     it('should update the updatedAt timestamp', () => {
@@ -225,7 +227,7 @@ describe('Account', () => {
       const account = anAccount({ email: 'dto@example.com' });
       const dto = account.toServerDTO();
       expect(dto.id).toBeDefined();
-      expect(dto.status).toBe(AccountStatus.ACTIVE);
+      expect(dto.status).toBe(AccountStatus.Active);
       expect(dto.profile).toBeDefined();
       expect(dto.settings).toBeDefined();
       expect(dto.email.address).toBe('dto@example.com');

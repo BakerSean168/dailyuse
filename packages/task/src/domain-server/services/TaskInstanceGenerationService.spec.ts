@@ -10,6 +10,7 @@ import { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
 import { TaskTemplate } from '../aggregates';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
+import { TaskType } from '@dailyuse/contracts/modules/task';
 import {
   aRecurringTask,
   aOneTimeTask,
@@ -62,7 +63,7 @@ describe('TaskInstanceGenerationService', () => {
       // Create a template where lastGeneratedDate is far in the future
       const farFuture = new Date(Date.now() + 200 * DAY_MS);
       const template = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
         lastGeneratedDate: farFuture,
@@ -76,7 +77,7 @@ describe('TaskInstanceGenerationService', () => {
     it('should use forceGenerate to start from today even if lastGeneratedDate exists', () => {
       const yesterday = new Date(Date.now() - DAY_MS);
       const template = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
         lastGeneratedDate: yesterday,
@@ -113,7 +114,7 @@ describe('TaskInstanceGenerationService', () => {
   describe('shouldRefillInstances', () => {
     it('should return false for non-Active templates', () => {
       const paused = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         status: TaskTemplateStatus.Paused,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
@@ -124,7 +125,7 @@ describe('TaskInstanceGenerationService', () => {
 
     it('should return false for Archived templates', () => {
       const archived = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         status: TaskTemplateStatus.Archived,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
@@ -135,7 +136,7 @@ describe('TaskInstanceGenerationService', () => {
 
     it('should return true for Active template with no lastGeneratedDate', () => {
       const template = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         status: TaskTemplateStatus.Active,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
@@ -150,7 +151,7 @@ describe('TaskInstanceGenerationService', () => {
       // lastGeneratedDate only 10 days ahead — below the 100-day threshold
       const tenDaysAhead = new Date(Date.now() + 10 * DAY_MS);
       const template = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         status: TaskTemplateStatus.Active,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),
@@ -164,7 +165,7 @@ describe('TaskInstanceGenerationService', () => {
       // lastGeneratedDate 150 days ahead — above the 100-day threshold
       const farAhead = new Date(Date.now() + 150 * DAY_MS);
       const template = aLoadedTaskTemplate({
-        taskType: 'RECURRING',
+        taskType: TaskType.Recurring,
         status: TaskTemplateStatus.Active,
         timeConfig: anAllDayTimeConfig(),
         recurrenceRule: aDailyRecurrenceRule(),

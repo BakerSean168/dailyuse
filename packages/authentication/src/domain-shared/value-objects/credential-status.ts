@@ -10,16 +10,16 @@ export type CredentialStatus = ICredentialStatus & { readonly __brand: unique sy
 /**
  * 合法值集�?- Single Source of Truth
  */
-const VALUES: ICredentialStatus[] = ['ACTIVE', 'SUSPENDED', 'EXPIRED', 'REVOKED'];
+const VALUES: ICredentialStatus[] = ['Active', 'Suspended', 'Expired', 'Revoked'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
  */
 export const CredentialStatus = {
-  ACTIVE: 'ACTIVE' as CredentialStatus,
-  SUSPENDED: 'SUSPENDED' as CredentialStatus,
-  EXPIRED: 'EXPIRED' as CredentialStatus,
-  REVOKED: 'REVOKED' as CredentialStatus,
+  Active: 'Active' as CredentialStatus,
+  Suspended: 'Suspended' as CredentialStatus,
+  Expired: 'Expired' as CredentialStatus,
+  Revoked: 'Revoked' as CredentialStatus,
 
   of(value: string): CredentialStatus {
     if (!this.isValid(value)) {
@@ -37,23 +37,23 @@ export const CredentialStatus = {
   },
 
   isActive(status: CredentialStatus): boolean {
-    return status === this.ACTIVE;
+    return status === this.Active;
   },
 
   isUsable(status: CredentialStatus): boolean {
-    return status === this.ACTIVE || status === this.SUSPENDED;
+    return status === this.Active || status === this.Suspended;
   },
 
   isSuspended(status: CredentialStatus): boolean {
-    return status === this.SUSPENDED;
+    return status === this.Suspended;
   },
 
   isExpired(status: CredentialStatus): boolean {
-    return status === this.EXPIRED;
+    return status === this.Expired;
   },
 
   isRevoked(status: CredentialStatus): boolean {
-    return status === this.REVOKED;
+    return status === this.Revoked;
   },
 
   isInvalid(status: CredentialStatus): boolean {

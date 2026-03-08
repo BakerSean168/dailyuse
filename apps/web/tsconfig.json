@@ -57,7 +57,12 @@
       "@/*": ["./src/*"],
 
       // ✅ App 层包：直接指向 source，因为 web 深度集成其 Vue 组件/composables
-      "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"]
+      "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
+      "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/notification": [
+        "../../packages/contracts/src/modules/notification/index.ts"
+      ],
+      "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"]
 
       // @dailyuse/ui-vue-shadcn 通过 package.json exports → dist 解析。
       // 不能指向 source，因其内部 @/ 别名在 web 的 tsconfig 中会错误解析。

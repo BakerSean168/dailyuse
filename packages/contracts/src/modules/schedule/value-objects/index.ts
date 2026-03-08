@@ -10,6 +10,7 @@ export { TaskPriority } from './task-priority';
 export { SourceModule } from './source-module';
 export { Timezone } from './timezone';
 export { ConflictSeverity } from './conflict-severity';
+export { ConflictSuggestionType } from './conflict-detection-result';
 
 // ============ Complex Value Objects ============
 export type {
@@ -52,4 +53,8 @@ export type {
   TaskMetadataClient,
 } from './task-metadata';
 
-export type { ConflictDetectionResult, ConflictDetail, ConflictSuggestion } from './conflict-detection-result';
+export type {
+  ConflictDetectionResult,
+  ConflictDetail,
+  ConflictSuggestion,
+} from './conflict-detection-result';

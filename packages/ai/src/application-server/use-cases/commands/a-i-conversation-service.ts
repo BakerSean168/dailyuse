@@ -8,7 +8,11 @@
 import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
 import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
 import { Message as MessageServer } from '../../../domain-server/entities/message';
-import type { AIConversationClientDTO, MessageClientDTO } from '@dailyuse/contracts/ai';
+import type {
+  AIConversationClientDTO,
+  MessageClientDTO,
+  ConversationListDTO,
+} from '@dailyuse/contracts/ai';
 import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
@@ -79,14 +83,7 @@ export class AIConversationService {
     identityId: string,
     page: number = 1,
     limit: number = 20,
-  ): Promise<{
-    conversations: AIConversationClientDTO[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-    };
-  }> {
+  ): Promise<ConversationListDTO> {
     try {
       // 获取所有对话（接口中无findRecent方法?
       const allConversations = await this.conversationRepository.findByIdentityId(identityId);

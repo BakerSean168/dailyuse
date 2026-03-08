@@ -29,7 +29,9 @@ export class ActivateTaskTemplate {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(id: string): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
+  async execute(
+    id: string,
+  ): Promise<Result<{ template: TaskTemplateClientDTO; instancesGenerated: number }>> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${id} not found`);
@@ -51,7 +53,7 @@ export class ActivateTaskTemplate {
 
     // 3. 鍙戝竷鎭㈠浜嬩欢
     try {
-      eventBus.send('task.template.resumed' as any, {
+      eventBus.send('task:template:resumed' as any, {
         taskTemplateId: template.id,
         taskTemplateTitle: template.title,
         identityId: template.identityId,
@@ -68,4 +70,3 @@ export class ActivateTaskTemplate {
     });
   }
 }
-

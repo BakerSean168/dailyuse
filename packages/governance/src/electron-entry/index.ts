@@ -15,16 +15,12 @@ import {
   RuleRevisionSqliteRepository,
   GovernanceModule,
   GovernanceContainer,
-} from '../infrastructure-server';
+} from '../infrastructure-server/sqlite';
 import { GovernanceController } from '../controllers/governance.controller';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
 import { createLogger } from '@dailyuse/utils';
 import type { Context } from '@dailyuse/contracts/shared';
-import type {
-  ListRulesQuery,
-  SearchRulesQuery,
-  GetRuleRevisionsQuery,
-} from '../contracts';
+import type { ListRulesQuery, SearchRulesQuery, GetRuleRevisionsQuery } from '../contracts';
 
 const logger = createLogger('GovernanceElectron');
 
@@ -86,9 +82,7 @@ export const GovernanceElectronModule: IElectronModule = {
       controller.searchRules(query, electronContext),
     );
 
-    ipcMain.handle(Ch.CREATE, (_event, req) =>
-      controller.createRule(req, electronContext),
-    );
+    ipcMain.handle(Ch.CREATE, (_event, req) => controller.createRule(req, electronContext));
 
     ipcMain.handle(Ch.UPDATE, (_event, payload: { ruleId: string; [key: string]: unknown }) => {
       const { ruleId, ...data } = payload;

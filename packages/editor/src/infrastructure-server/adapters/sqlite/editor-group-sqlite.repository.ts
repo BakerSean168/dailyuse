@@ -5,6 +5,7 @@
 import type Database from 'better-sqlite3';
 import { EditorGroup } from '../../../domain-server/entities/editor-group';
 import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
+import { EditorGroupSqliteMapper } from './mappers/editor-group-sqlite.mapper';
 
 export class SqliteEditorGroupRepository implements IEditorGroupRepository {
   constructor(private db: Database.Database) {}
@@ -15,7 +16,7 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     if (!row) return null;
 
-    return this.rowToGroup(row);
+    return EditorGroupSqliteMapper.toDomain(row);
   }
 
   async findBySessionId(sessionId: string): Promise<EditorGroup[]> {
@@ -24,7 +25,7 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
     );
     const rows = stmt.all(sessionId) as any[];
 
-    return rows.map((row) => this.rowToGroup(row));
+    return rows.map((row) => EditorGroupSqliteMapper.toDomain(row));
   }
 
   async findBySessionIdAndGroupIndex(
@@ -38,7 +39,7 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
 
     if (!row) return null;
 
-    return this.rowToGroup(row);
+    return EditorGroupSqliteMapper.toDomain(row);
   }
 
   async save(group: EditorGroup): Promise<void> {
@@ -100,20 +101,5 @@ export class SqliteEditorGroupRepository implements IEditorGroupRepository {
     );
     const result = stmt.get(sessionId) as { maxIndex: number | null };
     return result.maxIndex ?? -1;
-  }
-
-  private rowToGroup(row: any): EditorGroup {
-    return EditorGroup.load({
-      id: row.id,
-      sessionId: row.session_id,
-      workspaceId: row.workspace_id ?? row.workspaceId ?? row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      groupIndex: row.group_index,
-      activeTabIndex: row.active_tab_index ?? -1,
-      name: row.name ?? null,
-      tabs: [],
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    } as any);
   }
 }

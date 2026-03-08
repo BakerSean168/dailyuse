@@ -167,12 +167,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
+import { KeyResultId } from '@dailyuse/goal/domain-shared';
 import { useGoal } from '../composables/useGoal';
 
 const route = useRoute();
 const { t, locale } = useI18n();
 const goalId = (route.params.goalId as string) || (route.params.id as string);
-const krId = (route.params.krId as string) || (route.params.keyResultId as string);
+const krId = KeyResultId.of((route.params.krId as string) || (route.params.keyResultId as string));
 
 const {
   keyResults,

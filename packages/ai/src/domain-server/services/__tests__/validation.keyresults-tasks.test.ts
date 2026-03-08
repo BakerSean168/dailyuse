@@ -8,12 +8,12 @@ describe('AIGenerationValidationService.validateKeyResultsOutput', () => {
   function makeKR(overrides: Partial<any> = {}) {
     return {
       title: 'Improve Quality',
-      valueType: 'INCREMENTAL',
+      valueType: 'Incremental',
       targetValue: 10,
       currentValue: 0,
       unit: 'bugs',
       weight: 50,
-      aggregationMethod: 'LAST',
+      aggregationMethod: 'Last',
       ...overrides,
     };
   }
@@ -54,7 +54,7 @@ describe('AIGenerationValidationService.validateTasksOutput', () => {
       title: 'Research requirements',
       description: 'A'.repeat(60),
       estimatedHours: 8,
-      priority: 'HIGH',
+      priority: 'High',
       dependencies: [],
       ...overrides,
     };

@@ -5,11 +5,12 @@
 import type Database from 'better-sqlite3';
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import { Message } from '../../../domain-server/entities/message';
-import type { IAIConversationRepository, AIConversationQueryOptions } from '../../../domain-server/repositories/IAIConversationRepository';
+import type {
+  IAIConversationRepository,
+  AIConversationQueryOptions,
+} from '../../../domain-server/repositories/IAIConversationRepository';
 import type { ConversationStatus } from '@dailyuse/contracts/ai';
-import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
-import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
-import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { AiConversationSqliteMapper } from './mappers/ai-conversation-sqlite.mapper';
 
 export class SqliteAIConversationRepository implements IAIConversationRepository {
   constructor(private db: Database.Database) {}
@@ -62,7 +63,9 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
               String(message.conversationId),
               message.role,
               message.content,
-              message.tokenCount != null ? JSON.stringify({ totalTokens: message.tokenCount }) : null,
+              message.tokenCount != null
+                ? JSON.stringify({ totalTokens: message.tokenCount })
+                : null,
               message.createdAt,
             );
           }
@@ -75,11 +78,13 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
 
   async findById(id: string, options?: AIConversationQueryOptions): Promise<AIConversation | null> {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_conversations
         WHERE id = ? AND deleted_at IS NULL
         LIMIT 1
-      `)
+      `,
+      )
       .get(id) as any;
 
     if (!row) {
@@ -87,21 +92,26 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     }
 
     const messages = options?.includeChildren ? this.loadMessages(row.id) : [];
-    return this.toDomain(row, messages);
+    return AiConversationSqliteMapper.toDomain(row, messages);
   }
 
-  async findByIdentityId(identityId: string, options?: AIConversationQueryOptions): Promise<AIConversation[]> {
+  async findByIdentityId(
+    identityId: string,
+    options?: AIConversationQueryOptions,
+  ): Promise<AIConversation[]> {
     const rows = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_conversations
         WHERE identity_id = ? AND deleted_at IS NULL
         ORDER BY updated_at DESC
-      `)
+      `,
+      )
       .all(identityId) as any[];
 
     return rows.map((row) => {
       const messages = options?.includeChildren ? this.loadMessages(row.id) : [];
-      return this.toDomain(row, messages);
+      return AiConversationSqliteMapper.toDomain(row, messages);
     });
   }
 
@@ -111,40 +121,46 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
     options?: AIConversationQueryOptions,
   ): Promise<AIConversation[]> {
     const rows = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_conversations
         WHERE identity_id = ? AND status = ? AND deleted_at IS NULL
         ORDER BY updated_at DESC
-      `)
+      `,
+      )
       .all(identityId, status) as any[];
 
     return rows.map((row) => {
       const messages = options?.includeChildren ? this.loadMessages(row.id) : [];
-      return this.toDomain(row, messages);
+      return AiConversationSqliteMapper.toDomain(row, messages);
     });
   }
 
   async delete(id: string): Promise<void> {
     this.db
-      .prepare(`
+      .prepare(
+        `
         UPDATE ai_conversations
         SET status = ?, deleted_at = ?, updated_at = ?
         WHERE id = ?
-      `)
+      `,
+      )
       .run('Archived', Date.now(), Date.now(), id);
   }
 
   async findRecent(identityId: string, limit: number, offset?: number): Promise<AIConversation[]> {
     const rows = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_conversations
         WHERE identity_id = ? AND deleted_at IS NULL
         ORDER BY COALESCE(last_message_at, updated_at) DESC
         LIMIT ? OFFSET ?
-      `)
+      `,
+      )
       .all(identityId, Math.max(1, limit), Math.max(0, offset ?? 0)) as any[];
 
-    return rows.map((row) => this.toDomain(row, []));
+    return rows.map((row) => AiConversationSqliteMapper.toDomain(row, []));
   }
 
   async exists(id: string): Promise<boolean> {
@@ -157,51 +173,15 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
 
   private loadMessages(conversationId: string): Message[] {
     const rows = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT * FROM ai_messages
         WHERE conversation_id = ?
         ORDER BY created_at ASC
-      `)
+      `,
+      )
       .all(conversationId) as any[];
 
-    return rows.map((row) => {
-      let tokenCount: number | null = null;
-      if (row.token_usage) {
-        try {
-          const parsed = JSON.parse(row.token_usage);
-          tokenCount = typeof parsed?.totalTokens === 'number' ? parsed.totalTokens : null;
-        } catch {
-          tokenCount = null;
-        }
-      }
-
-      return Message.load({
-        id: AiMessageId.of(row.id),
-        conversationId: AiConversationId.of(row.conversation_id),
-        role: row.role,
-        content: row.content,
-        tokenCount,
-        version: 1,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.created_at),
-        deletedAt: null,
-      });
-    });
-  }
-
-  private toDomain(row: any, messages: Message[]): AIConversation {
-    return AIConversation.load({
-      id: AiConversationId.of(row.id),
-      identityId: IdentityId.of(row.identity_id),
-      name: row.name,
-      status: row.status,
-      messageCount: row.message_count ?? 0,
-      lastMessageAt: row.last_message_at ? new Date(row.last_message_at) : null,
-      version: row.version ?? 1,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-      deletedAt: row.deleted_at ? new Date(row.deleted_at) : null,
-      messages,
-    });
+    return rows.map((row) => AiConversationSqliteMapper.toMessageDomain(row));
   }
 }

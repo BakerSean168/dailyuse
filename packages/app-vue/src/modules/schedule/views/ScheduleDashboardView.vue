@@ -185,7 +185,8 @@ function handleDayClick(date: Date) {
   dayDetailOpen.value = true;
 }
 
-function switchToDayView(date: Date) {
+function switchToDayView(date: Date | null) {
+  if (!date) return;
   dayDetailOpen.value = false;
   activeView.value = 'day';
 }

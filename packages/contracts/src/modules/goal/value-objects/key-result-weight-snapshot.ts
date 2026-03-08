@@ -22,10 +22,10 @@ import type {
  * 权重快照触发方式
  */
 export const SnapshotTrigger = {
-  MANUAL: 'manual', // 用户手动调整
-  AUTO: 'auto', // 系统自动调整
-  RESTORE: 'restore', // 恢复历史快照
-  IMPORT: 'import', // 从外部导入
+  Manual: 'Manual', // 用户手动调整
+  Auto: 'Auto', // 系统自动调整
+  Restore: 'Restore', // 恢复历史快照
+  Import: 'Import', // 从外部导入
 } as const;
 
 export type SnapshotTrigger = (typeof SnapshotTrigger)[keyof typeof SnapshotTrigger];

@@ -1,6 +1,6 @@
 /**
  * ExternalLink 值对象
- * 
+ *
  * 外部链接：URL、标题、来源、快照
  * 不可变性（所有修改返回新实例）
  */
@@ -11,19 +11,18 @@ import type {
   ExternalLinkDTO,
 } from '@dailyuse/contracts/repository';
 
-type LinkSource = 'YOUTUBE' | 'ARTICLE' | 'OTHER';
+type LinkSource = 'Youtube' | 'Article' | 'Other';
 
 /**
  * ExternalLink 值对象实现
  */
 export class ExternalLink extends ValueObject<ExternalLinkDTO> implements IExternalLink {
-
   private constructor(props: ExternalLinkDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
-  
+
   public static create(props: ExternalLinkDTO): ExternalLink {
     this.validate(props);
     return new ExternalLink(props);
@@ -32,7 +31,7 @@ export class ExternalLink extends ValueObject<ExternalLinkDTO> implements IExter
   public static of(
     url: string,
     title: string,
-    source: LinkSource = 'OTHER',
+    source: LinkSource = 'Other',
     snapshotUrl?: string,
   ): ExternalLink {
     return ExternalLink.create({ url, title, source, snapshotUrl });
@@ -43,7 +42,7 @@ export class ExternalLink extends ValueObject<ExternalLinkDTO> implements IExter
   }
 
   // ================= 校验 =================
-  
+
   private static validate(props: ExternalLinkDTO): void {
     if (!props.url || props.url.trim().length === 0) {
       throw new Error('URL is required');
@@ -84,11 +83,11 @@ export class ExternalLink extends ValueObject<ExternalLinkDTO> implements IExter
   // ================= 计算属性 =================
 
   public get isYouTube(): boolean {
-    return this.props.source === 'YOUTUBE';
+    return this.props.source === 'Youtube';
   }
 
   public get isArticle(): boolean {
-    return this.props.source === 'ARTICLE';
+    return this.props.source === 'Article';
   }
 
   public get hasSnapshot(): boolean {

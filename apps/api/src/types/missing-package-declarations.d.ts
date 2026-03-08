@@ -25,3 +25,8 @@ declare module '@dailyuse/schedule/api' {
   import type { IApiModule } from '@/shared/contracts/api-module';
   export const ScheduleApiModule: IApiModule;
 }
+
+declare module '@dailyuse/ai/api' {
+  import type { IApiModule } from '@/shared/contracts/api-module';
+  export const AIApiModule: IApiModule;
+}

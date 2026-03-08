@@ -1,5 +1,5 @@
 export const IdentifierType = {
-  EMAIL: 'EMAIL',
-  PHONE: 'PHONE',
+  Email: 'Email',
+  Phone: 'Phone',
 } as const;
 export type IdentifierType = (typeof IdentifierType)[keyof typeof IdentifierType];

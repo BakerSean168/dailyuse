@@ -8,7 +8,6 @@ import type {
 } from '../domain-server';
 
 import { AIGenerationValidationService } from '../domain-server/services/AIGenerationValidationService';
-import { AIAdapterFactory } from './adapters/a-i-adapter-factory';
 import { AIRepositoryFactory } from './di';
 import { AIContainer } from './di/ai-container';
 
@@ -25,7 +24,9 @@ import {
   AIProviderConfigService,
   AIGenerationApplicationService,
   AIChatApplicationService,
+  GoalGenerationApplicationService,
 } from '../application-server/use-cases';
+import { QuotaEnforcementService } from '../domain-server/services/QuotaEnforcementService';
 
 type BetterSQLiteDB = Database.Database;
 
@@ -47,11 +48,9 @@ export class AIModule {
   public readonly providerConfigService: AIProviderConfigService;
   public readonly generationService: AIGenerationApplicationService;
   public readonly chatService: AIChatApplicationService;
+  public readonly goalGenerationService: GoalGenerationApplicationService;
 
-  constructor(
-    dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | BetterSQLiteDB,
-  ) {
+  constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
     // 1. Initialize Repositories using Factory
     const repositories = AIRepositoryFactory.create(dataSourceType, dbConnection);
     const container = AIContainer.getInstance();
@@ -79,25 +78,30 @@ export class AIModule {
     );
     this.getQuota = new GetQuota(this.usageQuotaRepository);
     this.conversationService = new AIConversationService(this.conversationRepository);
-    this.providerConfigService = new AIProviderConfigService(
-      this.providerConfigRepository,
-      (config: any) => AIAdapterFactory.createFromConfig(config),
-    );
+    this.providerConfigService = new AIProviderConfigService(this.providerConfigRepository);
 
     const validationService = new AIGenerationValidationService();
-    const defaultAdapter = AIAdapterFactory.getDefaultAdapter();
-    const quotaEnforcementService = { enforceQuota: async () => ({ allowed: true, remaining: 1000 }) } as any;
+    const quotaEnforcementService = new QuotaEnforcementService(this.usageQuotaRepository);
 
     this.generationService = new AIGenerationApplicationService(
       validationService,
       this.conversationRepository,
       this.usageQuotaRepository,
       quotaEnforcementService,
-      defaultAdapter,
       this.providerConfigRepository,
       this.generationTaskRepository,
     );
 
-    this.chatService = new AIChatApplicationService(this.conversationRepository, defaultAdapter);
+    this.goalGenerationService = new GoalGenerationApplicationService(
+      validationService,
+      this.providerConfigRepository,
+      this.usageQuotaRepository,
+      quotaEnforcementService,
+    );
+
+    this.chatService = new AIChatApplicationService(
+      this.conversationRepository,
+      this.providerConfigRepository,
+    );
   }
 }

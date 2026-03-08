@@ -35,9 +35,17 @@
       "types": "./dist/infrastructure-server/index.d.ts",
       "import": "./dist/infrastructure-server/index.js"
     },
+    "./infrastructure-server/sqlite": {
+      "types": "./dist/infrastructure-server/sqlite.d.ts",
+      "import": "./dist/infrastructure-server/sqlite.js"
+    },
     "./infrastructure-client": {
       "types": "./dist/infrastructure-client/index.d.ts",
       "import": "./dist/infrastructure-client/index.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
     },
     "./electron-entry": {
       "types": "./dist/electron-entry/index.d.ts",
@@ -50,17 +58,17 @@
   },
   "scripts": {},
   "dependencies": {
-    "@ai-sdk/openai": "^1.0.0",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
     "@dailyuse/utils": "workspace:*",
-    "ai": "^4.0.0",
     "better-sqlite3": "^12.5.0",
+    "express": "^5.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "7.6.13"
+    "@types/better-sqlite3": "7.6.13",
+    "@types/express": "^5.0.0"
   }
 }

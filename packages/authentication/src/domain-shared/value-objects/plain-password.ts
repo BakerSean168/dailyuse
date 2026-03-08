@@ -1,5 +1,8 @@
 import { ValueObject } from '@dailyuse/utils';
-import type { PlainPasswordDTO, PlainPassword as IPlainPassword } from '@dailyuse/contracts/authentication';
+import type {
+  PlainPasswordDTO,
+  PlainPassword as IPlainPassword,
+} from '@dailyuse/contracts/authentication';
 
 /**
  * 🔐 明文密码值对�?
@@ -16,7 +19,6 @@ import type { PlainPasswordDTO, PlainPassword as IPlainPassword } from '@dailyus
  * - 在完成哈希后立即被垃圾回�?
  */
 export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPlainPassword {
-
   private constructor(props: PlainPasswordDTO) {
     super(props);
   }
@@ -24,9 +26,9 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
   // ================= 工厂方法 1: 标准创建 =================
   /**
    * 创建新的明文密码值对象（包含校验�?
-   * 
+   *
    * @throws 当密码不符合安全要求�?
-   * 
+   *
    * ⚠️ 此方法应该在 Server 端也有一份实现，进行二次校验
    */
   public static create(props: PlainPasswordDTO): PlainPassword {
@@ -37,7 +39,7 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
   // ================= 内部逻辑 =================
   /**
    * 集中校验逻辑 - 密码强度校验
-   * 
+   *
    * 校验规则�?
    * 1. 最小长度：8 个字�?
    * 2. 最大长度：128 个字�?
@@ -69,12 +71,16 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
     const hasDigit = /\d/.test(password);
     const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
 
-    const complexityCount = [hasUpperCase, hasLowerCase, hasDigit, hasSpecialChar].filter(Boolean).length;
+    const complexityCount = [hasUpperCase, hasLowerCase, hasDigit, hasSpecialChar].filter(
+      Boolean,
+    ).length;
 
     // 至少包含 2 种复杂度（可选，根据业务调整�?
     // 如果要求更强的密码，可以改为 complexityCount < 3
     if (complexityCount < 2) {
-      throw new Error('Password must contain at least 2 of: uppercase, lowercase, digit, special character');
+      throw new Error(
+        'Password must contain at least 2 of: uppercase, lowercase, digit, special character',
+      );
     }
   }
 
@@ -87,9 +93,9 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
 
   /**
    * 计算密码强度等级
-   * @returns 'WEAK' | 'FAIR' | 'GOOD' | 'STRONG'
+   * @returns 'Weak' | 'Fair' | 'Good' | 'Strong'
    */
-  public getStrength(): 'WEAK' | 'FAIR' | 'GOOD' | 'STRONG' {
+  public getStrength(): 'Weak' | 'Fair' | 'Good' | 'Strong' {
     const password = this.props.value;
     let score = 0;
 
@@ -105,10 +111,10 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
     if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 1;
 
     // 映射到强度等�?
-    if (score <= 2) return 'WEAK';
-    if (score <= 4) return 'FAIR';
-    if (score <= 6) return 'GOOD';
-    return 'STRONG';
+    if (score <= 2) return 'Weak';
+    if (score <= 4) return 'Fair';
+    if (score <= 6) return 'Good';
+    return 'Strong';
   }
 
   /**
@@ -118,10 +124,10 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
   public getStrengthPercentage(): number {
     const strength = this.getStrength();
     const map: Record<typeof strength, number> = {
-      'WEAK': 25,
-      'FAIR': 50,
-      'GOOD': 75,
-      'STRONG': 100
+      Weak: 25,
+      Fair: 50,
+      Good: 75,
+      Strong: 100,
     };
     return map[strength];
   }
@@ -132,7 +138,7 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
    */
   public hasCommonPatterns(): boolean {
     const password = this.props.value.toLowerCase();
-    
+
     // 常见弱模�?
     const commonPatterns = [
       'password',
@@ -142,16 +148,16 @@ export class PlainPassword extends ValueObject<PlainPasswordDTO> implements IPla
       'admin',
       'letmein',
       '111111',
-      '000000'
+      '000000',
     ];
 
-    return commonPatterns.some(pattern => password.includes(pattern));
+    return commonPatterns.some((pattern) => password.includes(pattern));
   }
 
   // ================= 序列�?=================
   /**
    * ⚠️ 转换�?DTO
-   * 
+   *
    * 警告：此方法应该极少被调�?
    * 密码不应该被序列化到客户端或存储�?
    * 如果必须传输，必须：

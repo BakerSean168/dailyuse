@@ -2,9 +2,9 @@
  * 外部链接对象
  */
 export const ExternalLinkSource = {
-  Youtube: 'YOUTUBE',
-  Article: 'ARTICLE',
-  Other: 'OTHER',
+  Youtube: 'Youtube',
+  Article: 'Article',
+  Other: 'Other',
 } as const;
 
 export type ExternalLinkSource = (typeof ExternalLinkSource)[keyof typeof ExternalLinkSource];

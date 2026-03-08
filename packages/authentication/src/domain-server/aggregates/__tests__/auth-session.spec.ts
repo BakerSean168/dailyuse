@@ -26,7 +26,7 @@ function buildSessionState(overrides: Partial<AuthSessionState> = {}): AuthSessi
     identityId: IdentityId.generate(),
     deviceInfo: DeviceInfo.createDefault('test-device-001'),
     refreshTokenHash: 'hashed-refresh-token',
-    status: SessionStatus.ACTIVE,
+    status: SessionStatus.Active,
     createdAt: now,
     expiresAt: new Date(now.getTime() + REFRESH_TOKEN_DURATION_MS),
     lastActiveAt: now,
@@ -74,7 +74,7 @@ describe('AuthSession', () => {
 
       expect(session.id).toBe(sessionId);
       expect(session.identityId).toBe(identityId);
-      expect(session.status).toBe('ACTIVE');
+      expect(session.status).toBe('Active');
       expect(session.isRevoked).toBe(false);
       expect(session.refreshTokenHash).toBe('hash-abc');
     });
@@ -110,7 +110,7 @@ describe('AuthSession', () => {
 
       expect(session).toBeDefined();
       expect(session.identityId).toBe(identityId);
-      expect(session.status).toBe('ACTIVE');
+      expect(session.status).toBe('Active');
       expect(tokens.accessToken).toBe('mock-access-token');
       expect(tokens.refreshToken).toBe('mock-refresh-token');
       expect(tokenProvider.generateAuthTokens).toHaveBeenCalled();
@@ -131,11 +131,11 @@ describe('AuthSession', () => {
 
     it('should restore a revoked session', () => {
       const session = AuthSession.load(
-        buildSessionState({ isRevoked: true, status: SessionStatus.REVOKED }),
+        buildSessionState({ isRevoked: true, status: SessionStatus.Revoked }),
       );
 
       expect(session.isRevoked).toBe(true);
-      expect(session.status).toBe('REVOKED');
+      expect(session.status).toBe('Revoked');
     });
   });
 
@@ -158,7 +158,7 @@ describe('AuthSession', () => {
     });
 
     it('should return false for non-active status', () => {
-      const session = buildActiveSession({ status: SessionStatus.EXPIRED });
+      const session = buildActiveSession({ status: SessionStatus.Expired });
       expect(session.isValid()).toBe(false);
     });
   });
@@ -183,7 +183,7 @@ describe('AuthSession', () => {
       session.revoke();
 
       expect(session.isRevoked).toBe(true);
-      expect(session.status).toBe('REVOKED');
+      expect(session.status).toBe('Revoked');
     });
 
     it('should emit session-revoked domain event', () => {
@@ -206,17 +206,17 @@ describe('AuthSession', () => {
   });
 
   describe('markExpired', () => {
-    it('should mark session status as EXPIRED', () => {
+    it('should mark session status as Expired', () => {
       const session = buildActiveSession();
       session.markExpired();
-      expect(session.status).toBe('EXPIRED');
+      expect(session.status).toBe('Expired');
     });
 
     it('should be idempotent', () => {
       const session = buildActiveSession();
       session.markExpired();
       session.markExpired(); // no throw
-      expect(session.status).toBe('EXPIRED');
+      expect(session.status).toBe('Expired');
     });
   });
 
@@ -321,7 +321,7 @@ describe('AuthSession', () => {
 
       expect(dto.id).toBe(session.id);
       expect(dto.identityId).toBe(session.identityId);
-      expect(dto.status).toBe('ACTIVE');
+      expect(dto.status).toBe('Active');
       expect(dto.isRevoked).toBe(false);
       expect(dto.refreshTokenHash).toBeDefined();
       expect(typeof dto.createdAt).toBe('number');

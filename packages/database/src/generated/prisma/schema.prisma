@@ -262,33 +262,14 @@ model DashboardConfig {
 // 认证聚合根、标识符、绑定、凭证、会话
 // ==========================================
 
-// 1. 使用枚举保持与领域层 Value Object 一致
-enum AuthIdentityStatus {
-  ACTIVE // 正常
-  LOCKED // 多次尝试失败锁定
-  DISABLED // 管理员禁用
-  UNVERIFIED // 未验证
-}
-
-enum CredentialType {
-  PASSWORD
-  MAGIC_LINK
-  // PASSKEY // 未来扩展
-}
-
-enum CredentialStatus {
-  ACTIVE
-  SUSPENDED
-  EXPIRED
-  REVOKED // 如：用户重置了密码导致旧凭证失效
-}
+// 1. 取消 Prisma 枚举，统一存储大驼峰字符串
 
 // ==========================================
 // 1. 身份聚合根表 (AuthIdentity)
 // ==========================================
 model AuthIdentity {
-  id     String             @id @default(uuid())
-  status AuthIdentityStatus @default(UNVERIFIED)
+  id     String @id @default(uuid())
+  status String @default("Unverified")
 
   // 安全风控字段 (对应聚合根内部状态)
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
@@ -367,8 +348,8 @@ model AuthCredential {
   identity   AuthIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // 核心字段
-  type   CredentialType
-  status CredentialStatus @default(ACTIVE)
+  type   String
+  status String @default("Active")
 
   // [Type: PASSWORD]
   passwordHash          String?   @map("password_hash") // Argon2 hash

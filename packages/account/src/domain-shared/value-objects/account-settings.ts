@@ -1,10 +1,13 @@
 import { ValueObject } from '@dailyuse/utils';
-import type { AccountSettingsDTO, AccountSettingsPersistenceDTO, AccountSettings as IAccountSettings } from '@dailyuse/contracts/account';
+import type {
+  AccountSettingsDTO,
+  AccountSettingsPersistenceDTO,
+  AccountSettings as IAccountSettings,
+} from '@dailyuse/contracts/account';
 import { ThemeType } from './theme-type';
 import { LanguageCode } from './language-code';
 
 export class AccountSettings extends ValueObject<AccountSettingsDTO> implements IAccountSettings {
-
   private constructor(props: AccountSettingsDTO) {
     super(props);
   }
@@ -16,7 +19,7 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
 
   public static createDefault(): AccountSettings {
     return new AccountSettings({
-      theme: ThemeType.SYSTEM,
+      theme: ThemeType.System,
       language: LanguageCode.ZH_CN,
       timezone: 'Asia/Shanghai',
       notificationEnabled: true,
@@ -66,14 +69,28 @@ export class AccountSettings extends ValueObject<AccountSettingsDTO> implements 
     return new AccountSettings({ ...this.props, notificationEnabled: false });
   }
 
-  public isDarkTheme(): boolean { return this.props.theme === ThemeType.DARK; }
-  public isLightTheme(): boolean { return this.props.theme === ThemeType.LIGHT; }
-  public isSystemTheme(): boolean { return this.props.theme === ThemeType.SYSTEM; }
+  public isDarkTheme(): boolean {
+    return this.props.theme === ThemeType.Dark;
+  }
+  public isLightTheme(): boolean {
+    return this.props.theme === ThemeType.Light;
+  }
+  public isSystemTheme(): boolean {
+    return this.props.theme === ThemeType.System;
+  }
 
-  get theme(): ThemeType { return ThemeType.of(this.props.theme); }
-  get language(): LanguageCode { return LanguageCode.of(this.props.language); }
-  get timezone(): string { return this.props.timezone; }
-  get notificationEnabled(): boolean { return this.props.notificationEnabled; }
+  get theme(): ThemeType {
+    return ThemeType.of(this.props.theme);
+  }
+  get language(): LanguageCode {
+    return LanguageCode.of(this.props.language);
+  }
+  get timezone(): string {
+    return this.props.timezone;
+  }
+  get notificationEnabled(): boolean {
+    return this.props.notificationEnabled;
+  }
 
   public static fromPersistenceDTO(dto: AccountSettingsPersistenceDTO): AccountSettings {
     return new AccountSettings({

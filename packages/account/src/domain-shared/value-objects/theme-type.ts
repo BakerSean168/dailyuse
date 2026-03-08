@@ -2,12 +2,12 @@ import type { ThemeType as IThemeType } from '@dailyuse/contracts/account';
 
 export type ThemeType = IThemeType & { readonly __brand: unique symbol };
 
-const VALUES: IThemeType[] = ['LIGHT', 'DARK', 'SYSTEM'];
+const VALUES: IThemeType[] = ['Light', 'Dark', 'System'];
 
 export const ThemeType = {
-  LIGHT: 'LIGHT' as ThemeType,
-  DARK: 'DARK' as ThemeType,
-  SYSTEM: 'SYSTEM' as ThemeType,
+  Light: 'Light' as ThemeType,
+  Dark: 'Dark' as ThemeType,
+  System: 'System' as ThemeType,
 
   of(value: string): ThemeType {
     if (!this.isValid(value)) {
@@ -24,16 +24,26 @@ export const ThemeType = {
     return VALUES as ThemeType[];
   },
 
-  isLight(theme: ThemeType): boolean { return theme === this.LIGHT; },
-  isDark(theme: ThemeType): boolean { return theme === this.DARK; },
-  isSystem(theme: ThemeType): boolean { return theme === this.SYSTEM; },
+  isLight(theme: ThemeType): boolean {
+    return theme === this.Light;
+  },
+  isDark(theme: ThemeType): boolean {
+    return theme === this.Dark;
+  },
+  isSystem(theme: ThemeType): boolean {
+    return theme === this.System;
+  },
 
   shouldUseDarkMode(theme: ThemeType, systemPrefersDark = false): boolean {
     switch (theme) {
-      case this.LIGHT: return false;
-      case this.DARK: return true;
-      case this.SYSTEM: return systemPrefersDark;
-      default: return false;
+      case this.Light:
+        return false;
+      case this.Dark:
+        return true;
+      case this.System:
+        return systemPrefersDark;
+      default:
+        return false;
     }
   },
 };

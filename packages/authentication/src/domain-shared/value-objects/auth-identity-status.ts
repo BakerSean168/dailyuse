@@ -10,7 +10,7 @@ export type AuthIdentityStatus = IAuthIdentityStatus & { readonly __brand: uniqu
 /**
  * 合法值集�?- Single Source of Truth
  */
-const VALUES: IAuthIdentityStatus[] = ["ACTIVE", "LOCKED", "DISABLED", "UNVERIFIED"];
+const VALUES: IAuthIdentityStatus[] = ['Active', 'Locked', 'Disabled', 'Unverified'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
@@ -18,10 +18,10 @@ const VALUES: IAuthIdentityStatus[] = ["ACTIVE", "LOCKED", "DISABLED", "UNVERIFI
 export const AuthIdentityStatus = {
   // ================= 常量定义 =================
 
-  ACTIVE: 'ACTIVE' as AuthIdentityStatus,
-  LOCKED: 'LOCKED' as AuthIdentityStatus,
-  DISABLED: 'DISABLED' as AuthIdentityStatus,
-  UNVERIFIED: 'UNVERIFIED' as AuthIdentityStatus,
+  Active: 'Active' as AuthIdentityStatus,
+  Locked: 'Locked' as AuthIdentityStatus,
+  Disabled: 'Disabled' as AuthIdentityStatus,
+  Unverified: 'Unverified' as AuthIdentityStatus,
 
   // ================= 工厂方法 =================
 
@@ -45,35 +45,34 @@ export const AuthIdentityStatus = {
   // ================= 行为方法 (State Logic) =================
 
   isVerified(status: AuthIdentityStatus): boolean {
-    return status === this.ACTIVE;
+    return status === this.Active;
   },
 
   isUnverified(status: AuthIdentityStatus): boolean {
-    return status === this.UNVERIFIED;
+    return status === this.Unverified;
   },
 
   isDisabled(status: AuthIdentityStatus): boolean {
-    return status === this.DISABLED;
+    return status === this.Disabled;
   },
 
   isLocked(status: AuthIdentityStatus): boolean {
-    return status === this.LOCKED;
+    return status === this.Locked;
   },
 
   isActive(status: AuthIdentityStatus): boolean {
-    return status === this.ACTIVE;
+    return status === this.Active;
   },
 
   isInactive(status: AuthIdentityStatus): boolean {
-    return status === this.UNVERIFIED || status === this.DISABLED || status === this.LOCKED;
+    return status === this.Unverified || status === this.Disabled || status === this.Locked;
   },
 
   requiresUserAction(status: AuthIdentityStatus): boolean {
-    return status === this.UNVERIFIED;
+    return status === this.Unverified;
   },
 
   requiresAdminAction(status: AuthIdentityStatus): boolean {
-    return status === this.LOCKED || status === this.DISABLED;
+    return status === this.Locked || status === this.Disabled;
   },
-
 };

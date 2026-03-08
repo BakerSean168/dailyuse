@@ -72,7 +72,7 @@ import TaskTemplateManagement from '../components/TaskTemplateManagement.vue';
 import TaskTemplateDialog from '../components/dialogs/TaskTemplateDialog.vue';
 import { useTask } from '../composables/useTask';
 import type { TaskTemplateViewModel } from '../components/types';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { TaskType, type TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -159,14 +159,12 @@ function handleCreate() {
 }
 
 async function handleSaveCreate(template: TaskTemplateViewModel) {
-  const taskType: 'ONE_TIME' | 'RECURRING' = template.recurrenceRule ? 'RECURRING' : 'ONE_TIME';
   const result = await createTemplate({
     name: template.title,
     description: template.description ?? null,
-    taskType,
+    taskType: template.recurrenceRule ? TaskType.Recurring : TaskType.OneTime,
     timeConfig: template.timeConfig as any,
     recurrenceRule: template.recurrenceRule ?? null,
-    reminderConfig: template.reminderConfig ?? null,
     importance: (template.importance as any) ?? 'Moderate',
     tags: template.tags ?? [],
     folderId: (template.folderId as any) ?? null,
@@ -191,14 +189,11 @@ function handleEdit(templateId: string) {
 }
 
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
-  const taskType: 'ONE_TIME' | 'RECURRING' = vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME';
   const result = await updateTemplate(vm.id, {
     name: vm.title,
     description: vm.description ?? null,
-    taskType,
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
-    reminderConfig: vm.reminderConfig ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
     folderId: (vm.folderId as any) ?? null,

@@ -7,6 +7,7 @@ export default mergeConfig(
     projectRoot: __dirname,
     environment: 'node',
     aliases: {
+      '@dailyuse/domain-server': '../../packages/domain-server/src',
       '@dailyuse/domain-shared': '../../packages/domain-shared/src',
       '@dailyuse/database': '../../packages/database/src',
     },

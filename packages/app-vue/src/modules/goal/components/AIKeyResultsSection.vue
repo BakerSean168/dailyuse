@@ -115,7 +115,7 @@ import { Separator } from '@dailyuse/ui-vue-shadcn';
 import AIGenerateKRButton from './AIGenerateKRButton.vue';
 import KRPreviewList from './KRPreviewList.vue';
 
-interface KeyResultData {
+export interface KeyResultData {
   id?: KeyResultClientDTO['id'];
   title: string;
   description?: string;

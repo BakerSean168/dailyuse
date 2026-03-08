@@ -97,8 +97,8 @@ describe('LogoutService', () => {
 
     it('should throw NotLoggedInError when identity is not active', async () => {
       const identity = await buildIdentity();
-      // Identity is UNVERIFIED by default, isLoggedIn() checks isActive(status)
-      // UNVERIFIED is not ACTIVE, so isLoggedIn() returns false
+      // Identity is Unverified by default, isLoggedIn() checks isActive(status)
+      // Unverified is not Active, so isLoggedIn() returns false
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
 
       const ctx = createContext(identity.id);
@@ -159,7 +159,7 @@ describe('LogoutService', () => {
 
     it('should not persist when identity is not logged in', async () => {
       const identity = await buildIdentity();
-      // identity status is UNVERIFIED => isLoggedIn() returns false
+      // identity status is Unverified => isLoggedIn() returns false
       (identityRepo.findById as ReturnType<typeof vi.fn>).mockResolvedValue(identity);
 
       const ctx = createContext(identity.id);

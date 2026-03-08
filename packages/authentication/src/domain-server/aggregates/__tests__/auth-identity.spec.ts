@@ -1,6 +1,6 @@
 /**
  * AuthIdentity Aggregate Root Tests
- * 
+ *
  * Tests for the refactored AuthIdentity with:
  * - identifiers (EmailIdentifier, PhoneIdentifier)
  * - oauthBindings (OAuthBinding)
@@ -25,7 +25,6 @@ const MOCK_HASH = '$argon2id$v=19$m=65536,t=3,p=4$bW9ja3NhbHQ$bW9ja2hhc2h2YWx1ZQ
 const mockHasher: IPasswordHasher = {
   hash: vi.fn().mockResolvedValue(MOCK_HASH),
   compare: vi.fn().mockResolvedValue(true),
-  algorithm: 'ARGON2' as any,
 };
 
 describe('AuthIdentity', () => {
@@ -38,17 +37,17 @@ describe('AuthIdentity', () => {
       });
 
       expect(identity.id).toBeDefined();
-      expect(identity.status).toBe('UNVERIFIED');
-      
+      expect(identity.status).toBe('Unverified');
+
       // Email should be in identifiers
       expect(identity.identifiers).toHaveLength(1);
-      expect(identity.identifiers[0].type).toBe('EMAIL');
+      expect(identity.identifiers[0].type).toBe('Email');
       expect(identity.identifiers[0].value).toBe('test@example.com');
       expect(identity.identifiers[0].isVerified).toBe(false);
 
       // Password should be in credentials
       expect(identity.credentials).toHaveLength(1);
-      expect(identity.credentials[0].type).toBe('PASSWORD');
+      expect(identity.credentials[0].type).toBe('Password');
 
       // OAuth bindings should be empty
       expect(identity.oauthBindings).toHaveLength(0);
@@ -70,7 +69,7 @@ describe('AuthIdentity', () => {
       const events = identity.domainEvents;
       expect(events.length).toBeGreaterThan(0);
       expect(events[0].eventType).toBe('auth:identity-created');
-      expect((events[0].payload as any).createMethod).toBe('EMAIL');
+      expect((events[0].payload as any).createMethod).toBe('Email');
       expect((events[0].payload as any).email).toBe('test@example.com');
     });
   });
@@ -78,14 +77,14 @@ describe('AuthIdentity', () => {
   describe('createWithOAuth', () => {
     it('should create identity with OAuth binding', () => {
       const identity = AuthIdentity.createWithOAuth({
-        provider: 'GOOGLE' as any,
+        provider: 'Google' as any,
         sub: 'google-user-123',
       });
 
       expect(identity.id).toBeDefined();
       expect(identity.identifiers).toHaveLength(0);
       expect(identity.oauthBindings).toHaveLength(1);
-      expect(identity.oauthBindings[0].provider).toBe('GOOGLE');
+      expect(identity.oauthBindings[0].provider).toBe('Google');
       expect(identity.oauthBindings[0].providerSubjectId).toBe('google-user-123');
       expect(identity.credentials).toHaveLength(0);
       expect(identity.hasOAuth()).toBe(true);
@@ -194,22 +193,24 @@ describe('AuthIdentity', () => {
       const dto = original.toServerDTO();
 
       // Reconstruct domain objects from DTO (same as mapper would do)
-      const identifiers = dto.identifiers.map(i => {
-        if (i.type === 'EMAIL') return EmailIdentifier.fromDTO(i);
-        if (i.type === 'PHONE') return PhoneIdentifier.fromDTO(i);
+      const identifiers = dto.identifiers.map((i) => {
+        if (i.type === 'Email') return EmailIdentifier.fromDTO(i);
+        if (i.type === 'Phone') return PhoneIdentifier.fromDTO(i);
         throw new Error(`Unknown identifier type`);
       });
-      const oauthBindings = dto.oauthBindings.map(b => OAuthBinding.load({
-        id: b.id,
-        provider: OAuthProvider.of(b.provider),
-        providerSubjectId: b.providerSubjectId,
-        accessToken: b.accessToken ?? null,
-        refreshToken: b.refreshToken ?? null,
-        expiresAt: b.expiresAt ? new Date(b.expiresAt) : null,
-        createdAt: new Date(b.createdAt),
-        lastUsedAt: b.lastUsedAt ? new Date(b.lastUsedAt) : null,
-      }));
-      const credentials = dto.credentials.map(c => {
+      const oauthBindings = dto.oauthBindings.map((b) =>
+        OAuthBinding.load({
+          id: b.id,
+          provider: OAuthProvider.of(b.provider),
+          providerSubjectId: b.providerSubjectId,
+          accessToken: b.accessToken ?? null,
+          refreshToken: b.refreshToken ?? null,
+          expiresAt: b.expiresAt ? new Date(b.expiresAt) : null,
+          createdAt: new Date(b.createdAt),
+          lastUsedAt: b.lastUsedAt ? new Date(b.lastUsedAt) : null,
+        }),
+      );
+      const credentials = dto.credentials.map((c) => {
         const p = c as any;
         return PasswordCredential.load({
           id: p.id,
@@ -251,7 +252,7 @@ describe('AuthIdentity', () => {
 
       const clientDto = identity.toClientDTO();
       expect(clientDto.identifiers).toHaveLength(1);
-      expect(clientDto.identifiers[0].type).toBe('EMAIL');
+      expect(clientDto.identifiers[0].type).toBe('Email');
       expect(clientDto.hasPassword).toBe(true);
       expect(clientDto.hasEmail).toBe(true);
       expect(clientDto.hasPhone).toBe(false);
@@ -295,7 +296,7 @@ describe('AuthIdentity', () => {
       for (let i = 0; i < 5; i++) {
         identity.recordFailedLogin();
       }
-      expect(identity.status).toBe('LOCKED');
+      expect(identity.status).toBe('Locked');
       expect(identity.lockedUntil).toBeInstanceOf(Date);
     });
 

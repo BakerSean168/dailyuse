@@ -12,6 +12,8 @@ export default mergeConfig(
     aliases: {
       '@dailyuse/domain-shared': '../../packages/domain-shared/src',
       '@dailyuse/database': '../../packages/database/src',
+      '@dailyuse/task': '../../packages/task/src',
+      '@dailyuse/task/domain-shared': '../../packages/task/src/domain-shared',
     },
   }),
   defineConfig({
@@ -38,6 +40,10 @@ export default mergeConfig(
         {
           find: '@dailyuse/contracts/result',
           replacement: path.resolve(contractsSrc, 'result/index.ts'),
+        },
+        {
+          find: /^@dailyuse\/contracts\/modules\/(.+)/,
+          replacement: path.resolve(contractsSrc, 'modules/$1/index.ts'),
         },
         {
           find: /^@dailyuse\/contracts\/(.+)/,

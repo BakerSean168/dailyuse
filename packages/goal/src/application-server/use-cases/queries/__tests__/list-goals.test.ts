@@ -47,8 +47,8 @@ describe('ListGoals', () => {
     expect(result.data.data).toHaveLength(2);
     expect(result.data.pagination.total).toBe(2);
     expect(result.data.pagination.hasMore).toBe(false);
-    expect(goal1.toClientDTO).toHaveBeenCalledWith(true);
-    expect(goal2.toClientDTO).toHaveBeenCalledWith(true);
+    expect(goal1.toClientDTO).toHaveBeenCalledWith(false);
+    expect(goal2.toClientDTO).toHaveBeenCalledWith(false);
   });
 
   it('should return empty list when no goals exist', async () => {

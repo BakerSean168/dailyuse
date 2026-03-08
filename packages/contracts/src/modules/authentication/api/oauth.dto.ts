@@ -1,6 +1,6 @@
 /**
  * Authentication - OAuth Operations
- * 
+ *
  * 所有与第三方登录相关的API定义：OAuth授权、获取OAuth URL、回调处理
  */
 
@@ -15,7 +15,7 @@ import type { AuthResponseDTO } from '../dtos';
  * 获取 OAuth 授权 URL Schema
  */
 export const GetOAuthUrlSchema = z.object({
-  provider: z.enum(['GOOGLE', 'GITHUB', 'MICROSOFT', 'APPLE']),
+  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
   redirectUri: z.string().url().optional(),
 });
 
@@ -34,7 +34,7 @@ export interface GetOAuthUrlRes {
  * OAuth 回调处理 Schema
  */
 export const OAuthCallbackSchema = z.object({
-  provider: z.enum(['GOOGLE', 'GITHUB', 'MICROSOFT', 'APPLE']),
+  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
   code: z.string(),
   state: z.string(),
 });
@@ -50,7 +50,7 @@ export type OAuthCallbackRes = AuthResponseDTO;
  * OAuth 授权 Schema
  */
 export const OAuthAuthorizeSchema = z.object({
-  provider: z.enum(['GOOGLE', 'GITHUB', 'MICROSOFT', 'APPLE']),
+  provider: z.enum(['Google', 'Github', 'Microsoft', 'Apple']),
   code: z.string(),
   state: z.string().optional(),
   redirectUri: z.string().url().optional(),

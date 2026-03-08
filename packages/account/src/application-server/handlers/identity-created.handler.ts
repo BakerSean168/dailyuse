@@ -1,6 +1,6 @@
 /**
  * Identity Created Event Handler
- * 
+ *
  * Listens to 'auth:identity-created' event from authentication module
  * and creates a corresponding Account entity
  */
@@ -10,19 +10,18 @@ import { Account } from '../../domain-server';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthEventMap } from '@dailyuse/contracts/authentication';
+import { IdentityCreateMethod } from '@dailyuse/contracts/authentication';
 
 const logger = createLogger('IdentityCreatedHandler');
 
 /**
  * Identity Created Event Handler
- * 
+ *
  * When a new AuthIdentity is created in the authentication module,
  * automatically create a corresponding Account with the same ID
  */
 export class IdentityCreatedHandler {
-  constructor(
-    private readonly accountRepository: IAccountRepository,
-  ) {}
+  constructor(private readonly accountRepository: IAccountRepository) {}
 
   /**
    * Handle auth:identity-created event
@@ -46,25 +45,27 @@ export class IdentityCreatedHandler {
       }
 
       // 2. Determine email address based on creation method
-      const accountEmail = email || (() => {
-        if (createMethod === 'OAUTH') {
-          // For OAuth, we might get email from provider later
-          // For now, use a placeholder or throw error
-          logger.warn('[IdentityCreatedHandler] No email provided for OAuth identity', {
-            identityId,
-            oauthProvider,
-          });
+      const accountEmail =
+        email ||
+        (() => {
+          if (createMethod === IdentityCreateMethod.Oauth) {
+            // For OAuth, we might get email from provider later
+            // For now, use a placeholder or throw error
+            logger.warn('[IdentityCreatedHandler] No email provided for OAuth identity', {
+              identityId,
+              oauthProvider,
+            });
+            throw new Error('Email is required to create an account');
+          } else if (createMethod === IdentityCreateMethod.Phone) {
+            // For phone registration, email might be added later
+            logger.warn('[IdentityCreatedHandler] No email provided for phone identity', {
+              identityId,
+              phoneNumber,
+            });
+            throw new Error('Email is required to create an account');
+          }
           throw new Error('Email is required to create an account');
-        } else if (createMethod === 'PHONE') {
-          // For phone registration, email might be added later
-          logger.warn('[IdentityCreatedHandler] No email provided for phone identity', {
-            identityId,
-            phoneNumber,
-          });
-          throw new Error('Email is required to create an account');
-        }
-        throw new Error('Email is required to create an account');
-      })();
+        })();
 
       // 3. Create Account with the same IdentityId
       const account = Account.create({

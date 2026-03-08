@@ -134,7 +134,9 @@
                             <Calendar
                               mode="single"
                               :selected="getAbsoluteCalendarDate(trigger.absoluteTime)"
-                              @update:model-value="(d) => handleAbsoluteDateSelect(index, d)"
+                              @update:model-value="
+                                (d: Date | undefined) => handleAbsoluteDateSelect(index, d)
+                              "
                             />
                           </PopoverContent>
                         </Popover>

@@ -240,7 +240,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // 发布事件
-    this.addDomainEvent('schedule.task.paused', {
+    this.addDomainEvent('schedule:task:paused', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -265,7 +265,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.execution = this._props.execution.with({ nextRunAt });
 
     // 发布事件
-    this.addDomainEvent('schedule.task.resumed', {
+    this.addDomainEvent('schedule:task:resumed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -281,7 +281,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // 发布事件
-    this.addDomainEvent('schedule.task.completed', {
+    this.addDomainEvent('schedule:task:completed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -300,7 +300,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // 发布事件
-    this.addDomainEvent('schedule.task.cancelled', {
+    this.addDomainEvent('schedule:task:cancelled', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -316,7 +316,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // 发布事件
-    this.addDomainEvent('schedule.task.failed', {
+    this.addDomainEvent('schedule:task:failed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
       sourceEntityId: this._props.sourceEntityId,
@@ -340,7 +340,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.execution = this._props.execution.with({ nextRunAt });
 
     // 发布事件
-    this.addDomainEvent('schedule.task.schedule.updated', {
+    this.addDomainEvent('schedule:task:schedule-updated', {
       taskId: this.id,
       previousCronExpression: oldCron,
       newCronExpression: this._props.schedule.cronExpression,
@@ -371,7 +371,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
    *
    * @description
    * 1. 验证任务是否可执行（状态、启用、到期）
-   * 2. 发布 schedule.task.triggered 领域事件
+   * 2. 发布 schedule:task:triggered 领域事件
    * 3. 更新 nextRunAt（由外部 recordExecution 记录结果）
    *
    * @returns 是否成功触发执行
@@ -385,7 +385,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     // 2. 发布领域事件（通知其他模块任务被触发）
     // 完整序列化 metadata DTO 以确保正确传递
     const metadataDTO = this._props.metadata.toServerDTO();
-    this.addDomainEvent('schedule.task.triggered', {
+    this.addDomainEvent('schedule:task:triggered', {
       taskId: this.id,
       taskName: this._props.name,
       sourceModule: this._props.sourceModule,
@@ -465,7 +465,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.updatedAt = new Date();
 
     // 发布事件
-    this.addDomainEvent('schedule.task.executed', {
+    this.addDomainEvent('schedule:task:executed', {
       taskId: this.id,
       executionId: execution.id,
       sourceModule: this._props.sourceModule,
@@ -473,6 +473,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       status,
       duration,
       payload: this._props.metadata.toServerDTO().payload,
+      identityId: this._props.identityId,
     });
 
     return execution;
@@ -824,7 +825,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     const task = new ScheduleTask(state);
 
     // 发布创建事件
-    task.addDomainEvent('schedule.task.created', {
+    task.addDomainEvent('schedule:task:created', {
       taskId: task.id,
       name: params.name,
       sourceModule: params.sourceModule,

@@ -10,7 +10,7 @@ import type { AccountProfileDTO } from '@dailyuse/contracts/account';
 function aProfileDTO(overrides: Partial<AccountProfileDTO> = {}): AccountProfileDTO {
   return {
     nickname: 'TestUser',
-    gender: GenderType.PREFER_NOT_TO_SAY,
+    gender: GenderType.PreferNotToSay,
     realName: null,
     avatarUrl: null,
     bio: null,
@@ -31,7 +31,7 @@ describe('AccountProfile', () => {
     it('should create a profile with valid props', () => {
       const profile = AccountProfile.create(aProfileDTO());
       expect(profile.nickname).toBe('TestUser');
-      expect(profile.gender).toBe(GenderType.PREFER_NOT_TO_SAY);
+      expect(profile.gender).toBe(GenderType.PreferNotToSay);
     });
 
     it('should reject nickname shorter than 2 characters', () => {
@@ -69,17 +69,17 @@ describe('AccountProfile', () => {
   describe('createDefault', () => {
     it('should derive nickname from email local part', () => {
       const profile = AccountProfile.createDefault('john.doe@example.com');
-      expect(profile.nickname).toBe('john.doe@e');
+      expect(profile.nickname).toBe('john.doe');
     });
 
     it('should truncate long email local part to 10 characters', () => {
       const profile = AccountProfile.createDefault('areallylongemail@example.com');
-      expect(profile.nickname).toBe('areallylo');
+      expect(profile.nickname).toBe('areallylon');
     });
 
-    it('should set default gender as PREFER_NOT_TO_SAY', () => {
+    it('should set default gender as PreferNotToSay', () => {
       const profile = AccountProfile.createDefault('test@example.com');
-      expect(profile.gender).toBe(GenderType.PREFER_NOT_TO_SAY);
+      expect(profile.gender).toBe(GenderType.PreferNotToSay);
     });
 
     it('should set all optional fields to null', () => {
@@ -147,8 +147,8 @@ describe('AccountProfile', () => {
   describe('updateGender', () => {
     it('should return a new profile with updated gender', () => {
       const profile = AccountProfile.create(aProfileDTO());
-      const updated = profile.updateGender(GenderType.MALE);
-      expect(updated.gender).toBe(GenderType.MALE);
+      const updated = profile.updateGender(GenderType.Male);
+      expect(updated.gender).toBe(GenderType.Male);
     });
   });
 
@@ -232,11 +232,11 @@ describe('AccountProfile', () => {
         realName: null,
         avatarUrl: null,
         bio: null,
-        gender: 'MALE',
+        gender: 'Male',
         birthday: null,
       });
       expect(profile.nickname).toBe('Restored');
-      expect(profile.gender).toBe(GenderType.MALE);
+      expect(profile.gender).toBe(GenderType.Male);
     });
 
     it('should convert Date birthday to timestamp', () => {
@@ -246,7 +246,7 @@ describe('AccountProfile', () => {
         realName: null,
         avatarUrl: null,
         bio: null,
-        gender: 'FEMALE',
+        gender: 'Female',
         birthday: date,
       });
       expect(profile.birthday).toEqual(date);

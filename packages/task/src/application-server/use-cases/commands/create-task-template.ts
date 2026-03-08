@@ -83,8 +83,8 @@ export class CreateTaskTemplate {
         await this.templateRepository.save(template);
 
         // 发布事件
-        eventBus.send('task.instances.generated' as any, {
-          eventType: 'task_template.instances_generated',
+        eventBus.send('task:instances:generated' as any, {
+          eventType: 'task:instances:generated',
           version: '1.0',
           aggregateId: template.id,
           occurredOn: new Date(),

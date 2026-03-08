@@ -93,7 +93,12 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { AlertCircle, CheckCircle, Lightbulb, Loader2 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
+import {
+  ConflictSeverity,
+  ConflictSuggestionType,
+  type ConflictDetectionResult,
+  type ConflictSuggestion,
+} from '@dailyuse/contracts/schedule';
 
 interface Props {
   conflicts: ConflictDetectionResult | null;
@@ -111,19 +116,17 @@ const emit = defineEmits<Emits>();
 
 const { t, locale } = useI18n();
 
-const getSeverityVariant = (
-  severity?: 'minor' | 'moderate' | 'severe',
-): 'default' | 'destructive' | 'outline' => {
-  if (severity === 'severe') return 'destructive';
-  if (severity === 'moderate') return 'default';
+const getSeverityVariant = (severity?: ConflictSeverity): 'default' | 'destructive' | 'outline' => {
+  if (severity === ConflictSeverity.Severe) return 'destructive';
+  if (severity === ConflictSeverity.Moderate) return 'default';
   return 'outline';
 };
 
-const getSeverityLabel = (severity?: 'minor' | 'moderate' | 'severe'): string => {
-  const labels: Record<string, string> = {
-    severe: t('schedule.severity.severe'),
-    moderate: t('schedule.severity.moderate'),
-    minor: t('schedule.severity.minor'),
+const getSeverityLabel = (severity?: ConflictSeverity): string => {
+  const labels: Record<ConflictSeverity, string> = {
+    [ConflictSeverity.Severe]: t('schedule.severity.severe'),
+    [ConflictSeverity.Moderate]: t('schedule.severity.moderate'),
+    [ConflictSeverity.Minor]: t('schedule.severity.minor'),
   };
   return severity ? labels[severity] || t('common.unknown') : t('common.unknown');
 };
@@ -140,7 +143,7 @@ const formatDuration = (minutes: number): string => {
 };
 
 const getSuggestionLabel = (suggestion: ConflictSuggestion): string => {
-  if (suggestion.type === 'move_earlier') {
+  if (suggestion.type === ConflictSuggestionType.MoveEarlier) {
     const startTime = new Date(suggestion.newStartTime);
     const timeStr = startTime.toLocaleTimeString(locale.value, {
       hour: '2-digit',
@@ -149,7 +152,7 @@ const getSuggestionLabel = (suggestion: ConflictSuggestion): string => {
     return t('schedule.conflictAlert.moveEarlier', { time: timeStr });
   }
 
-  if (suggestion.type === 'move_later') {
+  if (suggestion.type === ConflictSuggestionType.MoveLater) {
     const startTime = new Date(suggestion.newStartTime);
     const timeStr = startTime.toLocaleTimeString(locale.value, {
       hour: '2-digit',
@@ -158,7 +161,7 @@ const getSuggestionLabel = (suggestion: ConflictSuggestion): string => {
     return t('schedule.conflictAlert.moveLater', { time: timeStr });
   }
 
-  if (suggestion.type === 'shorten') {
+  if (suggestion.type === ConflictSuggestionType.Shorten) {
     return t('schedule.conflictAlert.shortenDuration');
   }
 

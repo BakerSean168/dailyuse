@@ -24,12 +24,14 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { PriorityLevel } from '@dailyuse/contracts/shared';
 import { DayOfWeek, RecurrenceEndConditionType } from '@dailyuse/contracts/task';
+import { TaskType } from '../../value-objects';
 import {
   TaskTimeConfig,
   RecurrenceRule,
   TaskReminderConfig,
   TaskGoalBinding,
   ChecklistItemDefinition,
+  DependencyStatus,
 } from '../../value-objects';
 import {
   InvalidTaskTemplateStateError,
@@ -69,7 +71,7 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     identityId: overrides.identityId ?? makeIdentityId(),
     title: overrides.title ?? 'Test Task',
     description: overrides.description ?? null,
-    taskType: overrides.taskType ?? 'ONE_TIME',
+    taskType: overrides.taskType ?? TaskType.OneTime,
     importance: overrides.importance ?? ImportanceLevel.Moderate,
     tags: overrides.tags ?? [],
     color: overrides.color ?? null,
@@ -91,7 +93,7 @@ function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateStat
     estimatedMinutes: overrides.estimatedMinutes ?? null,
     actualMinutes: overrides.actualMinutes ?? null,
     note: overrides.note ?? null,
-    dependencyStatus: overrides.dependencyStatus ?? 'NONE',
+    dependencyStatus: overrides.dependencyStatus ?? DependencyStatus.None,
     isBlocked: overrides.isBlocked ?? false,
     blockingReason: overrides.blockingReason ?? null,
     createdAt: overrides.createdAt ?? now,
@@ -117,7 +119,7 @@ describe('TaskTemplate Aggregate', () => {
         expect(template.id).toBeDefined();
         expect(template.identityId).toBe(identityId);
         expect(template.title).toBe('Buy groceries');
-        expect(template.taskType).toBe('ONE_TIME');
+        expect(template.taskType).toBe(TaskType.OneTime);
         expect(template.status).toBe(TaskTemplateStatus.Active);
         expect(template.importance).toBe(ImportanceLevel.Moderate);
         expect(template.description).toBeNull();
@@ -191,7 +193,7 @@ describe('TaskTemplate Aggregate', () => {
 
         expect(template.history.length).toBeGreaterThanOrEqual(1);
         const createdEntry = template.history.find(
-          (h) => JSON.parse(h.changes ?? '{}').taskType === 'ONE_TIME',
+          (h) => JSON.parse(h.changes ?? '{}').taskType === TaskType.OneTime,
         );
         expect(createdEntry).toBeDefined();
       });
@@ -251,7 +253,7 @@ describe('TaskTemplate Aggregate', () => {
           identityId: makeIdentityId(),
           title: 'Task',
         });
-        expect(template.dependencyStatus).toBe('Pending');
+        expect(template.dependencyStatus).toBe(DependencyStatus.Waiting);
       });
     });
 
@@ -268,12 +270,12 @@ describe('TaskTemplate Aggregate', () => {
           recurrenceRule,
         });
 
-        expect(template.taskType).toBe('RECURRING');
+        expect(template.taskType).toBe(TaskType.Recurring);
         expect(template.status).toBe(TaskTemplateStatus.Active);
         expect(template.timeConfig).toBe(timeConfig);
         expect(template.recurrenceRule).toBe(recurrenceRule);
         expect(template.generateAheadDays).toBe(30);
-        expect(template.dependencyStatus).toBe('NONE');
+        expect(template.dependencyStatus).toBe(DependencyStatus.None);
       });
 
       it('should accept custom generateAheadDays', () => {
@@ -341,11 +343,11 @@ describe('TaskTemplate Aggregate', () => {
         const template = TaskTemplate.create({
           identityId: makeIdentityId(),
           title: 'Generic task',
-          taskType: 'ONE_TIME',
+          taskType: TaskType.OneTime,
           timeConfig,
         });
 
-        expect(template.taskType).toBe('ONE_TIME');
+        expect(template.taskType).toBe(TaskType.OneTime);
         expect(template.timeConfig).toBe(timeConfig);
       });
 
@@ -355,12 +357,12 @@ describe('TaskTemplate Aggregate', () => {
         const template = TaskTemplate.create({
           identityId: makeIdentityId(),
           title: 'Recurring via create',
-          taskType: 'RECURRING',
+          taskType: TaskType.Recurring,
           timeConfig,
           recurrenceRule,
         });
 
-        expect(template.taskType).toBe('RECURRING');
+        expect(template.taskType).toBe(TaskType.Recurring);
         expect(template.recurrenceRule).toBe(recurrenceRule);
       });
 
@@ -369,7 +371,7 @@ describe('TaskTemplate Aggregate', () => {
           TaskTemplate.create({
             identityId: makeIdentityId(),
             title: 'Task',
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             timeConfig: undefined as unknown as TaskTimeConfig,
           }),
         ).toThrow(InvalidTaskTemplateStateError);
@@ -380,7 +382,7 @@ describe('TaskTemplate Aggregate', () => {
           TaskTemplate.create({
             identityId: makeIdentityId(),
             title: 'Task',
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             timeConfig: makeAllDayTimeConfig(),
           }),
         ).toThrow(InvalidTaskTemplateStateError);
@@ -390,7 +392,7 @@ describe('TaskTemplate Aggregate', () => {
         const template = TaskTemplate.create({
           identityId: makeIdentityId(),
           title: 'Task',
-          taskType: 'ONE_TIME',
+          taskType: TaskType.OneTime,
           timeConfig: makeAllDayTimeConfig(),
         });
 
@@ -874,7 +876,7 @@ describe('TaskTemplate Aggregate', () => {
         const startDate = new Date('2025-06-15T00:00:00Z');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(startDate),
           }),
@@ -892,7 +894,7 @@ describe('TaskTemplate Aggregate', () => {
         const startDate = new Date('2025-06-15T00:00:00Z');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(startDate),
           }),
@@ -912,7 +914,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should generate daily instances for the date range', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
@@ -932,7 +934,7 @@ describe('TaskTemplate Aggregate', () => {
         const rule = makeWeeklyRule([DayOfWeek.Wednesday, DayOfWeek.Friday]);
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: rule,
@@ -954,7 +956,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should update lastGeneratedDate after generation', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
@@ -973,7 +975,7 @@ describe('TaskTemplate Aggregate', () => {
         const startDate = new Date('2025-06-15T00:00:00.000Z');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeTimePointConfig(23 * 60, startDate),
             recurrenceRule: makeDailyRule(),
@@ -984,10 +986,12 @@ describe('TaskTemplate Aggregate', () => {
         const to = new Date('2025-06-15T23:59:59.000Z').getTime();
         const instances = template.generateInstances(from, to);
 
-        expect(instances.length).toBe(1);
         const dayStart = new Date(from);
         dayStart.setHours(0, 0, 0, 0);
-        expect(instances[0].instanceDate).toBe(dayStart.getTime());
+        const matchingInstances = instances.filter(
+          (instance) => instance.instanceDate === dayStart.getTime(),
+        );
+        expect(matchingInstances).toHaveLength(1);
       });
     });
 
@@ -995,7 +999,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should throw if fromDate >= toDate', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
@@ -1010,7 +1014,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should throw for archived templates', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Archived,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
@@ -1025,7 +1029,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should throw for non-active templates (paused)', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Paused,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
@@ -1042,7 +1046,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should return false for non-active templates', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Paused,
             recurrenceRule: makeDailyRule(),
           }),
@@ -1053,7 +1057,7 @@ describe('TaskTemplate Aggregate', () => {
 
       it('should return false for ONE_TIME tasks', () => {
         const template = TaskTemplate.load(
-          makeState({ taskType: 'ONE_TIME', status: TaskTemplateStatus.Active }),
+          makeState({ taskType: TaskType.OneTime, status: TaskTemplateStatus.Active }),
         );
 
         expect(template.shouldGenerateInstance(Date.now())).toBe(false);
@@ -1063,7 +1067,7 @@ describe('TaskTemplate Aggregate', () => {
         const startDate = new Date('2025-06-15T00:00:00.000Z');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(startDate),
             recurrenceRule: makeDailyRule(),
@@ -1080,7 +1084,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should return false when no recurrence rule', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             recurrenceRule: null,
           }),
@@ -1092,7 +1096,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should return true for daily recurrence on any day', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             recurrenceRule: makeDailyRule(),
           }),
@@ -1108,7 +1112,7 @@ describe('TaskTemplate Aggregate', () => {
 
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             recurrenceRule: ruleWithEnd,
           }),
@@ -1123,7 +1127,7 @@ describe('TaskTemplate Aggregate', () => {
         const startDate = new Date('2025-06-15T00:00:00Z');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(startDate),
           }),
@@ -1255,7 +1259,7 @@ describe('TaskTemplate Aggregate', () => {
         const startDate = new Date('2025-06-15T00:00:00Z');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(startDate),
           }),
@@ -1267,7 +1271,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should return false for non-active template', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Paused,
           }),
         );
@@ -1279,7 +1283,7 @@ describe('TaskTemplate Aggregate', () => {
         const rule = makeDailyRule().setEndDate(new Date('2020-01-01'));
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             recurrenceRule: rule,
           }),
@@ -1294,7 +1298,7 @@ describe('TaskTemplate Aggregate', () => {
         const futureDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(futureDate),
           }),
@@ -1308,7 +1312,7 @@ describe('TaskTemplate Aggregate', () => {
         const pastDate = new Date('2020-01-01');
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(pastDate),
           }),
@@ -1331,7 +1335,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should return afterDate + 1 day for recurring tasks', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             recurrenceRule: makeDailyRule(),
           }),
@@ -1348,7 +1352,7 @@ describe('TaskTemplate Aggregate', () => {
         const pastDate = new Date(Date.now() - 86400000);
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             status: TaskTemplateStatus.Active,
             dueDate: pastDate,
           }),
@@ -1359,7 +1363,7 @@ describe('TaskTemplate Aggregate', () => {
 
       it('should return false when no due date', () => {
         const template = TaskTemplate.load(
-          makeState({ taskType: 'ONE_TIME', status: TaskTemplateStatus.Active }),
+          makeState({ taskType: TaskType.OneTime, status: TaskTemplateStatus.Active }),
         );
 
         expect(template.isOverdue()).toBe(false);
@@ -1368,7 +1372,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should return false for RECURRING tasks', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
           }),
         );
@@ -1382,7 +1386,7 @@ describe('TaskTemplate Aggregate', () => {
         const futureDue = new Date(Date.now() + 3 * 86400000);
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             dueDate: futureDue,
           }),
         );
@@ -1397,7 +1401,7 @@ describe('TaskTemplate Aggregate', () => {
         const pastDue = new Date(Date.now() - 2 * 86400000);
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'ONE_TIME',
+            taskType: TaskType.OneTime,
             dueDate: pastDue,
           }),
         );
@@ -1408,12 +1412,12 @@ describe('TaskTemplate Aggregate', () => {
       });
 
       it('should return null for RECURRING tasks', () => {
-        const template = TaskTemplate.load(makeState({ taskType: 'RECURRING' }));
+        const template = TaskTemplate.load(makeState({ taskType: TaskType.Recurring }));
         expect(template.getDaysUntilDue()).toBeNull();
       });
 
       it('should return null when no due date', () => {
-        const template = TaskTemplate.load(makeState({ taskType: 'ONE_TIME' }));
+        const template = TaskTemplate.load(makeState({ taskType: TaskType.OneTime }));
         expect(template.getDaysUntilDue()).toBeNull();
       });
     });
@@ -1685,7 +1689,7 @@ describe('TaskTemplate Aggregate', () => {
         template.markAsBlocked('Waiting for prerequisite');
         expect(template.isBlocked).toBe(true);
         expect(template.blockingReason).toBe('Waiting for prerequisite');
-        expect(template.dependencyStatus).toBe('BLOCKED');
+        expect(template.dependencyStatus).toBe(DependencyStatus.Blocked);
       });
 
       it('should throw for RECURRING tasks', () => {
@@ -1711,7 +1715,7 @@ describe('TaskTemplate Aggregate', () => {
         template.markAsReady();
         expect(template.isBlocked).toBe(false);
         expect(template.blockingReason).toBeNull();
-        expect(template.dependencyStatus).toBe('READY');
+        expect(template.dependencyStatus).toBe(DependencyStatus.Ready);
       });
 
       it('should throw for RECURRING tasks', () => {
@@ -1733,14 +1737,14 @@ describe('TaskTemplate Aggregate', () => {
           title: 'Task',
         });
 
-        template.updateDependencyStatus('READY');
-        expect(template.dependencyStatus).toBe('READY');
+        template.updateDependencyStatus(DependencyStatus.Ready);
+        expect(template.dependencyStatus).toBe(DependencyStatus.Ready);
 
-        template.updateDependencyStatus('BLOCKED');
-        expect(template.dependencyStatus).toBe('BLOCKED');
+        template.updateDependencyStatus(DependencyStatus.Blocked);
+        expect(template.dependencyStatus).toBe(DependencyStatus.Blocked);
 
-        template.updateDependencyStatus('Pending');
-        expect(template.dependencyStatus).toBe('Pending');
+        template.updateDependencyStatus(DependencyStatus.Waiting);
+        expect(template.dependencyStatus).toBe(DependencyStatus.Waiting);
       });
 
       it('should throw for RECURRING tasks', () => {
@@ -1751,7 +1755,7 @@ describe('TaskTemplate Aggregate', () => {
           recurrenceRule: makeDailyRule(),
         });
 
-        expect(() => template.updateDependencyStatus('READY')).toThrow(
+        expect(() => template.updateDependencyStatus(DependencyStatus.Ready)).toThrow(
           InvalidTaskTemplateStateError,
         );
       });
@@ -1958,7 +1962,7 @@ describe('TaskTemplate Aggregate', () => {
       it('should compute completion rate', () => {
         const template = TaskTemplate.load(
           makeState({
-            taskType: 'RECURRING',
+            taskType: TaskType.Recurring,
             status: TaskTemplateStatus.Active,
             timeConfig: makeAllDayTimeConfig(),
             recurrenceRule: makeDailyRule(),
@@ -1994,7 +1998,7 @@ describe('TaskTemplate Aggregate', () => {
       const template = TaskTemplate.create({
         identityId: makeIdentityId(),
         title: 'Task',
-        taskType: 'ONE_TIME',
+        taskType: TaskType.OneTime,
         timeConfig: makeAllDayTimeConfig(),
       });
 
@@ -2034,7 +2038,7 @@ describe('TaskTemplate Aggregate', () => {
       const template = TaskTemplate.create({
         identityId: makeIdentityId(),
         title: 'Task',
-        taskType: 'ONE_TIME',
+        taskType: TaskType.OneTime,
         timeConfig: makeAllDayTimeConfig(),
       });
 

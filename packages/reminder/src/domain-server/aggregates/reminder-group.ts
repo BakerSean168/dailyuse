@@ -145,7 +145,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       deletedAt: null,
       version: 1,
     });
-    group.addDomainEvent('ReminderGroupCreated', {
+    group.addDomainEvent('reminder:group:created', {
       identityId: params.identityId,
       group: group.toServerDTO(),
     });
@@ -157,7 +157,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     const oldMode = this._controlMode;
     this._controlMode = ControlMode.Group;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('ReminderGroupControlModeSwitched', {
+    this.addDomainEvent('reminder:group:control-mode-switched', {
       identityId: this._identityId,
       groupId: this.id,
       previousMode: oldMode,
@@ -170,7 +170,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     const oldMode = this._controlMode;
     this._controlMode = ControlMode.Individual;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('ReminderGroupControlModeSwitched', {
+    this.addDomainEvent('reminder:group:control-mode-switched', {
       identityId: this._identityId,
       groupId: this.id,
       previousMode: oldMode,
@@ -190,7 +190,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._enabled = true;
     this._status = ReminderStatus.Active;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('ReminderGroupEnabled', {
+    this.addDomainEvent('reminder:group:enabled', {
       identityId: this._identityId,
       groupId: this.id,
     });
@@ -200,7 +200,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._enabled = false;
     this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('ReminderGroupPaused', {
+    this.addDomainEvent('reminder:group:paused', {
       identityId: this._identityId,
       groupId: this.id,
     });
@@ -262,7 +262,7 @@ export class ReminderGroup extends AggregateRoot<string> {
     this._deletedAt = Date.now();
     this._status = ReminderStatus.Paused;
     this._updatedAt = new Date(Date.now());
-    this.addDomainEvent('ReminderGroupDeleted', {
+    this.addDomainEvent('reminder:group:deleted', {
       identityId: this._identityId,
       groupId: this.id,
       groupName: this._name,

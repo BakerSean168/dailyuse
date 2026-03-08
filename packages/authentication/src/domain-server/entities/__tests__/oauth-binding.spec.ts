@@ -10,11 +10,11 @@ describe('OAuthBinding', () => {
     it('should create an OAuth binding', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GOOGLE,
+        provider: OAuthProvider.Google,
         providerSubjectId: 'google-123',
       });
       expect(binding.id).toBe('binding-1');
-      expect(binding.provider).toBe(OAuthProvider.GOOGLE);
+      expect(binding.provider).toBe(OAuthProvider.Google);
       expect(binding.providerSubjectId).toBe('google-123');
       expect(binding.accessToken).toBeNull();
       expect(binding.refreshToken).toBeNull();
@@ -23,7 +23,7 @@ describe('OAuthBinding', () => {
     it('should create with tokens', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GITHUB,
+        provider: OAuthProvider.Github,
         providerSubjectId: 'gh-456',
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
@@ -35,11 +35,13 @@ describe('OAuthBinding', () => {
     });
 
     it('should throw if provider is missing', () => {
-      expect(() => OAuthBinding.create({
-        id: 'binding-1',
-        provider: '' as any,
-        providerSubjectId: 'sub-1',
-      })).toThrow();
+      expect(() =>
+        OAuthBinding.create({
+          id: 'binding-1',
+          provider: '' as any,
+          providerSubjectId: 'sub-1',
+        }),
+      ).toThrow();
     });
   });
 
@@ -47,7 +49,7 @@ describe('OAuthBinding', () => {
     it('should update tokens', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GOOGLE,
+        provider: OAuthProvider.Google,
         providerSubjectId: 'google-123',
       });
 
@@ -67,7 +69,7 @@ describe('OAuthBinding', () => {
     it('should return false when no expiry set', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GOOGLE,
+        provider: OAuthProvider.Google,
         providerSubjectId: 'google-123',
       });
       expect(binding.isTokenExpired()).toBe(false);
@@ -76,7 +78,7 @@ describe('OAuthBinding', () => {
     it('should return true when token expired', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GOOGLE,
+        provider: OAuthProvider.Google,
         providerSubjectId: 'google-123',
         expiresAt: Date.now() - 1000,
       });
@@ -88,7 +90,7 @@ describe('OAuthBinding', () => {
     it('should clear tokens on revoke', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GOOGLE,
+        provider: OAuthProvider.Google,
         providerSubjectId: 'google-123',
         accessToken: 'at',
         refreshToken: 'rt',
@@ -104,7 +106,7 @@ describe('OAuthBinding', () => {
     it('should serialize and deserialize via Server DTO', () => {
       const binding = OAuthBinding.create({
         id: 'binding-1',
-        provider: OAuthProvider.GOOGLE,
+        provider: OAuthProvider.Google,
         providerSubjectId: 'google-123',
         accessToken: 'at',
       });

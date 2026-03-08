@@ -1,10 +1,10 @@
 /**
  * 凭证状态
  */
-export const  CredentialStatus = {
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  EXPIRED: 'EXPIRED',
-  REVOKED: 'REVOKED',
+export const CredentialStatus = {
+  Active: 'Active',
+  Suspended: 'Suspended',
+  Expired: 'Expired',
+  Revoked: 'Revoked',
 } as const;
 export type CredentialStatus = (typeof CredentialStatus)[keyof typeof CredentialStatus];

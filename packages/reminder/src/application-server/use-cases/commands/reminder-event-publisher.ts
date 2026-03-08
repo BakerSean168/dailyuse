@@ -80,21 +80,21 @@ export class ReminderEventPublisher {
    * @param templateId - 提醒模板UUID
    * @param identityId - 账户 ID
    */
-  async publishReminderDeletedEvent(
-    templateId: string,
-    identityId: string,
-  ): Promise<void> {
+  async publishReminderDeletedEvent(templateId: string, identityId: string): Promise<void> {
     try {
       logger.info('Publishing reminder deleted event', {
         templateId,
         identityId,
       });
 
-      eventBus.send('reminder.template.deleted' as any, {
-        reminderId: templateId,
-        identityId,
-        deletedAt: Date.now(),
-      } as any);
+      eventBus.send(
+        'reminder:template:deleted' as any,
+        {
+          reminderId: templateId,
+          identityId,
+          deletedAt: Date.now(),
+        } as any,
+      );
 
       logger.debug('Reminder deleted event published', { templateId });
     } catch (error) {
@@ -131,14 +131,17 @@ export class ReminderEventPublisher {
         identityId,
       });
 
-      eventBus.send('reminder.response.recorded' as any, {
-        responseId,
-        templateId,
-        action,
-        responseTime,
-        identityId,
-        recordedAt: Date.now(),
-      } as any);
+      eventBus.send(
+        'reminder:response:recorded' as any,
+        {
+          responseId,
+          templateId,
+          action,
+          responseTime,
+          identityId,
+          recordedAt: Date.now(),
+        } as any,
+      );
 
       logger.debug('Response recorded event published', { responseId });
     } catch (error) {
@@ -173,14 +176,17 @@ export class ReminderEventPublisher {
         identityId,
       });
 
-      eventBus.send('reminder.frequency.adjusted' as any, {
-        templateId,
-        originalInterval: adjustment.originalInterval,
-        adjustedInterval: adjustment.adjustedInterval,
-        reason: adjustment.reason,
-        identityId,
-        adjustedAt: Date.now(),
-      } as any);
+      eventBus.send(
+        'reminder:frequency:adjusted' as any,
+        {
+          templateId,
+          originalInterval: adjustment.originalInterval,
+          adjustedInterval: adjustment.adjustedInterval,
+          reason: adjustment.reason,
+          identityId,
+          adjustedAt: Date.now(),
+        } as any,
+      );
 
       logger.debug('Frequency adjusted event published', { templateId });
     } catch (error) {

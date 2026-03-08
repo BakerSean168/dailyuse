@@ -39,8 +39,6 @@
     { "path": "./packages/utils" },
 
     // 客户端和服务端领域逻辑（依赖基础库）
-    { "path": "./packages/domain-client" },
-    { "path": "./packages/domain-server" },
 
     // 静态资源
     { "path": "./packages/assets" }

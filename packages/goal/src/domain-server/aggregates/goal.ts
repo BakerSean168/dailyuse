@@ -223,8 +223,8 @@ export class Goal extends AggregateRoot<GoalId> {
   /**
    * 📊 计算属性：优先级级别
    */
-  get priorityLevel(): 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' {
-    return mapPriorityToLevel(this._props.priority);
+  get priorityLevel(): 'Critical' | 'High' | 'Medium' | 'Low' {
+    return mapPriorityToLevel(this._props.priority) as 'Critical' | 'High' | 'Medium' | 'Low';
   }
 
   /**
@@ -396,7 +396,7 @@ export class Goal extends AggregateRoot<GoalId> {
       feasibilityAnalysis: params.feasibilityAnalysis?.trim() || null,
       motivation: params.motivation?.trim() || null,
       status: GoalStatus.Active,
-      importance: params.importance ?? ('MEDIUM' as ImportanceLevel),
+      importance: params.importance ?? ImportanceLevel.Moderate,
       priority: 0,
       category: params.category?.trim() || null,
       tags: params.tags ?? [],
@@ -517,9 +517,19 @@ export class Goal extends AggregateRoot<GoalId> {
         this.refreshPriority();
       }
 
+      const changeKeys = Object.keys(params);
       this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        changes: Object.keys(params),
+        changes: changeKeys,
       });
+
+      this.addDomainEvent<GoalEventMap['goal:schedule-time-changed']>(
+        'goal:schedule-time-changed',
+        {
+          identityId: this._props.identityId,
+          goal: this.toServerDTO(true),
+          changes: changeKeys,
+        },
+      );
     }
   }
 
@@ -568,7 +578,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public extendTargetDate(extensionDays: number): void {
     if (extensionDays <= 0) {
-      throw new GoalInvalidDateModificationError('extend', extensionDays);
+      throw new GoalInvalidDateModificationError('Extend', extensionDays);
     }
     if (!this._props.targetDate) {
       throw new GoalTargetDateNotSetError();
@@ -586,7 +596,7 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public shortenTargetDate(shortenDays: number): void {
     if (shortenDays <= 0) {
-      throw new GoalInvalidDateModificationError('shorten', shortenDays);
+      throw new GoalInvalidDateModificationError('Shorten', shortenDays);
     }
     if (!this._props.targetDate) {
       throw new GoalTargetDateNotSetError();
@@ -698,6 +708,9 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.updatedAt = now;
 
     this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+    this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
+      isSoftDelete: true,
+    });
   }
 
   /**
@@ -745,6 +758,14 @@ export class Goal extends AggregateRoot<GoalId> {
   public updateReminderConfig(config: GoalReminderConfigDTO | null): void {
     this._props.reminderConfig = config ? GoalReminderConfig.fromDTO(config) : null;
     this._props.updatedAt = new Date();
+    this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+      'goal:reminder-config-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: ['reminderConfig'],
+      },
+    );
   }
 
   /**
@@ -754,6 +775,14 @@ export class Goal extends AggregateRoot<GoalId> {
     if (this._props.reminderConfig) {
       this._props.reminderConfig = this._props.reminderConfig.setEnabled(true);
       this._props.updatedAt = new Date();
+      this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+        'goal:reminder-config-changed',
+        {
+          identityId: this._props.identityId,
+          goal: this.toServerDTO(true),
+          changes: ['reminderConfig', 'enabled'],
+        },
+      );
     }
   }
 
@@ -764,6 +793,14 @@ export class Goal extends AggregateRoot<GoalId> {
     if (this._props.reminderConfig) {
       this._props.reminderConfig = this._props.reminderConfig.setEnabled(false);
       this._props.updatedAt = new Date();
+      this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+        'goal:reminder-config-changed',
+        {
+          identityId: this._props.identityId,
+          goal: this.toServerDTO(true),
+          changes: ['reminderConfig', 'enabled'],
+        },
+      );
     }
   }
 
@@ -776,6 +813,14 @@ export class Goal extends AggregateRoot<GoalId> {
     }
     this._props.reminderConfig = this._props.reminderConfig.addTrigger(trigger);
     this._props.updatedAt = new Date();
+    this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+      'goal:reminder-config-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: ['reminderConfig', 'triggers'],
+      },
+    );
   }
 
   /**
@@ -787,6 +832,14 @@ export class Goal extends AggregateRoot<GoalId> {
     }
     this._props.reminderConfig = this._props.reminderConfig.removeTrigger(type, value);
     this._props.updatedAt = new Date();
+    this.addDomainEvent<GoalEventMap['goal:reminder-config-changed']>(
+      'goal:reminder-config-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: ['reminderConfig', 'triggers'],
+      },
+    );
   }
 
   // ================= 4. 关键结果管理 (KeyResult Management) =================
@@ -827,7 +880,7 @@ export class Goal extends AggregateRoot<GoalId> {
         currentValue: params.currentValue ?? 0,
         targetValue: params.targetValue,
         valueType: params.valueType as any,
-        aggregationMethod: (params.aggregationMethod || 'LAST') as any,
+        aggregationMethod: (params.aggregationMethod || 'Last') as any,
         unit: params.unit ?? null,
       },
       weight: params.weight,
@@ -1021,7 +1074,7 @@ export class Goal extends AggregateRoot<GoalId> {
 
     return {
       totalProgress,
-      calculationMode: 'weighted_average' as const,
+      calculationMode: 'WeightedAverage' as const,
       krContributions: this._props.keyResults.map((kr) => {
         const krProgress = kr.calculatePercentage();
         const contribution =

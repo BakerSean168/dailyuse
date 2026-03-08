@@ -7,6 +7,11 @@
 
 // ============ Protocol ============
 export * from './protocol';
+export type {
+  NotificationDispatchBase,
+  NotificationDispatchDesktopEvent,
+  NotificationDispatchInAppEvent,
+} from './protocol';
 
 // ============ Value Objects ============
 export * from './value-objects';

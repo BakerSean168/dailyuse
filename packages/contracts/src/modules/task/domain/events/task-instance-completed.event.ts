@@ -1,5 +1,5 @@
 export interface TaskInstanceCompletedEvent {
-  eventType: 'task.instance.completed';
+  eventType: 'task:instance:completed';
   payload: {
     taskInstanceId: string;
     taskTemplateId: string;

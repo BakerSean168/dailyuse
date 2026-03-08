@@ -5,6 +5,7 @@
 import type Database from 'better-sqlite3';
 import type { IAIUsageQuotaRepository } from '../../../domain-server/repositories/IAIUsageQuotaRepository';
 import { QuotaResetPeriod, type AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
+import { AiUsageQuotaSqliteMapper } from './mappers/ai-usage-quota-sqlite.mapper';
 
 export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
   constructor(private db: Database.Database) {}
@@ -50,7 +51,7 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
       )
       .get(id) as any;
 
-    return row ? this.rowToDTO(row) : null;
+    return row ? AiUsageQuotaSqliteMapper.toDTO(row) : null;
   }
 
   async findByIdentityId(identityId: string): Promise<AIUsageQuotaServerDTO | null> {
@@ -64,7 +65,7 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
       )
       .get(identityId) as any;
 
-    return row ? this.rowToDTO(row) : null;
+    return row ? AiUsageQuotaSqliteMapper.toDTO(row) : null;
   }
 
   async createDefaultQuota(identityId: string): Promise<AIUsageQuotaServerDTO> {
@@ -107,19 +108,5 @@ export class SqliteAIUsageQuotaRepository implements IAIUsageQuotaRepository {
       .get(identityId);
 
     return row !== undefined;
-  }
-
-  private rowToDTO(row: any): AIUsageQuotaServerDTO {
-    return {
-      id: row.id,
-      identityId: row.identity_id,
-      quotaLimit: row.quota_limit,
-      currentUsage: row.current_usage,
-      resetPeriod: row.reset_period,
-      lastResetAt: row.last_reset_at,
-      nextResetAt: row.next_reset_at,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
   }
 }

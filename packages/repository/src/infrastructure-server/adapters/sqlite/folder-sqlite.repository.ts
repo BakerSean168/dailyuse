@@ -4,10 +4,9 @@
  */
 
 import type Database from 'better-sqlite3';
-import { Folder, type FolderState } from '../../../domain-server/entities/folder';
-import { ResourceId } from '../../../domain-shared/value-objects/resource-id';
-import { FolderMetadata } from '../../../domain-shared/value-objects/folder-metadata';
+import { Folder } from '../../../domain-server/entities/folder';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
+import { FolderSqliteMapper } from './mappers/folder-sqlite.mapper';
 
 export class SqliteFolderRepository implements IFolderRepository {
   constructor(private db: Database.Database) {}
@@ -41,21 +40,21 @@ export class SqliteFolderRepository implements IFolderRepository {
 
     if (!row) return null;
 
-    return this.mapToDomain(row);
+    return FolderSqliteMapper.toDomain(row);
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(`SELECT * FROM folders WHERE repository_id = ? ORDER BY path ASC`);
     const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) => this.mapToDomain(row));
+    return rows.map((row) => FolderSqliteMapper.toDomain(row));
   }
 
   async findByParentId(parentId: string): Promise<Folder[]> {
     const stmt = this.db.prepare(`SELECT * FROM folders WHERE parent_id = ? ORDER BY name ASC`);
     const rows = stmt.all(parentId) as any[];
 
-    return rows.map((row) => this.mapToDomain(row));
+    return rows.map((row) => FolderSqliteMapper.toDomain(row));
   }
 
   async findByAccountId(identityId: string): Promise<Folder[]> {
@@ -67,7 +66,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(identityId) as any[];
 
-    return rows.map((row) => this.mapToDomain(row));
+    return rows.map((row) => FolderSqliteMapper.toDomain(row));
   }
 
   async existsByPath(repositoryId: string, path: string): Promise<boolean> {
@@ -88,7 +87,7 @@ export class SqliteFolderRepository implements IFolderRepository {
     );
     const rows = stmt.all(repositoryId) as any[];
 
-    return rows.map((row) => this.mapToDomain(row));
+    return rows.map((row) => FolderSqliteMapper.toDomain(row));
   }
 
   async deleteByRepositoryId(repositoryId: string): Promise<void> {
@@ -99,24 +98,5 @@ export class SqliteFolderRepository implements IFolderRepository {
   async exists(id: string): Promise<boolean> {
     const stmt = this.db.prepare(`SELECT 1 FROM folders WHERE id = ? LIMIT 1`);
     return stmt.get(id) !== undefined;
-  }
-
-  private mapToDomain(row: any): Folder {
-    const metadata = row.metadata ?? JSON.stringify(FolderMetadata.createDefault().toDTO());
-
-    return Folder.load({
-      id: ResourceId.of(row.id),
-      repositoryId: row.repository_id,
-      identityId: row.identity_id,
-      parentId: row.parent_id,
-      name: row.name,
-      path: row.path,
-      order: row.order ?? 0,
-      isExpanded: row.is_expanded ?? false,
-      metadata: FolderMetadata.fromDTO(JSON.parse(metadata)),
-      createdAt: row.created_at instanceof Date ? row.created_at : new Date(row.created_at),
-      updatedAt: row.updated_at instanceof Date ? row.updated_at : new Date(row.updated_at),
-      children: null,
-    });
   }
 }

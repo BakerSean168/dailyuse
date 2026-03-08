@@ -1,6 +1,6 @@
 /**
  * Authentication - Login Operations
- * 
+ *
  * 所有与登录相关的API定义：邮箱登录、手机登录、短信验证码
  */
 
@@ -16,7 +16,7 @@ import type { AuthResponseDTO } from '../dtos';
  */
 export const SendSmsCodeSchema = z.object({
   phoneNumber: z.string().min(5, '手机号格式错误'),
-  purpose: z.enum(['LOGIN', 'REGISTER', 'BIND', 'RESET_PASSWORD']),
+  purpose: z.enum(['Login', 'Register', 'Bind', 'ResetPassword']),
 });
 
 export type SendSmsCodeReq = z.infer<typeof SendSmsCodeSchema>;

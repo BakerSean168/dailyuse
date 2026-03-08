@@ -12,7 +12,7 @@ export interface ProgressBreakdown {
   totalProgress: number;
 
   /** 计算模式：加权平均 */
-  calculationMode: 'weighted_average';
+  calculationMode: ProgressCalculationMode;
 
   /** 各关键结果的贡献度列表 */
   krContributions: Array<{
@@ -38,6 +38,13 @@ export interface ProgressBreakdown {
   /** 更新触发方式 */
   updateTrigger: string;
 }
+
+export const ProgressCalculationMode = {
+  WeightedAverage: 'WeightedAverage',
+} as const;
+
+export type ProgressCalculationMode =
+  (typeof ProgressCalculationMode)[keyof typeof ProgressCalculationMode];
 
 /**
  * 进度分解响应

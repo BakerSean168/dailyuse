@@ -90,7 +90,7 @@ export class RecordReminderResponse {
 
       // 发布响应记录事件
       eventBus.send(
-        'reminder.response.recorded' as any,
+        'reminder:response:recorded' as any,
         {
           responseId: savedRecord.id,
           templateId: dto.templateId,

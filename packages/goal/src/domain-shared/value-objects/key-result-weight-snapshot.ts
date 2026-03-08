@@ -263,28 +263,28 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
    * 是否为手动调整
    */
   public get isManual(): boolean {
-    return this.props.trigger === 'manual';
+    return this.props.trigger === 'Manual';
   }
 
   /**
    * 是否为自动调整
    */
   public get isAuto(): boolean {
-    return this.props.trigger === 'auto';
+    return this.props.trigger === 'Auto';
   }
 
   /**
    * 是否为恢复操作
    */
   public get isRestore(): boolean {
-    return this.props.trigger === 'restore';
+    return this.props.trigger === 'Restore';
   }
 
   /**
    * 是否为导入操作
    */
   public get isImport(): boolean {
-    return this.props.trigger === 'import';
+    return this.props.trigger === 'Import';
   }
 
   /**
@@ -299,10 +299,10 @@ export class KeyResultWeightSnapshot extends ValueObject<KeyResultWeightSnapshot
    */
   public getTriggerDisplayText(): string {
     const triggerMap: Record<SnapshotTrigger, string> = {
-      manual: '手动调整',
-      auto: '自动调整',
-      restore: '恢复历史',
-      import: '外部导入',
+      Manual: '手动调整',
+      Auto: '自动调整',
+      Restore: '恢复历史',
+      Import: '外部导入',
     };
     return triggerMap[this.props.trigger] || this.props.trigger;
   }

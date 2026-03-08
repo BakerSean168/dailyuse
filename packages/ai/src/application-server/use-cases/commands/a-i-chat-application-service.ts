@@ -5,18 +5,12 @@
  * 依赖注入模式：所有依赖通过构造函数注入，不直接依赖具体实?
  */
 
-import type {
-  IAIConversationRepository,
-} from '../../../domain-server/repositories/IAIConversationRepository';
-import type {
-  IAIAdapter,
-  AIGenerationRequest,
-  AIStreamChunk,
-} from '../../../domain-server/interfaces/adapter-types';
+import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
+import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
 import { AIConversation as AIConversationServer } from '../../../domain-server/aggregates/ai-conversation';
 import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
-import { MessageRole, GenerationTaskType } from '@dailyuse/contracts/ai';
+import { MessageRole } from '@dailyuse/contracts/ai';
 import { createLogger, eventBus } from '@dailyuse/utils';
 
 const logger = createLogger('AIChatApplicationService');
@@ -27,7 +21,7 @@ const logger = createLogger('AIChatApplicationService');
 export class AIChatApplicationService {
   constructor(
     private readonly conversationRepository: IAIConversationRepository,
-    private readonly aiAdapter: IAIAdapter,
+    private readonly providerConfigRepository: IAIProviderConfigRepository,
   ) {}
 
   /**
@@ -42,7 +36,7 @@ export class AIChatApplicationService {
   ): Promise<SendMessageRes> {
     // 1. Validate & Save User Message
     const conversation = await this.validateAndGetConversation(identityId, conversationId);
-    const userMessage = await this.saveMessage(conversation, MessageRole.User, content);
+    await this.saveMessage(conversation, MessageRole.User, content);
 
     // 2. Prepare Context (History)
     // For simplicity, we just use the current message as prompt or fetch recent history
@@ -51,21 +45,7 @@ export class AIChatApplicationService {
     const prompt = this.formatChatPrompt(history, content);
 
     // 3. Call AI
-    const request: AIGenerationRequest = {
-      taskType: GenerationTaskType.GeneralChat,
-      prompt: prompt,
-      systemPrompt: 'You are a helpful assistant.',
-      // provider/model handling would go here if adapter supports dynamic config or we swtich adapter
-    };
-
-    let aiResponseContent = '';
-    try {
-      const response = await this.aiAdapter.generateText(request);
-      aiResponseContent = response.content;
-    } catch (error) {
-      logger.error('AI Generation Failed', error);
-      throw new Error('AI Service Unavailable');
-    }
+    const aiResponseContent = await this.generateChatResponse(identityId, prompt);
 
     // 4. Save AI Message
     const aiMessage = await this.saveMessage(
@@ -94,28 +74,18 @@ export class AIChatApplicationService {
     const history = await this.getConversationHistory(conversationId);
     const prompt = this.formatChatPrompt(history, content);
 
-    const request: AIGenerationRequest = {
-      taskType: GenerationTaskType.GeneralChat,
-      prompt: prompt,
-      systemPrompt: 'You are a helpful assistant.',
-    };
-
     let fullContent = '';
 
     try {
-      for await (const chunk of this.aiAdapter.streamText(request)) {
-        fullContent = chunk.fullText;
-        onChunk({
-          content: chunk.delta,
-          role: MessageRole.Assistant,
-        }); // Stream delta to client
-      }
+      fullContent = await this.generateChatResponse(identityId, prompt);
+      onChunk({
+        content: fullContent,
+        role: MessageRole.Assistant,
+      });
 
-      // Save full AI message after stream completes
       await this.saveMessage(conversation, MessageRole.Assistant, fullContent);
     } catch (error) {
       logger.error('AI Stream Failed', error);
-      // Should probably notify client of error
       throw error;
     }
   }
@@ -182,5 +152,61 @@ export class AIChatApplicationService {
     // prompt += `user: ${newContent}\n`; // newContent is already in history if we saved it first?
     // If we saved user message first, it is in history.
     return prompt;
+  }
+
+  private async generateChatResponse(identityId: string, prompt: string): Promise<string> {
+    const providerConfig = await this.getProviderConfig(identityId);
+    const response = await this.requestChatCompletion(providerConfig, prompt);
+    return response.content;
+  }
+
+  private async getProviderConfig(identityId: string) {
+    const defaultConfig = await this.providerConfigRepository.findDefaultByIdentityId(identityId);
+    if (defaultConfig && defaultConfig.isActive) {
+      return defaultConfig;
+    }
+
+    const providers = await this.providerConfigRepository.findByIdentityId(identityId);
+    const activeProvider = providers.find((provider) => provider.isActive);
+    if (!activeProvider) {
+      throw new Error('No AI provider configured');
+    }
+
+    return activeProvider;
+  }
+
+  private async requestChatCompletion(
+    config: { baseUrl: string; apiKey: string; defaultModel: string | null; name?: string },
+    prompt: string,
+  ): Promise<{ content: string }> {
+    const url = new URL('/v1/chat/completions', config.baseUrl);
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: config.defaultModel || 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`AI Provider error: ${response.status} ${errorText}`);
+    }
+
+    const json = await response.json();
+    const content = json?.choices?.[0]?.message?.content;
+    if (!content || typeof content !== 'string') {
+      throw new Error('AI Provider returned empty response');
+    }
+
+    return { content };
   }
 }

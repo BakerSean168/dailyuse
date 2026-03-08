@@ -8,7 +8,13 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createWebHistory } from 'vue-router';
-import { createAppRouter, useAuthenticationStore, createI18nPlugin } from '@dailyuse/app-vue';
+import {
+  createAppRouter,
+  useAuthenticationStore,
+  createI18nPlugin,
+  registerNotificationInitializationTasks,
+} from '@dailyuse/app-vue';
+import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
 
 import App from './App.vue';
@@ -56,6 +62,10 @@ async function startApp() {
 
   // Platform DI — HTTP-backed services + navigation
   app.use(installWebServices);
+
+  // App-Vue module initialization tasks
+  registerNotificationInitializationTasks();
+  await InitializationManager.getInstance().executePhase(InitializationPhase.APP_STARTUP);
 
   app.mount('#app');
 }

@@ -10,7 +10,7 @@ export type SessionStatus = ISessionStatus & { readonly __brand: unique symbol }
 /**
  * 合法值集�?- Single Source of Truth
  */
-const VALUES: ISessionStatus[] = ['ACTIVE', 'EXPIRED', 'REVOKED'];
+const VALUES: ISessionStatus[] = ['Active', 'Expired', 'Revoked'];
 
 /**
  * 伴生对象 - 提供静态方法和行为逻辑
@@ -18,9 +18,9 @@ const VALUES: ISessionStatus[] = ['ACTIVE', 'EXPIRED', 'REVOKED'];
 export const SessionStatus = {
   // ================= 常量定义 =================
 
-  ACTIVE: 'ACTIVE' as SessionStatus,
-  EXPIRED: 'EXPIRED' as SessionStatus,
-  REVOKED: 'REVOKED' as SessionStatus,
+  Active: 'Active' as SessionStatus,
+  Expired: 'Expired' as SessionStatus,
+  Revoked: 'Revoked' as SessionStatus,
 
   // ================= 工厂方法 =================
 
@@ -56,21 +56,21 @@ export const SessionStatus = {
    * 会话是否处于活跃状�?
    */
   isActive(status: SessionStatus): boolean {
-    return status === this.ACTIVE;
+    return status === this.Active;
   },
 
   /**
    * 会话是否已过�?
    */
   isExpired(status: SessionStatus): boolean {
-    return status === this.EXPIRED;
+    return status === this.Expired;
   },
 
   /**
    * 会话是否已被撤销（用户主动登出）
    */
   isRevoked(status: SessionStatus): boolean {
-    return status === this.REVOKED;
+    return status === this.Revoked;
   },
 
   /**

@@ -1,15 +1,15 @@
 /**
  * Prisma AuthSession Mapper
  *
- * 双向映射�?
- * - toDomain:  Prisma DB row �?AuthSessionState �?AuthSession 聚合�?
- * - toPersistence: AuthSession 聚合�?�?Prisma write data (扁平�?
+ * 双向映射�?
+ * - toDomain:  Prisma DB row �?AuthSessionState �?AuthSession 聚合�?
+ * - toPersistence: AuthSession 聚合�?�?Prisma write data (扁平�?
  *
- * 特殊映射说明�?
- * - Prisma AuthSession �?status 列，状态从 deletedAt / expiresAt 推导
- * - Prisma AuthSession �?token 列，JWT 在运行时签发
- * - DeviceInfo 值对象拆分为多个 Prisma 独立�?
- * - isRevoked 映射�?deletedAt（软删除模式�?
+ * 特殊映射说明�?
+ * - Prisma AuthSession �?status 列，状态从 deletedAt / expiresAt 推导
+ * - Prisma AuthSession �?token 列，JWT 在运行时签发
+ * - DeviceInfo 值对象拆分为多个 Prisma 独立�?
+ * - isRevoked 映射�?deletedAt（软删除模式�?
  */
 
 import type {
@@ -20,10 +20,7 @@ import type {
 import { AuthSession } from '../../../../domain-server';
 import type { AuthSessionState } from '../../../../domain-server';
 import type { PrismaAuthSessionRow } from '../../../types';
-import {
-  SessionStatus,
-  DeviceInfo as DeviceInfoVO,
-} from '../../../../domain-shared';
+import { SessionStatus, DeviceInfo as DeviceInfoVO } from '../../../../domain-shared';
 import type { IdentityId } from '@dailyuse/domain-shared/shared';
 
 // ============ Write Data Type ============
@@ -51,23 +48,23 @@ export interface AuthSessionPrismaWriteData {
 // ============ Mapper ============
 
 export class PrismaAuthSessionMapper {
-  // ========== DB �?Domain ==========
+  // ========== DB �?Domain ==========
 
   /**
-   * Prisma row �?AuthSession 聚合�?
+   * Prisma row �?AuthSession 聚合�?
    *
-   * 路径：DB Row �?AuthSessionState �?AuthSession.load()
+   * 路径：DB Row �?AuthSessionState �?AuthSession.load()
    */
   static toDomain(row: PrismaAuthSessionRow): AuthSession {
     return AuthSession.load(PrismaAuthSessionMapper.toState(row));
   }
 
   /**
-   * Prisma row �?AuthSessionState
+   * Prisma row �?AuthSessionState
    *
-   * 核心转换�?
-   * - 从多个独立列重组 DeviceInfo 值对�?
-   * - �?deletedAt/expiresAt 推导 session status
+   * 核心转换�?
+   * - 从多个独立列重组 DeviceInfo 值对�?
+   * - �?deletedAt/expiresAt 推导 session status
    */
   static toState(row: PrismaAuthSessionRow): AuthSessionState {
     const geoLocation = row.location as {
@@ -104,13 +101,13 @@ export class PrismaAuthSessionMapper {
     // Derive session status from Prisma state (no status column in DB)
     const isRevoked = row.deletedAt != null;
     const isExpired = row.expiresAt.getTime() < Date.now();
-    let status: typeof SessionStatus.ACTIVE;
+    let status: typeof SessionStatus.Active;
     if (isRevoked) {
-      status = SessionStatus.REVOKED;
+      status = SessionStatus.Revoked;
     } else if (isExpired) {
-      status = SessionStatus.EXPIRED;
+      status = SessionStatus.Expired;
     } else {
-      status = SessionStatus.ACTIVE;
+      status = SessionStatus.Active;
     }
 
     return {
@@ -126,15 +123,15 @@ export class PrismaAuthSessionMapper {
     };
   }
 
-  // ========== Domain �?DB ==========
+  // ========== Domain �?DB ==========
 
   /**
-   * AuthSession 聚合�?�?Prisma 写入数据
+   * AuthSession 聚合�?�?Prisma 写入数据
    *
-   * 路径：AuthSession.toServerDTO() �?Prisma write data
-   * - number (timestamp) �?Date 转换
-   * - DeviceInfo �?多个独立�?
-   * - isRevoked �?deletedAt
+   * 路径：AuthSession.toServerDTO() �?Prisma write data
+   * - number (timestamp) �?Date 转换
+   * - DeviceInfo �?多个独立�?
+   * - isRevoked �?deletedAt
    */
   static toPersistence(session: AuthSession): AuthSessionPrismaWriteData {
     const dto = session.toServerDTO();
@@ -151,9 +148,7 @@ export class PrismaAuthSessionMapper {
       os: deviceInfo.os ?? null,
       browser: deviceInfo.browser ?? null,
       ipAddress: deviceInfo.ipAddress ?? null,
-      location: deviceInfo.location
-        ? (deviceInfo.location as Record<string, unknown>)
-        : undefined,
+      location: deviceInfo.location ? (deviceInfo.location as Record<string, unknown>) : undefined,
       version: 1,
       createdAt: new Date(dto.createdAt),
       expiresAt: new Date(dto.expiresAt),

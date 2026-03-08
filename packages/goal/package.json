@@ -31,6 +31,10 @@
       "types": "./dist/infrastructure-server/index.d.ts",
       "import": "./dist/infrastructure-server/index.js"
     },
+    "./infrastructure-server/sqlite": {
+      "types": "./dist/infrastructure-server/sqlite.d.ts",
+      "import": "./dist/infrastructure-server/sqlite.js"
+    },
     "./api": {
       "types": "./dist/api/index.d.ts",
       "import": "./dist/api/index.js"

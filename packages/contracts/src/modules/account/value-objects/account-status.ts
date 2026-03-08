@@ -1,7 +1,7 @@
 export const AccountStatus = {
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  DEACTIVATED: 'DEACTIVATED',
+  Active: 'Active',
+  Suspended: 'Suspended',
+  Deactivated: 'Deactivated',
 } as const;
 
-export type AccountStatus = typeof AccountStatus[keyof typeof AccountStatus];
+export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus];

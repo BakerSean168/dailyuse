@@ -4,9 +4,9 @@ import type { SettingValueType } from './setting-value-type';
 import type { UIInputType } from './ui-input-type';
 
 export const SettingScope = {
-  User: 'USER',
-  Device: 'DEVICE',
-  System: 'SYSTEM',
+  User: 'User',
+  Device: 'Device',
+  System: 'System',
 } as const;
 
 export type SettingScope = (typeof SettingScope)[keyof typeof SettingScope];

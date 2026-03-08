@@ -11,12 +11,12 @@ const mockConflicts: ConflictDetectionResult = {
       overlapStart: Date.now(),
       overlapEnd: Date.now() + 30 * 60 * 1000,
       overlapDuration: 30 * 60 * 1000,
-      severity: 'moderate',
+      severity: 'Moderate',
     },
   ],
   suggestions: [
     {
-      type: 'move_later',
+      type: 'MoveLater',
       newStartTime: Date.now() + 60 * 60 * 1000,
       newEndTime: Date.now() + 2 * 60 * 60 * 1000,
       description: 'Move to 1 hour later',

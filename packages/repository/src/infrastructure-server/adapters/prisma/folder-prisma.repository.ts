@@ -7,36 +7,8 @@
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
-import { Folder, type FolderState } from '../../../domain-server/entities/folder';
-import { ResourceId } from '../../../domain-shared/value-objects/resource-id';
-import { FolderMetadata } from '../../../domain-shared/value-objects/folder-metadata';
-import type { FolderMetadataDTO } from '@dailyuse/contracts/repository';
-
-function parseMetadata(value: unknown): FolderMetadata {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return FolderMetadata.createDefault();
-  }
-  return FolderMetadata.fromDTO(value as FolderMetadataDTO);
-}
-
-function mapToDomain(data: any): Folder {
-  const state: FolderState = {
-    id: ResourceId.of(data.id),
-    repositoryId: data.repositoryId,
-    identityId: data.identityId,
-    parentId: data.parentId,
-    name: data.name,
-    path: data.path,
-    order: data.order,
-    isExpanded: data.isExpanded,
-    metadata: parseMetadata(data.metadata),
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    children: null,
-  };
-
-  return Folder.load(state);
-}
+import { Folder } from '../../../domain-server/entities/folder';
+import { FolderPrismaMapper } from './mappers/folder-prisma.mapper';
 
 /**
  * Folder Prisma Repository
@@ -79,7 +51,7 @@ export class FolderPrismaRepository implements IFolderRepository {
 
   async findById(id: string): Promise<Folder | null> {
     const data = await this.prisma.folder.findUnique({ where: { id } });
-    return data ? mapToDomain(data) : null;
+    return data ? FolderPrismaMapper.toDomain(data) : null;
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Folder[]> {
@@ -87,7 +59,7 @@ export class FolderPrismaRepository implements IFolderRepository {
       where: { repositoryId },
       orderBy: { path: 'asc' },
     });
-    return rows.map(mapToDomain);
+    return FolderPrismaMapper.toDomainList(rows);
   }
 
   async findByParentId(parentId: string): Promise<Folder[]> {
@@ -95,7 +67,7 @@ export class FolderPrismaRepository implements IFolderRepository {
       where: { parentId },
       orderBy: { name: 'asc' },
     });
-    return rows.map(mapToDomain);
+    return FolderPrismaMapper.toDomainList(rows);
   }
 
   async findRootFolders(repositoryId: string): Promise<Folder[]> {
@@ -103,7 +75,7 @@ export class FolderPrismaRepository implements IFolderRepository {
       where: { repositoryId, parentId: null },
       orderBy: { name: 'asc' },
     });
-    return rows.map(mapToDomain);
+    return FolderPrismaMapper.toDomainList(rows);
   }
 
   async delete(id: string): Promise<void> {

@@ -66,14 +66,14 @@ describe('DeleteTaskTemplate', () => {
     expect(templateRepo.delete).not.toHaveBeenCalled();
   });
 
-  it('should publish task.template.deleted event', async () => {
+  it('should publish task:template:deleted event', async () => {
     const template = aOneTimeTask();
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
 
     await useCase.execute(template.id);
 
     expect(eventBus.send).toHaveBeenCalledWith(
-      'task.template.deleted',
+      'task:template:deleted',
       expect.objectContaining({
         taskTemplateId: template.id,
         identityId: template.identityId,

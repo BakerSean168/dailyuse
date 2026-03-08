@@ -1,6 +1,6 @@
 /**
  * AuthIdentity 聚合根实现
- * 
+ *
  * 核心职责:
  * 1. 管理标识符集合 (邮箱/手机号 VO) —— 解决"如何找到用户"
  * 2. 管理 OAuth 绑定集合 (Entity 形式的标识符) —— 解决"通过第三方如何找到用户"
@@ -24,12 +24,10 @@ import {
   AuthCredentialId,
   HashedPassword,
   OAuthProvider,
-  PlainPassword
+  PlainPassword,
 } from '../../domain-shared';
 
-import {
-  IdentityId,
-} from '@dailyuse/domain-shared/shared';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 import { PasswordCredential, OAuthBinding } from '../entities';
 import { EmailIdentifier, PhoneIdentifier, type ConcreteIdentifier } from '../value-objects';
@@ -45,7 +43,7 @@ const LOCK_DURATION_MS = 15 * 60 * 1000;
 /** Domain state for AuthIdentity aggregate */
 export interface AuthIdentityState {
   id: IdentityId;
-  status: typeof AuthIdentityStatus.ACTIVE;
+  status: typeof AuthIdentityStatus.Active;
   failedLoginAttempts: number;
   lastFailedAttempt: Date | null;
   lockedUntil: Date | null;
@@ -63,9 +61,8 @@ export interface AuthIdentityState {
  * 管理用户的认证身份、标识符、绑定和凭证
  */
 export class AuthIdentity extends AggregateRoot<IdentityId> {
-
   // ================= 1. 内部状态 (Backing Fields) =================
-  private _status: typeof AuthIdentityStatus.ACTIVE;
+  private _status: typeof AuthIdentityStatus.Active;
   private _failedLoginAttempts: number;
   private _lastFailedAttempt: Date | null;
   private _lockedUntil: Date | null;
@@ -95,7 +92,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   }
 
   // ================= 3. 公共属性 (Getters) =================
-  get status(): typeof AuthIdentityStatus.ACTIVE {
+  get status(): typeof AuthIdentityStatus.Active {
     return this._status;
   }
 
@@ -112,11 +109,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   }
 
   get identifiers(): AuthIdentifierDTO[] {
-    return this._identifiers.map(i => i.toDTO());
+    return this._identifiers.map((i) => i.toDTO());
   }
 
   get oauthBindings(): OAuthBindingServerDTO[] {
-    return this._oauthBindings.map(b => b.toServerDTO());
+    return this._oauthBindings.map((b) => b.toServerDTO());
   }
 
   get credentials(): PasswordCredential[] {
@@ -158,13 +155,13 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     const emailIdentifier = EmailIdentifier.create(params.email, false);
     const passwordCredential = PasswordCredential.create({
       id: AuthCredentialId.generate(),
-      hashedPassword: hashedPassword
+      hashedPassword: hashedPassword,
     });
 
     const identityId = IdentityId.generate();
     const identity = new AuthIdentity({
       id: identityId,
-      status: AuthIdentityStatus.UNVERIFIED,
+      status: AuthIdentityStatus.Unverified,
       identifiers: [emailIdentifier],
       oauthBindings: [],
       credentials: [passwordCredential],
@@ -176,11 +173,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       updatedAt: now,
       deletedAt: null,
     });
-    
-    identity.addDomainEvent<AuthEventMap['auth:identity-created']>('auth:identity-created', { 
+
+    identity.addDomainEvent<AuthEventMap['auth:identity-created']>('auth:identity-created', {
       identityId: identityId,
-      createMethod: 'EMAIL',
-      email: params.email
+      createMethod: 'Email',
+      email: params.email,
     });
 
     return identity;
@@ -190,39 +187,36 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 🏭 通过 OAuth 创建身份
    * OAuthBinding 进入 oauthBindings 集合
    */
-  public static createWithOAuth(params: {
-    provider: OAuthProvider;
-    sub: string;
-  }): AuthIdentity {
+  public static createWithOAuth(params: { provider: OAuthProvider; sub: string }): AuthIdentity {
     const oauthBinding = OAuthBinding.create({
-        id: AuthCredentialId.generate(),
-        provider: params.provider,
-        providerSubjectId: params.sub
+      id: AuthCredentialId.generate(),
+      provider: params.provider,
+      providerSubjectId: params.sub,
     });
 
     const identityId = IdentityId.generate();
     const now = new Date();
     const identity = new AuthIdentity({
-        id: identityId,
-        identifiers: [],
-        oauthBindings: [oauthBinding],
-        credentials: [],
-        status: AuthIdentityStatus.UNVERIFIED,
-        failedLoginAttempts: 0,
-        lastFailedAttempt: null,
-        lockedUntil: null,
-        version: 1,
-        createdAt: now,
-        updatedAt: now,
-        deletedAt: null,
+      id: identityId,
+      identifiers: [],
+      oauthBindings: [oauthBinding],
+      credentials: [],
+      status: AuthIdentityStatus.Unverified,
+      failedLoginAttempts: 0,
+      lastFailedAttempt: null,
+      lockedUntil: null,
+      version: 1,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
     });
 
-    identity.addDomainEvent<AuthEventMap['auth:identity-created']>('auth:identity-created', { 
+    identity.addDomainEvent<AuthEventMap['auth:identity-created']>('auth:identity-created', {
       identityId: identityId,
-      createMethod: 'OAUTH',
-      oauthProvider: params.provider
+      createMethod: 'Oauth',
+      oauthProvider: params.provider,
     });
-    
+
     return identity;
   }
 
@@ -249,7 +243,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 移除邮箱标识符
    */
   public removeEmailIdentifier(email: string): void {
-    const idx = this._identifiers.findIndex(i => i.type === 'EMAIL' && i.value === email);
+    const idx = this._identifiers.findIndex((i) => i.type === 'Email' && i.value === email);
     if (idx < 0) throw new Error('Email identifier not found');
     if (!this.hasOtherLoginPathAfterIdentifierRemoval(idx)) {
       throw new Error('Cannot remove the last login path');
@@ -272,7 +266,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 移除手机标识符
    */
   public removePhoneIdentifier(phone: string): void {
-    const idx = this._identifiers.findIndex(i => i.type === 'PHONE' && i.value === phone);
+    const idx = this._identifiers.findIndex((i) => i.type === 'Phone' && i.value === phone);
     if (idx < 0) throw new Error('Phone identifier not found');
     if (!this.hasOtherLoginPathAfterIdentifierRemoval(idx)) {
       throw new Error('Cannot remove the last login path');
@@ -285,7 +279,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 验证邮箱标识符
    */
   public verifyEmailIdentifier(email: string): void {
-    const idx = this._identifiers.findIndex(i => i.type === 'EMAIL' && i.value === email);
+    const idx = this._identifiers.findIndex((i) => i.type === 'Email' && i.value === email);
     if (idx < 0) throw new Error('Email identifier not found');
     this._identifiers[idx] = (this._identifiers[idx] as EmailIdentifier).verify();
     this.refreshUpdatedAt();
@@ -295,7 +289,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 验证手机标识符
    */
   public verifyPhoneIdentifier(phone: string): void {
-    const idx = this._identifiers.findIndex(i => i.type === 'PHONE' && i.value === phone);
+    const idx = this._identifiers.findIndex((i) => i.type === 'Phone' && i.value === phone);
     if (idx < 0) throw new Error('Phone identifier not found');
     this._identifiers[idx] = (this._identifiers[idx] as PhoneIdentifier).verify();
     this.refreshUpdatedAt();
@@ -305,14 +299,20 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 根据邮箱查找标识符
    */
   public findIdentifierByEmail(email: string): EmailIdentifier | null {
-    return (this._identifiers.find(i => i.type === 'EMAIL' && i.value === email) as EmailIdentifier) ?? null;
+    return (
+      (this._identifiers.find((i) => i.type === 'Email' && i.value === email) as EmailIdentifier) ??
+      null
+    );
   }
 
   /**
    * 根据手机号查找标识符
    */
   public findIdentifierByPhone(phone: string): PhoneIdentifier | null {
-    return (this._identifiers.find(i => i.type === 'PHONE' && i.value === phone) as PhoneIdentifier) ?? null;
+    return (
+      (this._identifiers.find((i) => i.type === 'Phone' && i.value === phone) as PhoneIdentifier) ??
+      null
+    );
   }
 
   /**
@@ -327,7 +327,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    */
   public addOAuthBinding(binding: OAuthBinding): void {
     const existing = this._oauthBindings.find(
-      b => b.provider === binding.provider && b.providerSubjectId === binding.providerSubjectId
+      (b) => b.provider === binding.provider && b.providerSubjectId === binding.providerSubjectId,
     );
     if (existing) throw new Error(`OAuth binding for ${binding.provider} already exists`);
     this._oauthBindings.push(binding);
@@ -338,7 +338,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    * 移除 OAuth 绑定
    */
   public removeOAuthBinding(bindingId: string): void {
-    const idx = this._oauthBindings.findIndex(b => b.id === bindingId);
+    const idx = this._oauthBindings.findIndex((b) => b.id === bindingId);
     if (idx < 0) throw new Error(`OAuth binding with id ${bindingId} not found`);
     if (!this.hasOtherLoginPathAfterOAuthRemoval(idx)) {
       throw new Error('Cannot remove the last login path');
@@ -350,7 +350,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
   // ================= 6. 业务行为 (Business Actions) =================
 
   public async verifyPassword(plainPassword: string, hasher: IPasswordHasher): Promise<boolean> {
-    const credential = this.getCredentialByType(CredentialType.PASSWORD);
+    const credential = this.getCredentialByType(CredentialType.Password);
 
     if (!credential) {
       throw new Error('Credential not found or is not a password credential');
@@ -372,10 +372,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       throw new Error('Cannot activate a disabled identity');
     }
 
-    this._status = AuthIdentityStatus.ACTIVE;
+    this._status = AuthIdentityStatus.Active;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AuthEventMap['auth:identity-activated']>('auth:identity-activated' as keyof AuthEventMap, {
+    this.addDomainEvent<AuthEventMap['auth:identity-activated']>('auth:identity-activated', {
       identityId: this.id,
     });
   }
@@ -386,7 +386,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
 
     if (this._failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
       this._lockedUntil = new Date(Date.now() + LOCK_DURATION_MS);
-      this._status = AuthIdentityStatus.LOCKED;
+      this._status = AuthIdentityStatus.Locked;
     }
 
     this.refreshUpdatedAt();
@@ -402,7 +402,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
 
     if (AuthIdentityStatus.isLocked(this._status)) {
       this._lockedUntil = null;
-      this._status = AuthIdentityStatus.ACTIVE;
+      this._status = AuthIdentityStatus.Active;
     }
 
     this.refreshUpdatedAt();
@@ -416,7 +416,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     if (this._lockedUntil.getTime() < Date.now()) {
       this._lockedUntil = null;
       if (AuthIdentityStatus.isLocked(this._status)) {
-        this._status = AuthIdentityStatus.ACTIVE;
+        this._status = AuthIdentityStatus.Active;
       }
       this.refreshUpdatedAt();
       return false;
@@ -444,7 +444,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
 
   public addCredential(credential: PasswordCredential): void {
     const existingIndex = this._credentials.findIndex(
-      c => c.type === credential.type && c.id === credential.id
+      (c) => c.type === credential.type && c.id === credential.id,
     );
 
     if (existingIndex >= 0) {
@@ -460,7 +460,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       throw new Error('Cannot remove the last credential. At least one login path must be kept.');
     }
 
-    const index = this._credentials.findIndex(c => c.id === credentialId);
+    const index = this._credentials.findIndex((c) => c.id === credentialId);
     if (index < 0) {
       throw new Error(`Credential with id ${credentialId} not found`);
     }
@@ -469,20 +469,20 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
   }
 
-  public getCredentialByType(type: typeof CredentialType.PASSWORD): PasswordCredential | null {
-    return this._credentials.find(c => c.type === type) ?? null;
+  public getCredentialByType(type: typeof CredentialType.Password): PasswordCredential | null {
+    return this._credentials.find((c) => c.type === type) ?? null;
   }
 
   public hasPassword(): boolean {
-    return this._credentials.some(c => c.type === CredentialType.PASSWORD);
+    return this._credentials.some((c) => c.type === CredentialType.Password);
   }
 
   public hasEmail(): boolean {
-    return this._identifiers.some(i => i.type === 'EMAIL');
+    return this._identifiers.some((i) => i.type === 'Email');
   }
 
   public hasPhone(): boolean {
-    return this._identifiers.some(i => i.type === 'PHONE');
+    return this._identifiers.some((i) => i.type === 'Phone');
   }
 
   public hasOAuth(): boolean {
@@ -494,10 +494,10 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       return;
     }
 
-    this._status = AuthIdentityStatus.DISABLED;
+    this._status = AuthIdentityStatus.Disabled;
     this.refreshUpdatedAt();
 
-    this.addDomainEvent<AuthEventMap['auth:identity-disabled']>('auth:identity-disabled' as keyof AuthEventMap, {
+    this.addDomainEvent<AuthEventMap['auth:identity-disabled']>('auth:identity-disabled', {
       identityId: this.id,
     });
   }
@@ -509,7 +509,11 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    */
   private hasOtherLoginPathAfterIdentifierRemoval(removeIdx: number): boolean {
     const remainingIdentifiers = this._identifiers.filter((_, idx) => idx !== removeIdx);
-    return remainingIdentifiers.length > 0 || this._oauthBindings.length > 0 || this._credentials.length > 0;
+    return (
+      remainingIdentifiers.length > 0 ||
+      this._oauthBindings.length > 0 ||
+      this._credentials.length > 0
+    );
   }
 
   /**
@@ -517,7 +521,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
    */
   private hasOtherLoginPathAfterOAuthRemoval(removeIdx: number): boolean {
     const remainingBindings = this._oauthBindings.filter((_, idx) => idx !== removeIdx);
-    return this._identifiers.length > 0 || remainingBindings.length > 0 || this._credentials.length > 0;
+    return (
+      this._identifiers.length > 0 || remainingBindings.length > 0 || this._credentials.length > 0
+    );
   }
 
   // ================= 8. 序列化 (Serialization) =================
@@ -529,9 +535,9 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       failedLoginAttempts: this._failedLoginAttempts,
       lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
       lockedUntil: this._lockedUntil?.getTime() ?? null,
-      identifiers: this._identifiers.map(i => i.toDTO()),
-      oauthBindings: this._oauthBindings.map(b => b.toServerDTO()),
-      credentials: this._credentials.map(cred => cred.toServerDTO()),
+      identifiers: this._identifiers.map((i) => i.toDTO()),
+      oauthBindings: this._oauthBindings.map((b) => b.toServerDTO()),
+      credentials: this._credentials.map((cred) => cred.toServerDTO()),
       version: this._version,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
@@ -546,8 +552,8 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       failedLoginAttempts: this._failedLoginAttempts,
       lastFailedAttempt: this._lastFailedAttempt?.getTime() ?? null,
       lockedUntil: this._lockedUntil?.getTime() ?? null,
-      identifiers: this._identifiers.map(i => i.toDTO()),
-      credentials: this._credentials.map(cred => ({
+      identifiers: this._identifiers.map((i) => i.toDTO()),
+      credentials: this._credentials.map((cred) => ({
         id: cred.id,
         type: cred.type,
         displayName: 'Password',
@@ -568,5 +574,4 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       deletedAt: null,
     };
   }
-
 }

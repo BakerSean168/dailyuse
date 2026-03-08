@@ -9,14 +9,13 @@
  */
 
 import { Notification, nativeImage, BrowserWindow } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// ESM compatibility for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { eventBus } from '@dailyuse/utils';
+import type { NotificationDispatchDesktopEvent } from '@dailyuse/contracts/notification';
 import { getCustomNotificationManager } from './custom-notification.manager';
+import { resolveAssetPath, resolveAssetPathFromKey } from '../utils/asset-path';
+import { assetManifest, type AssetImageKey } from '@dailyuse/assets';
 
 /**
  * Configuration options for displaying a notification.
@@ -46,11 +45,11 @@ export class NotificationService {
   private static instance: NotificationService;
   private mainWindow: BrowserWindow | null = null;
   private defaultIcon: Electron.NativeImage | null = null;
-  
+
   // Do Not Disturb (DND) state
   private dndEnabled: boolean = false;
-  private dndStartHour: number = 22;  // Default: Starts at 22:00
-  private dndEndHour: number = 7;     // Default: Ends at 07:00
+  private dndStartHour: number = 22; // Default: Starts at 22:00
+  private dndEndHour: number = 7; // Default: Ends at 07:00
   private dndScheduleEnabled: boolean = false;
 
   // Custom Notification Setting
@@ -200,8 +199,7 @@ export class NotificationService {
    */
   private initDefaultIcon(): void {
     try {
-      // Attempt to load the app icon
-      const iconPath = path.join(__dirname, '../assets/icon.png');
+      const iconPath = resolveAssetPath('images/logos/DailyUse-128.png');
       this.defaultIcon = nativeImage.createFromPath(iconPath);
     } catch (err) {
       console.warn('[NotificationService] Failed to load default icon:', err);
@@ -212,60 +210,49 @@ export class NotificationService {
    * Initializes internal event listeners for system events (reminders, schedules).
    */
   private initEventListeners(): void {
-    // Listen for reminder triggers
-    eventBus.on('reminder.triggered', (data: {
-      id: string;
-      title: string;
-      body?: string;
-      templateId: string;
-    }) => {
-      this.showNotification({
-        title: data.title,
-        body: data.body || '',
-        data: {
-          type: 'reminder',
-          id: data.id,
-          templateId: data.templateId,
-        },
-      });
-    });
-
-    // Listen for schedule triggers
-    eventBus.on('schedule:task-execute', (data: {
-      id: string;
-      name: string;
-      description?: string;
-    }) => {
-      this.showNotification({
-        title: `调度任务: ${data.name}`,
-        body: data.description || '任务已执行',
-        data: {
-          type: 'schedule',
-          id: data.id,
-        },
-      });
-    });
+    eventBus.on(
+      'notification:dispatch_desktop' as any,
+      (event: NotificationDispatchDesktopEvent) => {
+        this.showNotification({
+          title: event.title,
+          body: event.body ?? '',
+          icon: event.icon ?? undefined,
+          silent: event.silent,
+          sound: event.sound?.enabled ?? true,
+          data: event.data,
+        });
+      },
+    );
 
     // Listen for setting changes to dynamically update notification style preference
-    eventBus.on('setting:UserSettingPatched', (eventData: { category: string; changes: Record<string, unknown> }) => {
-      if (eventData.category === 'notification' && 'useCustomNotification' in eventData.changes) {
-        this.useCustomNotification = Boolean(eventData.changes.useCustomNotification);
-        console.log(`[NotificationService] Updated useCustomNotification preference to: ${this.useCustomNotification}`);
-      }
-    });
+    eventBus.on(
+      'setting:UserSettingPatched',
+      (eventData: { category: string; changes: Record<string, unknown> }) => {
+        if (eventData.category === 'notification' && 'useCustomNotification' in eventData.changes) {
+          this.useCustomNotification = Boolean(eventData.changes.useCustomNotification);
+          console.log(
+            `[NotificationService] Updated useCustomNotification preference to: ${this.useCustomNotification}`,
+          );
+        }
+      },
+    );
 
     // Also listen to full import/reset events where we might receive the full tree
-    eventBus.on('setting:SettingImported', (eventData: { preferences?: { notification?: { useCustomNotification?: boolean } } }) => {
+    eventBus.on('setting:SettingImported' as any, (eventData: any) => {
       if (eventData?.preferences?.notification?.useCustomNotification !== undefined) {
-        this.useCustomNotification = Boolean(eventData.preferences.notification.useCustomNotification);
+        this.useCustomNotification = Boolean(
+          eventData.preferences.notification.useCustomNotification,
+        );
       }
     });
 
     // Also listen to successful login to fetch initial preferences
-    eventBus.on('auth:login_success', (eventData: { user: { settings?: { notification?: { useCustomNotification?: boolean } } } }) => {
-       if (eventData?.user?.settings?.notification?.useCustomNotification !== undefined) {
-          this.useCustomNotification = Boolean(eventData.user.settings.notification.useCustomNotification);
-       }
+    eventBus.on('auth:login_success' as any, (eventData: any) => {
+      if (eventData?.user?.settings?.notification?.useCustomNotification !== undefined) {
+        this.useCustomNotification = Boolean(
+          eventData.user.settings.notification.useCustomNotification,
+        );
+      }
     });
   }
 
@@ -308,7 +295,9 @@ export class NotificationService {
       const notification = new Notification({
         title: options.title,
         body: options.body,
-        icon: options.icon ? nativeImage.createFromPath(options.icon) : this.defaultIcon ?? undefined,
+        icon: options.icon
+          ? nativeImage.createFromPath(this.resolveNotificationIconPath(options.icon))
+          : (this.defaultIcon ?? undefined),
         silent: options.silent ?? !options.sound,
         urgency: options.urgency ?? 'normal',
       });
@@ -349,6 +338,28 @@ export class NotificationService {
     }
   }
 
+  private resolveNotificationIconPath(icon: string): string {
+    const manifestMatch = resolveAssetPathFromKey('images', icon as AssetImageKey, assetManifest);
+
+    if (manifestMatch) {
+      return manifestMatch;
+    }
+
+    if (icon.startsWith('file://')) {
+      return fileURLToPath(new URL(icon));
+    }
+
+    if (path.isAbsolute(icon)) {
+      return icon;
+    }
+
+    if (icon.startsWith('images/') || icon.startsWith('audio/') || icon.startsWith('fonts/')) {
+      return resolveAssetPath(icon);
+    }
+
+    return icon;
+  }
+
   /**
    * Handles custom actions on notifications (if implemented).
    *
@@ -376,9 +387,10 @@ export class NotificationService {
     body?: string;
     importance?: string;
   }): Notification | null {
-    const urgency = reminder.importance === 'vital' || reminder.importance === 'important'
-      ? 'critical' as const
-      : 'normal' as const;
+    const urgency =
+      reminder.importance === 'vital' || reminder.importance === 'important'
+        ? ('critical' as const)
+        : ('normal' as const);
 
     return this.showNotification({
       title: `🔔 ${reminder.title}`,
@@ -443,10 +455,7 @@ export class NotificationService {
    * @param {Object} task - Completed task details.
    * @returns {Notification | null} The notification instance.
    */
-  showTaskCompletedNotification(task: {
-    id: string;
-    title: string;
-  }): Notification | null {
+  showTaskCompletedNotification(task: { id: string; title: string }): Notification | null {
     return this.showNotification({
       title: `✅ 任务已完成`,
       body: task.title,

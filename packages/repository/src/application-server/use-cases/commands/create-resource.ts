@@ -66,7 +66,7 @@ export class CreateResource {
     const contentBytes = input.content ? Buffer.byteLength(input.content, 'utf8') : 0;
 
     let metadataOverrides = {};
-    if (input.type === ResourceType.FILE) {
+    if (input.type === ResourceType.File) {
       this.policy.assertExtensionAllowed(input.name, {
         forbiddenExtensions: input.forbiddenExtensions,
       });
@@ -84,7 +84,9 @@ export class CreateResource {
             metadataOverrides = {
               tags: Array.isArray(parsed.data.tags)
                 ? parsed.data.tags.map(String)
-                : (typeof parsed.data.tags === 'string' ? [parsed.data.tags] : []),
+                : typeof parsed.data.tags === 'string'
+                  ? [parsed.data.tags]
+                  : [],
               thumbnail: parsed.data.thumbnail ?? parsed.data.cover ?? null,
             };
           }
@@ -102,7 +104,7 @@ export class CreateResource {
       type: input.type,
       path: input.path,
       content: input.content ?? null,
-      size: input.type === ResourceType.FILE ? contentBytes : null,
+      size: input.type === ResourceType.File ? contentBytes : null,
       metadata: metadataOverrides,
       allowedExtensions: null,
     });
@@ -111,7 +113,7 @@ export class CreateResource {
       repositoryId: input.repositoryId,
       path: input.path,
       content: input.content ?? null,
-      isFolder: input.type === ResourceType.FOLDER,
+      isFolder: input.type === ResourceType.Folder,
     });
 
     await this.resourceRepository.save(resource);

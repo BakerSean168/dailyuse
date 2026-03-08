@@ -1,10 +1,13 @@
 import { ValueObject } from '@dailyuse/utils';
-import type { AccountProfileDTO, AccountProfilePersistenceDTO, AccountProfile as IAccountProfile } from '@dailyuse/contracts/account';
+import type {
+  AccountProfileDTO,
+  AccountProfilePersistenceDTO,
+  AccountProfile as IAccountProfile,
+} from '@dailyuse/contracts/account';
 import type { DomainDate } from '@dailyuse/contracts/primitives';
 import { GenderType } from './gender-type';
 
 export class AccountProfile extends ValueObject<AccountProfileDTO> implements IAccountProfile {
-
   private constructor(props: AccountProfileDTO) {
     super(props);
   }
@@ -19,7 +22,7 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
 
     return new AccountProfile({
       nickname: defaultNickname,
-      gender: GenderType.PREFER_NOT_TO_SAY,
+      gender: GenderType.PreferNotToSay,
       realName: null,
       avatarUrl: null,
       bio: null,
@@ -81,11 +84,21 @@ export class AccountProfile extends ValueObject<AccountProfileDTO> implements IA
     return this.props.realName || this.props.nickname;
   }
 
-  get nickname(): string { return this.props.nickname; }
-  get realName(): string | null { return this.props.realName; }
-  get avatarUrl(): string | null { return this.props.avatarUrl; }
-  get bio(): string | null { return this.props.bio; }
-  get gender(): GenderType { return GenderType.of(this.props.gender); }
+  get nickname(): string {
+    return this.props.nickname;
+  }
+  get realName(): string | null {
+    return this.props.realName;
+  }
+  get avatarUrl(): string | null {
+    return this.props.avatarUrl;
+  }
+  get bio(): string | null {
+    return this.props.bio;
+  }
+  get gender(): GenderType {
+    return GenderType.of(this.props.gender);
+  }
   get birthday(): DomainDate | null {
     return this.props.birthday ? new Date(this.props.birthday) : null;
   }

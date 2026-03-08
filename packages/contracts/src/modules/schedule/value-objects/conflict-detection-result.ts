@@ -1,9 +1,9 @@
 /**
  * Conflict Detection Result Types
- * 
+ *
  * Defines the structure for conflict detection results, including
  * conflict details and resolution suggestions.
- * 
+ *
  * @module Schedule
  * @since Story 9.1 (EPIC-SCHEDULE-001)
  */
@@ -12,17 +12,17 @@
  * Result of conflict detection analysis
  */
 export const ConflictSeverity = {
-  Minor: 'minor',
-  Moderate: 'moderate',
-  Severe: 'severe',
+  Minor: 'Minor',
+  Moderate: 'Moderate',
+  Severe: 'Severe',
 } as const;
 
 export type ConflictSeverity = (typeof ConflictSeverity)[keyof typeof ConflictSeverity];
 
 export const ConflictSuggestionType = {
-  MoveEarlier: 'move_earlier',
-  MoveLater: 'move_later',
-  Shorten: 'shorten',
+  MoveEarlier: 'MoveEarlier',
+  MoveLater: 'MoveLater',
+  Shorten: 'Shorten',
 } as const;
 
 export type ConflictSuggestionType =

@@ -75,7 +75,7 @@ export class FocusMode extends ValueObject<FocusModeDTO> implements IFocusMode {
     identityId: string,
     focusedGoalIds: string[],
     endTime: number,
-    hiddenGoalsMode: HiddenGoalsMode = 'hide',
+    hiddenGoalsMode: HiddenGoalsMode = 'Hide',
   ): FocusMode {
     const now = Date.now();
     return new FocusMode({

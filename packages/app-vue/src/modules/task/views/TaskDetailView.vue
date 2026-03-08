@@ -238,14 +238,11 @@ function openEditDialog() {
 
 async function handleSaveEdit(vm: TaskTemplateViewModel) {
   const id = route.params.id as string;
-  const taskType: 'ONE_TIME' | 'RECURRING' = vm.recurrenceRule ? 'RECURRING' : 'ONE_TIME';
   const result = await updateTemplate(id, {
     name: vm.title,
     description: vm.description ?? null,
-    taskType,
     timeConfig: vm.timeConfig as any,
     recurrenceRule: vm.recurrenceRule ?? null,
-    reminderConfig: vm.reminderConfig ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
     folderId: (vm.folderId as any) ?? null,
@@ -283,11 +280,13 @@ function getTimeTypeLabel(type?: string | null): string {
   }
 }
 
-function getTimeValueDisplay(timeConfig?: {
-  timeType?: string;
-  timePoint?: number | null;
-  timeRange?: { start: number; end: number } | null;
-} | null): string {
+function getTimeValueDisplay(
+  timeConfig?: {
+    timeType?: string;
+    timePoint?: number | null;
+    timeRange?: { start: number; end: number } | null;
+  } | null,
+): string {
   if (!timeConfig) return '-';
   if (timeConfig.timeType === 'AllDay') return t('task.timeConfig.allDay');
   if (timeConfig.timeType === 'TimePoint') return formatMinuteOfDay(timeConfig.timePoint);

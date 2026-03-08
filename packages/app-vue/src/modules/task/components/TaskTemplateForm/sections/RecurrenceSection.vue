@@ -158,7 +158,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { RecurrenceFrequency, DayOfWeek, RECURRENCE_RULE_DEFAULTS } from '@dailyuse/contracts/task';
+import {
+  RecurrenceFrequency,
+  DayOfWeek,
+  RECURRENCE_RULE_DEFAULTS,
+  TaskType,
+} from '@dailyuse/contracts/task';
 import type { RecurrenceRuleDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplateViewModel } from '../../types';
 import {
@@ -298,13 +303,13 @@ const recurrenceEnabled = computed({
       };
       updateTemplate((template) => {
         (template as any).recurrenceRule = defaultRule;
-        (template as any).taskType = 'RECURRING';
+        (template as any).taskType = TaskType.Recurring;
       });
     } else if (!value) {
       // 禁用重复：清空规则
       updateTemplate((template) => {
         (template as any).recurrenceRule = null;
-        (template as any).taskType = 'ONE_TIME';
+        (template as any).taskType = TaskType.OneTime;
       });
     }
   },

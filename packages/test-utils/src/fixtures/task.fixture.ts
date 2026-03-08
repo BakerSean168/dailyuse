@@ -27,7 +27,7 @@
 
 import { IdentityId } from '@dailyuse/domain-shared';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { DayOfWeek } from '@dailyuse/contracts/task';
+import { DayOfWeek, TaskType } from '@dailyuse/contracts/modules/task';
 import {
   TaskTemplateId,
   TaskInstanceId,
@@ -142,7 +142,7 @@ export function aTaskTemplateState(overrides: Partial<TaskTemplateState> = {}): 
     identityId: overrides.identityId ?? anIdentityId(),
     title: overrides.title ?? titleFor('Task'),
     description: overrides.description ?? null,
-    taskType: overrides.taskType ?? 'ONE_TIME',
+    taskType: overrides.taskType ?? TaskType.OneTime,
     importance: overrides.importance ?? ImportanceLevel.Moderate,
     tags: overrides.tags ?? [],
     color: overrides.color ?? null,

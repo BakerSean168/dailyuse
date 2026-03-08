@@ -8,13 +8,34 @@ import tailwindcss from '@tailwindcss/vite';
 // Native modules — must be externalized (cannot be bundled by Vite)
 const nativeModules = ['better-sqlite3', 'electron', 'argon2'];
 
-// Modules with CJS-only generated code that Rollup cannot bundle as ESM
-const cjsOnlyModules = ['@dailyuse/database'];
+// Third-party packages that leak into the main process via workspace package
+// dist files (e.g. @dailyuse/task uses date-fns, @dailyuse/repository uses
+// gray-matter). They are pure-JS so they can be resolved at runtime from
+// node_modules; externalizing them avoids Rollup resolution errors.
+const thirdPartyLeaks = ['date-fns', 'gray-matter'];
 
-// Main process external: native modules + CJS-only modules
-// All other @dailyuse/* workspace packages are bundled into main.js
+// Workspace packages that must stay external in the main process bundle.
+// @dailyuse/database: The main process only uses @dailyuse/database/powersync
+// (a standalone PowerSync schema), but barrel re-exports in repository/editor
+// transitively pull in the CJS Prisma generated client which Rollup cannot
+// resolve. Externalizing the whole package avoids this.
+const workspaceExternal = ['@dailyuse/database'];
+
+// Main process external: native modules + leaked third-party packages
+// All @dailyuse/* workspace packages are now bundled into main.js
 // so electron-builder doesn't need to search the pnpm monorepo
-const electronMainExternal = [...nativeModules, ...cjsOnlyModules];
+const electronMainExternalList = [...nativeModules, ...thirdPartyLeaks];
+
+// Rollup external function: matches exact strings from the list above,
+// plus @dailyuse/database and all its subpaths (e.g. @dailyuse/database/powersync).
+function isElectronMainExternal(id: string): boolean {
+  if (electronMainExternalList.includes(id)) return true;
+  // Match @dailyuse/database exactly or any subpath like @dailyuse/database/powersync
+  for (const pkg of workspaceExternal) {
+    if (id === pkg || id.startsWith(pkg + '/')) return true;
+  }
+  return false;
+}
 
 // Workspace packages to exclude from optimizeDeps
 const workspacePkgs = [
@@ -23,11 +44,13 @@ const workspacePkgs = [
   '@dailyuse/app-vue',
   '@dailyuse/ui-vue-shadcn',
   '@dailyuse/ipc-client',
+  '@dailyuse/assets',
 ];
 
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
+    conditions: ['import', 'module', 'default'],
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@main': path.resolve(__dirname, './src/main'),
@@ -77,7 +100,7 @@ export default defineConfig({
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
-              external: electronMainExternal,
+              external: isElectronMainExternal,
               output: {
                 format: 'es',
                 entryFileNames: '[name].js',

@@ -15,8 +15,8 @@ import {
   SqliteGoalRepository,
   SqliteGoalFolderRepository,
   SqliteGoalRecordRepository,
-} from '../infrastructure-server';
-import { GoalContainer } from '../infrastructure-server/di/goal-container';
+  GoalContainer,
+} from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRepository } from '../domain-server';
 import type { Context } from '@dailyuse/contracts/shared';
@@ -72,19 +72,35 @@ export const GoalElectronModule: IElectronModule = {
     // 4. IPC Handlers
     ipcMain.handle(Ch.LIST, (_, params) => goalModule.listGoals.execute(params));
     ipcMain.handle(Ch.GET, (_, id) => goalModule.getGoal.execute(id));
-    ipcMain.handle(Ch.CREATE, (_, dto) => goalModule.createGoal.execute(dto, { identityId: dto.identityId, deviceId: 'electron-app' } as Context));
+    ipcMain.handle(Ch.CREATE, (_, dto) =>
+      goalModule.createGoal.execute(dto, {
+        identityId: dto.identityId,
+        deviceId: 'electron-app',
+      } as Context),
+    );
     ipcMain.handle(Ch.UPDATE, (_, dto) => goalModule.updateGoal.execute(dto.id, dto));
     ipcMain.handle(Ch.DELETE, (_, id) => goalModule.deleteGoal.execute(id));
     ipcMain.handle(Ch.ARCHIVE, (_, id) => goalModule.archiveGoal.execute(id));
     ipcMain.handle(Ch.RESTORE, (_, id) => goalModule.activateGoal.execute(id));
     ipcMain.handle(Ch.UPDATE_PROGRESS, (_, dto) =>
-      goalModule.updateKeyResultProgress.execute(dto.goalId, dto.keyResultId, dto.currentValue, dto.note),
+      goalModule.updateKeyResultProgress.execute(
+        dto.goalId,
+        dto.keyResultId,
+        dto.currentValue,
+        dto.note,
+      ),
     );
 
     ipcMain.handle(Ch.FOLDER_LIST, (_, params) => goalModule.listGoalFolders.execute(params));
-    ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) => goalModule.createGoalFolder.execute(dto.identityId, dto));
-    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) => goalModule.updateGoalFolder.execute(dto.id, dto.identityId, dto));
-    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) => goalModule.deleteGoalFolder.execute(dto.id, dto.identityId));
+    ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) =>
+      goalModule.createGoalFolder.execute(dto.identityId, dto),
+    );
+    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) =>
+      goalModule.updateGoalFolder.execute(dto.id, dto.identityId, dto),
+    );
+    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) =>
+      goalModule.deleteGoalFolder.execute(dto.id, dto.identityId),
+    );
 
     logger.info('Goal module registered');
   },

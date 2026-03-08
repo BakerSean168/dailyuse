@@ -31,6 +31,7 @@ import { RepositoryApiModule } from '@dailyuse/repository/api';
 import { ScheduleApiModule } from '@dailyuse/schedule/api';
 import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
+import { AIApiModule } from '@dailyuse/ai/api';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
@@ -72,6 +73,7 @@ async function bootstrap(): Promise<void> {
     .register(ScheduleApiModule) // ✅ 日程模块
     .register(SettingApiModule) // ✅ 设置模块
     .register(TaskApiModule) // ✅ 任务模块
+    .register(AIApiModule) // ✅ AI 模块
     .register(GoalApiModule) // ✅ 目标模块
     .register(PowerSyncApiModule) // ✅ PowerSync 同步模块
     .register(DashboardApiModule) // ✅ 仪表盘聚合模块

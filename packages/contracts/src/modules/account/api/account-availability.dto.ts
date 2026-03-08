@@ -3,7 +3,7 @@ import { brandedId } from '../../../primitives';
 import type { IdentityId } from '../value-objects/identity-id';
 
 export const CheckAvailabilitySchema = z.object({
-  type: z.enum(['NICKNAME', 'EMAIL']),
+  type: z.enum(['Nickname', 'Email']),
   value: z.string(),
 });
 

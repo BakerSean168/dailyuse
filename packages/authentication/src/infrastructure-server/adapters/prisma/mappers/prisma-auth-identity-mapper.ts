@@ -2,21 +2,20 @@
  * Prisma AuthIdentity Aggregate Root Mapper
  *
  * 聚合根映射器（Boss Mapper）：
- * - toDomain:  Prisma DB rows �?AuthIdentity 聚合�?(直接通过 ServerDTO)
- * - toPersistence: AuthIdentity 聚合�?�?Prisma write data (含关联表)
+ * - toDomain:  Prisma DB rows �?AuthIdentity 聚合�?(直接通过 ServerDTO)
+ * - toPersistence: AuthIdentity 聚合�?�?Prisma write data (含关联表)
  *
- * 调度�?Mapper 处理各关联表的映射：
- * - PrismaAuthIdentifierMapper  �?auth_identifiers �?
- * - PrismaAuthCredentialMapper  �?auth_credentials �?
- * - PrismaOAuthBindingMapper    �?auth_oauth_bindings �?
+ * 调度�?Mapper 处理各关联表的映射：
+ * - PrismaAuthIdentifierMapper  �?auth_identifiers �?
+ * - PrismaAuthCredentialMapper  �?auth_credentials �?
+ * - PrismaOAuthBindingMapper    �?auth_oauth_bindings �?
  *
- * 设计原则�?
- * - Repository 只和聚合�?Mapper 打交�?
- * - 聚合�?Mapper 负责调度�?Mapper
- * - PersistenceDTO 已移除，mapper 直接�?DB Row �?ServerDTO 之间转换
+ * 设计原则�?
+ * - Repository 只和聚合�?Mapper 打交�?
+ * - 聚合�?Mapper 负责调度�?Mapper
+ * - PersistenceDTO 已移除，mapper 直接�?DB Row �?ServerDTO 之间转换
  */
 
-import type { AuthIdentityStatus } from '@dailyuse/database';
 import type {
   AuthIdentityServerDTO,
   AuthIdentifierDTO,
@@ -34,7 +33,6 @@ import {
   CredentialStatus,
   HashedPassword,
   OAuthProvider,
-  
 } from '../../../../domain-shared';
 import { EmailIdentifier, PhoneIdentifier } from '../../../../domain-server/value-objects';
 import { OAuthBinding, PasswordCredential } from '../../../../domain-server/entities';
@@ -54,7 +52,7 @@ export { PrismaOAuthBindingMapper } from './prisma-oauth-binding-mapper';
 export interface AuthIdentityPrismaWriteData {
   identity: {
     id: string;
-    status: AuthIdentityStatus;
+    status: AuthIdentityStatusVO;
     failedLoginAttempts: number;
     lastFailedAttempt: Date | null;
     lockedUntil: Date | null;
@@ -71,38 +69,40 @@ export interface AuthIdentityPrismaWriteData {
 // ============ Mapper ============
 
 export class PrismaAuthIdentityMapper {
-  // ========== DB �?Domain ==========
+  // ========== DB �?Domain ==========
 
   /**
-   * Prisma row (with relations) �?AuthIdentity 聚合�?
+   * Prisma row (with relations) �?AuthIdentity 聚合�?
    *
-   * 路径：DB Rows �?Domain Objects �?AuthIdentity.load()
+   * 路径：DB Rows �?Domain Objects �?AuthIdentity.load()
    */
   static toDomain(row: PrismaAuthIdentityWithRelations): AuthIdentity {
     const serverDTO = PrismaAuthIdentityMapper.toServerDTO(row);
 
     // Convert DTO identifiers to domain value objects
     const identifiers = (serverDTO.identifiers ?? []).map((dto: AuthIdentifierDTO) => {
-      if (dto.type === 'EMAIL') return EmailIdentifier.fromDTO(dto);
-      if (dto.type === 'PHONE') return PhoneIdentifier.fromDTO(dto);
+      if (dto.type === 'Email') return EmailIdentifier.fromDTO(dto);
+      if (dto.type === 'Phone') return PhoneIdentifier.fromDTO(dto);
       throw new Error(`Unknown identifier type: ${(dto as any).type}`);
     });
 
     // Convert DTO oauth bindings to domain entities
-    const oauthBindings = (serverDTO.oauthBindings ?? []).map((dto: OAuthBindingServerDTO) => OAuthBinding.load({
-      id: dto.id,
-      provider: OAuthProvider.of(dto.provider),
-      providerSubjectId: dto.providerSubjectId,
-      accessToken: dto.accessToken ?? null,
-      refreshToken: dto.refreshToken ?? null,
-      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
-      createdAt: new Date(dto.createdAt),
-      lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
-    }));
+    const oauthBindings = (serverDTO.oauthBindings ?? []).map((dto: OAuthBindingServerDTO) =>
+      OAuthBinding.load({
+        id: dto.id,
+        provider: OAuthProvider.of(dto.provider),
+        providerSubjectId: dto.providerSubjectId,
+        accessToken: dto.accessToken ?? null,
+        refreshToken: dto.refreshToken ?? null,
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+        createdAt: new Date(dto.createdAt),
+        lastUsedAt: dto.lastUsedAt ? new Date(dto.lastUsedAt) : null,
+      }),
+    );
 
     // Convert DTO credentials to domain entities
     const credentials = serverDTO.credentials.map((cred: AuthCredentialServerDTO) => {
-      if (cred.type === CredentialType.PASSWORD) {
+      if (cred.type === CredentialType.Password) {
         const p = cred as PasswordCredentialServerDTO;
         return PasswordCredential.load({
           id: p.id,
@@ -133,20 +133,20 @@ export class PrismaAuthIdentityMapper {
   }
 
   /**
-   * Prisma row (with relations) �?AuthIdentityServerDTO
+   * Prisma row (with relations) �?AuthIdentityServerDTO
    *
-   * �?Prisma 返回的多表数据组装成领域层的 ServerDTO�?
-   * 委托�?Mapper 处理各关联表的转换�?
+   * �?Prisma 返回的多表数据组装成领域层的 ServerDTO�?
+   * 委托�?Mapper 处理各关联表的转换�?
    */
   static toServerDTO(row: PrismaAuthIdentityWithRelations): AuthIdentityServerDTO {
     return {
       id: IdentityId.of(row.id),
-      status: row.status,
+      status: AuthIdentityStatusVO.of(row.status),
       failedLoginAttempts: row.failedLoginAttempts,
       lastFailedAttempt: row.lastFailedAttempt?.getTime() ?? null,
       lockedUntil: row.lockedUntil?.getTime() ?? null,
 
-      // 调度�?Mapper
+      // 调度�?Mapper
       identifiers: row.identifiers.map(PrismaAuthIdentifierMapper.toDomainDTO),
       oauthBindings: row.oauthBindings.map(PrismaOAuthBindingMapper.toDomainDTO),
       credentials: row.credentials.map(PrismaAuthCredentialMapper.toDomainDTO),
@@ -158,13 +158,13 @@ export class PrismaAuthIdentityMapper {
     };
   }
 
-  // ========== Domain �?DB ==========
+  // ========== Domain �?DB ==========
 
   /**
-   * AuthIdentity 聚合�?�?Prisma 写入数据
+   * AuthIdentity 聚合�?�?Prisma 写入数据
    *
-   * 路径：AuthIdentity.toServerDTO() �?Prisma write data
-   * 委托�?Mapper 处理关联表的转换�?
+   * 路径：AuthIdentity.toServerDTO() �?Prisma write data
+   * 委托�?Mapper 处理关联表的转换�?
    */
   static toPersistence(identity: AuthIdentity): AuthIdentityPrismaWriteData {
     const dto = identity.toServerDTO();
@@ -173,7 +173,7 @@ export class PrismaAuthIdentityMapper {
     return {
       identity: {
         id: dto.id,
-        status: dto.status as AuthIdentityStatus,
+        status: AuthIdentityStatusVO.of(dto.status),
         failedLoginAttempts: dto.failedLoginAttempts,
         lastFailedAttempt: dto.lastFailedAttempt ? new Date(dto.lastFailedAttempt) : null,
         lockedUntil: dto.lockedUntil ? new Date(dto.lockedUntil) : null,
@@ -182,13 +182,13 @@ export class PrismaAuthIdentityMapper {
         updatedAt: new Date(dto.updatedAt),
         deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
       },
-      identifiers: dto.identifiers.map((i) =>
+      identifiers: dto.identifiers.map((i: AuthIdentifierDTO) =>
         PrismaAuthIdentifierMapper.toPrismaCreate(i, identityId),
       ),
-      oauthBindings: dto.oauthBindings.map((b) =>
+      oauthBindings: dto.oauthBindings.map((b: OAuthBindingServerDTO) =>
         PrismaOAuthBindingMapper.toPrismaCreate(b, identityId),
       ),
-      credentials: dto.credentials.map((c) =>
+      credentials: dto.credentials.map((c: AuthCredentialServerDTO) =>
         PrismaAuthCredentialMapper.toPrismaCreate(c, identityId),
       ),
     };

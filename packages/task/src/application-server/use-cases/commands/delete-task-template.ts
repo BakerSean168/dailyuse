@@ -30,7 +30,7 @@ export class DeleteTaskTemplate {
 
     // 鍙戝竷鍒犻櫎浜嬩欢
     try {
-      eventBus.send('task.template.deleted' as any, {
+      eventBus.send('task:template:deleted' as any, {
         taskTemplateId: id,
         identityId: template.identityId,
         deletedAt: Date.now(),
@@ -42,4 +42,3 @@ export class DeleteTaskTemplate {
     return ok({ success: true });
   }
 }
-

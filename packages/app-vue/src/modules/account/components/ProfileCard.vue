@@ -5,7 +5,7 @@ import { Card, CardHeader, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Avatar, AvatarImage, AvatarFallback } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import type { AccountProfileDTO } from '@dailyuse/contracts/account';
+import { GenderType, type AccountProfileDTO } from '@dailyuse/contracts/account';
 
 interface ProfileCardProps {
   profile: AccountProfileDTO;
@@ -35,12 +35,14 @@ const initials = computed(() => {
 
 const genderText = computed(() => {
   switch (props.profile.gender) {
-    case 'MALE':
+    case GenderType.Male:
       return t('account.gender.male');
-    case 'FEMALE':
+    case GenderType.Female:
       return t('account.gender.female');
-    case 'OTHER':
+    case GenderType.Other:
       return t('account.gender.other');
+    case GenderType.PreferNotToSay:
+      return t('account.gender.notSet');
     default:
       return t('account.gender.notSet');
   }

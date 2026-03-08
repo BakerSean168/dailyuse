@@ -12,6 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { TaskType } from '@dailyuse/contracts/modules/task';
 import request from 'supertest';
 import {
   createSmokeApp,
@@ -44,7 +45,7 @@ function makeFakeTemplate(overrides: Record<string, unknown> = {}): TaskTemplate
   return TaskTemplate.create({
     identityId: TEST_IDENTITY_ID as any,
     title: 'Smoke Test Task',
-    taskType: 'ONE_TIME',
+    taskType: TaskType.OneTime,
     timeConfig: TaskTimeConfig.create({
       timeType: 'AllDay',
       startDate: null,
@@ -59,7 +60,7 @@ function makeFakeTemplate(overrides: Record<string, unknown> = {}): TaskTemplate
 /** Valid HTTP request body for creating a template (uses API field names) */
 const VALID_CREATE_BODY = {
   name: 'Smoke Task',
-  taskType: 'ONE_TIME',
+  taskType: TaskType.OneTime,
   timeConfig: { timeType: 'AllDay', startDate: null, timePoint: null },
   importance: 'Moderate',
 };
@@ -126,7 +127,7 @@ describe('Task Template API Smoke Tests', () => {
       const res = await request(ctx.app)
         .post('/api/v1/task-templates')
         .set('Authorization', `Bearer ${ctx.token}`)
-        .send({ taskType: 'ONE_TIME' }); // missing required fields
+        .send({ taskType: TaskType.OneTime }); // missing required fields
 
       expect(res.status).toBe(422);
       expect(res.body.ok).toBe(false);

@@ -5,8 +5,8 @@
 
 import type Database from 'better-sqlite3';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
-import { SessionLayout } from '../../../domain-server/value-objects/SessionLayout';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
+import { EditorSessionSqliteMapper } from './mappers/editor-session-sqlite.mapper';
 
 export class SqliteEditorSessionRepository implements IEditorSessionRepository {
   constructor(private db: Database.Database) {}
@@ -17,7 +17,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     if (!row) return null;
 
-    return this.rowToSession(row);
+    return EditorSessionSqliteMapper.toDomain(row);
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<EditorSession[]> {
@@ -26,7 +26,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     );
     const rows = stmt.all(workspaceId) as any[];
 
-    return rows.map((row) => this.rowToSession(row));
+    return rows.map((row) => EditorSessionSqliteMapper.toDomain(row));
   }
 
   async findByWorkspaceIdAndName(workspaceId: string, name: string): Promise<EditorSession | null> {
@@ -37,7 +37,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     if (!row) return null;
 
-    return this.rowToSession(row);
+    return EditorSessionSqliteMapper.toDomain(row);
   }
 
   async findActiveByWorkspaceId(workspaceId: string): Promise<EditorSession | null> {
@@ -48,7 +48,7 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
 
     if (!row) return null;
 
-    return this.rowToSession(row);
+    return EditorSessionSqliteMapper.toDomain(row);
   }
 
   async save(session: EditorSession): Promise<void> {
@@ -111,30 +111,5 @@ export class SqliteEditorSessionRepository implements IEditorSessionRepository {
     );
     const result = stmt.get(workspaceId) as { count: number };
     return result.count;
-  }
-
-  private rowToSession(row: any): EditorSession {
-    const layout = row.layout
-      ? JSON.parse(row.layout)
-      : {
-          split_type: 'horizontal',
-          group_count: 1,
-          active_group_index: row.active_group_index ?? 0,
-        };
-
-    return EditorSession.load({
-      id: row.id,
-      workspaceId: row.workspace_id,
-      identityId: row.identity_id ?? row.identityId ?? row.identity_id ?? row.identityId,
-      name: row.name,
-      description: row.description ?? null,
-      groups: [],
-      isActive: row.is_active === 1,
-      activeGroupIndex: row.active_group_index ?? 0,
-      layout: SessionLayout.fromDTO(layout),
-      lastAccessedAt: row.last_accessed_at ?? null,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    } as any);
   }
 }

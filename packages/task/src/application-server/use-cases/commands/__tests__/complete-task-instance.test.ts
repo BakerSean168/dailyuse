@@ -111,7 +111,7 @@ describe('CompleteTaskInstance', () => {
   });
 
   describe('event publishing', () => {
-    it('should publish task.instance.completed event', async () => {
+    it('should publish task:instance:completed event', async () => {
       const template = aOneTimeTask({ title: 'My Task' });
       const instance = await aTaskInstance({ templateId: template.id as any });
       vi.mocked(instanceRepo.findById).mockResolvedValue(instance);
@@ -120,7 +120,7 @@ describe('CompleteTaskInstance', () => {
       await useCase.execute(instance.id);
 
       expect(eventBus.send).toHaveBeenCalledWith(
-        'task.instance.completed',
+        'task:instance:completed',
         expect.objectContaining({
           taskInstanceId: instance.id,
           taskTemplateId: instance.templateId,
@@ -145,7 +145,7 @@ describe('CompleteTaskInstance', () => {
       await useCase.execute(instance.id);
 
       expect(eventBus.send).toHaveBeenCalledWith(
-        'task.instance.completed',
+        'task:instance:completed',
         expect.objectContaining({
           goalBinding: {
             goalId: 'goal-1',

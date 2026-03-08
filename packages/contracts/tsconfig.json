@@ -40,7 +40,9 @@
     // 路径别名：仅用于包内部的相对导入
     "paths": {
       // 包内部别名：@/ 指向 src 目录
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@dailyuse/assets": ["../assets/src/index.ts"],
+      "@dailyuse/assets/*": ["../assets/src/*/index.ts", "../assets/src/*.ts"]
     }
   },
 
