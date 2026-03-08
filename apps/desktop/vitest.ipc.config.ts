@@ -19,11 +19,30 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@dailyuse/infrastructure-server': resolve(__dirname, '../../packages/infrastructure-server/src'),
+      '@dailyuse/infrastructure-server': resolve(
+        __dirname,
+        '../../packages/infrastructure-server/src',
+      ),
       '@dailyuse/domain-server': resolve(__dirname, '../../packages/domain-server/src'),
       '@dailyuse/application-server': resolve(__dirname, '../../packages/application-server/src'),
       '@dailyuse/contracts': resolve(__dirname, '../../packages/contracts/src'),
+      '@dailyuse/contracts/authentication': resolve(
+        __dirname,
+        '../../packages/contracts/src/modules/authentication/index.ts',
+      ),
+      '@dailyuse/contracts/result': resolve(
+        __dirname,
+        '../../packages/contracts/src/result/index.ts',
+      ),
       '@dailyuse/utils': resolve(__dirname, '../../packages/utils/src'),
+      '@dailyuse/authentication/domain-server': resolve(
+        __dirname,
+        '../../packages/authentication/src/domain-server/index.ts',
+      ),
+      '@dailyuse/authentication/domain-shared': resolve(
+        __dirname,
+        '../../packages/authentication/src/domain-shared/index.ts',
+      ),
     },
   },
 });

@@ -15,6 +15,7 @@
     "@codemirror/state": "6.5.4",
     "@codemirror/view": "6.39.14",
     "@dailyuse/account": "workspace:*",
+    "@dailyuse/ai": "workspace:*",
     "@dailyuse/authentication": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/goal": "workspace:*",

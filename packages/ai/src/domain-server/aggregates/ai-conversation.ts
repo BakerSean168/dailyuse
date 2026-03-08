@@ -140,6 +140,16 @@ export class AIConversation extends AggregateRoot<AiConversationId> {
     });
   }
 
+  public rename(name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      throw new Error('Conversation name cannot be empty');
+    }
+
+    this._props.name = trimmed;
+    this._props.updatedAt = new Date();
+  }
+
   public softDelete(): void {
     this._props.deletedAt = new Date();
     this._props.status = ConversationStatus.Archived;

@@ -16,6 +16,7 @@ import { EditorSchema } from './editor.schema';
 import { ShortcutsSchema } from './shortcuts.schema';
 import { ExperimentalSchema } from './experimental.schema';
 import { UISchema } from './ui.schema';
+import { AISchema, KnowledgeNoteSubpathSchema } from './ai.schema';
 
 export const UserPreferencesSchema = z.object({
   appearance: AppearanceSchema.default(() => AppearanceSchema.parse({})),
@@ -27,6 +28,7 @@ export const UserPreferencesSchema = z.object({
   shortcuts: ShortcutsSchema.default(() => ShortcutsSchema.parse({})),
   experimental: ExperimentalSchema.default(() => ExperimentalSchema.parse({})),
   ui: UISchema.default(() => UISchema.parse({})),
+  ai: AISchema.default(() => AISchema.parse({})),
 });
 
 /** Map of category name → category Zod schema */
@@ -40,6 +42,7 @@ export const CATEGORY_SCHEMAS = {
   shortcuts: ShortcutsSchema,
   experimental: ExperimentalSchema,
   ui: UISchema,
+  ai: AISchema,
 } as const;
 
 export {
@@ -52,4 +55,6 @@ export {
   ShortcutsSchema,
   ExperimentalSchema,
   UISchema,
+  AISchema,
+  KnowledgeNoteSubpathSchema,
 };

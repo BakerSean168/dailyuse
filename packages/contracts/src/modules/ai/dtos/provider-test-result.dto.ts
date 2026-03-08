@@ -3,8 +3,9 @@
  */
 
 export interface TestAIProviderResultDTO {
-  success: boolean;
+  ok: boolean;
   response?: string;
+  model?: string;
   error?: string;
   latencyMs: number;
 }

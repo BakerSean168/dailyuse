@@ -1,82 +1,154 @@
 /**
  * AI Module — Electron Entry Point
- *
- * @module ai/electron-entry
  */
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AISqliteModule, AIContainer } from '../infrastructure-server/sqlite';
+import { AIContainer, AISqliteModule } from '../infrastructure-server/sqlite';
 import { createLogger } from '@dailyuse/utils';
+import { DesktopAIRuntime } from './services/desktop-ai-runtime';
 
 const logger = createLogger('AIElectron');
 
 const Ch = {
-  CHAT: 'ai:chat',
-  CONVERSATION_LIST: 'ai:conversation:list',
-  CONVERSATION_GET: 'ai:conversation:get',
-  CONVERSATION_CREATE: 'ai:conversation:create',
-  CONVERSATION_DELETE: 'ai:conversation:delete',
-  CONVERSATION_CLEAR: 'ai:conversation:clear',
-  ANALYZE_TASK: 'ai:analyze:task',
-  ANALYZE_GOAL: 'ai:analyze:goal',
-  SUGGEST_SCHEDULE: 'ai:suggest:schedule',
-  SUGGEST_BREAKDOWN: 'ai:suggest:breakdown',
-  DECOMPOSE_TASK: 'ai:task:decompose',
-  GET_CONFIG: 'ai:config:get',
-  UPDATE_CONFIG: 'ai:config:update',
+  PROVIDER_CREATE: 'ai:provider:create',
+  PROVIDER_LIST: 'ai:provider:list',
+  PROVIDER_GET: 'ai:provider:get',
+  PROVIDER_UPDATE: 'ai:provider:update',
+  PROVIDER_DELETE: 'ai:provider:delete',
+  PROVIDER_TEST: 'ai:provider:test',
+  PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
+  GOAL_GENERATE: 'ai:goal:generate',
+  CONVERSATION_CREATE: 'ai:chat:conversation:create',
+  CONVERSATION_UPDATE: 'ai:chat:conversation:update',
+  CONVERSATION_LIST: 'ai:chat:conversation:list',
+  CONVERSATION_GET: 'ai:chat:conversation:get',
+  CONVERSATION_DELETE: 'ai:chat:conversation:delete',
+  MESSAGE_SEND: 'ai:chat:message:send',
+  MESSAGE_LIST: 'ai:chat:message:list',
+  KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
 } as const;
 
 const channels = Object.values(Ch);
+
+function resolveIdentityId(payload: unknown): string {
+  if (typeof payload === 'string') return payload;
+  if (payload && typeof payload === 'object') {
+    const value = payload as Record<string, unknown>;
+    return String(value.identityId ?? value.accountId ?? 'local-user');
+  }
+  return 'local-user';
+}
 
 export const AIElectronModule: IElectronModule = {
   name: 'AI',
 
   register(ctx: IElectronModuleContext): void {
     const mod = new AISqliteModule(ctx.db);
+    const desktopRuntime = new DesktopAIRuntime(
+      ctx.db,
+      mod.providerConfigRepository,
+      async (identityId: string) => {
+        const row = ctx.db
+          .prepare('SELECT preferences FROM user_settings WHERE identity_id = ? LIMIT 1')
+          .get(identityId) as { preferences?: string } | undefined;
 
-    const chatSvc = mod.chatService;
-    const convSvc = mod.conversationService;
-    const configSvc = mod.providerConfigService;
-    const genSvc = mod.generationService;
+        if (!row?.preferences) {
+          return '';
+        }
 
-    ipcMain.handle(Ch.CHAT, (_, dto) =>
-      chatSvc.sendMessage(dto.identityId, dto.conversationId, dto.content, dto.provider, dto.model),
+        try {
+          const preferences = JSON.parse(row.preferences) as {
+            ai?: { knowledgeNoteSubpath?: string };
+          };
+          return preferences.ai?.knowledgeNoteSubpath ?? '';
+        } catch {
+          return '';
+        }
+      },
     );
-    ipcMain.handle(Ch.CONVERSATION_LIST, (_, params) =>
-      convSvc.listConversations(params.identityId, params.page, params.limit),
+
+    ipcMain.handle(Ch.PROVIDER_CREATE, async (_, dto) =>
+      mod.providerConfigService.createProvider(resolveIdentityId(dto), dto),
     );
-    ipcMain.handle(Ch.CONVERSATION_GET, (_, payload) => {
-      if (typeof payload === 'string') {
-        return convSvc.getConversation(payload);
-      }
-      return convSvc.getConversation(payload.conversationId, payload.includeMessages);
+    ipcMain.handle(Ch.PROVIDER_LIST, async (_, params) => ({
+      data: await mod.providerConfigService.listProviders(resolveIdentityId(params)),
+    }));
+    ipcMain.handle(Ch.PROVIDER_GET, async (_, id) => mod.providerConfigService.getProvider(id));
+    ipcMain.handle(Ch.PROVIDER_UPDATE, async (_, payload) =>
+      mod.providerConfigService.updateProvider(String(payload.id), payload),
+    );
+    ipcMain.handle(Ch.PROVIDER_DELETE, async (_, id) =>
+      mod.providerConfigService.deleteProvider(id),
+    );
+    ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) =>
+      mod.providerConfigService.testConnection(dto),
+    );
+    ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
+      mod.providerConfigService.setDefaultProvider(dto.providerId, resolveIdentityId(dto)),
+    );
+
+    ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
+      mod.goalGenerationService.generateGoal({
+        identityId: resolveIdentityId(dto),
+        ...dto,
+      }),
+    );
+
+    ipcMain.handle(Ch.CONVERSATION_CREATE, async (_, dto) =>
+      mod.conversationService.createConversation(resolveIdentityId(dto), dto.name),
+    );
+    ipcMain.handle(Ch.CONVERSATION_UPDATE, async (_, dto) =>
+      mod.conversationService.updateConversation(String(dto.id), { name: String(dto.name) }),
+    );
+    ipcMain.handle(Ch.CONVERSATION_LIST, async (_, dto) =>
+      mod.conversationService.listConversations(
+        resolveIdentityId(dto),
+        Number(dto?.page ?? 1),
+        Number(dto?.pageSize ?? 20),
+      ),
+    );
+    ipcMain.handle(Ch.CONVERSATION_GET, async (_, id) => {
+      const conversation = await mod.conversationService.getConversation(String(id), true);
+      return conversation?.toClientDTO() ?? null;
     });
-    ipcMain.handle(Ch.CONVERSATION_CREATE, (_, dto) =>
-      convSvc.createConversation(dto.identityId, dto.title),
+    ipcMain.handle(Ch.CONVERSATION_DELETE, async (_, id) =>
+      mod.conversationService.deleteConversation(String(id)),
     );
-    ipcMain.handle(Ch.CONVERSATION_DELETE, (_, id) => convSvc.deleteConversation(id));
-    ipcMain.handle(Ch.CONVERSATION_CLEAR, (_, id) => convSvc.deleteConversation(id));
-    ipcMain.handle(Ch.ANALYZE_TASK, (_, dto) => genSvc.summarizeText(dto));
-    ipcMain.handle(Ch.ANALYZE_GOAL, (_, dto) => genSvc.generateGoal(dto));
-    ipcMain.handle(Ch.SUGGEST_SCHEDULE, (_, dto) => genSvc.generateTasks(dto));
-    ipcMain.handle(Ch.SUGGEST_BREAKDOWN, (_, dto) => genSvc.generateKeyResults(dto));
-    ipcMain.handle(Ch.DECOMPOSE_TASK, (_, dto) => genSvc.generateTasks(dto));
-    ipcMain.handle(Ch.GET_CONFIG, (_, identityId) => configSvc.getDefaultProvider(identityId));
-    ipcMain.handle(Ch.UPDATE_CONFIG, (_, dto) => {
-      if (dto?.id) {
-        return configSvc.updateProvider(dto.id, dto);
-      }
-      return configSvc.createProvider(dto.identityId, dto);
+
+    ipcMain.handle(Ch.MESSAGE_SEND, async (_, dto) =>
+      mod.chatService.sendMessage(
+        resolveIdentityId(dto),
+        String(dto.conversationId),
+        String(dto.content),
+        dto.providerId,
+      ),
+    );
+    ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) => {
+      const conversation = await mod.conversationService.getConversation(
+        String(dto.conversationId),
+        true,
+      );
+      const messages = conversation?.getAllMessages().map((message) => message.toClientDTO()) ?? [];
+      return {
+        data: messages,
+        total: messages.length,
+        page: Number(dto?.page ?? 1),
+        pageSize: Number(dto?.pageSize ?? 50),
+      };
     });
+
+    ipcMain.handle(Ch.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
+      desktopRuntime.knowledgeNoteService.createKnowledgeNote(resolveIdentityId(dto), dto),
+    );
 
     logger.info('AI module registered');
   },
 
   destroy(): void {
     AIContainer.getInstance().reset();
-    for (const ch of channels) {
-      ipcMain.removeHandler(ch);
+    for (const channel of channels) {
+      ipcMain.removeHandler(channel);
     }
     logger.info('AI module destroyed');
   },

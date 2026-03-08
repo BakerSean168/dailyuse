@@ -292,56 +292,23 @@ const ALLOWED_CHANNELS = [
   'setting:import',
   'setting:export',
 
-  // ═══════════ AI (electron-entry: 13 handlers) ═══════════
-  // AI → Chat / Conversation
-  'ai:chat',
-  'ai:conversation:list',
-  'ai:conversation:get',
-  'ai:conversation:create',
-  'ai:conversation:update',
-  'ai:conversation:delete',
-  'ai:conversation:clear',
-  'ai:conversation:close',
-  'ai:conversation:archive',
-  // AI → Analysis & Suggestions
-  'ai:analyze:task',
-  'ai:analyze:goal',
-  'ai:suggest:schedule',
-  'ai:suggest:breakdown',
-  'ai:task:decompose',
-  // AI → Config
-  'ai:config:get',
-  'ai:config:update',
-  // AI → Message (adapter-only, no electron-entry handler)
-  'ai:message:send',
-  'ai:message:list',
-  'ai:message:delete',
-  'ai:message:stream:start',
-  'ai:message:stream:next',
-  'ai:message:stream:end',
-  // AI → Generation (adapter-only)
-  'ai:generation-task:create',
-  'ai:generation-task:list',
-  'ai:generation-task:get',
-  'ai:generation-task:cancel',
-  'ai:generation-task:retry',
-  'ai:generate:goal',
-  'ai:generate:goal-with-key-results',
-  'ai:generate:key-results',
-  'ai:generateKeyResults',
-  // AI → Provider (adapter-only)
+  // ═══════════ AI ═══════════
   'ai:provider:create',
   'ai:provider:list',
   'ai:provider:get',
   'ai:provider:update',
   'ai:provider:delete',
-  'ai:provider:test-connection',
+  'ai:provider:test',
   'ai:provider:set-default',
-  'ai:provider:refresh-models',
-  // AI → Quota (adapter-only)
-  'ai:quota:get',
-  'ai:quota:update-limit',
-  'ai:quota:check',
+  'ai:goal:generate',
+  'ai:chat:conversation:create',
+  'ai:chat:conversation:update',
+  'ai:chat:conversation:list',
+  'ai:chat:conversation:get',
+  'ai:chat:conversation:delete',
+  'ai:chat:message:send',
+  'ai:chat:message:list',
+  'ai:knowledge-note:create',
 
   // ═══════════ Governance (adapter-only) ═══════════
   'governance:rule:create',

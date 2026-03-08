@@ -58,6 +58,8 @@
 
       // ✅ App 层包：直接指向 source，因为 web 深度集成其 Vue 组件/composables
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
+      "@dailyuse/ai": ["../../packages/ai/src/index.ts"],
+      "@dailyuse/ai/*": ["../../packages/ai/src/*/index.ts"],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"

@@ -6,9 +6,13 @@ import type Database from 'better-sqlite3';
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 import { AiProviderConfigSqliteMapper } from './mappers/ai-provider-config-sqlite.mapper';
+import { AISecretCipher } from '../../security/ai-secret-cipher';
 
 export class SqliteAIProviderConfigRepository implements IAIProviderConfigRepository {
-  constructor(private db: Database.Database) {}
+  constructor(
+    private db: Database.Database,
+    private readonly secretCipher = new AISecretCipher(),
+  ) {}
 
   async save(config: AIProviderConfigServerDTO): Promise<void> {
     const stmt = this.db.prepare(`
@@ -38,7 +42,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
       config.name,
       config.providerType,
       config.baseUrl,
-      config.apiKey,
+      this.secretCipher.encrypt(this.secretCipher.decrypt(config.apiKey)),
       config.defaultModel,
       JSON.stringify(config.availableModels ?? []),
       config.isActive ? 1 : 0,
@@ -62,7 +66,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
       )
       .get(id) as any;
 
-    return row ? AiProviderConfigSqliteMapper.toDTO(row) : null;
+    return row ? AiProviderConfigSqliteMapper.toDTO(row, this.secretCipher) : null;
   }
 
   async findByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO[]> {
@@ -76,7 +80,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
       )
       .all(identityId) as any[];
 
-    return rows.map((row) => AiProviderConfigSqliteMapper.toDTO(row));
+    return rows.map((row) => AiProviderConfigSqliteMapper.toDTO(row, this.secretCipher));
   }
 
   async findDefaultByIdentityId(identityId: string): Promise<AIProviderConfigServerDTO | null> {
@@ -90,7 +94,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
       )
       .get(identityId) as any;
 
-    return row ? AiProviderConfigSqliteMapper.toDTO(row) : null;
+    return row ? AiProviderConfigSqliteMapper.toDTO(row, this.secretCipher) : null;
   }
 
   async findByIdentityIdAndName(
@@ -107,7 +111,7 @@ export class SqliteAIProviderConfigRepository implements IAIProviderConfigReposi
       )
       .get(identityId, name) as any;
 
-    return row ? AiProviderConfigSqliteMapper.toDTO(row) : null;
+    return row ? AiProviderConfigSqliteMapper.toDTO(row, this.secretCipher) : null;
   }
 
   async delete(id: string): Promise<void> {

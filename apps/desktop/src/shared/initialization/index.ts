@@ -19,7 +19,6 @@ import { registerNotificationInitializationTasks } from '../../main/modules/noti
 import { registerRepositoryInitializationTasks } from '../../main/modules/repository/initialization';
 import { registerDashboardInitializationTasks } from '../../main/modules/dashboard/initialization';
 import { registerAccountInitializationTasks } from '../../main/modules/account/initialization';
-import { registerAuthenticationInitializationTasks } from '../../main/modules/authentication/initialization';
 import { registerSettingInitializationTasks } from '../../main/modules/setting/initialization';
 
 /**
@@ -45,7 +44,6 @@ export function registerAllInitializationTasks(): void {
   registerRepositoryInitializationTasks();
   registerDashboardInitializationTasks();
   registerAccountInitializationTasks();
-  registerAuthenticationInitializationTasks();
   registerSettingInitializationTasks();
 
   console.log('[Initialization] All initialization tasks registered');

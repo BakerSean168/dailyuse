@@ -9,3 +9,6 @@ export * from './use-cases';
 
 // ===== Ports =====
 export * from './ports/IStoragePort';
+
+// ===== Infrastructure-facing adapters reused by other modules =====
+export { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';

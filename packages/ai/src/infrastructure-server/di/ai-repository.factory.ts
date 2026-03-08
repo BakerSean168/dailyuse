@@ -8,15 +8,11 @@ import type Database from 'better-sqlite3';
 
 import {
   AIConversationPrismaRepository,
-  AIGenerationTaskPrismaRepository,
   AIProviderConfigPrismaRepository,
-  AIUsageQuotaPrismaRepository,
 } from '../adapters/prisma';
 import {
   SqliteAIConversationRepository,
-  SqliteAIGenerationTaskRepository,
   SqliteAIProviderConfigRepository,
-  SqliteAIUsageQuotaRepository,
 } from '../adapters/sqlite';
 
 type BetterSQLiteDB = Database.Database;
@@ -31,9 +27,7 @@ export class AIRepositoryFactory {
   static createPrismaRepositories(prisma: PrismaClient) {
     return {
       conversationRepository: new AIConversationPrismaRepository(prisma),
-      generationTaskRepository: new AIGenerationTaskPrismaRepository(prisma),
       providerConfigRepository: new AIProviderConfigPrismaRepository(prisma),
-      usageQuotaRepository: new AIUsageQuotaPrismaRepository(prisma),
     };
   }
 
@@ -43,9 +37,7 @@ export class AIRepositoryFactory {
   static createSqliteRepositories(db: BetterSQLiteDB) {
     return {
       conversationRepository: new SqliteAIConversationRepository(db),
-      generationTaskRepository: new SqliteAIGenerationTaskRepository(db),
       providerConfigRepository: new SqliteAIProviderConfigRepository(db),
-      usageQuotaRepository: new SqliteAIUsageQuotaRepository(db),
     };
   }
 

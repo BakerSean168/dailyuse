@@ -7,11 +7,23 @@
     "types": ["node", "vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
+      "@/domain-server/*": ["./src/domain-server/*"],
+      "@/domain-shared/*": ["./src/domain-shared/*"],
       "@dailyuse/database": ["../database/src/index.ts"],
       "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/*": ["../domain-shared/src/*/index.ts"],
       "@dailyuse/contracts": ["../contracts/src/index.ts"],
       "@dailyuse/contracts/*": ["../contracts/src/modules/*/index.ts"],
+      "@dailyuse/repository": ["../repository/src/index.ts"],
+      "@dailyuse/repository/*": ["../repository/src/*/index.ts"],
+      "@dailyuse/repository/infrastructure-server/sqlite": [
+        "../repository/src/infrastructure-server/sqlite.ts"
+      ],
+      "@dailyuse/setting": ["../setting/src/index.ts"],
+      "@dailyuse/setting/*": ["../setting/src/*/index.ts"],
+      "@dailyuse/setting/infrastructure-server/sqlite": [
+        "../setting/src/infrastructure-server/sqlite.ts"
+      ],
       "@dailyuse/utils": ["../utils/src/index.ts"]
     }
   },

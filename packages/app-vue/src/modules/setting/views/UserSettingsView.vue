@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadc
 import { Loader2 } from 'lucide-vue-next';
 
 import AppearanceSettings from '../components/AppearanceSettings.vue';
+import AISettings from '../components/AISettings.vue';
 import LocaleSettings from '../components/LocaleSettings.vue';
 import EditorSettings from '../components/EditorSettings.vue';
 import WorkflowSettings from '../components/WorkflowSettings.vue';
@@ -166,6 +167,7 @@ const tabs = computed(() => [
   { value: 'editor', label: t('setting.tabs.editor') },
   { value: 'workflow', label: t('setting.tabs.workflow') },
   { value: 'repository', label: t('setting.tabs.repository') },
+  { value: 'ai', label: t('setting.tabs.ai') },
   { value: 'privacy', label: t('setting.tabs.privacy') },
   { value: 'shortcuts', label: t('setting.tabs.shortcuts') },
   { value: 'notifications', label: t('setting.tabs.notifications') },
@@ -214,6 +216,10 @@ const tabs = computed(() => [
 
           <TabsContent value="repository">
             <RepositorySettings v-model="repository" />
+          </TabsContent>
+
+          <TabsContent value="ai">
+            <AISettings />
           </TabsContent>
 
           <TabsContent value="privacy">

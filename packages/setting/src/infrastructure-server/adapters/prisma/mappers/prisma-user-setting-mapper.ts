@@ -6,14 +6,17 @@
  */
 
 import type { UserSetting as PrismaUserSetting } from '@dailyuse/database';
-import { UserSetting, type UserSettingState } from '@/domain-server/aggregates/user-setting';
-import { SettingId } from '@/domain-shared/value-objects/setting-id';
+import {
+  UserSetting,
+  type UserSettingState,
+} from '../../../../domain-server/aggregates/user-setting';
+import { SettingId } from '../../../../domain-shared/value-objects/setting-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { UserPreferencesSchema } from '@dailyuse/contracts/setting';
 
 export class PrismaUserSettingMapper {
   /**
-   * Prisma â†?Domain
+   * Prisma ï¿½?Domain
    */
   static toDomain(data: PrismaUserSetting): UserSetting {
     const preferences = UserPreferencesSchema.parse((data as { preferences: unknown }).preferences);
@@ -31,7 +34,7 @@ export class PrismaUserSettingMapper {
   }
 
   /**
-   * Domain â†?Prisma write data
+   * Domain ï¿½?Prisma write data
    */
   static toPersistence(setting: UserSetting): Record<string, unknown> {
     return {

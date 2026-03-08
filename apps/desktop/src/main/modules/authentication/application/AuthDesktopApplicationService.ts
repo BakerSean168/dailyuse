@@ -20,7 +20,6 @@
  */
 
 import { createLogger, type ILogger } from '@dailyuse/utils';
-import { getApiBaseUrl } from '../../../utils/api-config';
 import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
@@ -55,8 +54,16 @@ import {
   createSessionManager,
   type SessionStatus,
 } from '../infrastructure';
-import { connectPowerSync, disconnectPowerSync, openPowerSyncLocalOnly } from '../../../database/powersync';
+import {
+  connectPowerSync,
+  disconnectPowerSync,
+  openPowerSyncLocalOnly,
+} from '../../../database/powersync';
 import { getNetworkStateManager } from '../infrastructure';
+import { registerDesktopAccount } from './registerDesktopAccount';
+import { AuthRemoteGateway, type RegisterApiResponse } from './AuthRemoteGateway';
+import { loginDesktopAccount } from './loginDesktopAccount';
+import { refreshDesktopSession } from './refreshDesktopSession';
 
 // Re-export from contracts for convenience
 export type {
@@ -111,6 +118,7 @@ export interface SessionRestoreResult extends ContractSessionRestoreResult {
 export class AuthDesktopApplicationService {
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
+  private readonly remoteGateway: AuthRemoteGateway;
   private sessionManager: SessionManager | null = null;
 
   // 依赖注入的 Repositories（惰性初始化）
@@ -124,6 +132,7 @@ export class AuthDesktopApplicationService {
   constructor(logger?: ILogger) {
     this.logger = logger || createLogger('AuthDesktopAppService');
     this.tokenManager = getTokenManager(this.logger);
+    this.remoteGateway = new AuthRemoteGateway();
   }
 
   /**
@@ -233,15 +242,89 @@ export class AuthDesktopApplicationService {
     }
 
     try {
-      const result = await this.sessionManager.login({
-        identifier: credentials.email,
-        password: credentials.password,
-        rememberMe: credentials.rememberMe,
-      });
+      const networkManager = getNetworkStateManager();
+      const remoteResult = await loginDesktopAccount(
+        {
+          email: credentials.email,
+          password: credentials.password,
+          rememberMe: credentials.rememberMe,
+        },
+        {
+          isOnline: () => networkManager.isOnline(),
+          remoteGateway: this.remoteGateway,
+          logger: this.logger,
+          onSuccess: async (response, request) => {
+            if (!response.ok || !response.accessToken || !response.identityId) {
+              return;
+            }
 
-      if (result.ok) {
-        this.authMode = result.authMode ?? AuthMode.ONLINE_USER;
-        this.logger.info('Login successful', { identityId: result.identityId, authMode: this.authMode });
+            await this.tokenManager.saveTokens({
+              accessToken: response.accessToken,
+              refreshToken: response.refreshToken || '',
+              accessTokenExpiresIn: response.expiresIn || 3600,
+              identityId: response.identityId,
+              sessionId: response.sessionId || crypto.randomUUID(),
+            });
+
+            if (this.sessionManager) {
+              await this.sessionManager
+                .saveOfflineCredentials(request.email, request.password, response.identityId)
+                .catch((err) =>
+                  this.logger.warn('Failed to cache offline credentials', { error: err }),
+                );
+            }
+          },
+        },
+      );
+
+      if (!remoteResult.ok && !remoteResult.error.shouldFallbackToOffline) {
+        return toIpcResult(
+          fail({
+            code: 'LOGIN_FAILED',
+            message: remoteResult.error.message,
+          }),
+        );
+      }
+
+      let finalResult: {
+        ok: boolean;
+        response?: {
+          ok: boolean;
+          identityId?: string;
+          sessionId?: string;
+          authMode?: AuthMode;
+          error?: string;
+        };
+        error?: string;
+      };
+
+      if (remoteResult.ok) {
+        finalResult = {
+          ok: true,
+          response: {
+            ...remoteResult.response,
+            authMode: AuthMode.ONLINE_USER,
+          },
+        };
+      } else {
+        const offlineResponse = await this.sessionManager.login({
+          identifier: credentials.email,
+          password: credentials.password,
+          rememberMe: credentials.rememberMe,
+        });
+        finalResult = {
+          ok: offlineResponse.ok,
+          response: offlineResponse,
+          error: offlineResponse.error,
+        };
+      }
+
+      if (finalResult.ok && finalResult.response?.ok) {
+        this.authMode = finalResult.response.authMode ?? AuthMode.ONLINE_USER;
+        this.logger.info('Login successful', {
+          identityId: finalResult.response.identityId,
+          authMode: this.authMode,
+        });
 
         // Connect PowerSync based on auth mode
         if (this.authMode === AuthMode.ONLINE_USER) {
@@ -250,14 +333,16 @@ export class AuthDesktopApplicationService {
           );
         } else if (this.authMode === AuthMode.OFFLINE_USER) {
           openPowerSyncLocalOnly().catch((err) =>
-            this.logger.error('PowerSync local-only open failed after offline login', { error: err }),
+            this.logger.error('PowerSync local-only open failed after offline login', {
+              error: err,
+            }),
           );
         }
 
         return toIpcResult(
           ok({
-            identityId: result.identityId!,
-            sessionId: result.sessionId!,
+            identityId: finalResult.response.identityId!,
+            sessionId: finalResult.response.sessionId!,
           }),
         );
       }
@@ -265,7 +350,7 @@ export class AuthDesktopApplicationService {
       return toIpcResult(
         fail({
           code: 'LOGIN_FAILED',
-          message: result.error || '登录失败',
+          message: finalResult.error || '登录失败',
         }),
       );
     } catch (error) {
@@ -287,100 +372,54 @@ export class AuthDesktopApplicationService {
   async register(
     request: RegisterRequest,
   ): Promise<IpcResult<{ identityId: string; message: string }>> {
-    this.logger.info('Register attempt', { email: request.email });
+    const result = await registerDesktopAccount(request, {
+      isOnline: () => getNetworkStateManager().isOnline(),
+      remoteGateway: this.remoteGateway,
+      logger: this.logger,
+      onSuccess: async (data) => {
+        await this.handleRegisterSuccess(data, request);
+      },
+    });
 
-    // Registration requires network — offline registration is not allowed
-    const networkManager = getNetworkStateManager();
-    if (!networkManager.isOnline()) {
-      return toIpcResult(
-        fail({
-          code: 'OFFLINE',
-          message: '注册需要网络连接，请检查网络后重试。离线状态下可使用访客模式或已有账户登录。',
-        }),
-      );
+    if (result.ok) {
+      return toIpcResult(ok(result.response));
     }
 
-    try {
-      // 使用 API 服务器进行在线注册
-      const apiBaseUrl = getApiBaseUrl();
+    return toIpcResult(fail(result.error));
+  }
 
-      this.logger.info('Calling register API', { apiBaseUrl });
-
-      const response = await fetch(`${apiBaseUrl}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: request.email,
-          password: request.password,
-          username: request.username,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        this.logger.error('Registration failed', { status: response.status, data });
-        return toIpcResult(
-          fail({
-            code: 'REGISTER_FAILED',
-            message: data.message || data.error || `注册失败 (${response.status})`,
-          }),
-        );
-      }
-
-      this.logger.info('Registration successful', { email: request.email });
-
-      // 注册成功后自动登录
-      if (data.accessToken) {
-        await this.tokenManager.saveTokens({
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          accessTokenExpiresIn: data.expiresIn || 3600,
-          identityId: data.identityId || data.user?.id || '',
-          sessionId: data.sessionId || crypto.randomUUID(),
-        });
-        this.authMode = AuthMode.ONLINE_USER;
-
-        // Save offline credentials for future offline login
-        if (this.sessionManager) {
-          await this.sessionManager.saveOfflineCredentials(
-            request.email,
-            request.password,
-            data.identityId || data.user?.id || '',
-          ).catch((err) =>
-            this.logger.warn('Failed to cache offline credentials after register', { error: err }),
-          );
-        }
-      }
-
-      return toIpcResult(
-        ok({
-          identityId: data.identityId || data.user?.id,
-          message: '注册成功',
-        }),
-      );
-    } catch (error) {
-      this.logger.error('Registration request failed', { error });
-
-      // 网络错误提示
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        return toIpcResult(
-          fail({
-            code: 'NETWORK_ERROR',
-            message: '无法连接到服务器，请检查网络连接',
-          }),
-        );
-      }
-
-      return toIpcResult(
-        fail({
-          code: 'REGISTER_ERROR',
-          message: error instanceof Error ? error.message : '注册失败，请稍后重试',
-        }),
-      );
+  private async handleRegisterSuccess(
+    data: RegisterApiResponse,
+    request: RegisterRequest,
+  ): Promise<void> {
+    if (!data.accessToken) {
+      return;
     }
+
+    await this.tokenManager.saveTokens({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken || '',
+      accessTokenExpiresIn: data.expiresIn || 3600,
+      identityId: data.identityId || data.user?.id || '',
+      sessionId: data.sessionId || crypto.randomUUID(),
+    });
+    this.authMode = AuthMode.ONLINE_USER;
+
+    if (!this.sessionManager) {
+      return;
+    }
+
+    await this.sessionManager
+      .saveOfflineCredentials(
+        request.email,
+        request.password,
+        data.identityId || data.user?.id || '',
+      )
+      .catch((err) =>
+        this.logger.warn('Failed to cache offline credentials after register', {
+          error: err,
+        }),
+      );
   }
 
   /**
@@ -511,7 +550,51 @@ export class AuthDesktopApplicationService {
     }
 
     try {
-      const result = await this.sessionManager.refreshSession();
+      const tokenData = await this.tokenManager.loadTokens();
+      if (!tokenData) {
+        return toIpcResult(fail({ code: 'REFRESH_FAILED', message: '没有可刷新的会话令牌' }));
+      }
+
+      const remoteResult = await refreshDesktopSession(
+        {
+          refreshToken: tokenData.refreshToken,
+          sessionId: tokenData.sessionId,
+        },
+        {
+          isOnline: () => getNetworkStateManager().isOnline(),
+          remoteGateway: this.remoteGateway,
+          logger: this.logger,
+          onSuccess: async (response) => {
+            if (!response.ok || !response.accessToken) {
+              return;
+            }
+
+            await this.tokenManager.updateAccessToken(
+              response.accessToken,
+              response.expiresIn || 3600,
+            );
+
+            if (response.refreshToken) {
+              await this.tokenManager.updateRefreshToken(response.refreshToken);
+            }
+          },
+        },
+      );
+
+      let result;
+      if (remoteResult.ok) {
+        result = remoteResult.response;
+      } else if (remoteResult.error.shouldFallbackToOffline) {
+        result = await this.sessionManager.refreshSession();
+      } else {
+        return toIpcResult(
+          fail({
+            code: 'REFRESH_FAILED',
+            message: remoteResult.error.message,
+          }),
+        );
+      }
+
       if (result.ok) {
         return toIpcResult(
           ok({
@@ -586,7 +669,8 @@ export class AuthDesktopApplicationService {
       user,
       session: sessionInfo,
       tokenStatus,
-      canSync: this.authMode === AuthMode.ONLINE_USER && connectionStatus === ConnectionStatus.ONLINE,
+      canSync:
+        this.authMode === AuthMode.ONLINE_USER && connectionStatus === ConnectionStatus.ONLINE,
       needsReauth: tokenStatus.isRefreshTokenExpired,
     };
   }
@@ -640,6 +724,7 @@ export class AuthDesktopApplicationService {
    */
   async verify2FA(code: string): Promise<IpcResult<void>> {
     this.logger.debug('Verify 2FA');
+    void code;
     return toIpcResult(fail({ code: 'NOT_IMPLEMENTED', message: '2FA 功能尚未实现' }));
   }
 

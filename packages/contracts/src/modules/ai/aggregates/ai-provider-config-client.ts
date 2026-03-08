@@ -15,7 +15,7 @@ export interface AIProviderConfigClientDTO {
   id: AiProviderConfigId;
   /** 所属身份 ID */
   identityId: IdentityId;
-  /** 配置名称（用户自定义，如 "我的七牛云"） */
+  /** 配置名称（用户自定义） */
   name: string;
   /** 提供商类型 */
   providerType: AIProviderType;
@@ -31,7 +31,7 @@ export interface AIProviderConfigClientDTO {
   isActive: boolean;
   /** 是否为默认 Provider */
   isDefault: boolean;
-  /** 优先级（数字越小优先级越高，用于故障转移） */
+  /** 排序优先级 */
   priority: number;
   /** 版本号（用于乐观锁） */
   version: number;
@@ -72,5 +72,4 @@ export interface AIProviderConfigSummary {
   defaultModel: string | null;
   isActive: boolean;
   isDefault: boolean;
-  priority: number;
 }

@@ -29,14 +29,20 @@ export class SendMessage {
     }
 
     // 2. 创建消息实体
-    const message = Message.create({
+    const userMessage = Message.create({
       conversationId: input.conversationId,
       role: MessageRole.User,
       content: input.content,
     });
 
-    // 3. 添加消息到对?
-    conversation.addMessage(message);
+    conversation.addMessage(userMessage);
+
+    const assistantMessage = Message.create({
+      conversationId: input.conversationId,
+      role: MessageRole.Assistant,
+      content: 'AI response placeholder',
+    });
+    conversation.addMessage(assistantMessage);
 
     // 4. 保存
     await this.conversationRepository.save(conversation);
@@ -47,6 +53,16 @@ export class SendMessage {
       eventBus.send(event.eventType as any, event as any);
     }
 
-    return message.toClientDTO();
+    return {
+      userMessage: userMessage.toClientDTO(),
+      assistantMessage: assistantMessage.toClientDTO(),
+      tokenUsage: {
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+      },
+      providerId: 'IAiProviderConfigId_placeholder' as any,
+      processingTimeMs: 0,
+    };
   }
 }

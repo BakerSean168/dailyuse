@@ -17,6 +17,7 @@ import type {
   IRepositoryService,
   INotificationService,
   ISettingService,
+  IAIService,
   IRuleService,
   IDashboardService,
   NavigationItem,
@@ -33,6 +34,7 @@ export const REPOSITORY_SERVICE_KEY: InjectionKey<IRepositoryService> = Symbol('
 export const NOTIFICATION_SERVICE_KEY: InjectionKey<INotificationService> =
   Symbol('NotificationService');
 export const SETTING_SERVICE_KEY: InjectionKey<ISettingService> = Symbol('SettingService');
+export const AI_SERVICE_KEY: InjectionKey<IAIService> = Symbol('AIService');
 export const RULE_SERVICE_KEY: InjectionKey<IRuleService> = Symbol('RuleService');
 export const DASHBOARD_SERVICE_KEY: InjectionKey<IDashboardService> = Symbol('DashboardService');
 

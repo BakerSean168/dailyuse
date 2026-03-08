@@ -14,8 +14,8 @@ export type {
   IIpcClient,
   IAIConversationApiClient,
   IAIMessageApiClient,
-  IAIGenerationTaskApiClient,
-  IAIUsageQuotaApiClient,
+  IAIGoalApiClient,
+  AIKnowledgeNoteApiClient,
   IAIProviderConfigApiClient,
 } from './adapters/types';
 
@@ -24,15 +24,11 @@ export {
   // HTTP
   AIConversationHttpAdapter,
   AIMessageHttpAdapter,
-  AIGenerationTaskHttpAdapter,
-  AIUsageQuotaHttpAdapter,
   AIProviderConfigHttpAdapter,
   createAIHttpAdapters,
   // IPC
   AIConversationIpcAdapter,
   AIMessageIpcAdapter,
-  AIGenerationTaskIpcAdapter,
-  AIUsageQuotaIpcAdapter,
   AIProviderConfigIpcAdapter,
   createAIIpcAdapters,
 } from './adapters';

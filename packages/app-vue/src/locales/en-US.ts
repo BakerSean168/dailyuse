@@ -106,6 +106,7 @@ export default {
       editor: 'Editor',
       workflow: 'Workflow',
       repository: 'Repository',
+      ai: 'AI',
       privacy: 'Privacy',
       shortcuts: 'Shortcuts',
       notifications: 'Notifications',
@@ -294,6 +295,56 @@ export default {
       maxWidthNone: 'No limit',
     },
 
+    ai: {
+      title: 'AI Assistant',
+      description:
+        'Control the floating assistant entry and the default save path for AI-generated knowledge notes.',
+      enabled: 'Enable AI assistant',
+      enabledDescription:
+        'Turn off the assistant to hide AI entry points and pause global AI interactions.',
+      showFloatingBall: 'Show floating button',
+      showFloatingBallDescription: 'Display the global AI shortcut in the bottom-right corner.',
+      knowledgeNoteSubpath: 'Knowledge note default subpath',
+      knowledgeNoteSubpathDescription:
+        'Only enter a relative path under notes/. Leave blank to save directly into notes/.',
+      knowledgeNoteSubpathPlaceholder: 'For example ai/inbox',
+      knowledgeNoteResolvedPath: 'Resolved save location: {path}',
+      invalidSubpath: 'Please enter a valid relative subpath',
+      resetPath: 'Reset',
+      savePath: 'Save path',
+      saved: 'AI settings updated',
+      providerSectionTitle: 'Provider Configuration',
+      providerSectionDescription:
+        'Configure your own OpenAI-compatible API for the floating assistant and AI workflows.',
+      refreshProviders: 'Refresh list',
+      defaultProvider: 'Default',
+      inactiveProvider: 'Inactive',
+      setDefaultProvider: 'Set default',
+      loadIntoForm: 'Load into form',
+      deleteProvider: 'Delete',
+      noProviders: 'No AI providers yet. Create one from the form on the right.',
+      providerFormTitle: 'Edit Provider',
+      providerFormDescription: 'Supports any endpoint compatible with OpenAI chat completions.',
+      providerNamePlaceholder: 'Provider name',
+      providerBaseUrlPlaceholder: 'Base URL, for example https://api.openai.com/v1',
+      providerModelPlaceholder: 'Model, for example gpt-4o-mini',
+      providerApiKeyPlaceholder: 'API key',
+      markAsDefault: 'Use as default provider',
+      markAsDefaultDescription: 'Apply this provider as the default after create or update.',
+      createProvider: 'Create provider',
+      updateProvider: 'Update provider',
+      testProvider: 'Test connection',
+      testingProvider: 'Testing...',
+      resetProviderForm: 'Clear form',
+      providerCreated: 'Provider created',
+      providerUpdated: 'Provider updated',
+      providerDeleted: 'Provider deleted',
+      providerDefaultUpdated: 'Default provider updated',
+      providerActionFailed: 'Provider action failed',
+      providerTestPassed: 'Connection test passed',
+      providerTestFailed: 'Connection test failed',
+    },
+
     // ── Privacy ──
     privacy: {
       title: 'Privacy Settings',
@@ -338,7 +389,8 @@ export default {
       title: 'Notifications',
       description: 'Configure how the application sends you notifications',
       useCustomNotification: 'Use Custom App Notifications',
-      useCustomNotificationDescription: 'Enable to use the application\'s built-in notification style, or disable to use the operating system\'s native notifications.',
+      useCustomNotificationDescription:
+        "Enable to use the application's built-in notification style, or disable to use the operating system's native notifications.",
       comingSoon: 'This feature is under development. Stay tuned.',
     },
 
@@ -395,6 +447,7 @@ export default {
     // ── Error messages ──
     errors: {
       loadFailed: 'Failed to load settings',
+      updateFailed: 'Failed to update settings',
       resetFailed: 'Failed to reset settings',
       exportFailed: 'Failed to export settings',
       importFailed: 'Failed to import settings',

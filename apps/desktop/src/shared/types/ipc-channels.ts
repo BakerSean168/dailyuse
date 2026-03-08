@@ -245,41 +245,22 @@ export const AuthChannels = {
 // ============ AI Module Channels ============
 
 export const AIChannels = {
-  // Chat
-  CHAT: 'ai:chat',
-  CHAT_STREAM: 'ai:chat:stream',
-  CHAT_CANCEL: 'ai:chat:cancel',
-  CHAT_STOP: 'ai:chat:stop',
-
-  // Conversations
-  CONVERSATION_LIST: 'ai:conversation:list',
-  CONVERSATION_GET: 'ai:conversation:get',
-  CONVERSATION_CREATE: 'ai:conversation:create',
-  CONVERSATION_DELETE: 'ai:conversation:delete',
-  CONVERSATION_CLEAR: 'ai:conversation:clear',
-
-  // Analysis
-  ANALYZE_TASK: 'ai:analyze:task',
-  ANALYZE_GOAL: 'ai:analyze:goal',
-  SUGGEST_SCHEDULE: 'ai:suggest:schedule',
-  SUGGEST_BREAKDOWN: 'ai:suggest:breakdown',
-
-  // Task Decomposition
-  DECOMPOSE_TASK: 'ai:task:decompose',
-
-  // Planning
-  PLAN_DAY: 'ai:plan:day',
-  PLAN_WEEK: 'ai:plan:week',
-  PLAN_OPTIMIZE: 'ai:plan:optimize',
-
-  // Reviews
-  REVIEW_DAILY: 'ai:review:daily',
-  REVIEW_WEEKLY: 'ai:review:weekly',
-  REVIEW_MONTHLY: 'ai:review:monthly',
-
-  // Config
-  GET_CONFIG: 'ai:config:get',
-  UPDATE_CONFIG: 'ai:config:update',
+  PROVIDER_CREATE: 'ai:provider:create',
+  PROVIDER_LIST: 'ai:provider:list',
+  PROVIDER_GET: 'ai:provider:get',
+  PROVIDER_UPDATE: 'ai:provider:update',
+  PROVIDER_DELETE: 'ai:provider:delete',
+  PROVIDER_TEST: 'ai:provider:test',
+  PROVIDER_SET_DEFAULT: 'ai:provider:set-default',
+  GOAL_GENERATE: 'ai:goal:generate',
+  CONVERSATION_CREATE: 'ai:chat:conversation:create',
+  CONVERSATION_UPDATE: 'ai:chat:conversation:update',
+  CONVERSATION_LIST: 'ai:chat:conversation:list',
+  CONVERSATION_GET: 'ai:chat:conversation:get',
+  CONVERSATION_DELETE: 'ai:chat:conversation:delete',
+  MESSAGE_SEND: 'ai:chat:message:send',
+  MESSAGE_LIST: 'ai:chat:message:list',
+  KNOWLEDGE_NOTE_CREATE: 'ai:knowledge-note:create',
 } as const;
 
 // ============ Notification Module Channels ============

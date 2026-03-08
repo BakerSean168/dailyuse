@@ -12,27 +12,19 @@ export { AIRepositoryFactory } from './di';
 export * from './di/ai-container';
 
 // Ports (Interfaces)
-export {
-  type IAIConversationRepository,
-  type AIConversationQueryOptions,
-} from '../domain-server';
-export { type IAIGenerationTaskRepository, type IAIProviderConfigRepository, type IAIUsageQuotaRepository } from '../domain-server';
+export { type IAIConversationRepository, type AIConversationQueryOptions } from '../domain-server';
+export { type IAIProviderConfigRepository } from '../domain-server';
 
 // Prisma Adapters
 export {
   AIConversationPrismaRepository,
-  AIGenerationTaskPrismaRepository,
   AIProviderConfigPrismaRepository,
-  AIUsageQuotaPrismaRepository,
 } from './adapters/prisma';
 
 // SQLite Adapters
 export {
   SqliteAIConversationRepository,
-  SqliteAIGenerationTaskRepository,
   SqliteAIProviderConfigRepository,
-  SqliteAIUsageQuotaRepository,
-  SqliteKnowledgeGenerationTaskRepository,
 } from './adapters/sqlite';
 
 // SQLite schema

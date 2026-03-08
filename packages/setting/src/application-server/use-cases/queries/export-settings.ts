@@ -4,10 +4,9 @@
  * 导出用户设置为可传输的 JSON 对象
  */
 
-import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
 
 export class ExportSettings {
-
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
   async execute(identityId: string): Promise<Record<string, unknown>> {

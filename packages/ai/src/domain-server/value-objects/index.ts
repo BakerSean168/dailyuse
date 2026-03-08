@@ -9,11 +9,7 @@
 export {
   AiConversationId,
   AiMessageId,
-  AiGenerationTaskId,
   AiProviderConfigId,
-  AiUsageQuotaId,
 } from '../../domain-shared/value-objects';
 
-// Server-only value objects
-export * from './GenerationInput';
 export * from './TokenUsage';

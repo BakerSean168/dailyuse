@@ -31,3 +31,4 @@ export * from './modules/repository';
 export * from './modules/notification';
 export * from './modules/setting';
 export * from './modules/editor';
+export { default as AIFloatingBall } from './modules/ai/components/AIFloatingBall.vue';

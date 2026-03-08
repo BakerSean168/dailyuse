@@ -15,6 +15,28 @@ export interface ApiConfig {
   timeout: number;
 }
 
+function trimTrailingSlash(value: string): string {
+  return value.replace(/\/+$/, '');
+}
+
+function isAbsoluteHttpUrl(value: string): boolean {
+  return /^https?:\/\//.test(value);
+}
+
+function normalizeBaseUrl(baseUrl: string, defaultPath = '/api/v1'): string {
+  const trimmed = trimTrailingSlash(baseUrl);
+
+  if (/\/api\/v\d+$/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `${trimmed}${defaultPath}`;
+}
+
+function getApiScheme(hostOrUrl: string): 'http' | 'https' {
+  return /localhost|127\.0\.0\.1/i.test(hostOrUrl) ? 'http' : 'https';
+}
+
 /**
  * 获取 API 基础 URL
  *
@@ -24,23 +46,47 @@ export interface ApiConfig {
  * 3. 默认远程服务器
  */
 export function getApiBaseUrl(): string {
-  // 检查多个可能的环境变量
-  const envUrl =
-    process.env.DAILYUSE_API_URL ||
-    process.env.VITE_API_BASE_URL ||
-    process.env.API_BASE_URL;
+  const {
+    DAILYUSE_API_URL,
+    API_BASE_URL,
+    VITE_API_BASE_URL,
+    VITE_API_URL,
+    PROXY_TARGET_URL,
+    API_DOMAIN,
+  } = process.env;
 
-  if (envUrl) {
-    return envUrl;
+  const directBaseUrl = DAILYUSE_API_URL || API_BASE_URL;
+  if (directBaseUrl) {
+    return normalizeBaseUrl(directBaseUrl);
   }
 
-  // 开发模式使用本地或测试服务器
-  if (!app.isPackaged) {
-    return 'http://localhost:3000/api/v1';
+  if (VITE_API_BASE_URL && isAbsoluteHttpUrl(VITE_API_BASE_URL)) {
+    return normalizeBaseUrl(VITE_API_BASE_URL, '');
   }
 
-  // 生产模式使用默认服务器
-  return 'https://api.dailyuse.app/api/v1';
+  const basePath =
+    VITE_API_BASE_URL && VITE_API_BASE_URL.startsWith('/') ? VITE_API_BASE_URL : '/api/v1';
+
+  if (VITE_API_URL) {
+    return normalizeBaseUrl(VITE_API_URL, basePath);
+  }
+
+  if (PROXY_TARGET_URL) {
+    return normalizeBaseUrl(PROXY_TARGET_URL, basePath);
+  }
+
+  if (API_DOMAIN) {
+    const normalizedDomain = API_DOMAIN.replace(/^https?:\/\//, '');
+    return normalizeBaseUrl(`${getApiScheme(normalizedDomain)}://${normalizedDomain}`, basePath);
+  }
+
+  if (!app.isPackaged && VITE_API_BASE_URL && isAbsoluteHttpUrl(VITE_API_BASE_URL)) {
+    return normalizeBaseUrl(VITE_API_BASE_URL, '');
+  }
+
+  throw new Error(
+    'Desktop API base URL is not configured. Set DAILYUSE_API_URL, API_BASE_URL, VITE_API_URL, PROXY_TARGET_URL, or API_DOMAIN.',
+  );
 }
 
 /**
@@ -49,7 +95,7 @@ export function getApiBaseUrl(): string {
 export function getApiConfig(): ApiConfig {
   return {
     baseUrl: getApiBaseUrl(),
-    timeout: 30000, // 30 秒超时
+    timeout: Number(process.env.VITE_API_TIMEOUT || process.env.API_TIMEOUT) || 30000,
   };
 }
 

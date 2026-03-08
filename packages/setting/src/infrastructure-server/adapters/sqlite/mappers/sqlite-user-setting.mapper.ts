@@ -1,6 +1,9 @@
 import { UserPreferencesSchema } from '@dailyuse/contracts/setting';
-import { UserSetting, type UserSettingState } from '@/domain-server/aggregates/user-setting';
-import { SettingId } from '@/domain-shared/value-objects/setting-id';
+import {
+  UserSetting,
+  type UserSettingState,
+} from '../../../../domain-server/aggregates/user-setting';
+import { SettingId } from '../../../../domain-shared/value-objects/setting-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 export interface SqliteUserSettingRow {

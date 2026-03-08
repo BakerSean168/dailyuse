@@ -20,7 +20,12 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type { SettingId as ISettingId, IdentityId, TransferDate, DomainDate } from '@dailyuse/contracts/primitives';
+import type {
+  SettingId as ISettingId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+} from '@dailyuse/contracts/primitives';
 import type {
   UserSettingServerDTO,
   UserSettingClientDTO,
@@ -35,7 +40,7 @@ import {
   validateCategoryPatch,
 } from '@dailyuse/contracts/setting';
 import { CATEGORY_SCHEMAS } from '@dailyuse/contracts/setting';
-import { SettingId } from '@/domain-shared/value-objects/setting-id';
+import { SettingId } from '../../domain-shared/value-objects/setting-id';
 import { IdentityId as IdentityIdVO } from '@dailyuse/domain-shared/shared';
 import {
   SettingValidationError,
@@ -69,10 +74,18 @@ export class UserSetting extends AggregateRoot<ISettingId> {
 
   // ═══════════════════ Getters ═══════════════════
 
-  get identityId(): IdentityId { return this._props.identityId; }
-  get version(): number { return this._props.version; }
-  get createdAt(): DomainDate { return this._props.createdAt; }
-  get updatedAt(): DomainDate { return this._props.updatedAt; }
+  get identityId(): IdentityId {
+    return this._props.identityId;
+  }
+  get version(): number {
+    return this._props.version;
+  }
+  get createdAt(): DomainDate {
+    return this._props.createdAt;
+  }
+  get updatedAt(): DomainDate {
+    return this._props.updatedAt;
+  }
 
   /** Get preferences for a specific category (defensive copy) */
   getCategory<K extends PreferenceCategory>(category: K): UserSettingPreferences[K] {
@@ -125,7 +138,9 @@ export class UserSetting extends AggregateRoot<ISettingId> {
    */
   get<T = unknown>(key: string): T | undefined {
     const [category, field] = this.parseKey(key);
-    const categoryPrefs = this._props.preferences[category as PreferenceCategory] as Record<string, unknown> | undefined;
+    const categoryPrefs = this._props.preferences[category as PreferenceCategory] as
+      | Record<string, unknown>
+      | undefined;
     if (!categoryPrefs) return undefined;
     return categoryPrefs[field] as T | undefined;
   }
@@ -155,10 +170,10 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     this._props.version += 1;
     this.touch();
 
-    this.addDomainEvent<SettingEventMap['setting:UserSettingReset']>(
-      'setting:UserSettingReset',
-      { identityId: this._props.identityId, category },
-    );
+    this.addDomainEvent<SettingEventMap['setting:UserSettingReset']>('setting:UserSettingReset', {
+      identityId: this._props.identityId,
+      category,
+    });
   }
 
   /**
@@ -169,10 +184,9 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     this._props.version += 1;
     this.touch();
 
-    this.addDomainEvent<SettingEventMap['setting:UserSettingReset']>(
-      'setting:UserSettingReset',
-      { identityId: this._props.identityId },
-    );
+    this.addDomainEvent<SettingEventMap['setting:UserSettingReset']>('setting:UserSettingReset', {
+      identityId: this._props.identityId,
+    });
   }
 
   // ═══════════════════ Export / Import ═══════════════════
@@ -230,9 +244,10 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     overrides?: Partial<UserSettingPreferences>;
   }): UserSetting {
     const id = SettingId.of(SettingId.generate());
-    const identityId = typeof params.identityId === 'string'
-      ? IdentityIdVO.of(params.identityId)
-      : params.identityId;
+    const identityId =
+      typeof params.identityId === 'string'
+        ? IdentityIdVO.of(params.identityId)
+        : params.identityId;
     const defaults = getDefaultPreferences();
     const now = new Date();
 
@@ -241,7 +256,10 @@ export class UserSetting extends AggregateRoot<ISettingId> {
     if (params.overrides) {
       for (const cat of PREFERENCE_CATEGORIES) {
         if (params.overrides[cat]) {
-          (preferences as Record<string, unknown>)[cat] = { ...defaults[cat], ...params.overrides[cat] };
+          (preferences as Record<string, unknown>)[cat] = {
+            ...defaults[cat],
+            ...params.overrides[cat],
+          };
         }
       }
     }

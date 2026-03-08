@@ -4,12 +4,11 @@
  * 导入用户设置 — 支持合并或覆盖模式
  */
 
-import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
-import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 export class ImportSettings {
-
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
   async execute(

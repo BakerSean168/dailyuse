@@ -34,27 +34,30 @@ export class AIChatApplicationService {
     provider?: string,
     model?: string,
   ): Promise<SendMessageRes> {
-    // 1. Validate & Save User Message
     const conversation = await this.validateAndGetConversation(identityId, conversationId);
-    await this.saveMessage(conversation, MessageRole.User, content);
-
-    // 2. Prepare Context (History)
-    // For simplicity, we just use the current message as prompt or fetch recent history
-    // Ideally we should format history into a prompt string or use a chat-capable adapter
+    const userMessage = await this.saveMessage(conversation, MessageRole.User, content);
     const history = await this.getConversationHistory(conversationId);
     const prompt = this.formatChatPrompt(history, content);
-
-    // 3. Call AI
     const aiResponseContent = await this.generateChatResponse(identityId, prompt);
-
-    // 4. Save AI Message
-    const aiMessage = await this.saveMessage(
+    const assistantMessage = await this.saveMessage(
       conversation,
       MessageRole.Assistant,
       aiResponseContent,
     );
 
-    return aiMessage;
+    const providerConfig = await this.getProviderConfig(identityId);
+
+    return {
+      userMessage,
+      assistantMessage,
+      tokenUsage: {
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+      },
+      providerId: providerConfig.id,
+      processingTimeMs: 0,
+    };
   }
 
   /**

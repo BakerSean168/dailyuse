@@ -3,7 +3,12 @@
  * 用户自定义 AI 服务提供商配置（服务端视图）
  */
 
-import type { AiProviderConfigId, IdentityId, PersistenceDate, TransferDate, DomainDate } from '../../../primitives';
+import type {
+  AiProviderConfigId,
+  IdentityId,
+  PersistenceDate,
+  TransferDate,
+} from '../../../primitives';
 import type { AIProviderType } from '../value-objects/ai-provider-type';
 import type { AIModelInfo } from './ai-provider-config-client';
 
@@ -17,7 +22,7 @@ export interface AIProviderConfigPersistenceDTO {
   baseUrl: string;
   apiKey: string;
   defaultModel: string | null;
-  availableModels: AIModelInfo[]
+  availableModels: AIModelInfo[];
   isActive: boolean;
 
   isDefault: boolean;
@@ -54,7 +59,7 @@ export interface AIProviderConfigServerDTO {
   isActive: boolean;
   /** 是否为默认 Provider */
   isDefault: boolean;
-  /** 优先级（数字越小优先级越高，用于故障转移） */
+  /** 排序优先级 */
   priority: number;
   /** 版本号（用于乐观锁） */
   version: number;

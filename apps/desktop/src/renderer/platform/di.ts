@@ -18,6 +18,7 @@ import { ReminderClientService } from '@dailyuse/reminder/application-client';
 import { RepositoryClientService } from '@dailyuse/repository/application-client';
 import { NotificationClientService } from '@dailyuse/notification/application-client';
 import { SettingClientService } from '@dailyuse/setting/application-client';
+import { AIClientService } from '@dailyuse/ai/application-client';
 
 import {
   // Domain service keys
@@ -30,6 +31,7 @@ import {
   REPOSITORY_SERVICE_KEY,
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
+  AI_SERVICE_KEY,
   RULE_SERVICE_KEY,
   DASHBOARD_SERVICE_KEY,
   createDashboardIpcAdapter,
@@ -54,6 +56,7 @@ import { createReminderIpcAdapters } from '@dailyuse/reminder/infrastructure-cli
 import { createRepositoryIpcAdapters } from '@dailyuse/repository/infrastructure-client';
 import { createNotificationIpcAdapters } from '@dailyuse/notification/infrastructure-client';
 import { createSettingIpcAdapters } from '@dailyuse/setting/infrastructure-client';
+import { createAIIpcAdapters } from '@dailyuse/ai/infrastructure-client';
 import { createGovernanceIpcAdapters } from '@dailyuse/governance/infrastructure-client';
 
 /**
@@ -102,6 +105,18 @@ export function installIpcServices(app: App): void {
 
   const settingAdapters = createSettingIpcAdapters(resultIpcClient);
   app.provide(SETTING_SERVICE_KEY, new SettingClientService(settingAdapters.setting));
+
+  const aiAdapters = createAIIpcAdapters(resultIpcClient);
+  app.provide(
+    AI_SERVICE_KEY,
+    new AIClientService(
+      aiAdapters.providerConfig,
+      aiAdapters.conversation,
+      aiAdapters.message,
+      aiAdapters.goal,
+      aiAdapters.knowledgeNote,
+    ),
+  );
 
   const governanceAdapters = createGovernanceIpcAdapters(resultIpcClient);
   app.provide(RULE_SERVICE_KEY, governanceAdapters.rule);

@@ -81,6 +81,14 @@
         "cwd": "apps/desktop"
       }
     },
+    "test:main": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/apps/desktop-main"],
+      "options": {
+        "command": "vitest run --project desktop-main",
+        "cwd": "."
+      }
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

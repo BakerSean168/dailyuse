@@ -7,6 +7,7 @@
  */
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
+  AIFloatingBall,
   GlobalConfirmDialog,
   GlobalErrorBoundary,
   GlobalSheet,
@@ -42,6 +43,7 @@ const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
   <GlobalConfirmDialog />
   <GlobalSheet />
   <GlobalCommandPalette />
+  <AIFloatingBall />
 </template>
 
 <style>

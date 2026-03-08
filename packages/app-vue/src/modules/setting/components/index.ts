@@ -1,4 +1,5 @@
 export { default as AppearanceSettings } from './AppearanceSettings.vue';
+export { default as AISettings } from './AISettings.vue';
 export { default as EditorSettings } from './EditorSettings.vue';
 export { default as ExperimentalSettings } from './ExperimentalSettings.vue';
 export { default as LocaleSettings } from './LocaleSettings.vue';

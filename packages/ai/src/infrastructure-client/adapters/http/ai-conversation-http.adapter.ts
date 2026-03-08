@@ -1,10 +1,4 @@
-/**
- * AI Conversation HTTP Adapter
- *
- * HTTP implementation of IAIConversationApiClient.
- */
-
-import type { IHttpClient, IAIConversationApiClient } from '../types';
+import type { IAIConversationApiClient, IResultHttpClient } from '../types';
 import type {
   AIConversationClientDTO,
   ConversationListRes,
@@ -12,52 +6,46 @@ import type {
   UpdateConversationReq,
 } from '@dailyuse/contracts/ai';
 
-/**
- * AI Conversation HTTP Adapter
- *
- * Implements IAIConversationApiClient using HTTP REST API calls.
- */
 export class AIConversationHttpAdapter implements IAIConversationApiClient {
-  private readonly baseUrl = '/ai/conversations';
+  private readonly baseUrl = '/ai/chat/conversations';
 
-  constructor(private readonly httpClient: IHttpClient) {}
-
-  // ===== Conversation CRUD =====
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
   async createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO> {
-    return this.httpClient.post(this.baseUrl, request);
-  }
-
-  async getConversations(params?: {
-    page?: number;
-    pageSize?: number;
-    status?: string;
-  }): Promise<ConversationListRes> {
-    return this.httpClient.get(this.baseUrl, { params });
-  }
-
-  async getConversationById(id: string): Promise<AIConversationClientDTO> {
-    return this.httpClient.get(`${this.baseUrl}/${id}`);
+    const result = await this.httpClient.post<AIConversationClientDTO>(this.baseUrl, request);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async updateConversation(
     id: string,
     request: UpdateConversationReq,
   ): Promise<AIConversationClientDTO> {
-    return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
+    const result = await this.httpClient.patch<AIConversationClientDTO>(
+      `${this.baseUrl}/${id}`,
+      request,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
+  }
+
+  async getConversations(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<ConversationListRes> {
+    const result = await this.httpClient.get<ConversationListRes>(this.baseUrl, { params });
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
+  }
+
+  async getConversationById(id: string): Promise<AIConversationClientDTO> {
+    const result = await this.httpClient.get<AIConversationClientDTO>(`${this.baseUrl}/${id}`);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async deleteConversation(id: string): Promise<void> {
-    return this.httpClient.delete(`${this.baseUrl}/${id}`);
-  }
-
-  // ===== Conversation Status =====
-
-  async closeConversation(id: string): Promise<AIConversationClientDTO> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/close`);
-  }
-
-  async archiveConversation(id: string): Promise<AIConversationClientDTO> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
+    const result = await this.httpClient.delete<void>(`${this.baseUrl}/${id}`);
+    if (!result.ok) throw new Error(result.error.message);
   }
 }

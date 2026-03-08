@@ -1,14 +1,15 @@
 import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
+import type { AISecretCipher } from '../../../security/ai-secret-cipher';
 
 export class AiProviderConfigSqliteMapper {
-  static toDTO(row: any): AIProviderConfigServerDTO {
+  static toDTO(row: any, secretCipher: AISecretCipher): AIProviderConfigServerDTO {
     return {
       id: row.id,
       identityId: row.identity_id,
       name: row.name,
       providerType: row.provider_type,
       baseUrl: row.base_url,
-      apiKey: row.api_key_encrypted,
+      apiKey: secretCipher.decrypt(row.api_key_encrypted),
       defaultModel: row.default_model,
       availableModels: this.parseModels(row.available_models),
       isActive: row.is_active === 1,

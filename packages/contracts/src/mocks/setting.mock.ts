@@ -26,7 +26,11 @@ export function createMockUserSetting(
       },
       locale: {
         language: faker.helpers.arrayElement(['zh-CN', 'en-US', 'ja-JP']),
-        timezone: faker.helpers.arrayElement(['Asia/Shanghai', 'America/New_York', 'Europe/London']),
+        timezone: faker.helpers.arrayElement([
+          'Asia/Shanghai',
+          'America/New_York',
+          'Europe/London',
+        ]),
         dateFormat: faker.helpers.arrayElement(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY']),
         timeFormat: faker.helpers.arrayElement(['12H', '24H']),
         currency: faker.helpers.arrayElement(['CNY', 'USD', 'EUR']),
@@ -73,6 +77,11 @@ export function createMockUserSetting(
       ui: {
         startPage: faker.helpers.arrayElement(['dashboard', 'tasks', 'goals']),
         sidebarCollapsed: faker.datatype.boolean(),
+      },
+      ai: {
+        enabled: faker.datatype.boolean(),
+        showFloatingBall: faker.datatype.boolean(),
+        knowledgeNoteSubpath: faker.helpers.arrayElement(['', 'ai', 'ai/inbox']),
       },
     },
     version: 1,

@@ -7,8 +7,8 @@
 
 import type Database from 'better-sqlite3';
 import type { IDomainEvent } from '@dailyuse/contracts/shared';
-import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
-import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 import type { SettingEventMap } from '@dailyuse/contracts/setting';
 import { eventBus } from '@dailyuse/utils';
 import { SqliteUserSettingMapper, type SqliteUserSettingRow } from './mappers';

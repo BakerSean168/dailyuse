@@ -55,6 +55,26 @@ export type INotificationService = PublicInterface<
 export type ISettingService = PublicInterface<
   import('@dailyuse/setting/application-client').SettingClientService
 >;
+export interface IAIService {
+  createProvider(request: unknown): Promise<unknown>;
+  updateProvider(id: string, request: unknown): Promise<unknown>;
+  listProviders(): Promise<unknown>;
+  getProvider(id: string): Promise<unknown>;
+  deleteProvider(id: string): Promise<void>;
+  testProvider(request: unknown): Promise<unknown>;
+  setDefaultProvider(providerId: string): Promise<void>;
+  generateGoal(request: unknown): Promise<unknown>;
+  createConversation(request: unknown): Promise<unknown>;
+  listConversations(params?: { page?: number; pageSize?: number }): Promise<unknown>;
+  getConversation(id: string): Promise<unknown>;
+  deleteConversation(id: string): Promise<void>;
+  sendMessage(request: unknown): Promise<unknown>;
+  listMessages(
+    conversationId: string,
+    params?: { page?: number; pageSize?: number },
+  ): Promise<unknown>;
+  createKnowledgeNote(request: unknown): Promise<unknown>;
+}
 
 // ── Governance（纯接口，无 private）──
 export type { IRuleApiClient as IRuleService } from '@dailyuse/governance/infrastructure-client';

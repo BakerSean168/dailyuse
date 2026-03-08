@@ -10,6 +10,8 @@
     "paths": {
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"],
+      "@dailyuse/ai": ["../../packages/ai/src/index.ts"],
+      "@dailyuse/ai/*": ["../../packages/ai/src/*/index.ts"],
       "@dailyuse/task": ["../../packages/task/src/index.ts"],
       "@dailyuse/task/*": ["../../packages/task/src/*/index.ts"],
       "@dailyuse/repository": ["../../packages/repository/src/index.ts"],

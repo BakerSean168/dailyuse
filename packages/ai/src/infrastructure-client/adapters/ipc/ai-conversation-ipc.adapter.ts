@@ -1,10 +1,4 @@
-/**
- * AI Conversation IPC Adapter
- *
- * IPC implementation of IAIConversationApiClient for Electron desktop app.
- */
-
-import type { IIpcClient, IAIConversationApiClient } from '../types';
+import type { IAIConversationApiClient, IResultIpcClient } from '../types';
 import type {
   AIConversationClientDTO,
   ConversationListRes,
@@ -12,52 +6,49 @@ import type {
   UpdateConversationReq,
 } from '@dailyuse/contracts/ai';
 
-/**
- * AI Conversation IPC Adapter
- *
- * Implements IAIConversationApiClient using Electron IPC.
- */
 export class AIConversationIpcAdapter implements IAIConversationApiClient {
-  private readonly channel = 'ai:conversation';
+  private readonly channel = 'ai:chat:conversation';
 
-  constructor(private readonly ipcClient: IIpcClient) {}
-
-  // ===== Conversation CRUD =====
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:create`, request);
-  }
-
-  async getConversations(params?: {
-    page?: number;
-    pageSize?: number;
-    status?: string;
-  }): Promise<ConversationListRes> {
-    return this.ipcClient.invoke(`${this.channel}:list`, params);
-  }
-
-  async getConversationById(id: string): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:get`, id);
+    const result = await this.ipcClient.invoke<AIConversationClientDTO>(
+      `${this.channel}:create`,
+      request,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async updateConversation(
     id: string,
     request: UpdateConversationReq,
   ): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:update`, { id, ...request });
+    const result = await this.ipcClient.invoke<AIConversationClientDTO>(`${this.channel}:update`, {
+      id,
+      ...request,
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
+  }
+
+  async getConversations(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<ConversationListRes> {
+    const result = await this.ipcClient.invoke<ConversationListRes>(`${this.channel}:list`, params);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
+  }
+
+  async getConversationById(id: string): Promise<AIConversationClientDTO> {
+    const result = await this.ipcClient.invoke<AIConversationClientDTO>(`${this.channel}:get`, id);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async deleteConversation(id: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, id);
-  }
-
-  // ===== Conversation Status =====
-
-  async closeConversation(id: string): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:close`, id);
-  }
-
-  async archiveConversation(id: string): Promise<AIConversationClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:archive`, id);
+    const result = await this.ipcClient.invoke<void>(`${this.channel}:delete`, id);
+    if (!result.ok) throw new Error(result.error.message);
   }
 }

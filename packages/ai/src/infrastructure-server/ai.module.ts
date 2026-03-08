@@ -1,13 +1,6 @@
 import type { PrismaClient } from '@dailyuse/database';
 import type Database from 'better-sqlite3';
-import type {
-  IAIConversationRepository,
-  IAIGenerationTaskRepository,
-  IAIProviderConfigRepository,
-  IAIUsageQuotaRepository,
-} from '../domain-server';
-
-import { AIGenerationValidationService } from '../domain-server/services/AIGenerationValidationService';
+import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain-server';
 import { AIRepositoryFactory } from './di';
 import { AIContainer } from './di/ai-container';
 
@@ -19,22 +12,17 @@ import {
   GetConversation,
   SendMessage,
   GenerateGoal,
-  GetQuota,
   AIConversationService,
   AIProviderConfigService,
-  AIGenerationApplicationService,
   AIChatApplicationService,
   GoalGenerationApplicationService,
 } from '../application-server/use-cases';
-import { QuotaEnforcementService } from '../domain-server/services/QuotaEnforcementService';
 
 type BetterSQLiteDB = Database.Database;
 
 export class AIModule {
   public readonly conversationRepository: IAIConversationRepository;
-  public readonly generationTaskRepository: IAIGenerationTaskRepository;
   public readonly providerConfigRepository: IAIProviderConfigRepository;
-  public readonly usageQuotaRepository: IAIUsageQuotaRepository;
 
   public readonly createConversation: CreateConversation;
   public readonly deleteConversation: DeleteConversation;
@@ -43,10 +31,8 @@ export class AIModule {
   public readonly getConversation: GetConversation;
   public readonly sendMessage: SendMessage;
   public readonly generateGoal: GenerateGoal;
-  public readonly getQuota: GetQuota;
   public readonly conversationService: AIConversationService;
   public readonly providerConfigService: AIProviderConfigService;
-  public readonly generationService: AIGenerationApplicationService;
   public readonly chatService: AIChatApplicationService;
   public readonly goalGenerationService: GoalGenerationApplicationService;
 
@@ -56,14 +42,10 @@ export class AIModule {
     const container = AIContainer.getInstance();
     container.reset();
     container.setConversationRepository(repositories.conversationRepository);
-    container.setGenerationTaskRepository(repositories.generationTaskRepository);
     container.setProviderConfigRepository(repositories.providerConfigRepository);
-    container.setUsageQuotaRepository(repositories.usageQuotaRepository);
 
     this.conversationRepository = container.getConversationRepository();
-    this.generationTaskRepository = container.getGenerationTaskRepository();
     this.providerConfigRepository = container.getProviderConfigRepository();
-    this.usageQuotaRepository = container.getUsageQuotaRepository();
 
     // 2. Initialize Services
     this.createConversation = new CreateConversation(this.conversationRepository);
@@ -72,31 +54,15 @@ export class AIModule {
     this.listProviders = new ListProviders(this.providerConfigRepository);
     this.getConversation = new GetConversation(this.conversationRepository);
     this.sendMessage = new SendMessage(this.conversationRepository);
-    this.generateGoal = new GenerateGoal(
-      this.generationTaskRepository,
-      this.providerConfigRepository,
-    );
-    this.getQuota = new GetQuota(this.usageQuotaRepository);
+    this.generateGoal = new GenerateGoal(this.providerConfigRepository);
     this.conversationService = new AIConversationService(this.conversationRepository);
     this.providerConfigService = new AIProviderConfigService(this.providerConfigRepository);
 
-    const validationService = new AIGenerationValidationService();
-    const quotaEnforcementService = new QuotaEnforcementService(this.usageQuotaRepository);
-
-    this.generationService = new AIGenerationApplicationService(
-      validationService,
-      this.conversationRepository,
-      this.usageQuotaRepository,
-      quotaEnforcementService,
-      this.providerConfigRepository,
-      this.generationTaskRepository,
-    );
-
     this.goalGenerationService = new GoalGenerationApplicationService(
-      validationService,
+      null,
       this.providerConfigRepository,
-      this.usageQuotaRepository,
-      quotaEnforcementService,
+      null,
+      null,
     );
 
     this.chatService = new AIChatApplicationService(

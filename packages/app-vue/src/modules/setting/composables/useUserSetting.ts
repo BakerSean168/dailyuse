@@ -63,8 +63,15 @@ export function useUserSetting() {
     category: K,
     partial: Partial<UserSettingPreferences[K]>,
   ) {
-    // TODO: Replace with service method or injected HTTP client when available
-    console.warn('updateCategory: not yet implemented — requires HTTP client integration');
+    store.setError(null);
+    try {
+      const data = await service.patchCategory(category, partial as Record<string, unknown>);
+      store.setUserSetting(data);
+      return data;
+    } catch (e: unknown) {
+      handleError((e as Error).message || t('setting.errors.updateFailed'));
+      return null;
+    }
   }
 
   async function resetToDefaults(_category?: PreferenceCategory) {

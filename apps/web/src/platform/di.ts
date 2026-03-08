@@ -21,6 +21,7 @@ import {
   RULE_SERVICE_KEY,
   SCHEDULE_SERVICE_KEY,
   SETTING_SERVICE_KEY,
+  AI_SERVICE_KEY,
   TASK_SERVICE_KEY,
   // Dashboard
   DASHBOARD_SERVICE_KEY,
@@ -54,6 +55,8 @@ import { ScheduleClientService } from '@dailyuse/schedule/application-client';
 import { createScheduleHttpAdapters } from '@dailyuse/schedule/infrastructure-client';
 import { SettingClientService } from '@dailyuse/setting/application-client';
 import { createSettingHttpAdapters } from '@dailyuse/setting/infrastructure-client';
+import { AIClientService } from '@dailyuse/ai/application-client';
+import { createAIHttpAdapters } from '@dailyuse/ai/infrastructure-client';
 import { TaskClientService } from '@dailyuse/task/application-client';
 import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 
@@ -84,6 +87,15 @@ const scheduleService = new ScheduleClientService(scheduleAdapters.event, schedu
 
 const settingAdapters = createSettingHttpAdapters(resultHttpClient);
 const settingService = new SettingClientService(settingAdapters.setting);
+
+const aiAdapters = createAIHttpAdapters(resultHttpClient);
+const aiService = new AIClientService(
+  aiAdapters.providerConfig,
+  aiAdapters.conversation,
+  aiAdapters.message,
+  aiAdapters.goal,
+  aiAdapters.knowledgeNote,
+);
 
 const taskAdapters = createTaskHttpAdapters(resultHttpClient);
 const taskService = new TaskClientService(
@@ -116,6 +128,7 @@ export function installWebServices(app: App): void {
   app.provide(REPOSITORY_SERVICE_KEY, repositoryService);
   app.provide(SCHEDULE_SERVICE_KEY, scheduleService);
   app.provide(SETTING_SERVICE_KEY, settingService);
+  app.provide(AI_SERVICE_KEY, aiService);
   app.provide(TASK_SERVICE_KEY, taskService);
 
   // ── Dashboard ──

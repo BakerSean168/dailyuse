@@ -62,6 +62,8 @@
     "@dailyuse/database": "workspace:*",
     "@dailyuse/domain-shared": "workspace:*",
     "@dailyuse/http-client": "workspace:*",
+    "@dailyuse/repository": "workspace:*",
+    "@dailyuse/setting": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "better-sqlite3": "^12.5.0",
     "express": "^5.1.0",

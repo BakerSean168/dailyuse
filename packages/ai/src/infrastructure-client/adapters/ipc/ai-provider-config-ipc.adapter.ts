@@ -1,66 +1,73 @@
-/**
- * AI Provider Config IPC Adapter
- *
- * IPC implementation of IAIProviderConfigApiClient for Electron desktop app.
- */
-
-import type { IIpcClient, IAIProviderConfigApiClient } from '../types';
+import type { IAIProviderConfigApiClient, IResultIpcClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
   CreateAIProviderConfigReq,
-  UpdateAIProviderConfigReq,
+  SetDefaultAIProviderReq,
   TestAIProviderReq,
   TestAIProviderRes,
-  RefreshProviderModelsRes,
+  UpdateAIProviderConfigReq,
 } from '@dailyuse/contracts/ai';
 
-/**
- * AI Provider Config IPC Adapter
- *
- * Implements IAIProviderConfigApiClient using Electron IPC.
- */
 export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
   private readonly channel = 'ai:provider';
 
-  constructor(private readonly ipcClient: IIpcClient) {}
-
-  // ===== Provider CRUD =====
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:create`, request);
+    const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
+      `${this.channel}:create`,
+      request,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async getProviders(): Promise<AIProviderConfigSummary[]> {
-    return this.ipcClient.invoke(`${this.channel}:list`);
+    const result = await this.ipcClient.invoke<{ data: AIProviderConfigSummary[] }>(
+      `${this.channel}:list`,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data.data;
   }
 
   async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:get`, id);
+    const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
+      `${this.channel}:get`,
+      id,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async updateProvider(
     id: string,
     request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:update`, { id, ...request });
+    const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
+      `${this.channel}:update`,
+      {
+        id,
+        ...request,
+      },
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async deleteProvider(id: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, id);
+    const result = await this.ipcClient.invoke<void>(`${this.channel}:delete`, id);
+    if (!result.ok) throw new Error(result.error.message);
   }
-
-  // ===== Provider Operations =====
 
   async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
-    return this.ipcClient.invoke(`${this.channel}:test-connection`, request);
+    const result = await this.ipcClient.invoke<TestAIProviderRes>(`${this.channel}:test`, request);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
-  async setDefaultProvider(id: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:set-default`, id);
-  }
-
-  async refreshModels(id: string): Promise<RefreshProviderModelsRes> {
-    return this.ipcClient.invoke(`${this.channel}:refresh-models`, id);
+  async setDefaultProvider(request: SetDefaultAIProviderReq): Promise<void> {
+    const result = await this.ipcClient.invoke<void>(`${this.channel}:set-default`, request);
+    if (!result.ok) throw new Error(result.error.message);
   }
 }

@@ -1,13 +1,8 @@
-/**
- * AI - Response Schemas (Zod)
- */
-
 import { z } from 'zod';
-import type { GenerateGoalResultDTO } from '../dtos';
-import { GoalCategory } from '../dtos/goal-generation-result.dto';
-import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
+import { GoalCategory } from '../dtos';
+import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 const TokenUsageSchema = z.object({
   promptTokens: z.number(),
@@ -35,7 +30,7 @@ const GeneratedGoalDraftSchema = z.object({
   aiInsights: z.string().optional(),
 });
 
-export const GenerateGoalResultDTOSchema: z.ZodType<GenerateGoalResultDTO> = z.object({
+export const GenerateGoalResultDTOSchema = z.object({
   goal: GeneratedGoalDraftSchema,
   keyResults: z.array(KeyResultPreviewSchema).optional(),
   tokenUsage: TokenUsageSchema,

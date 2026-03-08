@@ -1,91 +1,70 @@
-/**
- * AI Provider Configuration Operations
- * 
- * This file contains DTOs for managing AI provider configurations.
- * Allows configuring multiple AI providers (OpenAI, Anthropic, etc.) and testing connections.
- */
-
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AiProviderConfigId } from '../../../primitives';
-import type { AIProviderConfigServerDTO } from '../aggregates/ai-provider-config-server';
+import type { AIProviderConfigClientDTO, AIProviderConfigSummary } from '../aggregates';
 import type { TestAIProviderResultDTO } from '../dtos';
 
-// ============================================================================
-// AI PROVIDER Configuration Operations
-// ============================================================================
+export const OpenAICompatibleProviderType = 'openai_compatible' as const;
 
-/**
- * 创建 AI Provider 配置 Schema
- */
-export const CreateAIProviderConfigSchema = z.object({
-  name: z.string().min(1).max(100),
-  provider: z.enum(['openai', 'anthropic', 'google', 'azure', 'custom']),
-  apiKey: z.string().min(1),
-  baseUrl: z.string().url().optional(),
-  model: z.string(),
+const ProviderBaseSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  baseUrl: z.string().trim().url(),
+  apiKey: z.string().trim().min(1),
+  model: z.string().trim().min(1).max(120),
   isDefault: z.boolean().default(false).optional(),
-  maxTokens: z.number().int().min(1).optional(),
-  temperature: z.number().min(0).max(2).optional(),
 });
 
+export const CreateAIProviderConfigSchema = ProviderBaseSchema;
 export type CreateAIProviderConfigReq = z.infer<typeof CreateAIProviderConfigSchema>;
-export type CreateAIProviderConfigRes = AIProviderConfigServerDTO;
+export type CreateAIProviderConfigRes = AIProviderConfigClientDTO;
 
-/**
- * 更新 AI Provider 配置 Schema
- */
 export const UpdateAIProviderConfigSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  apiKey: z.string().min(1).optional(),
-  baseUrl: z.string().url().optional(),
-  model: z.string().optional(),
+  name: z.string().trim().min(1).max(100).optional(),
+  baseUrl: z.string().trim().url().optional(),
+  apiKey: z.string().trim().min(1).optional(),
+  model: z.string().trim().min(1).max(120).optional(),
   isDefault: z.boolean().optional(),
-  maxTokens: z.number().int().min(1).optional(),
-  temperature: z.number().min(0).max(2).optional(),
   isActive: z.boolean().optional(),
 });
-
 export type UpdateAIProviderConfigReq = z.infer<typeof UpdateAIProviderConfigSchema>;
-export type UpdateAIProviderConfigRes = AIProviderConfigServerDTO;
-
-/**
- * 获取 AI Provider 配置列表
- */
-export type ListAIProviderConfigsReq = void;
+export type UpdateAIProviderConfigRes = AIProviderConfigClientDTO;
 
 export interface ListAIProviderConfigsRes {
-  data: AIProviderConfigServerDTO[];
-  total: number;
+  data: AIProviderConfigSummary[];
 }
 
-/**
- * 获取单个 AI Provider 配置
- */
 export type GetAIProviderConfigReq = void;
-export type GetAIProviderConfigRes = AIProviderConfigServerDTO;
+export type GetAIProviderConfigRes = AIProviderConfigClientDTO;
 
-/**
- * 删除 AI Provider 配置
- */
 export type DeleteAIProviderConfigReq = void;
 export type DeleteAIProviderConfigRes = void;
 
-/**
- * 测试 AI Provider Schema
- */
-export const TestAIProviderSchema = z.object({
-  providerId: brandedId<AiProviderConfigId>(),
-  testPrompt: z.string().default('Hello, this is a test.').optional(),
-});
+export const TestAIProviderSchema = z
+  .object({
+    providerId: brandedId<AiProviderConfigId>().optional(),
+    baseUrl: z.string().trim().url().optional(),
+    apiKey: z.string().trim().min(1).optional(),
+    model: z.string().trim().min(1).max(120).optional(),
+    testPrompt: z.string().trim().min(1).default('Hello, this is a test.').optional(),
+  })
+  .refine(
+    (value) => {
+      if (value.providerId) {
+        return true;
+      }
 
+      return Boolean(value.baseUrl && value.apiKey && value.model);
+    },
+    {
+      message: 'Either providerId or baseUrl/apiKey/model is required',
+      path: ['providerId'],
+    },
+  );
 export type TestAIProviderReq = z.infer<typeof TestAIProviderSchema>;
 export type TestAIProviderRes = TestAIProviderResultDTO;
 
-/**
- * Refresh Provider Models - refreshes the available model list for a provider
- */
-export type RefreshProviderModelsReq = void;
-export interface RefreshProviderModelsRes {
-  models: import('../aggregates/ai-provider-config-client').AIModelInfo[];
-}
+export const SetDefaultAIProviderSchema = z.object({
+  providerId: brandedId<AiProviderConfigId>(),
+});
+export type SetDefaultAIProviderReq = z.infer<typeof SetDefaultAIProviderSchema>;
+export type SetDefaultAIProviderRes = void;

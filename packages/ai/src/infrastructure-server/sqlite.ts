@@ -3,19 +3,11 @@
  */
 
 import type Database from 'better-sqlite3';
-import type {
-  IAIConversationRepository,
-  IAIGenerationTaskRepository,
-  IAIProviderConfigRepository,
-  IAIUsageQuotaRepository,
-} from '../domain-server';
-import { AIGenerationValidationService } from '../domain-server/services/AIGenerationValidationService';
+import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain-server';
 import { AIContainer } from './di/ai-container';
 import {
   SqliteAIConversationRepository,
-  SqliteAIGenerationTaskRepository,
   SqliteAIProviderConfigRepository,
-  SqliteAIUsageQuotaRepository,
 } from './adapters/sqlite';
 import {
   CreateConversation,
@@ -25,22 +17,17 @@ import {
   GetConversation,
   SendMessage,
   GenerateGoal,
-  GetQuota,
   AIConversationService,
   AIProviderConfigService,
-  AIGenerationApplicationService,
   AIChatApplicationService,
   GoalGenerationApplicationService,
 } from '../application-server/use-cases';
-import { QuotaEnforcementService } from '../domain-server/services/QuotaEnforcementService';
 
 type BetterSQLiteDB = Database.Database;
 
 export class AISqliteModule {
   public readonly conversationRepository: IAIConversationRepository;
-  public readonly generationTaskRepository: IAIGenerationTaskRepository;
   public readonly providerConfigRepository: IAIProviderConfigRepository;
-  public readonly usageQuotaRepository: IAIUsageQuotaRepository;
 
   public readonly createConversation: CreateConversation;
   public readonly deleteConversation: DeleteConversation;
@@ -49,30 +36,22 @@ export class AISqliteModule {
   public readonly getConversation: GetConversation;
   public readonly sendMessage: SendMessage;
   public readonly generateGoal: GenerateGoal;
-  public readonly getQuota: GetQuota;
   public readonly conversationService: AIConversationService;
   public readonly providerConfigService: AIProviderConfigService;
-  public readonly generationService: AIGenerationApplicationService;
   public readonly chatService: AIChatApplicationService;
   public readonly goalGenerationService: GoalGenerationApplicationService;
 
   constructor(dbConnection: BetterSQLiteDB) {
     const conversationRepository = new SqliteAIConversationRepository(dbConnection);
-    const generationTaskRepository = new SqliteAIGenerationTaskRepository(dbConnection);
     const providerConfigRepository = new SqliteAIProviderConfigRepository(dbConnection);
-    const usageQuotaRepository = new SqliteAIUsageQuotaRepository(dbConnection);
 
     const container = AIContainer.getInstance();
     container.reset();
     container.setConversationRepository(conversationRepository);
-    container.setGenerationTaskRepository(generationTaskRepository);
     container.setProviderConfigRepository(providerConfigRepository);
-    container.setUsageQuotaRepository(usageQuotaRepository);
 
     this.conversationRepository = container.getConversationRepository();
-    this.generationTaskRepository = container.getGenerationTaskRepository();
     this.providerConfigRepository = container.getProviderConfigRepository();
-    this.usageQuotaRepository = container.getUsageQuotaRepository();
 
     this.createConversation = new CreateConversation(this.conversationRepository);
     this.deleteConversation = new DeleteConversation(this.conversationRepository);
@@ -80,31 +59,15 @@ export class AISqliteModule {
     this.listProviders = new ListProviders(this.providerConfigRepository);
     this.getConversation = new GetConversation(this.conversationRepository);
     this.sendMessage = new SendMessage(this.conversationRepository);
-    this.generateGoal = new GenerateGoal(
-      this.generationTaskRepository,
-      this.providerConfigRepository,
-    );
-    this.getQuota = new GetQuota(this.usageQuotaRepository);
+    this.generateGoal = new GenerateGoal(this.providerConfigRepository);
     this.conversationService = new AIConversationService(this.conversationRepository);
     this.providerConfigService = new AIProviderConfigService(this.providerConfigRepository);
 
-    const validationService = new AIGenerationValidationService();
-    const quotaEnforcementService = new QuotaEnforcementService(this.usageQuotaRepository);
-
-    this.generationService = new AIGenerationApplicationService(
-      validationService,
-      this.conversationRepository,
-      this.usageQuotaRepository,
-      quotaEnforcementService,
-      this.providerConfigRepository,
-      this.generationTaskRepository,
-    );
-
     this.goalGenerationService = new GoalGenerationApplicationService(
-      validationService,
+      null,
       this.providerConfigRepository,
-      this.usageQuotaRepository,
-      quotaEnforcementService,
+      null,
+      null,
     );
 
     this.chatService = new AIChatApplicationService(
@@ -114,10 +77,4 @@ export class AISqliteModule {
   }
 }
 
-export {
-  SqliteAIConversationRepository,
-  SqliteAIGenerationTaskRepository,
-  SqliteAIProviderConfigRepository,
-  SqliteAIUsageQuotaRepository,
-  AIContainer,
-};
+export { SqliteAIConversationRepository, SqliteAIProviderConfigRepository, AIContainer };

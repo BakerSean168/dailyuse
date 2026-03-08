@@ -1,67 +1,26 @@
-/**
- * AI Message IPC Adapter
- *
- * IPC implementation of IAIMessageApiClient for Electron desktop app.
- */
+import type { IAIMessageApiClient, IResultIpcClient } from '../types';
+import type { MessageListRes, SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 
-import type { IIpcClient, IAIMessageApiClient } from '../types';
-import type {
-  MessageClientDTO,
-  MessageListRes,
-  SendMessageReq,
-  ChatStreamReq,
-  ChatStreamChunk,
-} from '@dailyuse/contracts/ai';
-
-/**
- * AI Message IPC Adapter
- *
- * Implements IAIMessageApiClient using Electron IPC.
- */
 export class AIMessageIpcAdapter implements IAIMessageApiClient {
-  private readonly channel = 'ai:message';
+  private readonly channel = 'ai:chat:message';
 
-  constructor(private readonly ipcClient: IIpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  // ===== Message CRUD =====
-
-  async sendMessage(request: SendMessageReq): Promise<MessageClientDTO> {
-    return this.ipcClient.invoke(`${this.channel}:send`, request);
+  async sendMessage(request: SendMessageReq): Promise<SendMessageRes> {
+    const result = await this.ipcClient.invoke<SendMessageRes>(`${this.channel}:send`, request);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async getMessages(
     conversationId: string,
-    params?: {
-      page?: number;
-      pageSize?: number;
-    },
+    params?: { page?: number; pageSize?: number },
   ): Promise<MessageListRes> {
-    return this.ipcClient.invoke(`${this.channel}:list`, { conversationId, ...params });
-  }
-
-  async deleteMessage(id: string): Promise<void> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, id);
-  }
-
-  // ===== Streaming Chat =====
-
-  async *streamChat(request: ChatStreamReq): AsyncGenerator<ChatStreamChunk, void, unknown> {
-    // IPC 流式实现需要使用 IPC 事件监听
-    // 这里提供基本框架，实际需要结合 Electron IPC 事件
-    const streamId = await this.ipcClient.invoke(`${this.channel}:stream:start`, request);
-
-    try {
-      // 使用 IPC 事件监听流数据
-      while (true) {
-        const chunk = await this.ipcClient.invoke<ChatStreamChunk>(`${this.channel}:stream:next`, streamId);
-        if (chunk.type === 'done') {
-          yield chunk;
-          break;
-        }
-        yield chunk;
-      }
-    } finally {
-      await this.ipcClient.invoke(`${this.channel}:stream:end`, streamId);
-    }
+    const result = await this.ipcClient.invoke<MessageListRes>(`${this.channel}:list`, {
+      conversationId,
+      ...params,
+    });
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 }

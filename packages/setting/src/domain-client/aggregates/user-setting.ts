@@ -15,11 +15,8 @@ import type {
   UserSettingPreferences,
   PreferenceCategory,
 } from '@dailyuse/contracts/setting';
-import {
-  getDefaultPreferences,
-  PREFERENCE_CATEGORIES,
-} from '@dailyuse/contracts/setting';
-import { SettingId } from '@/domain-shared/value-objects/setting-id';
+import { getDefaultPreferences, PREFERENCE_CATEGORIES } from '@dailyuse/contracts/setting';
+import { SettingId } from '../../domain-shared/value-objects/setting-id';
 
 // ═══════════════════ State Interface ═══════════════════
 
@@ -42,10 +39,18 @@ export class UserSetting extends AggregateRoot<ISettingId> {
 
   // ═══════════════════ Getters ═══════════════════
 
-  get identityId(): IIdentityId { return this._props.identityId; }
-  get version(): number { return this._props.version; }
-  get createdAt(): Date { return this._props.createdAt; }
-  get updatedAt(): Date { return this._props.updatedAt; }
+  get identityId(): IIdentityId {
+    return this._props.identityId;
+  }
+  get version(): number {
+    return this._props.version;
+  }
+  get createdAt(): Date {
+    return this._props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this._props.updatedAt;
+  }
 
   /** Get preferences for a specific category */
   getCategory<K extends PreferenceCategory>(category: K): UserSettingPreferences[K] {

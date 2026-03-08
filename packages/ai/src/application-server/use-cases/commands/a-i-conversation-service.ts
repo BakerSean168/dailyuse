@@ -11,7 +11,8 @@ import { Message as MessageServer } from '../../../domain-server/entities/messag
 import type {
   AIConversationClientDTO,
   MessageClientDTO,
-  ConversationListDTO,
+  ConversationListRes,
+  UpdateConversationReq,
 } from '@dailyuse/contracts/ai';
 import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
@@ -83,7 +84,7 @@ export class AIConversationService {
     identityId: string,
     page: number = 1,
     limit: number = 20,
-  ): Promise<ConversationListDTO> {
+  ): Promise<ConversationListRes> {
     try {
       // 获取所有对话（接口中无findRecent方法?
       const allConversations = await this.conversationRepository.findByIdentityId(identityId);
@@ -107,12 +108,10 @@ export class AIConversationService {
       });
 
       return {
-        conversations,
-        pagination: {
-          page,
-          limit,
-          total,
-        },
+        data: conversations,
+        total,
+        page,
+        pageSize: limit,
       };
     } catch (error) {
       logger.error('Failed to list conversations', { error, identityId, page, limit });
@@ -139,6 +138,22 @@ export class AIConversationService {
       logger.error('Failed to delete conversation', { error, conversationId });
       throw error;
     }
+  }
+
+  async updateConversation(
+    conversationId: string,
+    request: UpdateConversationReq,
+  ): Promise<AIConversationClientDTO> {
+    const conversation = await this.conversationRepository.findById(conversationId, {
+      includeChildren: false,
+    });
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    conversation.rename(request.name);
+    await this.conversationRepository.save(conversation);
+    return conversation.toClientDTO();
   }
 
   /**

@@ -4,12 +4,11 @@
  * 获取用户设置（如果不存在则创建默认设置）
  */
 
-import type { IUserSettingRepository } from '@/domain-server/repositories/IUserSettingRepository';
-import { UserSetting } from '@/domain-server/aggregates/user-setting';
+import type { IUserSettingRepository } from '../../../domain-server/repositories/IUserSettingRepository';
+import { UserSetting } from '../../../domain-server/aggregates/user-setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 export class GetUserSetting {
-
   constructor(private readonly userSettingRepository: IUserSettingRepository) {}
 
   async execute(identityId: string): Promise<UserSettingClientDTO> {

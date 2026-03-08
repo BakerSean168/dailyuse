@@ -10,6 +10,7 @@
  */
 import { Toaster, TooltipProvider } from '@dailyuse/ui-vue-shadcn';
 import {
+  AIFloatingBall,
   GlobalConfirmDialog,
   GlobalErrorBoundary,
   GlobalSheet,
@@ -33,6 +34,7 @@ import {
     <GlobalConfirmDialog />
     <GlobalSheet />
     <GlobalCommandPalette />
+    <AIFloatingBall />
   </TooltipProvider>
 </template>
 

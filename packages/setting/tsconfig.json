@@ -2,44 +2,21 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "lib": [
-      "ES2020"
-    ],
-    "types": [
-      "node",
-      "vitest/globals"
-    ],
+    "lib": ["ES2020"],
+    "types": ["node", "vitest/globals"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@dailyuse/database": [
-        "../database/src/index.ts"
-      ],
-      "@dailyuse/domain-shared": [
-        "../domain-shared/src/index.ts"
-      ],
-      "@dailyuse/domain-shared/*": [
-        "../domain-shared/src/*/index.ts"
-      ],
-      "@dailyuse/contracts": [
-        "../contracts/src/index.ts"
-      ],
-      "@dailyuse/contracts/*": [
-        "../contracts/src/modules/*/index.ts"
-      ],
-      "@dailyuse/utils": [
-        "../utils/src/index.ts"
-      ]
+      "@/*": ["./src/*"],
+      "@/domain-server/*": ["./src/domain-server/*"],
+      "@/domain-client/*": ["./src/domain-client/*"],
+      "@/domain-shared/*": ["./src/domain-shared/*"],
+      "@dailyuse/database": ["../database/src/index.ts"],
+      "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
+      "@dailyuse/domain-shared/*": ["../domain-shared/src/*/index.ts"],
+      "@dailyuse/contracts": ["../contracts/src/index.ts"],
+      "@dailyuse/contracts/*": ["../contracts/src/modules/*/index.ts"],
+      "@dailyuse/utils": ["../utils/src/index.ts"]
     }
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -26,10 +26,11 @@ export class AIGoalGenerationController {
 
     const result = await this.service.generateGoal({
       identityId,
-      idea: parsed.data.description,
+      idea: parsed.data.idea,
       providerId: parsed.data.providerId,
       category: parsed.data.category as any,
-      timeRange: parsed.data.timeframe,
+      timeframe: parsed.data.timeframe,
+      includeKeyResults: parsed.data.includeKeyResults,
     });
 
     return ok(result as GenerateGoalsRes);

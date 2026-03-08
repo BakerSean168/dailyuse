@@ -278,6 +278,14 @@ const domainResolveAliases = [
     find: '@dailyuse/task',
     replacement: path.resolve(__dirname, './packages/task/src/index.ts'),
   },
+  {
+    find: /^@dailyuse\/authentication\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/authentication/src/$1/index.ts'),
+  },
+  {
+    find: '@dailyuse/authentication',
+    replacement: path.resolve(__dirname, './packages/authentication/src/index.ts'),
+  },
 ];
 
 /**
@@ -648,6 +656,16 @@ export default defineConfig({
           root: './apps/desktop',
           environment: 'happy-dom',
           include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+          exclude: ['node_modules', 'dist', 'dist-electron', '.git', '.cache'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'desktop-main',
+          root: './apps/desktop/src/main',
+          environment: 'node',
+          include: ['**/__tests__/**/*.spec.ts', '**/__tests__/**/*.test.ts'],
           exclude: ['node_modules', 'dist', 'dist-electron', '.git', '.cache'],
         },
       },

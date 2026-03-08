@@ -15,14 +15,11 @@ export type {
   ShortcutPreferences,
   ExperimentalPreferences,
   UIStatePreferences,
+  AIPreferences,
   UserSettingPreferences,
 } from './types';
 
-export {
-  getDefaultPreferences,
-  PREFERENCE_CATEGORIES,
-  type PreferenceCategory,
-} from './defaults';
+export { getDefaultPreferences, PREFERENCE_CATEGORIES, type PreferenceCategory } from './defaults';
 
 export {
   AppearanceSchema,
@@ -34,6 +31,8 @@ export {
   ShortcutsSchema,
   ExperimentalSchema,
   UISchema,
+  AISchema,
+  KnowledgeNoteSubpathSchema,
   UserPreferencesSchema,
   CATEGORY_SCHEMAS,
 } from './schemas';

@@ -1,66 +1,64 @@
-/**
- * AI Provider Config HTTP Adapter
- *
- * HTTP implementation of IAIProviderConfigApiClient.
- */
-
-import type { IHttpClient, IAIProviderConfigApiClient } from '../types';
+import type { IAIProviderConfigApiClient, IResultHttpClient } from '../types';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
   CreateAIProviderConfigReq,
-  UpdateAIProviderConfigReq,
+  SetDefaultAIProviderReq,
   TestAIProviderReq,
   TestAIProviderRes,
-  RefreshProviderModelsRes,
+  UpdateAIProviderConfigReq,
 } from '@dailyuse/contracts/ai';
 
-/**
- * AI Provider Config HTTP Adapter
- *
- * Implements IAIProviderConfigApiClient using HTTP REST API calls.
- */
 export class AIProviderConfigHttpAdapter implements IAIProviderConfigApiClient {
   private readonly baseUrl = '/ai/providers';
 
-  constructor(private readonly httpClient: IHttpClient) {}
-
-  // ===== Provider CRUD =====
+  constructor(private readonly httpClient: IResultHttpClient) {}
 
   async createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO> {
-    return this.httpClient.post(this.baseUrl, request);
+    const result = await this.httpClient.post<AIProviderConfigClientDTO>(this.baseUrl, request);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async getProviders(): Promise<AIProviderConfigSummary[]> {
-    return this.httpClient.get(this.baseUrl);
+    const result = await this.httpClient.get<{ data: AIProviderConfigSummary[] }>(this.baseUrl);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data.data;
   }
 
   async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
-    return this.httpClient.get(`${this.baseUrl}/${id}`);
+    const result = await this.httpClient.get<AIProviderConfigClientDTO>(`${this.baseUrl}/${id}`);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async updateProvider(
     id: string,
     request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
-    return this.httpClient.patch(`${this.baseUrl}/${id}`, request);
+    const result = await this.httpClient.patch<AIProviderConfigClientDTO>(
+      `${this.baseUrl}/${id}`,
+      request,
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
   async deleteProvider(id: string): Promise<void> {
-    return this.httpClient.delete(`${this.baseUrl}/${id}`);
+    const result = await this.httpClient.delete<void>(`${this.baseUrl}/${id}`);
+    if (!result.ok) throw new Error(result.error.message);
   }
-
-  // ===== Provider Operations =====
 
   async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
-    return this.httpClient.post(`${this.baseUrl}/test-connection`, request);
+    const result = await this.httpClient.post<TestAIProviderRes>(`${this.baseUrl}/test`, request);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.data;
   }
 
-  async setDefaultProvider(id: string): Promise<void> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/set-default`);
-  }
-
-  async refreshModels(id: string): Promise<RefreshProviderModelsRes> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/refresh-models`);
+  async setDefaultProvider(request: SetDefaultAIProviderReq): Promise<void> {
+    const result = await this.httpClient.post<void>(
+      `${this.baseUrl}/${request.providerId}/set-default`,
+    );
+    if (!result.ok) throw new Error(result.error.message);
   }
 }

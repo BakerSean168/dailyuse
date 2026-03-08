@@ -16,6 +16,7 @@ import type {
   ShortcutsSchema,
   ExperimentalSchema,
   UISchema,
+  AISchema,
   UserPreferencesSchema,
 } from './schemas';
 
@@ -47,6 +48,9 @@ export type ExperimentalPreferences = z.infer<typeof ExperimentalSchema>;
 
 /** UI 状态偏好 */
 export type UIStatePreferences = z.infer<typeof UISchema>;
+
+/** AI 偏好 */
+export type AIPreferences = z.infer<typeof AISchema>;
 
 /** 聚合：所有偏好设置 */
 export type UserSettingPreferences = z.infer<typeof UserPreferencesSchema>;

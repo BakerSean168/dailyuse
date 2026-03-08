@@ -124,6 +124,9 @@ export const useRepositoryStore = defineStore('repository', {
     },
     setCurrentResource(r: ResourceClientDTO | null) {
       this.currentResource = r;
+      if (r) {
+        this.openTab(r.id);
+      }
     },
 
     // ── Tree Nodes ──

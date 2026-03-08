@@ -6,9 +6,6 @@
 // ============ Aggregates ============
 export * from './aggregates';
 
-// ============ Entities ============
-export * from './entities';
-
 // ============ Value Objects ============
 export * from './value-objects';
 
@@ -18,5 +15,5 @@ export * from './protocol';
 // ============ API ============
 export * from './api';
 
-// ============ DTOs ============
 export * from './dtos';
+export * from './entities';
