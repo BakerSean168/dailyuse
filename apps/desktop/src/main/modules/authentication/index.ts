@@ -17,6 +17,8 @@
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
 import { getNetworkStateManager } from './infrastructure';
 import { getAuthService } from './ipc/auth.ipc-handlers';
+import { AuthMode } from '@dailyuse/contracts/authentication';
+import { promotePowerSyncToSync } from '../../database/powersync';
 
 const logger = createLogger('AuthenticationModule');
 
@@ -74,17 +76,39 @@ export function registerAuthenticationModule(): void {
 
         // 3. 设置网络状态回调
         networkManager.setOnOnline(async () => {
-          logger.info('Network online - attempting token refresh');
+          logger.info('Network online - checking for auth mode promotion');
           try {
-            const refreshResult = await authService.refreshToken();
-            if (refreshResult.ok) logger.info('Token refreshed after network recovery');
+            const status = await authService.getStatus();
+
+            if (status.mode === AuthMode.OFFLINE_USER) {
+              // OFFLINE_USER → try to promote to ONLINE_USER
+              logger.info('Attempting OFFLINE_USER → ONLINE_USER promotion');
+              const refreshResult = await authService.refreshToken();
+              if (refreshResult.ok) {
+                logger.info('Token refreshed, promoting to ONLINE_USER with sync');
+                // Attach sync connector to existing local-only PowerSync instance
+                await promotePowerSyncToSync();
+                // TODO: broadcast auth status change to renderer
+              } else {
+                logger.info('Token refresh failed, staying as OFFLINE_USER', {
+                  error: refreshResult,
+                });
+              }
+            } else if (status.mode === AuthMode.ONLINE_USER) {
+              // Already online — just refresh to keep token fresh
+              const refreshResult = await authService.refreshToken();
+              if (refreshResult.ok) logger.info('Token refreshed after network recovery');
+            }
+            // GUEST mode: do nothing on network recovery (guest never auto-upgrades)
           } catch (error) {
-            logger.warn('Failed to refresh token on network restore', { error });
+            logger.warn('Failed to handle network recovery', { error });
           }
         });
 
         networkManager.setOnOffline(async () => {
-          logger.info('Network offline - switching to offline mode');
+          logger.info('Network offline - operating in local mode');
+          // No active downgrade needed — existing PowerSync instance continues
+          // serving local data, login() will use offline path automatically
         });
 
         logger.info('Authentication module initialized successfully', {

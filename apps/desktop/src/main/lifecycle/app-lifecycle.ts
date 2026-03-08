@@ -23,10 +23,10 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
-import { connectPowerSync, shutdownPowerSync } from '../database/powersync';
+import { connectPowerSync, openPowerSyncLocalOnly, shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
-import { getTokenManager } from '../modules/authentication/infrastructure';
+import { getTokenManager, getNetworkStateManager } from '../modules/authentication/infrastructure';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
 
 // ESM compatibility for __dirname
@@ -135,10 +135,21 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   let win: BrowserWindow;
 
   if (shouldShowMainWindow) {
-    // Cold-start auto-connect PowerSync (fire-and-forget; UI can proceed)
-    connectPowerSync().catch((err) =>
-      console.error('[Lifecycle] PowerSync cold-start connect failed:', err),
-    );
+    // Auth-mode-aware PowerSync startup
+    const networkManager = getNetworkStateManager();
+    const isOnline = networkManager.isOnline();
+
+    if (isOnline) {
+      // Online with valid tokens → full sync mode
+      connectPowerSync().catch((err) =>
+        console.error('[Lifecycle] PowerSync sync connect failed:', err),
+      );
+    } else {
+      // Offline with valid tokens → local-only mode (OFFLINE_USER)
+      openPowerSyncLocalOnly().catch((err) =>
+        console.error('[Lifecycle] PowerSync local-only open failed:', err),
+      );
+    }
 
     // 直接进入主窗口
     win = windowManager.createMainWindow();

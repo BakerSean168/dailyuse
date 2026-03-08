@@ -17,22 +17,25 @@ import { app } from 'electron';
 import { machineIdSync } from 'node-machine-id';
 import * as os from 'os';
 import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
-import { AuthSession } from '@dailyuse/authentication/domain-server';
+import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
-import type { IAuthSessionRepository, IAuthCredentialRepository } from '@dailyuse/authentication/domain-server';
-import type {
-  TokenStorageData,
-  TokenStatus,
-  SessionRestoreResult as ContractSessionRestoreResult,
-  AutoLoginResult as ContractAutoLoginResult,
-  SessionStatusDTO,
-  RefreshSessionRequest,
-  RefreshSessionResponse,
-  LoginRequest,
-  LoginResponse,
-  DeviceInfoClientDTO,
+import type { IAuthSessionRepository, IAuthCredentialRepository, IAuthIdentityRepository } from '@dailyuse/authentication/domain-server';
+import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
+import {
+  AuthMode,
+  type TokenStorageData,
+  type TokenStatus,
+  type SessionRestoreResult as ContractSessionRestoreResult,
+  type AutoLoginResult as ContractAutoLoginResult,
+  type SessionStatusDTO,
+  type RefreshSessionRequest,
+  type RefreshSessionResponse,
+  type LoginRequest,
+  type LoginResponse,
+  type DeviceInfoClientDTO,
 } from '@dailyuse/contracts/authentication';
 import { TokenManager, getTokenManager, type TokenData } from './TokenManager';
+import { getNetworkStateManager } from './NetworkStateManager';
 
 // ============ Internal Types ============
 
@@ -75,6 +78,15 @@ export class SessionManager {
   private readonly tokenManager: TokenManager;
   private readonly sessionRepository: IAuthSessionRepository;
   private readonly credentialRepository: IAuthCredentialRepository;
+
+  // Offline credential infrastructure (Phase 2)
+  private identityRepository: IAuthIdentityRepository | null = null;
+  private passwordHasher: IPasswordHasher | null = null;
+  // Maps email → server-side identityId for offline session creation
+  private serverIdentityMap: Map<string, string> = new Map();
+
+  // Guest identity persistence (Phase 4)
+  private static readonly GUEST_ID_KEY = 'guest_identity_id';
 
   private currentSession: AuthSession | null = null;
   private deviceInfo: DeviceInfoClientDTO | null = null;
@@ -394,40 +406,66 @@ export class SessionManager {
   // ============ Login/Logout ============
 
   /**
-   * 登录
+   * 登录 (Network-Aware Hybrid)
    *
-   * @param request - 登录请求
+   * 1. 在线时：尝试远程 API 登录 → 成功后缓存离线凭据 → ONLINE_USER
+   * 2. 在线但远程失败（网络错误）：降级到本地验证 → OFFLINE_USER
+   * 3. 在线但认证失败（401/403）：直接返回错误，不降级
+   * 4. 离线时：使用本地存储的凭据验证 → OFFLINE_USER
+   * 5. 无本地凭据：返回错误提示需要首次在线登录
    */
   async login(request: LoginRequest): Promise<LoginResponse> {
     this.logger.info('Login attempt', { identifier: request.identifier });
 
     try {
-      // 如果�?API 回调，使用远程登�?
-      if (this.apiLogin) {
-        const result = await this.apiLogin(request);
-        if (result.ok && result.accessToken && result.refreshToken) {
-          // 保存 Token
-          await this.tokenManager.saveTokens({
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-            accessTokenExpiresIn: result.expiresIn ?? 3600,
-            identityId: result.identityId!,
-            sessionId: result.sessionId ?? generateUUID(),
-          });
+      const networkManager = getNetworkStateManager();
+      const isOnline = networkManager.isOnline();
 
-          // 保存会话
-          
+      // Online path: try remote API first
+      if (isOnline && this.apiLogin) {
+        try {
+          const result = await this.apiLogin(request);
 
-          // 启动自动刷新
-          this.startAutoRefresh();
-          this.startActivityTracking();
+          if (result.ok && result.accessToken && result.refreshToken) {
+            // Remote login succeeded
+            await this.tokenManager.saveTokens({
+              accessToken: result.accessToken,
+              refreshToken: result.refreshToken,
+              accessTokenExpiresIn: result.expiresIn ?? 3600,
+              identityId: result.identityId!,
+              sessionId: result.sessionId ?? generateUUID(),
+            });
 
-          this.logger.info('Login successful', { identityId: result.identityId });
+            // Cache offline credentials for future offline login
+            if (request.password) {
+              this.saveOfflineCredentials(
+                request.identifier,
+                request.password,
+                result.identityId!,
+              ).catch((err) =>
+                this.logger.warn('Failed to cache offline credentials', { error: err }),
+              );
+            }
+
+            this.startAutoRefresh();
+            this.startActivityTracking();
+
+            this.logger.info('Online login successful', { identityId: result.identityId });
+            return { ...result, authMode: AuthMode.ONLINE_USER };
+          }
+
+          // Auth error (wrong password, account disabled, etc.) — do NOT fall back
+          if (result.error) {
+            this.logger.info('Remote auth failed, no fallback', { error: result.error });
+            return result;
+          }
+        } catch (error) {
+          // Network/fetch error — fall through to offline verification
+          this.logger.info('Remote login network error, attempting offline fallback', { error });
         }
-        return result;
       }
 
-      // 离线模式：使用本地账�?
+      // Offline path: verify against locally cached credentials
       return await this.localLogin(request);
     } catch (error) {
       this.logger.error('Login failed', { error });
@@ -436,18 +474,36 @@ export class SessionManager {
   }
 
   /**
-   * 本地登录（离线模式）
+   * 本地登录（离线密码验证）
    *
-   * 创建本地会话，不需要远程验�?
+   * 使用本地 AuthIdentity + Argon2 验证密码，
+   * 创建本地会话，返回 OFFLINE_USER 模式。
    */
   private async localLogin(request: LoginRequest): Promise<LoginResponse> {
-    this.logger.info('Performing local login (offline mode)');
+    this.logger.info('Attempting local login', { identifier: request.identifier });
 
-    // 在离线模式下，我们创建一个本地会�?
-    // 实际的密码验证应该在 AuthCredential 中完�?
+    // Verify password against locally cached credentials
+    const verification = await this.verifyOfflineCredentials(
+      request.identifier,
+      request.password,
+    );
+
+    if (!verification.ok) {
+      const errorMessages: Record<string, string> = {
+        NO_LOCAL_CREDENTIALS: '需要首次在线登录以缓存凭据',
+        INVALID_PASSWORD: '密码错误',
+        ACCOUNT_LOCKED: '账户已锁定，请稍后重试',
+        OFFLINE_AUTH_UNAVAILABLE: '离线认证服务不可用',
+      };
+      return {
+        ok: false,
+        error: errorMessages[verification.error!] ?? verification.error,
+        authMode: AuthMode.UNAUTHENTICATED,
+      };
+    }
+
+    // Create local session with real identity ID
     const deviceInfo = this.getDeviceInfo();
-
-    // 使用 DeviceInfo 值对象创建设备信�?
     const device = DeviceInfo.create({
       deviceType: 'DESKTOP',
       os: deviceInfo.os ?? undefined,
@@ -455,34 +511,33 @@ export class SessionManager {
       ipAddress: '127.0.0.1',
     });
 
-    // 创建会话
     const session = AuthSession.create({
-      identityId: `local-${request.identifier}`,
+      identityId: verification.identityId!,
       accessToken: generateUUID(),
       refreshToken: generateUUID(),
       device,
       ipAddress: '127.0.0.1',
     });
 
-    // 保存会话
     await this.sessionRepository.save(session);
     this.currentSession = session;
 
-    // 保存 Token
     await this.tokenManager.saveTokens({
       accessToken: session.accessToken,
       refreshToken: (session.refreshToken as any).token,
-      accessTokenExpiresIn: 3600, // 1 小时
-      refreshTokenExpiresIn: 30 * 24 * 3600, // 30 �?
+      accessTokenExpiresIn: 3600,
+      refreshTokenExpiresIn: 30 * 24 * 3600,
       identityId: session.identityId,
       sessionId: session.id,
     });
 
-    // 启动自动刷新
     this.startAutoRefresh();
     this.startActivityTracking();
 
-    this.logger.info('Local login successful', { identityId: session.identityId });
+    this.logger.info('Local login successful', {
+      identityId: session.identityId,
+      authMode: AuthMode.OFFLINE_USER,
+    });
 
     return {
       ok: true,
@@ -490,6 +545,7 @@ export class SessionManager {
       accessToken: session.accessToken,
       identityId: session.identityId,
       expiresIn: 3600,
+      authMode: AuthMode.OFFLINE_USER,
     };
   }
 
@@ -620,6 +676,189 @@ export class SessionManager {
     this.apiRefreshToken = callbacks.refreshToken ?? null;
     this.apiLogin = callbacks.login ?? null;
     this.logger.debug('API callbacks set');
+  }
+
+  // ============ Offline Auth Dependencies ============
+
+  /**
+   * 注入离线认证依赖
+   * @param identityRepository - 身份聚合根仓储（用于离线密码验证）
+   * @param passwordHasher - 密码哈希器（Argon2）
+   */
+  setOfflineAuthDependencies(
+    identityRepository: IAuthIdentityRepository,
+    passwordHasher: IPasswordHasher,
+  ): void {
+    this.identityRepository = identityRepository;
+    this.passwordHasher = passwordHasher;
+    this.logger.info('Offline auth dependencies injected');
+  }
+
+  // ============ Offline Credential Management (Phase 2) ============
+
+  /**
+   * 保存离线凭据
+   *
+   * 在线登录/注册成功后调用，将用户的邮箱+密码哈希持久化到本地 SQLite，
+   * 以便后续离线登录时验证。使用服务端的 identityId 以保持数据一致性。
+   *
+   * @param email - 用户邮箱
+   * @param plainPassword - 用户明文密码（将使用 Argon2 本地哈希后存储）
+   * @param identityId - 服务端返回的身份 ID（保持一致）
+   */
+  async saveOfflineCredentials(
+    email: string,
+    plainPassword: string,
+    identityId: string,
+  ): Promise<void> {
+    if (!this.identityRepository || !this.passwordHasher) {
+      this.logger.warn('Offline auth dependencies not available, skipping credential cache');
+      return;
+    }
+
+    try {
+      // Check if identity already exists locally
+      const existing = await this.identityRepository.findByEmail(email);
+
+      if (existing) {
+        this.logger.debug('Offline credentials already cached for email', { email });
+        return;
+      }
+
+      // Create identity with auto-generated ID, then save
+      // The server's identityId is preserved by using findByEmail() lookup during verification
+      const identity = await AuthIdentity.createWithEmailAndPassword({
+        email,
+        plainPassword,
+        hasher: this.passwordHasher,
+      });
+
+      await this.identityRepository.save(identity);
+
+      // Store the server↔local identity mapping for session creation
+      this.serverIdentityMap.set(email, identityId);
+
+      this.logger.info('Offline credentials cached successfully', { email, identityId });
+    } catch (error) {
+      this.logger.error('Failed to cache offline credentials', { error, email });
+      throw error;
+    }
+  }
+
+  /**
+   * 离线密码验证
+   *
+   * 使用本地存储的 AuthIdentity 验证用户密码。
+   * 包含失败计数和锁定机制（由 AuthIdentity 聚合根管理）。
+   * 返回服务端的 identityId（如果有映射），否则返回本地 ID。
+   */
+  private async verifyOfflineCredentials(
+    email: string,
+    plainPassword: string,
+  ): Promise<{ ok: boolean; identityId?: string; error?: string }> {
+    if (!this.identityRepository || !this.passwordHasher) {
+      return { ok: false, error: 'OFFLINE_AUTH_UNAVAILABLE' };
+    }
+
+    const identity = await this.identityRepository.findByEmail(email);
+    if (!identity) {
+      return { ok: false, error: 'NO_LOCAL_CREDENTIALS' };
+    }
+
+    // Check lockout
+    if (identity.isLocked()) {
+      return { ok: false, error: 'ACCOUNT_LOCKED' };
+    }
+
+    const verified = await identity.verifyPassword(plainPassword, this.passwordHasher);
+    if (!verified) {
+      identity.recordFailedLogin();
+      await this.identityRepository.save(identity);
+      return { ok: false, error: 'INVALID_PASSWORD' };
+    }
+
+    // Success — reset failed attempts
+    identity.resetFailedAttempts();
+    await this.identityRepository.save(identity);
+
+    // Prefer server-side identity ID for session consistency
+    // First check in-memory map, then fall back to saved token data
+    let serverIdentityId = this.serverIdentityMap.get(email);
+    if (!serverIdentityId) {
+      const tokenData = await this.tokenManager.loadTokens();
+      if (tokenData?.identityId && !tokenData.identityId.startsWith('guest')) {
+        serverIdentityId = tokenData.identityId;
+      }
+    }
+    const resolvedId = serverIdentityId ?? identity.id.toString();
+
+    return { ok: true, identityId: resolvedId };
+  }
+
+  // ============ Guest Identity Management (Phase 4) ============
+
+  /**
+   * 获取或创建持久化的访客身份 ID
+   *
+   * 访客 ID 存储在 auth_sessions 元数据中，应用重启后保持不变。
+   * 用户升级到云账户后可通过 clearGuestIdentity() 清除。
+   */
+  async getOrCreateGuestIdentity(): Promise<string> {
+    // Try to load existing guest ID from session repository metadata
+    const existingGuestSessions = await this.sessionRepository.findActiveSessions('guest');
+    if (existingGuestSessions.length > 0) {
+      const guestSession = existingGuestSessions[0];
+      this.currentSession = guestSession;
+      this.logger.info('Restored existing guest identity', { sessionId: guestSession.id });
+      return guestSession.identityId;
+    }
+
+    // Create new persistent guest identity
+    const guestId = `guest-${this.getDeviceInfo().deviceId.substring(0, 8)}`;
+
+    const deviceInfo = this.getDeviceInfo();
+    const device = DeviceInfo.create({
+      deviceType: 'DESKTOP',
+      os: deviceInfo.os ?? undefined,
+      browser: deviceInfo.appVersion ?? undefined,
+      ipAddress: '127.0.0.1',
+    });
+
+    const session = AuthSession.create({
+      identityId: guestId,
+      accessToken: generateUUID(),
+      refreshToken: generateUUID(),
+      device,
+      ipAddress: '127.0.0.1',
+    });
+
+    await this.sessionRepository.save(session);
+    this.currentSession = session;
+
+    // Save guest tokens locally
+    await this.tokenManager.saveTokens({
+      accessToken: session.accessToken,
+      refreshToken: (session.refreshToken as any).token,
+      accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
+      refreshTokenExpiresIn: 365 * 24 * 3600,
+      identityId: guestId,
+      sessionId: session.id,
+    });
+
+    this.logger.info('Created new guest identity', { guestId, sessionId: session.id });
+    return guestId;
+  }
+
+  /**
+   * 清除访客身份（用户升级到云账户时调用）
+   */
+  async clearGuestIdentity(): Promise<void> {
+    const guestSessions = await this.sessionRepository.findActiveSessions('guest');
+    for (const session of guestSessions) {
+      session.revoke();
+      await this.sessionRepository.save(session);
+    }
+    this.logger.info('Guest identity cleared');
   }
 
   // ============ Private Methods ============

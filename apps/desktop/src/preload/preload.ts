@@ -189,6 +189,7 @@ const ALLOWED_CHANNELS = [
   'auth:refresh-token',
   'auth:send-sms-code',
   'auth:enter-offline-mode',
+  'auth:enter-guest-mode',
   'auth:initialize',
   'auth:auto-login',
   'auth:verify-token',

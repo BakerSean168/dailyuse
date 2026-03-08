@@ -77,3 +77,13 @@ export const RevokeSessionSchema = z.object({
 
 export type RevokeSessionReq = z.infer<typeof RevokeSessionSchema>;
 export type RevokeSessionRes = void;
+
+// ============================================================================
+// Guest Mode (Desktop)
+// ============================================================================
+
+export interface GuestModeRes {
+  identityId: string;
+  mode: string;
+  message: string;
+}

@@ -228,6 +228,45 @@ export function useAuth() {
     }
   }
 
+  // ========== 访客模式 (Desktop Only) ==========
+
+  async function enterGuestMode(): Promise<boolean> {
+    if (!hasDesktopWindowBridge()) {
+      toast.error(t('auth.toast.loginFailed'), { description: '访客模式仅在桌面端可用' });
+      return false;
+    }
+
+    store.setLoading(true);
+    store.setError(null);
+    try {
+      const result = await service.enterGuestMode();
+      if (result.ok) {
+        const guestData = result.data;
+        // Set a synthetic identity so isAuthenticated becomes true
+        store.setCurrentIdentity({
+          id: guestData.identityId,
+          email: 'guest@local',
+          status: 'ACTIVE',
+        } as any);
+        store.setAccessToken('guest-local-token');
+        toast.success('已进入访客模式', { description: '数据仅保存在本地' });
+        await window.electronAPI!.invoke('window:transition-to-main');
+        return true;
+      }
+      const message = result.error?.message || '进入访客模式失败';
+      store.setError(message);
+      toast.error('访客模式失败', { description: message });
+      return false;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '进入访客模式失败';
+      store.setError(message);
+      toast.error('访客模式失败', { description: message });
+      return false;
+    } finally {
+      store.setLoading(false);
+    }
+  }
+
   return {
     // State
     isAuthenticated,
@@ -241,6 +280,7 @@ export function useAuth() {
     loginByPhone,
     registerByEmail,
     registerByPhone,
+    enterGuestMode,
     sendSmsCode,
     refreshToken,
     logout,

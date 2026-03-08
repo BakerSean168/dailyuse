@@ -16,6 +16,9 @@ export { AUTHENTICATION_MODULE_SCHEMA } from './adapters/sqlite/schema';
 // Encryptors
 export { Argon2Hasher } from './encryptors/argon2-hasher';
 
+// Services
+export { JwtTokenProvider } from './services/jwt-token-provider';
+
 // Strategies
 export { createJwtStrategy, createLocalStrategy } from './strategies';
 export type { JwtStrategyConfig, LocalStrategyConfig } from './strategies';

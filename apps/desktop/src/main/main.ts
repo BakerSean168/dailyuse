@@ -31,7 +31,7 @@ import { AIElectronModule } from '@dailyuse/ai/electron-entry';
 import { RepositoryElectronModule } from '@dailyuse/repository/electron-entry';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
-import { AuthenticationElectronModule } from '@dailyuse/authentication/electron-entry';
+import { DesktopAuthElectronModule } from './modules/authentication/desktop-auth.electron-module';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
 
 /** Kept as module-level for graceful shutdown access. */
@@ -53,7 +53,7 @@ async function initializeApp(): Promise<void> {
   await bootstrapper
     // Core services
     .register(AccountElectronModule)
-    .register(AuthenticationElectronModule)
+    .register(DesktopAuthElectronModule)
     .register(SettingElectronModule)
     .register(NotificationElectronModule)
     // Feature modules

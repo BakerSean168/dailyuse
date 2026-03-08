@@ -180,6 +180,52 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
 }
 
 /**
+ * Opens the PowerSync database in local-only mode (no sync).
+ *
+ * Used for OFFLINE_USER and GUEST auth modes where no auth token is available
+ * or cloud sync is not desired. Data is read/written locally to dailyuse-sync.sqlite
+ * without connecting to the PowerSync Service.
+ *
+ * If PowerSync is already connected (sync mode), returns the existing instance.
+ */
+export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
+  if (powerSyncDb) {
+    console.log('[PowerSync] Already open (reusing existing instance)');
+    return powerSyncDb;
+  }
+
+  const dbPath = getSyncDatabasePath();
+  console.log(`[PowerSync] Opening local-only database: ${dbPath}`);
+
+  powerSyncDb = new PowerSyncDatabase({
+    schema: PowerSyncAppSchema,
+    database: { dbFilename: dbPath },
+  });
+
+  // Do NOT call powerSyncDb.connect(connector) — local-only mode
+  // Just initialize the database and start change broadcast
+  startChangeBroadcast(powerSyncDb);
+
+  console.log('[PowerSync] Local-only mode active (no sync)');
+  return powerSyncDb;
+}
+
+/**
+ * Upgrades a local-only PowerSync instance to sync mode by attaching a connector.
+ * Used when OFFLINE_USER recovers network and gets promoted to ONLINE_USER.
+ */
+export async function promotePowerSyncToSync(): Promise<void> {
+  if (!powerSyncDb) {
+    console.warn('[PowerSync] No database instance to promote — call connectPowerSync() instead');
+    return;
+  }
+
+  const connector = new DesktopPowerSyncConnector();
+  await powerSyncDb.connect(connector);
+  console.log('[PowerSync] Promoted to sync mode');
+}
+
+/**
  * Disconnects and cleans up the PowerSync database.
  * Wipes the local sync data — use on LOGOUT only.
  */

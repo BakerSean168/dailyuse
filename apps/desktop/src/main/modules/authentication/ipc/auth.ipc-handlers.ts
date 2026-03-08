@@ -18,19 +18,22 @@ import type { IpcResult, CountResult } from '@dailyuse/contracts/result';
 import {
   AuthDesktopApplicationService,
   createAuthDesktopApplicationService,
+  AuthMode,
   type LoginCredentials,
   type RegisterRequest,
   type AuthStatus,
   type TwoFactorStatus,
   type ApiKeyInfo,
   type SessionInfo,
-  type DeviceInfo,
+  type DeviceInfoUI,
   type AutoLoginResult,
   type SessionRestoreResult,
 } from '../application/AuthDesktopApplicationService';
 import type { TokenStatus } from '../infrastructure';
 import type { SessionStatus } from '../infrastructure';
-import { SqliteAuthSessionRepository, SqliteAuthIdentityRepository as SqliteAuthCredentialRepository } from '@dailyuse/authentication/sqlite';
+import { SqliteAuthSessionRepository, SqliteAuthIdentityRepository } from '@dailyuse/authentication/sqlite';
+import { Argon2Hasher } from '@dailyuse/authentication/infrastructure-server';
+import { getDatabase } from '../../../database';
 
 const logger = createLogger('AuthIpcHandlers');
 
@@ -53,12 +56,17 @@ function ensureRepositoriesInjected(): void {
     return;
   }
 
+  const db = getDatabase();
   const svc = getService();
-  const sessionRepo = new SqliteAuthSessionRepository();
-  const credentialRepo = new SqliteAuthCredentialRepository();
-  svc.setRepositories(sessionRepo, credentialRepo);
+  const sessionRepo = new SqliteAuthSessionRepository(db);
+  const identityRepo = new SqliteAuthIdentityRepository(db);
+  svc.setRepositories(sessionRepo, identityRepo);
+
+  // Wire offline auth dependencies (Phase 2)
+  svc.setOfflineAuthDependencies(identityRepo, new Argon2Hasher());
+
   isRepositoriesInjected = true;
-  logger.info('Repositories injected to AuthDesktopApplicationService');
+  logger.info('Repositories and offline auth dependencies injected');
 }
 
 // 创建模块 IPC handler 注册器
@@ -193,17 +201,32 @@ handle<void, IpcResult<{ accessToken: string; expiresIn: number }>>(
 );
 
 /**
- * @description 进入离线模式
+ * @description 进入访客模式
+ * Channel Name: auth:enter-guest-mode
+ * Payload: void
+ * Return: IpcResult<{ identityId, mode, message }>
+ * Security: None
+ */
+handle<void, IpcResult<{ identityId: string; mode: AuthMode; message: string }>>(
+  'auth:enter-guest-mode',
+  () => {
+    ensureRepositoriesInjected();
+    return getService().enterGuestMode();
+  },
+);
+
+/**
+ * @description 进入离线模式 (deprecated, use auth:enter-guest-mode)
  * Channel Name: auth:enter-offline-mode
  * Payload: void
- * Return: IpcResult<{ identityId, mode, message }> - 统一格式 { ok, data?, error? }
+ * Return: IpcResult<{ identityId, mode, message }>
  * Security: None
  */
 handle<void, IpcResult<{ identityId: string; mode: string; message: string }>>(
   'auth:enter-offline-mode',
   () => {
     ensureRepositoriesInjected();
-    return getService().enterOfflineMode();
+    return getService().enterGuestMode();
   },
 );
 
@@ -407,10 +430,10 @@ handle<void, CountResult>(
  * @description 列出所有已登录设备
  * Channel Name: auth:device:list
  * Payload: void
- * Return: { devices: DeviceInfo[]; total: number }
+ * Return: { devices: DeviceInfoUI[]; total: number }
  * Security: Requires authentication
  */
-handle<void, { devices: DeviceInfo[]; total: number }>(
+handle<void, { devices: DeviceInfoUI[]; total: number }>(
   'auth:device:list',
   () => getService().listDevices(),
 );
@@ -419,10 +442,10 @@ handle<void, { devices: DeviceInfo[]; total: number }>(
  * @description 获取当前设备信息
  * Channel Name: auth:device:get-current
  * Payload: void
- * Return: DeviceInfo
+ * Return: DeviceInfoUI
  * Security: Requires authentication
  */
-handle<void, DeviceInfo>(
+handle<void, DeviceInfoUI>(
   'auth:device:get-current',
   () => getService().getCurrentDevice(),
 );

@@ -28,6 +28,7 @@ import type {
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
+  GuestModeRes,
 } from '@dailyuse/contracts/authentication';
 
 export class AuthClientService {
@@ -95,5 +96,11 @@ export class AuthClientService {
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.apiClient.resetPassword(req);
+  }
+
+  // ========== Guest Mode (Desktop) ==========
+
+  async enterGuestMode(): Promise<Result<GuestModeRes>> {
+    return this.apiClient.enterGuestMode();
   }
 }

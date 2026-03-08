@@ -27,6 +27,7 @@ import type {
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
+  GuestModeRes,
 } from '@dailyuse/contracts/authentication';
 
 /**
@@ -57,4 +58,7 @@ export interface IAuthApiClient {
   changePassword(req: ChangePasswordReq): Promise<Result<void>>;
   forgotPassword(req: ForgotPasswordReq): Promise<Result<void>>;
   resetPassword(req: ResetPasswordReq): Promise<Result<void>>;
+
+  // ========== Guest Mode (Desktop) ==========
+  enterGuestMode(): Promise<Result<GuestModeRes>>;
 }

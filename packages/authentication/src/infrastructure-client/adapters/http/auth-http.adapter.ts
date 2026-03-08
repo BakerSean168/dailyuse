@@ -7,6 +7,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import type { IAuthApiClient } from '../types';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
@@ -27,6 +28,7 @@ import type {
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
+  GuestModeRes,
 } from '@dailyuse/contracts/authentication';
 
 export class AuthHttpAdapter implements IAuthApiClient {
@@ -96,6 +98,10 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.httpClient.post(`${this.baseUrl}/password/reset`, req);
+  }
+
+  async enterGuestMode(): Promise<Result<GuestModeRes>> {
+    return fail({ code: 'NOT_SUPPORTED', message: 'Guest mode is only available on desktop' });
   }
 }
 

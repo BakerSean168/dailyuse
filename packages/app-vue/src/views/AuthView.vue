@@ -21,22 +21,25 @@ import {
   Input,
   Label,
 } from '@dailyuse/ui-vue-shadcn';
-import { Github, Chrome } from 'lucide-vue-next';
+import { UserRound } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { useAuth } from '../modules/authentication/composables/useAuth';
 
-const { loginByEmail, registerByEmail, isLoading } = useAuth();
+const { loginByEmail, registerByEmail, enterGuestMode, isLoading } = useAuth();
 
 const email = ref('');
 const password = ref('');
 const regEmail = ref('');
 const regPassword = ref('');
 const confirmPassword = ref('');
-const authAction = ref<'login' | 'register' | null>(null);
+const authAction = ref<'login' | 'register' | 'guest' | null>(null);
 
 const authLoadingMessage = computed(() => {
   if (authAction.value === 'register') {
-    return '登录中';
+    return '注册中';
+  }
+  if (authAction.value === 'guest') {
+    return '进入访客模式';
   }
   return '登录中';
 });
@@ -71,8 +74,12 @@ const handleRegister = async () => {
   }
 };
 
-const handleSocialLogin = (provider: string) => {
-  toast.info(`Login with ${provider} coming soon`);
+const handleGuestLogin = async () => {
+  authAction.value = 'guest';
+  const success = await enterGuestMode();
+  if (!success) {
+    authAction.value = null;
+  }
 };
 </script>
 
@@ -151,20 +158,14 @@ const handleSocialLogin = (provider: string) => {
             <span class="w-full border-t" />
           </div>
           <div class="relative flex justify-center text-xs uppercase">
-            <span class="bg-background px-2 text-muted-foreground"> Or continue with </span>
+            <span class="bg-background px-2 text-muted-foreground"> 或者 </span>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <Button variant="outline" @click="handleSocialLogin('Github')">
-            <Github class="mr-2 h-4 w-4" />
-            Github
-          </Button>
-          <Button variant="outline" @click="handleSocialLogin('Google')">
-            <Chrome class="mr-2 h-4 w-4" />
-            Google
-          </Button>
-        </div>
+        <Button variant="outline" class="w-full" :disabled="isLoading" @click="handleGuestLogin">
+          <UserRound class="mr-2 h-4 w-4" />
+          访客模式
+        </Button>
       </CardContent>
       <CardFooter class="justify-center text-xs text-muted-foreground">
         By clicking continue, you agree to our Terms of Service and Privacy Policy.

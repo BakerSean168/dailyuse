@@ -23,7 +23,7 @@ import { createLogger, type ILogger } from '@dailyuse/utils';
 import { getApiBaseUrl } from '../../../utils/api-config';
 import type {
   IAuthSessionRepository,
-  IAuthCredentialRepository,
+  IAuthIdentityRepository as IAuthCredentialRepository,
 } from '@dailyuse/authentication/domain-server';
 import type { AuthSession } from '@dailyuse/authentication/domain-server';
 import {
@@ -32,21 +32,21 @@ import {
   toIpcResult,
   ok,
   fail,
-  type ResultError,
 } from '@dailyuse/contracts/result';
-import type {
+import {
   AuthMode,
-  TokenStatus,
-  AutoLoginResult as ContractAutoLoginResult,
-  SessionRestoreResult as ContractSessionRestoreResult,
-  // Import shared types from contracts
-  UserInfo,
-  SessionInfo,
-  DeviceInfo,
-  TwoFactorStatus,
-  ApiKeyInfo,
-  AuthStatus,
-  EmailLoginCredentials,
+  ConnectionStatus,
+  type AuthSessionId,
+  type TokenStatus,
+  type AutoLoginResult as ContractAutoLoginResult,
+  type SessionRestoreResult as ContractSessionRestoreResult,
+  type UserInfo,
+  type SessionInfo,
+  type TwoFactorStatus,
+  type ApiKeyInfo,
+  type AuthStatus,
+  type EmailLoginCredentials,
+  type DeviceInfoUI,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
@@ -54,23 +54,22 @@ import {
   SessionManager,
   createSessionManager,
   type SessionStatus,
-  type LoginRequest as SessionLoginRequest,
-  type LoginResponse as SessionLoginResponse,
 } from '../infrastructure';
-import { connectPowerSync, disconnectPowerSync } from '../../../database/powersync';
+import { connectPowerSync, disconnectPowerSync, openPowerSyncLocalOnly } from '../../../database/powersync';
+import { getNetworkStateManager } from '../infrastructure';
 
 // Re-export from contracts for convenience
 export type {
   IpcResult,
   UserInfo,
   SessionInfo,
-  DeviceInfo,
   TwoFactorStatus,
   ApiKeyInfo,
   AuthStatus,
   EmailLoginCredentials,
 };
-export { toIpcResult, ok, fail };
+export type { DeviceInfoUI } from '@dailyuse/contracts/authentication';
+export { AuthMode, ConnectionStatus, toIpcResult, ok, fail };
 
 // Alias for backward compatibility
 export type LoginCredentials = EmailLoginCredentials;
@@ -119,7 +118,7 @@ export class AuthDesktopApplicationService {
   private credentialRepository: IAuthCredentialRepository | null = null;
 
   // 当前认证模式
-  private authMode: 'ONLINE' | 'OFFLINE' | 'LOCAL' = 'LOCAL';
+  private authMode: AuthMode = AuthMode.UNAUTHENTICATED;
   private isInitialized = false;
 
   constructor(logger?: ILogger) {
@@ -145,6 +144,21 @@ export class AuthDesktopApplicationService {
     );
 
     this.logger.info('Repositories injected');
+  }
+
+  /**
+   * 注入离线认证依赖（Phase 2）
+   * 将 IAuthIdentityRepository + IPasswordHasher 传递给 SessionManager
+   */
+  setOfflineAuthDependencies(
+    identityRepository: import('@dailyuse/authentication/domain-server').IAuthIdentityRepository,
+    passwordHasher: import('@dailyuse/authentication/domain-shared').IPasswordHasher,
+  ): void {
+    if (this.sessionManager) {
+      this.sessionManager.setOfflineAuthDependencies(identityRepository, passwordHasher);
+    } else {
+      this.logger.warn('SessionManager not initialized, cannot set offline auth dependencies');
+    }
   }
 
   /**
@@ -183,7 +197,7 @@ export class AuthDesktopApplicationService {
 
       return {
         ok: true,
-        hasValidSession: result.ok,
+        hasValidSession: result.ok ?? false,
         identityId: result.identityId,
         sessionId: result.session?.id,
         needsRefresh: result.needsRefresh,
@@ -226,13 +240,19 @@ export class AuthDesktopApplicationService {
       });
 
       if (result.ok) {
-        this.authMode = 'LOCAL'; // 或根据实际情况设置为 ONLINE
-        this.logger.info('Login successful', { identityId: result.identityId });
+        this.authMode = result.authMode ?? AuthMode.ONLINE_USER;
+        this.logger.info('Login successful', { identityId: result.identityId, authMode: this.authMode });
 
-        // Connect PowerSync now that we have valid credentials
-        connectPowerSync().catch((err) =>
-          this.logger.error('PowerSync connect failed after login', { error: err }),
-        );
+        // Connect PowerSync based on auth mode
+        if (this.authMode === AuthMode.ONLINE_USER) {
+          connectPowerSync().catch((err) =>
+            this.logger.error('PowerSync connect failed after login', { error: err }),
+          );
+        } else if (this.authMode === AuthMode.OFFLINE_USER) {
+          openPowerSyncLocalOnly().catch((err) =>
+            this.logger.error('PowerSync local-only open failed after offline login', { error: err }),
+          );
+        }
 
         return toIpcResult(
           ok({
@@ -268,6 +288,17 @@ export class AuthDesktopApplicationService {
     request: RegisterRequest,
   ): Promise<IpcResult<{ identityId: string; message: string }>> {
     this.logger.info('Register attempt', { email: request.email });
+
+    // Registration requires network — offline registration is not allowed
+    const networkManager = getNetworkStateManager();
+    if (!networkManager.isOnline()) {
+      return toIpcResult(
+        fail({
+          code: 'OFFLINE',
+          message: '注册需要网络连接，请检查网络后重试。离线状态下可使用访客模式或已有账户登录。',
+        }),
+      );
+    }
 
     try {
       // 使用 API 服务器进行在线注册
@@ -306,11 +337,22 @@ export class AuthDesktopApplicationService {
         await this.tokenManager.saveTokens({
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
-          accessTokenExpiresIn: data.expiresIn || 3600, // 默认 1 小时
+          accessTokenExpiresIn: data.expiresIn || 3600,
           identityId: data.identityId || data.user?.id || '',
           sessionId: data.sessionId || crypto.randomUUID(),
         });
-        this.authMode = 'ONLINE';
+        this.authMode = AuthMode.ONLINE_USER;
+
+        // Save offline credentials for future offline login
+        if (this.sessionManager) {
+          await this.sessionManager.saveOfflineCredentials(
+            request.email,
+            request.password,
+            data.identityId || data.user?.id || '',
+          ).catch((err) =>
+            this.logger.warn('Failed to cache offline credentials after register', { error: err }),
+          );
+        }
       }
 
       return toIpcResult(
@@ -342,38 +384,55 @@ export class AuthDesktopApplicationService {
   }
 
   /**
-   * 进入离线模式
-   * @description 使用本地账户，无需网络连接
-   * @returns IpcResult<OfflineModeData> - 统一的响应格式
+   * 进入访客模式
+   * @description 使用持久化的本地访客身份，无需网络连接
+   * @returns IpcResult<GuestModeData> - 统一的响应格式
+   */
+  async enterGuestMode(): Promise<
+    IpcResult<{ identityId: string; mode: AuthMode; message: string }>
+  > {
+    this.logger.info('Entering guest mode');
+
+    try {
+      if (!this.sessionManager) {
+        return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '认证服务未初始化' }));
+      }
+
+      const guestId = await this.sessionManager.getOrCreateGuestIdentity();
+      this.authMode = AuthMode.GUEST;
+
+      // Open local-only PowerSync for guest data
+      openPowerSyncLocalOnly().catch((err) =>
+        this.logger.error('PowerSync local-only open failed in guest mode', { error: err }),
+      );
+
+      this.logger.info('Guest mode activated', { identityId: guestId });
+
+      return toIpcResult(
+        ok({
+          identityId: guestId,
+          mode: AuthMode.GUEST,
+          message: '已进入访客模式',
+        }),
+      );
+    } catch (error) {
+      this.logger.error('Failed to enter guest mode', { error });
+      return toIpcResult(
+        fail({
+          code: 'GUEST_MODE_ERROR',
+          message: error instanceof Error ? error.message : '进入访客模式失败',
+        }),
+      );
+    }
+  }
+
+  /**
+   * @deprecated Use enterGuestMode() instead
    */
   async enterOfflineMode(): Promise<
     IpcResult<{ identityId: string; mode: string; message: string }>
   > {
-    this.logger.info('Entering offline mode');
-
-    try {
-      const identityId = `local-${crypto.randomUUID()}`;
-
-      this.authMode = 'LOCAL';
-
-      this.logger.info('Offline mode activated', { identityId });
-
-      return toIpcResult(
-        ok({
-          identityId,
-          mode: 'LOCAL',
-          message: '已进入离线模式',
-        }),
-      );
-    } catch (error) {
-      this.logger.error('Failed to enter offline mode', { error });
-      return toIpcResult(
-        fail({
-          code: 'OFFLINE_MODE_ERROR',
-          message: error instanceof Error ? error.message : '进入离线模式失败',
-        }),
-      );
-    }
+    return this.enterGuestMode();
   }
 
   /**
@@ -395,7 +454,7 @@ export class AuthDesktopApplicationService {
 
     try {
       const result = await this.sessionManager.logout();
-      this.authMode = 'LOCAL';
+      this.authMode = AuthMode.UNAUTHENTICATED;
 
       // Disconnect PowerSync and wipe local sync data regardless of logout result
       await disconnectPowerSync().catch((err) =>
@@ -495,6 +554,10 @@ export class AuthDesktopApplicationService {
 
     const tokenStatus = await this.tokenManager.getStatus();
     const session = this.sessionManager?.getCurrentSession();
+    const networkManager = getNetworkStateManager();
+    const connectionStatus: ConnectionStatus = networkManager.isOnline()
+      ? ConnectionStatus.ONLINE
+      : ConnectionStatus.OFFLINE;
 
     const authenticated = session?.isValid() ?? false;
     const user: UserInfo | null = session
@@ -506,11 +569,11 @@ export class AuthDesktopApplicationService {
     const sessionInfo: SessionInfo | null = session
       ? {
           id: session.id,
-          deviceName: (session.device as any)?.deviceId ?? 'Unknown',
-          deviceType: (session.device as any)?.deviceType ?? 'DESKTOP',
-          ipAddress: session.ipAddress,
+          deviceName: session.deviceInfo?.deviceName ?? session.deviceInfo?.deviceId ?? 'Unknown',
+          deviceType: session.deviceInfo?.deviceType ?? 'DESKTOP',
+          ipAddress: session.deviceInfo?.ipAddress ?? '',
           createdAt: new Date(session.createdAt).toISOString(),
-          lastActiveAt: new Date(session.lastActivityAt).toISOString(),
+          lastActiveAt: new Date(session.lastActiveAt).toISOString(),
           expiresAt: new Date(session.expiresAt).toISOString(),
           isCurrentSession: true,
         }
@@ -519,9 +582,12 @@ export class AuthDesktopApplicationService {
     return {
       authenticated,
       mode: this.authMode,
+      connectionStatus,
       user,
       session: sessionInfo,
       tokenStatus,
+      canSync: this.authMode === AuthMode.ONLINE_USER && connectionStatus === ConnectionStatus.ONLINE,
+      needsReauth: tokenStatus.isRefreshTokenExpired,
     };
   }
 
@@ -553,7 +619,7 @@ export class AuthDesktopApplicationService {
   async enable2FA(method: string): Promise<IpcResult<{ qrCodeUrl?: string; secret?: string }>> {
     this.logger.debug('Enable 2FA', { method });
 
-    if (this.authMode === 'LOCAL') {
+    if (this.authMode !== AuthMode.ONLINE_USER) {
       return toIpcResult(fail({ code: 'ONLINE_REQUIRED', message: '2FA 需要在线模式' }));
     }
 
@@ -606,7 +672,7 @@ export class AuthDesktopApplicationService {
   }): Promise<{ id: string; key: string } | null> {
     this.logger.debug('Create API key', { name: request.name });
 
-    if (this.authMode === 'LOCAL') {
+    if (this.authMode !== AuthMode.ONLINE_USER) {
       return null; // API Keys 仅在线模式可用
     }
 
@@ -658,14 +724,14 @@ export class AuthDesktopApplicationService {
         return { sessions: [], total: 0 };
       }
 
-      const sessions = await this.sessionRepository.findByAccountId(currentSession.identityId);
-      const sessionInfos: SessionInfo[] = sessions.map((s) => ({
+      const sessions = await this.sessionRepository.findByIdentityId(currentSession.identityId);
+      const sessionInfos: SessionInfo[] = sessions.map((s: AuthSession) => ({
         id: s.id,
-        deviceName: (s.device as any)?.deviceId ?? 'Unknown',
-        deviceType: (s.device as any)?.deviceType ?? 'UNKNOWN',
-        ipAddress: s.ipAddress,
+        deviceName: s.deviceInfo?.deviceName ?? s.deviceInfo?.deviceId ?? 'Unknown',
+        deviceType: s.deviceInfo?.deviceType ?? 'UNKNOWN',
+        ipAddress: s.deviceInfo?.ipAddress ?? '',
         createdAt: new Date(s.createdAt).toISOString(),
-        lastActiveAt: new Date(s.lastActivityAt).toISOString(),
+        lastActiveAt: new Date(s.lastActiveAt).toISOString(),
         expiresAt: new Date(s.expiresAt).toISOString(),
         isCurrentSession: s.id === currentSession.id,
       }));
@@ -690,11 +756,11 @@ export class AuthDesktopApplicationService {
 
     return {
       id: session.id,
-      deviceName: (session.device as any)?.deviceId ?? 'Unknown',
-      deviceType: (session.device as any)?.deviceType ?? 'DESKTOP',
-      ipAddress: session.ipAddress,
+      deviceName: session.deviceInfo?.deviceName ?? session.deviceInfo?.deviceId ?? 'Unknown',
+      deviceType: session.deviceInfo?.deviceType ?? 'DESKTOP',
+      ipAddress: session.deviceInfo?.ipAddress ?? '',
       createdAt: new Date(session.createdAt).toISOString(),
-      lastActiveAt: new Date(session.lastActivityAt).toISOString(),
+      lastActiveAt: new Date(session.lastActiveAt).toISOString(),
       expiresAt: new Date(session.expiresAt).toISOString(),
       isCurrentSession: true,
     };
@@ -711,7 +777,7 @@ export class AuthDesktopApplicationService {
     }
 
     try {
-      const session = await this.sessionRepository.findById(sessionId);
+      const session = await this.sessionRepository.findById(sessionId as AuthSessionId);
       if (!session) {
         return toIpcResult(fail({ code: 'NOT_FOUND', message: '会话不存在' }));
       }
@@ -766,7 +832,7 @@ export class AuthDesktopApplicationService {
   /**
    * 列出设备
    */
-  async listDevices(): Promise<{ devices: DeviceInfo[]; total: number }> {
+  async listDevices(): Promise<{ devices: DeviceInfoUI[]; total: number }> {
     this.logger.debug('List devices');
 
     const deviceInfo = this.sessionManager?.getDeviceInfo();
@@ -774,7 +840,7 @@ export class AuthDesktopApplicationService {
       return { devices: [], total: 0 };
     }
 
-    const currentDevice: DeviceInfo = {
+    const currentDevice: DeviceInfoUI = {
       id: deviceInfo.deviceId,
       name: deviceInfo.deviceName ?? 'Desktop App',
       type: deviceInfo.deviceType,
@@ -788,7 +854,7 @@ export class AuthDesktopApplicationService {
   /**
    * 获取当前设备
    */
-  async getCurrentDevice(): Promise<DeviceInfo> {
+  async getCurrentDevice(): Promise<DeviceInfoUI> {
     this.logger.debug('Get current device');
 
     const deviceInfo = this.sessionManager?.getDeviceInfo();

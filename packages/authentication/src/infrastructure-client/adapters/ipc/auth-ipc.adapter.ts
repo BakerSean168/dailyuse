@@ -25,6 +25,7 @@ import type {
   GetCurrentUserRes,
   ListSessionsRes,
   RevokeSessionReq,
+  GuestModeRes,
 } from '@dailyuse/contracts/authentication';
 
 const CHANNELS = {
@@ -41,6 +42,7 @@ const CHANNELS = {
   CHANGE_PASSWORD: 'auth:change-password',
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
+  ENTER_GUEST_MODE: 'auth:enter-guest-mode',
 } as const;
 
 export class AuthIpcAdapter implements IAuthApiClient {
@@ -96,6 +98,10 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
     return this.ipcClient.invoke(CHANNELS.RESET_PASSWORD, req);
+  }
+
+  async enterGuestMode(): Promise<Result<GuestModeRes>> {
+    return this.ipcClient.invoke(CHANNELS.ENTER_GUEST_MODE);
   }
 }
 

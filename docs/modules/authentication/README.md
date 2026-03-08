@@ -32,3 +32,16 @@ updated: 2025-11-23T17:20:00
 - 权限控制：基于角色和权限规则限制接口与资源访问。
 - 会话治理：支持多端登录与会话失效处理。
 - 安全防护：覆盖密码安全、失败限制和安全存储策略。
+
+## 架构说明
+
+Authentication 模块不是单一端内模块，而是 DailyUse 多端系统中的共享核心模块：
+
+- Web 与 Desktop 都会消费共享认证能力。
+- 远程 API（Express）提供正式认证与远程同步权威能力。
+- Desktop 额外注入本地数据库、离线登录、访客模式和同步生命周期能力。
+- 整体设计应遵循 DDD + 联邦 UI + Nx Monorepo 架构，而不是在 Desktop 中单独重写一整套认证服务。
+
+详细方案见：
+
+- [Authentication Shared Integration Plan](./desktop-shared-auth-integration-plan.md)

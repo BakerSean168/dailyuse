@@ -36,8 +36,7 @@ export function getApiBaseUrl(): string {
 
   // 开发模式使用本地或测试服务器
   if (!app.isPackaged) {
-    // 使用 .env.development.local 中配置的远程服务器
-    return 'http://47.108.252.228:3000/api/v1';
+    return 'http://localhost:3000/api/v1';
   }
 
   // 生产模式使用默认服务器
