@@ -1,36 +1,31 @@
 /**
  * @file Schema Entry Point
- * @description 统一导出所有模块的 Schema 初始化函数
+ * @description Unified SQLite schema initialization for desktop.
  *
- * 架构说明：
- * - 每个模块对应一个独立的 schema 文件
- * - 遵循 Package-First 架构，与 @dailyuse/domain-* 包对齐
- * - 便于团队协作和独立维护
+ * Canonical table definitions live inside packages. The desktop app keeps only
+ * this orchestration layer so local development can recreate the database from
+ * package-owned schemas without carrying module-specific DDL or legacy patches.
  */
 
 import type Database from 'better-sqlite3';
+import { ACCOUNT_MODULE_SCHEMA } from '@dailyuse/account/schema';
+import { GOAL_MODULE_SCHEMA } from '@dailyuse/goal/schema';
+import { TASK_MODULE_SCHEMA } from '@dailyuse/task/schema';
+import { SCHEDULE_MODULE_SCHEMA } from '@dailyuse/schedule/schema';
+import { REMINDER_MODULE_SCHEMA } from '@dailyuse/reminder/schema';
+import { AI_MODULE_SCHEMA } from '@dailyuse/ai/schema';
+import { NOTIFICATION_MODULE_SCHEMA } from '@dailyuse/notification/schema';
+import { REPOSITORY_MODULE_SCHEMA } from '@dailyuse/repository/schema';
+import { SETTING_MODULE_SCHEMA } from '@dailyuse/setting/schema';
+import { AUTHENTICATION_MODULE_SCHEMA } from '@dailyuse/authentication/schema';
+import { DASHBOARD_MODULE_SCHEMA } from '@dailyuse/database/dashboard-schema';
 
-export { initializeAccountTables } from './account.schema';
-export { initializeGoalTables } from './goal.schema';
-export { initializeTaskTables } from './task.schema';
-export { initializeScheduleTables } from './schedule.schema';
-export { initializeReminderTables } from './reminder.schema';
-export { initializeAITables } from './ai.schema';
-export { initializeNotificationTables } from './notification.schema';
-export { initializeDashboardTables } from './dashboard.schema';
-export { initializeRepositoryTables } from './repository.schema';
-export { initializeSettingTables } from './setting.schema';
+export const DESKTOP_SQLITE_SCHEMA_VERSION = '2026-03-08-package-owned-schema-v1';
 
-import { initializeAccountTables } from './account.schema';
-import { initializeGoalTables } from './goal.schema';
-import { initializeTaskTables } from './task.schema';
-import { initializeScheduleTables } from './schedule.schema';
-import { initializeReminderTables } from './reminder.schema';
-import { initializeAITables } from './ai.schema';
-import { initializeNotificationTables } from './notification.schema';
-import { initializeDashboardTables } from './dashboard.schema';
-import { initializeRepositoryTables } from './repository.schema';
-import { initializeSettingTables } from './setting.schema';
+function execSchema(database: Database.Database, schema: string, label: string): void {
+  database.exec(schema);
+  console.log(`[Database] ${label} tables initialized`);
+}
 
 /**
  * @function initializeAllTables
@@ -54,20 +49,21 @@ export function initializeAllTables(database: Database.Database): void {
   console.log('[Database] Initializing all module tables...');
 
   // Core Infrastructure
-  initializeAccountTables(database);
+  execSchema(database, ACCOUNT_MODULE_SCHEMA, 'Account');
+  execSchema(database, AUTHENTICATION_MODULE_SCHEMA, 'Authentication');
 
   // Core Business Modules
-  initializeGoalTables(database);
-  initializeTaskTables(database);
-  initializeScheduleTables(database);
-  initializeReminderTables(database);
+  execSchema(database, GOAL_MODULE_SCHEMA, 'Goal');
+  execSchema(database, TASK_MODULE_SCHEMA, 'Task');
+  execSchema(database, SCHEDULE_MODULE_SCHEMA, 'Schedule');
+  execSchema(database, REMINDER_MODULE_SCHEMA, 'Reminder');
 
   // Support Modules
-  initializeAITables(database);
-  initializeNotificationTables(database);
-  initializeDashboardTables(database);
-  initializeRepositoryTables(database);
-  initializeSettingTables(database);
+  execSchema(database, AI_MODULE_SCHEMA, 'AI');
+  execSchema(database, NOTIFICATION_MODULE_SCHEMA, 'Notification');
+  execSchema(database, DASHBOARD_MODULE_SCHEMA, 'Dashboard');
+  execSchema(database, REPOSITORY_MODULE_SCHEMA, 'Repository');
+  execSchema(database, SETTING_MODULE_SCHEMA, 'Setting');
 
   console.log('[Database] ✅ All module tables initialized successfully');
 }

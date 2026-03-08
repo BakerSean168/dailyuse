@@ -10,7 +10,7 @@ import { TaskInstanceGenerationService } from './TaskInstanceGenerationService';
 import { TaskTemplate } from '../aggregates';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskTemplateStatus } from '../../domain-shared/value-objects/task-template-status';
-import { TaskType } from '@dailyuse/contracts/modules/task';
+import { TaskType } from '@dailyuse/contracts/task';
 import {
   aRecurringTask,
   aOneTimeTask,

@@ -13,6 +13,7 @@ export default defineConfig({
     'src/api/index.ts',
     'src/electron-entry/index.ts',
     'src/sqlite.ts',
+    'src/schema.ts',
   ],
   format: ['esm'],
   dts: true,

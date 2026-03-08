@@ -49,11 +49,18 @@ CREATE INDEX IF NOT EXISTS idx_goals_parent_goal_id ON goals(parent_goal_id);
 -- ============================================================
 CREATE TABLE IF NOT EXISTS key_results (
   id TEXT PRIMARY KEY,
+  identity_id TEXT,
   goal_id TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
+  value_type TEXT,
+  aggregation_method TEXT,
+  target_value REAL NOT NULL DEFAULT 0,
+  current_value REAL NOT NULL DEFAULT 0,
+  unit TEXT,
   progress TEXT NOT NULL DEFAULT '{}',
   weight INTEGER NOT NULL DEFAULT 1,
+  "order" INTEGER NOT NULL DEFAULT 0,
   sort_order INTEGER NOT NULL DEFAULT 0,
   version INTEGER NOT NULL DEFAULT 1,
   created_at INTEGER NOT NULL,
@@ -63,18 +70,24 @@ CREATE TABLE IF NOT EXISTS key_results (
 );
 
 CREATE INDEX IF NOT EXISTS idx_key_results_goal_id ON key_results(goal_id);
+CREATE INDEX IF NOT EXISTS idx_key_results_identity_id ON key_results(identity_id);
 
 -- ============================================================
 -- Goal Reviews Table (实体，属�?Goal 聚合)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS goal_reviews (
   id TEXT PRIMARY KEY,
+  identity_id TEXT,
   goal_id TEXT NOT NULL,
   type TEXT NOT NULL,
+  review_type TEXT,
+  content TEXT,
   rating INTEGER NOT NULL DEFAULT 3,
   summary TEXT NOT NULL DEFAULT '',
   achievements TEXT,
   challenges TEXT,
+  lessons_learned TEXT,
+  next_steps TEXT,
   improvements TEXT,
   key_result_snapshots TEXT DEFAULT '[]',
   reviewed_at INTEGER NOT NULL,
@@ -86,6 +99,8 @@ CREATE TABLE IF NOT EXISTS goal_reviews (
 );
 
 CREATE INDEX IF NOT EXISTS idx_goal_reviews_goal_id ON goal_reviews(goal_id);
+CREATE INDEX IF NOT EXISTS idx_goal_reviews_identity_id ON goal_reviews(identity_id);
+CREATE INDEX IF NOT EXISTS idx_goal_reviews_review_type ON goal_reviews(review_type);
 
 -- ============================================================
 -- Goal Records Table (进度记录，属�?KeyResult)
@@ -93,6 +108,7 @@ CREATE INDEX IF NOT EXISTS idx_goal_reviews_goal_id ON goal_reviews(goal_id);
 CREATE TABLE IF NOT EXISTS goal_records (
   id TEXT PRIMARY KEY,
   key_result_id TEXT NOT NULL,
+  identity_id TEXT,
   value REAL NOT NULL DEFAULT 0,
   note TEXT,
   recorded_at INTEGER NOT NULL,
@@ -104,6 +120,7 @@ CREATE TABLE IF NOT EXISTS goal_records (
 );
 
 CREATE INDEX IF NOT EXISTS idx_goal_records_key_result_id ON goal_records(key_result_id);
+CREATE INDEX IF NOT EXISTS idx_goal_records_identity_id ON goal_records(identity_id);
 CREATE INDEX IF NOT EXISTS idx_goal_records_recorded_at ON goal_records(recorded_at);
 
 -- ============================================================
@@ -144,6 +161,7 @@ CREATE TABLE IF NOT EXISTS goal_folders (
   parent_folder_id TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,
   folder_type TEXT,
+  is_system_folder INTEGER NOT NULL DEFAULT 0,
   goal_count INTEGER NOT NULL DEFAULT 0,
   completed_goal_count INTEGER NOT NULL DEFAULT 0,
   version INTEGER NOT NULL DEFAULT 1,
@@ -155,6 +173,7 @@ CREATE TABLE IF NOT EXISTS goal_folders (
 
 CREATE INDEX IF NOT EXISTS idx_goal_folders_identity_id ON goal_folders(identity_id);
 CREATE INDEX IF NOT EXISTS idx_goal_folders_parent_folder_id ON goal_folders(parent_folder_id);
+CREATE INDEX IF NOT EXISTS idx_goal_folders_system ON goal_folders(identity_id, is_system_folder);
 
 -- ============================================================
 -- Focus Sessions Table (聚合�?
@@ -221,6 +240,7 @@ CREATE TABLE IF NOT EXISTS focus_mode_goals (
 CREATE TABLE IF NOT EXISTS weight_snapshots (
   id TEXT PRIMARY KEY,
   goal_id TEXT NOT NULL,
+  identity_id TEXT,
   key_result_id TEXT NOT NULL,
   old_weight INTEGER NOT NULL,
   new_weight INTEGER NOT NULL,
@@ -235,6 +255,7 @@ CREATE TABLE IF NOT EXISTS weight_snapshots (
 );
 
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_goal_id ON weight_snapshots(goal_id);
+CREATE INDEX IF NOT EXISTS idx_weight_snapshots_identity_id ON weight_snapshots(identity_id);
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_key_result_id ON weight_snapshots(key_result_id);
 CREATE INDEX IF NOT EXISTS idx_weight_snapshots_snapshot_time ON weight_snapshots(snapshot_time);
 `;

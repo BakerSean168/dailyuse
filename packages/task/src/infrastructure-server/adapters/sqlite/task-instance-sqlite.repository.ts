@@ -85,12 +85,20 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
 
     const stmt = this.db.prepare(`
       INSERT INTO task_instances (
-        id, identity_id, template_id, scheduled_date, status,
-        completed_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        id, identity_id, template_id, instance_date, scheduled_date, status,
+        importance, priority, time_config, actual_start_time, actual_end_time,
+        comment, completed_at, version, created_at, updated_at, deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
+        importance = excluded.importance,
+        priority = excluded.priority,
+        time_config = excluded.time_config,
+        actual_start_time = excluded.actual_start_time,
+        actual_end_time = excluded.actual_end_time,
+        comment = excluded.comment,
         completed_at = excluded.completed_at,
+        version = excluded.version,
         updated_at = excluded.updated_at
     `);
 
@@ -99,22 +107,39 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
       dto.identityId,
       dto.templateId,
       dto.instanceDate,
+      dto.instanceDate,
       dto.status,
+      dto.importance,
+      dto.priority ?? null,
+      JSON.stringify(dto.timeConfig),
+      dto.actualStartTime ?? null,
       dto.actualEndTime ?? null,
+      dto.comment ?? null,
+      dto.actualEndTime ?? null,
+      dto.version,
       dto.createdAt,
       dto.updatedAt,
+      dto.deletedAt,
     );
   }
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
     const insertStmt = this.db.prepare(`
       INSERT INTO task_instances (
-        id, identity_id, template_id, scheduled_date, status,
-        completed_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        id, identity_id, template_id, instance_date, scheduled_date, status,
+        importance, priority, time_config, actual_start_time, actual_end_time,
+        comment, completed_at, version, created_at, updated_at, deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
+        importance = excluded.importance,
+        priority = excluded.priority,
+        time_config = excluded.time_config,
+        actual_start_time = excluded.actual_start_time,
+        actual_end_time = excluded.actual_end_time,
+        comment = excluded.comment,
         completed_at = excluded.completed_at,
+        version = excluded.version,
         updated_at = excluded.updated_at
     `);
 
@@ -126,10 +151,19 @@ export class SqliteTaskInstanceRepository implements ITaskInstanceRepository {
           dto.identityId,
           dto.templateId,
           dto.instanceDate,
+          dto.instanceDate,
           dto.status,
+          dto.importance,
+          dto.priority ?? null,
+          JSON.stringify(dto.timeConfig),
+          dto.actualStartTime ?? null,
           dto.actualEndTime ?? null,
+          dto.comment ?? null,
+          dto.actualEndTime ?? null,
+          dto.version,
           dto.createdAt,
           dto.updatedAt,
+          dto.deletedAt,
         );
       }
     });

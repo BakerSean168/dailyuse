@@ -17,6 +17,10 @@
     "./powersync": {
       "types": "./src/powersync-schema.ts",
       "import": "./src/powersync-schema.ts"
+    },
+    "./dashboard-schema": {
+      "types": "./src/dashboard-schema.ts",
+      "import": "./src/dashboard-schema.ts"
     }
   },
   "scripts": {

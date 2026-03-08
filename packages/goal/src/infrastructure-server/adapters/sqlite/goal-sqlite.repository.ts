@@ -9,6 +9,7 @@
 import type Database from 'better-sqlite3';
 import { Goal } from '@/domain-server';
 import type { IGoalRepository } from '@/domain-server';
+import type { KeyResultProgressDTO } from '@dailyuse/contracts/goal';
 import { SqliteGoalMapper, dateToInt } from './mappers/sqlite-goal-mapper';
 
 export class SqliteGoalRepository implements IGoalRepository {
@@ -103,14 +104,22 @@ export class SqliteGoalRepository implements IGoalRepository {
         // Upsert each KR
         const krStmt = this.db.prepare(`
           INSERT INTO key_results (
-            id, goal_id, title, description, progress, weight,
-            sort_order, version, created_at, updated_at, deleted_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            id, identity_id, goal_id, title, description,
+            value_type, aggregation_method, target_value, current_value, unit,
+            progress, weight, "order", sort_order, version, created_at, updated_at, deleted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET
+            identity_id = excluded.identity_id,
             title = excluded.title,
             description = excluded.description,
+            value_type = excluded.value_type,
+            aggregation_method = excluded.aggregation_method,
+            target_value = excluded.target_value,
+            current_value = excluded.current_value,
+            unit = excluded.unit,
             progress = excluded.progress,
             weight = excluded.weight,
+            "order" = excluded."order",
             sort_order = excluded.sort_order,
             version = excluded.version,
             updated_at = excluded.updated_at,
@@ -118,15 +127,26 @@ export class SqliteGoalRepository implements IGoalRepository {
         `);
 
         for (const kr of dto.keyResults) {
-          const progress =
-            typeof kr.progress === 'string' ? kr.progress : JSON.stringify(kr.progress);
+          const progressObject: KeyResultProgressDTO =
+            typeof kr.progress === 'string'
+              ? (JSON.parse(kr.progress) as KeyResultProgressDTO)
+              : kr.progress;
+          const progress = JSON.stringify(progressObject);
+
           krStmt.run(
             kr.id as string,
+            dto.identityId as string,
             dto.id as string,
             kr.title,
             kr.description,
+            progressObject.valueType,
+            progressObject.aggregationMethod,
+            progressObject.targetValue,
+            progressObject.currentValue,
+            progressObject.unit,
             progress,
             kr.weight,
+            kr.sortOrder,
             kr.sortOrder,
             kr.version,
             dateToInt(kr.createdAt),
@@ -151,16 +171,21 @@ export class SqliteGoalRepository implements IGoalRepository {
 
         const reviewStmt = this.db.prepare(`
           INSERT INTO goal_reviews (
-            id, goal_id, type, rating, summary, achievements,
-            challenges, improvements, key_result_snapshots,
-            reviewed_at, version, created_at, updated_at, deleted_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            id, identity_id, goal_id, type, review_type, content, rating, summary,
+            achievements, challenges, lessons_learned, next_steps, improvements,
+            key_result_snapshots, reviewed_at, version, created_at, updated_at, deleted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET
+            identity_id = excluded.identity_id,
             type = excluded.type,
+            review_type = excluded.review_type,
+            content = excluded.content,
             rating = excluded.rating,
             summary = excluded.summary,
             achievements = excluded.achievements,
             challenges = excluded.challenges,
+            lessons_learned = excluded.lessons_learned,
+            next_steps = excluded.next_steps,
             improvements = excluded.improvements,
             key_result_snapshots = excluded.key_result_snapshots,
             reviewed_at = excluded.reviewed_at,
@@ -172,12 +197,17 @@ export class SqliteGoalRepository implements IGoalRepository {
         for (const review of dto.goalReviews) {
           reviewStmt.run(
             review.id as string,
+            dto.identityId as string,
             dto.id as string,
             review.type,
+            review.type,
+            review.summary,
             review.rating,
             review.summary,
             review.achievements,
             review.challenges,
+            null,
+            review.improvements,
             review.improvements,
             typeof review.keyResultSnapshots === 'string'
               ? review.keyResultSnapshots

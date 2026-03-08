@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS auth_identifiers (
   type        TEXT NOT NULL,
   value       TEXT NOT NULL,
   is_verified INTEGER NOT NULL DEFAULT 0,
+  created_at  INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
   FOREIGN KEY (identity_id) REFERENCES auth_identities(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_auth_identifiers_identity
@@ -41,12 +42,16 @@ CREATE TABLE IF NOT EXISTS auth_credentials (
   status                  TEXT NOT NULL DEFAULT 'Active',
   password_hash           TEXT,
   password_last_changed_at INTEGER,
+  version                 INTEGER NOT NULL DEFAULT 1,
   created_at              INTEGER NOT NULL,
   last_used_at            INTEGER,
+  deleted_at              INTEGER,
   FOREIGN KEY (identity_id) REFERENCES auth_identities(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_auth_credentials_identity
   ON auth_credentials(identity_id);
+CREATE INDEX IF NOT EXISTS idx_auth_credentials_identity_type
+  ON auth_credentials(identity_id, type);
 
 -- ─── auth_oauth_bindings (sub-entity) ───
 CREATE TABLE IF NOT EXISTS auth_oauth_bindings (

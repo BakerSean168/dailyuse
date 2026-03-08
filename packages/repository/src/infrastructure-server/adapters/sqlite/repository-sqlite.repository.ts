@@ -15,15 +15,18 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
   async save(repository: Repository): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT INTO repositories (
-        id, identity_id, name, description, type, status, config,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, identity_id, name, description, type, path, status, config, stats,
+        version, created_at, updated_at, deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         description = excluded.description,
         type = excluded.type,
+        path = excluded.path,
         status = excluded.status,
         config = excluded.config,
+        stats = excluded.stats,
+        version = excluded.version,
         updated_at = excluded.updated_at
     `);
 
@@ -33,10 +36,14 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
       repository.name,
       repository.description || null,
       repository.type,
+      repository.path,
       repository.status,
       JSON.stringify(repository.config),
+      JSON.stringify(repository.stats),
+      repository.version,
       repository.createdAt.getTime(),
       repository.updatedAt.getTime(),
+      repository.deletedAt?.getTime() ?? null,
     );
   }
 

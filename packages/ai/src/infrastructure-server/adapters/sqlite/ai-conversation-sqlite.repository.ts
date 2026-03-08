@@ -52,14 +52,15 @@ export class SqliteAIConversationRepository implements IAIConversationRepository
       if (dto.messages.length > 0) {
         const insertMessage = this.db.prepare(`
           INSERT INTO ai_messages (
-            id, conversation_id, role, content, token_usage, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?)
+            id, identity_id, conversation_id, role, content, token_usage, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
 
         const transaction = this.db.transaction((messages: NonNullable<typeof dto.messages>) => {
           for (const message of messages) {
             insertMessage.run(
               String(message.id),
+              String(dto.identityId),
               String(message.conversationId),
               message.role,
               message.content,

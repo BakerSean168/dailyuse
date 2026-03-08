@@ -66,6 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_conversations_status ON ai_conversations(statu
 -- AI Messages Table
 CREATE TABLE IF NOT EXISTS ai_messages (
   id TEXT PRIMARY KEY,
+  identity_id TEXT,
   conversation_id TEXT NOT NULL,
   role TEXT NOT NULL,
   content TEXT NOT NULL,
@@ -74,6 +75,7 @@ CREATE TABLE IF NOT EXISTS ai_messages (
   FOREIGN KEY (conversation_id) REFERENCES ai_conversations(id) ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_ai_messages_identity_id ON ai_messages(identity_id);
 CREATE INDEX IF NOT EXISTS idx_ai_messages_conversation_id ON ai_messages(conversation_id);
 CREATE INDEX IF NOT EXISTS idx_ai_messages_created_at ON ai_messages(created_at);
 
@@ -86,6 +88,7 @@ CREATE TABLE IF NOT EXISTS ai_usage_quotas (
   reset_period TEXT NOT NULL DEFAULT 'Daily',
   last_reset_at INTEGER NOT NULL,
   next_reset_at INTEGER NOT NULL,
+  version INTEGER NOT NULL DEFAULT 1,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
@@ -116,6 +119,7 @@ CREATE TABLE IF NOT EXISTS ai_provider_configs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ai_provider_configs_account_id ON ai_provider_configs(identity_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_provider_configs_identity_name ON ai_provider_configs(identity_id, name);
 CREATE INDEX IF NOT EXISTS idx_ai_provider_configs_is_default ON ai_provider_configs(is_default);
 CREATE INDEX IF NOT EXISTS idx_ai_provider_configs_priority ON ai_provider_configs(priority);
 `;

@@ -6,7 +6,7 @@ import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITask
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { CreateTaskTemplateReq } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { TaskType } from '@dailyuse/contracts/modules/task';
+import { TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { CreateTaskTemplate } from '../create-task-template';
 

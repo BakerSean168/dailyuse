@@ -63,4 +63,20 @@ async function startApp() {
   app.mount('#app');
 }
 
-startApp();
+startApp().catch((error) => {
+  console.error('[DesktopRenderer] Failed to start app', error);
+
+  const mountTarget = document.querySelector('#app');
+  if (mountTarget) {
+    mountTarget.innerHTML = `
+      <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:24px;background:#111827;color:#f9fafb;font-family:system-ui,sans-serif;">
+        <div style="max-width:640px;">
+          <h1 style="margin:0 0 12px;font-size:20px;">Desktop renderer failed to start</h1>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:#1f2937;padding:12px;border-radius:8px;overflow:auto;">${String(
+            error instanceof Error ? error.stack ?? error.message : error,
+          )}</pre>
+        </div>
+      </div>
+    `;
+  }
+});

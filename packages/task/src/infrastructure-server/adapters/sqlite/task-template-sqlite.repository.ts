@@ -131,30 +131,72 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
 
   async save(template: TaskTemplate): Promise<void> {
     const dto = template.toServerDTO();
-    const recurrencePattern = dto.recurrenceRule
-      ? JSON.stringify({
-          type: dto.recurrenceRule.frequency,
-          interval: dto.recurrenceRule.interval,
-          daysOfWeek: dto.recurrenceRule.daysOfWeek,
-        })
-      : null;
+    const recurrencePattern = dto.recurrenceRule ? JSON.stringify(dto.recurrenceRule) : null;
     const isRecurring = dto.recurrenceRule ? 1 : 0;
+    const timeConfig = dto.timeConfig;
+    const recurrenceRule = dto.recurrenceRule;
+    const reminderConfig = dto.reminderConfig;
+    const timeConfigRangeStart = timeConfig?.timeRange?.start ?? null;
+    const timeConfigRangeEnd = timeConfig?.timeRange?.end ?? null;
+    const timeConfigDurationMinutes =
+      timeConfigRangeStart != null && timeConfigRangeEnd != null
+        ? timeConfigRangeEnd - timeConfigRangeStart
+        : null;
+    const reminderTrigger = reminderConfig?.triggers?.[0] ?? null;
 
     const stmt = this.db.prepare(`
       INSERT INTO task_templates (
-        id, identity_id, folder_id, name, description, status,
-        tags, goal_id, is_recurring, recurrence_pattern, created_at, updated_at, deleted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, identity_id, folder_id, name, description, importance, priority, color, status,
+        tags, goal_id, parent_task_id,
+        time_config_type, time_config_start_time, time_config_end_time,
+        time_config_duration_minutes, time_config_time_point, time_config_time_range_start, time_config_time_range_end,
+        recurrence_rule_type, recurrence_rule_interval, recurrence_rule_days_of_week,
+        recurrence_rule_day_of_month, recurrence_rule_month_of_year, recurrence_rule_end_date, recurrence_rule_count,
+        reminder_config_enabled, reminder_config_time_offset_minutes, reminder_config_unit, reminder_config_channel,
+        last_generated_date, generate_ahead_days, goal_binding, checklist,
+        blocking_reason, dependency_status, is_blocked,
+        is_recurring, recurrence_pattern, version, created_at, updated_at, deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         identity_id = excluded.identity_id,
         folder_id = excluded.folder_id,
         name = excluded.name,
         description = excluded.description,
+        importance = excluded.importance,
+        priority = excluded.priority,
+        color = excluded.color,
         status = excluded.status,
         tags = excluded.tags,
         goal_id = excluded.goal_id,
+        parent_task_id = excluded.parent_task_id,
+        time_config_type = excluded.time_config_type,
+        time_config_start_time = excluded.time_config_start_time,
+        time_config_end_time = excluded.time_config_end_time,
+        time_config_duration_minutes = excluded.time_config_duration_minutes,
+        time_config_time_point = excluded.time_config_time_point,
+        time_config_time_range_start = excluded.time_config_time_range_start,
+        time_config_time_range_end = excluded.time_config_time_range_end,
+        recurrence_rule_type = excluded.recurrence_rule_type,
+        recurrence_rule_interval = excluded.recurrence_rule_interval,
+        recurrence_rule_days_of_week = excluded.recurrence_rule_days_of_week,
+        recurrence_rule_day_of_month = excluded.recurrence_rule_day_of_month,
+        recurrence_rule_month_of_year = excluded.recurrence_rule_month_of_year,
+        recurrence_rule_end_date = excluded.recurrence_rule_end_date,
+        recurrence_rule_count = excluded.recurrence_rule_count,
+        reminder_config_enabled = excluded.reminder_config_enabled,
+        reminder_config_time_offset_minutes = excluded.reminder_config_time_offset_minutes,
+        reminder_config_unit = excluded.reminder_config_unit,
+        reminder_config_channel = excluded.reminder_config_channel,
+        last_generated_date = excluded.last_generated_date,
+        generate_ahead_days = excluded.generate_ahead_days,
+        goal_binding = excluded.goal_binding,
+        checklist = excluded.checklist,
+        blocking_reason = excluded.blocking_reason,
+        dependency_status = excluded.dependency_status,
+        is_blocked = excluded.is_blocked,
         is_recurring = excluded.is_recurring,
         recurrence_pattern = excluded.recurrence_pattern,
+        version = excluded.version,
         updated_at = excluded.updated_at,
         deleted_at = excluded.deleted_at
     `);
@@ -165,11 +207,41 @@ export class SqliteTaskTemplateRepository implements ITaskTemplateRepository {
       dto.folderId,
       dto.name,
       dto.description || null,
+      dto.importance,
+      dto.priority ?? null,
+      dto.color ?? null,
       dto.status,
       typeof dto.tags === 'string' ? dto.tags : JSON.stringify(dto.tags),
       dto.goalBinding?.goalId ?? null,
+      dto.parentTaskId ?? null,
+      timeConfig?.timeType ?? null,
+      timeConfig?.startDate ?? null,
+      null,
+      timeConfigDurationMinutes,
+      timeConfig?.timePoint ?? null,
+      timeConfigRangeStart,
+      timeConfigRangeEnd,
+      recurrenceRule?.frequency ?? null,
+      recurrenceRule?.interval ?? null,
+      recurrenceRule?.daysOfWeek ? JSON.stringify(recurrenceRule.daysOfWeek) : null,
+      null,
+      null,
+      recurrenceRule?.endDate ?? null,
+      recurrenceRule?.occurrences ?? null,
+      reminderConfig?.enabled == null ? null : reminderConfig.enabled ? 1 : 0,
+      reminderTrigger?.relativeValue ?? null,
+      reminderTrigger?.relativeUnit ?? null,
+      reminderConfig ? 'PUSH' : null,
+      dto.lastGeneratedDate ?? null,
+      dto.generateAheadDays ?? null,
+      dto.goalBinding ? JSON.stringify(dto.goalBinding) : null,
+      dto.checklist ? JSON.stringify(dto.checklist) : null,
+      dto.blockingReason ?? null,
+      dto.dependencyStatus,
+      dto.isBlocked ? 1 : 0,
       isRecurring,
       recurrencePattern,
+      dto.version,
       typeof dto.createdAt === 'number' ? dto.createdAt : new Date(dto.createdAt).getTime(),
       typeof dto.updatedAt === 'number' ? dto.updatedAt : new Date(dto.updatedAt).getTime(),
       dto.deletedAt

@@ -15,10 +15,9 @@ const nativeModules = ['better-sqlite3', 'electron', 'argon2'];
 const thirdPartyLeaks = ['date-fns', 'gray-matter'];
 
 // Workspace packages that must stay external in the main process bundle.
-// @dailyuse/database: The main process only uses @dailyuse/database/powersync
-// (a standalone PowerSync schema), but barrel re-exports in repository/editor
-// transitively pull in the CJS Prisma generated client which Rollup cannot
-// resolve. Externalizing the whole package avoids this.
+// Keep only the root @dailyuse/database package external so Prisma-related
+// paths are never bundled, but allow the pure schema subpath
+// @dailyuse/database/powersync to be bundled into the desktop main process.
 const workspaceExternal = ['@dailyuse/database'];
 
 // Main process external: native modules + leaked third-party packages
@@ -26,13 +25,17 @@ const workspaceExternal = ['@dailyuse/database'];
 // so electron-builder doesn't need to search the pnpm monorepo
 const electronMainExternalList = [...nativeModules, ...thirdPartyLeaks];
 
-// Rollup external function: matches exact strings from the list above,
-// plus @dailyuse/database and all its subpaths (e.g. @dailyuse/database/powersync).
+// Rollup external function: matches exact strings from the list above.
+// For @dailyuse/database, keep the package root and Prisma-related subpaths
+// external, but bundle pure schema subpaths so CJS main-process output does not
+// need to require import-only package exports at runtime.
 function isElectronMainExternal(id: string): boolean {
   if (electronMainExternalList.includes(id)) return true;
-  // Match @dailyuse/database exactly or any subpath like @dailyuse/database/powersync
   for (const pkg of workspaceExternal) {
-    if (id === pkg || id.startsWith(pkg + '/')) return true;
+    if (id === pkg) return true;
+    if (pkg === '@dailyuse/database' && id.startsWith(pkg + '/')) {
+      return !['@dailyuse/database/powersync', '@dailyuse/database/dashboard-schema'].includes(id);
+    }
   }
   return false;
 }
@@ -102,9 +105,9 @@ export default defineConfig({
             rollupOptions: {
               external: isElectronMainExternal,
               output: {
-                format: 'es',
-                entryFileNames: '[name].js',
-                chunkFileNames: '[name].js',
+                format: 'cjs',
+                entryFileNames: '[name].cjs',
+                chunkFileNames: '[name].cjs',
                 assetFileNames: '[name].[ext]',
               },
             },

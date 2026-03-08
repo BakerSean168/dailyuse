@@ -20,6 +20,7 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   external: [
+    'electron',
     '@dailyuse/utils',
     '@dailyuse/contracts',
     '@dailyuse/http-client',

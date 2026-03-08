@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ok, fail, isOk } from '@dailyuse/contracts/result';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import { TaskType } from '@dailyuse/contracts/modules/task';
+import { TaskType } from '@dailyuse/contracts/task';
 import { TaskTemplateController, type TaskTemplateUseCases } from '../task-template.controller';
 
 // ---------------------------------------------------------------------------

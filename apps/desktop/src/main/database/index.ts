@@ -17,9 +17,64 @@ import Database from 'better-sqlite3';
 import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
-import { initializeAllTables } from './schema';
+import { DESKTOP_SQLITE_SCHEMA_VERSION, initializeAllTables } from './schema';
 
 let db: Database.Database | null = null;
+
+function configureDatabase(database: Database.Database): void {
+  database.pragma('journal_mode = WAL');
+  database.pragma('synchronous = NORMAL');
+  database.pragma('cache_size = -40000');
+  database.pragma('temp_store = MEMORY');
+  database.pragma('mmap_size = 268435456');
+  database.pragma('locking_mode = NORMAL');
+  database.pragma('wal_autocheckpoint = 1000');
+  database.pragma('foreign_keys = ON');
+}
+
+function removeDatabaseFiles(dbPath: string): void {
+  for (const filePath of [dbPath, `${dbPath}-wal`, `${dbPath}-shm`]) {
+    if (fs.existsSync(filePath)) {
+      fs.rmSync(filePath, { force: true });
+    }
+  }
+}
+
+function ensureFreshDevSchema(database: Database.Database, dbPath: string): Database.Database {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS __schema_meta (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
+  const versionRow = database
+    .prepare(`SELECT value FROM __schema_meta WHERE key = 'desktop_schema_version' LIMIT 1`)
+    .get() as { value?: string } | undefined;
+
+  const shouldReset = !app.isPackaged && versionRow?.value !== DESKTOP_SQLITE_SCHEMA_VERSION;
+  if (!shouldReset) {
+    return database;
+  }
+
+  console.log(
+    `[Database] Schema version changed (${versionRow?.value ?? 'none'} -> ${DESKTOP_SQLITE_SCHEMA_VERSION}), recreating local dev SQLite database`,
+  );
+
+  database.close();
+  removeDatabaseFiles(dbPath);
+
+  const recreated = new Database(dbPath);
+  configureDatabase(recreated);
+  recreated.exec(`
+    CREATE TABLE IF NOT EXISTS __schema_meta (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `);
+
+  return recreated;
+}
 
 /**
  * @function getDatabasePath
@@ -59,35 +114,16 @@ export function initializeDatabase(): Database.Database {
   const dbPath = getDatabasePath();
 
   db = new Database(dbPath);
-
-  // ========== EPIC-003: 性能优化 Pragma ==========
-  
-  // WAL 模式：提高并发写入性能
-  db.pragma('journal_mode = WAL');
-  
-  // 同步模式：NORMAL 平衡安全与速度（比 FULL 快，比 OFF 安全）
-  db.pragma('synchronous = NORMAL');
-  
-  // 页缓存大小：负数表示 KB（约 40MB 缓存）
-  db.pragma('cache_size = -40000');
-  
-  // 临时表存储：使用内存加速
-  db.pragma('temp_store = MEMORY');
-  
-  // 内存映射大小：256MB（加速大文件读取）
-  db.pragma('mmap_size = 268435456');
-  
-  // 锁模式：NORMAL 允许其他进程访问
-  db.pragma('locking_mode = NORMAL');
-  
-  // 自动检查点间隔：1000 页后自动 checkpoint（约 4MB）
-  db.pragma('wal_autocheckpoint = 1000');
-
-  // 启用外键约束
-  db.pragma('foreign_keys = ON');
+  configureDatabase(db);
+  db = ensureFreshDevSchema(db, dbPath);
 
   // 初始化所有模块表结构 (来自 schema/)
   initializeAllTables(db);
+  db.prepare(`
+    INSERT INTO __schema_meta (key, value)
+    VALUES ('desktop_schema_version', ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `).run(DESKTOP_SQLITE_SCHEMA_VERSION);
 
   const initTime = performance.now() - startTime;
   console.log(`[Database] Connected to SQLite: ${dbPath} (${initTime.toFixed(2)}ms)`);

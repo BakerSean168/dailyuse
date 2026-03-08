@@ -4,7 +4,7 @@ import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate, anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { TaskType } from '@dailyuse/contracts/modules/task';
+import { TaskType } from '@dailyuse/contracts/task';
 import { GetTaskDashboard } from '../get-task-dashboard';
 
 describe('GetTaskDashboard', () => {

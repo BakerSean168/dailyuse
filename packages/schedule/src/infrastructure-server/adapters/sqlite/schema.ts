@@ -13,8 +13,10 @@ CREATE TABLE IF NOT EXISTS schedules (
   is_all_day INTEGER DEFAULT 0,
   description TEXT,
   location TEXT,
+  version INTEGER NOT NULL DEFAULT 1,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
+  deleted_at INTEGER,
   FOREIGN KEY (identity_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
 
@@ -69,6 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_schedule_tasks_enabled ON schedule_tasks(enabled)
 CREATE TABLE IF NOT EXISTS schedule_executions (
   id TEXT PRIMARY KEY,
   task_id TEXT NOT NULL,
+  identity_id TEXT,
   execution_time INTEGER NOT NULL,
   status TEXT NOT NULL,
   duration INTEGER,
@@ -80,6 +83,7 @@ CREATE TABLE IF NOT EXISTS schedule_executions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_schedule_executions_task_id ON schedule_executions(task_id);
+CREATE INDEX IF NOT EXISTS idx_schedule_executions_identity_id ON schedule_executions(identity_id);
 CREATE INDEX IF NOT EXISTS idx_schedule_executions_execution_time ON schedule_executions(execution_time);
 CREATE INDEX IF NOT EXISTS idx_schedule_executions_status ON schedule_executions(status);
 `;

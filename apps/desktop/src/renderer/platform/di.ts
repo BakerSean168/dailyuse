@@ -9,6 +9,15 @@
  */
 import type { App } from 'vue';
 import { createIpcClient, createResultIpcClient } from '@dailyuse/ipc-client';
+import { AccountClientService } from '@dailyuse/account';
+import { AuthClientService } from '@dailyuse/authentication';
+import { GoalClientService } from '@dailyuse/goal';
+import { TaskClientService } from '@dailyuse/task';
+import { ScheduleClientService } from '@dailyuse/schedule';
+import { ReminderClientService } from '@dailyuse/reminder';
+import { RepositoryClientService } from '@dailyuse/repository';
+import { NotificationClientService } from '@dailyuse/notification';
+import { SettingClientService } from '@dailyuse/setting';
 
 import {
   // Domain service keys

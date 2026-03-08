@@ -145,8 +145,8 @@ export class WindowManager {
       logger.info('Login window shown');
     });
 
-    // 加载登录页面
-    this.loadWindowContent(this.loginWindow, '/login');
+    // app-vue exposes the authentication shell at /auth, not /login.
+    this.loadWindowContent(this.loginWindow, '/auth');
 
     // 窗口关闭事件
     this.loginWindow.on('closed', () => {
