@@ -119,3 +119,5 @@ tmp/
 
 # 包管理器缓存
 .pnpm-store/
+
+docs/thesis/
