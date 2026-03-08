@@ -4,12 +4,15 @@
  * Local transport interfaces for dependency inversion.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+
 // Re-export the port interface from application-client
 export type { IAuthApiClient } from '../../application-client';
 
 /**
- * IPC Client interface - local abstraction over IPC transport (Electron)
+ * IPC Client interface (Result-returning).
+ * Satisfied by ResultIpcClient from @dailyuse/ipc-client at the App level.
  */
-export interface IIpcClient {
-  invoke<T>(channel: string, ...args: unknown[]): Promise<T>;
+export interface IResultIpcClient {
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
 }

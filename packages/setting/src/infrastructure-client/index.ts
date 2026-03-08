@@ -5,7 +5,7 @@
  */
 
 // Port Interfaces
-export type { ISettingApiClient, IResultHttpClient, IIpcClient } from './adapters/types';
+export type { ISettingApiClient, IResultHttpClient, IResultIpcClient } from './adapters/types';
 
 // HTTP Adapters
 export { SettingHttpAdapter, createSettingHttpAdapters, type SettingHttpAdapters } from './adapters/http';

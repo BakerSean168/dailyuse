@@ -59,8 +59,8 @@ export type ISettingService = PublicInterface<
 // ── Governance（纯接口，无 private）──
 export type { IRuleApiClient as IRuleService } from '@dailyuse/governance/infrastructure-client';
 
-// ── HTTP Client (used by dashboard and other cross-cutting composables) ──
-export type IHttpClient = PublicInterface<import('@dailyuse/http-client').ResultHttpClient>;
+// ── Dashboard（纯接口，无 private）──
+export type { IDashboardApiClient as IDashboardService } from '../modules/dashboard/types';
 
 // ── Navigation ──
 export interface NavigationItem {

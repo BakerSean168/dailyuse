@@ -8,7 +8,7 @@
 // Types (port interfaces + transport interfaces)
 export type {
   IResultHttpClient,
-  IIpcClient,
+  IResultIpcClient,
   IRuleApiClient,
 } from './adapters/types';
 

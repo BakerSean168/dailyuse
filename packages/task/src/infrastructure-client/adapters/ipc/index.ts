@@ -5,7 +5,7 @@
  * Provides factory function to create all IPC adapters at once.
  */
 
-import type { IIpcClient } from '../types';
+import type { IResultIpcClient } from '../types';
 import { TaskTemplateIpcAdapter } from './task-template-ipc.adapter';
 import { TaskInstanceIpcAdapter } from './task-instance-ipc.adapter';
 import { TaskDependencyIpcAdapter } from './task-dependency-ipc.adapter';
@@ -40,7 +40,7 @@ export interface TaskIpcAdapters {
  * ```
  */
 export function createTaskIpcAdapters(
-  ipcClient: IIpcClient,
+  ipcClient: IResultIpcClient,
 ): TaskIpcAdapters {
   return {
     template: new TaskTemplateIpcAdapter(ipcClient),

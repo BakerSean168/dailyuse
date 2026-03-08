@@ -8,7 +8,7 @@
  * Pattern: ipcClient → create*IpcAdapters(ipcClient) → new *ClientService(adapters) → app.provide(KEY, service)
  */
 import type { App } from 'vue';
-import { createIpcClient, createResultIpcClient } from '@dailyuse/ipc-client';
+import { createResultIpcClient } from '@dailyuse/ipc-client';
 import { AccountClientService } from '@dailyuse/account/application-client';
 import { AuthClientService } from '@dailyuse/authentication/application-client';
 import { GoalClientService } from '@dailyuse/goal/application-client';
@@ -31,6 +31,8 @@ import {
   NOTIFICATION_SERVICE_KEY,
   SETTING_SERVICE_KEY,
   RULE_SERVICE_KEY,
+  DASHBOARD_SERVICE_KEY,
+  createDashboardIpcAdapter,
   // UI keys
   MAIN_NAVIGATION_KEY,
   BOTTOM_NAVIGATION_KEY,
@@ -59,14 +61,13 @@ import { createGovernanceIpcAdapters } from '@dailyuse/governance/infrastructure
  * and provides them to the app's inject() context.
  */
 export function installIpcServices(app: App): void {
-  const ipcClient = createIpcClient();
   const resultIpcClient = createResultIpcClient();
 
   // ── Domain Services ──
-  const accountAdapters = createAccountIpcAdapters(ipcClient);
+  const accountAdapters = createAccountIpcAdapters(resultIpcClient);
   app.provide(ACCOUNT_SERVICE_KEY, new AccountClientService(accountAdapters.account));
 
-  const authAdapters = createAuthIpcAdapters(ipcClient);
+  const authAdapters = createAuthIpcAdapters(resultIpcClient);
   app.provide(AUTH_SERVICE_KEY, new AuthClientService(authAdapters.auth));
 
   const goalAdapters = createGoalIpcAdapters(resultIpcClient);
@@ -75,35 +76,38 @@ export function installIpcServices(app: App): void {
     new GoalClientService(goalAdapters.goal, goalAdapters.folder, goalAdapters.focus),
   );
 
-  const taskAdapters = createTaskIpcAdapters(ipcClient);
+  const taskAdapters = createTaskIpcAdapters(resultIpcClient);
   app.provide(
     TASK_SERVICE_KEY,
     new TaskClientService(taskAdapters.template, taskAdapters.instance, taskAdapters.dependency),
   );
 
-  const scheduleAdapters = createScheduleIpcAdapters(ipcClient);
+  const scheduleAdapters = createScheduleIpcAdapters(resultIpcClient);
   app.provide(
     SCHEDULE_SERVICE_KEY,
     new ScheduleClientService(scheduleAdapters.event, scheduleAdapters.task),
   );
 
-  const reminderAdapters = createReminderIpcAdapters(ipcClient);
+  const reminderAdapters = createReminderIpcAdapters(resultIpcClient);
   app.provide(REMINDER_SERVICE_KEY, new ReminderClientService(reminderAdapters.reminder));
 
-  const repositoryAdapters = createRepositoryIpcAdapters(ipcClient);
+  const repositoryAdapters = createRepositoryIpcAdapters(resultIpcClient);
   app.provide(REPOSITORY_SERVICE_KEY, new RepositoryClientService(repositoryAdapters.repository));
 
-  const notificationAdapters = createNotificationIpcAdapters(ipcClient);
+  const notificationAdapters = createNotificationIpcAdapters(resultIpcClient);
   app.provide(
     NOTIFICATION_SERVICE_KEY,
     new NotificationClientService(notificationAdapters.notification),
   );
 
-  const settingAdapters = createSettingIpcAdapters(ipcClient);
+  const settingAdapters = createSettingIpcAdapters(resultIpcClient);
   app.provide(SETTING_SERVICE_KEY, new SettingClientService(settingAdapters.setting));
 
-  const governanceAdapters = createGovernanceIpcAdapters(ipcClient);
+  const governanceAdapters = createGovernanceIpcAdapters(resultIpcClient);
   app.provide(RULE_SERVICE_KEY, governanceAdapters.rule);
+
+  // ── Dashboard ──
+  app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));
 
   // ── UI / Navigation ──
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);

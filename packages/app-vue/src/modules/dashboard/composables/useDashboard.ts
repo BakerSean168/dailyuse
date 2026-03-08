@@ -1,72 +1,26 @@
 /**
  * useDashboard - Dashboard composable
  *
- * Fetches aggregated dashboard statistics from a single endpoint.
- * Uses ResultHttpClient directly (no domain service needed for read-only aggregation).
+ * Fetches aggregated dashboard statistics via DASHBOARD_SERVICE_KEY.
+ * Transport-agnostic: works with both HTTP (web) and IPC (desktop) adapters.
  */
 
 import { ref, computed } from 'vue';
-import { HTTP_CLIENT_KEY } from '../../../di/keys';
+import { DASHBOARD_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { getI18nGlobal } from '../../../plugins/i18n';
+import type { DashboardData } from '../types';
 
-// ── Types ──
-
-export interface DashboardStats {
-  activeTasks: number;
-  completedToday: number;
-  activeGoals: number;
-  upcomingReminders: number;
-  unreadNotifications: number;
-  scheduleConflicts: number;
-}
-
-export interface ActivityItem {
-  id: string;
-  type: string;
-  description: string;
-  timestamp: number;
-}
-
-export interface TrendDay {
-  date: string;
-  tasksCompleted: number;
-  tasksCreated: number;
-  focusMinutes: number;
-}
-
-export interface GoalProgressItem {
-  id: string;
-  name: string;
-  progress: number;
-  status: string;
-  dueDate: number;
-  keyResultCount: number;
-}
-
-export interface TaskBoardSummary {
-  todo: number;
-  inProgress: number;
-  done: number;
-  overdue: number;
-}
-
-export interface ScheduleItem {
-  id: string;
-  title: string;
-  startTime: number;
-  endTime: number;
-  priority: number;
-}
-
-export interface DashboardData {
-  stats: DashboardStats;
-  activityTimeline: ActivityItem[];
-  trendDays: TrendDay[];
-  goalProgress: GoalProgressItem[];
-  taskBoard: TaskBoardSummary;
-  upcomingSchedule: ScheduleItem[];
-}
+// Re-export types from the canonical location for backwards compatibility
+export type {
+  DashboardStats,
+  ActivityItem,
+  TrendDay,
+  GoalProgressItem,
+  TaskBoardSummary,
+  ScheduleItem,
+  DashboardData,
+} from '../types';
 
 // ── Default empty state ──
 
@@ -89,7 +43,7 @@ const emptyData: DashboardData = {
 // ── Composable ──
 
 export function useDashboard() {
-  const http = useStrictInject(HTTP_CLIENT_KEY, 'HttpClient');
+  const dashboardService = useStrictInject(DASHBOARD_SERVICE_KEY, 'DashboardService');
 
   const data = ref<DashboardData>({ ...emptyData });
   const isLoading = ref(false);
@@ -106,7 +60,7 @@ export function useDashboard() {
     isLoading.value = true;
     error.value = null;
     try {
-      const result = await http.get<DashboardData>('/dashboard/stats');
+      const result = await dashboardService.getDashboardStats();
       if (result.ok) {
         data.value = {
           stats: result.data.stats ?? emptyData.stats,

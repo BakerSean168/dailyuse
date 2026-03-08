@@ -18,6 +18,7 @@ import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
 import { ElectronBootstrapper } from './bootstrap';
+import { registerDashboardIpcHandler } from './ipc/dashboard-handler';
 
 // ── Module Electron Entry Points ─────────────────────────────────────
 import { GoalElectronModule } from '@dailyuse/goal/electron-entry';
@@ -84,6 +85,7 @@ async function initializeApp(): Promise<void> {
   startMemoryCleanup();
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
+  registerDashboardIpcHandler();
 
   const initTime = performance.now() - startTime;
   console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);

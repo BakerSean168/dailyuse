@@ -5,6 +5,7 @@
  * Modules define their own transport interfaces and accept injected implementations.
  */
 
+import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 
 // Re-export the port interface
@@ -31,8 +32,9 @@ export type {
 export type { IResultHttpClient };
 
 /**
- * IPC Client interface - local abstraction over IPC transport (Electron)
+ * IPC Client interface (Result-returning).
+ * Satisfied by ResultIpcClient from @dailyuse/ipc-client at the App level.
  */
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+export interface IResultIpcClient {
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
 }

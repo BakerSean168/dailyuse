@@ -27,11 +27,11 @@ import type {
 // IResultHttpClient imported from @dailyuse/http-client
 
 /**
- * IPC Client interface.
- * Satisfied by IpcClientImpl / ResultIpcClient at the App level.
+ * IPC Client interface (Result-returning).
+ * Satisfied by ResultIpcClient from @dailyuse/ipc-client at the App level.
  */
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+export interface IResultIpcClient {
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
 }
 
 // ============ Port Interfaces ============

@@ -9,7 +9,7 @@ export type {
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
-  IIpcClient,
+  IResultIpcClient,
 } from './adapters/types';
 
 // HTTP Adapters

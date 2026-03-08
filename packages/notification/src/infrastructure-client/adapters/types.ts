@@ -18,8 +18,8 @@ import type { ActionResult, CountResult } from '@dailyuse/contracts/result';
 
 // IResultHttpClient imported from @dailyuse/http-client
 
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+export interface IResultIpcClient {
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
 }
 
 // ============ Local Request/Response Types ============

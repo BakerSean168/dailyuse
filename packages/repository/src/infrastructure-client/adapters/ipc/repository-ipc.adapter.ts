@@ -6,9 +6,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { tryCatch } from '@dailyuse/contracts/result';
 import type {
-  IIpcClient,
+  IResultIpcClient,
   IRepositoryApiClient,
   CreateRepositoryRequest,
   CreateFolderRequest,
@@ -32,30 +31,30 @@ import type {
 export class RepositoryIpcAdapter implements IRepositoryApiClient {
   private readonly channel = 'repository';
 
-  constructor(private readonly ipcClient: IIpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   // ===== Repository CRUD =====
 
   async createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:create`, request));
+    return this.ipcClient.invoke(`${this.channel}:create`, request);
   }
 
   async getRepositories(): Promise<Result<RepositoryClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:list`));
+    return this.ipcClient.invoke(`${this.channel}:list`);
   }
 
   async getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:get`, id));
+    return this.ipcClient.invoke(`${this.channel}:get`, id);
   }
 
   async deleteRepository(id: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:delete`, id));
+    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 
   // ===== Folder Operations =====
 
   async createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:create`, request));
+    return this.ipcClient.invoke(`${this.channel}:folder:create`, request);
   }
 
   async getFolderContents(folderId: string): Promise<
@@ -64,81 +63,70 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
       resources: ResourceClientDTO[];
     }>
   > {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:list`, folderId));
+    return this.ipcClient.invoke(`${this.channel}:folder:list`, folderId);
   }
 
   async renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:update`, { id, name }));
+    return this.ipcClient.invoke(`${this.channel}:folder:update`, { id, name });
   }
 
   async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
-    return tryCatch(() =>
-      this.ipcClient.invoke(`${this.channel}:folder:update`, { id, targetParentId }),
-    );
+    return this.ipcClient.invoke(`${this.channel}:folder:update`, { id, targetParentId });
   }
 
   async deleteFolder(id: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:delete`, id));
+    return this.ipcClient.invoke(`${this.channel}:folder:delete`, id);
   }
 
   // ===== File Tree =====
 
   async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:folder:list`, repositoryId));
+    return this.ipcClient.invoke(`${this.channel}:folder:list`, repositoryId);
   }
 
   // ===== Search =====
 
   async search(request: SearchRequest): Promise<Result<SearchResponse>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:search`, request));
+    return this.ipcClient.invoke(`${this.channel}:search`, request);
   }
 
   // ===== Resource Operations =====
 
   async listResources(repositoryId: string): Promise<Result<ResourceClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:list`, repositoryId));
+    return this.ipcClient.invoke(`${this.channel}:resource:list`, repositoryId);
   }
 
   async createResource(
     repositoryId: string,
     request: CreateResourceRequest,
   ): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() =>
-      this.ipcClient.invoke(`${this.channel}:resource:create`, { repositoryId, ...request }),
-    );
+    return this.ipcClient.invoke(`${this.channel}:resource:create`, { repositoryId, ...request });
   }
 
   async getResource(id: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:get`, id));
+    return this.ipcClient.invoke(`${this.channel}:resource:get`, id);
   }
 
   async updateResource(
     id: string,
     request: UpdateResourceRequest,
   ): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() =>
-      this.ipcClient.invoke(`${this.channel}:resource:update`, { id, ...request }),
-    );
+    return this.ipcClient.invoke(`${this.channel}:resource:update`, { id, ...request });
   }
 
   async renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:update`, { id, name }));
+    return this.ipcClient.invoke(`${this.channel}:resource:update`, { id, name });
   }
 
   async moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>> {
-    return tryCatch(() =>
-      this.ipcClient.invoke(`${this.channel}:resource:update`, { id, targetFolderId }),
-    );
+    return this.ipcClient.invoke(`${this.channel}:resource:update`, { id, targetFolderId });
   }
 
   async deleteResource(id: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(`${this.channel}:resource:delete`, id));
+    return this.ipcClient.invoke(`${this.channel}:resource:delete`, id);
   }
 }
 
-/**
- * Factory function to create RepositoryIpcAdapter
- */
-export function createRepositoryIpcAdapter(ipcClient: IIpcClient): RepositoryIpcAdapter {
+export function createRepositoryIpcAdapter(ipcClient: IResultIpcClient): RepositoryIpcAdapter {
   return new RepositoryIpcAdapter(ipcClient);
 }

@@ -2,12 +2,11 @@
  * Account IPC Adapter
  *
  * IPC implementation of IAccountApiClient for Electron desktop apps.
- * Uses tryCatch to wrap IPC calls into Result<T>.
+ * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { tryCatch } from '@dailyuse/contracts/result';
-import type { IAccountApiClient, IIpcClient } from '../types';
+import type { IAccountApiClient, IResultIpcClient } from '../types';
 import type {
   AccountClientDTO,
   UpdateAccountReq,
@@ -24,25 +23,25 @@ const CHANNELS = {
 } as const;
 
 export class AccountIpcAdapter implements IAccountApiClient {
-  constructor(private readonly ipcClient: IIpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getMyProfile(): Promise<Result<AccountClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.GET_PROFILE));
+    return this.ipcClient.invoke(CHANNELS.GET_PROFILE);
   }
 
   async updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.UPDATE_PROFILE, request));
+    return this.ipcClient.invoke(CHANNELS.UPDATE_PROFILE, request);
   }
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.CHECK_AVAILABILITY, request));
+    return this.ipcClient.invoke(CHANNELS.CHECK_AVAILABILITY, request);
   }
 
   async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.CLOSE_ACCOUNT, request));
+    return this.ipcClient.invoke(CHANNELS.CLOSE_ACCOUNT, request);
   }
 }
 
-export function createAccountIpcAdapter(ipcClient: IIpcClient): IAccountApiClient {
+export function createAccountIpcAdapter(ipcClient: IResultIpcClient): IAccountApiClient {
   return new AccountIpcAdapter(ipcClient);
 }

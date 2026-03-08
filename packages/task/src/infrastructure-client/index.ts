@@ -9,7 +9,7 @@ export type {
   ITaskTemplateApiClient,
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
-  IIpcClient,
+  IResultIpcClient,
 } from './adapters/types';
 
 // HTTP Adapters

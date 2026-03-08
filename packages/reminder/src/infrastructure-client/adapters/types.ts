@@ -24,8 +24,8 @@ import type {
 
 // IResultHttpClient imported from @dailyuse/http-client
 
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+export interface IResultIpcClient {
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
 }
 
 // ============ Local Response Types ============

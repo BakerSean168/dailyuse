@@ -13,8 +13,8 @@ import type {
 
 export type { IResultHttpClient };
 
-export interface IIpcClient {
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+export interface IResultIpcClient {
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<Result<T>>;
 }
 
 /**

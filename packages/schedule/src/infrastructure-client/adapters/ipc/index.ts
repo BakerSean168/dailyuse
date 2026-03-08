@@ -5,7 +5,7 @@
  * Provides factory function to create all IPC adapters at once.
  */
 
-import type { IIpcClient } from '../types';
+import type { IResultIpcClient } from '../types';
 import { ScheduleEventIpcAdapter } from './schedule-event-ipc.adapter';
 import { ScheduleTaskIpcAdapter } from './schedule-task-ipc.adapter';
 
@@ -26,7 +26,7 @@ export interface ScheduleIpcAdapters {
  * The concrete implementation (e.g. IpcClientImpl) is created at the App layer.
  */
 export function createScheduleIpcAdapters(
-  ipcClient: IIpcClient,
+  ipcClient: IResultIpcClient,
 ): ScheduleIpcAdapters {
   return {
     event: new ScheduleEventIpcAdapter(ipcClient),

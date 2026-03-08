@@ -36,9 +36,9 @@ const authAction = ref<'login' | 'register' | null>(null);
 
 const authLoadingMessage = computed(() => {
   if (authAction.value === 'register') {
-    return '正在创建账户并启动主窗口...';
+    return '登录中';
   }
-  return '正在登录并启动主窗口...';
+  return '登录中';
 });
 
 const handleLogin = async () => {
@@ -178,7 +178,6 @@ const handleSocialLogin = (provider: string) => {
       <div class="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card/90 px-6 py-5 shadow-xl">
         <div class="h-8 w-8 animate-spin rounded-full border-2 border-primary/25 border-t-primary"></div>
         <div class="text-sm font-medium text-foreground">{{ authLoadingMessage }}</div>
-        <div class="text-xs text-muted-foreground">认证成功后将自动切换到主窗口</div>
       </div>
     </div>
   </div>

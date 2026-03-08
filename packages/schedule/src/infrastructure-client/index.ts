@@ -8,7 +8,7 @@
 export type {
   IScheduleTaskApiClient,
   IScheduleEventApiClient,
-  IIpcClient,
+  IResultIpcClient,
 } from './adapters/types';
 
 // HTTP Adapters

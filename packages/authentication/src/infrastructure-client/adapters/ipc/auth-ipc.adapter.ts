@@ -2,12 +2,11 @@
  * Auth IPC Adapter
  *
  * IPC implementation of IAuthApiClient for Electron desktop apps.
- * Uses tryCatch to wrap IPC calls into Result<T>.
+ * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { tryCatch } from '@dailyuse/contracts/result';
-import type { IAuthApiClient, IIpcClient } from '../types';
+import type { IAuthApiClient, IResultIpcClient } from '../types';
 import type {
   LoginByEmailReq,
   LoginByEmailRes,
@@ -45,61 +44,61 @@ const CHANNELS = {
 } as const;
 
 export class AuthIpcAdapter implements IAuthApiClient {
-  constructor(private readonly ipcClient: IIpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.LOGIN_EMAIL, req));
+    return this.ipcClient.invoke(CHANNELS.LOGIN_EMAIL, req);
   }
 
   async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.LOGIN_PHONE, req));
+    return this.ipcClient.invoke(CHANNELS.LOGIN_PHONE, req);
   }
 
   async registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.REGISTER_EMAIL, req));
+    return this.ipcClient.invoke(CHANNELS.REGISTER_EMAIL, req);
   }
 
   async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.REGISTER_PHONE, req));
+    return this.ipcClient.invoke(CHANNELS.REGISTER_PHONE, req);
   }
 
   async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.SEND_SMS, req));
+    return this.ipcClient.invoke(CHANNELS.SEND_SMS, req);
   }
 
   async refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.REFRESH_TOKEN, req));
+    return this.ipcClient.invoke(CHANNELS.REFRESH_TOKEN, req);
   }
 
   async logout(): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.LOGOUT));
+    return this.ipcClient.invoke(CHANNELS.LOGOUT);
   }
 
   async getCurrentUser(): Promise<Result<GetCurrentUserRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.GET_CURRENT_USER));
+    return this.ipcClient.invoke(CHANNELS.GET_CURRENT_USER);
   }
 
   async listSessions(): Promise<Result<ListSessionsRes>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.LIST_SESSIONS));
+    return this.ipcClient.invoke(CHANNELS.LIST_SESSIONS);
   }
 
   async revokeSession(req: RevokeSessionReq): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.REVOKE_SESSION, req));
+    return this.ipcClient.invoke(CHANNELS.REVOKE_SESSION, req);
   }
 
   async changePassword(req: ChangePasswordReq): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.CHANGE_PASSWORD, req));
+    return this.ipcClient.invoke(CHANNELS.CHANGE_PASSWORD, req);
   }
 
   async forgotPassword(req: ForgotPasswordReq): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.FORGOT_PASSWORD, req));
+    return this.ipcClient.invoke(CHANNELS.FORGOT_PASSWORD, req);
   }
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(CHANNELS.RESET_PASSWORD, req));
+    return this.ipcClient.invoke(CHANNELS.RESET_PASSWORD, req);
   }
 }
 
-export function createAuthIpcAdapter(ipcClient: IIpcClient): IAuthApiClient {
+export function createAuthIpcAdapter(ipcClient: IResultIpcClient): IAuthApiClient {
   return new AuthIpcAdapter(ipcClient);
 }

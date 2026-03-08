@@ -9,7 +9,7 @@ export type {
   IReminderApiClient,
   ReminderTemplatesResponse,
   ReminderGroupsResponse,
-  IIpcClient,
+  IResultIpcClient,
 } from './adapters/types';
 
 // HTTP Adapters

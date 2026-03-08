@@ -2,12 +2,12 @@
  * Schedule Task IPC Adapter
  *
  * IPC implementation of IScheduleTaskApiClient for Electron desktop apps.
+ * Uses ResultIpcClient — all methods return Result<T> directly.
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { tryCatch } from '@dailyuse/contracts/result';
 import type {
-  IIpcClient,
+  IResultIpcClient,
   IScheduleTaskApiClient,
 } from '../types';
 import type { SourceModule } from '@dailyuse/contracts/schedule';
@@ -38,64 +38,64 @@ const SCHEDULE_TASK_CHANNELS = {
 } as const;
 
 export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
-  constructor(private readonly ipcClient: IIpcClient) {}
+  constructor(private readonly ipcClient: IResultIpcClient) {}
 
   // ===== Schedule Task CRUD =====
 
   async createTask(request: CreateScheduleTaskRequest): Promise<Result<ScheduleTaskClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CREATE_TASK, request));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CREATE_TASK, request);
   }
 
   async createTasksBatch(tasks: CreateScheduleTaskRequest[]): Promise<Result<ScheduleTaskClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CREATE_TASKS_BATCH, tasks));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CREATE_TASKS_BATCH, tasks);
   }
 
   async getTasks(): Promise<Result<{ tasks: ScheduleTaskClientDTO[]; total: number }>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASKS));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASKS);
   }
 
   async getTaskById(taskId: string): Promise<Result<ScheduleTaskClientDTO>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASK_BY_ID, taskId));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASK_BY_ID, taskId);
   }
 
   async getDueTasks(params?: {
     beforeTime?: string;
     limit?: number;
   }): Promise<Result<ScheduleTaskClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_DUE_TASKS, params));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_DUE_TASKS, params);
   }
 
   async getTaskBySource(
     sourceModule: SourceModule,
     sourceEntityId: string,
   ): Promise<Result<ScheduleTaskClientDTO[]>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASK_BY_SOURCE, sourceModule, sourceEntityId));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.GET_TASK_BY_SOURCE, sourceModule, sourceEntityId);
   }
 
   // ===== Schedule Task Status Management =====
 
   async pauseTask(taskId: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.PAUSE_TASK, taskId));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.PAUSE_TASK, taskId);
   }
 
   async resumeTask(taskId: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.RESUME_TASK, taskId));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.RESUME_TASK, taskId);
   }
 
   async completeTask(taskId: string, reason?: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.COMPLETE_TASK, taskId, reason));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.COMPLETE_TASK, taskId, reason);
   }
 
   async cancelTask(taskId: string, reason?: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CANCEL_TASK, taskId, reason));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.CANCEL_TASK, taskId, reason);
   }
 
   async deleteTask(taskId: string): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_TASK, taskId));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_TASK, taskId);
   }
 
   async deleteTasksBatch(taskIds: string[]): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_TASKS_BATCH, taskIds));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.DELETE_TASKS_BATCH, taskIds);
   }
 
   async updateTaskMetadata(
@@ -106,13 +106,10 @@ export class ScheduleTaskIpcAdapter implements IScheduleTaskApiClient {
       tagsToRemove?: string[];
     },
   ): Promise<Result<void>> {
-    return tryCatch(() => this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.UPDATE_METADATA, taskId, metadata));
+    return this.ipcClient.invoke(SCHEDULE_TASK_CHANNELS.UPDATE_METADATA, taskId, metadata);
   }
 }
 
-/**
- * Factory function to create ScheduleTaskIpcAdapter
- */
-export function createScheduleTaskIpcAdapter(ipcClient: IIpcClient): ScheduleTaskIpcAdapter {
+export function createScheduleTaskIpcAdapter(ipcClient: IResultIpcClient): ScheduleTaskIpcAdapter {
   return new ScheduleTaskIpcAdapter(ipcClient);
 }
