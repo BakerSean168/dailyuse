@@ -19,7 +19,7 @@ const meta = {
   args: {
     variant: 'default',
     size: 'default',
-    disabled: false,
+    disabled: false as any,
   },
 } satisfies Meta<typeof Button>;
 

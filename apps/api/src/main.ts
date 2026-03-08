@@ -31,7 +31,7 @@ import { RepositoryApiModule } from '@dailyuse/repository/api';
 import { ScheduleApiModule } from '@dailyuse/schedule/api';
 import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
-import { createAIApiModule } from '@dailyuse/ai/api';
+import { createAIApiModule } from '@dailyuse/ai';
 import { SettingModule } from '@dailyuse/setting';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
@@ -45,12 +45,12 @@ const logger = createLogger('API');
 let bootstrapper: ApiBootstrapper | null = null;
 
 const AIApiModule = createAIApiModule({
-  createKnowledgeNotePersistence: (context) =>
+  createKnowledgeNotePersistence: (context: any) =>
     new RepositoryKnowledgeNotePersistenceAdapter(
       context.db,
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
-  getKnowledgeNoteSubpath: async (identityId, context) => {
+  getKnowledgeNoteSubpath: async (identityId: any, context: any) => {
     const settingModule = new SettingModule('prisma', context.db);
     const setting = await settingModule.getUserSetting.execute(identityId);
     return setting.preferences.ai.knowledgeNoteSubpath;

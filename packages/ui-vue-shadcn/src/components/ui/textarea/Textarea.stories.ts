@@ -31,7 +31,7 @@ export const WithLabel: Story = {
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, placeholder: 'Disabled textarea' },
+  args: { disabled: true as any, placeholder: 'Disabled textarea' },
 };
 
 export const WithValue: Story = {

@@ -224,7 +224,7 @@ export class SessionManager {
       if (!session) {
         this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
         // 尝试通过账户查找最近的活跃会话
-        const activeSessions = await this.sessionRepository.findActive(tokenData.identityId);
+        const activeSessions = await this.sessionRepository.findByIdentityId(tokenData.identityId);
         if (activeSessions.length === 0) {
           this.logger.info('No active sessions found for account');
           await this.tokenManager.clearTokens();
@@ -527,23 +527,23 @@ export class SessionManager {
       refreshToken: (session.refreshToken as any).token,
       accessTokenExpiresIn: 3600,
       refreshTokenExpiresIn: 30 * 24 * 3600,
-      identityId: session.identityId,
-      sessionId: session.id,
+      identityId: session?.identityId,
+      sessionId: session?.id,
     });
 
     this.startAutoRefresh();
     this.startActivityTracking();
 
     this.logger.info('Local login successful', {
-      identityId: session.identityId,
+      identityId: session?.identityId,
       authMode: AuthMode.OFFLINE_USER,
     });
 
     return {
       ok: true,
-      sessionId: session.id,
+      sessionId: session?.id,
       accessToken: session.accessToken,
-      identityId: session.identityId,
+      identityId: session?.identityId,
       expiresIn: 3600,
       authMode: AuthMode.OFFLINE_USER,
     };
@@ -595,9 +595,9 @@ export class SessionManager {
       identityId: this.currentSession?.identityId,
       tokenStatus,
       device: deviceInfo,
-      lastActivityAt: this.currentSession?.lastActivityAt,
-      sessionCreatedAt: this.currentSession?.createdAt,
-      sessionExpiresAt: this.currentSession?.expiresAt,
+      lastActivityAt: this.currentSession?.lastActiveAt?.getTime(),
+      sessionCreatedAt: this.currentSession?.createdAt?.getTime(),
+      sessionExpiresAt: this.currentSession?.expiresAt?.getTime(),
     };
   }
 
@@ -629,7 +629,7 @@ export class SessionManager {
     this.logger.info('Cleaning up expired sessions');
 
     try {
-      const deletedCount = await this.sessionRepository.delete();
+      const deletedCount = await this.sessionRepository.removeExpired();
       this.logger.info('Expired sessions cleaned up', { count: deletedCount });
       return deletedCount;
     } catch (error) {
@@ -645,11 +645,11 @@ export class SessionManager {
     this.logger.info('Cleaning up other sessions', { identityId });
 
     try {
-      const sessions = await this.sessionRepository.findActiveByIdentityId(identityId);
+      const sessions = await this.sessionRepository.findByIdentityId(identityId);
       let cleanedCount = 0;
 
       for (const session of sessions) {
-        if (session.id !== this.currentSession?.id) {
+        if (session?.id !== this.currentSession?.id) {
           session.revoke();
           await this.sessionRepository.save(session);
           cleanedCount++;
@@ -805,7 +805,7 @@ export class SessionManager {
    */
   async getOrCreateGuestIdentity(): Promise<string> {
     // Try to load existing guest ID from session repository metadata
-    const existingGuestSessions = await this.sessionRepository.findActive('guest');
+    const existingGuestSessions = await this.sessionRepository.findByIdentityId('guest');
     if (existingGuestSessions.length > 0) {
       const guestSession = existingGuestSessions[0];
       this.currentSession = guestSession;
@@ -842,10 +842,10 @@ export class SessionManager {
       accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
       refreshTokenExpiresIn: 365 * 24 * 3600,
       identityId: guestId,
-      sessionId: session.id,
+      sessionId: session?.id,
     });
 
-    this.logger.info('Created new guest identity', { guestId, sessionId: session.id });
+    this.logger.info('Created new guest identity', { guestId, sessionId: session?.id });
     return guestId;
   }
 
@@ -853,7 +853,7 @@ export class SessionManager {
    * 清除访客身份（用户升级到云账户时调用）
    */
   async clearGuestIdentity(): Promise<void> {
-    const guestSessions = await this.sessionRepository.findActive('guest');
+    const guestSessions = await this.sessionRepository.findByIdentityId('guest');
     for (const session of guestSessions) {
       session.revoke();
       await this.sessionRepository.save(session);
@@ -880,7 +880,7 @@ export class SessionManager {
       deviceName: hostname,
       os: platform,
       osVersion: release,
-      appVersion: app.getVersion(),
+      appVersion: app.getVersion() ?? null,
       firstSeenAt: now,
       lastSeenAt: now,
     };
@@ -923,7 +923,7 @@ export class SessionManager {
     // �?5 分钟记录一次活�?
     this.activityTimer = setInterval(async () => {
       if (this.currentSession) {
-        this.currentSession.recordActivity('HEARTBEAT');
+        this.currentSession.touch('HEARTBEAT');
         await this.sessionRepository.save(this.currentSession);
       }
     }, 5 * 60 * 1000);

@@ -36,7 +36,7 @@ export const WithCount: Story = {
 };
 
 export const WithIcon: Story = {
-  render: (args) => ({
+  render: (args: any) => ({
     components: { LinearSidebarItem },
     setup() { return { args }; },
     template: `

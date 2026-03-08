@@ -13,7 +13,7 @@ const meta = {
     type: { control: 'select', options: ['text', 'email', 'password', 'number', 'tel', 'url'] },
   },
   args: {
-    placeholder: 'Enter text...',
+    placeholder: "Enter text..." as any,
   },
 } satisfies Meta<typeof Input>;
 
@@ -35,7 +35,7 @@ export const WithLabel: Story = {
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, placeholder: 'Disabled input' },
+  args: { disabled: true as any, placeholder: 'Disabled input' },
 };
 
 export const WithValue: Story = {

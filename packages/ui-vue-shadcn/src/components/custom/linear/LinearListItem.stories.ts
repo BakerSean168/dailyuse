@@ -33,7 +33,7 @@ export const Active: Story = {
 };
 
 export const WithSlots: Story = {
-  render: (args) => ({
+  render: (args: any) => ({
     components: { LinearListItem, Badge, Button },
     setup() {
       return { args };
