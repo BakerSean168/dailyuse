@@ -19,7 +19,7 @@ import * as os from 'os';
 import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
 import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
-import type { IAuthSessionRepository, IAuthCredentialRepository, IAuthIdentityRepository } from '@dailyuse/authentication/domain-server';
+import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/domain-server';
 import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
 import {
   AuthMode,
@@ -77,7 +77,7 @@ export class SessionManager {
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
   private readonly sessionRepository: IAuthSessionRepository;
-  private readonly credentialRepository: IAuthCredentialRepository;
+
 
   // Offline credential infrastructure (Phase 2)
   private identityRepository: IAuthIdentityRepository | null = null;
@@ -99,13 +99,13 @@ export class SessionManager {
 
   private constructor(
     sessionRepository: IAuthSessionRepository,
-    credentialRepository: IAuthCredentialRepository,
+    identityRepository: IAuthIdentityRepository,
     logger?: ILogger,
   ) {
     this.logger = logger || createLogger('SessionManager');
     this.tokenManager = getTokenManager(this.logger);
     this.sessionRepository = sessionRepository;
-    this.credentialRepository = credentialRepository;
+    this.identityRepository = identityRepository;
 
     this.logger.info('SessionManager created');
   }
@@ -115,11 +115,11 @@ export class SessionManager {
    */
   static getInstance(
     sessionRepository: IAuthSessionRepository,
-    credentialRepository: IAuthCredentialRepository,
+    identityRepository: IAuthIdentityRepository,
     logger?: ILogger,
   ): SessionManager {
     if (!SessionManager.instance) {
-      SessionManager.instance = new SessionManager(sessionRepository, credentialRepository, logger);
+      SessionManager.instance = new SessionManager(sessionRepository, identityRepository, logger);
     }
     return SessionManager.instance;
   }
@@ -224,7 +224,7 @@ export class SessionManager {
       if (!session) {
         this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
         // 尝试通过账户查找最近的活跃会话
-        const activeSessions = await this.sessionRepository.findActiveSessions(tokenData.identityId);
+        const activeSessions = await this.sessionRepository.findActive(tokenData.identityId);
         if (activeSessions.length === 0) {
           this.logger.info('No active sessions found for account');
           await this.tokenManager.clearTokens();
@@ -364,7 +364,7 @@ export class SessionManager {
 
         // 更新会话
         if (this.currentSession) {
-          this.currentSession.refreshAccessToken(result.accessToken, (result.expiresIn ?? 3600) / 60);
+          this.currentSession.refreshTokenHash(result.accessToken, (result.expiresIn ?? 3600) / 60);
           await this.sessionRepository.save(this.currentSession);
         }
 
@@ -392,7 +392,7 @@ export class SessionManager {
 
     // 更新会话
     if (this.currentSession) {
-      this.currentSession.refreshAccessToken(tokenData.accessToken, newExpiresIn / 60);
+      this.currentSession.refreshTokenHash(tokenData.accessToken, newExpiresIn / 60);
       await this.sessionRepository.save(this.currentSession);
     }
 
@@ -505,7 +505,7 @@ export class SessionManager {
     // Create local session with real identity ID
     const deviceInfo = this.getDeviceInfo();
     const device = DeviceInfo.create({
-      deviceType: 'DESKTOP',
+      deviceType: 'Desktop',
       os: deviceInfo.os ?? undefined,
       browser: deviceInfo.appVersion ?? undefined,
       ipAddress: '127.0.0.1',
@@ -629,7 +629,7 @@ export class SessionManager {
     this.logger.info('Cleaning up expired sessions');
 
     try {
-      const deletedCount = await this.sessionRepository.deleteExpired();
+      const deletedCount = await this.sessionRepository.delete();
       this.logger.info('Expired sessions cleaned up', { count: deletedCount });
       return deletedCount;
     } catch (error) {
@@ -645,7 +645,7 @@ export class SessionManager {
     this.logger.info('Cleaning up other sessions', { identityId });
 
     try {
-      const sessions = await this.sessionRepository.findByAccountId(identityId);
+      const sessions = await this.sessionRepository.findActiveByIdentityId(identityId);
       let cleanedCount = 0;
 
       for (const session of sessions) {
@@ -805,7 +805,7 @@ export class SessionManager {
    */
   async getOrCreateGuestIdentity(): Promise<string> {
     // Try to load existing guest ID from session repository metadata
-    const existingGuestSessions = await this.sessionRepository.findActiveSessions('guest');
+    const existingGuestSessions = await this.sessionRepository.findActive('guest');
     if (existingGuestSessions.length > 0) {
       const guestSession = existingGuestSessions[0];
       this.currentSession = guestSession;
@@ -818,7 +818,7 @@ export class SessionManager {
 
     const deviceInfo = this.getDeviceInfo();
     const device = DeviceInfo.create({
-      deviceType: 'DESKTOP',
+      deviceType: 'Desktop',
       os: deviceInfo.os ?? undefined,
       browser: deviceInfo.appVersion ?? undefined,
       ipAddress: '127.0.0.1',
@@ -853,7 +853,7 @@ export class SessionManager {
    * 清除访客身份（用户升级到云账户时调用）
    */
   async clearGuestIdentity(): Promise<void> {
-    const guestSessions = await this.sessionRepository.findActiveSessions('guest');
+    const guestSessions = await this.sessionRepository.findActive('guest');
     for (const session of guestSessions) {
       session.revoke();
       await this.sessionRepository.save(session);
@@ -876,7 +876,7 @@ export class SessionManager {
     return {
       deviceId: machineId,
       deviceFingerprint: this.generateFingerprint(machineId, platform, hostname),
-      deviceType: 'DESKTOP',
+      deviceType: 'Desktop',
       deviceName: hostname,
       os: platform,
       osVersion: release,
@@ -947,9 +947,9 @@ export class SessionManager {
  */
 export function createSessionManager(
   sessionRepository: IAuthSessionRepository,
-  credentialRepository: IAuthCredentialRepository,
+  identityRepository: IAuthIdentityRepository,
   logger?: ILogger,
 ): SessionManager {
-  return SessionManager.getInstance(sessionRepository, credentialRepository, logger);
+  return SessionManager.getInstance(sessionRepository, identityRepository, logger);
 }
 

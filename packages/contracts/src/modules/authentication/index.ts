@@ -5,3 +5,4 @@ export * from './protocol';
 export * from './dtos';
 export * from './api';
 export * from './domain/events';
+export * from './network';

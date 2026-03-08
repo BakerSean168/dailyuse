@@ -102,7 +102,7 @@ export class NetworkStateManager extends EventEmitter {
     powerMonitor.on('resume', () => this.handleSystemResume());
 
     // 启动定期健康检查
-    if (this.config.enableHealthCheck) {
+    if (this.config.enableHealthCheck === true) {
       this.startHealthCheck();
     }
 
@@ -270,9 +270,9 @@ export class NetworkStateManager extends EventEmitter {
 
     this.checkTimer = setInterval(async () => {
       await this.refreshStatus();
-    }, this.config.checkInterval);
+    }, (this.config.checkInterval || 30000));
 
-    this.logger.info('Health check started', { interval: this.config.checkInterval });
+    this.logger.info('Health check started', { interval: (this.config.checkInterval || 30000) });
   }
 
   /**

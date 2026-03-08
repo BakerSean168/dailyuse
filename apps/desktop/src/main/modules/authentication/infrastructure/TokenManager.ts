@@ -106,9 +106,7 @@ export class TokenManager {
         now + (request.refreshTokenExpiresIn ?? DEFAULT_REFRESH_TOKEN_EXPIRES_IN) * 1000,
       identityId: request.identityId,
       sessionId: request.sessionId,
-      createdAt: now,
-      updatedAt: now,
-    };
+                };
 
     // 加密并写入
     await this.writeEncrypted(tokenData);
@@ -139,8 +137,7 @@ export class TokenManager {
       if (tokenData) {
         this.cachedTokenData = tokenData;
         this.logger.info('Tokens loaded from encrypted storage', {
-          identityId: tokenData.identityId,
-          accessTokenExpired: Date.now() > tokenData.accessTokenExpiresAt,
+                    accessTokenExpired: Date.now() > tokenData.accessTokenExpiresAt,
           refreshTokenExpired: Date.now() > tokenData.refreshTokenExpiresAt,
         });
       }
@@ -189,7 +186,6 @@ export class TokenManager {
     const now = Date.now();
     tokenData.accessToken = accessToken;
     tokenData.accessTokenExpiresAt = now + expiresIn * 1000;
-    tokenData.updatedAt = now;
 
     await this.writeEncrypted(tokenData);
     this.cachedTokenData = tokenData;
@@ -217,7 +213,6 @@ export class TokenManager {
     const now = Date.now();
     tokenData.refreshToken = refreshToken;
     tokenData.refreshTokenExpiresAt = now + expiresIn * 1000;
-    tokenData.updatedAt = now;
 
     await this.writeEncrypted(tokenData);
     this.cachedTokenData = tokenData;
@@ -259,9 +254,7 @@ export class TokenManager {
       shouldRefresh: !isAccessTokenExpired && accessTokenRemainingMs < REFRESH_THRESHOLD_MS,
       accessTokenRemainingMs,
       refreshTokenRemainingMs,
-      identityId: tokenData.identityId,
-      sessionId: tokenData.sessionId,
-    };
+                };
   }
 
   /**
