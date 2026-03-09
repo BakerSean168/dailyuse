@@ -447,7 +447,7 @@ const resetLayout = () => {
     // 强制重新渲染图表
     nextTick(() => {
       if (chartRef.value) {
-        chartRef.value.setOption(dagOption.value, true);
+        (chartRef.value as any).setOption(dagOption.value, true);
       }
     });
   } catch (error) {
@@ -469,7 +469,7 @@ const handleNodeClick = (params: any) => {
 // 监听拖拽事件保存坐标
 watch(chartRef, (chart) => {
   if (chart && layoutType.value === 'force') {
-    const instance = chart.chart as unknown as
+    const instance = (chart as any).chart as unknown as
       | { on: (name: string, cb: (params: any) => void) => void; getOption: () => any }
       | undefined;
     if (!instance) return;
@@ -532,7 +532,7 @@ useResizeObserver(containerRef, (entries) => {
     if (layoutType.value === 'hierarchical') {
       nextTick(() => {
         if (chartRef.value) {
-          chartRef.value.setOption(dagOption.value, true);
+          (chartRef.value as any).setOption(dagOption.value, true);
         }
       });
     }
@@ -542,7 +542,7 @@ useResizeObserver(containerRef, (entries) => {
 // 导出处理
 const handleExport = async (options: ExportOptions) => {
   try {
-    const chartInstance = chartRef.value?.chart;
+    const chartInstance = (chartRef.value as any)?.chart;
     if (!chartInstance) {
       console.error('Chart instance not found');
       return;

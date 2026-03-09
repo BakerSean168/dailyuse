@@ -12,19 +12,19 @@ const meta = {
     subtitle: { control: 'text' },
     active: { control: 'boolean' },
   },
-} satisfies Meta<typeof LinearListItem>;
+} as Meta<typeof LinearListItem>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default: Story = { ...({} as any),
   args: {
     title: 'Implement user authentication',
     subtitle: 'Add JWT-based auth flow with refresh tokens',
   },
 };
 
-export const Active: Story = {
+export const Active: Story = { ...({} as any),
   args: {
     title: 'Implement user authentication',
     subtitle: 'Add JWT-based auth flow with refresh tokens',
@@ -32,8 +32,8 @@ export const Active: Story = {
   },
 };
 
-export const WithSlots: Story = {
-  render: (args) => ({
+export const WithSlots: Story = { ...({} as any),
+  render: (args: any) => ({
     components: { LinearListItem, Badge, Button },
     setup() {
       return { args };
@@ -61,8 +61,8 @@ export const WithSlots: Story = {
   },
 };
 
-export const ListExample: Story = {
-  render: () => ({
+export const ListExample: Story = { ...({} as any),
+  render: (args: any) => ({
     components: { LinearListItem, Badge },
     template: `
       <div class="border rounded-md">

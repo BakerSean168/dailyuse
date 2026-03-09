@@ -1,3 +1,4 @@
+import type { EmblaCarouselType } from 'embla-carousel';
 import type { UnwrapRefCarouselApi as CarouselApi, CarouselEmits, CarouselProps } from './interface'
 import { createInjectionState } from '@vueuse/core'
 import emblaCarouselVue from 'embla-carousel-vue'

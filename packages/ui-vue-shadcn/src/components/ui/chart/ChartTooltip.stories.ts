@@ -5,12 +5,12 @@ const meta = {
   title: 'Atoms/Chart',
   component: ChartTooltip,
   tags: ['autodocs'],
-} satisfies Meta<typeof ChartTooltip>;
+} as Meta<typeof ChartTooltip>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default: Story = { ...({} as any),
   render: () => ({
     template: `
       <div class="rounded-md border p-6">

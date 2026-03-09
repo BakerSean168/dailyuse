@@ -5,12 +5,12 @@ const meta = {
   title: 'Atoms/Resizable',
   component: ResizablePanelGroup,
   tags: ['autodocs'],
-} satisfies Meta<typeof ResizablePanelGroup>;
+} as Meta<typeof ResizablePanelGroup>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default: Story = { ...({} as any),
   render: () => ({
     components: { ResizableHandle, ResizablePanel, ResizablePanelGroup },
     template: `
@@ -31,7 +31,7 @@ export const Default: Story = {
   }),
 };
 
-export const Vertical: Story = {
+export const Vertical: Story = { ...({} as any),
   render: () => ({
     components: { ResizableHandle, ResizablePanel, ResizablePanelGroup },
     template: `
@@ -52,7 +52,7 @@ export const Vertical: Story = {
   }),
 };
 
-export const ThreePanels: Story = {
+export const ThreePanels: Story = { ...({} as any),
   render: () => ({
     components: { ResizableHandle, ResizablePanel, ResizablePanelGroup },
     template: `

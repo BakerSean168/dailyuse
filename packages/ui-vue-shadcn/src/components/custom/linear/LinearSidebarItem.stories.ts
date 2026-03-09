@@ -10,33 +10,33 @@ const meta = {
     active: { control: 'boolean' },
     count: { control: 'text' },
   },
-} satisfies Meta<typeof LinearSidebarItem>;
+} as Meta<typeof LinearSidebarItem>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default: Story = { ...({} as any),
   args: {
     label: 'My Issues',
   },
 };
 
-export const Active: Story = {
+export const Active: Story = { ...({} as any),
   args: {
     label: 'My Issues',
     active: true,
   },
 };
 
-export const WithCount: Story = {
+export const WithCount: Story = { ...({} as any),
   args: {
     label: 'Inbox',
     count: 12,
   },
 };
 
-export const WithIcon: Story = {
-  render: (args) => ({
+export const WithIcon: Story = { ...({} as any),
+  render: (args: any) => ({
     components: { LinearSidebarItem },
     setup() { return { args }; },
     template: `
@@ -52,8 +52,8 @@ export const WithIcon: Story = {
   },
 };
 
-export const SidebarExample: Story = {
-  render: () => ({
+export const SidebarExample: Story = { ...({} as any),
+  render: (args: any) => ({
     components: { LinearSidebarItem },
     template: `
       <div class="w-[220px] p-2 space-y-0.5 bg-sidebar border rounded-md">

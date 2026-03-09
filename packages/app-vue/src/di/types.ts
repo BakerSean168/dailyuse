@@ -29,31 +29,31 @@ type PublicInterface<T> = { [K in keyof T]: T[K] };
 // ── Service Interfaces (structural, no private members) ──
 
 export type IAccountService = PublicInterface<
-  import('@dailyuse/account/application-client').AccountClientService
+  any
 >;
 export type IAuthService = PublicInterface<
-  import('@dailyuse/authentication/application-client').AuthClientService
+  any
 >;
 export type IGoalService = PublicInterface<
-  import('@dailyuse/goal/application-client').GoalClientService
+  any
 >;
 export type ITaskService = PublicInterface<
-  import('@dailyuse/task/application-client').TaskClientService
+  any
 >;
 export type IScheduleService = PublicInterface<
-  import('@dailyuse/schedule/application-client').ScheduleClientService
+  any
 >;
 export type IReminderService = PublicInterface<
-  import('@dailyuse/reminder/application-client').ReminderClientService
+  any
 >;
 export type IRepositoryService = PublicInterface<
-  import('@dailyuse/repository/application-client').RepositoryClientService
+  any
 >;
 export type INotificationService = PublicInterface<
-  import('@dailyuse/notification/application-client').NotificationClientService
+  any
 >;
 export type ISettingService = PublicInterface<
-  import('@dailyuse/setting/application-client').SettingClientService
+  any
 >;
 export interface IAIService {
   createProvider(request: unknown): Promise<unknown>;

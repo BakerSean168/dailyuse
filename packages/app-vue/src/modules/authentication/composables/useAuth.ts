@@ -30,7 +30,7 @@ export function useAuth() {
   const { t } = useI18n();
 
   const hasDesktopWindowBridge = () =>
-    typeof window !== 'undefined' && typeof window.electronAPI?.invoke === 'function';
+    typeof window !== 'undefined' && typeof (window as any).electronAPI?.invoke === 'function';
 
   async function completeAuthSuccess(
     data: AuthResponseDTO,
@@ -41,7 +41,7 @@ export function useAuth() {
     toast.success(title, { description });
 
     if (hasDesktopWindowBridge()) {
-      await window.electronAPI!.invoke('window:transition-to-main');
+      await (window as any).electronAPI!.invoke('window:transition-to-main');
       return true;
     }
 
@@ -221,7 +221,7 @@ export function useAuth() {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
       if (hasDesktopWindowBridge()) {
-        await window.electronAPI!.invoke('window:transition-to-login');
+        await (window as any).electronAPI!.invoke('window:transition-to-login');
       } else {
         await router.push('/auth');
       }
@@ -250,7 +250,7 @@ export function useAuth() {
         } as any);
         store.setAccessToken('guest-local-token');
         toast.success('已进入访客模式', { description: '数据仅保存在本地' });
-        await window.electronAPI!.invoke('window:transition-to-main');
+        await (window as any).electronAPI!.invoke('window:transition-to-main');
         return true;
       }
       const message = result.error?.message || '进入访客模式失败';

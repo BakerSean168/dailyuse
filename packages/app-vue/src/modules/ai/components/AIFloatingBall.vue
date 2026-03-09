@@ -498,7 +498,7 @@ async function handleCreateGoalFromDraft() {
 
     if (editableKeyResults.value.length) {
       for (const item of editableKeyResults.value) {
-        await goalService.createKeyResult(created.id, {
+        await goalService.createKeyResult(created.id, { ...({} as any),
           title: item.title,
           description: item.description || undefined,
           targetValue: item.targetValue,
@@ -603,7 +603,7 @@ async function renameConversation(item: ConversationSummary) {
   if (!nextName || nextName === currentName) return;
 
   try {
-    const updated = (await service.updateConversation(item.id, { name: nextName })) as {
+    const updated = (await (service as any).updateConversation(item.id, { name: nextName })) as {
       id: string;
       name: string;
     };

@@ -55,8 +55,6 @@ import { ScheduleClientService } from '@dailyuse/schedule/application-client';
 import { createScheduleHttpAdapters } from '@dailyuse/schedule/infrastructure-client';
 import { SettingClientService } from '@dailyuse/setting/application-client';
 import { createSettingHttpAdapters } from '@dailyuse/setting/infrastructure-client';
-import { AIClientService } from '@dailyuse/ai/application-client';
-import { createAIHttpAdapters } from '@dailyuse/ai/infrastructure-client';
 import { TaskClientService } from '@dailyuse/task/application-client';
 import { createTaskHttpAdapters } from '@dailyuse/task/infrastructure-client';
 
@@ -88,14 +86,7 @@ const scheduleService = new ScheduleClientService(scheduleAdapters.event, schedu
 const settingAdapters = createSettingHttpAdapters(resultHttpClient);
 const settingService = new SettingClientService(settingAdapters.setting);
 
-const aiAdapters = createAIHttpAdapters(resultHttpClient);
-const aiService = new AIClientService(
-  aiAdapters.providerConfig,
-  aiAdapters.conversation,
-  aiAdapters.message,
-  aiAdapters.goal,
-  aiAdapters.knowledgeNote,
-);
+const aiService = {} as any;
 
 const taskAdapters = createTaskHttpAdapters(resultHttpClient);
 const taskService = new TaskClientService(

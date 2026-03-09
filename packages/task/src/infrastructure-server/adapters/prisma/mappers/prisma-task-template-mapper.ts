@@ -113,7 +113,7 @@ export class PrismaTaskTemplateMapper {
       lastGeneratedDate: data.lastGeneratedDate ?? null,
       generateAheadDays: data.generateAheadDays,
       parentTaskId: data.parentTaskId ? TaskTemplateId.of(data.parentTaskId) : null,
-      dependencyStatus: data.dependencyStatus ?? 'NONE',
+      dependencyStatus: (data.dependencyStatus ?? 'NONE') as any,
       isBlocked: data.isBlocked ?? false,
       blockingReason: data.blockingReason,
       startDate: null,

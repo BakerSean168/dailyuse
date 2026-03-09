@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import type { Goal } from '@dailyuse/domain-server/goal';
+import type { Goal } from '@dailyuse/goal/domain-server';
 import type { GoalServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
@@ -13,7 +13,6 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 export interface MockGoalRepository {
   save: ReturnType<typeof vi.fn>;
-  findById: ReturnType<typeof vi.fn>;
   findById: ReturnType<typeof vi.fn>;
   findByAccountId: ReturnType<typeof vi.fn>;
   findByFolderId: ReturnType<typeof vi.fn>;
@@ -24,8 +23,8 @@ export interface MockGoalRepository {
 
 export function createMockGoalRepository(): MockGoalRepository {
   return {
+
     save: vi.fn().mockResolvedValue(undefined),
-    findById: vi.fn().mockResolvedValue(null),
     findById: vi.fn().mockResolvedValue(null),
     findByAccountId: vi.fn().mockResolvedValue([]),
     findByFolderId: vi.fn().mockResolvedValue([]),
@@ -149,16 +148,16 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
   goalCounter++;
   const now = Date.now();
   return {
-    id: `goal-${goalCounter}-${now}`,
-    identityId: 'test-account-uuid',
-    folderId: null,
+    id: `goal-${goalCounter}-${now}` as any,
+    identityId: 'test-account-uuid' as any,
+    folderId: null as any,
     title: `Test Goal ${goalCounter}`,
     description: 'Test goal description',
     status: 'ACTIVE' as GoalStatus,
     importance: ImportanceLevel.Moderate,
     // urgency: UrgencyLevel.Medium, // REMOVED - priority now computed from importance + targetDate
-    category: null,
-    color: null,
+    category: null as any,
+    color: null as any,
     startDate: null,
     targetDate: null,
     completedAt: null,
@@ -170,13 +169,13 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
     createdAt: now,
     updatedAt: now,
     ...overrides,
-  };
+  } as unknown as GoalServerDTO;
 }
 
 export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
   // 动态导入以避免循环依赖
 
-  const { Goal } = require('@dailyuse/domain-server/goal');
+  const { Goal } = require('@dailyuse/goal/domain-server');
   const dto = createMockGoalDTO(overrides);
   return Goal.fromPersistenceDTO(dto);
 }

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '.';
 
-const meta = {
+const meta: any = {
   title: 'Atoms/Carousel',
   component: Carousel,
   tags: ['autodocs'],

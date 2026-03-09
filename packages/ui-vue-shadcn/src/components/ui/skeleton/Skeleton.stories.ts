@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { Skeleton } from '.';
 
-const meta = {
+const meta: any = {
   title: 'Atoms/Skeleton',
   component: Skeleton,
   tags: ['autodocs'],

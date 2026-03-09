@@ -305,7 +305,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
-      exclude: [
+      exclude: ['**/*.integration.test.ts',
         'node_modules/',
         'dist/',
         'dist-electron/',

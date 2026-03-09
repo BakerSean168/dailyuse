@@ -58,11 +58,6 @@ body,
   margin: 0;
 }
 
-/* Offset content below the fixed titlebar */
-.has-titlebar {
-  padding-top: 32px;
-}
-
 .desktop-toaster {
   z-index: 12000;
 }
