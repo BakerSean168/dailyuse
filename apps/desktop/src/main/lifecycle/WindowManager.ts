@@ -22,19 +22,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const logger = createLogger('WindowManager');
-const DESKTOP_CHROME_BACKGROUND = '#f8fafc';
+const DESKTOP_CHROME_BACKGROUND = '#ffffff';
 const DESKTOP_CHROME_FOREGROUND = '#0f172a';
 
 function createNativeWindowChromeOptions(): Pick<
   BrowserWindowConstructorOptions,
-  'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+  'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
 > {
   const options: Pick<
     BrowserWindowConstructorOptions,
-    'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+    'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
   > = {
+    autoHideMenuBar: true,
     backgroundColor: DESKTOP_CHROME_BACKGROUND,
-    titleBarStyle: 'default',
+    title: '',
+    titleBarStyle: 'hidden',
   };
 
   if (process.platform === 'win32' || process.platform === 'linux') {
@@ -176,6 +178,9 @@ export class WindowManager {
       show: false,
     });
 
+    this.loginWindow.setMenuBarVisibility(false);
+    this.loginWindow.removeMenu();
+
     this.attachWindowDiagnostics(this.loginWindow, 'login');
 
     // 准备好后显示
@@ -228,6 +233,9 @@ export class WindowManager {
       },
       show: false,
     });
+
+    this.mainWindow.setMenuBarVisibility(false);
+    this.mainWindow.removeMenu();
 
     this.attachWindowDiagnostics(this.mainWindow, 'main');
 

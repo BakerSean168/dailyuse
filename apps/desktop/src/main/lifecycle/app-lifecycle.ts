@@ -37,19 +37,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
-const DESKTOP_CHROME_BACKGROUND = '#f8fafc';
+const DESKTOP_CHROME_BACKGROUND = '#ffffff';
 const DESKTOP_CHROME_FOREGROUND = '#0f172a';
 
 function createNativeWindowChromeOptions(): Pick<
   BrowserWindowConstructorOptions,
-  'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+  'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
 > {
   const options: Pick<
     BrowserWindowConstructorOptions,
-    'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+    'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
   > = {
+    autoHideMenuBar: true,
     backgroundColor: DESKTOP_CHROME_BACKGROUND,
-    titleBarStyle: 'default',
+    title: '',
+    titleBarStyle: 'hidden',
   };
 
   if (process.platform === 'win32' || process.platform === 'linux') {
@@ -90,6 +92,9 @@ export function createMainWindow(): BrowserWindow {
     },
     show: false,
   });
+
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.removeMenu();
 
   // Show window only when ready to avoid white screen
   mainWindow.once('ready-to-show', () => {

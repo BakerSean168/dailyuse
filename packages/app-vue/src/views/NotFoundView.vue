@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-background p-8">
+  <div class="flex h-full min-h-0 flex-col items-center justify-center bg-background p-8">
     <div class="text-center space-y-4">
       <h1 class="text-6xl font-bold text-muted-foreground">404</h1>
       <p class="text-xl text-muted-foreground">页面未找到</p>

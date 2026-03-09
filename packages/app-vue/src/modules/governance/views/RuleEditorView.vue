@@ -121,6 +121,9 @@
               <TagInput
                 :tags="form.tags"
                 :suggestions="allTags"
+                :label="t('governance.tagInput.label')"
+                :hint="t('governance.tagInput.hint')"
+                :placeholder="t('governance.tagInput.placeholder')"
                 @update:tags="form.tags = $event"
               />
             </div>
@@ -299,8 +302,8 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from 'lucide-vue-next';
+import { TagInput } from '@dailyuse/ui-vue-shadcn';
 import { useGovernance } from '../composables/useGovernance';
-import { TagInput } from '../components';
 import type { CreateRuleReq, UpdateRuleReq, RuleSeverity } from '../types';
 
 const props = defineProps<{

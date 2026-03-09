@@ -1,12 +1,11 @@
 <template>
   <div class="space-y-2">
-    <label class="text-sm font-medium leading-none">{{ resolvedLabel }}</label>
-    <div class="flex flex-wrap gap-1.5 p-2 min-h-[38px] border rounded-md bg-background">
-      <!-- Existing tags -->
+    <label v-if="resolvedLabel" class="text-sm font-medium leading-none">{{ resolvedLabel }}</label>
+    <div class="flex min-h-[38px] flex-wrap gap-1.5 rounded-md border bg-background p-2">
       <span
         v-for="tag in modelValue"
         :key="tag"
-        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-medium"
+        class="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
       >
         {{ tag }}
         <button class="hover:text-blue-600 dark:hover:text-blue-300" @click="removeTag(tag)">
@@ -14,13 +13,12 @@
         </button>
       </span>
 
-      <!-- Input -->
       <input
         ref="inputRef"
         v-model="inputValue"
         type="text"
-        class="flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        :placeholder="modelValue.length === 0 ? t('governance.tagInput.placeholder') : ''"
+        class="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        :placeholder="modelValue.length === 0 ? resolvedPlaceholder : ''"
         :list="suggestions.length > 0 ? 'tag-suggestions' : undefined"
         @keydown.enter.prevent="addTag"
         @keydown.backspace="onBackspace"
@@ -28,7 +26,6 @@
     </div>
     <p v-if="resolvedHint" class="text-xs text-muted-foreground">{{ resolvedHint }}</p>
 
-    <!-- Suggestions datalist -->
     <datalist v-if="suggestions.length > 0" id="tag-suggestions">
       <option v-for="s in filteredSuggestions" :key="s" :value="s" />
     </datalist>
@@ -36,11 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { X } from 'lucide-vue-next';
-import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -48,16 +42,15 @@ const props = withDefaults(
     suggestions?: string[];
     label?: string;
     hint?: string;
+    placeholder?: string;
   }>(),
   {
     suggestions: () => [],
     label: undefined,
     hint: undefined,
+    placeholder: 'Type and press Enter to add tags',
   },
 );
-
-const resolvedLabel = computed(() => props.label ?? t('governance.tagInput.label'));
-const resolvedHint = computed(() => props.hint ?? t('governance.tagInput.hint'));
 
 const emit = defineEmits<{
   'update:tags': [tags: string[]];
@@ -67,6 +60,9 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const inputValue = ref('');
 
 const modelValue = computed(() => props.tags);
+const resolvedLabel = computed(() => props.label?.trim() || '');
+const resolvedHint = computed(() => props.hint?.trim() || '');
+const resolvedPlaceholder = computed(() => props.placeholder?.trim() || '');
 
 const filteredSuggestions = computed(() =>
   props.suggestions.filter((s) => !props.tags.includes(s)),

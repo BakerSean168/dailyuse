@@ -54,7 +54,7 @@ function handleGoHome() {
 <template>
   <slot v-if="!hasError" />
 
-  <div v-else class="flex min-h-screen items-center justify-center bg-background p-6">
+  <div v-else class="flex h-full min-h-0 items-center justify-center bg-background p-6">
     <div class="mx-auto max-w-md text-center space-y-6">
       <!-- Icon -->
       <div

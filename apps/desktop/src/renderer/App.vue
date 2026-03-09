@@ -5,6 +5,7 @@
  * Same global overlays as the web app, with Electron using
  * the native window chrome instead of an in-app title bar.
  */
+import { computed } from 'vue';
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
   AIFloatingBall,
@@ -13,17 +14,27 @@ import {
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
+  useAuthenticationStore,
 } from '@dailyuse/app-vue';
+
+const authStore = useAuthenticationStore();
+const shouldShowAIFloatingBall = computed(() => authStore.isAuthenticated);
 </script>
 
 <template>
-  <!-- Progress bar -->
-  <GlobalProgressBar />
+  <div class="desktop-shell">
+    <div class="desktop-drag-strip" aria-hidden="true" />
 
-  <!-- Error boundary wraps the entire view -->
-  <GlobalErrorBoundary>
-    <router-view />
-  </GlobalErrorBoundary>
+    <!-- Progress bar -->
+    <GlobalProgressBar />
+
+    <!-- Error boundary wraps the entire view -->
+    <GlobalErrorBoundary>
+      <main class="desktop-content">
+        <router-view />
+      </main>
+    </GlobalErrorBoundary>
+  </div>
 
   <!-- Global overlays -->
   <Toaster
@@ -37,7 +48,7 @@ import {
   <GlobalConfirmDialog />
   <GlobalSheet />
   <GlobalCommandPalette />
-  <AIFloatingBall />
+  <AIFloatingBall v-if="shouldShowAIFloatingBall" />
 </template>
 
 <style>
@@ -50,6 +61,28 @@ body,
 #app {
   height: 100%;
   margin: 0;
+}
+
+.desktop-shell {
+  display: grid;
+  grid-template-rows: 36px minmax(0, 1fr);
+  height: 100%;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.desktop-drag-strip {
+  background: hsl(var(--background));
+  app-region: drag;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.desktop-content {
+  min-height: 0;
+  overflow: hidden;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
 }
 
 .desktop-toaster {

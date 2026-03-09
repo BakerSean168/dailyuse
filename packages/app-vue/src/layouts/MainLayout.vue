@@ -22,7 +22,7 @@ const navigateTo = (path: string) => {
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden">
+  <div class="flex h-full min-h-0 overflow-hidden bg-background">
     <aside class="w-44 flex flex-col bg-sidebar border-r border-sidebar-border shrink-0 p-3 gap-2">
       <button
         class="text-left font-bold px-2 py-2 rounded hover:bg-sidebar-accent"
@@ -64,7 +64,7 @@ const navigateTo = (path: string) => {
       </div>
     </aside>
 
-    <main class="flex-1 overflow-auto">
+    <main class="flex-1 min-h-0 overflow-auto">
       <router-view />
     </main>
   </div>

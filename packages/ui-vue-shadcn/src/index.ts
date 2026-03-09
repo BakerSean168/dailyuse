@@ -154,6 +154,7 @@ export * from './components/ui/tooltip';
 // ==========================================
 // 4. Custom Components
 // ==========================================
+export * from './components/custom/form';
 // Linear layout components (generic, stays in ui-vue-shadcn)
 export * from './components/custom/linear';
 

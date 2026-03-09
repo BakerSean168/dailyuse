@@ -177,8 +177,8 @@ const tabs = computed(() => [
 </script>
 
 <template>
-  <div class="h-full overflow-auto">
-    <div class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+  <div class="h-full min-h-0 overflow-auto bg-background">
+    <div class="mx-auto max-w-4xl px-6 py-8 space-y-6">
       <!-- Page header -->
       <div>
         <h1 class="text-2xl font-bold tracking-tight">{{ t('setting.title') }}</h1>

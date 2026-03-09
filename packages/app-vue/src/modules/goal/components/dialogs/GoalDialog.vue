@@ -369,6 +369,7 @@ import {
   DialogDescription,
   DialogFooter,
   Button,
+  TagInput,
   Input,
   Label,
   Textarea,
@@ -401,7 +402,6 @@ import {
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { useGoal } from '../../composables/useGoal';
-import { TagInput } from '../../../governance/components';
 import KeyResultDialog from './KeyResultDialog.vue';
 import type {
   CreateGoalReq,
