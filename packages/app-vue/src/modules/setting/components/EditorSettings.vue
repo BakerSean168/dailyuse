@@ -54,9 +54,8 @@
                 (value) =>
                   emit('update:modelValue', { ...modelValue, autoSaveDelay: Number(value) })
               "
-              class="ml-4 w-[180px]"
             >
-              <SelectTrigger>
+              <SelectTrigger class="ml-4 w-[180px]">
                 <SelectValue :placeholder="t('setting.editor.autoSaveDelayPlaceholder')" />
               </SelectTrigger>
               <SelectContent>

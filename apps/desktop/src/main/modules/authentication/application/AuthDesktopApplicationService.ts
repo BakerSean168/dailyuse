@@ -49,6 +49,7 @@ import {
   type AuthStatus,
   type EmailLoginCredentials,
   type DeviceInfoUI,
+  type RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
@@ -57,7 +58,6 @@ import {
   createSessionManager,
   type SessionStatus,
   getRememberedAccountsService,
-  type RememberedAccountRecord,
 } from '../infrastructure';
 import {
   connectPowerSync,
@@ -287,6 +287,15 @@ export class AuthDesktopApplicationService {
               }
             }
 
+            // Create local session so getCurrentIdentityId() works after online login
+            if (this.sessionManager) {
+              await this.sessionManager.createOnlineSession({
+                identityId: response.identity.id,
+                sessionId: response.session.id || crypto.randomUUID(),
+                expiresIn: 3600,
+              });
+            }
+
             await this.rememberedAccounts.recordLogin({
               identityId: response.identity.id,
               identifier: request.email,
@@ -294,6 +303,7 @@ export class AuthDesktopApplicationService {
               avatarUrl: null,
               rememberPassword: request.rememberPassword ?? false,
               autoLogin: request.autoLogin ?? false,
+              password: request.rememberPassword ? request.password : undefined,
             });
           },
         },
@@ -916,7 +926,7 @@ export class AuthDesktopApplicationService {
     }
 
     try {
-      const currentSession = this.sessionManager?.getCurrentSession();
+      const  currentSession = this.sessionManager?.getCurrentSession();
       if (!currentSession) {
         return { sessions: [], total: 0 };
       }
@@ -983,8 +993,21 @@ export class AuthDesktopApplicationService {
     };
   }
 
-  async getRememberedAccounts(): Promise<RememberedAccountRecord[]> {
-    return this.rememberedAccounts.list();
+  async getRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
+    const accounts = await this.rememberedAccounts.list();
+    return accounts.map((account) => ({
+      identityId: account.identityId,
+      identifier: account.identifier,
+      nickname: account.nickname,
+      avatarUrl: account.avatarUrl,
+      rememberPassword: account.rememberPassword,
+      autoLogin: account.autoLogin,
+      lastUsedAt: account.lastUsedAt,
+      lastLoginAt: account.lastLoginAt,
+      savedPassword: account.rememberPassword
+        ? this.rememberedAccounts.decryptPassword(account)
+        : null,
+    }));
   }
 
   async removeRememberedAccount(identityId: string): Promise<IpcResult<void>> {

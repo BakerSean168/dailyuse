@@ -182,18 +182,18 @@ const emit = defineEmits<{
 // Language options — labels are the native language names (not translated)
 const languageOptions = [
   { label: '简体中文', value: 'zh-CN' },
-  { label: '繁體中文', value: 'zh-TW' },
   { label: 'English', value: 'en-US' },
-  { label: '日本語', value: 'ja-JP' },
-  { label: '한국어', value: 'ko-KR' },
+  // { label: '日本語', value: 'ja-JP' },
+  // { label: '한국어', value: 'ko-KR' },
+  // { label: '繁體中文', value: 'zh-TW' },
 ];
 
 const timezoneOpts = computed(() => [
   { label: t('setting.locale.tzBeijing'), value: 'Asia/Shanghai' },
-  { label: t('setting.locale.tzTokyo'), value: 'Asia/Tokyo' },
   { label: t('setting.locale.tzNewYork'), value: 'America/New_York' },
-  { label: t('setting.locale.tzLondon'), value: 'Europe/London' },
-  { label: t('setting.locale.tzSydney'), value: 'Australia/Sydney' },
+  // { label: t('setting.locale.tzTokyo'), value: 'Asia/Tokyo' },
+  // { label: t('setting.locale.tzLondon'), value: 'Europe/London' },
+  // { label: t('setting.locale.tzSydney'), value: 'Australia/Sydney' },
 ]);
 
 const dateFormatOpts = computed(() => [
@@ -217,8 +217,8 @@ const weekStartOpts = computed(() => [
 const currencyOpts = computed(() => [
   { label: t('setting.locale.currencyCNY'), value: 'CNY' },
   { label: t('setting.locale.currencyUSD'), value: 'USD' },
-  { label: t('setting.locale.currencyEUR'), value: 'EUR' },
-  { label: t('setting.locale.currencyJPY'), value: 'JPY' },
-  { label: t('setting.locale.currencyGBP'), value: 'GBP' },
+  // { label: t('setting.locale.currencyEUR'), value: 'EUR' },
+  // { label: t('setting.locale.currencyJPY'), value: 'JPY' },
+  // { label: t('setting.locale.currencyGBP'), value: 'GBP' },
 ]);
 </script>

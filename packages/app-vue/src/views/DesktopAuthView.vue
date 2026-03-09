@@ -24,6 +24,7 @@ interface RememberedAccountItem {
   autoLogin: boolean;
   lastUsedAt: number;
   lastLoginAt: number;
+  savedPassword?: string | null;
 }
 
 const {
@@ -59,6 +60,7 @@ watch(selectedAccount, (account) => {
   email.value = account.identifier;
   rememberPassword.value = account.rememberPassword;
   autoLogin.value = account.autoLogin;
+  password.value = account.savedPassword ?? '';
 });
 
 watch(autoLogin, (value) => {

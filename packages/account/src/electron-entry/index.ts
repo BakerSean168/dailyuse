@@ -12,6 +12,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import type { IpcResult } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 import {
   ElectronAccountRepository,
@@ -33,6 +34,18 @@ const Ch = {
 
 const channels = Object.values(Ch);
 
+async function withAuth<T>(
+  ctx: IElectronModuleContext,
+  handler: (identityId: string) => Promise<IpcResult<T>>,
+): Promise<IpcResult<T>> {
+  try {
+    const identityId = await ctx.auth.requireIdentityId();
+    return await handler(identityId);
+  } catch {
+    return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
+  }
+}
+
 export const AccountElectronModule: IElectronModule = {
   name: 'Account',
 
@@ -48,27 +61,30 @@ export const AccountElectronModule: IElectronModule = {
     ipcMain.handle(Ch.LIST, (_event, params) => accountModule.accountRepository.findAll(params));
 
     ipcMain.handle(Ch.GET, async () => {
-      const identityId = await ctx.auth.requireIdentityId();
-      const profile = await accountModule.getProfile.execute(identityId);
-      if (!profile) {
-        return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
-      }
-      return ok(profile);
+      return withAuth(ctx, async (identityId) => {
+        const profile = await accountModule.getProfile.execute(identityId);
+        if (!profile) {
+          return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
+        }
+        return ok(profile);
+      });
     });
 
     ipcMain.handle(Ch.GET_CURRENT, async () => {
-      const identityId = await ctx.auth.requireIdentityId();
-      const profile = await accountModule.getProfile.execute(identityId);
-      if (!profile) {
-        return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
-      }
-      return ok(profile);
+      return withAuth(ctx, async (identityId) => {
+        const profile = await accountModule.getProfile.execute(identityId);
+        if (!profile) {
+          return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
+        }
+        return ok(profile);
+      });
     });
 
     ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
-      const identityId = await ctx.auth.requireIdentityId();
-      const result = await accountModule.updateProfile.execute(identityId, payload);
-      return ok(result.account);
+      return withAuth(ctx, async (identityId) => {
+        const result = await accountModule.updateProfile.execute(identityId, payload);
+        return ok(result.account);
+      });
     });
 
     ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: any) =>

@@ -6,6 +6,7 @@
  * the native window chrome instead of an in-app title bar.
  */
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
   AIFloatingBall,
@@ -17,8 +18,11 @@ import {
   useAuthenticationStore,
 } from '@dailyuse/app-vue';
 
+const route = useRoute();
 const authStore = useAuthenticationStore();
-const shouldShowAIFloatingBall = computed(() => authStore.isAuthenticated);
+const shouldShowAIFloatingBall = computed(
+  () => authStore.isAuthenticated && route.meta.requiresAuth !== false,
+);
 </script>
 
 <template>

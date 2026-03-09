@@ -283,6 +283,8 @@ export interface RememberedDesktopAccountDTO {
   autoLogin: boolean;
   lastUsedAt: number;
   lastLoginAt: number;
+  /** Decrypted password (only present when rememberPassword is true) */
+  savedPassword?: string | null;
 }
 
 // ============================================================================

@@ -456,6 +456,13 @@ export class SessionManager {
               );
             }
 
+            // Create local session so getCurrentSession() works after online login
+            await this.createOnlineSession({
+              identityId: result.identityId!,
+              sessionId: result.sessionId ?? generateUUID(),
+              expiresIn: result.expiresIn ?? 3600,
+            });
+
             this.startAutoRefresh();
             this.startActivityTracking();
 
@@ -580,6 +587,39 @@ export class SessionManager {
       this.logger.error('Logout failed', { error });
       return { ok: false, error: String(error) };
     }
+  }
+
+  // ============ Online Session Creation ============
+
+  /**
+   * 创建在线登录会话
+   *
+   * 在线登录成功后调用，创建本地 AuthSession 并设置为当前会话。
+   * 确保 getCurrentSession() / getCurrentIdentityId() 在在线登录后返回正确值。
+   */
+  async createOnlineSession(params: {
+    identityId: string;
+    sessionId: string;
+    expiresIn?: number;
+  }): Promise<void> {
+    const deviceInfo = this.getDeviceInfo();
+    const device = DeviceInfo.create(deviceInfo as any);
+
+    const session = AuthSession.create({
+      id: params.sessionId as unknown as AuthSessionId,
+      identityId: params.identityId as unknown as IdentityId,
+      refreshTokenHash: generateUUID(),
+      expiresAt: Date.now() + (params.expiresIn ?? 3600) * 1000,
+      deviceInfo: device.toDTO(),
+    });
+
+    await this.sessionRepository.save(session);
+    this.currentSession = session;
+
+    this.logger.info('Online session created', {
+      identityId: params.identityId,
+      sessionId: params.sessionId,
+    });
   }
 
   // ============ Session Status ============

@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { app, safeStorage } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -13,6 +13,8 @@ export interface RememberedAccountRecord {
   autoLogin: boolean;
   lastUsedAt: number;
   lastLoginAt: number;
+  /** Base64-encoded safeStorage-encrypted password (only when rememberPassword is true) */
+  encryptedPassword?: string;
 }
 
 interface RememberedAccountsFile {
@@ -26,6 +28,8 @@ interface RecordLoginInput {
   avatarUrl?: string | null;
   rememberPassword: boolean;
   autoLogin: boolean;
+  /** Plaintext password to encrypt and store (only when rememberPassword is true) */
+  password?: string;
 }
 
 const DEFAULT_FILE: RememberedAccountsFile = { accounts: [] };
@@ -66,6 +70,13 @@ export class RememberedAccountsService {
   async recordLogin(input: RecordLoginInput): Promise<void> {
     const data = await this.read();
     const now = Date.now();
+
+    // Encrypt password if rememberPassword is true and password is provided
+    let encryptedPassword: string | undefined;
+    if (input.rememberPassword && input.password && safeStorage.isEncryptionAvailable()) {
+      encryptedPassword = safeStorage.encryptString(input.password).toString('base64');
+    }
+
     const next: RememberedAccountRecord = {
       identityId: input.identityId,
       identifier: input.identifier.trim(),
@@ -75,6 +86,7 @@ export class RememberedAccountsService {
       autoLogin: input.autoLogin,
       lastUsedAt: now,
       lastLoginAt: now,
+      encryptedPassword,
     };
 
     const remaining = data.accounts.filter((account) => account.identityId !== input.identityId);
@@ -111,6 +123,25 @@ export class RememberedAccountsService {
     const data = await this.read();
     const accounts = data.accounts.filter((account) => account.identityId !== identityId);
     await this.write({ accounts });
+  }
+
+  /**
+   * Decrypt the stored password for a remembered account.
+   * Returns null if no encrypted password is stored or decryption fails.
+   */
+  decryptPassword(account: RememberedAccountRecord): string | null {
+    if (!account.encryptedPassword || !safeStorage.isEncryptionAvailable()) {
+      return null;
+    }
+    try {
+      const buffer = Buffer.from(account.encryptedPassword, 'base64');
+      return safeStorage.decryptString(buffer);
+    } catch {
+      this.logger.warn('Failed to decrypt password for account', {
+        identityId: account.identityId,
+      });
+      return null;
+    }
   }
 
   private async read(): Promise<RememberedAccountsFile> {
