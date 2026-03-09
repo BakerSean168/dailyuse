@@ -98,7 +98,7 @@
             v-model="tagInput"
             :placeholder="t('repository.import.addTagsPlaceholder')"
             @keydown.enter.prevent="addTag"
-            @keydown.comma.prevent="addTag"
+            @keydown.,.prevent="addTag"
           />
         </div>
       </div>
