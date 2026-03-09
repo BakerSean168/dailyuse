@@ -86,7 +86,7 @@ export class SessionManager {
   private identityRepository: IAuthIdentityRepository | null = null;
   private passwordHasher: IPasswordHasher | null = null;
   // Maps email → server-side identityId for offline session creation
-  private serverIdentityMap: Map<string, string> = new Map();
+  // (No longer needed — local AuthIdentity is now stored with the server ID directly)
 
   // Guest identity persistence (Phase 4)
   private static readonly GUEST_ID_KEY = 'guest_identity_id';
@@ -518,7 +518,7 @@ export class SessionManager {
       refreshTokenHash: generateUUID(),
       expiresAt: Date.now() + 3600 * 1000,
 
-      deviceInfo: device as any,
+      deviceInfo: device.toDTO(),
     });
 
     await this.sessionRepository.save(session);
@@ -726,22 +726,28 @@ export class SessionManager {
       const existing = await this.identityRepository.findByEmail(email);
 
       if (existing) {
-        this.logger.debug('Offline credentials already cached for email', { email });
-        return;
+        if (existing.id.toString() === identityId) {
+          this.logger.debug('Offline credentials already cached with correct server ID', { email });
+          return;
+        }
+        // Existing entry has wrong (locally-generated) ID — remove and recreate with server ID
+        this.logger.info('Replacing offline credentials with correct server ID', {
+          email,
+          oldId: existing.id.toString(),
+          newId: identityId,
+        });
+        await this.identityRepository.delete(existing);
       }
 
-      // Create identity with auto-generated ID, then save
-      // The server's identityId is preserved by using findByEmail() lookup during verification
+      // Create identity using the server's identity ID so local tables stay consistent
       const identity = await AuthIdentity.createWithEmailAndPassword({
+        id: identityId as unknown as IdentityId,
         email,
         plainPassword,
         hasher: this.passwordHasher,
       });
 
       await this.identityRepository.save(identity);
-
-      // Store the server↔local identity mapping for session creation
-      this.serverIdentityMap.set(email, identityId);
 
       this.logger.info('Offline credentials cached successfully', { email, identityId });
     } catch (error) {
@@ -761,7 +767,6 @@ export class SessionManager {
     }
 
     await this.identityRepository.delete(identity);
-    this.serverIdentityMap.delete(email);
   }
 
   /**
@@ -800,18 +805,10 @@ export class SessionManager {
     identity.resetFailedAttempts();
     await this.identityRepository.save(identity);
 
-    // Prefer server-side identity ID for session consistency
-    // First check in-memory map, then fall back to saved token data
-    let serverIdentityId = this.serverIdentityMap.get(email);
-    if (!serverIdentityId) {
-      const tokenData = await this.tokenManager.loadTokens();
-      if (tokenData?.identityId && !tokenData.identityId.startsWith('guest')) {
-        serverIdentityId = tokenData.identityId;
-      }
-    }
-    const resolvedId = serverIdentityId ?? identity.id.toString();
-
-    return { ok: true, identityId: resolvedId };
+    // Use the identity's own ID for session creation.
+    // Since saveOfflineCredentials now stores AuthIdentity with the server's ID,
+    // identity.id IS the server ID — consistent with tokens, sessions, and accounts.
+    return { ok: true, identityId: identity.id.toString() };
   }
 
   // ============ Guest Identity Management (Phase 4) ============
@@ -846,7 +843,7 @@ export class SessionManager {
       refreshTokenHash: generateUUID(),
       expiresAt: Date.now() + 3600 * 1000,
 
-      deviceInfo: device as any,
+      deviceInfo: device.toDTO(),
     });
 
     await this.sessionRepository.save(session);

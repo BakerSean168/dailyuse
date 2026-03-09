@@ -9,7 +9,7 @@ import type Database from 'better-sqlite3';
 import type { IAuthIdentityRepository } from '../../../domain-server';
 import { AuthIdentity } from '../../../domain-server';
 import type { OAuthProvider } from '../../../domain-shared';
-import { createLogger } from '@dailyuse/utils';
+import { createLogger, eventBus } from '@dailyuse/utils';
 import {
   SqliteAuthIdentityMapper,
   type AuthIdentityRow,
@@ -107,6 +107,13 @@ export class SqliteAuthIdentityRepository implements IAuthIdentityRepository {
       });
 
       trx();
+
+      // Publish domain events (e.g. auth:identity-created) after successful save
+      const domainEvents = identity.pullDomainEvents();
+      for (const evt of domainEvents) {
+        eventBus.send(evt.eventType as any, evt.payload as any);
+      }
+
       logger.debug('[SqliteAuthIdentityRepository] Identity saved', { id: d.id });
     } catch (error) {
       logger.error('[SqliteAuthIdentityRepository] Save failed', {

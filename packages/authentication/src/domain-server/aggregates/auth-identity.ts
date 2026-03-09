@@ -146,6 +146,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
     email: string;
     plainPassword: string;
     hasher: IPasswordHasher;
+    id?: IdentityId;
   }): Promise<AuthIdentity> {
     const now = new Date();
 
@@ -158,7 +159,7 @@ export class AuthIdentity extends AggregateRoot<IdentityId> {
       hashedPassword: hashedPassword,
     });
 
-    const identityId = IdentityId.generate();
+    const identityId = params.id ?? IdentityId.generate();
     const identity = new AuthIdentity({
       id: identityId,
       status: AuthIdentityStatus.Unverified,

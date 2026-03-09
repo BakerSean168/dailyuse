@@ -12,7 +12,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
+import { ok, fail } from '@dailyuse/contracts/result';
 import {
   ElectronAccountRepository,
   AccountModule,
@@ -50,13 +50,19 @@ export const AccountElectronModule: IElectronModule = {
     ipcMain.handle(Ch.GET, async () => {
       const identityId = await ctx.auth.requireIdentityId();
       const profile = await accountModule.getProfile.execute(identityId);
-      return ok(profile as any);
+      if (!profile) {
+        return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
+      }
+      return ok(profile);
     });
 
     ipcMain.handle(Ch.GET_CURRENT, async () => {
       const identityId = await ctx.auth.requireIdentityId();
       const profile = await accountModule.getProfile.execute(identityId);
-      return ok(profile as any);
+      if (!profile) {
+        return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
+      }
+      return ok(profile);
     });
 
     ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
