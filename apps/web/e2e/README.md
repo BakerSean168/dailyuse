@@ -512,8 +512,6 @@ pnpm exec playwright show-trace trace.zip
 - [Page Object Model 指南](https://playwright.dev/docs/pom)
 - [GitHub Actions 配置](https://docs.github.com/en/actions)
 - [STORY-029 规划文档](../STORY-029-E2E-TEST-EXPANSION.md)
-- [Phase 1 完成报告](../STORY-029-PHASE-1-COMPLETION.md)
-- [Phase 2 完成报告](../STORY-029-PHASE-2-COMPLETION.md)
 
 ---
 
