@@ -3,8 +3,8 @@ import { ref } from 'vue';
 import AppearanceSettings from './AppearanceSettings.vue';
 
 const defaultSettings = {
-  themeStyle: 'light',
-  fontSize: 'medium',
+  theme: 'light',
+  fontSize: 14,
   accentColor: '#3b82f6',
   compactMode: false,
   fontFamily: null,
@@ -48,8 +48,8 @@ export const DarkTheme: Story = {
   }),
   args: {
     modelValue: {
-      themeStyle: 'dark',
-      fontSize: 'large',
+      theme: 'dark',
+      fontSize: 16,
       accentColor: '#8b5cf6',
       compactMode: false,
       fontFamily: 'monospace',
@@ -68,8 +68,8 @@ export const CompactMode: Story = {
   }),
   args: {
     modelValue: {
-      themeStyle: 'light',
-      fontSize: 'small',
+      theme: 'light',
+      fontSize: 12,
       accentColor: '#10b981',
       compactMode: true,
       fontFamily: null,
@@ -91,7 +91,7 @@ export const CustomThemeOptions: Story = {
     themeOptions: [
       { label: 'Day Mode', value: 'light' },
       { label: 'Night Mode', value: 'dark' },
-      { label: 'Auto (System)', value: 'system' },
+      { label: 'Auto (System)', value: 'auto' },
     ],
   },
 };

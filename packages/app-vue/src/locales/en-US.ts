@@ -131,6 +131,7 @@ export default {
       // Theme options
       themeLight: 'Standard Light',
       themeDark: 'Standard Dark',
+      themeAuto: 'System',
       themeDarkBlue: 'Dark Blue',
       themeWarmPaper: 'Warm Paper (Light)',
       themeLightBlue: 'Light Blue',

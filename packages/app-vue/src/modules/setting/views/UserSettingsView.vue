@@ -24,27 +24,36 @@ import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
 
 import { useUserSetting } from '../composables/useUserSetting';
-import { useLocaleSync } from '../composables/useLocaleSync';
+import { applyThemeMode, useLocaleSync } from '../composables';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import type { AppLocale } from '../../../plugins/i18n';
+import type { UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 const { t } = useI18n();
 
 // Activate locale sync (bridge store → vue-i18n)
 useLocaleSync();
 
-const { userSetting, isLoading, error, getCategory, loadSettings, exportSettings, importSettings } =
-  useUserSetting();
+const {
+  userSetting,
+  isLoading,
+  error,
+  getCategory,
+  loadSettings,
+  exportSettings,
+  importSettings,
+  updateCategory,
+} = useUserSetting();
 
 const activeTab = ref('appearance');
 
 // ── Section models — local reactive copies for v-model ──
 const appearance = ref({
-  themeStyle: 'light',
-  fontSize: 'MEDIUM',
+  theme: 'auto' as UserSettingPreferences['appearance']['theme'],
+  fontSize: 14,
   accentColor: '#3b82f6',
   compactMode: false,
-  fontFamily: '',
+  fontFamily: null as string | null,
 });
 
 const locale = ref({
@@ -140,6 +149,20 @@ function hydrateFromStore() {
 }
 
 watch(userSetting, () => hydrateFromStore());
+
+watch(
+  () => appearance.value.theme,
+  async (theme, previousTheme) => {
+    applyThemeMode(theme);
+
+    if (theme === previousTheme || previousTheme === undefined) {
+      return;
+    }
+
+    await updateCategory('appearance', { theme });
+  },
+  { immediate: true },
+);
 
 // ── Sync locale changes to vue-i18n immediately ──
 watch(

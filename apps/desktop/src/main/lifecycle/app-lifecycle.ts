@@ -15,7 +15,7 @@
  * @module lifecycle/app-lifecycle
  */
 
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, nativeTheme } from 'electron';
 import type { BrowserWindowConstructorOptions, TitleBarOverlay } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -24,10 +24,10 @@ import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
 import { stopMemoryCleanup, closeDatabase } from '../database';
-import { connectPowerSync, openPowerSyncLocalOnly, shutdownPowerSync } from '../database/powersync';
+import { shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
-import { getTokenManager, getNetworkStateManager } from '../modules/authentication/infrastructure';
+import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getRememberedAccountsService } from '../modules/authentication/infrastructure';
 import { getDesktopAuthService } from '../auth/desktop-auth-context';
 import { resolvePreloadPath } from '../utils/resolve-preload-path';
@@ -37,27 +37,38 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
-const DESKTOP_CHROME_BACKGROUND = '#ffffff';
-const DESKTOP_CHROME_FOREGROUND = '#0f172a';
+
+function getDesktopChromePalette() {
+  return nativeTheme.shouldUseDarkColors
+    ? {
+        background: '#0f172a',
+        foreground: '#e2e8f0',
+      }
+    : {
+        background: '#f8fafc',
+        foreground: '#0f172a',
+      };
+}
 
 function createNativeWindowChromeOptions(): Pick<
   BrowserWindowConstructorOptions,
   'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
 > {
+  const palette = getDesktopChromePalette();
   const options: Pick<
     BrowserWindowConstructorOptions,
     'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
   > = {
     autoHideMenuBar: true,
-    backgroundColor: DESKTOP_CHROME_BACKGROUND,
+    backgroundColor: palette.background,
     title: '',
     titleBarStyle: 'hidden',
   };
 
   if (process.platform === 'win32' || process.platform === 'linux') {
     options.titleBarOverlay = {
-      color: DESKTOP_CHROME_BACKGROUND,
-      symbolColor: DESKTOP_CHROME_FOREGROUND,
+      color: palette.background,
+      symbolColor: palette.foreground,
       height: 36,
     } satisfies TitleBarOverlay;
   }
@@ -176,21 +187,9 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
   let win: BrowserWindow;
 
   if (shouldShowMainWindow) {
-    // Auth-mode-aware PowerSync startup
-    const networkManager = getNetworkStateManager();
-    const isOnline = networkManager.isOnline();
-
-    if (isOnline) {
-      // Online with valid tokens → full sync mode
-      connectPowerSync().catch((err) =>
-        console.error('[Lifecycle] PowerSync sync connect failed:', err),
-      );
-    } else {
-      // Offline with valid tokens → local-only mode (OFFLINE_USER)
-      openPowerSyncLocalOnly().catch((err) =>
-        console.error('[Lifecycle] PowerSync local-only open failed:', err),
-      );
-    }
+    // PowerSync is already initialized by authService.initialize() →
+    // initializePowerSyncAsync(), which handles online/offline modes.
+    // No need to call connectPowerSync()/openPowerSyncLocalOnly() here.
 
     // 直接进入主窗口
     win = windowManager.createMainWindow();

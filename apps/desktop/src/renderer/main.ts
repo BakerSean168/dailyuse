@@ -74,6 +74,45 @@ function ensureElectronBridgeAvailable(): void {
   );
 }
 
+/**
+ * Validates Pinia-persisted auth state against the main process session.
+ *
+ * If the renderer thinks it is authenticated (from a previous session) but
+ * the main process has no live session, we try `auth:initialize` first
+ * (which restores from encrypted tokens / SQLite). If that also fails,
+ * we clear the store so the router guard redirects to login.
+ */
+async function syncRendererAuthState(): Promise<void> {
+  const store = useAuthenticationStore();
+  if (!store.isAuthenticated) return; // nothing persisted — skip sync
+
+  try {
+    // 1. Ask main process for current auth status
+    const status = await window.electronAPI!.invoke('auth:get-status') as {
+      authenticated: boolean;
+      mode?: string;
+    };
+
+    if (status.authenticated) return; // main process agrees — all good
+
+    // 2. Main process has no session — try restoring it
+    const initResult = await window.electronAPI!.invoke('auth:initialize') as {
+      ok?: boolean;
+      hasValidSession?: boolean;
+    };
+
+    if (initResult?.ok && initResult?.hasValidSession) return; // restored
+
+    // 3. Could not restore — clear stale renderer state
+    console.warn('[Auth Sync] Main process has no valid session, clearing renderer auth state');
+    store.reset();
+  } catch (err) {
+    // IPC failure during startup (e.g. module not yet registered) — clear to be safe
+    console.error('[Auth Sync] Failed to sync with main process:', err);
+    store.reset();
+  }
+}
+
 async function startApp() {
   const app = createApp(App);
 
@@ -98,6 +137,12 @@ async function startApp() {
 
   // I18n — required before any app-vue composable or global component uses useI18n()
   app.use(createI18nPlugin('zh-CN'));
+
+  // ── Sync renderer auth state with main process ────────────────
+  // Pinia persistence may hold stale tokens from a previous session.
+  // Verify that the main process actually has a live session before
+  // the router guard allows access to protected routes.
+  await syncRendererAuthState();
 
   // Router (Hash mode for Electron file:// protocol)
   const router = createAppRouter({

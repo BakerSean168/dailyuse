@@ -39,6 +39,10 @@ import { getApiBaseUrl } from '../utils/api-config';
 
 let powerSyncDb: PowerSyncDatabase | null = null;
 
+// Concurrency guards — prevent duplicate instances when two callers race.
+let connectingPromise: Promise<PowerSyncDatabase> | null = null;
+let openingPromise: Promise<PowerSyncDatabase> | null = null;
+
 // ──────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────
@@ -154,29 +158,46 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
 /**
  * Creates and connects the PowerSync database.
  * Call this AFTER the user has authenticated.
+ *
+ * Guarded against concurrent calls — if a connection is already in
+ * progress the same promise is returned.
  */
 export async function connectPowerSync(): Promise<PowerSyncDatabase> {
   if (powerSyncDb) {
     console.log('[PowerSync] Already connected');
     return powerSyncDb;
   }
+  if (connectingPromise) {
+    console.log('[PowerSync] Connection already in progress, waiting…');
+    return connectingPromise;
+  }
 
-  const dbPath = getSyncDatabasePath();
-  console.log(`[PowerSync] Initializing sync database: ${dbPath}`);
+  connectingPromise = (async () => {
+    const dbPath = getSyncDatabasePath();
+    console.log(`[PowerSync] Initializing sync database: ${dbPath}`);
 
-  powerSyncDb = new PowerSyncDatabase({
-    schema: PowerSyncAppSchema,
-    database: { dbFilename: dbPath },
-  });
+    const db = new PowerSyncDatabase({
+      schema: PowerSyncAppSchema,
+      database: { dbFilename: dbPath },
+    });
 
-  const connector = new DesktopPowerSyncConnector();
-  await powerSyncDb.connect(connector);
+    const connector = new DesktopPowerSyncConnector();
+    await db.connect(connector);
 
-  // Start broadcasting table changes to renderer windows
-  startChangeBroadcast(powerSyncDb);
+    powerSyncDb = db;
 
-  console.log('[PowerSync] Connected to PowerSync Service');
-  return powerSyncDb;
+    // Start broadcasting table changes to renderer windows
+    startChangeBroadcast(db);
+
+    console.log('[PowerSync] Connected to PowerSync Service');
+    return db;
+  })();
+
+  try {
+    return await connectingPromise;
+  } finally {
+    connectingPromise = null;
+  }
 }
 
 /**
@@ -187,27 +208,42 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
  * without connecting to the PowerSync Service.
  *
  * If PowerSync is already connected (sync mode), returns the existing instance.
+ * Guarded against concurrent calls.
  */
 export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
   if (powerSyncDb) {
     console.log('[PowerSync] Already open (reusing existing instance)');
     return powerSyncDb;
   }
+  if (openingPromise) {
+    console.log('[PowerSync] Local-only open already in progress, waiting…');
+    return openingPromise;
+  }
 
-  const dbPath = getSyncDatabasePath();
-  console.log(`[PowerSync] Opening local-only database: ${dbPath}`);
+  openingPromise = (async () => {
+    const dbPath = getSyncDatabasePath();
+    console.log(`[PowerSync] Opening local-only database: ${dbPath}`);
 
-  powerSyncDb = new PowerSyncDatabase({
-    schema: PowerSyncAppSchema,
-    database: { dbFilename: dbPath },
-  });
+    const db = new PowerSyncDatabase({
+      schema: PowerSyncAppSchema,
+      database: { dbFilename: dbPath },
+    });
 
-  // Do NOT call powerSyncDb.connect(connector) — local-only mode
-  // Just initialize the database and start change broadcast
-  startChangeBroadcast(powerSyncDb);
+    powerSyncDb = db;
 
-  console.log('[PowerSync] Local-only mode active (no sync)');
-  return powerSyncDb;
+    // Do NOT call db.connect(connector) — local-only mode
+    // Just initialize the database and start change broadcast
+    startChangeBroadcast(db);
+
+    console.log('[PowerSync] Local-only mode active (no sync)');
+    return db;
+  })();
+
+  try {
+    return await openingPromise;
+  } finally {
+    openingPromise = null;
+  }
 }
 
 /**

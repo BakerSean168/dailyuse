@@ -131,6 +131,7 @@ export default {
       // Theme options
       themeLight: '标准浅色 (浅色)',
       themeDark: '标准深色 (深色)',
+      themeAuto: '跟随系统',
       themeDarkBlue: '深蓝 (深色)',
       themeWarmPaper: '暖纸 (浅色)',
       themeLightBlue: '浅蓝 (浅色)',

@@ -9,10 +9,10 @@
         <div class="space-y-2">
           <Label for="theme-select">{{ t('setting.appearance.theme') }}</Label>
           <Select
-            :model-value="modelValue.themeStyle"
+            :model-value="modelValue.theme"
             @update:model-value="
               (value: any) =>
-                emit('update:modelValue', { ...modelValue, themeStyle: value as string })
+                emit('update:modelValue', { ...modelValue, theme: value as AppearanceTheme })
             "
           >
             <SelectTrigger id="theme-select">
@@ -33,10 +33,9 @@
         <div class="space-y-2">
           <Label for="font-size-select">{{ t('setting.appearance.fontSize') }}</Label>
           <Select
-            :model-value="modelValue.fontSize"
+            :model-value="String(modelValue.fontSize)"
             @update:model-value="
-              (value: any) =>
-                emit('update:modelValue', { ...modelValue, fontSize: value as string })
+              (value: any) => emit('update:modelValue', { ...modelValue, fontSize: Number(value) })
             "
           >
             <SelectTrigger id="font-size-select">
@@ -127,12 +126,14 @@ import { Input } from '@dailyuse/ui-vue-shadcn';
 const { t } = useI18n();
 
 interface AppearanceSettings {
-  themeStyle?: string;
-  fontSize?: string;
+  theme?: AppearanceTheme;
+  fontSize?: number;
   accentColor?: string;
   compactMode?: boolean;
   fontFamily?: string | null;
 }
+
+type AppearanceTheme = 'light' | 'dark' | 'auto';
 
 interface Props {
   modelValue: AppearanceSettings;
@@ -152,17 +153,14 @@ const themeOptions = computed(
     props.themeOptions ?? [
       { label: `☀️ ${t('setting.appearance.themeLight')}`, value: 'light' },
       { label: `🌙 ${t('setting.appearance.themeDark')}`, value: 'dark' },
-      { label: `🌊 ${t('setting.appearance.themeDarkBlue')}`, value: 'darkBlue' },
-      { label: `📄 ${t('setting.appearance.themeWarmPaper')}`, value: 'warmPaper' },
-      { label: `💠 ${t('setting.appearance.themeLightBlue')}`, value: 'lightBlue' },
-      { label: `🌿 ${t('setting.appearance.themeBlueGreen')}`, value: 'blueGreen' },
+      { label: `🖥️ ${t('setting.appearance.themeAuto')}`, value: 'auto' },
     ],
 );
 
 const fontSizeOpts = computed(() => [
-  { label: t('setting.appearance.fontSmall'), value: 'SMALL' },
-  { label: t('setting.appearance.fontMedium'), value: 'MEDIUM' },
-  { label: t('setting.appearance.fontLarge'), value: 'LARGE' },
+  { label: t('setting.appearance.fontSmall'), value: '12' },
+  { label: t('setting.appearance.fontMedium'), value: '14' },
+  { label: t('setting.appearance.fontLarge'), value: '16' },
 ]);
 
 const fontFamilyOpts = computed(() => [

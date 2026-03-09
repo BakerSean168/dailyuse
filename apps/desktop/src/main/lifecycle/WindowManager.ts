@@ -11,7 +11,7 @@
  * 3. 否 → 显示登录窗口，登录成功后切换到主窗口
  */
 
-import { BrowserWindow, screen, ipcMain, app } from 'electron';
+import { BrowserWindow, screen, ipcMain, app, nativeTheme } from 'electron';
 import type { BrowserWindowConstructorOptions, TitleBarOverlay } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,27 +22,38 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const logger = createLogger('WindowManager');
-const DESKTOP_CHROME_BACKGROUND = '#ffffff';
-const DESKTOP_CHROME_FOREGROUND = '#0f172a';
+
+function getDesktopChromePalette() {
+  return nativeTheme.shouldUseDarkColors
+    ? {
+        background: '#0f172a',
+        foreground: '#e2e8f0',
+      }
+    : {
+        background: '#f8fafc',
+        foreground: '#0f172a',
+      };
+}
 
 function createNativeWindowChromeOptions(): Pick<
   BrowserWindowConstructorOptions,
   'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
 > {
+  const palette = getDesktopChromePalette();
   const options: Pick<
     BrowserWindowConstructorOptions,
     'autoHideMenuBar' | 'backgroundColor' | 'title' | 'titleBarStyle' | 'titleBarOverlay'
   > = {
     autoHideMenuBar: true,
-    backgroundColor: DESKTOP_CHROME_BACKGROUND,
+    backgroundColor: palette.background,
     title: '',
     titleBarStyle: 'hidden',
   };
 
   if (process.platform === 'win32' || process.platform === 'linux') {
     options.titleBarOverlay = {
-      color: DESKTOP_CHROME_BACKGROUND,
-      symbolColor: DESKTOP_CHROME_FOREGROUND,
+      color: palette.background,
+      symbolColor: palette.foreground,
       height: 36,
     } satisfies TitleBarOverlay;
   }

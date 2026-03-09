@@ -9,7 +9,13 @@ export { useUserSettingStore, useSettingStore } from './stores/userSettingStore'
 export type { UserSettingStoreType } from './stores/userSettingStore';
 
 // Composables
-export { useUserSetting, useUserSettingData } from './composables';
+export {
+  useUserSetting,
+  useUserSettingData,
+  useLocaleSync,
+  useThemeSync,
+  applyThemeMode,
+} from './composables';
 
 // Routes
 export { settingRoutes } from './router';

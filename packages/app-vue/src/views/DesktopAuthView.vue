@@ -139,7 +139,7 @@ onMounted(() => {
       >
         <div class="mb-5 flex items-start gap-3">
           <div
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg"
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20"
           >
             <Sparkles class="h-5 w-5" />
           </div>
@@ -152,7 +152,9 @@ onMounted(() => {
         </div>
 
         <Tabs v-model="mode" class="space-y-4">
-          <TabsList class="grid h-auto w-full grid-cols-3 rounded-2xl bg-slate-100 p-1">
+          <TabsList
+            class="grid h-auto w-full grid-cols-3 rounded-2xl border border-border/70 bg-muted/80 p-1 backdrop-blur-sm"
+          >
             <TabsTrigger value="login" class="rounded-xl">登录</TabsTrigger>
             <TabsTrigger value="register" class="rounded-xl">注册</TabsTrigger>
             <TabsTrigger value="quick-login" class="rounded-xl">快速登录</TabsTrigger>

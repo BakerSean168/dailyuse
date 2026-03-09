@@ -15,6 +15,7 @@ import {
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
+  useThemeSync,
   useAuthenticationStore,
 } from '@dailyuse/app-vue';
 
@@ -23,6 +24,8 @@ const authStore = useAuthenticationStore();
 const shouldShowAIFloatingBall = computed(
   () => authStore.isAuthenticated && route.meta.requiresAuth !== false,
 );
+
+useThemeSync();
 </script>
 
 <template>
