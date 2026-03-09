@@ -104,7 +104,7 @@ export function registerInfrastructureInitializationTasks(): void {
   /**
    * Task 3: IPC System Initialization
    *
-   * Registers all IPC handlers for various modules (AI, Task, Goal, Schedule, etc.).
+   * System-level IPC handlers (the feature modules are handled via ElectronBootstrapper).
    *
    * Dependencies: 'di-container-configuration' (Handlers depend on injected services)
    * Priority: 15 (Medium-high, runs after DI)
@@ -120,9 +120,13 @@ export function registerInfrastructureInitializationTasks(): void {
       const startTime = performance.now();
 
       try {
-        // Dynamically import and initialize all module IPC handlers
-        const { initializeIPCHandlers } = await import('../../main/modules/ipc-registry');
-        initializeIPCHandlers();
+        // Dynamically import and register system handlers
+        // System handlers are registered via app-lifecycle where managers are available,
+        // so we don't strictly need to do it here, or we pass null if it's just early initialization.
+        // It's better to just resolve to a no-op if app-lifecycle handles it, but since this was
+        // originally here, let's keep it with nulls as placeholders.
+        const { registerSystemIpcHandlers } = await import('../../main/ipc/index');
+        registerSystemIpcHandlers(null, null, null);
 
         const duration = performance.now() - startTime;
 
