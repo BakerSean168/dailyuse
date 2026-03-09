@@ -3,7 +3,7 @@
     <!-- Header with Add Button -->
     <div class="flex items-center justify-between px-2 py-1.5 mb-2">
       <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
-        >Folders</span
+        >{{ t('goal.folder.folders') }}</span
       >
       <Button variant="ghost" size="icon" class="h-5 w-5 hover:bg-muted" @click="emit('create')">
         <Plus class="h-3 w-3" />
@@ -22,7 +22,7 @@
       @click="selectFolder('all')"
     >
       <LayoutGrid class="h-4 w-4 text-muted-foreground" />
-      <span class="flex-1 text-left">All Goals</span>
+      <span class="flex-1 text-left">{{ t('goal.list.allGoals') }}</span>
       <Badge
         variant="secondary"
         class="ml-auto text-[10px] h-5 px-1.5 min-w-[20px] justify-center bg-muted text-muted-foreground"
@@ -72,12 +72,13 @@
       @click="selectFolder('archived')"
     >
       <Archive class="h-4 w-4 text-muted-foreground" />
-      <span class="flex-1 text-left">Archived</span>
+      <span class="flex-1 text-left">{{ t('goal.folder.archived') }}</span>
     </Button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Plus, LayoutGrid, Folder, Archive, Pencil, Trash2 } from 'lucide-vue-next';
@@ -96,6 +97,8 @@ const emit = defineEmits<{
   edit: [folder: any];
   delete: [id: string];
 }>();
+
+const { t } = useI18n();
 
 const selectFolder = (id: string) => {
   emit('select', id);

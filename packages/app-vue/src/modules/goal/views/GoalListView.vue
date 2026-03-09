@@ -5,7 +5,7 @@
       <div class="flex h-14 items-center border-b p-4">
         <div class="flex items-center gap-2 font-semibold">
           <Target class="h-5 w-5 text-primary" />
-          <span>Goals</span>
+          <span>{{ t('nav.goals') }}</span>
         </div>
       </div>
 
@@ -17,7 +17,7 @@
             @click="selectedFolderId = null"
           >
             <LayoutGrid class="h-4 w-4" />
-            <span>All Goals</span>
+            <span>{{ t('goal.list.allGoals') }}</span>
             <Badge variant="secondary" class="ml-auto text-xs">{{ goals.length }}</Badge>
           </div>
 
@@ -45,7 +45,7 @@
 
       <div class="border-t p-4">
         <Button variant="ghost" size="sm" class="w-full justify-start" @click="openCreateFolder">
-          <FolderPlus class="mr-2 h-4 w-4" /> New Folder
+          <FolderPlus class="mr-2 h-4 w-4" /> {{ t('goal.list.newFolder') }}
         </Button>
       </div>
     </aside>
@@ -57,7 +57,7 @@
         class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
       >
         <div class="flex items-center gap-4">
-          <h1 class="text-lg font-medium text-foreground">Overview</h1>
+          <h1 class="text-lg font-medium text-foreground">{{ t('goal.list.overview') }}</h1>
           <Separator orientation="vertical" class="mx-2 h-4" />
           <div class="flex items-center gap-1">
             <Button
@@ -84,7 +84,7 @@
             />
             <Input
               v-model="searchQuery"
-              placeholder="Search goals..."
+              :placeholder="t('goal.list.searchGoals')"
               class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
               @input="search(searchQuery)"
             />
@@ -97,12 +97,12 @@
             @click="$router.push({ name: 'goal-comparison' })"
           >
             <LayoutGrid class="h-4 w-4" />
-            <span>Compare</span>
+            <span>{{ t('goal.list.compare') }}</span>
           </Button>
 
           <Button size="sm" class="h-8 gap-2" @click="openCreateDialog">
             <Plus class="h-4 w-4" />
-            <span>New Goal</span>
+            <span>{{ t('goal.list.newGoal') }}</span>
           </Button>
         </div>
       </header>
@@ -138,11 +138,11 @@
             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
               <Target class="h-6 w-6 opacity-50" />
             </div>
-            <h3 class="mb-1 text-lg font-medium text-foreground">No goals found</h3>
-            <p class="mb-6 text-sm">Create a new goal to get started with tracking.</p>
+            <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('goal.list.noGoalsFound') }}</h3>
+            <p class="mb-6 text-sm">{{ t('goal.list.createToStart') }}</p>
             <Button @click="openCreateDialog">
               <Plus class="mr-2 h-4 w-4" />
-              Create Goal
+              {{ t('goal.list.createGoal') }}
             </Button>
           </div>
         </div>
@@ -210,12 +210,12 @@ const dialogMode = ref<'create' | 'edit'>('create');
 const editingGoal = ref<GoalClientDTO | null>(null);
 const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 
-const statusTabs = [
-  { label: 'All', value: 'all' },
-  { label: 'Active', value: 'Active' },
-  { label: 'Paused', value: 'Paused' },
-  { label: 'Completed', value: 'Completed' },
-];
+const statusTabs = computed(() => [
+  { label: t('goal.list.statusAll'), value: 'all' },
+  { label: t('goal.list.statusActive'), value: 'Active' },
+  { label: t('goal.list.statusPaused'), value: 'Paused' },
+  { label: t('goal.list.statusCompleted'), value: 'Completed' },
+]);
 
 const filteredGoals = computed(() => {
   let result = goals.value;
