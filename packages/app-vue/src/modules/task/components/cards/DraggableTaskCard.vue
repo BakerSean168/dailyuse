@@ -67,19 +67,20 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // Props
-interface Props {
-  template: TaskTemplateViewModel;
-  enableDrag?: boolean;
-  canDrop?: (source: TaskTemplateViewModel, target: TaskTemplateViewModel) => boolean;
-  onCreateDependency?: (
-    source: TaskTemplateViewModel,
-    target: TaskTemplateViewModel,
-  ) => Promise<boolean> | boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  enableDrag: true,
-});
+const props = withDefaults(
+  defineProps<{
+    template: TaskTemplateViewModel;
+    enableDrag?: boolean;
+    canDrop?: (source: TaskTemplateViewModel, target: TaskTemplateViewModel) => boolean;
+    onCreateDependency?: (
+      source: TaskTemplateViewModel,
+      target: TaskTemplateViewModel,
+    ) => Promise<boolean> | boolean;
+  }>(),
+  {
+    enableDrag: true,
+  },
+);
 
 // Emits
 const emit = defineEmits<{

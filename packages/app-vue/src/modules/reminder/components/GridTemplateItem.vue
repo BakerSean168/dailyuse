@@ -44,37 +44,31 @@ import { computed, inject } from 'vue';
 import { Bell, FolderInput, Pencil, Trash2 } from 'lucide-vue-next';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
+import type { ReminderTemplateViewItem } from '../types';
 
-interface ReminderTemplate {
-  id: string;
-  name: string;
-  effectiveEnabled: boolean;
-}
-
-interface Props {
-  item: ReminderTemplate;
-}
-
-const props = defineProps<Props>();
+const props = defineProps<{
+  item: ReminderTemplateViewItem;
+}>();
 
 const emit = defineEmits<{
-  click: [item: ReminderTemplate];
-  move: [item: ReminderTemplate];
-  edit: [item: ReminderTemplate];
-  delete: [item: ReminderTemplate];
+  click: [item: ReminderTemplateViewItem];
+  move: [item: ReminderTemplateViewItem];
+  edit: [item: ReminderTemplateViewItem];
+  delete: [item: ReminderTemplateViewItem];
 }>();
 
 const isTemplateEnabled = computed(() => props.item.effectiveEnabled);
 
 // Support both injected callbacks and emits for flexibility
-const onMoveTemplate = inject<(item: ReminderTemplate) => void>('onMoveTemplate', (item) =>
+const onMoveTemplate = inject<(item: ReminderTemplateViewItem) => void>('onMoveTemplate', (item) =>
   emit('move', item),
 );
-const onEditTemplate = inject<(item: ReminderTemplate) => void>('onEditTemplate', (item) =>
+const onEditTemplate = inject<(item: ReminderTemplateViewItem) => void>('onEditTemplate', (item) =>
   emit('edit', item),
 );
-const onDeleteTemplate = inject<(item: ReminderTemplate) => void>('onDeleteTemplate', (item) =>
-  emit('delete', item),
+const onDeleteTemplate = inject<(item: ReminderTemplateViewItem) => void>(
+  'onDeleteTemplate',
+  (item) => emit('delete', item),
 );
 
 const onDragStart = (event: DragEvent) => {

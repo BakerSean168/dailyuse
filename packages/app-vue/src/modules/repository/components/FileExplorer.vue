@@ -15,7 +15,10 @@
     </div>
 
     <!-- Empty State -->
-    <div v-if="!selectedRepository" class="flex flex-col items-center justify-center flex-1 px-4 py-12 text-center">
+    <div
+      v-if="!selectedRepository"
+      class="flex flex-col items-center justify-center flex-1 px-4 py-12 text-center"
+    >
       <FolderX class="w-12 h-12 mb-2 text-muted-foreground/50" />
       <p class="text-sm text-muted-foreground">请先选择一个仓储</p>
     </div>
@@ -26,7 +29,10 @@
     </div>
 
     <!-- Error -->
-    <div v-else-if="error" class="flex flex-col items-center justify-center flex-1 px-4 text-center">
+    <div
+      v-else-if="error"
+      class="flex flex-col items-center justify-center flex-1 px-4 text-center"
+    >
       <AlertCircle class="w-12 h-12 mb-2 text-destructive" />
       <p class="text-sm text-destructive mb-3">{{ error }}</p>
       <Button size="sm" @click="$emit('refresh')">重试</Button>
@@ -76,20 +82,21 @@ interface TreeItemData {
   raw: FolderClientDTO;
 }
 
-interface Props {
-  selectedRepository?: string | null;
-  folders: FolderClientDTO[];
-  isLoading?: boolean;
-  error?: string | null;
-  selectedFolderId?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  selectedRepository: null,
-  isLoading: false,
-  error: null,
-  selectedFolderId: null,
-});
+const props = withDefaults(
+  defineProps<{
+    selectedRepository?: string | null;
+    folders: FolderClientDTO[];
+    isLoading?: boolean;
+    error?: string | null;
+    selectedFolderId?: string | null;
+  }>(),
+  {
+    selectedRepository: null,
+    isLoading: false,
+    error: null,
+    selectedFolderId: null,
+  },
+);
 
 const emit = defineEmits<{
   'create-folder': [parentId?: string];

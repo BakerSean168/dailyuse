@@ -247,17 +247,7 @@ import {
 import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
-
-export interface KeyResultPreview {
-  id?: string;
-  title: string;
-  description?: string;
-  targetValue: number;
-  unit: string;
-  weight?: number;
-  importance?: string;
-  selected: boolean;
-}
+import type { KeyResultDraft, KeyResultPreview } from '../types';
 
 const props = defineProps<{
   results?: any[];
@@ -295,15 +285,15 @@ const isEditFormValid = computed(() => {
   );
 });
 
-function loadResults(results: any[]) {
-  keyResults.value = results.map((kr: any) => ({
+function loadResults(results: KeyResultDraft[]) {
+  keyResults.value = results.map((kr) => ({
     id: kr.id || crypto.randomUUID(),
-    title: kr.title || kr.name || '',
+    title: kr.title || '',
     description: kr.description || '',
-    targetValue: kr.targetValue || kr.target || 0,
+    targetValue: kr.targetValue || 0,
     unit: kr.unit || '',
-    weight: kr.weight || null,
-    importance: kr.importance || null,
+    weight: kr.weight,
+    importance: kr.importance,
     selected: true,
   }));
 }

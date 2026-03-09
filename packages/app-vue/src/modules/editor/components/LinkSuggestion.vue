@@ -76,17 +76,18 @@ import { FileText, Keyboard } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
-interface Props {
-  visible: boolean;
-  searchQuery: string;
-  position: { x: number; y: number };
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  visible: false,
-  searchQuery: '',
-  position: () => ({ x: 0, y: 0 }),
-});
+const props = withDefaults(
+  defineProps<{
+    visible: boolean;
+    searchQuery: string;
+    position: { x: number; y: number };
+  }>(),
+  {
+    visible: false,
+    searchQuery: '',
+    position: () => ({ x: 0, y: 0 }),
+  },
+);
 
 const emit = defineEmits<{
   select: [document: DocumentClientDTO | null];

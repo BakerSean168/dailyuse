@@ -106,15 +106,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@daily
 import type { TreeNode } from '@dailyuse/contracts/repository';
 import FileTreeNode from './FileTreeNode.vue';
 
-interface Props {
+defineProps<{
   repositoryId: string | null;
   nodes: TreeNode[];
   selectedId: string | null;
   expandedIds: string[];
   loading?: boolean;
-}
-
-defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   'create-folder': [parentId?: string];

@@ -213,28 +213,17 @@ import { RadioGroup, RadioGroupItem } from '@dailyuse/ui-vue-shadcn';
 import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
+import type { ReminderGroupFormModel } from '../types';
 
-export interface ReminderGroup {
-  id?: string;
-  name: string;
-  description?: string | null;
-  icon?: string | null;
-  color?: string | null;
-  controlMode: string;
-  order?: number;
-}
-
-export interface Props {
-  group?: ReminderGroup | null;
-}
-
-const props = defineProps<Props>();
+const props = defineProps<{
+  group?: ReminderGroupFormModel | null;
+}>();
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  save: [data: Omit<ReminderGroup, 'id'>];
-  update: [id: string, data: Omit<ReminderGroup, 'id'>];
+  save: [data: Omit<ReminderGroupFormModel, 'id'>];
+  update: [id: string, data: Omit<ReminderGroupFormModel, 'id'>];
 }>();
 
 const visible = ref(false);
@@ -291,7 +280,7 @@ const resetForm = () => {
   formData.order = 0;
 };
 
-const fillForm = (group: ReminderGroup) => {
+const fillForm = (group: ReminderGroupFormModel) => {
   formData.name = group.name;
   formData.description = group.description || '';
   formData.icon = group.icon || 'mdi-folder';
@@ -305,7 +294,7 @@ const open = () => {
   visible.value = true;
 };
 
-const openForEdit = (group: ReminderGroup) => {
+const openForEdit = (group: ReminderGroupFormModel) => {
   fillForm(group);
   visible.value = true;
 };
@@ -327,7 +316,7 @@ const handleSave = async () => {
 
   isSaving.value = true;
   try {
-    const data: Omit<ReminderGroup, 'id'> = {
+    const data: Omit<ReminderGroupFormModel, 'id'> = {
       name: formData.name.trim(),
       description: formData.description?.trim() || undefined,
       color: formData.color,

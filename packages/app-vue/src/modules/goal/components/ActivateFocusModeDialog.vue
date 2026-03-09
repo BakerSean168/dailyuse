@@ -122,16 +122,17 @@ import {
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  modelValue?: boolean;
-  goals?: Array<{ id: string; title: string }>;
-  onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeClientDTO>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: false,
-  goals: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue?: boolean;
+    goals?: Array<{ id: string; title: string }>;
+    onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeClientDTO>;
+  }>(),
+  {
+    modelValue: false,
+    goals: () => [],
+  },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];

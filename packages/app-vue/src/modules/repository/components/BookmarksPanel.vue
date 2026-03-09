@@ -65,11 +65,9 @@ import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceBookmarkClientDTO as BookmarkType } from '@dailyuse/contracts/repository';
 
-interface Props {
+const props = defineProps<{
   bookmarks: BookmarkType[];
-}
-
-const props = defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 

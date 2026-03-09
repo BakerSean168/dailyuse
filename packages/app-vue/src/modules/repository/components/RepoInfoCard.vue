@@ -1,5 +1,5 @@
 <template>
-  <Card 
+  <Card
     class="group cursor-pointer border rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/30 h-full"
     @click="$emit('click', repository)"
   >
@@ -24,7 +24,11 @@
           <span>{{ updateLabel }}: {{ formattedDate }}</span>
         </div>
 
-        <Button variant="ghost" size="icon" class="h-8 w-8 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+        >
           <ArrowRight class="h-4 w-4" />
         </Button>
       </div>
@@ -45,17 +49,18 @@ interface Repository {
   updatedAt?: string | number | Date;
 }
 
-interface Props {
-  repository: Repository;
-  updateLabel?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  updateLabel: '更新',
-});
+const props = withDefaults(
+  defineProps<{
+    repository: Repository;
+    updateLabel?: string;
+  }>(),
+  {
+    updateLabel: '更新',
+  },
+);
 
 defineEmits<{
-  (e: 'click', repository: Repository): void;
+  click: [repository: Repository];
 }>();
 
 const formattedDate = computed(() => {

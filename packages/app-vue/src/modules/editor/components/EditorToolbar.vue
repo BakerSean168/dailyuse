@@ -142,11 +142,9 @@ import {
 
 const { t } = useI18n();
 
-interface Props {
+defineProps<{
   saving?: boolean;
-}
-
-defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   'insert-text': [text: string];

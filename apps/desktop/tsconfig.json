@@ -15,13 +15,12 @@
       "@electron/*": ["./electron/*"],
       "@common/*": ["./common/*"],
 
-      // UI layer packages: resolve to source (same pattern as web's tsconfig).
-      // This ensures di/types.ts inline import() expressions degrade the same way
-      // as in the web app, avoiding dist-vs-source type identity conflicts.
+      // 开发态源码白名单：仅保留当前桌面渲染进程需要深度联调的包入口。
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
-      "@dailyuse/ai": ["../../packages/ai/src/index.ts"],
-      "@dailyuse/ai/*": ["../../packages/ai/src/*/index.ts"],
-      "@dailyuse/ui-vue-shadcn": ["../../packages/ui-vue-shadcn/src/index.ts"],
+      "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
+      "@dailyuse/ai/infrastructure-client": [
+        "../../packages/ai/src/infrastructure-client/index.ts"
+      ],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
@@ -32,6 +31,9 @@
         "../../packages/assets/src/*/index.ts",
         "../../packages/assets/src/*.ts"
       ]
+
+      // 其他 @dailyuse/* 包通过 package.json dependencies + exports → dist 解析。
+      // 让桌面构建与真实包边界对齐，而不是默认长期依赖源码直连。
     }
   },
 

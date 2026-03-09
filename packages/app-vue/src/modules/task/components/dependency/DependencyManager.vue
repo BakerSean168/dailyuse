@@ -142,13 +142,11 @@ import type {
   TaskDependencyValidationWarning,
 } from '../types';
 
-interface Props {
+const props = defineProps<{
   currentTaskId?: string;
   allTasks: TaskForDAGViewModel[];
   dependencies: TaskDependencyClientDTO[];
-}
-
-const props = defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 

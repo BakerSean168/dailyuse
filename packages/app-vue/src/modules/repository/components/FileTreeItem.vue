@@ -66,15 +66,16 @@ interface TreeItemData {
   raw: FolderClientDTO;
 }
 
-interface Props {
-  item: TreeItemData;
-  openedFolders: string[];
-  selectedId?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  selectedId: null,
-});
+const props = withDefaults(
+  defineProps<{
+    item: TreeItemData;
+    openedFolders: string[];
+    selectedId?: string | null;
+  }>(),
+  {
+    selectedId: null,
+  },
+);
 
 const emit = defineEmits<{
   select: [folder: FolderClientDTO];

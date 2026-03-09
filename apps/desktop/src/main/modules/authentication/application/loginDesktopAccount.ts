@@ -12,7 +12,8 @@ import {
 export interface DesktopLoginRequest {
   email: string;
   password: string;
-  rememberMe?: boolean;
+  rememberPassword?: boolean;
+  autoLogin?: boolean;
 }
 
 export type DesktopLoginResult = AuthFlowResult<AuthResponseDTO>;

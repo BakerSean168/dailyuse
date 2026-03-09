@@ -50,6 +50,8 @@ const Ch = {
   GET_STATUS: 'auth:get-status',
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
+  REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
+  REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
   VERIFY_TOKEN: 'auth:verify-token',
   TOKEN_STATUS: 'auth:token-status',
   SESSION_STATUS: 'auth:session-status',
@@ -138,6 +140,10 @@ export const DesktopAuthElectronModule: IElectronModule = {
     ipcMain.handle(Ch.GET_STATUS, () => desktopService.getStatus());
     ipcMain.handle(Ch.INITIALIZE, () => desktopService.initialize());
     ipcMain.handle(Ch.AUTO_LOGIN, () => desktopService.autoLogin());
+    ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_LIST, () => desktopService.getRememberedAccounts());
+    ipcMain.handle(Ch.REMEMBERED_ACCOUNTS_REMOVE, (_event, identityId: string) =>
+      desktopService.removeRememberedAccount(identityId),
+    );
     ipcMain.handle(Ch.VERIFY_TOKEN, (_event, token: string) => desktopService.verifyToken(token));
     ipcMain.handle(Ch.TOKEN_STATUS, () => desktopService.getTokenStatus());
     ipcMain.handle(Ch.SESSION_STATUS, () => desktopService.getSessionStatus());

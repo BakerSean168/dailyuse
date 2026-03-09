@@ -13,6 +13,7 @@ export * from './locales';
 export * from './router';
 export { default as MainLayout } from './layouts/MainLayout.vue';
 export { default as AuthLayout } from './layouts/AuthLayout.vue';
+export { default as DesktopAuthView } from './views/DesktopAuthView.vue';
 
 // ── Shared ──
 export * from './shared/utils/result-helpers';

@@ -29,6 +29,7 @@ import type {
   ListSessionsRes,
   RevokeSessionReq,
   GuestModeRes,
+  RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 
 export class AuthClientService {
@@ -102,5 +103,13 @@ export class AuthClientService {
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {
     return this.apiClient.enterGuestMode();
+  }
+
+  async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
+    return this.apiClient.listRememberedAccounts();
+  }
+
+  async removeRememberedAccount(identityId: string): Promise<Result<void>> {
+    return this.apiClient.removeRememberedAccount(identityId);
   }
 }

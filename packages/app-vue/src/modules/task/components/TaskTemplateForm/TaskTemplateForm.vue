@@ -71,31 +71,17 @@ import ReminderSection from './sections/ReminderSection.vue';
 import MetadataSection from './sections/MetadataSection.vue';
 import KeyResultLinksSection from './sections/KeyResultLinksSection.vue';
 import { useTaskTemplateForm } from '../../composables/useTaskTemplateForm';
-import type { TaskTemplateViewModel } from '../types';
+import type { TaskTemplateFormEmits, TaskTemplateFormProps, TaskTemplateViewModel } from '../types';
 
 const { t } = useI18n();
 
-// ===== Props 定义 =====
-interface Props {
-  modelValue?: TaskTemplateViewModel | null;
-  isEditMode?: boolean;
-  readonly?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<TaskTemplateFormProps>(), {
   modelValue: null,
   isEditMode: false,
   readonly: false,
 });
 
-// ===== Emits 定义 =====
-interface Emits {
-  'update:modelValue': [value: TaskTemplateViewModel];
-  'update:validation': [validation: { isValid: boolean }];
-  close: [];
-}
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<TaskTemplateFormEmits>();
 
 // ===== 响应式数据 =====
 const formRef = ref();

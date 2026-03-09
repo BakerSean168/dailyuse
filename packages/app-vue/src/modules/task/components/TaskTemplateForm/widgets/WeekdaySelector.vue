@@ -39,16 +39,12 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-interface Props {
+const props = defineProps<{
   modelValue: number[];
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: number[]): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: number[]];
+}>();
 
 const localSelected = computed({
   get: () => props.modelValue || [],

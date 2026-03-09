@@ -160,17 +160,13 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-interface Props {
+const props = defineProps<{
   modelValue: TaskTemplateViewModel;
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
-  (e: 'update:validation', isValid: boolean): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: TaskTemplateViewModel];
+  'update:validation': [isValid: boolean];
+}>();
 
 const tagInput = ref('');
 

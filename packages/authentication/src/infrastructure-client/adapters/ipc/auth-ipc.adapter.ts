@@ -26,6 +26,7 @@ import type {
   ListSessionsRes,
   RevokeSessionReq,
   GuestModeRes,
+  RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 
 const CHANNELS = {
@@ -43,6 +44,8 @@ const CHANNELS = {
   FORGOT_PASSWORD: 'auth:forgot-password',
   RESET_PASSWORD: 'auth:reset-password',
   ENTER_GUEST_MODE: 'auth:enter-guest-mode',
+  REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
+  REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
 } as const;
 
 export class AuthIpcAdapter implements IAuthApiClient {
@@ -102,6 +105,14 @@ export class AuthIpcAdapter implements IAuthApiClient {
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {
     return this.ipcClient.invoke(CHANNELS.ENTER_GUEST_MODE);
+  }
+
+  async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
+    return this.ipcClient.invoke(CHANNELS.REMEMBERED_ACCOUNTS_LIST);
+  }
+
+  async removeRememberedAccount(identityId: string): Promise<Result<void>> {
+    return this.ipcClient.invoke(CHANNELS.REMEMBERED_ACCOUNTS_REMOVE, identityId);
   }
 }
 

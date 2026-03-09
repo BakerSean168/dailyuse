@@ -95,14 +95,15 @@ export interface ResourceTab {
   isPinned: boolean;
 }
 
-interface Props {
-  tabs: ResourceTab[];
-  activeTabId?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  activeTabId: null,
-});
+const props = withDefaults(
+  defineProps<{
+    tabs: ResourceTab[];
+    activeTabId?: string | null;
+  }>(),
+  {
+    activeTabId: null,
+  },
+);
 
 const emit = defineEmits<{
   'switch-tab': [id: string];

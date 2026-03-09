@@ -228,41 +228,40 @@ import {
   Circle,
 } from 'lucide-vue-next';
 
-interface Props {
-  template: TaskTemplateViewModel;
-  statusFilters?: Array<{
-    label: string;
-    value: string;
-    icon: string;
-  }>;
-  onDelete?: (template: TaskTemplateViewModel) => void | Promise<void>;
-  onPause?: (template: TaskTemplateViewModel) => void | Promise<void>;
-  onActivate?: (template: TaskTemplateViewModel) => void | Promise<void>;
-  resolveGoalBindingName?: (
-    binding: TaskGoalBindingViewModel,
-    template: TaskTemplateViewModel,
-  ) => string;
-}
+const props = withDefaults(
+  defineProps<{
+    template: TaskTemplateViewModel;
+    statusFilters?: Array<{
+      label: string;
+      value: string;
+      icon: string;
+    }>;
+    onDelete?: (template: TaskTemplateViewModel) => void | Promise<void>;
+    onPause?: (template: TaskTemplateViewModel) => void | Promise<void>;
+    onActivate?: (template: TaskTemplateViewModel) => void | Promise<void>;
+    resolveGoalBindingName?: (
+      binding: TaskGoalBindingViewModel,
+      template: TaskTemplateViewModel,
+    ) => string;
+  }>(),
+  {
+    statusFilters: () => [
+      { label: 'active', value: 'active', icon: 'mdi-play-circle' },
+      { label: 'draft', value: 'draft', icon: 'mdi-file-document-outline' },
+      { label: 'paused', value: 'paused', icon: 'mdi-pause-circle' },
+      { label: 'archived', value: 'archived', icon: 'mdi-archive' },
+    ],
+  },
+);
 
-interface Emits {
-  (e: 'click', templateId: string): void;
-  (e: 'edit', templateId: string): void;
-  (e: 'delete', template: TaskTemplateViewModel): void;
-  (e: 'pause', template: TaskTemplateViewModel): void;
-  (e: 'resume', template: TaskTemplateViewModel): void;
-  (e: 'activate', template: TaskTemplateViewModel): void;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  statusFilters: () => [
-    { label: 'active', value: 'active', icon: 'mdi-play-circle' },
-    { label: 'draft', value: 'draft', icon: 'mdi-file-document-outline' },
-    { label: 'paused', value: 'paused', icon: 'mdi-pause-circle' },
-    { label: 'archived', value: 'archived', icon: 'mdi-archive' },
-  ],
-});
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  click: [templateId: string];
+  edit: [templateId: string];
+  delete: [template: TaskTemplateViewModel];
+  pause: [template: TaskTemplateViewModel];
+  resume: [template: TaskTemplateViewModel];
+  activate: [template: TaskTemplateViewModel];
+}>();
 
 // --- ActionableWrapper menu actions ---
 const menuActions = computed<MenuAction[]>(() => [

@@ -16,6 +16,7 @@ import {
   useAuthenticationStore,
   createI18nPlugin,
   registerNotificationInitializationTasks,
+  DesktopAuthView,
 } from '@dailyuse/app-vue';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { progressStart, progressDone } from '@dailyuse/ui-vue-shadcn';
@@ -102,6 +103,7 @@ async function startApp() {
   const router = createAppRouter({
     history: createWebHashHistory(),
     isAuthenticated: () => useAuthenticationStore().isAuthenticated,
+    authView: DesktopAuthView,
     additionalRoutes: [
       {
         path: '/custom-notification',

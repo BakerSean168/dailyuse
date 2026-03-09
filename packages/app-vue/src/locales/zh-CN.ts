@@ -536,10 +536,16 @@ export default {
   account: {
     title: '个人中心',
     center: '个人中心',
+    description: '昵称就是你的唯一展示名，修改后会直接持久化到当前账号。',
+    actions: {
+      logout: '退出登录',
+      saveProfile: '保存资料',
+    },
     profile: {
       editTitle: '编辑个人资料',
       changeAvatar: '更换头像',
       avatarRecommendation: '建议上传 200x200 像素的图片',
+      avatarUrl: '头像地址',
       nickname: '昵称',
       realName: '真实姓名',
       bio: '个人简介',
@@ -549,10 +555,14 @@ export default {
     },
     placeholder: {
       nickname: '请输入昵称',
+      avatarUrl: 'https://... ',
       realNameOptional: '真实姓名（选填）',
-      bio: '请输入个人简介',
+      bio: '介绍一下你自己',
       gender: '请选择性别',
       selectDate: '请选择日期',
+    },
+    status: {
+      loading: '正在加载账户资料...',
     },
     gender: {
       male: '男',
@@ -573,6 +583,13 @@ export default {
       accountClosed: '账户已注销',
       closeAccountFailed: '注销账户失败',
       closeFailed: '注销失败',
+    },
+    logoutHint: '你可以在这里安全退出当前账户，会立即返回登录页。',
+    logoutConfirm: {
+      title: '确认退出登录？',
+      description: '退出后将返回登录页，如需继续使用需要重新登录。',
+      confirmText: '退出登录',
+      cancelText: '取消',
     },
   },
 

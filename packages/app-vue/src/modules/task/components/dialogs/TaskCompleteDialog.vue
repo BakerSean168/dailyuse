@@ -300,23 +300,24 @@ interface GoalBinding {
   unit?: string;
 }
 
-interface Props {
-  taskId: string;
-  taskTitle: string;
-  instanceDate: number | Date;
-  goalBinding?: GoalBinding;
-  showQuickValues?: boolean;
-}
-
 interface CompleteTaskData {
   recordValue?: number;
   note?: string;
   duration?: number;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  showQuickValues: true,
-});
+const props = withDefaults(
+  defineProps<{
+    taskId: string;
+    taskTitle: string;
+    instanceDate: number | Date;
+    goalBinding?: GoalBinding;
+    showQuickValues?: boolean;
+  }>(),
+  {
+    showQuickValues: true,
+  },
+);
 
 const emit = defineEmits<{
   confirm: [data: CompleteTaskData];

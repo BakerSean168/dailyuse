@@ -48,15 +48,16 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  goals?: GoalClientDTO[];
-}
-
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<Props>(), {
-  goals: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    goals?: GoalClientDTO[];
+  }>(),
+  {
+    goals: () => [],
+  },
+);
 
 const isShowingMotive = ref(true);
 const currentContent = ref('');

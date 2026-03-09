@@ -9,18 +9,19 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 
-interface Props {
-  modelValue: string;
-  darkMode?: boolean;
-  readonly?: boolean;
-  placeholder?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  darkMode: false,
-  readonly: false,
-  placeholder: '',
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: string;
+    darkMode?: boolean;
+    readonly?: boolean;
+    placeholder?: string;
+  }>(),
+  {
+    darkMode: false,
+    readonly: false,
+    placeholder: '',
+  },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: string];

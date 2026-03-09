@@ -71,15 +71,16 @@ import type { TaskForDAGViewModel } from '../types';
 
 use([GraphChart, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
-interface Props {
-  tasks: TaskForDAGViewModel[];
-  dependencies: TaskDependencyClientDTO[];
-  compact?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  compact: false,
-});
+const props = withDefaults(
+  defineProps<{
+    tasks: TaskForDAGViewModel[];
+    dependencies: TaskDependencyClientDTO[];
+    compact?: boolean;
+  }>(),
+  {
+    compact: false,
+  },
+);
 
 const { t } = useI18n();
 

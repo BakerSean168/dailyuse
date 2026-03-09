@@ -29,6 +29,7 @@ import type {
   ListSessionsRes,
   RevokeSessionReq,
   GuestModeRes,
+  RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 
 export class AuthHttpAdapter implements IAuthApiClient {
@@ -102,6 +103,20 @@ export class AuthHttpAdapter implements IAuthApiClient {
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {
     return fail({ code: 'NOT_SUPPORTED', message: 'Guest mode is only available on desktop' });
+  }
+
+  async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
+    return fail({
+      code: 'NOT_SUPPORTED',
+      message: 'Remembered accounts are only available on desktop',
+    });
+  }
+
+  async removeRememberedAccount(): Promise<Result<void>> {
+    return fail({
+      code: 'NOT_SUPPORTED',
+      message: 'Remembered accounts are only available on desktop',
+    });
   }
 }
 

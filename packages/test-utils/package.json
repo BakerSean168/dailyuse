@@ -16,6 +16,9 @@
     "./setup/*": "./src/setup/*.ts"
   },
   "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/domain-shared": "workspace:*",
+    "@dailyuse/task": "workspace:*",
     "vitest": "^4.0.15"
   },
   "devDependencies": {

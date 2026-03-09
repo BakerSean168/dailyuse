@@ -546,10 +546,17 @@ export default {
   account: {
     title: 'Account',
     center: 'Account Center',
+    description:
+      'Your nickname is the primary display name and will be saved to the current account.',
+    actions: {
+      logout: 'Log Out',
+      saveProfile: 'Save Profile',
+    },
     profile: {
       editTitle: 'Edit Profile',
       changeAvatar: 'Change Avatar',
       avatarRecommendation: 'Recommended: 200x200 pixels',
+      avatarUrl: 'Avatar URL',
       nickname: 'Nickname',
       realName: 'Real Name',
       bio: 'Bio',
@@ -559,10 +566,14 @@ export default {
     },
     placeholder: {
       nickname: 'Enter nickname',
+      avatarUrl: 'https://... ',
       realNameOptional: 'Real name (optional)',
-      bio: 'Enter bio',
+      bio: 'Tell people a little about yourself',
       gender: 'Select gender',
       selectDate: 'Select date',
+    },
+    status: {
+      loading: 'Loading account profile...',
     },
     gender: {
       male: 'Male',
@@ -583,6 +594,13 @@ export default {
       accountClosed: 'Account closed',
       closeAccountFailed: 'Failed to close account',
       closeFailed: 'Close failed',
+    },
+    logoutHint: 'You can safely sign out here and return to the login page right away.',
+    logoutConfirm: {
+      title: 'Log out of your account?',
+      description: 'You will return to the sign-in page and need to log in again to continue.',
+      confirmText: 'Log Out',
+      cancelText: 'Cancel',
     },
   },
 

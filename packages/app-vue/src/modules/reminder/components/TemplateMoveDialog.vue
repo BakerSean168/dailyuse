@@ -150,33 +150,22 @@ import {
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
 
-interface ReminderTemplate {
-  id: string;
-  name: string;
-  groupId?: string | null;
-}
-
-interface ReminderGroup {
-  id: string;
-  name: string;
-  description?: string | null;
-  icon?: string | null;
-  enabled: boolean;
-}
-
-interface Props {
-  template?: ReminderTemplate | null;
-  groups?: ReminderGroup[];
-  templates?: ReminderTemplate[];
-}
+import type { ReminderMoveGroup, ReminderMoveTemplate } from '../types';
 
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<Props>(), {
-  template: null,
-  groups: () => [],
-  templates: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    template?: ReminderMoveTemplate | null;
+    groups?: ReminderMoveGroup[];
+    templates?: ReminderMoveTemplate[];
+  }>(),
+  {
+    template: null,
+    groups: () => [],
+    templates: () => [],
+  },
+);
 
 const emit = defineEmits<{
   moved: [templateId: string, targetGroupId: string | null];

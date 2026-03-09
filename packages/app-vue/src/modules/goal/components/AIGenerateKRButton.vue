@@ -143,22 +143,23 @@ import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Sparkles, Info, AlertCircle } from 'lucide-vue-next';
 
-interface Props {
-  initialGoalTitle?: string;
-  initialGoalDescription?: string;
-  initialStartDate?: number;
-  initialEndDate?: number;
-  isGenerating?: boolean;
-  error?: string | null;
-  quota?: { remainingQuota: number; quotaLimit: number } | null;
-  hasQuota?: boolean;
-  timeToReset?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isGenerating: false,
-  hasQuota: true,
-});
+const props = withDefaults(
+  defineProps<{
+    initialGoalTitle?: string;
+    initialGoalDescription?: string;
+    initialStartDate?: number;
+    initialEndDate?: number;
+    isGenerating?: boolean;
+    error?: string | null;
+    quota?: { remainingQuota: number; quotaLimit: number } | null;
+    hasQuota?: boolean;
+    timeToReset?: string | null;
+  }>(),
+  {
+    isGenerating: false,
+    hasQuota: true,
+  },
+);
 
 const { t } = useI18n();
 

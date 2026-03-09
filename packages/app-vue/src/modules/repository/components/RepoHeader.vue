@@ -86,14 +86,15 @@ import {
   Upload,
 } from 'lucide-vue-next';
 
-interface Props {
-  modelValue: 'preview' | 'manage';
-  debounceMs?: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  debounceMs: 300,
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: 'preview' | 'manage';
+    debounceMs?: number;
+  }>(),
+  {
+    debounceMs: 300,
+  },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: 'preview' | 'manage'];

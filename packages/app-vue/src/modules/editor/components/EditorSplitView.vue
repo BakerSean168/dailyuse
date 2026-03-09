@@ -21,15 +21,16 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  viewMode?: 'edit' | 'preview' | 'split';
-  initialSplitPosition?: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  viewMode: 'split',
-  initialSplitPosition: 50,
-});
+const props = withDefaults(
+  defineProps<{
+    viewMode?: 'edit' | 'preview' | 'split';
+    initialSplitPosition?: number;
+  }>(),
+  {
+    viewMode: 'split',
+    initialSplitPosition: 50,
+  },
+);
 
 const emit = defineEmits<{
   'split-position-change': [position: number];

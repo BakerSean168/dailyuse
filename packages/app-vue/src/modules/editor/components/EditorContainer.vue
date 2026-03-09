@@ -50,21 +50,20 @@ import MediaViewer from './MediaViewer.vue';
 
 const { t } = useI18n();
 
-interface Props {
-  initialTabs?: EditorTab[];
-}
+const props = withDefaults(
+  defineProps<{
+    initialTabs?: EditorTab[];
+  }>(),
+  {
+    initialTabs: () => [],
+  },
+);
 
-const props = withDefaults(defineProps<Props>(), {
-  initialTabs: () => [],
-});
-
-interface Emits {
-  (e: 'content-change', tab: EditorTab): void;
-  (e: 'tab-close', tab: EditorTab): void;
-  (e: 'save-request', tab: EditorTab): void;
-}
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  'content-change': [tab: EditorTab];
+  'tab-close': [tab: EditorTab];
+  'save-request': [tab: EditorTab];
+}>();
 
 const tabs = ref<EditorTab[]>([...props.initialTabs]);
 

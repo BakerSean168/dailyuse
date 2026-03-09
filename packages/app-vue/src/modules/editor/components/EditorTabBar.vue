@@ -1,6 +1,10 @@
 <template>
   <div class="border-b bg-background">
-    <Tabs :model-value="String(activeTabIndex)" @update:model-value="activeTabIndex = Number($event)" class="w-full">
+    <Tabs
+      :model-value="String(activeTabIndex)"
+      @update:model-value="activeTabIndex = Number($event)"
+      class="w-full"
+    >
       <TabsList class="h-10 w-full justify-start rounded-none bg-transparent p-0">
         <TabsTrigger
           v-for="(tab, index) in tabs"
@@ -11,11 +15,8 @@
         >
           <component :is="getFileIcon(tab.fileType)" class="h-4 w-4 mr-2" />
           <span class="text-sm max-w-[120px] truncate">{{ tab.title }}</span>
-          
-          <div
-            v-if="tab.isDirty"
-            class="w-2 h-2 rounded-full bg-orange-500 ml-1"
-          />
+
+          <div v-if="tab.isDirty" class="w-2 h-2 rounded-full bg-orange-500 ml-1" />
 
           <Button
             variant="ghost"
@@ -40,22 +41,21 @@ import { FileText, Image, Video, Music, File, X } from 'lucide-vue-next';
 
 export type EditorTab = SimpleEditorTab;
 
-interface Props {
-  tabs: EditorTab[];
-  activeTab?: string;
-}
+const props = withDefaults(
+  defineProps<{
+    tabs: EditorTab[];
+    activeTab?: string;
+  }>(),
+  {
+    activeTab: undefined,
+  },
+);
 
-const props = withDefaults(defineProps<Props>(), {
-  activeTab: undefined,
-});
-
-interface Emits {
-  (e: 'tab-click', tab: EditorTab): void;
-  (e: 'tab-close', tab: EditorTab): void;
-  (e: 'update:activeTab', id: string): void;
-}
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  'tab-click': [tab: EditorTab];
+  'tab-close': [tab: EditorTab];
+  'update:activeTab': [id: string];
+}>();
 
 const activeTabIndex = computed({
   get: () => {

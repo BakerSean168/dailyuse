@@ -62,16 +62,12 @@ interface SnoozeConfig {
   maxCount: number;
 }
 
-interface Props {
+const props = defineProps<{
   modelValue: SnoozeConfig;
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: SnoozeConfig): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: SnoozeConfig];
+}>();
 
 const localSnooze = computed({
   get: () => props.modelValue,

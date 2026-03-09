@@ -119,20 +119,21 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  focusModeHistory?: FocusModeClientDTO[];
-  isLoading?: boolean;
-  goals?: Array<{ id: string; title: string }>;
-  onRefresh?: () => Promise<void>;
-  onExtend?: (item: FocusModeClientDTO, newEndTime: number) => Promise<void>;
-  onDeactivate?: (id: string) => Promise<void>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  focusModeHistory: () => [],
-  isLoading: false,
-  goals: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    focusModeHistory?: FocusModeClientDTO[];
+    isLoading?: boolean;
+    goals?: Array<{ id: string; title: string }>;
+    onRefresh?: () => Promise<void>;
+    onExtend?: (item: FocusModeClientDTO, newEndTime: number) => Promise<void>;
+    onDeactivate?: (id: string) => Promise<void>;
+  }>(),
+  {
+    focusModeHistory: () => [],
+    isLoading: false,
+    goals: () => [],
+  },
+);
 
 const { t, locale } = useI18n();
 

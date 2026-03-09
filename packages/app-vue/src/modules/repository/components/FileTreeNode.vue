@@ -63,14 +63,12 @@ import {
 } from 'lucide-vue-next';
 import type { TreeNode } from '@dailyuse/contracts/repository';
 
-interface Props {
+const props = defineProps<{
   node: TreeNode;
   level: number;
   selectedId: string | null;
   expandedIds: string[];
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   select: [node: TreeNode];

@@ -47,15 +47,15 @@
           <div v-else class="flex flex-col items-center justify-center py-4 text-center">
             <component :is="getPreviewIcon()" class="w-8 h-8 mb-2 text-muted-foreground" />
             <span class="text-sm font-medium mb-1">{{ content.name }}</span>
-            <span v-if="content.size" class="text-xs text-muted-foreground">{{ formatSize(content.size) }}</span>
+            <span v-if="content.size" class="text-xs text-muted-foreground">{{
+              formatSize(content.size)
+            }}</span>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="flex justify-end gap-2 px-3 py-2 border-t bg-muted/50">
-          <Button variant="ghost" size="sm" @click.stop="$emit('open', content)">
-            打开
-          </Button>
+          <Button variant="ghost" size="sm" @click.stop="$emit('open', content)"> 打开 </Button>
           <Button variant="ghost" size="sm" @click.stop="$emit('copy-link', content)">
             复制链接
           </Button>
@@ -80,13 +80,11 @@ interface PreviewContent {
   id?: string;
 }
 
-interface Props {
+const props = defineProps<{
   visible: boolean;
   content: PreviewContent | null;
   position: { x: number; y: number };
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   'update:visible': [value: boolean];

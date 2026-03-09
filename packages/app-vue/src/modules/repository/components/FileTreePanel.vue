@@ -94,18 +94,19 @@ import type { TreeNode } from '@dailyuse/contracts/repository';
 
 const { t } = useI18n();
 
-interface Props {
-  nodes: TreeNode[];
-  isLoading?: boolean;
-  showFileInfo?: boolean;
-  isAllExpanded?: boolean;
-}
-
-withDefaults(defineProps<Props>(), {
-  isLoading: false,
-  showFileInfo: false,
-  isAllExpanded: false,
-});
+withDefaults(
+  defineProps<{
+    nodes: TreeNode[];
+    isLoading?: boolean;
+    showFileInfo?: boolean;
+    isAllExpanded?: boolean;
+  }>(),
+  {
+    isLoading: false,
+    showFileInfo: false,
+    isAllExpanded: false,
+  },
+);
 
 defineEmits<{
   refresh: [];

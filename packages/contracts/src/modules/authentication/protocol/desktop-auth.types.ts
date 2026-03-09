@@ -158,7 +158,8 @@ export interface RefreshSessionResponse {
 export interface LoginRequest {
   identifier: string;
   password: string;
-  rememberMe?: boolean;
+  rememberPassword?: boolean;
+  autoLogin?: boolean;
 }
 
 /**
@@ -269,7 +270,19 @@ export interface AuthOperationResult {
 export interface EmailLoginCredentials {
   email: string;
   password: string;
-  rememberMe?: boolean;
+  rememberPassword?: boolean;
+  autoLogin?: boolean;
+}
+
+export interface RememberedDesktopAccountDTO {
+  identityId: string;
+  identifier: string;
+  nickname: string | null;
+  avatarUrl: string | null;
+  rememberPassword: boolean;
+  autoLogin: boolean;
+  lastUsedAt: number;
+  lastLoginAt: number;
 }
 
 // ============================================================================

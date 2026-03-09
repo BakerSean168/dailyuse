@@ -198,20 +198,21 @@ interface StatusFilter {
   icon: string;
 }
 
-interface Props {
-  templates: TaskTemplateViewModel[];
-  dependencies: TaskDependencyClientDTO[];
-  statusFilters?: StatusFilter[];
-  onCreateDependency?: (sourceId: string, targetId: string) => Promise<boolean> | boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  statusFilters: () => [
-    { label: 'ACTIVE', value: 'ACTIVE', icon: 'mdi-play-circle' },
-    { label: 'PAUSED', value: 'PAUSED', icon: 'mdi-pause-circle' },
-    { label: 'ARCHIVED', value: 'ARCHIVED', icon: 'mdi-archive' },
-  ],
-});
+const props = withDefaults(
+  defineProps<{
+    templates: TaskTemplateViewModel[];
+    dependencies: TaskDependencyClientDTO[];
+    statusFilters?: StatusFilter[];
+    onCreateDependency?: (sourceId: string, targetId: string) => Promise<boolean> | boolean;
+  }>(),
+  {
+    statusFilters: () => [
+      { label: 'ACTIVE', value: 'ACTIVE', icon: 'mdi-play-circle' },
+      { label: 'PAUSED', value: 'PAUSED', icon: 'mdi-pause-circle' },
+      { label: 'ARCHIVED', value: 'ARCHIVED', icon: 'mdi-archive' },
+    ],
+  },
+);
 
 const emit = defineEmits<{
   (e: 'create-template'): void;

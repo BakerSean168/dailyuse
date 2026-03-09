@@ -112,15 +112,16 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-interface Props {
-  tasks?: TaskInstanceViewModel[];
-  onNavigateToManagement?: () => void | Promise<void>;
-  onToggleComplete?: (task: TaskInstanceViewModel) => void | Promise<void>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  tasks: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    tasks?: TaskInstanceViewModel[];
+    onNavigateToManagement?: () => void | Promise<void>;
+    onToggleComplete?: (task: TaskInstanceViewModel) => void | Promise<void>;
+  }>(),
+  {
+    tasks: () => [],
+  },
+);
 
 const emit = defineEmits<{
   (e: 'navigate-management'): void;

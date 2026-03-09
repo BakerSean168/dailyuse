@@ -158,15 +158,16 @@ import {
   Palmtree,
 } from 'lucide-vue-next';
 
-interface Props {
-  taskInstances: TaskInstanceViewModel[];
-  loading?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  taskInstances: () => [],
-  loading: false,
-});
+const props = withDefaults(
+  defineProps<{
+    taskInstances: TaskInstanceViewModel[];
+    loading?: boolean;
+  }>(),
+  {
+    taskInstances: () => [],
+    loading: false,
+  },
+);
 
 const emit = defineEmits<{
   (e: 'refresh'): void;

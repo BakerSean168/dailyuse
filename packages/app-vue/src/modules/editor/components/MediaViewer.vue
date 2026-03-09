@@ -79,15 +79,16 @@ import { Music, FileQuestion, AlertCircle } from 'lucide-vue-next';
 
 const { t } = useI18n();
 
-interface Props {
-  filePath: string;
-  fileType: 'image' | 'video' | 'audio';
-  fileName?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  fileName: 'Untitled',
-});
+const props = withDefaults(
+  defineProps<{
+    filePath: string;
+    fileType: 'image' | 'video' | 'audio';
+    fileName?: string;
+  }>(),
+  {
+    fileName: 'Untitled',
+  },
+);
 
 const loading = ref(false);
 const error = ref<string | null>(null);

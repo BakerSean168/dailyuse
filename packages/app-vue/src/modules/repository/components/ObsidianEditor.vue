@@ -191,21 +191,22 @@ import {
   DropdownMenuTrigger,
 } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  content: string;
-  fileName?: string;
-  folderPath?: string;
-  isSaving?: boolean;
-  isDirty?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  content: '',
-  fileName: '',
-  folderPath: '',
-  isSaving: false,
-  isDirty: false,
-});
+const props = withDefaults(
+  defineProps<{
+    content: string;
+    fileName?: string;
+    folderPath?: string;
+    isSaving?: boolean;
+    isDirty?: boolean;
+  }>(),
+  {
+    content: '',
+    fileName: '',
+    folderPath: '',
+    isSaving: false,
+    isDirty: false,
+  },
+);
 
 const emit = defineEmits<{
   save: [content: string];

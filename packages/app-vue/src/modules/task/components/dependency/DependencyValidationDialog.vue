@@ -114,19 +114,15 @@ import {
 import { AlertCircle, CheckCircle, ArrowDown, RefreshCw, Info, Network } from 'lucide-vue-next';
 import type { TaskDependencyValidationError, TaskForDAGViewModel } from '../types';
 
-interface Props {
+const props = defineProps<{
   modelValue: boolean;
   error: TaskDependencyValidationError | null;
   tasks?: TaskForDAGViewModel[];
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'view-graph'): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean];
+  'view-graph': [];
+}>();
 
 const { t } = useI18n();
 

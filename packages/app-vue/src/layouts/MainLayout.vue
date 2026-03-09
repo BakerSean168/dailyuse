@@ -2,7 +2,7 @@
 import { computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { BOTTOM_NAVIGATION_KEY, LOGOUT_HANDLER_KEY, MAIN_NAVIGATION_KEY } from '../di/keys';
+import { BOTTOM_NAVIGATION_KEY, MAIN_NAVIGATION_KEY } from '../di/keys';
 import { defaultMainNavigation, defaultBottomNavigation } from '../di/navigation';
 
 const { t } = useI18n();
@@ -11,7 +11,6 @@ const route = useRoute();
 
 const mainNavigation = computed(() => inject(MAIN_NAVIGATION_KEY) ?? defaultMainNavigation);
 const bottomNavigation = computed(() => inject(BOTTOM_NAVIGATION_KEY) ?? defaultBottomNavigation);
-const logout = inject(LOGOUT_HANDLER_KEY);
 
 const isActive = (path: string) =>
   path === '/' ? route.path === '/' : route.path.startsWith(path);
@@ -61,14 +60,6 @@ const navigateTo = (path: string) => {
           @click="navigateTo(item.path)"
         >
           {{ t(item.title) }}
-        </button>
-
-        <button
-          v-if="logout"
-          class="w-full text-left px-2 py-2 rounded transition-colors hover:bg-sidebar-accent hover:text-destructive"
-          @click="logout"
-        >
-          {{ t('nav.logout') }}
         </button>
       </div>
     </aside>

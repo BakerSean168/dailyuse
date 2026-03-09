@@ -20,6 +20,10 @@ function getRegisteredService(): AuthDesktopApplicationService {
   return authService;
 }
 
+export function getDesktopAuthService(): AuthDesktopApplicationService {
+  return getRegisteredService();
+}
+
 export class DesktopAuthContextProvider {
   async getIdentityId(): Promise<string | null> {
     return getRegisteredService().getCurrentIdentityId();

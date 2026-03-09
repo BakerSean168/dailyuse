@@ -46,15 +46,16 @@ import { CheckCircle2, Circle, Clock, Check } from 'lucide-vue-next';
 import type { TaskInstanceViewModel } from './types';
 
 // Props
-interface Props {
-  task: TaskInstanceViewModel;
-  showBorder?: boolean;
-  taskTitle?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showBorder: true,
-});
+const props = withDefaults(
+  defineProps<{
+    task: TaskInstanceViewModel;
+    showBorder?: boolean;
+    taskTitle?: string;
+  }>(),
+  {
+    showBorder: true,
+  },
+);
 
 const { t } = useI18n();
 

@@ -26,7 +26,7 @@
               Basic Information
             </h3>
             <Separator />
-            
+
             <div class="space-y-3">
               <div class="flex items-start gap-3">
                 <FileText class="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -59,7 +59,9 @@
                 <div class="flex-1">
                   <p class="text-sm font-medium">Trigger Configuration</p>
                   <div class="flex flex-wrap gap-1 mt-1">
-                    <Badge variant="secondary">Type: {{ template.trigger.type || 'unknown' }}</Badge>
+                    <Badge variant="secondary"
+                      >Type: {{ template.trigger.type || 'unknown' }}</Badge
+                    >
                     <Badge v-if="template.trigger.interval" variant="secondary">
                       Interval: {{ template.trigger.interval.minutes }} min
                     </Badge>
@@ -79,7 +81,7 @@
               Statistics
             </h3>
             <Separator />
-            
+
             <div class="grid grid-cols-3 gap-4">
               <Card class="p-4 text-center">
                 <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
@@ -103,7 +105,7 @@
               Time Information
             </h3>
             <Separator />
-            
+
             <div class="space-y-3">
               <div class="flex items-start gap-3">
                 <CalendarPlus class="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -126,10 +128,14 @@
           <!-- Status Toggle -->
           <div class="flex items-center justify-between p-4 border rounded-lg">
             <div class="flex items-center gap-3">
-              <Power :class="['h-5 w-5', template.effectiveEnabled ? 'text-green-600' : 'text-gray-400']" />
+              <Power
+                :class="['h-5 w-5', template.effectiveEnabled ? 'text-green-600' : 'text-gray-400']"
+              />
               <div>
                 <p class="text-sm font-medium">Template Status</p>
-                <p class="text-xs text-muted-foreground">{{ template.effectiveEnabled ? 'Currently active' : 'Currently paused' }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ template.effectiveEnabled ? 'Currently active' : 'Currently paused' }}
+                </p>
               </div>
             </div>
             <Switch
@@ -190,35 +196,16 @@ import { Card } from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
+import type { ReminderTemplateCardModel } from '../types';
 
-interface ReminderTemplate {
-  id: string;
-  name: string;
-  description?: string | null;
-  icon?: string | null;
-  color?: string | null;
-  effectiveEnabled: boolean;
-  groupId?: string | null;
-  triggerText?: string;
-  trigger?: {
-    type: string;
-    interval?: { minutes: number; [key: string]: unknown } | null;
-    fixedTime?: { time: string; [key: string]: unknown } | null;
-  };
-  createdAt?: number;
-  updatedAt?: number;
-}
-
-interface Props {
-  template?: ReminderTemplate | null;
-}
-
-const props = defineProps<Props>();
+const props = defineProps<{
+  template?: ReminderTemplateCardModel | null;
+}>();
 
 const emit = defineEmits<{
-  'edit-template': [template: ReminderTemplate];
+  'edit-template': [template: ReminderTemplateCardModel];
   'view-instances': [templateId: string];
-  'status-changed': [template: ReminderTemplate, enabled: boolean];
+  'status-changed': [template: ReminderTemplateCardModel, enabled: boolean];
 }>();
 
 const visible = ref(false);
@@ -245,7 +232,7 @@ const handleVisibleChange = (value: boolean) => {
 
 const handleToggleStatus = async (enabled: boolean) => {
   if (!props.template) return;
-  
+
   isTogglingStatus.value = true;
   try {
     emit('status-changed', props.template, enabled);

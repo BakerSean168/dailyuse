@@ -203,27 +203,28 @@ interface Filters {
   priorities?: string[];
 }
 
-interface Props {
-  visible?: boolean;
-  title?: string;
-  isLoading?: boolean;
-  error?: string | null;
-  groupedReminders?: GroupedReminder[];
-  stats?: Stats | null;
-  filters?: Filters;
-}
-
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<Props>(), {
-  visible: true,
-  title: undefined,
-  isLoading: false,
-  error: null,
-  groupedReminders: () => [],
-  stats: null,
-  filters: () => ({ days: '1' }),
-});
+const props = withDefaults(
+  defineProps<{
+    visible?: boolean;
+    title?: string;
+    isLoading?: boolean;
+    error?: string | null;
+    groupedReminders?: GroupedReminder[];
+    stats?: Stats | null;
+    filters?: Filters;
+  }>(),
+  {
+    visible: true,
+    title: undefined,
+    isLoading: false,
+    error: null,
+    groupedReminders: () => [],
+    stats: null,
+    filters: () => ({ days: '1' }),
+  },
+);
 
 const emit = defineEmits<{
   refresh: [];

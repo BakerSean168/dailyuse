@@ -13,6 +13,8 @@
       "@dailyuse/domain-shared": ["packages/domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/*": ["packages/domain-shared/src/*/index.ts"],
       "@dailyuse/task": ["packages/task/src/index.ts"],
+      "@dailyuse/task/domain-shared": ["packages/task/src/domain-shared/index.ts"],
+      "@dailyuse/task/domain-server": ["packages/task/src/domain-server/index.ts"],
       "@dailyuse/task/*": ["packages/task/src/*/index.ts"],
       "@dailyuse/utils": ["packages/utils/src/index.ts"],
       "@dailyuse/utils/*": ["packages/utils/src/*/index.ts"],

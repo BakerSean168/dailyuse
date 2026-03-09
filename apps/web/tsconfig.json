@@ -56,19 +56,26 @@
       // 项目内部别名：@/ 指向 src 目录
       "@/*": ["./src/*"],
 
-      // ✅ App 层包：直接指向 source，因为 web 深度集成其 Vue 组件/composables
+      // ✅ 开发态源码白名单：仅保留当前需要深度联调的 workspace 包
       "@dailyuse/app-vue": ["../../packages/app-vue/src/index.ts"],
-      "@dailyuse/ai": ["../../packages/ai/src/index.ts"],
-      "@dailyuse/ai/*": ["../../packages/ai/src/*/index.ts"],
+      "@dailyuse/authentication/application-client": [
+        "../../packages/authentication/src/application-client/index.ts"
+      ],
+      "@dailyuse/authentication/infrastructure-client": [
+        "../../packages/authentication/src/infrastructure-client/index.ts"
+      ],
+      "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
+      "@dailyuse/ai/infrastructure-client": [
+        "../../packages/ai/src/infrastructure-client/index.ts"
+      ],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
       ],
       "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"]
 
-      // @dailyuse/ui-vue-shadcn 通过 package.json exports → dist 解析。
-      // 不能指向 source，因其内部 @/ 别名在 web 的 tsconfig 中会错误解析。
-      // 其他 @dailyuse/* 包同样通过 dist 解析。
+      // 其他 @dailyuse/* 包通过 package.json dependencies + exports → dist 解析。
+      // 这样让 build 阶段回到真实包边界，而不是长期依赖源码直连。
       // DI 类型使用 PublicInterface<T> 工具类型消除了 source-vs-dist
       // 的 private property 名义类型冲突。
     }

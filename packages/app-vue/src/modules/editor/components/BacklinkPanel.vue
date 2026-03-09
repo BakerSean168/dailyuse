@@ -115,14 +115,15 @@ interface BacklinkDTO {
   context: string;
 }
 
-interface Props {
-  documentId: string;
-  autoLoad?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  autoLoad: true,
-});
+const props = withDefaults(
+  defineProps<{
+    documentId: string;
+    autoLoad?: boolean;
+  }>(),
+  {
+    autoLoad: true,
+  },
+);
 
 const emit = defineEmits<{
   navigate: [sourceDocumentId: string];

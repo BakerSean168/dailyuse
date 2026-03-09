@@ -10,7 +10,7 @@
           <FileText class="h-4 w-4" />
           {{ resourceName }}
         </CardTitle>
-        
+
         <div class="flex items-center gap-2">
           <Badge v-if="isSaving" variant="secondary" class="text-xs">
             <Loader2 class="mr-1 h-3 w-3 animate-spin" />
@@ -24,10 +24,8 @@
             <Check class="mr-1 h-3 w-3" />
             已保存
           </Badge>
-          
-          <Badge v-if="wordCount" variant="outline" class="text-xs">
-            {{ wordCount }} 字
-          </Badge>
+
+          <Badge v-if="wordCount" variant="outline" class="text-xs"> {{ wordCount }} 字 </Badge>
         </div>
       </div>
     </CardHeader>
@@ -44,22 +42,23 @@ import { FileText, Loader2, Circle, Check } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  resourceId: string;
-  resourceName?: string;
-  content?: string;
-  isSaving?: boolean;
-  hasUnsavedChanges?: boolean;
-  wordCount?: number;
-}
-
-withDefaults(defineProps<Props>(), {
-  resourceName: '未命名资源',
-  content: '',
-  isSaving: false,
-  hasUnsavedChanges: false,
-  wordCount: 0,
-});
+withDefaults(
+  defineProps<{
+    resourceId: string;
+    resourceName?: string;
+    content?: string;
+    isSaving?: boolean;
+    hasUnsavedChanges?: boolean;
+    wordCount?: number;
+  }>(),
+  {
+    resourceName: '未命名资源',
+    content: '',
+    isSaving: false,
+    hasUnsavedChanges: false,
+    wordCount: 0,
+  },
+);
 
 const emit = defineEmits<{
   'save-content': [content: string];

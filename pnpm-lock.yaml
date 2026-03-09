@@ -442,19 +442,6 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@dailyuse/assets':
-        specifier: workspace:*
-        version: link:../../packages/assets
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.5.0
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      gray-matter:
-        specifier: 4.0.3
-        version: 4.0.3
-    devDependencies:
       '@dailyuse/account':
         specifier: workspace:*
         version: link:../../packages/account
@@ -464,18 +451,15 @@ importers:
       '@dailyuse/app-vue':
         specifier: workspace:*
         version: link:../../packages/app-vue
+      '@dailyuse/assets':
+        specifier: workspace:*
+        version: link:../../packages/assets
       '@dailyuse/authentication':
         specifier: workspace:*
         version: link:../../packages/authentication
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@dailyuse/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@dailyuse/editor':
-        specifier: workspace:*
-        version: link:../../packages/editor
       '@dailyuse/goal':
         specifier: workspace:*
         version: link:../../packages/goal
@@ -509,6 +493,22 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      better-sqlite3:
+        specifier: ^12.5.0
+        version: 12.5.0
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      gray-matter:
+        specifier: 4.0.3
+        version: 4.0.3
+    devDependencies:
+      '@dailyuse/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@dailyuse/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
       '@electron/rebuild':
         specifier: ^4.0.1
         version: 4.0.3
@@ -620,6 +620,9 @@ importers:
       '@dailyuse/account':
         specifier: workspace:*
         version: link:../../packages/account
+      '@dailyuse/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@dailyuse/app-vue':
         specifier: workspace:*
         version: link:../../packages/app-vue
@@ -1477,6 +1480,15 @@ importers:
 
   packages/test-utils:
     dependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/domain-shared':
+        specifier: workspace:*
+        version: link:../domain-shared
+      '@dailyuse/task':
+        specifier: workspace:*
+        version: link:../task
       vitest:
         specifier: ^4.0.15
         version: 4.0.15(@opentelemetry/api@1.9.0)(@types/node@22.13.14)(@vitest/ui@4.0.15)(happy-dom@20.0.11)(jiti@2.4.2)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.10(@types/node@22.13.14)(typescript@5.9.3))(sass-embedded@1.96.0)(sass@1.96.0)(stylus@0.57.0)(tsx@4.21.0)(yaml@2.8.2)

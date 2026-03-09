@@ -158,14 +158,13 @@ import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
 import TemplateDesktopCard from '../components/TemplateDesktopCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
-import GroupDialog, {
-  type ReminderGroup as ReminderGroupDialogGroup,
-} from '../components/GroupDialog.vue';
+import GroupDialog from '../components/GroupDialog.vue';
 import { useReminder } from '../composables/useReminder';
 import type {
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
 } from '@dailyuse/contracts/reminder';
+import type { ReminderGroupFormModel } from '../types';
 
 const {
   templates,
@@ -277,7 +276,7 @@ async function handleUpdateGroup(id: string, data: Record<string, unknown>) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getGroupActions(group: ReminderGroupDialogGroup): MenuAction[] {
+function getGroupActions(group: ReminderGroupFormModel): MenuAction[] {
   return [
     {
       key: 'edit',
@@ -297,13 +296,13 @@ function getGroupActions(group: ReminderGroupDialogGroup): MenuAction[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleEditGroup(group: ReminderGroupDialogGroup) {
+function handleEditGroup(group: ReminderGroupFormModel) {
   editingGroup.value = group as ReminderGroupClientDTO;
   groupDialogRef.value?.openForEdit(group);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleDeleteGroup(group: ReminderGroupDialogGroup) {
+async function handleDeleteGroup(group: ReminderGroupFormModel) {
   if (!window.confirm(t('reminder.group.confirmDelete'))) return;
   if (!group.id) return;
   const ok = await deleteGroup(group.id);

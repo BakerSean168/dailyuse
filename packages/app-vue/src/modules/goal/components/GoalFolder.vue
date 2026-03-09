@@ -85,18 +85,16 @@ import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 
-interface Props {
+const props = defineProps<{
   goalFolders: any[];
   selectedFolderId: string;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
-  (e: 'select', id: string): void;
-  (e: 'create'): void;
-  (e: 'edit', folder: any): void;
-  (e: 'delete', id: string): void;
+  select: [id: string];
+  create: [];
+  edit: [folder: any];
+  delete: [id: string];
 }>();
 
 const selectFolder = (id: string) => {

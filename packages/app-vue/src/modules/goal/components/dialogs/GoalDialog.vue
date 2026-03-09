@@ -299,12 +299,20 @@
                     {{ index + 1 }}.
                   </span>
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate">{{ kr.title || t('goal.dialog.krTitle') }}</p>
+                    <p class="text-sm font-medium truncate">
+                      {{ kr.title || t('goal.dialog.krTitle') }}
+                    </p>
                     <p class="text-xs text-muted-foreground mt-1">
-                      {{ kr.valueType }} · {{ kr.currentValue }} / {{ kr.targetValue }} · {{ t('goal.dialog.krWeight') }} {{ kr.weight }}
+                      {{ kr.valueType }} · {{ kr.currentValue }} / {{ kr.targetValue }} ·
+                      {{ t('goal.dialog.krWeight') }} {{ kr.weight }}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0" @click="editKr(kr._localId)">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8 shrink-0"
+                    @click="editKr(kr._localId)"
+                  >
                     <Pencil class="h-4 w-4" />
                   </Button>
                   <Button
@@ -407,21 +415,22 @@ import type { GoalFolderId, GoalId } from '@dailyuse/contracts/primitives';
 
 // ── Props & Emits ──────────────────────────────────────────────────────
 
-interface Props {
-  mode?: 'create' | 'edit';
-  goal?: GoalClientDTO | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'create',
-  goal: null,
-});
+const props = withDefaults(
+  defineProps<{
+    mode?: 'create' | 'edit';
+    goal?: GoalClientDTO | null;
+  }>(),
+  {
+    mode: 'create',
+    goal: null,
+  },
+);
 
 const open = defineModel<boolean>('open', { default: false });
 
 const emit = defineEmits<{
-  (e: 'created'): void;
-  (e: 'updated'): void;
+  created: [];
+  updated: [];
 }>();
 
 // ── Composable ─────────────────────────────────────────────────────────
@@ -541,7 +550,8 @@ function buildKrDto(kr: LocalKr): KeyResultClientDTO {
     description: null,
     progress: {
       valueType: kr.valueType as KeyResultClientDTO['progress']['valueType'],
-      aggregationMethod: kr.calculationMethod as KeyResultClientDTO['progress']['aggregationMethod'],
+      aggregationMethod:
+        kr.calculationMethod as KeyResultClientDTO['progress']['aggregationMethod'],
       initialValue: kr.initialValue,
       targetValue: kr.targetValue,
       currentValue: kr.currentValue,
@@ -597,7 +607,9 @@ function handleSaveKr(payload: {
 }) {
   const data = payload.keyResult;
   const existing = payload.isEditing
-    ? krList.value.find((item) => item._existingId === data.id || `tmp-${item._localId}` === data.id)
+    ? krList.value.find(
+        (item) => item._existingId === data.id || `tmp-${item._localId}` === data.id,
+      )
     : null;
 
   if (existing) {

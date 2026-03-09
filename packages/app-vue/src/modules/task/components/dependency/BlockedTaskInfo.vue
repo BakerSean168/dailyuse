@@ -71,12 +71,10 @@ interface BlockingTask {
   estimatedMinutes?: number | null;
 }
 
-interface Props {
+const props = defineProps<{
   blockingTasks: BlockingTask[];
   totalPredecessors: number;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 

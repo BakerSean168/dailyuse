@@ -74,11 +74,9 @@ import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 
-interface Props {
+const props = defineProps<{
   repository: RepositoryClientDTO;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   'view-details': [repository: RepositoryClientDTO];

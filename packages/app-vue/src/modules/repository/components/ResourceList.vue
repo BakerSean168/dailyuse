@@ -58,15 +58,16 @@ import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
-interface Props {
-  resources: ResourceClientDTO[];
-  selectedId?: string;
-  bookmarkedIds?: string[];
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  bookmarkedIds: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    resources: ResourceClientDTO[];
+    selectedId?: string;
+    bookmarkedIds?: string[];
+  }>(),
+  {
+    bookmarkedIds: () => [],
+  },
+);
 
 const emit = defineEmits<{
   select: [resource: ResourceClientDTO];

@@ -33,7 +33,9 @@
       <div v-else-if="!scheduleStatus || !scheduleStatus.hasSchedule" class="text-center py-8">
         <CalendarClock class="h-12 w-12 text-muted-foreground mx-auto mb-2" />
         <p class="text-sm font-medium">No Schedule Set</p>
-        <p class="text-xs text-muted-foreground mt-1">This reminder template has no automatic schedule configured</p>
+        <p class="text-xs text-muted-foreground mt-1">
+          This reminder template has no automatic schedule configured
+        </p>
       </div>
 
       <!-- Schedule Details -->
@@ -43,7 +45,9 @@
           <Clock class="h-5 w-5 text-muted-foreground mt-0.5" />
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium">Cron Expression</p>
-            <code class="text-xs bg-muted px-2 py-1 rounded mt-1 block">{{ scheduleStatus.cronExpression }}</code>
+            <code class="text-xs bg-muted px-2 py-1 rounded mt-1 block">{{
+              scheduleStatus.cronExpression
+            }}</code>
           </div>
         </div>
 
@@ -63,7 +67,9 @@
             <p class="text-sm font-medium">Next Execution</p>
             <p class="text-sm text-primary font-medium mt-1">
               {{ formatDateTime(scheduleStatus.nextRunAt) }}
-              <span class="text-xs text-muted-foreground ml-1">({{ getRelativeTime(scheduleStatus.nextRunAt) }})</span>
+              <span class="text-xs text-muted-foreground ml-1"
+                >({{ getRelativeTime(scheduleStatus.nextRunAt) }})</span
+              >
             </p>
           </div>
         </div>
@@ -85,7 +91,9 @@
           <Hash class="h-5 w-5 text-muted-foreground mt-0.5" />
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium">Execution Count</p>
-            <p class="text-sm text-muted-foreground mt-1">{{ scheduleStatus.executionCount }} times</p>
+            <p class="text-sm text-muted-foreground mt-1">
+              {{ scheduleStatus.executionCount }} times
+            </p>
           </div>
         </div>
 
@@ -101,7 +109,11 @@
         </div>
 
         <!-- Recent Executions -->
-        <Accordion v-if="scheduleStatus.recentExecutions && scheduleStatus.recentExecutions.length > 0" type="single" collapsible>
+        <Accordion
+          v-if="scheduleStatus.recentExecutions && scheduleStatus.recentExecutions.length > 0"
+          type="single"
+          collapsible
+        >
           <AccordionItem value="history">
             <AccordionTrigger>
               <div class="flex items-center gap-2">
@@ -118,7 +130,9 @@
                 >
                   <div class="flex-1">
                     <p class="text-xs">{{ formatDateTime(execution.executedAt) }}</p>
-                    <p v-if="execution.error" class="text-xs text-destructive mt-1">{{ execution.error }}</p>
+                    <p v-if="execution.error" class="text-xs text-destructive mt-1">
+                      {{ execution.error }}
+                    </p>
                   </div>
                   <Badge :variant="execution.success ? 'default' : 'destructive'" class="text-xs">
                     {{ execution.success ? 'Success' : 'Failed' }}
@@ -191,20 +205,21 @@ interface ScheduleStatus {
   recentExecutions?: Execution[];
 }
 
-interface Props {
-  scheduleStatus?: ScheduleStatus | null;
-  isLoading?: boolean;
-  error?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  scheduleStatus: null,
-  isLoading: false,
-  error: null,
-});
+const props = withDefaults(
+  defineProps<{
+    scheduleStatus?: ScheduleStatus | null;
+    isLoading?: boolean;
+    error?: string | null;
+  }>(),
+  {
+    scheduleStatus: null,
+    isLoading: false,
+    error: null,
+  },
+);
 
 const emit = defineEmits<{
-  'refresh': [];
+  refresh: [];
 }>();
 
 const statusColor = computed(() => {
@@ -232,7 +247,9 @@ const getRelativeTime = (date: Date | string | number | null | undefined): strin
   return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
-const getStatusVariant = (status: string | undefined): 'default' | 'destructive' | 'outline' | 'secondary' => {
+const getStatusVariant = (
+  status: string | undefined,
+): 'default' | 'destructive' | 'outline' | 'secondary' => {
   switch (status) {
     case 'ACTIVE':
       return 'default';

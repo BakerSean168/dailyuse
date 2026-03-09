@@ -235,17 +235,13 @@ const getDefaultEndDate = (): string => {
   return date.toISOString().split('T')[0];
 };
 
-interface Props {
+const props = defineProps<{
   modelValue: TaskTemplateViewModel;
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
-  (e: 'update:validation', isValid: boolean): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: TaskTemplateViewModel];
+  'update:validation': [isValid: boolean];
+}>();
 
 const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const updatedTemplate: TaskTemplateViewModel = {

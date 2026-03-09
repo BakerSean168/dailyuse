@@ -54,19 +54,20 @@ const { t } = useI18n();
 
 type FocusModeStatus = 'active' | 'expired';
 
-interface Props {
-  show?: boolean;
-  status: FocusModeStatus;
-  statusText: string;
-  detailText: string;
-  remainingDays: number;
-  loading?: boolean;
-}
-
-withDefaults(defineProps<Props>(), {
-  show: true,
-  loading: false,
-});
+withDefaults(
+  defineProps<{
+    show?: boolean;
+    status: FocusModeStatus;
+    statusText: string;
+    detailText: string;
+    remainingDays: number;
+    loading?: boolean;
+  }>(),
+  {
+    show: true,
+    loading: false,
+  },
+);
 
 defineEmits<{
   (e: 'extend'): void;

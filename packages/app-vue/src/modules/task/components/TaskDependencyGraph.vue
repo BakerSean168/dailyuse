@@ -167,15 +167,16 @@ import {
 type TaskClientDTO = TaskTemplateClientDTO & TaskForDAGViewModel;
 
 // Props
-interface Props {
-  tasks: TaskClientDTO[];
-  dependencies: TaskDependencyClientDTO[];
-  height?: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  height: 600,
-});
+const props = withDefaults(
+  defineProps<{
+    tasks: TaskClientDTO[];
+    dependencies: TaskDependencyClientDTO[];
+    height?: number;
+  }>(),
+  {
+    height: 600,
+  },
+);
 
 const { t } = useI18n();
 

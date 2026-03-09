@@ -74,20 +74,21 @@ import type { TaskTemplateViewModel } from '../types';
 
 const { t } = useI18n();
 
-interface Props {
-  modelValue: boolean;
-  templates: TaskTemplateViewModel[];
-  loading?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  loading: false,
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean;
+    templates: TaskTemplateViewModel[];
+    loading?: boolean;
+  }>(),
+  {
+    loading: false,
+  },
+);
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'confirm', templateId: string): void;
-  (e: 'cancel'): void;
+  'update:modelValue': [value: boolean];
+  confirm: [templateId: string];
+  cancel: [];
 }>();
 
 const selectedId = ref('');

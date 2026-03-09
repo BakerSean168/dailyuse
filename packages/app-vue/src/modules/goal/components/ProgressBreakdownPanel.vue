@@ -138,13 +138,11 @@ import { PieChart, X, Loader2, AlertCircle, BarChart3, Calculator } from 'lucide
 import { format } from 'date-fns';
 import type { ProgressBreakdown } from '@dailyuse/contracts/goal';
 
-interface Props {
+const props = defineProps<{
   breakdown: ProgressBreakdown | null;
   loading?: boolean;
   error?: string | null;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 

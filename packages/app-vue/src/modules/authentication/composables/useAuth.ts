@@ -18,6 +18,7 @@ import type {
   RegisterByPhoneReq,
   SendSmsCodeReq,
   AuthResponseDTO,
+  RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
@@ -267,6 +268,24 @@ export function useAuth() {
     }
   }
 
+  async function listRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
+    const result = await service.listRememberedAccounts();
+    if (result.ok) {
+      return result.data;
+    }
+    return [];
+  }
+
+  async function removeRememberedAccount(identityId: string): Promise<boolean> {
+    const result = await service.removeRememberedAccount(identityId);
+    if (result.ok) {
+      return true;
+    }
+
+    toast.error('移除账号失败', { description: result.error.message });
+    return false;
+  }
+
   return {
     // State
     isAuthenticated,
@@ -281,6 +300,8 @@ export function useAuth() {
     registerByEmail,
     registerByPhone,
     enterGuestMode,
+    listRememberedAccounts,
+    removeRememberedAccount,
     sendSmsCode,
     refreshToken,
     logout,

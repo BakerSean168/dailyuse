@@ -98,14 +98,15 @@ interface ReminderGroup {
   controlMode: string;
 }
 
-interface Props {
-  group: ReminderGroup;
-  templateCount?: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  templateCount: 0,
-});
+const props = withDefaults(
+  defineProps<{
+    group: ReminderGroup;
+    templateCount?: number;
+  }>(),
+  {
+    templateCount: 0,
+  },
+);
 
 const emit = defineEmits<{
   click: [group: ReminderGroup];

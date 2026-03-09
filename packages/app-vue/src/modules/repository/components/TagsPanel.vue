@@ -12,11 +12,7 @@
     <div v-if="statistics.length > 0" class="mb-3">
       <div class="relative">
         <Search class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          v-model="searchQuery"
-          placeholder="搜索标签..."
-          class="h-8 pl-8 text-sm"
-        />
+        <Input v-model="searchQuery" placeholder="搜索标签..." class="h-8 pl-8 text-sm" />
       </div>
     </div>
 
@@ -33,7 +29,10 @@
     </Alert>
 
     <!-- Tags cloud -->
-    <div v-else-if="filteredStatistics.length > 0" class="flex flex-wrap gap-2 flex-1 overflow-y-auto">
+    <div
+      v-else-if="filteredStatistics.length > 0"
+      class="flex flex-wrap gap-2 flex-1 overflow-y-auto"
+    >
       <Badge
         v-for="stat in filteredStatistics"
         :key="stat.tag"
@@ -61,7 +60,7 @@
     <!-- Tag filtered resources -->
     <template v-if="selectedTag && filteredResources.length > 0">
       <Separator class="my-3" />
-      
+
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-medium">{{ selectedTag }}</span>
         <Button variant="ghost" size="icon-sm" @click="$emit('clear-selection')">
@@ -111,20 +110,21 @@ interface TaggedResource {
   updatedAt: string;
 }
 
-interface Props {
-  statistics: TagStatistic[];
-  selectedTag?: string | null;
-  filteredResources?: TaggedResource[];
-  loading?: boolean;
-  error?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  selectedTag: null,
-  filteredResources: () => [],
-  loading: false,
-  error: null,
-});
+const props = withDefaults(
+  defineProps<{
+    statistics: TagStatistic[];
+    selectedTag?: string | null;
+    filteredResources?: TaggedResource[];
+    loading?: boolean;
+    error?: string | null;
+  }>(),
+  {
+    selectedTag: null,
+    filteredResources: () => [],
+    loading: false,
+    error: null,
+  },
+);
 
 const emit = defineEmits<{
   'select-tag': [tag: string];
@@ -137,9 +137,7 @@ const searchQuery = ref('');
 const filteredStatistics = computed(() => {
   if (!searchQuery.value) return props.statistics;
   const query = searchQuery.value.toLowerCase();
-  return props.statistics.filter((stat) =>
-    stat.tag.toLowerCase().includes(query)
-  );
+  return props.statistics.filter((stat) => stat.tag.toLowerCase().includes(query));
 });
 
 function handleSelectTag(tag: string) {

@@ -125,14 +125,15 @@ interface LinkGraphResponseDTO {
   depth: number;
 }
 
-interface Props {
-  documentId: string;
-  initialDepth?: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  initialDepth: 2,
-});
+const props = withDefaults(
+  defineProps<{
+    documentId: string;
+    initialDepth?: number;
+  }>(),
+  {
+    initialDepth: 2,
+  },
+);
 
 const emit = defineEmits<{
   close: [];

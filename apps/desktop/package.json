@@ -25,20 +25,16 @@
     "affected:lint": "nx affected --target=lint"
   },
   "dependencies": {
-    "@dailyuse/assets": "workspace:*",
-    "better-sqlite3": "^12.5.0",
-    "date-fns": "^4.1.0",
-    "gray-matter": "4.0.3"
-  },
-  "devDependencies": {
     "@dailyuse/account": "workspace:*",
     "@dailyuse/ai": "workspace:*",
     "@dailyuse/app-vue": "workspace:*",
+    "@dailyuse/assets": "workspace:*",
     "@dailyuse/authentication": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
-    "@dailyuse/database": "workspace:*",
-    "@dailyuse/editor": "workspace:*",
     "@dailyuse/goal": "workspace:*",
+    "better-sqlite3": "^12.5.0",
+    "date-fns": "^4.1.0",
+    "gray-matter": "4.0.3",
     "@dailyuse/governance": "workspace:*",
     "@dailyuse/ipc-client": "workspace:*",
     "@dailyuse/notification": "workspace:*",
@@ -48,7 +44,11 @@
     "@dailyuse/setting": "workspace:*",
     "@dailyuse/task": "workspace:*",
     "@dailyuse/ui-vue-shadcn": "workspace:*",
-    "@dailyuse/utils": "workspace:*",
+    "@dailyuse/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@dailyuse/database": "workspace:*",
+    "@dailyuse/editor": "workspace:*",
     "@electron/rebuild": "^4.0.3",
     "@eslint/js": "^9.32.0",
     "@eslint/markdown": "^7.1.0",

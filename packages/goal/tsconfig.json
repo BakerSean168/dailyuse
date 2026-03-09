@@ -2,50 +2,25 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "lib": [
-      "ES2020"
-    ],
-    "types": [
-      "node",
-      "vitest/globals"
-    ],
+    "lib": ["ES2020"],
+    "types": ["node", "vitest/globals"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@dailyuse/database": [
-        "../database/src/index.ts"
-      ],
-      "@dailyuse/http-client": [
-        "../http-client/src/index.ts"
-      ],
-      "@dailyuse/domain-shared": [
-        "../domain-shared/src/index.ts"
-      ],
-      "@dailyuse/domain-shared/*": [
-        "../domain-shared/src/*/index.ts"
-      ],
-      "@dailyuse/contracts": [
-        "../contracts/src/index.ts"
-      ],
-      "@dailyuse/contracts/*": [
-        "../contracts/src/modules/*/index.ts"
-      ],
-      "@dailyuse/utils": [
-        "../utils/src/index.ts"
-      ],
-      "@dailyuse/patterns": [
-        "../patterns/src/index.ts"
-      ]
+      "@/*": ["./src/*"],
+      "@dailyuse/database": ["../database/src/index.ts"],
+      "@dailyuse/http-client": ["../http-client/src/index.ts"],
+      "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
+      "@dailyuse/domain-shared/shared": ["../domain-shared/src/shared/index.ts"],
+      "@dailyuse/contracts": ["../contracts/src/index.ts"],
+      "@dailyuse/contracts/goal": ["../contracts/src/modules/goal/index.ts"],
+      "@dailyuse/contracts/result": ["../contracts/src/result/index.ts"],
+      "@dailyuse/contracts/shared": ["../contracts/src/shared/index.ts"],
+      "@dailyuse/contracts/primitives": ["../contracts/src/primitives/index.ts"],
+      "@dailyuse/contracts/electron": ["../contracts/src/electron/index.ts"],
+      "@dailyuse/utils": ["../utils/src/index.ts"],
+      "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
+      "@dailyuse/patterns": ["../patterns/src/index.ts"]
     }
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -72,13 +72,14 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  goals?: GoalClientDTO[];
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  goals: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    goals?: GoalClientDTO[];
+  }>(),
+  {
+    goals: () => [],
+  },
+);
 
 const { t } = useI18n();
 

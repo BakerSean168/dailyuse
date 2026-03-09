@@ -26,18 +26,19 @@
 import FileTreePanel from './FileTreePanel.vue';
 import type { TreeNode } from '@dailyuse/contracts/repository';
 
-interface Props {
-  nodes: TreeNode[];
-  isLoading?: boolean;
-  showFileInfo?: boolean;
-  isAllExpanded?: boolean;
-}
-
-withDefaults(defineProps<Props>(), {
-  isLoading: false,
-  showFileInfo: false,
-  isAllExpanded: false,
-});
+withDefaults(
+  defineProps<{
+    nodes: TreeNode[];
+    isLoading?: boolean;
+    showFileInfo?: boolean;
+    isAllExpanded?: boolean;
+  }>(),
+  {
+    isLoading: false,
+    showFileInfo: false,
+    isAllExpanded: false,
+  },
+);
 
 const emit = defineEmits<{
   refresh: [];

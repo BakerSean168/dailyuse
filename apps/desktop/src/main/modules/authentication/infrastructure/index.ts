@@ -32,13 +32,18 @@ export type {
 export { TokenManager, getTokenManager } from './TokenManager';
 export { SessionManager, createSessionManager } from './SessionManager';
 export { NetworkStateManager, getNetworkStateManager } from './NetworkStateManager';
-export type { NetworkStatus, NetworkStateChangeEvent, NetworkStateManagerConfig } from './NetworkStateManager';
+export {
+  RememberedAccountsService,
+  getRememberedAccountsService,
+} from './RememberedAccountsService';
+export type {
+  NetworkStatus,
+  NetworkStateChangeEvent,
+  NetworkStateManagerConfig,
+} from './NetworkStateManager';
 
 // Export local types
 export type { TokenData } from './TokenManager';
 
-export type {
-  SessionRestoreResult,
-  AutoLoginResult,
-  SessionStatus,
-} from './SessionManager';
+export type { SessionRestoreResult, AutoLoginResult, SessionStatus } from './SessionManager';
+export type { RememberedAccountRecord } from './RememberedAccountsService';

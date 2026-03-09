@@ -15,12 +15,10 @@ import MarkdownIt from 'markdown-it';
 
 const { t } = useI18n();
 
-interface Props {
+const props = defineProps<{
   content: string;
   onLinkClick?: (title: string) => void;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   linkClick: [title: string];

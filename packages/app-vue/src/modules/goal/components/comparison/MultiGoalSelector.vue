@@ -120,17 +120,18 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  goals?: GoalClientDTO[];
-  minGoals?: number;
-  maxGoals?: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  goals: () => [],
-  minGoals: 2,
-  maxGoals: 4,
-});
+const props = withDefaults(
+  defineProps<{
+    goals?: GoalClientDTO[];
+    minGoals?: number;
+    maxGoals?: number;
+  }>(),
+  {
+    goals: () => [],
+    minGoals: 2,
+    maxGoals: 4,
+  },
+);
 
 const emit = defineEmits<{
   compare: [goals: GoalClientDTO[]];

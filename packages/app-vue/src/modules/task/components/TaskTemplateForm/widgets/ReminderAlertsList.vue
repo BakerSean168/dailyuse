@@ -128,17 +128,13 @@ interface ReminderAlert {
   message?: string;
 }
 
-interface Props {
+const props = defineProps<{
   modelValue: ReminderAlert[];
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: ReminderAlert[]): void;
-  (e: 'update:validation', isValid: boolean): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: ReminderAlert[]];
+  'update:validation': [isValid: boolean];
+}>();
 
 const absoluteTimeInput = ref(new Date());
 

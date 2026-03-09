@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
@@ -46,7 +46,8 @@ const emit = defineEmits<LoginFormEmits>();
 const emailForm = ref({
   email: '',
   password: '',
-  rememberMe: false,
+  rememberPassword: false,
+  autoLogin: false,
 });
 
 // Phone login form
@@ -89,7 +90,8 @@ const handleEmailLogin = () => {
   emit('loginByEmail', {
     email: emailForm.value.email,
     password: emailForm.value.password,
-    rememberMe: emailForm.value.rememberMe,
+    rememberPassword: emailForm.value.rememberPassword,
+    autoLogin: emailForm.value.autoLogin,
   });
 };
 
@@ -132,8 +134,25 @@ const handleForgotPassword = () => {
   emit('forgotPassword');
 };
 
+watch(
+  () => emailForm.value.autoLogin,
+  (value) => {
+    if (value) {
+      emailForm.value.rememberPassword = true;
+    }
+  },
+);
+
+watch(
+  () => emailForm.value.rememberPassword,
+  (value) => {
+    if (!value) {
+      emailForm.value.autoLogin = false;
+    }
+  },
+);
+
 // Cleanup
-import { onUnmounted } from 'vue';
 onUnmounted(() => {
   if (countdownTimer) {
     clearInterval(countdownTimer);
@@ -183,10 +202,16 @@ onUnmounted(() => {
 
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <Checkbox id="remember" v-model:checked="emailForm.rememberMe" :disabled="loading" />
-              <Label for="remember" class="text-sm font-normal cursor-pointer">
-                {{ t('auth.login.rememberMe') }}
-              </Label>
+              <Checkbox
+                id="remember"
+                v-model:checked="emailForm.rememberPassword"
+                :disabled="loading"
+              />
+              <Label for="remember" class="text-sm font-normal cursor-pointer"> 记住密码 </Label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <Checkbox id="auto-login" v-model:checked="emailForm.autoLogin" :disabled="loading" />
+              <Label for="auto-login" class="text-sm font-normal cursor-pointer">自动登录</Label>
             </div>
 
             <Button

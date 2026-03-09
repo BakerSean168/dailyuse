@@ -157,18 +157,19 @@ import { Switch } from '@dailyuse/ui-vue-shadcn';
 import { Card, CardContent } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  open: boolean;
-  repositoryName?: string;
-  parentFolderName?: string;
-}
-
 const { t } = useI18n();
 
-const props = withDefaults(defineProps<Props>(), {
-  repositoryName: '',
-  parentFolderName: '',
-});
+const props = withDefaults(
+  defineProps<{
+    open: boolean;
+    repositoryName?: string;
+    parentFolderName?: string;
+  }>(),
+  {
+    repositoryName: '',
+    parentFolderName: '',
+  },
+);
 
 const emit = defineEmits<{
   'update:open': [value: boolean];

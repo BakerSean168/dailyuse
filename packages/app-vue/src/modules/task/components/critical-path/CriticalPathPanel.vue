@@ -105,12 +105,10 @@ interface CriticalPathResultViewModel {
   suggestions: Array<{ type: string; description: string; priority: string; impact: number }>;
 }
 
-interface Props {
+const props = defineProps<{
   result: CriticalPathResultViewModel | null;
   allTasks: TaskForDAGViewModel[];
-}
-
-const props = defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 

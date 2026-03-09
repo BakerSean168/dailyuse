@@ -20,7 +20,10 @@ import { createLogger, generateUUID, type ILogger } from '@dailyuse/utils';
 import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
 import type { IdentityId, AuthSessionId } from '@dailyuse/contracts/authentication';
 import { DeviceInfo } from '@dailyuse/authentication/domain-shared';
-import type { IAuthSessionRepository, IAuthIdentityRepository } from '@dailyuse/authentication/domain-server';
+import type {
+  IAuthSessionRepository,
+  IAuthIdentityRepository,
+} from '@dailyuse/authentication/domain-server';
 import type { IPasswordHasher } from '@dailyuse/authentication/domain-shared';
 import {
   AuthMode,
@@ -79,7 +82,6 @@ export class SessionManager {
   private readonly tokenManager: TokenManager;
   private readonly sessionRepository: IAuthSessionRepository;
 
-
   // Offline credential infrastructure (Phase 2)
   private identityRepository: IAuthIdentityRepository | null = null;
   private passwordHasher: IPasswordHasher | null = null;
@@ -95,7 +97,9 @@ export class SessionManager {
   private activityTimer: NodeJS.Timeout | null = null;
 
   // API 回调（用于与后端通信�?
-  private apiRefreshToken: ((request: RefreshSessionRequest) => Promise<RefreshSessionResponse>) | null = null;
+  private apiRefreshToken:
+    | ((request: RefreshSessionRequest) => Promise<RefreshSessionResponse>)
+    | null = null;
   private apiLogin: ((request: LoginRequest) => Promise<LoginResponse>) | null = null;
 
   private constructor(
@@ -221,11 +225,15 @@ export class SessionManager {
       }
 
       // 3. 查找会话记录
-      const session = await this.sessionRepository.findById(tokenData.sessionId as unknown as AuthSessionId);
+      const session = await this.sessionRepository.findById(
+        tokenData.sessionId as unknown as AuthSessionId,
+      );
       if (!session) {
         this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
         // 尝试通过账户查找最近的活跃会话
-        const activeSessions = await this.sessionRepository.findByIdentityId(tokenData.identityId as unknown as IdentityId);
+        const activeSessions = await this.sessionRepository.findByIdentityId(
+          tokenData.identityId as unknown as IdentityId,
+        );
         if (activeSessions.length === 0) {
           this.logger.info('No active sessions found for account');
           await this.tokenManager.clearTokens();
@@ -484,10 +492,7 @@ export class SessionManager {
     this.logger.info('Attempting local login', { identifier: request.identifier });
 
     // Verify password against locally cached credentials
-    const verification = await this.verifyOfflineCredentials(
-      request.identifier,
-      request.password,
-    );
+    const verification = await this.verifyOfflineCredentials(request.identifier, request.password);
 
     if (!verification.ok) {
       const errorMessages: Record<string, string> = {
@@ -514,7 +519,6 @@ export class SessionManager {
       expiresAt: Date.now() + 3600 * 1000,
 
       deviceInfo: device as any,
-
     });
 
     await this.sessionRepository.save(session);
@@ -644,7 +648,9 @@ export class SessionManager {
     this.logger.info('Cleaning up other sessions', { identityId });
 
     try {
-      const sessions = await this.sessionRepository.findByIdentityId(identityId as unknown as IdentityId);
+      const sessions = await this.sessionRepository.findByIdentityId(
+        identityId as unknown as IdentityId,
+      );
       let cleanedCount = 0;
 
       for (const session of sessions) {
@@ -744,6 +750,20 @@ export class SessionManager {
     }
   }
 
+  async removeOfflineCredentials(email: string): Promise<void> {
+    if (!this.identityRepository) {
+      return;
+    }
+
+    const identity = await this.identityRepository.findByEmail(email);
+    if (!identity) {
+      return;
+    }
+
+    await this.identityRepository.delete(identity);
+    this.serverIdentityMap.delete(email);
+  }
+
   /**
    * 离线密码验证
    *
@@ -804,7 +824,9 @@ export class SessionManager {
    */
   async getOrCreateGuestIdentity(): Promise<string> {
     // Try to load existing guest ID from session repository metadata
-    const existingGuestSessions = await this.sessionRepository.findByIdentityId('guest' as unknown as IdentityId);
+    const existingGuestSessions = await this.sessionRepository.findByIdentityId(
+      'guest' as unknown as IdentityId,
+    );
     if (existingGuestSessions.length > 0) {
       const guestSession = existingGuestSessions[0];
       this.currentSession = guestSession;
@@ -825,7 +847,6 @@ export class SessionManager {
       expiresAt: Date.now() + 3600 * 1000,
 
       deviceInfo: device as any,
-
     });
 
     await this.sessionRepository.save(session);
@@ -849,7 +870,9 @@ export class SessionManager {
    * 清除访客身份（用户升级到云账户时调用）
    */
   async clearGuestIdentity(): Promise<void> {
-    const guestSessions = await this.sessionRepository.findByIdentityId('guest' as unknown as IdentityId);
+    const guestSessions = await this.sessionRepository.findByIdentityId(
+      'guest' as unknown as IdentityId,
+    );
     for (const session of guestSessions) {
       session.revoke();
       await this.sessionRepository.save(session);
@@ -917,12 +940,15 @@ export class SessionManager {
    */
   private startActivityTracking(): void {
     // �?5 分钟记录一次活�?
-    this.activityTimer = setInterval(async () => {
-      if (this.currentSession) {
-        this.currentSession.touch();
-        await this.sessionRepository.save(this.currentSession);
-      }
-    }, 5 * 60 * 1000);
+    this.activityTimer = setInterval(
+      async () => {
+        if (this.currentSession) {
+          this.currentSession.touch();
+          await this.sessionRepository.save(this.currentSession);
+        }
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
@@ -948,4 +974,3 @@ export function createSessionManager(
 ): SessionManager {
   return SessionManager.getInstance(sessionRepository, identityRepository, logger);
 }
-

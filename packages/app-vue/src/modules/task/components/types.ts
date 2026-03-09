@@ -101,6 +101,22 @@ export interface TaskTemplateViewModel {
   color?: string | null;
 }
 
+export interface TaskTemplateFormProps {
+  modelValue?: TaskTemplateViewModel | null;
+  isEditMode?: boolean;
+  readonly?: boolean;
+}
+
+export interface TaskTemplateFormValidationState {
+  isValid: boolean;
+}
+
+export interface TaskTemplateFormEmits {
+  'update:modelValue': [value: TaskTemplateViewModel];
+  'update:validation': [validation: TaskTemplateFormValidationState];
+  close: [];
+}
+
 export interface TaskInstanceViewModel {
   id: string;
   templateId?: string;

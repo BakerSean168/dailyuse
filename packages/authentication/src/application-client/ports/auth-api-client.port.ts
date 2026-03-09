@@ -28,6 +28,7 @@ import type {
   ListSessionsRes,
   RevokeSessionReq,
   GuestModeRes,
+  RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 
 /**
@@ -61,4 +62,6 @@ export interface IAuthApiClient {
 
   // ========== Guest Mode (Desktop) ==========
   enterGuestMode(): Promise<Result<GuestModeRes>>;
+  listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>>;
+  removeRememberedAccount(identityId: string): Promise<Result<void>>;
 }

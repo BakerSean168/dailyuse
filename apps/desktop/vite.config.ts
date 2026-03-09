@@ -5,6 +5,12 @@ import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 
+const desktopRendererDevWorkspaceEntries = [
+  ['@dailyuse/app-vue', '../../packages/app-vue/src/index.ts'],
+  ['@dailyuse/ai/application-client', '../../packages/ai/src/application-client/index.ts'],
+  ['@dailyuse/ai/infrastructure-client', '../../packages/ai/src/infrastructure-client/index.ts'],
+] as const;
+
 // Native modules — must be externalized (cannot be bundled by Vite)
 const nativeModules = ['better-sqlite3', 'electron', 'argon2'];
 
@@ -51,95 +57,109 @@ const workspacePkgs = [
 ];
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  resolve: {
-    conditions: ['import', 'module', 'default'],
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@main': path.resolve(__dirname, './src/main'),
-      '@preload': path.resolve(__dirname, './src/preload'),
-      '@renderer': path.resolve(__dirname, './src/renderer'),
-      // Browser-env Node.js polyfills
-      crypto: 'crypto-browserify',
-      stream: 'stream-browserify',
-      buffer: 'buffer',
+export default defineConfig(({ command, mode }) => {
+  const isDev = command === 'serve' || mode !== 'production';
+  const devWorkspaceAliases: Record<string, string> = isDev
+    ? Object.fromEntries(
+        desktopRendererDevWorkspaceEntries.map(([importPath, sourcePath]) => [
+          importPath,
+          path.resolve(__dirname, sourcePath),
+        ]),
+      )
+    : {};
+
+  const rendererAliases: Record<string, string> = {
+    '@': path.resolve(__dirname, './src'),
+    '@main': path.resolve(__dirname, './src/main'),
+    '@preload': path.resolve(__dirname, './src/preload'),
+    '@renderer': path.resolve(__dirname, './src/renderer'),
+    crypto: 'crypto-browserify',
+    stream: 'stream-browserify',
+    buffer: 'buffer',
+    ...devWorkspaceAliases,
+  };
+
+  return {
+    resolve: {
+      conditions: ['import', 'module', 'default'],
+      alias: rendererAliases,
     },
-  },
-  define: {
-    global: 'globalThis',
-  },
-  worker: {
-    format: 'es',
-  },
-  base: './',
-  build: {
-    rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'),
-      external: nativeModules,
+    define: {
+      global: 'globalThis',
     },
-  },
-  optimizeDeps: {
-    exclude: [...nativeModules, ...workspacePkgs],
-  },
-  test: {
-    globals: true,
-    include: ['src/**/*.test.ts'],
-    environment: 'jsdom',
-  },
-  plugins: [
-    vue(),
-    tailwindcss(),
-    electron({
-      main: {
-        entry: path.resolve(__dirname, 'src/main/main.ts'),
-        vite: {
-          resolve: {
-            alias: {
-              '@main': path.resolve(__dirname, './src/main'),
-              '@preload': path.resolve(__dirname, './src/preload'),
-              '@renderer': path.resolve(__dirname, './src/renderer'),
-            },
-          },
-          build: {
-            outDir: 'dist-electron',
-            rollupOptions: {
-              external: isElectronMainExternal,
-              output: {
-                format: 'cjs',
-                entryFileNames: '[name].cjs',
-                chunkFileNames: '[name].cjs',
-                assetFileNames: '[name].[ext]',
+    worker: {
+      format: 'es',
+    },
+    base: './',
+    build: {
+      rollupOptions: {
+        input: path.resolve(__dirname, 'index.html'),
+        external: nativeModules,
+      },
+    },
+    optimizeDeps: {
+      exclude: [...nativeModules, ...workspacePkgs],
+    },
+    test: {
+      globals: true,
+      include: ['src/**/*.test.ts'],
+      environment: 'jsdom',
+    },
+    plugins: [
+      vue(),
+      tailwindcss(),
+      electron({
+        main: {
+          entry: path.resolve(__dirname, 'src/main/main.ts'),
+          vite: {
+            resolve: {
+              alias: {
+                '@main': path.resolve(__dirname, './src/main'),
+                '@preload': path.resolve(__dirname, './src/preload'),
+                '@renderer': path.resolve(__dirname, './src/renderer'),
               },
             },
-          },
-          optimizeDeps: {
-            exclude: [...nativeModules, ...workspacePkgs],
-          },
-        },
-      },
-      preload: {
-        input: {
-          preload: path.resolve(__dirname, 'src/preload/preload.ts'),
-        },
-        vite: {
-          build: {
-            outDir: 'dist-electron',
-            rollupOptions: {
-              external: nativeModules,
-              output: {
-                format: 'cjs',
-                inlineDynamicImports: false,
-                manualChunks: undefined,
-                entryFileNames: '[name].cjs',
+            build: {
+              outDir: 'dist-electron',
+              rollupOptions: {
+                external: isElectronMainExternal,
+                output: {
+                  format: 'cjs',
+                  entryFileNames: '[name].cjs',
+                  chunkFileNames: '[name].cjs',
+                  assetFileNames: '[name].[ext]',
+                },
               },
             },
-          },
-          optimizeDeps: {
-            exclude: [...nativeModules, ...workspacePkgs],
+            optimizeDeps: {
+              exclude: [...nativeModules, ...workspacePkgs],
+            },
           },
         },
-      },
-      renderer: process.env.NODE_ENV === 'test' ? undefined : {},
-    }),
-  ],
+        preload: {
+          input: {
+            preload: path.resolve(__dirname, 'src/preload/preload.ts'),
+          },
+          vite: {
+            build: {
+              outDir: 'dist-electron',
+              rollupOptions: {
+                external: nativeModules,
+                output: {
+                  format: 'cjs',
+                  inlineDynamicImports: false,
+                  manualChunks: undefined,
+                  entryFileNames: '[name].cjs',
+                },
+              },
+            },
+            optimizeDeps: {
+              exclude: [...nativeModules, ...workspacePkgs],
+            },
+          },
+        },
+        renderer: process.env.NODE_ENV === 'test' ? undefined : {},
+      }),
+    ],
+  };
 });

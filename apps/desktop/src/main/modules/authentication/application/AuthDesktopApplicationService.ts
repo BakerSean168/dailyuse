@@ -56,6 +56,8 @@ import {
   SessionManager,
   createSessionManager,
   type SessionStatus,
+  getRememberedAccountsService,
+  type RememberedAccountRecord,
 } from '../infrastructure';
 import {
   connectPowerSync,
@@ -122,6 +124,7 @@ export class AuthDesktopApplicationService {
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
   private readonly remoteGateway: AuthRemoteGateway;
+  private readonly rememberedAccounts = getRememberedAccountsService();
   private sessionManager: SessionManager | null = null;
 
   // 依赖注入的 Repositories（惰性初始化）
@@ -248,7 +251,8 @@ export class AuthDesktopApplicationService {
         {
           email: credentials.email,
           password: credentials.password,
-          rememberMe: credentials.rememberMe,
+          rememberPassword: credentials.rememberPassword,
+          autoLogin: credentials.autoLogin,
         },
         {
           isOnline: () => networkManager.isOnline(),
@@ -268,12 +272,29 @@ export class AuthDesktopApplicationService {
             });
 
             if (this.sessionManager) {
-              await this.sessionManager
-                .saveOfflineCredentials(request.email, request.password, response.identity.id)
-                .catch((err) =>
-                  this.logger.warn('Failed to cache offline credentials', { error: err }),
-                );
+              if (request.rememberPassword) {
+                await this.sessionManager
+                  .saveOfflineCredentials(request.email, request.password, response.identity.id)
+                  .catch((err) =>
+                    this.logger.warn('Failed to cache offline credentials', { error: err }),
+                  );
+              } else {
+                await this.sessionManager
+                  .removeOfflineCredentials(request.email)
+                  .catch((err) =>
+                    this.logger.warn('Failed to clear offline credentials', { error: err }),
+                  );
+              }
             }
+
+            await this.rememberedAccounts.recordLogin({
+              identityId: response.identity.id,
+              identifier: request.email,
+              nickname: this.extractNickname(response.identity),
+              avatarUrl: null,
+              rememberPassword: request.rememberPassword ?? false,
+              autoLogin: request.autoLogin ?? false,
+            });
           },
         },
       );
@@ -305,7 +326,8 @@ export class AuthDesktopApplicationService {
         const offlineResponse = await this.sessionManager.login({
           identifier: credentials.email,
           password: credentials.password,
-          rememberMe: credentials.rememberMe,
+          rememberPassword: credentials.rememberPassword,
+          autoLogin: credentials.autoLogin,
         });
 
         const offlineAuthResponse =
@@ -487,6 +509,15 @@ export class AuthDesktopApplicationService {
           error: err,
         }),
       );
+
+    await this.rememberedAccounts.recordLogin({
+      identityId,
+      identifier: request.email,
+      nickname: request.username ?? null,
+      avatarUrl: null,
+      rememberPassword: true,
+      autoLogin: false,
+    });
   }
 
   /**
@@ -590,6 +621,11 @@ export class AuthDesktopApplicationService {
     }
 
     try {
+      const remembered = await this.rememberedAccounts.getAutoLoginAccount();
+      if (!remembered) {
+        return { ok: true, authenticated: false };
+      }
+
       const result = await this.sessionManager.autoLogin();
 
       return {
@@ -945,6 +981,32 @@ export class AuthDesktopApplicationService {
       identityId: session.identityId,
       deviceId: session.deviceInfo?.deviceId ?? 'desktop-app',
     };
+  }
+
+  async getRememberedAccounts(): Promise<RememberedAccountRecord[]> {
+    return this.rememberedAccounts.list();
+  }
+
+  async removeRememberedAccount(identityId: string): Promise<IpcResult<void>> {
+    try {
+      await this.rememberedAccounts.remove(identityId);
+      return toIpcResult(ok(undefined));
+    } catch (error) {
+      return toIpcResult(
+        fail({ code: 'REMEMBERED_ACCOUNT_REMOVE_FAILED', message: String(error) }),
+      );
+    }
+  }
+
+  private extractNickname(identity: AuthIdentityClientDTO): string | null {
+    const emailIdentifier = identity.identifiers.find(
+      (
+        identifier,
+      ): identifier is Extract<AuthIdentityClientDTO['identifiers'][number], { type: 'Email' }> =>
+        identifier.type === 'Email',
+    );
+
+    return emailIdentifier?.value?.split('@')[0] || null;
   }
 
   /**

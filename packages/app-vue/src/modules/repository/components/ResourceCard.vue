@@ -78,11 +78,9 @@ import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
-interface Props {
+const props = defineProps<{
   resource: ResourceClientDTO;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const emit = defineEmits<{
   view: [resource: ResourceClientDTO];

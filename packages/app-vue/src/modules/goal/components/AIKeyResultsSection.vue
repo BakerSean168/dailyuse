@@ -106,7 +106,6 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Target, Lightbulb, CheckCircle, X, Plus } from 'lucide-vue-next';
-import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import { Alert, AlertTitle, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
@@ -114,17 +113,7 @@ import { Card } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import AIGenerateKRButton from './AIGenerateKRButton.vue';
 import KRPreviewList from './KRPreviewList.vue';
-
-export interface KeyResultData {
-  id?: KeyResultClientDTO['id'];
-  title: string;
-  description?: string;
-  targetValue: number;
-  unit: string;
-  weight?: number;
-  importance?: string;
-  selected?: boolean;
-}
+import type { KeyResultDraft } from '../types';
 
 const props = defineProps<{
   goalTitle?: string;
@@ -134,7 +123,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  resultsUpdated: [results: KeyResultData[]];
+  resultsUpdated: [results: KeyResultDraft[]];
   manualAdd: [];
 }>();
 
@@ -144,8 +133,8 @@ const generateButtonRef = ref();
 const previewListRef = ref();
 const showHint = ref(true);
 const generatedResults = ref<any[]>([]);
-const acceptedResults = ref<KeyResultData[]>([]);
-const selectedResults = ref<KeyResultData[]>([]);
+const acceptedResults = ref<KeyResultDraft[]>([]);
+const selectedResults = ref<KeyResultDraft[]>([]);
 
 const hasGeneratedResults = computed(() => generatedResults.value.length > 0);
 
@@ -160,7 +149,7 @@ function handleError(error: string) {
   props.onError?.(error);
 }
 
-function handleAccept(results: KeyResultData[]) {
+function handleAccept(results: KeyResultDraft[]) {
   acceptedResults.value.push(...results);
   generatedResults.value = [];
 
@@ -168,7 +157,7 @@ function handleAccept(results: KeyResultData[]) {
   props.onSuccess?.(t('goal.aiKeyResults.adoptSuccess', { n: results.length }));
 }
 
-function handleEdit(index: number, kr: KeyResultData) {
+function handleEdit(index: number, kr: KeyResultDraft) {
   void index;
   void kr;
 }
@@ -177,7 +166,7 @@ function handleRemove(index: number) {
   void index;
 }
 
-function handleSelectionChange(selected: KeyResultData[]) {
+function handleSelectionChange(selected: KeyResultDraft[]) {
   selectedResults.value = selected;
 }
 
@@ -206,7 +195,7 @@ function getAcceptedResults() {
   return acceptedResults.value;
 }
 
-function setAcceptedResults(results: KeyResultData[]) {
+function setAcceptedResults(results: KeyResultDraft[]) {
   acceptedResults.value = results;
 }
 

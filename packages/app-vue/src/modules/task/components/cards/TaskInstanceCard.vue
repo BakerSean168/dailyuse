@@ -48,15 +48,16 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // Props
-interface Props {
-  task: TaskInstanceViewModel;
-  showBorder?: boolean;
-  goalStore?: any;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showBorder: true,
-});
+const props = withDefaults(
+  defineProps<{
+    task: TaskInstanceViewModel;
+    showBorder?: boolean;
+    goalStore?: any;
+  }>(),
+  {
+    showBorder: true,
+  },
+);
 
 // Emits
 const emit = defineEmits<{

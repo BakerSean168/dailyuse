@@ -60,22 +60,23 @@ import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  open: boolean;
-  name?: string;
-  icon?: string;
-  parentId?: string;
-  parentName?: string;
-  loading?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  name: '',
-  icon: '',
-  parentId: '',
-  parentName: '',
-  loading: false,
-});
+const props = withDefaults(
+  defineProps<{
+    open: boolean;
+    name?: string;
+    icon?: string;
+    parentId?: string;
+    parentName?: string;
+    loading?: boolean;
+  }>(),
+  {
+    name: '',
+    icon: '',
+    parentId: '',
+    parentName: '',
+    loading: false,
+  },
+);
 
 const emit = defineEmits<{
   'update:open': [value: boolean];

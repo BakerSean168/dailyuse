@@ -32,7 +32,8 @@ export type SendSmsCodeRes = void;
 export const LoginByEmailSchema = z.object({
   email: z.string().email(),
   password: z.string(),
-  rememberMe: z.boolean().default(false).optional(),
+  rememberPassword: z.boolean().default(false).optional(),
+  autoLogin: z.boolean().default(false).optional(),
 });
 
 export type LoginByEmailReq = z.infer<typeof LoginByEmailSchema>;

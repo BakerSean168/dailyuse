@@ -114,22 +114,23 @@ import {
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
 
-interface Props {
-  open: boolean;
-  name?: string;
-  type?: string;
-  folderId?: string;
-  loading?: boolean;
-  showFolderSelection?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  name: '',
-  type: 'MARKDOWN',
-  folderId: '',
-  loading: false,
-  showFolderSelection: false,
-});
+const props = withDefaults(
+  defineProps<{
+    open: boolean;
+    name?: string;
+    type?: string;
+    folderId?: string;
+    loading?: boolean;
+    showFolderSelection?: boolean;
+  }>(),
+  {
+    name: '',
+    type: 'MARKDOWN',
+    folderId: '',
+    loading: false,
+    showFolderSelection: false,
+  },
+);
 
 const emit = defineEmits<{
   'update:open': [value: boolean];

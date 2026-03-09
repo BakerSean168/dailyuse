@@ -212,15 +212,16 @@ interface Resource {
   path?: string;
 }
 
-interface Props {
-  repositoryId: string | null;
-  resources: Resource[];
-  isLoading?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isLoading: false,
-});
+const props = withDefaults(
+  defineProps<{
+    repositoryId: string | null;
+    resources: Resource[];
+    isLoading?: boolean;
+  }>(),
+  {
+    isLoading: false,
+  },
+);
 
 const emit = defineEmits<{
   upload: [];

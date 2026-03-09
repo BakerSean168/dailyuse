@@ -112,18 +112,16 @@ import { cn } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../../components/shared';
 import type { MenuAction } from '../../../../components/shared';
 
-interface Props {
+const props = defineProps<{
   goal: any;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  (e: 'view', goal: any): void;
-  (e: 'edit', goal: any): void;
-  (e: 'delete', id: string): void;
+  view: [goal: any];
+  edit: [goal: any];
+  delete: [id: string];
 }>();
 
 // ========== Menu Actions ==========

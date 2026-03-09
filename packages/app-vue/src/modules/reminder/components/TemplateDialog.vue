@@ -520,23 +520,20 @@ import type {
   UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderGroupOption } from '../types';
 
 const { t, locale } = useI18n();
 
-export interface ReminderGroup {
-  id: string;
-  name: string;
-}
-
-export interface Props {
-  template?: ReminderTemplateClientDTO | null;
-  groupOptions?: ReminderGroup[];
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  template: null,
-  groupOptions: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    template?: ReminderTemplateClientDTO | null;
+    groupOptions?: ReminderGroupOption[];
+  }>(),
+  {
+    template: null,
+    groupOptions: () => [],
+  },
+);
 
 const emit = defineEmits<{
   save: [data: CreateReminderTemplateReq];

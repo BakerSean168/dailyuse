@@ -24,14 +24,14 @@ export class UpdateAccountProfileUseCase {
     // The aggregate root enforces domain invariants
     let profile = account.profile;
 
-    if (request.nickname) {
+    if (request.nickname !== undefined) {
       profile = profile.updateNickname(request.nickname);
     }
     if (request.avatar !== undefined) {
-      profile = request.avatar ? profile.updateAvatar(request.avatar) : profile;
+      profile = profile.updateAvatar(request.avatar ?? '');
     }
     if (request.bio !== undefined) {
-      profile = request.bio ? profile.updateBio(request.bio) : profile;
+      profile = profile.updateBio(request.bio ?? '');
     }
 
     // Write updated profile back to aggregate

@@ -129,7 +129,7 @@ import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import type { SearchMode, SearchResultItem, SearchMatch } from '@dailyuse/contracts/repository';
 
-interface Props {
+defineProps<{
   repositoryId: string;
   results?: SearchResultItem[];
   searching?: boolean;
@@ -137,9 +137,7 @@ interface Props {
   totalResults?: number;
   totalMatches?: number;
   searchTime?: number;
-}
-
-defineProps<Props>();
+}>();
 
 const { t } = useI18n();
 

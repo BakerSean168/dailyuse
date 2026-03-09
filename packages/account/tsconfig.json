@@ -8,11 +8,15 @@
     "paths": {
       "@/*": ["./src/*"],
       "@dailyuse/database": ["../database/src/index.ts"],
-      "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
-      "@dailyuse/domain-shared/*": ["../domain-shared/src/*/index.ts"],
-      "@dailyuse/contracts": ["../contracts/src/index.ts"],
-      "@dailyuse/contracts/*": ["../contracts/src/modules/*/index.ts"],
+      "@dailyuse/domain-shared/shared": ["../domain-shared/src/shared/index.ts"],
+      "@dailyuse/contracts/account": ["../contracts/src/modules/account/index.ts"],
+      "@dailyuse/contracts/authentication": ["../contracts/src/modules/authentication/index.ts"],
+      "@dailyuse/contracts/electron": ["../contracts/src/electron/index.ts"],
+      "@dailyuse/contracts/primitives": ["../contracts/src/primitives/index.ts"],
+      "@dailyuse/contracts/result": ["../contracts/src/result/index.ts"],
+      "@dailyuse/contracts/shared": ["../contracts/src/shared/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
+      "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
       "@dailyuse/patterns": ["../patterns/src/index.ts"]
     }
   },

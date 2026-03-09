@@ -17,6 +17,7 @@ import type {
 
 const CHANNELS = {
   GET_PROFILE: 'account:get',
+  GET_CURRENT: 'account:get-me',
   UPDATE_PROFILE: 'account:update-profile',
   CHECK_AVAILABILITY: 'account:check-availability',
   CLOSE_ACCOUNT: 'account:close',
@@ -26,7 +27,7 @@ export class AccountIpcAdapter implements IAccountApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getMyProfile(): Promise<Result<AccountClientDTO>> {
-    return this.ipcClient.invoke(CHANNELS.GET_PROFILE);
+    return this.ipcClient.invoke(CHANNELS.GET_CURRENT);
   }
 
   async updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>> {

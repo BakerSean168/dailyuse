@@ -311,17 +311,13 @@ function updateAbsoluteTimePart(index: number, part: 'hour' | 'minute', value: s
   updateTriggers();
 }
 
-interface Props {
+const props = defineProps<{
   modelValue: TaskTemplateViewModel;
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: TaskTemplateViewModel): void;
-  (e: 'update:validation', isValid: boolean): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+}>();
+const emit = defineEmits<{
+  'update:modelValue': [value: TaskTemplateViewModel];
+  'update:validation': [isValid: boolean];
+}>();
 
 const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const updatedTemplate: TaskTemplateViewModel = {

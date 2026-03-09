@@ -86,20 +86,21 @@ import type { MenuAction } from '../../../components/shared';
 
 const { t } = useI18n();
 
-interface Props {
-  node: TreeNode;
-  level?: number;
-  showFileInfo?: boolean;
-  selectedId?: string | null;
-  expandedIds?: string[];
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  level: 0,
-  showFileInfo: false,
-  selectedId: null,
-  expandedIds: () => [],
-});
+const props = withDefaults(
+  defineProps<{
+    node: TreeNode;
+    level?: number;
+    showFileInfo?: boolean;
+    selectedId?: string | null;
+    expandedIds?: string[];
+  }>(),
+  {
+    level: 0,
+    showFileInfo: false,
+    selectedId: null,
+    expandedIds: () => [],
+  },
+);
 
 const emit = defineEmits<{
   select: [node: TreeNode];

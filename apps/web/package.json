@@ -6,6 +6,7 @@
   "scripts": {},
   "dependencies": {
     "@dailyuse/account": "workspace:*",
+    "@dailyuse/ai": "workspace:*",
     "@dailyuse/app-vue": "workspace:*",
     "@dailyuse/assets": "workspace:*",
     "@dailyuse/authentication": "workspace:*",

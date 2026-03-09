@@ -167,16 +167,17 @@ import {
 import { Button, Badge } from '@dailyuse/ui-vue-shadcn';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
-interface Props {
-  resourcesByType: Record<string, ResourceClientDTO[]>;
-  isLoading?: boolean;
-  selectedId?: string | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isLoading: false,
-  selectedId: null,
-});
+const props = withDefaults(
+  defineProps<{
+    resourcesByType: Record<string, ResourceClientDTO[]>;
+    isLoading?: boolean;
+    selectedId?: string | null;
+  }>(),
+  {
+    isLoading: false,
+    selectedId: null,
+  },
+);
 
 defineEmits<{
   'create-note': [];
