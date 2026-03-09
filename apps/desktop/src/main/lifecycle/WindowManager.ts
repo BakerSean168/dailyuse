@@ -12,6 +12,7 @@
  */
 
 import { BrowserWindow, screen, ipcMain, app } from 'electron';
+import type { BrowserWindowConstructorOptions, TitleBarOverlay } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createLogger } from '@dailyuse/utils';
@@ -21,6 +22,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const logger = createLogger('WindowManager');
+const DESKTOP_CHROME_BACKGROUND = '#f8fafc';
+const DESKTOP_CHROME_FOREGROUND = '#0f172a';
+
+function createNativeWindowChromeOptions(): Pick<
+  BrowserWindowConstructorOptions,
+  'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+> {
+  const options: Pick<
+    BrowserWindowConstructorOptions,
+    'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+  > = {
+    backgroundColor: DESKTOP_CHROME_BACKGROUND,
+    titleBarStyle: 'default',
+  };
+
+  if (process.platform === 'win32' || process.platform === 'linux') {
+    options.titleBarOverlay = {
+      color: DESKTOP_CHROME_BACKGROUND,
+      symbolColor: DESKTOP_CHROME_FOREGROUND,
+      height: 36,
+    } satisfies TitleBarOverlay;
+  }
+
+  return options;
+}
 
 // ============ Types ============
 
@@ -68,10 +94,11 @@ export class WindowManager {
 
   private constructor(config: WindowManagerConfig = {}) {
     const preloadPath = config.preloadPath || resolvePreloadPath(__dirname);
-    
+
     this.config = {
       preloadPath,
-      devServerUrl: config.devServerUrl || process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173',
+      devServerUrl:
+        config.devServerUrl || process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173',
       isDev: config.isDev ?? process.env.NODE_ENV === 'development',
     };
 
@@ -139,9 +166,7 @@ export class WindowManager {
       maximizable: false,
       minimizable: true,
       fullscreenable: false,
-      frame: false, // 无边框，自定义标题栏
-      transparent: false,
-      backgroundColor: '#1a1a2e', // 暗色背景
+      ...createNativeWindowChromeOptions(),
       webPreferences: {
         preload: this.config.preloadPath,
         contextIsolation: true,
@@ -194,13 +219,13 @@ export class WindowManager {
       height: 800,
       minWidth: 900,
       minHeight: 600,
+      ...createNativeWindowChromeOptions(),
       webPreferences: {
         preload: this.config.preloadPath,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
       },
-      titleBarStyle: 'hiddenInset',
       show: false,
     });
 
@@ -425,60 +450,6 @@ export class WindowManager {
     // 登出 → 切换到登录窗口
     ipcMain.handle('window:transition-to-login', async () => {
       await this.transitionToLoginWindow();
-      return { success: true };
-    });
-
-    ipcMain.handle('window:minimize', (event) => {
-      this.getWindowForSender(event.sender.id)?.minimize();
-      return { success: true };
-    });
-
-    ipcMain.handle('window:toggle-maximize', (event) => {
-      const senderWindow = this.getWindowForSender(event.sender.id);
-      if (!senderWindow) {
-        return { success: false };
-      }
-
-      if (senderWindow.isMaximized()) {
-        senderWindow.unmaximize();
-      } else {
-        senderWindow.maximize();
-      }
-
-      return { success: true, isMaximized: senderWindow.isMaximized() };
-    });
-
-    ipcMain.handle('window:close', (event) => {
-      this.getWindowForSender(event.sender.id)?.close();
-      return { success: true };
-    });
-
-    ipcMain.handle('window:get-state', (event) => {
-      const senderWindow = this.getWindowForSender(event.sender.id);
-      if (!senderWindow) {
-        return {
-          isMaximized: false,
-          isMinimized: false,
-          isFocused: false,
-        };
-      }
-
-      return {
-        isMaximized: senderWindow.isMaximized(),
-        isMinimized: senderWindow.isMinimized(),
-        isFocused: senderWindow.isFocused(),
-      };
-    });
-
-    // 最小化登录窗口
-    ipcMain.handle('window:minimize-login', () => {
-      this.loginWindow?.minimize();
-      return { success: true };
-    });
-
-    // 关闭登录窗口（退出应用）
-    ipcMain.handle('window:close-login', () => {
-      this.loginWindow?.close();
       return { success: true };
     });
 

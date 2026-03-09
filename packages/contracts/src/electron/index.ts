@@ -8,6 +8,9 @@
  */
 
 import type Database from 'better-sqlite3';
+import type { Context } from '../shared';
+export type { IElectronAuthContext } from './auth-context';
+import type { IElectronAuthContext } from './auth-context';
 
 /**
  * Shared context provided to every Electron module during registration.
@@ -15,6 +18,8 @@ import type Database from 'better-sqlite3';
 export interface IElectronModuleContext {
   /** The active better-sqlite3 database instance. */
   readonly db: Database.Database;
+  /** Shared authenticated desktop session context. */
+  readonly auth: IElectronAuthContext;
 }
 
 /**

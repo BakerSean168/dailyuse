@@ -19,6 +19,7 @@
 import type Database from 'better-sqlite3';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils';
+import { DesktopAuthContextProvider } from './auth/desktop-auth-context';
 
 const logger = createLogger('ElectronBootstrapper');
 
@@ -46,6 +47,7 @@ export class ElectronBootstrapper {
   public async init(): Promise<void> {
     const context: IElectronModuleContext = {
       db: this.db,
+      auth: new DesktopAuthContextProvider(),
     };
 
     logger.info(`Starting module registration (${this.modules.length} modules)...`);

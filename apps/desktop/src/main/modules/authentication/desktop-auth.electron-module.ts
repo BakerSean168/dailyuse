@@ -28,6 +28,10 @@ import { fail } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
 import { AuthDesktopApplicationService } from './application/AuthDesktopApplicationService';
 import { getNetworkStateManager } from './infrastructure';
+import {
+  clearDesktopAuthService,
+  registerDesktopAuthService,
+} from '../../auth/desktop-auth-context';
 
 const logger = createLogger('DesktopAuthElectron');
 
@@ -105,6 +109,7 @@ export const DesktopAuthElectronModule: IElectronModule = {
     const desktopService = new AuthDesktopApplicationService(logger);
     desktopService.setRepositories(sessionRepository, identityRepository);
     desktopService.setOfflineAuthDependencies(identityRepository, passwordHasher);
+    registerDesktopAuthService(desktopService);
 
     // 3. Initialize network state
     const networkManager = getNetworkStateManager({}, logger);
@@ -204,6 +209,7 @@ export const DesktopAuthElectronModule: IElectronModule = {
       ipcMain.removeHandler(ch);
     }
     AuthenticationContainer.getInstance().reset();
+    clearDesktopAuthService();
     logger.info('Desktop Authentication module destroyed');
   },
 };

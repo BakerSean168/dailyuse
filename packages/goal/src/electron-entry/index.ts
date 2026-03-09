@@ -9,7 +9,7 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import { type IElectronModule, type IElectronModuleContext } from '@dailyuse/contracts/electron';
 import {
   GoalModule,
   SqliteGoalRepository,
@@ -20,6 +20,9 @@ import {
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRepository } from '../domain-server';
 import type { Context } from '@dailyuse/contracts/shared';
+import { GoalController } from '../controllers/goal.controller';
+import { GoalFolderController } from '../controllers/goal-folder.controller';
+import { withAuthenticatedValue } from './authenticated-ipc';
 const logger = createLogger('GoalElectron');
 
 /**
@@ -67,16 +70,53 @@ export const GoalElectronModule: IElectronModule = {
       goalFolderRepository,
       goalRecordRepository,
     });
+    const goalController = new GoalController({
+      createGoal: goalModule.createGoal,
+      getGoal: goalModule.getGoal,
+      listGoals: goalModule.listGoals,
+      updateGoal: goalModule.updateGoal,
+      deleteGoal: goalModule.deleteGoal,
+      archiveGoal: goalModule.archiveGoal,
+      activateGoal: goalModule.activateGoal,
+      completeGoal: goalModule.completeGoal,
+      searchGoals: goalModule.searchGoals,
+      addKeyResult: goalModule.addKeyResult,
+      updateKeyResult: goalModule.updateKeyResult,
+      updateKeyResultProgress: goalModule.updateKeyResultProgress,
+      deleteKeyResult: goalModule.deleteKeyResult,
+      addReview: goalModule.addReview,
+      listReviews: goalModule.listReviews,
+      updateReview: goalModule.updateReview,
+      deleteReview: goalModule.deleteReview,
+      createRecord: goalModule.createRecord,
+      listRecords: goalModule.listRecords,
+      deleteRecord: goalModule.deleteRecord,
+    });
+    const goalFolderController = new GoalFolderController({
+      createGoalFolder: goalModule.createGoalFolder,
+      getGoalFolder: goalModule.getGoalFolder,
+      listGoalFolders: goalModule.listGoalFolders,
+      updateGoalFolder: goalModule.updateGoalFolder,
+      deleteGoalFolder: goalModule.deleteGoalFolder,
+    });
     _goalRepository = goalModule.goalRepository;
 
     // 4. IPC Handlers
-    ipcMain.handle(Ch.LIST, (_, params) => goalModule.listGoals.execute(params));
-    ipcMain.handle(Ch.GET, (_, id) => goalModule.getGoal.execute(id));
-    ipcMain.handle(Ch.CREATE, (_, dto) =>
-      goalModule.createGoal.execute(dto, {
-        identityId: dto.identityId,
-        deviceId: 'electron-app',
-      } as Context),
+    ipcMain.handle(Ch.LIST, async (_event, params) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.list({ ...(params ?? {}), identityId: requestContext.identityId }),
+      ),
+    );
+    ipcMain.handle(Ch.GET, (_event, id, includeChildren = true) =>
+      goalController.get(id, includeChildren),
+    );
+    ipcMain.handle(Ch.CREATE, async (_event, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.create(
+          { ...dto, identityId: requestContext.identityId },
+          requestContext as Context,
+        ),
+      ),
     );
     ipcMain.handle(Ch.UPDATE, (_, dto) => goalModule.updateGoal.execute(dto.id, dto));
     ipcMain.handle(Ch.DELETE, (_, id) => goalModule.deleteGoal.execute(id));
@@ -90,16 +130,25 @@ export const GoalElectronModule: IElectronModule = {
         dto.note,
       ),
     );
-
-    ipcMain.handle(Ch.FOLDER_LIST, (_, params) => goalModule.listGoalFolders.execute(params));
-    ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) =>
-      goalModule.createGoalFolder.execute(dto.identityId, dto),
+    ipcMain.handle(Ch.FOLDER_LIST, async (_event, params) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalFolderController.list({ ...(params ?? {}), identityId: requestContext.identityId }),
+      ),
     );
-    ipcMain.handle(Ch.FOLDER_UPDATE, (_, dto) =>
-      goalModule.updateGoalFolder.execute(dto.id, dto.identityId, dto),
+    ipcMain.handle(Ch.FOLDER_CREATE, async (_event, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalFolderController.create(dto, requestContext as Context),
+      ),
     );
-    ipcMain.handle(Ch.FOLDER_DELETE, (_, dto) =>
-      goalModule.deleteGoalFolder.execute(dto.id, dto.identityId),
+    ipcMain.handle(Ch.FOLDER_UPDATE, async (_event, id, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalFolderController.update(id, dto, requestContext as Context),
+      ),
+    );
+    ipcMain.handle(Ch.FOLDER_DELETE, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalFolderController.delete(id, requestContext as Context),
+      ),
     );
 
     logger.info('Goal module registered');

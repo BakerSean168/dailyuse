@@ -16,6 +16,7 @@
  */
 
 import { app, BrowserWindow } from 'electron';
+import type { BrowserWindowConstructorOptions, TitleBarOverlay } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-features';
@@ -34,6 +35,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
+const DESKTOP_CHROME_BACKGROUND = '#f8fafc';
+const DESKTOP_CHROME_FOREGROUND = '#0f172a';
+
+function createNativeWindowChromeOptions(): Pick<
+  BrowserWindowConstructorOptions,
+  'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+> {
+  const options: Pick<
+    BrowserWindowConstructorOptions,
+    'backgroundColor' | 'titleBarStyle' | 'titleBarOverlay'
+  > = {
+    backgroundColor: DESKTOP_CHROME_BACKGROUND,
+    titleBarStyle: 'default',
+  };
+
+  if (process.platform === 'win32' || process.platform === 'linux') {
+    options.titleBarOverlay = {
+      color: DESKTOP_CHROME_BACKGROUND,
+      symbolColor: DESKTOP_CHROME_FOREGROUND,
+      height: 36,
+    } satisfies TitleBarOverlay;
+  }
+
+  return options;
+}
 
 /**
  * Creates the main application window.
@@ -53,13 +79,13 @@ export function createMainWindow(): BrowserWindow {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    ...createNativeWindowChromeOptions(),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
     },
-    titleBarStyle: 'hiddenInset',
     show: false,
   });
 

@@ -2,8 +2,8 @@
 /**
  * Desktop App Root Component
  *
- * Same global overlays as the web app, plus a custom
- * frameless titlebar for the desktop window.
+ * Same global overlays as the web app, with Electron using
+ * the native window chrome instead of an in-app title bar.
  */
 import { Toaster } from '@dailyuse/ui-vue-shadcn';
 import {
@@ -14,15 +14,9 @@ import {
   GlobalCommandPalette,
   GlobalProgressBar,
 } from '@dailyuse/app-vue';
-import TitleBar from './platform/TitleBar.vue';
-
-const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
 </script>
 
 <template>
-  <!-- Custom frameless titlebar (Desktop only) -->
-  <TitleBar v-if="isElectron" />
-
   <!-- Progress bar -->
   <GlobalProgressBar />
 

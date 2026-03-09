@@ -20,13 +20,14 @@ import {
 
 const api = window.electronAPI;
 
-export function initElectronFeatures(_: App): void {
+export function initElectronFeatures(app: App): void {
+  void app;
+
   if (!api) return;
 
   setupTraySync();
   setupShortcuts();
   setupOnlineStatus();
-  setupWindowState();
   setupDbChangeListener();
 }
 
@@ -54,12 +55,6 @@ function setupOnlineStatus(): void {
   });
   window.addEventListener('offline', () => {
     console.log('[Electron] Network: offline');
-  });
-}
-
-function setupWindowState(): void {
-  api?.invoke('window:get-state').catch(() => {
-    // Window state retrieval is optional; ignore errors
   });
 }
 

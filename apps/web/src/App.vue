@@ -8,6 +8,7 @@
  * 3. 全局辅助交互 (GlobalCommandPalette, GlobalSheet, GlobalProgressBar)
  * 4. 错误兜底系统 (GlobalErrorBoundary)
  */
+import { computed } from 'vue';
 import { Toaster, TooltipProvider } from '@dailyuse/ui-vue-shadcn';
 import {
   AIFloatingBall,
@@ -16,7 +17,11 @@ import {
   GlobalSheet,
   GlobalCommandPalette,
   GlobalProgressBar,
+  useAuthenticationStore,
 } from '@dailyuse/app-vue';
+
+const authStore = useAuthenticationStore();
+const shouldShowAIFloatingBall = computed(() => authStore.isAuthenticated);
 </script>
 
 <template>
@@ -34,7 +39,7 @@ import {
     <GlobalConfirmDialog />
     <GlobalSheet />
     <GlobalCommandPalette />
-    <AIFloatingBall />
+    <AIFloatingBall v-if="shouldShowAIFloatingBall" />
   </TooltipProvider>
 </template>
 

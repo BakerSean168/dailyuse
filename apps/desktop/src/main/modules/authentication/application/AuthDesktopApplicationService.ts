@@ -927,6 +927,26 @@ export class AuthDesktopApplicationService {
     };
   }
 
+  getCurrentIdentityId(): string | null {
+    return this.sessionManager?.getCurrentSession()?.identityId ?? null;
+  }
+
+  getCurrentSessionId(): string | null {
+    return this.sessionManager?.getCurrentSession()?.id ?? null;
+  }
+
+  getCurrentRequestContext(): { identityId: string; deviceId: string } | null {
+    const session = this.sessionManager?.getCurrentSession();
+    if (!session) {
+      return null;
+    }
+
+    return {
+      identityId: session.identityId,
+      deviceId: session.deviceInfo?.deviceId ?? 'desktop-app',
+    };
+  }
+
   /**
    * 撤销会话
    */

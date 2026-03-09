@@ -54,6 +54,14 @@ export default defineConfig(({ mode, command }) => {
           __dirname,
           '../../packages/authentication/src/infrastructure-client/index.ts',
         ),
+        '@dailyuse/ai/application-client': path.resolve(
+          __dirname,
+          '../../packages/ai/src/application-client/index.ts',
+        ),
+        '@dailyuse/ai/infrastructure-client': path.resolve(
+          __dirname,
+          '../../packages/ai/src/infrastructure-client/index.ts',
+        ),
         // 注意：所有 @dailyuse/* 包通过 node_modules 解析到各包的 dist 目录
         // 不再使用指向源码的别名，这样可以：
         // 1. 保持包边界清晰
