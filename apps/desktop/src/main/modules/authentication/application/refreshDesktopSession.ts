@@ -1,7 +1,4 @@
-import type {
-  RefreshSessionRequest,
-  RefreshSessionResponse,
-} from '@dailyuse/contracts/authentication';
+import type { AuthResponseDTO, RefreshSessionRequest } from '@dailyuse/contracts/authentication';
 
 import type { AuthRemoteGateway } from './AuthRemoteGateway';
 import {
@@ -12,13 +9,13 @@ import {
   type AuthFlowResult,
 } from './authFlowTypes';
 
-export type DesktopRefreshResult = AuthFlowResult<RefreshSessionResponse>;
+export type DesktopRefreshResult = AuthFlowResult<AuthResponseDTO>;
 
 interface RefreshDesktopSessionDependencies {
   isOnline: () => boolean;
   remoteGateway: Pick<AuthRemoteGateway, 'createRefreshUrl' | 'refreshToken'>;
   logger: AuthFlowLogger;
-  onSuccess?: (response: RefreshSessionResponse, request: RefreshSessionRequest) => Promise<void>;
+  onSuccess?: (response: AuthResponseDTO, request: RefreshSessionRequest) => Promise<void>;
 }
 
 export async function refreshDesktopSession(
@@ -43,12 +40,31 @@ export async function refreshDesktopSession(
     const response = await remoteGateway.refreshToken(request);
 
     if (!response.ok) {
-      const message = response.data.error || `刷新失败 (${response.status})`;
+      const message =
+        ('message' in response.data && response.data.message) ||
+        ('error' in response.data && response.data.error) ||
+        `刷新失败 (${response.status})`;
       logger.info('Remote refresh rejected', { status: response.status, message });
 
       return {
         ok: false,
         error: createTerminalAuthError('REFRESH_FAILED', message),
+      };
+    }
+
+    if (
+      !('identity' in response.data) ||
+      !('session' in response.data) ||
+      !response.data.accessToken
+    ) {
+      logger.error('Remote refresh returned incomplete auth payload', {
+        status: response.status,
+        data: response.data,
+      });
+
+      return {
+        ok: false,
+        error: createTerminalAuthError('REFRESH_FAILED', '刷新成功，但认证数据不完整'),
       };
     }
 

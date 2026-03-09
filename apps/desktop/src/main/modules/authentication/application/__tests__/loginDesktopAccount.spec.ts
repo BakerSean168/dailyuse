@@ -51,7 +51,7 @@ describe('loginDesktopAccount', () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
-      json: async () => ({ ok: false, error: '密码错误' }),
+      json: async () => ({ message: '密码错误' }),
     });
 
     const result = await loginDesktopAccount(
@@ -77,17 +77,57 @@ describe('loginDesktopAccount', () => {
   });
 
   it('returns ONLINE_USER response when API login succeeds', async () => {
+    const authPayload = {
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      identity: {
+        id: 'user-1',
+        status: 'Active',
+        failedLoginAttempts: 0,
+        lastFailedAttempt: null,
+        lockedUntil: null,
+        identifiers: [],
+        credentials: [],
+        hasPassword: true,
+        hasEmail: true,
+        hasPhone: false,
+        hasOAuth: false,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        deletedAt: null,
+      },
+      session: {
+        id: 'session-1',
+        identityId: 'user-1',
+        deviceInfo: {
+          deviceId: 'device-1',
+          deviceFingerprint: 'fingerprint-1',
+          deviceType: 'Desktop',
+          deviceName: 'Test Desktop',
+          os: 'Windows',
+          osVersion: '11',
+          browser: 'DailyUse',
+          appVersion: '1.0.0',
+          ipAddress: '127.0.0.1',
+          userAgent: 'Vitest',
+          location: null,
+          firstSeenAt: 1,
+          lastSeenAt: 1,
+        },
+        isCurrentSession: true,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        expiresAt: 2,
+        lastActiveAt: 1,
+        deletedAt: null,
+      },
+    };
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
-        ok: true,
-        identityId: 'user-1',
-        sessionId: 'session-1',
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-        expiresIn: 3600,
-      }),
+      json: async () => ({ data: authPayload }),
     });
 
     const onSuccess = vi.fn();
@@ -107,14 +147,7 @@ describe('loginDesktopAccount', () => {
 
     expect(result).toEqual({
       ok: true,
-      response: {
-        ok: true,
-        identityId: 'user-1',
-        sessionId: 'session-1',
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-        expiresIn: 3600,
-      },
+      response: authPayload,
     });
     expect(onSuccess).toHaveBeenCalledOnce();
   });

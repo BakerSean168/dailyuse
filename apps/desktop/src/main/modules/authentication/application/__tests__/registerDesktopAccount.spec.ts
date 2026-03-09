@@ -110,4 +110,78 @@ describe('registerDesktopAccount', () => {
       },
     });
   });
+
+  it('returns the full auth payload when registration succeeds', async () => {
+    const authPayload = {
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      identity: {
+        id: 'user-1',
+        status: 'Active',
+        failedLoginAttempts: 0,
+        lastFailedAttempt: null,
+        lockedUntil: null,
+        identifiers: [],
+        credentials: [],
+        hasPassword: true,
+        hasEmail: true,
+        hasPhone: false,
+        hasOAuth: false,
+        version: 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        deletedAt: null,
+      },
+      session: {
+        id: 'session-1',
+        identityId: 'user-1',
+        deviceInfo: {
+          deviceId: 'device-1',
+          deviceFingerprint: 'fingerprint-1',
+          deviceType: 'Desktop',
+          deviceName: 'Test Desktop',
+          os: 'Windows',
+          osVersion: '11',
+          appVersion: '1.0.0',
+        },
+        isCurrentSession: true,
+        version: 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        expiresAt: Date.now() + 3600_000,
+        lastActiveAt: Date.now(),
+        deletedAt: null,
+      },
+    };
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => authPayload,
+    });
+    const onSuccess = vi.fn();
+
+    const result = await registerDesktopAccount(
+      {
+        email: 'new@example.com',
+        password: 'secret123',
+        username: 'new-user',
+      },
+      {
+        isOnline: () => true,
+        remoteGateway: createRemoteGatewayMock(fetchImpl),
+        logger: createLogger(),
+        onSuccess,
+      },
+    );
+
+    expect(onSuccess).toHaveBeenCalledWith(authPayload, {
+      email: 'new@example.com',
+      password: 'secret123',
+      username: 'new-user',
+    });
+    expect(result).toEqual({
+      ok: true,
+      response: authPayload,
+    });
+  });
 });

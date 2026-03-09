@@ -35,6 +35,9 @@ import {
 import {
   AuthMode,
   ConnectionStatus,
+  type AuthResponseDTO,
+  type AuthIdentityClientDTO,
+  type AuthSessionClientDTO,
   type AuthSessionId,
   type TokenStatus,
   type AutoLoginResult as ContractAutoLoginResult,
@@ -232,9 +235,7 @@ export class AuthDesktopApplicationService {
    * 登录
    * @returns IpcResult<LoginData> - 统一的响应格式
    */
-  async login(
-    credentials: LoginCredentials,
-  ): Promise<IpcResult<{ identityId: string; sessionId: string }>> {
+  async login(credentials: LoginCredentials): Promise<IpcResult<AuthResponseDTO>> {
     this.logger.info('Login attempt', { email: credentials.email });
 
     if (!this.sessionManager) {
@@ -254,21 +255,21 @@ export class AuthDesktopApplicationService {
           remoteGateway: this.remoteGateway,
           logger: this.logger,
           onSuccess: async (response, request) => {
-            if (!response.ok || !response.accessToken || !response.identityId) {
+            if (!response.accessToken) {
               return;
             }
 
             await this.tokenManager.saveTokens({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken || '',
-              accessTokenExpiresIn: response.expiresIn || 3600,
-              identityId: response.identityId,
-              sessionId: response.sessionId || crypto.randomUUID(),
+              accessTokenExpiresIn: 3600,
+              identityId: response.identity.id,
+              sessionId: response.session.id || crypto.randomUUID(),
             });
 
             if (this.sessionManager) {
               await this.sessionManager
-                .saveOfflineCredentials(request.email, request.password, response.identityId)
+                .saveOfflineCredentials(request.email, request.password, response.identity.id)
                 .catch((err) =>
                   this.logger.warn('Failed to cache offline credentials', { error: err }),
                 );
@@ -288,13 +289,7 @@ export class AuthDesktopApplicationService {
 
       let finalResult: {
         ok: boolean;
-        response?: {
-          ok: boolean;
-          identityId?: string;
-          sessionId?: string;
-          authMode?: AuthMode;
-          error?: string;
-        };
+        response?: AuthResponseDTO & { authMode?: AuthMode; ok?: boolean };
         error?: string;
       };
 
@@ -312,17 +307,32 @@ export class AuthDesktopApplicationService {
           password: credentials.password,
           rememberMe: credentials.rememberMe,
         });
+
+        const offlineAuthResponse =
+          offlineResponse.ok &&
+          offlineResponse.identityId &&
+          offlineResponse.sessionId &&
+          offlineResponse.accessToken
+            ? await this.buildOfflineAuthResponse(
+                offlineResponse.identityId,
+                offlineResponse.sessionId,
+                offlineResponse.accessToken,
+              )
+            : undefined;
+
         finalResult = {
           ok: offlineResponse.ok,
-          response: offlineResponse,
+          response: offlineAuthResponse
+            ? { ...offlineAuthResponse, authMode: AuthMode.OFFLINE_USER, ok: true }
+            : undefined,
           error: offlineResponse.error,
         };
       }
 
-      if (finalResult.ok && finalResult.response?.ok) {
+      if (finalResult.ok && finalResult.response) {
         this.authMode = finalResult.response.authMode ?? AuthMode.ONLINE_USER;
         this.logger.info('Login successful', {
-          identityId: finalResult.response.identityId,
+          identityId: finalResult.response.identity.id,
           authMode: this.authMode,
         });
 
@@ -339,12 +349,7 @@ export class AuthDesktopApplicationService {
           );
         }
 
-        return toIpcResult(
-          ok({
-            identityId: finalResult.response.identityId!,
-            sessionId: finalResult.response.sessionId!,
-          }),
-        );
+        return toIpcResult(ok(finalResult.response));
       }
 
       return toIpcResult(
@@ -364,14 +369,78 @@ export class AuthDesktopApplicationService {
     }
   }
 
+  private async buildOfflineAuthResponse(
+    identityId: string,
+    sessionId: string,
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<AuthResponseDTO> {
+    const identity = await this.credentialRepository?.findById(identityId as any);
+    const session = await this.sessionRepository?.findById(sessionId as AuthSessionId);
+
+    const identityDto: AuthIdentityClientDTO = identity
+      ? identity.toClientDTO()
+      : {
+          id: identityId as any,
+          status: 'Active' as any,
+          failedLoginAttempts: 0,
+          lastFailedAttempt: null,
+          lockedUntil: null,
+          identifiers: [],
+          credentials: [],
+          hasPassword: true,
+          hasEmail: false,
+          hasPhone: false,
+          hasOAuth: false,
+          version: 1,
+          createdAt: Date.now() as any,
+          updatedAt: Date.now() as any,
+          deletedAt: null,
+        };
+
+    const sessionDto: AuthSessionClientDTO = session
+      ? session.toClientDTO(true)
+      : {
+          id: sessionId as any,
+          identityId: identityId as any,
+          deviceInfo: {
+            deviceId: 'desktop-offline',
+            deviceFingerprint: 'offline',
+            deviceType: 'Desktop' as any,
+            deviceName: 'Desktop Offline Session',
+            os: null,
+            osVersion: null,
+            browser: null,
+            appVersion: null,
+            ipAddress: null,
+            userAgent: null,
+            location: null,
+            firstSeenAt: Date.now(),
+            lastSeenAt: Date.now(),
+          },
+          isCurrentSession: true,
+          version: 1,
+          createdAt: Date.now() as any,
+          updatedAt: Date.now() as any,
+          expiresAt: (Date.now() + 3600_000) as any,
+          lastActiveAt: Date.now() as any,
+          deletedAt: null,
+        };
+
+    return {
+      accessToken,
+      refreshToken,
+      identity: identityDto,
+      session: sessionDto,
+    };
+  }
+
   /**
    * 注册
    * @description 在线模式注册新账户
    * @returns IpcResult<RegisterData> - 统一的响应格式
    */
-  async register(
-    request: RegisterRequest,
-  ): Promise<IpcResult<{ identityId: string; message: string }>> {
+  async register(request: RegisterRequest): Promise<IpcResult<AuthResponseDTO>> {
     const result = await registerDesktopAccount(request, {
       isOnline: () => getNetworkStateManager().isOnline(),
       remoteGateway: this.remoteGateway,
@@ -392,7 +461,9 @@ export class AuthDesktopApplicationService {
     data: RegisterApiResponse,
     request: RegisterRequest,
   ): Promise<void> {
-    if (!data.accessToken) {
+    const identityId = data.identity?.id || data.identityId || data.user?.id || '';
+
+    if (!data.accessToken || !identityId) {
       return;
     }
 
@@ -400,8 +471,8 @@ export class AuthDesktopApplicationService {
       accessToken: data.accessToken,
       refreshToken: data.refreshToken || '',
       accessTokenExpiresIn: data.expiresIn || 3600,
-      identityId: data.identityId || data.user?.id || '',
-      sessionId: data.sessionId || crypto.randomUUID(),
+      identityId,
+      sessionId: data.session?.id || data.sessionId || crypto.randomUUID(),
     });
     this.authMode = AuthMode.ONLINE_USER;
 
@@ -410,11 +481,7 @@ export class AuthDesktopApplicationService {
     }
 
     await this.sessionManager
-      .saveOfflineCredentials(
-        request.email,
-        request.password,
-        data.identityId || data.user?.id || '',
-      )
+      .saveOfflineCredentials(request.email, request.password, identityId)
       .catch((err) =>
         this.logger.warn('Failed to cache offline credentials after register', {
           error: err,
@@ -542,7 +609,7 @@ export class AuthDesktopApplicationService {
    * 刷新令牌
    * @returns IpcResult<RefreshData> - 统一的响应格式
    */
-  async refreshToken(): Promise<IpcResult<{ accessToken: string; expiresIn: number }>> {
+  async refreshToken(): Promise<IpcResult<AuthResponseDTO>> {
     this.logger.info('Refresh token');
 
     if (!this.sessionManager) {
@@ -565,14 +632,11 @@ export class AuthDesktopApplicationService {
           remoteGateway: this.remoteGateway,
           logger: this.logger,
           onSuccess: async (response) => {
-            if (!response.ok || !response.accessToken) {
+            if (!response.accessToken) {
               return;
             }
 
-            await this.tokenManager.updateAccessToken(
-              response.accessToken,
-              response.expiresIn || 3600,
-            );
+            await this.tokenManager.updateAccessToken(response.accessToken, 3600);
 
             if (response.refreshToken) {
               await this.tokenManager.updateRefreshToken(response.refreshToken);
@@ -581,11 +645,28 @@ export class AuthDesktopApplicationService {
         },
       );
 
-      let result;
+      let result: AuthResponseDTO | null = null;
       if (remoteResult.ok) {
         result = remoteResult.response;
       } else if (remoteResult.error.shouldFallbackToOffline) {
-        result = await this.sessionManager.refreshSession();
+        const offlineResult = await this.sessionManager.refreshSession();
+        if (
+          offlineResult.ok &&
+          tokenData.identityId &&
+          tokenData.sessionId &&
+          tokenData.accessToken
+        ) {
+          result = await this.buildOfflineAuthResponse(
+            tokenData.identityId,
+            tokenData.sessionId,
+            tokenData.accessToken,
+            tokenData.refreshToken,
+          );
+        } else {
+          return toIpcResult(
+            fail({ code: 'REFRESH_FAILED', message: offlineResult.error || '刷新失败' }),
+          );
+        }
       } else {
         return toIpcResult(
           fail({
@@ -595,15 +676,10 @@ export class AuthDesktopApplicationService {
         );
       }
 
-      if (result.ok) {
-        return toIpcResult(
-          ok({
-            accessToken: result.accessToken!,
-            expiresIn: result.expiresIn!,
-          }),
-        );
+      if (result) {
+        return toIpcResult(ok(result));
       }
-      return toIpcResult(fail({ code: 'REFRESH_FAILED', message: result.error || '刷新失败' }));
+      return toIpcResult(fail({ code: 'REFRESH_FAILED', message: '刷新失败' }));
     } catch (error) {
       this.logger.error('Refresh token failed', { error });
       return toIpcResult(fail({ code: 'REFRESH_ERROR', message: String(error) }));

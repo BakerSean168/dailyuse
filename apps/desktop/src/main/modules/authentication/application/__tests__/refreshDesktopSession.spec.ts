@@ -51,7 +51,7 @@ describe('refreshDesktopSession', () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
-      json: async () => ({ ok: false, error: '刷新令牌无效' }),
+      json: async () => ({ message: '刷新令牌无效' }),
     });
 
     const result = await refreshDesktopSession(
@@ -77,15 +77,57 @@ describe('refreshDesktopSession', () => {
   });
 
   it('returns refreshed token data when API refresh succeeds', async () => {
+    const authPayload = {
+      accessToken: 'new-access-token',
+      refreshToken: 'new-refresh-token',
+      identity: {
+        id: 'user-1',
+        status: 'Active',
+        failedLoginAttempts: 0,
+        lastFailedAttempt: null,
+        lockedUntil: null,
+        identifiers: [],
+        credentials: [],
+        hasPassword: true,
+        hasEmail: true,
+        hasPhone: false,
+        hasOAuth: false,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        deletedAt: null,
+      },
+      session: {
+        id: 'session-1',
+        identityId: 'user-1',
+        deviceInfo: {
+          deviceId: 'device-1',
+          deviceFingerprint: 'fingerprint-1',
+          deviceType: 'Desktop',
+          deviceName: 'Test Desktop',
+          os: 'Windows',
+          osVersion: '11',
+          browser: 'DailyUse',
+          appVersion: '1.0.0',
+          ipAddress: '127.0.0.1',
+          userAgent: 'Vitest',
+          location: null,
+          firstSeenAt: 1,
+          lastSeenAt: 1,
+        },
+        isCurrentSession: true,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        expiresAt: 2,
+        lastActiveAt: 1,
+        deletedAt: null,
+      },
+    };
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
-        ok: true,
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token',
-        expiresIn: 3600,
-      }),
+      json: async () => ({ data: authPayload }),
     });
 
     const onSuccess = vi.fn();
@@ -105,12 +147,7 @@ describe('refreshDesktopSession', () => {
 
     expect(result).toEqual({
       ok: true,
-      response: {
-        ok: true,
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token',
-        expiresIn: 3600,
-      },
+      response: authPayload,
     });
     expect(onSuccess).toHaveBeenCalledOnce();
   });

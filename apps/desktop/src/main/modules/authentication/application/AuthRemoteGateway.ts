@@ -1,11 +1,7 @@
 import { createApiUrl } from '../../../utils/api-config';
-import type {
-  LoginResponse,
-  RefreshSessionRequest,
-  RefreshSessionResponse,
-} from '@dailyuse/contracts/authentication';
+import type { AuthResponseDTO, RefreshSessionRequest } from '@dailyuse/contracts/authentication';
 
-export interface RegisterApiResponse {
+export interface RegisterApiResponse extends Partial<AuthResponseDTO> {
   identityId?: string;
   sessionId?: string;
   accessToken?: string;
@@ -33,13 +29,13 @@ export interface RegisterApiResult {
 export interface LoginApiResult {
   ok: boolean;
   status: number;
-  data: LoginResponse;
+  data: AuthResponseDTO | { message?: string; error?: string };
 }
 
 export interface RefreshApiResult {
   ok: boolean;
   status: number;
-  data: RefreshSessionResponse;
+  data: AuthResponseDTO | { message?: string; error?: string };
 }
 
 export class AuthRemoteGateway {
@@ -69,7 +65,10 @@ export class AuthRemoteGateway {
       body: JSON.stringify(request),
     });
 
-    const data = (await response.json()) as RegisterApiResponse;
+    const body = (await response.json()) as
+      | RegisterApiResponse
+      | { data?: RegisterApiResponse; message?: string };
+    const data = 'data' in body && body.data ? body.data : (body as RegisterApiResponse);
 
     return {
       ok: response.ok,
@@ -88,9 +87,9 @@ export class AuthRemoteGateway {
     });
 
     const body = (await response.json()) as
-      | LoginResponse
-      | { data?: LoginResponse; message?: string };
-    const data = 'data' in body && body.data ? body.data : (body as LoginResponse);
+      | AuthResponseDTO
+      | { data?: AuthResponseDTO; message?: string; error?: string };
+    const data = 'data' in body && body.data ? body.data : body;
 
     return {
       ok: response.ok,
@@ -109,9 +108,9 @@ export class AuthRemoteGateway {
     });
 
     const body = (await response.json()) as
-      | RefreshSessionResponse
-      | { data?: RefreshSessionResponse; message?: string };
-    const data = 'data' in body && body.data ? body.data : (body as RefreshSessionResponse);
+      | AuthResponseDTO
+      | { data?: AuthResponseDTO; message?: string; error?: string };
+    const data = 'data' in body && body.data ? body.data : body;
 
     return {
       ok: response.ok,

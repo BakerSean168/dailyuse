@@ -4,10 +4,51 @@ import { AuthRemoteGateway } from '../AuthRemoteGateway';
 
 describe('AuthRemoteGateway', () => {
   it('posts registration requests to the auth register endpoint', async () => {
+    const authPayload = {
+      accessToken: 'token',
+      refreshToken: 'refresh-token',
+      identity: {
+        id: 'user-1',
+        status: 'Active',
+        failedLoginAttempts: 0,
+        lastFailedAttempt: null,
+        lockedUntil: null,
+        identifiers: [],
+        credentials: [],
+        hasPassword: true,
+        hasEmail: true,
+        hasPhone: false,
+        hasOAuth: false,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        deletedAt: null,
+      },
+      session: {
+        id: 'session-1',
+        identityId: 'user-1',
+        deviceInfo: {
+          deviceId: 'device-1',
+          deviceFingerprint: 'fingerprint-1',
+          deviceType: 'Desktop',
+          deviceName: 'Test Desktop',
+          os: 'Windows',
+          osVersion: '11',
+          appVersion: '1.0.0',
+        },
+        isCurrentSession: true,
+        version: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        expiresAt: 2,
+        lastActiveAt: 1,
+        deletedAt: null,
+      },
+    };
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ identityId: 'user-1', accessToken: 'token' }),
+      json: async () => ({ data: authPayload }),
     });
 
     const gateway = new AuthRemoteGateway(
@@ -31,7 +72,7 @@ describe('AuthRemoteGateway', () => {
     expect(result).toEqual({
       ok: true,
       status: 201,
-      data: { identityId: 'user-1', accessToken: 'token' },
+      data: authPayload,
     });
   });
 

@@ -1,3 +1,5 @@
+import type { AuthResponseDTO } from '@dailyuse/contracts/authentication';
+
 import type { AuthRemoteGateway, RegisterApiResponse } from './AuthRemoteGateway';
 import {
   createOfflineAuthError,
@@ -13,12 +15,7 @@ export interface RegisterRequest {
   username?: string;
 }
 
-export interface RegisterSuccessData {
-  identityId: string;
-  message: string;
-}
-
-export type RegisterResult = AuthFlowResult<RegisterSuccessData>;
+export type RegisterResult = AuthFlowResult<AuthResponseDTO>;
 
 interface RegisterDesktopAccountDependencies {
   isOnline: () => boolean;
@@ -80,11 +77,22 @@ export async function registerDesktopAccount(
       await onSuccess(data, request);
     }
 
+    if (!data.accessToken || !data.identity || !data.session) {
+      logger.error('Registration succeeded but auth payload is incomplete', { data });
+
+      return {
+        ok: false,
+        error: createTerminalAuthError('REGISTER_FAILED', '注册成功，但认证数据不完整'),
+      };
+    }
+
     return {
       ok: true,
       response: {
-        identityId: data.identityId || data.user?.id || '',
-        message: '注册成功',
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        identity: data.identity,
+        session: data.session,
       },
     };
   } catch (error) {

@@ -1,4 +1,4 @@
-import { type LoginResponse } from '@dailyuse/contracts/authentication';
+import { type AuthResponseDTO } from '@dailyuse/contracts/authentication';
 
 import type { AuthRemoteGateway } from './AuthRemoteGateway';
 import {
@@ -15,13 +15,13 @@ export interface DesktopLoginRequest {
   rememberMe?: boolean;
 }
 
-export type DesktopLoginResult = AuthFlowResult<LoginResponse>;
+export type DesktopLoginResult = AuthFlowResult<AuthResponseDTO>;
 
 interface LoginDesktopAccountDependencies {
   isOnline: () => boolean;
   remoteGateway: Pick<AuthRemoteGateway, 'createLoginUrl' | 'login'>;
   logger: AuthFlowLogger;
-  onSuccess?: (response: LoginResponse, request: DesktopLoginRequest) => Promise<void>;
+  onSuccess?: (response: AuthResponseDTO, request: DesktopLoginRequest) => Promise<void>;
 }
 
 export async function loginDesktopAccount(
@@ -49,7 +49,10 @@ export async function loginDesktopAccount(
     });
 
     if (!response.ok) {
-      const message = response.data.error || `登录失败 (${response.status})`;
+      const message =
+        ('message' in response.data && response.data.message) ||
+        ('error' in response.data && response.data.error) ||
+        `登录失败 (${response.status})`;
       logger.info('Remote login rejected', { status: response.status, message });
 
       return {
@@ -58,9 +61,25 @@ export async function loginDesktopAccount(
       };
     }
 
+    if (
+      !('identity' in response.data) ||
+      !('session' in response.data) ||
+      !response.data.accessToken
+    ) {
+      logger.error('Remote login returned incomplete auth payload', {
+        status: response.status,
+        data: response.data,
+      });
+
+      return {
+        ok: false,
+        error: createTerminalAuthError('AUTH_FAILED', '登录成功，但认证数据不完整'),
+      };
+    }
+
     logger.info('Remote login successful', {
-      identityId: response.data.identityId,
-      sessionId: response.data.sessionId,
+      identityId: response.data.identity.id,
+      sessionId: response.data.session.id,
     });
 
     if (onSuccess) {

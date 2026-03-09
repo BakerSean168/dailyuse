@@ -40,21 +40,23 @@ We have successfully created a comprehensive initialization infrastructure for t
 
 Three critical infrastructure tasks with proper dependencies:
 
-| Task Name | Phase | Priority | Dependencies | Description |
-|-----------|-------|----------|--------------|-------------|
-| `database-initialization` | APP_STARTUP | 5 | None | SQLite connection setup with WAL mode, page cache optimization |
-| `di-container-configuration` | APP_STARTUP | 10 | `database-initialization` | DI container setup with service and repository registration |
-| `ipc-system-initialization` | APP_STARTUP | 15 | `di-container-configuration` | Electron IPC handlers registration for all modules |
+| Task Name                    | Phase       | Priority | Dependencies                 | Description                                                    |
+| ---------------------------- | ----------- | -------- | ---------------------------- | -------------------------------------------------------------- |
+| `database-initialization`    | APP_STARTUP | 5        | None                         | SQLite connection setup with WAL mode, page cache optimization |
+| `di-container-configuration` | APP_STARTUP | 10       | `database-initialization`    | DI container setup with service and repository registration    |
+| `ipc-system-initialization`  | APP_STARTUP | 15       | `di-container-configuration` | Electron IPC handlers registration for all modules             |
 
 ### 2. Module Initialization Tasks (10 modules)
 
 Each module has a corresponding initialization task that:
+
 - Registers with a consistent phase (`APP_STARTUP`)
 - Uses medium priority (50) to run after infrastructure
 - Depends on `di-container-configuration`
 - Provides hooks for module-specific setup and cleanup
 
 **Modules:**
+
 - AI (conversations, messages, quota, providers)
 - Task (templates, instances, dashboard)
 - Goal (CRUD, status, statistics)
@@ -140,6 +142,7 @@ await manager.executePhase(InitializationPhase.APP_STARTUP);
 ## Type Safety
 
 All files use strict TypeScript with:
+
 - `verbatimModuleSyntax` enabled
 - Type-only imports where applicable
 - Proper async/await handling
@@ -183,6 +186,7 @@ async function initializeApp(): Promise<void> {
 ### Phase 2: Enhanced Module Initialization ✅ **Ready**
 
 Each module initialization can be enhanced to:
+
 - Load module-specific configurations
 - Register event listeners
 - Initialize caches
@@ -201,25 +205,21 @@ export function registerAIInitializationTasks(): void {
     dependencies: ['di-container-configuration'],
     initialize: async () => {
       console.log('[AI Module] Initializing AI module...');
-      
-      // Load AI-specific configuration
-      const aiConfig = await loadAIConfiguration();
-      
-      // Initialize AI services
-      const aiService = container.resolve('AIService');
-      await aiService.initialize(aiConfig);
-      
-      // Register AI-specific IPC handlers
-      const aiHandler = new AIIPCHandler();
-      aiHandler.registerHandlers();
-      
+
+      // Compose desktop-specific adapters for AI features
+      const knowledgeNotePersistence = new DesktopKnowledgeNotePersistenceAdapter(db);
+
+      // Register the AI Electron module using the current provider/chat/knowledge-note IPC API
+      const aiModule = createAIElectronModule({
+        createKnowledgeNotePersistence: () => knowledgeNotePersistence,
+      });
+      aiModule.register(context);
+
       console.log('[AI Module] AI module initialized');
     },
     cleanup: async () => {
       console.log('[AI Module] Cleaning up AI module...');
-      // Cleanup AI service
-      const aiService = container.resolve('AIService');
-      await aiService.shutdown();
+      AIContainer.getInstance().reset();
     },
   });
 }
@@ -228,6 +228,7 @@ export function registerAIInitializationTasks(): void {
 ### Phase 3: Cross-Cutting Concerns
 
 Additional initialization tasks for:
+
 - Event bus registration
 - Cache initialization
 - Performance monitoring
@@ -237,6 +238,7 @@ Additional initialization tasks for:
 ### Phase 4: Graceful Shutdown
 
 Ensure all cleanup tasks execute on:
+
 - App quit
 - Module reload (dev mode)
 - Error recovery
@@ -266,15 +268,18 @@ Ensure all cleanup tasks execute on:
 ### New Files (21 total)
 
 **Infrastructure Layer (6 files):**
+
 - `/shared/infrastructure/index.ts`
 - `/shared/infrastructure/database/index.ts`
 - `/shared/infrastructure/containers/index.ts`
 
 **Initialization Layer (3 files):**
+
 - `/shared/initialization/index.ts` - Orchestrator
 - `/shared/initialization/infraInitialization.ts` - Infrastructure tasks
 
 **Module Initialization (10 files):**
+
 - `/main/modules/ai/initialization/index.ts`
 - `/main/modules/task/initialization/index.ts`
 - `/main/modules/goal/initialization/index.ts`

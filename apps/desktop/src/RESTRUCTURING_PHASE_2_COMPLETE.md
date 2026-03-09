@@ -72,6 +72,7 @@ Created initialization templates for all 10 core modules:
 ```
 
 Each module has:
+
 - `registerXXXInitializationTasks()` function
 - Task registration with:
   - Phase: `APP_STARTUP`
@@ -158,6 +159,7 @@ registerAllInitializationTasks()
 ### Non-Breaking Changes
 
 All changes are **additive only**:
+
 - New adapter files in `/shared/infrastructure/`
 - New initialization layer in `/shared/initialization/`
 - New module initialization in each module's folder
@@ -167,15 +169,18 @@ All changes are **additive only**:
 ## Files Created (17 total)
 
 ### Infrastructure Layer (3)
+
 1. `/shared/infrastructure/index.ts` - 9 lines
 2. `/shared/infrastructure/database/index.ts` - 15 lines
 3. `/shared/infrastructure/containers/index.ts` - 20 lines
 
 ### Initialization Layer (2)
+
 4. `/shared/initialization/index.ts` - 51 lines
 5. `/shared/initialization/infraInitialization.ts` - 149 lines
 
 ### Module Initialization (10)
+
 6. `/main/modules/ai/initialization/index.ts` - 27 lines
 7. `/main/modules/task/initialization/index.ts` - 27 lines
 8. `/main/modules/goal/initialization/index.ts` - 27 lines
@@ -188,6 +193,7 @@ All changes are **additive only**:
 15. `/main/modules/setting/initialization/index.ts` - 27 lines
 
 ### Documentation (2)
+
 16. `/INITIALIZATION_SUMMARY.md` - Comprehensive technical guide
 17. This file - `/RESTRUCTURING_PHASE_2_COMPLETE.md` - Progress report
 
@@ -196,12 +202,14 @@ All changes are **additive only**:
 ## Testing Status
 
 ### ✅ Compilation Tests
+
 - [x] All initialization files compile without errors
 - [x] No TypeScript strict mode violations
 - [x] All imports resolve correctly
 - [x] No circular dependencies
 
 ### ⏳ Integration Tests (Ready for)
+
 - [ ] Desktop app launch with new initialization system
 - [ ] Database initialization logging
 - [ ] DI container configuration logging
@@ -212,6 +220,7 @@ All changes are **additive only**:
 - [ ] Error handling for initialization failures
 
 ### ⏳ Performance Tests (Ready for)
+
 - [ ] Database init timing (target: <100ms)
 - [ ] DI container config timing (target: <50ms)
 - [ ] IPC registration timing (target: <30ms)
@@ -254,40 +263,44 @@ pnpm dev
 ### Step 3: Verify IPC Handlers (5 minutes)
 
 From renderer, test a few channels:
+
 ```typescript
 // Test AI IPC
-const result = await window.electron.ipcRenderer.invoke('ai:create-conversation', {
-  accountUuid: 'test-uuid',
-  title: 'Test'
+const result = await window.electronAPI.invoke('ai:provider:list');
+console.log(result); // Should return the provider list payload
+
+const conversation = await window.electronAPI.invoke('ai:chat:conversation:create', {
+  identityId: 'test-user',
+  name: 'Test',
 });
-console.log(result); // Should have {success, data, error, meta}
+console.log(conversation);
 ```
 
 ### Step 4: Enhance Module Initialization (30 minutes per module)
 
 Add module-specific setup to each module's `initialize` function:
+
 ```typescript
 initialize: async () => {
   console.log('[AI Module] Initializing AI module...');
-  
-  // Load configuration
-  const aiConfig = await loadAIConfiguration();
-  
-  // Initialize services
-  const aiService = container.resolve('AIService');
-  await aiService.initialize(aiConfig);
-  
-  // Register IPC handlers
-  const aiHandler = new AIIPCHandler();
-  aiHandler.registerHandlers();
-  
+
+  // Resolve any desktop-side adapters needed by AI features
+  const knowledgeNotePersistence = new DesktopKnowledgeNotePersistenceAdapter(db);
+
+  // Register the AI Electron module with the new provider/chat/knowledge-note IPC surface
+  const aiModule = createAIElectronModule({
+    createKnowledgeNotePersistence: () => knowledgeNotePersistence,
+  });
+  aiModule.register(context);
+
   console.log('[AI Module] AI module initialized');
-}
+};
 ```
 
 ### Step 5: Complete Code Restructuring (Phases 1-4 from RESTRUCTURING_PLAN.md)
 
 Now that initialization infrastructure is in place, continue with:
+
 - Moving database/di from main/ to shared/
 - Reorganizing scattered files from main/ to modules/
 - Creating consistent module structure across all 10 modules
@@ -295,60 +308,72 @@ Now that initialization infrastructure is in place, continue with:
 ## Benefits Achieved
 
 ### 1. Centralized Initialization ✅
+
 Single entry point for all startup tasks instead of scattered logic
 
 ### 2. Dependency Management ✅
+
 Explicit dependencies prevent race conditions and circular issues
 
 ### 3. Phase-Based Execution ✅
+
 Clear separation between APP_STARTUP, USER_LOGIN, etc. phases
 
 ### 4. Performance Visibility ✅
+
 Detailed timing metrics for each initialization step
 
 ### 5. Error Handling ✅
+
 Unified error handling with proper logging and context
 
 ### 6. Graceful Shutdown ✅
+
 Cleanup hooks ensure proper resource deallocation
 
 ### 7. Type Safety ✅
+
 Full TypeScript support with strict mode compliance
 
 ### 8. Testability ✅
+
 Easy to mock initialization tasks for unit testing
 
 ## Alignment with Project Goals
 
 ### From User Request
+
 ✅ "优化 desktop 中已经实现的代码结构"
+
 - Created centralized initialization infrastructure
 - Established shared layer for cross-cutting concerns
 - Module initialization patterns established
 
 ✅ "符合 API 和 Web 的模式"
+
 - Using InitializationManager from @dailyuse/utils (same as API/Web)
 - Following DDD module structure with initialization layer
 - Consistent logging and error handling patterns
 
 ✅ "只需要 shared、modules 以及一些配置文件"
+
 - Created `/shared/infrastructure/` and `/shared/initialization/`
 - Module-specific initialization in each module folder
 - No scattered files in main directory root
 
 ## Metrics Summary
 
-| Metric | Value |
-|--------|-------|
-| Files Created | 17 |
-| Total LOC | ~532 |
-| Modules with Initialization | 10 |
-| Infrastructure Tasks | 3 |
-| IPC Handlers Ready | 117+ |
-| Compilation Status | ✅ No Errors |
-| Type Safety | ✅ Strict Mode |
-| Error Handling | ✅ Custom Classes |
-| Documentation | ✅ Comprehensive |
+| Metric                      | Value             |
+| --------------------------- | ----------------- |
+| Files Created               | 17                |
+| Total LOC                   | ~532              |
+| Modules with Initialization | 10                |
+| Infrastructure Tasks        | 3                 |
+| IPC Handlers Ready          | 117+              |
+| Compilation Status          | ✅ No Errors      |
+| Type Safety                 | ✅ Strict Mode    |
+| Error Handling              | ✅ Custom Classes |
+| Documentation               | ✅ Comprehensive  |
 
 ---
 
@@ -384,4 +409,3 @@ Once tested and verified:
 **Session Duration**: ~2 hours  
 **Completion Rate**: Phase 2 of 4 (50%)  
 **Ready for Next Session**: Yes ✅
-
