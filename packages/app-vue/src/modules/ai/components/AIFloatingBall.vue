@@ -106,6 +106,7 @@
             @confirm="handleCreateGoalFromDraft"
             @add-key-result="addKeyResult"
             @remove-key-result="removeKeyResult"
+            @update-goal="editableGoal = $event"
           />
         </div>
       </DialogContent>

@@ -3,14 +3,14 @@
     <div v-if="hasDraft" class="space-y-4">
       <div>
         <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Draft Title</p>
-        <Input v-model="goal.title" class="mt-2" />
-        <Textarea v-model="goal.description" class="mt-3 min-h-28" />
+        <Input :model-value="goal.title" @update:model-value="(val: any) => $emit('update-goal', { ...goal, title: val })" class="mt-2" />
+        <Textarea :model-value="goal.description" @update:model-value="(val: any) => $emit('update-goal', { ...goal, description: val })" class="mt-3 min-h-28" />
       </div>
 
       <div class="grid gap-3 sm:grid-cols-2">
         <div class="rounded-xl border border-border/50 bg-background/70 p-3">
           <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Category</p>
-          <Select v-model="goal.category">
+          <Select :model-value="goal.category" @update:model-value="(val: any) => $emit('update-goal', { ...goal, category: val })">
             <SelectTrigger class="mt-2">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -27,7 +27,7 @@
         </div>
         <div class="rounded-xl border border-border/50 bg-background/70 p-3">
           <p class="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Importance</p>
-          <Select v-model="goal.importance">
+          <Select :model-value="goal.importance" @update:model-value="(val: any) => $emit('update-goal', { ...goal, importance: val })">
             <SelectTrigger class="mt-2">
               <SelectValue placeholder="Select importance" />
             </SelectTrigger>
@@ -99,6 +99,7 @@ defineEmits<{
   confirm: [];
   'add-key-result': [];
   'remove-key-result': [index: number];
+  'update-goal': [payload: any];
 }>();
 
 const props = defineProps<{
