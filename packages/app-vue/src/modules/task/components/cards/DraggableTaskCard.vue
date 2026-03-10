@@ -23,7 +23,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
   >
     <!-- Drag Handle (visible on hover) -->
     <div v-if="enableDrag && !isDragging" class="drag-handle" data-testid="drag-handle">
-      <GripVertical class="h-4 w-4 text-gray-400" />
+      <GripVertical class="h-4 w-4 text-muted-foreground" />
     </div>
 
     <!-- Drop Zone Indicator (when valid drop target) -->
@@ -32,7 +32,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       class="drop-zone-indicator"
       data-testid="drop-zone-valid"
     >
-      <PlusCircle class="h-8 w-8 text-green-500" />
+      <PlusCircle class="h-8 w-8 text-success" />
       <span class="drop-zone-text">{{ t('task.draggableCard.releaseToDep') }}</span>
     </div>
 
@@ -42,7 +42,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
       class="drop-zone-indicator invalid"
       data-testid="drop-zone-invalid"
     >
-      <XCircle class="h-8 w-8 text-red-500" />
+      <XCircle class="h-8 w-8 text-destructive" />
       <span class="drop-zone-text">{{ t('task.draggableCard.cannotCreateDep') }}</span>
     </div>
 

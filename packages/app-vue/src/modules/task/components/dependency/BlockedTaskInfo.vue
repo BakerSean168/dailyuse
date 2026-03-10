@@ -49,7 +49,7 @@
 
   <Card v-else class="my-3 border">
     <CardContent class="p-3 flex items-center">
-      <CheckCircle class="h-5 w-5 text-green-500 mr-2" />
+      <CheckCircle class="h-5 w-5 text-success mr-2" />
       <div>
         <div class="font-medium">{{ t('task.blocked.ready') }}</div>
         <div class="text-xs text-muted-foreground">{{ t('task.blocked.readyMessage') }}</div>
@@ -93,9 +93,9 @@ const progressPercentage = computed(() => {
 
 const getStatusColorClass = (status: string): string => {
   const colors: Record<string, string> = {
-    COMPLETED: 'text-green-500',
+    COMPLETED: 'text-success',
     IN_PROGRESS: 'text-primary',
-    READY: 'text-blue-500',
+    READY: 'text-info',
     BLOCKED: 'text-destructive',
     PENDING: 'text-muted-foreground',
     CANCELLED: 'text-muted-foreground',
@@ -105,9 +105,9 @@ const getStatusColorClass = (status: string): string => {
 
 const getStatusBadgeClass = (status: string): string => {
   const classes: Record<string, string> = {
-    COMPLETED: 'bg-green-100 text-green-800',
+    COMPLETED: 'bg-success/15 text-success',
     IN_PROGRESS: 'bg-primary/10 text-primary',
-    READY: 'bg-blue-100 text-blue-800',
+    READY: 'bg-info/15 text-info',
     BLOCKED: 'bg-destructive/10 text-destructive',
     PENDING: 'bg-muted text-muted-foreground',
     CANCELLED: 'bg-muted text-muted-foreground',

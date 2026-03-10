@@ -128,8 +128,8 @@
 
               <!-- 匹配原因 -->
               <div v-if="result.reasons.length > 0" class="mt-2 flex items-center">
-                <CheckCircle class="h-4 w-4 text-green-500 mr-1 flex-shrink-0" />
-                <span class="text-xs text-green-500">{{ result.reasons[0] }}</span>
+                <CheckCircle class="h-4 w-4 text-success mr-1 flex-shrink-0" />
+                <span class="text-xs text-success">{{ result.reasons[0] }}</span>
               </div>
 
               <!-- 关键结果预览 -->
@@ -443,24 +443,24 @@ const getCategoryIconComponent = (category: string): Component => {
 const getCategoryColorClass = (category: string): string => {
   const colors: Record<string, string> = {
     product: 'text-purple-500',
-    engineering: 'text-blue-500',
-    sales: 'text-green-500',
-    marketing: 'text-orange-500',
-    general: 'text-gray-500',
+    engineering: 'text-info',
+    sales: 'text-success',
+    marketing: 'text-warning',
+    general: 'text-muted-foreground',
   };
-  return colors[category] || 'text-gray-500';
+  return colors[category] || 'text-muted-foreground';
 };
 
 const getScoreBadgeClass = (score: number): string => {
-  if (score >= 80) return 'bg-green-100 text-green-700 hover:bg-green-100';
-  if (score >= 60) return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100';
-  return 'bg-blue-100 text-blue-700 hover:bg-blue-100';
+  if (score >= 80) return 'bg-success/15 text-success hover:bg-success/15';
+  if (score >= 60) return 'bg-warning/15 text-warning hover:bg-warning/15';
+  return 'bg-info/15 text-info hover:bg-info/15';
 };
 
 const getWeightBgClass = (weight: number): string => {
-  if (weight >= 4) return 'bg-green-100 text-green-700';
-  if (weight >= 3) return 'bg-yellow-100 text-yellow-700';
-  return 'bg-blue-100 text-blue-700';
+  if (weight >= 4) return 'bg-success/15 text-success';
+  if (weight >= 3) return 'bg-warning/15 text-warning';
+  return 'bg-info/15 text-info';
 };
 
 // Expose

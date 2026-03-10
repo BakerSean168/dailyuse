@@ -76,7 +76,7 @@
     <!-- Active filter indicator -->
     <div
       v-if="hasActiveFilter"
-      class="flex items-center justify-between p-3 rounded-md bg-blue-50 dark:bg-blue-900/20 text-sm text-blue-800 dark:text-blue-400 mb-4"
+      class="flex items-center justify-between p-3 rounded-md bg-info/10 dark:bg-info/20 text-sm text-info dark:text-info mb-4"
     >
       <span>{{ t('governance.list.filterApplied', { total: pagination.total }) }}</span>
       <button class="text-xs hover:underline" @click="clearFilters">

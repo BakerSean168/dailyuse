@@ -159,10 +159,10 @@ function formatDateTime(timestamp: number): string {
 }
 
 function getPriorityColorClass(priority: number | null | undefined): string {
-  if (!priority) return 'bg-gray-500';
-  if (priority >= 5) return 'bg-red-500';
-  if (priority >= 4) return 'bg-orange-500';
-  if (priority >= 3) return 'bg-blue-500';
-  return 'bg-green-500';
+  if (!priority) return 'bg-muted-foreground';
+  if (priority >= 5) return 'bg-destructive';
+  if (priority >= 4) return 'bg-warning';
+  if (priority >= 3) return 'bg-info';
+  return 'bg-success';
 }
 </script>

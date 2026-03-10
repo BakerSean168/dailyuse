@@ -3,7 +3,7 @@
     <div
       :class="[
         'flex gap-3 p-4 cursor-pointer transition-colors hover:bg-muted/50 border-b last:border-b-0',
-        !notification.isRead && 'bg-blue-50 dark:bg-blue-950/20',
+        !notification.isRead && 'bg-info/10 dark:bg-info/20',
       ]"
       @click="$emit('click', notification)"
     >
@@ -21,7 +21,7 @@
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-1">
           <!-- Unread indicator dot -->
-          <span v-if="!notification.isRead" class="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+          <span v-if="!notification.isRead" class="h-2 w-2 shrink-0 rounded-full bg-info" />
           <span :class="['text-sm', !notification.isRead && 'font-semibold']">
             {{ notification.title }}
           </span>
@@ -125,15 +125,15 @@ const typeIconMap: Record<string, any> = {
 };
 
 const typeColorClassMap: Record<string, string> = {
-  SYSTEM: 'bg-blue-500',
-  TASK: 'bg-green-500',
-  GOAL: 'bg-orange-500',
+  SYSTEM: 'bg-info',
+  TASK: 'bg-success',
+  GOAL: 'bg-warning',
   REMINDER: 'bg-purple-500',
   SCHEDULE: 'bg-cyan-500',
 };
 
 const typeIcon = computed(() => typeIconMap[props.notification.type] || Bell);
-const typeColorClass = computed(() => typeColorClassMap[props.notification.type] || 'bg-gray-500');
+const typeColorClass = computed(() => typeColorClassMap[props.notification.type] || 'bg-muted-foreground');
 
 const priorityVariant = computed(() => {
   switch (props.notification.importance) {

@@ -76,7 +76,7 @@
             <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
-                  <TrendingUp class="h-4 w-4 text-green-600" />
+                  <TrendingUp class="h-4 w-4 text-success" />
                   {{ t('goal.comparison.overallProgress') }}
                 </span>
               </td>
@@ -99,7 +99,7 @@
             <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
-                  <Weight class="h-4 w-4 text-amber-500" />
+                  <Weight class="h-4 w-4 text-warning" />
                   {{ t('goal.comparison.weightSum') }}
                 </span>
               </td>
@@ -121,7 +121,7 @@
             <tr class="border-b border-border/50 transition-colors hover:bg-muted/30">
               <td class="p-4 font-medium">
                 <span class="flex items-center gap-2">
-                  <PieChart class="h-4 w-4 text-blue-500" />
+                  <PieChart class="h-4 w-4 text-info" />
                   {{ t('goal.comparison.avgWeight') }}
                 </span>
               </td>
@@ -289,23 +289,23 @@
 
       <div class="mt-4">
         <div class="mb-4 flex items-center gap-3">
-          <Lightbulb class="h-7 w-7 text-amber-500" />
+          <Lightbulb class="h-7 w-7 text-warning" />
           <span class="text-lg font-bold">{{ t('goal.comparison.insights') }}</span>
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           <!-- 进度最快 -->
           <Card
-            class="overflow-hidden border-green-200 bg-green-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-green-900 dark:bg-green-950/30"
+            class="overflow-hidden border-success/40 bg-success/10/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-green-900 dark:bg-green-950/30"
           >
             <CardContent class="p-4">
               <div class="mb-3 flex items-center gap-3">
-                <Trophy class="h-8 w-8 text-green-600" />
+                <Trophy class="h-8 w-8 text-success" />
                 <div>
                   <div class="text-xs text-muted-foreground">
                     {{ t('goal.comparison.fastestProgress') }}
                   </div>
-                  <div class="mt-1 text-3xl font-bold text-green-600">
+                  <div class="mt-1 text-3xl font-bold text-success">
                     {{ getProgress(getHighestProgressGoal()) }}%
                   </div>
                 </div>
@@ -325,7 +325,7 @@
 
           <!-- KR 数量最多 -->
           <Card
-            class="overflow-hidden border-blue-200 bg-blue-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-blue-900 dark:bg-blue-950/30"
+            class="overflow-hidden border-info/40 bg-info/10/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-blue-900 dark:bg-blue-950/30"
           >
             <CardContent class="p-4">
               <div class="mb-3 flex items-center gap-3">
@@ -352,16 +352,16 @@
 
           <!-- 活跃时间最长 -->
           <Card
-            class="overflow-hidden border-amber-200 bg-amber-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-amber-900 dark:bg-amber-950/30"
+            class="overflow-hidden border-warning/40 bg-amber-50/50 transition-all hover:-translate-y-1 hover:shadow-lg dark:border-amber-900 dark:bg-amber-950/30"
           >
             <CardContent class="p-4">
               <div class="mb-3 flex items-center gap-3">
-                <CalendarClock class="h-8 w-8 text-amber-500" />
+                <CalendarClock class="h-8 w-8 text-warning" />
                 <div>
                   <div class="text-xs text-muted-foreground">
                     {{ t('goal.comparison.longestActive') }}
                   </div>
-                  <div class="mt-1 text-3xl font-bold text-amber-500">
+                  <div class="mt-1 text-3xl font-bold text-warning">
                     {{ getActiveDays(getOldestGoal()) }}{{ t('goal.comparison.dayUnit') }}
                   </div>
                 </div>
@@ -493,9 +493,9 @@ const getStatusText = (goal: any): string => {
 };
 
 const getProgressTextClass = (progress: number): string => {
-  if (progress >= 80) return 'text-green-600';
+  if (progress >= 80) return 'text-success';
   if (progress >= 50) return 'text-primary';
-  if (progress >= 20) return 'text-amber-500';
+  if (progress >= 20) return 'text-warning';
   return 'text-destructive';
 };
 

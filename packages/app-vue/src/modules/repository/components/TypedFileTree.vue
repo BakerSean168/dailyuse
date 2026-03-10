@@ -200,7 +200,7 @@ const typeFolders = computed(() => [
     key: 'notes',
     label: t('repository.fileTypes.notes'),
     icon: FileText,
-    iconClass: 'text-blue-500',
+    iconClass: 'text-info',
     resources: props.resourcesByType.notes || [],
     count: (props.resourcesByType.notes || []).length,
   },
@@ -216,7 +216,7 @@ const typeFolders = computed(() => [
     key: 'videos',
     label: t('repository.fileTypes.videos'),
     icon: FileVideo,
-    iconClass: 'text-red-500',
+    iconClass: 'text-destructive',
     resources: props.resourcesByType.videos || [],
     count: (props.resourcesByType.videos || []).length,
   },
@@ -224,7 +224,7 @@ const typeFolders = computed(() => [
     key: 'audio',
     label: t('repository.fileTypes.audio'),
     icon: FileAudio,
-    iconClass: 'text-green-500',
+    iconClass: 'text-success',
     resources: props.resourcesByType.audio || [],
     count: (props.resourcesByType.audio || []).length,
   },
@@ -232,7 +232,7 @@ const typeFolders = computed(() => [
     key: 'documents',
     label: t('repository.fileTypes.documents'),
     icon: FileIcon,
-    iconClass: 'text-orange-500',
+    iconClass: 'text-warning',
     resources: props.resourcesByType.documents || [],
     count: (props.resourcesByType.documents || []).length,
   },
@@ -278,10 +278,10 @@ function getFileIcon(resource: ResourceClientDTO) {
 
 function getFileIconClass(resource: ResourceClientDTO) {
   const mime = resource.mimeType || '';
-  if (mime.startsWith('text/markdown') || resource.extension === '.md') return 'text-blue-500';
+  if (mime.startsWith('text/markdown') || resource.extension === '.md') return 'text-info';
   if (mime.startsWith('image/')) return 'text-purple-500';
-  if (mime.startsWith('video/')) return 'text-red-500';
-  if (mime.startsWith('audio/')) return 'text-green-500';
+  if (mime.startsWith('video/')) return 'text-destructive';
+  if (mime.startsWith('audio/')) return 'text-success';
   return 'text-muted-foreground';
 }
 </script>

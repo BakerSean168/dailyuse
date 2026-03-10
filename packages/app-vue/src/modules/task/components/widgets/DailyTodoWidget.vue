@@ -92,9 +92,9 @@
                 v-if="inst.status === 'Skipped' || inst.status === 'Expired'"
                 class="shrink-0 rounded px-1 py-0.5 text-[9px] font-medium"
                 :class="{
-                  'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400':
+                  'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground':
                     inst.status === 'Skipped',
-                  'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400':
+                  'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive':
                     inst.status === 'Expired',
                 }"
               >

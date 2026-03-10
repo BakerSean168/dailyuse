@@ -74,7 +74,7 @@
 
           <!-- 时间范围 -->
           <div class="flex items-center gap-2">
-            <Clock class="h-4 w-4 shrink-0 text-blue-500" />
+            <Clock class="h-4 w-4 shrink-0 text-info" />
             <span class="text-sm text-muted-foreground">
               {{ timeLabel }}
             </span>
@@ -82,7 +82,7 @@
 
           <!-- 重复模式 -->
           <div class="flex items-center gap-2">
-            <RefreshCw class="h-4 w-4 shrink-0 text-green-500" />
+            <RefreshCw class="h-4 w-4 shrink-0 text-success" />
             <span class="text-sm text-muted-foreground">
               {{ template.recurrenceText }}
             </span>
@@ -103,7 +103,7 @@
 
           <!-- 关联目标 -->
           <div v-if="template.goalBinding" class="flex items-center gap-2">
-            <Target class="h-4 w-4 shrink-0 text-yellow-500" />
+            <Target class="h-4 w-4 shrink-0 text-warning" />
             <span class="text-sm text-muted-foreground">
               {{ t('task.templateCard.linkedGoal') }}
             </span>
@@ -157,7 +157,7 @@
           data-testid="task-card-resume-button"
           variant="outline"
           size="sm"
-          class="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+          class="border-warning text-warning hover:bg-warning/10"
           @click.stop="handleResume"
         >
           <Play class="h-4 w-4 mr-1" />
@@ -168,7 +168,7 @@
           data-testid="task-card-activate-button"
           variant="outline"
           size="sm"
-          class="border-blue-500 text-blue-600 hover:bg-blue-50"
+          class="border-info text-info hover:bg-info/10"
           @click.stop="handleActivateTemplate"
         >
           <Play class="h-4 w-4 mr-1" />
@@ -283,10 +283,10 @@ const menuActions = computed<MenuAction[]>(() => [
 
 // 状态相关方法
 const getTemplateStatusBadgeClass = (template: TaskTemplateViewModel) => {
-  if (template.isActive) return 'bg-green-100 text-green-800 border-green-200';
-  if (template.isPaused) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-  if (template.isArchived) return 'bg-gray-100 text-gray-800 border-gray-200';
-  return 'bg-gray-100 text-gray-800 border-gray-200';
+  if (template.isActive) return 'bg-success/15 text-success border-success/40';
+  if (template.isPaused) return 'bg-warning/15 text-warning border-warning/40';
+  if (template.isArchived) return 'bg-muted text-foreground border-muted';
+  return 'bg-muted text-foreground border-muted';
 };
 
 const getTemplateStatusIconComponent = (template: TaskTemplateViewModel) => {
@@ -306,17 +306,17 @@ const getTemplateStatusText = (template: TaskTemplateViewModel) => {
 const getImportanceBadgeClass = (importance: string | undefined) => {
   switch (importance) {
     case ImportanceLevel.Trivial:
-      return 'border-gray-300 text-gray-600';
+      return 'border-muted text-muted-foreground';
     case ImportanceLevel.Minor:
-      return 'border-green-400 text-green-700';
+      return 'border-success/60 text-success';
     case ImportanceLevel.Moderate:
-      return 'border-blue-400 text-blue-700';
+      return 'border-info/60 text-info';
     case ImportanceLevel.Important:
-      return 'border-yellow-400 text-yellow-700';
+      return 'border-warning/60 text-warning';
     case ImportanceLevel.Vital:
-      return 'border-red-400 text-red-700';
+      return 'border-destructive/60 text-destructive';
     default:
-      return 'border-gray-300 text-gray-600';
+      return 'border-muted text-muted-foreground';
   }
 };
 
@@ -338,9 +338,9 @@ const getPriorityLevel = (priority: number): string => {
  * Returns Tailwind classes for priority badge
  */
 const getPriorityBadgeClass = (priority: number): string => {
-  if (priority >= 80) return 'bg-red-100 text-red-800 border-red-200';
-  if (priority >= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-  return 'bg-gray-100 text-gray-800 border-gray-200';
+  if (priority >= 80) return 'bg-destructive/15 text-destructive border-destructive/40';
+  if (priority >= 60) return 'bg-warning/15 text-warning border-warning/40';
+  return 'bg-muted text-foreground border-muted';
 };
 
 /**

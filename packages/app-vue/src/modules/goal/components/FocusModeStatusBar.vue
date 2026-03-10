@@ -79,11 +79,11 @@ function getStatusIcon(status: FocusModeStatus) {
 }
 
 function getStatusColorClass(status: FocusModeStatus): string {
-  return status === 'expired' ? 'text-destructive' : 'text-green-600';
+  return status === 'expired' ? 'text-destructive' : 'text-success';
 }
 
 function getBorderColorClass(status: FocusModeStatus): string {
-  return status === 'expired' ? 'border-destructive' : 'border-green-600';
+  return status === 'expired' ? 'border-destructive' : 'border-success';
 }
 
 function getRemainingDaysBadgeVariant(days: number): BadgeVariants['variant'] {

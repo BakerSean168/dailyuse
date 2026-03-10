@@ -24,8 +24,8 @@
             class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
             :class="{
               'bg-primary': event.source === 'schedule',
-              'bg-green-500': event.source === 'goal',
-              'bg-blue-500': event.source === 'task',
+              'bg-success': event.source === 'goal',
+              'bg-info': event.source === 'task',
             }"
           />
           <div class="min-w-0 flex-1">
@@ -35,20 +35,18 @@
               class="mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium"
               :class="{
                 'bg-primary/10 text-primary': event.source === 'schedule',
-                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400':
-                  event.source === 'goal',
-                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400':
-                  event.source === 'task',
+                'bg-success/15 text-success': event.source === 'goal',
+                'bg-info/15 text-info': event.source === 'task',
               }"
             >
               {{ sourceLabel(event.source) }}
             </span>
           </div>
-          <AlertCircle v-if="event.hasConflict" class="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+          <AlertCircle v-if="event.hasConflict" class="mt-0.5 h-4 w-4 shrink-0 text-warning" />
           <!-- Complete button: only for task instances that are not yet completed -->
           <button
             v-if="event.source === 'task' && event.instanceStatus !== 'Completed'"
-            class="ml-1 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-green-100 hover:text-green-600 transition-colors"
+            class="ml-1 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-success/15 hover:text-success transition-colors"
             :title="t('task.action.complete')"
             @click.stop="emit('complete-task', event.originalId)"
           >

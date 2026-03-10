@@ -2,7 +2,7 @@
   <Card class="h-full flex flex-col shadow-md">
     <!-- Header -->
     <CardHeader
-      class="flex flex-row items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20"
+      class="flex flex-row items-center justify-between p-4 bg-gradient-to-br from-info/10 to-transparent"
     >
       <div class="flex items-center gap-3">
         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-info/10">
@@ -53,11 +53,9 @@
                 </div>
               </CardContent>
             </Card>
-            <Card
-              class="bg-green-50 dark:bg-green-950/20 hover:-translate-y-0.5 transition-transform"
-            >
+            <Card class="bg-success/10 hover:-translate-y-0.5 transition-transform">
               <CardContent class="text-center p-4">
-                <div class="text-3xl font-bold text-green-600 dark:text-green-400">
+                <div class="text-3xl font-bold text-success">
                   {{ statistics.activeTasks }}
                 </div>
                 <div class="text-xs text-muted-foreground">
@@ -65,11 +63,9 @@
                 </div>
               </CardContent>
             </Card>
-            <Card
-              class="bg-orange-50 dark:bg-orange-950/20 hover:-translate-y-0.5 transition-transform"
-            >
+            <Card class="bg-warning/10 hover:-translate-y-0.5 transition-transform">
               <CardContent class="text-center p-4">
-                <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                <div class="text-3xl font-bold text-warning">
                   {{ statistics.pausedTasks }}
                 </div>
                 <div class="text-xs text-muted-foreground">
@@ -77,9 +73,9 @@
                 </div>
               </CardContent>
             </Card>
-            <Card class="bg-red-50 dark:bg-red-950/20 hover:-translate-y-0.5 transition-transform">
+            <Card class="bg-destructive/10 hover:-translate-y-0.5 transition-transform">
               <CardContent class="text-center p-4">
-                <div class="text-3xl font-bold text-red-600 dark:text-red-400">
+                <div class="text-3xl font-bold text-destructive">
                   {{ statistics.failedTasks }}
                 </div>
                 <div class="text-xs text-muted-foreground">
@@ -106,7 +102,7 @@
             </Card>
             <Card variant="outline">
               <CardContent class="text-center p-4">
-                <div class="text-xl font-bold text-green-600 dark:text-green-400">
+                <div class="text-xl font-bold text-success">
                   {{ statistics.successfulExecutions }}
                 </div>
                 <div class="text-xs text-muted-foreground">
@@ -116,7 +112,7 @@
             </Card>
             <Card variant="outline">
               <CardContent class="text-center p-4">
-                <div class="text-xl font-bold text-red-600 dark:text-red-400">
+                <div class="text-xl font-bold text-destructive">
                   {{ statistics.failedExecutions }}
                 </div>
                 <div class="text-xs text-muted-foreground">
@@ -131,9 +127,7 @@
             <CardContent class="p-4">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium">{{ t('schedule.statistics.successRate') }}</span>
-                <span class="text-lg font-bold text-green-600 dark:text-green-400"
-                  >{{ successRate }}%</span
-                >
+                <span class="text-lg font-bold text-success">{{ successRate }}%</span>
               </div>
               <Progress :model-value="successRate" class="h-2" />
             </CardContent>
@@ -281,10 +275,10 @@ function getModuleIcon(module: string): any {
 function getModuleColorClass(module: string): string {
   const colorMap: Record<string, string> = {
     reminder: 'text-primary',
-    task: 'text-green-600 dark:text-green-400',
-    goal: 'text-orange-600 dark:text-orange-400',
-    notification: 'text-blue-600 dark:text-blue-400',
+    task: 'text-success',
+    goal: 'text-warning',
+    notification: 'text-info',
   };
-  return colorMap[module] || 'text-gray-600';
+  return colorMap[module] || 'text-muted-foreground';
 }
 </script>

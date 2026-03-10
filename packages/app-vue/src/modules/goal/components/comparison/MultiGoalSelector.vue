@@ -209,9 +209,9 @@ const getStatusText = (status: GoalClientDTO['status']) => {
 };
 
 const getStatusBadgeClass = (status: GoalClientDTO['status']) => {
-  if (status === 'Completed') return 'bg-green-100 text-green-700 border-green-200';
-  if (status === 'Active') return 'bg-blue-100 text-blue-700 border-blue-200';
-  if (status === 'Archived') return 'bg-amber-100 text-amber-700 border-amber-200';
+  if (status === 'Completed') return 'bg-success/15 text-success border-success/40';
+  if (status === 'Active') return 'bg-info/15 text-info border-info/40';
+  if (status === 'Archived') return 'bg-warning/15 text-warning border-warning/40';
   return 'bg-muted text-muted-foreground';
 };
 

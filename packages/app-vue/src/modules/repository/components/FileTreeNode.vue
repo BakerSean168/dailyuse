@@ -108,9 +108,9 @@ const nodeIcon = computed(() => {
 
 const iconColorClass = computed(() => {
   if (props.node.type === 'folder') {
-    return 'text-amber-500';
+    return 'text-warning';
   }
-  return 'text-blue-500';
+  return 'text-info';
 });
 
 const displayName = computed(() => {

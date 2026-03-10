@@ -35,7 +35,7 @@
 
       <!-- Status Indicator -->
       <div class="absolute top-3 left-3">
-        <div :class="['w-3 h-3 rounded-full', group.enabled ? 'bg-green-500' : 'bg-gray-400']" />
+        <div :class="['w-3 h-3 rounded-full', group.enabled ? 'bg-success' : 'bg-gray-400']" />
       </div>
 
       <!-- Control Mode Badge -->

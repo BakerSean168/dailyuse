@@ -308,9 +308,9 @@ const formatTime = (timestamp: number) => {
 
 // 获取权重变化 avatar 的 Tailwind 类
 const getWeightChangeAvatarClass = (delta: number) => {
-  if (delta > 0) return 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400';
-  if (delta < 0) return 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400';
-  return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+  if (delta > 0) return 'bg-success/15 text-success dark:bg-green-900 dark:text-success';
+  if (delta < 0) return 'bg-destructive/15 text-destructive dark:bg-red-900 dark:text-destructive';
+  return 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground';
 };
 
 // 获取权重变化图标组件

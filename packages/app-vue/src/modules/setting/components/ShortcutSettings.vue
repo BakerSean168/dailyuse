@@ -66,7 +66,7 @@
                     class="h-8 w-8"
                     @click="emit('saveEdit')"
                   >
-                    <Check class="h-4 w-4 text-green-600" />
+                    <Check class="h-4 w-4 text-success" />
                   </Button>
                   <Button
                     v-if="editingShortcut?.id === shortcut.id"

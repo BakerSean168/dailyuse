@@ -51,7 +51,7 @@
           <CheckCircle class="w-5 h-5 text-success" />
           {{ t('goal.aiKeyResults.adoptedKR') }}
         </h3>
-        <Badge class="ml-2 bg-green-100 text-green-700 hover:bg-green-100">
+        <Badge class="ml-2 bg-success/15 text-success hover:bg-success/15">
           {{ acceptedResults.length }} {{ t('goal.aiKeyResults.count') }}
         </Badge>
       </div>

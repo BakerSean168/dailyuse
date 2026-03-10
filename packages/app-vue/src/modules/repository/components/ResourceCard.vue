@@ -128,13 +128,13 @@ function getResourceIcon() {
 function getIconBgClass(): string {
   const type = (props.resource as any).type;
   const classMap: Record<string, string> = {
-    IMAGE: 'bg-green-100 dark:bg-green-900/20',
+    IMAGE: 'bg-success/15 dark:bg-success/20',
     VIDEO: 'bg-purple-100 dark:bg-purple-900/20',
-    AUDIO: 'bg-orange-100 dark:bg-orange-900/20',
-    PDF: 'bg-red-100 dark:bg-red-900/20',
+    AUDIO: 'bg-warning/15 dark:bg-warning/20',
+    PDF: 'bg-destructive/15 dark:bg-destructive/20',
     LINK: 'bg-cyan-100 dark:bg-cyan-900/20',
-    CODE: 'bg-blue-100 dark:bg-blue-900/20',
-    OTHER: 'bg-gray-100 dark:bg-gray-900/20',
+    CODE: 'bg-info/15 dark:bg-info/20',
+    OTHER: 'bg-muted dark:bg-muted/20',
   };
   return classMap[type] || classMap.OTHER;
 }
@@ -142,13 +142,13 @@ function getIconBgClass(): string {
 function getIconClass(): string {
   const type = (props.resource as any).type;
   const classMap: Record<string, string> = {
-    IMAGE: 'text-green-600 dark:text-green-400',
+    IMAGE: 'text-success dark:text-success',
     VIDEO: 'text-purple-600 dark:text-purple-400',
-    AUDIO: 'text-orange-600 dark:text-orange-400',
-    PDF: 'text-red-600 dark:text-red-400',
+    AUDIO: 'text-warning dark:text-warning',
+    PDF: 'text-destructive dark:text-destructive',
     LINK: 'text-cyan-600 dark:text-cyan-400',
-    CODE: 'text-blue-600 dark:text-blue-400',
-    OTHER: 'text-gray-600 dark:text-gray-400',
+    CODE: 'text-info dark:text-info',
+    OTHER: 'text-muted-foreground dark:text-muted-foreground',
   };
   return classMap[type] || classMap.OTHER;
 }

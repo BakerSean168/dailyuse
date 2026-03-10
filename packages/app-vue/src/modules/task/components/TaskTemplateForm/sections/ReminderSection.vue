@@ -12,7 +12,7 @@
       }}</CardTitle>
       <!-- 验证状态指示器 -->
       <AlertTriangle v-if="!isValid" class="h-5 w-5 ml-2 text-destructive" />
-      <CheckCircle v-else class="h-5 w-5 ml-2 text-green-500" />
+      <CheckCircle v-else class="h-5 w-5 ml-2 text-success" />
     </CardHeader>
     <CardContent>
       <!-- 显示验证错误 -->

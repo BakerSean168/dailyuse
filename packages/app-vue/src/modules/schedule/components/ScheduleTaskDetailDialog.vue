@@ -197,10 +197,10 @@
                   <div
                     class="w-2 h-2 rounded-full"
                     :class="{
-                      'bg-green-500': execution.status === 'success',
-                      'bg-red-500': execution.status === 'failed',
-                      'bg-yellow-500': execution.status === 'timeout',
-                      'bg-gray-500': execution.status === 'pending',
+                      'bg-success': execution.status === 'success',
+                      'bg-destructive': execution.status === 'failed',
+                      'bg-warning': execution.status === 'timeout',
+                      'bg-muted-foreground': execution.status === 'pending',
                     }"
                   />
                   <div>

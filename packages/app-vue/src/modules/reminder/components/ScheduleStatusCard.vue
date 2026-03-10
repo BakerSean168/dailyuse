@@ -224,9 +224,9 @@ const emit = defineEmits<{
 
 const statusColor = computed(() => {
   if (!props.scheduleStatus || !props.scheduleStatus.hasSchedule) return 'text-muted-foreground';
-  if (!props.scheduleStatus.enabled) return 'text-orange-500';
-  if (props.scheduleStatus.status === 'ACTIVE') return 'text-green-500';
-  if (props.scheduleStatus.status === 'PAUSED') return 'text-orange-500';
+  if (!props.scheduleStatus.enabled) return 'text-warning';
+  if (props.scheduleStatus.status === 'ACTIVE') return 'text-success';
+  if (props.scheduleStatus.status === 'PAUSED') return 'text-warning';
   if (props.scheduleStatus.status === 'CANCELLED') return 'text-destructive';
   return 'text-muted-foreground';
 });

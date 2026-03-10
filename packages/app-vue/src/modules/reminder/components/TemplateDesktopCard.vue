@@ -88,11 +88,11 @@
                 <div class="text-xs text-muted-foreground">Total Instances</div>
               </Card>
               <Card class="p-4 text-center">
-                <div class="text-2xl font-bold text-green-600">{{ stats.completed }}</div>
+                <div class="text-2xl font-bold text-success">{{ stats.completed }}</div>
                 <div class="text-xs text-muted-foreground">Completed</div>
               </Card>
               <Card class="p-4 text-center">
-                <div class="text-2xl font-bold text-orange-600">{{ stats.pending }}</div>
+                <div class="text-2xl font-bold text-warning">{{ stats.pending }}</div>
                 <div class="text-xs text-muted-foreground">Pending</div>
               </Card>
             </div>
@@ -129,7 +129,7 @@
           <div class="flex items-center justify-between p-4 border rounded-lg">
             <div class="flex items-center gap-3">
               <Power
-                :class="['h-5 w-5', template.effectiveEnabled ? 'text-green-600' : 'text-gray-400']"
+                :class="['h-5 w-5', template.effectiveEnabled ? 'text-success' : 'text-muted-foreground']"
               />
               <div>
                 <p class="text-sm font-medium">Template Status</p>

@@ -21,7 +21,7 @@
             <div class="flex items-center justify-between">
               <CardTitle>{{ t('goal.reviewDetail.overallRating') }}</CardTitle>
               <div class="flex items-center gap-2">
-                <Star class="h-5 w-5 text-yellow-500" />
+                <Star class="h-5 w-5 text-warning" />
                 <span class="text-2xl font-bold">{{ review.rating }}</span>
                 <span class="text-sm text-muted-foreground">/ 10</span>
               </div>
@@ -48,7 +48,7 @@
         <Card v-if="review.achievements">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Trophy class="h-4 w-4 text-green-500" /> {{ t('goal.reviewDetail.achievements') }}
+              <Trophy class="h-4 w-4 text-success" /> {{ t('goal.reviewDetail.achievements') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -60,7 +60,7 @@
         <Card v-if="review.challenges">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <AlertTriangle class="h-4 w-4 text-orange-500" />
+              <AlertTriangle class="h-4 w-4 text-warning" />
               {{ t('goal.reviewDetail.challenges') }}
             </CardTitle>
           </CardHeader>
@@ -73,7 +73,7 @@
         <Card v-if="review.improvements">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
-              <Lightbulb class="h-4 w-4 text-blue-500" /> {{ t('goal.reviewDetail.improvements') }}
+              <Lightbulb class="h-4 w-4 text-info" /> {{ t('goal.reviewDetail.improvements') }}
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -9,7 +9,7 @@
           <p class="truncate font-semibold">{{ goal.name }}</p>
           <div class="mt-2 flex items-center gap-2">
             <Badge variant="outline">{{ statusText }}</Badge>
-            <Badge v-if="todayProgress > 0" class="bg-green-100 text-green-700 hover:bg-green-100">
+            <Badge v-if="todayProgress > 0" class="bg-success/15 text-success hover:bg-success/15">
               +{{ Math.round(todayProgress) }}%
             </Badge>
           </div>

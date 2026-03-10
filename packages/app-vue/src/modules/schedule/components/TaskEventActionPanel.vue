@@ -3,7 +3,7 @@
     <SheetContent side="bottom" class="rounded-t-xl pb-safe">
       <SheetHeader class="text-left">
         <SheetTitle class="flex items-center gap-2">
-          <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500 shrink-0" />
+          <span class="inline-block h-2.5 w-2.5 rounded-full bg-info shrink-0" />
           {{ event?.title ?? '' }}
         </SheetTitle>
         <SheetDescription>
@@ -34,7 +34,7 @@
         <!-- Already completed state -->
         <div
           v-else-if="event && event.instanceStatus === 'Completed'"
-          class="flex items-center justify-center gap-2 rounded-lg border border-green-200 bg-green-50 py-3 text-sm font-medium text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400"
+          class="flex items-center justify-center gap-2 rounded-lg border border-success/40 bg-success/10 py-3 text-sm font-medium text-success"
         >
           <CheckCircle2 class="h-4 w-4" />
           {{ t('task.status.completed') }}
@@ -85,15 +85,15 @@ function formatTimeRange(event: CalendarEventItem): string {
 const statusBadgeClass = computed(() => {
   switch (props.event?.instanceStatus) {
     case 'Completed':
-      return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      return 'bg-success/15 text-success';
     case 'InProgress':
-      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+      return 'bg-info/15 text-info';
     case 'Skipped':
-      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+      return 'bg-muted text-muted-foreground';
     case 'Expired':
-      return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      return 'bg-destructive/15 text-destructive';
     default:
-      return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      return 'bg-warning/15 text-warning';
   }
 });
 

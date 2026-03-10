@@ -198,11 +198,11 @@ function getIconClass() {
 
   const ext = props.node.extension?.toLowerCase();
   const colorMap: Record<string, string> = {
-    md: 'text-blue-500',
-    json: 'text-yellow-500',
-    js: 'text-yellow-500',
-    ts: 'text-blue-500',
-    vue: 'text-green-500',
+    md: 'text-info',
+    json: 'text-warning',
+    js: 'text-warning',
+    ts: 'text-info',
+    vue: 'text-success',
     png: 'text-purple-500',
     jpg: 'text-purple-500',
   };

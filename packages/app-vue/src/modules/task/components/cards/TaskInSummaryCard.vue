@@ -49,7 +49,7 @@
           :key="task.id"
           :class="[
             'flex items-center p-4 mx-2 my-1 rounded-lg transition-all duration-300 hover:bg-primary/[0.04] hover:translate-x-1',
-            task.isCompleted && 'opacity-60 bg-green-500/[0.08] hover:bg-green-500/[0.12]',
+            task.isCompleted && 'opacity-60 bg-success/[0.08] hover:bg-success/[0.12]',
           ]"
           :style="{ animationDelay: `${index * 0.1}s` }"
           class="animate-slide-in-up"
@@ -80,7 +80,7 @@
 
       <!-- 空状态 -->
       <div v-else class="p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
-        <CheckCircle class="h-16 w-16 text-green-500 mb-4 animate-bounce" />
+        <CheckCircle class="h-16 w-16 text-success mb-4 animate-bounce" />
         <h3 class="text-lg font-medium mb-1">{{ t('task.summaryCard.allCompleted') }}</h3>
         <p class="text-sm text-muted-foreground mb-4">
           {{ t('task.summaryCard.congratsMessage') }}

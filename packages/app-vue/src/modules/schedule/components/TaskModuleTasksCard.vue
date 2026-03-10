@@ -3,7 +3,7 @@
     <CardHeader class="flex flex-row items-center justify-between space-y-0 p-4">
       <div class="flex items-center">
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 mr-3"
+          class="flex h-10 w-10 items-center justify-center rounded-lg bg-success/15 text-success mr-3"
         >
           <ListChecks class="h-5 w-5" />
         </div>
@@ -22,7 +22,7 @@
     <CardContent class="p-4 flex-1">
       <!-- Loading state -->
       <div v-if="isLoading" class="flex justify-center items-center py-8">
-        <Loader2 class="h-12 w-12 animate-spin text-green-600" />
+        <Loader2 class="h-12 w-12 animate-spin text-success" />
       </div>
 
       <!-- Error state -->
@@ -168,13 +168,13 @@ function getStatusVariant(): BadgeVariants['variant'] {
 
 function getTaskStatusColorClass(status: string): string {
   const colorMap: Record<string, string> = {
-    Active: 'text-green-600',
-    Paused: 'text-yellow-600',
-    Completed: 'text-blue-600',
-    Failed: 'text-red-600',
-    Cancelled: 'text-gray-400',
+    Active: 'text-success',
+    Paused: 'text-warning',
+    Completed: 'text-info',
+    Failed: 'text-destructive',
+    Cancelled: 'text-muted-foreground',
   };
-  return colorMap[status] || 'text-gray-400';
+  return colorMap[status] || 'text-muted-foreground';
 }
 
 function getBadgeVariant(status: string): BadgeVariants['variant'] {

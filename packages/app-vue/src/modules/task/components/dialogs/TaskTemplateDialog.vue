@@ -4,7 +4,7 @@
       <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
         <component
           :is="mode === 'edit' ? Pencil : PlusCircle"
-          :class="mode === 'edit' ? 'text-primary' : 'text-green-500'"
+          :class="mode === 'edit' ? 'text-primary' : 'text-success'"
           class="h-6 w-6 shrink-0"
         />
         <div>

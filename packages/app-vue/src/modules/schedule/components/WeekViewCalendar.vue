@@ -34,7 +34,7 @@
             v-for="day in weekDays"
             :key="day.date"
             class="day-header p-3 text-center border-r"
-            :class="{ 'bg-blue-50': day.isToday }"
+            :class="{ 'bg-primary/10': day.isToday }"
           >
             <div class="text-xs text-muted-foreground">{{ day.dayName }}</div>
             <div class="text-lg font-bold mt-1">{{ day.dateNumber }}</div>
@@ -59,7 +59,7 @@
             v-for="day in weekDays"
             :key="day.date"
             class="day-column relative border-r"
-            :class="{ 'bg-gray-50': day.isToday }"
+            :class="{ 'bg-primary/5': day.isToday }"
           >
             <!-- Time Slot Backgrounds -->
             <div v-for="hour in hours" :key="hour" class="time-slot-bg h-15 border-b"></div>
@@ -186,11 +186,11 @@ function getEventsForDay(dateStr: string): CalendarEventItem[] {
 }
 
 function eventBgClass(event: CalendarEventItem): string {
-  if (event.hasConflict) return 'bg-orange-500';
+  if (event.hasConflict) return 'bg-warning';
   const map: Record<CalendarEventItem['source'], string> = {
     schedule: 'bg-primary',
-    goal: 'bg-green-500',
-    task: 'bg-blue-500',
+    goal: 'bg-success',
+    task: 'bg-info',
   };
   return map[event.source];
 }

@@ -5,7 +5,7 @@
         <Target class="h-5 w-5" />
         <CardTitle>{{ t('task.krLinks.title') }}</CardTitle>
       </div>
-      <Badge v-if="hasGoalBinding" variant="default" class="bg-green-500">
+      <Badge v-if="hasGoalBinding" variant="default" class="bg-success">
         <CheckCircle class="h-3 w-3 mr-1" />
         {{ t('task.krLinks.linkedCount') }}
       </Badge>
@@ -134,11 +134,11 @@
         <!-- 预览卡片 -->
         <Card
           v-if="hasCompleteBinding"
-          class="mt-4 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+          class="mt-4 bg-success/10 dark:bg-success/20 border-success/40 dark:border-success/50"
         >
           <CardContent class="pt-4">
             <div class="flex items-center">
-              <Link2 class="h-10 w-10 text-green-500 mr-3 shrink-0" />
+              <Link2 class="h-10 w-10 text-success mr-3 shrink-0" />
               <div class="flex-1">
                 <div class="text-sm font-medium mb-1">{{ t('task.krLinks.configPreview') }}</div>
                 <div class="text-xs text-muted-foreground">
@@ -257,19 +257,19 @@ const selectedKeyResultTitle = computed(() => {
 // ===== UI 辅助方法 =====
 const getGoalStatusColorClass = (status: string): string => {
   const colorMap: Record<string, string> = {
-    NOT_STARTED: 'text-gray-400',
+    NOT_STARTED: 'text-muted-foreground',
     IN_PROGRESS: 'text-primary',
-    COMPLETED: 'text-green-500',
-    ARCHIVED: 'text-yellow-500',
+    COMPLETED: 'text-success',
+    ARCHIVED: 'text-warning',
     ABANDONED: 'text-destructive',
   };
-  return colorMap[status] || 'text-gray-400';
+  return colorMap[status] || 'text-muted-foreground';
 };
 
 const getProgressBgClass = (percentage: number): string => {
-  if (percentage >= 80) return 'bg-green-500';
+  if (percentage >= 80) return 'bg-success';
   if (percentage >= 50) return 'bg-primary';
-  if (percentage >= 30) return 'bg-yellow-500';
+  if (percentage >= 30) return 'bg-warning';
   return 'bg-destructive';
 };
 

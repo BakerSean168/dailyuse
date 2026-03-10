@@ -113,8 +113,8 @@ const isSmallSize = computed(() => props.size === 'small');
  */
 const getProgressColorClass = (goal: (typeof activeGoals.value)[0]) => {
   if (goal.isOverdue) return 'bg-destructive';
-  if (goal.isWarning) return 'bg-yellow-500';
-  if (goal.completionProgress >= 80) return 'bg-green-500';
+  if (goal.isWarning) return 'bg-warning';
+  if (goal.completionProgress >= 80) return 'bg-success';
   return 'bg-primary';
 };
 
@@ -123,8 +123,8 @@ const getProgressColorClass = (goal: (typeof activeGoals.value)[0]) => {
  */
 const getProgressBgClass = (goal: (typeof activeGoals.value)[0]) => {
   if (goal.isOverdue) return 'bg-destructive/20';
-  if (goal.isWarning) return 'bg-yellow-500/20';
-  if (goal.completionProgress >= 80) return 'bg-green-500/20';
+  if (goal.isWarning) return 'bg-warning/20';
+  if (goal.completionProgress >= 80) return 'bg-success/20';
   return 'bg-primary/20';
 };
 

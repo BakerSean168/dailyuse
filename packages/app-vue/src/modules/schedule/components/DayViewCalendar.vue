@@ -41,10 +41,10 @@
               <!-- Current time indicator -->
               <div
                 v-if="isCurrentHour(hour)"
-                class="absolute left-0 right-0 h-0.5 bg-red-500 z-10"
+                class="absolute left-0 right-0 h-0.5 bg-destructive z-10"
                 :style="{ top: `${currentMinuteOffset}%` }"
               >
-                <div class="absolute -left-1 -top-1 w-2.5 h-2.5 rounded-full bg-red-500" />
+                <div class="absolute -left-1 -top-1 w-2.5 h-2.5 rounded-full bg-destructive" />
               </div>
             </div>
           </template>
@@ -141,11 +141,11 @@ function formatEventTime(event: CalendarEventItem): string {
 }
 
 function eventBgClass(event: CalendarEventItem): string {
-  if (event.hasConflict) return 'bg-orange-500';
+  if (event.hasConflict) return 'bg-warning';
   const map: Record<CalendarEventItem['source'], string> = {
     schedule: 'bg-primary',
-    goal: 'bg-green-500',
-    task: 'bg-blue-500',
+    goal: 'bg-success',
+    task: 'bg-info',
   };
   return map[event.source];
 }

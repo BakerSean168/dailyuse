@@ -62,7 +62,7 @@
     <div class="task-sections mt-4">
       <div v-if="totalCount === 0" class="overlay-card text-center py-12">
         <div class="overlay-content">
-          <Palmtree class="h-20 w-20 text-green-500 mx-auto mb-4" />
+          <Palmtree class="h-20 w-20 text-success mx-auto mb-4" />
           <h3 class="text-xl font-semibold mb-3">{{ t('task.instanceMgmt.restDay') }}</h3>
           <p class="text-base text-muted-foreground mb-4">
             {{ t('task.instanceMgmt.noTasksToday') }}
@@ -74,10 +74,10 @@
         <Card class="task-section-card incomplete-tasks">
           <CardHeader class="section-header flex flex-row items-center justify-between pb-2">
             <div class="flex items-center gap-2">
-              <Clock class="h-5 w-5 text-yellow-500" />
+              <Clock class="h-5 w-5 text-warning" />
               <CardTitle class="text-base">{{ t('task.instanceMgmt.pendingTasks') }}</CardTitle>
             </div>
-            <Badge variant="outline" class="text-yellow-600">{{ incompleteTasks.length }}</Badge>
+            <Badge variant="outline" class="text-warning">{{ incompleteTasks.length }}</Badge>
           </CardHeader>
           <CardContent class="p-0 task-content">
             <div class="task-list">
@@ -96,10 +96,10 @@
         <Card class="task-section-card completed-tasks">
           <CardHeader class="section-header flex flex-row items-center justify-between pb-2">
             <div class="flex items-center gap-2">
-              <CheckCircle class="h-5 w-5 text-green-500" />
+              <CheckCircle class="h-5 w-5 text-success" />
               <CardTitle class="text-base">{{ t('task.instanceMgmt.completedTasks') }}</CardTitle>
             </div>
-            <Badge variant="outline" class="text-green-600">{{ completedTasks.length }}</Badge>
+            <Badge variant="outline" class="text-success">{{ completedTasks.length }}</Badge>
           </CardHeader>
           <CardContent class="p-0 task-content">
             <div class="task-list">

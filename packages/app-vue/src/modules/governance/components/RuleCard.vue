@@ -10,7 +10,7 @@
         <component
           :is="severityIcon"
           :size="16"
-          :class="rule.severity === 'Mandatory' ? 'text-destructive' : 'text-blue-500'"
+          :class="rule.severity === 'Mandatory' ? 'text-destructive' : 'text-info'"
           class="shrink-0"
         />
         <div class="min-w-0">
@@ -35,7 +35,7 @@
         <span
           v-for="tag in rule.tags"
           :key="tag.value"
-          class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+          class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-info/15 text-info dark:bg-info/30 dark:text-info"
         >
           {{ tag.value }}
         </span>
@@ -44,7 +44,7 @@
       <!-- Counters -->
       <div class="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
         <span v-if="rule.goodExamples.length > 0" class="flex items-center gap-0.5">
-          <CheckCircle :size="12" class="text-green-500" />
+          <CheckCircle :size="12" class="text-success" />
           {{ rule.goodExamples.length }}
         </span>
         <span v-if="rule.badExamples.length > 0" class="flex items-center gap-0.5">
@@ -58,7 +58,7 @@
     <!-- Deprecation warning -->
     <div
       v-if="rule.status === 'Deprecated' && rule.deprecationReason"
-      class="mt-3 p-2 rounded-md bg-yellow-50 dark:bg-yellow-900/20 text-sm text-yellow-800 dark:text-yellow-400 flex items-start gap-2"
+      class="mt-3 p-2 rounded-md bg-warning/10 dark:bg-warning/20 text-sm text-warning dark:text-warning flex items-start gap-2"
     >
       <AlertTriangle :size="14" class="shrink-0 mt-0.5" />
       {{ rule.deprecationReason }}

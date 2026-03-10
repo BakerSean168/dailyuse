@@ -92,20 +92,20 @@ const open = ref(false);
 
 function statusClass(color: string): string {
   const map: Record<string, string> = {
-    green: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    gray: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
-    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    red: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    orange: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    green: 'bg-success/15 text-success',
+    gray: 'bg-muted text-muted-foreground',
+    blue: 'bg-info/15 text-info',
+    red: 'bg-destructive/15 text-destructive',
+    orange: 'bg-warning/15 text-warning',
   };
   return map[color] ?? map['gray'];
 }
 
 function healthClass(health: string): string {
   const map: Record<string, string> = {
-    healthy: 'text-green-600 dark:text-green-400',
-    warning: 'text-orange-600 dark:text-orange-400',
-    critical: 'text-red-600 dark:text-red-400',
+    healthy: 'text-success',
+    warning: 'text-warning',
+    critical: 'text-destructive',
   };
   return map[health] ?? '';
 }

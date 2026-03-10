@@ -2,7 +2,7 @@
   <ActionableWrapper :actions="menuActions">
     <Card
       class="relative overflow-hidden border transition hover:-translate-y-0.5 hover:shadow-md"
-      :class="progressPercentage >= 100 ? 'border-green-500/50' : ''"
+      :class="progressPercentage >= 100 ? 'border-success/50' : ''"
     >
       <div
         class="absolute inset-y-0 left-0 z-0 opacity-10 transition-all"

@@ -16,7 +16,7 @@
           <component :is="getFileIcon(tab.fileType)" class="h-4 w-4 mr-2" />
           <span class="text-sm max-w-[120px] truncate">{{ tab.title }}</span>
 
-          <div v-if="tab.isDirty" class="w-2 h-2 rounded-full bg-orange-500 ml-1" />
+          <div v-if="tab.isDirty" class="w-2 h-2 rounded-full bg-warning ml-1" />
 
           <Button
             variant="ghost"

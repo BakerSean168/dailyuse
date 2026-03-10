@@ -126,7 +126,7 @@
           </DialogTitle>
         </DialogHeader>
         <div class="pt-4 space-y-4">
-          <Alert class="bg-yellow-50 border-yellow-200">
+          <Alert class="bg-warning/10 border-warning/40">
             <AlertDescription>
               <strong>{{ t('task.templateMgmt.cannotUndo') }}</strong>
             </AlertDescription>
@@ -255,11 +255,11 @@ const getTemplateCountByStatus = (status: string) => {
 };
 
 const getStatusBadgeClass = (status: string) => {
-  if (status === 'ACTIVE') return 'bg-green-100 text-green-800';
-  if (status === 'PAUSED') return 'bg-yellow-100 text-yellow-800';
-  if (status === 'ARCHIVED') return 'bg-blue-100 text-blue-800';
-  if (status === 'DELETED') return 'bg-red-100 text-red-800';
-  return 'bg-gray-100 text-gray-800';
+  if (status === 'ACTIVE') return 'bg-success/15 text-success';
+  if (status === 'PAUSED') return 'bg-warning/15 text-warning';
+  if (status === 'ARCHIVED') return 'bg-info/15 text-info';
+  if (status === 'DELETED') return 'bg-destructive/15 text-destructive';
+  return 'bg-muted text-foreground';
 };
 
 const getStatusIconComponent = (icon: string) => {
@@ -286,9 +286,9 @@ const getEmptyStateIconComponent = () => {
 
 const getEmptyStateIconColor = () => {
   const status = currentStatus.value;
-  if (status === 'ACTIVE') return 'text-green-400';
-  if (status === 'PAUSED') return 'text-yellow-400';
-  if (status === 'ARCHIVED') return 'text-blue-400';
+  if (status === 'ACTIVE') return 'text-success';
+  if (status === 'PAUSED') return 'text-warning';
+  if (status === 'ARCHIVED') return 'text-info';
   return 'text-muted-foreground';
 };
 

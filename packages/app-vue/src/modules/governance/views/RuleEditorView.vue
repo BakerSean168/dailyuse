@@ -133,7 +133,7 @@
           <div class="border rounded-lg">
             <div class="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
               <h2 class="text-sm font-medium flex items-center gap-1.5">
-                <CheckCircle :size="14" class="text-green-500" />
+                <CheckCircle :size="14" class="text-success" />
                 {{ t('governance.editor.goodExamples') }}
               </h2>
               <button

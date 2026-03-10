@@ -193,23 +193,23 @@ function generateRecommendations() {
 
 // 获取置信度 Badge 样式
 function getConfidenceBadgeClass(confidence: number): string {
-  if (confidence >= 80) return 'bg-green-500 text-white border-transparent';
-  if (confidence >= 60) return 'bg-yellow-500 text-white border-transparent';
-  return 'bg-blue-500 text-white border-transparent';
+  if (confidence >= 80) return 'bg-success text-white border-transparent';
+  if (confidence >= 60) return 'bg-warning text-white border-transparent';
+  return 'bg-info text-white border-transparent';
 }
 
 // 获取权重条样式
 function getWeightBarClass(weight: number): string {
-  if (weight >= 4) return 'bg-green-500';
-  if (weight >= 3) return 'bg-yellow-500';
-  return 'bg-red-500';
+  if (weight >= 4) return 'bg-success';
+  if (weight >= 3) return 'bg-warning';
+  return 'bg-destructive';
 }
 
 // 获取权重图标颜色
 function getWeightIconClass(weight: number): string {
-  if (weight >= 4) return 'text-green-500';
-  if (weight >= 3) return 'text-yellow-500';
-  return 'text-red-500';
+  if (weight >= 4) return 'text-success';
+  if (weight >= 3) return 'text-warning';
+  return 'text-destructive';
 }
 
 // 高亮关键词

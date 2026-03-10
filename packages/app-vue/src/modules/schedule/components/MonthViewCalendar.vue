@@ -222,12 +222,12 @@ function getEventsForDate(dateStr: string): CalendarEventItem[] {
 
 function eventClass(event: CalendarEventItem): string {
   if (event.hasConflict) {
-    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+    return 'bg-warning/15 text-warning';
   }
   const map: Record<CalendarEventItem['source'], string> = {
     schedule: 'bg-primary/10 text-primary',
-    goal: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    task: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    goal: 'bg-success/15 text-success',
+    task: 'bg-info/15 text-info',
   };
   return map[event.source];
 }

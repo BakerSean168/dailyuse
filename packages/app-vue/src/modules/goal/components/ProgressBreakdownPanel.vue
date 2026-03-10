@@ -158,21 +158,21 @@ function getProgressVariant(progress: number): BadgeVariants['variant'] {
 }
 
 function getProgressClass(progress: number): string {
-  if (progress >= 90) return '[&>div]:bg-green-600';
-  if (progress >= 70) return '[&>div]:bg-blue-600';
-  if (progress >= 50) return '[&>div]:bg-yellow-600';
-  if (progress >= 30) return '[&>div]:bg-orange-600';
-  return '[&>div]:bg-red-600';
+  if (progress >= 90) return '[&>div]:bg-success';
+  if (progress >= 70) return '[&>div]:bg-info';
+  if (progress >= 50) return '[&>div]:bg-warning';
+  if (progress >= 30) return '[&>div]:bg-warning';
+  return '[&>div]:bg-destructive';
 }
 
 function getProgressBgClass(progress: number): string {
-  if (progress >= 90) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-  if (progress >= 70) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+  if (progress >= 90) return 'bg-success/15 text-success dark:bg-success/30 dark:text-success';
+  if (progress >= 70) return 'bg-info/15 text-info dark:bg-info/30 dark:text-info';
   if (progress >= 50)
-    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+    return 'bg-warning/15 text-warning dark:bg-warning/30 dark:text-warning';
   if (progress >= 30)
-    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
-  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    return 'bg-warning/15 text-warning dark:bg-warning/30 dark:text-warning';
+  return 'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive';
 }
 
 function formatTime(timestamp: number): string {

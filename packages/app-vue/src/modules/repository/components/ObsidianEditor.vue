@@ -139,14 +139,14 @@
     <div
       class="absolute bottom-4 right-6 flex items-center gap-2 px-3 py-1 text-xs bg-background/90 rounded border"
     >
-      <span v-if="isSaving" class="flex items-center gap-1 text-yellow-600">
+      <span v-if="isSaving" class="flex items-center gap-1 text-warning">
         <Loader2 class="h-3 w-3 animate-spin" />
         {{ t('repository.workspace.saving') }}
       </span>
       <span v-else-if="isDirty" class="text-muted-foreground">{{
         t('repository.workspace.unsaved')
       }}</span>
-      <span v-else class="text-green-600">{{ t('repository.workspace.saved') }}</span>
+      <span v-else class="text-success">{{ t('repository.workspace.saved') }}</span>
       <span class="text-muted-foreground">|</span>
       <span class="text-muted-foreground"
         >{{ wordCount }} {{ t('repository.workspace.chars') }}</span

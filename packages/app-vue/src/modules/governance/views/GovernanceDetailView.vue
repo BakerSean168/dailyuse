@@ -58,8 +58,8 @@
             class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium"
             :class="
               currentRule.severity === 'Mandatory'
-                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                ? 'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive'
+                : 'bg-info/15 text-info dark:bg-info/30 dark:text-info'
             "
           >
             {{
@@ -74,7 +74,7 @@
           <span
             v-for="tag in currentRule.tags"
             :key="typeof tag === 'string' ? tag : tag.value"
-            class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+            class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-info/15 text-info dark:bg-info/30 dark:text-info"
           >
             {{ typeof tag === 'string' ? tag : tag.value }}
           </span>
@@ -89,16 +89,16 @@
       <!-- Deprecation Warning -->
       <div
         v-if="currentRule.status === 'Deprecated'"
-        class="flex items-start gap-3 p-4 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 mb-6"
+        class="flex items-start gap-3 p-4 rounded-md bg-warning/10 dark:bg-warning/20 border border-warning/40 dark:border-warning/50 mb-6"
       >
-        <AlertTriangle :size="20" class="text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+        <AlertTriangle :size="20" class="text-warning dark:text-warning shrink-0 mt-0.5" />
         <div>
-          <h3 class="font-medium text-yellow-800 dark:text-yellow-300">
+          <h3 class="font-medium text-warning dark:text-yellow-300">
             {{ t('governance.detail.deprecatedWarning') }}
           </h3>
           <p
             v-if="currentRule.deprecationReason"
-            class="text-sm text-yellow-700 dark:text-yellow-400 mt-1"
+            class="text-sm text-warning dark:text-warning mt-1"
           >
             {{ currentRule.deprecationReason }}
           </p>
@@ -142,7 +142,7 @@
       <!-- Good Examples -->
       <div v-if="currentRule.goodExamples.length > 0" class="mb-6">
         <h2 class="text-sm font-medium mb-3 flex items-center gap-1.5">
-          <CheckCircle :size="16" class="text-green-500" />
+          <CheckCircle :size="16" class="text-success" />
           {{ t('governance.detail.goodExamples', { count: currentRule.goodExamples.length }) }}
         </h2>
         <div class="space-y-3">
@@ -326,11 +326,11 @@ function formatDate(dateStr: string | number): string {
 function revisionDotColor(changeType: string): string {
   switch (changeType) {
     case 'Created':
-      return 'bg-green-500';
+      return 'bg-success';
     case 'Updated':
-      return 'bg-blue-500';
+      return 'bg-info';
     case 'Deprecated':
-      return 'bg-yellow-500';
+      return 'bg-warning';
     case 'Reactivated':
       return 'bg-primary';
     default:
@@ -341,11 +341,11 @@ function revisionDotColor(changeType: string): string {
 function revisionBadgeClasses(changeType: string): string {
   switch (changeType) {
     case 'Created':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      return 'bg-success/15 text-success dark:bg-success/30 dark:text-success';
     case 'Updated':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      return 'bg-info/15 text-info dark:bg-info/30 dark:text-info';
     case 'Deprecated':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      return 'bg-warning/15 text-warning dark:bg-warning/30 dark:text-warning';
     case 'Reactivated':
       return 'bg-primary/10 text-primary';
     default:

@@ -21,7 +21,7 @@
     <Alert
       v-if="!isLoading && conflicts && !conflicts.hasConflict"
       variant="default"
-      class="border-green-200 bg-green-50 text-green-800"
+      class="border-success/40 bg-success/10 text-success"
     >
       <CheckCircle class="h-4 w-4" />
       <AlertDescription>{{ t('schedule.conflictAlert.noConflict') }}</AlertDescription>

@@ -342,18 +342,18 @@ const valueTypes = computed(() => [
 
 const progressColor = computed(() => {
   const progress = progressPercentage.value;
-  if (progress >= 80) return 'text-green-600';
-  if (progress >= 60) return 'text-yellow-600';
-  if (progress >= 40) return 'text-orange-500';
-  return 'text-red-600';
+  if (progress >= 80) return 'text-success';
+  if (progress >= 60) return 'text-warning';
+  if (progress >= 40) return 'text-warning';
+  return 'text-destructive';
 });
 
 const progressBarClass = computed(() => {
   const progress = progressPercentage.value;
-  if (progress >= 80) return '[&>div]:bg-green-500';
-  if (progress >= 60) return '[&>div]:bg-yellow-500';
-  if (progress >= 40) return '[&>div]:bg-orange-500';
-  return '[&>div]:bg-red-500';
+  if (progress >= 80) return '[&>div]:bg-success';
+  if (progress >= 60) return '[&>div]:bg-warning';
+  if (progress >= 40) return '[&>div]:bg-warning';
+  return '[&>div]:bg-destructive';
 });
 
 const handleSave = async () => {

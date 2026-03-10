@@ -74,11 +74,11 @@ const changeLabel = computed(() => {
 const badgeClass = computed(() => {
   switch (props.revision.changeType) {
     case 'Created':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      return 'bg-success/15 text-success dark:bg-success/30 dark:text-success';
     case 'Updated':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      return 'bg-info/15 text-info dark:bg-info/30 dark:text-info';
     case 'Deprecated':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      return 'bg-warning/15 text-warning dark:bg-warning/30 dark:text-warning';
     case 'Reactivated':
       return 'bg-primary/10 text-primary';
     default:

@@ -29,11 +29,11 @@ const props = withDefaults(
 const badgeClasses = computed(() => {
   switch (props.status) {
     case RuleStatus.Active:
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      return 'bg-success/15 text-success dark:bg-success/30 dark:text-success';
     case RuleStatus.Draft:
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      return 'bg-warning/15 text-warning dark:bg-warning/30 dark:text-warning';
     case RuleStatus.Deprecated:
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      return 'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive';
     default:
       return 'bg-muted text-muted-foreground';
   }

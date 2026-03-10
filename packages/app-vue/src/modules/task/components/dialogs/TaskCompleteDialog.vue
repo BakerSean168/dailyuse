@@ -18,7 +18,7 @@
     "
   >
     <DialogContent class="max-w-[600px]">
-      <DialogHeader class="bg-green-600 -m-6 mb-0 p-4 rounded-t-lg">
+      <DialogHeader class="bg-success -m-6 mb-0 p-4 rounded-t-lg">
         <DialogTitle class="flex items-center text-white">
           <CheckCircle class="h-5 w-5 mr-2 text-white" />
           {{ t('task.complete.title') }}
@@ -121,7 +121,7 @@
                   class="h-4 w-4"
                   :class="
                     recordValue !== null && recordValue > 0
-                      ? 'text-green-500'
+                      ? 'text-success'
                       : 'text-muted-foreground'
                   "
                 />
@@ -151,7 +151,7 @@
           <!-- 预测结果 -->
           <Alert
             v-if="recordValue !== null && recordValue > 0"
-            class="bg-green-50 border-green-200"
+            class="bg-success/10 border-success/40"
           >
             <AlertDescription>
               <div class="text-xs">
@@ -181,7 +181,7 @@
         </div>
 
         <!-- 无 Goal 绑定时的提示 -->
-        <Alert v-else class="bg-green-50 border-green-200">
+        <Alert v-else class="bg-success/10 border-success/40">
           <AlertDescription>
             <div class="text-sm flex items-center gap-1">
               <Info class="h-4 w-4 shrink-0" />
@@ -231,7 +231,7 @@
         <Button
           :disabled="!isValid || isSubmitting"
           @click="confirm"
-          class="bg-green-600 hover:bg-green-700"
+          class="bg-success hover:bg-success"
         >
           <Loader2 v-if="isSubmitting" class="h-4 w-4 mr-1 animate-spin" />
           <Check v-else class="h-4 w-4 mr-1" />
@@ -444,17 +444,17 @@ const getAggregationMethodIconComponent = (method?: AggregationMethod) => {
 const getAggregationMethodBadgeClass = (method?: AggregationMethod) => {
   switch (method) {
     case AggregationMethod.SUM:
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-info/15 text-info';
     case AggregationMethod.MAX:
-      return 'bg-green-100 text-green-800';
+      return 'bg-success/15 text-success';
     case AggregationMethod.AVERAGE:
       return 'bg-cyan-100 text-cyan-800';
     case AggregationMethod.MIN:
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-warning/15 text-warning';
     case AggregationMethod.LAST:
       return 'bg-purple-100 text-purple-800';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-muted text-foreground';
   }
 };
 
@@ -541,19 +541,19 @@ const calculatePercentage = (current: number, target: number) => {
 // 获取进度 Badge 样式
 const getProgressBadgeClass = (current: number, target: number) => {
   const percentage = (current / target) * 100;
-  if (percentage >= 100) return 'bg-green-100 text-green-800';
-  if (percentage >= 70) return 'bg-blue-100 text-blue-800';
-  if (percentage >= 40) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-red-100 text-red-800';
+  if (percentage >= 100) return 'bg-success/15 text-success';
+  if (percentage >= 70) return 'bg-info/15 text-info';
+  if (percentage >= 40) return 'bg-warning/15 text-warning';
+  return 'bg-destructive/15 text-destructive';
 };
 
 // 获取剩余量的样式类
 const getRemainingClass = (current: number, target: number) => {
   const remaining = target - current;
-  if (remaining <= 0) return 'text-green-600';
-  if (remaining / target <= 0.3) return 'text-blue-600';
-  if (remaining / target <= 0.6) return 'text-yellow-600';
-  return 'text-red-600';
+  if (remaining <= 0) return 'text-success';
+  if (remaining / target <= 0.3) return 'text-info';
+  if (remaining / target <= 0.6) return 'text-warning';
+  return 'text-destructive';
 };
 
 // 格式化日期

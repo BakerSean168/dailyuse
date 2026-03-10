@@ -53,7 +53,7 @@
           <div class="text-xs text-muted-foreground">{{ t('reminder.sidebar.total') }}</div>
         </div>
         <div>
-          <div class="text-2xl font-bold text-blue-600">{{ stats.today }}</div>
+          <div class="text-2xl font-bold text-info">{{ stats.today }}</div>
           <div class="text-xs text-muted-foreground">{{ t('reminder.sidebar.statsToday') }}</div>
         </div>
         <div>
@@ -251,9 +251,9 @@ const handleFiltersChange = () => {
 
 const getPriorityClass = (priority: string): string => {
   const classes: Record<string, string> = {
-    urgent: 'bg-red-500',
-    high: 'bg-orange-500',
-    normal: 'bg-blue-500',
+    urgent: 'bg-destructive',
+    high: 'bg-warning',
+    normal: 'bg-info',
     low: 'bg-gray-400',
   };
   return classes[priority] || 'bg-gray-400';

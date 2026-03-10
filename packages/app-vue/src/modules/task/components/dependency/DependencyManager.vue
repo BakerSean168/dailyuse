@@ -284,9 +284,9 @@ const getTaskTitle = (id: string): string => {
 
 const getDependencyTypeColorClass = (type: string): string => {
   if (type === 'FS') return 'text-primary';
-  if (type === 'SS') return 'text-blue-500';
-  if (type === 'FF') return 'text-green-500';
-  if (type === 'SF') return 'text-yellow-500';
+  if (type === 'SS') return 'text-info';
+  if (type === 'FF') return 'text-success';
+  if (type === 'SF') return 'text-warning';
   return 'text-muted-foreground';
 };
 

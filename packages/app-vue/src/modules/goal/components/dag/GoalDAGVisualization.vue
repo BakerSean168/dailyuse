@@ -107,7 +107,7 @@
               <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
               {{ t('goal.dag.legendGoalNode') }}
             </Badge>
-            <Badge class="bg-green-600 text-white hover:bg-green-700">
+            <Badge class="bg-success text-white hover:bg-success">
               <Circle class="mr-1 h-2.5 w-2.5 fill-current" />
               {{ t('goal.dag.legendWeight7to10') }}
             </Badge>

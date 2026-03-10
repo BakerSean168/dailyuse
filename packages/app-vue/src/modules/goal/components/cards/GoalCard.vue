@@ -202,18 +202,18 @@ const getStatusLabel = (status: string): string => {
 
 const getDaysRemainingClass = (days: number) => {
   if (days < 0) return 'text-destructive font-medium';
-  if (days < 7) return 'text-orange-500 font-medium';
+  if (days < 7) return 'text-warning font-medium';
   return '';
 };
 
 const getStatusColorClass = (status: string) => {
   switch (status) {
     case 'Completed':
-      return 'text-green-600 border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-900/30';
+      return 'text-success border-success/40 bg-success/10 dark:bg-success/20 dark:border-success/40';
     case 'Archived':
       return 'text-muted-foreground border-muted bg-muted/50';
     case 'Draft':
-      return 'text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-900/30';
+      return 'text-warning border-warning/40 bg-warning/10 dark:bg-warning/20 dark:border-yellow-900/30';
     default:
       return 'text-primary border-primary/20 bg-primary/5';
   }
@@ -222,9 +222,9 @@ const getStatusColorClass = (status: string) => {
 const getProgressColorClass = (status: string) => {
   switch (status) {
     case 'Completed':
-      return 'bg-green-500';
+      return 'bg-success';
     case 'Draft':
-      return 'bg-yellow-500';
+      return 'bg-warning';
     default:
       return 'bg-primary';
   }
