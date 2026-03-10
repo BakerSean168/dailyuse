@@ -141,19 +141,19 @@ DailyUse/
 
 #### 技术栈
 
-| 组件           | 技�?                       | 版本    |
-| -------------- | -------------------------- | ------- |
-| **桌面框架**   | Electron                   | 39.2.6  |
-| **前端**       | React 19                   | 19.2.1  |
-| \*_状态管�?_   | Zustand                    | 5.0.5   |
-| \*_UI �?_      | shadcn/ui + Tailwind CSS 4 | -       |
-| \*_本地数据�?_ | PowerSync local runtime    | 0.17.1  |
-| **文件监控**   | chokidar                   | 4.0.3   |
-| **Git 集成**   | simple-git                 | 3.27.0  |
-| **任务调度**   | node-schedule              | 2.1.1   |
-| **日志**       | electron-log               | 5.4.2   |
-| **打包**       | electron-builder           | 26.0.12 |
-| **自动更新**   | electron-updater           | 6.6.2   |
+| 组件           | 技�?                       | 版本      |
+| -------------- | -------------------------- | --------- |
+| **桌面框架**   | Electron                   | 39.2.6    |
+| **前端**       | React 19                   | 19.2.1    |
+| \*_状态管�?_   | Zustand                    | 5.0.5     |
+| \*_UI �?_      | shadcn/ui + Tailwind CSS 4 | -         |
+| \*_本地数据�?_ | PowerSync local runtime    | 0.17.1    |
+| **文件监控**   | chokidar                   | 4.0.3     |
+| **Git 集成**   | simple-git                 | 3.27.0    |
+| **任务调度**   | node-schedule              | 2.1.1     |
+| **日志**       | @dailyuse/utils logger     | workspace |
+| **打包**       | electron-builder           | 26.0.12   |
+| **自动更新**   | electron-updater           | 6.6.2     |
 
 #### 核心功能
 

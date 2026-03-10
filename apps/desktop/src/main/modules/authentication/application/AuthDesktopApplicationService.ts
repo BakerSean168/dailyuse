@@ -66,6 +66,7 @@ import {
   connectPowerSync,
   disconnectPowerSync,
   openPowerSyncLocalOnly,
+  promotePowerSyncToSync,
 } from '../../../database/powersync';
 import { getNetworkStateManager } from '../infrastructure';
 import { registerDesktopAccount } from './registerDesktopAccount';
@@ -1130,8 +1131,8 @@ export class AuthDesktopApplicationService {
     this.powerSyncInitPromise = (async () => {
       try {
         if (authMode === AuthMode.ONLINE_USER) {
-          await connectPowerSync();
-          this.logger.info('PowerSync connected in background');
+          await promotePowerSyncToSync();
+          this.logger.info('PowerSync sync mode ensured in background');
         } else if (authMode === AuthMode.OFFLINE_USER) {
           await openPowerSyncLocalOnly();
           this.logger.info('PowerSync local-only mode initialized in background');

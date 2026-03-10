@@ -21,13 +21,14 @@ updated: 2025-01-22T00:00:00
 
 ### 📋 快速导航
 
-| 指南                                             | 目的                   | 关联规范                                |
-| ------------------------------------------------ | ---------------------- | --------------------------------------- |
-| **[coding-standards.md](./coding-standards.md)** | 代码编写规范与最佳实践 | 🏷️ naming, 🏛 architecture, 🔄 patterns |
-| **[git-workflow.md](./git-workflow.md)**         | Git工作流与提交规范    | 🏷️ naming                               |
-| **[setup.md](./setup.md)**                       | 开发环境配置           | 🏷️ naming, 🛠️ tech-stack                |
-| **[testing.md](./testing.md)**                   | 测试策略与实践         | 🏛 architecture, 🔄 patterns            |
-| **[debugging.md](./debugging.md)**               | 调试技巧与工具         | 🏛 architecture                         |
+| 指南                                               | 目的                   | 关联规范                                |
+| -------------------------------------------------- | ---------------------- | --------------------------------------- |
+| **[coding-standards.md](./coding-standards.md)**   | 代码编写规范与最佳实践 | 🏷️ naming, 🏛 architecture, 🔄 patterns |
+| **[git-workflow.md](./git-workflow.md)**           | Git工作流与提交规范    | 🏷️ naming                               |
+| **[setup.md](./setup.md)**                         | 开发环境配置           | 🏷️ naming, 🛠️ tech-stack                |
+| **[testing.md](./testing.md)**                     | 测试策略与实践         | 🏛 architecture, 🔄 patterns            |
+| **[debugging.md](./debugging.md)**                 | 调试技巧与工具         | 🏛 architecture                         |
+| **[logging-and-tools.md](./logging-and-tools.md)** | 日志定位与排障工具     | 🏛 architecture, 🛠 tooling             |
 
 ---
 

@@ -39,6 +39,7 @@ import { getUnifiedDatabasePath } from './paths';
 // ──────────────────────────────────────────────
 
 let powerSyncDb: PowerSyncDatabase | null = null;
+let syncConnected = false;
 
 // Concurrency guards — prevent duplicate instances when two callers race.
 let connectingPromise: Promise<PowerSyncDatabase> | null = null;
@@ -55,10 +56,6 @@ function getSyncDatabasePath(): string {
     fs.mkdirSync(dbDir, { recursive: true });
   }
   return dbPath;
-}
-
-function getPowerSyncServiceUrl(): string {
-  return process.env.POWERSYNC_URL || 'http://localhost:8080';
 }
 
 // ──────────────────────────────────────────────
@@ -97,12 +94,38 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
       throw new Error(`[PowerSync] Failed to fetch credentials: ${response.status} ${body}`);
     }
 
-    const data = (await response.json()) as { token: string; expiresAt: string };
+    const payload = (await response.json()) as {
+      ok: boolean;
+      data?: {
+        token?: string;
+        endpoint?: string;
+        expiresIn?: number;
+      };
+      message?: string;
+    };
+
+    if (
+      !payload?.ok ||
+      !payload.data?.token ||
+      !payload.data?.endpoint ||
+      !payload.data?.expiresIn
+    ) {
+      throw new Error(
+        `[PowerSync] Invalid credentials response contract from API: ${JSON.stringify(payload)}`,
+      );
+    }
+
+    const expiresAt = new Date(Date.now() + payload.data.expiresIn * 1000);
+    console.log('[PowerSync] Credentials fetched', {
+      endpoint: payload.data.endpoint,
+      expiresAt: expiresAt.toISOString(),
+      tokenPrefix: `${payload.data.token.slice(0, 10)}...`,
+    });
 
     return {
-      endpoint: getPowerSyncServiceUrl(),
-      token: data.token,
-      expiresAt: new Date(data.expiresAt),
+      endpoint: payload.data.endpoint,
+      token: payload.data.token,
+      expiresAt,
     };
   }
 
@@ -129,19 +152,41 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
           data: op.opData,
         }));
 
+        const tableCounts = ops.reduce<Record<string, number>>((acc, op) => {
+          acc[op.table] = (acc[op.table] ?? 0) + 1;
+          return acc;
+        }, {});
+        const includesGoals = Object.keys(tableCounts).some((table) => table.includes('goal'));
+        console.log('[PowerSync] Uploading CRUD transaction', {
+          opCount: ops.length,
+          tableCounts,
+          includesGoals,
+        });
+
         const response = await fetch(`${this.apiBaseUrl}/powersync/crud`, {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ operations: ops }),
+          body: JSON.stringify({
+            transactions: [
+              {
+                ops,
+              },
+            ],
+          }),
         });
 
         if (!response.ok) {
           const body = await response.text().catch(() => '');
           throw new Error(`[PowerSync] CRUD upload failed: ${response.status} ${body}`);
         }
+
+        console.log('[PowerSync] CRUD transaction uploaded successfully', {
+          opCount: ops.length,
+          includesGoals,
+        });
 
         await transaction.complete();
       } catch (error) {
@@ -164,13 +209,31 @@ class DesktopPowerSyncConnector implements PowerSyncBackendConnector {
  * progress the same promise is returned.
  */
 export async function connectPowerSync(): Promise<PowerSyncDatabase> {
-  if (powerSyncDb) {
-    console.log('[PowerSync] Already connected');
-    return powerSyncDb;
-  }
   if (connectingPromise) {
     console.log('[PowerSync] Connection already in progress, waiting…');
     return connectingPromise;
+  }
+
+  if (powerSyncDb && syncConnected) {
+    console.log('[PowerSync] Already connected (sync mode)');
+    return powerSyncDb;
+  }
+
+  if (powerSyncDb && !syncConnected) {
+    connectingPromise = (async () => {
+      console.log('[PowerSync] Promoting existing local-only instance to sync mode');
+      const connector = new DesktopPowerSyncConnector();
+      await powerSyncDb!.connect(connector);
+      syncConnected = true;
+      console.log('[PowerSync] Connected to PowerSync Service (promoted)');
+      return powerSyncDb!;
+    })();
+
+    try {
+      return await connectingPromise;
+    } finally {
+      connectingPromise = null;
+    }
   }
 
   connectingPromise = (async () => {
@@ -186,6 +249,7 @@ export async function connectPowerSync(): Promise<PowerSyncDatabase> {
     await db.connect(connector);
 
     powerSyncDb = db;
+    syncConnected = true;
 
     // Start broadcasting table changes to renderer windows
     startChangeBroadcast(db);
@@ -231,6 +295,7 @@ export async function openPowerSyncLocalOnly(): Promise<PowerSyncDatabase> {
     });
 
     powerSyncDb = db;
+    syncConnected = false;
 
     // Do NOT call db.connect(connector) — local-only mode
     // Just initialize the database and start change broadcast
@@ -257,8 +322,14 @@ export async function promotePowerSyncToSync(): Promise<void> {
     return;
   }
 
+  if (syncConnected) {
+    console.log('[PowerSync] Already in sync mode');
+    return;
+  }
+
   const connector = new DesktopPowerSyncConnector();
   await powerSyncDb.connect(connector);
+  syncConnected = true;
   console.log('[PowerSync] Promoted to sync mode');
 }
 
@@ -277,6 +348,7 @@ export async function disconnectPowerSync(): Promise<void> {
   } catch (error) {
     console.error('[PowerSync] Error during disconnect:', error);
   } finally {
+    syncConnected = false;
     powerSyncDb = null;
   }
 }
@@ -295,6 +367,7 @@ export async function shutdownPowerSync(): Promise<void> {
   } catch (error) {
     console.error('[PowerSync] Error during shutdown:', error);
   } finally {
+    syncConnected = false;
     powerSyncDb = null;
   }
 }
@@ -327,6 +400,12 @@ function startChangeBroadcast(db: PowerSyncDatabase): void {
     onChange: (event) => {
       const tables = event.changedTables;
       if (tables.length === 0) return;
+
+      const includesGoals = tables.some((table) => table.includes('goal'));
+      console.log('[PowerSync] Changed tables detected', {
+        tables,
+        includesGoals,
+      });
 
       // Broadcast to every open BrowserWindow
       for (const win of BrowserWindow.getAllWindows()) {

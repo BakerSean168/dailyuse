@@ -204,6 +204,12 @@ export const PowerSyncApiModule: IApiModule = {
           } as jwt.SignOptions,
         );
 
+        logger.info('Issued PowerSync token', {
+          identityId: req.identityId,
+          audience: 'powersync-dev',
+          expiresInSec: 300,
+        });
+
         return res.json({
           ok: true,
           data: {
@@ -242,6 +248,17 @@ export const PowerSyncApiModule: IApiModule = {
         }
 
         const identityId = req.identityId!;
+        const txCount = Array.isArray(transactions) ? transactions.length : 0;
+        const opCount = transactions.reduce(
+          (count: number, tx: any) => count + (tx?.ops?.length ?? tx?.crud?.length ?? 0),
+          0,
+        );
+
+        logger.info('PowerSync CRUD batch received', {
+          identityId,
+          transactionCount: txCount,
+          operationCount: opCount,
+        });
 
         // Process all transactions
         await db.$transaction(async (tx: any) => {
@@ -304,7 +321,10 @@ export const PowerSyncApiModule: IApiModule = {
 
         return res.json({ ok: true });
       } catch (error) {
-        logger.error('PowerSync CRUD processing failed', error);
+        logger.error('PowerSync CRUD processing failed', {
+          error,
+          identityId: req.identityId,
+        });
         return res.status(500).json({
           ok: false,
           code: 'INTERNAL_ERROR',
