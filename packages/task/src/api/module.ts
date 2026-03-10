@@ -54,26 +54,24 @@ export const TaskApiModule: TaskApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — TaskModule assembles repositories and configures TaskContainer
-    const taskModule = new TaskModule('prisma', db as PrismaClient);
+    const taskModule = new TaskModule(db as PrismaClient);
 
     // 2. Create controllers with application services
-    const templateController = new TaskTemplateController(
-      {
-        createTemplate: taskModule.createTaskTemplate,
-        getTemplate: taskModule.getTaskTemplate,
-        listTemplates: taskModule.listTaskTemplates,
-        updateTemplate: taskModule.updateTaskTemplate,
-        deleteTemplate: taskModule.deleteTaskTemplate,
-        activateTemplate: taskModule.activateTaskTemplate,
-        pauseTemplate: taskModule.pauseTaskTemplate,
-        archiveTemplate: taskModule.archiveTaskTemplate,
-        listByPriority: taskModule.listTaskTemplatesByPriority,
-        generateInstances: taskModule.generateTaskInstances,
-        bindToGoal: taskModule.bindTaskToGoal,
-        unbindFromGoal: taskModule.unbindTaskFromGoal,
-        listInstancesByTemplate: taskModule.listTaskInstancesByTemplate,
-      },
-    );
+    const templateController = new TaskTemplateController({
+      createTemplate: taskModule.createTaskTemplate,
+      getTemplate: taskModule.getTaskTemplate,
+      listTemplates: taskModule.listTaskTemplates,
+      updateTemplate: taskModule.updateTaskTemplate,
+      deleteTemplate: taskModule.deleteTaskTemplate,
+      activateTemplate: taskModule.activateTaskTemplate,
+      pauseTemplate: taskModule.pauseTaskTemplate,
+      archiveTemplate: taskModule.archiveTaskTemplate,
+      listByPriority: taskModule.listTaskTemplatesByPriority,
+      generateInstances: taskModule.generateTaskInstances,
+      bindToGoal: taskModule.bindTaskToGoal,
+      unbindFromGoal: taskModule.unbindTaskFromGoal,
+      listInstancesByTemplate: taskModule.listTaskInstancesByTemplate,
+    });
     const instanceController = new TaskInstanceController({
       getTaskInstance: taskModule.getTaskInstance,
       listByAccount: taskModule.listTaskInstancesByAccount,

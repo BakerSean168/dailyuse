@@ -43,9 +43,8 @@ export * from './application-client';
 export {
   PrismaAuthIdentityRepository,
   PrismaAuthSessionRepository,
-  SqliteAuthIdentityRepository,
-  SqliteAuthSessionRepository,
-  AUTHENTICATION_MODULE_SCHEMA,
+  PowerSyncAuthIdentityRepository,
+  PowerSyncAuthSessionRepository,
   Argon2Hasher,
   AuthenticationContainer,
   AuthenticationRepositoryFactory,

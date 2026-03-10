@@ -21,6 +21,70 @@
 import { column, Schema, Table } from '@powersync/common';
 
 // ──────────────────────────────────────────────
+// Authentication
+// ──────────────────────────────────────────────
+
+const auth_identities = new Table({
+  status: column.text,
+  failed_login_attempts: column.integer,
+  last_failed_attempt: column.text,
+  locked_until: column.text,
+  version: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const auth_identifiers = new Table({
+  identity_id: column.text,
+  type: column.text,
+  value: column.text,
+  is_verified: column.integer,
+  created_at: column.text,
+});
+
+const auth_oauth_bindings = new Table({
+  identity_id: column.text,
+  provider: column.text,
+  provider_subject_id: column.text,
+  access_token: column.text,
+  refresh_token: column.text,
+  expires_at: column.text,
+  created_at: column.text,
+  last_used_at: column.text,
+});
+
+const auth_credentials = new Table({
+  identity_id: column.text,
+  type: column.text,
+  status: column.text,
+  password_hash: column.text,
+  password_last_changed_at: column.text,
+  version: column.integer,
+  created_at: column.text,
+  last_used_at: column.text,
+  deleted_at: column.text,
+});
+
+const auth_sessions = new Table({
+  identity_id: column.text,
+  refresh_token_hash: column.text,
+  device_id: column.text,
+  device_fingerprint: column.text,
+  device_type: column.text,
+  device_name: column.text,
+  os: column.text,
+  browser: column.text,
+  ip_address: column.text,
+  location: column.text,
+  version: column.integer,
+  created_at: column.text,
+  expires_at: column.text,
+  last_active_at: column.text,
+  deleted_at: column.text,
+});
+
+// ──────────────────────────────────────────────
 // Account
 // ──────────────────────────────────────────────
 
@@ -963,6 +1027,12 @@ const rule_revisions = new Table({
 // ──────────────────────────────────────────────
 
 export const PowerSyncAppSchema = new Schema({
+  // Authentication
+  auth_identities,
+  auth_identifiers,
+  auth_oauth_bindings,
+  auth_credentials,
+  auth_sessions,
   // Account
   accounts,
   user_settings,

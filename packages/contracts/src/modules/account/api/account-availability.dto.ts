@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { brandedId } from '../../../primitives';
-import type { IdentityId } from '../value-objects/identity-id';
+
+export const AccountAvailabilityFieldSchema = z.enum(['nickname', 'email']);
 
 export const CheckAvailabilitySchema = z.object({
-  type: z.enum(['Nickname', 'Email']),
+  type: AccountAvailabilityFieldSchema,
   value: z.string(),
 });
 

@@ -235,12 +235,12 @@ export class SessionManager {
           tokenData.identityId as unknown as IdentityId,
         );
         if (activeSessions.length === 0) {
-          this.logger.info('No active sessions found for account');
-          await this.tokenManager.clearTokens();
-          return { ok: false, needsReLogin: true };
+          this.logger.info('No persisted session found, reconstructing runtime session from token');
+          this.currentSession = await this.restoreRuntimeSessionFromToken(tokenData);
+        } else {
+          // 使用最近的活跃会话
+          this.currentSession = activeSessions[0];
         }
-        // 使用最近的活跃会话
-        this.currentSession = activeSessions[0];
       } else {
         // 4. 验证会话有效�?
         if (!session.isValid()) {
@@ -507,6 +507,7 @@ export class SessionManager {
         INVALID_PASSWORD: '密码错误',
         ACCOUNT_LOCKED: '账户已锁定，请稍后重试',
         OFFLINE_AUTH_UNAVAILABLE: '离线认证服务不可用',
+        OFFLINE_STORAGE_ERROR: '内部错误，请联系开发者',
       };
       return {
         ok: false,
@@ -824,7 +825,17 @@ export class SessionManager {
       return { ok: false, error: 'OFFLINE_AUTH_UNAVAILABLE' };
     }
 
-    const identity = await this.identityRepository.findByEmail(email);
+    let identity: AuthIdentity | null;
+    try {
+      identity = await this.identityRepository.findByEmail(email);
+    } catch (error) {
+      this.logger.error('Offline credential lookup failed', {
+        email,
+        error,
+      });
+      return { ok: false, error: 'OFFLINE_STORAGE_ERROR' };
+    }
+
     if (!identity) {
       return { ok: false, error: 'NO_LOCAL_CREDENTIALS' };
     }
@@ -837,13 +848,28 @@ export class SessionManager {
     const verified = await identity.verifyPassword(plainPassword, this.passwordHasher);
     if (!verified) {
       identity.recordFailedLogin();
-      await this.identityRepository.save(identity);
+      try {
+        await this.identityRepository.save(identity);
+      } catch (error) {
+        this.logger.error('Failed to persist failed-login state for offline identity', {
+          identityId: identity.id.toString(),
+          error,
+        });
+      }
       return { ok: false, error: 'INVALID_PASSWORD' };
     }
 
     // Success — reset failed attempts
     identity.resetFailedAttempts();
-    await this.identityRepository.save(identity);
+    try {
+      await this.identityRepository.save(identity);
+    } catch (error) {
+      this.logger.error('Failed to persist reset-failed-attempts state for offline identity', {
+        identityId: identity.id.toString(),
+        error,
+      });
+      return { ok: false, error: 'OFFLINE_STORAGE_ERROR' };
+    }
 
     // Use the identity's own ID for session creation.
     // Since saveOfflineCredentials now stores AuthIdentity with the server's ID,
@@ -948,6 +974,31 @@ export class SessionManager {
   private generateFingerprint(machineId: string, platform: string, hostname: string): string {
     const data = `${machineId}-${platform}-${hostname}`;
     return crypto.createHash('sha256').update(data).digest('hex');
+  }
+
+  private async restoreRuntimeSessionFromToken(tokenData: TokenData): Promise<AuthSession> {
+    const deviceInfo = this.getDeviceInfo();
+    const device = DeviceInfo.create(deviceInfo as any);
+    const expiresAt = Math.max(tokenData.accessTokenExpiresAt, tokenData.refreshTokenExpiresAt);
+
+    const session = AuthSession.create({
+      id: tokenData.sessionId as unknown as AuthSessionId,
+      identityId: tokenData.identityId as unknown as IdentityId,
+      refreshTokenHash: generateUUID(),
+      expiresAt,
+      deviceInfo: device.toDTO(),
+    });
+
+    try {
+      await this.sessionRepository.save(session);
+    } catch (error) {
+      this.logger.warn('Failed to persist reconstructed session, keeping runtime-only session', {
+        error,
+        sessionId: tokenData.sessionId,
+      });
+    }
+
+    return session;
   }
 
   /**

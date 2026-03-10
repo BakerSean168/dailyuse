@@ -6,7 +6,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { ScheduleSqliteModule, ScheduleContainer } from '../infrastructure-server/sqlite';
+import { SchedulePowerSyncModule, ScheduleContainer } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleEventController } from '../controllers/schedule-event.controller';
 import { withAuthenticatedValue } from './authenticated-ipc';
@@ -31,7 +31,7 @@ export const ScheduleElectronModule: IElectronModule = {
   name: 'Schedule',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new ScheduleSqliteModule(ctx.db);
+    const mod = new SchedulePowerSyncModule(ctx.db);
     const eventController = new ScheduleEventController({
       scheduleEventService: mod.scheduleEventService,
     });

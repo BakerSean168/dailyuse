@@ -1,17 +1,17 @@
 /**
  * @dailyuse/governance
- * 
+ *
  * 治理模块 - 架构规则与代码标准的活文档库
- * 
+ *
  * 【业务场景】
  * 架构治理规则管理，包含：
  * - 创建、编辑、删除规则
  * - 状态流转：Draft → Active → Deprecated
  * - 严重性管理：Mandatory / Recommended / Optional
  * - 版本追踪：RuleRevision 记录每次变更
- * 
+ *
  * 【分层架构】
- * 
+ *
  * ```
  * ┌─────────────────────────────────────────────────────────┐
  * │  contracts (契约层)                                      │
@@ -31,19 +31,19 @@
  * │  - 领域服务（RuleDomainService）                        │
  * └─────────────────────────────────────────────────────────┘
  * ```
- * 
+ *
  * 【使用示例】
- * 
+ *
  * ```typescript
  * // 1. 导入契约层类型
  * import type { RuleClientDTO, RuleStatus } from '@dailyuse/governance/contracts';
- * 
+ *
  * // 2. 导入值对象工厂
  * import { RuleIdFactory } from '@dailyuse/governance/domain-shared';
- * 
+ *
  * // 3. 导入聚合根
  * import { Rule, IRuleRepository } from '@dailyuse/governance/domain-server';
- * 
+ *
  * // 4. 使用组合根
  * import { GovernanceModule } from '@dailyuse/governance/infrastructure-server';
  * const module = new GovernanceModule({ ruleRepository, revisionRepository });
@@ -78,12 +78,12 @@ export * from './application-client';
 // ================= Infrastructure Layer (基础设施层) =================
 // Infrastructure-Server: Repositories, persistence (server-side)
 // Infrastructure-Client: Local storage, caching (client-side)
-export { 
+export {
   RulePrismaRepository,
   RuleRevisionPrismaRepository,
-  RuleSqliteRepository,
-  RuleRevisionSqliteRepository,
-  GOVERNANCE_MODULE_SCHEMA,
+  PowerSyncRuleRepository,
+  PowerSyncRuleRevisionRepository,
+  GovernancePowerSyncModule,
   GovernanceContainer,
   GovernanceModule,
   type GovernanceModuleRepositories,

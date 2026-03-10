@@ -17,10 +17,8 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import {
-  SqliteAuthIdentityRepository,
-  SqliteAuthSessionRepository,
-} from '@dailyuse/authentication/sqlite';
-import {
+  PowerSyncAuthIdentityRepository,
+  PowerSyncAuthSessionRepository,
   Argon2Hasher,
   AuthenticationContainer,
 } from '@dailyuse/authentication/infrastructure-server';
@@ -32,6 +30,7 @@ import {
   clearDesktopAuthService,
   registerDesktopAuthService,
 } from '../../auth/desktop-auth-context';
+import { PowerSyncAccountRepository } from '@dailyuse/account/infrastructure-server';
 
 const logger = createLogger('DesktopAuthElectron');
 
@@ -103,13 +102,15 @@ export const DesktopAuthElectronModule: IElectronModule = {
     const { db } = ctx;
 
     // ── 1. Shared infrastructure ────────────────────────────────
-    const identityRepository = new SqliteAuthIdentityRepository(db);
-    const sessionRepository = new SqliteAuthSessionRepository(db);
+    const identityRepository = new PowerSyncAuthIdentityRepository(db);
+    const sessionRepository = new PowerSyncAuthSessionRepository(db);
+    const accountRepository = new PowerSyncAccountRepository(db as any);
     const passwordHasher = new Argon2Hasher();
 
     // 2. Desktop Application Service (guest mode, token/session mgmt, etc.)
     const desktopService = new AuthDesktopApplicationService(logger);
     desktopService.setRepositories(sessionRepository, identityRepository);
+    desktopService.setAccountRepository(accountRepository);
     desktopService.setOfflineAuthDependencies(identityRepository, passwordHasher);
     registerDesktopAuthService(desktopService);
 
@@ -127,7 +128,12 @@ export const DesktopAuthElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.REGISTER, (_event, data) => desktopService.register(data));
 
-    ipcMain.handle(Ch.LOGOUT, () => desktopService.logout());
+    ipcMain.handle(Ch.LOGOUT, async () => {
+      logger.info('IPC auth:logout received');
+      const result = await desktopService.logout();
+      logger.info('IPC auth:logout completed', { ok: result.ok });
+      return result;
+    });
 
     ipcMain.handle(Ch.REFRESH_TOKEN, () => desktopService.refreshToken());
 

@@ -42,5 +42,10 @@ export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
-export { PrismaAccountRepository, AccountModule } from './infrastructure-server';
+export {
+  PrismaAccountRepository,
+  PowerSyncAccountRepository,
+  AccountModule,
+} from './infrastructure-server';
 export * from './infrastructure-client';
+export * from './electron-entry';

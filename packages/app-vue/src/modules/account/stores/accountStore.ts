@@ -17,6 +17,7 @@ import { AccountStatus } from '@dailyuse/contracts/account';
 export interface AccountState {
   // 当前账户
   currentAccount: AccountClientDTO | null;
+  isInitialized: boolean;
 
   // UI 状态
   isLoading: boolean;
@@ -27,6 +28,7 @@ export interface AccountState {
 export const useAccountStore = defineStore('account', {
   state: (): AccountState => ({
     currentAccount: null,
+    isInitialized: false,
     isLoading: false,
     error: null,
   }),
@@ -63,6 +65,10 @@ export const useAccountStore = defineStore('account', {
       this.currentAccount = null;
     },
 
+    setInitialized(initialized: boolean) {
+      this.isInitialized = initialized;
+    },
+
     // ========== Status Actions ==========
     setLoading(loading: boolean) {
       this.isLoading = loading;
@@ -75,6 +81,7 @@ export const useAccountStore = defineStore('account', {
     // ========== Lifecycle ==========
     reset() {
       this.currentAccount = null;
+      this.isInitialized = false;
       this.isLoading = false;
       this.error = null;
     },

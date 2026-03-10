@@ -9,7 +9,7 @@ export default defineConfig({
     'src/application-server/index.ts',
     'src/application-client/index.ts',
     'src/infrastructure-server/index.ts',
-    'src/infrastructure-server/sqlite.ts',
+    'src/infrastructure-server/powersync.ts',
     'src/infrastructure-client/index.ts',
     'src/api/index.ts',
     'src/electron-entry/index.ts',
@@ -20,7 +20,6 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   external: [
-    'better-sqlite3',
     'electron',
     '@dailyuse/utils',
     '@dailyuse/contracts',

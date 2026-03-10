@@ -2,11 +2,11 @@
  * Database Provider Factory
  *
  * 鏀寔澶氭暟鎹簱閫傞厤鐨勫伐鍘傜被锛屽厑璁稿湪杩愯鏃跺垏鎹㈡暟鎹簱瀹炵幇銆?
- * 閲囩敤绛栫暐妯″紡锛屼负涓嶅悓鐨勬暟鎹簱锛圥risma銆丼QLite銆丮ySQL绛夛級鎻愪緵缁熶竴鐨勪粨鍌ㄥ疄鐜般€?
+ * 閲囩敤绛栫暐妯″紡锛屼负涓嶅悓鐨勬暟鎹簱锛圥risma銆丳owerSync銆丮ySQL绛夛級鎻愪緵缁熶竴鐨勪粨鍌ㄥ疄鐜般€?
  *
  * 浣跨敤鍦烘櫙锛?
  * - API 椤圭洰浣跨敤 Prisma锛圥ostgreSQL锛?
- * - Desktop 椤圭洰浣跨敤 SQLite
+ * - Desktop 椤圭洰浣跨敤 PowerSync
  * - Web 鍓嶇浣跨敤 IndexedDB锛堟湭鏉ワ級
  */
 
@@ -21,7 +21,7 @@ import type { IFolderRepository } from '../domain-server/repositories/IFolderRep
  */
 export enum DatabaseProvider {
   PRISMA = 'prisma',
-  SQLITE = 'sqlite',
+  POWERSYNC = 'powersync',
   MYSQL = 'mysql',
   POSTGRES = 'postgres',
   MEMORY = 'memory',
@@ -34,10 +34,10 @@ export interface IDatabaseProviderConfig {
   provider: DatabaseProvider | string;
   /** Prisma 瀹炰緥锛堝綋浣跨敤 Prisma 鏃讹級 */
   prisma?: PrismaClient;
-  /** SQLite 鏁版嵁搴撹矾寰勶紙褰撲娇鐢?SQLite 鏃讹級 */
-  sqliteDbPath?: string;
-  /** SQLite 鏁版嵁搴撹繛鎺ュ疄渚嬶紙褰撳凡Create鏃讹級 */
-  sqliteDb?: any;
+  /** PowerSync database path/config (desktop) */
+  powersyncDbPath?: string;
+  /** PowerSync db instance when already initialized */
+  powersyncDb?: any;
   /** 鍏朵粬鑷畾涔夐厤缃?*/
   [key: string]: any;
 }
@@ -110,11 +110,11 @@ export class DatabaseProviderFactory {
       require('./providers/prisma-provider').PrismaProviderInitializer,
     );
 
-    // SQLite 鎻愪緵鑰呭凡绉昏嚦 infrastructure-desktop 鍖?
+    // PowerSync provider is composed from desktop runtime
     // 涓嶅湪姝ゅ娉ㄥ唽浠ラ伩鍏嶅惊鐜緷璧?
     // DatabaseProviderFactory.registerProvider(
-    //   DatabaseProvider.SQLITE,
-    //   require('./providers/sqlite-provider').SqliteProviderInitializer,
+    //   DatabaseProvider.POWERSYNC,
+    //   require('./providers/powersync-provider').PowerSyncProviderInitializer,
     // );
 
     // Memory 鎻愪緵鑰呯敤浜庢祴璇?
@@ -127,10 +127,7 @@ export class DatabaseProviderFactory {
   /**
    * 娉ㄥ唽鑷畾涔夋彁渚涜€呭垵濮嬪寲鍣?
    */
-  static registerProvider(
-    name: string,
-    initializer: new () => IProviderInitializer,
-  ): void {
+  static registerProvider(name: string, initializer: new () => IProviderInitializer): void {
     DatabaseProviderFactory.initializers.set(name, initializer);
   }
 
@@ -200,17 +197,17 @@ export async function initializePrismaProvider(
 }
 
 /**
- * 渚挎嵎鏂规硶锛氬垵濮嬪寲 Desktop锛圫QLite锛夌幆澧?
+ * 渚挎嵎鏂规硶锛氬垵濮嬪寲 Desktop锛圥owerSync锛夌幆澧?
  */
-export async function initializeSqliteProvider(
+export async function initializePowerSyncProvider(
   dbPath: string,
   container: RepositoryContainer,
 ): Promise<IProviderInitializer> {
   const factory = DatabaseProviderFactory.getInstance();
   return factory.initializeProvider(
     {
-      provider: DatabaseProvider.SQLITE,
-      sqliteDbPath: dbPath,
+      provider: DatabaseProvider.POWERSYNC,
+      powersyncDbPath: dbPath,
     },
     container,
   );

@@ -8,7 +8,7 @@ import { ipcMain } from 'electron';
 import * as path from 'path';
 import { app } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { RepositorySqliteModule, RepositoryContainer } from '../infrastructure-server/sqlite';
+import { RepositoryPowerSyncModule, RepositoryContainer } from '../infrastructure-server/powersync';
 import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
 import { CreateResource, UpdateResourceContent } from '../application-server';
 import { createLogger } from '@dailyuse/utils';
@@ -39,7 +39,7 @@ export const RepositoryElectronModule: IElectronModule = {
   name: 'Repository',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new RepositorySqliteModule(ctx.db);
+    const mod = new RepositoryPowerSyncModule(ctx.db);
 
     const repoRepo = mod.repositoryRepository;
     const resourceRepo = mod.resourceRepository;

@@ -16,6 +16,14 @@ function toUnauthorizedResult<T>(): IpcResult<T> {
   return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
 }
 
+function toAuthResolutionResult<T>(error: unknown): IpcResult<T> {
+  if (error instanceof Error && error.message === 'AUTH_RESTORING') {
+    return fail({ code: 'AUTH_RESTORING', message: 'Authentication restore in progress' });
+  }
+
+  return toUnauthorizedResult<T>();
+}
+
 export async function withAuthenticatedValue<T>(
   ctx: IElectronModuleContext,
   handler: (requestContext: Context) => Promise<IpcResult<T> | T>,
@@ -24,7 +32,7 @@ export async function withAuthenticatedValue<T>(
     const requestContext = await ctx.auth.requireRequestContext();
     const result = await handler(requestContext);
     return isIpcResult<T>(result) ? result : ok(result);
-  } catch {
-    return toUnauthorizedResult<T>();
+  } catch (error) {
+    return toAuthResolutionResult<T>(error);
   }
 }

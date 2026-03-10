@@ -51,7 +51,7 @@ const AIApiModule = createAIApiModule({
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
   getKnowledgeNoteSubpath: async (identityId: any, context: any) => {
-    const settingModule = new SettingModule('prisma', context.db);
+    const settingModule = new SettingModule(context.db);
     const setting = await settingModule.getUserSetting.execute(identityId);
     return setting.preferences.ai.knowledgeNoteSubpath;
   },

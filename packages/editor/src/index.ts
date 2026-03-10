@@ -10,7 +10,7 @@
  * domain-server       → 聚合根、仓储接口、领域服务
  * domain-client       → 客户端领域模型
  * application-server  → 用例服务（服务端）
- * infrastructure-server → SQLite 仓储实现、DI 容器
+ * infrastructure-server → PowerSync/Prisma 仓储实现、DI 容器
  *
  * 【使用示例】
  *

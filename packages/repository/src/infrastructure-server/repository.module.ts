@@ -1,21 +1,21 @@
 /**
  * Repository Module
- * 
+ *
  * DI Container for Repository domain.
- * Supports both Prisma (API) and SQLite (Desktop) data sources.
- * 
+ * Supports both Prisma (API) and PowerSync (Desktop) data sources.
+ *
  * Usage:
  * ```typescript
  * // API (Prisma)
  * const repositoryModule = new RepositoryModule('prisma', prismaClient);
- * 
- * // Desktop (SQLite)
- * const repositoryModule = new RepositoryModule('sqlite', sqliteDb);
+ *
+ * // Desktop (PowerSync)
+ * const repositoryModule = new RepositoryModule('powersync', powersyncDb);
  * ```
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type Database from 'better-sqlite3';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
@@ -26,8 +26,6 @@ import { RepositorySyncApplicationService } from '../application-server/use-case
 import { RepositoryRepositoryFactory } from './di/repository-repository.factory';
 import { RepositoryContainer } from './di/repository-container-v2';
 
-type BetterSQLiteDB = Database.Database;
-
 export class RepositoryModule {
   // ============ Repositories (Public for testing) ============
   public readonly repositoryRepository: IRepositoryRepository;
@@ -37,7 +35,10 @@ export class RepositoryModule {
   // ============ Application Services (Public - injected into routes) ============
   public readonly syncService: RepositorySyncApplicationService;
 
-  constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
+  constructor(
+    dataSourceType: 'prisma' | 'powersync',
+    dbConnection: PrismaClient | IElectronDatabase,
+  ) {
     // ============ Step 1: Initialize Repositories using Factory ============
     const repositories = RepositoryRepositoryFactory.create(dataSourceType, dbConnection);
 

@@ -1,16 +1,20 @@
 # Infrastructure-Server 包架构标准
 
+> 更新说明（2026-03）：本文档包含历史双数据源（Prisma + SQLite）示例。对 desktop 当前实现，请以 PowerSync adapters/runtime 为准。
+
 基于 **ADR-023: Server-Side Clean Architecture** 和 **ADR-025: Module Composition Pattern**
 
 ## 整体架构
 
 `packages/infrastructure-server` 是应用的技术驱动层，负责：
+
 - 数据持久化实现（Repository 模式）
 - 外部服务集成（邮件、存储、调度等）
 - 依赖注入容器（Module Composition Root）
 
 **关键设计原则：**
-- ✅ 支持多数据源（Prisma 用于 API，SQLite 用于 Desktop）
+
+- ✅ 支持多数据源（Prisma 用于 API，PowerSync 用于 Desktop）
 - ✅ Pure Dependency Injection（无 Service Locator 反模式）
 - ✅ 一个 Module 类支持两种数据库
 - ✅ Factory 模式在构造时选择正确的适配器
@@ -62,7 +66,7 @@
 │  └─ index.ts
 │
 ├─ [module].module.ts                         # ⭐ Module 类：DI 容器 & Composition Root
-│  
+│
 ├─ index.ts                                   # ⭐ 导出 Module + Factories + Adapters
 │
 └─ README.md                                  # 模块文档（可选但推荐）
@@ -75,6 +79,7 @@
 **作用：** 实现 Repository Port，为不同数据源提供具体实现
 
 **规范：**
+
 ```typescript
 // adapters/prisma/task-instance-prisma.repository.ts
 import type { PrismaClient } from '@prisma/client';
@@ -82,14 +87,19 @@ import { TaskInstancePrismaRepository } from '@dailyuse/domain-server/task';
 
 export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
   constructor(private prisma: PrismaClient) {}
-  
-  async findById(id: string) { /* ... */ }
-  async create(data) { /* ... */ }
+
+  async findById(id: string) {
+    /* ... */
+  }
+  async create(data) {
+    /* ... */
+  }
   // ...
 }
 ```
 
 **必须：**
+
 - 每个适配器实现相同的 Port（接口）
 - Constructor 接收数据库连接对象
 - 无静态方法（无 getInstance）
@@ -105,6 +115,7 @@ export class TaskInstancePrismaRepository implements ITaskInstanceRepository {
 **作用：** 通过 Factory 在运行时选择正确的 Repository 实现
 
 **规范：**
+
 ```typescript
 // di/task-repository.factory.ts
 import type { PrismaClient } from '@prisma/client';
@@ -147,6 +158,7 @@ export class TaskRepositoryFactory {
 ```
 
 **必须：**
+
 - 每个 Factory 方法对应一个 Repository 类型
 - 支持 'prisma' 和 'sqlite' 两种类型
 - 抛出有意义的错误信息
@@ -158,6 +170,7 @@ export class TaskRepositoryFactory {
 **作用：** 定义 Repository 合约，使 Domain 层无依赖
 
 **规范：**
+
 ```typescript
 // ports/task-instance-repository.port.ts
 export interface ITaskInstanceRepository {
@@ -171,6 +184,7 @@ export interface ITaskInstanceRepository {
 ```
 
 **必须：**
+
 - 使用 `I` 前缀表示接口
 - 方法签名与所有 Adapter 保持一致
 - 无具体实现逻辑
@@ -182,6 +196,7 @@ export interface ITaskInstanceRepository {
 **作用：** 集成第三方库（如 Bree 调度器、Redis 缓存等）
 
 **规范：**
+
 ```typescript
 // external/datasources/cron-job-manager.ts
 import { BreeExecutionEngine } from 'bree';
@@ -196,12 +211,17 @@ export class CronJobManager {
     });
   }
 
-  async start() { /* ... */ }
-  async stop() { /* ... */ }
+  async start() {
+    /* ... */
+  }
+  async stop() {
+    /* ... */
+  }
 }
 ```
 
 **何时使用：**
+
 - 模块需要外部服务（邮件、调度、缓存）
 - 映射数据库对象到 API DTO
 
@@ -210,12 +230,14 @@ export class CronJobManager {
 #### 5. `[module].module.ts` - Module 类
 
 **作用：** DI 容器，负责：
+
 1. 选择正确的 Repository 实现
 2. 实例化 Application Services
 3. 组合依赖关系
 
 **规范：**
-```typescript
+
+````typescript
 // task.module.ts
 import type { PrismaClient } from '@prisma/client';
 import type Database from 'better-sqlite3';
@@ -232,18 +254,18 @@ type BetterSQLiteDB = Database.Database;
 
 /**
  * Task Module
- * 
+ *
  * DI Container for Task domain.
  * Supports both Prisma (API) and SQLite (Desktop) data sources.
- * 
+ *
  * Usage:
  * ```typescript
  * // API (Prisma)
  * const taskModule = new TaskModule('prisma', prismaClient);
- * 
+ *
  * // Desktop (SQLite)
  * const taskModule = new TaskModule('sqlite', sqliteDb);
- * 
+ *
  * // Use services
  * await taskModule.taskInstanceService.createTask(taskData);
  * ```
@@ -283,9 +305,7 @@ export class TaskModule {
       this.taskDependencyRepository, // 可能需要其他 repo
     );
 
-    this.taskTemplateService = new TaskTemplateApplicationService(
-      this.taskInstanceRepository,
-    );
+    this.taskTemplateService = new TaskTemplateApplicationService(this.taskInstanceRepository);
 
     this.taskDependencyService = new TaskDependencyApplicationService(
       this.taskDependencyRepository,
@@ -296,9 +316,10 @@ export class TaskModule {
     );
   }
 }
-```
+````
 
 **关键要点：**
+
 - ✅ Constructor 接收 `(dataSourceType, dbConnection)` 两个参数
 - ✅ 用 Factory 创建 Repository（不直接 new PrismaRepository）
 - ✅ Repositories 都是 public（便于测试和类型检查）
@@ -311,6 +332,7 @@ export class TaskModule {
 #### 6. `index.ts` - 统一导出
 
 **规范：**
+
 ```typescript
 // task/index.ts
 /**
@@ -449,32 +471,33 @@ export function registerTaskRoutes(taskModule: TaskModule): Router {
 
 ## 模块清单
 
-| 模块 | 状态 | 优先级 | 备注 |
-|------|------|--------|------|
-| account | ✅ 已优化 | - | 完整支持 Prisma + SQLite |
-| task | ✅ 已优化 | - | 完整支持 Prisma + SQLite |
-| goal | ⚠️ 待优化 | 高 | 只有 Prisma，缺少 SQLite |
-| repository | ⚠️ 待优化 | 高 | 缺少完整的 Service 实现 |
-| dashboard | ⚠️ 待优化 | 高 | 只有 Prisma，缺少 SQLite |
-| schedule | ✅ 已优化 | - | 完整支持 Prisma + SQLite |
-| reminder | ⚠️ 待优化 | 中 | - |
-| notification | ⚠️ 待优化 | 中 | - |
-| setting | ⚠️ 待优化 | 中 | - |
-| editor | ⚠️ 待优化 | 中 | - |
-| ai | ⚠️ 待优化 | 低 | - |
-| authentication | ⚠️ 待优化 | 中 | - |
-| sync | ⚠️ 待优化 | 中 | - |
+| 模块           | 状态      | 优先级 | 备注                     |
+| -------------- | --------- | ------ | ------------------------ |
+| account        | ✅ 已优化 | -      | 完整支持 Prisma + SQLite |
+| task           | ✅ 已优化 | -      | 完整支持 Prisma + SQLite |
+| goal           | ⚠️ 待优化 | 高     | 只有 Prisma，缺少 SQLite |
+| repository     | ⚠️ 待优化 | 高     | 缺少完整的 Service 实现  |
+| dashboard      | ⚠️ 待优化 | 高     | 只有 Prisma，缺少 SQLite |
+| schedule       | ✅ 已优化 | -      | 完整支持 Prisma + SQLite |
+| reminder       | ⚠️ 待优化 | 中     | -                        |
+| notification   | ⚠️ 待优化 | 中     | -                        |
+| setting        | ⚠️ 待优化 | 中     | -                        |
+| editor         | ⚠️ 待优化 | 中     | -                        |
+| ai             | ⚠️ 待优化 | 低     | -                        |
+| authentication | ⚠️ 待优化 | 中     | -                        |
+| sync           | ⚠️ 待优化 | 中     | -                        |
 
 ---
 
 ## 常见错误 ❌
 
 ### 1. 在 Module 中直接 new Adapter（硬编码）
+
 ```typescript
 // ❌ 错误：硬编码 Prisma，Desktop 无法用 SQLite
 export class GoalModule {
   constructor(prisma: PrismaClient) {
-    this.goalRepository = new GoalPrismaRepository(prisma);  // ❌ 不支持 SQLite
+    this.goalRepository = new GoalPrismaRepository(prisma); // ❌ 不支持 SQLite
   }
 }
 
@@ -487,6 +510,7 @@ export class GoalModule {
 ```
 
 ### 2. Module 导入 @dailyuse/infrastructure-server
+
 ```typescript
 // ❌ 错误：造成循环依赖
 import { SomeContainer } from '@dailyuse/infrastructure-server';
@@ -500,28 +524,34 @@ import { GoalApplicationService } from '@dailyuse/application-server';
 ```
 
 ### 3. Repository 有静态方法
+
 ```typescript
 // ❌ 错误：无法切换实现
 export class GoalRepository {
-  static getInstance() { /* ... */ }
+  static getInstance() {
+    /* ... */
+  }
 }
 
 // ✅ 正确：通过构造器注入
 export class GoalRepository {
-  constructor(prisma: PrismaClient) { /* ... */ }
+  constructor(prisma: PrismaClient) {
+    /* ... */
+  }
 }
 ```
 
 ### 4. Module 中有 private Repository
+
 ```typescript
 // ❌ 错误：测试无法访问
 export class GoalModule {
-  private goalRepository;  // ❌ 私有
+  private goalRepository; // ❌ 私有
 }
 
 // ✅ 正确：public 便于测试
 export class GoalModule {
-  public readonly goalRepository;  // ✅ 公开，只读
+  public readonly goalRepository; // ✅ 公开，只读
 }
 ```
 
@@ -549,4 +579,3 @@ export class GoalModule {
 
 - [ADR-023: Server-Side Clean Architecture Refactor](./adr/ADR-023-ServerSide-Clean-Architecture-Refactor.md)
 - [ADR-025: Module Composition Pattern](./adr/ADR-025-Module-Composition-Pattern.md)
-

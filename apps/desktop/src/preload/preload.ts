@@ -58,7 +58,7 @@ const ALLOWED_CHANNELS = [
   // Goal → Aggregate (adapter-only)
   'goal:aggregate',
   'goal:clone',
-  // Goal → Folder (electron-entry: 4 handlers)
+  // Goal → Folder
   'goal:folder:list',
   'goal:folder:get',
   'goal:folder:create',

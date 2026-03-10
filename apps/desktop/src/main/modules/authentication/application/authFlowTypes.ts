@@ -1,6 +1,8 @@
 export type AuthFlowErrorCode =
   | 'OFFLINE'
   | 'REMOTE_UNREACHABLE'
+  | 'CONFIG_ERROR'
+  | 'INTERNAL_ERROR'
   | 'AUTH_FAILED'
   | 'REGISTER_FAILED'
   | 'REFRESH_FAILED'
@@ -35,6 +37,22 @@ export function createRemoteUnreachableError(message: string): AuthFlowError {
     code: 'REMOTE_UNREACHABLE',
     message,
     shouldFallbackToOffline: true,
+  };
+}
+
+export function createConfigError(message: string): AuthFlowError {
+  return {
+    code: 'CONFIG_ERROR',
+    message,
+    shouldFallbackToOffline: false,
+  };
+}
+
+export function createInternalError(message: string): AuthFlowError {
+  return {
+    code: 'INTERNAL_ERROR',
+    message,
+    shouldFallbackToOffline: false,
   };
 }
 

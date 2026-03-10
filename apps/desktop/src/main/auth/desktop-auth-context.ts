@@ -1,8 +1,11 @@
 import type { Context } from '@dailyuse/contracts/shared';
+import { AuthRuntimeState } from '@dailyuse/contracts/authentication';
+import { createLogger } from '@dailyuse/utils';
 
 import type { AuthDesktopApplicationService } from '../modules/authentication/application/AuthDesktopApplicationService';
 
 let authService: AuthDesktopApplicationService | null = null;
+const logger = createLogger('DesktopAuthContextProvider');
 
 export function registerDesktopAuthService(service: AuthDesktopApplicationService): void {
   authService = service;
@@ -20,6 +23,10 @@ function getRegisteredService(): AuthDesktopApplicationService {
   return authService;
 }
 
+function createAuthResolutionError(code: 'AUTH_REQUIRED' | 'AUTH_RESTORING'): Error {
+  return new Error(code);
+}
+
 export function getDesktopAuthService(): AuthDesktopApplicationService {
   return getRegisteredService();
 }
@@ -30,9 +37,14 @@ export class DesktopAuthContextProvider {
   }
 
   async requireIdentityId(): Promise<string> {
+    const service = getRegisteredService();
+    if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
+      throw createAuthResolutionError('AUTH_RESTORING');
+    }
+
     const identityId = await this.getIdentityId();
     if (!identityId) {
-      throw new Error('AUTH_REQUIRED');
+      throw createAuthResolutionError('AUTH_REQUIRED');
     }
 
     return identityId;
@@ -47,9 +59,21 @@ export class DesktopAuthContextProvider {
   }
 
   async requireRequestContext(): Promise<Context> {
+    const service = getRegisteredService();
+    const runtimeState = service.getRuntimeState();
+    if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
+      logger.warn('requireRequestContext rejected: auth restoring');
+      throw createAuthResolutionError('AUTH_RESTORING');
+    }
+
     const context = await this.getRequestContext();
     if (!context) {
-      throw new Error('AUTH_REQUIRED');
+      logger.warn('requireRequestContext rejected: no active request context', {
+        runtimeState,
+        identityId: service.getCurrentIdentityId(),
+        sessionId: service.getCurrentSessionId(),
+      });
+      throw createAuthResolutionError('AUTH_REQUIRED');
     }
 
     return context;

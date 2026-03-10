@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { _getConfirmState, _resolveConfirm } from '@dailyuse/ui-vue-shadcn';
 import { buttonVariants } from '@dailyuse/ui-vue-shadcn';
 import { cn } from '@dailyuse/ui-vue-shadcn';
+import { Button } from '@dailyuse/ui-vue-shadcn';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -10,11 +11,35 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogCancel,
-  AlertDialogAction,
 } from '@dailyuse/ui-vue-shadcn';
 
 const state = _getConfirmState();
+let resolvedByAction = false;
+
+watch(
+  () => state.open,
+  (open) => {
+    if (open) {
+      resolvedByAction = false;
+    }
+  },
+);
+
+function handleCancel(): void {
+  resolvedByAction = true;
+  _resolveConfirm(false);
+}
+
+function handleConfirm(): void {
+  resolvedByAction = true;
+  _resolveConfirm(true);
+}
+
+function handleOpenUpdate(open: boolean): void {
+  if (!open && !resolvedByAction) {
+    _resolveConfirm(false);
+  }
+}
 
 const actionClass = computed(() =>
   state.variant === 'destructive'
@@ -24,7 +49,7 @@ const actionClass = computed(() =>
 </script>
 
 <template>
-  <AlertDialog :open="state.open" @update:open="(v) => { if (!v) _resolveConfirm(false) }">
+  <AlertDialog :open="state.open" @update:open="handleOpenUpdate">
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>{{ state.title }}</AlertDialogTitle>
@@ -33,12 +58,12 @@ const actionClass = computed(() =>
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel @click="_resolveConfirm(false)">
+        <Button variant="outline" class="mt-2 sm:mt-0" @click="handleCancel">
           {{ state.cancelText }}
-        </AlertDialogCancel>
-        <AlertDialogAction :class="actionClass" @click="_resolveConfirm(true)">
+        </Button>
+        <Button :class="actionClass" @click="handleConfirm">
           {{ state.confirmText }}
-        </AlertDialogAction>
+        </Button>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

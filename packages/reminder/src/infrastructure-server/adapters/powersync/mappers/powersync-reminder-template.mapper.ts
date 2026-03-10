@@ -1,0 +1,210 @@
+import type {
+  ReminderStatus,
+  ReminderType,
+  NotificationChannel,
+  TriggerResult,
+} from '@dailyuse/contracts/reminder';
+import type { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { ReminderTemplate } from '../../../../domain-server/aggregates/reminder-template';
+import { ReminderHistory } from '../../../../domain-server/entities/reminder-history';
+import { ReminderTemplateId } from '../../../../domain-shared/value-objects/reminder-template-id';
+import { ReminderHistoryId } from '../../../../domain-shared/value-objects/reminder-history-id';
+import {
+  TriggerConfig,
+  ActiveTimeConfig,
+  NotificationConfig,
+  RecurrenceConfig,
+  ActiveHoursConfig,
+  ResponseMetrics,
+  FrequencyAdjustment,
+} from '../../../../domain-server/value-objects';
+
+export type PowerSyncReminderTemplateRow = {
+  id: string;
+  identity_id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  self_enabled: number | boolean;
+  status: string;
+  reminder_group_id: string | null;
+  importance_level: string;
+  tags: string;
+  color: string | null;
+  icon: string | null;
+  next_trigger_at: string | null;
+  version: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  trigger: string;
+  recurrence: string | null;
+  active_time: string;
+  active_hours: string | null;
+  notification_config: string;
+  stats: string | null;
+  click_rate: number | null;
+  ignore_rate: number | null;
+  avg_response_time: number | null;
+  snooze_count: number | null;
+  effectiveness_score: number | null;
+  sample_size: number | null;
+  last_analysis_time: string | null;
+  original_interval: number | null;
+  adjusted_interval: number | null;
+  adjustment_reason: string | null;
+  adjustment_time: string | null;
+  is_auto_adjusted: number | boolean | null;
+  user_confirmed: number | boolean | null;
+  smart_frequency_enabled: number | boolean | null;
+};
+
+export type PowerSyncReminderHistoryRow = {
+  id: string;
+  identity_id: string;
+  template_id: string;
+  triggered_at: string;
+  result: string;
+  error: string | null;
+  notification_sent: number | boolean;
+  notification_channel: string | null;
+  created_at: string;
+};
+
+export class PowerSyncReminderTemplateMapper {
+  static toDomain(
+    data: PowerSyncReminderTemplateRow,
+    historyRows: PowerSyncReminderHistoryRow[] = [],
+  ): ReminderTemplate {
+    const responseMetrics =
+      data.click_rate != null && data.ignore_rate != null
+        ? ResponseMetrics.fromDTO({
+            clickRate: data.click_rate,
+            ignoreRate: data.ignore_rate,
+            avgResponseTime: data.avg_response_time ?? 0,
+            snoozeCount: data.snooze_count ?? 0,
+            effectivenessScore: data.effectiveness_score ?? 0,
+            sampleSize: data.sample_size ?? 0,
+            lastAnalysisTime: data.last_analysis_time
+              ? new Date(data.last_analysis_time).getTime()
+              : Date.now(),
+          })
+        : null;
+
+    const frequencyAdjustment =
+      data.original_interval != null && data.adjusted_interval != null
+        ? FrequencyAdjustment.fromDTO({
+            originalInterval: data.original_interval,
+            adjustedInterval: data.adjusted_interval,
+            adjustmentReason: data.adjustment_reason ?? '',
+            adjustmentTime: data.adjustment_time
+              ? new Date(data.adjustment_time).getTime()
+              : Date.now(),
+            isAutoAdjusted: data.is_auto_adjusted === true || data.is_auto_adjusted === 1,
+            userConfirmed: data.user_confirmed === true || data.user_confirmed === 1,
+            rejectionReason: null,
+          })
+        : null;
+
+    const history = historyRows.map((row) =>
+      ReminderHistory.load({
+        id: ReminderHistoryId.of(row.id),
+        templateId: row.template_id,
+        identityId: row.identity_id,
+        triggeredAt: new Date(row.triggered_at),
+        result: row.result as TriggerResult,
+        error: row.error ?? null,
+        notificationSent: row.notification_sent === true || row.notification_sent === 1,
+        notificationChannels: row.notification_channel
+          ? (JSON.parse(row.notification_channel) as NotificationChannel[])
+          : null,
+        createdAt: new Date(row.created_at),
+      }),
+    );
+
+    return ReminderTemplate.load({
+      id: ReminderTemplateId.of(data.id),
+      identityId: IdentityId.of(data.identity_id),
+      title: data.name,
+      description: data.description ?? null,
+      type: data.type as ReminderType,
+      trigger: TriggerConfig.fromDTO(JSON.parse(data.trigger)),
+      recurrence: data.recurrence ? RecurrenceConfig.fromDTO(JSON.parse(data.recurrence)) : null,
+      activeTime: ActiveTimeConfig.fromDTO(JSON.parse(data.active_time)),
+      activeHours: data.active_hours
+        ? ActiveHoursConfig.fromDTO(JSON.parse(data.active_hours))
+        : null,
+      notificationConfig: NotificationConfig.fromDTO(JSON.parse(data.notification_config)),
+      selfEnabled: data.self_enabled === true || data.self_enabled === 1,
+      status: data.status as ReminderStatus,
+      groupId: data.reminder_group_id ?? null,
+      effectiveEnabled: data.self_enabled === true || data.self_enabled === 1,
+      importanceLevel: data.importance_level as ImportanceLevel,
+      tags: JSON.parse(data.tags ?? '[]') as string[],
+      color: data.color ?? null,
+      icon: data.icon ?? null,
+      nextTriggerAt: data.next_trigger_at ? new Date(data.next_trigger_at).getTime() : null,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+      deletedAt: data.deleted_at ? new Date(data.deleted_at).getTime() : null,
+      version: data.version ?? 1,
+      responseMetrics,
+      frequencyAdjustment,
+      smartFrequencyEnabled:
+        data.smart_frequency_enabled == null
+          ? true
+          : data.smart_frequency_enabled === true || data.smart_frequency_enabled === 1,
+      history,
+    });
+  }
+
+  static toPersistence(template: ReminderTemplate) {
+    const dto = template.toServerDTO();
+    const responseMetrics = template.responseMetrics?.toDTO();
+    const frequencyAdjustment = template.frequencyAdjustment?.toDTO();
+    return {
+      id: String(dto.id),
+      identityId: String(dto.identityId),
+      name: dto.name,
+      description: dto.description ?? null,
+      type: dto.type,
+      selfEnabled: dto.selfEnabled ? 1 : 0,
+      status: dto.status,
+      reminderGroupId: dto.groupId ?? null,
+      importanceLevel: dto.importanceLevel,
+      tags: JSON.stringify(dto.tags),
+      color: dto.color ?? null,
+      icon: dto.icon ?? null,
+      nextTriggerAt: dto.nextTriggerAt != null ? new Date(dto.nextTriggerAt).toISOString() : null,
+      version: dto.version,
+      createdAt: new Date(dto.createdAt).toISOString(),
+      updatedAt: new Date(dto.updatedAt).toISOString(),
+      deletedAt: dto.deletedAt != null ? new Date(dto.deletedAt).toISOString() : null,
+      trigger: JSON.stringify(dto.trigger),
+      recurrence: dto.recurrence ? JSON.stringify(dto.recurrence) : null,
+      activeTime: JSON.stringify(dto.activeTime),
+      activeHours: dto.activeHours ? JSON.stringify(dto.activeHours) : null,
+      notificationConfig: JSON.stringify(dto.notificationConfig),
+      stats: '{}',
+      clickRate: responseMetrics?.clickRate ?? null,
+      ignoreRate: responseMetrics?.ignoreRate ?? null,
+      avgResponseTime: responseMetrics?.avgResponseTime ?? null,
+      snoozeCount: responseMetrics?.snoozeCount ?? 0,
+      effectivenessScore: responseMetrics?.effectivenessScore ?? null,
+      sampleSize: responseMetrics?.sampleSize ?? 0,
+      lastAnalysisTime: responseMetrics?.lastAnalysisTime
+        ? new Date(responseMetrics.lastAnalysisTime).toISOString()
+        : null,
+      originalInterval: frequencyAdjustment?.originalInterval ?? null,
+      adjustedInterval: frequencyAdjustment?.adjustedInterval ?? null,
+      adjustmentReason: frequencyAdjustment?.adjustmentReason ?? null,
+      adjustmentTime: frequencyAdjustment?.adjustmentTime
+        ? new Date(frequencyAdjustment.adjustmentTime).toISOString()
+        : null,
+      isAutoAdjusted: frequencyAdjustment?.isAutoAdjusted ? 1 : 0,
+      userConfirmed: frequencyAdjustment?.userConfirmed ? 1 : 0,
+      smartFrequencyEnabled: template.smartFrequencyEnabled ? 1 : 0,
+    };
+  }
+}

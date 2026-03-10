@@ -11,7 +11,7 @@
  * domain-client    → 客户端领域模型
  * application-server → 用例（服务端）
  * application-client → 客户端应用服务
- * infrastructure-server → Prisma/SQLite 仓储、AI Provider 适配器
+ * infrastructure-server → Prisma/PowerSync 仓储、AI Provider 适配器
  * infrastructure-client → HTTP/IPC 适配器、AI Prompt 模板
  *
  * 【使用示例】

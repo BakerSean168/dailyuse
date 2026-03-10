@@ -8,7 +8,13 @@
 import type { Result } from '@dailyuse/contracts/result';
 import { map as mapResult } from '@dailyuse/contracts/result';
 import type { IAccountApiClient } from '../ports/account-api-client.port';
-import type { UpdateAccountReq, CheckAvailabilityReq, CheckAvailabilityRes, CloseAccountReq, AccountClientDTO } from '@dailyuse/contracts/account';
+import type {
+  UpdateAccountReq,
+  CheckAvailabilityReq,
+  CheckAvailabilityRes,
+  CloseAccountReq,
+  AccountClientDTO,
+} from '@dailyuse/contracts/account';
 import { Account } from '../../domain-client';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import {
@@ -39,12 +45,12 @@ export class AccountClientService {
 
   async getMyProfile(): Promise<Result<Account>> {
     const result = await this.apiClient.getMyProfile();
-    return mapResult(result, dto => accountFromDTO(dto));
+    return mapResult(result, (dto) => accountFromDTO(dto));
   }
 
   async updateMyProfile(request: UpdateAccountReq): Promise<Result<Account>> {
     const result = await this.apiClient.updateMyProfile(request);
-    return mapResult(result, dto => accountFromDTO(dto));
+    return mapResult(result, (dto) => accountFromDTO(dto));
   }
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {

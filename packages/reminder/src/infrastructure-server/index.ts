@@ -14,12 +14,8 @@ export { ReminderTemplatePrismaRepository } from './adapters/prisma/reminder-tem
 export { ReminderResponsePrismaRepository } from './adapters/prisma/reminder-response-prisma.repository';
 export { UserReminderPreferencePrismaRepository } from './adapters/prisma/user-reminder-preference-prisma.repository';
 
-// SQLite Adapters
-export { SqliteReminderGroupRepository } from './adapters/sqlite/reminder-group-sqlite.repository';
-export { SqliteReminderResponseRepository } from './adapters/sqlite/reminder-response-sqlite.repository';
-export { SqliteReminderTemplateRepository } from './adapters/sqlite/reminder-template-sqlite.repository';
-export { UserReminderPreferenceSqliteRepository } from './adapters/sqlite/user-reminder-preference-sqlite.repository';
-
-// SQLite schema
-export { REMINDER_MODULE_SCHEMA } from './adapters/sqlite/schema';
-
+// PowerSync Adapters
+export { ReminderGroupPowerSyncRepository } from './adapters/powersync/reminder-group-powersync.repository';
+export { ReminderTemplatePowerSyncRepository } from './adapters/powersync/reminder-template-powersync.repository';
+export { ReminderResponsePowerSyncRepository } from './adapters/powersync/reminder-response-powersync.repository';
+export { UserReminderPreferencePowerSyncRepository } from './adapters/powersync/user-reminder-preference-powersync.repository';

@@ -7,11 +7,11 @@
 // Adapters (Prisma Repositories)
 export { PrismaAuthIdentityRepository, PrismaAuthSessionRepository } from './adapters/prisma';
 
-// Adapters (SQLite Repositories)
-export { SqliteAuthIdentityRepository, SqliteAuthSessionRepository } from './adapters/sqlite';
-
-// SQLite Schema
-export { AUTHENTICATION_MODULE_SCHEMA } from './adapters/sqlite/schema';
+// Adapters (PowerSync Repositories)
+export {
+  PowerSyncAuthIdentityRepository,
+  PowerSyncAuthSessionRepository,
+} from './adapters/powersync';
 
 // Encryptors
 export { Argon2Hasher } from './encryptors/argon2-hasher';
@@ -29,6 +29,6 @@ export { AuthenticationRepositoryFactory } from './di/authentication-repository.
 
 // Composition Root
 export {
-	AuthenticationModule,
-	type AuthenticationModuleDependencies,
+  AuthenticationModule,
+  type AuthenticationModuleDependencies,
 } from './authentication.module';

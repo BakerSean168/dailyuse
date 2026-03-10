@@ -6,7 +6,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { SettingSqliteModule, SettingContainer } from '../infrastructure-server/sqlite';
+import { SettingPowerSyncModule, SettingContainer } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SettingElectron');
@@ -14,6 +14,7 @@ const logger = createLogger('SettingElectron');
 const Ch = {
   GET_ALL: 'setting:all',
   GET: 'setting:get',
+  UPDATE: 'setting:update',
   PATCH: 'setting:patch',
   RESET: 'setting:reset',
   IMPORT: 'setting:import',
@@ -26,7 +27,7 @@ export const SettingElectronModule: IElectronModule = {
   name: 'Setting',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new SettingSqliteModule(ctx.db);
+    const mod = new SettingPowerSyncModule(ctx.db);
 
     const resolveIdentityId = (payload: unknown): string => {
       if (typeof payload === 'string') return payload;
@@ -41,6 +42,13 @@ export const SettingElectronModule: IElectronModule = {
       mod.getUserSetting.execute(resolveIdentityId(params)),
     );
     ipcMain.handle(Ch.GET, (_, params) => mod.getUserSetting.execute(resolveIdentityId(params)));
+    ipcMain.handle(Ch.UPDATE, (_, dto) => {
+      const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
+      const identityId = resolveIdentityId(dto);
+      const category = payload.category as string;
+      const patch = (payload.patch as Record<string, unknown>) ?? payload;
+      return mod.patchUserSetting.execute(identityId, category as any, patch);
+    });
     ipcMain.handle(Ch.PATCH, (_, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
       const identityId = resolveIdentityId(dto);

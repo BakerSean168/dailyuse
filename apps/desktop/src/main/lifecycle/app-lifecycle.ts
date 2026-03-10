@@ -23,7 +23,6 @@ import { initializeDesktopFeatures, cleanupDesktopFeatures } from '../desktop-fe
 import { registerSystemIpcHandlers } from '../ipc/system-handlers';
 import { getTrayManager, getShortcutManager, getAutoLaunchManager } from '../desktop-features';
 import { initNotificationService } from '../services';
-import { stopMemoryCleanup, closeDatabase } from '../database';
 import { shutdownPowerSync } from '../database/powersync';
 import { getBootstrapper } from '../main';
 import { getWindowManager } from './WindowManager';
@@ -251,16 +250,13 @@ function handleWindowAllClosed(): void {
 /**
  * Handles the 'before-quit' event.
  *
- * Performs cleanup tasks such as stopping timers, cleaning up desktop features,
- * shutting down modules, and closing the database connection.
+ * Performs cleanup tasks such as cleaning up desktop features,
+ * shutting down modules, and shutting down the PowerSync runtime.
  *
  * @returns {Promise<void>} A promise that resolves when cleanup is complete.
  */
 async function handleBeforeQuit(): Promise<void> {
   console.log('[Lifecycle] Cleaning up before quit...');
-
-  // Stop scheduled tasks
-  stopMemoryCleanup();
 
   // Gracefully shut down PowerSync (preserves local sync cache for next cold start).
   // On logout, disconnectPowerSync() is called instead, which wipes the data.
@@ -276,9 +272,6 @@ async function handleBeforeQuit(): Promise<void> {
   if (bootstrapper) {
     await bootstrapper.destroy();
   }
-
-  // Close database connection
-  closeDatabase();
 
   console.log('[Lifecycle] Cleanup complete');
 }

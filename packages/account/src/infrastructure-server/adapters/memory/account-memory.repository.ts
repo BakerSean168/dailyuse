@@ -12,18 +12,17 @@ export class MemoryAccountRepository implements IAccountRepository {
     return this.accounts.get(id) ?? null;
   }
 
-  async findByUsername(username: string): Promise<Account | null> {
+  async findByNickname(nickname: string): Promise<Account | null> {
     return (
       Array.from(this.accounts.values()).find((account) => {
-        return account.profile.nickname === username;
+        return account.profile.nickname === nickname;
       }) ?? null
     );
   }
 
   async findByEmail(email: string): Promise<Account | null> {
     return (
-      Array.from(this.accounts.values()).find((account) => account.email.address === email) ??
-      null
+      Array.from(this.accounts.values()).find((account) => account.email.address === email) ?? null
     );
   }
 
@@ -36,8 +35,8 @@ export class MemoryAccountRepository implements IAccountRepository {
     );
   }
 
-  async existsByUsername(username: string): Promise<boolean> {
-    return (await this.findByUsername(username)) !== null;
+  async existsByNickname(nickname: string): Promise<boolean> {
+    return (await this.findByNickname(nickname)) !== null;
   }
 
   async existsByEmail(email: string): Promise<boolean> {

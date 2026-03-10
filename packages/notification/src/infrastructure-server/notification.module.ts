@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@dailyuse/database';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type {
   INotificationPreferenceRepository,
   INotificationRepository,
@@ -13,8 +14,6 @@ import {
 import { NotificationRepositoryFactory } from './di';
 import { NotificationContainer } from './di/notification-container';
 
-type BetterSQLiteDB = any;
-
 export class NotificationModule {
   public readonly notificationRepository: INotificationRepository;
   public readonly notificationPreferenceRepository: INotificationPreferenceRepository;
@@ -25,8 +24,8 @@ export class NotificationModule {
   public readonly notificationChannelService: NotificationChannelApplicationService;
 
   constructor(
-    dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | BetterSQLiteDB,
+    dataSourceType: 'prisma' | 'powersync',
+    dbConnection: PrismaClient | IElectronDatabase,
   ) {
     // 1. Initialize Repositories using Factory
     const repositories = NotificationRepositoryFactory.create(dataSourceType, dbConnection);

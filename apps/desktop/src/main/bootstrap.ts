@@ -2,7 +2,7 @@
  * Electron Bootstrapper
  *
  * Chain-registers `IElectronModule` instances, providing each with a shared
- * context (database connection).  Mirrors the API-side `ApiBootstrapper`.
+ * context (PowerSync-backed business database). Mirrors the API-side `ApiBootstrapper`.
  *
  * Usage:
  * ```ts
@@ -16,7 +16,7 @@
  * @module bootstrap
  */
 
-import type Database from 'better-sqlite3';
+import type { PowerSyncDatabase } from '@powersync/node';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { createLogger } from '@dailyuse/utils';
 import { DesktopAuthContextProvider } from './auth/desktop-auth-context';
@@ -25,10 +25,10 @@ const logger = createLogger('ElectronBootstrapper');
 
 export class ElectronBootstrapper {
   private readonly modules: IElectronModule[] = [];
-  private readonly db: Database.Database;
+  private readonly db: IElectronModuleContext['db'];
 
-  constructor(db: Database.Database) {
-    this.db = db;
+  constructor(db: PowerSyncDatabase) {
+    this.db = db as unknown as IElectronModuleContext['db'];
   }
 
   /**

@@ -19,9 +19,6 @@
       "@dailyuse/contracts/repository": ["../contracts/src/modules/repository/index.ts"],
       "@dailyuse/contracts/result": ["../contracts/src/result/index.ts"],
       "@dailyuse/contracts/shared": ["../contracts/src/shared/index.ts"],
-      "@dailyuse/repository/infrastructure-server/sqlite": [
-        "../repository/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/utils": ["../utils/src/index.ts"],
       "@dailyuse/utils/result": ["../utils/src/result/index.ts"]
     }

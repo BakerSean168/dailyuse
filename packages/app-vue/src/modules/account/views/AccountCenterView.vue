@@ -58,10 +58,7 @@ async function handleSave() {
 }
 
 async function handleLogout() {
-  if (!logout) {
-    return;
-  }
-
+  console.info('[AccountCenter] Logout button clicked');
   const confirmed = await useConfirm({
     title: t('account.logoutConfirm.title'),
     description: t('account.logoutConfirm.description'),
@@ -71,11 +68,30 @@ async function handleLogout() {
   });
 
   if (!confirmed) {
+    console.info('[AccountCenter] Logout cancelled by user');
     return;
   }
 
-  toast.success(t('auth.toast.loggedOut'));
-  await logout();
+  console.info('[AccountCenter] Logout confirmed by user');
+
+  if (!logout) {
+    console.error('[AccountCenter] Logout handler is not provided');
+    toast.error(t('auth.toast.logout'), {
+      description: 'Logout handler is unavailable',
+    });
+    return;
+  }
+
+  try {
+    console.info('[AccountCenter] Calling injected logout handler');
+    await logout();
+    console.info('[AccountCenter] Logout handler resolved successfully');
+    toast.success(t('auth.toast.loggedOut'));
+  } catch (error) {
+    toast.error(t('auth.toast.logout'), {
+      description: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 onMounted(() => {

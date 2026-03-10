@@ -25,6 +25,7 @@ updated: 2025-12-06
 ### 现有基础设施
 
 已提取的包：
+
 - `@dailyuse/infrastructure-client`: 12 Container, 21 IPC Adapters
 - `@dailyuse/infrastructure-server`: 11 Container
 - `configureDesktopDependencies(electronApi)`: 渲染进程 DI 配置函数
@@ -113,9 +114,9 @@ updated: 2025-12-06
 │  │                                                               │   │
 │  │  GoalContainer.getInstance().getGoalRepository()              │   │
 │  │      ↓                                                        │   │
-│  │  SqliteGoalRepository                                         │   │
+│  │  PowerSyncGoalRepository                                      │   │
 │  │      ↓                                                        │   │
-│  │  better-sqlite3                                               │   │
+│  │  PowerSync local database runtime                             │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
@@ -133,6 +134,7 @@ export interface ElectronAPI {
 ```
 
 **设计理由**:
+
 - `invoke`: Promise 风格，适合请求-响应模式
 - `on/off`: 事件订阅，适合主进程推送（如通知）
 - 泛型 `<T>`: 保持类型安全
@@ -157,6 +159,7 @@ export interface ElectronAPI {
 ```
 
 **设计理由**:
+
 - 清晰的命名空间隔离
 - 易于日志过滤和调试
 - 与 IPC Adapter 中的 channel 属性一致
@@ -171,22 +174,31 @@ const electronAPI = {
   invoke: <T>(channel: string, ...args: unknown[]): Promise<T> => {
     // 安全检查：只允许预定义的通道
     const allowedChannels = [
-      'goal:', 'goal-folder:', 'task:', 'schedule:', 'reminder:',
-      'account:', 'auth:', 'notification:', 'ai:', 'dashboard:',
-      'repository:', 'setting:'
+      'goal:',
+      'goal-folder:',
+      'task:',
+      'schedule:',
+      'reminder:',
+      'account:',
+      'auth:',
+      'notification:',
+      'ai:',
+      'dashboard:',
+      'repository:',
+      'setting:',
     ];
-    
-    if (!allowedChannels.some(prefix => channel.startsWith(prefix))) {
+
+    if (!allowedChannels.some((prefix) => channel.startsWith(prefix))) {
       return Promise.reject(new Error(`Blocked IPC channel: ${channel}`));
     }
-    
+
     return ipcRenderer.invoke(channel, ...args);
   },
-  
+
   on: (channel: string, callback: (...args: unknown[]) => void) => {
     ipcRenderer.on(channel, (_, ...args) => callback(...args));
   },
-  
+
   off: (channel: string, callback: (...args: unknown[]) => void) => {
     ipcRenderer.removeListener(channel, callback);
   },
@@ -196,6 +208,7 @@ contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 ```
 
 **安全考虑**:
+
 - 白名单机制防止任意 IPC 调用
 - contextBridge 隔离渲染进程
 
@@ -211,10 +224,7 @@ export function registerGoalHandlers(): void {
   const container = GoalContainer.getInstance();
 
   // 统一错误处理包装器
-  const handle = <T>(
-    channel: string,
-    handler: (...args: unknown[]) => Promise<T>
-  ) => {
+  const handle = <T>(channel: string, handler: (...args: unknown[]) => Promise<T>) => {
     ipcMain.handle(channel, async (event, ...args) => {
       try {
         log.debug(`IPC ${channel}`, { args });
@@ -249,6 +259,7 @@ export function registerGoalHandlers(): void {
 ```
 
 **设计理由**:
+
 - 统一的错误处理和日志
 - Handler 函数简洁
 - 易于测试
@@ -261,7 +272,7 @@ export function registerGoalHandlers(): void {
 Main Process:
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. app.whenReady()                                               │
-│ 2. initializeDatabase()           ← SQLite 连接                 │
+│ 2. openPowerSyncLocalOnly()       ← PowerSync 本地数据库连接     │
 │ 3. configureMainProcessDI()       ← Container 注册              │
 │ 4. registerAllIpcHandlers()       ← IPC Handler 注册            │
 │ 5. createMainWindow()             ← 创建窗口                    │
@@ -281,29 +292,35 @@ Renderer Process:
 ### 为什么选择方案 B？
 
 ✅ **与现有架构完美契合**
+
 - IPC Adapter 已实现，只需正确连接
 - Container 模式在两端一致
 
 ✅ **Promise 风格简洁**
+
 - `invoke/handle` 比 `send/on` 更直观
 - 自动处理请求-响应匹配
 
 ✅ **类型安全**
+
 - `@dailyuse/contracts` 定义的 DTO 在两端共享
 - TypeScript 编译时检查
 
 ✅ **易于调试**
+
 - 统一日志格式
 - Channel 命名清晰
 
 ### 为什么不选其他方案？
 
 ❌ **方案 A (直接 IPC)**
+
 - 代码重复
 - 无抽象层，难以测试
 - 与共享包不兼容
 
 ❌ **方案 C (自定义 RPC)**
+
 - 过度工程
 - 额外学习成本
 - 已有 IPC Adapter 无需重复造轮子
@@ -314,7 +331,7 @@ Renderer Process:
 
 1. **主进程 DI** (STORY-002)
    - 创建 `desktop-main.composition-root.ts`
-   - 配置 SQLite Repository
+   - 配置 PowerSync Repository
 
 2. **Preload 修复** (STORY-004)
    - 新增 `electronAPI` 暴露
@@ -336,12 +353,12 @@ Renderer Process:
 
 ## 风险与缓解
 
-| 风险 | 概率 | 影响 | 缓解措施 |
-|------|------|------|---------|
-| IPC 序列化失败 | 中 | 高 | 确保只传递 Plain Object，无循环引用 |
-| 大数据量传输慢 | 中 | 中 | 实现分页，流式传输 |
-| 类型不同步 | 低 | 高 | 使用 `@dailyuse/contracts` 统一 DTO |
-| 调试困难 | 中 | 中 | electron-log 统一日志 |
+| 风险           | 概率 | 影响 | 缓解措施                            |
+| -------------- | ---- | ---- | ----------------------------------- |
+| IPC 序列化失败 | 中   | 高   | 确保只传递 Plain Object，无循环引用 |
+| 大数据量传输慢 | 中   | 中   | 实现分页，流式传输                  |
+| 类型不同步     | 低   | 高   | 使用 `@dailyuse/contracts` 统一 DTO |
+| 调试困难       | 中   | 中   | electron-log 统一日志               |
 
 ## 相关决策
 

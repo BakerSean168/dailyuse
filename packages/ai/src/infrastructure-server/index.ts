@@ -6,6 +6,7 @@
 
 // DI Module
 export { AIModule } from './ai.module';
+export { AIPowerSyncModule } from './powersync';
 
 // DI Factory
 export { AIRepositoryFactory } from './di';
@@ -21,11 +22,8 @@ export {
   AIProviderConfigPrismaRepository,
 } from './adapters/prisma';
 
-// SQLite Adapters
+// PowerSync Adapters
 export {
-  SqliteAIConversationRepository,
-  SqliteAIProviderConfigRepository,
-} from './adapters/sqlite';
-
-// SQLite schema
-export { AI_MODULE_SCHEMA } from './adapters/sqlite/schema';
+  PowerSyncAIConversationRepository,
+  PowerSyncAIProviderConfigRepository,
+} from './adapters/powersync';

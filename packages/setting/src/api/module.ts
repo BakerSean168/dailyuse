@@ -42,18 +42,22 @@ export const SettingApiModule: SettingApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const settingModule = new SettingModule('prisma', db as PrismaClient);
+    const settingModule = new SettingModule(db as PrismaClient);
 
     // 2. 创建路由处理器
     const handlers: SettingUseCases = {
-      getUserSetting: async (ctx) =>
-        ok(await settingModule.getUserSetting.execute(ctx.identityId)),
+      getUserSetting: async (ctx) => ok(await settingModule.getUserSetting.execute(ctx.identityId)),
       patchUserSetting: async (data, ctx) =>
-        ok(await settingModule.patchUserSetting.execute(ctx.identityId, data.category as any, data.patch)),
+        ok(
+          await settingModule.patchUserSetting.execute(
+            ctx.identityId,
+            data.category as any,
+            data.patch,
+          ),
+        ),
       resetUserSetting: async (ctx, category) =>
         ok(await settingModule.resetUserSetting.execute(ctx.identityId, category)),
-      exportSettings: async (ctx) =>
-        ok(await settingModule.exportSettings.execute(ctx.identityId)),
+      exportSettings: async (ctx) => ok(await settingModule.exportSettings.execute(ctx.identityId)),
       importSettings: async (data, ctx) => {
         let importData: Record<string, any>;
         try {
@@ -61,15 +65,12 @@ export const SettingApiModule: SettingApiModuleDef = {
         } catch {
           return fail({ code: 'VALIDATION_ERROR' as const, message: 'Invalid JSON in data field' });
         }
-        const result = await settingModule.importSettings.execute(
-          ctx.identityId,
-          importData,
-          { merge: !data.overwrite },
-        );
+        const result = await settingModule.importSettings.execute(ctx.identityId, importData, {
+          merge: !data.overwrite,
+        });
         return ok(result);
       },
-      getDefaultSettings: () =>
-        ok(settingModule.getDefaultSettings.execute()),
+      getDefaultSettings: () => ok(settingModule.getDefaultSettings.execute()),
     };
 
     // 3. 注册路由

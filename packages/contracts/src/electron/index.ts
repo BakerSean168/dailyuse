@@ -7,17 +7,21 @@
  * @module contracts/electron
  */
 
-import type Database from 'better-sqlite3';
-import type { Context } from '../shared';
 export type { IElectronAuthContext } from './auth-context';
+export type {
+  IElectronDatabase,
+  IElectronDatabaseQueryResult,
+  IElectronDatabaseTransaction,
+} from './database';
 import type { IElectronAuthContext } from './auth-context';
+import type { IElectronDatabase } from './database';
 
 /**
  * Shared context provided to every Electron module during registration.
  */
 export interface IElectronModuleContext {
-  /** The active better-sqlite3 database instance. */
-  readonly db: Database.Database;
+  /** The canonical PowerSync-backed desktop business database runtime. */
+  readonly db: IElectronDatabase;
   /** Shared authenticated desktop session context. */
   readonly auth: IElectronAuthContext;
 }

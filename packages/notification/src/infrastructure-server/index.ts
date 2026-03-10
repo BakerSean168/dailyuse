@@ -6,6 +6,7 @@
 
 // DI Module
 export { NotificationModule } from './notification.module';
+export { NotificationPowerSyncModule } from './powersync';
 export { NotificationContainer } from './di/notification-container';
 
 // DI Factory
@@ -21,12 +22,9 @@ export {
   NotificationTemplatePrismaRepository,
 } from './adapters/prisma';
 
-// SQLite Adapters
+// PowerSync Adapters
 export {
-  SqliteNotificationRepository,
-  SqliteNotificationPreferenceRepository,
-  SqliteNotificationTemplateRepository,
-} from './adapters/sqlite';
-
-// SQLite schema
-export { NOTIFICATION_MODULE_SCHEMA } from './adapters/sqlite/schema';
+  PowerSyncNotificationRepository,
+  PowerSyncNotificationPreferenceRepository,
+  PowerSyncNotificationTemplateRepository,
+} from './adapters/powersync';

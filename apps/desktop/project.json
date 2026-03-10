@@ -44,7 +44,7 @@
     "package": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["npx @electron/rebuild -f -o better-sqlite3", "electron-builder --dir"],
+        "commands": ["electron-builder --dir"],
         "cwd": "apps/desktop",
         "parallel": false
       }
@@ -52,7 +52,7 @@
     "dist": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["npx @electron/rebuild -f -o better-sqlite3", "electron-builder"],
+        "commands": ["electron-builder"],
         "cwd": "apps/desktop",
         "parallel": false
       }

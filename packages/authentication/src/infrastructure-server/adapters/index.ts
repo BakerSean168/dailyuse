@@ -1,2 +1,2 @@
 export * from './prisma';
-export * from './sqlite';
+export * from './powersync';

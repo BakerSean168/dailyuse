@@ -1,6 +1,6 @@
-﻿import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
-import type Database from 'better-sqlite3';
-import { SqliteEditorWorkspaceRepository } from '../adapters/sqlite/editor-workspace-sqlite.repository';
+import type { IEditorWorkspaceRepository } from '../../domain-server/repositories/IEditorWorkspaceRepository';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import { PowerSyncEditorWorkspaceRepository } from '../adapters/powersync/editor-workspace-powersync.repository';
 
 /**
  * Editor Module DI Container
@@ -9,7 +9,7 @@ import { SqliteEditorWorkspaceRepository } from '../adapters/sqlite/editor-works
 export class EditorContainer {
   private static instance: EditorContainer;
   private editorWorkspaceRepository: IEditorWorkspaceRepository | null = null;
-  private db?: Database.Database;
+  private db?: IElectronDatabase;
 
   private constructor() {}
 
@@ -24,9 +24,9 @@ export class EditorContainer {
   }
 
   /**
-   * Initialize with a better-sqlite3 database instance
+   * Initialize with PowerSync-compatible electron database contract
    */
-  initialize(db: Database.Database): void {
+  initialize(db: IElectronDatabase): void {
     this.db = db;
   }
 
@@ -39,7 +39,7 @@ export class EditorContainer {
       if (!this.db) {
         throw new Error('EditorContainer not initialized. Call initialize(db) first.');
       }
-      this.editorWorkspaceRepository = new SqliteEditorWorkspaceRepository(this.db);
+      this.editorWorkspaceRepository = new PowerSyncEditorWorkspaceRepository(this.db);
     }
     return this.editorWorkspaceRepository;
   }

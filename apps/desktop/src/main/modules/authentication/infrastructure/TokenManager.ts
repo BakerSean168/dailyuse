@@ -106,7 +106,7 @@ export class TokenManager {
         now + (request.refreshTokenExpiresIn ?? DEFAULT_REFRESH_TOKEN_EXPIRES_IN) * 1000,
       identityId: request.identityId,
       sessionId: request.sessionId,
-                };
+    };
 
     // 加密并写入
     await this.writeEncrypted(tokenData);
@@ -137,7 +137,7 @@ export class TokenManager {
       if (tokenData) {
         this.cachedTokenData = tokenData;
         this.logger.info('Tokens loaded from encrypted storage', {
-                    accessTokenExpired: Date.now() > tokenData.accessTokenExpiresAt,
+          accessTokenExpired: Date.now() > tokenData.accessTokenExpiresAt,
           refreshTokenExpired: Date.now() > tokenData.refreshTokenExpiresAt,
         });
       }
@@ -254,7 +254,7 @@ export class TokenManager {
       shouldRefresh: !isAccessTokenExpired && accessTokenRemainingMs < REFRESH_THRESHOLD_MS,
       accessTokenRemainingMs,
       refreshTokenRemainingMs,
-                };
+    };
   }
 
   /**
@@ -354,6 +354,10 @@ export class TokenManager {
    */
   getTokenPath(): string {
     return this.tokenPath;
+  }
+
+  getCachedTokenData(): TokenData | null {
+    return this.cachedTokenData;
   }
 
   // ============ Private Methods ============

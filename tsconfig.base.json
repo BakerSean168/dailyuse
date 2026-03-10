@@ -43,64 +43,28 @@
       // ✅ 业务模块包
       "@dailyuse/governance": ["packages/governance/src/index.ts"],
       "@dailyuse/governance/*": ["packages/governance/src/*/index.ts"],
-      "@dailyuse/governance/infrastructure-server/sqlite": [
-        "packages/governance/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/account": ["packages/account/src/index.ts"],
       "@dailyuse/account/*": ["packages/account/src/*/index.ts"],
-      "@dailyuse/account/infrastructure-server/sqlite": [
-        "packages/account/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/authentication": ["packages/authentication/src/index.ts"],
       "@dailyuse/authentication/*": ["packages/authentication/src/*/index.ts"],
-      "@dailyuse/authentication/infrastructure-server/sqlite": [
-        "packages/authentication/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/goal": ["packages/goal/src/index.ts"],
       "@dailyuse/goal/*": ["packages/goal/src/*/index.ts"],
-      "@dailyuse/goal/infrastructure-server/sqlite": [
-        "packages/goal/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/task": ["packages/task/src/index.ts"],
       "@dailyuse/task/*": ["packages/task/src/*/index.ts"],
-      "@dailyuse/task/infrastructure-server/sqlite": [
-        "packages/task/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/repository": ["packages/repository/src/index.ts"],
       "@dailyuse/repository/*": ["packages/repository/src/*/index.ts"],
-      "@dailyuse/repository/infrastructure-server/sqlite": [
-        "packages/repository/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/editor": ["packages/editor/src/index.ts"],
       "@dailyuse/editor/*": ["packages/editor/src/*/index.ts"],
-      "@dailyuse/editor/infrastructure-server/sqlite": [
-        "packages/editor/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/reminder": ["packages/reminder/src/index.ts"],
       "@dailyuse/reminder/*": ["packages/reminder/src/*/index.ts"],
-      "@dailyuse/reminder/infrastructure-server/sqlite": [
-        "packages/reminder/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/notification": ["packages/notification/src/index.ts"],
       "@dailyuse/notification/*": ["packages/notification/src/*/index.ts"],
-      "@dailyuse/notification/infrastructure-server/sqlite": [
-        "packages/notification/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/schedule": ["packages/schedule/src/index.ts"],
       "@dailyuse/schedule/*": ["packages/schedule/src/*/index.ts"],
-      "@dailyuse/schedule/infrastructure-server/sqlite": [
-        "packages/schedule/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/setting": ["packages/setting/src/index.ts"],
       "@dailyuse/setting/*": ["packages/setting/src/*/index.ts"],
-      "@dailyuse/setting/infrastructure-server/sqlite": [
-        "packages/setting/src/infrastructure-server/sqlite.ts"
-      ],
       "@dailyuse/ai": ["packages/ai/src/index.ts"],
       "@dailyuse/ai/*": ["packages/ai/src/*/index.ts"],
-      "@dailyuse/ai/infrastructure-server/sqlite": [
-        "packages/ai/src/infrastructure-server/sqlite.ts"
-      ],
 
       // ✅ 客户端工具包
       "@dailyuse/http-client": ["packages/http-client/src/index.ts"],

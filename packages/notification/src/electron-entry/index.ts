@@ -6,7 +6,10 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { NotificationSqliteModule, NotificationContainer } from '../infrastructure-server/sqlite';
+import {
+  NotificationPowerSyncModule,
+  NotificationContainer,
+} from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('NotificationElectron');
@@ -30,7 +33,7 @@ export const NotificationElectronModule: IElectronModule = {
   name: 'Notification',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new NotificationSqliteModule(ctx.db);
+    const mod = new NotificationPowerSyncModule(ctx.db);
 
     const svc = mod.notificationService;
     const templateSvc = mod.notificationTemplateService;

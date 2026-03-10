@@ -15,7 +15,7 @@ import {
   ImportSettings,
   GetDefaultSettings,
 } from '../application-server';
-import { SettingRepositoryFactory } from './di';
+import { UserSettingPrismaRepository } from './adapters/prisma';
 import { SettingContainer } from './di/setting-container';
 
 export class SettingModule {
@@ -27,12 +27,11 @@ export class SettingModule {
   public readonly importSettings: ImportSettings;
   public readonly getDefaultSettings: GetDefaultSettings;
 
-  constructor(
-    dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | unknown,
-  ) {
+  constructor(dbConnection: PrismaClient) {
     // 1. Initialize Repositories
-    const repositories = SettingRepositoryFactory.create(dataSourceType, dbConnection);
+    const repositories = {
+      userSettingRepository: new UserSettingPrismaRepository(dbConnection),
+    };
 
     // 2. Register in DI container
     const container = SettingContainer.getInstance();
@@ -50,4 +49,3 @@ export class SettingModule {
     this.getDefaultSettings = new GetDefaultSettings();
   }
 }
-

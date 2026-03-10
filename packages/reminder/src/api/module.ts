@@ -48,7 +48,7 @@ export const ReminderApiModule: ReminderApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — initialize repositories via ReminderModule
-    const reminderModule = new ReminderModule('prisma', db as PrismaClient);
+    const reminderModule = new ReminderModule(db as PrismaClient);
 
     // Initialize application services
     const reminderDomainService = new ReminderDomainService(
@@ -165,7 +165,9 @@ export const ReminderApiModule: ReminderApiModuleDef = {
         return ok(group.toClientDTO());
       },
       listGroups: async (ctx) => {
-        const groups = await reminderModule.reminderGroupRepository.findByIdentityId(ctx.identityId);
+        const groups = await reminderModule.reminderGroupRepository.findByIdentityId(
+          ctx.identityId,
+        );
         const data = groups.map((g) => g.toClientDTO());
         return ok({
           groups: data,
@@ -257,7 +259,9 @@ export const ReminderApiModule: ReminderApiModuleDef = {
         return ok(result);
       },
       getTemplateHistory: async (id) => {
-        const template = await reminderModule.reminderTemplateRepository.findById(id, { includeHistory: true } as any);
+        const template = await reminderModule.reminderTemplateRepository.findById(id, {
+          includeHistory: true,
+        } as any);
         if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
         const history = template.getAllHistory ? template.getAllHistory() : [];
         return ok(history);
@@ -308,14 +312,19 @@ export const ReminderApiModule: ReminderApiModuleDef = {
 
       // Preferences
       getPreferences: async (ctx) => {
-        const prefs = await reminderModule.userReminderPreferenceRepository.findByIdentityId(ctx.identityId);
+        const prefs = await reminderModule.userReminderPreferenceRepository.findByIdentityId(
+          ctx.identityId,
+        );
         return ok(prefs);
       },
       updatePreferences: async (data, ctx) => {
-        const existing = await reminderModule.userReminderPreferenceRepository.findByIdentityId(ctx.identityId);
+        const existing = await reminderModule.userReminderPreferenceRepository.findByIdentityId(
+          ctx.identityId,
+        );
         if (!existing) {
           // Create default preferences with the update data
-          const { UserReminderPreferences } = await import('../domain-server/aggregates/user-reminder-preferences');
+          const { UserReminderPreferences } =
+            await import('../domain-server/aggregates/user-reminder-preferences');
           const prefs = UserReminderPreferences.create({ identityId: ctx.identityId });
           if (data.bestTimeSlots || data.worstTimeSlots) {
             prefs.updateTimeSlots(

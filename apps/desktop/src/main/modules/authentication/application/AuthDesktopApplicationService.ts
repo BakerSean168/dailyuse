@@ -24,6 +24,8 @@ import type {
   IAuthSessionRepository,
   IAuthIdentityRepository as IAuthCredentialRepository,
 } from '@dailyuse/authentication/domain-server';
+import type { IAccountRepository } from '@dailyuse/account/domain-server';
+import { Account } from '@dailyuse/account/domain-server';
 import type { AuthSession } from '@dailyuse/authentication/domain-server';
 import {
   // Result Pattern - 统一响应格式
@@ -34,6 +36,7 @@ import {
 } from '@dailyuse/contracts/result';
 import {
   AuthMode,
+  AuthRuntimeState,
   ConnectionStatus,
   type AuthResponseDTO,
   type AuthIdentityClientDTO,
@@ -130,9 +133,11 @@ export class AuthDesktopApplicationService {
   // 依赖注入的 Repositories（惰性初始化）
   private sessionRepository: IAuthSessionRepository | null = null;
   private credentialRepository: IAuthCredentialRepository | null = null;
+  private accountRepository: IAccountRepository | null = null;
 
   // 当前认证模式
   private authMode: AuthMode = AuthMode.UNAUTHENTICATED;
+  private runtimeState: AuthRuntimeState = AuthRuntimeState.UNINITIALIZED;
   private isInitialized = false;
 
   // Tracked promise for the most recent PowerSync initialization (non-blocking).
@@ -164,6 +169,10 @@ export class AuthDesktopApplicationService {
     this.logger.info('Repositories injected');
   }
 
+  setAccountRepository(accountRepository: IAccountRepository): void {
+    this.accountRepository = accountRepository;
+  }
+
   /**
    * 注入离线认证依赖（Phase 2）
    * 将 IAuthIdentityRepository + IPasswordHasher 传递给 SessionManager
@@ -193,6 +202,7 @@ export class AuthDesktopApplicationService {
       return {
         success: true,
         hasValidSession: this.sessionManager?.getCurrentSession()?.isValid() ?? false,
+        runtimeState: this.runtimeState,
       };
     }
 
@@ -201,16 +211,30 @@ export class AuthDesktopApplicationService {
     if (!this.sessionManager) {
       this.logger.warn('SessionManager not available, running in minimal mode');
       this.isInitialized = true;
-      return { ok: true, hasValidSession: false };
+      this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
+      return { ok: true, hasValidSession: false, runtimeState: this.runtimeState };
     }
 
     try {
+      this.runtimeState = AuthRuntimeState.RESTORING;
       const result = await this.sessionManager.initialize();
 
       // Determine auth mode from token (default to ONLINE_USER if available)
       if (result.ok && result.session) {
         const tokenData = await this.tokenManager.loadTokens();
         this.authMode = tokenData ? AuthMode.ONLINE_USER : AuthMode.OFFLINE_USER;
+        this.runtimeState = AuthRuntimeState.AUTHENTICATED;
+
+        const credentialIdentity = await this.credentialRepository?.findById(
+          result.session.identityId as any,
+        );
+        const restoredEmail = credentialIdentity
+          ? this.extractIdentityEmail(credentialIdentity.toClientDTO())
+          : null;
+        await this.ensureAccountProjection(result.session.identityId, restoredEmail);
+      } else {
+        this.authMode = AuthMode.UNAUTHENTICATED;
+        this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
       }
 
       this.isInitialized = true;
@@ -228,6 +252,7 @@ export class AuthDesktopApplicationService {
       return {
         ok: true,
         hasValidSession: result.ok ?? false,
+        runtimeState: this.runtimeState,
         identityId: result.identityId,
         sessionId: result.session?.id,
         needsRefresh: result.needsRefresh,
@@ -236,9 +261,12 @@ export class AuthDesktopApplicationService {
     } catch (error) {
       this.logger.error('Failed to initialize', { error });
       this.isInitialized = true;
+      this.authMode = AuthMode.UNAUTHENTICATED;
+      this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
       return {
         ok: false,
         hasValidSession: false,
+        runtimeState: this.runtimeState,
         error: String(error),
         needsReLogin: true,
       };
@@ -315,6 +343,11 @@ export class AuthDesktopApplicationService {
               });
             }
 
+            await this.ensureAccountProjection(
+              String(response.identity.id),
+              this.extractIdentityEmail(response.identity) ?? request.email,
+            );
+
             await this.rememberedAccounts.recordLogin({
               identityId: response.identity.id,
               identifier: request.email,
@@ -382,6 +415,7 @@ export class AuthDesktopApplicationService {
 
       if (finalResult.ok && finalResult.response) {
         this.authMode = finalResult.response.authMode ?? AuthMode.ONLINE_USER;
+        this.runtimeState = AuthRuntimeState.AUTHENTICATED;
         this.logger.info('Login successful', {
           identityId: finalResult.response.identity.id,
           authMode: this.authMode,
@@ -518,6 +552,7 @@ export class AuthDesktopApplicationService {
       sessionId,
     });
     this.authMode = AuthMode.ONLINE_USER;
+    this.runtimeState = AuthRuntimeState.AUTHENTICATED;
 
     if (!this.sessionManager) {
       return;
@@ -569,6 +604,7 @@ export class AuthDesktopApplicationService {
 
       const guestId = await this.sessionManager.getOrCreateGuestIdentity();
       this.authMode = AuthMode.GUEST;
+      this.runtimeState = AuthRuntimeState.AUTHENTICATED;
 
       // Open local-only PowerSync for guest data
       openPowerSyncLocalOnly().catch((err) =>
@@ -614,6 +650,8 @@ export class AuthDesktopApplicationService {
     if (!this.sessionManager) {
       // 至少清除 Token
       await this.tokenManager.clearTokens();
+      this.authMode = AuthMode.UNAUTHENTICATED;
+      this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
       // Disconnect PowerSync and wipe local sync data
       await disconnectPowerSync().catch((err) =>
         this.logger.error('PowerSync disconnect failed during logout', { error: err }),
@@ -624,6 +662,7 @@ export class AuthDesktopApplicationService {
     try {
       const result = await this.sessionManager.logout();
       this.authMode = AuthMode.UNAUTHENTICATED;
+      this.runtimeState = AuthRuntimeState.UNAUTHENTICATED;
 
       // Disconnect PowerSync and wipe local sync data regardless of logout result
       await disconnectPowerSync().catch((err) =>
@@ -809,6 +848,7 @@ export class AuthDesktopApplicationService {
     return {
       authenticated,
       mode: this.authMode,
+      runtimeState: this.runtimeState,
       connectionStatus,
       user,
       session: sessionInfo,
@@ -948,7 +988,7 @@ export class AuthDesktopApplicationService {
     }
 
     try {
-      const  currentSession = this.sessionManager?.getCurrentSession();
+      const currentSession = this.sessionManager?.getCurrentSession();
       if (!currentSession) {
         return { sessions: [], total: 0 };
       }
@@ -996,23 +1036,59 @@ export class AuthDesktopApplicationService {
   }
 
   getCurrentIdentityId(): string | null {
-    return this.sessionManager?.getCurrentSession()?.identityId ?? null;
+    if (this.runtimeState === AuthRuntimeState.RESTORING) {
+      return null;
+    }
+
+    const currentSession = this.sessionManager?.getCurrentSession();
+    if (currentSession?.identityId) {
+      return currentSession.identityId;
+    }
+
+    const tokenData = this.tokenManager.getCachedTokenData();
+    return tokenData?.identityId ?? null;
   }
 
   getCurrentSessionId(): string | null {
-    return this.sessionManager?.getCurrentSession()?.id ?? null;
+    if (this.runtimeState === AuthRuntimeState.RESTORING) {
+      return null;
+    }
+
+    const currentSession = this.sessionManager?.getCurrentSession();
+    if (currentSession?.id) {
+      return currentSession.id;
+    }
+
+    const tokenData = this.tokenManager.getCachedTokenData();
+    return tokenData?.sessionId ?? null;
   }
 
   getCurrentRequestContext(): { identityId: string; deviceId: string } | null {
+    if (this.runtimeState === AuthRuntimeState.RESTORING) {
+      return null;
+    }
+
     const session = this.sessionManager?.getCurrentSession();
     if (!session) {
-      return null;
+      const identityId = this.getCurrentIdentityId();
+      if (!identityId) {
+        return null;
+      }
+
+      return {
+        identityId,
+        deviceId: 'desktop-app',
+      };
     }
 
     return {
       identityId: session.identityId,
       deviceId: session.deviceInfo?.deviceId ?? 'desktop-app',
     };
+  }
+
+  getRuntimeState(): AuthRuntimeState {
+    return this.runtimeState;
   }
 
   async getRememberedAccounts(): Promise<RememberedDesktopAccountDTO[]> {
@@ -1077,6 +1153,52 @@ export class AuthDesktopApplicationService {
     );
 
     return emailIdentifier?.value?.split('@')[0] || null;
+  }
+
+  private extractIdentityEmail(identity: AuthIdentityClientDTO): string | null {
+    const emailIdentifier = identity.identifiers.find((identifier) => identifier.type === 'Email');
+    if (!emailIdentifier) {
+      return null;
+    }
+
+    const raw = (emailIdentifier as any).value;
+    if (typeof raw === 'string') {
+      const normalized = raw.trim().toLowerCase();
+      return normalized.length > 0 ? normalized : null;
+    }
+
+    if (raw && typeof raw === 'object' && typeof raw.value === 'string') {
+      const normalized = raw.value.trim().toLowerCase();
+      return normalized.length > 0 ? normalized : null;
+    }
+
+    return null;
+  }
+
+  private async ensureAccountProjection(identityId: string, email: string | null): Promise<void> {
+    if (!this.accountRepository) {
+      return;
+    }
+
+    const existing = await this.accountRepository.findById(identityId);
+    if (existing) {
+      return;
+    }
+
+    const normalizedEmail = email?.trim().toLowerCase() ?? null;
+    if (!normalizedEmail) {
+      this.logger.warn('Skip account projection bootstrap due to missing email', {
+        identityId,
+      });
+      return;
+    }
+
+    const account = Account.create({
+      id: identityId as any,
+      email: normalizedEmail,
+    });
+    await this.accountRepository.save(account);
+    this.logger.info('Account projection ensured', { identityId });
   }
 
   /**

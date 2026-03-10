@@ -2,7 +2,7 @@
  * Governance Module — Electron Entry Point
  *
  * Self-contained Composition Root for the Governance module in Electron main process.
- * Instantiates SQLite repositories, wires through GovernanceModule,
+ * Instantiates PowerSync repositories, wires through GovernanceModule,
  * and registers IPC handlers using the GovernanceController.
  *
  * @module governance/electron-entry
@@ -10,12 +10,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import {
-  RuleSqliteRepository,
-  RuleRevisionSqliteRepository,
-  GovernanceModule,
-  GovernanceContainer,
-} from '../infrastructure-server/sqlite';
+import { GovernancePowerSyncModule, GovernanceContainer } from '../infrastructure-server/powersync';
 import { GovernanceController } from '../controllers/governance.controller';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
 import { createLogger } from '@dailyuse/utils';
@@ -42,17 +37,10 @@ export const GovernanceElectronModule: IElectronModule = {
   register(ctx: IElectronModuleContext): void {
     const { db } = ctx;
 
-    // 1. Repositories
-    const ruleRepository = new RuleSqliteRepository(db);
-    const revisionRepository = new RuleRevisionSqliteRepository(db);
+    // 1. Composition Root
+    const governanceModule = new GovernancePowerSyncModule(db);
 
-    // 2. Composition Root
-    const governanceModule = new GovernanceModule({
-      ruleRepository,
-      revisionRepository,
-    });
-
-    // 3. Controller (Zod validation + use case orchestration)
+    // 2. Controller (Zod validation + use case orchestration)
     const useCases: GovernanceUseCases = {
       createRule: (req, cx) => governanceModule.createRule.execute(req, cx),
       updateRule: (id, req, cx) => governanceModule.updateRule.execute(id, req, cx),
@@ -65,7 +53,7 @@ export const GovernanceElectronModule: IElectronModule = {
 
     const controller = new GovernanceController(useCases);
 
-    // 4. IPC Handlers
+    // 3. IPC Handlers
     const electronContext: Context = { identityId: 'desktop-user', deviceId: 'electron-app' };
 
     ipcMain.handle(Ch.LIST, (_event, query?: ListRulesQuery) =>

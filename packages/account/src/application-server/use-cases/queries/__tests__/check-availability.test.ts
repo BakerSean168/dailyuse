@@ -13,11 +13,11 @@ describe('CheckAvailabilityUseCase', () => {
     useCase = new CheckAvailabilityUseCase(repo);
   });
 
-  describe('Email type', () => {
+  describe('email field', () => {
     it('should return available=true when email does not exist', async () => {
       (repo.existsByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
-      const result = await useCase.execute({ type: 'Email', value: 'new@example.com' });
+      const result = await useCase.execute({ type: 'email', value: 'new@example.com' });
 
       expect(result.available).toBe(true);
       expect(repo.existsByEmail).toHaveBeenCalledWith('new@example.com');
@@ -26,26 +26,26 @@ describe('CheckAvailabilityUseCase', () => {
     it('should return available=false when email already exists', async () => {
       (repo.existsByEmail as ReturnType<typeof vi.fn>).mockResolvedValue(true);
 
-      const result = await useCase.execute({ type: 'Email', value: 'taken@example.com' });
+      const result = await useCase.execute({ type: 'email', value: 'taken@example.com' });
 
       expect(result.available).toBe(false);
     });
   });
 
-  describe('Nickname type', () => {
-    it('should return available=true when username does not exist', async () => {
-      (repo.existsByUsername as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+  describe('nickname field', () => {
+    it('should return available=true when nickname does not exist', async () => {
+      (repo.existsByNickname as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
-      const result = await useCase.execute({ type: 'Nickname', value: 'newuser' });
+      const result = await useCase.execute({ type: 'nickname', value: 'newuser' });
 
       expect(result.available).toBe(true);
-      expect(repo.existsByUsername).toHaveBeenCalledWith('newuser');
+      expect(repo.existsByNickname).toHaveBeenCalledWith('newuser');
     });
 
-    it('should return available=false when username already exists', async () => {
-      (repo.existsByUsername as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    it('should return available=false when nickname already exists', async () => {
+      (repo.existsByNickname as ReturnType<typeof vi.fn>).mockResolvedValue(true);
 
-      const result = await useCase.execute({ type: 'Nickname', value: 'takenuser' });
+      const result = await useCase.execute({ type: 'nickname', value: 'takenuser' });
 
       expect(result.available).toBe(false);
     });

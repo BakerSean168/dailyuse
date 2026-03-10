@@ -11,7 +11,7 @@
  * domain-client       → 客户端领域模型
  * application-server  → 用例服务（服务端）
  * application-client  → 客户端服务
- * infrastructure-server → Prisma/SQLite/Memory 仓储实现、DI 模块
+ * infrastructure-server → Prisma/PowerSync/Memory 仓储实现、DI 模块
  * infrastructure-client → HTTP/IPC 适配器
  *
  * 【使用示例】

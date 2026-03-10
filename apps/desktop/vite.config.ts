@@ -12,13 +12,13 @@ const desktopRendererDevWorkspaceEntries = [
 ] as const;
 
 // Native modules — must be externalized (cannot be bundled by Vite)
-const nativeModules = ['better-sqlite3', 'electron', 'argon2'];
+const nativeModules = ['electron', 'argon2'];
 
 // Third-party packages that leak into the main process via workspace package
 // dist files (e.g. @dailyuse/task uses date-fns, @dailyuse/repository uses
 // gray-matter). They are pure-JS so they can be resolved at runtime from
 // node_modules; externalizing them avoids Rollup resolution errors.
-const thirdPartyLeaks = ['date-fns', 'gray-matter'];
+const thirdPartyLeaks = ['date-fns', 'gray-matter', '@powersync/node', '@powersync/common'];
 
 // Workspace packages that must stay external in the main process bundle.
 // Keep only the root @dailyuse/database package external so Prisma-related

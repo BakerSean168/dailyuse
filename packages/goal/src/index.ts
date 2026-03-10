@@ -11,7 +11,7 @@
  * domain-client       → 客户端领域模型
  * application-server  → 用例服务（服务端）
  * application-client  → 客户端服务
- * infrastructure-server → Prisma/SQLite 仓储实现、DI 模块
+ * infrastructure-server → Prisma/PowerSync 仓储实现、DI 模块
  * infrastructure-client → HTTP/IPC 适配器
  *
  * 【使用示例】
@@ -27,7 +27,6 @@
  * import { GoalModule } from '@dailyuse/goal/infrastructure-server';
  * ```
  */
-
 
 // ================= Contracts Layer =================
 export * from '@dailyuse/contracts/goal';
@@ -60,3 +59,4 @@ export * from './application-client';
 // ================= Infrastructure Layer =================
 export * from './infrastructure-server';
 export * from './infrastructure-client';
+export * from './electron-entry';

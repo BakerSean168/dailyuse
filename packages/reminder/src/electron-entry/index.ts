@@ -8,7 +8,7 @@ import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { ok } from '@dailyuse/contracts/result';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { ReminderSqliteModule, ReminderContainer } from '../infrastructure-server/sqlite';
+import { ReminderPowerSyncModule, ReminderContainer } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
 import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
@@ -37,7 +37,7 @@ export const ReminderElectronModule: IElectronModule = {
   name: 'Reminder',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new ReminderSqliteModule(ctx.db);
+    const mod = new ReminderPowerSyncModule(ctx.db);
 
     const templateRepo = mod.reminderTemplateRepository;
     const groupRepo = mod.reminderGroupRepository;

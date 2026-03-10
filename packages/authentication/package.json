@@ -28,10 +28,6 @@
       "types": "./dist/infrastructure-server/index.d.ts",
       "import": "./dist/infrastructure-server/index.js"
     },
-    "./infrastructure-server/sqlite": {
-      "types": "./dist/infrastructure-server/sqlite.d.ts",
-      "import": "./dist/infrastructure-server/sqlite.js"
-    },
     "./infrastructure-client": {
       "types": "./dist/infrastructure-client/index.d.ts",
       "import": "./dist/infrastructure-client/index.js"
@@ -43,10 +39,6 @@
     "./electron-entry": {
       "types": "./dist/electron-entry/index.d.ts",
       "import": "./dist/electron-entry/index.js"
-    },
-    "./sqlite": {
-      "types": "./dist/sqlite.d.ts",
-      "import": "./dist/sqlite.js"
     },
     "./schema": {
       "types": "./dist/schema.d.ts",
@@ -65,7 +57,6 @@
     "@dailyuse/patterns": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "argon2": "^0.43.0",
-    "better-sqlite3": "^12.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
@@ -74,7 +65,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "7.6.13",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/passport-jwt": "^4.0.1",

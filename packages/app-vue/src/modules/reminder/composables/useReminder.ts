@@ -19,6 +19,7 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
+import type { ResultError } from '@dailyuse/contracts/result';
 
 export function useReminder() {
   const service = useStrictInject(REMINDER_SERVICE_KEY, 'ReminderService');
@@ -41,16 +42,59 @@ export function useReminder() {
     console.error(msg);
   }
 
+  async function ensureDesktopAuthReady(): Promise<boolean> {
+    const api = (window as any)?.electronAPI;
+    if (!api?.invoke) {
+      return false;
+    }
+
+    try {
+      const status = (await api.invoke('auth:get-status')) as {
+        authenticated?: boolean;
+        runtimeState?: string;
+      };
+
+      if (status?.authenticated) {
+        return true;
+      }
+
+      if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
+        await api.invoke('auth:initialize');
+        const refreshed = (await api.invoke('auth:get-status')) as { authenticated?: boolean };
+        return Boolean(refreshed?.authenticated);
+      }
+    } catch (error) {
+      console.warn('[Reminder] Failed to ensure desktop auth readiness', error);
+    }
+
+    return false;
+  }
+
+  async function maybeRecoverAuth(error: ResultError): Promise<boolean> {
+    if (error.code !== 'AUTH_REQUIRED' && error.code !== 'AUTH_RESTORING') {
+      return false;
+    }
+    return ensureDesktopAuthReady();
+  }
+
   // ── Templates ──
 
   async function fetchTemplates() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getReminderTemplates({
+      let result = await service.getReminderTemplates({
         page: store.pagination.page,
         limit: store.pagination.pageSize,
       });
+
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.getReminderTemplates({
+          page: store.pagination.page,
+          limit: store.pagination.pageSize,
+        });
+      }
+
       if (result.ok) {
         store.setTemplates(result.data.templates ?? [], result.data.total ?? 0);
       } else {
@@ -140,7 +184,12 @@ export function useReminder() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getReminderGroups();
+      let result = await service.getReminderGroups();
+
+      if (!result.ok && (await maybeRecoverAuth(result.error))) {
+        result = await service.getReminderGroups();
+      }
+
       if (result.ok) {
         store.setGroups(result.data.groups ?? []);
       } else {

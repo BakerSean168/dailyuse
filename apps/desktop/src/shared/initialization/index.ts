@@ -21,11 +21,11 @@ export function registerAllInitializationTasks(): void {
   console.log('[Initialization] Registering all application initialization tasks...');
 
   // Infrastructure initialization (database, DI, IPC)
+  registerInfrastructureInitializationTasks();
 
   // Module-specific initialization tasks
   // These calls register tasks with the InitializationManager but do not execute them immediately.
   // Execution happens when InitializationManager.executePhase() is called.
-
 
   console.log('[Initialization] All initialization tasks registered');
 }

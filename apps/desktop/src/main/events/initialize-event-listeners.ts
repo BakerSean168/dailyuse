@@ -9,8 +9,8 @@
  */
 
 import { eventBus } from '@dailyuse/utils';
-import { getGoalRepository } from '@dailyuse/goal/electron-entry';
-import { GoalRecord, type KeyResult } from '@dailyuse/goal/domain-server';
+import { GoalRecord, type KeyResult } from '@dailyuse/goal';
+import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
 
 let isInitialized = false;
 
@@ -104,10 +104,13 @@ function initializeTaskToGoalProgressListener(): void {
           recordedAt: new Date(),
         });
 
+        const goalRecordRepository = getGoalRecordRepository();
+
         // 4. Add record to Key Result (triggers recalculation of current value)
         keyResult.addRecord(record.toServerDTO());
 
-        // 5. Persist changes
+        // 5. Persist canonical goal_records row first, then persist recalculated aggregate state.
+        await goalRecordRepository.save(record);
         await goalRepository.save(goal);
 
         console.log(

@@ -1,5 +1,4 @@
 import type { PrismaClient } from '@dailyuse/database';
-import type Database from 'better-sqlite3';
 import type {
   IScheduleExecutionRepository,
   IScheduleRepository,
@@ -20,10 +19,12 @@ import {
 } from '@/application-server/use-cases';
 import { ScheduleEventApplicationService } from '@/application-server/services/schedule-event-application-service';
 import { ScheduleEventPublisher } from '@/application-server/use-cases/schedule-event-publisher';
-import { ScheduleRepositoryFactory } from '@/infrastructure-server/di';
+import {
+  ScheduleExecutionPrismaRepository,
+  SchedulePrismaRepository,
+  ScheduleTaskPrismaRepository,
+} from '@/infrastructure-server/adapters/prisma';
 import { ScheduleContainer } from '@/infrastructure-server/di/schedule-container';
-
-type BetterSQLiteDB = Database.Database;
 
 export class ScheduleModule {
   public readonly scheduleRepository: IScheduleRepository;
@@ -42,12 +43,13 @@ export class ScheduleModule {
   public readonly listScheduleTasksByStatus: ListScheduleTasksByStatusUseCase;
   public readonly scheduleEventService: ScheduleEventApplicationService;
 
-  constructor(
-    dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | BetterSQLiteDB,
-  ) {
-    // 1. Initialize Repositories using Factory
-    const repositories = ScheduleRepositoryFactory.create(dataSourceType, dbConnection);
+  constructor(dbConnection: PrismaClient) {
+    // 1. Initialize Repositories
+    const repositories = {
+      scheduleRepository: new SchedulePrismaRepository(dbConnection),
+      scheduleExecutionRepository: new ScheduleExecutionPrismaRepository(dbConnection),
+      scheduleTaskRepository: new ScheduleTaskPrismaRepository(dbConnection),
+    };
     const container = ScheduleContainer.getInstance();
     container.reset();
     container.setScheduleRepository(repositories.scheduleRepository);
@@ -59,22 +61,24 @@ export class ScheduleModule {
     this.scheduleTaskRepository = container.getScheduleTaskRepository();
 
     // 2. Initialize Services
-    this.createScheduleTask = new CreateScheduleTaskUseCase(
-      this.scheduleTaskRepository,
-    );
+    this.createScheduleTask = new CreateScheduleTaskUseCase(this.scheduleTaskRepository);
     this.updateScheduleTask = new UpdateScheduleTaskUseCase(this.scheduleTaskRepository);
     this.deleteScheduleTask = new DeleteScheduleTaskUseCase(this.scheduleTaskRepository);
     this.pauseScheduleTask = new PauseScheduleTaskUseCase(this.scheduleTaskRepository);
     this.resumeScheduleTask = new ResumeScheduleTaskUseCase(this.scheduleTaskRepository);
     this.triggerScheduleTask = new TriggerScheduleTaskUseCase(this.scheduleTaskRepository);
     this.getScheduleTask = new GetScheduleTaskUseCase(this.scheduleTaskRepository);
-    this.listScheduleTasksByAccount = new ListScheduleTasksByAccountUseCase(this.scheduleTaskRepository);
-    this.listScheduleTasksBySource = new ListScheduleTasksBySourceUseCase(this.scheduleTaskRepository);
-    this.listScheduleTasksByStatus = new ListScheduleTasksByStatusUseCase(this.scheduleTaskRepository);
-
-    this.scheduleEventService = new ScheduleEventApplicationService(
-      this.scheduleRepository,
+    this.listScheduleTasksByAccount = new ListScheduleTasksByAccountUseCase(
+      this.scheduleTaskRepository,
     );
+    this.listScheduleTasksBySource = new ListScheduleTasksBySourceUseCase(
+      this.scheduleTaskRepository,
+    );
+    this.listScheduleTasksByStatus = new ListScheduleTasksByStatusUseCase(
+      this.scheduleTaskRepository,
+    );
+
+    this.scheduleEventService = new ScheduleEventApplicationService(this.scheduleRepository);
 
     ScheduleEventPublisher.configure({
       createScheduleTask: this.createScheduleTask,

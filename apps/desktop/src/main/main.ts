@@ -7,13 +7,13 @@
  * own `electron-entry` Composition Root, mirroring the API-side pattern.
  *
  * Responsibilities of this file:
- *   1. Initialize the SQLite database
+ *   1. Initialize the PowerSync-backed business database runtime
  *   2. Bootstrap all business modules via ElectronBootstrapper
- *   3. Start ancillary services (memory cleanup, dev tools)
+ *   3. Start ancillary services (dev tools)
  *   4. Hand off to the lifecycle manager (window creation, shutdown)
  */
 
-import { initializeDatabase, startMemoryCleanup } from './database';
+import { openPowerSyncLocalOnly } from './database/powersync';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
@@ -50,9 +50,9 @@ async function initializeApp(): Promise<void> {
   const startTime = performance.now();
   console.log('[App] Initializing...');
 
-  // 1. Database
-  const db = initializeDatabase();
-  console.log('[App] Database initialized');
+  // 1. PowerSync-backed business database runtime
+  const db = await openPowerSyncLocalOnly();
+  console.log('[App] PowerSync business database initialized');
 
   // 2. Bootstrap business modules
   bootstrapper = new ElectronBootstrapper(db);
@@ -88,7 +88,6 @@ async function initializeApp(): Promise<void> {
   console.log('[App] Event listeners initialized');
 
   // 4. Ancillary
-  startMemoryCleanup();
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
   registerDashboardIpcHandler();

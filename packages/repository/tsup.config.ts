@@ -8,7 +8,7 @@ export default defineConfig({
     'src/domain-client/index.ts',
     'src/application-server/index.ts',
     'src/infrastructure-server/index.ts',
-    'src/infrastructure-server/sqlite.ts',
+    'src/infrastructure-server/powersync.ts',
     'src/application-client/index.ts',
     'src/infrastructure-client/index.ts',
     'src/api/index.ts',
@@ -20,7 +20,6 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   external: [
-    'better-sqlite3',
     'electron',
     '@dailyuse/utils',
     '@dailyuse/contracts',

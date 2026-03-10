@@ -49,7 +49,7 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — create module with shared database client
-    const scheduleModule = new ScheduleModule('prisma', db as PrismaClient);
+    const scheduleModule = new ScheduleModule(db as PrismaClient);
 
     // 2. Build handler map
     const handlers: ScheduleUseCases = {
@@ -112,7 +112,9 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
         return ok(task.toServerDTO());
       },
       getDueTasks: async () => {
-        const tasks = await scheduleModule.scheduleTaskRepository.findDueTasksForExecution(new Date());
+        const tasks = await scheduleModule.scheduleTaskRepository.findDueTasksForExecution(
+          new Date(),
+        );
         return ok(tasks.map((t: any) => t.toServerDTO()));
       },
       batchDeleteTasks: async (ids) => {
@@ -122,7 +124,10 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
             await scheduleModule.deleteScheduleTask.execute(id);
             results.success.push(id);
           } catch (err) {
-            results.failed.push({ id, error: err instanceof Error ? err.message : 'Unknown error' });
+            results.failed.push({
+              id,
+              error: err instanceof Error ? err.message : 'Unknown error',
+            });
           }
         }
         return ok(results);
@@ -140,12 +145,18 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
     const scheduleRoutes = registerScheduleRoutes(handlers, middleware, context.openApiRegistry);
 
     // 3b. Register schedule event routes (calendar entries)
-    const conflictDetectionService = new ScheduleConflictDetectionService(scheduleModule.scheduleRepository);
+    const conflictDetectionService = new ScheduleConflictDetectionService(
+      scheduleModule.scheduleRepository,
+    );
     const eventController = new ScheduleEventController({
       scheduleEventService: scheduleModule.scheduleEventService,
       conflictDetectionService,
     });
-    const eventRoutes = registerScheduleEventRoutes(eventController, middleware, context.openApiRegistry);
+    const eventRoutes = registerScheduleEventRoutes(
+      eventController,
+      middleware,
+      context.openApiRegistry,
+    );
 
     // 4. Mount onto API router
     router.use('/schedules', scheduleRoutes);

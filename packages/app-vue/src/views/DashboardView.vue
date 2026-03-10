@@ -6,7 +6,7 @@
  * goal progress, task board summary, upcoming schedule, quick actions.
  */
 
-import { onMounted, computed } from 'vue';
+import { onMounted, onBeforeUnmount, computed, nextTick, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDashboard } from '../modules/dashboard/composables/useDashboard';
 import {
@@ -68,8 +68,17 @@ const {
   fetchDashboard,
 } = useDashboard();
 
+const chartReady = ref(false);
+
 onMounted(() => {
-  fetchDashboard();
+  void fetchDashboard();
+  void nextTick(() => {
+    chartReady.value = true;
+  });
+});
+
+onBeforeUnmount(() => {
+  chartReady.value = false;
 });
 
 // ── Stat cards config ──
@@ -307,8 +316,11 @@ function navigateTo(path: string) {
               <template v-if="isLoading">
                 <Skeleton class="h-[220px] w-full rounded-lg" />
               </template>
-              <template v-else>
+              <template v-else-if="chartReady">
                 <v-chart class="h-[220px] w-full" :option="trendChartOption" autoresize />
+              </template>
+              <template v-else>
+                <Skeleton class="h-[220px] w-full rounded-lg" />
               </template>
             </CardContent>
           </Card>

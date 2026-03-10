@@ -14,10 +14,12 @@ updated: 2025-12-06
 
 # ADR-007: 主进程 SQLite 直接访问策略
 
-**状态**: ✅ 已采纳  
+**状态**: ⚠️ 已过时（被 PowerSync-only Desktop Runtime 取代）  
 **日期**: 2025-12-06  
 **决策者**: @BakerSean168  
 **关联**: ADR-004, ADR-006
+
+> 说明：本 ADR 作为历史记录保留，不再反映当前实现。当前 desktop 主进程已切换为 PowerSync-only 本地运行时。
 
 ## 背景
 
@@ -52,31 +54,37 @@ updated: 2025-12-06
 ### 为什么选择方案 A？
 
 ✅ **简单性**
+
 - 无需额外进程管理
 - 代码直观易维护
 - 调试方便
 
 ✅ **性能足够**
+
 - 单用户场景，并发压力小
 - better-sqlite3 同步 API 足够快
 - SQLite 本身支持 WAL 模式
 
 ✅ **与现有架构一致**
+
 - 直接使用 `@dailyuse/infrastructure-server` Container
 - Repository 模式无需改变
 
 ✅ **事务完整性**
+
 - 同步 API 保证事务原子性
 - 无跨进程事务问题
 
 ### 为什么不选其他方案？
 
 ❌ **方案 B (Worker Thread)**
+
 - 增加复杂度
 - better-sqlite3 不支持 Worker Thread
 - 需要额外的消息序列化
 
 ❌ **方案 C (独立进程)**
+
 - 过度工程
 - 进程管理复杂
 - 应用启动变慢
@@ -96,18 +104,18 @@ let db: Database.Database | null = null;
 export function initializeDatabase(): Database.Database {
   const userDataPath = app.getPath('userData');
   const dbPath = path.join(userDataPath, 'dailyuse.db');
-  
+
   db = new Database(dbPath, {
     // WAL 模式提升并发读性能
     // verbose: console.log, // 开发时启用
   });
-  
+
   // 启用 WAL 模式
   db.pragma('journal_mode = WAL');
-  
+
   // 运行迁移
   runMigrations(db);
-  
+
   return db;
 }
 
@@ -137,42 +145,42 @@ import { getDatabase } from '../../shared/database';
 export class SqliteGoalRepository implements IGoalRepository {
   async findAll(params?: { status?: string; limit?: number }): Promise<Goal[]> {
     const db = getDatabase();
-    
+
     let sql = 'SELECT * FROM goals';
     const conditions: string[] = [];
     const values: unknown[] = [];
-    
+
     if (params?.status) {
       conditions.push('status = ?');
       values.push(params.status);
     }
-    
+
     if (conditions.length > 0) {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
-    
+
     if (params?.limit) {
       sql += ' LIMIT ?';
       values.push(params.limit);
     }
-    
+
     const rows = db.prepare(sql).all(...values);
     return rows.map(this.mapToEntity);
   }
-  
+
   async findById(uuid: string): Promise<Goal | null> {
     const db = getDatabase();
     const row = db.prepare('SELECT * FROM goals WHERE uuid = ?').get(uuid);
     return row ? this.mapToEntity(row) : null;
   }
-  
+
   async create(goal: Goal): Promise<Goal> {
     const db = getDatabase();
     const stmt = db.prepare(`
       INSERT INTO goals (uuid, title, description, status, progress, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     stmt.run(
       goal.uuid,
       goal.title,
@@ -180,22 +188,22 @@ export class SqliteGoalRepository implements IGoalRepository {
       goal.status,
       goal.progress,
       goal.createdAt.toISOString(),
-      goal.updatedAt.toISOString()
+      goal.updatedAt.toISOString(),
     );
-    
+
     return goal;
   }
-  
+
   async update(uuid: string, data: Partial<Goal>): Promise<Goal> {
     const db = getDatabase();
     // ... 实现更新逻辑
   }
-  
+
   async delete(uuid: string): Promise<void> {
     const db = getDatabase();
     db.prepare('DELETE FROM goals WHERE uuid = ?').run(uuid);
   }
-  
+
   private mapToEntity(row: unknown): Goal {
     // 将数据库行映射为领域实体
     return {
@@ -211,20 +219,18 @@ export class SqliteGoalRepository implements IGoalRepository {
 
 ```typescript
 // apps/desktop/src/main/di/desktop-main.composition-root.ts
-import { GoalContainer, TaskContainer, /* ... */ } from '@dailyuse/infrastructure-server';
+import { GoalContainer, TaskContainer /* ... */ } from '@dailyuse/infrastructure-server';
 import { SqliteGoalRepository } from './sqlite-adapters/goal.sqlite-repository';
 import { SqliteTaskRepository } from './sqlite-adapters/task.sqlite-repository';
 // ...
 
 export function configureMainProcessDependencies(): void {
   // Goal Module
-  GoalContainer.getInstance()
-    .registerGoalRepository(new SqliteGoalRepository());
-  
+  GoalContainer.getInstance().registerGoalRepository(new SqliteGoalRepository());
+
   // Task Module
-  TaskContainer.getInstance()
-    .registerTaskRepository(new SqliteTaskRepository());
-  
+  TaskContainer.getInstance().registerTaskRepository(new SqliteTaskRepository());
+
   // ... 其他模块
 }
 ```
@@ -238,6 +244,7 @@ PRAGMA journal_mode = WAL;
 ```
 
 优势:
+
 - 读写可并行
 - 写操作不阻塞读
 - 崩溃恢复更快
@@ -258,24 +265,24 @@ async createMany(goals: Goal[]): Promise<void> {
   const insert = db.prepare(`
     INSERT INTO goals (uuid, title, ...) VALUES (?, ?, ...)
   `);
-  
+
   const insertMany = db.transaction((goals: Goal[]) => {
     for (const goal of goals) {
       insert.run(goal.uuid, goal.title, ...);
     }
   });
-  
+
   insertMany(goals);
 }
 ```
 
 ## 风险与缓解
 
-| 风险 | 概率 | 影响 | 缓解措施 |
-|------|------|------|---------|
-| 主进程阻塞 | 低 | 中 | 大查询分页，避免全表扫描 |
-| 数据损坏 | 低 | 高 | WAL 模式 + 定期备份 |
-| 迁移失败 | 中 | 高 | 迁移版本化，支持回滚 |
+| 风险       | 概率 | 影响 | 缓解措施                 |
+| ---------- | ---- | ---- | ------------------------ |
+| 主进程阻塞 | 低   | 中   | 大查询分页，避免全表扫描 |
+| 数据损坏   | 低   | 高   | WAL 模式 + 定期备份      |
+| 迁移失败   | 中   | 高   | 迁移版本化，支持回滚     |
 
 ## 未来演进
 

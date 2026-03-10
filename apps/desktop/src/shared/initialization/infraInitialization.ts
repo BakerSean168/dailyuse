@@ -5,7 +5,7 @@ import type { InitializationTask } from '@dailyuse/utils';
  * Registers infrastructure initialization tasks with the InitializationManager.
  *
  * This function orchestrates the startup sequence for the core infrastructure layer:
- * 1. **Database**: Establishes the SQLite connection and schema.
+ * 1. **Database**: Establishes the PowerSync-backed business database runtime.
  * 2. **DI Container**: Configures dependency injection for services and repositories.
  * 3. **IPC System**: Registers all Electron IPC handlers.
  *
@@ -17,11 +17,7 @@ export function registerInfrastructureInitializationTasks(): void {
   /**
    * Task 1: Database Initialization
    *
-   * Initializes SQLite connection with performance optimizations:
-   * - WAL mode for better concurrency
-   * - Page cache for reduced I/O
-   * - Memory-mapped I/O for faster reads
-   * - Proper journal mode
+   * Initializes the PowerSync-backed desktop business database runtime.
    *
    * Priority: 5 (Very high, no dependencies)
    * Phase: APP_STARTUP (Critical path)
@@ -32,21 +28,23 @@ export function registerInfrastructureInitializationTasks(): void {
     priority: 5,
     dependencies: [],
     initialize: async () => {
-      console.log('[Infrastructure] Initializing database...');
+      console.log('[Infrastructure] Initializing PowerSync business database...');
       const startTime = performance.now();
 
       try {
         // Dynamic import for main process only module
-        const { initializeDatabase } = await import('../../main/database');
-        const db = initializeDatabase();
+        const { openPowerSyncLocalOnly } = await import('../../main/database/powersync');
+        await openPowerSyncLocalOnly();
         const duration = performance.now() - startTime;
 
         console.log(
-          `[Infrastructure] Database initialized successfully in ${duration.toFixed(2)}ms`
+          `[Infrastructure] PowerSync business database initialized successfully in ${duration.toFixed(2)}ms`,
         );
       } catch (error) {
         console.error('[Infrastructure] Database initialization failed:', error);
-        throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Database initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     cleanup: async () => {
@@ -82,17 +80,17 @@ export function registerInfrastructureInitializationTasks(): void {
       const startTime = performance.now();
 
       try {
-        // Dynamic import for main process only module
-        const { configureMainProcessDependencies } = await import('../../main/di');
-        configureMainProcessDependencies();
+        // ElectronBootstrapper now owns main-process composition directly.
         const duration = performance.now() - startTime;
 
         console.log(
-          `[Infrastructure] DI container configured successfully in ${duration.toFixed(2)}ms`
+          `[Infrastructure] DI container bootstrap is now handled by ElectronBootstrapper (${duration.toFixed(2)}ms)`,
         );
       } catch (error) {
         console.error('[Infrastructure] DI container configuration failed:', error);
-        throw new Error(`DI configuration failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `DI configuration failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     cleanup: async () => {
@@ -120,18 +118,18 @@ export function registerInfrastructureInitializationTasks(): void {
       const startTime = performance.now();
 
       try {
-        // Dynamically import and initialize all module IPC handlers
-        const { initializeIPCHandlers } = await import('../../main/modules/ipc-registry');
-        initializeIPCHandlers();
+        // IPC registration is now handled during ElectronBootstrapper module registration.
 
         const duration = performance.now() - startTime;
 
         console.log(
-          `[Infrastructure] IPC system initialized successfully in ${duration.toFixed(2)}ms`
+          `[Infrastructure] IPC bootstrap is now handled by ElectronBootstrapper (${duration.toFixed(2)}ms)`,
         );
       } catch (error) {
         console.error('[Infrastructure] IPC system initialization failed:', error);
-        throw new Error(`IPC initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `IPC initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     cleanup: async () => {

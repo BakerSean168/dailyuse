@@ -4,7 +4,7 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AIContainer, AISqliteModule } from '../infrastructure-server/sqlite';
+import { AIContainer, AIPowerSyncModule } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import { DesktopAIRuntime } from './services/desktop-ai-runtime';
 import type { IKnowledgeNotePersistencePort } from '../application-server';
@@ -43,9 +43,10 @@ function resolveIdentityId(payload: unknown): string {
 
 function createKnowledgeNoteSubpathResolver(ctx: IElectronModuleContext) {
   return async (identityId: string): Promise<string> => {
-    const row = ctx.db
-      .prepare('SELECT preferences FROM user_settings WHERE identity_id = ? LIMIT 1')
-      .get(identityId) as { preferences?: string } | undefined;
+    const row = await ctx.db.getOptional<{ preferences?: string }>(
+      'SELECT preferences FROM user_settings WHERE identity_id = ? LIMIT 1',
+      [identityId],
+    );
 
     if (!row?.preferences) {
       return '';
@@ -69,7 +70,7 @@ export function createAIElectronModule(options: {
     name: 'AI',
 
     register(ctx: IElectronModuleContext): void {
-      const mod = new AISqliteModule(ctx.db);
+      const mod = new AIPowerSyncModule(ctx.db);
       const desktopRuntime = new DesktopAIRuntime(
         mod.providerConfigRepository,
         options.createKnowledgeNotePersistence(ctx),

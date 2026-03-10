@@ -2,18 +2,19 @@
  * Task Module - Composition Root
  * 任务模块组合根
  *
- * 负责初始化仓储和应用服务
- * 支持 Prisma (API) 和 SQLite (Desktop) 数据源
+ * 负责初始化 Prisma 仓储和应用服务
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type Database from 'better-sqlite3';
 import type { ITaskTemplateRepository } from '../domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
 import type { ITaskDependencyRepository } from '../domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskFolderRepository } from '../domain-server/repositories/ITaskFolderRepository';
 import { TaskContainer } from './di/task-container';
-import { TaskRepositoryFactory } from './di/task-repository.factory';
+import { TaskTemplatePrismaRepository } from './adapters/prisma/task-template-prisma.repository';
+import { TaskInstancePrismaRepository } from './adapters/prisma/task-instance-prisma.repository';
+import { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependency-prisma.repository';
+import { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
 import { CreateTaskTemplate } from '../application-server/use-cases/commands/create-task-template';
 import { GetTaskTemplate } from '../application-server/use-cases/queries/get-task-template';
 import { ListTaskTemplates } from '../application-server/use-cases/queries/list-task-templates';
@@ -42,8 +43,6 @@ import { ListTaskTemplatesByPriority } from '../application-server/use-cases/que
 import { ListTaskDependencies } from '../application-server/use-cases/queries/list-task-dependencies';
 import { GetDependencyChain } from '../application-server/use-cases/queries/get-dependency-chain';
 import { ValidateTaskDependency } from '../application-server/use-cases/queries/validate-task-dependency';
-
-type BetterSQLiteDB = Database.Database;
 
 /**
  * Task Module
@@ -84,27 +83,12 @@ export class TaskModule {
   public readonly getDependencyChain: GetDependencyChain;
   public readonly validateTaskDependency: ValidateTaskDependency;
 
-  constructor(
-    dataSourceType: 'prisma' | 'sqlite',
-    dbConnection: PrismaClient | BetterSQLiteDB,
-  ) {
+  constructor(dbConnection: PrismaClient) {
     // 1. Initialize Repositories
-    const taskTemplateRepository = TaskRepositoryFactory.createTaskTemplateRepository(
-      dataSourceType,
-      dbConnection,
-    );
-    const taskInstanceRepository = TaskRepositoryFactory.createTaskInstanceRepository(
-      dataSourceType,
-      dbConnection,
-    );
-    const taskDependencyRepository = TaskRepositoryFactory.createTaskDependencyRepository(
-      dataSourceType,
-      dbConnection,
-    );
-    const taskFolderRepository = TaskRepositoryFactory.createTaskFolderRepository(
-      dataSourceType,
-      dbConnection,
-    );
+    const taskTemplateRepository = new TaskTemplatePrismaRepository(dbConnection);
+    const taskInstanceRepository = new TaskInstancePrismaRepository(dbConnection);
+    const taskDependencyRepository = new TaskDependencyPrismaRepository(dbConnection);
+    const taskFolderRepository = new TaskFolderPrismaRepository(dbConnection);
 
     // 2. Register repositories in DI container
     const container = TaskContainer.getInstance();

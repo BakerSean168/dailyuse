@@ -9,6 +9,7 @@
  */
 import type { App } from 'vue';
 import { createResultIpcClient } from '@dailyuse/ipc-client';
+import { toast } from 'vue-sonner';
 import { AccountClientService } from '@dailyuse/account/application-client';
 import { AuthClientService } from '@dailyuse/authentication/application-client';
 import { GoalClientService } from '@dailyuse/goal/application-client';
@@ -128,9 +129,25 @@ export function installIpcServices(app: App): void {
   app.provide(MAIN_NAVIGATION_KEY, defaultMainNavigation);
   app.provide(BOTTOM_NAVIGATION_KEY, defaultBottomNavigation);
   app.provide(LOGOUT_HANDLER_KEY, async () => {
-    const authStore = useAuthenticationStore();
-    authStore.reset();
-    // Desktop: transition to login window via IPC
-    window.electronAPI?.invoke('window:transition-to-login');
+    console.info('[Desktop Logout] Handler invoked');
+    try {
+      console.info('[Desktop Logout] Invoking auth:logout');
+      const logoutResult = await window.electronAPI?.invoke('auth:logout');
+      console.info('[Desktop Logout] auth:logout result', logoutResult);
+
+      const authStore = useAuthenticationStore();
+      console.info('[Desktop Logout] Resetting auth store');
+      authStore.reset();
+
+      console.info('[Desktop Logout] Invoking window:transition-to-login');
+      const transitionResult = await window.electronAPI?.invoke('window:transition-to-login');
+      console.info('[Desktop Logout] window:transition-to-login result', transitionResult);
+    } catch (error) {
+      console.error('[Desktop Logout] Failed to logout/transition', error);
+      toast.error('退出登录失败', {
+        description: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   });
 }

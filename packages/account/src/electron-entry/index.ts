@@ -2,7 +2,7 @@
  * Account Module — Electron Entry Point
  *
  * Self-contained Composition Root for the Account module in Electron main process.
- * Creates an `ElectronAccountRepository` (SQLite) and wires it through `AccountModule`,
+ * Creates a PowerSync-backed account repository and wires it through `AccountModule`,
  * then registers IPC handlers and cross-module event listeners.
  *
  * Mirrors the API-side `AccountApiModule` pattern.
@@ -15,10 +15,10 @@ import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contract
 import type { IpcResult } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 import {
-  ElectronAccountRepository,
+  PowerSyncAccountRepository,
   AccountModule,
   AccountContainer,
-} from '../infrastructure-server/sqlite';
+} from '../infrastructure-server';
 import { registerAccountEventListeners } from '../application-server/handlers';
 import { createLogger } from '@dailyuse/utils';
 
@@ -27,9 +27,11 @@ const logger = createLogger('AccountElectron');
 const Ch = {
   LIST: 'account:list',
   GET: 'account:get',
+  GET_CURRENT_ALIAS: 'account:current',
   GET_CURRENT: 'account:get-me',
   UPDATE_PROFILE: 'account:update-profile',
   CHECK_AVAILABILITY: 'account:check-availability',
+  CLOSE: 'account:close',
 } as const;
 
 const channels = Object.values(Ch);
@@ -41,7 +43,11 @@ async function withAuth<T>(
   try {
     const identityId = await ctx.auth.requireIdentityId();
     return await handler(identityId);
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === 'AUTH_RESTORING') {
+      return fail({ code: 'AUTH_RESTORING', message: 'Authentication restore in progress' });
+    }
+
     return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
   }
 }
@@ -50,8 +56,8 @@ export const AccountElectronModule: IElectronModule = {
   name: 'Account',
 
   register(ctx: IElectronModuleContext): void {
-    // 1. Composition Root — SQLite repository + AccountModule facade
-    const accountRepository = new ElectronAccountRepository(ctx.db);
+    // 1. Composition Root — PowerSync repository + AccountModule facade
+    const accountRepository = new PowerSyncAccountRepository(ctx.db as any);
     const accountModule = new AccountModule({ accountRepository });
 
     // 2. Cross-module event listeners (auth:identity-created → auto-create account)
@@ -80,6 +86,16 @@ export const AccountElectronModule: IElectronModule = {
       });
     });
 
+    ipcMain.handle(Ch.GET_CURRENT_ALIAS, async () => {
+      return withAuth(ctx, async (identityId) => {
+        const profile = await accountModule.getProfile.execute(identityId);
+        if (!profile) {
+          return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
+        }
+        return ok(profile);
+      });
+    });
+
     ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
       return withAuth(ctx, async (identityId) => {
         const result = await accountModule.updateProfile.execute(identityId, payload);
@@ -90,6 +106,13 @@ export const AccountElectronModule: IElectronModule = {
     ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: any) =>
       accountModule.checkAvailability.execute(data),
     );
+
+    ipcMain.handle(Ch.CLOSE, async (_event, payload: any) => {
+      return withAuth(ctx, async (identityId) => {
+        const result = await accountModule.closeAccount.execute(identityId, payload ?? {});
+        return ok(result);
+      });
+    });
 
     logger.info('Account module registered');
   },

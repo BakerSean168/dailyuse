@@ -16,7 +16,9 @@ updated: 2025-12-03
 
 **状态**: ✅ 已采纳  
 **日期**: 2025-12-03  
-**决策者**: @BakerSean168  
+**决策者**: @BakerSean168
+
+> 更新说明（2026-03）：本文档保留历史演进上下文，部分 SQLite/Prisma-for-desktop 描述已被 PowerSync-only desktop runtime 取代。
 
 ## 背景
 
@@ -50,21 +52,25 @@ DailyUse 目前是一个 Web 应用，后端运行在远程服务器上。为了
 ### 为什么选择方案 C？
 
 ✅ **最大化代码复用**
+
 - Domain 层 100% 复用
 - Application 层 100% 复用
 - Infrastructure 层通过 Ports & Adapters 模式适配
 
 ✅ **真正的离线优先**
+
 - 主进程运行完整业务逻辑
 - 本地 SQLite 存储
 - 无需依赖远程服务器
 
 ✅ **架构一致性**
+
 - Web 和 Desktop 共享相同的 DDD 架构
 - 业务逻辑变更只需修改一处
 - 统一的测试策略
 
 ✅ **UI 现代化机会**
+
 - React + shadcn 提供更灵活的组件系统
 - Tailwind CSS 完整支持
 - 活跃的社区和 blocks 生态
@@ -72,11 +78,13 @@ DailyUse 目前是一个 Web 应用，后端运行在远程服务器上。为了
 ### 为什么不选其他方案？
 
 ❌ **方案 A (简单复用)**
+
 - 仍依赖网络，无法真正离线
 - 没有发挥 Electron 的本地能力
 - 性能与 Web 版无差异
 
 ❌ **方案 B (完全重写)**
+
 - 重复工作量巨大
 - 维护两套业务逻辑
 - 容易产生不一致
@@ -87,12 +95,12 @@ DailyUse 目前是一个 Web 应用，后端运行在远程服务器上。为了
 
 #### 现有代码 → 新结构映射
 
-| 现有位置 | 新位置 | 说明 |
-|----------|--------|------|
-| `apps/web/src/modules/goal/application/GoalApplicationService.ts` | `packages/app-client/src/goal/use-cases/` | 拆分为多个 Use Case |
-| `apps/api/src/modules/goal/application/GoalApplicationService.ts` | `packages/app-server/src/goal/use-cases/` | 拆分为多个 Use Case |
-| `apps/web/src/modules/goal/infrastructure/api/GoalApiClient.ts` | `packages/infra/src/adapters/http/goal.http.ts` | HTTP 适配器 |
-| `apps/api/src/modules/goal/infrastructure/repositories/GoalRepository.ts` | `packages/infra/src/adapters/prisma/goal.prisma.ts` | Prisma 适配器 |
+| 现有位置                                                                  | 新位置                                              | 说明                |
+| ------------------------------------------------------------------------- | --------------------------------------------------- | ------------------- |
+| `apps/web/src/modules/goal/application/GoalApplicationService.ts`         | `packages/app-client/src/goal/use-cases/`           | 拆分为多个 Use Case |
+| `apps/api/src/modules/goal/application/GoalApplicationService.ts`         | `packages/app-server/src/goal/use-cases/`           | 拆分为多个 Use Case |
+| `apps/web/src/modules/goal/infrastructure/api/GoalApiClient.ts`           | `packages/infra/src/adapters/http/goal.http.ts`     | HTTP 适配器         |
+| `apps/api/src/modules/goal/infrastructure/repositories/GoalRepository.ts` | `packages/infra/src/adapters/prisma/goal.prisma.ts` | Prisma 适配器       |
 
 #### Application Service → Use Case 拆分示例
 
@@ -129,13 +137,13 @@ packages/app-server/src/goal/
 
 #### 命名规范
 
-| 类型 | 规范 | 示例 |
-|------|------|------|
-| 包名 | kebab-case | `app-client`, `infra` |
-| 文件夹 | kebab-case | `goal/`, `use-cases/` |
-| 文件名 | kebab-case | `create-goal.ts`, `repository.ts` |
-| 类/接口 | PascalCase | `CreateGoal`, `IRepository` |
-| 函数/变量 | camelCase | `createGoal`, `goalRepository` |
+| 类型      | 规范       | 示例                              |
+| --------- | ---------- | --------------------------------- |
+| 包名      | kebab-case | `app-client`, `infra`             |
+| 文件夹    | kebab-case | `goal/`, `use-cases/`             |
+| 文件名    | kebab-case | `create-goal.ts`, `repository.ts` |
+| 类/接口   | PascalCase | `CreateGoal`, `IRepository`       |
+| 函数/变量 | camelCase  | `createGoal`, `goalRepository`    |
 
 #### 包结构
 
@@ -434,9 +442,9 @@ model Goal {
   progress    Float    @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   keyResults  KeyResult[]
-  
+
   @@map("goals")
 }
 
@@ -453,7 +461,7 @@ export type DatabaseProvider = 'postgresql' | 'sqlite';
 
 export interface PrismaClientConfig {
   provider: DatabaseProvider;
-  url?: string;  // 可选，默认使用环境变量
+  url?: string; // 可选，默认使用环境变量
 }
 
 let prismaInstance: PrismaClient | null = null;
@@ -469,9 +477,7 @@ export function createPrismaClient(config?: PrismaClientConfig): PrismaClient {
   }
 
   prismaInstance = new PrismaClient({
-    log: process.env.NODE_ENV === 'development' 
-      ? ['query', 'error', 'warn'] 
-      : ['error'],
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 
   return prismaInstance;
@@ -505,9 +511,9 @@ export class GoalPrismaRepository implements IGoalRepository {
   constructor(private prisma: PrismaClient) {}
 
   async findById(uuid: string): Promise<Goal | null> {
-    const record = await this.prisma.goal.findUnique({ 
+    const record = await this.prisma.goal.findUnique({
       where: { uuid },
-      include: { keyResults: true }
+      include: { keyResults: true },
     });
     return record ? GoalMapper.toDomain(record) : null;
   }
@@ -518,7 +524,7 @@ export class GoalPrismaRepository implements IGoalRepository {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: { keyResults: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
     return records.map(GoalMapper.toDomain);
   }
@@ -562,9 +568,9 @@ export async function initDatabase() {
   const dbPath = path.join(app.getPath('userData'), 'dailyuse.db');
   const databaseUrl = `file:${dbPath}`;
 
-  const prisma = createPrismaClient({ 
+  const prisma = createPrismaClient({
     provider: 'sqlite',
-    url: databaseUrl 
+    url: databaseUrl,
   });
 
   // 运行迁移 (首次启动或升级时)
@@ -591,21 +597,18 @@ async function runMigrations(dbPath: string) {
 ```json5
 // apps/desktop/electron-builder.json5
 {
-  "extraResources": [
+  extraResources: [
     {
-      "from": "node_modules/.prisma/client/",
-      "to": "prisma-client",
-      "filter": ["*.node", "schema.prisma"]
+      from: 'node_modules/.prisma/client/',
+      to: 'prisma-client',
+      filter: ['*.node', 'schema.prisma'],
     },
     {
-      "from": "prisma/migrations/",
-      "to": "prisma-migrations"
-    }
+      from: 'prisma/migrations/',
+      to: 'prisma-migrations',
+    },
   ],
-  "asarUnpack": [
-    "node_modules/.prisma/**/*",
-    "node_modules/@prisma/**/*"
-  ]
+  asarUnpack: ['node_modules/.prisma/**/*', 'node_modules/@prisma/**/*'],
 }
 ```
 
@@ -616,7 +619,7 @@ async function runMigrations(dbPath: string) {
 export interface SyncConfig {
   strategy: 'realtime' | 'manual' | 'disabled';
   conflictResolution: 'server-wins' | 'client-wins' | 'manual';
-  syncInterval?: number;  // for realtime strategy
+  syncInterval?: number; // for realtime strategy
 }
 
 export class SyncEngine {
@@ -630,19 +633,19 @@ export class SyncEngine {
   async sync(): Promise<SyncResult> {
     // 1. 获取本地变更
     const localChanges = await this.localRepository.getUnsynced();
-    
+
     // 2. 获取远程变更
     const remoteChanges = await this.remoteApi.getChanges(this.lastSyncTime);
-    
+
     // 3. 检测冲突
     const conflicts = this.detectConflicts(localChanges, remoteChanges);
-    
+
     // 4. 解决冲突
     const resolved = await this.conflictResolver.resolve(conflicts);
-    
+
     // 5. 应用变更
     await this.applyChanges(resolved);
-    
+
     return { success: true, syncedAt: new Date() };
   }
 }
@@ -769,7 +772,7 @@ export class LocalAIService implements IAIService {
 }
 
 // 使用时通过依赖注入选择实现
-const aiService = navigator.onLine 
+const aiService = navigator.onLine
   ? new RemoteAIService(apiClient)
   : new LocalAIService('./models/llama-3.2');
 ```
@@ -816,16 +819,19 @@ const aiService = navigator.onLine
 ### 正面影响
 
 ✅ **用户体验提升**
+
 - 离线可用，不依赖网络
 - 本地执行，响应更快
 - 数据本地存储，隐私性更好
 
 ✅ **代码质量提升**
+
 - Ports & Adapters 模式提供清晰的测试边界
 - 多环境适配能力
 - 业务逻辑高度复用
 
 ✅ **架构灵活性**
+
 - 未来可轻松添加移动端 (React Native)
 - AI 服务可平滑切换本地/远程
 - 同步策略可配置
@@ -833,29 +839,32 @@ const aiService = navigator.onLine
 ### 负面影响
 
 ⚠️ **初期复杂度增加**
+
 - 包数量增加，依赖管理更复杂
 - 需要维护多个 Adapter 实现
 - IPC 通信增加调试难度
 
 ⚠️ **开发成本**
+
 - 需要学习 Electron + React
 - UI 需要重新实现
 - 同步逻辑复杂
 
 ⚠️ **维护成本**
+
 - 需要同时维护 Web 和 Desktop
 - SQLite 和 PostgreSQL 可能有差异
 - 需要持续保持两端一致
 
 ## 风险与缓解
 
-| 风险 | 概率 | 影响 | 缓解措施 |
-|------|------|------|----------|
-| Prisma SQLite 与 PostgreSQL 语法差异 | 低 | 中 | Prisma 抽象了大部分差异，避免使用原生 SQL |
-| Electron 打包 Prisma 复杂 | 中 | 中 | 使用 extraResources 配置，参考官方指南 |
-| 同步冲突处理复杂 | 高 | 中 | 初期使用简单策略，逐步优化 |
-| UI 复刻工作量大 | 高 | 中 | 分模块迭代，优先核心功能 |
-| Electron 包体积大 | 中 | 低 | 优化打包配置，使用 asar |
+| 风险                                 | 概率 | 影响 | 缓解措施                                  |
+| ------------------------------------ | ---- | ---- | ----------------------------------------- |
+| Prisma SQLite 与 PostgreSQL 语法差异 | 低   | 中   | Prisma 抽象了大部分差异，避免使用原生 SQL |
+| Electron 打包 Prisma 复杂            | 中   | 中   | 使用 extraResources 配置，参考官方指南    |
+| 同步冲突处理复杂                     | 高   | 中   | 初期使用简单策略，逐步优化                |
+| UI 复刻工作量大                      | 高   | 中   | 分模块迭代，优先核心功能                  |
+| Electron 包体积大                    | 中   | 低   | 优化打包配置，使用 asar                   |
 
 ## 相关决策
 

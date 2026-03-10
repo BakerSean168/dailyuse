@@ -140,13 +140,13 @@ describe('AccountController', () => {
       );
 
       const result = await controller.checkAvailability({
-        type: 'Email',
+        type: 'email',
         value: 'test@example.com',
       });
 
       expect(isOk(result)).toBe(true);
       expect(useCases.checkAvailability).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'Email', value: 'test@example.com' }),
+        expect.objectContaining({ type: 'email', value: 'test@example.com' }),
       );
     });
 
@@ -172,7 +172,7 @@ describe('AccountController', () => {
     });
 
     it('should return VALIDATION_ERROR for missing value', async () => {
-      const result = await controller.checkAvailability({ type: 'Email' });
+      const result = await controller.checkAvailability({ type: 'email' });
 
       expect(isOk(result)).toBe(false);
     });

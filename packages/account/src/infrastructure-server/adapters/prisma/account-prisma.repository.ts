@@ -85,11 +85,11 @@ export class PrismaAccountRepository
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async findByUsername(username: string, tx?: unknown): Promise<Account | null> {
+  async findByNickname(nickname: string, tx?: unknown): Promise<Account | null> {
     const client = (tx || this.prisma) as any;
-    // Nickname stored in profile JSON �?search by nickname
+    // Nickname stored in profile JSON; search by nickname.
     const rows = await client.account.findMany({
-      where: { profile: { path: ['nickname'], equals: username } },
+      where: { profile: { path: ['nickname'], equals: nickname } },
       take: 1,
     });
     if (!rows || rows.length === 0) return null;
@@ -110,8 +110,8 @@ export class PrismaAccountRepository
     return AccountPrismaMapper.toDomain(row);
   }
 
-  async existsByUsername(username: string, tx?: unknown): Promise<boolean> {
-    const account = await this.findByUsername(username, tx);
+  async existsByNickname(nickname: string, tx?: unknown): Promise<boolean> {
+    const account = await this.findByNickname(nickname, tx);
     return account !== null;
   }
 

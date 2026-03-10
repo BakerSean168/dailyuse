@@ -8,12 +8,14 @@
 
 ## 📋 项目概要
 
+> 更新说明（2026-03）：本文档部分历史段落仍提及 SQLite/better-sqlite3。desktop 当前运行时已迁移为 PowerSync local-first。
+
 **DailyUse** 是一个基�?Electron + Vue 3/React 19 + TypeScript 的现代化个人效率管理平台，采�?Nx Monorepo 架构。该项目结合了桌面应用、Web 应用和后�?API 服务，为用户提供跨平台的生产力工具�?
 
 ### 核心特�?
 
 - �?\*_跨平�?_: Windows/macOS/Linux 支持
-- �?**离线优先**: 本地 SQLite 数据�?
+- �?**离线优先**: 本地 PowerSync 数据�?
 - �?\*_模块化架�?_: Nx Monorepo + DDD 领域驱动设计
 - �?**全栈 TypeScript**: 类型安全的前后端代码
 - �?**现代 UI**: Vuetify 3 (Web) + shadcn/ui (Desktop)
@@ -145,7 +147,7 @@ DailyUse/
 | **前端**       | React 19                   | 19.2.1  |
 | \*_状态管�?_   | Zustand                    | 5.0.5   |
 | \*_UI �?_      | shadcn/ui + Tailwind CSS 4 | -       |
-| \*_本地数据�?_ | better-sqlite3             | 11.10.0 |
+| \*_本地数据�?_ | PowerSync local runtime    | 0.17.1  |
 | **文件监控**   | chokidar                   | 4.0.3   |
 | **Git 集成**   | simple-git                 | 3.27.0  |
 | **任务调度**   | node-schedule              | 2.1.1   |
@@ -156,7 +158,7 @@ DailyUse/
 #### 核心功能
 
 - 原生桌面应用体验 (React 19 渲染)
-- 本地 SQLite 数据存储
+- 本地 PowerSync 数据存储
 - 系统托盘集成
 - 快捷键支�?(Alt+Space)
 - 桌面通知

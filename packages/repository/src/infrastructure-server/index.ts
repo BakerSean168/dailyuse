@@ -2,24 +2,29 @@
  * Repository Module - Infrastructure Server
  *
  * Repository implementations and DI Module for Repository domain.
- * Supports both Prisma (API) and SQLite (Desktop) data sources.
+ * Supports Prisma (API) and PowerSync (Desktop) data sources.
  */
 // Module (Composition Pattern - ADR-025)
 export { RepositoryModule } from './repository.module';
+export { RepositoryPowerSyncModule } from './powersync';
 export { RepositoryContainer } from './di/repository-container-v2';
 
 // Repository Factory
 export { RepositoryRepositoryFactory } from './di/repository-repository.factory';
 
 // Ports (Interfaces)
-export { type IFolderRepository, type IRepositoryRepository, type IResourceRepository } from '../domain-server';
+export {
+  type IFolderRepository,
+  type IRepositoryRepository,
+  type IResourceRepository,
+} from '../domain-server';
 
 // Database Provider Factory (鏍稿績鏂板)
 export {
   DatabaseProviderFactory,
   DatabaseProvider,
   initializePrismaProvider,
-  initializeSqliteProvider,
+  initializePowerSyncProvider,
   type IDatabaseProviderConfig,
   type IProviderInitContext,
   type IProviderInitializer,
@@ -35,11 +40,10 @@ export { FolderPrismaRepository } from './adapters/prisma/folder-prisma.reposito
 export { RepositoryPrismaRepository } from './adapters/prisma/repository-prisma.repository';
 export { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repository';
 
-// SQLite Adapters
-export { SqliteRepositoryRepository } from './adapters/sqlite/repository-sqlite.repository';
-export { SqliteFolderRepository } from './adapters/sqlite/folder-sqlite.repository';
-export { SqliteResourceRepository } from './adapters/sqlite/resource-sqlite.repository';
-export { REPOSITORY_MODULE_SCHEMA } from './adapters/sqlite/schema';
+// PowerSync Adapters
+export { PowerSyncRepositoryRepository } from './adapters/powersync/repository-powersync.repository';
+export { PowerSyncFolderRepository } from './adapters/powersync/folder-powersync.repository';
+export { PowerSyncResourceRepository } from './adapters/powersync/resource-powersync.repository';
 
 // Memory Adapters
 export { FolderMemoryRepository } from './adapters/memory/folder-memory.repository';

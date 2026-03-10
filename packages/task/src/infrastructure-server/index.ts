@@ -9,15 +9,12 @@ export { TaskInstancePrismaRepository } from './adapters/prisma/task-instance-pr
 export { TaskTemplatePrismaRepository } from './adapters/prisma/task-template-prisma.repository';
 export { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependency-prisma.repository';
 export { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
-export { SqliteTaskInstanceRepository } from './adapters/sqlite/task-instance-sqlite.repository';
-export { SqliteTaskTemplateRepository } from './adapters/sqlite/task-template-sqlite.repository';
-export { SqliteTaskDependencyRepository } from './adapters/sqlite/task-dependency-sqlite.repository';
-export { SqliteTaskFolderRepository } from './adapters/sqlite/task-folder-sqlite.repository';
+export { PowerSyncTaskTemplateRepository } from './adapters/powersync/task-template-powersync.repository';
+export { PowerSyncTaskInstanceRepository } from './adapters/powersync/task-instance-powersync.repository';
+export { PowerSyncTaskDependencyRepository } from './adapters/powersync/task-dependency-powersync.repository';
+export { PowerSyncTaskFolderRepository } from './adapters/powersync/task-folder-powersync.repository';
 
 // DI Module
 export { TaskModule } from './task.module';
+export { TaskPowerSyncModule } from './powersync';
 export { TaskContainer } from './di/task-container';
-
-// SQLite schema
-export { TASK_MODULE_SCHEMA } from './adapters/sqlite/schema';
-

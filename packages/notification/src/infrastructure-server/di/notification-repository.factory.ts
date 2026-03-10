@@ -4,6 +4,7 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 import {
   NotificationPrismaRepository,
@@ -12,12 +13,10 @@ import {
 } from '../adapters/prisma';
 
 import {
-  SqliteNotificationRepository,
-  SqliteNotificationPreferenceRepository,
-  SqliteNotificationTemplateRepository,
-} from '../adapters/sqlite';
-
-type BetterSQLiteDB = any;
+  PowerSyncNotificationRepository,
+  PowerSyncNotificationPreferenceRepository,
+  PowerSyncNotificationTemplateRepository,
+} from '../adapters/powersync';
 
 /**
  * Notification Repository Factory
@@ -35,13 +34,13 @@ export class NotificationRepositoryFactory {
   }
 
   /**
-   * Create repositories using SQLite (for Desktop/better-sqlite3)
+   * Create repositories using PowerSync database contract (Desktop)
    */
-  static createSqliteRepositories(db: BetterSQLiteDB) {
+  static createPowerSyncRepositories(db: IElectronDatabase) {
     return {
-      notificationRepository: new SqliteNotificationRepository(db),
-      notificationPreferenceRepository: new SqliteNotificationPreferenceRepository(db),
-      notificationTemplateRepository: new SqliteNotificationTemplateRepository(db),
+      notificationRepository: new PowerSyncNotificationRepository(db),
+      notificationPreferenceRepository: new PowerSyncNotificationPreferenceRepository(db),
+      notificationTemplateRepository: new PowerSyncNotificationTemplateRepository(db),
     };
   }
 
@@ -49,13 +48,13 @@ export class NotificationRepositoryFactory {
    * Create repositories based on data source type
    */
   static create(
-    dataSource: 'prisma' | 'sqlite',
-    client: PrismaClient | BetterSQLiteDB,
+    dataSource: 'prisma' | 'powersync',
+    client: PrismaClient | IElectronDatabase,
   ): ReturnType<typeof NotificationRepositoryFactory.createPrismaRepositories> {
     if (dataSource === 'prisma') {
       return this.createPrismaRepositories(client as PrismaClient) as any;
     } else {
-      return this.createSqliteRepositories(client as BetterSQLiteDB) as any;
+      return this.createPowerSyncRepositories(client as IElectronDatabase) as any;
     }
   }
 }

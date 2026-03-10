@@ -462,12 +462,14 @@ export class WindowManager {
   private registerIpcHandlers(): void {
     // 登录成功 → 切换到主窗口
     ipcMain.handle('window:transition-to-main', async () => {
+      logger.info('IPC window:transition-to-main received');
       await this.transitionToMainWindow();
       return { success: true };
     });
 
     // 登出 → 切换到登录窗口
     ipcMain.handle('window:transition-to-login', async () => {
+      logger.info('IPC window:transition-to-login received');
       await this.transitionToLoginWindow();
       return { success: true };
     });

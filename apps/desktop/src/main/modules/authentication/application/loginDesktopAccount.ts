@@ -2,7 +2,8 @@ import { type AuthResponseDTO } from '@dailyuse/contracts/authentication';
 
 import type { AuthRemoteGateway } from './AuthRemoteGateway';
 import {
-  createOfflineAuthError,
+  createConfigError,
+  createInternalError,
   createRemoteUnreachableError,
   createTerminalAuthError,
   type AuthFlowLogger,
@@ -33,15 +34,23 @@ export async function loginDesktopAccount(
 
   logger.info('Desktop login attempt', { email: request.email });
 
-  if (!isOnline()) {
-    return {
-      ok: false,
-      error: createOfflineAuthError('OFFLINE'),
-    };
-  }
+  const onlineSnapshot = isOnline();
+  logger.info('Desktop login connectivity snapshot', { online: onlineSnapshot });
 
   try {
-    const loginUrl = remoteGateway.createLoginUrl();
+    let loginUrl: string;
+    try {
+      loginUrl = remoteGateway.createLoginUrl();
+    } catch (error) {
+      logger.error('Failed to resolve login API URL from desktop config', { error });
+      return {
+        ok: false,
+        error: createConfigError(
+          error instanceof Error ? error.message : 'Desktop API base URL is not configured',
+        ),
+      };
+    }
+
     logger.info('Calling login API', { loginUrl });
 
     const response = await remoteGateway.login({
@@ -84,7 +93,19 @@ export async function loginDesktopAccount(
     });
 
     if (onSuccess) {
-      await onSuccess(response.data, request);
+      try {
+        await onSuccess(response.data, request);
+      } catch (error) {
+        logger.error('Remote login succeeded but local persistence failed', {
+          error,
+          email: request.email,
+          identityId: response.data.identity.id,
+        });
+        return {
+          ok: false,
+          error: createInternalError('LOCAL_PERSISTENCE_FAILED'),
+        };
+      }
     }
 
     return {
@@ -92,7 +113,10 @@ export async function loginDesktopAccount(
       response: response.data,
     };
   } catch (error) {
-    logger.warn('Remote login request failed, allowing offline fallback', { error });
+    logger.warn('Remote login request failed, allowing offline fallback', {
+      error,
+      onlineSnapshot,
+    });
     return {
       ok: false,
       error: createRemoteUnreachableError(

@@ -4,18 +4,16 @@
  */
 
 import type { PrismaClient } from '@dailyuse/database';
-import type Database from 'better-sqlite3';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 import {
   AIConversationPrismaRepository,
   AIProviderConfigPrismaRepository,
 } from '../adapters/prisma';
 import {
-  SqliteAIConversationRepository,
-  SqliteAIProviderConfigRepository,
-} from '../adapters/sqlite';
-
-type BetterSQLiteDB = Database.Database;
+  PowerSyncAIConversationRepository,
+  PowerSyncAIProviderConfigRepository,
+} from '../adapters/powersync';
 
 /**
  * AI Repository Factory
@@ -32,12 +30,12 @@ export class AIRepositoryFactory {
   }
 
   /**
-   * Create repositories using SQLite (for Desktop/better-sqlite3)
+   * Create repositories using PowerSync (for Desktop)
    */
-  static createSqliteRepositories(db: BetterSQLiteDB) {
+  static createPowerSyncRepositories(db: IElectronDatabase) {
     return {
-      conversationRepository: new SqliteAIConversationRepository(db),
-      providerConfigRepository: new SqliteAIProviderConfigRepository(db),
+      conversationRepository: new PowerSyncAIConversationRepository(db),
+      providerConfigRepository: new PowerSyncAIProviderConfigRepository(db),
     };
   }
 
@@ -45,13 +43,13 @@ export class AIRepositoryFactory {
    * Create repositories based on data source type
    */
   static create(
-    dataSource: 'prisma' | 'sqlite',
-    client: PrismaClient | BetterSQLiteDB,
+    dataSource: 'prisma' | 'powersync',
+    client: PrismaClient | IElectronDatabase,
   ): ReturnType<typeof AIRepositoryFactory.createPrismaRepositories> {
     if (dataSource === 'prisma') {
       return this.createPrismaRepositories(client as PrismaClient) as any;
     } else {
-      return this.createSqliteRepositories(client as BetterSQLiteDB) as any;
+      return this.createPowerSyncRepositories(client as IElectronDatabase) as any;
     }
   }
 }

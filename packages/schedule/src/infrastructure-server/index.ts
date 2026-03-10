@@ -8,9 +8,6 @@
 export { ScheduleModule } from './schedule.module';
 export { ScheduleContainer } from './di/schedule-container';
 
-// DI Factory
-export { ScheduleRepositoryFactory } from './di';
-
 // Adapters - Prisma
 export {
   SchedulePrismaRepository,
@@ -18,15 +15,10 @@ export {
   ScheduleExecutionPrismaRepository,
 } from './adapters/prisma';
 
-// Adapters - SQLite
+// Adapters - PowerSync
 export {
-  SqliteScheduleRepository,
-  SqliteScheduleTaskRepository,
-  SqliteScheduleExecutionRepository,
-} from './adapters/sqlite';
+  PowerSyncScheduleRepository,
+  PowerSyncScheduleTaskRepository,
+  PowerSyncScheduleExecutionRepository,
+} from './adapters/powersync';
 export { SchedulerBootstrap } from './scheduler-bootstrap';
-
-// SQLite schema
-export { SCHEDULE_MODULE_SCHEMA } from './adapters/sqlite/schema';
-
-

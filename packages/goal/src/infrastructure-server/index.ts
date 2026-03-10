@@ -2,7 +2,6 @@
  * Goal Module - Infrastructure Server
  *
  * Repository implementations for Goal domain.
- * Supports both Prisma (API) and SQLite (Desktop) data sources.
  *
  * 遵循 Governance 模块架构：
  * - 此层只包含仓储实现、映射器、端口定义
@@ -17,14 +16,10 @@ export { FocusSessionPrismaRepository } from './adapters/prisma/focus-session-pr
 export { PrismaWeightSnapshotRepository } from './adapters/prisma/weight-snapshot-prisma.repository';
 export { GoalRecordPrismaRepository } from './adapters/prisma/goal-record-prisma.repository';
 
-// ============ Adapters - SQLite ============
-export { SqliteGoalRepository } from './adapters/sqlite/goal-sqlite.repository';
-export { SqliteGoalFolderRepository } from './adapters/sqlite/goal-folder-sqlite.repository';
-export { SqliteFocusModeRepository } from './adapters/sqlite/focus-mode-sqlite.repository';
-export { SqliteFocusSessionRepository } from './adapters/sqlite/focus-session-sqlite.repository';
-export { SqliteWeightSnapshotRepository } from './adapters/sqlite/weight-snapshot-sqlite.repository';
-export { SqliteGoalRecordRepository } from './adapters/sqlite/goal-record-sqlite.repository';
-export { GOAL_MODULE_SCHEMA } from './adapters/sqlite/schema';
+// ============ Adapters - PowerSync ============
+export { GoalPowerSyncRepository } from './adapters/powersync/goal-powersync.repository';
+export { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-powersync.repository';
+export { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
 
 // ============ Composition Root ============
 export { GoalModule, type GoalModuleRepositories } from './goal.module';

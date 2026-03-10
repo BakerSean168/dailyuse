@@ -8,6 +8,7 @@
 import type { App } from 'vue';
 
 import {
+  useAccountStore,
   useGoalStore,
   useTaskStore,
   useScheduleStore,
@@ -67,6 +68,7 @@ function setupOnlineStatus(): void {
  * should be invalidated when the table changes.
  */
 const TABLE_TO_MODULE: Record<string, string> = {
+  accounts: 'account',
   // Goal
   goals: 'goal',
   goal_folders: 'goal',
@@ -125,6 +127,7 @@ const TABLE_TO_MODULE: Record<string, string> = {
  * not-initialized so the next composable access triggers a fresh fetch.
  */
 const MODULE_INVALIDATORS: Record<string, () => void> = {
+  account: () => useAccountStore().setInitialized(false),
   goal: () => useGoalStore().setInitialized(false),
   task: () => useTaskStore().setInitialized(false),
   schedule: () => useScheduleStore().setInitialized(false),

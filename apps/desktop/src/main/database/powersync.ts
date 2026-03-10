@@ -8,8 +8,8 @@
  *
  * Design decisions:
  *   - PowerSync's Node SDK (`@powersync/node`) internally manages its own
- *     `better-sqlite3` connection. We do NOT share the existing `dailyuse.sqlite`
- *     file — PowerSync writes to `dailyuse-sync.sqlite` in the same directory.
+ *     SQLite connection, but it now points at the unified desktop business
+ *     database file so sync and local business reads observe the same data.
  *   - The connector obtains a PowerSync-specific RS256 JWT from the API's
  *     `/powersync/token` endpoint, authenticating via the existing HS256 access token.
  *   - CRUD uploads are batched to `/powersync/crud` in the API.
@@ -25,13 +25,14 @@ import type {
   PowerSyncCredentials,
   CrudTransaction,
 } from '@powersync/common';
-import { app, BrowserWindow } from 'electron';
+import { BrowserWindow } from 'electron';
 import path from 'path';
 import fs from 'fs';
 
 import { PowerSyncAppSchema } from '@dailyuse/database/powersync';
 import { getTokenManager } from '../modules/authentication/infrastructure';
 import { getApiBaseUrl } from '../utils/api-config';
+import { getUnifiedDatabasePath } from './paths';
 
 // ──────────────────────────────────────────────
 // Module state
@@ -48,12 +49,12 @@ let openingPromise: Promise<PowerSyncDatabase> | null = null;
 // ──────────────────────────────────────────────
 
 function getSyncDatabasePath(): string {
-  const userDataPath = app.getPath('userData');
-  const dbDir = path.join(userDataPath, 'data');
+  const dbPath = getUnifiedDatabasePath();
+  const dbDir = path.dirname(dbPath);
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
-  return path.join(dbDir, 'dailyuse-sync.sqlite');
+  return dbPath;
 }
 
 function getPowerSyncServiceUrl(): string {

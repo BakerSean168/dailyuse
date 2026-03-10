@@ -30,6 +30,19 @@ export const AuthMode = {
 export type AuthMode = (typeof AuthMode)[keyof typeof AuthMode];
 
 /**
+ * Runtime authentication state in the desktop main process.
+ * Distinguishes restore-in-progress from a true unauthenticated state.
+ */
+export const AuthRuntimeState = {
+  UNINITIALIZED: 'UNINITIALIZED',
+  RESTORING: 'RESTORING',
+  AUTHENTICATED: 'AUTHENTICATED',
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+} as const;
+
+export type AuthRuntimeState = (typeof AuthRuntimeState)[keyof typeof AuthRuntimeState];
+
+/**
  * Network connection status as observed by the main process.
  */
 export const ConnectionStatus = {
@@ -101,6 +114,7 @@ export interface SessionRestoreResult {
   ok?: boolean;
   success?: boolean;
   hasValidSession?: boolean;
+  runtimeState?: AuthRuntimeState;
   identityId?: string;
   sessionId?: string;
   needsRefresh?: boolean;
@@ -232,6 +246,7 @@ export interface DeviceInfoUI {
 export interface AuthStatus {
   authenticated: boolean;
   mode: AuthMode;
+  runtimeState: AuthRuntimeState;
   connectionStatus: ConnectionStatus;
   user: UserInfo | null;
   session: SessionInfo | null;

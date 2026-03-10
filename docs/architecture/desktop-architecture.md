@@ -101,7 +101,7 @@ Desktop 应用
 │  ║                             │                                 ║   │
 │  ║                             ▼                                 ║   │
 │  ║  ┌────────────────────────────────────────────────────────┐  ║   │
-│  ║  │  SQLite (better-sqlite3)                              │  ║   │
+│  ║  │  PowerSync (local-first SQLite runtime)               │  ║   │
 │  ║  │  └─ dailyuse.db                                       │  ║   │
 │  ║  └────────────────────────────────────────────────────────┘  ║   │
 │  ║                                                                ║   │
@@ -130,12 +130,12 @@ import { registerAllHandlers } from './ipc/register-handlers';
 
 app.whenReady().then(async () => {
   // 1️⃣ 初始化 L1-L3（数据库 + 依赖容器）
-  await initializeDatabase();
+  await openPowerSyncLocalOnly();
   configureMainProcessDependencies();
-  
+
   // 2️⃣ 注册 IPC Handlers（L5 的入口点）
   registerAllHandlers();
-  
+
   // 3️⃣ 创建主窗口
   await createWindow();
 });
@@ -146,24 +146,22 @@ app.whenReady().then(async () => {
 ```typescript
 // src/main/di/desktop-main.composition-root.ts
 import {
-  ScheduleContainer,        // L3: 容器
+  ScheduleContainer, // L3: 容器
   TaskContainer,
 } from '@dailyuse/infrastructure-server';
 
 import {
-  SqliteScheduleRepository, // L3: 实现
-  SqliteTaskRepository,
-} from './sqlite-adapters';
+  PowerSyncScheduleRepository, // L3: 实现
+  PowerSyncTaskRepository,
+} from './powersync-adapters';
 
 export function configureMainProcessDependencies(): void {
   // 装配 Schedule 模块（L1-L3）
-  ScheduleContainer.getInstance()
-    .registerScheduleTaskRepository(new SqliteScheduleRepository());
-    // 👆 L3 实现依赖 L2（ScheduleTask）依赖 L1（ScheduleTaskDTO）
+  ScheduleContainer.getInstance().registerScheduleTaskRepository(new PowerSyncScheduleRepository());
+  // 👆 L3 实现依赖 L2（ScheduleTask）依赖 L1（ScheduleTaskDTO）
 
   // 装配 Task 模块（L1-L3）
-  TaskContainer.getInstance()
-    .registerTaskRepository(new SqliteTaskRepository());
+  TaskContainer.getInstance().registerTaskRepository(new PowerSyncTaskRepository());
 
   // ...其他模块
 
@@ -172,6 +170,7 @@ export function configureMainProcessDependencies(): void {
 ```
 
 **这一步的意义：**
+
 - ✅ L1 (Contracts) 被所有层看到
 - ✅ L2 (Domain) 验证业务规则
 - ✅ L3 (Infrastructure) 提供实现
@@ -190,30 +189,28 @@ import type { ScheduleTaskDTO } from '@dailyuse/contracts';
 export function registerScheduleHandlers(): void {
   // IPC 通道：'schedule:getActive'
   // 依赖链：IPC → L4 应用服务 → L3 容器 → L2 领域模型 → L1 契约
-  
+
   ipcMain.handle('schedule:getActive', async (_, accountUuid: string) => {
     // 从 L3 容器获取 L4 应用服务（这里用应用级编排）
-    const repository = ScheduleContainer.getInstance()
-      .getScheduleTaskRepository();
-    
+    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
+
     // 调用 L2 的业务逻辑
     const tasks = await repository.findEnabled();
-    
+
     // 返回 L1 契约（ScheduleTaskDTO）给客户端
-    return tasks.map(task => task.toClientDTO());
+    return tasks.map((task) => task.toClientDTO());
   });
 
   // 又例：触发任务执行（Desktop 特定的功能）
   ipcMain.handle('schedule:executeTask', async (_, taskUuid: string) => {
     // 1. 获取任务（L3 + L2）
-    const repository = ScheduleContainer.getInstance()
-      .getScheduleTaskRepository();
+    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
     const task = await repository.findByUuid(taskUuid);
-    
+
     // 2. 执行任务（L5 特定的逻辑）
     if (task.canExecute()) {
       await executeScheduleTask(task);
-      
+
       // 3. Desktop 特定：发送本地通知
       new Notification({
         title: '任务已执行',
@@ -225,6 +222,7 @@ export function registerScheduleHandlers(): void {
 ```
 
 **关键观察：**
+
 - IPC Handler 是 Desktop 对外暴露的 API
 - 它们内部调用 L4 的应用服务
 - 然后加上 Desktop 特定的处理（通知、IPC 序列化等）
@@ -241,9 +239,9 @@ export function registerScheduleHandlers(): void {
 // infrastructure/DesktopScheduler.ts
 import { powerMonitor } from 'electron';
 import {
-  ScheduleTaskQueue,      // 来自 L4
-  type IScheduleTimer,    // 来自 L4
-  type IScheduleMonitor,  // 来自 L4
+  ScheduleTaskQueue, // 来自 L4
+  type IScheduleTimer, // 来自 L4
+  type IScheduleMonitor, // 来自 L4
 } from '@dailyuse/application-server';
 
 import { ScheduleContainer } from '@dailyuse/infrastructure-server';
@@ -263,8 +261,7 @@ export class DesktopScheduler {
 
   async start(): Promise<void> {
     // 从 L3 获取仓储
-    const repository = ScheduleContainer.getInstance()
-      .getScheduleTaskRepository();
+    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
 
     // 使用 L4 的 ScheduleTaskQueue
     this.queue = new ScheduleTaskQueue({
@@ -272,7 +269,7 @@ export class DesktopScheduler {
         loadActiveTasks: async () => {
           const tasks = await repository.findEnabled();
           // 转换为 L4 期望的格式
-          return tasks.map(t => ({
+          return tasks.map((t) => ({
             taskUuid: t.uuid,
             nextRunAt: t.nextRunAt?.getTime() ?? Date.now(),
             cronExpression: t.schedule.cronExpression,
@@ -300,6 +297,7 @@ export class DesktopScheduler {
 ```
 
 **依赖链分析：**
+
 ```
 DesktopScheduler (L5)
 ├─ ScheduleTaskQueue (L4) ✓
@@ -337,8 +335,7 @@ export async function executeScheduleTask(task: ScheduleTask): Promise<void> {
     });
 
     // 4. 保存回数据库（L3）
-    const repository = ScheduleContainer.getInstance()
-      .getScheduleTaskRepository();
+    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
     await repository.save(task);
 
     // 5. Desktop 特定：发送本地通知
@@ -397,7 +394,7 @@ export function registerScheduleInitializationTasks(): void {
     dependencies: ['schedule-module-initialization'],
     initialize: async () => {
       console.log('[Schedule] Starting task queue...');
-      
+
       const scheduler = DesktopScheduler.createInstance({
         onExecuteTask: executeScheduleTask,
       });
@@ -439,6 +436,7 @@ export function registerScheduleInitializationTasks(): void {
 ### Desktop 中使用 Patterns 的例子
 
 **Before（代码散落）：**
+
 ```typescript
 // 从 application-server 导入 MinHeap
 import { MinHeap } from '@dailyuse/application-server/schedule/scheduler';
@@ -447,6 +445,7 @@ import { MinHeap } from '@dailyuse/application-server/schedule/scheduler';
 ```
 
 **After（清晰的通用框架）：**
+
 ```typescript
 // 从 patterns 导入通用基类
 import { BaseTaskQueue, MinHeap } from '@dailyuse/patterns';
@@ -468,13 +467,13 @@ export class DesktopScheduleTaskQueue extends BaseTaskQueue<ScheduleTask> {
   // 重写执行方法，添加 Electron 特定逻辑
   async execute(task: ScheduleTask): Promise<void> {
     if (!task.canExecute()) return;
-    
+
     // 使用 Electron 计时器（而不是系统计时器）
     await this.electronTimer.waitUntil(task.nextRunAt);
-    
+
     // 执行任务
     await executeScheduleTask(task);
-    
+
     // 发送 IPC 事件到 Renderer
     mainWindow?.webContents.send('schedule:executed', { taskId: task.id });
   }
@@ -483,12 +482,12 @@ export class DesktopScheduleTaskQueue extends BaseTaskQueue<ScheduleTask> {
 
 ### 好处
 
-| 好处 | 详细说明 |
-|------|---------|
-| **高复用** | MinHeap、BaseTaskQueue 可被所有模块复用 |
-| **易测试** | 通用模式不依赖 Electron，轻松 mock |
-| **易扩展** | 新应用（如 Mobile）可继承同样的基类 |
-| **清晰职责** | Desktop 只添加 Electron 特定逻辑 |
+| 好处         | 详细说明                                |
+| ------------ | --------------------------------------- |
+| **高复用**   | MinHeap、BaseTaskQueue 可被所有模块复用 |
+| **易测试**   | 通用模式不依赖 Electron，轻松 mock      |
+| **易扩展**   | 新应用（如 Mobile）可继承同样的基类     |
+| **清晰职责** | Desktop 只添加 Electron 特定逻辑        |
 
 ---
 
@@ -500,10 +499,10 @@ export class DesktopScheduleTaskQueue extends BaseTaskQueue<ScheduleTask> {
 
 ```typescript
 // ❌ Before：什么都有
-import { priorityCalculator } from '@dailyuse/utils';  // 业务计算
-import { MinHeap } from '@dailyuse/utils';             // 通用模式
-import { logger } from '@dailyuse/utils';              // 基础工具
-import { ReminderErrors } from '@dailyuse/utils';      // 业务错误
+import { priorityCalculator } from '@dailyuse/utils'; // 业务计算
+import { MinHeap } from '@dailyuse/utils'; // 通用模式
+import { logger } from '@dailyuse/utils'; // 基础工具
+import { ReminderErrors } from '@dailyuse/utils'; // 业务错误
 ```
 
 ### 现在的清晰分工
@@ -518,16 +517,16 @@ import { ReminderErrors } from '@dailyuse/domain-server/reminder/errors';
 
 **迁移详情：**
 
-| 代码 | 从 | 到 | 理由 |
-|------|----|----|------|
-| `priorityCalculator` | utils/shared | domain-server/schedule/calculators | Schedule 特定 |
-| `recurrence.ts` | utils/shared | domain-server/schedule/calculators | Schedule 特定 |
-| `MinHeap` | application-server/scheduler | patterns/scheduler/priority-queue | 通用模式 |
-| `BaseTaskQueue` | application-server/scheduler | patterns/scheduler | 通用基类 |
-| `ReminderErrors` | utils/errors | domain-server/reminder/errors | 业务特定 |
-| `logger` | 保持 | utils/shared | 基础工具，所有层都用 |
-| `uuid` 工具 | 保持 | utils/shared | 通用函数 |
-| `debounce` 等 | 保持 | utils/frontend | 前端工具 |
+| 代码                 | 从                           | 到                                 | 理由                 |
+| -------------------- | ---------------------------- | ---------------------------------- | -------------------- |
+| `priorityCalculator` | utils/shared                 | domain-server/schedule/calculators | Schedule 特定        |
+| `recurrence.ts`      | utils/shared                 | domain-server/schedule/calculators | Schedule 特定        |
+| `MinHeap`            | application-server/scheduler | patterns/scheduler/priority-queue  | 通用模式             |
+| `BaseTaskQueue`      | application-server/scheduler | patterns/scheduler                 | 通用基类             |
+| `ReminderErrors`     | utils/errors                 | domain-server/reminder/errors      | 业务特定             |
+| `logger`             | 保持                         | utils/shared                       | 基础工具，所有层都用 |
+| `uuid` 工具          | 保持                         | utils/shared                       | 通用函数             |
+| `debounce` 等        | 保持                         | utils/frontend                     | 前端工具             |
 
 ---
 
@@ -540,11 +539,11 @@ apps/desktop/
 │   │   ├── index.ts                              # 应用入口（第 1 步）
 │   │   │
 │   │   ├── database/
-│   │   │   └── index.ts                          # SQLite 初始化
+│   │   │   └── index.ts                          # PowerSync 本地初始化
 │   │   │
 │   │   ├── di/
 │   │   │   ├── desktop-main.composition-root.ts  # 装配 L2-L4（第 2 步）
-│   │   │   └── sqlite-adapters/
+│   │   │   └── powersync-adapters/
 │   │   │       └── *.repository.ts               # L3 实现
 │   │   │
 │   │   ├── ipc/
@@ -587,13 +586,14 @@ apps/desktop/
 
 Desktop 的依赖必须遵循五层规则：
 
-| 来源 | 可依赖 | 例子 |
-|------|--------|------|
-| **Desktop IPC Handlers** | L4、L3、L2、L1 | ✅ 可用 ScheduleTaskQueue |
-| **Desktop 特定（DesktopScheduler）** | L4、L3、L2、L1 | ✅ 可用 Electron API |
-| **Desktop SQLite Adapters** | L2、L1 | ✅ 只实现 L3 接口 |
+| 来源                                 | 可依赖         | 例子                      |
+| ------------------------------------ | -------------- | ------------------------- |
+| **Desktop IPC Handlers**             | L4、L3、L2、L1 | ✅ 可用 ScheduleTaskQueue |
+| **Desktop 特定（DesktopScheduler）** | L4、L3、L2、L1 | ✅ 可用 Electron API      |
+| **Desktop PowerSync Adapters**       | L2、L1         | ✅ 只实现 L3 接口         |
 
 **违反规则示例（❌ 不允许）：**
+
 ```typescript
 // ❌ Desktop 直接依赖 contracts（应该通过 Domain 层）
 import { ScheduleTaskDTO } from '@dailyuse/contracts';
@@ -608,13 +608,13 @@ class DesktopScheduler { ... }
 
 ## 技术栈总览
 
-| 层级 | 来源 | 技术 |
-|------|------|------|
-| **L5 Desktop** | 项目 | Electron 39.2.6、better-sqlite3 |
-| **L4** | `@dailyuse/application-server` | ScheduleTaskQueue、算法、编排 |
-| **L3** | `@dailyuse/infrastructure-server` | 容器、仓储实现、依赖注入 |
-| **L2** | `@dailyuse/domain-server` | 业务规则、聚合根、值对象 |
-| **L1** | `@dailyuse/contracts` | DTO、枚举、类型定义 |
+| 层级           | 来源                              | 技术                                     |
+| -------------- | --------------------------------- | ---------------------------------------- |
+| **L5 Desktop** | 项目                              | Electron 39.2.6、PowerSync local runtime |
+| **L4**         | `@dailyuse/application-server`    | ScheduleTaskQueue、算法、编排            |
+| **L3**         | `@dailyuse/infrastructure-server` | 容器、仓储实现、依赖注入                 |
+| **L2**         | `@dailyuse/domain-server`         | 业务规则、聚合根、值对象                 |
+| **L1**         | `@dailyuse/contracts`             | DTO、枚举、类型定义                      |
 
 ---
 
@@ -623,11 +623,11 @@ class DesktopScheduler { ... }
 ```
 1. Electron app.whenReady()
    │
-2. initializeDatabase()              【初始化 SQLite】
+2. openPowerSyncLocalOnly()         【初始化 PowerSync 本地数据库】
    │
 3. configureMainProcessDependencies() 【装配 L1-L3】
    │   ├─ ScheduleContainer.getInstance()
-   │   ├─ .registerScheduleTaskRepository(new SqliteScheduleRepository())
+   │   ├─ .registerScheduleTaskRepository(new PowerSyncScheduleRepository())
    │   └─ ...其他容器和仓储
    │
 4. registerAllHandlers()              【注册 IPC】
@@ -691,11 +691,11 @@ export class ScheduleController {
 
 ## IPC 通道映射
 
-| IPC 通道 | Handler 位置 | 依赖链 |
-|---------|-------------|--------|
+| IPC 通道             | Handler 位置            | 依赖链             |
+| -------------------- | ----------------------- | ------------------ |
 | `schedule:getActive` | schedule.ipc-handler.ts | IPC → L3 → L2 → L1 |
-| `schedule:execute` | schedule.ipc-handler.ts | IPC → L4 → L3 → L2 |
-| `schedule:stats` | schedule.ipc-handler.ts | IPC → L4 Monitor |
+| `schedule:execute`   | schedule.ipc-handler.ts | IPC → L4 → L3 → L2 |
+| `schedule:stats`     | schedule.ipc-handler.ts | IPC → L4 Monitor   |
 
 ---
 

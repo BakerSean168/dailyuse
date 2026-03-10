@@ -2,8 +2,8 @@
  * Goal Module — Electron Entry Point
  *
  * Self-contained Composition Root for the Goal module in Electron main process.
- * Instantiates SQLite repositories, domain services, application services,
- * and registers IPC handlers.
+ * Instantiates PowerSync-backed repositories, domain services, application
+ * services, and registers IPC handlers.
  *
  * @module goal/electron-entry
  */
@@ -12,13 +12,13 @@ import { ipcMain } from 'electron';
 import { type IElectronModule, type IElectronModuleContext } from '@dailyuse/contracts/electron';
 import {
   GoalModule,
-  SqliteGoalRepository,
-  SqliteGoalFolderRepository,
-  SqliteGoalRecordRepository,
+  GoalPowerSyncRepository,
+  GoalFolderPowerSyncRepository,
+  GoalRecordPowerSyncRepository,
   GoalContainer,
-} from '../infrastructure-server/sqlite';
+} from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
-import type { IGoalRepository } from '../domain-server';
+import type { IGoalRecordRepository, IGoalRepository } from '../domain-server';
 import type { Context } from '@dailyuse/contracts/shared';
 import { GoalController } from '../controllers/goal.controller';
 import { GoalFolderController } from '../controllers/goal-folder.controller';
@@ -30,11 +30,17 @@ const logger = createLogger('GoalElectron');
  * event handlers (e.g. task-completion → goal-progress).
  */
 let _goalRepository: IGoalRepository | null = null;
+let _goalRecordRepository: IGoalRecordRepository | null = null;
 
 /** Returns the registered goal repository (throws if module not yet registered). */
 export function getGoalRepository(): IGoalRepository {
   if (!_goalRepository) throw new Error('Goal module not registered yet');
   return _goalRepository;
+}
+
+export function getGoalRecordRepository(): IGoalRecordRepository {
+  if (!_goalRecordRepository) throw new Error('Goal module not registered yet');
+  return _goalRecordRepository;
 }
 
 /** IPC channel constants — aligned with apps/desktop/src/shared/types/ipc-channels.ts */
@@ -46,6 +52,10 @@ const Ch = {
   DELETE: 'goal:delete',
   ARCHIVE: 'goal:archive',
   RESTORE: 'goal:restore',
+  ACTIVATE: 'goal:activate',
+  COMPLETE: 'goal:complete',
+  SEARCH: 'goal:search',
+  FOLDER_GET: 'goal:folder:get',
   UPDATE_PROGRESS: 'goal:update-progress',
   FOLDER_LIST: 'goal:folder:list',
   FOLDER_CREATE: 'goal:folder:create',
@@ -62,9 +72,9 @@ export const GoalElectronModule: IElectronModule = {
     const { db } = ctx;
 
     // 1. Repositories
-    const goalRepository = new SqliteGoalRepository(db);
-    const goalFolderRepository = new SqliteGoalFolderRepository(db);
-    const goalRecordRepository = new SqliteGoalRecordRepository(db);
+    const goalRepository = new GoalPowerSyncRepository(db);
+    const goalFolderRepository = new GoalFolderPowerSyncRepository(db);
+    const goalRecordRepository = new GoalRecordPowerSyncRepository(db);
     const goalModule = new GoalModule({
       goalRepository,
       goalFolderRepository,
@@ -100,6 +110,7 @@ export const GoalElectronModule: IElectronModule = {
       deleteGoalFolder: goalModule.deleteGoalFolder,
     });
     _goalRepository = goalModule.goalRepository;
+    _goalRecordRepository = goalModule.goalRecordRepository;
 
     // 4. IPC Handlers
     ipcMain.handle(Ch.LIST, async (_event, params) =>
@@ -122,6 +133,13 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.DELETE, (_, id) => goalModule.deleteGoal.execute(id));
     ipcMain.handle(Ch.ARCHIVE, (_, id) => goalModule.archiveGoal.execute(id));
     ipcMain.handle(Ch.RESTORE, (_, id) => goalModule.activateGoal.execute(id));
+    ipcMain.handle(Ch.ACTIVATE, (_, id) => goalController.activate(id));
+    ipcMain.handle(Ch.COMPLETE, (_, id) => goalController.complete(id));
+    ipcMain.handle(Ch.SEARCH, async (_event, params) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.search(String(params?.query ?? ''), requestContext),
+      ),
+    );
     ipcMain.handle(Ch.UPDATE_PROGRESS, (_, dto) =>
       goalModule.updateKeyResultProgress.execute(
         dto.goalId,
@@ -135,6 +153,7 @@ export const GoalElectronModule: IElectronModule = {
         goalFolderController.list({ ...(params ?? {}), identityId: requestContext.identityId }),
       ),
     );
+    ipcMain.handle(Ch.FOLDER_GET, (_event, id) => goalFolderController.get(id));
     ipcMain.handle(Ch.FOLDER_CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
         goalFolderController.create(dto, requestContext as Context),
@@ -160,6 +179,7 @@ export const GoalElectronModule: IElectronModule = {
     }
     GoalContainer.getInstance().reset();
     _goalRepository = null;
+    _goalRecordRepository = null;
     logger.info('Goal module destroyed');
   },
 };

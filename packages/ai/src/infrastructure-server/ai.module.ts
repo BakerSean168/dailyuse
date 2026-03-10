@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@dailyuse/database';
-import type Database from 'better-sqlite3';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { IAIConversationRepository, IAIProviderConfigRepository } from '../domain-server';
 import { AIRepositoryFactory } from './di';
 import { AIContainer } from './di/ai-container';
@@ -18,8 +18,6 @@ import {
   GoalGenerationApplicationService,
 } from '../application-server/use-cases';
 
-type BetterSQLiteDB = Database.Database;
-
 export class AIModule {
   public readonly conversationRepository: IAIConversationRepository;
   public readonly providerConfigRepository: IAIProviderConfigRepository;
@@ -36,7 +34,10 @@ export class AIModule {
   public readonly chatService: AIChatApplicationService;
   public readonly goalGenerationService: GoalGenerationApplicationService;
 
-  constructor(dataSourceType: 'prisma' | 'sqlite', dbConnection: PrismaClient | BetterSQLiteDB) {
+  constructor(
+    dataSourceType: 'prisma' | 'powersync',
+    dbConnection: PrismaClient | IElectronDatabase,
+  ) {
     // 1. Initialize Repositories using Factory
     const repositories = AIRepositoryFactory.create(dataSourceType, dbConnection);
     const container = AIContainer.getInstance();

@@ -1,1 +1,1 @@
-export * from './schedule-repository.factory';
+export {};

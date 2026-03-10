@@ -1,6 +1,5 @@
 import * as path from 'node:path';
 import { app } from 'electron';
-import type Database from 'better-sqlite3';
 import { ResourceType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
@@ -8,14 +7,15 @@ import type {
   IKnowledgeNotePersistencePort,
 } from '@dailyuse/ai/application-server';
 import { CreateResource, FsStorageAdapter } from '@dailyuse/repository';
-import { RepositorySqliteModule } from '@dailyuse/repository/infrastructure-server/sqlite';
+import { RepositoryPowerSyncModule } from '@dailyuse/repository/infrastructure-server';
+import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
 export class DesktopKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
-  private readonly repositoryModule: RepositorySqliteModule;
+  private readonly repositoryModule: RepositoryPowerSyncModule;
   private readonly createResource: CreateResource;
 
-  constructor(db: Database.Database) {
-    this.repositoryModule = new RepositorySqliteModule(db);
+  constructor(db: IElectronDatabase) {
+    this.repositoryModule = new RepositoryPowerSyncModule(db);
 
     const storageBaseDir = path.join(app.getPath('userData'), 'repository-storage');
     const storagePort = new FsStorageAdapter(storageBaseDir);
