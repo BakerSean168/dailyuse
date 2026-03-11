@@ -122,7 +122,7 @@ export function registerGoalCrudRoutes(
         category: req.query?.category as string | undefined,
         tags: parseStringArray(req.query?.tags),
         folderId: folderId as any,
-        keyword: req.query?.keyword as string | undefined,
+        query: req.query?.query as string | undefined,
         startDate: parseNumber(req.query?.startDate),
         endDate: parseNumber(req.query?.endDate),
         sortBy: req.query?.sortBy as
@@ -147,14 +147,15 @@ export function registerGoalCrudRoutes(
       path: '/search',
       summary: '搜索目标',
       request: {
-        query: z.object({ keyword: z.string().optional(), status: z.string().optional() }),
+        query: z.object({ query: z.string().optional(), status: z.string().optional() }),
       },
       responses: {
-        200: successResponse(z.array(GoalClientDTOSchema), '搜索成功'),
+        200: successResponse(QueryGoalsResSchema, '搜索成功'),
       },
     },
     [auth],
-    (req, ctx) => controller.search(typeof req.query?.q === 'string' ? req.query.q : '', ctx),
+    (req, ctx) =>
+      controller.search(typeof req.query?.query === 'string' ? req.query.query : '', ctx),
   );
 
   // GET /:id — 获取目标详情
@@ -297,12 +298,14 @@ export function registerGoalCrudRoutes(
         200: successResponse(
           z.object({
             goalId: z.string(),
-            keyResults: z.array(z.object({
-              keyResultId: z.string(),
-              title: z.string(),
-              weight: z.number(),
-              progress: z.any(),
-            })),
+            keyResults: z.array(
+              z.object({
+                keyResultId: z.string(),
+                title: z.string(),
+                weight: z.number(),
+                progress: z.any(),
+              }),
+            ),
             overallProgress: z.number(),
           }),
           '获取成功',
@@ -326,7 +329,7 @@ export function registerGoalCrudRoutes(
           content: {
             'application/json': {
               schema: z.object({
-                name: z.string().optional(),
+                title: z.string().optional(),
                 description: z.string().optional(),
                 includeKeyResults: z.boolean().optional(),
                 includeRecords: z.boolean().optional(),
@@ -345,7 +348,7 @@ export function registerGoalCrudRoutes(
       controller.cloneGoal(
         req.params!.id,
         (req.body ?? {}) as {
-          name?: string;
+          title?: string;
           description?: string;
           includeKeyResults?: boolean;
           includeRecords?: boolean;
@@ -367,10 +370,12 @@ export function registerGoalCrudRoutes(
           content: {
             'application/json': {
               schema: z.object({
-                updates: z.array(z.object({
-                  keyResultId: z.string(),
-                  weight: z.number().int().min(1).max(5),
-                })),
+                updates: z.array(
+                  z.object({
+                    keyResultId: z.string(),
+                    weight: z.number().int().min(1).max(5),
+                  }),
+                ),
               }),
             },
           },
@@ -385,10 +390,8 @@ export function registerGoalCrudRoutes(
     (req) =>
       controller.batchUpdateKeyResultWeights(
         req.params!.id,
-        (
-          (req.body as { updates?: Array<{ keyResultId: string; weight: number }> } | undefined)
-            ?.updates ?? []
-        ),
+        (req.body as { updates?: Array<{ keyResultId: string; weight: number }> } | undefined)
+          ?.updates ?? [],
       ),
   );
 

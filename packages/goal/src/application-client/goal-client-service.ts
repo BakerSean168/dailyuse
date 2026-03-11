@@ -209,6 +209,7 @@ export class GoalClientService {
   async listGoals(params?: {
     page?: number;
     limit?: number;
+    query?: string;
     status?: string;
     dirId?: string;
     startDate?: string;

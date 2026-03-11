@@ -1,6 +1,6 @@
 /**
  * Goal - CRUD Operations
- * 
+ *
  * 目标的基础增删改查操作，包括批量操作
  */
 
@@ -21,7 +21,10 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 export const CreateGoalSchema = z.object({
   title: z.string().min(1, '目标标题不能为空').max(256, '目标标题不能超过 256 字符'),
   description: z.string().max(2000, '描述不能超过 2000 字符').optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式').optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式')
+    .optional(),
   feasibilityAnalysis: z.string().max(2000).optional(),
   motivation: z.string().max(2000).optional(),
   importance: z.enum(ImportanceLevel),
@@ -46,7 +49,11 @@ export type CreateGoalRes = GoalClientDTO;
 export const UpdateGoalSchema = z.object({
   title: z.string().min(1).max(256).optional(),
   description: z.string().max(2000).nullable().optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).nullable().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .nullable()
+    .optional(),
   feasibilityAnalysis: z.string().max(2000).nullable().optional(),
   motivation: z.string().max(2000).nullable().optional(),
   importance: z.enum(ImportanceLevel).optional(),
@@ -91,10 +98,13 @@ export const QueryGoalsSchema = z.object({
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   folderId: brandedId<GoalFolderId>().optional(),
-  keyword: z.string().max(256).optional(),
+  query: z.string().max(256).optional(),
   startDate: z.number().int().optional(),
   endDate: z.number().int().optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'targetDate', 'priority']).default('createdAt').optional(),
+  sortBy: z
+    .enum(['createdAt', 'updatedAt', 'targetDate', 'priority'])
+    .default('createdAt')
+    .optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
   page: z.number().int().min(1).default(1).optional(),
   pageSize: z.number().int().min(1).max(100).default(20).optional(),

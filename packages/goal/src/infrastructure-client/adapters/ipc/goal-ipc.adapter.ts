@@ -40,6 +40,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
   async getGoals(params?: {
     page?: number;
     limit?: number;
+    query?: string;
     status?: string;
     dirId?: string;
     startDate?: string;
@@ -49,21 +50,11 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
   }
 
-  async getGoalById(
-    id: string,
-    includeChildren = true,
-  ): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:get`,
-      id,
-      includeChildren,
-    );
+  async getGoalById(id: string, includeChildren = true): Promise<Result<GoalClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:get`, id, includeChildren);
   }
 
-  async updateGoal(
-    id: string,
-    request: UpdateGoalReq,
-  ): Promise<Result<GoalClientDTO>> {
+  async updateGoal(id: string, request: UpdateGoalReq): Promise<Result<GoalClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:update`, id, request);
   }
 
@@ -107,20 +98,11 @@ export class GoalIpcAdapter implements IGoalApiClient {
     goalId: string,
     request: Omit<AddKeyResultReq, 'goalId'>,
   ): Promise<Result<KeyResultClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:keyResult:add`,
-      goalId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:keyResult:add`, goalId, request);
   }
 
-  async getKeyResultsByGoal(
-    goalId: string,
-  ): Promise<Result<GetKeyResultsRes>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:keyResult:list`,
-      goalId,
-    );
+  async getKeyResultsByGoal(goalId: string): Promise<Result<GetKeyResultsRes>> {
+    return this.ipcClient.invoke(`${this.channel}:keyResult:list`, goalId);
   }
 
   async updateKeyResultForGoal(
@@ -128,43 +110,22 @@ export class GoalIpcAdapter implements IGoalApiClient {
     keyResultId: string,
     request: UpdateKeyResultReq,
   ): Promise<Result<KeyResultClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:keyResult:update`,
-      goalId,
-      keyResultId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:keyResult:update`, goalId, keyResultId, request);
   }
 
-  async deleteKeyResultForGoal(
-    goalId: string,
-    keyResultId: string,
-  ): Promise<Result<void>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:keyResult:delete`,
-      goalId,
-      keyResultId,
-    );
+  async deleteKeyResultForGoal(goalId: string, keyResultId: string): Promise<Result<void>> {
+    return this.ipcClient.invoke(`${this.channel}:keyResult:delete`, goalId, keyResultId);
   }
 
   async batchUpdateKeyResultWeights(
     goalId: string,
     request: { updates: Array<{ keyResultId: string; weight: number }> },
   ): Promise<Result<GetKeyResultsRes>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:keyResult:batchUpdateWeights`,
-      goalId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:keyResult:batchUpdateWeights`, goalId, request);
   }
 
-  async getProgressBreakdown(
-    goalId: string,
-  ): Promise<Result<ProgressBreakdown>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:progressBreakdown`,
-      goalId,
-    );
+  async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
+    return this.ipcClient.invoke(`${this.channel}:progressBreakdown`, goalId);
   }
 
   // ===== GoalReview Management =====
@@ -173,20 +134,11 @@ export class GoalIpcAdapter implements IGoalApiClient {
     goalId: string,
     request: CreateGoalReviewReq,
   ): Promise<Result<GoalReviewClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:review:create`,
-      goalId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:review:create`, goalId, request);
   }
 
-  async getGoalReviewsByGoal(
-    goalId: string,
-  ): Promise<Result<GetGoalReviewsRes>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:review:list`,
-      goalId,
-    );
+  async getGoalReviewsByGoal(goalId: string): Promise<Result<GetGoalReviewsRes>> {
+    return this.ipcClient.invoke(`${this.channel}:review:list`, goalId);
   }
 
   async updateGoalReview(
@@ -194,23 +146,11 @@ export class GoalIpcAdapter implements IGoalApiClient {
     reviewId: string,
     request: Partial<GoalReviewClientDTO>,
   ): Promise<Result<GoalReviewClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:review:update`,
-      goalId,
-      reviewId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:review:update`, goalId, reviewId, request);
   }
 
-  async deleteGoalReview(
-    goalId: string,
-    reviewId: string,
-  ): Promise<Result<void>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:review:delete`,
-      goalId,
-      reviewId,
-    );
+  async deleteGoalReview(goalId: string, reviewId: string): Promise<Result<void>> {
+    return this.ipcClient.invoke(`${this.channel}:review:delete`, goalId, reviewId);
   }
 
   // ===== GoalRecord Management =====
@@ -220,12 +160,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     keyResultId: string,
     request: Pick<CreateGoalRecordReq, 'value' | 'note'>,
   ): Promise<Result<GoalRecordClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:record:create`,
-      goalId,
-      keyResultId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:record:create`, goalId, keyResultId, request);
   }
 
   async getGoalRecordsByKeyResult(
@@ -245,11 +180,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:record:listByGoal`,
-      goalId,
-      params,
-    );
+    return this.ipcClient.invoke(`${this.channel}:record:listByGoal`, goalId, params);
   }
 
   async deleteGoalRecord(
@@ -257,36 +188,25 @@ export class GoalIpcAdapter implements IGoalApiClient {
     keyResultId: string,
     recordId: string,
   ): Promise<Result<void>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:record:delete`,
-      goalId,
-      keyResultId,
-      recordId,
-    );
+    return this.ipcClient.invoke(`${this.channel}:record:delete`, goalId, keyResultId, recordId);
   }
 
   // ===== Aggregate View =====
 
-  async getGoalAggregateView(
-    goalId: string,
-  ): Promise<Result<GetGoalAggregateRes>> {
+  async getGoalAggregateView(goalId: string): Promise<Result<GetGoalAggregateRes>> {
     return this.ipcClient.invoke(`${this.channel}:aggregate`, goalId);
   }
 
   async cloneGoal(
     goalId: string,
     request: {
-      name?: string;
+      title?: string;
       description?: string;
       includeKeyResults?: boolean;
       includeRecords?: boolean;
     },
   ): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(
-      `${this.channel}:clone`,
-      goalId,
-      request,
-    );
+    return this.ipcClient.invoke(`${this.channel}:clone`, goalId, request);
   }
 
   // ===== AI Generation =====

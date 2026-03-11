@@ -41,18 +41,31 @@ interface SharedConfigOptions {
  */
 export function createSharedConfig(options: SharedConfigOptions) {
   const { projectRoot, environment = 'node', aliases = {} } = options;
+  const projectSrc = path.resolve(projectRoot, './src');
+
+  const resolvedAliases = Object.fromEntries(
+    Object.entries(aliases).map(([key, value]) => [
+      key,
+      value.startsWith('.') ? path.resolve(projectRoot, value) : value,
+    ]),
+  );
 
   // Common aliases for all projects
   const baseAliases = {
-    '@': path.resolve(projectRoot, './src'),
+    ...resolvedAliases,
+    '@': projectSrc,
+    '@/': `${projectSrc}/`,
     '@dailyuse/contracts': path.resolve(projectRoot, '../../packages/contracts/src'),
     '@dailyuse/utils': path.resolve(projectRoot, '../../packages/utils/src'),
-    ...aliases,
   };
+
+  const aliasEntries = Object.entries(baseAliases)
+    .sort(([a], [b]) => b.length - a.length)
+    .map(([find, replacement]) => ({ find, replacement }));
 
   return defineConfig({
     resolve: {
-      alias: baseAliases,
+      alias: aliasEntries,
     },
     test: {
       globals: true,

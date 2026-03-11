@@ -132,7 +132,7 @@ const {
   loop,
 } = useGoalTimeline(goalRef);
 
-const goalTitle = computed(() => props.goal?.title || t('goal.timeline.untitledGoal'));
+const goalTitle = computed(() => props.goal?.name || t('goal.timeline.untitledGoal'));
 
 // ==================== Methods ====================
 

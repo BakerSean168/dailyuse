@@ -79,8 +79,8 @@ const activeGoals = computed(() => {
       }
 
       return {
-        uuid: goal.uuid,
-        title: goal.title,
+        id: goal.id,
+        name: goal.name,
         startDate: goal.startDate!,
         targetDate: goal.targetDate!,
         totalDays,
@@ -140,8 +140,8 @@ const getBadgeVariant = (goal: (typeof activeGoals.value)[0]) => {
 /**
  * 格式化日期
  */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
+const formatDate = (value: number) => {
+  const date = new Date(value);
   return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' });
 };
 
@@ -190,10 +190,10 @@ onMounted(async () => {
 
     <!-- Goal Timeline List -->
     <CardContent v-else class="p-3 goal-list-container">
-      <div v-for="goal in activeGoals" :key="goal.uuid" class="goal-item mb-3 p-3">
+      <div v-for="goal in activeGoals" :key="goal.id" class="goal-item mb-3 p-3">
         <!-- Goal Header -->
         <div class="flex items-start justify-between mb-2">
-          <span class="text-sm font-bold flex-1">{{ goal.title }}</span>
+          <span class="text-sm font-bold flex-1">{{ goal.name }}</span>
           <Badge :variant="getBadgeVariant(goal)" class="ml-2 shrink-0">
             {{
               goal.isOverdue

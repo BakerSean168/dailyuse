@@ -24,12 +24,21 @@ export class ListGoals {
       folderId: input.folderId,
     });
 
+    const normalizedQuery = input.query?.trim().toLowerCase();
+    const filteredGoals = normalizedQuery
+      ? goals.filter(
+          (g) =>
+            g.name.toLowerCase().includes(normalizedQuery) ||
+            g.description?.toLowerCase().includes(normalizedQuery),
+        )
+      : goals;
+
     const page = input.page ?? 1;
-    const pageSize = input.pageSize ?? goals.length;
-    const total = goals.length;
+    const pageSize = input.pageSize ?? filteredGoals.length;
+    const total = filteredGoals.length;
 
     return ok({
-      data: goals.map((g: Goal) => g.toClientDTO(Boolean(input.includeKeyResults))),
+      data: filteredGoals.map((g: Goal) => g.toClientDTO(Boolean(input.includeKeyResults))),
       pagination: {
         page,
         pageSize,

@@ -34,7 +34,8 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project goal"
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/goal"
       }
     }
   }

@@ -11,7 +11,6 @@
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
-
   GoalClientDTO,
   KeyResultClientDTO,
   GoalReviewClientDTO,
@@ -61,6 +60,7 @@ export interface IGoalApiClient {
   getGoals(params?: {
     page?: number;
     limit?: number;
+    query?: string;
     status?: string;
     dirId?: string;
     startDate?: string;
@@ -132,18 +132,14 @@ export interface IGoalApiClient {
     goalId: string,
     params?: { limit?: number; offset?: number },
   ): Promise<Result<GetGoalRecordsRes>>;
-  deleteGoalRecord(
-    goalId: string,
-    keyResultId: string,
-    recordId: string,
-  ): Promise<Result<void>>;
+  deleteGoalRecord(goalId: string, keyResultId: string, recordId: string): Promise<Result<void>>;
 
   // Aggregate View
   getGoalAggregateView(goalId: string): Promise<Result<GetGoalAggregateRes>>;
   cloneGoal(
     goalId: string,
     request: {
-      name?: string;
+      title?: string;
       description?: string;
       includeKeyResults?: boolean;
       includeRecords?: boolean;
@@ -182,10 +178,7 @@ export interface IGoalFolderApiClient {
     parentId?: string | null;
   }): Promise<Result<QueryGoalFoldersRes>>;
   getGoalFolderById(id: string): Promise<Result<GoalFolderClientDTO>>;
-  updateGoalFolder(
-    id: string,
-    request: UpdateGoalFolderReq,
-  ): Promise<Result<GoalFolderClientDTO>>;
+  updateGoalFolder(id: string, request: UpdateGoalFolderReq): Promise<Result<GoalFolderClientDTO>>;
   deleteGoalFolder(id: string): Promise<Result<void>>;
 }
 

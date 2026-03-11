@@ -22,6 +22,7 @@ import type {
   GoalClientDTO,
   CreateGoalReq,
   UpdateGoalReq,
+  GetGoalAggregateRes,
   GoalStatus,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
@@ -285,12 +286,16 @@ export function useGoal() {
    * getGoalAggregateView - 获取单个目标聚合视图（含关键结果等）
    * 供 GoalDAGVisualization 等组件调用
    */
-  async function getGoalAggregateView(goalId: string) {
+  async function getGoalAggregateView(goalId: string): Promise<GetGoalAggregateRes | null> {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getGoal(goalId);
+      const result = await service.getGoalAggregateView(goalId);
       if (result.ok) {
+        store.setCurrentGoal(result.data.goal);
+        store.setKeyResults(result.data.keyResults ?? result.data.goal.keyResults ?? []);
+        store.setGoalRecords(result.data.records ?? []);
+        store.setGoalReviews(result.data.reviews ?? result.data.goal.reviews ?? []);
         return result.data;
       } else {
         handleError(result.error.message || t('goal.error.loadAggregateViewFailed'));

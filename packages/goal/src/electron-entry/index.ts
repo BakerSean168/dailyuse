@@ -55,8 +55,11 @@ const Ch = {
   ACTIVATE: 'goal:activate',
   COMPLETE: 'goal:complete',
   SEARCH: 'goal:search',
+  AGGREGATE: 'goal:aggregate',
+  CLONE: 'goal:clone',
   FOLDER_GET: 'goal:folder:get',
   UPDATE_PROGRESS: 'goal:update-progress',
+  KEY_RESULT_BATCH_UPDATE_WEIGHTS: 'goal:keyResult:batchUpdateWeights',
   FOLDER_LIST: 'goal:folder:list',
   FOLDER_CREATE: 'goal:folder:create',
   FOLDER_UPDATE: 'goal:folder:update',
@@ -140,6 +143,12 @@ export const GoalElectronModule: IElectronModule = {
         goalController.search(String(params?.query ?? ''), requestContext),
       ),
     );
+    ipcMain.handle(Ch.AGGREGATE, (_, id) => goalController.getAggregate(id));
+    ipcMain.handle(Ch.CLONE, async (_event, goalId, params) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.cloneGoal(goalId, params ?? {}, requestContext),
+      ),
+    );
     ipcMain.handle(Ch.UPDATE_PROGRESS, (_, dto) =>
       goalModule.updateKeyResultProgress.execute(
         dto.goalId,
@@ -147,6 +156,9 @@ export const GoalElectronModule: IElectronModule = {
         dto.currentValue,
         dto.note,
       ),
+    );
+    ipcMain.handle(Ch.KEY_RESULT_BATCH_UPDATE_WEIGHTS, (_, goalId, request) =>
+      goalController.batchUpdateKeyResultWeights(goalId, request?.updates ?? []),
     );
     ipcMain.handle(Ch.FOLDER_LIST, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>

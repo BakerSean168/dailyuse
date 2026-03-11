@@ -82,9 +82,9 @@
         </Alert>
 
         <!-- 空状态 -->
-        <Alert v-else-if="!localGoal || !hasKeyResults">
+        <Alert v-else-if="!aggregateGoal || !hasKeyResults">
           <AlertDescription>
-            {{ !localGoal ? t('goal.dag.loading') : t('goal.dag.noKeyResult') }}
+            {{ !aggregateGoal ? t('goal.dag.loading') : t('goal.dag.noKeyResult') }}
           </AlertDescription>
         </Alert>
 
@@ -157,6 +157,11 @@ import {
   TooltipContent,
 } from '@dailyuse/ui-vue-shadcn';
 import { GitBranch, Dumbbell, Zap, RefreshCw, Download, Loader2, Circle } from 'lucide-vue-next';
+import type {
+  GetGoalAggregateRes,
+  GoalClientDTO,
+  KeyResultClientDTO,
+} from '@dailyuse/contracts/goal';
 import { useGoal } from '../../composables/useGoal';
 import { useResizeObserver } from '@vueuse/core';
 import ExportDialog from './ExportDialog.vue';
@@ -185,8 +190,7 @@ const layoutType = ref<'force' | 'hierarchical'>('force');
 const hasCustomLayout = ref(false);
 const containerSize = ref({ width: 800, height: 600 });
 
-// 本地 goal 数据（不依赖 store 的 currentGoal）
-const localGoal = ref<any>(null);
+const aggregateView = ref<GetGoalAggregateRes | null>(null);
 const isLoading = ref(false);
 
 // 加载错误状态
@@ -199,13 +203,15 @@ const currentCenter = ref<[number, number]>([0, 0]);
 const isUpdatingViewport = ref(false); // 防止循环更新
 
 // 计算属性
-const hasKeyResults = computed(() => {
-  return localGoal.value?.keyResults && localGoal.value.keyResults.length > 0;
-});
+const aggregateGoal = computed<GoalClientDTO | null>(() => aggregateView.value?.goal ?? null);
+const aggregateKeyResults = computed<KeyResultClientDTO[]>(
+  () => aggregateView.value?.keyResults ?? [],
+);
+
+const hasKeyResults = computed(() => aggregateKeyResults.value.length > 0);
 
 const totalWeight = computed(() => {
-  if (!localGoal.value?.keyResults) return 0;
-  return localGoal.value.keyResults.reduce((sum: number, kr: any) => sum + kr.weight, 0);
+  return aggregateKeyResults.value.reduce((sum, kr) => sum + kr.weight, 0);
 });
 
 // 颜色映射函数 (权重范围: 1-10)
@@ -217,19 +223,19 @@ const getWeightColor = (weight: number): string => {
 
 // 分层布局计算
 const calculateHierarchicalLayout = () => {
-  if (!localGoal.value) return { nodes: [], links: [] };
+  if (!aggregateGoal.value) return { nodes: [], links: [] };
 
   const containerWidth = 800;
   const goalY = 100;
   const krY = 300;
-  const krs = localGoal.value.keyResults ?? [];
+  const krs = aggregateKeyResults.value;
 
   const nodes = [];
 
   // Goal 节点居中
   nodes.push({
-    id: localGoal.value.id,
-    name: localGoal.value.name,
+    id: aggregateGoal.value.id,
+    name: aggregateGoal.value.name,
     x: containerWidth / 2,
     y: goalY,
     symbolSize: 80,
@@ -254,8 +260,8 @@ const calculateHierarchicalLayout = () => {
     });
   });
 
-  const links = krs.map((kr: any) => ({
-    source: localGoal.value!.id,
+  const links = krs.map((kr) => ({
+    source: aggregateGoal.value!.id,
     target: kr.id,
     lineStyle: {
       width: Math.max(1, kr.weight / 2),
@@ -268,19 +274,19 @@ const calculateHierarchicalLayout = () => {
 
 // Force 布局配置
 const calculateForceLayout = () => {
-  if (!localGoal.value) return { nodes: [], links: [] };
+  if (!aggregateGoal.value) return { nodes: [], links: [] };
 
-  const krs = localGoal.value.keyResults ?? [];
+  const krs = aggregateKeyResults.value;
 
   const nodes = [
     {
-      id: localGoal.value.id,
-      name: localGoal.value.name,
+      id: aggregateGoal.value.id,
+      name: aggregateGoal.value.name,
       symbolSize: 80,
       itemStyle: { color: '#2196F3' },
       category: 0,
     },
-    ...krs.map((kr: any) => ({
+    ...krs.map((kr) => ({
       id: kr.id,
       name: kr.title,
       value: kr.weight,
@@ -290,8 +296,8 @@ const calculateForceLayout = () => {
     })),
   ];
 
-  const links = krs.map((kr: any) => ({
-    source: localGoal.value!.id,
+  const links = krs.map((kr) => ({
+    source: aggregateGoal.value!.id,
     target: kr.id,
     lineStyle: {
       width: Math.max(1, kr.weight / 2),
@@ -304,7 +310,7 @@ const calculateForceLayout = () => {
 
 // DAG 图表配置
 const dagOption = computed<EChartsOption>(() => {
-  if (!localGoal.value || !hasKeyResults.value) return {};
+  if (!aggregateGoal.value || !hasKeyResults.value) return {};
 
   // 从 localStorage 加载保存的布局
   const savedLayout = loadLayout(props.goalId);
@@ -568,7 +574,7 @@ const handleExport = async (options: ExportOptions) => {
 
     // 生成文件名并下载
     const filename = dagExportService.generateFilename(
-      localGoal.value?.name || 'goal',
+      aggregateGoal.value?.name || 'goal',
       options.format,
     );
     dagExportService.downloadBlob(blob, filename);
@@ -642,15 +648,15 @@ const loadGoalData = async () => {
 
   loadError.value = null;
   isLoading.value = true;
+  aggregateView.value = null;
   try {
     const result = await getGoalAggregateView(props.goalId);
-    // 将 Goal 实体转换为可用的数据格式
-    const data = result as any;
-    localGoal.value = data?.goal
-      ? data.goal.toClientDTO
-        ? data.goal.toClientDTO(true)
-        : data.goal
-      : data;
+    if (!result) {
+      loadError.value = t('goal.dag.loadDataFailed');
+      return;
+    }
+
+    aggregateView.value = result;
   } catch (error) {
     console.error('Failed to load goal aggregate view:', error);
     loadError.value = error instanceof Error ? error.message : t('goal.dag.loadDataFailed');

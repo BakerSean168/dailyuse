@@ -28,7 +28,7 @@
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="goal in availableGoals" :key="goal.id" :value="goal.id">
-                {{ goal.title }}
+                {{ goal.name }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -125,7 +125,7 @@ import {
 const props = withDefaults(
   defineProps<{
     modelValue?: boolean;
-    goals?: Array<{ id: string; title: string }>;
+    goals?: Array<{ id: string; name: string }>;
     onActivate?: (request: ActivateFocusModeRequest) => Promise<FocusModeClientDTO>;
   }>(),
   {

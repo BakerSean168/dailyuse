@@ -122,7 +122,7 @@ export class GoalController {
     if (!query.trim()) {
       return fail({
         code: 'VALIDATION_ERROR',
-        message: 'Search query (q) is required',
+        message: 'Search query (query) is required',
       });
     }
     return this.useCases.searchGoals.execute(ctx.identityId, query);
@@ -213,7 +213,12 @@ export class GoalController {
 
   async cloneGoal(
     goalId: string,
-    params: { name?: string; description?: string; includeKeyResults?: boolean; includeRecords?: boolean },
+    params: {
+      title?: string;
+      description?: string;
+      includeKeyResults?: boolean;
+      includeRecords?: boolean;
+    },
     ctx: Context,
   ): Promise<Result<unknown>> {
     // Get original goal
@@ -222,9 +227,8 @@ export class GoalController {
 
     const original = goalResult.data as unknown as Record<string, unknown>;
     const createData = {
-      name: params.name ?? `${original.name} (Copy)`,
+      title: params.title ?? `${original.name} (Copy)`,
       description: params.description ?? (original.description as string | undefined),
-      status: 'Active',
       importance: original.importance,
       category: original.category,
       tags: original.tags,
@@ -401,10 +405,15 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createRecord.execute(goalId, keyResultId, {
-      value: parsed.data.value,
-      note: parsed.data.note,
-    }, ctx.identityId);
+    return this.useCases.createRecord.execute(
+      goalId,
+      keyResultId,
+      {
+        value: parsed.data.value,
+        note: parsed.data.note,
+      },
+      ctx.identityId,
+    );
   }
 
   async listRecordsByGoal(
