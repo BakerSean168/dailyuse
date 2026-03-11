@@ -4,11 +4,149 @@ import {
   createMockValidateDependencyResponse,
   taskMockRoutes,
 } from './task.handlers';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  TaskDependencyHttpAdapter,
+  TaskInstanceHttpAdapter,
+  TaskTemplateHttpAdapter,
+} from '@dailyuse/task/infrastructure-client';
+import type { IResultHttpClient } from '@dailyuse/http-client';
+import { ok, type Result } from '@dailyuse/contracts/result';
+
+type HttpSpy = IResultHttpClient & {
+  get: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+  put: ReturnType<typeof vi.fn>;
+  patch: ReturnType<typeof vi.fn>;
+  delete: ReturnType<typeof vi.fn>;
+};
+
+function successResult<T>(data: T): Result<T> {
+  return ok(data);
+}
+
+function createHttpClientSpy(): HttpSpy {
+  return {
+    get: vi.fn(async () => successResult({ templates: [], total: 0 })),
+    post: vi.fn(async () => successResult(null)),
+    put: vi.fn(async () => successResult(null)),
+    patch: vi.fn(async () => successResult(null)),
+    delete: vi.fn(async () => successResult(null)),
+  } as HttpSpy;
+}
 
 describe('task handlers contracts', () => {
   it('uses the current task adapter route prefixes', () => {
     expect(taskMockRoutes.templates).toMatch(/\/task-templates$/);
     expect(taskMockRoutes.instances).toMatch(/\/task-instances$/);
+    expect(taskMockRoutes.tasks).toMatch(/\/tasks$/);
+  });
+
+  it('uses the same task instance routes and query shape as the adapter', async () => {
+    const httpClient = createHttpClientSpy();
+    const adapter = new TaskTemplateHttpAdapter(httpClient);
+
+    await adapter.getInstancesByDateRange('template-1', 100, 200);
+    await adapter.generateInstances('template-1', {
+      fromDate: 100,
+      toDate: 200,
+    });
+
+    expect(httpClient.get).toHaveBeenCalledWith('/task-templates/template-1/instances', {
+      params: { from: 100, to: 200 },
+    });
+    expect(httpClient.post).toHaveBeenCalledWith('/task-templates/template-1/generate-instances', {
+      fromDate: 100,
+      toDate: 200,
+    });
+  });
+
+  it('uses the current task instance adapter routes and payload shapes', async () => {
+    const httpClient = createHttpClientSpy();
+    const adapter = new TaskInstanceHttpAdapter(httpClient);
+
+    await adapter.getTaskInstances({
+      page: 1,
+      limit: 10,
+      templateId: 'template-1',
+      status: 'Pending',
+      startDate: 100,
+      endDate: 200,
+    });
+    await adapter.getTaskInstanceById('instance-1');
+    await adapter.startTaskInstance('instance-1');
+    await adapter.completeTaskInstance('instance-1', {
+      duration: 30,
+      note: 'done',
+      rating: 5,
+    });
+    await adapter.skipTaskInstance('instance-2', { reason: 'deferred' });
+    await adapter.checkExpiredInstances();
+    await adapter.deleteTaskInstance('instance-3');
+
+    expect(httpClient.get).toHaveBeenNthCalledWith(1, '/task-instances', {
+      params: {
+        page: 1,
+        limit: 10,
+        templateId: 'template-1',
+        status: 'Pending',
+        startDate: 100,
+        endDate: 200,
+      },
+    });
+    expect(httpClient.get).toHaveBeenNthCalledWith(2, '/task-instances/instance-1');
+    expect(httpClient.post).toHaveBeenNthCalledWith(1, '/task-instances/instance-1/start');
+    expect(httpClient.post).toHaveBeenNthCalledWith(2, '/task-instances/instance-1/complete', {
+      duration: 30,
+      note: 'done',
+      rating: 5,
+    });
+    expect(httpClient.post).toHaveBeenNthCalledWith(3, '/task-instances/instance-2/skip', {
+      reason: 'deferred',
+    });
+    expect(httpClient.post).toHaveBeenNthCalledWith(4, '/task-instances/check-expired');
+    expect(httpClient.delete).toHaveBeenCalledWith('/task-instances/instance-3');
+    expect(taskMockRoutes.instances).toMatch(/\/task-instances$/);
+  });
+
+  it('uses the current task dependency adapter routes and payload shapes', async () => {
+    const httpClient = createHttpClientSpy();
+    const adapter = new TaskDependencyHttpAdapter(httpClient);
+    const createPayload = {
+      identityId: 'identity-1',
+      predecessorTaskId: 'task-a',
+      successorTaskId: 'task-b',
+      dependencyType: 'FinishToStart' as const,
+      lagDays: 2,
+    };
+    const validatePayload = {
+      predecessorTaskId: 'task-a',
+      successorTaskId: 'task-b',
+    };
+    const updatePayload = {
+      dependencyType: 'StartToStart' as const,
+      lagDays: 1,
+    };
+
+    await adapter.createDependency('task-b', createPayload);
+    await adapter.getDependencies('task-b');
+    await adapter.getDependents('task-a');
+    await adapter.getDependencyChain('task-b');
+    await adapter.validateDependency(validatePayload);
+    await adapter.updateDependency('dep-1', updatePayload);
+    await adapter.deleteDependency('dep-1');
+
+    expect(httpClient.post).toHaveBeenNthCalledWith(1, '/tasks/task-b/dependencies', createPayload);
+    expect(httpClient.get).toHaveBeenNthCalledWith(1, '/tasks/task-b/dependencies');
+    expect(httpClient.get).toHaveBeenNthCalledWith(2, '/tasks/task-a/dependents');
+    expect(httpClient.get).toHaveBeenNthCalledWith(3, '/tasks/task-b/dependency-chain');
+    expect(httpClient.post).toHaveBeenNthCalledWith(
+      2,
+      '/tasks/dependencies/validate',
+      validatePayload,
+    );
+    expect(httpClient.put).toHaveBeenCalledWith('/tasks/dependencies/dep-1', updatePayload);
+    expect(httpClient.delete).toHaveBeenCalledWith('/tasks/dependencies/dep-1');
     expect(taskMockRoutes.tasks).toMatch(/\/tasks$/);
   });
 
@@ -36,5 +174,35 @@ describe('task handlers contracts', () => {
         allSuccessors: expect.any(Array),
       }),
     );
+  });
+
+  it('uses the same template list route and query shape as the adapter', async () => {
+    const httpClient = createHttpClientSpy();
+    const adapter = new TaskTemplateHttpAdapter(httpClient);
+
+    await adapter.getTaskTemplates({
+      page: 2,
+      limit: 20,
+      status: 'Active',
+      goalId: 'goal-1',
+      tags: ['focus'],
+    });
+
+    expect(httpClient.get).toHaveBeenCalledWith('/task-templates', {
+      params: {
+        page: 2,
+        limit: 20,
+        status: 'Active',
+        goalId: 'goal-1',
+        tags: ['focus'],
+      },
+    });
+
+    const requestConfig = httpClient.get.mock.calls[0]?.[1] as {
+      params?: Record<string, unknown>;
+    };
+    expect(taskMockRoutes.templates).toMatch(/\/task-templates$/);
+    expect(requestConfig.params).not.toHaveProperty('folderId');
+    expect(requestConfig.params).not.toHaveProperty('urgency');
   });
 });

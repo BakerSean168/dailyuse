@@ -37,6 +37,7 @@ import type {
   ITaskTemplateApiClient,
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
+  TaskTemplateListParams,
 } from '../infrastructure-client/adapters/types';
 import { TaskTemplate } from '../domain-client/aggregates/task-template';
 import { TaskInstance } from '../domain-client/aggregates/task-instance';
@@ -148,16 +149,9 @@ export class TaskClientService {
     return mapResult(result, (dto) => taskTemplateFromDTO(dto));
   }
 
-  async listTemplates(params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    folderId?: string;
-    goalId?: string;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<Result<{ templates: TaskTemplate[]; total: number }>> {
+  async listTemplates(
+    params?: TaskTemplateListParams,
+  ): Promise<Result<{ templates: TaskTemplate[]; total: number }>> {
     const result = await this.templateApi.getTaskTemplates(params);
     return mapResult(result, (data) => {
       const templates = data.templates ?? [];

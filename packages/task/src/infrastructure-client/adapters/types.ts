@@ -41,27 +41,43 @@ export interface IResultIpcClient {
 
 // ============ Task Template API Client ============
 
+export interface TaskTemplateListParams extends Record<string, unknown> {
+  page?: number;
+  limit?: number;
+  status?: string;
+  goalId?: string;
+  tags?: string[];
+}
+
 export interface ITaskTemplateApiClient {
   createTaskTemplate(request: CreateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>>;
-  getTaskTemplates(params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    folderId?: string;
-    goalId?: string;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;
-  getTaskTemplateById(id: string, includeChildren?: boolean): Promise<Result<TaskTemplateClientDTO>>;
-  updateTaskTemplate(id: string, request: UpdateTaskTemplateReq): Promise<Result<TaskTemplateClientDTO>>;
+  getTaskTemplates(
+    params?: TaskTemplateListParams,
+  ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>>;
+  getTaskTemplateById(
+    id: string,
+    includeChildren?: boolean,
+  ): Promise<Result<TaskTemplateClientDTO>>;
+  updateTaskTemplate(
+    id: string,
+    request: UpdateTaskTemplateReq,
+  ): Promise<Result<TaskTemplateClientDTO>>;
   deleteTaskTemplate(id: string): Promise<Result<void>>;
-  getTasksWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplateClientDTO[]>>;
+  getTasksWithPrioritySorting(params?: {
+    limit?: number;
+  }): Promise<Result<TaskTemplateClientDTO[]>>;
   activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   pauseTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
   archiveTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>>;
-  generateInstances(templateId: string, request: GenerateInstancesReq): Promise<Result<TaskInstanceClientDTO[]>>;
-  getInstancesByDateRange(templateId: string, from: number, to: number): Promise<Result<TaskInstanceClientDTO[]>>;
+  generateInstances(
+    templateId: string,
+    request: GenerateInstancesReq,
+  ): Promise<Result<TaskInstanceClientDTO[]>>;
+  getInstancesByDateRange(
+    templateId: string,
+    from: number,
+    to: number,
+  ): Promise<Result<TaskInstanceClientDTO[]>>;
   bindToGoal(templateId: string, request: BindToGoalReq): Promise<Result<TaskTemplateClientDTO>>;
   unbindFromGoal(templateId: string): Promise<Result<TaskTemplateClientDTO>>;
 }
@@ -80,19 +96,33 @@ export interface ITaskInstanceApiClient {
   getTaskInstanceById(id: string): Promise<Result<TaskInstanceClientDTO>>;
   deleteTaskInstance(id: string): Promise<Result<void>>;
   startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>>;
-  completeTaskInstance(id: string, request?: CompleteTaskInstanceReq): Promise<Result<TaskInstanceClientDTO>>;
-  skipTaskInstance(id: string, request?: SkipTaskInstanceReq): Promise<Result<TaskInstanceClientDTO>>;
+  completeTaskInstance(
+    id: string,
+    request?: CompleteTaskInstanceReq,
+  ): Promise<Result<TaskInstanceClientDTO>>;
+  skipTaskInstance(
+    id: string,
+    request?: SkipTaskInstanceReq,
+  ): Promise<Result<TaskInstanceClientDTO>>;
   checkExpiredInstances(): Promise<Result<{ count: number; instances: TaskInstanceClientDTO[] }>>;
 }
 
 // ============ Task Dependency API Client ============
 
 export interface ITaskDependencyApiClient {
-  createDependency(taskId: string, request: CreateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
+  createDependency(
+    taskId: string,
+    request: CreateTaskDependencyRequest,
+  ): Promise<Result<TaskDependencyClientDTO>>;
   getDependencies(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
   getDependents(taskId: string): Promise<Result<TaskDependencyClientDTO[]>>;
   getDependencyChain(taskId: string): Promise<Result<DependencyChainClientDTO>>;
-  validateDependency(request: ValidateDependencyRequest): Promise<Result<ValidateDependencyResponse>>;
+  validateDependency(
+    request: ValidateDependencyRequest,
+  ): Promise<Result<ValidateDependencyResponse>>;
   deleteDependency(id: string): Promise<Result<void>>;
-  updateDependency(id: string, request: UpdateTaskDependencyRequest): Promise<Result<TaskDependencyClientDTO>>;
+  updateDependency(
+    id: string,
+    request: UpdateTaskDependencyRequest,
+  ): Promise<Result<TaskDependencyClientDTO>>;
 }

@@ -13,6 +13,14 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 
+type TaskTemplateListParams = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  goalId?: string;
+  tags?: string[];
+};
+
 export function useTask() {
   const service = useStrictInject(TASK_SERVICE_KEY, 'TaskService');
   const store = useTaskStore();
@@ -34,7 +42,7 @@ export function useTask() {
   }
 
   // ========== Templates ==========
-  async function fetchTemplates(query?: Record<string, unknown>) {
+  async function fetchTemplates(query?: TaskTemplateListParams) {
     store.setLoading(true);
     store.setError(null);
     try {
@@ -42,7 +50,7 @@ export function useTask() {
         ...query,
         page: store.pagination.page,
         limit: store.pagination.pageSize,
-      } as Parameters<typeof service.listTemplates>[0]);
+      });
       if (result.ok) {
         store.setTemplates(
           (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),

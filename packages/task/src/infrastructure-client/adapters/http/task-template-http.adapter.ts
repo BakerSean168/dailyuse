@@ -7,7 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type { ITaskTemplateApiClient } from '../types';
+import type { ITaskTemplateApiClient, TaskTemplateListParams } from '../types';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -33,16 +33,9 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.httpClient.post(this.baseUrl, request);
   }
 
-  async getTaskTemplates(params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    folderId?: string;
-    goalId?: string;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
+  async getTaskTemplates(
+    params?: TaskTemplateListParams,
+  ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
     return this.httpClient.get(this.baseUrl, { params });
   }
 

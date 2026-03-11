@@ -2581,8 +2581,6 @@ export default {
       colorMark: '颜色标记',
       selectColor: '选择颜色',
       clearColor: '清除颜色',
-      folderId: '文件夹 ID',
-      folderPlaceholder: '可选，输入文件夹 ID',
       tags: '任务标签',
       tagPlaceholder: '按回车键添加新标签',
       tagWork: '工作',

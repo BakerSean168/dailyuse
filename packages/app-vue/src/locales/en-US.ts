@@ -2603,8 +2603,6 @@ export default {
       colorMark: 'Color Mark',
       selectColor: 'Select color',
       clearColor: 'Clear color',
-      folderId: 'Folder ID',
-      folderPlaceholder: 'Optional, enter folder ID',
       tags: 'Tags',
       tagPlaceholder: 'Press Enter to add a tag',
       tagWork: 'Work',

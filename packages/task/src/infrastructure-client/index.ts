@@ -10,6 +10,7 @@ export type {
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
   IResultIpcClient,
+  TaskTemplateListParams,
 } from './adapters/types';
 
 // HTTP Adapters
@@ -29,4 +30,3 @@ export {
   createTaskIpcAdapters,
   type TaskIpcAdapters,
 } from './adapters/ipc';
-

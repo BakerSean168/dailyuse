@@ -6,10 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type {
-  ITaskTemplateApiClient,
-  IResultIpcClient,
-} from '../types';
+import type { ITaskTemplateApiClient, IResultIpcClient, TaskTemplateListParams } from '../types';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
@@ -26,20 +23,16 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     return this.ipcClient.invoke('task:template:create', request);
   }
 
-  async getTaskTemplates(params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    folderId?: string;
-    goalId?: string;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
+  async getTaskTemplates(
+    params?: TaskTemplateListParams,
+  ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
     return this.ipcClient.invoke('task:template:list', params);
   }
 
-  async getTaskTemplateById(id: string, includeChildren = false): Promise<Result<TaskTemplateClientDTO>> {
+  async getTaskTemplateById(
+    id: string,
+    includeChildren = false,
+  ): Promise<Result<TaskTemplateClientDTO>> {
     return this.ipcClient.invoke('task:template:get', { id, includeChildren });
   }
 
@@ -54,7 +47,9 @@ export class TaskTemplateIpcAdapter implements ITaskTemplateApiClient {
     return this.ipcClient.invoke('task:template:delete', { id });
   }
 
-  async getTasksWithPrioritySorting(params?: { limit?: number }): Promise<Result<TaskTemplateClientDTO[]>> {
+  async getTasksWithPrioritySorting(params?: {
+    limit?: number;
+  }): Promise<Result<TaskTemplateClientDTO[]>> {
     return this.ipcClient.invoke('task:template:get-by-priority', { params });
   }
 
