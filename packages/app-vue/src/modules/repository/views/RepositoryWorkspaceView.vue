@@ -333,6 +333,8 @@ import {
   getResourceInsertionFeedback,
   type EditorSelectionRange,
   type ResourceInsertionItem,
+  type ResourceInsertionMode,
+  type ResourceInsertionTemplate,
   type SelfContainedExportResult,
 } from '../../editor/composables/useResourceInsertion';
 import type { ResolvedMarkdownResourceReference } from '../../editor/utils/markdownResourceReferences';
@@ -602,8 +604,8 @@ async function handleInsertExistingImage(resource: ResourceClientDTO) {
 
 async function handleInsertResource(payload: {
   item: ResourceInsertionItem;
-  mode: 'path' | 'base64';
-  template?: 'auto';
+  mode: ResourceInsertionMode;
+  template: ResourceInsertionTemplate;
 }) {
   try {
     await insertExistingResource({

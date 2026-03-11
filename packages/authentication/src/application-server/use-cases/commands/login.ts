@@ -39,14 +39,14 @@ export class Login {
       // 1. 通过领域服务验证凭据（内部处理失败尝试计数）
       const identity = await this.domainLoginService.loginByEmail({
         email: input.email,
-        password: input.password
+        password: input.password,
       });
 
       // 2. 创建会话（领域事件在内部创建�?
       const { AuthSession: session, tokens } = AuthSession.start({
         identityId: identity.id,
         deviceId: cx.deviceId,
-        tokenProvider: this.tokenProvider
+        tokenProvider: this.tokenProvider,
       });
 
       // 3. 保存会话（仓储层自动发送领域事件）
@@ -54,20 +54,22 @@ export class Login {
 
       logger.info('[Login] Login successful', {
         identityId: identity.id,
-        sessionId: session.id
+        sessionId: session.id,
       });
+
+      const sessionDto = session.toClientDTO(true);
 
       // 4. 返回 AuthResponse
       return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         identity: identity.toClientDTO(),
-        session: session.toClientDTO(true)
+        session: sessionDto,
       };
     } catch (error) {
       logger.error('[Login] Login failed', {
         email: input.email,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

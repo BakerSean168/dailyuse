@@ -42,6 +42,22 @@ export const authHandlers = [
     );
   }),
 
+  http.post(`${BASE}/register/phone`, () => {
+    return HttpResponse.json(
+      {
+        ok: false,
+        code: 503,
+        message: 'Phone registration is not implemented on the server yet',
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Phone registration is not implemented on the server yet',
+        },
+        timestamp: Date.now(),
+      },
+      { status: 503 },
+    );
+  }),
+
   // POST /api/v1/auth/refresh — refresh access token
   http.post(`${BASE}/refresh`, () => {
     const mockAuth = createMockAuthResponse();
@@ -54,15 +70,116 @@ export const authHandlers = [
     });
   }),
 
+  http.post(`${BASE}/login/phone`, () => {
+    return HttpResponse.json(
+      {
+        ok: false,
+        code: 503,
+        message: 'Phone login is not implemented on the server yet',
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Phone login is not implemented on the server yet',
+        },
+        timestamp: Date.now(),
+      },
+      { status: 503 },
+    );
+  }),
+
+  http.post(`${BASE}/sms/send`, () => {
+    return HttpResponse.json(
+      {
+        ok: false,
+        code: 503,
+        message: 'SMS verification is not implemented on the server yet',
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'SMS verification is not implemented on the server yet',
+        },
+        timestamp: Date.now(),
+      },
+      { status: 503 },
+    );
+  }),
+
   // GET /api/v1/auth/me — get current identity (used on app init)
   http.get(`${BASE}/me`, () => {
+    const mockAuth = createMockAuthResponse();
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'OK',
-      data: createMockAuthResponse().identity,
+      data: {
+        identity: mockAuth.identity,
+        session: mockAuth.session,
+      },
       timestamp: Date.now(),
     });
+  }),
+
+  http.get(`${BASE}/sessions`, () => {
+    const mockAuth = createMockAuthResponse();
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'OK',
+      data: {
+        sessions: [mockAuth.session],
+      },
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${BASE}/sessions/revoke`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Session revoked',
+      data: null,
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${BASE}/password/change`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Password changed',
+      data: null,
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${BASE}/password/forgot`, () => {
+    return HttpResponse.json(
+      {
+        ok: false,
+        code: 503,
+        message: 'Forgot password is not implemented on the server yet',
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Forgot password is not implemented on the server yet',
+        },
+        timestamp: Date.now(),
+      },
+      { status: 503 },
+    );
+  }),
+
+  http.post(`${BASE}/password/reset`, () => {
+    return HttpResponse.json(
+      {
+        ok: false,
+        code: 503,
+        message: 'Password reset is not implemented on the server yet',
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Password reset is not implemented on the server yet',
+        },
+        timestamp: Date.now(),
+      },
+      { status: 503 },
+    );
   }),
 
   // POST /api/v1/auth/logout — logout

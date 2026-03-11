@@ -5,7 +5,14 @@
     "outDir": "./dist",
     "paths": {
       "@/*": ["./src/*"],
+      "@dailyuse/contracts": ["../contracts/src/index.ts"],
+      "@dailyuse/contracts/*": [
+        "../contracts/src/modules/*/index.ts",
+        "../contracts/src/*/index.ts"
+      ],
       "@dailyuse/database": ["../database/src/index.ts"],
+      "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
+      "@dailyuse/domain-shared/*": ["../domain-shared/src/*/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
       "@dailyuse/patterns": ["../patterns/src/index.ts"]
     }

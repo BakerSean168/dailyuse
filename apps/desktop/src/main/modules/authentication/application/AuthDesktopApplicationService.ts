@@ -52,6 +52,7 @@ import {
   type AuthStatus,
   type EmailLoginCredentials,
   type DeviceInfoUI,
+  type ListSessionsRes,
   type RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 import {
@@ -75,15 +76,7 @@ import { loginDesktopAccount } from './loginDesktopAccount';
 import { refreshDesktopSession } from './refreshDesktopSession';
 
 // Re-export from contracts for convenience
-export type {
-  IpcResult,
-  UserInfo,
-  SessionInfo,
-  TwoFactorStatus,
-  ApiKeyInfo,
-  AuthStatus,
-  EmailLoginCredentials,
-};
+export type { IpcResult, UserInfo, TwoFactorStatus, ApiKeyInfo, AuthStatus, EmailLoginCredentials };
 export type { DeviceInfoUI } from '@dailyuse/contracts/authentication';
 export { AuthMode, ConnectionStatus, toIpcResult, ok, fail };
 
@@ -143,6 +136,15 @@ export class AuthDesktopApplicationService {
 
   // Tracked promise for the most recent PowerSync initialization (non-blocking).
   private powerSyncInitPromise: Promise<void> | null = null;
+
+  private getAccessTokenExpiresInSeconds(expiresAt?: number): number {
+    if (typeof expiresAt !== 'number') {
+      return 3600;
+    }
+
+    const remainingMs = expiresAt - Date.now();
+    return Math.max(1, Math.ceil(remainingMs / 1000));
+  }
 
   constructor(logger?: ILogger) {
     this.logger = logger || createLogger('AuthDesktopAppService');
@@ -310,11 +312,14 @@ export class AuthDesktopApplicationService {
             // Use a single sessionId for both token storage and session creation
             // to prevent mismatch when response.session.id is falsy
             const sessionId = response.session.id || crypto.randomUUID();
+            const accessTokenExpiresIn = this.getAccessTokenExpiresInSeconds(
+              response.session?.expiresAt,
+            );
 
             await this.tokenManager.saveTokens({
               accessToken: response.accessToken,
               refreshToken: response.refreshToken || '',
-              accessTokenExpiresIn: 3600,
+              accessTokenExpiresIn,
               identityId: response.identity.id,
               sessionId,
             });
@@ -340,7 +345,7 @@ export class AuthDesktopApplicationService {
               await this.sessionManager.createOnlineSession({
                 identityId: response.identity.id,
                 sessionId,
-                expiresIn: 3600,
+                expiresIn: accessTokenExpiresIn,
               });
             }
 
@@ -545,10 +550,11 @@ export class AuthDesktopApplicationService {
     }
 
     const sessionId = data.session?.id || data.sessionId || crypto.randomUUID();
+    const accessTokenExpiresIn = this.getAccessTokenExpiresInSeconds(data.session?.expiresAt);
     await this.tokenManager.saveTokens({
       accessToken: data.accessToken,
       refreshToken: data.refreshToken || '',
-      accessTokenExpiresIn: data.expiresIn || 3600,
+      accessTokenExpiresIn,
       identityId,
       sessionId,
     });
@@ -563,7 +569,7 @@ export class AuthDesktopApplicationService {
     await this.sessionManager.createOnlineSession({
       identityId,
       sessionId,
-      expiresIn: data.expiresIn || 3600,
+      expiresIn: accessTokenExpiresIn,
     });
 
     await this.sessionManager
@@ -744,7 +750,10 @@ export class AuthDesktopApplicationService {
               return;
             }
 
-            await this.tokenManager.updateAccessToken(response.accessToken, 3600);
+            await this.tokenManager.updateAccessToken(
+              response.accessToken,
+              this.getAccessTokenExpiresInSeconds(response.session?.expiresAt),
+            );
 
             if (response.refreshToken) {
               await this.tokenManager.updateRefreshToken(response.refreshToken);
@@ -981,35 +990,28 @@ export class AuthDesktopApplicationService {
   /**
    * 列出会话
    */
-  async listSessions(): Promise<{ sessions: SessionInfo[]; total: number }> {
+  async listSessions(): Promise<ListSessionsRes> {
     this.logger.debug('List sessions');
 
     if (!this.sessionRepository) {
-      return { sessions: [], total: 0 };
+      return { sessions: [] };
     }
 
     try {
       const currentSession = this.sessionManager?.getCurrentSession();
       if (!currentSession) {
-        return { sessions: [], total: 0 };
+        return { sessions: [] };
       }
 
       const sessions = await this.sessionRepository.findByIdentityId(currentSession.identityId);
-      const sessionInfos: SessionInfo[] = sessions.map((s: AuthSession) => ({
-        id: s.id,
-        deviceName: s.deviceInfo?.deviceName ?? s.deviceInfo?.deviceId ?? 'Unknown',
-        deviceType: s.deviceInfo?.deviceType ?? 'UNKNOWN',
-        ipAddress: s.deviceInfo?.ipAddress ?? '',
-        createdAt: new Date(s.createdAt).toISOString(),
-        lastActiveAt: new Date(s.lastActiveAt).toISOString(),
-        expiresAt: new Date(s.expiresAt).toISOString(),
-        isCurrentSession: s.id === currentSession.id,
-      }));
+      const sessionInfos: AuthSessionClientDTO[] = sessions.map((s: AuthSession) =>
+        s.toClientDTO(s.id === currentSession.id),
+      );
 
-      return { sessions: sessionInfos, total: sessionInfos.length };
+      return { sessions: sessionInfos };
     } catch (error) {
       this.logger.error('Failed to list sessions', { error });
-      return { sessions: [], total: 0 };
+      return { sessions: [] };
     }
   }
 

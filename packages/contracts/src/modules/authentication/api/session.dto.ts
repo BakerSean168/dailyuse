@@ -1,6 +1,6 @@
 /**
  * Authentication - Session Operations
- * 
+ *
  * 所有与会话管理相关的API定义：Token刷新、登出、验证Token、会话管理
  */
 
@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { AuthSessionId, IdentityId } from '../value-objects';
 import type { AuthResponseDTO } from '../dtos';
+import type { AuthIdentityClientDTO, AuthSessionClientDTO } from '../aggregates';
 
 // ============================================================================
 // Token Refresh
@@ -53,7 +54,13 @@ export interface ValidateTokenRes {
 // ============================================================================
 
 export type GetCurrentUserReq = void;
-export type GetCurrentUserRes = AuthResponseDTO;
+
+export interface CurrentUserDTO {
+  identity: AuthIdentityClientDTO;
+  session?: AuthSessionClientDTO | null;
+}
+
+export type GetCurrentUserRes = CurrentUserDTO;
 
 // ============================================================================
 // Session Management
@@ -62,13 +69,7 @@ export type GetCurrentUserRes = AuthResponseDTO;
 export type ListSessionsReq = void;
 
 export interface ListSessionsRes {
-  sessions: Array<{
-    sessionId: AuthSessionId;
-    deviceInfo?: string;
-    createdAt: number;
-    lastActiveAt: number;
-    ipAddress?: string;
-  }>;
+  sessions: AuthSessionClientDTO[];
 }
 
 export const RevokeSessionSchema = z.object({

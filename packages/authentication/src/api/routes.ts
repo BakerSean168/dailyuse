@@ -20,13 +20,29 @@ import {
   errorResponse,
 } from '@dailyuse/utils/result';
 import {
+  ChangePasswordSchema,
+  ForgotPasswordSchema,
   RegisterByEmailSchema,
+  RegisterByPhoneSchema,
   LoginByEmailSchema,
+  LoginByPhoneSchema,
   RefreshTokenSchema,
   AuthResponseSchema,
+  RevokeSessionSchema,
+  ResetPasswordSchema,
+  SendSmsCodeSchema,
 } from '@dailyuse/contracts/authentication';
 import { AuthenticationController } from '../controllers/auth.controller';
 import type { AuthenticationUseCases } from '../controllers/auth.controller';
+
+const CurrentUserResponseSchema = z.object({
+  identity: z.object({}).passthrough(),
+  session: z.object({}).passthrough().nullable().optional(),
+});
+
+const SessionListResponseSchema = z.object({
+  sessions: z.array(z.object({}).passthrough()),
+});
 
 // ============ Types ============
 
@@ -70,6 +86,23 @@ export function registerAuthenticationRoutes(
     { requireAuth: false, successStatus: 201 },
   );
 
+  r.route(
+    {
+      method: 'post',
+      path: '/register/phone',
+      summary: '手机号注册',
+      request: { body: { content: { 'application/json': { schema: RegisterByPhoneSchema } } } },
+      responses: {
+        201: successResponse(AuthResponseSchema, '注册成功'),
+        400: errorResponse('参数错误'),
+        503: errorResponse('服务暂不可用'),
+      },
+    },
+    [],
+    (req, ctx) => controller.registerByPhone(req.body, ctx),
+    { requireAuth: false, successStatus: 201 },
+  );
+
   // POST /login — 用户登录 (no auth required)
   r.route(
     {
@@ -85,6 +118,40 @@ export function registerAuthenticationRoutes(
     },
     [],
     (req, ctx) => controller.login(req.body, ctx),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/login/phone',
+      summary: '手机号登录',
+      request: { body: { content: { 'application/json': { schema: LoginByPhoneSchema } } } },
+      responses: {
+        200: successResponse(AuthResponseSchema, '登录成功'),
+        400: errorResponse('参数错误'),
+        503: errorResponse('服务暂不可用'),
+      },
+    },
+    [],
+    (req, ctx) => controller.loginByPhone(req.body, ctx),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/sms/send',
+      summary: '发送短信验证码',
+      request: { body: { content: { 'application/json': { schema: SendSmsCodeSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '发送成功'),
+        400: errorResponse('参数错误'),
+        503: errorResponse('服务暂不可用'),
+      },
+    },
+    [],
+    (req) => controller.sendSmsCode(req.body),
     { requireAuth: false },
   );
 
@@ -104,6 +171,52 @@ export function registerAuthenticationRoutes(
     (req, ctx) => controller.logout(ctx),
   );
 
+  r.route(
+    {
+      method: 'get',
+      path: '/me',
+      summary: '获取当前用户',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: successResponse(CurrentUserResponseSchema, '获取成功'),
+        401: errorResponse('未认证'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.getCurrentUser(ctx, (req as any).user?.sessionId),
+  );
+
+  r.route(
+    {
+      method: 'get',
+      path: '/sessions',
+      summary: '获取当前用户会话列表',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: successResponse(SessionListResponseSchema, '获取成功'),
+        401: errorResponse('未认证'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.listSessions(ctx, (req as any).user?.sessionId),
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/sessions/revoke',
+      summary: '撤销指定会话',
+      security: [{ bearerAuth: [] }],
+      request: { body: { content: { 'application/json': { schema: RevokeSessionSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '撤销成功'),
+        401: errorResponse('未认证'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.revokeSession(req.body, ctx),
+  );
+
   // POST /refresh — 刷新访问令牌
   r.route(
     {
@@ -118,6 +231,54 @@ export function registerAuthenticationRoutes(
     },
     [],
     (req, ctx) => controller.refreshToken(req.body, ctx),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/password/change',
+      summary: '修改密码',
+      security: [{ bearerAuth: [] }],
+      request: { body: { content: { 'application/json': { schema: ChangePasswordSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '密码修改成功'),
+        401: errorResponse('未认证'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.changePassword(req.body, ctx),
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/password/forgot',
+      summary: '发起密码重置',
+      request: { body: { content: { 'application/json': { schema: ForgotPasswordSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '请求已接收'),
+        503: errorResponse('服务暂不可用'),
+      },
+    },
+    [],
+    (req) => controller.forgotPassword(req.body),
+    { requireAuth: false },
+  );
+
+  r.route(
+    {
+      method: 'post',
+      path: '/password/reset',
+      summary: '重置密码',
+      request: { body: { content: { 'application/json': { schema: ResetPasswordSchema } } } },
+      responses: {
+        200: successResponse(z.null(), '密码重置成功'),
+        503: errorResponse('服务暂不可用'),
+      },
+    },
+    [],
+    (req) => controller.resetPassword(req.body),
     { requireAuth: false },
   );
 

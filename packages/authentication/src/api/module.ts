@@ -132,6 +132,11 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
           throw err;
         }
       },
+      registerByPhone: async (_data, _cx) =>
+        fail({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Phone registration is not implemented on the server yet',
+        }),
       login: async (data, cx) => {
         try {
           return ok(await authenticationModule.login.execute(data, cx));
@@ -143,24 +148,44 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
           throw err;
         }
       },
+      loginByPhone: async (_data, _cx) =>
+        fail({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Phone login is not implemented on the server yet',
+        }),
+      sendSmsCode: async (_data) =>
+        fail({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'SMS verification is not implemented on the server yet',
+        }),
       logout: async (cx) => {
         await authenticationModule.logout.execute(undefined as void, cx);
         return ok(undefined as void);
       },
       refreshToken: async (data, cx) =>
         ok(await authenticationModule.refreshToken.execute(data, cx)),
-      // getActiveSessions: (identityId) => getActiveSessionsService.execute(identityId),
-      // revokeSession: (sessionId, identityId) => revokeSessionService.execute(sessionId, identityId),
-      // revokeAllSessions: (identityId) => revokeAllSessionsService.executeForWeb(identityId),
-      // enable2fa: (identityId, method) => enable2faService.execute(identityId, method),
-      // disable2fa: (identityId) => disable2faService.execute(identityId),
-      // verify2fa: (sessionId, code) => verify2faService.execute(sessionId, code),
-      // createApiKey: (identityId, name, expiresInDays) => createApiKeyService.execute(identityId, name, expiresInDays),
-      // listApiKeys: (identityId) => listApiKeysService.execute(identityId),
-      // revokeApiKey: (keyId, identityId) => revokeApiKeyService.execute(keyId, identityId),
-      // changePassword: (identityId, currentPassword, newPassword) => changePasswordService.execute(identityId, currentPassword, newPassword),
-      // forgotPassword: (email) => forgotPasswordService.execute(email),
-      // resetPassword: (token, newPassword) => resetPasswordService.execute(token, newPassword),
+      getCurrentUser: async (cx, sessionId) =>
+        ok(await authenticationModule.getCurrentUser.execute(cx.identityId, sessionId)),
+      listSessions: async (cx, sessionId) =>
+        ok(await authenticationModule.listSessions.execute(cx.identityId, sessionId)),
+      revokeSession: async (data, cx) => {
+        await authenticationModule.revokeSession.execute(data, cx);
+        return ok(undefined as void);
+      },
+      changePassword: async (data, cx) => {
+        await authenticationModule.changePassword.execute(data, cx);
+        return ok(undefined as void);
+      },
+      forgotPassword: async (_data) =>
+        fail({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Forgot password is not implemented on the server yet',
+        }),
+      resetPassword: async (_data) =>
+        fail({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Password reset is not implemented on the server yet',
+        }),
     };
 
     // 4. Register routes

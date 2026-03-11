@@ -56,7 +56,7 @@ export class RefreshToken {
       // 4. 生成新的 token pair
       const tokens = this.tokenProvider.generateAuthTokens({
         identityId: session.identityId,
-        sessionId: session.id
+        sessionId: session.id,
       });
 
       // 5. 更新会话中的 refresh token 哈希
@@ -73,20 +73,22 @@ export class RefreshToken {
 
       logger.info('[RefreshToken] Token refresh successful', {
         identityId: tokenIdentityId,
-        sessionId: session.id
+        sessionId: session.id,
       });
+
+      const sessionDto = session.toClientDTO(true);
 
       // 8. 返回 AuthResponse
       return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         identity: identity.toClientDTO(),
-        session: session.toClientDTO(true)
+        session: sessionDto,
       };
     } catch (error) {
       logger.error('[RefreshToken] Token refresh failed', {
         identityId: cx.identityId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

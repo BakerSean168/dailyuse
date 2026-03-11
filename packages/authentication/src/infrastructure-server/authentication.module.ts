@@ -1,14 +1,15 @@
-import type {
-  IAuthIdentityRepository,
-  IAuthSessionRepository,
-} from '../domain-server';
+import type { IAuthIdentityRepository, IAuthSessionRepository } from '../domain-server';
 import type { ITokenProvider } from '../domain-server/services/token-provider.interface';
 import type { IPasswordHasher } from '../domain-shared';
 import {
+  ChangePassword,
+  GetCurrentUser,
   Login,
+  ListSessions,
   Logout,
   Register,
   RefreshToken,
+  RevokeSession,
 } from '../application-server';
 
 export interface AuthenticationModuleDependencies {
@@ -28,6 +29,10 @@ export class AuthenticationModule {
   public readonly logout: Logout;
   public readonly register: Register;
   public readonly refreshToken: RefreshToken;
+  public readonly getCurrentUser: GetCurrentUser;
+  public readonly listSessions: ListSessions;
+  public readonly revokeSession: RevokeSession;
+  public readonly changePassword: ChangePassword;
 
   constructor(dependencies: AuthenticationModuleDependencies) {
     this.identityRepository = dependencies.identityRepository;
@@ -52,6 +57,14 @@ export class AuthenticationModule {
       this.sessionRepository,
       this.identityRepository,
       this.tokenProvider,
+    );
+    this.getCurrentUser = new GetCurrentUser(this.identityRepository, this.sessionRepository);
+    this.listSessions = new ListSessions(this.sessionRepository);
+    this.revokeSession = new RevokeSession(this.sessionRepository);
+    this.changePassword = new ChangePassword(
+      this.identityRepository,
+      this.sessionRepository,
+      this.passwordHasher,
     );
   }
 }

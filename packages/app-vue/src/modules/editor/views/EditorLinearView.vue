@@ -164,6 +164,8 @@ import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
 import type {
   ResourceInsertionItem,
+  ResourceInsertionMode,
+  ResourceInsertionTemplate,
   SelfContainedExportResult,
 } from '../composables/useResourceInsertion';
 import { repairBrokenMarkdownReference } from '../utils/resourceReferenceIndex';
@@ -354,8 +356,8 @@ async function handleInsertExistingImage(resource: ResourceClientDTO) {
 
 async function handleInsertResource(payload: {
   item: ResourceInsertionItem;
-  mode: 'path' | 'base64';
-  template?: 'auto';
+  mode: ResourceInsertionMode;
+  template: ResourceInsertionTemplate;
 }) {
   try {
     await insertExistingResource({

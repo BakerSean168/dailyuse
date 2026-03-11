@@ -96,11 +96,9 @@ export const useAuthenticationStore = defineStore('authentication', {
     },
 
     // ========== Token Actions ==========
-    setAccessToken(token: string | null, expiresIn?: number) {
+    setAccessToken(token: string | null, expiresAt?: number) {
       this.accessToken = token;
-      if (expiresIn && token) {
-        this.tokenExpiresAt = Date.now() + expiresIn * 1000;
-      }
+      this.tokenExpiresAt = token && typeof expiresAt === 'number' ? expiresAt : null;
     },
 
     setRefreshToken(token: string | null) {
@@ -149,7 +147,7 @@ export const useAuthenticationStore = defineStore('authentication', {
      * 处理认证响应（登录/注册成功后统一调用）
      */
     handleAuthResponse(data: AuthResponseDTO) {
-      this.setAccessToken(data.accessToken);
+      this.setAccessToken(data.accessToken, data.session?.expiresAt);
       if (data.refreshToken) {
         this.setRefreshToken(data.refreshToken);
       }

@@ -34,7 +34,7 @@ export function useSession() {
     store.setLoading(false);
 
     if (result.ok) {
-      store.setActiveSessions(result.data.sessions as any);
+      store.setActiveSessions(result.data.sessions);
       return true;
     }
     const message = result.error.message || t('auth.toast.loadSessionsFailed');

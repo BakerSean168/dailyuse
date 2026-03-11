@@ -112,7 +112,8 @@ export class AuthHttpAdapter implements IAuthApiClient {
     });
   }
 
-  async removeRememberedAccount(): Promise<Result<void>> {
+  async removeRememberedAccount(identityId: string): Promise<Result<void>> {
+    void identityId;
     return fail({
       code: 'NOT_SUPPORTED',
       message: 'Remembered accounts are only available on desktop',
