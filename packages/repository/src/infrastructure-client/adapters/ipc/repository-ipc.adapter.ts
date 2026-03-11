@@ -13,6 +13,7 @@ import type {
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
+  UploadResourcesRequest,
 } from '../types';
 import type {
   RepositoryClientDTO,
@@ -21,7 +22,23 @@ import type {
   FileTreeResponse,
   SearchRequest,
   SearchResponse,
+  UploadResourcesResponseDTO,
+  ResourceBookmarkClientDTO,
+  CreateResourceBookmarkRequestDTO,
+  UpdateResourceBookmarkRequestDTO,
+  ReorderResourceBookmarksRequestDTO,
 } from '@dailyuse/contracts/repository';
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  if (typeof btoa === 'function') {
+    return btoa(binary);
+  }
+  return Buffer.from(bytes).toString('base64');
+}
 
 /**
  * Repository IPC Adapter
@@ -124,6 +141,70 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
 
   async deleteResource(id: string): Promise<Result<void>> {
     return this.ipcClient.invoke(`${this.channel}:resource:delete`, id);
+  }
+
+  async uploadResources(
+    repositoryId: string,
+    request: UploadResourcesRequest,
+  ): Promise<Result<UploadResourcesResponseDTO>> {
+    const files = await Promise.all(
+      request.files.map(async (file) => {
+        if (typeof File !== 'undefined' && file instanceof File) {
+          const buffer = new Uint8Array(await file.arrayBuffer());
+          return {
+            name: file.name,
+            mimeType: file.type,
+            size: file.size,
+            contentBase64: bytesToBase64(buffer),
+          };
+        }
+        return file;
+      }),
+    );
+
+    return this.ipcClient.invoke(`${this.channel}:resource:upload`, {
+      repositoryId,
+      files,
+      metadata: {
+        folderId: request.folderId,
+        tags: request.tags,
+        overwritePolicy: request.overwritePolicy,
+      },
+    });
+  }
+
+  async listBookmarks(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.ipcClient.invoke(`${this.channel}:bookmark:list`, { repositoryId });
+  }
+
+  async createBookmark(
+    repositoryId: string,
+    request: CreateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:bookmark:create`, { repositoryId, request });
+  }
+
+  async updateBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    request: UpdateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:bookmark:update`, {
+      repositoryId,
+      bookmarkId,
+      request,
+    });
+  }
+
+  async reorderBookmarks(
+    repositoryId: string,
+    request: ReorderResourceBookmarksRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.ipcClient.invoke(`${this.channel}:bookmark:reorder`, { repositoryId, request });
+  }
+
+  async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
+    return this.ipcClient.invoke(`${this.channel}:bookmark:delete`, { repositoryId, bookmarkId });
   }
 }
 

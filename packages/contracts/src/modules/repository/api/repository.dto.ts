@@ -30,7 +30,6 @@ export type UpdateRepositoryReq = z.infer<typeof UpdateRepositorySchema>;
 // ==================== Resource Schemas ====================
 
 export const CreateResourceSchema = z.object({
-  repositoryId: brandedId<RepositoryId>().describe('所属仓库 ID'),
   name: z.string().min(1).max(255).describe('资源名称'),
   type: z.string().min(1).max(100).describe('资源类型'),
   mimeType: z.string().max(200).optional().describe('MIME 类型'),

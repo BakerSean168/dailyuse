@@ -11,4 +11,4 @@ export { default as MediaViewer } from './MediaViewer.vue';
 
 // Re-export the EditorTab type directly from contracts (avoids tsc's
 // inability to resolve named type exports from .vue SFC files).
-export type { SimpleEditorTab as EditorTab } from '@dailyuse/contracts/shared';
+export type { EditorController, EditorOpenFileInput, EditorTab } from '../types';

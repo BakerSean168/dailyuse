@@ -31,3 +31,36 @@ export const ResourceResponseSchema = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
 });
+
+export const ResourceBookmarkResponseSchema = z.object({
+  id: z.string(),
+  resourceId: brandedId<ResourceId>(),
+  identityId: z.string(),
+  aliasName: z.string().nullable(),
+  icon: z.string().nullable(),
+  color: z.string().nullable(),
+  sortOrder: z.number(),
+  version: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  deletedAt: z.number().nullable(),
+  displayName: z.string(),
+  isOwner: z.boolean(),
+});
+
+export const UploadResourceSuccessResponseSchema = z.object({
+  fileName: z.string(),
+  resource: ResourceResponseSchema,
+});
+
+export const UploadResourceFailureResponseSchema = z.object({
+  fileName: z.string(),
+  code: z.string(),
+  message: z.string(),
+});
+
+export const UploadResourcesResponseSchema = z.object({
+  successes: z.array(UploadResourceSuccessResponseSchema),
+  failures: z.array(UploadResourceFailureResponseSchema),
+  resources: z.array(ResourceResponseSchema),
+});

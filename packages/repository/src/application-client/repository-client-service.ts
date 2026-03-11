@@ -21,6 +21,11 @@ import type {
   FileTreeResponse,
   SearchRequest,
   SearchResponse,
+  UploadResourcesResponseDTO,
+  ResourceBookmarkClientDTO,
+  CreateResourceBookmarkRequestDTO,
+  UpdateResourceBookmarkRequestDTO,
+  ReorderResourceBookmarksRequestDTO,
 } from '@dailyuse/contracts/repository';
 import type {
   IRepositoryApiClient,
@@ -28,6 +33,7 @@ import type {
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
+  UploadResourcesRequest,
 } from '../infrastructure-client/adapters/types';
 import { Repository } from '../domain-client/aggregates/Repository';
 import { RepositoryId } from '../domain-shared/value-objects/repository-id';
@@ -152,5 +158,42 @@ export class RepositoryClientService {
 
   async deleteResource(id: string): Promise<Result<void>> {
     return this.repositoryApi.deleteResource(id);
+  }
+
+  async uploadResources(
+    repositoryId: string,
+    request: UploadResourcesRequest,
+  ): Promise<Result<UploadResourcesResponseDTO>> {
+    return this.repositoryApi.uploadResources(repositoryId, request);
+  }
+
+  async listBookmarks(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.repositoryApi.listBookmarks(repositoryId);
+  }
+
+  async createBookmark(
+    repositoryId: string,
+    request: CreateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>> {
+    return this.repositoryApi.createBookmark(repositoryId, request);
+  }
+
+  async updateBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    request: UpdateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>> {
+    return this.repositoryApi.updateBookmark(repositoryId, bookmarkId, request);
+  }
+
+  async reorderBookmarks(
+    repositoryId: string,
+    request: ReorderResourceBookmarksRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.repositoryApi.reorderBookmarks(repositoryId, request);
+  }
+
+  async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
+    return this.repositoryApi.deleteBookmark(repositoryId, bookmarkId);
   }
 }

@@ -13,6 +13,7 @@ import type {
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
+  UploadResourcesRequest,
 } from '../types';
 import type {
   RepositoryClientDTO,
@@ -21,7 +22,20 @@ import type {
   FileTreeResponse,
   SearchRequest,
   SearchResponse,
+  UploadResourcesResponseDTO,
+  ResourceBookmarkClientDTO,
+  CreateResourceBookmarkRequestDTO,
+  UpdateResourceBookmarkRequestDTO,
+  ReorderResourceBookmarksRequestDTO,
 } from '@dailyuse/contracts/repository';
+import { fail } from '@dailyuse/contracts/result';
+
+function base64ToBytes(value: string): Uint8Array {
+  if (typeof atob === 'function') {
+    return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+  }
+  return Uint8Array.from(Buffer.from(value, 'base64'));
+}
 
 /**
  * Repository HTTP Adapter
@@ -124,6 +138,88 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
 
   async deleteResource(id: string): Promise<Result<void>> {
     return this.httpClient.delete(`/resources/${id}`);
+  }
+
+  async uploadResources(
+    repositoryId: string,
+    request: UploadResourcesRequest,
+  ): Promise<Result<UploadResourcesResponseDTO>> {
+    const client = this.httpClient as any;
+    const axios = typeof client.getAxiosInstance === 'function' ? client.getAxiosInstance() : null;
+    if (!axios) {
+      return fail({
+        code: 'INTERNAL_ERROR',
+        message: 'HTTP client does not support multipart uploads',
+      });
+    }
+
+    const FormDataCtor = (globalThis as any).FormData;
+    const BlobCtor = (globalThis as any).Blob;
+    if (!FormDataCtor || !BlobCtor) {
+      return fail({
+        code: 'INTERNAL_ERROR',
+        message: 'Runtime does not support multipart uploads',
+      });
+    }
+    const formData = new FormDataCtor();
+    for (const file of request.files) {
+      if (typeof (file as any).arrayBuffer === 'function') {
+        const bytes = new Uint8Array(await (file as any).arrayBuffer());
+        const blob = new BlobCtor([bytes], {
+          type: (file as any).type || 'application/octet-stream',
+        });
+        formData.append('files', blob, (file as any).name);
+      } else {
+        const uploaded = file as any;
+        const blob = new BlobCtor([base64ToBytes(uploaded.contentBase64)], {
+          type: uploaded.mimeType || 'application/octet-stream',
+        });
+        formData.append('files', blob, uploaded.name);
+      }
+    }
+    if (request.folderId) formData.append('folderId', request.folderId);
+    if (request.tags) formData.append('tags', JSON.stringify(request.tags));
+    if (request.overwritePolicy) formData.append('overwritePolicy', request.overwritePolicy);
+
+    return client.request({
+      method: 'post',
+      url: `${this.baseUrl}/${repositoryId}/resources/upload`,
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  }
+
+  async listBookmarks(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.httpClient.get(`${this.baseUrl}/${repositoryId}/bookmarks`);
+  }
+
+  async createBookmark(
+    repositoryId: string,
+    request: CreateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/${repositoryId}/bookmarks`, request);
+  }
+
+  async updateBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    request: UpdateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>> {
+    return this.httpClient.patch(
+      `${this.baseUrl}/${repositoryId}/bookmarks/${bookmarkId}`,
+      request,
+    );
+  }
+
+  async reorderBookmarks(
+    repositoryId: string,
+    request: ReorderResourceBookmarksRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO[]>> {
+    return this.httpClient.post(`${this.baseUrl}/${repositoryId}/bookmarks/reorder`, request);
+  }
+
+  async deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>> {
+    return this.httpClient.delete(`${this.baseUrl}/${repositoryId}/bookmarks/${bookmarkId}`);
   }
 }
 

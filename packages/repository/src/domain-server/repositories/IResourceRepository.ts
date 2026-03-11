@@ -1,6 +1,6 @@
 ﻿/**
  * IResourceRepository - 璧勬簮浠撳偍鎺ュ彛
- * 
+ *
  * 鑱岃矗锛?
  * - 璧勬簮鐨?CRUD 鎿嶄綔
  * - 璧勬簮鏌ヨ
@@ -23,6 +23,8 @@ export interface IResourceRepository {
    * 鏍规嵁浠撳簱 ID 鏌ユ壘璧勬簮
    */
   findByRepositoryId(repositoryId: string): Promise<Resource[]>;
+
+  findByRepositoryIdAndPath(repositoryId: string, path: string): Promise<Resource | null>;
 
   /**
    * 鏍规嵁鏂囦欢澶?UUID 鏌ユ壘璧勬簮

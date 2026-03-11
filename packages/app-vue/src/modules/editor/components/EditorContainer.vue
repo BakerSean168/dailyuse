@@ -41,12 +41,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileText } from 'lucide-vue-next';
-import EditorTabBar, { type EditorTab } from './EditorTabBar.vue';
+import EditorTabBar from './EditorTabBar.vue';
 import MarkdownEditor from './MarkdownEditor.vue';
 import MediaViewer from './MediaViewer.vue';
+import type { EditorOpenFileInput, EditorTab } from '../types';
 
 const { t } = useI18n();
 
@@ -74,13 +75,7 @@ const activeTab = computed(() => {
   return tabs.value.find((tab) => tab.id === activeTabId.value) || null;
 });
 
-function openFile(file: {
-  id?: string;
-  title: string;
-  fileType: 'markdown' | 'image' | 'video' | 'audio';
-  filePath: string;
-  content?: string;
-}) {
+function openFile(file: EditorOpenFileInput) {
   const existingTab = tabs.value.find((tab) => tab.filePath === file.filePath);
   if (existingTab) {
     activeTabId.value = existingTab.id;

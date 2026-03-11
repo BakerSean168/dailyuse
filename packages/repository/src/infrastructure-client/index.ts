@@ -10,10 +10,20 @@ export type {
   CreateRepositoryRequest,
   CreateFolderRequest,
   IResultIpcClient,
+  UploadResourcesRequest,
+  UploadFileLike,
 } from './adapters/types';
 
 // HTTP Adapters
-export { RepositoryHttpAdapter, createRepositoryHttpAdapters, type RepositoryHttpAdapters } from './adapters/http';
+export {
+  RepositoryHttpAdapter,
+  createRepositoryHttpAdapters,
+  type RepositoryHttpAdapters,
+} from './adapters/http';
 
 // IPC Adapters
-export { RepositoryIpcAdapter, createRepositoryIpcAdapters, type RepositoryIpcAdapters } from './adapters/ipc';
+export {
+  RepositoryIpcAdapter,
+  createRepositoryIpcAdapters,
+  type RepositoryIpcAdapters,
+} from './adapters/ipc';

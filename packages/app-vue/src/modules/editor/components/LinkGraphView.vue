@@ -75,6 +75,9 @@
           {{ t('editor.linkGraph.nodeCount') }} {{ graphData.nodes.length }} |
           {{ t('editor.linkGraph.linkCount') }} {{ graphData.edges.length }}
         </Badge>
+        <Badge v-if="graphData.truncated" variant="secondary">
+          {{ t('editor.linkGraph.truncated') }}
+        </Badge>
       </div>
     </CardContent>
 
@@ -97,33 +100,12 @@ import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
 import { Network, RotateCw, X, AlertCircle } from 'lucide-vue-next';
 import * as echarts from 'echarts';
+import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
+import type { LinkGraphData, LinkGraphEdge, LinkGraphNode } from '../utils/linkIndex';
 
 const { t } = useI18n();
 
-interface LinkGraphNodeDTO {
-  id: string;
-  title: string;
-  isCenter: boolean;
-  isCurrent: boolean;
-  linkCount: number;
-  backlinkCount: number;
-  depth: number;
-}
-
-interface LinkGraphEdgeDTO {
-  sourceId: string;
-  targetId: string;
-  source: string;
-  target: string;
-  linkText?: string;
-}
-
-interface LinkGraphResponseDTO {
-  nodes: LinkGraphNodeDTO[];
-  edges: LinkGraphEdgeDTO[];
-  centerId: string;
-  depth: number;
-}
+const { ensureResourcesLoaded, getGraph } = useEditorLinkIndex();
 
 const props = withDefaults(
   defineProps<{
@@ -152,11 +134,12 @@ const currentDepthStr = computed({
 const chartRef = ref<HTMLElement | null>(null);
 let chartInstance: echarts.ECharts | null = null;
 
-const graphData = ref<LinkGraphResponseDTO>({
+const graphData = ref<LinkGraphData>({
   nodes: [],
   edges: [],
   centerId: props.documentId,
   depth: currentDepth.value,
+  truncated: false,
 });
 
 async function loadLinkGraph() {
@@ -171,19 +154,25 @@ async function loadLinkGraph() {
       edges: [],
       centerId: props.documentId,
       depth: currentDepth.value,
+      truncated: false,
     };
-    error.value = t('editor.linkGraph.comingSoon');
+    await ensureResourcesLoaded();
+    graphData.value = getGraph(props.documentId, currentDepth.value, {
+      maxNodes: 40,
+      maxEdges: 80,
+    });
 
     await nextTick();
     renderGraph();
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Load link graph failed:', err);
-    error.value = err.message || t('editor.linkGraph.loadFailed');
+    error.value = err instanceof Error ? err.message : t('editor.linkGraph.loadFailed');
     graphData.value = {
       nodes: [],
       edges: [],
       centerId: props.documentId,
       depth: currentDepth.value,
+      truncated: false,
     };
   } finally {
     loading.value = false;
@@ -195,15 +184,19 @@ function renderGraph() {
 
   if (!chartInstance) {
     chartInstance = echarts.init(chartRef.value);
+  } else if (graphData.value.nodes.length === 0) {
+    chartInstance.clear();
   }
 
-  const nodes = graphData.value.nodes.map((node: LinkGraphNodeDTO) => ({
+  const nodes = graphData.value.nodes.map((node: LinkGraphNode) => ({
     id: node.id,
     name: node.title,
-    symbolSize: node.isCurrent ? 60 : 40 + Math.min(node.linkCount + node.backlinkCount, 20) * 2,
+    symbolSize: node.isCurrent
+      ? 64
+      : 28 + Math.min(node.linkCount + node.backlinkCount + (3 - node.depth), 18) * 2,
     value: node.linkCount + node.backlinkCount,
     itemStyle: {
-      color: node.isCurrent ? '#1976d2' : '#90caf9',
+      color: node.isCurrent ? '#1d4ed8' : node.depth === 1 ? '#0f766e' : '#7c3aed',
     },
     label: {
       show: true,
@@ -211,7 +204,7 @@ function renderGraph() {
     },
   }));
 
-  const links = graphData.value.edges.map((edge: LinkGraphEdgeDTO) => ({
+  const links = graphData.value.edges.map((edge: LinkGraphEdge) => ({
     source: edge.source,
     target: edge.target,
     label: {
@@ -223,11 +216,11 @@ function renderGraph() {
   const option = {
     tooltip: {
       trigger: 'item',
-      formatter: (params: any) => {
+      formatter: (params: { dataType?: string; data?: { name: string; value: number } }) => {
         if (params.dataType === 'node') {
           return t('editor.linkGraph.linkCountTooltip', {
-            name: params.data.name,
-            count: params.data.value,
+            name: params.data?.name ?? '',
+            count: params.data?.value ?? 0,
           });
         }
         return '';
@@ -242,9 +235,9 @@ function renderGraph() {
         roam: true,
         draggable: true,
         force: {
-          repulsion: 200,
+          repulsion: 280,
           gravity: 0.1,
-          edgeLength: 150,
+          edgeLength: 120,
           layoutAnimation: true,
         },
         emphasis: {
@@ -265,15 +258,18 @@ function renderGraph() {
   chartInstance.setOption(option);
 
   chartInstance.off('click');
-  chartInstance.on('click', (params: any) => {
+  chartInstance.on('click', (params: { dataType?: string; data?: { id?: string } }) => {
     if (params.dataType === 'node') {
-      emit('nodeClick', params.data.id);
+      const nodeId = params.data?.id;
+      if (nodeId) {
+        emit('nodeClick', nodeId);
+      }
     }
   });
 }
 
 function refresh() {
-  loadLinkGraph();
+  void loadLinkGraph();
 }
 
 function resizeChart() {
@@ -285,16 +281,16 @@ function resizeChart() {
 watch(
   () => props.documentId,
   () => {
-    loadLinkGraph();
+    void loadLinkGraph();
   },
 );
 
 watch(currentDepth, () => {
-  loadLinkGraph();
+  void loadLinkGraph();
 });
 
 onMounted(() => {
-  loadLinkGraph();
+  void loadLinkGraph();
   window.addEventListener('resize', resizeChart);
 });
 

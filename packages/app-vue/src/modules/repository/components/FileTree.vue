@@ -127,10 +127,10 @@ const emit = defineEmits<{
 }>();
 
 function handleEmptyAreaContextMenu(_event: MouseEvent) {
-  // TODO: Implement empty area context menu
+  // Legacy story-only component. Production workspace uses TypedFileTree instead.
 }
 
 function handleNodeContextMenu(_event: MouseEvent, _node: TreeNode) {
-  // TODO: Implement node context menu
+  // Legacy story-only component. Production workspace uses TypedFileTree instead.
 }
 </script>

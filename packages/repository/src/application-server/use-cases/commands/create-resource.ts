@@ -26,6 +26,9 @@ export interface CreateResourceInput {
   type: ResourceType;
   path: string;
   content?: string;
+  binaryContent?: Uint8Array;
+  mimeType?: string;
+  metadata?: Record<string, unknown>;
   maxFileBytes?: number;
   maxTotalBytes?: number;
   forbiddenExtensions?: string[];
@@ -63,9 +66,13 @@ export class CreateResource {
       throw new Error(`Resource already exists at path: ${input.path}`);
     }
 
-    const contentBytes = input.content ? Buffer.byteLength(input.content, 'utf8') : 0;
+    const storageContent = input.binaryContent ?? input.content ?? null;
+    const contentBytes =
+      typeof storageContent === 'string'
+        ? Buffer.byteLength(storageContent, 'utf8')
+        : (storageContent?.byteLength ?? 0);
 
-    let metadataOverrides = {};
+    let metadataOverrides: Record<string, unknown> = { ...(input.metadata ?? {}) };
     if (input.type === ResourceType.File) {
       this.policy.assertExtensionAllowed(input.name, {
         forbiddenExtensions: input.forbiddenExtensions,
@@ -103,7 +110,8 @@ export class CreateResource {
       name: input.name,
       type: input.type,
       path: input.path,
-      content: input.content ?? null,
+      mimeType: input.mimeType ?? null,
+      content: input.binaryContent ? null : (input.content ?? null),
       size: input.type === ResourceType.File ? contentBytes : null,
       metadata: metadataOverrides,
       allowedExtensions: null,
@@ -112,7 +120,7 @@ export class CreateResource {
     await this.storagePort.write({
       repositoryId: input.repositoryId,
       path: input.path,
-      content: input.content ?? null,
+      content: storageContent,
       isFolder: input.type === ResourceType.Folder,
     });
 

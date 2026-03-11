@@ -24,7 +24,17 @@ export class ResourceMemoryRepository implements IResourceRepository {
   }
 
   async findByRepositoryId(repositoryId: string): Promise<Resource[]> {
-    return Array.from(this.resources.values()).filter((r) => String(r.repositoryId) === repositoryId);
+    return Array.from(this.resources.values()).filter(
+      (r) => String(r.repositoryId) === repositoryId,
+    );
+  }
+
+  async findByRepositoryIdAndPath(repositoryId: string, path: string): Promise<Resource | null> {
+    return (
+      Array.from(this.resources.values()).find(
+        (r: any) => String(r.repositoryId) === repositoryId && r.path === path,
+      ) ?? null
+    );
   }
 
   async findByFolderId(folderId: string): Promise<Resource[]> {

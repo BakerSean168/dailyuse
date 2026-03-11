@@ -12,10 +12,7 @@ import { RepositoryMemoryRepository } from '../adapters/memory/repository-memory
 import { ResourceMemoryRepository } from '../adapters/memory/resource-memory.repository';
 import { FolderMemoryRepository } from '../adapters/memory/folder-memory.repository';
 
-import type {
-  IProviderInitContext,
-  IProviderInitializer,
-} from '../database-provider-factory';
+import type { IProviderInitContext, IProviderInitializer } from '../database-provider-factory';
 
 /**
  * Memory 鎻愪緵鑰呭垵濮嬪寲鍣?

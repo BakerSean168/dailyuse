@@ -4,7 +4,7 @@ import type {
   IStoragePort,
   StorageWriteRequest,
   StorageMoveRequest,
-  StorageDeleteRequest
+  StorageDeleteRequest,
 } from '../../../application-server/ports/IStoragePort';
 
 /**
@@ -44,7 +44,11 @@ export class FsStorageAdapter implements IStoragePort {
         await fs.promises.mkdir(fullPath, { recursive: true });
       }
     } else {
-      await fs.promises.writeFile(fullPath, request.content ?? '', 'utf8');
+      if (typeof request.content === 'string' || request.content == null) {
+        await fs.promises.writeFile(fullPath, request.content ?? '', 'utf8');
+      } else {
+        await fs.promises.writeFile(fullPath, request.content);
+      }
     }
   }
 

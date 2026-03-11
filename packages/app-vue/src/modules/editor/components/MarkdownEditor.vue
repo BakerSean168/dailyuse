@@ -8,6 +8,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { findActiveWikiLinkRange } from '../utils/wikiLinks';
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +29,7 @@ const emit = defineEmits<{
   change: [value: string];
   keydown: [event: KeyboardEvent];
   'trigger-suggestion': [position: { x: number; y: number; query: string }];
+  'close-suggestion': [];
 }>();
 
 const editorRef = ref<HTMLElement | null>(null);
@@ -38,48 +40,37 @@ function handleUpdate(content: string) {
   emit('change', content);
 }
 
-function getCursorPosition(): { x: number; y: number } | null {
-  if (!editorView) return null;
+function emitSuggestionState(view: EditorView | null = editorView) {
+  if (!view) return;
 
-  const { state } = editorView;
-  const { from } = state.selection.main;
+  const cursor = view.state.selection.main.from;
+  const content = view.state.doc.toString();
+  const activeRange = findActiveWikiLinkRange(content, cursor);
 
-  const coords = editorView.coordsAtPos(from);
-  if (!coords) return null;
+  if (!activeRange) {
+    emit('close-suggestion');
+    return;
+  }
 
-  return {
+  const coords = view.coordsAtPos(cursor);
+  if (!coords) {
+    emit('close-suggestion');
+    return;
+  }
+
+  emit('trigger-suggestion', {
     x: coords.left,
     y: coords.bottom,
-  };
-}
-
-function getTextBeforeCursor(length: number = 50): string {
-  if (!editorView) return '';
-
-  const { state } = editorView;
-  const { from } = state.selection.main;
-  const startPos = Math.max(0, from - length);
-
-  return state.doc.sliceString(startPos, from);
+    query: activeRange.query,
+  });
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   emit('keydown', event);
 
-  if (event.key === '[') {
-    const textBefore = getTextBeforeCursor(2);
-    if (textBefore.endsWith('[')) {
-      const position = getCursorPosition();
-      if (position) {
-        setTimeout(() => {
-          const textAfter = getTextBeforeCursor(50);
-          const match = textAfter.match(/\[\[([^\]]*?)$/);
-          const query = match ? match[1] : '';
-          emit('trigger-suggestion', { ...position, query });
-        }, 0);
-      }
-    }
-  }
+  setTimeout(() => {
+    emitSuggestionState();
+  }, 0);
 }
 
 function initializeEditor() {
@@ -89,6 +80,10 @@ function initializeEditor() {
     EditorView.updateListener.of((update) => {
       if (update.docChanged) {
         handleUpdate(update.state.doc.toString());
+      }
+
+      if (update.docChanged || update.selectionSet) {
+        emitSuggestionState(update.view);
       }
     }),
     EditorView.lineWrapping,
@@ -140,27 +135,31 @@ function insertText(text: string) {
 function insertTextAtCursor(text: string) {
   if (!editorView) return;
 
+  replaceActiveWikiLink(text);
+}
+
+function replaceActiveWikiLink(text: string) {
+  if (!editorView) return;
+
   const { state } = editorView;
-  const { from } = state.selection.main;
+  const { from, to } = state.selection.main;
+  const content = state.doc.toString();
+  const activeRange = from === to ? findActiveWikiLinkRange(content, from) : null;
 
-  const textBefore = getTextBeforeCursor(100);
-  const lastBracketIndex = textBefore.lastIndexOf('[[');
-
-  if (lastBracketIndex !== -1) {
-    const deleteFrom = from - (textBefore.length - lastBracketIndex);
-
+  if (activeRange && from === to) {
     editorView.dispatch({
-      changes: { from: deleteFrom, to: from, insert: text },
-      selection: { anchor: deleteFrom + text.length },
+      changes: { from: activeRange.from, to: activeRange.to, insert: text },
+      selection: { anchor: activeRange.from + text.length },
     });
   } else {
     editorView.dispatch({
-      changes: { from, insert: text },
+      changes: { from, to, insert: text },
       selection: { anchor: from + text.length },
     });
   }
 
   editorView.focus();
+  emitSuggestionState();
 }
 
 function wrapSelection(prefix: string, suffix: string) {
@@ -213,6 +212,7 @@ function focus() {
 defineExpose({
   insertText,
   insertTextAtCursor,
+  replaceActiveWikiLink,
   wrapSelection,
   replaceSelection,
   getSelection,
@@ -222,6 +222,7 @@ defineExpose({
 
 onMounted(() => {
   initializeEditor();
+  emitSuggestionState();
 });
 
 onBeforeUnmount(() => {
@@ -238,6 +239,7 @@ watch(
       editorView.dispatch({
         changes: { from: 0, to: currentValue.length, insert: newValue },
       });
+      emitSuggestionState();
     }
   },
 );

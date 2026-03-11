@@ -3,6 +3,15 @@ import type { ResourceBookmarkClientDTO } from '../entities';
 
 // ============ Zod Validation Schemas ============
 export {
+  CreateResourceBookmarkSchema,
+  type CreateResourceBookmarkZodReq,
+  UpdateResourceBookmarkSchema,
+  type UpdateResourceBookmarkZodReq,
+  ReorderResourceBookmarksSchema,
+  type ReorderResourceBookmarksZodReq,
+} from './bookmark.dto';
+
+export {
   CreateRepositorySchema,
   type CreateRepositoryReq as CreateRepositoryZodReq,
   UpdateRepositorySchema,
@@ -12,6 +21,13 @@ export {
   UpdateResourceSchema,
   type UpdateResourceReq as UpdateResourceZodReq,
 } from './repository.dto';
+
+export {
+  UploadResourcesMetadataSchema,
+  type UploadResourcesMetadataZodReq,
+  UploadResourcesMultipartSchema,
+  type UploadResourcesMultipartZodReq,
+} from './upload.dto';
 
 export * from './response-schemas';
 
@@ -46,7 +62,6 @@ export interface ListRepositoryReq {
 export type ListRepositoryRes = RepositoryClientDTO[];
 
 export interface CreateResourceReq {
-  repositoryId: string;
   name: string;
   type: string;
   mimeType?: string;
@@ -80,3 +95,10 @@ export interface ResourceBookmarkCreateReq {
   name?: string;
 }
 export type ResourceBookmarkCreateRes = ResourceBookmarkClientDTO;
+
+export interface UploadResourcesReq {
+  repositoryId: string;
+  folderId?: string;
+  tags?: string[];
+  overwritePolicy?: 'skip' | 'replace';
+}

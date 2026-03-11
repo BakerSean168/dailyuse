@@ -13,12 +13,20 @@ import {
   UpdateRepositorySchema,
   CreateResourceSchema,
   UpdateResourceSchema,
+  CreateResourceBookmarkSchema,
+  UpdateResourceBookmarkSchema,
+  ReorderResourceBookmarksSchema,
 } from '@dailyuse/contracts/repository';
 import type {
   CreateRepositoryZodReq,
   UpdateRepositoryZodReq,
   CreateResourceZodReq,
   UpdateResourceZodReq,
+  CreateResourceBookmarkRequestDTO,
+  UpdateResourceBookmarkRequestDTO,
+  ReorderResourceBookmarksRequestDTO,
+  UploadResourcesRequestDTO,
+  UploadResourceFileDTO,
 } from '@dailyuse/contracts/repository';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -38,7 +46,10 @@ export interface RepositoryUseCases {
   activateRepository(id: string): Promise<Result<unknown>>;
   updateRepositoryStats(id: string, data: Record<string, unknown>): Promise<Result<unknown>>;
   // Resource CRUD
-  createResource(data: CreateResourceZodReq & { repositoryId: string }, ctx: Context): Promise<Result<unknown>>;
+  createResource(
+    data: CreateResourceZodReq & { repositoryId: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
   listResources(
     repositoryId: string,
     filters: { folderId?: string; status?: string },
@@ -46,13 +57,46 @@ export interface RepositoryUseCases {
   getResource(id: string): Promise<Result<unknown>>;
   updateResource(id: string, data: UpdateResourceZodReq): Promise<Result<unknown>>;
   deleteResource(id: string): Promise<Result<unknown>>;
+  uploadResources(
+    data: {
+      repositoryId: string;
+      files: UploadResourceFileDTO[];
+      metadata?: UploadResourcesRequestDTO;
+    },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
   // Folder CRUD
-  createFolder(data: { repositoryId: string; name: string; parentId?: string; order?: number }, ctx: Context): Promise<Result<unknown>>;
+  createFolder(
+    data: { repositoryId: string; name: string; parentId?: string; order?: number },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
   getFolderTree(repositoryId: string): Promise<Result<unknown>>;
   getFolder(id: string): Promise<Result<unknown>>;
   renameFolder(id: string, newName: string): Promise<Result<unknown>>;
   moveFolder(id: string, newParentId: string | null): Promise<Result<unknown>>;
   deleteFolder(id: string): Promise<Result<unknown>>;
+  listResourceBookmarks(repositoryId: string, ctx: Context): Promise<Result<unknown>>;
+  createResourceBookmark(
+    repositoryId: string,
+    data: CreateResourceBookmarkRequestDTO,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  updateResourceBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    data: UpdateResourceBookmarkRequestDTO,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  reorderResourceBookmarks(
+    repositoryId: string,
+    data: ReorderResourceBookmarksRequestDTO,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  deleteResourceBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
 }
 
 export class RepositoryController {
@@ -118,10 +162,13 @@ export class RepositoryController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createResource({
-      ...parsed.data,
-      repositoryId: repoId as any,
-    }, ctx);
+    return this.useCases.createResource(
+      {
+        ...parsed.data,
+        repositoryId: repoId as any,
+      },
+      ctx,
+    );
   }
 
   async listResources(
@@ -149,6 +196,15 @@ export class RepositoryController {
 
   async deleteResource(id: string): Promise<Result<unknown>> {
     return this.useCases.deleteResource(id);
+  }
+
+  async uploadResources(
+    repositoryId: string,
+    files: UploadResourceFileDTO[],
+    metadata: UploadResourcesRequestDTO | undefined,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    return this.useCases.uploadResources({ repositoryId, files, metadata }, ctx);
   }
 
   // ==================== Repository Stats ====================
@@ -201,5 +257,66 @@ export class RepositoryController {
 
   async deleteFolder(id: string): Promise<Result<unknown>> {
     return this.useCases.deleteFolder(id);
+  }
+
+  async listResourceBookmarks(repositoryId: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.listResourceBookmarks(repositoryId, ctx);
+  }
+
+  async createResourceBookmark(
+    repositoryId: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    const parsed = CreateResourceBookmarkSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid bookmark data',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.createResourceBookmark(repositoryId, parsed.data, ctx);
+  }
+
+  async updateResourceBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    const parsed = UpdateResourceBookmarkSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid bookmark update data',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.updateResourceBookmark(repositoryId, bookmarkId, parsed.data, ctx);
+  }
+
+  async reorderResourceBookmarks(
+    repositoryId: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    const parsed = ReorderResourceBookmarksSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid bookmark reorder data',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.reorderResourceBookmarks(repositoryId, parsed.data, ctx);
+  }
+
+  async deleteResourceBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
+    return this.useCases.deleteResourceBookmark(repositoryId, bookmarkId, ctx);
   }
 }

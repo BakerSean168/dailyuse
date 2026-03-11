@@ -72,6 +72,13 @@ export class ResourcePrismaRepository implements IResourceRepository {
     return ResourcePrismaMapper.toDomainList(rows);
   }
 
+  async findByRepositoryIdAndPath(repositoryId: string, path: string): Promise<Resource | null> {
+    const row = await this.prisma.resource.findFirst({
+      where: { repositoryId, path },
+    });
+    return row ? ResourcePrismaMapper.toDomain(row) : null;
+  }
+
   async findByFolderId(folderId: string): Promise<Resource[]> {
     const rows = await this.prisma.resource.findMany({
       where: { folderId },

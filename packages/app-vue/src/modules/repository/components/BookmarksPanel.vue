@@ -54,13 +54,47 @@
         </p>
       </div>
     </div>
+
+    <Dialog v-model:open="renameDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{{ t('repository.bookmarksPanel.renameTitle') }}</DialogTitle>
+          <DialogDescription>{{
+            t('repository.bookmarksPanel.renameDescription')
+          }}</DialogDescription>
+        </DialogHeader>
+
+        <Input
+          v-model="renameValue"
+          :placeholder="t('repository.bookmarksPanel.renamePlaceholder')"
+        />
+
+        <DialogFooter>
+          <Button variant="outline" @click="renameDialogOpen = false">{{
+            t('common.cancel')
+          }}</Button>
+          <Button @click="confirmRename">{{ t('common.save') }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Bookmark, Folder, FileText, Pencil, ArrowUp, ArrowDown, Trash2 } from 'lucide-vue-next';
-import { Badge } from '@dailyuse/ui-vue-shadcn';
+import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+} from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { ResourceBookmarkClientDTO as BookmarkType } from '@dailyuse/contracts/repository';
@@ -70,10 +104,13 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const renameDialogOpen = ref(false);
+const renameValue = ref('');
+const renameTarget = ref<BookmarkType | null>(null);
 
 const emit = defineEmits<{
   select: [bookmark: BookmarkType];
-  rename: [bookmark: BookmarkType];
+  rename: [payload: { bookmark: BookmarkType; name: string }];
   'move-up': [bookmark: BookmarkType];
   'move-down': [bookmark: BookmarkType];
   remove: [bookmark: BookmarkType];
@@ -94,7 +131,7 @@ function getBookmarkActions(bookmark: BookmarkType, index: number): MenuAction[]
       key: 'rename',
       label: menuLabel('rename'),
       icon: Pencil,
-      handler: () => emit('rename', bookmark),
+      handler: () => openRenameDialog(bookmark),
     },
     {
       key: 'move-up',
@@ -119,5 +156,23 @@ function getBookmarkActions(bookmark: BookmarkType, index: number): MenuAction[]
       handler: () => emit('remove', bookmark),
     },
   ];
+}
+
+function openRenameDialog(bookmark: BookmarkType) {
+  renameTarget.value = bookmark;
+  renameValue.value = bookmark.aliasName ?? '';
+  renameDialogOpen.value = true;
+}
+
+function confirmRename() {
+  if (!renameTarget.value) {
+    return;
+  }
+
+  emit('rename', {
+    bookmark: renameTarget.value,
+    name: renameValue.value,
+  });
+  renameDialogOpen.value = false;
 }
 </script>

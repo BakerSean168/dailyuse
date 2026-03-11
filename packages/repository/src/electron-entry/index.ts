@@ -10,7 +10,16 @@ import { app } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import { RepositoryPowerSyncModule, RepositoryContainer } from '../infrastructure-server/powersync';
 import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
-import { CreateResource, UpdateResourceContent } from '../application-server';
+import {
+  CreateResource,
+  UpdateResourceContent,
+  UploadResources,
+  ListResourceBookmarks,
+  CreateResourceBookmark,
+  UpdateResourceBookmark,
+  ReorderResourceBookmarks,
+  DeleteResourceBookmark,
+} from '../application-server';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RepositoryElectron');
@@ -24,8 +33,14 @@ const Ch = {
   RESOURCE_LIST: 'repository:resource:list',
   RESOURCE_GET: 'repository:resource:get',
   RESOURCE_CREATE: 'repository:resource:create',
+  RESOURCE_UPLOAD: 'repository:resource:upload',
   RESOURCE_UPDATE: 'repository:resource:update',
   RESOURCE_DELETE: 'repository:resource:delete',
+  BOOKMARK_LIST: 'repository:bookmark:list',
+  BOOKMARK_CREATE: 'repository:bookmark:create',
+  BOOKMARK_UPDATE: 'repository:bookmark:update',
+  BOOKMARK_REORDER: 'repository:bookmark:reorder',
+  BOOKMARK_DELETE: 'repository:bookmark:delete',
   FOLDER_LIST: 'repository:folder:list',
   FOLDER_CREATE: 'repository:folder:create',
   FOLDER_UPDATE: 'repository:folder:update',
@@ -75,6 +90,23 @@ export const RepositoryElectronModule: IElectronModule = {
       });
       return result.resource;
     });
+    const uploadResources = new UploadResources(createResource, resourceRepo, repoRepo, folderRepo);
+    const listBookmarks = new ListResourceBookmarks(mod.resourceBookmarkRepository, resourceRepo);
+    const createBookmark = new CreateResourceBookmark(mod.resourceBookmarkRepository, resourceRepo);
+    const updateBookmark = new UpdateResourceBookmark(mod.resourceBookmarkRepository, resourceRepo);
+    const reorderBookmarks = new ReorderResourceBookmarks(
+      mod.resourceBookmarkRepository,
+      resourceRepo,
+    );
+    const deleteBookmark = new DeleteResourceBookmark(mod.resourceBookmarkRepository);
+    ipcMain.handle(Ch.RESOURCE_UPLOAD, async (_, payload) => {
+      return uploadResources.execute({
+        repositoryId: payload.repositoryId,
+        identityId: payload.identityId || 'local-user',
+        files: payload.files,
+        metadata: payload.metadata,
+      });
+    });
     ipcMain.handle(Ch.RESOURCE_UPDATE, async (_, dto) => {
       if (dto.content !== undefined) {
         const result = await updateResourceContent.execute({
@@ -86,6 +118,51 @@ export const RepositoryElectronModule: IElectronModule = {
       return resourceRepo.save(dto);
     });
     ipcMain.handle(Ch.RESOURCE_DELETE, (_, id) => resourceRepo.delete(id));
+    ipcMain.handle(Ch.BOOKMARK_LIST, async (_, params) => {
+      const result = await listBookmarks.execute({
+        repositoryId: params.repositoryId,
+        identityId: params.identityId || 'local-user',
+      });
+      return result.bookmarks;
+    });
+    ipcMain.handle(Ch.BOOKMARK_CREATE, async (_, payload) => {
+      const result = await createBookmark.execute({
+        repositoryId: payload.repositoryId,
+        identityId: payload.identityId || 'local-user',
+        resourceId: payload.request.resourceId,
+        aliasName: payload.request.aliasName,
+        icon: payload.request.icon,
+        color: payload.request.color,
+      });
+      return result.bookmark;
+    });
+    ipcMain.handle(Ch.BOOKMARK_UPDATE, async (_, payload) => {
+      const result = await updateBookmark.execute({
+        repositoryId: payload.repositoryId,
+        identityId: payload.identityId || 'local-user',
+        bookmarkId: payload.bookmarkId,
+        aliasName: payload.request.aliasName,
+        icon: payload.request.icon,
+        color: payload.request.color,
+      });
+      return result.bookmark;
+    });
+    ipcMain.handle(Ch.BOOKMARK_REORDER, async (_, payload) => {
+      const result = await reorderBookmarks.execute({
+        repositoryId: payload.repositoryId,
+        identityId: payload.identityId || 'local-user',
+        bookmarkIds: payload.request.bookmarkIds,
+      });
+      return result.bookmarks;
+    });
+    ipcMain.handle(Ch.BOOKMARK_DELETE, async (_, payload) => {
+      await deleteBookmark.execute({
+        repositoryId: payload.repositoryId,
+        identityId: payload.identityId || 'local-user',
+        bookmarkId: payload.bookmarkId,
+      });
+      return undefined;
+    });
 
     // Folder CRUD
     ipcMain.handle(Ch.FOLDER_LIST, (_, params) =>

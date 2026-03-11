@@ -1,7 +1,7 @@
 <template>
   <Popover v-model:open="isVisible">
     <PopoverTrigger as-child>
-      <div :style="{ position: 'absolute', left: `${position.x}px`, top: `${position.y}px` }" />
+      <div :style="{ position: 'fixed', left: `${position.x}px`, top: `${position.y}px` }" />
     </PopoverTrigger>
     <PopoverContent class="w-80 p-0" align="start">
       <Command class="rounded-lg border-none shadow-md">
@@ -25,7 +25,7 @@
         <CommandList>
           <CommandGroup :heading="t('editor.linkSuggestion.documents')">
             <CommandItem
-              v-for="(doc, index) in filteredDocuments"
+              v-for="(doc, index) in documents"
               :key="doc.id"
               :value="doc.id"
               :data-selected="selectedIndex === index"
@@ -35,13 +35,13 @@
             >
               <FileText class="mr-2 h-4 w-4" />
               <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium truncate">{{ doc.name }}</div>
+                <div class="text-sm font-medium truncate">{{ doc.title }}</div>
                 <div class="flex items-center gap-2 mt-1">
                   <span class="text-xs text-muted-foreground truncate">{{
                     getFolderPath(doc.path) || '/'
                   }}</span>
-                  <Badge v-if="doc.metadata?.tags?.length" variant="secondary" class="text-xs">
-                    {{ doc.metadata.tags[0] }}
+                  <Badge v-if="doc.tags.length" variant="secondary" class="text-xs">
+                    {{ doc.tags[0] }}
                   </Badge>
                 </div>
               </div>
@@ -58,10 +58,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
-import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
 import {
   Command,
@@ -73,6 +72,8 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { FileText, Keyboard } from 'lucide-vue-next';
+import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
+import type { LinkIndexDocument } from '../utils/linkIndex';
 
 const { t } = useI18n();
 
@@ -81,36 +82,28 @@ const props = withDefaults(
     visible: boolean;
     searchQuery: string;
     position: { x: number; y: number };
+    excludeDocumentId?: string;
   }>(),
   {
     visible: false,
     searchQuery: '',
     position: () => ({ x: 0, y: 0 }),
+    excludeDocumentId: undefined,
   },
 );
 
 const emit = defineEmits<{
-  select: [document: DocumentClientDTO | null];
+  select: [document: LinkIndexDocument | null];
   close: [];
   createNew: [title: string];
 }>();
 
+const { ensureResourcesLoaded, searchDocuments: searchLinkDocuments } = useEditorLinkIndex();
+
 const isVisible = ref(false);
 const loading = ref(false);
-const documents = ref<DocumentClientDTO[]>([]);
+const documents = ref<LinkIndexDocument[]>([]);
 const selectedIndex = ref(0);
-
-const filteredDocuments = computed(() => {
-  if (!props.searchQuery.trim()) return documents.value;
-
-  const query = props.searchQuery.toLowerCase();
-  return documents.value.filter(
-    (doc) =>
-      doc.name.toLowerCase().includes(query) ||
-      doc.path?.toLowerCase().includes(query) ||
-      doc.metadata?.tags?.some((tag: string) => tag.toLowerCase().includes(query)),
-  );
-});
 
 function getFolderPath(path: string): string {
   const lastSlash = path.lastIndexOf('/');
@@ -118,14 +111,13 @@ function getFolderPath(path: string): string {
 }
 
 async function searchDocumentsImpl(query: string) {
-  if (!query || query.length < 1) {
-    documents.value = [];
-    return;
-  }
-
   loading.value = true;
   try {
-    documents.value = [];
+    await ensureResourcesLoaded();
+    documents.value = searchLinkDocuments(query, {
+      excludeId: props.excludeDocumentId,
+      limit: 12,
+    });
     selectedIndex.value = 0;
   } catch (error) {
     console.error('Search documents failed:', error);
@@ -137,14 +129,14 @@ async function searchDocumentsImpl(query: string) {
 
 const searchDocuments = useDebounceFn(searchDocumentsImpl, 300);
 
-function selectDocument(doc: DocumentClientDTO) {
+function selectDocument(doc: LinkIndexDocument) {
   emit('select', doc);
   close();
 }
 
 function selectCurrent() {
-  if (filteredDocuments.value.length > 0) {
-    const selected = filteredDocuments.value[selectedIndex.value];
+  if (documents.value.length > 0) {
+    const selected = documents.value[selectedIndex.value];
     selectDocument(selected);
   } else if (props.searchQuery.trim()) {
     emit('createNew', props.searchQuery.trim());
@@ -154,16 +146,28 @@ function selectCurrent() {
 
 function close() {
   isVisible.value = false;
+  documents.value = [];
   emit('close');
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   if (!isVisible.value) return;
 
+  if (documents.value.length === 0) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      selectCurrent();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      close();
+    }
+    return;
+  }
+
   switch (event.key) {
     case 'ArrowDown':
       event.preventDefault();
-      selectedIndex.value = Math.min(selectedIndex.value + 1, filteredDocuments.value.length - 1);
+      selectedIndex.value = Math.min(selectedIndex.value + 1, documents.value.length - 1);
       break;
 
     case 'ArrowUp':
@@ -189,6 +193,9 @@ watch(
     isVisible.value = visible;
     if (visible) {
       selectedIndex.value = 0;
+      void searchDocumentsImpl(props.searchQuery);
+    } else {
+      documents.value = [];
     }
   },
 );
@@ -196,10 +203,8 @@ watch(
 watch(
   () => props.searchQuery,
   (query) => {
-    if (query) {
+    if (isVisible.value) {
       searchDocuments(query);
-    } else {
-      documents.value = [];
     }
   },
 );

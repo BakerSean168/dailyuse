@@ -20,17 +20,21 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
+import type { IResourceBookmarkRepository } from '../domain-server/repositories/IResourceBookmarkRepository';
 
 import { RepositorySyncApplicationService } from '../application-server/use-cases/commands/repository-sync-application-service';
 
 import { RepositoryRepositoryFactory } from './di/repository-repository.factory';
 import { RepositoryContainer } from './di/repository-container-v2';
+import { ResourceBookmarkPrismaRepository } from './adapters/prisma/resource-bookmark-prisma.repository';
+import { ResourceBookmarkPowerSyncRepository } from './adapters/powersync/resource-bookmark-powersync.repository';
 
 export class RepositoryModule {
   // ============ Repositories (Public for testing) ============
   public readonly repositoryRepository: IRepositoryRepository;
   public readonly resourceRepository: IResourceRepository;
   public readonly folderRepository: IFolderRepository;
+  public readonly resourceBookmarkRepository: IResourceBookmarkRepository;
 
   // ============ Application Services (Public - injected into routes) ============
   public readonly syncService: RepositorySyncApplicationService;
@@ -51,6 +55,10 @@ export class RepositoryModule {
     this.repositoryRepository = container.getRepositoryRepository();
     this.resourceRepository = container.getResourceRepository();
     this.folderRepository = container.getFolderRepository();
+    this.resourceBookmarkRepository =
+      dataSourceType === 'prisma'
+        ? new ResourceBookmarkPrismaRepository(dbConnection as PrismaClient)
+        : new ResourceBookmarkPowerSyncRepository(dbConnection as IElectronDatabase);
 
     // ============ Step 2: Initialize Application Services (Pure DI) ============
     this.syncService = new RepositorySyncApplicationService();

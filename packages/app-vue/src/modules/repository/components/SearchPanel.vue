@@ -28,7 +28,7 @@
       </div>
 
       <!-- Advanced options -->
-      <div v-if="showAdvanced" class="mt-3 space-y-2">
+      <div class="mt-3 flex flex-wrap gap-4">
         <label class="flex items-center gap-2 text-sm">
           <input type="checkbox" v-model="caseSensitive" class="rounded" />
           {{ t('repository.search.caseSensitive') }}
@@ -70,10 +70,17 @@
           <div class="flex items-start gap-2">
             <component :is="getFileIcon(result.resourceType)" class="h-4 w-4 mt-0.5 shrink-0" />
             <div class="flex-1 min-w-0">
-              <div
-                class="text-sm font-medium truncate"
-                v-html="highlightMatch(result.resourceName)"
-              />
+              <div class="text-sm font-medium truncate">
+                <template
+                  v-for="(segment, segmentIndex) in highlightResourceName(result.resourceName)"
+                  :key="segmentIndex"
+                >
+                  <mark v-if="segment.match" class="bg-yellow-200 px-0 text-inherit">{{
+                    segment.text
+                  }}</mark>
+                  <span v-else>{{ segment.text }}</span>
+                </template>
+              </div>
               <div class="text-xs text-muted-foreground truncate">{{ result.resourcePath }}</div>
 
               <!-- Matches -->
@@ -84,7 +91,17 @@
                   class="text-xs font-mono bg-muted p-1 rounded"
                 >
                   <span class="text-muted-foreground">{{ match.lineNumber }}:</span>
-                  <span v-html="highlightMatchInLine(match)" />
+                  <span>
+                    <template
+                      v-for="(segment, segmentIndex) in highlightLineMatch(match)"
+                      :key="segmentIndex"
+                    >
+                      <mark v-if="segment.match" class="bg-yellow-200 px-0 text-inherit">{{
+                        segment.text
+                      }}</mark>
+                      <span v-else>{{ segment.text }}</span>
+                    </template>
+                  </span>
                 </div>
                 <div v-if="result.matches.length > 3" class="text-xs text-muted-foreground">
                   +{{ result.matches.length - 3 }} {{ t('repository.search.moreMatches') }}
@@ -128,6 +145,11 @@ import { Input } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import type { SearchMode, SearchResultItem, SearchMatch } from '@dailyuse/contracts/repository';
+import {
+  buildHighlightSegments,
+  buildIndexedHighlightSegments,
+  type HighlightOptions,
+} from '../composables/repositorySearch';
 
 defineProps<{
   repositoryId: string;
@@ -151,7 +173,11 @@ const localQuery = ref('');
 const selectedMode = ref<SearchMode>('all');
 const caseSensitive = ref(false);
 const useRegex = ref(false);
-const showAdvanced = ref(false);
+const submittedQuery = ref('');
+const submittedHighlightOptions = ref<HighlightOptions>({
+  caseSensitive: false,
+  useRegex: false,
+});
 
 const searchModes = [
   { value: 'all' as SearchMode, labelKey: 'repository.search.modeAll', icon: FileSearch },
@@ -170,6 +196,11 @@ function selectMode(mode: SearchMode) {
 
 function handleSearch() {
   if (!localQuery.value.trim()) return;
+  submittedQuery.value = localQuery.value;
+  submittedHighlightOptions.value = {
+    caseSensitive: caseSensitive.value,
+    useRegex: useRegex.value,
+  };
   emit('search', localQuery.value, selectedMode.value, {
     caseSensitive: caseSensitive.value,
     useRegex: useRegex.value,
@@ -180,17 +211,11 @@ function getFileIcon(type: string) {
   return FileText; // Simplified
 }
 
-function highlightMatch(text: string): string {
-  if (!localQuery.value) return text;
-  const regex = new RegExp(`(${localQuery.value})`, 'gi');
-  return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+function highlightResourceName(text: string) {
+  return buildHighlightSegments(text, submittedQuery.value, submittedHighlightOptions.value);
 }
 
-function highlightMatchInLine(match: SearchMatch): string {
-  const { lineContent, startIndex, endIndex } = match;
-  const before = lineContent.substring(0, startIndex);
-  const matchText = lineContent.substring(startIndex, endIndex);
-  const after = lineContent.substring(endIndex);
-  return `${before}<mark class="bg-yellow-200">${matchText}</mark>${after}`;
+function highlightLineMatch(match: SearchMatch) {
+  return buildIndexedHighlightSegments(match.lineContent, match.startIndex, match.endIndex);
 }
 </script>

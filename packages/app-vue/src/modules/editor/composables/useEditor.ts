@@ -4,13 +4,12 @@
  */
 
 import { ref, computed } from 'vue';
-// import type { EditorTab } from '../components/EditorTabBar.vue';
-type EditorTab = any; // TODO: Define proper type
+import type { EditorController, EditorOpenFileInput, EditorTab } from '../types';
 
 /**
  * 编辑器实例引用
  */
-const editorInstanceRef = ref<any>(null);
+const editorInstanceRef = ref<EditorController | null>(null);
 
 /**
  * useEditor
@@ -19,20 +18,14 @@ export function useEditor() {
   /**
    * 设置编辑器实例
    */
-  function setEditorInstance(instance: any) {
+  function setEditorInstance(instance: EditorController | null) {
     editorInstanceRef.value = instance;
   }
 
   /**
    * 打开文件
    */
-  function openFile(file: {
-    id?: string;
-    title: string;
-    fileType: 'markdown' | 'image' | 'video' | 'audio';
-    filePath: string;
-    content?: string;
-  }) {
+  function openFile(file: EditorOpenFileInput) {
     if (!editorInstanceRef.value) {
       console.warn('Editor instance not initialized');
       return null;

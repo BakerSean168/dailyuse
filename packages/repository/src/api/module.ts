@@ -32,6 +32,12 @@ import {
   DeleteFolder,
   CreateResource,
   UpdateResourceContent,
+  UploadResources,
+  CreateResourceBookmark,
+  UpdateResourceBookmark,
+  ReorderResourceBookmarks,
+  DeleteResourceBookmark,
+  ListResourceBookmarks,
 } from '../application-server';
 import type { IStoragePort } from '../application-server/ports/IStoragePort';
 import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
@@ -39,7 +45,7 @@ import {
   registerRepositoryRoutes,
   registerResourceRoutes,
   registerFolderRoutes,
-} from './routes';
+} from './routes/index';
 import type { RepositoryUseCases } from '../controllers/repository.controller';
 import { registerRepositoryInitializationTasks } from './initialization';
 
@@ -73,7 +79,9 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     const createRepository = new CreateRepository(repositoryModule.repositoryRepository);
     const getRepository = new GetRepository(repositoryModule.repositoryRepository);
     const listRepositories = new ListRepositories(repositoryModule.repositoryRepository);
-    const updateRepositoryConfig = new UpdateRepositoryConfig(repositoryModule.repositoryRepository);
+    const updateRepositoryConfig = new UpdateRepositoryConfig(
+      repositoryModule.repositoryRepository,
+    );
     const deleteRepository = new DeleteRepository(repositoryModule.repositoryRepository);
     const archiveRepository = new ArchiveRepository(repositoryModule.repositoryRepository);
     const activateRepository = new ActivateRepository(repositoryModule.repositoryRepository);
@@ -82,7 +90,8 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
     const updateRepositoryStats = new UpdateRepositoryStats(repositoryModule.repositoryRepository);
 
     // Create an instance of FsStorageAdapter, using a temp or configured path
-    const storageBaseDir = process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';
+    const storageBaseDir =
+      process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage';
     const storagePort: IStoragePort = new FsStorageAdapter(storageBaseDir);
 
     const createResourceUseCases = new CreateResource(
@@ -94,6 +103,31 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
       repositoryModule.resourceRepository,
       repositoryModule.repositoryRepository,
       storagePort,
+    );
+    const uploadResources = new UploadResources(
+      createResourceUseCases,
+      repositoryModule.resourceRepository,
+      repositoryModule.repositoryRepository,
+      repositoryModule.folderRepository,
+    );
+    const listResourceBookmarks = new ListResourceBookmarks(
+      repositoryModule.resourceBookmarkRepository,
+      repositoryModule.resourceRepository,
+    );
+    const createResourceBookmark = new CreateResourceBookmark(
+      repositoryModule.resourceBookmarkRepository,
+      repositoryModule.resourceRepository,
+    );
+    const updateResourceBookmark = new UpdateResourceBookmark(
+      repositoryModule.resourceBookmarkRepository,
+      repositoryModule.resourceRepository,
+    );
+    const reorderResourceBookmarks = new ReorderResourceBookmarks(
+      repositoryModule.resourceBookmarkRepository,
+      repositoryModule.resourceRepository,
+    );
+    const deleteResourceBookmark = new DeleteResourceBookmark(
+      repositoryModule.resourceBookmarkRepository,
     );
 
     const createFolder = new CreateFolder(
@@ -221,6 +255,15 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         await repositoryModule.resourceRepository.save(resource);
         return ok(undefined);
       },
+      uploadResources: async (data, ctx) => {
+        const result = await uploadResources.execute({
+          repositoryId: data.repositoryId,
+          identityId: ctx.identityId || 'api-user',
+          files: data.files,
+          metadata: data.metadata,
+        });
+        return ok(result);
+      },
 
       // Repository stats
       updateRepositoryStats: async (id, data) => {
@@ -260,10 +303,59 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         await deleteFolder.execute({ id });
         return ok(undefined);
       },
+      listResourceBookmarks: async (repositoryId, ctx) => {
+        const result = await listResourceBookmarks.execute({
+          repositoryId,
+          identityId: ctx.identityId,
+        });
+        return ok(result.bookmarks);
+      },
+      createResourceBookmark: async (repositoryId, data, ctx) => {
+        const result = await createResourceBookmark.execute({
+          repositoryId,
+          identityId: ctx.identityId,
+          resourceId: data.resourceId,
+          aliasName: data.aliasName,
+          icon: data.icon,
+          color: data.color,
+        });
+        return ok(result.bookmark);
+      },
+      updateResourceBookmark: async (repositoryId, bookmarkId, data, ctx) => {
+        const result = await updateResourceBookmark.execute({
+          repositoryId,
+          identityId: ctx.identityId,
+          bookmarkId,
+          aliasName: data.aliasName,
+          icon: data.icon,
+          color: data.color,
+        });
+        return ok(result.bookmark);
+      },
+      reorderResourceBookmarks: async (repositoryId, data, ctx) => {
+        const result = await reorderResourceBookmarks.execute({
+          repositoryId,
+          identityId: ctx.identityId,
+          bookmarkIds: data.bookmarkIds,
+        });
+        return ok(result.bookmarks);
+      },
+      deleteResourceBookmark: async (repositoryId, bookmarkId, ctx) => {
+        await deleteResourceBookmark.execute({
+          repositoryId,
+          identityId: ctx.identityId,
+          bookmarkId,
+        });
+        return ok({ ok: true });
+      },
     };
 
     // 4. Register routes
-    const repositoryRoutes = registerRepositoryRoutes(handlers, middleware, context.openApiRegistry);
+    const repositoryRoutes = registerRepositoryRoutes(
+      handlers,
+      middleware,
+      context.openApiRegistry,
+    );
     const resourceRoutes = registerResourceRoutes(handlers, middleware, context.openApiRegistry);
     const folderRoutes = registerFolderRoutes(handlers, middleware, context.openApiRegistry);
 

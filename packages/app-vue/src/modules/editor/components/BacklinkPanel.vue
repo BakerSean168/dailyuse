@@ -106,14 +106,12 @@ import {
   ExternalLink,
   AlertCircle,
 } from 'lucide-vue-next';
+import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
+import type { BacklinkItem } from '../utils/linkIndex';
 
 const { t, locale } = useI18n();
 
-interface BacklinkDTO {
-  link: { id: string; isBroken: boolean };
-  sourceDocument: { id: string; title: string; updatedAt: number };
-  context: string;
-}
+const { ensureResourcesLoaded, getBacklinks } = useEditorLinkIndex();
 
 const props = withDefaults(
   defineProps<{
@@ -130,7 +128,7 @@ const emit = defineEmits<{
 }>();
 
 const loading = ref(false);
-const backlinks = ref<BacklinkDTO[]>([]);
+const backlinks = ref<BacklinkItem[]>([]);
 const error = ref<string | null>(null);
 
 async function loadBacklinks() {
@@ -140,11 +138,11 @@ async function loadBacklinks() {
   error.value = null;
 
   try {
-    backlinks.value = [];
-    error.value = t('editor.backlink.comingSoon');
-  } catch (err: any) {
+    await ensureResourcesLoaded();
+    backlinks.value = getBacklinks(props.documentId, 100);
+  } catch (err: unknown) {
     console.error('Load backlinks failed:', err);
-    error.value = err.message || t('editor.backlink.loadFailed');
+    error.value = err instanceof Error ? err.message : t('editor.backlink.loadFailed');
     backlinks.value = [];
   } finally {
     loading.value = false;
@@ -155,7 +153,7 @@ function refresh() {
   loadBacklinks();
 }
 
-function navigateToSource(backlink: BacklinkDTO) {
+function navigateToSource(backlink: BacklinkItem) {
   const sourceId = backlink.sourceDocument.id;
   emit('navigate', sourceId);
 }

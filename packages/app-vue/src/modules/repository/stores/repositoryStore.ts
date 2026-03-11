@@ -204,7 +204,7 @@ export const useRepositoryStore = defineStore('repository', {
   },
 
   persist: {
-    pick: ['sidebarMode', 'sidebarCollapsed', 'openTabIds', 'activeTabId'] as string[],
+    pick: ['sidebarMode', 'sidebarCollapsed', 'openTabIds', 'activeTabId', 'bookmarks'] as string[],
   },
 });
 

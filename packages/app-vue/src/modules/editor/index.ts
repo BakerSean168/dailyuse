@@ -9,6 +9,8 @@ export { useEditor } from './composables/useEditor';
 export { useAutoSave } from './composables/useAutoSave';
 export type { AutoSaveConfig } from './composables/useAutoSave';
 export { useMarkdownEditor } from './composables/useMarkdownEditor';
+export { useEditorLinkIndex } from './composables/useEditorLinkIndex';
+export type { EditorController, EditorOpenFileInput, EditorTab } from './types';
 
 // Components
 export * from './components';

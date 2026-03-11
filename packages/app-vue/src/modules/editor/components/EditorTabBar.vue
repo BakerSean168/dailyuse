@@ -34,12 +34,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { SimpleEditorTab } from '@dailyuse/contracts/shared';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { FileText, Image, Video, Music, File, X } from 'lucide-vue-next';
-
-export type EditorTab = SimpleEditorTab;
+import type { EditorTab } from '../types';
 
 const props = withDefaults(
   defineProps<{

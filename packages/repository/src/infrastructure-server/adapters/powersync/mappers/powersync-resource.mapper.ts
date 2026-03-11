@@ -61,6 +61,8 @@ export class PowerSyncResourceMapper {
   static toDomain(row: PowerSyncResourceRow): Resource {
     const metadata = row.metadata ?? JSON.stringify(ResourceMetadata.createEmpty().toDTO());
     const stats = row.stats ?? JSON.stringify(ResourceStats.createEmpty().toDTO());
+    const parsedMetadata = ResourceMetadata.fromDTO(JSON.parse(metadata));
+    const metadataDto = parsedMetadata.toDTO();
 
     const state: ResourceState = {
       id: ResourceId.of(row.id),
@@ -70,11 +72,11 @@ export class PowerSyncResourceMapper {
       type: row.type as ResourceState['type'],
       name: row.name,
       path: row.path,
-      mimeType: null,
+      mimeType: typeof metadataDto.mimeType === 'string' ? (metadataDto.mimeType as string) : null,
       size: row.size,
       content: row.content,
       childrenCount: null,
-      metadata: ResourceMetadata.fromDTO(JSON.parse(metadata)),
+      metadata: parsedMetadata,
       stats: ResourceStats.fromDTO(JSON.parse(stats)),
       status: normalizeResourceStatus(row.status),
       createdAt: toDate(row.created_at) ?? new Date(),

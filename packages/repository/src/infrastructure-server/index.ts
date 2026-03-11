@@ -39,16 +39,19 @@ export { MemoryProviderInitializer } from './providers/memory-provider';
 export { FolderPrismaRepository } from './adapters/prisma/folder-prisma.repository';
 export { RepositoryPrismaRepository } from './adapters/prisma/repository-prisma.repository';
 export { ResourcePrismaRepository } from './adapters/prisma/resource-prisma.repository';
+export { ResourceBookmarkPrismaRepository } from './adapters/prisma/resource-bookmark-prisma.repository';
 
 // PowerSync Adapters
 export { PowerSyncRepositoryRepository } from './adapters/powersync/repository-powersync.repository';
 export { PowerSyncFolderRepository } from './adapters/powersync/folder-powersync.repository';
 export { PowerSyncResourceRepository } from './adapters/powersync/resource-powersync.repository';
+export { ResourceBookmarkPowerSyncRepository } from './adapters/powersync/resource-bookmark-powersync.repository';
 
 // Memory Adapters
 export { FolderMemoryRepository } from './adapters/memory/folder-memory.repository';
 export { RepositoryMemoryRepository } from './adapters/memory/repository-memory.repository';
 export { ResourceMemoryRepository } from './adapters/memory/resource-memory.repository';
+export { ResourceBookmarkMemoryRepository } from './adapters/memory/resource-bookmark-memory.repository';
 
 // Initialization Scripts
 export {

@@ -17,3 +17,4 @@ export * from './services/PathCalculator';
 export * from './repositories/IRepositoryRepository';
 export * from './repositories/IFolderRepository';
 export * from './repositories/IResourceRepository';
+export * from './repositories/IResourceBookmarkRepository';

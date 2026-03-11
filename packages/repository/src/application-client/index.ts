@@ -6,7 +6,10 @@
  */
 
 // ===== Port Interfaces =====
-export type { IRepositoryApiClient } from '../infrastructure-client/adapters/types';
+export type {
+  IRepositoryApiClient,
+  UploadResourcesRequest,
+} from '../infrastructure-client/adapters/types';
 
 export { RepositoryClientService } from './repository-client-service';
 

@@ -37,6 +37,7 @@ function parseStats(value: unknown): ResourceStats {
 
 export class ResourcePrismaMapper {
   static toDomain(data: PrismaResource): Resource {
+    const metadata = parseMetadata(data.metadata);
     const state: ResourceState = {
       id: ResourceId.of(data.id),
       repositoryId: RepositoryId.of(data.repositoryId),
@@ -45,11 +46,14 @@ export class ResourcePrismaMapper {
       type: data.type as ResourceType,
       name: data.name,
       path: data.path,
-      mimeType: null,
+      mimeType:
+        typeof metadata.toDTO().mimeType === 'string'
+          ? (metadata.toDTO().mimeType as string)
+          : null,
       size: data.size,
       content: data.content,
       childrenCount: null,
-      metadata: parseMetadata(data.metadata),
+      metadata,
       stats: parseStats(data.stats),
       status: normalizeResourceStatus(data.status),
       createdAt: data.createdAt,

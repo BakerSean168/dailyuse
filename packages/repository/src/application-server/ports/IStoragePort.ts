@@ -1,7 +1,7 @@
 export interface StorageWriteRequest {
   repositoryId: string;
   path: string;
-  content?: string | null;
+  content?: string | Uint8Array | null;
   isFolder?: boolean;
 }
 

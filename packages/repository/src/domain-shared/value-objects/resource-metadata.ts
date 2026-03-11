@@ -1,9 +1,9 @@
 /**
  * ResourceMetadata 值对象
- * 
+ *
  * 资源元数据：标签、字数、阅读时间、缩略图
  * 不可变性（所有修改返回新实例）
- * 
+ *
  * 注意：由于 IResourceMetadata 接口包含索引签名 [key: string]: unknown，
  * TypeScript 类无法直接实现。此类提供相同的属性和方法。
  */
@@ -18,13 +18,12 @@ import type {
  * ResourceMetadata 值对象实现
  */
 export class ResourceMetadata extends ValueObject<ResourceMetadataDTO> {
-
   private constructor(props: ResourceMetadataDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
-  
+
   public static create(props: ResourceMetadataDTO): ResourceMetadata {
     return new ResourceMetadata(props);
   }
@@ -77,7 +76,7 @@ export class ResourceMetadata extends ValueObject<ResourceMetadataDTO> {
   public removeTag(tag: string): ResourceMetadata {
     return new ResourceMetadata({
       ...this.props,
-      tags: this.props.tags.filter(t => t !== tag),
+      tags: this.props.tags.filter((t) => t !== tag),
     });
   }
 
@@ -91,9 +90,7 @@ export class ResourceMetadata extends ValueObject<ResourceMetadataDTO> {
 
   public updateReadingTime(): ResourceMetadata {
     // 平均阅读速度：200字/分钟
-    const readingTime = this.props.wordCount 
-      ? Math.ceil(this.props.wordCount / 200) 
-      : null;
+    const readingTime = this.props.wordCount ? Math.ceil(this.props.wordCount / 200) : null;
     return new ResourceMetadata({ ...this.props, readingTime });
   }
 
@@ -121,6 +118,7 @@ export class ResourceMetadata extends ValueObject<ResourceMetadataDTO> {
 
   public toDTO(): ResourceMetadataDTO {
     return {
+      ...this.props,
       tags: [...this.props.tags],
       wordCount: this.props.wordCount,
       readingTime: this.props.readingTime,

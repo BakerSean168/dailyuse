@@ -2,18 +2,21 @@ import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
 import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
 import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
+import type { IResourceBookmarkRepository } from '../domain-server/repositories/IResourceBookmarkRepository';
 import { RepositorySyncApplicationService } from '../application-server/use-cases/commands/repository-sync-application-service';
 import { RepositoryContainer } from './di/repository-container-v2';
 import {
   PowerSyncRepositoryRepository,
   PowerSyncResourceRepository,
   PowerSyncFolderRepository,
+  ResourceBookmarkPowerSyncRepository,
 } from './adapters/powersync';
 
 export class RepositoryPowerSyncModule {
   public readonly repositoryRepository: IRepositoryRepository;
   public readonly resourceRepository: IResourceRepository;
   public readonly folderRepository: IFolderRepository;
+  public readonly resourceBookmarkRepository: IResourceBookmarkRepository;
 
   public readonly syncService: RepositorySyncApplicationService;
 
@@ -31,6 +34,7 @@ export class RepositoryPowerSyncModule {
     this.repositoryRepository = container.getRepositoryRepository();
     this.resourceRepository = container.getResourceRepository();
     this.folderRepository = container.getFolderRepository();
+    this.resourceBookmarkRepository = new ResourceBookmarkPowerSyncRepository(dbConnection);
 
     this.syncService = new RepositorySyncApplicationService();
   }
@@ -40,5 +44,6 @@ export {
   PowerSyncRepositoryRepository,
   PowerSyncResourceRepository,
   PowerSyncFolderRepository,
+  ResourceBookmarkPowerSyncRepository,
   RepositoryContainer,
 };

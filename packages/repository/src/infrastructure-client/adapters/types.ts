@@ -17,6 +17,13 @@ import type {
   FileTreeResponse,
   SearchRequest,
   SearchResponse,
+  UploadResourcesRequestDTO,
+  UploadResourcesResponseDTO,
+  UploadResourceFileDTO,
+  ResourceBookmarkClientDTO,
+  CreateResourceBookmarkRequestDTO,
+  UpdateResourceBookmarkRequestDTO,
+  ReorderResourceBookmarksRequestDTO,
 } from '@dailyuse/contracts/repository';
 
 // ============ Transport Client Interfaces ============
@@ -61,6 +68,17 @@ export interface UpdateResourceRequest {
   metadata?: Record<string, unknown>;
 }
 
+export interface UploadFileLike {
+  name: string;
+  type?: string;
+  size?: number;
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+export interface UploadResourcesRequest extends UploadResourcesRequestDTO {
+  files: Array<UploadFileLike | UploadResourceFileDTO>;
+}
+
 // ============ Port Interface ============
 
 /**
@@ -102,4 +120,24 @@ export interface IRepositoryApiClient {
   renameResource(id: string, name: string): Promise<Result<ResourceClientDTO>>;
   moveResource(id: string, targetFolderId: string): Promise<Result<ResourceClientDTO>>;
   deleteResource(id: string): Promise<Result<void>>;
+  uploadResources(
+    repositoryId: string,
+    request: UploadResourcesRequest,
+  ): Promise<Result<UploadResourcesResponseDTO>>;
+
+  listBookmarks(repositoryId: string): Promise<Result<ResourceBookmarkClientDTO[]>>;
+  createBookmark(
+    repositoryId: string,
+    request: CreateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>>;
+  updateBookmark(
+    repositoryId: string,
+    bookmarkId: string,
+    request: UpdateResourceBookmarkRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO>>;
+  reorderBookmarks(
+    repositoryId: string,
+    request: ReorderResourceBookmarksRequestDTO,
+  ): Promise<Result<ResourceBookmarkClientDTO[]>>;
+  deleteBookmark(repositoryId: string, bookmarkId: string): Promise<Result<void>>;
 }

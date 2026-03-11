@@ -213,7 +213,13 @@
     </ResizablePanelGroup>
 
     <!-- Batch Import Dialog -->
-    <BatchImportDialog v-model:open="showImportDialog" @import="handleBatchImport" />
+    <BatchImportDialog
+      v-model:open="showImportDialog"
+      :importing="isUploading"
+      :progress="uploadProgress"
+      :summary="importSummary"
+      @import="handleBatchImport"
+    />
   </div>
 </template>
 
@@ -286,11 +292,18 @@ const {
   currentResource,
   isLoading,
   isSaving,
+  isUploading,
+  uploadProgress,
   initRepository,
   fetchResources,
-  createResource,
-  deleteResource,
+  fetchBookmarks,
+  createMarkdownNote,
   saveResourceContent,
+  uploadResources,
+  searchResources,
+  renameBookmark,
+  reorderBookmarks,
+  removeBookmark,
   openResource,
 } = useRepository();
 
@@ -311,6 +324,10 @@ const hasSearched = ref(false);
 const searchTotalResults = ref(0);
 const searchTotalMatches = ref(0);
 const searchTime = ref(0);
+const importSummary = ref<{
+  successes: ResourceClientDTO[];
+  failures: Array<{ fileName: string; message: string; code: string }>;
+} | null>(null);
 
 // ── Sidebar mode config ──
 const sidebarModes = computed(() => [
@@ -349,6 +366,7 @@ onMounted(async () => {
   await initRepository();
   if (repositoryId.value) {
     await fetchResources();
+    await fetchBookmarks();
   }
 });
 
@@ -361,9 +379,17 @@ function handleOpenResource(resource: ResourceClientDTO) {
   openResource(resource);
 }
 
-function handleCreateNote() {
-  // TODO: Show create note dialog or inline create
-  toast.info('创建笔记 — 功能待实现');
+async function handleCreateNote() {
+  const note = await createMarkdownNote();
+  if (!note) {
+    toast.error(t('repository.workspace.createNoteFailed'));
+    return;
+  }
+
+  openResource(note);
+  toast.success(
+    t('repository.workspace.createNoteSuccess', { name: note.displayName || note.name }),
+  );
 }
 
 function handleRefresh() {
@@ -458,21 +484,38 @@ function handleCloseAll() {
 }
 
 // ── Search ──
-function handleSearch(
+async function handleSearch(
   query: string,
   mode: SearchMode,
   options: { caseSensitive: boolean; useRegex: boolean },
 ) {
   isSearching.value = true;
   hasSearched.value = true;
-  // TODO: Call search service
-  setTimeout(() => {
-    searchResults.value = [];
-    searchTotalResults.value = 0;
-    searchTotalMatches.value = 0;
-    searchTime.value = 0;
+
+  try {
+    if (!repositoryId.value) {
+      searchResults.value = [];
+      searchTotalResults.value = 0;
+      searchTotalMatches.value = 0;
+      searchTime.value = 0;
+      return;
+    }
+
+    const result = await searchResources({
+      repositoryId: repositoryId.value,
+      query,
+      mode,
+      caseSensitive: options.caseSensitive,
+      useRegex: options.useRegex,
+    });
+
+    searchResults.value = result.results;
+    searchTotalResults.value = result.totalResults;
+    searchTotalMatches.value = result.totalMatches;
+    searchTime.value = result.searchTime;
+  } finally {
     isSearching.value = false;
-  }, 300);
+  }
 }
 
 function handleSearchSelect(result: SearchResultItem) {
@@ -490,38 +533,68 @@ function handleBookmarkSelect(bookmark: ResourceBookmarkClientDTO) {
   }
 }
 
-function handleBookmarkRename(bookmark: ResourceBookmarkClientDTO) {
-  // TODO: Implement rename
-  toast.info('重命名书签 — 功能待实现');
+async function handleBookmarkRename(payload: {
+  bookmark: ResourceBookmarkClientDTO;
+  name: string;
+}) {
+  const result = await renameBookmark(payload.bookmark, payload.name);
+  if (!result) {
+    return;
+  }
+
+  toast.success(
+    result.persisted
+      ? t('repository.bookmarksPanel.renamePersisted')
+      : t('repository.bookmarksPanel.renameLocalOnly'),
+  );
 }
 
-function handleBookmarkMoveUp(bookmark: ResourceBookmarkClientDTO) {
+async function handleBookmarkMoveUp(bookmark: ResourceBookmarkClientDTO) {
   const idx = store.bookmarks.findIndex((b) => b.id === bookmark.id);
   if (idx > 0) {
     const items = [...store.bookmarks];
     [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
     store.setBookmarks(items);
+    await reorderBookmarks(items.map((item) => item.id));
   }
 }
 
-function handleBookmarkMoveDown(bookmark: ResourceBookmarkClientDTO) {
+async function handleBookmarkMoveDown(bookmark: ResourceBookmarkClientDTO) {
   const idx = store.bookmarks.findIndex((b) => b.id === bookmark.id);
   if (idx >= 0 && idx < store.bookmarks.length - 1) {
     const items = [...store.bookmarks];
     [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
     store.setBookmarks(items);
+    await reorderBookmarks(items.map((item) => item.id));
   }
 }
 
-function handleBookmarkRemove(bookmark: ResourceBookmarkClientDTO) {
-  store.removeBookmark(bookmark.id);
+async function handleBookmarkRemove(bookmark: ResourceBookmarkClientDTO) {
+  await removeBookmark(bookmark.id);
 }
 
 // ── Import ──
-function handleBatchImport(files: File[], tags: string[]) {
-  // TODO: Call upload service
-  toast.info(`导入 ${files.length} 个文件，标签: ${tags.join(', ') || '无'} — 上传功能待实现`);
-  showImportDialog.value = false;
+async function handleBatchImport(files: File[], tags: string[]) {
+  importSummary.value = null;
+
+  const result = await uploadResources(files, tags);
+  importSummary.value = result;
+
+  if (result.successes.length > 0) {
+    await fetchResources();
+    const firstMarkdown = result.successes.find((resource) => isMarkdown(resource));
+    if (firstMarkdown) {
+      openResource(firstMarkdown);
+    }
+  }
+
+  if (result.failures.length === 0) {
+    showImportDialog.value = false;
+    toast.success(t('repository.import.importSuccess', { count: result.successes.length }));
+    return;
+  }
+
+  toast.warning(t('repository.import.partialSuccess'));
 }
 
 // ── Helpers ──

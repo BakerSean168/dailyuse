@@ -19,9 +19,9 @@ export interface CreateResourceBookmarkRequestDTO {
  * 更新书签请求 DTO
  */
 export interface UpdateResourceBookmarkRequestDTO {
-  aliasName?: string;
-  icon?: string;
-  color?: string;
+  aliasName?: string | null;
+  icon?: string | null;
+  color?: string | null;
 }
 
 /**

@@ -96,6 +96,14 @@ export class PowerSyncResourceRepository implements IResourceRepository {
     return rows.map((row) => PowerSyncResourceMapper.toDomain(row));
   }
 
+  async findByRepositoryIdAndPath(repositoryId: string, path: string): Promise<Resource | null> {
+    const row = await this.db.getOptional<PowerSyncResourceRow>(
+      `SELECT * FROM resources WHERE repository_id = ? AND path = ? LIMIT 1`,
+      [repositoryId, path],
+    );
+    return row ? PowerSyncResourceMapper.toDomain(row) : null;
+  }
+
   async findByFolderId(folderId: string): Promise<Resource[]> {
     const rows = await this.db.getAll<PowerSyncResourceRow>(
       `SELECT * FROM resources WHERE folder_id = ? ORDER BY name ASC`,
