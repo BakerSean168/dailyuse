@@ -24,6 +24,7 @@ import {
   KeyResultClientDTOSchema,
   GetGoalAggregateResSchema,
 } from '@dailyuse/contracts/goal';
+import type { QueryGoalsReq } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
@@ -113,15 +114,17 @@ export function registerGoalCrudRoutes(
       const includeKeyResults =
         parseBoolean(req.query?.includeKeyResults) ?? parseBoolean(req.query?.includeChildren);
       const pageSize = parseNumber(req.query?.pageSize) ?? parseNumber(req.query?.limit);
-      const folderId = (req.query?.folderId ?? req.query?.dirId) as string | undefined;
+      const status = parseStringArray(req.query?.status) as QueryGoalsReq['status'];
+      const importance = parseStringArray(req.query?.importance) as QueryGoalsReq['importance'];
+      const folderId = (req.query?.folderId ?? req.query?.dirId) as QueryGoalsReq['folderId'];
 
       return controller.list({
         identityId: ctx.identityId,
-        status: parseStringArray(req.query?.status) as any,
-        importance: parseStringArray(req.query?.importance) as any,
+        status,
+        importance,
         category: req.query?.category as string | undefined,
         tags: parseStringArray(req.query?.tags),
-        folderId: folderId as any,
+        folderId,
         query: req.query?.query as string | undefined,
         startDate: parseNumber(req.query?.startDate),
         endDate: parseNumber(req.query?.endDate),
@@ -297,16 +300,19 @@ export function registerGoalCrudRoutes(
       responses: {
         200: successResponse(
           z.object({
-            goalId: z.string(),
-            keyResults: z.array(
+            totalProgress: z.number(),
+            calculationMode: z.literal('WeightedAverage'),
+            krContributions: z.array(
               z.object({
                 keyResultId: z.string(),
-                title: z.string(),
+                keyResultName: z.string(),
+                progress: z.number(),
                 weight: z.number(),
-                progress: z.any(),
+                contribution: z.number(),
               }),
             ),
-            overallProgress: z.number(),
+            lastUpdateTime: z.number(),
+            updateTrigger: z.string(),
           }),
           '获取成功',
         ),

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ResourceBookmarkClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { __test__ } from './useRepository';
+import type {
+  RepositoryClientDTO,
+  ResourceBookmarkClientDTO,
+  ResourceClientDTO,
+} from '@dailyuse/contracts/repository';
+import { __test__ as composableTest } from './useRepository';
+import { __test__ as storeTest } from '../stores/repositoryStore';
 
 function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceClientDTO {
   return {
@@ -64,16 +69,59 @@ describe('useRepository helpers', () => {
       failures: [{ fileName: 'broken.pdf', message: 'Nope', code: 'UPLOAD_FAILED' }],
     };
 
-    expect(__test__.isUploadResponse(response)).toBe(true);
+    expect(composableTest.isUploadResponse(response)).toBe(true);
   });
 
   it('rebuilds bookmark display name from linked resource when alias is cleared', () => {
     const resource = createResource({ displayName: 'Recovered Title' });
     const bookmark = createBookmark({ aliasName: 'Old Alias', displayName: 'Old Alias' });
 
-    const updated = __test__.buildBookmarkWithAlias(bookmark, null, [resource]);
+    const updated = storeTest.buildBookmarkWithAlias(bookmark, null, [resource]);
 
     expect(updated.aliasName).toBeNull();
     expect(updated.displayName).toBe('Recovered Title');
+  });
+
+  it('applies transient bookmark UI state without mutating persisted truth', () => {
+    const first = createBookmark();
+    const second = createBookmark({
+      id: 'bookmark-2' as ResourceBookmarkClientDTO['id'],
+      sortOrder: 1,
+    });
+
+    const derived = storeTest.applyBookmarkUiState(
+      [first, second],
+      [createResource({ id: 'resource-2' as ResourceClientDTO['id'] })],
+      {
+        aliasById: { [first.id]: 'Temporary Alias' },
+        orderedIds: [second.id, first.id],
+        removedIds: [second.id],
+      },
+    );
+
+    expect(derived).toHaveLength(1);
+    expect(derived[0]?.id).toBe(first.id);
+    expect(derived[0]?.aliasName).toBe('Temporary Alias');
+    expect(first.aliasName).toBeNull();
+  });
+
+  it('keeps explicit repository selection when still available', () => {
+    const repositories = [{ id: 'repo-1' }, { id: 'repo-2' }] as Array<RepositoryClientDTO>;
+
+    expect(composableTest.resolveCurrentRepositoryId(repositories, 'repo-2')).toBe('repo-2');
+    expect(composableTest.resolveCurrentRepositoryId(repositories, 'missing')).toBe('repo-1');
+    expect(composableTest.resolveCurrentRepositoryId([], 'repo-2')).toBeNull();
+  });
+
+  it('reorders bookmarks while preserving ids not included in payload tail', () => {
+    const first = createBookmark();
+    const second = createBookmark({ id: 'bookmark-2' as ResourceBookmarkClientDTO['id'] });
+    const third = createBookmark({ id: 'bookmark-3' as ResourceBookmarkClientDTO['id'] });
+
+    expect(
+      composableTest
+        .reorderBookmarkCollection([first, second, third], [third.id, first.id])
+        .map((bookmark) => bookmark.id),
+    ).toEqual([third.id, first.id, second.id]);
   });
 });

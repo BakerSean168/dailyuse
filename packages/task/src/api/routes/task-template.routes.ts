@@ -17,12 +17,14 @@ import {
   CreateTaskTemplateSchema,
   UpdateTaskTemplateSchema,
   TaskTemplateResponseSchema,
+  TaskTemplateListResponseSchema,
   GenerateInstancesSchema,
   BindToGoalSchema,
   TaskInstanceResponseSchema,
 } from '@dailyuse/contracts/task';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
+import type { QueryTaskTemplatesReq, TaskTemplateStatus } from '@dailyuse/contracts/task';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 
 // ============ Types ============
@@ -30,6 +32,14 @@ import type { TaskTemplateController } from '../controllers/task-template.contro
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
+}
+
+function getFirstQueryValue(value: unknown): string | undefined {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : undefined;
+  }
+
+  return typeof value === 'string' ? value : undefined;
 }
 
 // ============ Route Registration ============
@@ -80,16 +90,23 @@ export function registerTaskTemplateRoutes(
         }),
       },
       responses: {
-        200: successResponse(z.array(TaskTemplateResponseSchema), '获取成功'),
+        200: successResponse(TaskTemplateListResponseSchema, '获取成功'),
       },
     },
     [auth],
-    (req, ctx) => controller.listTemplates(ctx.identityId, {
-      status: req.query?.status as any,
-      folderId: req.query?.folderId as string,
-      goalId: req.query?.goalId as string,
-      tags: req.query?.tags ? (req.query.tags as string).split(',') : undefined,
-    }),
+    (req, ctx) => {
+      const status = getFirstQueryValue(req.query?.status) as TaskTemplateStatus | undefined;
+      const folderId = getFirstQueryValue(req.query?.folderId) as QueryTaskTemplatesReq['folderId'];
+      const goalId = getFirstQueryValue(req.query?.goalId) as QueryTaskTemplatesReq['goalId'];
+      const tags = getFirstQueryValue(req.query?.tags)?.split(',');
+
+      return controller.listTemplates(ctx.identityId, {
+        status,
+        folderId,
+        goalId,
+        tags,
+      });
+    },
   );
 
   // GET /by-priority — List templates sorted by priority (must be before /:id)
@@ -108,10 +125,11 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listByPriority(
-      ctx.identityId,
-      req.query?.limit ? Number(req.query.limit) : undefined,
-    ),
+    (req, ctx) =>
+      controller.listByPriority(
+        ctx.identityId,
+        req.query?.limit ? Number(req.query.limit) : undefined,
+      ),
   );
 
   // GET /:id — Get template by ID

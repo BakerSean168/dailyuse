@@ -37,7 +37,7 @@ const CHANNELS = {
   SEND_SMS: 'auth:send-sms-code',
   REFRESH_TOKEN: 'auth:refresh-token',
   LOGOUT: 'auth:logout',
-  GET_CURRENT_USER: 'auth:get-status',
+  GET_CURRENT_USER: 'auth:get-current-user',
   LIST_SESSIONS: 'auth:session:list',
   REVOKE_SESSION: 'auth:session:revoke',
   CHANGE_PASSWORD: 'auth:change-password',

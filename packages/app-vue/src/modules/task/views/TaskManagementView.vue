@@ -167,7 +167,6 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     recurrenceRule: template.recurrenceRule ?? null,
     importance: (template.importance as any) ?? 'Moderate',
     tags: template.tags ?? [],
-    folderId: (template.folderId as any) ?? null,
     color: template.color ?? null,
   });
   if (result) {
@@ -196,7 +195,6 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
-    folderId: (vm.folderId as any) ?? null,
     color: vm.color ?? null,
   });
   if (result) {

@@ -23,7 +23,9 @@ import type {
   TaskTemplateStatus,
   TaskInstanceClientDTO,
   CreateTaskTemplateReq,
+  QueryTaskTemplatesReq,
 } from '@dailyuse/contracts/task';
+import { IdentityId } from '@dailyuse/domain-shared';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type { CreateTaskTemplate } from '../../application-server/use-cases/commands/create-task-template';
 import type { GetTaskTemplate } from '../../application-server/use-cases/queries/get-task-template';
@@ -121,24 +123,26 @@ export class TaskTemplateController {
     identityId: string,
     filters?: {
       status?: TaskTemplateStatus;
-      folderId?: string;
-      goalId?: string;
+      folderId?: QueryTaskTemplatesReq['folderId'];
+      goalId?: QueryTaskTemplatesReq['goalId'];
       tags?: string[];
     },
-  ): Promise<Result<TaskTemplateClientDTO[]>> {
-    const result = await this.useCases.listTemplates.execute({
-      identityId,
+  ): Promise<Result<{ templates: TaskTemplateClientDTO[]; total: number }>> {
+    const request: QueryTaskTemplatesReq = {
+      identityId: IdentityId.of(identityId) as QueryTaskTemplatesReq['identityId'],
       status: filters?.status ? [filters.status] : undefined,
       folderId: filters?.folderId,
       goalId: filters?.goalId,
       tags: filters?.tags,
-    } as any);
+    };
+
+    const result = await this.useCases.listTemplates.execute(request);
 
     if (!isOk(result)) {
-      return result as Result<TaskTemplateClientDTO[]>;
+      return result as Result<{ templates: TaskTemplateClientDTO[]; total: number }>;
     }
 
-    return ok(result.data.templates);
+    return ok({ templates: result.data.templates, total: result.data.total });
   }
 
   /**
@@ -223,10 +227,7 @@ export class TaskTemplateController {
   /**
    * Generate instances for a template
    */
-  async generateInstances(
-    id: string,
-    input: unknown,
-  ): Promise<Result<TaskInstanceClientDTO[]>> {
+  async generateInstances(id: string, input: unknown): Promise<Result<TaskInstanceClientDTO[]>> {
     const parsed = GenerateInstancesSchema.safeParse(input);
     if (!parsed.success) {
       return fail({

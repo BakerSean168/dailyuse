@@ -1,18 +1,3 @@
-/**
- * MSW Handlers - Task Module
- *
- * Intercepts HTTP requests to the Task API and returns mock data.
- * Paths match the actual HTTP adapters:
- *   - TaskTemplateHttpAdapter: /tasks/templates
- *   - TaskInstanceHttpAdapter: /tasks/templates/instances
- *   - TaskDependencyHttpAdapter: /tasks
- *
- * IMPORTANT: Handler order matters in MSW. More-specific paths must come
- * before catch-all param routes. INSTANCES and TEMPLATES sub-resource handlers
- * must appear before TEMPLATES/:id, because TEMPLATES/:id would otherwise
- * match /tasks/templates/instances with id="instances".
- */
-
 import { http, HttpResponse } from 'msw';
 import {
   createMockTaskTemplate,
@@ -20,15 +5,67 @@ import {
   createMockTaskInstance,
   createMockTaskInstanceList,
 } from '@dailyuse/contracts/mocks';
+import type {
+  DependencyChainClientDTO,
+  TaskDependencyClientDTO,
+  ValidateDependencyResponse,
+} from '@dailyuse/contracts/task';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-const TEMPLATES = `${API_BASE}/tasks/templates`;
-const INSTANCES = `${TEMPLATES}/instances`;
+const TEMPLATES = `${API_BASE}/task-templates`;
+const INSTANCES = `${API_BASE}/task-instances`;
 const TASKS = `${API_BASE}/tasks`;
 
-export const taskHandlers = [
-  // ============ Templates (exact paths) ============
+export const taskMockRoutes = {
+  templates: TEMPLATES,
+  instances: INSTANCES,
+  tasks: TASKS,
+};
 
+export function createMockTaskDependency(
+  overrides: Partial<TaskDependencyClientDTO> = {},
+): TaskDependencyClientDTO {
+  return {
+    id: overrides.id ?? `dep-${Date.now()}`,
+    predecessorTaskId: overrides.predecessorTaskId ?? 'task-predecessor-1',
+    successorTaskId: overrides.successorTaskId ?? 'task-successor-1',
+    dependencyType: overrides.dependencyType ?? 'FinishToStart',
+    lagDays: overrides.lagDays ?? 0,
+    version: overrides.version ?? 1,
+    createdAt: overrides.createdAt ?? Date.now(),
+    updatedAt: overrides.updatedAt ?? Date.now(),
+    deletedAt: overrides.deletedAt ?? null,
+    predecessorTaskTitle: overrides.predecessorTaskTitle,
+    successorTaskTitle: overrides.successorTaskTitle,
+  };
+}
+
+export function createMockValidateDependencyResponse(
+  overrides: Partial<ValidateDependencyResponse> = {},
+): ValidateDependencyResponse {
+  return {
+    isValid: overrides.isValid ?? true,
+    errors: overrides.errors,
+    wouldCreateCycle: overrides.wouldCreateCycle ?? false,
+    cyclePath: overrides.cyclePath,
+    message: overrides.message ?? 'Dependency is valid.',
+  };
+}
+
+export function createMockDependencyChain(
+  overrides: Partial<DependencyChainClientDTO> = {},
+): DependencyChainClientDTO {
+  return {
+    taskId: overrides.taskId ?? 'task-1',
+    allPredecessors: overrides.allPredecessors ?? [],
+    allSuccessors: overrides.allSuccessors ?? [],
+    depth: overrides.depth ?? 0,
+    isOnCriticalPath: overrides.isOnCriticalPath ?? false,
+    estimatedCompletionDate: overrides.estimatedCompletionDate,
+  };
+}
+
+export const taskHandlers = [
   http.get(`${TEMPLATES}/by-priority`, () => {
     return HttpResponse.json({
       ok: true,
@@ -63,10 +100,6 @@ export const taskHandlers = [
       { status: 201 },
     );
   }),
-
-  // ============ Instances (must be before TEMPLATES/:id) ============
-  // TEMPLATES/:id would match /tasks/templates/instances with id="instances"
-  // so all INSTANCES routes must be registered first.
 
   http.get(INSTANCES, () => {
     return HttpResponse.json({
@@ -128,17 +161,15 @@ export const taskHandlers = [
     });
   }),
 
-  http.delete(`${INSTANCES}/:id`, ({ params }) => {
+  http.delete(`${INSTANCES}/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: null,
       timestamp: Date.now(),
     });
   }),
-
-  // ============ Template sub-resources (must be before TEMPLATES/:id) ============
 
   http.get(`${TEMPLATES}/:id/instances`, ({ params }) => {
     return HttpResponse.json({
@@ -185,7 +216,7 @@ export const taskHandlers = [
       ok: true,
       code: 200,
       message: 'Archived',
-      data: createMockTaskTemplate({ id: params.id as string, status: 'Deleted' }),
+      data: createMockTaskTemplate({ id: params.id as string, status: 'Archived' }),
       timestamp: Date.now(),
     });
   }),
@@ -210,8 +241,6 @@ export const taskHandlers = [
     });
   }),
 
-  // ============ Template CRUD catch-all (last among TEMPLATES routes) ============
-
   http.get(`${TEMPLATES}/:id`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
@@ -233,102 +262,109 @@ export const taskHandlers = [
     });
   }),
 
-  http.delete(`${TEMPLATES}/:id`, ({ params }) => {
+  http.delete(`${TEMPLATES}/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: null,
       timestamp: Date.now(),
     });
   }),
-
-  // ============ Dependencies ============
 
   http.post(`${TASKS}/dependencies/validate`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Valid',
-      data: { valid: true, cycles: [] },
+      data: createMockValidateDependencyResponse(),
       timestamp: Date.now(),
     });
   }),
 
-  http.post(`${TASKS}/:taskId/dependencies`, ({ params }) => {
+  http.post(`${TASKS}/:taskId/dependencies`, async ({ params, request }) => {
+    const body = (await request.json()) as Partial<TaskDependencyClientDTO>;
     return HttpResponse.json(
       {
         ok: true,
         code: 200,
         message: 'Created',
-        data: {
-          id: `dep-${Date.now()}`,
-          sourceTaskId: params.taskId,
-          targetTaskId: 'target-id',
-          type: 'FinishToStart',
-        },
+        data: createMockTaskDependency({
+          predecessorTaskId: body.predecessorTaskId ?? 'task-predecessor-1',
+          successorTaskId: body.successorTaskId ?? (params.taskId as string),
+          dependencyType: body.dependencyType,
+          lagDays: body.lagDays,
+        }),
         timestamp: Date.now(),
       },
       { status: 201 },
     );
   }),
 
-  http.get(`${TASKS}/:taskId/dependencies`, () => {
+  http.get(`${TASKS}/:taskId/dependencies`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: [],
+      data: [
+        createMockTaskDependency({
+          successorTaskId: params.taskId as string,
+          predecessorTaskTitle: 'Prepare inputs',
+          successorTaskTitle: 'Run task',
+        }),
+      ],
       timestamp: Date.now(),
     });
   }),
 
-  http.get(`${TASKS}/:taskId/dependents`, () => {
+  http.get(`${TASKS}/:taskId/dependents`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: [],
+      data: [
+        createMockTaskDependency({
+          predecessorTaskId: params.taskId as string,
+          successorTaskId: 'task-dependent-1',
+          predecessorTaskTitle: 'Run task',
+          successorTaskTitle: 'Review output',
+        }),
+      ],
       timestamp: Date.now(),
     });
   }),
 
-  http.get(`${TASKS}/:taskId/dependency-chain`, () => {
+  http.get(`${TASKS}/:taskId/dependency-chain`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: { chain: [], hasCycle: false },
+      data: createMockDependencyChain({ taskId: params.taskId as string }),
       timestamp: Date.now(),
     });
   }),
 
-  http.put(`${TASKS}/dependencies/:id`, ({ params }) => {
+  http.put(`${TASKS}/dependencies/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Partial<TaskDependencyClientDTO>;
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Updated',
-      data: {
+      data: createMockTaskDependency({
         id: params.id as string,
-        predecessorTaskId: 'predecessor-1',
-        successorTaskId: 'successor-1',
-        dependencyType: 'FinishToStart',
-        lagDays: 0,
-        version: 1,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        deletedAt: null,
-      },
+        dependencyType: body.dependencyType,
+        lagDays: body.lagDays,
+      }),
       timestamp: Date.now(),
     });
   }),
 
-  http.delete(`${TASKS}/dependencies/:id`, ({ params }) => {
+  http.delete(`${TASKS}/dependencies/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: null,
       timestamp: Date.now(),
     });
   }),

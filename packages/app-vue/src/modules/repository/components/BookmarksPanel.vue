@@ -101,6 +101,9 @@ import type { ResourceBookmarkClientDTO as BookmarkType } from '@dailyuse/contra
 
 const props = defineProps<{
   bookmarks: BookmarkType[];
+  canRename?: boolean;
+  canReorder?: boolean;
+  canRemove?: boolean;
 }>();
 
 const { t } = useI18n();
@@ -131,20 +134,21 @@ function getBookmarkActions(bookmark: BookmarkType, index: number): MenuAction[]
       key: 'rename',
       label: menuLabel('rename'),
       icon: Pencil,
+      disabled: props.canRename === false,
       handler: () => openRenameDialog(bookmark),
     },
     {
       key: 'move-up',
       label: menuLabel('moveUp'),
       icon: ArrowUp,
-      disabled: index === 0,
+      disabled: props.canReorder === false || index === 0,
       handler: () => emit('move-up', bookmark),
     },
     {
       key: 'move-down',
       label: menuLabel('moveDown'),
       icon: ArrowDown,
-      disabled: index === props.bookmarks.length - 1,
+      disabled: props.canReorder === false || index === props.bookmarks.length - 1,
       handler: () => emit('move-down', bookmark),
     },
     {
@@ -153,6 +157,7 @@ function getBookmarkActions(bookmark: BookmarkType, index: number): MenuAction[]
       icon: Trash2,
       destructive: true,
       separator: true,
+      disabled: props.canRemove === false,
       handler: () => emit('remove', bookmark),
     },
   ];

@@ -95,8 +95,6 @@ export interface TaskTemplateViewModel {
   formattedCreatedAt?: string;
   /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */
   taskType?: string;
-  /** Folder ID for organising task templates */
-  folderId?: string | null;
   /** Colour swatch hex string */
   color?: string | null;
 }

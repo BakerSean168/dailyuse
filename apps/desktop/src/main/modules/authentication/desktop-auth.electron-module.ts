@@ -46,6 +46,7 @@ const Ch = {
   // Desktop-specific (AuthDesktopApplicationService)
   ENTER_GUEST_MODE: 'auth:enter-guest-mode',
   ENTER_OFFLINE_MODE: 'auth:enter-offline-mode',
+  GET_CURRENT_USER: 'auth:get-current-user',
   GET_STATUS: 'auth:get-status',
   INITIALIZE: 'auth:initialize',
   AUTO_LOGIN: 'auth:auto-login',
@@ -142,7 +143,7 @@ export const DesktopAuthElectronModule: IElectronModule = {
     // ══════════════════════════════════════════════════════════════
 
     ipcMain.handle(Ch.ENTER_GUEST_MODE, () => desktopService.enterGuestMode());
-    ipcMain.handle(Ch.ENTER_OFFLINE_MODE, () => desktopService.enterGuestMode());
+    ipcMain.handle(Ch.ENTER_OFFLINE_MODE, () => desktopService.enterOfflineMode());
     ipcMain.handle(Ch.GET_STATUS, () => desktopService.getStatus());
     ipcMain.handle(Ch.INITIALIZE, () => desktopService.initialize());
     ipcMain.handle(Ch.AUTO_LOGIN, () => desktopService.autoLogin());
@@ -179,8 +180,9 @@ export const DesktopAuthElectronModule: IElectronModule = {
     // Sessions
     ipcMain.handle(Ch.SESSION_LIST, () => desktopService.listSessions());
     ipcMain.handle(Ch.SESSION_GET_CURRENT, () => desktopService.getCurrentSession());
-    ipcMain.handle(Ch.SESSION_REVOKE, (_event, sessionId: string) =>
-      desktopService.revokeSession(sessionId),
+    ipcMain.handle(Ch.GET_CURRENT_USER, () => desktopService.getCurrentUser());
+    ipcMain.handle(Ch.SESSION_REVOKE, (_event, payload: string | { sessionId: string }) =>
+      desktopService.revokeSession(typeof payload === 'string' ? payload : payload?.sessionId),
     );
     ipcMain.handle(Ch.SESSION_REVOKE_ALL, () => desktopService.revokeAllSessions());
 

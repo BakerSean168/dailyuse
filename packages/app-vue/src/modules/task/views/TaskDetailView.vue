@@ -245,7 +245,6 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     recurrenceRule: vm.recurrenceRule ?? null,
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
-    folderId: (vm.folderId as any) ?? null,
     color: vm.color ?? null,
   });
   if (result) {

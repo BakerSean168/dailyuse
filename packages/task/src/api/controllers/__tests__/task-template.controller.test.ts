@@ -236,7 +236,7 @@ describe('TaskTemplateController', () => {
       expect(args.tags).toEqual(['tag1', 'tag2']);
     });
 
-    it('should unwrap result.data.templates', async () => {
+    it('should return templates and total', async () => {
       const templates = [FAKE_TEMPLATE_DTO];
       (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
         ok({ templates, total: 1 }),
@@ -246,7 +246,7 @@ describe('TaskTemplateController', () => {
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.data).toBe(templates);
+        expect(result.data).toEqual({ templates, total: 1 });
       }
     });
   });

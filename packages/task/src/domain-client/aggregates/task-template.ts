@@ -22,7 +22,7 @@ import type {
   TaskTemplateStatus,
 } from '@dailyuse/contracts/task';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { GoalFolderId } from '@dailyuse/contracts/primitives';
+import type { TaskFolderId } from '@dailyuse/contracts/primitives';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
@@ -38,7 +38,7 @@ export interface TaskTemplateState {
   importance: ImportanceLevel;
   priority: number | undefined;
   goalBinding: TaskGoalBinding | null;
-  folderId: GoalFolderId | null;
+  folderId: TaskFolderId | null;
   tags: string[];
   color: string | null;
   status: TaskTemplateStatus;
@@ -113,7 +113,7 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     return this._props.goalBinding;
   }
 
-  get folderId(): GoalFolderId | null {
+  get folderId(): TaskFolderId | null {
     return this._props.folderId;
   }
 
@@ -244,11 +244,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       name: this._props.name,
       description: this._props.description,
       timeConfig: this.serializeTimeConfig(this._props.timeConfig),
-      recurrenceRule: this._props.recurrenceRule ? this.serializeRecurrenceRule(this._props.recurrenceRule) : null,
+      recurrenceRule: this._props.recurrenceRule
+        ? this.serializeRecurrenceRule(this._props.recurrenceRule)
+        : null,
       reminderConfig: this._props.reminderConfig as TaskReminderConfigDTO | null,
       importance: this._props.importance,
       priority: this._props.priority,
-      goalBinding: this._props.goalBinding ? this.serializeGoalBinding(this._props.goalBinding) : null,
+      goalBinding: this._props.goalBinding
+        ? this.serializeGoalBinding(this._props.goalBinding)
+        : null,
       folderId: this._props.folderId ? String(this._props.folderId) : null,
       tags: [...this._props.tags],
       color: this._props.color,

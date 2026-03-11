@@ -20,6 +20,7 @@ import {
 } from '@dailyuse/contracts/task';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskInstanceId } from '@dailyuse/contracts/primitives';
+import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskInstanceController } from '../controllers/task-instance.controller';
 
 // ============ Types ============
@@ -27,6 +28,14 @@ import type { TaskInstanceController } from '../controllers/task-instance.contro
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
   requireRole?(roles: string[]): RequestHandler;
+}
+
+function getFirstQueryValue(value: unknown): string | undefined {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : undefined;
+  }
+
+  return typeof value === 'string' ? value : undefined;
 }
 
 // ============ Route Registration ============
@@ -62,11 +71,12 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.getInstancesByDateRange(
-      ctx.identityId,
-      req.query?.startDate ? Number(req.query.startDate) : Date.now(),
-      req.query?.endDate ? Number(req.query.endDate) : Date.now() + 86400000 * 7,
-    ),
+    (req, ctx) =>
+      controller.getInstancesByDateRange(
+        ctx.identityId,
+        req.query?.startDate ? Number(req.query.startDate) : Date.now(),
+        req.query?.endDate ? Number(req.query.endDate) : Date.now() + 86400000 * 7,
+      ),
   );
 
   // POST /check-expired — Check and mark expired instances
@@ -100,10 +110,11 @@ export function registerTaskInstanceRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.listInstances(ctx.identityId, {
-      templateId: req.query?.templateId as string,
-      status: req.query?.status as any,
-    }),
+    (req, ctx) =>
+      controller.listInstances(ctx.identityId, {
+        templateId: getFirstQueryValue(req.query?.templateId),
+        status: getFirstQueryValue(req.query?.status) as TaskInstanceStatus | undefined,
+      }),
   );
 
   // GET /:id — Get instance by ID

@@ -32,7 +32,7 @@ import type {
   TaskGoalBinding,
   TaskGoalBindingDTO,
 } from '@dailyuse/contracts/task';
-import type { GoalFolderId } from '@dailyuse/contracts/primitives';
+import type { TaskFolderId } from '@dailyuse/contracts/primitives';
 import type {
   ITaskTemplateApiClient,
   ITaskInstanceApiClient,
@@ -58,7 +58,7 @@ function taskTemplateFromDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     importance: dto.importance,
     priority: dto.priority,
     goalBinding: dto.goalBinding ? parseGoalBinding(dto.goalBinding) : null,
-    folderId: dto.folderId ? (dto.folderId as GoalFolderId) : null,
+    folderId: dto.folderId ? (dto.folderId as TaskFolderId) : null,
     tags: dto.tags ?? [],
     color: dto.color,
     status: dto.status,
@@ -160,9 +160,8 @@ export class TaskClientService {
   }): Promise<Result<{ templates: TaskTemplate[]; total: number }>> {
     const result = await this.templateApi.getTaskTemplates(params);
     return mapResult(result, (data) => {
-      // Server may return a flat array or { templates, total } object
-      const templates = Array.isArray(data) ? data : (data.templates ?? []);
-      const total = Array.isArray(data) ? data.length : (data.total ?? templates.length);
+      const templates = data.templates ?? [];
+      const total = data.total ?? templates.length;
       return {
         templates: templates.map((dto) => taskTemplateFromDTO(dto)),
         total,

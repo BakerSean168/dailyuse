@@ -79,7 +79,10 @@
             <!-- Bookmarks Mode -->
             <BookmarksPanel
               v-else-if="store.sidebarMode === 'bookmarks'"
-              :bookmarks="store.bookmarks"
+              :bookmarks="bookmarks"
+              :can-rename="bookmarkCapabilities.canRename"
+              :can-reorder="bookmarkCapabilities.canReorder"
+              :can-remove="bookmarkCapabilities.canRemove"
               @select="handleBookmarkSelect"
               @rename="handleBookmarkRename"
               @move-up="handleBookmarkMoveUp"
@@ -361,11 +364,13 @@ const { t } = useI18n();
 const store = useRepositoryStore();
 const {
   repositoryId,
+  bookmarks,
   resourcesByType,
   isLoading,
   isSaving,
   isUploading,
   uploadProgress,
+  bookmarkCapabilities,
   initRepository,
   fetchResources,
   fetchBookmarks,
@@ -854,21 +859,19 @@ async function handleBookmarkRename(payload: {
 }
 
 async function handleBookmarkMoveUp(bookmark: ResourceBookmarkClientDTO) {
-  const idx = store.bookmarks.findIndex((b) => b.id === bookmark.id);
+  const idx = bookmarks.value.findIndex((b) => b.id === bookmark.id);
   if (idx > 0) {
-    const items = [...store.bookmarks];
+    const items = [...bookmarks.value];
     [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
-    store.setBookmarks(items);
     await reorderBookmarks(items.map((item) => item.id));
   }
 }
 
 async function handleBookmarkMoveDown(bookmark: ResourceBookmarkClientDTO) {
-  const idx = store.bookmarks.findIndex((b) => b.id === bookmark.id);
-  if (idx >= 0 && idx < store.bookmarks.length - 1) {
-    const items = [...store.bookmarks];
+  const idx = bookmarks.value.findIndex((b) => b.id === bookmark.id);
+  if (idx >= 0 && idx < bookmarks.value.length - 1) {
+    const items = [...bookmarks.value];
     [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
-    store.setBookmarks(items);
     await reorderBookmarks(items.map((item) => item.id));
   }
 }

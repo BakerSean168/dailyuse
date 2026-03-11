@@ -1,10 +1,11 @@
 /**
  * Repository Store - Pinia 状态管理
- * 单仓库模型 — 每个用户只有一个仓库，状态聚焦于资源管理。
+ * 显式当前仓库上下文，避免在 UI 层隐式依赖仓库列表顺序。
  */
 
 import { defineStore } from 'pinia';
 import type {
+  RepositoryClientDTO,
   ResourceClientDTO,
   TreeNode,
   ResourceBookmarkClientDTO,
@@ -13,9 +14,17 @@ import type { ResourceInsertionRecentEntry } from '../../editor/composables/useR
 
 export type SidebarMode = 'files' | 'search' | 'bookmarks';
 
+interface BookmarkUiState {
+  aliasById: Record<string, string | null>;
+  orderedIds: string[] | null;
+  removedIds: string[];
+}
+
 export interface RepositoryState {
-  /** 当前仓库 ID（单仓库，初始化后不变） */
-  repositoryId: string | null;
+  /** 当前用户可访问的仓库列表 */
+  repositories: RepositoryClientDTO[];
+  /** 当前选中的仓库 ID */
+  currentRepositoryId: string | null;
 
   /** 资源列表 */
   resources: ResourceClientDTO[];
@@ -24,8 +33,10 @@ export interface RepositoryState {
 
   /** 文件树节点 */
   treeNodes: TreeNode[];
-  /** 书签列表 */
-  bookmarks: ResourceBookmarkClientDTO[];
+  /** 来自服务端的书签真值 */
+  persistedBookmarks: ResourceBookmarkClientDTO[];
+  /** 仅用于当前会话的书签 UI 回退态 */
+  bookmarkUiState: BookmarkUiState;
   /** 最近插入的资源 */
   recentInsertions: ResourceInsertionRecentEntry[];
 
@@ -46,11 +57,17 @@ export interface RepositoryState {
 
 export const useRepositoryStore = defineStore('repository', {
   state: (): RepositoryState => ({
-    repositoryId: null,
+    repositories: [],
+    currentRepositoryId: null,
     resources: [],
     currentResource: null,
     treeNodes: [],
-    bookmarks: [],
+    persistedBookmarks: [],
+    bookmarkUiState: {
+      aliasById: {},
+      orderedIds: null,
+      removedIds: [],
+    },
     recentInsertions: [],
     sidebarMode: 'files',
     sidebarCollapsed: false,
@@ -62,6 +79,16 @@ export const useRepositoryStore = defineStore('repository', {
   }),
 
   getters: {
+    repositoryId(): string | null {
+      return this.currentRepositoryId;
+    },
+
+    currentRepository(): RepositoryClientDTO | null {
+      return (
+        this.repositories.find((repository) => repository.id === this.currentRepositoryId) ?? null
+      );
+    },
+
     /** 按类型分组的资源（用于类型化文件树） */
     resourcesByType(): Record<string, ResourceClientDTO[]> {
       const groups: Record<string, ResourceClientDTO[]> = {
@@ -97,12 +124,33 @@ export const useRepositoryStore = defineStore('repository', {
       }
       return groups;
     },
+
+    bookmarks(): ResourceBookmarkClientDTO[] {
+      return applyBookmarkUiState(this.persistedBookmarks, this.resources, this.bookmarkUiState);
+    },
   },
 
   actions: {
     // ── Repository ──
-    setRepositoryId(id: string) {
-      this.repositoryId = id;
+    setRepositories(items: RepositoryClientDTO[]) {
+      this.repositories = items;
+    },
+    setCurrentRepositoryId(id: string | null) {
+      const didChange = this.currentRepositoryId !== id;
+      this.currentRepositoryId = id;
+      if (didChange) {
+        this.clearRepositoryScopedState();
+      }
+    },
+    clearRepositoryScopedState() {
+      this.resources = [];
+      this.currentResource = null;
+      this.treeNodes = [];
+      this.persistedBookmarks = [];
+      this.recentInsertions = [];
+      this.openTabIds = [];
+      this.activeTabId = null;
+      this.resetBookmarkUiState();
     },
 
     // ── Resources ──
@@ -139,14 +187,51 @@ export const useRepositoryStore = defineStore('repository', {
     },
 
     // ── Bookmarks ──
-    setBookmarks(items: ResourceBookmarkClientDTO[]) {
-      this.bookmarks = items;
+    setPersistedBookmarks(items: ResourceBookmarkClientDTO[]) {
+      this.persistedBookmarks = items;
     },
-    addBookmark(b: ResourceBookmarkClientDTO) {
-      this.bookmarks.push(b);
+    upsertPersistedBookmark(bookmark: ResourceBookmarkClientDTO) {
+      const index = this.persistedBookmarks.findIndex((item) => item.id === bookmark.id);
+      if (index >= 0) {
+        this.persistedBookmarks[index] = bookmark;
+        return;
+      }
+
+      this.persistedBookmarks.push(bookmark);
     },
-    removeBookmark(id: string) {
-      this.bookmarks = this.bookmarks.filter((b) => b.id !== id);
+    removePersistedBookmark(id: string) {
+      this.persistedBookmarks = this.persistedBookmarks.filter((bookmark) => bookmark.id !== id);
+    },
+    setTransientBookmarkAlias(id: string, aliasName: string | null) {
+      this.bookmarkUiState.aliasById = {
+        ...this.bookmarkUiState.aliasById,
+        [id]: aliasName,
+      };
+    },
+    clearTransientBookmarkAlias(id: string) {
+      const nextAliases = { ...this.bookmarkUiState.aliasById };
+      delete nextAliases[id];
+      this.bookmarkUiState.aliasById = nextAliases;
+    },
+    setTransientBookmarkOrder(ids: string[] | null) {
+      this.bookmarkUiState.orderedIds = ids ? [...ids] : null;
+    },
+    markTransientBookmarkRemoved(id: string) {
+      if (!this.bookmarkUiState.removedIds.includes(id)) {
+        this.bookmarkUiState.removedIds = [...this.bookmarkUiState.removedIds, id];
+      }
+    },
+    unmarkTransientBookmarkRemoved(id: string) {
+      this.bookmarkUiState.removedIds = this.bookmarkUiState.removedIds.filter(
+        (bookmarkId) => bookmarkId !== id,
+      );
+    },
+    resetBookmarkUiState() {
+      this.bookmarkUiState = {
+        aliasById: {},
+        orderedIds: null,
+        removedIds: [],
+      };
     },
     setRecentInsertions(items: ResourceInsertionRecentEntry[]) {
       this.recentInsertions = items;
@@ -218,12 +303,64 @@ export const useRepositoryStore = defineStore('repository', {
     pick: [
       'sidebarMode',
       'sidebarCollapsed',
+      'currentRepositoryId',
       'openTabIds',
       'activeTabId',
-      'bookmarks',
+      'persistedBookmarks',
       'recentInsertions',
     ] as string[],
   },
 });
 
 export type RepositoryStoreType = ReturnType<typeof useRepositoryStore>;
+
+function applyBookmarkUiState(
+  bookmarks: ResourceBookmarkClientDTO[],
+  resources: ResourceClientDTO[],
+  uiState: BookmarkUiState,
+): ResourceBookmarkClientDTO[] {
+  const visibleBookmarks = bookmarks
+    .filter((bookmark) => !uiState.removedIds.includes(bookmark.id))
+    .map((bookmark) => {
+      if (!(bookmark.id in uiState.aliasById)) {
+        return bookmark;
+      }
+
+      return buildBookmarkWithAlias(bookmark, uiState.aliasById[bookmark.id] ?? null, resources);
+    });
+
+  if (!uiState.orderedIds || uiState.orderedIds.length === 0) {
+    return visibleBookmarks;
+  }
+
+  const byId = new Map(visibleBookmarks.map((bookmark) => [bookmark.id, bookmark]));
+  const orderedBookmarks = uiState.orderedIds
+    .map((bookmarkId) => byId.get(bookmarkId) ?? null)
+    .filter((bookmark): bookmark is ResourceBookmarkClientDTO => bookmark !== null);
+
+  const orderedIds = new Set(orderedBookmarks.map((bookmark) => bookmark.id));
+  const remainingBookmarks = visibleBookmarks.filter((bookmark) => !orderedIds.has(bookmark.id));
+
+  return [...orderedBookmarks, ...remainingBookmarks];
+}
+
+function buildBookmarkWithAlias(
+  bookmark: ResourceBookmarkClientDTO,
+  aliasName: string | null,
+  resources: ResourceClientDTO[],
+): ResourceBookmarkClientDTO {
+  const resource = resources.find((item) => item.id === bookmark.resourceId) ?? null;
+  const displayName = aliasName || resource?.displayName || resource?.name || bookmark.displayName;
+
+  return {
+    ...bookmark,
+    aliasName,
+    displayName,
+    updatedAt: Date.now() as ResourceBookmarkClientDTO['updatedAt'],
+  };
+}
+
+export const __test__ = {
+  applyBookmarkUiState,
+  buildBookmarkWithAlias,
+};

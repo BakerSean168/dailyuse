@@ -2981,7 +2981,7 @@ export default {
       renamePlaceholder: '书签名称',
       renameFailed: '重命名书签失败',
       renamePersisted: '书签已重命名',
-      renameLocalOnly: '书签重命名当前仅保存在前端，本地刷新后仍会保留。',
+      renameLocalOnly: '书签重命名当前仅在本次会话临时生效，刷新后会恢复服务端结果。',
     },
     fileTreePanel: {
       loading: '加载文件树...',

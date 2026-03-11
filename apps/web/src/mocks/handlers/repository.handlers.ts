@@ -1,10 +1,3 @@
-/**
- * MSW Handlers - Repository Module
- *
- * Paths match the actual HTTP adapter:
- *   - RepositoryHttpAdapter: /repositories, /folders, /resources, /search
- */
-
 import { http, HttpResponse } from 'msw';
 import {
   createMockRepository,
@@ -12,13 +5,28 @@ import {
   createMockResource,
   createMockResourceList,
 } from '@dailyuse/contracts/mocks';
-import type { RepositoryClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
+import type {
+  RepositoryClientDTO,
+  ResourceBookmarkClientDTO,
+  ResourceClientDTO,
+  SearchMode,
+  SearchResponse,
+  UploadResourcesResponseDTO,
+} from '@dailyuse/contracts/repository';
 import { faker } from '@faker-js/faker';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const REPOS = `${API_BASE}/repositories`;
 const FOLDERS = `${API_BASE}/folders`;
 const RESOURCES = `${API_BASE}/resources`;
+const SEARCH = `${API_BASE}/search`;
+
+export const repositoryMockRoutes = {
+  repositories: REPOS,
+  folders: FOLDERS,
+  resources: RESOURCES,
+  search: SEARCH,
+};
 
 const toRepoId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as RepositoryClientDTO['id'];
@@ -41,9 +49,80 @@ function createMockFolder(overrides: Record<string, unknown> = {}) {
   };
 }
 
-export const repositoryHandlers = [
-  // ============ Repositories ============
+export function createMockResourceBookmark(
+  overrides: Partial<ResourceBookmarkClientDTO> = {},
+): ResourceBookmarkClientDTO {
+  const fallbackName = faker.helpers.arrayElement(['Inbox.md', 'Ideas.md', 'Plan.md']);
+  return {
+    id: overrides.id ?? faker.string.uuid(),
+    resourceId:
+      overrides.resourceId ?? (faker.string.uuid() as ResourceBookmarkClientDTO['resourceId']),
+    identityId:
+      overrides.identityId ?? (faker.string.uuid() as ResourceBookmarkClientDTO['identityId']),
+    aliasName: overrides.aliasName ?? null,
+    icon: overrides.icon ?? null,
+    color: overrides.color ?? null,
+    sortOrder: overrides.sortOrder ?? 0,
+    version: overrides.version ?? 1,
+    createdAt: overrides.createdAt ?? Date.now(),
+    updatedAt: overrides.updatedAt ?? Date.now(),
+    deletedAt: overrides.deletedAt ?? null,
+    displayName: overrides.displayName ?? overrides.aliasName ?? fallbackName,
+    isOwner: overrides.isOwner ?? true,
+  };
+}
 
+export function createMockUploadResourcesResponse(
+  repositoryId: string,
+  fileNames: string[],
+): UploadResourcesResponseDTO {
+  const resources = fileNames.map((fileName) =>
+    createMockResource({ repositoryId: repositoryId as RepositoryClientDTO['id'], name: fileName }),
+  );
+  return {
+    successes: resources.map((resource, index) => ({
+      fileName: fileNames[index] ?? resource.name,
+      resource,
+    })),
+    failures: [],
+    resources,
+  };
+}
+
+export function createMockRepositorySearchResponse(
+  query: string,
+  mode: SearchMode = 'all',
+): SearchResponse {
+  const results = createMockResourceList(5).map((resource, index) => ({
+    resourceId: resource.id as string,
+    resourceName: resource.name,
+    resourcePath: `/${resource.name}`,
+    resourceType: resource.type || 'markdown',
+    matchType: 'content' as const,
+    matches: [
+      {
+        lineNumber: index + 1,
+        lineContent: `${query} match in ${resource.name}`,
+        startIndex: 0,
+        endIndex: query.length,
+      },
+    ],
+    matchCount: 1,
+    createdAt: String(resource.createdAt ?? Date.now()),
+    updatedAt: String(resource.updatedAt ?? Date.now()),
+  }));
+
+  return {
+    results,
+    totalResults: results.length,
+    totalMatches: results.length,
+    searchTime: 42,
+    query,
+    mode,
+  };
+}
+
+export const repositoryHandlers = [
   http.get(REPOS, () => {
     return HttpResponse.json({
       ok: true,
@@ -70,30 +149,30 @@ export const repositoryHandlers = [
 
   http.get(`${REPOS}/:id/tree`, ({ params }) => {
     const repoId = toRepoId(params['id']);
-    const folders = Array.from({ length: 4 }, (_, i) =>
-      createMockFolder({ repositoryId: repoId, name: `文件夹 ${i + 1}` }),
+    const folders = Array.from({ length: 4 }, (_, index) =>
+      createMockFolder({ repositoryId: repoId, name: `文件夹 ${index + 1}` }),
     );
     const resources = createMockResourceList(6, { repositoryId: repoId });
-    // Build TreeNode[] from folders + resources
     const tree = [
-      ...folders.map((f) => ({
-        id: f.id,
-        name: f.name,
+      ...folders.map((folder) => ({
+        id: folder.id,
+        name: folder.name,
         type: 'folder' as const,
-        parentId: f.parentId,
+        parentId: folder.parentId,
         repositoryId: repoId as string,
-        path: f.path,
+        path: folder.path,
         children: [],
       })),
-      ...resources.map((r) => ({
-        id: r.id as string,
-        name: r.name,
+      ...resources.map((resource) => ({
+        id: resource.id as string,
+        name: resource.name,
         type: 'file' as const,
         parentId: null,
         repositoryId: repoId as string,
-        path: `/${r.name}`,
+        path: `/${resource.name}`,
       })),
     ];
+
     return HttpResponse.json({
       ok: true,
       code: 200,
@@ -123,7 +202,7 @@ export const repositoryHandlers = [
       ok: true,
       code: 200,
       message: 'Success',
-      data: { data: resources, total: resources.length },
+      data: resources,
       timestamp: Date.now(),
     });
   }),
@@ -143,6 +222,94 @@ export const repositoryHandlers = [
       },
       { status: 201 },
     );
+  }),
+
+  http.post(`${REPOS}/:repoId/resources/upload`, async ({ params, request }) => {
+    const formData = await request.formData();
+    const fileNames = formData
+      .getAll('files')
+      .map((file) => (file instanceof File ? file.name : null))
+      .filter((fileName): fileName is string => Boolean(fileName));
+
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Uploaded',
+      data: createMockUploadResourcesResponse(params.repoId as string, fileNames),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.get(`${REPOS}/:repoId/bookmarks`, ({ params }) => {
+    const resourceId = createMockResource({ repositoryId: toRepoId(params['repoId']) }).id;
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: [createMockResourceBookmark({ resourceId, displayName: 'Inbox.md' })],
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${REPOS}/:repoId/bookmarks`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const aliasName = typeof body.aliasName === 'string' ? body.aliasName : null;
+    return HttpResponse.json(
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockResourceBookmark({
+          resourceId: String(
+            body.resourceId ?? createMockResource().id,
+          ) as ResourceBookmarkClientDTO['resourceId'],
+          aliasName,
+          displayName: aliasName ?? 'Pinned resource',
+        }),
+        timestamp: Date.now(),
+      },
+      { status: 201 },
+    );
+  }),
+
+  http.patch(`${REPOS}/:repoId/bookmarks/:bookmarkId`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const aliasName = typeof body.aliasName === 'string' ? body.aliasName : null;
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: createMockResourceBookmark({
+        id: params.bookmarkId as string,
+        aliasName,
+        displayName: aliasName ?? 'Pinned resource',
+      }),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${REPOS}/:repoId/bookmarks/reorder`, async ({ request }) => {
+    const body = (await request.json()) as { bookmarkIds?: string[] };
+    const bookmarkIds = body.bookmarkIds ?? [];
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: bookmarkIds.map((bookmarkId, index) =>
+        createMockResourceBookmark({ id: bookmarkId, sortOrder: index }),
+      ),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.delete(`${REPOS}/:repoId/bookmarks/:bookmarkId`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Deleted',
+      data: null,
+      timestamp: Date.now(),
+    });
   }),
 
   http.get(`${REPOS}/:id`, ({ params }) => {
@@ -166,27 +333,15 @@ export const repositoryHandlers = [
     });
   }),
 
-  http.delete(`${REPOS}/:id`, ({ params }) => {
+  http.delete(`${REPOS}/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: null,
       timestamp: Date.now(),
     });
   }),
-
-  http.delete(`${REPOS}/:repositoryId/resources/:resourceId`, ({ params }) => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Deleted',
-      data: { id: params.resourceId },
-      timestamp: Date.now(),
-    });
-  }),
-
-  // ============ Folders ============
 
   http.get(`${FOLDERS}/:folderId/contents`, () => {
     return HttpResponse.json({
@@ -222,17 +377,15 @@ export const repositoryHandlers = [
     });
   }),
 
-  http.delete(`${FOLDERS}/:id`, ({ params }) => {
+  http.delete(`${FOLDERS}/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: null,
       timestamp: Date.now(),
     });
   }),
-
-  // ============ Resources ============
 
   http.get(`${RESOURCES}/:id`, ({ params }) => {
     return HttpResponse.json({
@@ -255,6 +408,17 @@ export const repositoryHandlers = [
     });
   }),
 
+  http.put(`${RESOURCES}/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Updated',
+      data: createMockResource({ id: toResourceId(params['id']), ...(body as object) }),
+      timestamp: Date.now(),
+    });
+  }),
+
   http.post(`${RESOURCES}/:id/move`, ({ params }) => {
     return HttpResponse.json({
       ok: true,
@@ -265,44 +429,26 @@ export const repositoryHandlers = [
     });
   }),
 
-  http.delete(`${RESOURCES}/:id`, ({ params }) => {
+  http.delete(`${RESOURCES}/:id`, () => {
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Deleted',
-      data: { id: params.id },
+      data: null,
       timestamp: Date.now(),
     });
   }),
 
-  // ============ Search ============
-
-  http.post(`${API_BASE}/search`, ({ request }) => {
-    const url = new URL(request.url);
-    const query = url.searchParams.get('q') || 'mock-query';
-    const mockResults = createMockResourceList(5).map((r) => ({
-      resourceId: r.id as string,
-      resourceName: r.name,
-      resourcePath: `/${r.name}`,
-      resourceType: r.type || 'markdown',
-      matchType: 'content' as const,
-      matches: [],
-      matchCount: 0,
-      createdAt: String(r.createdAt ?? Date.now()),
-      updatedAt: String(r.updatedAt ?? Date.now()),
-    }));
+  http.post(SEARCH, async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as {
+      query?: string;
+      mode?: SearchMode;
+    };
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Success',
-      data: {
-        results: mockResults,
-        totalResults: mockResults.length,
-        totalMatches: mockResults.length,
-        searchTime: 42,
-        query,
-        mode: 'all',
-      },
+      data: createMockRepositorySearchResponse(body.query ?? 'mock-query', body.mode ?? 'all'),
       timestamp: Date.now(),
     });
   }),

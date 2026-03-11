@@ -4,16 +4,11 @@
  */
 
 import { defineStore } from 'pinia';
-import type {
-  TaskTemplateClientDTO,
-  TaskInstanceClientDTO,
-  TaskFolderClientDTO,
-} from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
 export interface TaskState {
   templates: TaskTemplateClientDTO[];
   instances: TaskInstanceClientDTO[];
-  folders: TaskFolderClientDTO[];
   currentTemplate: TaskTemplateClientDTO | null;
   currentInstance: TaskInstanceClientDTO | null;
   isLoading: boolean;
@@ -26,7 +21,6 @@ export const useTaskStore = defineStore('task', {
   state: (): TaskState => ({
     templates: [],
     instances: [],
-    folders: [],
     currentTemplate: null,
     currentInstance: null,
     isLoading: false,
@@ -38,7 +32,8 @@ export const useTaskStore = defineStore('task', {
   getters: {
     getTemplateById: (state) => (id: string) => state.templates.find((t) => t.id === id),
     getInstanceById: (state) => (id: string) => state.instances.find((i) => i.id === id),
-    activeTemplateCount: (state): number => state.templates.filter((t) => t.status === 'Active').length,
+    activeTemplateCount: (state): number =>
+      state.templates.filter((t) => t.status === 'Active').length,
     totalPages: (state): number => Math.ceil(state.pagination.total / state.pagination.pageSize),
   },
 
@@ -47,7 +42,10 @@ export const useTaskStore = defineStore('task', {
       this.templates = t;
       if (total !== undefined) this.pagination.total = total;
     },
-    addTemplate(t: TaskTemplateClientDTO) { this.templates.unshift(t); this.pagination.total++; },
+    addTemplate(t: TaskTemplateClientDTO) {
+      this.templates.unshift(t);
+      this.pagination.total++;
+    },
     updateTemplate(t: TaskTemplateClientDTO) {
       const i = this.templates.findIndex((x) => x.id === t.id);
       if (i !== -1) this.templates[i] = t;
@@ -58,26 +56,43 @@ export const useTaskStore = defineStore('task', {
       this.pagination.total--;
       if (this.currentTemplate?.id === id) this.currentTemplate = null;
     },
-    setCurrentTemplate(t: TaskTemplateClientDTO | null) { this.currentTemplate = t; },
+    setCurrentTemplate(t: TaskTemplateClientDTO | null) {
+      this.currentTemplate = t;
+    },
 
-    setInstances(i: TaskInstanceClientDTO[]) { this.instances = i; },
-    addInstance(i: TaskInstanceClientDTO) { this.instances.push(i); },
+    setInstances(i: TaskInstanceClientDTO[]) {
+      this.instances = i;
+    },
+    addInstance(i: TaskInstanceClientDTO) {
+      this.instances.push(i);
+    },
     updateInstance(i: TaskInstanceClientDTO) {
       const idx = this.instances.findIndex((x) => x.id === i.id);
       if (idx !== -1) this.instances[idx] = i;
       if (this.currentInstance?.id === i.id) this.currentInstance = i;
     },
-    removeInstance(id: string) { this.instances = this.instances.filter((i) => i.id !== id); },
-    setCurrentInstance(i: TaskInstanceClientDTO | null) { this.currentInstance = i; },
+    removeInstance(id: string) {
+      this.instances = this.instances.filter((i) => i.id !== id);
+    },
+    setCurrentInstance(i: TaskInstanceClientDTO | null) {
+      this.currentInstance = i;
+    },
+    setLoading(v: boolean) {
+      this.isLoading = v;
+    },
+    setError(e: string | null) {
+      this.error = e;
+    },
+    setPage(p: number) {
+      this.pagination.page = p;
+    },
+    setInitialized(v: boolean) {
+      this.isInitialized = v;
+    },
 
-    setFolders(f: TaskFolderClientDTO[]) { this.folders = f; },
-
-    setLoading(v: boolean) { this.isLoading = v; },
-    setError(e: string | null) { this.error = e; },
-    setPage(p: number) { this.pagination.page = p; },
-    setInitialized(v: boolean) { this.isInitialized = v; },
-
-    reset() { this.$reset(); },
+    reset() {
+      this.$reset();
+    },
   },
 
   persist: {

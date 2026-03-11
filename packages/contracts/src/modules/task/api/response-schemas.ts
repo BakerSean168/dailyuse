@@ -20,6 +20,11 @@ export const TaskTemplateResponseSchema = z.object({
   updatedAt: z.number(),
 });
 
+export const TaskTemplateListResponseSchema = z.object({
+  templates: z.array(TaskTemplateResponseSchema),
+  total: z.number(),
+});
+
 /**
  * TaskInstance Response Schema
  */

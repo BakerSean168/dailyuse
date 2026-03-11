@@ -42,6 +42,7 @@ import {
   type AuthIdentityClientDTO,
   type AuthSessionClientDTO,
   type AuthSessionId,
+  type GetCurrentUserRes,
   type TokenStatus,
   type AutoLoginResult as ContractAutoLoginResult,
   type SessionRestoreResult as ContractSessionRestoreResult,
@@ -1015,6 +1016,37 @@ export class AuthDesktopApplicationService {
     }
   }
 
+  async getCurrentUser(): Promise<GetCurrentUserRes> {
+    const identityId = this.getCurrentIdentityId();
+    const session = this.sessionManager?.getCurrentSession() ?? null;
+    const identity = identityId
+      ? await this.credentialRepository?.findById(identityId as any)
+      : null;
+
+    return {
+      identity: identity
+        ? identity.toClientDTO()
+        : ({
+            id: (identityId ?? 'unknown') as any,
+            status: 'Active' as any,
+            failedLoginAttempts: 0,
+            lastFailedAttempt: null,
+            lockedUntil: null,
+            identifiers: [],
+            credentials: [],
+            hasPassword: true,
+            hasEmail: false,
+            hasPhone: false,
+            hasOAuth: false,
+            version: 1,
+            createdAt: Date.now() as any,
+            updatedAt: Date.now() as any,
+            deletedAt: null,
+          } satisfies AuthIdentityClientDTO),
+      session: session ? session.toClientDTO(true) : null,
+    };
+  }
+
   /**
    * 获取当前会话
    */
@@ -1207,8 +1239,12 @@ export class AuthDesktopApplicationService {
   /**
    * 撤销会话
    */
-  async revokeSession(sessionId: string): Promise<IpcResult<void>> {
+  async revokeSession(sessionId?: string): Promise<IpcResult<void>> {
     this.logger.debug('Revoke session', { sessionId });
+
+    if (!sessionId) {
+      return toIpcResult(fail({ code: 'VALIDATION_ERROR', message: '缺少 sessionId' }));
+    }
 
     if (!this.sessionRepository) {
       return toIpcResult(fail({ code: 'NOT_INITIALIZED', message: '服务未初始化' }));

@@ -34,7 +34,8 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project task"
+        "command": "vitest run --config vitest.config.ts",
+        "cwd": "packages/task"
       }
     },
     "test:integration": {

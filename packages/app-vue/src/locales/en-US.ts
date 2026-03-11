@@ -3004,7 +3004,8 @@ export default {
       renamePlaceholder: 'Bookmark name',
       renameFailed: 'Failed to rename bookmark',
       renamePersisted: 'Bookmark renamed',
-      renameLocalOnly: 'Bookmark rename is saved locally until backend persistence is available.',
+      renameLocalOnly:
+        'Bookmark rename is only temporary in this session until backend persistence is available.',
     },
     fileTreePanel: {
       loading: 'Loading file tree...',

@@ -23,7 +23,7 @@ const Ch = {
   LOGIN: 'auth:login',
   REGISTER: 'auth:register',
   LOGOUT: 'auth:logout',
-  GET_CURRENT_USER: 'auth:current-user',
+  GET_CURRENT_USER: 'auth:get-current-user',
   CHECK_AUTH: 'auth:check',
   REFRESH_TOKEN: 'auth:refresh-token',
 } as const;

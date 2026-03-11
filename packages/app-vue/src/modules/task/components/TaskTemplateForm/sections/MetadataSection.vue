@@ -85,18 +85,6 @@
           </Popover>
         </div>
 
-        <!-- 文件夹 ID -->
-        <div class="col-span-12 md:col-span-6">
-          <Label for="folder-id-input">{{ t('task.metadata.folderId') }}</Label>
-          <Input
-            id="folder-id-input"
-            :model-value="folderId ?? ''"
-            :placeholder="t('task.metadata.folderPlaceholder')"
-            class="mt-1"
-            @update:model-value="folderId = String($event) || null"
-          />
-        </div>
-
         <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
         <div class="col-span-12">
           <Label for="tags-input">{{ t('task.metadata.tags') }}</Label>
@@ -274,16 +262,6 @@ const color = computed({
   set: (value: string | null) => {
     updateTemplate((template) => {
       template.color = value;
-    });
-  },
-});
-
-// 文件夹
-const folderId = computed({
-  get: () => props.modelValue.folderId ?? null,
-  set: (value: string | null) => {
-    updateTemplate((template) => {
-      template.folderId = value;
     });
   },
 });

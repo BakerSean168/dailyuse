@@ -1,6 +1,7 @@
 import type { GetCurrentUserRes } from '@dailyuse/contracts/authentication';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
+import { AuthSessionId } from '@/domain-shared';
 
 export class GetCurrentUser {
   constructor(
@@ -16,7 +17,7 @@ export class GetCurrentUser {
 
     let session = null;
     if (sessionId) {
-      const currentSession = await this.sessionRepository.findById(sessionId as any);
+      const currentSession = await this.sessionRepository.findById(AuthSessionId.of(sessionId));
       if (currentSession && String(currentSession.identityId) === String(identity.id)) {
         session = currentSession.toClientDTO(true);
       }

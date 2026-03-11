@@ -1,7 +1,7 @@
 /**
  * useRepository - 仓储模块主 composable
  *
- * 单仓库模型 — 自动初始化用户的唯一仓库，聚焦于资源操作。
+ * 显式维护当前仓库上下文，并区分服务端书签真值与临时 UI 回退态。
  */
 
 import { computed, ref } from 'vue';
@@ -9,6 +9,7 @@ import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
+  RepositoryClientDTO,
   ResourceBookmarkClientDTO,
   ResourceClientDTO,
   SearchRequest,
@@ -96,28 +97,38 @@ export function useRepository() {
     currentFileName: null,
   });
 
+  const repositories = computed(() => store.repositories);
+  const currentRepositoryId = computed(() => store.currentRepositoryId);
+  const currentRepository = computed(() => store.currentRepository);
   const repositoryId = computed(() => store.repositoryId);
   const resources = computed(() => store.resources);
   const resourcesByType = computed(() => store.resourcesByType);
   const currentResource = computed(() => store.currentResource);
+  const bookmarks = computed(() => store.bookmarks);
   const recentInsertions = computed(() => store.recentInsertions);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const isSaving = computed(() => savingId.value !== null);
-  const bookmarkPersistenceAvailable = computed(() => typeof service.updateBookmark === 'function');
+  const bookmarkCapabilities = computed(() => ({
+    canList: typeof service.listBookmarks === 'function',
+    canRename: typeof service.updateBookmark === 'function',
+    canReorder: typeof service.reorderBookmarks === 'function',
+    canRemove: typeof service.deleteBookmark === 'function',
+  }));
+  const bookmarkPersistenceAvailable = computed(() => bookmarkCapabilities.value.canRename);
 
   function handleError(msg: string): void {
     store.setError(msg);
     console.error(msg);
   }
 
-  // ── Repository init (single-repo) ──
+  // ── Repository init ──
   /**
-   * Initialize the user's single repository.
-   * Fetches the list and picks the first one (or creates one if none exist).
+   * Initialize repository context.
+   * Keep current product behavior by selecting the first repository only when no explicit selection exists.
    */
   async function initRepository() {
-    if (store.isInitialized && store.repositoryId) return;
+    if (store.isInitialized && store.currentRepositoryId) return;
 
     store.setLoading(true);
     store.setError(null);
@@ -125,10 +136,8 @@ export function useRepository() {
       const result = await service.getRepositories();
       if (result.ok) {
         const repos = (result.data ?? []).map((r: Repository) => r.toDTO());
-        if (repos.length > 0) {
-          store.setRepositoryId(repos[0].id);
-        }
-        // If no repos exist, repositoryId stays null — workspace shows empty state
+        store.setRepositories(repos);
+        store.setCurrentRepositoryId(resolveCurrentRepositoryId(repos, store.currentRepositoryId));
       } else {
         handleError(getResultErrorMessage(result, '加载仓库失败'));
       }
@@ -140,11 +149,11 @@ export function useRepository() {
 
   // ── Resources ──
   async function fetchResources(): Promise<void> {
-    if (!store.repositoryId) return;
+    if (!store.currentRepositoryId) return;
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.listResources(store.repositoryId);
+      const result = await service.listResources(store.currentRepositoryId);
       if (result.ok) {
         store.setResources(result.data ?? []);
       } else {
@@ -162,11 +171,11 @@ export function useRepository() {
     content?: string;
     folderId?: string;
   }): Promise<ResourceClientDTO | null> {
-    if (!store.repositoryId) return null;
+    if (!store.currentRepositoryId) return null;
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createResource(store.repositoryId, {
+      const result = await service.createResource(store.currentRepositoryId, {
         ...data,
       });
       if (result.ok && result.data) {
@@ -302,17 +311,32 @@ export function useRepository() {
   }
 
   async function fetchBookmarks(): Promise<void> {
-    if (!store.repositoryId || typeof service.listBookmarks !== 'function') {
+    if (!store.currentRepositoryId || !bookmarkCapabilities.value.canList) {
       return;
     }
 
-    const result = await service.listBookmarks(store.repositoryId);
+    const listBookmarks = service.listBookmarks;
+    if (!listBookmarks) {
+      return;
+    }
+
+    const result = await listBookmarks(store.currentRepositoryId);
     if (result.ok) {
-      store.setBookmarks(result.data ?? []);
+      store.setPersistedBookmarks(result.data ?? []);
+      store.resetBookmarkUiState();
       return;
     }
 
     handleError(getResultErrorMessage(result, '加载书签失败'));
+  }
+
+  async function resyncBookmarks(): Promise<void> {
+    if (!store.currentRepositoryId || !bookmarkCapabilities.value.canList) {
+      store.resetBookmarkUiState();
+      return;
+    }
+
+    await fetchBookmarks();
   }
 
   async function uploadResources(
@@ -320,7 +344,7 @@ export function useRepository() {
     tags: string[] = [],
     folderId?: string,
   ): Promise<RepositoryUploadResult> {
-    if (!store.repositoryId || files.length === 0) {
+    if (!store.currentRepositoryId || files.length === 0) {
       return { successes: [], failures: [] };
     }
 
@@ -333,7 +357,7 @@ export function useRepository() {
 
     try {
       if (typeof service.uploadResources === 'function') {
-        const remoteResult = await service.uploadResources(store.repositoryId, {
+        const remoteResult = await service.uploadResources(store.currentRepositoryId, {
           files,
           tags,
           folderId,
@@ -443,80 +467,106 @@ export function useRepository() {
     bookmark: ResourceBookmarkClientDTO,
     aliasName: string,
   ): Promise<{ bookmark: ResourceBookmarkClientDTO; persisted: boolean } | null> {
-    if (!store.repositoryId) {
+    if (!store.currentRepositoryId) {
       return null;
     }
 
     const normalizedAlias = aliasName.trim() || null;
 
-    if (typeof service.updateBookmark === 'function') {
-      const result = await service.updateBookmark(store.repositoryId, bookmark.id, {
+    if (bookmarkCapabilities.value.canRename) {
+      const updateBookmark = service.updateBookmark;
+      if (!updateBookmark) {
+        return null;
+      }
+
+      const result = await updateBookmark(store.currentRepositoryId, bookmark.id, {
         aliasName: normalizedAlias,
       });
       if (result.ok && result.data) {
-        replaceBookmark(result.data);
+        store.upsertPersistedBookmark(result.data);
+        store.clearTransientBookmarkAlias(bookmark.id);
         return { bookmark: result.data, persisted: true };
       }
 
       handleError(getResultErrorMessage(result, '重命名书签失败'));
+      await resyncBookmarks();
       return null;
     }
 
-    const fallbackBookmark = buildBookmarkWithAlias(bookmark, normalizedAlias, store.resources);
-    replaceBookmark(fallbackBookmark);
+    store.setTransientBookmarkAlias(bookmark.id, normalizedAlias);
+    const fallbackBookmark = store.bookmarks.find((item) => item.id === bookmark.id) ?? bookmark;
     return { bookmark: fallbackBookmark, persisted: false };
   }
 
   async function reorderBookmarks(bookmarkIds: string[]): Promise<boolean> {
-    if (!store.repositoryId) {
+    if (!store.currentRepositoryId) {
       return false;
     }
 
-    const previousBookmarks = [...store.bookmarks];
-    const orderedBookmarks = bookmarkIds
-      .map((bookmarkId) => store.bookmarks.find((bookmark) => bookmark.id === bookmarkId) ?? null)
-      .filter((bookmark): bookmark is ResourceBookmarkClientDTO => bookmark !== null);
-
-    store.setBookmarks(orderedBookmarks);
-
-    if (typeof service.reorderBookmarks !== 'function') {
+    if (!bookmarkCapabilities.value.canReorder) {
       return false;
     }
 
-    const result = await service.reorderBookmarks(store.repositoryId, { bookmarkIds });
+    const previousOrder = store.bookmarkUiState.orderedIds;
+    store.setTransientBookmarkOrder(bookmarkIds);
+
+    const reorderBookmarks = service.reorderBookmarks;
+    if (!reorderBookmarks) {
+      store.setTransientBookmarkOrder(previousOrder);
+      return false;
+    }
+
+    const result = await reorderBookmarks(store.currentRepositoryId, { bookmarkIds });
     if (result.ok) {
       if (result.data) {
-        store.setBookmarks(result.data);
+        store.setPersistedBookmarks(result.data);
+      } else {
+        store.setPersistedBookmarks(
+          reorderBookmarkCollection(store.persistedBookmarks, bookmarkIds),
+        );
       }
+      store.resetBookmarkUiState();
       return true;
     }
 
-    store.setBookmarks(previousBookmarks);
+    store.setTransientBookmarkOrder(previousOrder);
     handleError(getResultErrorMessage(result, '更新书签顺序失败'));
+    await resyncBookmarks();
     return false;
   }
 
   async function removeBookmark(bookmarkId: string): Promise<boolean> {
-    if (!store.repositoryId) {
-      store.removeBookmark(bookmarkId);
+    if (!store.currentRepositoryId) {
       return false;
     }
 
-    const previousBookmarks = [...store.bookmarks];
-    store.removeBookmark(bookmarkId);
-
-    if (typeof service.deleteBookmark !== 'function') {
+    if (!bookmarkCapabilities.value.canRemove) {
       return false;
     }
 
-    const result = await service.deleteBookmark(store.repositoryId, bookmarkId);
+    store.markTransientBookmarkRemoved(bookmarkId);
+
+    const deleteBookmark = service.deleteBookmark;
+    if (!deleteBookmark) {
+      store.unmarkTransientBookmarkRemoved(bookmarkId);
+      return false;
+    }
+
+    const result = await deleteBookmark(store.currentRepositoryId, bookmarkId);
     if (result.ok) {
+      store.removePersistedBookmark(bookmarkId);
+      store.unmarkTransientBookmarkRemoved(bookmarkId);
       return true;
     }
 
-    store.setBookmarks(previousBookmarks);
+    store.unmarkTransientBookmarkRemoved(bookmarkId);
     handleError(getResultErrorMessage(result, '删除书签失败'));
+    await resyncBookmarks();
     return false;
+  }
+
+  function setCurrentRepository(repositoryId: string | null): void {
+    store.setCurrentRepositoryId(resolveCurrentRepositoryId(store.repositories, repositoryId));
   }
 
   // ── Tabs convenience ──
@@ -525,25 +575,28 @@ export function useRepository() {
     store.openTab(resource.id);
   }
 
-  function replaceBookmark(bookmark: ResourceBookmarkClientDTO): void {
-    store.setBookmarks(store.bookmarks.map((item) => (item.id === bookmark.id ? bookmark : item)));
-  }
-
   return {
+    repositories,
+    currentRepositoryId,
+    currentRepository,
     repositoryId,
     resources,
     resourcesByType,
     currentResource,
+    bookmarks,
     recentInsertions,
     isLoading,
     isSaving,
     isUploading,
     uploadProgress,
+    bookmarkCapabilities,
     bookmarkPersistenceAvailable,
     error,
     initRepository,
+    setCurrentRepository,
     fetchResources,
     fetchBookmarks,
+    resyncBookmarks,
     createResource,
     createMarkdownNote,
     deleteResource,
@@ -624,22 +677,6 @@ function guessMimeType(fileName: string): string {
   return 'application/octet-stream';
 }
 
-function buildBookmarkWithAlias(
-  bookmark: ResourceBookmarkClientDTO,
-  aliasName: string | null,
-  resources: ResourceClientDTO[],
-): ResourceBookmarkClientDTO {
-  const resource = resources.find((item) => item.id === bookmark.resourceId) ?? null;
-  const displayName = aliasName || resource?.displayName || resource?.name || bookmark.displayName;
-
-  return {
-    ...bookmark,
-    aliasName,
-    displayName,
-    updatedAt: Date.now() as ResourceBookmarkClientDTO['updatedAt'],
-  };
-}
-
 function getResultErrorMessage(
   result: { error?: { message?: string } },
   fallbackMessage: string,
@@ -647,7 +684,35 @@ function getResultErrorMessage(
   return result.error?.message || fallbackMessage;
 }
 
+function resolveCurrentRepositoryId(
+  repositories: RepositoryClientDTO[],
+  requestedRepositoryId: string | null,
+): string | null {
+  if (
+    requestedRepositoryId &&
+    repositories.some((repository) => repository.id === requestedRepositoryId)
+  ) {
+    return requestedRepositoryId;
+  }
+
+  return repositories[0]?.id ?? null;
+}
+
+function reorderBookmarkCollection(
+  bookmarks: ResourceBookmarkClientDTO[],
+  bookmarkIds: string[],
+): ResourceBookmarkClientDTO[] {
+  const bookmarkById = new Map(bookmarks.map((bookmark) => [bookmark.id, bookmark]));
+  const ordered = bookmarkIds
+    .map((bookmarkId) => bookmarkById.get(bookmarkId) ?? null)
+    .filter((bookmark): bookmark is ResourceBookmarkClientDTO => bookmark !== null);
+  const includedIds = new Set(ordered.map((bookmark) => bookmark.id));
+
+  return [...ordered, ...bookmarks.filter((bookmark) => !includedIds.has(bookmark.id))];
+}
+
 export const __test__ = {
   isUploadResponse,
-  buildBookmarkWithAlias,
+  resolveCurrentRepositoryId,
+  reorderBookmarkCollection,
 };

@@ -21,7 +21,6 @@ export function useTask() {
 
   const templates = computed(() => store.templates);
   const instances = computed(() => store.instances);
-  const folders = computed(() => store.folders);
   const currentTemplate = computed(() => store.currentTemplate);
   const currentInstance = computed(() => store.currentInstance);
   const isLoading = computed(() => store.isLoading);
@@ -216,18 +215,6 @@ export function useTask() {
     return null;
   }
 
-  // ========== Folders ==========
-  async function fetchFolders() {
-    // TODO: Backend API for task folders is not implemented yet.
-    // Ensure this feature is implemented on backend before enabling.
-    console.warn('fetchFolders: Task folders feature is not implemented on backend yet.');
-    /*
-    const result = await service.listFolders();
-    if (result.ok) { store.setFolders(result.data.map(f => f.toDTO())); }
-    else { handleError(result.error.message || '加载任务文件夹失败'); }
-    */
-  }
-
   function setPage(p: number) {
     store.setPage(p);
     fetchTemplates();
@@ -236,7 +223,6 @@ export function useTask() {
   return {
     templates,
     instances,
-    folders,
     currentTemplate,
     currentInstance,
     isLoading,
@@ -255,7 +241,6 @@ export function useTask() {
     startInstance,
     completeInstance,
     skipInstance,
-    fetchFolders,
     setPage,
   };
 }

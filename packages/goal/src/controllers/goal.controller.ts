@@ -26,6 +26,9 @@ import {
 } from '@dailyuse/contracts/goal';
 import type {
   CreateGoalReq,
+  GoalClientDTO,
+  GetGoalAggregateRes,
+  ProgressBreakdown,
   UpdateGoalReq,
   QueryGoalsReq,
   AddKeyResultReq,
@@ -91,6 +94,10 @@ export interface GoalUseCases {
  */
 export class GoalController {
   constructor(private readonly useCases: GoalUseCases) {}
+
+  private toGoalClientDTO(data: unknown): GoalClientDTO {
+    return data as GoalClientDTO;
+  }
 
   // ==================== Goal CRUD ====================
 
@@ -167,18 +174,18 @@ export class GoalController {
     }
   }
 
-  async getAggregate(goalId: string): Promise<Result<unknown>> {
+  async getAggregate(goalId: string): Promise<Result<GetGoalAggregateRes>> {
     const goalResult = await this.useCases.getGoal.execute(goalId, true);
     if (!goalResult.ok) return goalResult;
 
-    const goal = goalResult.data as unknown as Record<string, unknown>;
+    const goal = this.toGoalClientDTO(goalResult.data);
     const recordsResult = await this.useCases.listRecords.execute({ goalId });
-    const records = recordsResult.ok ? (recordsResult.data as any).data : [];
-    const reviews = (goal.reviews as unknown[]) ?? [];
-    const keyResults = (goal.keyResults as unknown[]) ?? [];
+    const records = recordsResult.ok ? recordsResult.data.data : [];
+    const reviews = goal.reviews ?? [];
+    const keyResults = goal.keyResults ?? [];
 
     return ok({
-      goal: goalResult.data,
+      goal,
       keyResults,
       records,
       reviews,
@@ -192,22 +199,62 @@ export class GoalController {
     });
   }
 
-  async getProgressBreakdown(goalId: string): Promise<Result<unknown>> {
+  async getProgressBreakdown(goalId: string): Promise<Result<ProgressBreakdown>> {
     const goalResult = await this.useCases.getGoal.execute(goalId, true);
     if (!goalResult.ok) return goalResult;
 
-    const goal = goalResult.data as unknown as Record<string, unknown>;
-    const keyResults = ((goal.keyResults as any[]) ?? []).map((kr: any) => ({
-      keyResultId: kr.id,
-      title: kr.title,
-      weight: kr.weight,
-      progress: kr.progress,
-    }));
+    const goal = this.toGoalClientDTO(goalResult.data);
+    const keyResults = goal.keyResults ?? [];
+    const totalWeight = keyResults.reduce(
+      (sum, kr) => sum + (typeof kr.weight === 'number' ? kr.weight : 0),
+      0,
+    );
 
     return ok({
-      goalId,
-      keyResults,
-      overallProgress: 0,
+      totalProgress: keyResults.length
+        ? Math.round(
+            keyResults.reduce((sum, kr) => {
+              const progressValue =
+                typeof kr.progress?.currentValue === 'number' &&
+                typeof kr.progress?.targetValue === 'number' &&
+                kr.progress.targetValue > kr.progress.initialValue
+                  ? ((kr.progress.currentValue - kr.progress.initialValue) /
+                      (kr.progress.targetValue - kr.progress.initialValue)) *
+                    100
+                  : typeof kr.progress?.targetValue === 'number' && kr.progress.targetValue > 0
+                    ? (kr.progress.currentValue / kr.progress.targetValue) * 100
+                    : 0;
+              const weight = typeof kr.weight === 'number' ? kr.weight : 0;
+              return sum + progressValue * weight;
+            }, 0) / (totalWeight || keyResults.length),
+          ) / 100
+        : 0,
+      calculationMode: 'WeightedAverage' as const,
+      krContributions: keyResults.map((kr) => {
+        const progress =
+          typeof kr.progress?.currentValue === 'number' &&
+          typeof kr.progress?.targetValue === 'number' &&
+          kr.progress.targetValue > kr.progress.initialValue
+            ? Math.round(
+                ((kr.progress.currentValue - kr.progress.initialValue) /
+                  (kr.progress.targetValue - kr.progress.initialValue)) *
+                  10000,
+              ) / 100
+            : typeof kr.progress?.targetValue === 'number' && kr.progress.targetValue > 0
+              ? Math.round((kr.progress.currentValue / kr.progress.targetValue) * 10000) / 100
+              : 0;
+        const weight = typeof kr.weight === 'number' ? kr.weight : 0;
+        return {
+          keyResultId: kr.id,
+          keyResultName: kr.title,
+          progress,
+          weight,
+          contribution:
+            totalWeight > 0 ? Math.round(((progress * weight) / totalWeight) * 100) / 100 : 0,
+        };
+      }),
+      lastUpdateTime: typeof goal.updatedAt === 'number' ? goal.updatedAt : Date.now(),
+      updateTrigger: '自动计算',
     });
   }
 
@@ -220,21 +267,21 @@ export class GoalController {
       includeRecords?: boolean;
     },
     ctx: Context,
-  ): Promise<Result<unknown>> {
+  ): Promise<Result<GoalClientDTO>> {
     // Get original goal
     const goalResult = await this.useCases.getGoal.execute(goalId, true);
     if (!goalResult.ok) return goalResult;
 
-    const original = goalResult.data as unknown as Record<string, unknown>;
-    const createData = {
+    const original = this.toGoalClientDTO(goalResult.data);
+    const createData: CreateGoalReq = {
       title: params.title ?? `${original.name} (Copy)`,
-      description: params.description ?? (original.description as string | undefined),
+      description: params.description ?? original.description ?? undefined,
       importance: original.importance,
-      category: original.category,
+      category: original.category ?? undefined,
       tags: original.tags,
     };
 
-    return this.useCases.createGoal.execute(createData as any, ctx);
+    return this.useCases.createGoal.execute(createData, ctx);
   }
 
   async batchUpdateKeyResultWeights(
@@ -277,8 +324,8 @@ export class GoalController {
     }
     return this.useCases.addKeyResult.execute(goalId, {
       title: parsed.data.title,
-      valueType: parsed.data.valueType as any,
-      aggregationMethod: parsed.data.calculationMethod as any,
+      valueType: parsed.data.valueType,
+      aggregationMethod: parsed.data.calculationMethod,
       targetValue: parsed.data.targetValue,
       currentValue: parsed.data.currentValue,
       unit: parsed.data.unit,

@@ -9,6 +9,7 @@ import type { IAuthIdentityRepository } from '@/domain-server';
 import type { RefreshTokenReq, RefreshTokenRes } from '@dailyuse/contracts/authentication';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { ITokenProvider } from '@/domain-server/services/token-provider.interface';
+import { AuthSessionId } from '@/domain-shared';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RefreshToken');
@@ -39,7 +40,7 @@ export class RefreshToken {
       const { identityId: tokenIdentityId, sessionId: tokenSessionId } = verifyResult.data;
 
       // 2. 根据 payload 查找并校验会话
-      const session = await this.sessionRepository.findById(tokenSessionId as any);
+      const session = await this.sessionRepository.findById(AuthSessionId.of(tokenSessionId));
       const refreshTokenHash = this.tokenProvider.hash(input.refreshToken);
 
       if (!session || !session.isValid() || session.refreshTokenHash !== refreshTokenHash) {

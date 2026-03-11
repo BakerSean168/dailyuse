@@ -92,7 +92,6 @@ function createBlankTemplate(): TaskTemplateViewModel {
     instanceCount: 0,
     completionRate: 0,
     taskType: TaskType.Recurring,
-    folderId: null,
     color: null,
   };
 }

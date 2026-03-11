@@ -210,7 +210,7 @@ export const AuthChannels = {
   LOGOUT: 'auth:logout',
 
   // Session
-  GET_CURRENT_USER: 'auth:current-user',
+  GET_CURRENT_USER: 'auth:get-current-user',
   CHECK_AUTH: 'auth:check',
   REFRESH_TOKEN: 'auth:refresh-token',
 
@@ -233,8 +233,8 @@ export const AuthChannels = {
   TWO_FACTOR_ENABLE: 'auth:2fa:enable',
   TWO_FACTOR_DISABLE: 'auth:2fa:disable',
   TWO_FACTOR_VERIFY: 'auth:2fa:verify',
-  TWO_FACTOR_STATUS: 'auth:2fa:status',
-  TWO_FACTOR_BACKUP_CODES: 'auth:2fa:backup-codes',
+  TWO_FACTOR_STATUS: 'auth:2fa:get-status',
+  TWO_FACTOR_BACKUP_CODES: 'auth:2fa:generate-backup-codes',
 
   // Sessions
   SESSION_LIST: 'auth:session:list',
