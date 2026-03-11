@@ -93,7 +93,7 @@
       <ResizableHandle with-handle />
 
       <!-- ─── Main Content Area ─── -->
-      <ResizablePanel :default-size="78">
+      <ResizablePanel :default-size="resourceDetailOpen ? 58 : 78">
         <main class="flex h-full flex-col overflow-hidden">
           <!-- Tab Bar -->
           <TabManager
@@ -117,7 +117,9 @@
                 <EditorToolbar
                   :saving="isSaving"
                   @insert-text="handleInsertText"
+                  @insert-resource="showResourcePicker = true"
                   @insert-existing-image="showImagePicker = true"
+                  @export-self-contained="handleExportSelfContained"
                   @wrap-selection="handleWrapSelection"
                   @view-mode-change="handleViewModeChange"
                   @save="handleSaveContent(editorContent)"
@@ -135,9 +137,20 @@
                     />
                   </template>
                   <template #preview>
-                    <EditorPreview :content="editorContent" @link-click="handleInternalLinkClick" />
+                    <EditorPreview
+                      :content="editorContent"
+                      :broken-resource-references="activeBrokenReferences"
+                      @link-click="handleInternalLinkClick"
+                    />
                   </template>
                 </EditorSplitView>
+
+                <div class="border-t p-4">
+                  <BrokenResourceDiagnostics
+                    :diagnostics="activeBrokenDiagnostics"
+                    @repair="handleRepairReference"
+                  />
+                </div>
 
                 <!-- Status Bar -->
                 <div
@@ -212,6 +225,18 @@
           </div>
         </main>
       </ResizablePanel>
+
+      <template v-if="resourceDetailOpen">
+        <ResizableHandle with-handle />
+        <ResizablePanel :default-size="20" :min-size="18" :max-size="32">
+          <ResourceDetailPanel
+            :resource="activeResource"
+            :inbound-references="activeInboundReferences"
+            @navigate-note="handleNavigateToNote"
+            @delete-resource="handleDeleteResource"
+          />
+        </ResizablePanel>
+      </template>
     </ResizablePanelGroup>
 
     <!-- Batch Import Dialog -->
@@ -226,7 +251,29 @@
     <ImageResourcePickerDialog
       v-model:open="showImagePicker"
       :resources="imageResources"
+      :recent-resources="recentImageResources"
       @select="handleInsertExistingImage"
+    />
+
+    <ResourcePickerDialog
+      v-model:open="showResourcePicker"
+      :items="resourceItems"
+      :recent-items="recentResourceItems"
+      @select="handleInsertResource"
+    />
+
+    <SelfContainedExportDialog
+      v-model:open="showExportDialog"
+      :result="exportResult"
+      @copy="handleCopyExport"
+      @download="handleDownloadExport"
+    />
+
+    <ReferenceRepairDialog
+      v-model:open="showRepairDialog"
+      :reference="pendingRepairReference"
+      :candidates="repairCandidates"
+      @select="applyRepairCandidate"
     />
   </div>
 </template>
@@ -271,16 +318,26 @@ import BatchImportDialog from '../components/BatchImportDialog.vue';
 
 // Editor module components (CodeMirror 6)
 import MarkdownEditor from '../../editor/components/MarkdownEditor.vue';
+import BrokenResourceDiagnostics from '../../editor/components/BrokenResourceDiagnostics.vue';
 import EditorToolbar from '../../editor/components/EditorToolbar.vue';
 import EditorSplitView from '../../editor/components/EditorSplitView.vue';
 import EditorPreview from '../../editor/components/EditorPreview.vue';
 import ImageResourcePickerDialog from '../../editor/components/ImageResourcePickerDialog.vue';
+import ReferenceRepairDialog from '../../editor/components/ReferenceRepairDialog.vue';
+import ResourcePickerDialog from '../../editor/components/ResourcePickerDialog.vue';
+import SelfContainedExportDialog from '../../editor/components/SelfContainedExportDialog.vue';
 import MediaViewer from '../../editor/components/MediaViewer.vue';
+import { useResourceReferenceIndex } from '../../editor/composables/useResourceReferenceIndex';
 import {
   useResourceInsertion,
   getResourceInsertionFeedback,
   type EditorSelectionRange,
+  type ResourceInsertionItem,
+  type SelfContainedExportResult,
 } from '../../editor/composables/useResourceInsertion';
+import type { ResolvedMarkdownResourceReference } from '../../editor/utils/markdownResourceReferences';
+import { repairBrokenMarkdownReference } from '../../editor/utils/resourceReferenceIndex';
+import ResourceDetailPanel from '../components/ResourceDetailPanel.vue';
 
 import type {
   ResourceClientDTO,
@@ -303,7 +360,6 @@ const store = useRepositoryStore();
 const {
   repositoryId,
   resourcesByType,
-  currentResource,
   isLoading,
   isSaving,
   isUploading,
@@ -319,14 +375,30 @@ const {
   reorderBookmarks,
   removeBookmark,
   openResource,
+  deleteResource,
 } = useRepository();
-const { imageResources, insertUploadedImages, insertExistingImage } = useResourceInsertion();
+const {
+  imageResources,
+  resourceItems,
+  recentResources,
+  insertUploadedImages,
+  insertExistingImage,
+  insertExistingResource,
+  exportMarkdownAsSelfContained,
+} = useResourceInsertion();
+const { getInboundReferences, getUnresolvedReferences, getDeleteImpact } =
+  useResourceReferenceIndex();
 
 // ── Local state ──
 const showImportDialog = ref(false);
 const showImagePicker = ref(false);
+const showResourcePicker = ref(false);
+const showRepairDialog = ref(false);
+const showExportDialog = ref(false);
 const isDirty = ref(false);
 const pinnedTabIds = ref(new Set<string>());
+const exportResult = ref<SelfContainedExportResult | null>(null);
+const pendingRepairReference = ref<ResolvedMarkdownResourceReference | null>(null);
 
 // Editor state
 const markdownEditorRef = ref<InstanceType<typeof MarkdownEditor> | null>(null);
@@ -356,6 +428,36 @@ const sidebarModes = computed(() => [
 const activeResource = computed(() => {
   if (!store.activeTabId) return null;
   return store.resources.find((r) => r.id === store.activeTabId) ?? null;
+});
+const resourceDetailOpen = computed(() => activeResource.value != null);
+const activeInboundReferences = computed(() =>
+  activeResource.value ? getInboundReferences(activeResource.value.id) : [],
+);
+const activeBrokenDiagnostics = computed(() =>
+  activeResource.value && isMarkdown(activeResource.value)
+    ? getUnresolvedReferences(activeResource.value.id)
+    : [],
+);
+const activeBrokenReferences = computed(() =>
+  activeBrokenDiagnostics.value.map((item) => item.reference),
+);
+const recentImageResources = computed(() =>
+  recentResources.value.filter((item) => item.item.kind === 'image').map((item) => item.resource),
+);
+const recentResourceItems = computed(() => recentResources.value.map((item) => item.item));
+const repairCandidates = computed(() => {
+  if (!pendingRepairReference.value) {
+    return [];
+  }
+
+  const replacementKind = pendingRepairReference.value.kind === 'image' ? 'image' : 'other';
+  return resourceItems.value
+    .filter(
+      (item) =>
+        item.kind === replacementKind &&
+        item.resource.id !== pendingRepairReference.value?.resourceId,
+    )
+    .map((item) => item.resource);
 });
 
 // ── Tabs ──
@@ -482,9 +584,9 @@ async function handlePasteFiles(files: File[], selection: EditorSelectionRange) 
   }
 }
 
-function handleInsertExistingImage(resource: ResourceClientDTO) {
+async function handleInsertExistingImage(resource: ResourceClientDTO) {
   try {
-    insertExistingImage({
+    await insertExistingImage({
       resource,
       insertText: insertTextAtSelection,
     });
@@ -495,6 +597,138 @@ function handleInsertExistingImage(resource: ResourceClientDTO) {
     console.error('Insert existing image failed:', error);
     showImagePicker.value = false;
     toast.error(t('editor.resourceInsertion.insertExistingFailed'));
+  }
+}
+
+async function handleInsertResource(payload: {
+  item: ResourceInsertionItem;
+  mode: 'path' | 'base64';
+  template?: 'auto';
+}) {
+  try {
+    await insertExistingResource({
+      resource: payload.item.resource,
+      mode: payload.mode,
+      template: payload.template ?? 'auto',
+      insertText: insertTextAtSelection,
+    });
+    showResourcePicker.value = false;
+    markdownEditorRef.value?.focus();
+    toast.success(t('editor.resourceInsertion.insertExistingSuccess'));
+  } catch (error) {
+    console.error('Insert resource failed:', error);
+    showResourcePicker.value = false;
+    toast.error(
+      payload.mode === 'base64'
+        ? t('editor.resourceInsertion.insertBase64Failed')
+        : t('editor.resourceInsertion.insertExistingFailed'),
+    );
+  }
+}
+
+async function handleExportSelfContained() {
+  if (!activeResource.value || !isMarkdown(activeResource.value)) {
+    return;
+  }
+
+  try {
+    exportResult.value = await exportMarkdownAsSelfContained({ markdown: editorContent.value });
+    showExportDialog.value = true;
+  } catch (error) {
+    console.error('Export failed:', error);
+    toast.error(t('editor.exportDialog.exportFailed'));
+  }
+}
+
+async function handleCopyExport() {
+  if (!exportResult.value) {
+    return;
+  }
+
+  if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+    toast.error(t('editor.exportDialog.exportFailed'));
+    return;
+  }
+
+  await navigator.clipboard.writeText(exportResult.value.markdown);
+  toast.success(t('editor.exportDialog.copySuccess'));
+}
+
+function handleDownloadExport() {
+  if (!exportResult.value || !activeResource.value) {
+    return;
+  }
+
+  const blob = new Blob([exportResult.value.markdown], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${activeResource.value.displayName || activeResource.value.name}-self-contained.md`;
+  link.click();
+  URL.revokeObjectURL(url);
+  toast.success(t('editor.exportDialog.downloadSuccess'));
+}
+
+function handleRepairReference(reference: ResolvedMarkdownResourceReference) {
+  pendingRepairReference.value = reference;
+
+  if (repairCandidates.value.length === 0) {
+    pendingRepairReference.value = null;
+    toast.error(t('editor.diagnostics.noReplacement'));
+    return;
+  }
+
+  showRepairDialog.value = true;
+}
+
+function applyRepairCandidate(replacement: ResourceClientDTO) {
+  const reference = pendingRepairReference.value;
+  if (!reference) {
+    return;
+  }
+
+  editorContent.value = repairBrokenMarkdownReference({
+    markdown: editorContent.value,
+    reference,
+    replacement,
+  });
+  isDirty.value = true;
+  showRepairDialog.value = false;
+  pendingRepairReference.value = null;
+  toast.success(t('editor.diagnostics.repaired'));
+}
+
+function handleNavigateToNote(noteId: string) {
+  const resource = store.resources.find((item) => item.id === noteId);
+  if (resource) {
+    openResource(resource);
+  }
+}
+
+async function handleDeleteResource() {
+  if (!activeResource.value) {
+    return;
+  }
+
+  const impact = getDeleteImpact(activeResource.value.id);
+  const confirmed = window.confirm(
+    impact.referenceCount > 0
+      ? t('repository.resourceDetails.deleteImpact', {
+          count: impact.referenceCount,
+          notes: impact.notes.length,
+        })
+      : t('repository.resourceDetails.deleteConfirm'),
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const success = await deleteResource(activeResource.value.id);
+  if (success) {
+    toast.success(t('repository.resourceDetails.deleteSuccess'));
+  } else {
+    toast.error(t('repository.resourceDetails.deleteFailed'));
   }
 }
 
@@ -511,7 +745,12 @@ watch(activeResource, (resource) => {
   if (resource) {
     editorContent.value = resource.content || '';
     isDirty.value = false;
+  } else {
+    editorContent.value = '';
+    isDirty.value = false;
   }
+  showExportDialog.value = false;
+  exportResult.value = null;
 });
 
 // ── Tabs ──

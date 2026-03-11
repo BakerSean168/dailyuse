@@ -27,6 +27,7 @@ export { default as ResourceEditor } from './ResourceEditor.vue';
 export { default as TreeNodeItem } from './TreeNodeItem.vue';
 export { default as RepoCard } from './RepoCard.vue';
 export { default as ResourceCard } from './ResourceCard.vue';
+export { default as ResourceDetailPanel } from './ResourceDetailPanel.vue';
 export { default as AIKnowledgeGeneratorDialog } from './AIKnowledgeGeneratorDialog.vue';
 
 // Dialogs

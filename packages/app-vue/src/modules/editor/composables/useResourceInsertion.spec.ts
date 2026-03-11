@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { __test__ } from './useResourceInsertion';
@@ -13,7 +13,7 @@ function createResource(overrides: Partial<ResourceClientDTO> = {}): ResourceCli
     mimeType: 'image/png',
     path: '/images/meeting-notes.png',
     size: 128,
-    content: '',
+    content: 'ZmFrZQ==',
     metadata: { tags: [], wordCount: null, readingTime: null, thumbnail: null },
     stats: { viewCount: 0, editCount: 0, linkCount: 0, lastViewedAt: null, lastEditedAt: null },
     status: 'Active',
@@ -55,47 +55,35 @@ describe('useResourceInsertion helpers', () => {
     expect(fileName).toBe('meeting-notes-2026-03-11-090807-02.png');
   });
 
-  it('builds markdown image references from repository path values', () => {
-    expect(__test__.buildMarkdownImageReference(createResource())).toBe(
+  it('classifies insertion kinds from repository resources', () => {
+    expect(__test__.classifyResourceInsertionKind(createResource())).toBe('image');
+    expect(
+      __test__.classifyResourceInsertionKind(
+        createResource({ mimeType: 'text/markdown', extension: '.md', name: 'doc.md' }),
+      ),
+    ).toBe('note');
+  });
+
+  it('builds path markdown references from repository path values', () => {
+    expect(__test__.buildPathMarkdownReference(createResource(), 'image')).toBe(
       '![Meeting Notes](/images/meeting-notes.png)',
     );
   });
 
-  it('filters image resources from mixed repository content', () => {
-    const filtered = __test__.filterImageResources([
-      createResource({ id: 'img-1' as ResourceClientDTO['id'], updatedAt: 2 }),
-      createResource({
-        id: 'doc-1' as ResourceClientDTO['id'],
-        mimeType: 'text/markdown',
-        extension: '.md',
-        path: '/notes/test.md',
-      }),
-      createResource({ id: 'img-2' as ResourceClientDTO['id'], updatedAt: 3 }),
-    ]);
-
-    expect(filtered.map((resource) => resource.id)).toEqual(['img-2', 'img-1']);
-  });
-
-  it('summarizes insertion feedback for mixed upload results', () => {
-    const feedback = __test__.getResourceInsertionFeedback({
-      insertedResources: [createResource()],
-      failures: [{ fileName: 'broken.png', message: 'failed', code: 'UPLOAD_FAILED' }],
+  it('builds base64 markdown references for explicit image insertion', async () => {
+    const result = await __test__.buildResourceMarkdown(createResource(), {
+      mode: 'base64',
+      template: 'image',
+      readResourceAsDataUrl: async () => 'data:image/png;base64,ZmFrZQ==',
     });
 
-    expect(feedback).toEqual({
-      successCount: 1,
-      failureCount: 1,
-      hasSuccess: true,
-      hasFailure: true,
-      isPartial: true,
-    });
+    expect(result).toBe('![Meeting Notes](data:image/png;base64,ZmFrZQ==)');
   });
 });
 
 describe('useResourceInsertion orchestration', () => {
   it('uploads pasted images and inserts backend path references at the captured selection', async () => {
     const inserted: Array<{ text: string; selection?: { from: number; to: number } }> = [];
-    const resources = ref<ResourceClientDTO[]>([]);
     const uploadResources = vi.fn(async (files: File[]) => ({
       successes: files.map((file, index) =>
         createResource({
@@ -109,8 +97,9 @@ describe('useResourceInsertion orchestration', () => {
     }));
 
     const insertion = __test__.createResourceInsertion({
-      resources: computed(() => resources.value),
+      resources: computed(() => []),
       uploadResources,
+      readResourceAsDataUrl: async () => 'data:image/png;base64,ZmFrZQ==',
     });
 
     const result = await insertion.insertUploadedImages({

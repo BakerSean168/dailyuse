@@ -69,11 +69,22 @@
         variant="ghost"
         size="icon"
         class="h-8 w-8"
-        :title="t('editor.toolbar.insertExistingImage')"
-        :aria-label="t('editor.toolbar.insertExistingImage')"
-        @click="insertExistingImage"
+        :title="t('editor.toolbar.insertResource')"
+        :aria-label="t('editor.toolbar.insertResource')"
+        @click="insertResource"
       >
         <Images class="h-4 w-4" />
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :title="t('editor.toolbar.exportSelfContained')"
+        :aria-label="t('editor.toolbar.exportSelfContained')"
+        @click="exportSelfContained"
+      >
+        <Share2 class="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" class="h-6" />
@@ -159,6 +170,7 @@ import {
   PanelLeftClose,
   Eye,
   Save,
+  Share2,
 } from 'lucide-vue-next';
 
 const { t } = useI18n();
@@ -170,7 +182,8 @@ defineProps<{
 const emit = defineEmits<{
   'insert-text': [text: string];
   'wrap-selection': [prefix: string, suffix: string];
-  'insert-existing-image': [];
+  'insert-resource': [];
+  'export-self-contained': [];
   'view-mode-change': [mode: 'edit' | 'split' | 'preview'];
   save: [];
 }>();
@@ -209,8 +222,12 @@ function insertImage() {
   emit('wrap-selection', '![', '](url)');
 }
 
-function insertExistingImage() {
-  emit('insert-existing-image');
+function insertResource() {
+  emit('insert-resource');
+}
+
+function exportSelfContained() {
+  emit('export-self-contained');
 }
 
 function handleViewModeChange(value: string | string[]) {

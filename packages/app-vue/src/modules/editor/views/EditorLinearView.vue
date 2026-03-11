@@ -31,7 +31,9 @@
         <EditorToolbar
           :saving="isSaving"
           @insert-text="handleInsertText"
+          @insert-resource="showResourcePicker = true"
           @insert-existing-image="showImagePicker = true"
+          @export-self-contained="handleExportSelfContained"
           @wrap-selection="handleWrapSelection"
           @view-mode-change="handleViewModeChange"
           @save="handleSave"
@@ -61,7 +63,11 @@
             </div>
           </template>
           <template #preview>
-            <EditorPreview :content="editorContent" @link-click="handleInternalLinkClick" />
+            <EditorPreview
+              :content="editorContent"
+              :broken-resource-references="brokenReferences"
+              @link-click="handleInternalLinkClick"
+            />
           </template>
         </EditorSplitView>
 
@@ -78,6 +84,12 @@
       <aside
         class="w-full lg:w-[360px] xl:w-[400px] border-t lg:border-t-0 bg-muted/10 flex flex-col"
       >
+        <div class="flex-1 min-h-[280px] p-4">
+          <BrokenResourceDiagnostics
+            :diagnostics="brokenDiagnostics"
+            @repair="handleRepairReference"
+          />
+        </div>
         <div class="flex-1 min-h-[280px]">
           <BacklinkPanel :document-id="currentDocument.id" @navigate="navigateToDocument" />
         </div>
@@ -94,7 +106,29 @@
     <ImageResourcePickerDialog
       v-model:open="showImagePicker"
       :resources="imageResources"
+      :recent-resources="recentImageResources"
       @select="handleInsertExistingImage"
+    />
+
+    <ResourcePickerDialog
+      v-model:open="showResourcePicker"
+      :items="resourceItems"
+      :recent-items="recentResourceItems"
+      @select="handleInsertResource"
+    />
+
+    <SelfContainedExportDialog
+      v-model:open="showExportDialog"
+      :result="exportResult"
+      @copy="handleCopyExport"
+      @download="handleDownloadExport"
+    />
+
+    <ReferenceRepairDialog
+      v-model:open="showRepairDialog"
+      :reference="pendingRepairReference"
+      :candidates="repairCandidates"
+      @select="applyRepairCandidate"
     />
   </div>
 </template>
@@ -109,12 +143,17 @@ import { Alert, AlertDescription, Button } from '@dailyuse/ui-vue-shadcn';
 import EditorToolbar from '../components/EditorToolbar.vue';
 import EditorSplitView from '../components/EditorSplitView.vue';
 import EditorPreview from '../components/EditorPreview.vue';
+import BrokenResourceDiagnostics from '../components/BrokenResourceDiagnostics.vue';
 import ImageResourcePickerDialog from '../components/ImageResourcePickerDialog.vue';
 import MarkdownEditor from '../components/MarkdownEditor.vue';
+import ReferenceRepairDialog from '../components/ReferenceRepairDialog.vue';
 import LinkSuggestion from '../components/LinkSuggestion.vue';
 import BacklinkPanel from '../components/BacklinkPanel.vue';
 import LinkGraphView from '../components/LinkGraphView.vue';
+import ResourcePickerDialog from '../components/ResourcePickerDialog.vue';
+import SelfContainedExportDialog from '../components/SelfContainedExportDialog.vue';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
+import { useResourceReferenceIndex } from '../composables/useResourceReferenceIndex';
 import {
   getResourceInsertionFeedback,
   type EditorSelectionRange,
@@ -122,6 +161,12 @@ import {
 import { formatWikiLink } from '../utils/wikiLinks';
 import type { LinkIndexDocument } from '../utils/linkIndex';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
+import type {
+  ResourceInsertionItem,
+  SelfContainedExportResult,
+} from '../composables/useResourceInsertion';
+import { repairBrokenMarkdownReference } from '../utils/resourceReferenceIndex';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -133,11 +178,16 @@ const {
   createMarkdownDocument,
   saveDocumentContent,
   imageResources,
+  resourceItems,
+  recentResources,
   insertUploadedImages,
   insertExistingImage,
+  insertExistingResource,
+  exportMarkdownAsSelfContained,
   isSaving,
   error,
 } = useEditorLinkIndex();
+const { getUnresolvedReferences } = useResourceReferenceIndex();
 
 const markdownEditorRef = ref<InstanceType<typeof MarkdownEditor> | null>(null);
 const isLoading = ref(true);
@@ -147,6 +197,11 @@ const editorContent = ref('');
 const isDirty = ref(false);
 const viewMode = ref<'edit' | 'split' | 'preview'>('split');
 const showImagePicker = ref(false);
+const showResourcePicker = ref(false);
+const showRepairDialog = ref(false);
+const showExportDialog = ref(false);
+const exportResult = ref<SelfContainedExportResult | null>(null);
+const pendingRepairReference = ref<ResolvedMarkdownResourceReference | null>(null);
 const suggestionState = ref({
   visible: false,
   query: '',
@@ -155,6 +210,28 @@ const suggestionState = ref({
 
 const documentId = computed(() => String(route.params.id || ''));
 const documentTitle = computed(() => currentDocument.value?.title || t('editor.linear.untitled'));
+const brokenDiagnostics = computed(() =>
+  currentDocument.value ? getUnresolvedReferences(currentDocument.value.id) : [],
+);
+const brokenReferences = computed(() => brokenDiagnostics.value.map((item) => item.reference));
+const recentImageResources = computed(() =>
+  recentResources.value.filter((item) => item.item.kind === 'image').map((item) => item.resource),
+);
+const recentResourceItems = computed(() => recentResources.value.map((item) => item.item));
+const repairCandidates = computed(() => {
+  if (!pendingRepairReference.value) {
+    return [];
+  }
+
+  const replacementKind = pendingRepairReference.value.kind === 'image' ? 'image' : 'other';
+  return resourceItems.value
+    .filter(
+      (item) =>
+        item.kind === replacementKind &&
+        item.resource.id !== pendingRepairReference.value?.resourceId,
+    )
+    .map((item) => item.resource);
+});
 
 async function loadDocument() {
   if (!documentId.value) {
@@ -259,9 +336,9 @@ async function handlePasteFiles(files: File[], selection: EditorSelectionRange) 
   }
 }
 
-function handleInsertExistingImage(resource: ResourceClientDTO) {
+async function handleInsertExistingImage(resource: ResourceClientDTO) {
   try {
-    insertExistingImage({
+    await insertExistingImage({
       resource,
       insertText: insertTextAtSelection,
     });
@@ -273,6 +350,101 @@ function handleInsertExistingImage(resource: ResourceClientDTO) {
     showImagePicker.value = false;
     toast.error(t('editor.resourceInsertion.insertExistingFailed'));
   }
+}
+
+async function handleInsertResource(payload: {
+  item: ResourceInsertionItem;
+  mode: 'path' | 'base64';
+  template?: 'auto';
+}) {
+  try {
+    await insertExistingResource({
+      resource: payload.item.resource,
+      mode: payload.mode,
+      template: payload.template ?? 'auto',
+      insertText: insertTextAtSelection,
+    });
+    showResourcePicker.value = false;
+    markdownEditorRef.value?.focus();
+    toast.success(t('editor.resourceInsertion.insertExistingSuccess'));
+  } catch (error) {
+    console.error('Insert resource failed:', error);
+    showResourcePicker.value = false;
+    toast.error(
+      payload.mode === 'base64'
+        ? t('editor.resourceInsertion.insertBase64Failed')
+        : t('editor.resourceInsertion.insertExistingFailed'),
+    );
+  }
+}
+
+async function handleExportSelfContained() {
+  try {
+    exportResult.value = await exportMarkdownAsSelfContained({ markdown: editorContent.value });
+    showExportDialog.value = true;
+  } catch (error) {
+    console.error('Self-contained export failed:', error);
+    toast.error(t('editor.exportDialog.exportFailed'));
+  }
+}
+
+async function handleCopyExport() {
+  if (!exportResult.value) {
+    return;
+  }
+
+  if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+    toast.error(t('editor.exportDialog.exportFailed'));
+    return;
+  }
+
+  await navigator.clipboard.writeText(exportResult.value.markdown);
+  toast.success(t('editor.exportDialog.copySuccess'));
+}
+
+function handleDownloadExport() {
+  if (!exportResult.value || !currentDocument.value) {
+    return;
+  }
+
+  const blob = new Blob([exportResult.value.markdown], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${currentDocument.value.title || 'note'}-self-contained.md`;
+  link.click();
+  URL.revokeObjectURL(url);
+  toast.success(t('editor.exportDialog.downloadSuccess'));
+}
+
+function handleRepairReference(reference: ResolvedMarkdownResourceReference) {
+  pendingRepairReference.value = reference;
+
+  if (repairCandidates.value.length === 0) {
+    pendingRepairReference.value = null;
+    toast.error(t('editor.diagnostics.noReplacement'));
+    return;
+  }
+
+  showRepairDialog.value = true;
+}
+
+function applyRepairCandidate(replacement: ResourceClientDTO) {
+  const reference = pendingRepairReference.value;
+  if (!reference) {
+    return;
+  }
+
+  editorContent.value = repairBrokenMarkdownReference({
+    markdown: editorContent.value,
+    reference,
+    replacement,
+  });
+  isDirty.value =
+    currentDocument.value != null && editorContent.value !== currentDocument.value.content;
+  showRepairDialog.value = false;
+  pendingRepairReference.value = null;
+  toast.success(t('editor.diagnostics.repaired'));
 }
 
 function handleTriggerSuggestion(payload: { x: number; y: number; query: string }) {
@@ -349,6 +521,8 @@ function noop() {}
 
 watch(documentId, () => {
   closeSuggestion();
+  showExportDialog.value = false;
+  exportResult.value = null;
   void loadDocument();
 });
 

@@ -54,13 +54,29 @@ const i18n = createI18n({
   locale: 'en-US',
   messages: {
     'en-US': {
+      common: {
+        all: 'All',
+      },
       editor: {
         resourcePicker: {
-          title: 'Insert image from repository',
-          description: 'Choose an existing repository image to insert at the cursor.',
-          searchPlaceholder: 'Search images...',
-          empty: 'No images in this repository yet',
-          noMatches: 'No images match your search',
+          title: 'Insert repository resource',
+          description: 'Pick an existing repository resource to insert into the note.',
+          searchPlaceholder: 'Search resources...',
+          modeLabel: 'Insertion mode',
+          modeHint: 'Path references stay canonical in stored notes.',
+          modePath: 'Path',
+          modeBase64: 'Base64',
+          base64Hint: 'Base64 only applies to image embeds and is intended for explicit sharing.',
+          recent: 'Recent',
+          empty: 'No resources yet',
+          noMatches: 'No resources match your search',
+          kinds: {
+            image: 'Image',
+            note: 'Note',
+            document: 'Document',
+            media: 'Media',
+            other: 'Other',
+          },
         },
       },
     },

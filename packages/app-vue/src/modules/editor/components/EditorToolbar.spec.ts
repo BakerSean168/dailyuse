@@ -26,7 +26,8 @@ const i18n = createI18n({
           content: 'Content',
           insertLink: 'Insert link markdown',
           insertImage: 'Insert image markdown',
-          insertExistingImage: 'Insert repository image',
+          insertResource: 'Insert repository resource',
+          exportSelfContained: 'Export self-contained markdown',
         },
       },
       common: {
@@ -37,16 +38,16 @@ const i18n = createI18n({
 });
 
 describe('EditorToolbar', () => {
-  it('emits a dedicated event for inserting repository images', async () => {
+  it('emits a dedicated event for opening the unified resource picker', async () => {
     const wrapper = mount(EditorToolbar, {
       global: {
         plugins: [i18n],
       },
     });
 
-    const button = wrapper.find('button[aria-label="Insert repository image"]');
+    const button = wrapper.find('button[aria-label="Insert repository resource"]');
     await button.trigger('click');
 
-    expect(wrapper.emitted('insert-existing-image')).toHaveLength(1);
+    expect(wrapper.emitted('insert-resource')).toHaveLength(1);
   });
 });

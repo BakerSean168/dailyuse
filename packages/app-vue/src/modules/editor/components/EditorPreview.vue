@@ -12,12 +12,14 @@
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
+import type Token from 'markdown-it/lib/token.mjs';
 
 const { t } = useI18n();
 
 const props = defineProps<{
   content: string;
   onLinkClick?: (title: string) => void;
+  brokenResourceReferences?: Array<{ destination: string }>;
 }>();
 
 const emit = defineEmits<{
@@ -35,14 +37,14 @@ function initializeMarkdownIt() {
     breaks: true,
   });
 
-  md.core.ruler.after('inline', 'bidirectional-links', (state: any) => {
+  md.core.ruler.after('inline', 'bidirectional-links', (state) => {
     const blockTokens = state.tokens;
 
     for (let i = 0; i < blockTokens.length; i++) {
       if (blockTokens[i].type !== 'inline') continue;
 
       const inlineTokens = blockTokens[i].children || [];
-      const newTokens = [];
+      const newTokens: Token[] = [];
 
       for (let j = 0; j < inlineTokens.length; j++) {
         const token = inlineTokens[j];
@@ -107,8 +109,33 @@ function renderMarkdown() {
   if (!md) return;
 
   try {
-    let content = props.content;
-    renderedHtml.value = md.render(content);
+    const html = md.render(props.content);
+    const brokenDestinations = new Set(
+      (props.brokenResourceReferences ?? []).map((reference) => reference.destination),
+    );
+
+    renderedHtml.value = html.replace(
+      /(<(?:img|a)[^>]+(?:src|href)="([^"]+)"[^>]*>)/g,
+      (match, tag, destination) => {
+        const decodedDestination = (() => {
+          try {
+            return decodeURI(destination);
+          } catch {
+            return destination;
+          }
+        })();
+
+        if (!brokenDestinations.has(destination) && !brokenDestinations.has(decodedDestination)) {
+          return match;
+        }
+
+        if (/class="([^"]*)"/.test(tag)) {
+          return tag.replace(/class="([^"]*)"/, 'class="$1 broken-resource-reference"');
+        }
+
+        return tag.replace(/>$/, ' class="broken-resource-reference">');
+      },
+    );
   } catch (error) {
     console.error('Markdown render error:', error);
     renderedHtml.value = '<p>' + t('editor.preview.renderError') + '</p>';
@@ -134,7 +161,7 @@ onMounted(() => {
 });
 
 watch(
-  () => props.content,
+  () => [props.content, props.brokenResourceReferences],
   () => {
     renderMarkdown();
   },
@@ -274,6 +301,11 @@ watch(
 .preview-content img {
   max-width: 100%;
   height: auto;
+}
+
+.preview-content .broken-resource-reference {
+  outline: 2px dashed hsl(var(--destructive));
+  outline-offset: 2px;
 }
 
 .preview-content strong {

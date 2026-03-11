@@ -9,6 +9,7 @@ import type {
   TreeNode,
   ResourceBookmarkClientDTO,
 } from '@dailyuse/contracts/repository';
+import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
 
 export type SidebarMode = 'files' | 'search' | 'bookmarks';
 
@@ -25,6 +26,8 @@ export interface RepositoryState {
   treeNodes: TreeNode[];
   /** 书签列表 */
   bookmarks: ResourceBookmarkClientDTO[];
+  /** 最近插入的资源 */
+  recentInsertions: ResourceInsertionRecentEntry[];
 
   /** 侧边栏模式 */
   sidebarMode: SidebarMode;
@@ -48,6 +51,7 @@ export const useRepositoryStore = defineStore('repository', {
     currentResource: null,
     treeNodes: [],
     bookmarks: [],
+    recentInsertions: [],
     sidebarMode: 'files',
     sidebarCollapsed: false,
     openTabIds: [],
@@ -144,6 +148,13 @@ export const useRepositoryStore = defineStore('repository', {
     removeBookmark(id: string) {
       this.bookmarks = this.bookmarks.filter((b) => b.id !== id);
     },
+    setRecentInsertions(items: ResourceInsertionRecentEntry[]) {
+      this.recentInsertions = items;
+    },
+    recordRecentInsertion(entry: ResourceInsertionRecentEntry) {
+      const deduped = this.recentInsertions.filter((item) => item.resourceId !== entry.resourceId);
+      this.recentInsertions = [entry, ...deduped].slice(0, 20);
+    },
 
     // ── Sidebar ──
     setSidebarMode(mode: SidebarMode) {
@@ -204,7 +215,14 @@ export const useRepositoryStore = defineStore('repository', {
   },
 
   persist: {
-    pick: ['sidebarMode', 'sidebarCollapsed', 'openTabIds', 'activeTabId', 'bookmarks'] as string[],
+    pick: [
+      'sidebarMode',
+      'sidebarCollapsed',
+      'openTabIds',
+      'activeTabId',
+      'bookmarks',
+      'recentInsertions',
+    ] as string[],
   },
 });
 

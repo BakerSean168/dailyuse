@@ -16,6 +16,7 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type { Repository } from '@dailyuse/repository/domain-client';
 import { searchRepositoryResources } from './repositorySearch';
+import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -76,6 +77,9 @@ interface RepositoryServiceLike {
     repositoryId: string,
     bookmarkId: string,
   ): Promise<{ ok: boolean; error?: { message?: string } }>;
+  getResource?(
+    resourceId: string,
+  ): Promise<{ ok: boolean; data?: ResourceClientDTO; error?: { message?: string } }>;
 }
 
 export function useRepository() {
@@ -96,6 +100,7 @@ export function useRepository() {
   const resources = computed(() => store.resources);
   const resourcesByType = computed(() => store.resourcesByType);
   const currentResource = computed(() => store.currentResource);
+  const recentInsertions = computed(() => store.recentInsertions);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const isSaving = computed(() => savingId.value !== null);
@@ -193,6 +198,42 @@ export function useRepository() {
     } finally {
       savingId.value = null;
     }
+  }
+
+  async function readResourceAsDataUrl(resource: ResourceClientDTO): Promise<string> {
+    const latest = await getResourceById(resource.id);
+    const source = latest ?? resource;
+
+    if (typeof source.content !== 'string' || source.content.length === 0) {
+      throw new Error('Resource content is unavailable.');
+    }
+
+    const mimeType = source.mimeType || guessMimeType(source.name);
+    const normalized = source.content.replace(/\s+/g, '');
+
+    if (normalized.startsWith('data:')) {
+      return normalized;
+    }
+
+    return `data:${mimeType};base64,${normalized}`;
+  }
+
+  async function getResourceById(resourceId: string): Promise<ResourceClientDTO | null> {
+    if (typeof service.getResource !== 'function') {
+      return store.resources.find((resource) => resource.id === resourceId) ?? null;
+    }
+
+    const result = await service.getResource(resourceId);
+    if (result.ok && result.data) {
+      store.updateResource(result.data);
+      return result.data;
+    }
+
+    return store.resources.find((resource) => resource.id === resourceId) ?? null;
+  }
+
+  function recordRecentInsertion(entry: ResourceInsertionRecentEntry): void {
+    store.recordRecentInsertion(entry);
   }
 
   async function saveResourceContent(resourceId: string, content: string) {
@@ -493,6 +534,7 @@ export function useRepository() {
     resources,
     resourcesByType,
     currentResource,
+    recentInsertions,
     isLoading,
     isSaving,
     isUploading,
@@ -505,6 +547,9 @@ export function useRepository() {
     createResource,
     createMarkdownNote,
     deleteResource,
+    readResourceAsDataUrl,
+    getResourceById,
+    recordRecentInsertion,
     saveResourceContent,
     updateResourceMetadata,
     uploadResources,

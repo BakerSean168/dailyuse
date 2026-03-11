@@ -82,7 +82,11 @@ export function useEditorLinkIndex() {
     createMarkdownDocument,
     saveDocumentContent,
     imageResources: resourceInsertion.imageResources,
+    resourceItems: resourceInsertion.resourceItems,
+    recentResources: resourceInsertion.recentResources,
     insertUploadedImages: resourceInsertion.insertUploadedImages,
     insertExistingImage: resourceInsertion.insertExistingImage,
+    insertExistingResource: resourceInsertion.insertExistingResource,
+    exportMarkdownAsSelfContained: resourceInsertion.exportMarkdownAsSelfContained,
   };
 }
