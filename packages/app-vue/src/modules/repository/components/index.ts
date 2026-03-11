@@ -6,6 +6,7 @@ export { default as TabManager } from './TabManager.vue';
 // File tree components
 export { default as FileTree } from './FileTree.vue';
 export { default as FileTreeNode } from './FileTreeNode.vue';
+export { default as TypedFileTree } from './TypedFileTree.vue';
 
 // List and panel components
 export { default as ResourceList } from './ResourceList.vue';
@@ -16,6 +17,7 @@ export { default as TagsPanel } from './TagsPanel.vue';
 export { default as BookmarksPanel } from './BookmarksPanel.vue';
 export { default as FileExplorer } from './FileExplorer.vue';
 export { default as FileTreeItem } from './FileTreeItem.vue';
+// Legacy folder-first panels kept for compatibility only.
 export { default as FileTreePanel } from './FileTreePanel.vue';
 export { default as FilesPanel } from './FilesPanel.vue';
 export { default as LinkPreviewPopover } from './LinkPreviewPopover.vue';
@@ -29,8 +31,4 @@ export { default as AIKnowledgeGeneratorDialog } from './AIKnowledgeGeneratorDia
 
 // Dialogs
 export { default as CreateResourceDialog } from './dialogs/CreateResourceDialog.vue';
-export { default as CreateFolderDialog } from './dialogs/CreateFolderDialog.vue';
 export { default as BatchImportDialog } from './BatchImportDialog.vue';
-
-// Workspace components
-export { default as TypedFileTree } from './TypedFileTree.vue';

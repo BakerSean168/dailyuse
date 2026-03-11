@@ -11,10 +11,12 @@ import {
   type LinkIndexDocument,
   type SearchDocumentsOptions,
 } from '../utils/linkIndex';
+import { useResourceInsertion } from './useResourceInsertion';
 
 export function useEditorLinkIndex() {
   const store = useRepositoryStore();
   const repository = useRepository();
+  const resourceInsertion = useResourceInsertion();
 
   const index = computed(() => buildEditorLinkIndex(store.resources));
   const documents = computed(() => index.value.documents);
@@ -79,5 +81,8 @@ export function useEditorLinkIndex() {
     getGraph,
     createMarkdownDocument,
     saveDocumentContent,
+    imageResources: resourceInsertion.imageResources,
+    insertUploadedImages: resourceInsertion.insertUploadedImages,
+    insertExistingImage: resourceInsertion.insertExistingImage,
   };
 }

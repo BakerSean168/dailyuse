@@ -45,11 +45,35 @@
       <Separator orientation="vertical" class="h-6" />
 
       <!-- Link & Image -->
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertLink">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :title="t('editor.toolbar.insertLink')"
+        :aria-label="t('editor.toolbar.insertLink')"
+        @click="insertLink"
+      >
         <Link class="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" class="h-8 w-8" @click="insertImage">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :title="t('editor.toolbar.insertImage')"
+        :aria-label="t('editor.toolbar.insertImage')"
+        @click="insertImage"
+      >
         <Image class="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8"
+        :title="t('editor.toolbar.insertExistingImage')"
+        :aria-label="t('editor.toolbar.insertExistingImage')"
+        @click="insertExistingImage"
+      >
+        <Images class="h-4 w-4" />
       </Button>
 
       <Separator orientation="vertical" class="h-6" />
@@ -82,11 +106,7 @@
     <div class="flex-1" />
 
     <!-- View Mode Toggle -->
-    <ToggleGroup
-      v-model="viewMode"
-      type="single"
-      @update:model-value="(val: any) => $emit('view-mode-change', val)"
-    >
+    <ToggleGroup v-model="viewMode" type="single" @update:model-value="handleViewModeChange">
       <ToggleGroupItem value="edit" aria-label="Edit mode" class="h-8 w-8">
         <Pencil class="h-4 w-4" />
       </ToggleGroupItem>
@@ -128,6 +148,7 @@ import {
   Code2,
   Link,
   Image,
+  Images,
   List,
   ListOrdered,
   ListTodo,
@@ -149,6 +170,7 @@ defineProps<{
 const emit = defineEmits<{
   'insert-text': [text: string];
   'wrap-selection': [prefix: string, suffix: string];
+  'insert-existing-image': [];
   'view-mode-change': [mode: 'edit' | 'split' | 'preview'];
   save: [];
 }>();
@@ -185,6 +207,17 @@ function insertLink() {
 
 function insertImage() {
   emit('wrap-selection', '![', '](url)');
+}
+
+function insertExistingImage() {
+  emit('insert-existing-image');
+}
+
+function handleViewModeChange(value: string | string[]) {
+  if (value === 'edit' || value === 'split' || value === 'preview') {
+    viewMode.value = value;
+    emit('view-mode-change', value);
+  }
 }
 
 function insertUnorderedList() {

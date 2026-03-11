@@ -117,6 +117,7 @@
                 <EditorToolbar
                   :saving="isSaving"
                   @insert-text="handleInsertText"
+                  @insert-existing-image="showImagePicker = true"
                   @wrap-selection="handleWrapSelection"
                   @view-mode-change="handleViewModeChange"
                   @save="handleSaveContent(editorContent)"
@@ -130,6 +131,7 @@
                       v-model="editorContent"
                       :placeholder="t('repository.workspace.startWriting')"
                       @change="handleEditorChange"
+                      @paste-files="handlePasteFiles"
                     />
                   </template>
                   <template #preview>
@@ -220,6 +222,12 @@
       :summary="importSummary"
       @import="handleBatchImport"
     />
+
+    <ImageResourcePickerDialog
+      v-model:open="showImagePicker"
+      :resources="imageResources"
+      @select="handleInsertExistingImage"
+    />
   </div>
 </template>
 
@@ -266,7 +274,13 @@ import MarkdownEditor from '../../editor/components/MarkdownEditor.vue';
 import EditorToolbar from '../../editor/components/EditorToolbar.vue';
 import EditorSplitView from '../../editor/components/EditorSplitView.vue';
 import EditorPreview from '../../editor/components/EditorPreview.vue';
+import ImageResourcePickerDialog from '../../editor/components/ImageResourcePickerDialog.vue';
 import MediaViewer from '../../editor/components/MediaViewer.vue';
+import {
+  useResourceInsertion,
+  getResourceInsertionFeedback,
+  type EditorSelectionRange,
+} from '../../editor/composables/useResourceInsertion';
 
 import type {
   ResourceClientDTO,
@@ -306,9 +320,11 @@ const {
   removeBookmark,
   openResource,
 } = useRepository();
+const { imageResources, insertUploadedImages, insertExistingImage } = useResourceInsertion();
 
 // ── Local state ──
 const showImportDialog = ref(false);
+const showImagePicker = ref(false);
 const isDirty = ref(false);
 const pinnedTabIds = ref(new Set<string>());
 
@@ -410,6 +426,10 @@ function handleInsertText(text: string) {
   markdownEditorRef.value?.insertText(text);
 }
 
+function insertTextAtSelection(text: string, selection?: EditorSelectionRange) {
+  markdownEditorRef.value?.insertTextAtSelection(text, selection);
+}
+
 function handleWrapSelection(prefix: string, suffix: string) {
   markdownEditorRef.value?.wrapSelection(prefix, suffix);
 }
@@ -432,6 +452,49 @@ function handleInternalLinkClick(title: string) {
     openResource(resource);
   } else {
     toast.info(`${t('repository.workspace.linkNotFound')}: ${title}`);
+  }
+}
+
+async function handlePasteFiles(files: File[], selection: EditorSelectionRange) {
+  if (!activeResource.value || !isMarkdown(activeResource.value)) {
+    return;
+  }
+
+  try {
+    const result = await insertUploadedImages({
+      files,
+      currentNoteName: activeResource.value.name,
+      insertText: insertTextAtSelection,
+      selection,
+    });
+    const feedback = getResourceInsertionFeedback(result);
+
+    if (feedback.hasSuccess) {
+      toast.success(t('editor.resourceInsertion.pasteSuccess', { count: feedback.successCount }));
+    }
+
+    if (feedback.hasFailure) {
+      toast.warning(t('editor.resourceInsertion.partialFailure', { count: feedback.failureCount }));
+    }
+  } catch (error) {
+    console.error('Paste image upload failed:', error);
+    toast.error(t('editor.resourceInsertion.uploadFailed'));
+  }
+}
+
+function handleInsertExistingImage(resource: ResourceClientDTO) {
+  try {
+    insertExistingImage({
+      resource,
+      insertText: insertTextAtSelection,
+    });
+    showImagePicker.value = false;
+    markdownEditorRef.value?.focus();
+    toast.success(t('editor.resourceInsertion.insertExistingSuccess'));
+  } catch (error) {
+    console.error('Insert existing image failed:', error);
+    showImagePicker.value = false;
+    toast.error(t('editor.resourceInsertion.insertExistingFailed'));
   }
 }
 

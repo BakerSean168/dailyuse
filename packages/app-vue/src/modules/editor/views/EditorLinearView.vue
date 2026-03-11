@@ -31,6 +31,7 @@
         <EditorToolbar
           :saving="isSaving"
           @insert-text="handleInsertText"
+          @insert-existing-image="showImagePicker = true"
           @wrap-selection="handleWrapSelection"
           @view-mode-change="handleViewModeChange"
           @save="handleSave"
@@ -44,6 +45,7 @@
                 v-model="editorContent"
                 :placeholder="t('repository.workspace.startWriting')"
                 @change="handleEditorChange"
+                @paste-files="handlePasteFiles"
                 @trigger-suggestion="handleTriggerSuggestion"
                 @close-suggestion="closeSuggestion"
               />
@@ -88,6 +90,12 @@
         </div>
       </aside>
     </div>
+
+    <ImageResourcePickerDialog
+      v-model:open="showImagePicker"
+      :resources="imageResources"
+      @select="handleInsertExistingImage"
+    />
   </div>
 </template>
 
@@ -101,13 +109,19 @@ import { Alert, AlertDescription, Button } from '@dailyuse/ui-vue-shadcn';
 import EditorToolbar from '../components/EditorToolbar.vue';
 import EditorSplitView from '../components/EditorSplitView.vue';
 import EditorPreview from '../components/EditorPreview.vue';
+import ImageResourcePickerDialog from '../components/ImageResourcePickerDialog.vue';
 import MarkdownEditor from '../components/MarkdownEditor.vue';
 import LinkSuggestion from '../components/LinkSuggestion.vue';
 import BacklinkPanel from '../components/BacklinkPanel.vue';
 import LinkGraphView from '../components/LinkGraphView.vue';
 import { useEditorLinkIndex } from '../composables/useEditorLinkIndex';
+import {
+  getResourceInsertionFeedback,
+  type EditorSelectionRange,
+} from '../composables/useResourceInsertion';
 import { formatWikiLink } from '../utils/wikiLinks';
 import type { LinkIndexDocument } from '../utils/linkIndex';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -118,6 +132,9 @@ const {
   resolveDocument,
   createMarkdownDocument,
   saveDocumentContent,
+  imageResources,
+  insertUploadedImages,
+  insertExistingImage,
   isSaving,
   error,
 } = useEditorLinkIndex();
@@ -129,6 +146,7 @@ const currentDocument = ref<LinkIndexDocument | null>(null);
 const editorContent = ref('');
 const isDirty = ref(false);
 const viewMode = ref<'edit' | 'split' | 'preview'>('split');
+const showImagePicker = ref(false);
 const suggestionState = ref({
   visible: false,
   query: '',
@@ -174,6 +192,10 @@ function handleInsertText(text: string) {
   markdownEditorRef.value?.insertText(text);
 }
 
+function insertTextAtSelection(text: string, selection?: EditorSelectionRange) {
+  markdownEditorRef.value?.insertTextAtSelection(text, selection);
+}
+
 function handleWrapSelection(prefix: string, suffix: string) {
   markdownEditorRef.value?.wrapSelection(prefix, suffix);
 }
@@ -208,6 +230,49 @@ async function handleSave() {
   };
   isDirty.value = false;
   toast.success(t('editor.linear.saveSuccess'));
+}
+
+async function handlePasteFiles(files: File[], selection: EditorSelectionRange) {
+  if (!currentDocument.value) {
+    return;
+  }
+
+  try {
+    const result = await insertUploadedImages({
+      files,
+      currentNoteName: currentDocument.value.title,
+      insertText: insertTextAtSelection,
+      selection,
+    });
+    const feedback = getResourceInsertionFeedback(result);
+
+    if (feedback.hasSuccess) {
+      toast.success(t('editor.resourceInsertion.pasteSuccess', { count: feedback.successCount }));
+    }
+
+    if (feedback.hasFailure) {
+      toast.warning(t('editor.resourceInsertion.partialFailure', { count: feedback.failureCount }));
+    }
+  } catch (error) {
+    console.error('Linear editor paste upload failed:', error);
+    toast.error(t('editor.resourceInsertion.uploadFailed'));
+  }
+}
+
+function handleInsertExistingImage(resource: ResourceClientDTO) {
+  try {
+    insertExistingImage({
+      resource,
+      insertText: insertTextAtSelection,
+    });
+    showImagePicker.value = false;
+    markdownEditorRef.value?.focus();
+    toast.success(t('editor.resourceInsertion.insertExistingSuccess'));
+  } catch (error) {
+    console.error('Linear editor insert existing image failed:', error);
+    showImagePicker.value = false;
+    toast.error(t('editor.resourceInsertion.insertExistingFailed'));
+  }
 }
 
 function handleTriggerSuggestion(payload: { x: number; y: number; query: string }) {

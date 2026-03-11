@@ -833,6 +833,23 @@ export default {
       heading: 'Heading {level}',
       column: 'Col',
       content: 'Content',
+      insertLink: 'Insert link markdown',
+      insertImage: 'Insert image markdown',
+      insertExistingImage: 'Insert repository image',
+    },
+    resourcePicker: {
+      title: 'Insert image from repository',
+      description: 'Choose an existing repository image to insert at the cursor.',
+      searchPlaceholder: 'Search images...',
+      empty: 'No images in this repository yet',
+      noMatches: 'No images match your search',
+    },
+    resourceInsertion: {
+      pasteSuccess: 'Inserted {count} image references',
+      partialFailure: '{count} image uploads failed',
+      uploadFailed: 'Failed to upload pasted image',
+      insertExistingSuccess: 'Inserted image reference',
+      insertExistingFailed: 'Failed to insert image reference',
     },
     container: {
       document: 'document',
@@ -2928,7 +2945,7 @@ export default {
     fileTreePanel: {
       loading: 'Loading file tree...',
       empty: 'No files yet',
-      createFolder: 'New folder',
+      createFolder: 'Legacy folder action',
     },
     treeNode: {
       today: 'Today',

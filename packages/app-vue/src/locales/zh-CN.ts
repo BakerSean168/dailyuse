@@ -820,6 +820,23 @@ export default {
       heading: '标题 {level}',
       column: '列',
       content: '内容',
+      insertLink: '插入链接语法',
+      insertImage: '插入图片语法',
+      insertExistingImage: '插入仓库图片',
+    },
+    resourcePicker: {
+      title: '从仓库插入图片',
+      description: '选择已有仓库图片并在当前光标处插入引用。',
+      searchPlaceholder: '搜索图片...',
+      empty: '当前仓库还没有图片资源',
+      noMatches: '没有匹配的图片资源',
+    },
+    resourceInsertion: {
+      pasteSuccess: '已插入 {count} 个图片引用',
+      partialFailure: '{count} 张图片上传失败',
+      uploadFailed: '粘贴图片上传失败',
+      insertExistingSuccess: '已插入图片引用',
+      insertExistingFailed: '插入图片引用失败',
     },
     container: {
       document: '文档',
@@ -2907,7 +2924,7 @@ export default {
     fileTreePanel: {
       loading: '加载文件树...',
       empty: '暂无文件',
-      createFolder: '新建文件夹',
+      createFolder: '旧版文件夹操作',
     },
     treeNode: {
       today: '今天',

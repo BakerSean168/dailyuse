@@ -1,7 +1,7 @@
 <!--
-  TypedFileTree - Type-based fixed folder structure
-  Files are grouped by type (Notes/Images/Videos/Audio/Documents/Other)
-  instead of user-created folders. Forces tag-based organization.
+  TypedFileTree - Type-based fixed resource navigation
+  Resources are grouped by type (Notes/Images/Videos/Audio/Documents/Other)
+  for repository-first authoring instead of user-managed folders.
 -->
 
 <template>
@@ -76,28 +76,28 @@
         </div>
       </div>
 
-      <!-- Type Folders -->
+      <!-- Type Groups -->
       <div v-else class="space-y-0.5">
-        <div v-for="folder in typeFolders" :key="folder.key">
-          <!-- Folder Header -->
+        <div v-for="group in typeGroups" :key="group.key">
+          <!-- Group Header -->
           <div
             class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
-            @click="toggleFolder(folder.key)"
+            @click="toggleGroup(group.key)"
           >
             <Button variant="ghost" size="icon" class="h-5 w-5 shrink-0 p-0">
               <ChevronRight
                 class="h-4 w-4 transition-transform"
-                :class="{ 'rotate-90': expandedFolders.has(folder.key) }"
+                :class="{ 'rotate-90': expandedGroups.has(group.key) }"
               />
             </Button>
-            <component :is="folder.icon" class="h-4 w-4 shrink-0" :class="folder.iconClass" />
-            <span class="text-sm font-medium flex-1">{{ folder.label }}</span>
-            <Badge v-if="folder.count > 0" variant="secondary" class="text-xs h-5 px-1.5">
-              {{ folder.count }}
+            <component :is="group.icon" class="h-4 w-4 shrink-0" :class="group.iconClass" />
+            <span class="text-sm font-medium flex-1">{{ group.label }}</span>
+            <Badge v-if="group.count > 0" variant="secondary" class="text-xs h-5 px-1.5">
+              {{ group.count }}
             </Badge>
           </div>
 
-          <!-- Folder Children (files) -->
+          <!-- Group Children (resources) -->
           <Transition
             enter-active-class="transition-all duration-150 ease-out"
             leave-active-class="transition-all duration-100 ease-in"
@@ -106,9 +106,9 @@
             leave-from-class="opacity-100"
             leave-to-class="opacity-0 max-h-0"
           >
-            <div v-show="expandedFolders.has(folder.key)" class="ml-4">
+            <div v-show="expandedGroups.has(group.key)" class="ml-4">
               <div
-                v-for="resource in folder.resources"
+                v-for="resource in group.resources"
                 :key="resource.id"
                 class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
                 :class="{ 'bg-accent': selectedId === resource.id }"
@@ -133,7 +133,7 @@
                 </span>
               </div>
               <div
-                v-if="folder.resources.length === 0"
+                v-if="group.resources.length === 0"
                 class="px-2 py-2 ml-5 text-xs text-muted-foreground italic"
               >
                 {{ t('repository.workspace.noFiles') }}
@@ -189,13 +189,13 @@ defineEmits<{
 
 const { t } = useI18n();
 
-const expandedFolders = ref(new Set<string>(['notes']));
+const expandedGroups = ref(new Set<string>(['notes']));
 
 const totalCount = computed(() =>
   Object.values(props.resourcesByType).reduce((sum, arr) => sum + arr.length, 0),
 );
 
-const typeFolders = computed(() => [
+const typeGroups = computed(() => [
   {
     key: 'notes',
     label: t('repository.fileTypes.notes'),
@@ -246,11 +246,11 @@ const typeFolders = computed(() => [
   },
 ]);
 
-function toggleFolder(key: string) {
-  if (expandedFolders.value.has(key)) {
-    expandedFolders.value.delete(key);
+function toggleGroup(key: string) {
+  if (expandedGroups.value.has(key)) {
+    expandedGroups.value.delete(key);
   } else {
-    expandedFolders.value.add(key);
+    expandedGroups.value.add(key);
   }
 }
 

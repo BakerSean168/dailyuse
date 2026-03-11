@@ -9,6 +9,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { findActiveWikiLinkRange } from '../utils/wikiLinks';
+import type { EditorSelectionRange } from '../composables/useResourceInsertion';
 
 const props = withDefaults(
   defineProps<{
@@ -30,6 +31,7 @@ const emit = defineEmits<{
   keydown: [event: KeyboardEvent];
   'trigger-suggestion': [position: { x: number; y: number; query: string }];
   'close-suggestion': [];
+  'paste-files': [files: File[], selection: EditorSelectionRange];
 }>();
 
 const editorRef = ref<HTMLElement | null>(null);
@@ -73,6 +75,21 @@ function handleKeyDown(event: KeyboardEvent) {
   }, 0);
 }
 
+function handlePaste(event: ClipboardEvent) {
+  const clipboardItems = Array.from(event.clipboardData?.items ?? []);
+  const files = clipboardItems
+    .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+
+  if (files.length === 0 || !editorView) {
+    return;
+  }
+
+  event.preventDefault();
+  emit('paste-files', files, getSelectionRange());
+}
+
 function initializeEditor() {
   if (!editorRef.value) return;
 
@@ -104,6 +121,7 @@ function initializeEditor() {
   });
 
   editorView.contentDOM.addEventListener('keydown', handleKeyDown);
+  editorView.contentDOM.addEventListener('paste', handlePaste);
 
   if (props.readonly) {
     editorView.contentDOM.setAttribute('contenteditable', 'false');
@@ -113,6 +131,7 @@ function initializeEditor() {
 function destroyEditor() {
   if (editorView) {
     editorView.contentDOM.removeEventListener('keydown', handleKeyDown);
+    editorView.contentDOM.removeEventListener('paste', handlePaste);
     editorView.destroy();
     editorView = null;
   }
@@ -195,6 +214,27 @@ function replaceSelection(text: string) {
   editorView.focus();
 }
 
+function getSelectionRange(): EditorSelectionRange {
+  if (!editorView) return { from: 0, to: 0 };
+
+  const { from, to } = editorView.state.selection.main;
+  return { from, to };
+}
+
+function insertTextAtSelection(text: string, selection?: EditorSelectionRange) {
+  if (!editorView) return;
+
+  const range = selection ?? getSelectionRange();
+
+  editorView.dispatch({
+    changes: { from: range.from, to: range.to, insert: text },
+    selection: { anchor: range.from + text.length },
+  });
+
+  editorView.focus();
+  emitSuggestionState();
+}
+
 function getSelection(): string {
   if (!editorView) return '';
 
@@ -216,6 +256,8 @@ defineExpose({
   wrapSelection,
   replaceSelection,
   getSelection,
+  getSelectionRange,
+  insertTextAtSelection,
   focus,
   editorView,
 });

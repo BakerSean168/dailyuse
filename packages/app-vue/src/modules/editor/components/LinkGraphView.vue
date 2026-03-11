@@ -258,9 +258,13 @@ function renderGraph() {
   chartInstance.setOption(option);
 
   chartInstance.off('click');
-  chartInstance.on('click', (params: { dataType?: string; data?: { id?: string } }) => {
-    if (params.dataType === 'node') {
-      const nodeId = params.data?.id;
+  chartInstance.on('click', (params: unknown) => {
+    const clickParams = params as { dataType?: string; data?: unknown };
+    if (clickParams.dataType === 'node') {
+      const nodeId =
+        clickParams.data && typeof clickParams.data === 'object' && 'id' in clickParams.data
+          ? String((clickParams.data as { id?: unknown }).id ?? '')
+          : '';
       if (nodeId) {
         emit('nodeClick', nodeId);
       }
