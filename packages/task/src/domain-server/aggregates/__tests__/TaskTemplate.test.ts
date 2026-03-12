@@ -14,7 +14,7 @@
  * - Edge cases & error handling
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TaskTemplate } from '../task-template';
 import type { TaskTemplateState } from '../task-template';
 import { TaskTemplateStatus } from '../../../domain-shared/value-objects/task-template-status';
@@ -1793,14 +1793,21 @@ describe('TaskTemplate Aggregate', () => {
     });
 
     it('should return getPriorityScore() matching getPriority().score', () => {
-      const template = TaskTemplate.createOneTimeTask({
-        identityId: makeIdentityId(),
-        title: 'Task',
-        importance: ImportanceLevel.Important,
-        dueDate: new Date(Date.now() + 2 * 86400000),
-      });
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
 
-      expect(template.getPriorityScore()).toBe(template.getPriority().score);
+      try {
+        const template = TaskTemplate.createOneTimeTask({
+          identityId: makeIdentityId(),
+          title: 'Task',
+          importance: ImportanceLevel.Important,
+          dueDate: new Date(Date.now() + 2 * 86400000),
+        });
+
+        expect(template.getPriorityScore()).toBe(template.getPriority().score);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('should return getPriorityLevel() matching getPriority().level', () => {

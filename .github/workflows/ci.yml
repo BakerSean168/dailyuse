@@ -72,7 +72,7 @@ jobs:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
         shell: bash
         run: |
-          EXCLUDED_PROJECTS=$(pnpm exec nx show projects | grep '^prisma-client-' | paste -sd, -)
+          EXCLUDED_PROJECTS=$(pnpm exec nx show projects | awk '/^prisma-client-/{printf "%s%s", sep, $0; sep=","}')
           if [ -n "$EXCLUDED_PROJECTS" ]; then
             echo "Excluding generated Prisma projects from lint: $EXCLUDED_PROJECTS"
             pnpm exec nx affected -t lint --parallel=3 --exclude="$EXCLUDED_PROJECTS" --outputStyle=static
