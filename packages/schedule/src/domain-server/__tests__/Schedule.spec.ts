@@ -93,7 +93,7 @@ describe('Schedule Aggregate', () => {
   describe('load()', () => {
     it('should load schedule from state', () => {
       const dto = {
-        id: ScheduleId.of('sched-456'),
+        id: ScheduleId.of('IScheduleId_sched-456'),
         identityId: 'acc-789',
         title: 'Client Meeting',
         description: 'Discuss project',
@@ -111,7 +111,7 @@ describe('Schedule Aggregate', () => {
 
       const schedule = Schedule.load(dto);
 
-      expect(schedule.id).toBe('sched-456');
+      expect(schedule.id).toBe('IScheduleId_sched-456');
       expect(schedule.identityId).toBe('acc-789');
       expect(schedule.title).toBe('Client Meeting');
       expect(schedule.hasConflict).toBe(true);

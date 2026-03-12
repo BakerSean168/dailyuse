@@ -16,7 +16,7 @@ describe('GetDefaultSettings', () => {
     const result = useCase.execute();
 
     expect(result.id).toBeDefined();
-    expect(result.identityId).toBe('defaults');
+    expect(result.identityId).toBe('IdentityId_defaults');
     expect(result.preferences).toBeDefined();
     expect(result.version).toBe(1);
     expect(typeof result.createdAt).toBe('number');

@@ -3,7 +3,7 @@ import { UserSetting } from '../user-setting';
 import { getDefaultPreferences } from '@dailyuse/contracts/setting';
 
 describe('UserSetting Aggregate Root', () => {
-  const testIdentityId = 'test-identity-123';
+  const testIdentityId = 'IdentityId_test-identity-123';
 
   describe('create()', () => {
     it('should create a new user setting with default preferences', () => {
@@ -101,9 +101,7 @@ describe('UserSetting Aggregate Root', () => {
     it('should reject invalid values via Zod validation', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
 
-      expect(() =>
-        setting.patchCategory('appearance', { fontSize: 999 } as any),
-      ).toThrow();
+      expect(() => setting.patchCategory('appearance', { fontSize: 999 } as any)).toThrow();
     });
   });
 
@@ -195,8 +193,21 @@ describe('UserSetting Aggregate Root', () => {
       const setting = UserSetting.create({ identityId: testIdentityId });
 
       setting.importPreferences({
-        appearance: { theme: 'dark', fontSize: 16, compactMode: true, accentColor: '#FF0000', fontFamily: null },
-        locale: { language: 'en-US', timezone: 'America/New_York', dateFormat: 'MM/DD/YYYY', timeFormat: '12H', currency: 'USD', weekStartsOn: 0 },
+        appearance: {
+          theme: 'dark',
+          fontSize: 16,
+          compactMode: true,
+          accentColor: '#FF0000',
+          fontFamily: null,
+        },
+        locale: {
+          language: 'en-US',
+          timezone: 'America/New_York',
+          dateFormat: 'MM/DD/YYYY',
+          timeFormat: '12H',
+          currency: 'USD',
+          weekStartsOn: 0,
+        },
       });
 
       expect(setting.toPreferences().appearance.theme).toBe('dark');

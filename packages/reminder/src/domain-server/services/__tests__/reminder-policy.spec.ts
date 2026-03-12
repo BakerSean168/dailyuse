@@ -21,7 +21,7 @@ const SHARED_IDENTITY = `IdentityId_${generateUUID()}`;
 function makeTemplateState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemplateState {
   const now = Date.now();
   return {
-    id: ReminderTemplateId.of(generateUUID()),
+    id: ReminderTemplateId.generate(),
     identityId: IdentityId.of(SHARED_IDENTITY),
     title: 'Policy Test',
     description: null,

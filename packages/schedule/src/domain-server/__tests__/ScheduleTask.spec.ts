@@ -271,7 +271,7 @@ describe('ScheduleTask Aggregate', () => {
   describe('fromDTO()', () => {
     it('should create task from a DTO object', () => {
       const dto = {
-        id: 'task-dto-001',
+        id: 'IScheduleTaskId_task-dto-001',
         identityId: 'acc-dto',
         name: 'DTO Task',
         description: 'From DTO',

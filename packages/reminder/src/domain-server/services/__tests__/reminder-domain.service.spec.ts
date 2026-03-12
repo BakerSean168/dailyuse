@@ -24,7 +24,7 @@ const IDENTITY_ID = `IdentityId_${generateUUID()}`;
 function makeTemplateState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemplateState {
   const now = Date.now();
   return {
-    id: ReminderTemplateId.of(generateUUID()),
+    id: ReminderTemplateId.generate(),
     identityId: IdentityId.of(IDENTITY_ID),
     title: 'Domain Svc Test',
     description: null,

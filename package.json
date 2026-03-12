@@ -206,6 +206,13 @@
     ]
   },
   "nx": {
-    "includedScripts": []
+    "includedScripts": [],
+    "targets": {
+      "test": {
+        "options": {
+          "command": "vitest run --project=!task-integration"
+        }
+      }
+    }
   }
 }

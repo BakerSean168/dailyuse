@@ -305,6 +305,20 @@ const taskResolveAliases = [
   ...domainResolveAliases,
 ];
 
+function createPackageResolveAliases(
+  packageName: string,
+  extraAliases: Array<{ find: string | RegExp; replacement: string }> = [],
+) {
+  return [
+    {
+      find: /^@\/(.+)/,
+      replacement: path.resolve(__dirname, `./packages/${packageName}/src/$1`),
+    },
+    ...extraAliases,
+    ...domainResolveAliases,
+  ];
+}
+
 export default defineConfig({
   test: {
     // Global configuration that affects all projects
@@ -329,8 +343,8 @@ export default defineConfig({
       include: ['apps/**/src/**', 'packages/**/src/**'],
     },
 
-    // Global reporters for all projects
-    reporters: ['verbose'],
+    // Keep local runs detailed, but make CI logs compact and high-signal.
+    reporters: process.env.CI ? ['dot'] : ['verbose'],
 
     // Define all test projects in the workspace
     projects: [
@@ -375,8 +389,7 @@ export default defineConfig({
       // Setting unit tests
       {
         extends: true,
-        plugins: [domainResolveAtAlias],
-        resolve: { alias: domainResolveAliases },
+        resolve: { alias: createPackageResolveAliases('setting') },
         test: {
           name: 'setting',
           root: './packages/setting',
@@ -389,8 +402,7 @@ export default defineConfig({
       // Account unit tests
       {
         extends: true,
-        plugins: [domainResolveAtAlias],
-        resolve: { alias: domainResolveAliases },
+        resolve: { alias: createPackageResolveAliases('account') },
         test: {
           name: 'account',
           root: './packages/account',
@@ -403,8 +415,7 @@ export default defineConfig({
       // Goal unit tests
       {
         extends: true,
-        plugins: [domainResolveAtAlias],
-        resolve: { alias: domainResolveAliases },
+        resolve: { alias: createPackageResolveAliases('goal') },
         test: {
           name: 'goal',
           root: './packages/goal',
@@ -417,8 +428,7 @@ export default defineConfig({
       // Governance unit tests
       {
         extends: true,
-        plugins: [domainResolveAtAlias],
-        resolve: { alias: domainResolveAliases },
+        resolve: { alias: createPackageResolveAliases('governance') },
         test: {
           name: 'governance',
           root: './packages/governance',
@@ -430,10 +440,8 @@ export default defineConfig({
       // Reminder unit tests
       {
         extends: true,
-        plugins: [domainResolveAtAlias],
         resolve: {
-          alias: [
-            ...domainResolveAliases,
+          alias: createPackageResolveAliases('reminder', [
             // Reminder cross-package dependencies
             {
               find: '@dailyuse/schedule',
@@ -443,7 +451,7 @@ export default defineConfig({
               find: '@dailyuse/http-client',
               replacement: path.resolve(__dirname, './packages/http-client/src/index.ts'),
             },
-          ],
+          ]),
         },
         test: {
           name: 'reminder',
@@ -468,8 +476,7 @@ export default defineConfig({
       // Authentication unit tests
       {
         extends: true,
-        plugins: [domainResolveAtAlias],
-        resolve: { alias: domainResolveAliases },
+        resolve: { alias: createPackageResolveAliases('authentication') },
         test: {
           name: 'authentication',
           root: './packages/authentication',
@@ -481,6 +488,7 @@ export default defineConfig({
       // Schedule unit tests
       {
         extends: true,
+        resolve: { alias: createPackageResolveAliases('schedule') },
         test: {
           name: 'schedule',
           root: './packages/schedule',
@@ -492,6 +500,7 @@ export default defineConfig({
       // Repository unit tests
       {
         extends: true,
+        resolve: { alias: createPackageResolveAliases('repository') },
         test: {
           name: 'repository',
           root: './packages/repository',

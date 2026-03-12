@@ -4,6 +4,7 @@ import type { AuthRemoteGateway } from './AuthRemoteGateway';
 import {
   createConfigError,
   createInternalError,
+  createOfflineAuthError,
   createRemoteUnreachableError,
   createTerminalAuthError,
   type AuthFlowLogger,
@@ -36,6 +37,13 @@ export async function loginDesktopAccount(
 
   const onlineSnapshot = isOnline();
   logger.info('Desktop login connectivity snapshot', { online: onlineSnapshot });
+
+  if (!onlineSnapshot) {
+    return {
+      ok: false,
+      error: createOfflineAuthError('OFFLINE'),
+    };
+  }
 
   try {
     let loginUrl: string;

@@ -14,7 +14,6 @@ import {
 import { ReminderNotificationConfig } from '../../../domain-shared/value-objects/reminder-notification-config';
 import { ReminderStatus, ReminderType, TriggerResult } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { generateUUID } from '@dailyuse/utils';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -23,7 +22,7 @@ import { generateUUID } from '@dailyuse/utils';
 function makeState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemplateState {
   const now = Date.now();
   return {
-    id: ReminderTemplateId.of(generateUUID()),
+    id: ReminderTemplateId.generate(),
     identityId: IdentityId.generate(),
     title: 'Test Reminder',
     description: null,

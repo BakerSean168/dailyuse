@@ -28,7 +28,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-template-id';
 import { IdentityId } from '@dailyuse/domain-shared';
-import { AggregateRoot, generateUUID } from '@dailyuse/utils';
+import { AggregateRoot } from '@dailyuse/utils';
 import {
   RecurrenceConfig,
   NotificationConfig,
@@ -208,7 +208,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     icon?: string;
     groupId?: string;
   }): ReminderTemplate {
-    const id = ReminderTemplateId.of(generateUUID());
+    const id = ReminderTemplateId.generate();
     const now = Date.now();
 
     // 创建值对象

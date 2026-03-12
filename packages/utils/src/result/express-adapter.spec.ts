@@ -159,13 +159,18 @@ describe('expressAdapter', () => {
   });
 
   it('should handle thrown errors', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const controllerFn = vi.fn().mockRejectedValue(new Error('Database error'));
     const handler = expressAdapter(controllerFn);
 
     const req = createMockReq();
     const res = createMockRes();
 
-    await handler(req, res);
+    try {
+      await handler(req, res);
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
 
     expect(res.statusCode).toBe(500);
     expect(res.body.ok).toBe(false);
@@ -186,9 +191,11 @@ describe('expressAdapter', () => {
   });
 
   it('should preserve domain error context in error responses', async () => {
-    const controllerFn = vi.fn().mockRejectedValue(
-      new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
-    );
+    const controllerFn = vi
+      .fn()
+      .mockRejectedValue(
+        new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
+      );
     const handler = expressAdapter(controllerFn);
 
     const req = createMockReq();
@@ -291,6 +298,7 @@ describe('expressAdapterWithValidation', () => {
   });
 
   it('should handle controller errors gracefully', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const schema = createMockSchema({ name: 'Test' });
     const controllerFn = vi.fn().mockRejectedValue(new Error('Unexpected'));
     const handler = expressAdapterWithValidation(schema, controllerFn);
@@ -298,7 +306,11 @@ describe('expressAdapterWithValidation', () => {
     const req = createMockReq({ body: { name: 'Test' } });
     const res = createMockRes();
 
-    await handler(req, res);
+    try {
+      await handler(req, res);
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
 
     expect(res.statusCode).toBe(500);
     expect(res.body.ok).toBe(false);

@@ -9,7 +9,7 @@ import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
 
 export class GetDefaultSettings {
   execute(): UserSettingClientDTO {
-    const defaultSetting = UserSetting.create({ identityId: 'defaults' });
+    const defaultSetting = UserSetting.create({ identityId: 'IdentityId_defaults' });
     return defaultSetting.toClientDTO();
   }
 }
