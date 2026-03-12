@@ -31,12 +31,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -86,12 +86,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -110,7 +110,7 @@ jobs:
         run: pnpm exec nx run-many -t build --all --exclude=api,web,desktop --outputStyle=static
 
       - name: 📦 Upload package artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: packages-build
           path: |
@@ -126,12 +126,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -145,7 +145,7 @@ jobs:
         run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: 📦 Download package artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: packages-build
           path: .
@@ -180,12 +180,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -199,7 +199,7 @@ jobs:
         run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: 📦 Download package artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: packages-build
           path: .
@@ -234,12 +234,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -253,7 +253,7 @@ jobs:
         run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: 📦 Download package artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: packages-build
           path: .
