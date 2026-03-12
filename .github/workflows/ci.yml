@@ -39,8 +39,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          package-manager-cache: false
 
       - name: 📦 Setup pnpm
         run: |
@@ -95,8 +94,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          package-manager-cache: false
 
       - name: 📦 Setup pnpm
         run: |
@@ -136,8 +134,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          package-manager-cache: false
 
       - name: 📦 Setup pnpm
         run: |
@@ -191,8 +188,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          package-manager-cache: false
 
       - name: 📦 Setup pnpm
         run: |
@@ -246,8 +242,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          package-manager-cache: false
 
       - name: 📦 Setup pnpm
         run: |
