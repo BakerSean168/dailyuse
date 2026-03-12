@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { expressAdapter, expressAdapterWithValidation, formatZodErrors } from './express-adapter';
 import { ok, fail } from '@dailyuse/contracts/result';
+import { ConflictError } from '../errors/DomainError';
 
 // ============================================================================
 // Mock helpers
@@ -138,7 +139,11 @@ describe('expressAdapter', () => {
 
   it('should handle controller failure result', async () => {
     const controllerFn = vi.fn().mockResolvedValue(
-      fail({ code: 'NOT_FOUND', message: 'Goal not found' }),
+      fail({
+        code: 'NOT_FOUND',
+        message: 'Goal not found',
+        context: { entity: 'goal', id: 'goal-1' },
+      }),
     );
     const handler = expressAdapter(controllerFn);
 
@@ -150,6 +155,7 @@ describe('expressAdapter', () => {
     expect(res.statusCode).toBe(404);
     expect(res.body.ok).toBe(false);
     expect(res.body.error.code).toBe('NOT_FOUND');
+    expect(res.body.error.context).toEqual({ entity: 'goal', id: 'goal-1' });
   });
 
   it('should handle thrown errors', async () => {
@@ -177,6 +183,24 @@ describe('expressAdapter', () => {
     await handler(req, res);
 
     expect(controllerFn).toHaveBeenCalledWith(req, { identityId: 'custom-id', deviceId: 'mobile' });
+  });
+
+  it('should preserve domain error context in error responses', async () => {
+    const controllerFn = vi.fn().mockRejectedValue(
+      new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
+    );
+    const handler = expressAdapter(controllerFn);
+
+    const req = createMockReq();
+    const res = createMockRes();
+
+    await handler(req, res);
+
+    expect(res.statusCode).toBe(409);
+    expect(res.body.error.context).toEqual({
+      count: 2,
+      repositoryIds: ['repo-1'],
+    });
   });
 });
 

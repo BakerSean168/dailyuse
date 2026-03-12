@@ -39,6 +39,8 @@ export class HttpClientError extends Error {
     public readonly details?: unknown,
     /** 原始错误对象 */
     public readonly cause?: unknown,
+    /** 结构化业务上下文 */
+    public readonly context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'HttpClientError';
@@ -174,6 +176,8 @@ export class AxiosHttpClient implements HttpClient {
             data.error?.code ?? 'BUSINESS_ERROR',
             response.status,
             data.error?.details,
+            undefined,
+            data.error?.context,
           );
         }
 
@@ -201,6 +205,8 @@ export class AxiosHttpClient implements HttpClient {
               errorData.error?.code ?? 'UNKNOWN',
               response.status,
               errorData.error?.details,
+              undefined,
+              errorData.error?.context,
             );
           }
 

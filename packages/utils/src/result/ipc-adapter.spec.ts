@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ipcAdapter, ipcAdapterWithValidation } from './ipc-adapter';
 import { ok, fail } from '@dailyuse/contracts/result';
+import { ConflictError } from '../errors/DomainError';
 
 // ============================================================================
 // Mock helpers
@@ -53,7 +54,11 @@ describe('ipcAdapter', () => {
 
   it('should return IpcResult on controller failure', async () => {
     const controllerFn = vi.fn().mockResolvedValue(
-      fail({ code: 'NOT_FOUND', message: 'Not found' }),
+      fail({
+        code: 'NOT_FOUND',
+        message: 'Not found',
+        context: { entity: 'repository', id: 'repo-1' },
+      }),
     );
     const handler = ipcAdapter(controllerFn);
 
@@ -62,6 +67,7 @@ describe('ipcAdapter', () => {
     expect(result.ok).toBe(false);
     expect(result.error?.code).toBe('NOT_FOUND');
     expect(result.error?.message).toBe('Not found');
+    expect(result.error?.context).toEqual({ entity: 'repository', id: 'repo-1' });
   });
 
   it('should handle thrown errors', async () => {
@@ -87,6 +93,22 @@ describe('ipcAdapter', () => {
       {},
       { identityId: 'desktop-user', deviceId: 'desktop-mac' },
     );
+  });
+
+  it('should preserve domain error context when controller throws', async () => {
+    const controllerFn = vi.fn().mockRejectedValue(
+      new ConflictError('Multiple repositories found', { count: 2, repositoryIds: ['repo-1'] }),
+    );
+    const handler = ipcAdapter(controllerFn);
+
+    const result = await handler(createMockEvent(), {});
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('CONFLICT');
+    expect(result.error?.context).toEqual({
+      count: 2,
+      repositoryIds: ['repo-1'],
+    });
   });
 });
 

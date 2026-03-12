@@ -1,6 +1,6 @@
 import { createIdType } from '@dailyuse/utils';
 
-import type { IdentityId as IIdentityId } from '@dailyuse/contracts/primitives';
+import type { IdentityId as IIdentityId } from '@dailyuse/contracts';
 
 /**
  * 全局 IdentityId 类型定义

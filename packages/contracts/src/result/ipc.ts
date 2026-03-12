@@ -35,6 +35,7 @@ export interface IpcResult<T = unknown> {
       message: string;
       value?: unknown;
     }>;
+    context?: Record<string, unknown>;
   };
   /** 元数据 */
   meta?: {
@@ -85,6 +86,7 @@ export function toIpcResult<T>(result: Result<T>): IpcResult<T> {
         message: d.message,
         value: d.value,
       })),
+      context: result.error.context,
     },
     meta: result.meta ? {
       traceId: result.meta.traceId,
@@ -129,6 +131,7 @@ export function fromIpcResult<T>(ipcResult: IpcResult<T>): Result<T, ResultError
       message: d.message,
       value: d.value,
     })),
+    context: ipcResult.error?.context,
   };
 
   return fail(error, meta);

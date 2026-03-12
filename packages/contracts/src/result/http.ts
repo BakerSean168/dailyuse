@@ -36,6 +36,7 @@ export interface HttpResponse<T = unknown> {
     code: string;
     message: string;
     details?: ResultErrorDetail[];
+    context?: Record<string, unknown>;
   };
   /** 分页信息（列表接口） */
   pagination?: PageInfo;
@@ -156,6 +157,7 @@ export function toHttpResponse<T>(
       code: result.error.code,
       message: result.error.message,
       details: result.error.details,
+      context: result.error.context,
     },
     timestamp,
     traceId: options.traceId ?? result.meta?.traceId,
@@ -183,6 +185,7 @@ export function fromHttpResponse<T>(response: HttpResponse<T>): Result<T, Result
       code: response.error?.code ?? ResultCode.UNKNOWN,
       message: response.error?.message ?? response.message,
       details: response.error?.details,
+      context: response.error?.context,
     },
     meta,
   );
@@ -239,8 +242,9 @@ export class HttpResponseBuilder {
     code: string,
     message: string,
     details?: ResultErrorDetail[],
+    context?: Record<string, unknown>,
   ): HttpResponse<never> {
-    return toHttpResponse(fail({ code, message, details }), {
+    return toHttpResponse(fail({ code, message, details, context }), {
       traceId: this.traceId,
       startTime: this.startTime,
     });

@@ -41,6 +41,7 @@
 // Primitives
 // ============================================================
 export { brandedId } from './primitives';
+export type { IdentityId } from './primitives';
 
 // ============================================================
 // 响应系统（旧版已移除，请使用 @dailyuse/contracts/result）

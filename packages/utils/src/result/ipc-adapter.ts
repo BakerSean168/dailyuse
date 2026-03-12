@@ -34,6 +34,7 @@ import {
   fail,
 } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
+import { isDomainError } from '../errors/DomainError';
 
 // ============================================================================
 // Types
@@ -97,6 +98,16 @@ export function ipcAdapter<T>(
       const result = await controllerFn(args, context);
       return toIpcResult(result);
     } catch (err) {
+      if (isDomainError(err)) {
+        return toIpcResult(
+          fail({
+            code: err.code,
+            message: err.message,
+            context: err.context,
+          }),
+        );
+      }
+
       // Recognize DomainError (or any Error with a string `code`) and preserve code
       const code =
         err instanceof Error &&
@@ -181,6 +192,16 @@ export function ipcAdapterWithValidation<TInput, TOutput>(
       const result = await controllerFn(parsed.data, context);
       return toIpcResult(result);
     } catch (err) {
+      if (isDomainError(err)) {
+        return toIpcResult(
+          fail({
+            code: err.code,
+            message: err.message,
+            context: err.context,
+          }),
+        );
+      }
+
       const code =
         err instanceof Error &&
         'code' in err &&

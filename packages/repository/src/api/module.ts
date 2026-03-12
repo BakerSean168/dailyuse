@@ -191,7 +191,7 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
           return fail({
             code: 'CONFLICT',
             message: 'Single-repository mode expected exactly one repository',
-            details: {
+            context: {
               count: repositories.length,
               repositoryIds: repositories.map((repository) => repository.id),
             },

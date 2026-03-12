@@ -167,7 +167,7 @@ export function expressAdapter<T>(
       // 1. Domain errors — safe to expose code + message (developer-crafted)
       if (isDomainError(err)) {
         const status = err.httpStatus ?? errorCodeToHttpStatus(err.code);
-        res.status(status).json(responseBuilder.error(err.code, err.message));
+        res.status(status).json(responseBuilder.error(err.code, err.message, undefined, err.context));
         return;
       }
 
@@ -268,7 +268,7 @@ export function expressAdapterWithValidation<TInput, TOutput>(
       // 1. Domain errors — safe to expose code + message (developer-crafted)
       if (isDomainError(err)) {
         const status = err.httpStatus ?? errorCodeToHttpStatus(err.code);
-        res.status(status).json(responseBuilder.error(err.code, err.message));
+        res.status(status).json(responseBuilder.error(err.code, err.message, undefined, err.context));
         return;
       }
 

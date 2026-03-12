@@ -92,6 +92,8 @@ export interface ResultError {
   message: string;
   /** 错误详情列表 */
   details?: ResultErrorDetail[];
+  /** 结构化业务上下文 */
+  context?: Record<string, unknown>;
   /** 原始错误（仅开发环境） */
   cause?: unknown;
 }

@@ -40,6 +40,7 @@ export const OpenApiErrorResponseSchema = z.object({
       code: z.string(),
       message: z.string(),
     })).optional(),
+    context: z.record(z.string(), z.unknown()).optional(),
   }),
   timestamp: z.number(),
 });
