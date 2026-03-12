@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ok, fail, isOk } from '@dailyuse/contracts/result';
+import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { TaskInstanceController, type TaskInstanceUseCases } from '../task-instance.controller';
 
@@ -29,6 +30,8 @@ const FAKE_INSTANCE_DTO: TaskInstanceClientDTO = {
   createdAt: 1000,
   updatedAt: 1000,
 } as unknown as TaskInstanceClientDTO;
+
+const TEST_IDENTITY_ID = anIdentityId();
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -87,7 +90,7 @@ describe('TaskInstanceController', () => {
     it('should call listByTemplate when templateId is provided', async () => {
       (useCases.listByTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok([]));
 
-      await controller.listInstances('identity-1', { templateId: 'tmpl_1' });
+      await controller.listInstances(TEST_IDENTITY_ID, { templateId: 'tmpl_1' });
 
       expect(useCases.listByTemplate.execute).toHaveBeenCalledWith('tmpl_1');
       expect(useCases.listByStatus.execute).not.toHaveBeenCalled();
@@ -97,9 +100,9 @@ describe('TaskInstanceController', () => {
     it('should call listByStatus when status is provided (and no templateId)', async () => {
       (useCases.listByStatus.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok([]));
 
-      await controller.listInstances('identity-1', { status: 'Pending' as any });
+      await controller.listInstances(TEST_IDENTITY_ID, { status: 'Pending' as any });
 
-      expect(useCases.listByStatus.execute).toHaveBeenCalledWith('identity-1', 'Pending');
+      expect(useCases.listByStatus.execute).toHaveBeenCalledWith(TEST_IDENTITY_ID, 'Pending');
       expect(useCases.listByTemplate.execute).not.toHaveBeenCalled();
       expect(useCases.listByAccount.execute).not.toHaveBeenCalled();
     });
@@ -107,9 +110,9 @@ describe('TaskInstanceController', () => {
     it('should call listByAccount when no filters are provided', async () => {
       (useCases.listByAccount.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok([]));
 
-      await controller.listInstances('identity-1');
+      await controller.listInstances(TEST_IDENTITY_ID);
 
-      expect(useCases.listByAccount.execute).toHaveBeenCalledWith('identity-1');
+      expect(useCases.listByAccount.execute).toHaveBeenCalledWith(TEST_IDENTITY_ID);
       expect(useCases.listByTemplate.execute).not.toHaveBeenCalled();
       expect(useCases.listByStatus.execute).not.toHaveBeenCalled();
     });
@@ -117,7 +120,7 @@ describe('TaskInstanceController', () => {
     it('should prioritize templateId over status', async () => {
       (useCases.listByTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok([]));
 
-      await controller.listInstances('identity-1', {
+      await controller.listInstances(TEST_IDENTITY_ID, {
         templateId: 'tmpl_1',
         status: 'Pending' as any,
       });
@@ -129,9 +132,9 @@ describe('TaskInstanceController', () => {
     it('should call listByAccount when filters is empty object', async () => {
       (useCases.listByAccount.execute as ReturnType<typeof vi.fn>).mockResolvedValue(ok([]));
 
-      await controller.listInstances('identity-1', {});
+      await controller.listInstances(TEST_IDENTITY_ID, {});
 
-      expect(useCases.listByAccount.execute).toHaveBeenCalledWith('identity-1');
+      expect(useCases.listByAccount.execute).toHaveBeenCalledWith(TEST_IDENTITY_ID);
     });
   });
 
@@ -148,16 +151,16 @@ describe('TaskInstanceController', () => {
         ok({ data: [FAKE_INSTANCE_DTO], total: 1 }),
       );
 
-      await controller.getInstancesByDateRange('identity-1', 1000, 2000);
+      await controller.getInstancesByDateRange(TEST_IDENTITY_ID, 1000, 2000);
 
-      expect(useCases.getByDateRange.execute).toHaveBeenCalledWith('identity-1', 1000, 2000);
+      expect(useCases.getByDateRange.execute).toHaveBeenCalledWith(TEST_IDENTITY_ID, 1000, 2000);
     });
 
     it('should forward use case failure', async () => {
       const useCaseError = fail({ code: 'VALIDATION_ERROR', message: 'Invalid range' });
       (useCases.getByDateRange.execute as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.getInstancesByDateRange('identity-1', 1000, 2000);
+      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, 1000, 2000);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -171,7 +174,7 @@ describe('TaskInstanceController', () => {
         ok({ data: [FAKE_INSTANCE_DTO], total: 1 }),
       );
 
-      const result = await controller.getInstancesByDateRange('identity-1', 1000, 2000);
+      const result = await controller.getInstancesByDateRange(TEST_IDENTITY_ID, 1000, 2000);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ok, fail, isOk } from '@dailyuse/contracts/result';
+import { anIdentityId } from '@dailyuse/test-utils/fixtures';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import { TaskTemplateController, type TaskTemplateUseCases } from '../task-template.controller';
@@ -43,6 +44,8 @@ const VALID_UPDATE_INPUT = {
   name: 'Updated Name',
 };
 
+const TEST_IDENTITY_ID = anIdentityId();
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -61,7 +64,7 @@ describe('TaskTemplateController', () => {
   // =========================================================================
   describe('createTemplate', () => {
     it('should return VALIDATION_ERROR when input is invalid', async () => {
-      const result = await controller.createTemplate({}, 'identity-1');
+      const result = await controller.createTemplate({}, TEST_IDENTITY_ID);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -79,11 +82,11 @@ describe('TaskTemplateController', () => {
         ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 0 }),
       );
 
-      const result = await controller.createTemplate(VALID_CREATE_INPUT, 'identity-1');
+      const result = await controller.createTemplate(VALID_CREATE_INPUT, TEST_IDENTITY_ID);
 
       expect(useCases.createTemplate.execute).toHaveBeenCalledOnce();
       const args = (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(args.identityId).toBe('identity-1');
+      expect(args.identityId).toBe(TEST_IDENTITY_ID);
       expect(args.name).toBe('My Task');
       expect(args.taskType).toBe(TaskType.OneTime);
       expect(args.importance).toBe('Moderate');
@@ -94,7 +97,7 @@ describe('TaskTemplateController', () => {
         ok({ template: FAKE_TEMPLATE_DTO, instanceCount: 5 }),
       );
 
-      const result = await controller.createTemplate(VALID_CREATE_INPUT, 'identity-1');
+      const result = await controller.createTemplate(VALID_CREATE_INPUT, TEST_IDENTITY_ID);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
@@ -109,7 +112,7 @@ describe('TaskTemplateController', () => {
       });
       (useCases.createTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(useCaseError);
 
-      const result = await controller.createTemplate(VALID_CREATE_INPUT, 'identity-1');
+      const result = await controller.createTemplate(VALID_CREATE_INPUT, TEST_IDENTITY_ID);
 
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -121,7 +124,7 @@ describe('TaskTemplateController', () => {
     it('should reject missing name field', async () => {
       const result = await controller.createTemplate(
         { taskType: TaskType.OneTime, timeConfig: { timeType: 'AllDay' }, importance: 'Moderate' },
-        'identity-1',
+        TEST_IDENTITY_ID,
       );
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -132,7 +135,7 @@ describe('TaskTemplateController', () => {
     it('should reject empty name string', async () => {
       const result = await controller.createTemplate(
         { ...VALID_CREATE_INPUT, name: '' },
-        'identity-1',
+        TEST_IDENTITY_ID,
       );
       expect(isOk(result)).toBe(false);
       if (!isOk(result)) {
@@ -201,11 +204,11 @@ describe('TaskTemplateController', () => {
         ok({ templates: [], total: 0 }),
       );
 
-      await controller.listTemplates('identity-1');
+      await controller.listTemplates(TEST_IDENTITY_ID);
 
       expect(useCases.listTemplates.execute).toHaveBeenCalledOnce();
       const args = (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
-      expect(args.identityId).toBe('identity-1');
+      expect(args.identityId).toBe(TEST_IDENTITY_ID);
     });
 
     it('should wrap single status into array', async () => {
@@ -213,7 +216,7 @@ describe('TaskTemplateController', () => {
         ok({ templates: [], total: 0 }),
       );
 
-      await controller.listTemplates('identity-1', { status: 'Active' as any });
+      await controller.listTemplates(TEST_IDENTITY_ID, { status: 'Active' as any });
 
       const args = (useCases.listTemplates.execute as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(args.status).toEqual(['Active']);
@@ -224,7 +227,7 @@ describe('TaskTemplateController', () => {
         ok({ templates: [], total: 0 }),
       );
 
-      await controller.listTemplates('identity-1', {
+      await controller.listTemplates(TEST_IDENTITY_ID, {
         folderId: 'folder-1',
         goalId: 'goal-1',
         tags: ['tag1', 'tag2'],
@@ -242,7 +245,7 @@ describe('TaskTemplateController', () => {
         ok({ templates, total: 1 }),
       );
 
-      const result = await controller.listTemplates('identity-1');
+      const result = await controller.listTemplates(TEST_IDENTITY_ID);
 
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {

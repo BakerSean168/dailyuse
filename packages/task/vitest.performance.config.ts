@@ -33,8 +33,15 @@ const projectConfig = defineConfig({
     ],
   },
   test: {
-    name: 'task',
-    testTimeout: 10000,
+    name: 'task-performance',
+    include: [
+      'src/application-server/__tests__/benchmarks/sort-algorithm.bench.ts',
+      'src/application-server/__tests__/benchmarks/service-sorting.bench.ts',
+      'src/application-server/__tests__/benchmarks/stability.bench.ts',
+      'src/application-server/__tests__/benchmarks/http-endpoint.bench.ts',
+    ],
+    exclude: ['node_modules', 'dist', '.git', '.cache'],
+    testTimeout: 30000,
     pool: 'forks',
   },
 }) as UserConfig;

@@ -45,10 +45,7 @@ export default defineConfig({
     passWithNoTests: true,
     // 序列化测试，避免数据库冲突
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true, // API 测试使用单进程避免数据库锁
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
   },
 });

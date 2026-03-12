@@ -28,8 +28,9 @@
  * ```
  */
 
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { accessSync } from 'node:fs';
+import { createConnection } from 'node:net';
 import { resolve } from 'node:path';
 
 // ─── Constants ──────────────────────────────────────────────────────
@@ -37,16 +38,19 @@ import { resolve } from 'node:path';
 const TEST_DB_USER = 'test_user';
 const TEST_DB_PASS = 'test_pass';
 const TEST_DB_NAME = 'dailyuse_test';
-const TEST_DB_HOST = 'localhost';
+const TEST_DB_HOST = '127.0.0.1';
 const TEST_DB_PORT = 5433;
 const TEST_DB_CONTAINER = 'dailyuse-test-db';
-const COMPOSE_FILE = 'docker-compose.test.yml';
+const LEGACY_TEST_COMPOSE_FILE = 'docker-compose.test.yml';
+const WORKSPACE_COMPOSE_FILE = 'docker-compose.yml';
+const TEST_COMPOSE_SERVICE = 'postgres-test';
+const DEFAULT_TEST_DATABASE_URL = `postgresql://${TEST_DB_USER}:${TEST_DB_PASS}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}`;
 
 /**
  * The test database URL. Set this in process.env.DATABASE_URL before
  * running Prisma or connecting to the database.
  */
-export const TEST_DATABASE_URL = `postgresql://${TEST_DB_USER}:${TEST_DB_PASS}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}`;
+export const TEST_DATABASE_URL = DEFAULT_TEST_DATABASE_URL;
 
 // ─── Docker Container Management ────────────────────────────────────
 
@@ -70,7 +74,7 @@ export function isContainerRunning(): boolean {
  * Start the test database container using docker-compose.
  * If the container is already running, this is a no-op.
  *
- * @param projectRoot - Path to the monorepo root (where docker-compose.test.yml lives)
+ * @param projectRoot - Path to the monorepo root
  */
 export function startTestContainer(projectRoot?: string): void {
   if (isContainerRunning()) {
@@ -80,8 +84,9 @@ export function startTestContainer(projectRoot?: string): void {
 
   console.log('[test-utils] Starting test database container...');
   const root = projectRoot ?? findProjectRoot();
+  const composeConfig = resolveComposeConfig(root);
 
-  execFileSync('docker', ['compose', '-f', COMPOSE_FILE, 'up', '-d', '--wait'], {
+  execFileSync('docker', [...composeConfig.args, 'up', '-d', '--wait', ...composeConfig.services], {
     cwd: root,
     stdio: 'inherit',
   });
@@ -97,8 +102,9 @@ export function stopTestContainer(projectRoot?: string): void {
 
   console.log('[test-utils] Stopping test database container...');
   const root = projectRoot ?? findProjectRoot();
+  const composeConfig = resolveComposeConfig(root);
 
-  execFileSync('docker', ['compose', '-f', COMPOSE_FILE, 'down', '-v'], {
+  execFileSync('docker', [...composeConfig.args, 'stop', ...composeConfig.services], {
     cwd: root,
     stdio: 'inherit',
   });
@@ -107,42 +113,22 @@ export function stopTestContainer(projectRoot?: string): void {
 /**
  * Wait for PostgreSQL to be ready to accept connections.
  *
- * In CI environments (where `CI=true`), uses `pg_isready` directly against
- * the host since the DB runs as a GitHub Actions service container, not
- * inside a named Docker container.
- *
  * @param timeoutMs - Maximum time to wait (default 30s)
  * @throws Error if database is not ready within timeout
  */
 export async function waitForDatabase(timeoutMs = 30_000): Promise<void> {
   const startedAt = Date.now();
-  const isCI = process.env.CI === 'true';
+  const { hostname, port } = getTestDatabaseConnectionInfo();
 
   while (Date.now() - startedAt < timeoutMs) {
-    try {
-      if (isCI) {
-        // In CI, PostgreSQL runs as a service container on the host network.
-        // Use pg_isready directly (available on ubuntu-latest).
-        execFileSync(
-          'pg_isready',
-          ['-h', TEST_DB_HOST, '-p', String(TEST_DB_PORT), '-U', TEST_DB_USER, '-d', TEST_DB_NAME],
-          { stdio: ['pipe', 'pipe', 'pipe'] },
-        );
-      } else {
-        // Locally, PostgreSQL runs inside a named Docker container.
-        execFileSync(
-          'docker',
-          ['exec', TEST_DB_CONTAINER, 'pg_isready', '-U', TEST_DB_USER, '-d', TEST_DB_NAME],
-          { stdio: ['pipe', 'pipe', 'pipe'] },
-        );
-      }
-      return; // ready
-    } catch {
-      await sleep(500);
+    if (await canConnectToPort(hostname, port)) {
+      return;
     }
+
+    await sleep(500);
   }
 
-  console.warn(`[test-utils] Database not ready after ${timeoutMs}ms. Bypassing error to allow dry-run tests.`); return;
+  throw new Error(`[test-utils] Database not ready after ${timeoutMs}ms`);
 }
 
 // ─── Prisma Schema Management ──────────────────────────────────────
@@ -159,15 +145,18 @@ export async function waitForDatabase(timeoutMs = 30_000): Promise<void> {
 export function syncPrismaSchema(prismaDir?: string): void {
   console.log('[test-utils] Syncing Prisma schema to test database...');
 
-  const dir = prismaDir ?? resolve(findProjectRoot(), 'packages/database/prisma');
+  const root = findProjectRoot();
+  const dir = prismaDir ?? resolve(root, 'packages/database/prisma');
+  const prismaCli = resolve(root, 'node_modules/prisma/build/index.js');
 
   // Prisma 7 removed --skip-generate; only --accept-data-loss remains
-  execFileSync('npx', ['prisma', 'db', 'push', '--accept-data-loss'], {
+  execFileSync(process.execPath, [prismaCli, 'db', 'push', '--accept-data-loss'], {
     cwd: dir,
     stdio: 'inherit',
     env: {
       ...process.env,
-      DATABASE_URL: TEST_DATABASE_URL,
+      DATABASE_URL: getTestDatabaseUrl(),
+      PRISMA_HIDE_UPDATE_MESSAGE: 'true',
     },
   });
 
@@ -189,11 +178,13 @@ export function syncPrismaSchema(prismaDir?: string): void {
 export async function ensureTestDatabase(projectRoot?: string): Promise<void> {
   const root = projectRoot ?? findProjectRoot();
   const isCI = process.env.CI === 'true';
+  const databaseUrl = getTestDatabaseUrl();
 
   // Set env vars first — Prisma needs DATABASE_URL
   process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL = TEST_DATABASE_URL;
-  process.env.JWT_SECRET = 'test-jwt-secret-key';
+  process.env.DATABASE_URL = databaseUrl;
+  process.env.JWT_SECRET = 'test-jwt-secret-not-for-production';
+  process.env.PRISMA_HIDE_UPDATE_MESSAGE = 'true';
 
   if (isCI) {
     console.log('[test-utils] CI detected — skipping Docker container management');
@@ -209,7 +200,7 @@ export async function ensureTestDatabase(projectRoot?: string): Promise<void> {
  * Get the test database URL. Convenience for tests that need the URL.
  */
 export function getTestDatabaseUrl(): string {
-  return TEST_DATABASE_URL;
+  return process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL;
 }
 
 // ─── Data Cleanup ──────────────────────────────────────────────────
@@ -242,8 +233,35 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function getTestDatabaseConnectionInfo(): { hostname: string; port: number } {
+  const url = new URL(getTestDatabaseUrl());
+  return {
+    hostname: url.hostname,
+    port: url.port ? Number(url.port) : 5432,
+  };
+}
+
+function canConnectToPort(hostname: string, port: number, timeoutMs = 1_000): Promise<boolean> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const socket = createConnection({ host: hostname, port });
+
+    const finish = (result: boolean) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve(result);
+    };
+
+    socket.setTimeout(timeoutMs);
+    socket.once('connect', () => finish(true));
+    socket.once('error', () => finish(false));
+    socket.once('timeout', () => finish(false));
+  });
+}
+
 /**
- * Find the monorepo root by looking for docker-compose.test.yml
+ * Find the monorepo root by looking for Nx / pnpm workspace markers
  * walking up from the current working directory.
  */
 function findProjectRoot(): string {
@@ -252,9 +270,8 @@ function findProjectRoot(): string {
   // Walk up to find the monorepo root (max 10 levels)
   for (let i = 0; i < 10; i++) {
     try {
-      // Check if docker-compose.test.yml exists here
-      const composeFile = resolve(dir, COMPOSE_FILE);
-      accessSync(composeFile);
+      accessSync(resolve(dir, 'nx.json'));
+      accessSync(resolve(dir, 'pnpm-workspace.yaml'));
       return dir;
     } catch {
       dir = resolve(dir, '..');
@@ -263,4 +280,35 @@ function findProjectRoot(): string {
 
   // Fallback: assume cwd is the root
   return process.cwd();
+}
+
+type ComposeConfig = {
+  args: string[];
+  services: string[];
+};
+
+function resolveComposeConfig(projectRoot: string): ComposeConfig {
+  const legacyComposeFile = resolve(projectRoot, LEGACY_TEST_COMPOSE_FILE);
+  try {
+    accessSync(legacyComposeFile);
+    return {
+      args: ['compose', '-f', LEGACY_TEST_COMPOSE_FILE],
+      services: [],
+    };
+  } catch {
+    // Fall through to the profile-based workspace compose file.
+  }
+
+  const workspaceComposeFile = resolve(projectRoot, WORKSPACE_COMPOSE_FILE);
+  try {
+    accessSync(workspaceComposeFile);
+    return {
+      args: ['compose', '-f', WORKSPACE_COMPOSE_FILE, '--profile', 'test'],
+      services: [TEST_COMPOSE_SERVICE],
+    };
+  } catch {
+    throw new Error(
+      `[test-utils] No test compose file found. Expected ${LEGACY_TEST_COMPOSE_FILE} or ${WORKSPACE_COMPOSE_FILE} in ${projectRoot}.`,
+    );
+  }
 }

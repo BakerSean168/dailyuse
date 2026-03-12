@@ -46,6 +46,16 @@
       "options": {
         "command": "vitest run --project task-integration"
       }
+    },
+    "test:performance": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-performance"],
+      "inputs": ["default", "^production"],
+      "cache": false,
+      "options": {
+        "command": "vitest run --config vitest.performance.config.ts -t \"acceptable time\"",
+        "cwd": "packages/task"
+      }
     }
   }
 }

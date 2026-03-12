@@ -52,9 +52,17 @@
     "dist": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["electron-builder"],
+        "command": "electron-builder",
         "cwd": "apps/desktop",
         "parallel": false
+      },
+      "configurations": {
+        "windows": {
+          "command": "electron-builder --win --x64"
+        },
+        "linux": {
+          "command": "electron-builder --linux AppImage deb rpm --x64"
+        }
       }
     },
     "lint": {

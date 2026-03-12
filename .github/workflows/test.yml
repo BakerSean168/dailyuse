@@ -12,11 +12,16 @@ concurrency:
   group: test-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: '22'
+  CI: 'true'
+  NODE_ENV: test
+  PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
 jobs:
-  # ========== Job 1: Unit & Smoke Tests (no DB required) ==========
   unit-and-smoke:
     name: Unit & Smoke Tests
     runs-on: ubuntu-latest
@@ -24,30 +29,31 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.2.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: pnpm build:packages
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: Run domain unit tests
-        run: npx vitest run --project task
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run task:test
 
       - name: Run API smoke tests
-        run: npx vitest run --project api-smoke
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run api:test:smoke
 
-  # ========== Job 2: Integration Tests (requires PostgreSQL) ==========
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
@@ -69,32 +75,33 @@ jobs:
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://test_user:test_pass@localhost:5433/dailyuse_test
+      DATABASE_URL: postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test
+      JWT_SECRET: test-jwt-secret-not-for-production
+      TZ: UTC
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.2.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build packages
-        run: pnpm build:packages
-
-      - name: Generate Prisma client
-        run: npx prisma generate --config packages/database/prisma/prisma.config.ts
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: Push Prisma schema to test database
-        run: npx prisma db push --force-reset --config packages/database/prisma/prisma.config.ts
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run database:prisma-push
 
       - name: Run integration tests
-        run: npx vitest run --project task-integration
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run task:test:integration

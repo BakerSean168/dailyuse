@@ -1,6 +1,6 @@
 {
   "name": "@dailyuse/scheduler-server",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "独立的调度器包，支持 Bree、node-cron 等多种调度引擎",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

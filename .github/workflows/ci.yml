@@ -16,124 +16,84 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
-  # 仅指定 Node 版本，pnpm 版本由 packageManager 字段自动检测
   NODE_VERSION: '22'
+  CI: 'true'
+  PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
 jobs:
-  # ========== Job 1: 安装依赖 ==========
-  setup:
+  lint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        # 不指定 version，让它自动从 packageManager 读取
+        uses: pnpm/action-setup@v4.2.0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 💾 Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            .nx/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-  # ========== Job 2: Lint ==========
-  lint:
-    needs: setup
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: 🔄 Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            .nx/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
 
       - name: 🧹 Lint affected projects
-        run: pnpm nx affected -t lint --parallel=3
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx affected -t lint --parallel=3 --outputStyle=static
 
-  # ========== Job 3: Build Packages (required for typecheck) ==========
   build-packages:
-    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.2.0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: 🔄 Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            .nx/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: 🏗️ Build packages (for type declarations)
-        run: pnpm build:packages
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run-many -t build --all --exclude=api,web,desktop --outputStyle=static
 
-      - name: 💾 Cache package dist
-        uses: actions/cache@v4
+      - name: 📦 Upload package artifacts
+        uses: actions/upload-artifact@v6
         with:
+          name: packages-build
           path: |
             packages/*/dist
-          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
+            packages/database/src/generated/prisma
+          if-no-files-found: error
+          retention-days: 1
 
-  # ========== Job 4: Typecheck (requires built packages) ==========
   typecheck:
     needs: build-packages
     runs-on: ubuntu-latest
@@ -141,43 +101,37 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.2.0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: 🔄 Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            .nx/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
-      - name: 🔄 Restore package dist cache
-        uses: actions/cache@v4
+      - name: 📦 Download package artifacts
+        uses: actions/download-artifact@v7
         with:
-          path: |
-            packages/*/dist
-          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
+          name: packages-build
+          path: .
 
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
 
       - name: 🔍 Typecheck affected projects
-        run: pnpm nx affected -t typecheck --parallel=3
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
 
-  # ========== Job 5: Test ==========
   test:
     needs: build-packages
     runs-on: ubuntu-latest
@@ -185,45 +139,37 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.2.0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: 🔄 Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            .nx/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
-      - name: 🔄 Restore package dist cache
-        uses: actions/cache@v4
+      - name: 📦 Download package artifacts
+        uses: actions/download-artifact@v7
         with:
-          path: |
-            packages/*/dist
-          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
+          name: packages-build
+          path: .
 
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
 
       - name: 🧪 Test affected projects
-        run: pnpm nx affected -t test --parallel=3 --passWithNoTests
         env:
-          CI: true
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx affected -t test --parallel=3 --passWithNoTests --outputStyle=static
 
-  # ========== Job 6: Build Apps ==========
   build:
     needs: build-packages
     runs-on: ubuntu-latest
@@ -231,43 +177,37 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v4.2.0
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: 🔄 Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-            .nx/cache
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
-      - name: 🔄 Restore package dist cache
-        uses: actions/cache@v4
+      - name: 📦 Download package artifacts
+        uses: actions/download-artifact@v7
         with:
-          path: |
-            packages/*/dist
-          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
+          name: packages-build
+          path: .
 
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
 
       - name: 🏗️ Build affected apps
-        run: pnpm nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client'
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx affected -t build --parallel=3 --exclude='contracts,utils,ui-core,assets,sync-client' --outputStyle=static
 
-  # ========== Job 7: CI 状态检查 ==========
   ci-success:
     needs: [lint, typecheck, test, build]
     runs-on: ubuntu-latest

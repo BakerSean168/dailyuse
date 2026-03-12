@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { anIdentityId } from '@dailyuse/test-utils/fixtures';
@@ -15,6 +15,15 @@ vi.mock('@dailyuse/utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@dailyuse/utils')>();
   return {
     ...actual,
+    createLogger: vi.fn(() => ({
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      setLevel: vi.fn(),
+      addTransport: vi.fn(),
+      child: vi.fn(),
+    })),
     eventBus: { send: vi.fn() },
   };
 });
@@ -57,6 +66,7 @@ describe('CreateTaskTemplate', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     mockGenerateInstances.mockReturnValue([]);
 
     templateRepo = createMockRepo<ITaskTemplateRepository>({
@@ -67,6 +77,10 @@ describe('CreateTaskTemplate', () => {
     });
 
     useCase = new CreateTaskTemplate(templateRepo, instanceRepo);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should create a one-time task template', async () => {

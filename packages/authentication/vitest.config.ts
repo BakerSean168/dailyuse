@@ -18,11 +18,6 @@ export default mergeConfig(
       root: __dirname,
       testTimeout: 10000,
       pool: 'forks',
-      poolOptions: {
-        forks: {
-          singleFork: false,
-        },
-      },
     },
   }),
 );

@@ -7,6 +7,9 @@ on:
       - 'packages/contracts/src/modules/task/**'
       - '.github/workflows/performance-check.yml'
 
+permissions:
+  contents: read
+
 jobs:
   performance:
     runs-on: ubuntu-latest
@@ -14,31 +17,32 @@ jobs:
 
     env:
       NODE_VERSION: '22'
+      PRISMA_HIDE_UPDATE_MESSAGE: 'true'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4.2.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: Run performance benchmarks
-        run: |
-          pnpm nx test task \
-            --testPathPattern="sort-algorithm.bench|service-sorting.bench|stability.bench|http-endpoint.bench" \
-            --testNamePattern="acceptable time" \
-            --reporter=verbose
-        continue-on-error: true
+        id: benchmarks
+        env:
+          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
+        run: pnpm exec nx run task:test:performance --outputStyle=static
 
       - name: Check benchmark results
+        if: always()
         run: |
           echo "✅ Performance benchmarks completed"
           echo "📊 Key metrics:"
@@ -47,10 +51,10 @@ jobs:
           echo "   - Stability variance: should be <10%"
           echo ""
           echo "ℹ️  If benchmarks failed, check logs above for details"
-          echo "💡 Tip: Run locally with: pnpm nx test task --testPathPattern='bench'"
-        continue-on-error: true
+          echo "💡 Tip: Run locally with: pnpm exec nx run task:test:performance"
 
       - name: Verify no regressions
+        if: always()
         run: |
           # Check if all benchmark tests passed
           # Note: This is a basic check - a more sophisticated setup would
@@ -70,4 +74,4 @@ jobs:
           echo "If any metric exceeds targets, check:"
           echo "1. Review the benchmark test output above"
           echo "2. Check for other PRs affecting task sorting"
-          echo "3. Run benchmarks locally to verify: pnpm nx test task --testPathPattern=bench"
+          echo "3. Run benchmarks locally to verify: pnpm exec nx run task:test:performance"

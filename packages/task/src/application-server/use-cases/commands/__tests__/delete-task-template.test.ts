@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/test-utils/fixtures';
@@ -23,12 +23,17 @@ describe('DeleteTaskTemplate', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findById: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
       softDelete: vi.fn().mockResolvedValue(undefined),
     });
     useCase = new DeleteTaskTemplate(templateRepo);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should return ok with success:true when template not found (idempotent)', async () => {

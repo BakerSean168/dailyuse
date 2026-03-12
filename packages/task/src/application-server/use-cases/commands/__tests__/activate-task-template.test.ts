@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aLoadedTaskTemplate, aRecurringTask } from '@dailyuse/test-utils/fixtures';
@@ -37,6 +37,7 @@ describe('ActivateTaskTemplate', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     mockGenerateInstances.mockReturnValue([]);
 
     templateRepo = createMockRepo<ITaskTemplateRepository>({
@@ -48,6 +49,10 @@ describe('ActivateTaskTemplate', () => {
     });
 
     useCase = new ActivateTaskTemplate(templateRepo, instanceRepo);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should return NOT_FOUND when template does not exist', async () => {

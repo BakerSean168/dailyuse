@@ -493,9 +493,12 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.5.0
+      '@powersync/common':
+        specifier: ^1.47.0
+        version: 1.47.0
+      '@powersync/node':
+        specifier: ^0.17.1
+        version: 0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.6.2)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -518,15 +521,6 @@ importers:
       '@eslint/markdown':
         specifier: ^7.1.0
         version: 7.5.1
-      '@powersync/common':
-        specifier: ^1.47.0
-        version: 1.47.0
-      '@powersync/node':
-        specifier: ^0.17.1
-        version: 0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.5.0)
-      '@types/better-sqlite3':
-        specifier: ^7.6.13
-        version: 7.6.13
       '@types/uuid':
         specifier: ^11.0.0
         version: 11.0.0
@@ -741,9 +735,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^4.21.0
         version: 4.22.1
@@ -754,9 +745,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -784,9 +772,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.5.0
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -794,9 +779,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -957,9 +939,6 @@ importers:
       argon2:
         specifier: ^0.43.0
         version: 0.43.1
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -979,9 +958,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1010,12 +986,6 @@ importers:
       '@faker-js/faker':
         specifier: 10.3.0
         version: 10.3.0
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
-      better-sqlite3:
-        specifier: 12.6.2
-        version: 12.6.2
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -1090,9 +1060,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.6.2
-        version: 12.6.2
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -1100,9 +1067,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1127,9 +1091,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.5.0
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -1137,9 +1098,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1158,9 +1116,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^4.21.0
         version: 4.22.1
@@ -1168,9 +1123,6 @@ importers:
         specifier: ^2.3.0
         version: 2.8.1
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1221,9 +1173,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -1231,9 +1180,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1270,9 +1216,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -1280,9 +1223,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1304,9 +1244,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -1317,9 +1254,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1344,9 +1278,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       express:
         specifier: ^5.1.0
         version: 5.2.1
@@ -1354,9 +1285,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1412,9 +1340,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -1425,9 +1350,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -1458,9 +1380,6 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
-      better-sqlite3:
-        specifier: ^12.5.0
-        version: 12.6.2
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -1471,9 +1390,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: 7.6.13
-        version: 7.6.13
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -4339,9 +4255,6 @@ packages:
     resolution: {integrity: sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==}
     deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
 
-  '@types/better-sqlite3@7.6.13':
-    resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
-
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
 
@@ -5566,10 +5479,6 @@ packages:
   bcryptjs@3.0.3:
     resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
-
-  better-sqlite3@12.5.0:
-    resolution: {integrity: sha512-WwCZ/5Diz7rsF29o27o0Gcc1Du+l7Zsv7SYtVPG0X3G/uUI1LqdxrQI7c9Hs2FWpqXXERjW9hp6g3/tH7DlVKg==}
-    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x}
 
   better-sqlite3@12.6.2:
     resolution: {integrity: sha512-8VYKM3MjCa9WcaSAI3hzwhmyHVlH8tiGFwf0RlTsZPWJ1I5MkzjiudCo4KC4DxOaL/53A5B1sI/IbldNFDbsKA==}
@@ -14219,7 +14128,7 @@ snapshots:
       async-mutex: 0.5.0
       event-iterator: 2.0.0
 
-  '@powersync/node@0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.5.0)':
+  '@powersync/node@0.17.1(@powersync/common@1.47.0)(better-sqlite3@12.6.2)':
     dependencies:
       '@powersync/common': 1.47.0
       async-mutex: 0.5.0
@@ -14227,7 +14136,7 @@ snapshots:
       comlink: 4.4.2
       undici: 7.21.0
     optionalDependencies:
-      better-sqlite3: 12.5.0
+      better-sqlite3: 12.6.2
 
   '@prisma/adapter-pg@7.4.2':
     dependencies:
@@ -14851,10 +14760,6 @@ snapshots:
   '@types/bcryptjs@3.0.0':
     dependencies:
       bcryptjs: 3.0.3
-
-  '@types/better-sqlite3@7.6.13':
-    dependencies:
-      '@types/node': 22.13.14
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -16557,15 +16462,11 @@ snapshots:
 
   bcryptjs@3.0.3: {}
 
-  better-sqlite3@12.5.0:
-    dependencies:
-      bindings: 1.5.0
-      prebuild-install: 7.1.3
-
   better-sqlite3@12.6.2:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
+    optional: true
 
   bidi-js@1.0.3:
     dependencies:
@@ -16576,6 +16477,7 @@ snapshots:
   bindings@1.5.0:
     dependencies:
       file-uri-to-path: 1.0.0
+    optional: true
 
   birpc@2.9.0: {}
 
@@ -17033,7 +16935,8 @@ snapshots:
     dependencies:
       readdirp: 5.0.0
 
-  chownr@1.1.4: {}
+  chownr@1.1.4:
+    optional: true
 
   chownr@2.0.0: {}
 
@@ -18591,7 +18494,8 @@ snapshots:
       strip-final-newline: 4.0.0
       yoctocolors: 2.1.2
 
-  expand-template@2.0.3: {}
+  expand-template@2.0.3:
+    optional: true
 
   expect-type@1.3.0: {}
 
@@ -18765,7 +18669,8 @@ snapshots:
     dependencies:
       moment: 2.30.1
 
-  file-uri-to-path@1.0.0: {}
+  file-uri-to-path@1.0.0:
+    optional: true
 
   filelist@1.0.4:
     dependencies:
@@ -19036,7 +18941,8 @@ snapshots:
       nypm: 0.6.2
       pathe: 2.0.3
 
-  github-from-package@0.0.0: {}
+  github-from-package@0.0.0:
+    optional: true
 
   github-slugger@2.0.0: {}
 
@@ -20743,7 +20649,8 @@ snapshots:
 
   mitt@3.0.1: {}
 
-  mkdirp-classic@0.5.3: {}
+  mkdirp-classic@0.5.3:
+    optional: true
 
   mkdirp@0.5.6:
     dependencies:
@@ -20845,7 +20752,8 @@ snapshots:
 
   nanoid@5.1.6: {}
 
-  napi-build-utils@2.0.0: {}
+  napi-build-utils@2.0.0:
+    optional: true
 
   natural-compare@1.4.0: {}
 
@@ -21622,6 +21530,7 @@ snapshots:
       simple-get: 4.0.1
       tar-fs: 2.1.4
       tunnel-agent: 0.6.0
+    optional: true
 
   precinct@12.2.0:
     dependencies:
@@ -22639,13 +22548,15 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-concat@1.0.1: {}
+  simple-concat@1.0.1:
+    optional: true
 
   simple-get@4.0.1:
     dependencies:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
+    optional: true
 
   simple-git@3.30.0:
     dependencies:
@@ -23077,6 +22988,7 @@ snapshots:
       mkdirp-classic: 0.5.3
       pump: 3.0.3
       tar-stream: 2.2.0
+    optional: true
 
   tar-stream@2.2.0:
     dependencies:

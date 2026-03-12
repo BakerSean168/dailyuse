@@ -20,11 +20,6 @@ export default mergeConfig(
       setupFiles: ['./src/test/setup.ts'],
       testTimeout: 10000,
       pool: 'forks',
-      poolOptions: {
-        forks: {
-          singleFork: false,
-        },
-      },
     },
   }),
 );

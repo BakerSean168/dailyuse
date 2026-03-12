@@ -3,23 +3,10 @@
  * Tests sorting at service level (including enrichment and conversions)
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import {
-  benchmark,
-  createMockTasks,
-  calculateVariance,
-  findOutliers,
-} from './benchmark-utils';
-import { TaskQueryService } from '../../services/task-query.service-api';
-import { TaskSortBy, TaskFilterBy } from '@dailyuse/contracts/task';
+import { describe, it, expect } from 'vitest';
+import { benchmark, createMockTasks, calculateVariance, findOutliers } from './benchmark-utils';
 
 describe('Benchmarks: TaskQueryService Sorting', () => {
-  let service: TaskQueryService;
-
-  beforeEach(async () => {
-    service = await TaskQueryService.getInstance();
-  });
-
   it('should sort 2000 tasks by priority (service level) in acceptable time', async () => {
     const tasks = createMockTasks(2000);
 
@@ -37,9 +24,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[service priority] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[service priority] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(100);
   });
 
@@ -64,9 +49,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[service dueDate] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[service dueDate] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(100);
   });
 
@@ -86,9 +69,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[service createdAt] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[service createdAt] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(100);
   });
 
@@ -114,9 +95,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[service importance] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[service importance] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(100);
   });
 
@@ -127,8 +106,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       'Service: Filter (importance:important) + Sort by priority',
       async () => {
         const filtered = tasks.filter(
-          (t) =>
-            t.importance === 'vital' || t.importance === 'important',
+          (t) => t.importance === 'vital' || t.importance === 'important',
         );
         filtered.sort((a, b) => b.priority - a.priority);
       },
@@ -136,9 +114,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[filter 1 + sort] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[filter 1 + sort] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(100);
   });
 
@@ -150,8 +126,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       async () => {
         const filtered = tasks.filter(
           (t) =>
-            (t.importance === 'vital' || t.importance === 'important') &&
-            t.status === 'ACTIVE',
+            (t.importance === 'vital' || t.importance === 'important') && t.status === 'ACTIVE',
         );
         filtered.sort((a, b) => b.priority - a.priority);
       },
@@ -159,9 +134,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[filter 2 + sort] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[filter 2 + sort] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(110);
   });
 
@@ -183,9 +156,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
       10,
     );
 
-    console.log(
-      `[filter 3 + sort] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`,
-    );
+    console.log(`[filter 3 + sort] avg=${result.avgMs}ms, p95=${result.p95Ms}ms`);
     expect(result.avgMs).toBeLessThan(120);
   });
 
@@ -207,9 +178,7 @@ describe('Benchmarks: TaskQueryService Sorting', () => {
     const variance = calculateVariance(times);
     const outliers = findOutliers(times, 1.5);
 
-    console.log(
-      `[consistency] variance=${variance.toFixed(2)}%, outliers=${outliers.length}/20`,
-    );
+    console.log(`[consistency] variance=${variance.toFixed(2)}%, outliers=${outliers.length}/20`);
     expect(variance).toBeLessThan(100); // High threshold for varying filters and JIT warmup
   });
 });

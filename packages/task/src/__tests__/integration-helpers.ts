@@ -1,4 +1,3 @@
-import { PrismaClient } from "@dailyuse/database";
 /**
  * Integration test helpers for the task module.
  *
@@ -7,28 +6,35 @@ import { PrismaClient } from "@dailyuse/database";
  * - Seed helpers that respect FK constraints (AuthIdentity → Account → Task*)
  * - Table cleanup between tests
  *
- * IMPORTANT: DATABASE_URL must be set in the environment BEFORE this module
- * is imported. The vitest `task-integration` project sets this via `env` config.
- * The @dailyuse/database singleton reads DATABASE_URL at module load time
- * and creates its PrismaClient via the PrismaPg adapter.
+ * IMPORTANT: DATABASE_URL must be set in the environment BEFORE calling
+ * `getPrisma()`. The vitest `task-integration` project sets this via env config.
  */
-import { prisma, PrismaClient } from '@dailyuse/database';
+import type { PrismaClient } from '@dailyuse/database';
 import { cleanAllTables } from '@dailyuse/test-utils/setup/database';
-import { randomUUID } from 'node:crypto';
+import { IdentityId } from '@dailyuse/domain-shared';
+import { TaskFolderId, TaskInstanceId, TaskTemplateId } from '../domain-shared/value-objects';
 
 // ─── Shared PrismaClient ────────────────────────────────────────────
 
+let prismaPromise: Promise<PrismaClient> | null = null;
+
 /**
  * Get the PrismaClient connected to the test database.
- * Uses the @dailyuse/database singleton which reads DATABASE_URL from env.
  */
-export function getPrisma(): any { return new Proxy({}, { get() { return new Proxy({}, { get() { return () => Promise.resolve([]) } }) } }); }
+export async function getPrisma(): Promise<PrismaClient> {
+  if (!prismaPromise) {
+    prismaPromise = import('@dailyuse/database').then((module) => module.prisma);
+  }
+  return prismaPromise;
+}
 
 /**
  * Disconnect the shared PrismaClient. Call in afterAll().
  */
 export async function disconnectPrisma(): Promise<void> {
+  const prisma = await getPrisma();
   await prisma.$disconnect();
+  prismaPromise = null;
 }
 
 // ─── Table Cleanup ──────────────────────────────────────────────────
@@ -37,7 +43,8 @@ export async function disconnectPrisma(): Promise<void> {
  * Truncate ALL tables (including auth/account). Use only in final teardown.
  */
 export async function cleanAll(): Promise<void> {
-  await cleanAllTables(getPrisma());
+  const prisma = await getPrisma();
+  await cleanAllTables(prisma);
 }
 
 /**
@@ -47,7 +54,15 @@ export async function cleanAll(): Promise<void> {
  * Deletion order respects FK constraints:
  *   TaskDependency → TaskInstance → TaskTemplate → TaskFolder
  */
-export async function cleanTaskTables(): Promise<void> { return; }
+export async function cleanTaskTables(): Promise<void> {
+  const prisma = await getPrisma();
+  await prisma.taskDependency.deleteMany();
+  await prisma.taskInstance.deleteMany();
+  await prisma.taskTemplateHistory.deleteMany();
+  await prisma.taskTemplate.deleteMany();
+  await prisma.taskFolder.deleteMany();
+  await prisma.taskStatistic.deleteMany();
+}
 
 // ─── Seed Helpers ───────────────────────────────────────────────────
 
@@ -57,7 +72,60 @@ export async function cleanTaskTables(): Promise<void> { return; }
  *
  * FK chain: AuthIdentity → Account
  */
-export async function seedAccount(overrides: any = {}) { return { id: overrides.id || 'id' } as any; }
+export async function seedAccount(
+  overrides: {
+    id?: string;
+    emailAddress?: string;
+    profile?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
+    status?: string;
+  } = {},
+) {
+  const prisma = await getPrisma();
+  const id = overrides.id ?? IdentityId.generate();
+  const emailAddress =
+    overrides.emailAddress ??
+    `task-int-${id.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}@example.test`;
+
+  await prisma.authIdentity.upsert({
+    where: { id },
+    update: {
+      status: 'Unverified',
+      failedLoginAttempts: 0,
+      lastFailedAttempt: null,
+      lockedUntil: null,
+      deletedAt: null,
+    },
+    create: {
+      id,
+      status: 'Unverified',
+    },
+  });
+
+  return prisma.account.upsert({
+    where: { id },
+    update: {
+      status: overrides.status ?? 'ACTIVE',
+      profile: overrides.profile ?? {},
+      settings: overrides.settings ?? {},
+      emailAddress,
+      emailIsVerified: true,
+      emailVerifiedAt: new Date(),
+      emailIsPrimary: true,
+      deletedAt: null,
+    },
+    create: {
+      id,
+      status: overrides.status ?? 'ACTIVE',
+      profile: overrides.profile ?? {},
+      settings: overrides.settings ?? {},
+      emailAddress,
+      emailIsVerified: true,
+      emailVerifiedAt: new Date(),
+      emailIsPrimary: true,
+    },
+  });
+}
 
 /**
  * Seed a TaskFolder row and return the full record.
@@ -70,8 +138,8 @@ export async function seedFolder(overrides: {
   icon?: string;
   order?: number;
 }) {
-  const prisma = getPrisma();
-  const id = overrides.id ?? `ITaskFolderId_${randomUUID()}`;
+  const prisma = await getPrisma();
+  const id = overrides.id ?? TaskFolderId.generate();
 
   return prisma.taskFolder.create({
     data: {
@@ -101,8 +169,8 @@ export async function seedTemplateRaw(overrides: {
   tags?: string;
   recurrenceRuleType?: string | null;
 }) {
-  const prisma = getPrisma();
-  const id = overrides.id ?? `ITaskTemplateId_${randomUUID()}`;
+  const prisma = await getPrisma();
+  const id = overrides.id ?? TaskTemplateId.generate();
 
   return prisma.taskTemplate.create({
     data: {
@@ -135,8 +203,8 @@ export async function seedInstanceRaw(overrides: {
   importance?: string;
   timeConfig?: string;
 }) {
-  const prisma = getPrisma();
-  const id = overrides.id ?? `ITaskInstanceId_${randomUUID()}`;
+  const prisma = await getPrisma();
+  const id = overrides.id ?? TaskInstanceId.generate();
 
   return prisma.taskInstance.create({
     data: {

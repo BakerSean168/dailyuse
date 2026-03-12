@@ -3,6 +3,10 @@ import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
 
+// Vitest projects add signal/exit listeners in several worker modes.
+// Raise the cap slightly to avoid tool-internal listener noise in CI.
+process.setMaxListeners(32);
+
 /**
  * Vitest Configuration for DailyUse Monorepo
  *
@@ -290,11 +294,16 @@ const domainResolveAliases = [
 
 /**
  * Task-specific resolve aliases (extends domainResolveAliases).
- * Currently identical to domainResolveAliases since the task aliases
- * were moved there for test-utils compatibility. Kept as a separate
- * variable for future task-only aliases.
+ * Fork workers do not reliably execute importer-aware resolver plugins,
+ * so task projects need an explicit @/ alias that points at task/src.
  */
-const taskResolveAliases = [...domainResolveAliases];
+const taskResolveAliases = [
+  {
+    find: /^@\/(.+)/,
+    replacement: path.resolve(__dirname, './packages/task/src/$1'),
+  },
+  ...domainResolveAliases,
+];
 
 export default defineConfig({
   test: {
@@ -305,7 +314,8 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
-      exclude: ['**/*.integration.test.ts',
+      exclude: [
+        '**/*.integration.test.ts',
         'node_modules/',
         'dist/',
         'dist-electron/',
@@ -320,7 +330,7 @@ export default defineConfig({
     },
 
     // Global reporters for all projects
-    reporters: process.env.CI ? ['verbose', 'json', 'html'] : ['verbose'],
+    reporters: ['verbose'],
 
     // Define all test projects in the workspace
     projects: [
@@ -541,22 +551,25 @@ export default defineConfig({
           name: 'task-integration',
           root: './packages/task',
           environment: 'node',
-          include: ['src/**/*.integration.{test,spec}.{js,ts}'],
+          include: [
+            'src/**/*.integration.test.ts',
+            'src/**/*.integration.spec.ts',
+            'src/**/*.integration.test.js',
+            'src/**/*.integration.spec.js',
+          ],
           exclude: ['node_modules', 'dist', '.git', '.cache'],
           testTimeout: 30000,
+          passWithNoTests: false,
           env: {
-            DATABASE_URL: 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test',
+            DATABASE_URL: 'postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test',
           },
           globalSetup: [
             path.resolve(__dirname, './packages/task/src/__tests__/integration-global-setup.ts'),
           ],
           fileParallelism: false, // Run test files sequentially to avoid DB conflicts
           pool: 'forks',
-          poolOptions: {
-            forks: {
-              singleFork: true, // All files in one fork (shared process)
-            },
-          },
+          maxWorkers: 1,
+          isolate: false,
         },
       },
 
@@ -592,11 +605,8 @@ export default defineConfig({
           testTimeout: 30000,
           // API tests use single fork to avoid database conflicts
           pool: 'forks',
-          poolOptions: {
-            forks: {
-              singleFork: true,
-            },
-          },
+          maxWorkers: 1,
+          isolate: false,
         },
       },
       // API smoke tests (Supertest → Express → real Use Cases → mock Repos)
@@ -605,6 +615,12 @@ export default defineConfig({
         plugins: [taskDeepImportResolver, domainResolveAtAlias],
         resolve: {
           alias: [
+            // Fork workers do not reliably execute importer-aware resolver plugins.
+            // Smoke tests only exercise the task module, so map @/ to task/src explicitly.
+            {
+              find: /^@\/(.+)/,
+              replacement: path.resolve(__dirname, './packages/task/src/$1'),
+            },
             // Deep path aliases for task controllers/routes (NOT in barrel exports)
             // These MUST come BEFORE the generic @dailyuse/task/(.+) alias
             {

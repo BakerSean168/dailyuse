@@ -51,7 +51,7 @@ import { registerTaskRoutes } from '@dailyuse/task/api/routes';
 // ============================================================================
 
 export const JWT_SECRET = 'smoke-test-jwt-secret-key-at-least-32-chars';
-export const TEST_IDENTITY_ID = 'IIdentityId_00000000-0000-0000-0000-smoke0000001';
+export const TEST_IDENTITY_ID = 'IdentityId_smoke-user-0001';
 
 // ============================================================================
 // Mock Repository Factory

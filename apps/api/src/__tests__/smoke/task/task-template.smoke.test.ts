@@ -162,7 +162,10 @@ describe('Task Template API Smoke Tests', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
-      expect(res.body.data).toEqual([]);
+      expect(res.body.data).toEqual({
+        templates: [],
+        total: 0,
+      });
     });
 
     it('should return templates from repository', async () => {
@@ -175,8 +178,9 @@ describe('Task Template API Smoke Tests', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
-      expect(res.body.data).toHaveLength(1);
-      expect(res.body.data[0].name).toBe('Smoke Test Task');
+      expect(res.body.data.templates).toHaveLength(1);
+      expect(res.body.data.total).toBe(1);
+      expect(res.body.data.templates[0].name).toBe('Smoke Test Task');
     });
 
     it('should pass status filter to repository', async () => {

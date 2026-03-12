@@ -10,7 +10,7 @@
  *   3. Validation / business-rule rejection (422/404 where applicable)
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import { createSmokeApp, TEST_IDENTITY_ID, type SmokeTestApp } from '../helpers/create-smoke-app';
 import { TaskInstance } from '@dailyuse/task/domain-server';
@@ -74,9 +74,24 @@ function makeFakeInstance(
 
 describe('Task Instance API Smoke Tests', () => {
   let ctx: SmokeTestApp;
+  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
+  const originalConsoleWarn = console.warn;
 
   beforeEach(() => {
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation((message, ...args) => {
+      if (
+        typeof message === 'string' &&
+        message.startsWith('[CompleteTaskInstance] Template not found:')
+      ) {
+        return;
+      }
+      originalConsoleWarn(message, ...args);
+    });
     ctx = createSmokeApp();
+  });
+
+  afterEach(() => {
+    consoleWarnSpy.mockRestore();
   });
 
   // =========================================================================

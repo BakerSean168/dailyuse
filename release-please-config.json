@@ -1,48 +1,19 @@
 {
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
   "packages": {
     ".": {
       "release-type": "node",
       "package-name": "daily-use",
-      "changelog-path": "CHANGELOG.md"
-    },
-    "apps/api": {
-      "release-type": "node",
-      "package-name": "@dailyuse/api",
-      "changelog-path": "CHANGELOG.md"
-    },
-    "apps/web": {
-      "release-type": "node",
-      "package-name": "@dailyuse/web",
-      "changelog-path": "CHANGELOG.md"
-    },
-    "apps/desktop": {
-      "release-type": "node",
-      "package-name": "@dailyuse/desktop",
-      "changelog-path": "CHANGELOG.md"
-    },
-    "packages/contracts": {
-      "release-type": "node",
-      "package-name": "@dailyuse/contracts"
-    },
-    "packages/ui-core": {
-      "release-type": "node",
-      "package-name": "@dailyuse/ui-core"
-    },
-    "packages/ui-vue-shadcn": {
-      "release-type": "node",
-      "package-name": "@dailyuse/ui-vue-shadcn"
-    },
-    "packages/utils": {
-      "release-type": "node",
-      "package-name": "@dailyuse/utils"
-    },
-    "packages/test-utils": {
-      "release-type": "node",
-      "package-name": "@dailyuse/test-utils"
-    },
-    "packages/assets": {
-      "release-type": "node",
-      "package-name": "@dailyuse/assets"
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "apps/desktop/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   }
 }

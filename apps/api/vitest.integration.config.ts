@@ -27,10 +27,7 @@ export default defineConfig({
     testTimeout: 60000,
     // 序列化测试，避免数据库冲突
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
   },
 });

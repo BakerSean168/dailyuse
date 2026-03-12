@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aTaskInstance } from '@dailyuse/test-utils/fixtures';
@@ -25,6 +25,8 @@ describe('CompleteTaskInstance', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       findById: vi.fn(),
       save: vi.fn().mockResolvedValue(undefined),
@@ -33,6 +35,10 @@ describe('CompleteTaskInstance', () => {
       findById: vi.fn(),
     });
     useCase = new CompleteTaskInstance(instanceRepo, templateRepo);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should return NOT_FOUND when instance does not exist', async () => {
