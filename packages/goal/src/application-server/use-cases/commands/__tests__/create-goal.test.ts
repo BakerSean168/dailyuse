@@ -17,7 +17,7 @@ describe('CreateGoal', () => {
 
   function aCreateInput(overrides: Record<string, any> = {}) {
     return {
-      title: 'Learn TypeScript',
+      name: 'Learn TypeScript',
       description: 'Master DDD patterns',
       color: '#3B82F6',
       importance: 'MEDIUM',
@@ -46,15 +46,15 @@ describe('CreateGoal', () => {
     }
   });
 
-  it('should return VALIDATION_ERROR when title is empty', async () => {
-    const result = await useCase.execute(aCreateInput({ title: '' }), aContext());
+  it('should return VALIDATION_ERROR when name is empty', async () => {
+    const result = await useCase.execute(aCreateInput({ name: '' }), aContext());
 
     expect(result).toBeErrorWithCode('VALIDATION_ERROR');
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should return VALIDATION_ERROR when title is whitespace-only', async () => {
-    const result = await useCase.execute(aCreateInput({ title: '   ' }), aContext());
+  it('should return VALIDATION_ERROR when name is whitespace-only', async () => {
+    const result = await useCase.execute(aCreateInput({ name: '   ' }), aContext());
 
     expect(result).toBeErrorWithCode('VALIDATION_ERROR');
   });

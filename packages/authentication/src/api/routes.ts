@@ -31,18 +31,11 @@ import {
   RevokeSessionSchema,
   ResetPasswordSchema,
   SendSmsCodeSchema,
+  CurrentUserResponseSchema,
+  SessionListResponseSchema,
 } from '@dailyuse/contracts/authentication';
 import { AuthenticationController } from '../controllers/auth.controller';
 import type { AuthenticationUseCases } from '../controllers/auth.controller';
-
-const CurrentUserResponseSchema = z.object({
-  identity: z.object({}).passthrough(),
-  session: z.object({}).passthrough().nullable().optional(),
-});
-
-const SessionListResponseSchema = z.object({
-  sessions: z.array(z.object({}).passthrough()),
-});
 
 // ============ Types ============
 

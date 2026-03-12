@@ -1861,7 +1861,7 @@ export default {
       tabBasicInfo: 'Basic Info',
       tabKeyResults: 'Key Results',
       // Form labels
-      goalTitle: 'Goal Title',
+      goalTitle: 'Goal Name',
       goalTitlePlaceholder: 'e.g. Increase Monthly Recurring Revenue',
       description: 'Description',
       descriptionPlaceholder: 'Add details about why this goal matters...',
@@ -1927,7 +1927,7 @@ export default {
       saveChanges: 'Save Changes',
       createGoal: 'Create Goal',
       // Validation
-      titleRequired: 'Goal title is required',
+      titleRequired: 'Goal name is required',
       krTitleRequired: 'All key results must have a title.',
       krWeightInvalid: 'Key result weight must be an integer between 1 and 5.',
       krTargetInvalid: 'Key result target value must be greater than 0.',
@@ -2915,6 +2915,9 @@ export default {
     workspace: {
       selectFile: 'Select a file',
       selectFileDesc: 'Select a file from the left panel to start editing or viewing',
+      noRepository: 'No repository yet',
+      noRepositoryDesc:
+        'There is no repository available for the current account. Initialize or create one first.',
       createNote: 'New Note',
       createNoteSuccess: 'Created note: {name}',
       createNoteFailed: 'Failed to create note',

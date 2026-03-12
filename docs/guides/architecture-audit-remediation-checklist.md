@@ -139,11 +139,16 @@ updated: 2026-03-11T22:45:00
   - 将组件 props 或内部数据流收敛为单一 aggregate view model。
 - **验收标准**：组件只接受一种明确的 aggregate 返回结构。
 
-#### [ ] B4. 统一 `title/name` 命名并修复克隆流程
+#### [x] B4. 统一 `title/name` 命名并修复克隆流程
 
 - **目标**：消除目标模块新旧命名体系混用。
 - **产品结论**：对外命名统一为 `name`
-- **当前状态**：
+- **完成备注（2026-03-12）**：
+  - `CreateGoalSchema` / `UpdateGoalSchema` / `CloneGoalSchema` 现已只接受 `name`，并通过 `.strict()` 明确拒绝旧的 `title` 请求字段。
+  - `GoalController` 已删除 `title -> name` 归一化 helper，create / update / clone 统一走正式 schema 输出。
+  - clone 复用 `CreateGoalSchema.parse(...)` 生成 `CreateGoalReq`，不再保留迁移期兼容映射。
+  - Web mock、route smoke test 和 goal 相关 E2E 夹具已同步切到 `name`，避免旧字段名被测试继续固化。
+- **审计起点（已解决）**：
   - 输入契约已偏向 `title`：`packages/contracts/src/modules/goal/api/goal-crud.dto.ts`
   - 传输/领域输出仍以 `name` 为主：`packages/contracts/src/modules/goal/aggregates/goal-client.ts`
   - application service 已做 `title -> name` 映射：`packages/goal/src/application-server/use-cases/commands/update-goal.ts`
@@ -252,7 +257,7 @@ updated: 2026-03-11T22:45:00
 
 - **目标**：明确前端是否允许用户拥有多个仓库。
 - **产品结论**：`单仓库`
-- **当前状态**：
+- **审计起点（已解决）**：
   - 后端能力和数据结构天然支持多仓库：`GET /repositories` 返回列表，store 也已有 `repositories` 与 `currentRepositoryId`
   - 前端初始化仍带“无选择时默认取首仓库”的隐式单仓库行为：`resolveCurrentRepositoryId()` in `packages/app-vue/src/modules/repository/composables/useRepository.ts`
   - 当前 UI 没有清晰的仓库切换入口，因此运行时体验更像“伪单仓库 + 多仓库数据模型”
@@ -272,9 +277,15 @@ updated: 2026-03-11T22:45:00
   - 记录该决策到架构文档或 ADR。
 - **验收标准**：产品和代码层面对仓库数量模型使用一致语义。
 
-#### [ ] D2. 若为单仓库：收缩应用边界
+#### [x] D2. 若为单仓库：收缩应用边界
 
 - **目标**：避免前端通过 `repos[0]` 隐式决定业务语义。
+- **完成备注（2026-03-12）**：
+  - `GET /repositories/current` 已成为 Web / Desktop 应用层初始化当前仓库的显式边界。
+  - `useRepository()` 只消费 `getCurrentRepository()`；前端客户端层不再暴露未使用的 `getRepositories()`。
+  - `repositoryStore` 已收敛为 `currentRepository/currentRepositoryId`，不再保留单仓库场景下长度为 0/1 的 `repositories` 兼容缓存。
+  - 前端 `/repositories -> /repository` 重定向和 repository application client 的兼容别名已移除。
+  - 未使用的旧版 `packages/repository/src/api/routes.ts` 路由副本已删除，避免双份实现继续漂移。
 - **当前状态**：
   - 目前不存在显式 `getCurrentRepository` 边界
   - 单仓库语义仅由 `resolveCurrentRepositoryId(repositories[0])` 隐含表达
@@ -425,7 +436,7 @@ updated: 2026-03-11T22:45:00
   - 删除与真实接口不一致的 mock shape。
 - **验收标准**：mock 与真实 adapter 的资源列表响应结构完全一致。
 
-#### [ ] F3. 增加 adapter-route-contract 契约测试
+#### [x] F3. 增加 adapter-route-contract 契约测试
 
 - **目标**：以后新增接口时能自动发现契约漂移。
 - **当前状态**：

@@ -192,6 +192,20 @@ export function registerRepositoryCrudRoutes(
   r.route(
     {
       method: 'get',
+      path: '/current',
+      summary: '获取当前仓库',
+      responses: {
+        200: successResponse(RepositoryResponseSchema.nullable(), '获取成功'),
+        409: errorResponse('检测到多个仓库，无法确定当前仓库'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.getCurrentRepository(ctx),
+  );
+
+  r.route(
+    {
+      method: 'get',
       path: '/:repoId/bookmarks',
       summary: '获取书签列表',
       request: { params: z.object({ repoId: brandedId<RepositoryId>() }) },

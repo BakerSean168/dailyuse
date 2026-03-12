@@ -24,11 +24,41 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const GOALS = `${API_BASE}/goals`;
 const FOLDERS = `${API_BASE}/goal-folders`;
 
+export const goalMockRoutes = {
+  goals: GOALS,
+  folders: FOLDERS,
+};
+
 const toGoalId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as GoalClientDTO['id'];
 
 const toFolderId = (p: string | readonly string[] | undefined) =>
   (Array.isArray(p) ? p[0] : (p ?? '')) as GoalFolderClientDTO['id'];
+
+export function createMockGoalAggregateResponse(goalId: GoalClientDTO['id']) {
+  const goal = createMockGoal({ id: goalId });
+  const keyResults = Array.from({ length: 3 }, () => createMockKeyResult());
+  const records = createMockGoalRecordList(4, { goalId });
+  const reviews = createMockGoalReviewList(2, { goalId });
+
+  return {
+    goal: {
+      ...goal,
+      keyResults,
+      reviews,
+    },
+    keyResults,
+    records,
+    reviews,
+    statistics: {
+      totalKeyResults: keyResults.length,
+      completedKeyResults: 1,
+      totalRecords: records.length,
+      totalReviews: reviews.length,
+      overallProgress: 48,
+    },
+  };
+}
 
 export const goalHandlers = [
   // ============ Goals ============
@@ -60,7 +90,9 @@ export const goalHandlers = [
         ok: true,
         code: 200,
         message: 'Created',
-        data: createMockGoal({ name: body['title'] as string | undefined }),
+        data: createMockGoal({
+          name: typeof body['name'] === 'string' ? body['name'] : undefined,
+        }),
         timestamp: Date.now(),
       },
       { status: 201 },
@@ -294,13 +326,49 @@ export const goalHandlers = [
 
   http.patch(`${GOALS}/:id`, async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
+    const name = typeof body['name'] === 'string' ? body['name'] : undefined;
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'Updated',
-      data: createMockGoal({ id: toGoalId(params['id']), ...(body as object) }),
+      data: createMockGoal({
+        id: toGoalId(params['id']),
+        ...(body as object),
+        ...(name ? { name } : {}),
+      }),
       timestamp: Date.now(),
     });
+  }),
+
+  http.get(`${GOALS}/:id/aggregate`, ({ params }) => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: createMockGoalAggregateResponse(toGoalId(params['id'])),
+      timestamp: Date.now(),
+    });
+  }),
+
+  http.post(`${GOALS}/:id/clone`, async ({ params, request }) => {
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    const original = createMockGoal({ id: toGoalId(params['id']) });
+    return HttpResponse.json(
+      {
+        ok: true,
+        code: 200,
+        message: 'Created',
+        data: createMockGoal({
+          name:
+            (typeof body['name'] === 'string' ? body['name'] : undefined) ??
+            `${original.name} (copy)`,
+          description:
+            typeof body['description'] === 'string' ? body['description'] : original.description,
+        }),
+        timestamp: Date.now(),
+      },
+      { status: 201 },
+    );
   }),
 
   http.delete(`${GOALS}/:id`, ({ params }) => {

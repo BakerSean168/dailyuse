@@ -24,8 +24,8 @@ export class CreateGoal {
 
   async execute(input: CreateGoalReq, context: Context): Promise<Result<CreateGoalRes>> {
     // 1. 验证输入
-    if (!input.title?.trim()) {
-      return error('VALIDATION_ERROR', 'Title is required');
+    if (!input.name?.trim()) {
+      return error('VALIDATION_ERROR', 'Name is required');
     }
     if (!context.identityId?.trim()) {
       return error('UNAUTHORIZED', 'Identity ID is required');
@@ -48,7 +48,7 @@ export class CreateGoal {
     const goal = Goal.create(
       {
         identityId: IdentityId.of(context.identityId),
-        name: input.title,
+        name: input.name,
         description: input.description ?? null,
         color: input.color ?? '#3B82F6',
         feasibilityAnalysis: input.feasibilityAnalysis ?? null,

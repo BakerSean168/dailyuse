@@ -177,6 +177,29 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         });
         return ok(result.repositories);
       },
+      getCurrentRepository: async (ctx) => {
+        const result = await listRepositories.execute({
+          identityId: ctx.identityId,
+        });
+        const repositories = result.repositories;
+
+        if (repositories.length === 0) {
+          return ok(null);
+        }
+
+        if (repositories.length > 1) {
+          return fail({
+            code: 'CONFLICT',
+            message: 'Single-repository mode expected exactly one repository',
+            details: {
+              count: repositories.length,
+              repositoryIds: repositories.map((repository) => repository.id),
+            },
+          });
+        }
+
+        return ok(repositories[0]);
+      },
       getRepository: async (id) => {
         const result = await getRepository.execute({ id });
         return ok(result.repository);

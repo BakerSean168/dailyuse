@@ -25,6 +25,7 @@ export type RepositoryRpcMap = {
   'repository:update': [UpdateRepositoryReq, RepositoryClientDTO];
   'repository:get': [GetRepositoryReq, RepositoryClientDTO];
   'repository:list': [ListRepositoryReq, RepositoryClientDTO[]];
+  'repository:current': [void, RepositoryClientDTO | null];
   'repository:delete': [{ repositoryId: string; hardDelete?: boolean }, { ok: boolean }];
   'repository:archive': [{ repositoryId: string }, RepositoryClientDTO];
   'repository:unarchive': [{ repositoryId: string }, RepositoryClientDTO];

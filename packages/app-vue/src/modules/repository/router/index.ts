@@ -18,11 +18,6 @@ export const repositoryRoutes: RouteRecordRaw[] = [
       requiresAuth: true,
     },
   },
-  // Backward compatibility redirect
-  {
-    path: '/repositories',
-    redirect: '/repository',
-  },
   {
     path: '/document/:id',
     name: 'document-edit',

@@ -16,6 +16,7 @@ import {
 import {
   CreateGoalSchema,
   UpdateGoalSchema,
+  CloneGoalSchema,
   QueryGoalsSchema,
   GoalClientDTOSchema,
   QueryGoalsResSchema,
@@ -24,7 +25,7 @@ import {
   KeyResultClientDTOSchema,
   GetGoalAggregateResSchema,
 } from '@dailyuse/contracts/goal';
-import type { QueryGoalsReq } from '@dailyuse/contracts/goal';
+import type { CloneGoalReq, QueryGoalsReq } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
@@ -150,7 +151,7 @@ export function registerGoalCrudRoutes(
       path: '/search',
       summary: '搜索目标',
       request: {
-        query: z.object({ query: z.string().optional(), status: z.string().optional() }),
+        query: z.object({ query: z.string().optional(), status: z.string().optional() }).strict(),
       },
       responses: {
         200: successResponse(QueryGoalsResSchema, '搜索成功'),
@@ -334,12 +335,7 @@ export function registerGoalCrudRoutes(
         body: {
           content: {
             'application/json': {
-              schema: z.object({
-                title: z.string().optional(),
-                description: z.string().optional(),
-                includeKeyResults: z.boolean().optional(),
-                includeRecords: z.boolean().optional(),
-              }),
+              schema: CloneGoalSchema,
             },
           },
         },
@@ -350,17 +346,7 @@ export function registerGoalCrudRoutes(
       },
     },
     [auth],
-    (req, ctx) =>
-      controller.cloneGoal(
-        req.params!.id,
-        (req.body ?? {}) as {
-          title?: string;
-          description?: string;
-          includeKeyResults?: boolean;
-          includeRecords?: boolean;
-        },
-        ctx,
-      ),
+    (req, ctx) => controller.cloneGoal(req.params!.id, (req.body ?? {}) as CloneGoalReq, ctx),
     { successStatus: 201 },
   );
 

@@ -306,6 +306,7 @@ export const NotificationChannels = {
 export const RepositoryChannels = {
   // Repository
   LIST: 'repository:list',
+  CURRENT: 'repository:current',
   GET: 'repository:get',
   CREATE: 'repository:create',
   UPDATE: 'repository:update',

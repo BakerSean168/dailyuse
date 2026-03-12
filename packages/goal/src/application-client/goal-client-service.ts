@@ -19,6 +19,7 @@ import { map as mapResult } from '@dailyuse/contracts/result';
 import type {
   CreateGoalReq,
   UpdateGoalReq,
+  CloneGoalReq,
   AddKeyResultReq,
   UpdateKeyResultReq,
   CreateGoalFolderReq,
@@ -281,8 +282,8 @@ export class GoalClientService {
     return this.goalApi.getGoalAggregateView(id);
   }
 
-  async cloneGoal(id: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.cloneGoal(id, {});
+  async cloneGoal(id: string, request: CloneGoalReq = {}): Promise<Result<Goal>> {
+    const result = await this.goalApi.cloneGoal(id, request);
     return mapResult(result, (dto) => goalFromDTO(dto));
   }
 

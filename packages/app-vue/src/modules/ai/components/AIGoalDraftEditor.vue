@@ -2,8 +2,8 @@
   <div class="rounded-2xl border border-border/60 bg-muted/20 p-4">
     <div v-if="hasDraft" class="space-y-4">
       <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Draft Title</p>
-        <Input :model-value="goal.title" @update:model-value="(val: any) => $emit('update-goal', { ...goal, title: val })" class="mt-2" />
+        <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Draft Name</p>
+        <Input :model-value="goal.name" @update:model-value="(val: any) => $emit('update-goal', { ...goal, name: val })" class="mt-2" />
         <Textarea :model-value="goal.description" @update:model-value="(val: any) => $emit('update-goal', { ...goal, description: val })" class="mt-3 min-h-28" />
       </div>
 
@@ -65,7 +65,7 @@
 
       <Button
         class="w-full"
-        :disabled="isSubmitting || !goal.title.trim()"
+        :disabled="isSubmitting || !goal.name.trim()"
         @click="$emit('confirm')"
       >
         {{ isSubmitting ? 'Creating goal...' : 'Create Goal' }}
@@ -104,7 +104,7 @@ defineEmits<{
 
 const props = defineProps<{
   goal: {
-    title: string;
+    name: string;
     description: string;
     category: string;
     importance: string;
@@ -119,6 +119,6 @@ const props = defineProps<{
 }>();
 
 const hasDraft = computed(() =>
-  Boolean(props.goal.title || props.goal.description || props.keyResults.length),
+  Boolean(props.goal.name || props.goal.description || props.keyResults.length),
 );
 </script>

@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  RepositoryClientDTO,
-  ResourceBookmarkClientDTO,
-  ResourceClientDTO,
-} from '@dailyuse/contracts/repository';
+import type { ResourceBookmarkClientDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { __test__ as composableTest } from './useRepository';
 import { __test__ as storeTest } from '../stores/repositoryStore';
 
@@ -103,14 +99,6 @@ describe('useRepository helpers', () => {
     expect(derived[0]?.id).toBe(first.id);
     expect(derived[0]?.aliasName).toBe('Temporary Alias');
     expect(first.aliasName).toBeNull();
-  });
-
-  it('keeps explicit repository selection when still available', () => {
-    const repositories = [{ id: 'repo-1' }, { id: 'repo-2' }] as Array<RepositoryClientDTO>;
-
-    expect(composableTest.resolveCurrentRepositoryId(repositories, 'repo-2')).toBe('repo-2');
-    expect(composableTest.resolveCurrentRepositoryId(repositories, 'missing')).toBe('repo-1');
-    expect(composableTest.resolveCurrentRepositoryId([], 'repo-2')).toBeNull();
   });
 
   it('reorders bookmarks while preserving ids not included in payload tail', () => {

@@ -71,9 +71,9 @@ export class RepositoryClientService {
     return mapResult(result, (dto) => repositoryFromDTO(dto));
   }
 
-  async getRepositories(): Promise<Result<Repository[]>> {
-    const result = await this.repositoryApi.getRepositories();
-    return mapResult(result, (dtos) => dtos.map((dto) => repositoryFromDTO(dto)));
+  async getCurrentRepository(): Promise<Result<Repository | null>> {
+    const result = await this.repositoryApi.getCurrentRepository();
+    return mapResult(result, (dto) => (dto ? repositoryFromDTO(dto) : null));
   }
 
   async getRepositoryById(id: string): Promise<Result<Repository>> {

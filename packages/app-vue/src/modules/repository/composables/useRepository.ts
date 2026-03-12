@@ -9,7 +9,6 @@ import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
-  RepositoryClientDTO,
   ResourceBookmarkClientDTO,
   ResourceClientDTO,
   SearchRequest,
@@ -37,7 +36,11 @@ export interface RepositoryUploadProgress {
 }
 
 interface RepositoryServiceLike {
-  getRepositories(): Promise<{ ok: boolean; data?: Repository[]; error?: { message?: string } }>;
+  getCurrentRepository(): Promise<{
+    ok: boolean;
+    data?: Repository | null;
+    error?: { message?: string };
+  }>;
   listResources(
     repositoryId: string,
   ): Promise<{ ok: boolean; data?: ResourceClientDTO[]; error?: { message?: string } }>;
@@ -97,7 +100,6 @@ export function useRepository() {
     currentFileName: null,
   });
 
-  const repositories = computed(() => store.repositories);
   const currentRepositoryId = computed(() => store.currentRepositoryId);
   const currentRepository = computed(() => store.currentRepository);
   const repositoryId = computed(() => store.repositoryId);
@@ -123,22 +125,19 @@ export function useRepository() {
   }
 
   // ── Repository init ──
-  /**
-   * Initialize repository context.
-   * Keep current product behavior by selecting the first repository only when no explicit selection exists.
-   */
+  /** Initialize repository context from the explicit single-repository boundary. */
   async function initRepository() {
-    if (store.isInitialized && store.currentRepositoryId) return;
+    if (store.isInitialized) return;
 
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getRepositories();
+      const result = await service.getCurrentRepository();
       if (result.ok) {
-        const repos = (result.data ?? []).map((r: Repository) => r.toDTO());
-        store.setRepositories(repos);
-        store.setCurrentRepositoryId(resolveCurrentRepositoryId(repos, store.currentRepositoryId));
+        const repository = result.data ?? null;
+        store.setCurrentRepository(repository ? repository.toDTO() : null);
       } else {
+        store.setCurrentRepository(null);
         handleError(getResultErrorMessage(result, '加载仓库失败'));
       }
     } finally {
@@ -565,10 +564,6 @@ export function useRepository() {
     return false;
   }
 
-  function setCurrentRepository(repositoryId: string | null): void {
-    store.setCurrentRepositoryId(resolveCurrentRepositoryId(store.repositories, repositoryId));
-  }
-
   // ── Tabs convenience ──
   function openResource(resource: ResourceClientDTO) {
     store.setCurrentResource(resource);
@@ -576,7 +571,6 @@ export function useRepository() {
   }
 
   return {
-    repositories,
     currentRepositoryId,
     currentRepository,
     repositoryId,
@@ -593,7 +587,6 @@ export function useRepository() {
     bookmarkPersistenceAvailable,
     error,
     initRepository,
-    setCurrentRepository,
     fetchResources,
     fetchBookmarks,
     resyncBookmarks,
@@ -684,20 +677,6 @@ function getResultErrorMessage(
   return result.error?.message || fallbackMessage;
 }
 
-function resolveCurrentRepositoryId(
-  repositories: RepositoryClientDTO[],
-  requestedRepositoryId: string | null,
-): string | null {
-  if (
-    requestedRepositoryId &&
-    repositories.some((repository) => repository.id === requestedRepositoryId)
-  ) {
-    return requestedRepositoryId;
-  }
-
-  return repositories[0]?.id ?? null;
-}
-
 function reorderBookmarkCollection(
   bookmarks: ResourceBookmarkClientDTO[],
   bookmarkIds: string[],
@@ -713,6 +692,5 @@ function reorderBookmarkCollection(
 
 export const __test__ = {
   isUploadResponse,
-  resolveCurrentRepositoryId,
   reorderBookmarkCollection,
 };

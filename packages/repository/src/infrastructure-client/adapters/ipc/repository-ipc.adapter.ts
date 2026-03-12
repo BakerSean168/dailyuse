@@ -56,8 +56,8 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
     return this.ipcClient.invoke(`${this.channel}:create`, request);
   }
 
-  async getRepositories(): Promise<Result<RepositoryClientDTO[]>> {
-    return this.ipcClient.invoke(`${this.channel}:list`);
+  async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
+    return this.ipcClient.invoke(`${this.channel}:current`);
   }
 
   async getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>> {

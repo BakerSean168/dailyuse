@@ -53,8 +53,8 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
     return this.httpClient.post(this.baseUrl, request);
   }
 
-  async getRepositories(): Promise<Result<RepositoryClientDTO[]>> {
-    return this.httpClient.get(this.baseUrl);
+  async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
+    return this.httpClient.get(`${this.baseUrl}/current`);
   }
 
   async getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>> {

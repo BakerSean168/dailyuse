@@ -87,7 +87,7 @@ export interface UploadResourcesRequest extends UploadResourcesRequestDTO {
 export interface IRepositoryApiClient {
   // ===== Repository CRUD =====
   createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>>;
-  getRepositories(): Promise<Result<RepositoryClientDTO[]>>;
+  getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>>;
   getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>>;
   deleteRepository(id: string): Promise<Result<void>>;
 

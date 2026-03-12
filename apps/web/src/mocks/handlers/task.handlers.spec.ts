@@ -4,36 +4,13 @@ import {
   createMockValidateDependencyResponse,
   taskMockRoutes,
 } from './task.handlers';
-import { describe, expect, it, vi } from 'vitest';
+import { createHttpClientSpy } from './_shared/contract-test-helpers';
+import { describe, expect, it } from 'vitest';
 import {
   TaskDependencyHttpAdapter,
   TaskInstanceHttpAdapter,
   TaskTemplateHttpAdapter,
 } from '@dailyuse/task/infrastructure-client';
-import type { IResultHttpClient } from '@dailyuse/http-client';
-import { ok, type Result } from '@dailyuse/contracts/result';
-
-type HttpSpy = IResultHttpClient & {
-  get: ReturnType<typeof vi.fn>;
-  post: ReturnType<typeof vi.fn>;
-  put: ReturnType<typeof vi.fn>;
-  patch: ReturnType<typeof vi.fn>;
-  delete: ReturnType<typeof vi.fn>;
-};
-
-function successResult<T>(data: T): Result<T> {
-  return ok(data);
-}
-
-function createHttpClientSpy(): HttpSpy {
-  return {
-    get: vi.fn(async () => successResult({ templates: [], total: 0 })),
-    post: vi.fn(async () => successResult(null)),
-    put: vi.fn(async () => successResult(null)),
-    patch: vi.fn(async () => successResult(null)),
-    delete: vi.fn(async () => successResult(null)),
-  } as HttpSpy;
-}
 
 describe('task handlers contracts', () => {
   it('uses the current task adapter route prefixes', () => {

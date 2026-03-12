@@ -197,9 +197,9 @@ const button = page
 </button>
 
 <input 
-  data-testid="goal-title-input"
-  name="title" 
-  placeholder="目标标题"
+  data-testid="goal-name-input"
+  name="name"
+  placeholder="一段话来描述自己的目标"
 />
 
 <div data-testid="goal-progress">
@@ -256,7 +256,7 @@ npx playwright show-report
 每个测试使用**时间戳**确保数据隔离:
 
 ```typescript
-const goalTitle = `E2E Test Goal ${Date.now()}`;
+const goalName = `E2E Test Goal ${Date.now()}`;
 const testEmail = `test-${Date.now()}@example.com`;
 ```
 
@@ -266,7 +266,7 @@ const testEmail = `test-${Date.now()}@example.com`;
 
 ```typescript
 test.afterEach(async () => {
-  await cleanupTestGoals(page, [goalTitle1, goalTitle2]);
+  await cleanupTestGoals(page, [goalName1, goalName2]);
 });
 ```
 
@@ -279,10 +279,10 @@ test.afterEach(async () => {
 ```typescript
 test('示例测试', async () => {
   // Arrange: 准备测试数据
-  await createGoal(page, { title: 'Test Goal' });
+  await createGoal(page, { name: 'Test Goal' });
   
   // Act: 执行操作
-  await updateGoal(page, 'Test Goal', { title: 'Updated' });
+  await updateGoal(page, 'Test Goal', { name: 'Updated' });
   
   // Assert: 验证结果
   await expect(page.locator('text=Updated')).toBeVisible();
@@ -294,11 +294,11 @@ test('示例测试', async () => {
 ```typescript
 // ❌ 不好: 重复代码
 await page.click('button:has-text("创建目标")');
-await page.fill('input[name="title"]', goalTitle);
+await page.fill('input[name="name"]', goalName);
 await page.click('button:has-text("保存")');
 
 // ✅ 好: 使用辅助函数
-await createGoal(page, { title: goalTitle });
+await createGoal(page, { name: goalName });
 ```
 
 ### 3. 合理的等待

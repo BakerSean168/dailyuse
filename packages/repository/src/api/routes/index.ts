@@ -28,9 +28,6 @@ interface PlatformMiddleware {
 
 /**
  * Register repository routes (mounted at /repositories).
- *
- * Backward-compatible signature — drop-in replacement for the
- * original `registerRepositoryRoutes` in routes.ts.
  */
 export function registerRepositoryRoutes(
   handlers: RepositoryUseCases,
@@ -50,9 +47,6 @@ export function registerRepositoryRoutes(
 
 /**
  * Register standalone resource routes (mounted at /resources).
- *
- * Backward-compatible signature — drop-in replacement for the
- * original `registerResourceRoutes` in routes.ts.
  */
 export function registerResourceRoutes(
   handlers: RepositoryUseCases,

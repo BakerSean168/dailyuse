@@ -1,21 +1,21 @@
 /**
-import { WEB_CONFIG } from '../config';
  * Goal Focus Mode E2E 测试
  * 测试专注模式的核心业务流程
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { WEB_CONFIG } from '../config';
 import { login, TEST_USER } from '../helpers/testHelpers';
 
 test.describe('Goal Focus Mode - 专注模式', () => {
   let page: Page;
-  let focusGoalTitle: string;
-  let otherGoalTitle: string;
+  let focusGoalName: string;
+  let otherGoalName: string;
 
   test.beforeEach(async ({ page: testPage }) => {
     page = testPage;
-    focusGoalTitle = `E2E Focus Goal ${Date.now()}`;
-    otherGoalTitle = `E2E Other Goal ${Date.now()}`;
+    focusGoalName = `E2E Focus Goal ${Date.now()}`;
+    otherGoalName = `E2E Other Goal ${Date.now()}`;
 
     // 登录
     await login(page, TEST_USER.username, TEST_USER.password);
@@ -25,12 +25,12 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 
     // 创建两个测试目标
     await createGoal(page, {
-      title: focusGoalTitle,
+      name: focusGoalName,
       description: '专注目标',
     });
 
     await createGoal(page, {
-      title: otherGoalTitle,
+      name: otherGoalName,
       description: '其他目标',
     });
 
@@ -39,7 +39,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 
   test.afterEach(async () => {
     // 清理测试数据
-    await cleanupTestGoals(page, [focusGoalTitle, otherGoalTitle]);
+    await cleanupTestGoals(page, [focusGoalName, otherGoalName]);
   });
 
   test('[P0] 应该能够启用专注模式', async () => {
@@ -47,14 +47,14 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await openFocusMode(page);
 
     // 选择要专注的目标
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
 
     // 启动专注模式
     await startFocusMode(page, { duration: 30 }); // 30分钟
 
     // Assert: 验证进入专注模式
     await expect(page.locator('text=/专注模式|Focus Mode/i')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator(`text=${focusGoalTitle}`)).toBeVisible();
+    await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
     
     console.log('✅ 启用专注模式测试通过');
   });
@@ -62,14 +62,14 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P0] 应该在专注模式中隐藏其他目标', async () => {
     // Arrange: 启用专注模式
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 30 });
 
     await page.waitForTimeout(1000);
 
     // Assert: 专注目标可见,其他目标隐藏
-    await expect(page.locator(`text=${focusGoalTitle}`)).toBeVisible();
-    await expect(page.locator(`text=${otherGoalTitle}`)).not.toBeVisible();
+    await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
+    await expect(page.locator(`text=${otherGoalName}`)).not.toBeVisible();
     
     console.log('✅ 隐藏其他目标测试通过');
   });
@@ -77,7 +77,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P0] 应该显示专注模式倒计时', async () => {
     // Arrange: 启用专注模式
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 30 });
 
     // Assert: 验证倒计时显示
@@ -94,7 +94,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P1] 应该能够延长专注模式时间', async () => {
     // Arrange: 启用专注模式
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 30 });
 
     await page.waitForTimeout(1000);
@@ -116,7 +116,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P1] 应该能够手动结束专注模式', async () => {
     // Arrange: 启用专注模式
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 30 });
 
     await page.waitForTimeout(1000);
@@ -128,8 +128,8 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await expect(page.locator('text=/专注模式|Focus Mode/i')).not.toBeVisible();
     
     // 两个目标都应该可见
-    await expect(page.locator(`text=${focusGoalTitle}`)).toBeVisible();
-    await expect(page.locator(`text=${otherGoalTitle}`)).toBeVisible();
+    await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
+    await expect(page.locator(`text=${otherGoalName}`)).toBeVisible();
     
     console.log('✅ 手动结束专注模式测试通过');
   });
@@ -137,7 +137,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P1] 应该显示专注模式历史记录', async () => {
     // Arrange: 完成一次专注周期
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 1 }); // 1分钟用于快速测试
 
     await page.waitForTimeout(1000);
@@ -151,7 +151,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await expect(historyPanel).toBeVisible({ timeout: 5000 });
 
     // 应该显示刚才的专注记录
-    await expect(page.locator(`text=${focusGoalTitle}`)).toBeVisible();
+    await expect(page.locator(`text=${focusGoalName}`)).toBeVisible();
     
     console.log('✅ 历史记录显示测试通过');
   });
@@ -159,7 +159,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P2] 应该在专注模式中记录专注时间', async () => {
     // Arrange: 启用专注模式
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 1 }); // 1分钟
 
     // 等待一段时间
@@ -169,7 +169,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await endFocusMode(page);
 
     // Assert: 查看统计信息,应该记录了专注时间
-    await page.click(`text=${focusGoalTitle}`);
+    await page.click(`text=${focusGoalName}`);
     await page.waitForLoadState('networkidle');
 
     // 查找专注时间统计
@@ -185,7 +185,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
   test('[P2] 应该阻止在活跃专注模式时启动新的专注周期', async () => {
     // Arrange: 启用第一个专注模式
     await openFocusMode(page);
-    await selectFocusGoal(page, focusGoalTitle);
+    await selectFocusGoal(page, focusGoalName);
     await startFocusMode(page, { duration: 30 });
 
     await page.waitForTimeout(1000);
@@ -212,12 +212,15 @@ test.describe('Goal Focus Mode - 专注模式', () => {
 
 // ========== 辅助函数 ==========
 
-async function createGoal(page: Page, options: { title: string; description?: string }) {
+async function createGoal(page: Page, options: { name: string; description?: string }) {
   const createButton = page.locator('button:has-text("创建目标")').or(page.locator('[data-testid="create-goal-button"]'));
   await createButton.click();
   await page.waitForTimeout(500);
 
-  await page.locator('input[name="title"]').or(page.locator('[data-testid="goal-title-input"]')).fill(options.title);
+  await page
+    .locator('input[placeholder="一段话来描述自己的目标"]')
+    .or(page.locator('[data-testid="goal-name-input"]'))
+    .fill(options.name);
   
   if (options.description) {
     await page.locator('textarea[name="description"]').or(page.locator('[data-testid="goal-description-input"]')).fill(options.description);
@@ -243,13 +246,13 @@ async function openFocusMode(page: Page) {
   console.log('[Focus] 专注模式面板已打开');
 }
 
-async function selectFocusGoal(page: Page, goalTitle: string) {
-  console.log(`[Focus] 选择专注目标: ${goalTitle}`);
+async function selectFocusGoal(page: Page, goalName: string) {
+  console.log(`[Focus] 选择专注目标: ${goalName}`);
 
   // 在目标列表中选择
   const goalOption = page
-    .locator(`text=${goalTitle}`)
-    .or(page.locator(`[data-goal-title="${goalTitle}"]`));
+    .locator(`text=${goalName}`)
+    .or(page.locator(`[data-goal-title="${goalName}"]`));
 
   await goalOption.click();
   await page.waitForTimeout(500);

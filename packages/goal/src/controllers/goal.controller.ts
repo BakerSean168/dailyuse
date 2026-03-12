@@ -15,6 +15,7 @@ import { fail, ok } from '@dailyuse/contracts/result';
 import {
   CreateGoalSchema,
   UpdateGoalSchema,
+  CloneGoalSchema,
   QueryGoalsSchema,
   AddKeyResultSchema,
   UpdateKeyResultSchema,
@@ -29,6 +30,7 @@ import type {
   GoalClientDTO,
   GetGoalAggregateRes,
   ProgressBreakdown,
+  CloneGoalReq,
   UpdateGoalReq,
   QueryGoalsReq,
   AddKeyResultReq,
@@ -260,26 +262,24 @@ export class GoalController {
 
   async cloneGoal(
     goalId: string,
-    params: {
-      title?: string;
-      description?: string;
-      includeKeyResults?: boolean;
-      includeRecords?: boolean;
-    },
+    params: unknown,
     ctx: Context,
   ): Promise<Result<GoalClientDTO>> {
+    const parsedParams = CloneGoalSchema.safeParse(params ?? {});
+    if (!parsedParams.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsedParams.error.issues),
+      });
+    }
+
     // Get original goal
     const goalResult = await this.useCases.getGoal.execute(goalId, true);
     if (!goalResult.ok) return goalResult;
 
     const original = this.toGoalClientDTO(goalResult.data);
-    const createData: CreateGoalReq = {
-      title: params.title ?? `${original.name} (Copy)`,
-      description: params.description ?? original.description ?? undefined,
-      importance: original.importance,
-      category: original.category ?? undefined,
-      tags: original.tags,
-    };
+    const createData = toCreateGoalReqFromCloneSource(original, parsedParams.data);
 
     return this.useCases.createGoal.execute(createData, ctx);
   }
@@ -490,4 +490,17 @@ export class GoalController {
   async deleteRecord(recordId: string): Promise<Result<unknown>> {
     return this.useCases.deleteRecord.execute(recordId);
   }
+}
+
+function toCreateGoalReqFromCloneSource(
+  original: GoalClientDTO,
+  params: CloneGoalReq,
+): CreateGoalReq {
+  return CreateGoalSchema.parse({
+    name: params.name ?? `${original.name} (Copy)`,
+    description: params.description ?? original.description ?? undefined,
+    importance: original.importance,
+    category: original.category ?? undefined,
+    tags: original.tags.length > 0 ? original.tags : undefined,
+  });
 }

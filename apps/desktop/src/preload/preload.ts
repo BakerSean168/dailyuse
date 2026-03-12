@@ -256,6 +256,7 @@ const ALLOWED_CHANNELS = [
 
   // ═══════════ Repository (electron-entry: 15 handlers) ═══════════
   'repository:list',
+  'repository:current',
   'repository:get',
   'repository:create',
   'repository:update',

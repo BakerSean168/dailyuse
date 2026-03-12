@@ -19,14 +19,14 @@
         <!-- ========== Tab 1: Basic Info ========== -->
         <TabsContent value="basic" class="flex-1 overflow-y-auto px-6 pb-2 mt-0">
           <div class="grid gap-5 py-4">
-            <!-- Title Input -->
+            <!-- Name Input -->
             <div class="grid gap-2">
-              <Label htmlFor="goal-title" class="font-medium">{{
+              <Label htmlFor="goal-name" class="font-medium">{{
                 t('goal.dialog.goalTitle')
               }}</Label>
               <Input
-                id="goal-title"
-                v-model="form.title"
+                id="goal-name"
+                v-model="form.name"
                 :placeholder="t('goal.dialog.goalTitlePlaceholder')"
                 class="h-10"
               />
@@ -643,7 +643,7 @@ function handleSaveKr(payload: {
 // ── Form State ─────────────────────────────────────────────────────────
 
 const defaultForm = () => ({
-  title: '',
+  name: '',
   description: '',
   category: '',
   importance: 'Moderate' as string,
@@ -718,7 +718,7 @@ function resetForm() {
 }
 
 function prefillFromGoal(goal: GoalClientDTO) {
-  form.title = goal.name;
+  form.name = goal.name;
   form.description = goal.description ?? '';
   form.category = goal.category ?? '';
   form.importance = goal.importance;
@@ -862,7 +862,7 @@ async function saveKrs(goalId: string): Promise<boolean> {
 // ── Save Handler ───────────────────────────────────────────────────────
 
 async function handleSave() {
-  if (!form.title.trim()) {
+  if (!form.name.trim()) {
     toast.error(t('goal.dialog.titleRequired'));
     return;
   }
@@ -877,8 +877,8 @@ async function handleSave() {
     // Build partial update request — only include changed fields
     const req: UpdateGoalReq = {};
 
-    if (form.title.trim() !== props.goal.name) {
-      req.title = form.title.trim();
+    if (form.name.trim() !== props.goal.name) {
+      req.name = form.name.trim();
     }
 
     const desc = form.description?.trim() || null;
@@ -947,7 +947,7 @@ async function handleSave() {
   } else {
     // Create mode
     const req: CreateGoalReq = {
-      title: form.title.trim(),
+      name: form.name.trim(),
       description: form.description?.trim() || undefined,
       category: form.category || undefined,
       importance: form.importance as CreateGoalReq['importance'],

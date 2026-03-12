@@ -26,6 +26,7 @@ const logger = createLogger('RepositoryElectron');
 
 const Ch = {
   LIST: 'repository:list',
+  CURRENT: 'repository:current',
   GET: 'repository:get',
   CREATE: 'repository:create',
   UPDATE: 'repository:update',
@@ -50,6 +51,24 @@ const Ch = {
 
 const channels = Object.values(Ch);
 
+function resolveIdentityId(params: unknown): string {
+  if (
+    params &&
+    typeof params === 'object' &&
+    'identityId' in params &&
+    typeof (params as { identityId?: unknown }).identityId === 'string' &&
+    (params as { identityId: string }).identityId.length > 0
+  ) {
+    return (params as { identityId: string }).identityId;
+  }
+
+  if (typeof params === 'string' && params.length > 0) {
+    return params;
+  }
+
+  return 'local-user';
+}
+
 export const RepositoryElectronModule: IElectronModule = {
   name: 'Repository',
 
@@ -67,7 +86,20 @@ export const RepositoryElectronModule: IElectronModule = {
     const updateResourceContent = new UpdateResourceContent(resourceRepo, repoRepo, storagePort);
 
     // Repository CRUD
-    ipcMain.handle(Ch.LIST, (_, params) => repoRepo.findByIdentityId(params?.identityId ?? params));
+    ipcMain.handle(Ch.LIST, async (_, params) => {
+      const repositories = await repoRepo.findByIdentityId(resolveIdentityId(params));
+      return repositories.map((repository) => repository.toClientDTO());
+    });
+    ipcMain.handle(Ch.CURRENT, async (_, params) => {
+      const repositories = await repoRepo.findByIdentityId(resolveIdentityId(params));
+      if (repositories.length === 0) {
+        return null;
+      }
+      if (repositories.length > 1) {
+        throw new Error('Single-repository mode expected exactly one repository');
+      }
+      return repositories[0]?.toClientDTO() ?? null;
+    });
     ipcMain.handle(Ch.GET, (_, id) => repoRepo.findById(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => repoRepo.save(dto));
     ipcMain.handle(Ch.UPDATE, (_, dto) => repoRepo.save(dto));

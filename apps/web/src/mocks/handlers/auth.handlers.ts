@@ -16,6 +16,36 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 // 结果类似于: '/api/v1/account'
 const BASE = `${API_BASE}/auth`;
 
+export const authMockRoutes = {
+  base: BASE,
+  login: `${BASE}/login`,
+  register: `${BASE}/register`,
+  loginPhone: `${BASE}/login/phone`,
+  registerPhone: `${BASE}/register/phone`,
+  refresh: `${BASE}/refresh`,
+  me: `${BASE}/me`,
+  sessions: `${BASE}/sessions`,
+  revokeSession: `${BASE}/sessions/revoke`,
+  changePassword: `${BASE}/password/change`,
+  forgotPassword: `${BASE}/password/forgot`,
+  resetPassword: `${BASE}/password/reset`,
+};
+
+export function createMockCurrentUserResponse() {
+  const mockAuth = createMockAuthResponse();
+  return {
+    identity: mockAuth.identity,
+    session: mockAuth.session,
+  };
+}
+
+export function createMockSessionListResponse() {
+  const mockAuth = createMockAuthResponse();
+  return {
+    sessions: [mockAuth.session],
+  };
+}
+
 export const authHandlers = [
   // POST /api/v1/auth/login — email/password login
   http.post(`${BASE}/login`, () => {
@@ -104,28 +134,21 @@ export const authHandlers = [
 
   // GET /api/v1/auth/me — get current identity (used on app init)
   http.get(`${BASE}/me`, () => {
-    const mockAuth = createMockAuthResponse();
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'OK',
-      data: {
-        identity: mockAuth.identity,
-        session: mockAuth.session,
-      },
+      data: createMockCurrentUserResponse(),
       timestamp: Date.now(),
     });
   }),
 
   http.get(`${BASE}/sessions`, () => {
-    const mockAuth = createMockAuthResponse();
     return HttpResponse.json({
       ok: true,
       code: 200,
       message: 'OK',
-      data: {
-        sessions: [mockAuth.session],
-      },
+      data: createMockSessionListResponse(),
       timestamp: Date.now(),
     });
   }),

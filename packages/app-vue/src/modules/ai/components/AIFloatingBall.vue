@@ -311,7 +311,8 @@ import AIGoalDraftEditor from './AIGoalDraftEditor.vue';
 
 type GoalDraft = {
   goal: {
-    title: string;
+    name?: string;
+    title?: string;
     description: string;
     category: string;
     importance: string;
@@ -358,7 +359,7 @@ const goalLoading = ref(false);
 const goalDraft = ref<GoalDraft | null>(null);
 const creatingGoal = ref(false);
 const editableGoal = ref({
-  title: '',
+  name: '',
   description: '',
   category: '',
   importance: ImportanceLevel.Moderate,
@@ -459,7 +460,7 @@ async function handleGenerateGoal() {
       includeKeyResults: true,
     })) as GoalDraft;
     editableGoal.value = {
-      title: goalDraft.value.goal.title,
+      name: goalDraft.value.goal.name ?? goalDraft.value.goal.title ?? '',
       description: goalDraft.value.goal.description,
       category: goalDraft.value.goal.category,
       importance: goalDraft.value.goal.importance as typeof editableGoal.value.importance,
@@ -485,7 +486,7 @@ async function handleCreateGoalFromDraft() {
   creatingGoal.value = true;
   try {
     const created = await createGoal({
-      title: editableGoal.value.title,
+      name: editableGoal.value.name,
       description: editableGoal.value.description,
       category: editableGoal.value.category || undefined,
       importance: editableGoal.value.importance,

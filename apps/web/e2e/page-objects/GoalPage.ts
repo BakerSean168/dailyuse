@@ -16,7 +16,7 @@ export class GoalPage {
 
   // 对话框元素
   readonly goalDialog: Locator;
-  readonly titleInput: Locator;
+  readonly nameInput: Locator;
   readonly descriptionInput: Locator;
   readonly saveButton: Locator;
   readonly cancelButton: Locator;
@@ -38,9 +38,9 @@ export class GoalPage {
     // 对话框元素
     this.goalDialog = page.locator('[role="dialog"]').or(page.locator('.v-dialog'));
 
-    this.titleInput = page
-      .locator('input[name="title"]')
-      .or(page.locator('[data-testid="goal-title-input"]'));
+    this.nameInput = page
+      .locator('input[placeholder="一段话来描述自己的目标"]')
+      .or(page.locator('[data-testid="goal-name-input"]'));
 
     this.descriptionInput = page
       .locator('textarea[name="description"]')
@@ -80,12 +80,12 @@ export class GoalPage {
    * 创建新目标
    */
   async createGoal(data: {
-    title: string;
+    name: string;
     description?: string;
     importance?: string;
     deadline?: string;
   }) {
-    console.log(`[GoalPage] 创建目标: ${data.title}`);
+    console.log(`[GoalPage] 创建目标: ${data.name}`);
 
     // 点击创建按钮
     await this.createGoalButton.click();
@@ -94,7 +94,7 @@ export class GoalPage {
     await this.goalDialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // 填写表单
-    await this.titleInput.fill(data.title);
+    await this.nameInput.fill(data.name);
 
     if (data.description) {
       await this.descriptionInput.fill(data.description);
@@ -109,30 +109,30 @@ export class GoalPage {
     // 等待数据加载
     await this.page.waitForTimeout(1000);
 
-    console.log(`[GoalPage] 目标创建成功: ${data.title}`);
+    console.log(`[GoalPage] 目标创建成功: ${data.name}`);
   }
 
   // ========== 查询操作 ==========
 
   /**
-   * 根据标题查找目标卡片
+   * 根据名称查找目标卡片
    */
-  getGoalCardByTitle(title: string): Locator {
-    return this.page.locator(`text=${title}`).locator('..');
+  getGoalCardByName(name: string): Locator {
+    return this.page.locator(`text=${name}`).locator('..');
   }
 
   /**
    * 验证目标存在
    */
-  async expectGoalToExist(title: string, timeout: number = 10000) {
-    await expect(this.page.locator(`text=${title}`)).toBeVisible({ timeout });
+  async expectGoalToExist(name: string, timeout: number = 10000) {
+    await expect(this.page.locator(`text=${name}`)).toBeVisible({ timeout });
   }
 
   /**
    * 验证目标不存在
    */
-  async expectGoalNotToExist(title: string) {
-    await expect(this.page.locator(`text=${title}`)).not.toBeVisible();
+  async expectGoalNotToExist(name: string) {
+    await expect(this.page.locator(`text=${name}`)).not.toBeVisible();
   }
 
   // ========== 编辑操作 ==========
@@ -141,15 +141,15 @@ export class GoalPage {
    * 编辑目标
    */
   async editGoal(
-    goalTitle: string,
+    goalName: string,
     updates: {
-      title?: string;
+      name?: string;
       description?: string;
     },
   ) {
-    console.log(`[GoalPage] 编辑目标: ${goalTitle}`);
+    console.log(`[GoalPage] 编辑目标: ${goalName}`);
 
-    const goalCard = this.getGoalCardByTitle(goalTitle);
+    const goalCard = this.getGoalCardByName(goalName);
     await goalCard.hover();
 
     // 查找编辑按钮
@@ -163,9 +163,9 @@ export class GoalPage {
     await this.goalDialog.waitFor({ state: 'visible', timeout: 5000 });
 
     // 更新字段
-    if (updates.title) {
-      await this.titleInput.clear();
-      await this.titleInput.fill(updates.title);
+    if (updates.name) {
+      await this.nameInput.clear();
+      await this.nameInput.fill(updates.name);
     }
 
     if (updates.description) {
@@ -186,10 +186,10 @@ export class GoalPage {
   /**
    * 删除目标
    */
-  async deleteGoal(goalTitle: string) {
-    console.log(`[GoalPage] 删除目标: ${goalTitle}`);
+  async deleteGoal(goalName: string) {
+    console.log(`[GoalPage] 删除目标: ${goalName}`);
 
-    const goalCard = this.getGoalCardByTitle(goalTitle);
+    const goalCard = this.getGoalCardByName(goalName);
     await goalCard.hover();
 
     // 点击删除按钮
@@ -217,10 +217,10 @@ export class GoalPage {
   /**
    * 激活目标
    */
-  async activateGoal(goalTitle: string) {
-    console.log(`[GoalPage] 激活目标: ${goalTitle}`);
+  async activateGoal(goalName: string) {
+    console.log(`[GoalPage] 激活目标: ${goalName}`);
 
-    const goalCard = this.getGoalCardByTitle(goalTitle);
+    const goalCard = this.getGoalCardByName(goalName);
     await goalCard.hover();
 
     const activateButton = goalCard.locator('button[title*="激活"]');
@@ -236,10 +236,10 @@ export class GoalPage {
   /**
    * 完成目标
    */
-  async completeGoal(goalTitle: string) {
-    console.log(`[GoalPage] 完成目标: ${goalTitle}`);
+  async completeGoal(goalName: string) {
+    console.log(`[GoalPage] 完成目标: ${goalName}`);
 
-    const goalCard = this.getGoalCardByTitle(goalTitle);
+    const goalCard = this.getGoalCardByName(goalName);
     await goalCard.hover();
 
     const completeButton = goalCard.locator('button[title*="完成"]');

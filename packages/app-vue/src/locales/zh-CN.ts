@@ -1840,7 +1840,7 @@ export default {
       tabBasicInfo: '基本信息',
       tabKeyResults: '关键结果',
       // Form labels
-      goalTitle: '目标标题',
+      goalTitle: '目标名称',
       goalTitlePlaceholder: '例如：提升月度经常性收入',
       description: '描述',
       descriptionPlaceholder: '补充说明此目标的重要性...',
@@ -1906,7 +1906,7 @@ export default {
       saveChanges: '保存更改',
       createGoal: '创建目标',
       // Validation
-      titleRequired: '目标标题不能为空',
+      titleRequired: '目标名称不能为空',
       krTitleRequired: '所有关键结果都必须有标题。',
       krWeightInvalid: '关键结果权重必须是 1 到 5 之间的整数。',
       krTargetInvalid: '关键结果目标值必须大于 0。',
@@ -2892,6 +2892,8 @@ export default {
     workspace: {
       selectFile: '选择文件',
       selectFileDesc: '从左侧选择一个文件开始编辑或查看',
+      noRepository: '暂无仓库',
+      noRepositoryDesc: '当前账户还没有可用仓库，请先完成仓库初始化或创建。',
       createNote: '新建笔记',
       createNoteSuccess: '已创建笔记：{name}',
       createNoteFailed: '创建笔记失败',

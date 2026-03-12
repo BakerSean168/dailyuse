@@ -15,6 +15,7 @@ import type {
   ProgressBreakdown,
   CreateGoalReq,
   UpdateGoalReq,
+  CloneGoalReq,
   QueryGoalsRes,
   AddKeyResultReq,
   UpdateKeyResultReq,
@@ -208,12 +209,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
 
   async cloneGoal(
     goalId: string,
-    request: {
-      title?: string;
-      description?: string;
-      includeKeyResults?: boolean;
-      includeRecords?: boolean;
-    },
+    request: CloneGoalReq,
   ): Promise<Result<GoalClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${goalId}/clone`, request);
   }

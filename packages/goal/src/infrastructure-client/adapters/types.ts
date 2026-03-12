@@ -20,6 +20,7 @@ import type {
   ProgressBreakdown,
   CreateGoalReq,
   UpdateGoalReq,
+  CloneGoalReq,
   QueryGoalsRes,
   AddKeyResultReq,
   UpdateKeyResultReq,
@@ -138,12 +139,7 @@ export interface IGoalApiClient {
   getGoalAggregateView(goalId: string): Promise<Result<GetGoalAggregateRes>>;
   cloneGoal(
     goalId: string,
-    request: {
-      title?: string;
-      description?: string;
-      includeKeyResults?: boolean;
-      includeRecords?: boolean;
-    },
+    request: CloneGoalReq,
   ): Promise<Result<GoalClientDTO>>;
 
   // AI Generation

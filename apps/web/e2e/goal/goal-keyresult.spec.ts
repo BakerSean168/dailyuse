@@ -1,19 +1,19 @@
 /**
-import { WEB_CONFIG } from '../config';
  * Goal KeyResult E2E 测试
  * 测试关键结果管理的核心业务流程
  */
 
 import { test, expect, type Page } from '@playwright/test';
+import { WEB_CONFIG } from '../config';
 import { login, TEST_USER } from '../helpers/testHelpers';
 
 test.describe('Goal KeyResult - 关键结果管理', () => {
   let page: Page;
-  let testGoalTitle: string;
+  let testGoalName: string;
 
   test.beforeEach(async ({ page: testPage }) => {
     page = testPage;
-    testGoalTitle = `E2E Goal with KR ${Date.now()}`;
+    testGoalName = `E2E Goal with KR ${Date.now()}`;
 
     // 登录
     await login(page, TEST_USER.username, TEST_USER.password);
@@ -23,18 +23,18 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 
     // 创建测试目标
     await createGoal(page, {
-      title: testGoalTitle,
+      name: testGoalName,
       description: '用于测试关键结果',
     });
 
     // 打开目标详情
-    await page.click(`text=${testGoalTitle}`);
+    await page.click(`text=${testGoalName}`);
     await page.waitForLoadState('networkidle');
   });
 
   test.afterEach(async () => {
     // 清理测试数据
-    await cleanupTestGoal(page, testGoalTitle);
+    await cleanupTestGoal(page, testGoalName);
   });
 
   test('[P0] 应该能够添加 INCREMENTAL 类型的关键结果', async () => {
@@ -225,12 +225,15 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
 
 // ========== 辅助函数 ==========
 
-async function createGoal(page: Page, options: { title: string; description?: string }) {
+async function createGoal(page: Page, options: { name: string; description?: string }) {
   const createButton = page.locator('button:has-text("创建目标")').or(page.locator('[data-testid="create-goal-button"]'));
   await createButton.click();
   await page.waitForTimeout(500);
 
-  await page.locator('input[name="title"]').or(page.locator('[data-testid="goal-title-input"]')).fill(options.title);
+  await page
+    .locator('input[placeholder="一段话来描述自己的目标"]')
+    .or(page.locator('[data-testid="goal-name-input"]'))
+    .fill(options.name);
   
   if (options.description) {
     await page.locator('textarea[name="description"]').or(page.locator('[data-testid="goal-description-input"]')).fill(options.description);

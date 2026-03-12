@@ -39,6 +39,7 @@ export interface RepositoryUseCases {
     filters: { status?: string; type?: string },
     ctx: Context,
   ): Promise<Result<unknown>>;
+  getCurrentRepository(ctx: Context): Promise<Result<unknown>>;
   getRepository(id: string): Promise<Result<unknown>>;
   updateRepository(id: string, data: UpdateRepositoryZodReq): Promise<Result<unknown>>;
   deleteRepository(id: string): Promise<Result<unknown>>;
@@ -121,6 +122,10 @@ export class RepositoryController {
     ctx: Context,
   ): Promise<Result<unknown>> {
     return this.useCases.listRepositories(filters, ctx);
+  }
+
+  async getCurrentRepository(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getCurrentRepository(ctx);
   }
 
   async getRepository(id: string): Promise<Result<unknown>> {

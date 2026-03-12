@@ -15,6 +15,7 @@ import type {
   ProgressBreakdown,
   CreateGoalReq,
   UpdateGoalReq,
+  CloneGoalReq,
   QueryGoalsRes,
   AddKeyResultReq,
   UpdateKeyResultReq,
@@ -199,12 +200,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   async cloneGoal(
     goalId: string,
-    request: {
-      title?: string;
-      description?: string;
-      includeKeyResults?: boolean;
-      includeRecords?: boolean;
-    },
+    request: CloneGoalReq,
   ): Promise<Result<GoalClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:clone`, goalId, request);
   }

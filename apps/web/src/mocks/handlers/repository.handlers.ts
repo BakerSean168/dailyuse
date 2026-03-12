@@ -23,6 +23,7 @@ const SEARCH = `${API_BASE}/search`;
 
 export const repositoryMockRoutes = {
   repositories: REPOS,
+  current: `${REPOS}/current`,
   folders: FOLDERS,
   resources: RESOURCES,
   search: SEARCH,
@@ -145,6 +146,16 @@ export const repositoryHandlers = [
       },
       { status: 201 },
     );
+  }),
+
+  http.get(`${REPOS}/current`, () => {
+    return HttpResponse.json({
+      ok: true,
+      code: 200,
+      message: 'Success',
+      data: createMockRepository(),
+      timestamp: Date.now(),
+    });
   }),
 
   http.get(`${REPOS}/:id/tree`, ({ params }) => {

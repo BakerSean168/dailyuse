@@ -202,6 +202,21 @@
 
             <!-- Empty State (no file selected) -->
             <div
+              v-else-if="!repositoryId && !isLoading"
+              class="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
+            >
+              <div class="h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
+                <BookOpen class="h-8 w-8 text-muted-foreground/50" />
+              </div>
+              <div>
+                <h3 class="text-lg font-medium">{{ t('repository.workspace.noRepository') }}</h3>
+                <p class="text-sm text-muted-foreground mt-1">
+                  {{ t('repository.workspace.noRepositoryDesc') }}
+                </p>
+              </div>
+            </div>
+
+            <div
               v-else
               class="flex flex-col items-center justify-center h-full gap-4 text-center px-8"
             >

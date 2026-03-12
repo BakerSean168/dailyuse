@@ -21,8 +21,8 @@ interface BookmarkUiState {
 }
 
 export interface RepositoryState {
-  /** 当前用户可访问的仓库列表 */
-  repositories: RepositoryClientDTO[];
+  /** 当前仓库 */
+  currentRepository: RepositoryClientDTO | null;
   /** 当前选中的仓库 ID */
   currentRepositoryId: string | null;
 
@@ -57,7 +57,7 @@ export interface RepositoryState {
 
 export const useRepositoryStore = defineStore('repository', {
   state: (): RepositoryState => ({
-    repositories: [],
+    currentRepository: null,
     currentRepositoryId: null,
     resources: [],
     currentResource: null,
@@ -81,12 +81,6 @@ export const useRepositoryStore = defineStore('repository', {
   getters: {
     repositoryId(): string | null {
       return this.currentRepositoryId;
-    },
-
-    currentRepository(): RepositoryClientDTO | null {
-      return (
-        this.repositories.find((repository) => repository.id === this.currentRepositoryId) ?? null
-      );
     },
 
     /** 按类型分组的资源（用于类型化文件树） */
@@ -132,12 +126,11 @@ export const useRepositoryStore = defineStore('repository', {
 
   actions: {
     // ── Repository ──
-    setRepositories(items: RepositoryClientDTO[]) {
-      this.repositories = items;
-    },
-    setCurrentRepositoryId(id: string | null) {
-      const didChange = this.currentRepositoryId !== id;
-      this.currentRepositoryId = id;
+    setCurrentRepository(repository: RepositoryClientDTO | null) {
+      const nextId = repository?.id ?? null;
+      const didChange = this.currentRepositoryId !== nextId;
+      this.currentRepository = repository;
+      this.currentRepositoryId = nextId;
       if (didChange) {
         this.clearRepositoryScopedState();
       }

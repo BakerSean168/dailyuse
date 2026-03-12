@@ -33,7 +33,7 @@ export class UpdateGoal {
 
     // 3. 使用聚合根方法更新基本信息
     goal.updateBasicInfo({
-      name: input.title,
+      name: input.name,
       description: input.description,
       importance: input.importance as ImportanceLevel | undefined,
       category: input.category,

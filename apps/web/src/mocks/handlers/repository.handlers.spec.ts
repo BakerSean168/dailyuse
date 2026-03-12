@@ -4,44 +4,40 @@ import {
   createMockUploadResourcesResponse,
   repositoryMockRoutes,
 } from './repository.handlers';
-import { describe, expect, it, vi } from 'vitest';
-import { RepositoryHttpAdapter } from '@dailyuse/repository/infrastructure-client';
-import type { IResultHttpClient } from '@dailyuse/http-client';
-import { ok, type Result } from '@dailyuse/contracts/result';
+import {
+  createHttpClientSpy,
+  expectSchemaSuccess,
+  successResult,
+} from './_shared/contract-test-helpers';
+import { describe, expect, it } from 'vitest';
 import type { ResourceId } from '@dailyuse/contracts/primitives';
-
-type HttpSpy = IResultHttpClient & {
-  get: ReturnType<typeof vi.fn>;
-  post: ReturnType<typeof vi.fn>;
-  put: ReturnType<typeof vi.fn>;
-  patch: ReturnType<typeof vi.fn>;
-  delete: ReturnType<typeof vi.fn>;
-  request: ReturnType<typeof vi.fn>;
-  getAxiosInstance: ReturnType<typeof vi.fn>;
-};
-
-function successResult<T>(data: T): Result<T> {
-  return ok(data);
-}
-
-function createHttpClientSpy(): HttpSpy {
-  return {
-    get: vi.fn(async () => successResult([])),
-    post: vi.fn(async () => successResult(null)),
-    put: vi.fn(async () => successResult(null)),
-    patch: vi.fn(async () => successResult(null)),
-    delete: vi.fn(async () => successResult(null)),
-    request: vi.fn(async () => successResult(null)),
-    getAxiosInstance: vi.fn(() => ({})),
-  } as HttpSpy;
-}
+import { createMockRepository } from '@dailyuse/contracts/mocks';
+import { RepositoryResponseSchema } from '../../../../../packages/contracts/src/modules/repository';
+import { RepositoryHttpAdapter } from '../../../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter';
 
 describe('repository handlers contracts', () => {
   it('uses the current repository adapter route prefixes', () => {
     expect(repositoryMockRoutes.repositories).toMatch(/\/repositories$/);
+    expect(repositoryMockRoutes.current).toMatch(/\/repositories\/current$/);
     expect(repositoryMockRoutes.folders).toMatch(/\/folders$/);
     expect(repositoryMockRoutes.resources).toMatch(/\/resources$/);
     expect(repositoryMockRoutes.search).toMatch(/\/search$/);
+  });
+
+  it('uses the explicit current repository route and response shape as the adapter', async () => {
+    const httpClient = createHttpClientSpy();
+    const adapter = new RepositoryHttpAdapter(httpClient);
+    const repository = createMockRepository();
+
+    httpClient.get.mockResolvedValueOnce(successResult(repository));
+
+    const result = await adapter.getCurrentRepository();
+
+    expect(httpClient.get).toHaveBeenCalledWith('/repositories/current');
+    expect(result).toEqual({ ok: true, data: repository });
+    if (result.ok) {
+      expectSchemaSuccess(RepositoryResponseSchema, result.data);
+    }
   });
 
   it('builds bookmark, upload, and search payloads with current shapes', () => {

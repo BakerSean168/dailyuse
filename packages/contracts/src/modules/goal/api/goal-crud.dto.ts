@@ -11,6 +11,12 @@ import type { GoalClientDTO } from '../aggregates';
 import { GoalStatus } from '../value-objects/goal-status';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
+const GoalNameSchema = z
+  .string()
+  .trim()
+  .min(1, '目标名称不能为空')
+  .max(256, '目标名称不能超过 256 字符');
+
 // ============================================================================
 // CREATE Goal
 // ============================================================================
@@ -18,23 +24,25 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 /**
  * 创建目标 Schema
  */
-export const CreateGoalSchema = z.object({
-  title: z.string().min(1, '目标标题不能为空').max(256, '目标标题不能超过 256 字符'),
-  description: z.string().max(2000, '描述不能超过 2000 字符').optional(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式')
-    .optional(),
-  feasibilityAnalysis: z.string().max(2000).optional(),
-  motivation: z.string().max(2000).optional(),
-  importance: z.enum(ImportanceLevel),
-  category: z.string().max(100).optional(),
-  tags: z.array(z.string().max(50)).optional(),
-  startDate: z.number().int().optional(),
-  targetDate: z.number().int().optional(),
-  folderId: brandedId<GoalFolderId>().optional(),
-  parentGoalId: brandedId<GoalId>().optional(),
-});
+export const CreateGoalSchema = z
+  .object({
+    name: GoalNameSchema,
+    description: z.string().max(2000, '描述不能超过 2000 字符').optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9A-F]{6}$/i, '颜色必须是有效的 hex 格式')
+      .optional(),
+    feasibilityAnalysis: z.string().max(2000).optional(),
+    motivation: z.string().max(2000).optional(),
+    importance: z.enum(ImportanceLevel),
+    category: z.string().max(100).optional(),
+    tags: z.array(z.string().max(50)).optional(),
+    startDate: z.number().int().optional(),
+    targetDate: z.number().int().optional(),
+    folderId: brandedId<GoalFolderId>().optional(),
+    parentGoalId: brandedId<GoalId>().optional(),
+  })
+  .strict();
 
 export type CreateGoalReq = z.infer<typeof CreateGoalSchema>;
 export type CreateGoalRes = GoalClientDTO;
@@ -46,24 +54,26 @@ export type CreateGoalRes = GoalClientDTO;
 /**
  * 更新目标 Schema
  */
-export const UpdateGoalSchema = z.object({
-  title: z.string().min(1).max(256).optional(),
-  description: z.string().max(2000).nullable().optional(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-F]{6}$/i)
-    .nullable()
-    .optional(),
-  feasibilityAnalysis: z.string().max(2000).nullable().optional(),
-  motivation: z.string().max(2000).nullable().optional(),
-  importance: z.enum(ImportanceLevel).optional(),
-  category: z.string().max(100).nullable().optional(),
-  tags: z.array(z.string().max(50)).nullable().optional(),
-  startDate: z.number().int().nullable().optional(),
-  targetDate: z.number().int().nullable().optional(),
-  folderId: brandedId<GoalFolderId>().nullable().optional(),
-  parentGoalId: brandedId<GoalId>().nullable().optional(),
-});
+export const UpdateGoalSchema = z
+  .object({
+    name: GoalNameSchema.optional(),
+    description: z.string().max(2000).nullable().optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9A-F]{6}$/i)
+      .nullable()
+      .optional(),
+    feasibilityAnalysis: z.string().max(2000).nullable().optional(),
+    motivation: z.string().max(2000).nullable().optional(),
+    importance: z.enum(ImportanceLevel).optional(),
+    category: z.string().max(100).nullable().optional(),
+    tags: z.array(z.string().max(50)).nullable().optional(),
+    startDate: z.number().int().nullable().optional(),
+    targetDate: z.number().int().nullable().optional(),
+    folderId: brandedId<GoalFolderId>().nullable().optional(),
+    parentGoalId: brandedId<GoalId>().nullable().optional(),
+  })
+  .strict();
 
 export type UpdateGoalReq = z.infer<typeof UpdateGoalSchema>;
 export type UpdateGoalRes = GoalClientDTO;
@@ -126,6 +136,21 @@ export type QueryGoalsReq = z.infer<typeof QueryGoalsSchema>;
 export type GetGoalAggregateReq = void;
 
 // GetGoalAggregateRes 由 response-schemas.ts 中 GetGoalAggregateResSchema 的 z.infer 导出
+
+// ============================================================================
+// CLONE Goal
+// ============================================================================
+
+export const CloneGoalSchema = z
+  .object({
+    name: GoalNameSchema.optional(),
+    description: z.string().max(2000, '描述不能超过 2000 字符').optional(),
+    includeKeyResults: z.boolean().optional(),
+    includeRecords: z.boolean().optional(),
+  })
+  .strict();
+
+export type CloneGoalReq = z.infer<typeof CloneGoalSchema>;
 
 // ============================================================================
 // BATCH Operations
