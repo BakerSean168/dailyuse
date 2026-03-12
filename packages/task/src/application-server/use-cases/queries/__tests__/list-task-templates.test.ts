@@ -13,8 +13,8 @@ import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { ListTaskTemplates } from '../list-task-templates';
 
 // Mock eventBus — preserve all real exports
-vi.mock('@dailyuse/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dailyuse/utils')>();
+vi.mock('@dailyuse/utils', async () => {
+  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
   return {
     ...actual,
     eventBus: { send: vi.fn() },

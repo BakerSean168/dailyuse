@@ -7,6 +7,47 @@ import pluginVue from 'eslint-plugin-vue';
 // @ts-ignore
 import nxPlugin from '@nx/eslint-plugin';
 
+const moduleBoundaryDepConstraints = [
+  {
+    // shared: pure primitives, cannot depend on anything else
+    sourceTag: 'layer:shared',
+    onlyDependOnLibsWithTags: ['layer:shared'],
+  },
+  {
+    // infra: technical plumbing, depends on shared only
+    sourceTag: 'layer:infra',
+    onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra'],
+  },
+  {
+    // domain: business logic, depends on shared + infra (for repos/db)
+    sourceTag: 'layer:domain',
+    onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:domain'],
+  },
+  {
+    // ui: presentation, can consume all layers
+    sourceTag: 'layer:ui',
+    onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:domain', 'layer:ui'],
+  },
+  {
+    // app: application shells, can consume everything
+    sourceTag: 'layer:app',
+    onlyDependOnLibsWithTags: [
+      'layer:shared',
+      'layer:infra',
+      'layer:domain',
+      'layer:ui',
+      'layer:app',
+    ],
+  },
+] as const;
+
+const moduleBoundaryOptions = {
+  enforceBuildableLibDependency: true,
+  allow: ['./generated/prisma/**'],
+  checkDynamicDependenciesExceptions: ['@dailyuse/database'],
+  depConstraints: moduleBoundaryDepConstraints,
+} as const;
+
 export default tseslint.config(
   [
     {
@@ -17,6 +58,7 @@ export default tseslint.config(
         '**/coverage/**',
         '**/.nx/**',
         '**/dist-electron/**',
+        '**/src/generated/prisma/**',
         '**/*.min.js',
         '**/*.d.ts',
       ],
@@ -58,51 +100,36 @@ export default tseslint.config(
     {
       plugins: { '@nx': nxPlugin },
       rules: {
-        '@nx/enforce-module-boundaries': [
-          'error',
-          {
-            enforceBuildableLibDependency: true,
-            allow: [],
-            depConstraints: [
-              {
-                // shared: pure primitives, cannot depend on anything else
-                sourceTag: 'layer:shared',
-                onlyDependOnLibsWithTags: ['layer:shared'],
-              },
-              {
-                // infra: technical plumbing, depends on shared only
-                sourceTag: 'layer:infra',
-                onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra'],
-              },
-              {
-                // domain: business logic, depends on shared + infra (for repos/db)
-                sourceTag: 'layer:domain',
-                onlyDependOnLibsWithTags: ['layer:shared', 'layer:infra', 'layer:domain'],
-              },
-              {
-                // ui: presentation, can consume all layers
-                sourceTag: 'layer:ui',
-                onlyDependOnLibsWithTags: [
-                  'layer:shared',
-                  'layer:infra',
-                  'layer:domain',
-                  'layer:ui',
-                ],
-              },
-              {
-                // app: application shells, can consume everything
-                sourceTag: 'layer:app',
-                onlyDependOnLibsWithTags: [
-                  'layer:shared',
-                  'layer:infra',
-                  'layer:domain',
-                  'layer:ui',
-                  'layer:app',
-                ],
-              },
-            ],
-          },
-        ],
+        '@nx/enforce-module-boundaries': ['error', moduleBoundaryOptions],
+      },
+    },
+    {
+      files: [
+        '**/eslint.config.{js,mjs,cjs,ts,mts,cts}',
+        '**/tsup.config.{js,mjs,cjs,ts,mts,cts}',
+        '**/vite.config.{js,mjs,cjs,ts,mts,cts}',
+        '**/vitest*.config.{js,mjs,cjs,ts,mts,cts}',
+      ],
+      plugins: { '@nx': nxPlugin },
+      rules: {
+        '@nx/enforce-module-boundaries': 'off',
+      },
+    },
+    {
+      files: [
+        '**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      ],
+      plugins: { '@nx': nxPlugin },
+      rules: {
+        '@nx/enforce-module-boundaries': 'off',
+      },
+    },
+    {
+      files: ['packages/test-utils/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      plugins: { '@nx': nxPlugin },
+      rules: {
+        '@nx/enforce-module-boundaries': 'off',
       },
     },
   ],

@@ -42,7 +42,7 @@ import {
   TaskInstanceStatus,
   TaskTimeType,
 } from '@dailyuse/task/domain-shared';
-import { TaskTemplate } from '@dailyuse/task/domain-server';
+import { TaskInstance, TaskTemplate } from '@dailyuse/task/domain-server';
 import type { TaskTemplateState } from '@dailyuse/task/domain-server';
 
 import { titleFor } from './base.fixture.js';
@@ -184,10 +184,6 @@ export function aLoadedTaskTemplate(overrides: Partial<TaskTemplateState> = {}):
 
 // ─── TaskInstance Fixtures ───────────────────────────────────────────
 
-// Note: TaskInstance.create() also requires importing from domain-server.
-// We import it lazily to avoid circular dependency issues if the domain-server
-// barrel re-exports both aggregates.
-
 /**
  * Parameters for creating a task instance fixture.
  */
@@ -201,10 +197,8 @@ export interface TaskInstanceOverrides {
 
 /**
  * Create a TaskInstance aggregate with sensible defaults.
- * Requires dynamic import since TaskInstance may share barrel with TaskTemplate.
  */
 export async function aTaskInstance(overrides: TaskInstanceOverrides = {}) {
-  const { TaskInstance } = await import('@dailyuse/task/domain-server');
   return TaskInstance.create({
     templateId: overrides.templateId ?? TaskTemplateId.generate(),
     identityId: overrides.identityId ?? anIdentityId(),

@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import type { Goal } from '@dailyuse/goal/domain-server';
+import { Goal } from '@dailyuse/goal/domain-server';
 import type { GoalServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
@@ -23,7 +23,6 @@ export interface MockGoalRepository {
 
 export function createMockGoalRepository(): MockGoalRepository {
   return {
-
     save: vi.fn().mockResolvedValue(undefined),
     findById: vi.fn().mockResolvedValue(null),
     findByAccountId: vi.fn().mockResolvedValue([]),
@@ -173,9 +172,6 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
 }
 
 export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
-  // 动态导入以避免循环依赖
-
-  const { Goal } = require('@dailyuse/goal/domain-server');
   const dto = createMockGoalDTO(overrides);
   return Goal.fromPersistenceDTO(dto);
 }

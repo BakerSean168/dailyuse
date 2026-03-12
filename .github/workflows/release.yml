@@ -37,15 +37,17 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4.2.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
 
       - name: Install Linux packaging dependencies
         if: runner.os == 'Linux'

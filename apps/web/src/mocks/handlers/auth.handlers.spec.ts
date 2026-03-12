@@ -20,7 +20,7 @@ import {
   ResetPasswordSchema,
   RevokeSessionSchema,
   SessionListResponseSchema,
-} from '../../../../../packages/contracts/src/modules/authentication';
+} from '@dailyuse/contracts/authentication';
 import { createMockAuthResponse } from '@dailyuse/contracts/mocks';
 
 describe('auth handlers contracts', () => {

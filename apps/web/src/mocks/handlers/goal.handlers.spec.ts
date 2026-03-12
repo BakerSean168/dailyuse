@@ -1,7 +1,4 @@
-import {
-  createMockGoalAggregateResponse,
-  goalMockRoutes,
-} from './goal.handlers';
+import { createMockGoalAggregateResponse, goalMockRoutes } from './goal.handlers';
 import {
   createHttpClientSpy,
   expectSchemaFailure,
@@ -16,7 +13,7 @@ import {
   GetGoalAggregateResSchema,
   QueryGoalsResSchema,
   UpdateGoalSchema,
-} from '../../../../../packages/contracts/src/modules/goal';
+} from '@dailyuse/contracts/goal';
 import { createMockGoal, createMockQueryGoalsRes } from '@dailyuse/contracts/mocks';
 
 describe('goal handlers contracts', () => {

@@ -11,8 +11,8 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { CreateTaskTemplate } from '../create-task-template';
 
 // Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
-vi.mock('@dailyuse/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dailyuse/utils')>();
+vi.mock('@dailyuse/utils', async () => {
+  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
   return {
     ...actual,
     createLogger: vi.fn(() => ({

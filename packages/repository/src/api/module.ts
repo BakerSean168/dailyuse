@@ -246,7 +246,7 @@ export const RepositoryApiModule: RepositoryApiModuleDef = {
         return ok(result.resource);
       },
       updateResource: async (id, data) => {
-        let currentResource = await repositoryModule.resourceRepository.findById(id);
+        const currentResource = await repositoryModule.resourceRepository.findById(id);
         if (!currentResource) {
           throw new Error(`Resource not found: ${id}`);
         }

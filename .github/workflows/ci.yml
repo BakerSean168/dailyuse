@@ -35,9 +35,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4.2.0
-
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -45,16 +42,44 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: 📦 Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
+
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile --reporter=append-only
 
       - name: 🔍 Derive SHAs for affected
-        uses: nrwl/nx-set-shas@v4
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
+          else
+            NX_BASE_VALUE="${{ github.event.before }}"
+            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
+              NX_BASE_VALUE=$(git rev-parse HEAD~1)
+            fi
+          fi
+          NX_HEAD_VALUE="${{ github.sha }}"
+          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
+          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
+          echo "Using NX_BASE=$NX_BASE_VALUE"
+          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🧹 Lint affected projects
         env:
           NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx affected -t lint --parallel=3 --outputStyle=static
+        shell: bash
+        run: |
+          EXCLUDED_PROJECTS=$(pnpm exec nx show projects | grep '^prisma-client-' | paste -sd, -)
+          if [ -n "$EXCLUDED_PROJECTS" ]; then
+            echo "Excluding generated Prisma projects from lint: $EXCLUDED_PROJECTS"
+            pnpm exec nx affected -t lint --parallel=3 --exclude="$EXCLUDED_PROJECTS" --outputStyle=static
+          else
+            pnpm exec nx affected -t lint --parallel=3 --outputStyle=static
+          fi
 
   build-packages:
     runs-on: ubuntu-latest
@@ -66,15 +91,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4.2.0
-
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📦 Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile --reporter=append-only
@@ -105,15 +132,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4.2.0
-
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📦 Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile --reporter=append-only
@@ -125,7 +154,22 @@ jobs:
           path: .
 
       - name: 🔍 Derive SHAs for affected
-        uses: nrwl/nx-set-shas@v4
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
+          else
+            NX_BASE_VALUE="${{ github.event.before }}"
+            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
+              NX_BASE_VALUE=$(git rev-parse HEAD~1)
+            fi
+          fi
+          NX_HEAD_VALUE="${{ github.sha }}"
+          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
+          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
+          echo "Using NX_BASE=$NX_BASE_VALUE"
+          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🔍 Typecheck affected projects
         env:
@@ -143,15 +187,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4.2.0
-
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📦 Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile --reporter=append-only
@@ -163,7 +209,22 @@ jobs:
           path: .
 
       - name: 🔍 Derive SHAs for affected
-        uses: nrwl/nx-set-shas@v4
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
+          else
+            NX_BASE_VALUE="${{ github.event.before }}"
+            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
+              NX_BASE_VALUE=$(git rev-parse HEAD~1)
+            fi
+          fi
+          NX_HEAD_VALUE="${{ github.sha }}"
+          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
+          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
+          echo "Using NX_BASE=$NX_BASE_VALUE"
+          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🧪 Test affected projects
         env:
@@ -181,15 +242,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4.2.0
-
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📦 Setup pnpm
+        run: |
+          corepack enable
+          pnpm --version
 
       - name: 📥 Install dependencies
         run: pnpm install --frozen-lockfile --reporter=append-only
@@ -201,7 +264,22 @@ jobs:
           path: .
 
       - name: 🔍 Derive SHAs for affected
-        uses: nrwl/nx-set-shas@v4
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
+          else
+            NX_BASE_VALUE="${{ github.event.before }}"
+            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
+              NX_BASE_VALUE=$(git rev-parse HEAD~1)
+            fi
+          fi
+          NX_HEAD_VALUE="${{ github.sha }}"
+          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
+          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
+          echo "Using NX_BASE=$NX_BASE_VALUE"
+          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🏗️ Build affected apps
         env:

@@ -6,8 +6,8 @@ import { UserSetting } from '@/domain-server/aggregates/user-setting';
 import { ExportSettings } from '../export-settings';
 
 // Mock eventBus to prevent real event publishing
-vi.mock('@dailyuse/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dailyuse/utils')>();
+vi.mock('@dailyuse/utils', async () => {
+  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
   return { ...actual, eventBus: { send: vi.fn() } };
 });
 

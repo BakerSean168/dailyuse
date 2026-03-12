@@ -12,8 +12,8 @@ import {
 import { describe, expect, it } from 'vitest';
 import type { ResourceId } from '@dailyuse/contracts/primitives';
 import { createMockRepository } from '@dailyuse/contracts/mocks';
-import { RepositoryResponseSchema } from '../../../../../packages/contracts/src/modules/repository';
-import { RepositoryHttpAdapter } from '../../../../../packages/repository/src/infrastructure-client/adapters/http/repository-http.adapter';
+import { RepositoryResponseSchema } from '@dailyuse/contracts/repository';
+import { RepositoryHttpAdapter } from '@dailyuse/repository/infrastructure-client';
 
 describe('repository handlers contracts', () => {
   it('uses the current repository adapter route prefixes', () => {

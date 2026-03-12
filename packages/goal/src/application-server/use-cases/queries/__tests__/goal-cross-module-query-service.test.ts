@@ -3,8 +3,8 @@ import { createMockRepo } from '@dailyuse/test-utils';
 import type { IGoalRepository } from '@/domain-server';
 import { GoalCrossModuleQueryService } from '../goal-cross-module-query-service';
 
-vi.mock('@dailyuse/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dailyuse/utils')>();
+vi.mock('@dailyuse/utils', async () => {
+  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
   return {
     ...actual,
     createLogger: vi.fn().mockReturnValue({
