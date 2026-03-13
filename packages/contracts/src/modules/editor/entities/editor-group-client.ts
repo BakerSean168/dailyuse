@@ -1,17 +1,22 @@
 /**
  * EditorGroup Entity - Client Interface
- * 编辑器分组实�?- 客户端接�?
  */
 
-import type { EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+} from '../../../primitives';
 import type { EditorGroupServerDTO } from './editor-group-server';
 
-// 从实体导入类型
+// Entity imports
 import type { EditorTabClientDTO } from './editor-tab-client';
 
 /**
- * Editor Group Client DTO
- * 编辑器分组客户端 DTO（包�?UI 格式化字段）
+ * Editor Group Client DTO (includes UI formatted fields).
  */
 export interface EditorGroupClientDTO {
   id: string;
@@ -22,13 +27,13 @@ export interface EditorGroupClientDTO {
   activeTabIndex: number;
   name: string | null;
 
-  // 子实体：标签列表
+  // Child entities: tab list
   tabs: EditorTabClientDTO[];
 
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI formatted fields
   formattedCreatedAt: string;
   formattedUpdatedAt: string;
 }

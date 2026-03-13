@@ -1,27 +1,25 @@
 import { OAuthProvider as IOAuthProvider } from '@dailyuse/contracts/authentication';
 
 /**
- * 🔑 凭证类型 - 认证方式标识
+ * OAuth provider type - authentication method identifier.
  *
- * Branded Type：运行时�?string，编译时具有类型安全�?
- * 零序列化成本，内存开销极小
+ * Branded type: string at runtime, with compile-time type safety.
+ * Zero serialization cost, minimal memory overhead.
  */
 export type OAuthProvider = IOAuthProvider & { readonly __brand: unique symbol };
 
 /**
- * 合法值集�?- Single Source of Truth
- * 用于校验和遍�?
- * �?优化�?1：直接从 Contract 对象中获取所有值，无需手动抄写一�?
- * Object.values(IOAuthProvider) 会返回 ['Google', 'Facebook', ...]
+ * Valid values set - Single Source of Truth.
+ * Derived directly from the Contract enum to avoid manual duplication.
  */
 const VALUES: IOAuthProvider[] = Object.values(IOAuthProvider) as IOAuthProvider[];
 
 /**
- * 伴生对象 - 提供静态方法和行为逻辑
- * 没有 this，所有行为方法第一个参数都是该 Type 的实�?
+ * Companion object providing static methods and behavior logic.
+ * Stateless - all behavior methods take an instance as the first parameter.
  */
 export const OAuthProvider = {
-  // ================= 常量定义 =================
+  // ================= Constants =================
 
   Google: 'Google' as OAuthProvider,
   Facebook: 'Facebook' as OAuthProvider,
@@ -30,12 +28,11 @@ export const OAuthProvider = {
   Wechat: 'Wechat' as OAuthProvider,
   Weibo: 'Weibo' as OAuthProvider,
 
-  // ================= 工厂方法 =================
+  // ================= Factory Methods =================
 
   /**
-   * 🏭 工厂方法：验证并转换
-   * 接受任意 string，返回安全的 OAuthProvider
-   * @throws 当输入值不在合法值列表中�?
+   * Factory method: validates and converts a string to OAuthProvider.
+   * @throws When the input value is not in the valid values list.
    */
   of(value: string): OAuthProvider {
     if (!this.isValid(value)) {
@@ -44,23 +41,21 @@ export const OAuthProvider = {
     return value as OAuthProvider;
   },
 
-  // ================= 类型守卫 =================
+  // ================= Type Guards =================
 
   /**
-   * 🛡�?类型守卫：运行时类型检�?
-   * 用于条件判断时的类型细化
+   * Type guard: runtime type check for OAuthProvider values.
    */
   isValid(value: string): value is OAuthProvider {
     return VALUES.includes(value as IOAuthProvider);
   },
 
   /**
-   * 📋 获取所有可用�?
-   * 用于前端渲染选项列表
+   * Returns all available OAuth provider values.
    */
   getAll(): OAuthProvider[] {
     return VALUES as OAuthProvider[];
   },
 
-  // ================= 行为方法 (State Logic) =================
+  // ================= Behavior Methods (State Logic) =================
 };

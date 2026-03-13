@@ -1,6 +1,5 @@
 /**
  * Reminder History Entity - Client Interface
- * 提醒历史实体 - 客户端接�?
  */
 
 import type {
@@ -13,7 +12,7 @@ import type { TriggerResult } from '../value-objects/trigger-result';
 import type { NotificationChannel } from '../value-objects/notification-channel';
 import type { ReminderHistoryServerDTO } from './reminder-history-server';
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Reminder History Client DTO
@@ -31,12 +30,10 @@ export interface ReminderHistoryClientDTO {
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
 
-  // UI 扩展
-  resultText: string; // "成功" | "失败" | "跳过"
-  timeAgo: string; // "3 小时�?
-  channelsText: string | null; // "应用�?+ 推�?
+  // UI extensions
+  resultText: string; // "Success" | "Failed" | "Skipped"
+  timeAgo: string; // "3 hours ago"
+  channelsText: string | null; // "In-app + Push"
 }
 
-/**
- * Reminder History Client 静态工厂方法接�?
- */
+/** Static factory method interface for Reminder History Client. */

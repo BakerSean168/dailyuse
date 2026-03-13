@@ -2,7 +2,7 @@
  * PrismaAuthIdentityRepository
  *
  * Prisma implementation of IAuthIdentityRepository.
- * 映射逻辑委托�?PrismaAuthIdentityMapper�?
+ * Mapping logic is delegated to PrismaAuthIdentityMapper.
  *
  * Extends AggregateRepositoryBase to automatically publish domain events after persistence.
  */

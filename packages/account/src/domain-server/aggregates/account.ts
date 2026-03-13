@@ -1,6 +1,4 @@
-/**
- * Account 聚合根实�?
- */
+/** Account Aggregate Root - Server-side implementation. */
 
 import type { AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
@@ -70,7 +68,7 @@ export class Account extends AggregateRoot<IdentityId> {
     return this._props.updatedAt;
   }
 
-  // ================= 工厂方法 =================
+  // ================= Factory Methods =================
 
   public static create(params: { id: IdentityId; email: string }): Account {
     const now = new Date();
@@ -104,7 +102,7 @@ export class Account extends AggregateRoot<IdentityId> {
     return new Account(state);
   }
 
-  // ================= 业务行为 =================
+  // ================= Business Operations =================
 
   private refreshUpdatedAt(): void {
     this._props.updatedAt = new Date();
@@ -144,7 +142,7 @@ export class Account extends AggregateRoot<IdentityId> {
     });
   }
 
-  // ================= 序列�?=================
+  // ================= Serialization =================
 
   public toServerDTO(): AccountServerDTO {
     return {

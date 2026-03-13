@@ -1,11 +1,17 @@
 /**
  * Goal Aggregate Root - Server Contracts
- * 目标聚合�?- 服务端契�?
  *
- * 注意：Contracts 包只包含纯类型定义，不包含业务逻辑或方�?
+ * Note: The contracts package contains only pure type definitions, no business logic.
  */
 
-import type { DomainDate, TransferDate, PersistenceDate, GoalId, IdentityId, GoalFolderId } from '../../../primitives';
+import type {
+  DomainDate,
+  TransferDate,
+  PersistenceDate,
+  GoalId,
+  IdentityId,
+  GoalFolderId,
+} from '../../../primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
 import type { KeyResultServerDTO, KeyResultPersistenceDTO } from '../entities/key-result-server';
@@ -17,12 +23,9 @@ import type {
 } from '../value-objects';
 import type { KeyResultWeightSnapshotDTO } from '../value-objects/key-result-weight-snapshot';
 
-// ============ Transfer DTO (传输�? ============
+// ============ Transfer DTO ============
 
-/**
- * Goal Server DTO
- * API 传输�?
- */
+/** Goal Server DTO for API transfer. */
 export interface GoalServerDTO {
   id: GoalId;
   identityId: IdentityId;
@@ -44,7 +47,7 @@ export interface GoalServerDTO {
   sortOrder: number;
   reminderConfig: GoalReminderConfigDTO | null;
 
-  /** 计算属性：动态优先级分数 (0-100) */
+  /** Computed property: dynamic priority score (0-100) */
   priority: number | null;
 
   keyResults: KeyResultServerDTO[] | null;
@@ -57,12 +60,9 @@ export interface GoalServerDTO {
   deletedAt: TransferDate | null;
 }
 
-// ============ Persistence DTO (持久化层) ============
+// ============ Persistence DTO ============
 
-/**
- * Goal Persistence DTO
- * 数据库存储用
- */
+/** Goal Persistence DTO for database storage. */
 export interface GoalPersistenceDTO {
   id: string;
   identityId: string;
@@ -73,9 +73,9 @@ export interface GoalPersistenceDTO {
   motivation: string | null;
   status: string;
   importance: string;
-  /** 
-   * 动态优先级分数（持久化）
-   * 用于高性能排序，每日 Cron Job 更新
+  /**
+   * Dynamic priority score (persisted).
+   * Used for high-performance sorting, updated by daily cron job.
    */
   priority: number;
   category: string | null;

@@ -1,15 +1,20 @@
 /**
  * DocumentVersion Entity - Client Interface
- * 文档版本实体 - 客户端接�?
  */
 
-import type { DocumentVersionId, DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type {
+  DocumentVersionId,
+  DocumentId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+} from '../../../primitives';
 import type { VersionChangeType } from '../value-objects/version-change-type';
 import type { DocumentVersionServerDTO } from './document-version-server';
 
 /**
- * Document Version Client DTO
- * 文档版本客户�?DTO（包�?UI 格式化字段）
+ * Document Version Client DTO (includes UI formatted fields).
  */
 export interface DocumentVersionClientDTO {
   id: string;
@@ -25,6 +30,6 @@ export interface DocumentVersionClientDTO {
   createdBy: string | null;
   createdAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI formatted fields
   formattedCreatedAt: string;
 }

@@ -1,6 +1,7 @@
 /**
  * Account Module - Domain Server
- * 聚合根、仓储接口、领域服�?
+ *
+ * Aggregate roots, repository interfaces, and domain services.
  */
 
 // Aggregates

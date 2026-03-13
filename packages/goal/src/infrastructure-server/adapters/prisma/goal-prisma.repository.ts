@@ -5,7 +5,7 @@
  * Supports both PostgreSQL (API) and SQLite (Desktop).
  *
  * Mapping:
- * - Domain Goal �?GoalPersistenceDTO �?Prisma result
+ * - Domain Goal → GoalPersistenceDTO → Prisma result
  * - KeyResult progress is stored as individual columns in Prisma,
  *   but as a JSON string in the domain DTO
  * - GoalReview maps reviewType→type, content→summary, lessonsLearned→improvements
@@ -27,11 +27,11 @@ import { persistenceDtoToGoalState } from './mappers/goal-state-mapper';
 const eventBusAdapter = createEventBusAdapter(eventBus);
 
 // ============================================================
-// Prisma �?Domain Mappers (delegated to PrismaGoalMapper)
+// Prisma → Domain Mappers (delegated to PrismaGoalMapper)
 // ============================================================
 
 /**
- * Parse KeyResultPersistenceDTO.progress JSON �?Prisma columns
+ * Parses KeyResultPersistenceDTO progress JSON into Prisma columns.
  */
 function parseKeyResultProgressForPrisma(kr: KeyResultPersistenceDTO | KeyResultServerDTO) {
   return PrismaGoalMapper.parseKeyResultProgress(kr as KeyResultPersistenceDTO);
@@ -303,7 +303,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
         }
       }
 
-      // 4. Sync Weight Snapshots (insert-only �?snapshots are immutable)
+      // 4. Sync Weight Snapshots (insert-only — snapshots are immutable)
       if (dto.weightSnapshots && dto.weightSnapshots.length > 0) {
         for (const ws of dto.weightSnapshots) {
           // Check if snapshot already exists (idempotent)

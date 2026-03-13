@@ -1,29 +1,29 @@
 import type { AuthIdentityStatus as IAuthIdentityStatus } from '@dailyuse/contracts/authentication';
 
 /**
- * 👤 身份状�?- 用户身份验证的生命周期状�?
+ * Identity Status - lifecycle state for user authentication identity.
  *
- * Branded Type：运行时�?string，编译时具有类型安全�?
+ * Branded Type: string at runtime, with compile-time type safety.
  */
 export type AuthIdentityStatus = IAuthIdentityStatus & { readonly __brand: unique symbol };
 
 /**
- * 合法值集�?- Single Source of Truth
+ * Valid value set - Single Source of Truth
  */
 const VALUES: IAuthIdentityStatus[] = ['Active', 'Locked', 'Disabled', 'Unverified'];
 
 /**
- * 伴生对象 - 提供静态方法和行为逻辑
+ * Companion object - provides static methods and behavior logic.
  */
 export const AuthIdentityStatus = {
-  // ================= 常量定义 =================
+  // ================= Constants =================
 
   Active: 'Active' as AuthIdentityStatus,
   Locked: 'Locked' as AuthIdentityStatus,
   Disabled: 'Disabled' as AuthIdentityStatus,
   Unverified: 'Unverified' as AuthIdentityStatus,
 
-  // ================= 工厂方法 =================
+  // ================= Factory Methods =================
 
   of(value: string): AuthIdentityStatus {
     if (!this.isValid(value)) {
@@ -32,7 +32,7 @@ export const AuthIdentityStatus = {
     return value as AuthIdentityStatus;
   },
 
-  // ================= 类型守卫 =================
+  // ================= Type Guards =================
 
   isValid(value: string): value is AuthIdentityStatus {
     return VALUES.includes(value as IAuthIdentityStatus);
@@ -42,7 +42,7 @@ export const AuthIdentityStatus = {
     return VALUES as AuthIdentityStatus[];
   },
 
-  // ================= 行为方法 (State Logic) =================
+  // ================= Behavior Methods (State Logic) =================
 
   isVerified(status: AuthIdentityStatus): boolean {
     return status === this.Active;

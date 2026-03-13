@@ -2,43 +2,43 @@ import type { AuthSessionId, IdentityId } from '@dailyuse/contracts/authenticati
 import type { AuthSession } from '../aggregates/auth-session';
 
 /**
- * 会话聚合根仓储接�?
- * 负责 AuthSession 的生命周期管�?
+ * Repository interface for the AuthSession aggregate root.
+ * Handles session lifecycle management.
  */
 export interface IAuthSessionRepository {
   /**
-   * �?保存会话 (新建登录或续�?
+   * Saves a session (new login or renewal).
    */
   save(session: AuthSession): Promise<void>;
 
   /**
-   * 🔍 根据 ID 查找 (用于校验 Token)
+   * Finds a session by ID (for token validation).
    */
   findById(id: AuthSessionId): Promise<AuthSession | null>;
 
   /**
-   * 🔍 查找某用户的所有会�?(用于"我的设备"列表)
+   * Finds all sessions for a user (for "my devices" list).
    */
   findByIdentityId(identityId: IdentityId): Promise<AuthSession[]>;
 
   /**
-   * 🔍 查找并刷�?Token
-   * (有些实现可能需要单独的方法来原子更�?AccessToken)
+   * Finds and refreshes a token.
+   * (Some implementations may need a separate method for atomic access token updates.)
    */
-  // updateToken(sessionId: SessionId, newToken: string): Promise<void>; // 可选，视实现而定
+  // updateToken(sessionId: SessionId, newToken: string): Promise<void>; // Optional, depends on implementation
 
   /**
-   * 🗑�?移除单个会话 (登出 / 踢下�?
+   * Removes a single session (logout / kick).
    */
   remove(session: AuthSession): Promise<void>;
 
   /**
-   * 🗑�?移除某用户的所有会�?(修改密码后强制下�?/ 封号)
+   * Removes all sessions for a user (forced logout after password change / account ban).
    */
   removeAllByIdentityId(identityId: IdentityId): Promise<void>;
 
   /**
-   * 🧹 清理过期会话 (定时任务�?
+   * Cleans up expired sessions (scheduled task).
    */
   removeExpired(): Promise<void>;
 }

@@ -1,11 +1,11 @@
 /**
  * Prisma AuthOAuthBinding Sub-Mapper
  *
- * å­è¡¨æ˜ å°„å™¨ï¼šå¤„ç† auth_oauth_bindings è¡?â†?OAuthBindingServerDTO
+ * Sub-table mapper: handles auth_oauth_bindings <-> OAuthBindingServerDTO conversion.
  *
- * èŒè´£ï¼?
- * - DB Row â†?OAuthBindingServerDTO (è¯»æ•°æ?
- * - OAuthBindingServerDTO â†?Prisma CreateInput (å†™æ•°æ?
+ * Responsibilities:
+ * - DB Row -> OAuthBindingServerDTO (read path)
+ * - OAuthBindingServerDTO -> Prisma CreateInput (write path)
  */
 
 import type { Prisma } from '@dailyuse/database';
@@ -14,9 +14,9 @@ import type { PrismaAuthOAuthBindingRow } from '../../../types';
 
 export class PrismaOAuthBindingMapper {
   /**
-   * Row â†?Domain DTO (è¯»æ•°æ?
+   * Row -> Domain DTO (read path).
    *
-   * Date â†?number (timestamp) è½¬æ¢
+   * Converts Date to number (timestamp).
    */
   static toDomainDTO(row: PrismaAuthOAuthBindingRow): OAuthBindingServerDTO {
     return {
@@ -32,9 +32,9 @@ export class PrismaOAuthBindingMapper {
   }
 
   /**
-   * Domain DTO â†?Prisma CreateInput (å†™æ•°æ?
+   * Domain DTO -> Prisma CreateInput (write path).
    *
-   * number (timestamp) â†?Date è½¬æ¢
+   * Converts number (timestamp) to Date.
    */
   static toPrismaCreate(
     binding: OAuthBindingServerDTO,

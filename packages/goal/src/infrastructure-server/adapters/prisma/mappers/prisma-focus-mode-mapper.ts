@@ -11,7 +11,7 @@ import { FocusMode } from '@/domain-server';
 
 export class PrismaFocusModeMapper {
   /**
-   * Prisma row �?Domain FocusMode value object.
+   * Maps a Prisma row to a Domain FocusMode value object.
    * Converts DateTime fields to timestamps for FocusModeDTO.
    */
   static toDomain(data: PrismaFocusMode): FocusMode {
@@ -30,9 +30,7 @@ export class PrismaFocusModeMapper {
     return FocusMode.fromDTO(dto);
   }
 
-  /**
-   * Batch conversion: Prisma �?Domain
-   */
+  /** Batch converts Prisma FocusMode rows to Domain value objects. */
   static toDomainList(rows: PrismaFocusMode[]): FocusMode[] {
     return rows.map((row) => PrismaFocusModeMapper.toDomain(row));
   }

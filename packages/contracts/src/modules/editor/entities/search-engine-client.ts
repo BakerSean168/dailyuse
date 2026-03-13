@@ -1,14 +1,18 @@
 /**
  * SearchEngine Entity - Client Interface
- * 搜索引擎实体 - 客户端接�?
  */
 
-import type { SearchEngineId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type {
+  SearchEngineId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+} from '../../../primitives';
 import type { SearchEngineServerDTO } from './search-engine-server';
 
 /**
- * Search Engine Client DTO
- * 搜索引擎客户�?DTO（包�?UI 格式化字段）
+ * Search Engine Client DTO (includes UI formatted fields).
  */
 export interface SearchEngineClientDTO {
   id: string;
@@ -25,7 +29,7 @@ export interface SearchEngineClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI formatted fields
   formattedLastIndexed: string | null;
   formattedCreatedAt: string;
   formattedUpdatedAt: string;

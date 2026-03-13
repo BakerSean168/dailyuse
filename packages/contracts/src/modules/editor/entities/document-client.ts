@@ -1,19 +1,23 @@
 /**
  * Document Entity - Client Interface
- * 文档实体 - 客户端接�?
  */
 
-import type { DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
+import type {
+  DocumentId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+} from '../../../primitives';
 import type { DocumentLanguage } from '../value-objects/document-language';
 import type { IndexStatus } from '../value-objects/index-status';
 import type { DocumentServerDTO } from './document-server';
 
-// 从值对象导入类型
+// Value object imports
 import type { DocumentMetadataClientDTO } from '../value-objects';
 
 /**
- * Document Client DTO
- * 文档客户�?DTO（包�?UI 格式化字段）
+ * Document Client DTO (includes UI formatted fields).
  */
 export interface DocumentClientDTO {
   id: string;
@@ -31,7 +35,7 @@ export interface DocumentClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // UI 格式化字�?
+  // UI formatted fields
   formattedLastIndexed: string | null;
   formattedLastModified: string | null;
   formattedCreatedAt: string;

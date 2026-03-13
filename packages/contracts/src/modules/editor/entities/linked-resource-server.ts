@@ -1,38 +1,43 @@
 /**
  * LinkedResource Entity - Server Interface
- * 链接资源实体 - 服务端接�?
  */
 
-import type { LinkedResourceId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
+import type {
+  LinkedResourceId,
+  EditorWorkspaceId,
+  IdentityId,
+  DocumentId,
+  TransferDate,
+  DomainDate,
+  PersistenceDate,
+} from '../../../primitives';
 import type { LinkedSourceType } from '../value-objects/linked-source-type';
 import type { LinkedTargetType } from '../value-objects/linked-target-type';
 import type { LinkedResourceClientDTO } from './linked-resource-client';
 
 /**
  * Linked Resource Server DTO
- * 链接资源服务�?DTO
  */
 export interface LinkedResourceServerDTO {
   id: LinkedResourceId;
-  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
+  workspaceId: EditorWorkspaceId; // Parent workspace ID (aggregate root FK)
   identityId: IdentityId;
-  sourceDocumentId: DocumentId; // 源文�?ID
+  sourceDocumentId: DocumentId; // Source document ID
   sourceType: LinkedSourceType;
-  sourceLine: number | null; // 源位置（行号�?
-  sourceColumn: number | null; // 源位置（列号�?
-  targetPath: string; // 目标路径（可能是相对路径或绝对路径）
+  sourceLine: number | null; // Source position (line number)
+  sourceColumn: number | null; // Source position (column number)
+  targetPath: string; // Target path (relative or absolute)
   targetType: LinkedTargetType;
-  targetDocumentId: DocumentId | null; // 目标文档 ID（如果是内部文档�?
-  targetAnchor: string | null; // 目标锚点（如 #heading-id�?
-  isValid: boolean; // 链接是否有效（目标是否存在）
+  targetDocumentId: DocumentId | null; // Target document ID (if internal document)
+  targetAnchor: string | null; // Target anchor (e.g. #heading-id)
+  isValid: boolean; // Whether the link target exists
   lastValidatedAt: TransferDate | null;
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
 
 /**
- * Linked Resource Persistence DTO
- * 链接资源持久�?DTO（数据库字段，snake_case�?
+ * Linked Resource Persistence DTO (database fields, snake_case).
  */
 export interface LinkedResourcePersistenceDTO {
   id: LinkedResourceId;

@@ -1,7 +1,5 @@
 /**
  * Complete Task Instance Service
- *
- * 完成任务实例
  */
 
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
@@ -37,11 +35,11 @@ export class CompleteTaskInstance {
       return error('VALIDATION_ERROR', 'Cannot complete this task instance');
     }
 
-    // 标记为完�?
+    // Mark as completed
     instance.complete(request?.duration, request?.note, request?.rating);
     await this.instanceRepository.save(instance);
 
-    // 发布事件
+    // Publish completion event
     await this.publishTaskCompletedEvent(instance);
 
     return ok({
@@ -49,9 +47,7 @@ export class CompleteTaskInstance {
     });
   }
 
-  /**
-   * 发布任务完成事件
-   */
+  /** Publishes a task completed event. */
   private async publishTaskCompletedEvent(instance: any): Promise<void> {
     try {
       const template = await this.templateRepository.findById(instance.templateId);
@@ -82,7 +78,7 @@ export class CompleteTaskInstance {
 
       eventBus.send('task:instance:completed' as any, event.payload as any);
     } catch (error) {
-      console.error('�?[CompleteTaskInstance] Failed to publish event', error);
+      console.error('[CompleteTaskInstance] Failed to publish event', error);
     }
   }
 }

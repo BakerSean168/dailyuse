@@ -11,9 +11,7 @@ import { GoalFolderId } from '@/domain-shared';
 import type { FolderType } from '@dailyuse/contracts/goal';
 
 export class PrismaGoalFolderMapper {
-  /**
-   * Prisma row â†?Domain GoalFolder aggregate
-   */
+  /** Maps a Prisma row to a Domain GoalFolder aggregate. */
   static toDomain(data: PrismaGoalFolder): GoalFolder {
     return GoalFolder.load({
       id: GoalFolderId.of(data.id),
@@ -35,9 +33,7 @@ export class PrismaGoalFolderMapper {
     });
   }
 
-  /**
-   * Batch conversion: Prisma â†?Domain
-   */
+  /** Batch converts Prisma GoalFolder rows to Domain aggregates. */
   static toDomainList(rows: PrismaGoalFolder[]): GoalFolder[] {
     return rows.map((row) => PrismaGoalFolderMapper.toDomain(row));
   }

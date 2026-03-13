@@ -8,18 +8,14 @@ import { PasswordAlgorithm } from './password-algorithm';
 import { PlainPassword } from './plain-password';
 import type { IPasswordHasher } from '../services/i-password-hasher.service';
 /**
- * 🔐 哈希密码值对�?
+ * Hashed password value object.
  *
- * ⚠️ 安全说明�?
- * - 此对象仅�?Server 端存�?
- * - 包含敏感数据（哈希值和盐值），不应传输到客户�?
- * - 用于密码验证时的比对
- * - 绝对不能被客户端看到或修�?
+ * Security note: This object exists only on the server side.
+ * Contains sensitive data (hash and salt) that must never be sent to the client.
+ * Used for password verification comparisons.
  *
- * 责任�?
- * - 存储哈希后的密码和盐�?
- * - 提供密码相关的业务逻辑
- * - 不可变性：所有修改操作都返回新实�?
+ * Stores the hashed password and salt, provides password-related business logic,
+ * and is immutable - all modifications return a new instance.
  */
 export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IHashedPassword {
   private constructor(props: HashedPasswordDTO) {
@@ -27,36 +23,36 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
   }
 
   /**
-   * 🏭 异步工厂：从原始密码创建 (Raw -> Hashed)
-   * 这里是唯一发生加密计算的地�?
+   * Async factory: creates a hashed password from a plain password.
+   * This is the only place where the hashing computation occurs.
    */
   public static async create(
     rawPassword: PlainPassword,
     hasher: IPasswordHasher,
   ): Promise<HashedPassword> {
-    // 1. 执行耗时的哈希算�?
+    // 1. Perform the hashing algorithm
     const hashString = await hasher.hash(rawPassword.value);
 
-    // 2. �?PHC 格式哈希中提取盐�?
-    // 格式: $argon2id$v=19$m=65536,t=3,p=4$salt$hash
+    // 2. Extract salt from PHC format hash
+    // Format: $argon2id$v=19$m=65536,t=3,p=4$salt$hash
     const parts = hashString.split('$');
     if (parts.length < 6) {
       throw new Error('Invalid argon2 hash format');
     }
-    const salt = parts[4]; // base64 编码的盐
+    const salt = parts[4]; // base64-encoded salt
 
-    // 3. 返回包装好的值对�?
+    // 3. Return the wrapped value object
     return new HashedPassword({
       hash: hashString,
       salt,
-      algorithm: PasswordAlgorithm.Argon2, // 使用 Argon2 算法
+      algorithm: PasswordAlgorithm.Argon2, // Use Argon2 algorithm
       createdAt: Date.now(),
     });
   }
 
-  // ================= 工厂方法 2: �?DTO 恢复 =================
+  // ================= Factory Method 2: Restore from DTO =================
   /**
-   * �?DTO 恢复哈希密码对象
+   * Restores a hashed password object from a DTO.
    */
   public static fromDTO(dto: HashedPasswordDTO): HashedPassword {
     return new HashedPassword(dto);
@@ -71,10 +67,10 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
     });
   }
 
-  // ================= 工厂方法 3: 创建默认�?=================
+  // ================= Factory Method 3: Create Default =================
   /**
-   * 创建一个占位符哈希密码（用于从不设置过密码的账户）
-   * 这样的密码永远不会匹配任何输�?
+   * Creates a placeholder hashed password for accounts that have never set a password.
+   * This password will never match any input.
    */
   public static createPlaceholder(): HashedPassword {
     return new HashedPassword({
@@ -102,63 +98,63 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
     return this.props.createdAt;
   }
 
-  // ================= 内部逻辑 =================
+  // ================= Internal Logic =================
   /**
-   * 集中校验逻辑
+   * Centralized validation logic.
    */
   private static validate(props: HashedPasswordDTO): void {
-    // 哈希值不能为�?
+    // Hash value must not be empty
     if (!props.hash || props.hash.trim().length === 0) {
       throw new Error('Hash value cannot be empty');
     }
 
-    // 盐值不能为�?
+    // Salt value must not be empty
     if (!props.salt || props.salt.trim().length === 0) {
       throw new Error('Salt value cannot be empty');
     }
 
-    // 算法必须是已知的
+    // Algorithm must be a known value
     if (!PasswordAlgorithm.isValid(props.algorithm)) {
       throw new Error(`Unknown password algorithm: ${props.algorithm}`);
     }
 
-    // 创建时间戳必须是有效�?
+    // Creation timestamp must be valid
     if (!Number.isFinite(props.createdAt) || props.createdAt < 0) {
       throw new Error('Invalid creation timestamp');
     }
 
-    // 创建时间不能在未来太远（允许一些时钟偏差）
-    const MAX_CLOCK_SKEW = 60000; // 1 分钟
+    // Creation time must not be too far in the future (allow some clock skew)
+    const MAX_CLOCK_SKEW = 60000; // 1 minute
     if (props.createdAt > Date.now() + MAX_CLOCK_SKEW) {
       throw new Error('Creation timestamp is in the future');
     }
   }
 
-  // ================= 计算属�?=================
+  // ================= Computed Properties =================
 
   /**
-   * 获取哈希使用的算�?
+   * Gets the algorithm used for hashing.
    */
   public getAlgorithm(): typeof this.props.algorithm {
     return this.props.algorithm;
   }
 
   /**
-   * 密码是否使用的是现代算法
+   * Checks whether the password uses a modern (secure) algorithm.
    */
   public usesModernAlgorithm(): boolean {
     return PasswordAlgorithm.isSecure(PasswordAlgorithm.of(this.props.algorithm));
   }
 
   /**
-   * 密码是否使用的是已过时的算法（应该迁移）
+   * Checks whether the password uses a deprecated algorithm (should be migrated).
    */
   public usesDeprecatedAlgorithm(): boolean {
     return PasswordAlgorithm.isDeprecated(PasswordAlgorithm.of(this.props.algorithm));
   }
 
   /**
-   * 获取密码创建距今的天�?
+   * Gets the number of days since the password was created.
    */
   public getDaysSinceCreation(): number {
     const dayMs = 24 * 60 * 60 * 1000;
@@ -166,19 +162,19 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
   }
 
   /**
-   * 密码是否需要重置（例如超过 90 天）
-   * 可以根据业务规则调整天数阈�?
+   * Checks whether the password needs to be reset (e.g. older than 90 days).
+   * @param maxAgeDays - Maximum password age in days before reset is required.
    */
   public needsReset(maxAgeDays: number = 90): boolean {
     return this.getDaysSinceCreation() > maxAgeDays;
   }
 
-  // ================= 行为方法 =================
+  // ================= Behavior Methods =================
 
   /**
-   * 更新密码为新的哈希�?
-   * 场景：用户修改密�?
-   * @throws 当新哈希值不合法�?
+   * Updates the password hash with a new value.
+   * Used when a user changes their password.
+   * @throws When the new hash value is invalid.
    */
   public updateHash(
     newHash: string,
@@ -201,31 +197,28 @@ export class HashedPassword extends ValueObject<HashedPasswordDTO> implements IH
   }
 
   /**
-   * 是否应该进行算法迁移
-   * 从旧算法（如 PBKDF2）迁移到新算法（�?Argon2�?
+   * Checks whether the algorithm should be migrated.
+   * E.g. from an older algorithm (PBKDF2) to a modern one (Argon2).
    */
   public shouldMigrateAlgorithm(): boolean {
     return this.usesDeprecatedAlgorithm();
   }
 
-  // ================= 序列�? API / Client =================
+  // ================= Serialization: API / Client =================
   /**
-   * ⚠️ 转换�?DTO
+   * Converts to DTO.
    *
-   * 警告：此方法返回�?DTO 包含敏感信息
-   * 绝对不能发送到客户端！
-   * 仅供 Server 端内部使�?
+   * WARNING: The returned DTO contains sensitive information.
+   * Must never be sent to the client. Server-side internal use only.
    */
   public toDTO(): HashedPasswordDTO {
     return { ...this.props };
   }
 
-  // ================= 序列�? Persistence =================
+  // ================= Serialization: Persistence =================
   /**
-   * 转换为持久化格式（数据库存储�?
-   *
-   * �?DTO 中的 number 类型 timestamp 转换�?Date 对象
-   * 用于 ORM 映射
+   * Converts to persistence format for database storage.
+   * Converts the number timestamp in the DTO to a Date object for ORM mapping.
    */
   public toPersistence(): HashedPasswordPersistenceDTO {
     return {

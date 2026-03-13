@@ -1,23 +1,18 @@
 /**
- * TaskInstance 聚合根实�?(Server)
- * 任务实例 - 聚合�?
- * 
- * 【规范说明：聚合根（Aggregate Root）�?
- * 聚合根是 DDD 中的核心概念，代表一个业务边界：
- * - 唯一标识：通过 ID 区分不同的聚合实�?
- * - 事务边界：所有对聚合的修改在一个事务内完成
- * - 统一性：聚合保证内部状态的一致�?
- * - 生命周期：聚合有创建、修改、删除的完整生命周期
- * 
- * 【TaskInstance 职责�?
- * 管理任务实例的完整生命周期：
- * - 状态转换（PENDING �?IN_PROGRESS �?COMPLETED/SKIPPED/EXPIRED�?
- * - 执行时间追踪（开始时间、结束时间、实际耗时�?
- * - 完成记录（完成状态、评分、备注）
- * - 跳过记录（跳过原因、跳过时间）
+ * TaskInstance Aggregate Root (Server)
+ *
+ * Manages the full lifecycle of a task instance:
+ * - State transitions (PENDING -> IN_PROGRESS -> COMPLETED/SKIPPED/EXPIRED)
+ * - Execution time tracking (start time, end time, actual duration)
+ * - Completion records (status, rating, notes)
+ * - Skip records (reason, skip time)
  */
 
-import type { TaskInstanceClientDTO, TaskInstanceServerDTO, TaskEventMap } from '@dailyuse/contracts/task';
+import type {
+  TaskInstanceClientDTO,
+  TaskInstanceServerDTO,
+  TaskEventMap,
+} from '@dailyuse/contracts/task';
 import { TaskInstanceStatus, TaskTimeType as TimeType } from '@dailyuse/contracts/task';
 import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-id';
 import { TaskInstanceId } from '../../domain-shared/value-objects/task-instance-id';
@@ -49,19 +44,17 @@ export interface TaskInstanceState {
   deletedAt: Date | null;
 }
 
-/**
- * TaskInstance 聚合根
- */
+/** TaskInstance aggregate root. */
 export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   private _props: TaskInstanceState;
 
-  // ===== 2. 构造函数 (Private) =====
+  // ===== 2. Constructor (Private) =====
   private constructor(state: TaskInstanceState) {
     super(state.id);
     this._props = state;
   }
 
-  // ===== 3. 公共属�?(Getters) =====
+  // ===== 3. Public Properties (Getters) =====
   public get templateId(): TaskTemplateId {
     return this._props.templateId;
   }
@@ -87,8 +80,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
   }
 
   /**
-   * 获取任务实例的截止时间（根据 timeConfig 计算）
-   * Story 1.5: 用于优先级计算
+   * Gets the task instance's due time based on timeConfig.
+   * Used for priority calculation.
    */
   public get dueDate(): number | null {
     if (this._props.timeConfig.timeType === TimeType.TimePoint) {
@@ -96,11 +89,8 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     } else if (this._props.timeConfig.timeType === TimeType.TimeRange) {
       return this._props.timeConfig.timeRange?.end ?? null;
     } else {
-      // 全天任务截止 instanceDate 当天结束 (23:59:59)
-      // instanceDate 通常是当天的 00:00:00 (本地时间 或 UTC?)
-      // 假设 instanceDate 是该日的起始时间(UTC 0点 或 Local 0点)
-      // 如果没有更好的信息，就使用 instanceDate + 1 天
-      return this._props.instanceDate + 86400000 - 1; 
+      // All-day task: due at end of instanceDate day (23:59:59)
+      return this._props.instanceDate + 86400000 - 1;
     }
   }
 
@@ -144,11 +134,9 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return this._props.deletedAt;
   }
 
-  // ===== 业务方法 =====
+  // ===== Business Methods =====
 
-  /**
-   * 开始任务
-   */
+  /** Starts the task. */
   public start(): void {
     if (!this.canStart()) {
       throw new Error('Cannot start task in current state');
@@ -159,9 +147,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.updatedAt = Date.now();
   }
 
-  /**
-   * 完成任务
-   */
+  /** Completes the task. */
   public complete(actualDuration?: number, note?: string, rating?: number): void {
     if (!this.canComplete()) {
       throw new Error('Cannot complete task in current state');
@@ -171,7 +157,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.status = TaskInstanceStatus.Completed;
     this._props.actualEndTime = now;
 
-    // 创建完成记录
+    // Create completion record
     this._props.completionRecord = CompletionRecord.create({
       completedAt: now,
       actualDuration:
@@ -185,16 +171,14 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     this._props.updatedAt = now;
-    
-    // 🎯 触发领域事件
+
+    // Trigger domain event
     this.addDomainEvent<TaskEventMap['task:complete']>('task:complete', {
       goalId: null, // TaskInstance doesn't store goalId directly
     });
   }
 
-  /**
-   * 跳过任务
-   */
+  /** Skips the task. */
   public skip(reason?: string): void {
     if (!this.canSkip()) {
       throw new Error('Cannot skip task in current state');
@@ -203,7 +187,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     const now = Date.now();
     this._props.status = TaskInstanceStatus.Skipped;
 
-    // 创建跳过记录
+    // Create skip record
     this._props.skipRecord = SkipRecord.create({
       skippedAt: now,
       reason: reason ?? null,
@@ -216,9 +200,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     this._props.updatedAt = now;
   }
 
-  /**
-   * 标记为过�?
-   */
+  /** Marks the instance as expired. */
   public markExpired(): void {
     if (
       this._props.status === TaskInstanceStatus.Pending ||
@@ -229,9 +211,7 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
   }
 
-  /**
-   * 业务判断方法
-   */
+  /** Business state check methods. */
   public canStart(): boolean {
     return this._props.status === TaskInstanceStatus.Pending;
   }
@@ -259,11 +239,11 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     }
 
     const now = Date.now();
-    // 检查是否超过实例日�?
-    return now > this._props.instanceDate + 86400000; // 超过1天视为过<
+    // Check if past the instance date
+    return now > this._props.instanceDate + 86400000; // Overdue after 1 day
   }
 
-  // ===== 6. 序列化(Serialization) =====
+  // ===== 6. Serialization =====
 
   public toServerDTO(): TaskInstanceServerDTO {
     return {
@@ -305,13 +285,13 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     };
   }
 
-  // ===== 4. 工厂方法 (Factories) =====
+  // ===== 4. Factory Methods =====
 
   /**
-   * 🏭 业务工厂：创建新的任务实�?
+   * Factory method: creates a new task instance.
    *
-   * 注意：不再发布领域事�?
-   * 提醒�?ScheduleTask 统一管理（混合方�?C�?
+   * Note: does not publish domain events.
+   * Reminders are managed by ScheduleTask.
    */
   public static create(params: {
     templateId: TaskTemplateId;
@@ -356,14 +336,12 @@ export class TaskInstance extends AggregateRoot<TaskInstanceId> {
     return instance;
   }
 
-  /**
-   * 🏭 恢复工厂：从状态恢复聚合
-   */
+  /** Factory method: restores an aggregate from persisted state. */
   public static load(state: TaskInstanceState): TaskInstance {
     return new TaskInstance(state);
   }
 
-  // ===== 辅助方法 =====
+  // ===== Helper Methods =====
 
   private getStatusText(): string {
     const statusMap: Record<TaskInstanceStatus, string> = {

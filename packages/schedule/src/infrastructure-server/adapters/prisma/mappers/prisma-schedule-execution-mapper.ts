@@ -1,6 +1,7 @@
 /**
  * Prisma Schedule Execution Mapper
- * 负责 Prisma 模型�?ScheduleExecution 实体之间的数据转�?
+ *
+ * Maps between Prisma model and ScheduleExecution entity.
  */
 
 import type { ScheduleExecution as PrismaScheduleExecution } from '@dailyuse/database';
@@ -9,12 +10,11 @@ import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * PrismaScheduleExecutionMapper
- * 处理 ScheduleExecution 实体�?Prisma 模型的转�?
+ *
+ * Handles conversion between ScheduleExecution entity and Prisma model.
  */
 export class PrismaScheduleExecutionMapper {
-  /**
-   * �?Prisma 模型转换�?ScheduleExecution 实体
-   */
+  /** Converts a Prisma model to a ScheduleExecution domain entity. */
   public static toDomain(data: PrismaScheduleExecution): ScheduleExecution {
     return ScheduleExecution.load({
       id: data.id,
@@ -34,9 +34,7 @@ export class PrismaScheduleExecutionMapper {
     });
   }
 
-  /**
-   * �?ScheduleExecution 实体转换�?Prisma 持久化数�?
-   */
+  /** Converts a ScheduleExecution entity to Prisma persistence data. */
   public static toPersistence(
     execution: ScheduleExecution,
   ): Omit<PrismaScheduleExecution, 'createdAt'> {
@@ -53,9 +51,7 @@ export class PrismaScheduleExecutionMapper {
     };
   }
 
-  /**
-   * 转换�?Prisma create 输入数据（包�?createdAt�?
-   */
+  /** Converts to Prisma create input data (includes createdAt). */
   public static toCreateInput(execution: ScheduleExecution): any {
     const persistence = this.toPersistence(execution);
 
@@ -65,9 +61,7 @@ export class PrismaScheduleExecutionMapper {
     };
   }
 
-  /**
-   * 转换�?Prisma update 输入数据
-   */
+  /** Converts to Prisma update input data. */
   public static toUpdateInput(execution: ScheduleExecution): any {
     return this.toPersistence(execution);
   }

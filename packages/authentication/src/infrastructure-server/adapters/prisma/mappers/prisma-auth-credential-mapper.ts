@@ -1,11 +1,11 @@
 /**
  * Prisma AuthCredential Sub-Mapper
  *
- * 子表映射器：处理 auth_credentials �?�?AuthCredentialServerDTO
+ * Sub-table mapper: handles auth_credentials <-> AuthCredentialServerDTO conversion.
  *
- * 职责�?
- * - DB Row �?AuthCredentialServerDTO (读数�?
- * - AuthCredentialServerDTO �?Prisma CreateInput (写数�?
+ * Responsibilities:
+ * - DB Row -> AuthCredentialServerDTO (read path)
+ * - AuthCredentialServerDTO -> Prisma CreateInput (write path)
  */
 
 import type { Prisma } from '@dailyuse/database';
@@ -25,11 +25,11 @@ import type { PrismaAuthCredentialRow } from '../../../types';
 
 export class PrismaAuthCredentialMapper {
   /**
-   * Row �?Domain DTO (读数�?
+   * Row -> Domain DTO (read path).
    *
-   * �?Prisma 行数据转换为领域层认识的 ServerDTO�?
-   * - 数据库的 passwordHash 字段 �?领域�?hashedPassword
-   * - Date �?number (timestamp)
+   * Converts Prisma row data to a domain-layer ServerDTO:
+   * - Maps the passwordHash DB column to the domain hashedPassword field
+   * - Converts Date to number (timestamp)
    */
   static toDomainDTO(row: PrismaAuthCredentialRow): AuthCredentialServerDTO {
     const base = {
@@ -66,11 +66,11 @@ export class PrismaAuthCredentialMapper {
   }
 
   /**
-   * Domain DTO �?Prisma CreateInput (写数�?
+   * Domain DTO -> Prisma CreateInput (write path).
    *
-   * 将领域层�?ServerDTO 转换�?Prisma 写入格式�?
-   * - hashedPassword �?passwordHash
-   * - timestamp (number) �?Date
+   * Converts a domain-layer ServerDTO to Prisma write format:
+   * - Maps hashedPassword to passwordHash
+   * - Converts timestamp (number) to Date
    */
   static toPrismaCreate(
     cred: AuthCredentialServerDTO,

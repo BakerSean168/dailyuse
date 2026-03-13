@@ -3,52 +3,52 @@ import type { OAuthProvider } from '../../domain-shared';
 import type { AuthIdentity } from '../aggregates/auth-identity';
 
 /**
- * 身份聚合根仓储接�?
- * 负责 AuthIdentity 的持久化和查�?
+ * Repository interface for the AuthIdentity aggregate root.
+ * Handles persistence and querying of AuthIdentity.
  */
 export interface IAuthIdentityRepository {
   /**
-   * �?保存或更新身�?
-   * 新增时：将聚合根持久化到数据�?
-   * 更新时：比对变更并更�?(或者全量覆�?
+   * Saves or updates an identity.
+   * On insert: persists the aggregate root to the database.
+   * On update: detects changes and applies them (or overwrites entirely).
    */
   save(identity: AuthIdentity): Promise<void>;
 
   /**
-   * 🔍 根据 ID 查找
-   * 用于：获取当前用户信息、修改密码等后续操作
+   * Finds an identity by ID.
+   * Used for retrieving current user info, changing passwords, etc.
    */
   findById(id: IdentityId): Promise<AuthIdentity | null>;
 
   /**
-   * 🔍 根据邮箱查找 (用于邮箱登录/注册查重)
-   * 注意：虽�?Email �?Credential 的一部分，但我们需要找到所属的 Identity
+   * Finds an identity by email (for email login / registration uniqueness check).
+   * Note: although email is part of a Credential, we need to locate the owning Identity.
    */
   findByEmail(email: string): Promise<AuthIdentity | null>;
 
   /**
-   * 🔍 根据手机号查�?(用于手机登录/注册查重)
+   * Finds an identity by phone number (for phone login / registration uniqueness check).
    */
   findByPhone(phoneNumber: string): Promise<AuthIdentity | null>;
 
   /**
-   * 🔍 根据 OAuth 信息查找 (用于第三方登�?
-   * 需要匹�?provider �?openId (sub)
+   * Finds an identity by OAuth info (for third-party login).
+   * Matches on provider and openId (sub).
    */
   findByOAuth(provider: OAuthProvider, subjectId: string): Promise<AuthIdentity | null>;
 
   /**
-   * 🛡�?检查邮箱是否存�?(性能优化，只返回 boolean)
+   * Checks whether an email already exists (optimized, returns boolean only).
    */
   existsByEmail(email: string): Promise<boolean>;
 
   /**
-   * 🛡�?检查手机号是否存在
+   * Checks whether a phone number already exists.
    */
   existsByPhone(phoneNumber: string): Promise<boolean>;
 
   /**
-   * 🗑�?删除身份 (注销账号)
+   * Deletes an identity (account deactivation).
    */
   delete(identity: AuthIdentity): Promise<void>;
 }

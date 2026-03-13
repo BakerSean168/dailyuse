@@ -1,32 +1,25 @@
 /**
  * Notification Config Value Object
- * 通知配置值对�?
  */
 
 import type { NotificationChannel } from './notification-channel';
 import type { NotificationAction } from './notification-action';
 
-// ============ 子配置接�?============
+// ============ Sub-config Interfaces ============
 
-/**
- * 声音配置
- */
+/** Sound configuration. */
 export interface SoundConfig {
   enabled: boolean;
   soundName: string | null;
 }
 
-/**
- * 震动配置
- */
+/** Vibration configuration. */
 export interface VibrationConfig {
   enabled: boolean;
   pattern: number[] | null;
 }
 
-/**
- * 通知操作
- */
+/** Notification action configuration. */
 export interface NotificationActionConfig {
   id: string;
   label: string;
@@ -34,11 +27,9 @@ export interface NotificationActionConfig {
   customAction: string | null;
 }
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 通知配置 - Server 接口
- */
+/** Notification config - Server interface. */
 export interface INotificationConfigServer {
   channels: NotificationChannel[];
   title: string | null;
@@ -47,7 +38,7 @@ export interface INotificationConfigServer {
   vibration: VibrationConfig | null;
   actions: NotificationActionConfig[] | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -57,12 +48,10 @@ export interface INotificationConfigServer {
     >,
   ): INotificationConfigServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 通知配置 - Client 接口
- */
+/** Notification config - Client interface. */
 export interface INotificationConfigClient {
   channels: NotificationChannel[];
   title: string | null;
@@ -71,17 +60,17 @@ export interface INotificationConfigClient {
   vibration: VibrationConfig | null;
   actions: NotificationActionConfig[] | null;
 
-  // UI 辅助属�?
-  channelsText: string; // "应用�?+ 推�?
+  // UI helper properties
+  channelsText: string; // "In-app + Push"
   hasSoundEnabled: boolean;
   hasVibrationEnabled: boolean;
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Notification Config Server DTO
@@ -122,7 +111,7 @@ export interface NotificationConfigPersistenceDTO {
   actions: string | null; // JSON string
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type NotificationConfigServer = INotificationConfigServer;
 export type NotificationConfigClient = INotificationConfigClient;

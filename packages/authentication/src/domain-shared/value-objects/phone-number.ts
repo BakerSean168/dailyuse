@@ -6,32 +6,30 @@ import type {
 } from '@dailyuse/contracts/authentication';
 
 /**
- * 📱 手机号码值对�?
+ * Phone number value object.
  *
- * 责任�?
- * - 验证手机号格式和长度
- * - 支持多个国家的手机号（目前以中国为主�?
- * - 提供手机号相关的业务逻辑（打码、验证等�?
- * - 不可变性：所有修改操作都返回新实�?
+ * Validates phone number format and length, supports multiple countries
+ * (primarily China), provides phone-related business logic (masking,
+ * carrier detection, etc.), and is immutable.
  */
 export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNumber {
   private constructor(props: PhoneNumberDTO) {
     super(props);
   }
 
-  // ================= 工厂方法 1: 标准创建 =================
+  // ================= Factory Method 1: Standard Creation =================
   /**
-   * 创建新的手机号码值对象（包含校验�?
-   * @throws 当手机号格式不合法时
+   * Creates a new phone number value object with validation.
+   * @throws When the phone number format is invalid.
    */
   public static create(props: PhoneNumberDTO): PhoneNumber {
     this.validate(props);
     return new PhoneNumber(props);
   }
 
-  // ================= 工厂方法 2: �?DTO 恢复 =================
+  // ================= Factory Method 2: Restore from DTO =================
   /**
-   * �?DTO 恢复手机号码对象
+   * Restores a phone number object from a DTO.
    */
   public static fromDTO(dto: PhoneNumberDTO): PhoneNumber {
     return new PhoneNumber(dto);
@@ -46,51 +44,51 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
     return this.props.value;
   }
 
-  // ================= 内部逻辑 =================
+  // ================= Internal Logic =================
   /**
-   * 集中校验逻辑
+   * Centralized validation logic.
    */
   private static validate(props: PhoneNumberDTO): void {
-    // 移除所有非数字字符进行校验
+    // Strip all non-digit characters for validation
     const digitsOnly = props.value.replace(/\D/g, '');
 
-    // 中国手机号校验（最常见的格式）
-    // 允许格式�?3/14/15/16/17/18/19 开头的 11 位数�?
+    // China mobile phone validation (most common format)
+    // Allows numbers starting with 13/14/15/16/17/18/19, 11 digits total
     const chinaPhoneRegex = /^1[3-9]\d{9}$/;
     if (!chinaPhoneRegex.test(digitsOnly)) {
       throw new Error(`Invalid phone number format: ${props.value}`);
     }
 
-    // 国际格式手机号校验（可选的 + 和国家码�?
+    // International format validation (optional + and country code)
     const internationalRegex = /^\+?[1-9]\d{1,14}$/;
     if (!internationalRegex.test(digitsOnly.replace('+', ''))) {
       throw new Error('Phone number must match international format');
     }
   }
 
-  // ================= 计算属�?=================
+  // ================= Computed Properties =================
 
   /**
-   * 获取纯数字格式的手机号（去除所有特殊字符）
+   * Gets the phone number in digits-only format (all special characters removed).
    */
   public getDigitsOnly(): string {
     return this.props.value.replace(/\D/g, '');
   }
 
   /**
-   * 获取国家码部分（如果有）
+   * Gets the country code portion (if present).
    * @example '+86-13800000000' => '86'
    */
   public getCountryCode(): string {
     if (this.props.value.startsWith('+')) {
       const match = this.props.value.match(/^\+(\d+)/);
-      return match ? match[1] : '86'; // 默认中国
+      return match ? match[1] : '86'; // Default: China
     }
-    return '86'; // 默认中国
+    return '86'; // Default: China
   }
 
   /**
-   * 获取打码后的手机�?(UI 展示�?
+   * Gets a masked phone number for UI display.
    * @example '13800000000' => '138****0000'
    */
   public getMaskedNumber(): string {
@@ -105,7 +103,7 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
   }
 
   /**
-   * 是否是中国大陆手机号
+   * Checks whether this is a China mainland phone number.
    */
   public isChinaMainland(): boolean {
     const digitsOnly = this.getDigitsOnly();
@@ -113,7 +111,7 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
   }
 
   /**
-   * 获取运营商（仅针对中国大陆手机号�?
+   * Gets the carrier for China mainland phone numbers.
    * @returns 'ChinaMobile' | 'ChinaUnicom' | 'ChinaTelecom' | 'Unknown'
    */
   public getCarrier(): 'ChinaMobile' | 'ChinaUnicom' | 'ChinaTelecom' | 'Unknown' {
@@ -123,7 +121,7 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
 
     const prefix = this.getDigitsOnly().slice(0, 3);
 
-    // 中国移动�?34-139, 147, 150, 151, 152, 157, 158, 159, 178, 182, 183, 184, 187, 188, 198
+    // China Mobile: 134-139, 147, 150-152, 157-159, 178, 182-184, 187-188, 198
     if (
       [
         '134',
@@ -151,7 +149,7 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
       return 'ChinaMobile';
     }
 
-    // 中国联通：130, 131, 132, 155, 156, 166, 171, 175, 176, 185, 186, 196
+    // China Unicom: 130-132, 155-156, 166, 171, 175-176, 185-186, 196
     if (
       ['130', '131', '132', '155', '156', '166', '171', '175', '176', '185', '186', '196'].includes(
         prefix,
@@ -160,7 +158,7 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
       return 'ChinaUnicom';
     }
 
-    // 中国电信�?33, 149, 153, 173, 177, 180, 181, 189, 190, 191, 193, 199
+    // China Telecom: 133, 149, 153, 173, 177, 180-181, 189-191, 193, 199
     if (
       ['133', '149', '153', '173', '177', '180', '181', '189', '190', '191', '193', '199'].includes(
         prefix,
@@ -172,17 +170,17 @@ export class PhoneNumber extends ValueObject<PhoneNumberDTO> implements IPhoneNu
     return 'Unknown';
   }
 
-  // ================= 序列�? API / Client =================
+  // ================= Serialization: API / Client =================
   /**
-   * 转换�?DTO（用�?API 传输�?
+   * Converts to a DTO for API transport.
    */
   public toDTO(): PhoneNumberDTO {
     return { ...this.props };
   }
 
-  // ================= 序列�? Persistence =================
+  // ================= Serialization: Persistence =================
   /**
-   * 转换为持久化格式（数据库存储�?
+   * Converts to persistence format for database storage.
    */
   public toPersistence(): PhoneNumberPersistenceDTO {
     return {

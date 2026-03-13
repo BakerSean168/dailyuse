@@ -2,19 +2,22 @@
  * Goal Aggregate Root - Client Contracts
  */
 
-import type { DomainDate, TransferDate, GoalId, IdentityId, GoalFolderId } from '../../../primitives';
+import type {
+  DomainDate,
+  TransferDate,
+  GoalId,
+  IdentityId,
+  GoalFolderId,
+} from '../../../primitives';
 import type { ImportanceLevel } from '../../../shared/index';
 import type { GoalStatus } from '../value-objects/goal-status';
 import type { KeyResultClientDTO } from '../entities/key-result-client';
 import type { GoalReviewClientDTO } from '../entities/goal-review-client';
 import type { GoalReminderConfig, GoalReminderConfigDTO } from '../value-objects';
 
-// ============ Transfer DTO (传输�? ============
+// ============ Transfer DTO ============
 
-/**
- * Goal Time Range Summary
- * 时间范围概要（UI 用）
- */
+/** Goal time range summary for UI display. */
 export interface GoalTimeRangeSummary {
   startDate: TransferDate | null;
   targetDate: TransferDate | null;
@@ -38,7 +41,7 @@ export interface GoalClientDTO {
   motivation: string | null;
   status: GoalStatus;
   importance: ImportanceLevel;
-  /** 动态优先级分数 */
+  /** Dynamic priority score */
   priority: number;
   category: string | null;
   tags: string[];
@@ -55,11 +58,11 @@ export interface GoalClientDTO {
   deletedAt: TransferDate | null;
   version: number;
 
-  // 子实体DTO
+  // Child entity DTOs
   keyResults: KeyResultClientDTO[] | null;
   reviews: GoalReviewClientDTO[] | null;
 
-  // 关键结果摘要（用于列表轻量展示）
+  // Key result summary (for lightweight list display)
   totalKeyResults?: number;
   completedKeyResults?: number;
 }

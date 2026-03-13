@@ -7,22 +7,22 @@ import { ValueObject } from '@dailyuse/utils';
 import { DeviceType } from './device-type';
 
 /**
- * 📱 设备信息值对�?
+ * Device Info Value Object
  *
- * 责任�?
- * - 存储和管理登录设备的相关信息
- * - 提供设备识别和分类的业务逻辑
- * - 用于设备信任管理和安全策�?
- * - 不可变性：所有修改操作都返回新实�?
+ * Responsibilities:
+ * - Stores and manages login device information
+ * - Provides device identification and classification logic
+ * - Used for device trust management and security policies
+ * - Immutable: all modifications return a new instance
  */
 export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInfo {
   private constructor(props: DeviceInfoDTO) {
     super(props);
   }
 
-  // ================= 工厂方法 1: 标准创建 =================
+  // ================= Factory Method 1: Standard Creation =================
   /**
-   * 创建新的设备信息值对象（包含校验�?
+   * Creates a new DeviceInfo value object (with validation).
    */
   public static create(props: DeviceInfoDTO): DeviceInfo {
     this.validate(props);
@@ -48,9 +48,9 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     });
   }
 
-  // ================= 工厂方法 2: �?DTO 恢复 =================
+  // ================= Factory Method 2: Restore from DTO =================
   /**
-   * �?DTO 恢复设备信息对象
+   * Restores a DeviceInfo object from a DTO.
    */
   public static fromDTO(dto: DeviceInfoDTO): DeviceInfo {
     // If a DeviceInfo value-object instance is passed, extract its plain DTO first.
@@ -108,17 +108,17 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     return this.props.lastSeenAt;
   }
 
-  // ================= 内部逻辑 =================
+  // ================= Internal Logic =================
   /**
-   * 集中校验逻辑
+   * Centralized validation logic.
    */
   private static validate(props: DeviceInfoDTO): void {
-    // 设备类型必须有效
+    // Device type must be valid
     if (!DeviceType.isValid(props.deviceType)) {
       throw new Error(`Invalid device type: ${props.deviceType}`);
     }
 
-    // 设备名称如果提供则不能为空字符串（null 表示未知设备，允许）
+    // Device name cannot be empty string if provided (null means unknown device, allowed)
     if (
       props.deviceName !== null &&
       props.deviceName !== undefined &&
@@ -127,17 +127,17 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
       throw new Error('Device name cannot be empty');
     }
 
-    // 设备名称长度限制
+    // Device name length limit
     if (props.deviceName && props.deviceName.length > 100) {
       throw new Error('Device name too long (max 100 characters)');
     }
 
-    // User Agent 可以为空，但如果有，长度要限�?
+    // User agent may be empty, but if present, enforce length limit
     if (props.userAgent && props.userAgent.length > 500) {
       throw new Error('User agent too long (max 500 characters)');
     }
 
-    // IP 地址格式基本校验
+    // Basic IP address format validation
     if (props.ipAddress) {
       const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$|^[a-f0-9:]+$/i;
       if (!ipRegex.test(props.ipAddress)) {
@@ -145,7 +145,7 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
       }
     }
 
-    // 时间戳有效性检�?
+    // Timestamp validity check
     if (!Number.isFinite(props.firstSeenAt) || props.firstSeenAt < 0) {
       throw new Error('Invalid firstSeenAt timestamp');
     }
@@ -157,37 +157,37 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
       throw new Error('Invalid lastSeenAt timestamp');
     }
 
-    // lastSeenAt 应该 >= firstSeenAt
+    // lastSeenAt must be >= firstSeenAt
     if (props.lastSeenAt && props.lastSeenAt < props.firstSeenAt) {
       throw new Error('lastSeenAt cannot be earlier than firstSeenAt');
     }
   }
 
-  // ================= 计算属�?=================
+  // ================= Computed Properties =================
 
   /**
-   * 获取设备的显示名�?
+   * Returns the device's display name.
    */
   public getDisplayName(): string {
     return this.props.deviceName || '';
   }
 
   /**
-   * 设备是否是移动设�?
+   * Checks if the device is a mobile device.
    */
   public isMobile(): boolean {
     return DeviceType.isMobile(this.props.deviceType as DeviceType);
   }
 
   /**
-   * 设备是否是网页端
+   * Checks if the device is a web browser.
    */
   public isBrowser(): boolean {
     return DeviceType.isBrowser(this.props.deviceType as DeviceType);
   }
 
   /**
-   * 获取设备被首次看到的距今时间（天数）
+   * Returns the number of days since the device was first seen.
    */
   public getDaysSinceFirstSeen(): number {
     const dayMs = 24 * 60 * 60 * 1000;
@@ -195,8 +195,8 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
   }
 
   /**
-   * 获取设备最后一次被看到的距今时间（天数�?
-   * 如果设备从未被使用过，返回该设备从创建到现在的天�?
+   * Returns the number of days since the device was last seen.
+   * If the device has never been used, returns days since creation.
    */
   public getDaysSinceLastSeen(): number {
     const dayMs = 24 * 60 * 60 * 1000;
@@ -205,59 +205,59 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
   }
 
   /**
-   * 获取设备�?年龄"描述（从首次看到至今�?
+   * Returns a human-readable description of the device's age (since first seen).
    */
   public getAgeDescription(): string {
     const days = this.getDaysSinceFirstSeen();
 
-    if (days === 0) return '今天首次登录';
-    if (days === 1) return '昨天首次登录';
-    if (days < 7) return `${days} 天前首次登录`;
-    if (days < 30) return `${Math.floor(days / 7)} 周前首次登录`;
-    if (days < 365) return `${Math.floor(days / 30)} 个月前首次登录`;
-    return `${Math.floor(days / 365)} 年前首次登录`;
+    if (days === 0) return 'First login today';
+    if (days === 1) return 'First login yesterday';
+    if (days < 7) return `First login ${days} days ago`;
+    if (days < 30) return `First login ${Math.floor(days / 7)} weeks ago`;
+    if (days < 365) return `First login ${Math.floor(days / 30)} months ago`;
+    return `First login ${Math.floor(days / 365)} years ago`;
   }
 
   /**
-   * 获取最后活动时间的描述
+   * Returns a human-readable description of the last activity time.
    */
   public getLastActivityDescription(): string {
     const days = this.getDaysSinceLastSeen();
 
-    if (days === 0) return '今天';
-    if (days === 1) return '昨天';
-    if (days < 7) return `${days} 天前`;
-    if (days < 30) return `${Math.floor(days / 7)} 周前`;
-    if (days < 365) return `${Math.floor(days / 30)} 个月前`;
-    return `${Math.floor(days / 365)} 年前`;
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    if (days < 365) return `${Math.floor(days / 30)} months ago`;
+    return `${Math.floor(days / 365)} years ago`;
   }
 
   /**
-   * 设备是否已成�?熟悉"的设备（超过 7 天）
+   * Checks if the device is "familiar" (seen for more than 7 days).
    */
   public isFamiliar(): boolean {
     return this.getDaysSinceFirstSeen() >= 7;
   }
 
   /**
-   * 设备是否是新设备�?4 小时内）
+   * Checks if the device is new (within 24 hours).
    */
   public isNewDevice(): boolean {
     return this.getDaysSinceFirstSeen() === 0;
   }
 
   /**
-   * 设备是否已很久没有被使用（超�?30 天）
+   * Checks if the device has been inactive for over 30 days.
    */
   public isInactive(): boolean {
     return this.getDaysSinceLastSeen() > 30;
   }
 
-  // ================= 行为方法 =================
+  // ================= Behavior Methods =================
 
   /**
-   * 更新最后活动时�?
-   * 场景：用户再次从该设备登�?
+   * Updates the last seen timestamp.
+   * Used when a user logs in again from this device.
    */
   public updateLastSeen(): DeviceInfo {
     return new DeviceInfo({
@@ -267,8 +267,8 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
   }
 
   /**
-   * 更新设备名称
-   * 场景：用户重命名设备
+   * Renames the device.
+   * Used when a user renames their device.
    */
   public rename(newName: string): DeviceInfo {
     DeviceInfo.validate({
@@ -282,17 +282,17 @@ export class DeviceInfo extends ValueObject<DeviceInfoDTO> implements IDeviceInf
     });
   }
 
-  // ================= 序列�? API / Client =================
+  // ================= Serialization: API / Client =================
   /**
-   * 转换�?DTO（用�?API 传输�?
+   * Converts to DTO (for API transport).
    */
   public toDTO(): DeviceInfoDTO {
     return { ...this.props };
   }
 
-  // ================= 序列�? Persistence =================
+  // ================= Serialization: Persistence =================
   /**
-   * 转换为持久化格式（数据库存储�?
+   * Converts to persistence format (for database storage).
    */
   public toPersistence(): DeviceInfoPersistenceDTO {
     return {

@@ -1,18 +1,25 @@
 /**
  * EditorTab Entity - Client Interface
- * 缂栬緫鍣ㄦ爣绛惧疄浣?- 瀹㈡埛绔帴�?
  */
 
-import type { EditorTabId, EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, DocumentId, TransferDate, DomainDate } from '../../../primitives';
+import type {
+  EditorTabId,
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+  DocumentId,
+  TransferDate,
+  DomainDate,
+} from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabServerDTO } from './editor-tab-server';
 
-// 从值对象导入类型
+// Value object imports
 import type { TabViewStateClientDTO } from '../value-objects';
 
 /**
- * Editor Tab Client DTO
- * 缂栬緫鍣ㄦ爣绛惧鎴风 DTO锛堝寘AndUI 鏍煎紡鍖栧瓧娈碉�?
+ * Editor Tab Client DTO (includes UI formatted fields).
  */
 export interface EditorTabClientDTO {
   id: string;
@@ -31,7 +38,7 @@ export interface EditorTabClientDTO {
   createdAt: TransferDate;
   updatedAt: TransferDate;
 
-  // UI 鏍煎紡鍖栧瓧�?
+  // UI formatted fields
   formattedLastAccessed: string | null;
   formattedCreatedAt: string;
   formattedUpdatedAt: string;

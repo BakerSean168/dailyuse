@@ -1,12 +1,11 @@
 /**
- * ScheduleTask 聚合根实�?
- * 任务调度聚合�?
+ * ScheduleTask Aggregate Root
  *
- * DDD 聚合根职责：
- * - 管理任务生命周期
- * - 管理执行记录子实�?
- * - 执行业务逻辑
- * - 确保聚合内的一致�?
+ * DDD aggregate root responsibilities:
+ * - Manages task lifecycle
+ * - Manages execution record child entities
+ * - Executes business logic
+ * - Ensures consistency within the aggregate
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
@@ -41,24 +40,22 @@ export interface ScheduleTaskState {
   deletedAt: Date | null;
 }
 
-/**
- * ScheduleTask 聚合根
- */
+/** ScheduleTask aggregate root. */
 export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
-  // ===== 私有字段 =====
+  // ===== Private Fields =====
   private _props: ScheduleTaskState;
 
-  // ===== 子实体集合 =====
+  // ===== Child Entity Collection =====
   private _executions: ScheduleExecution[];
 
-  // ===== 构造函数（私有） =====
+  // ===== Constructor (Private) =====
   private constructor(state: ScheduleTaskState) {
     super(state.id);
     this._props = state;
     this._executions = [];
   }
 
-  // ===== Getter 属性 =====
+  // ===== Getter Properties =====
 
   public get identityId(): string {
     return this._props.identityId;
@@ -109,70 +106,54 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return this._executions.length > 0 ? [...this._executions] : null;
   }
 
-  // ===== 便捷访问器方法 =====
+  // ===== Convenience Accessor Methods =====
 
-  /**
-   * 获取任务名称（便捷访问器）
-   */
+  /** Returns the task name (convenience accessor). */
   public get taskName(): string {
     return this._props.name;
   }
 
   /**
-   * 获取下次执行时间（便捷访问器）
-   * @returns Date 对象或 null
+   * Returns the next execution time (convenience accessor).
+   * @returns Date object or null
    */
   public get nextRunAt(): Date | null {
     return this._props.execution.nextRunAt ? new Date(this._props.execution.nextRunAt) : null;
   }
 
-  /**
-   * 获取执行次数（便捷访问器）
-   */
+  /** Returns the execution count (convenience accessor). */
   public get executionCount(): number {
     return this._props.execution.executionCount;
   }
 
-  /**
-   * 获取最大执行次数（便捷访问器）
-   */
+  /** Returns the maximum execution count (convenience accessor). */
   public get maxExecutions(): number | null {
     return this._props.schedule.maxExecutions;
   }
 
-  /**
-   * 获取执行信息值对象
-   */
+  /** Returns the execution info value object. */
   public getExecutionInfo(): ExecutionInfo {
     return this._props.execution;
   }
 
-  /**
-   * 获取调度配置值对象
-   */
+  /** Returns the schedule config value object. */
   public getScheduleConfig(): ScheduleConfig {
     return this._props.schedule;
   }
 
-  /**
-   * 获取重试策略值对象
-   */
+  /** Returns the retry policy value object. */
   public getRetryPolicyVO(): RetryPolicy {
     return this._props.retryPolicy;
   }
 
-  /**
-   * 获取任务元数据值对象
-   */
+  /** Returns the task metadata value object. */
   public getTaskMetadata(): TaskMetadata {
     return this._props.metadata;
   }
 
-  // ===== 工厂方法（创建子实体�?=====
+  // ===== Factory Methods (Child Entities) =====
 
-  /**
-   * 创建执行记录
-   */
+  /** Creates an execution record. */
   public createExecution(params: {
     executionTime: number;
     status?: ExecutionStatus;
@@ -185,48 +166,36 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return execution;
   }
 
-  // ===== 子实体管理方�?=====
+  // ===== Child Entity Management =====
 
-  /**
-   * 添加执行记录
-   */
+  /** Adds an execution record. */
   public addExecution(execution: ScheduleExecution): void {
     this._executions.push(execution);
   }
 
-  /**
-   * 获取执行记录
-   */
+  /** Finds an execution record by ID. */
   public getExecution(id: string): ScheduleExecution | null {
     return this._executions.find((e) => e.id === id) ?? null;
   }
 
-  /**
-   * 获取所有执行记�?
-   */
+  /** Returns all execution records. */
   public getAllExecutions(): ScheduleExecution[] {
     return [...this._executions];
   }
 
-  /**
-   * 获取最近的执行记录
-   */
+  /** Returns the most recent execution records up to the given limit. */
   public getRecentExecutions(limit: number): ScheduleExecution[] {
     return this._executions.sort((a, b) => b.executionTime - a.executionTime).slice(0, limit);
   }
 
-  /**
-   * 获取失败的执行记�?
-   */
+  /** Returns all failed or timed-out execution records. */
   public getFailedExecutions(): ScheduleExecution[] {
     return this._executions.filter((e) => e.isFailed() || e.isTimeout());
   }
 
-  // ===== 生命周期管理 =====
+  // ===== Lifecycle Management =====
 
-  /**
-   * 暂停任务
-   */
+  /** Pauses the task. */
   public pause(reason?: string): void {
     if (
       this._props.status === ScheduleTaskStatus.Completed ||
@@ -235,11 +204,11 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       throw new Error('Cannot pause a completed or cancelled task');
     }
     this._props.status = ScheduleTaskStatus.Paused;
-    // 自动禁用，保持状态一致
+    // Auto-disable to maintain consistent state
     this._props.enabled = false;
     this._props.updatedAt = new Date();
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:paused', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
@@ -248,23 +217,21 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 恢复任务
-   */
+  /** Resumes the task. */
   public resume(): void {
     if (this._props.status !== ScheduleTaskStatus.Paused) {
       throw new Error('Can only resume a paused task');
     }
     this._props.status = ScheduleTaskStatus.Active;
-    // 自动启用
+    // Auto-enable
     this._props.enabled = true;
     this._props.updatedAt = new Date();
 
-    // 重新计算下次执行时间 (使用当前时间作为默认值)
+    // Recalculate next execution time (uses current time as default)
     const nextRunAt = Date.now();
     this._props.execution = this._props.execution.with({ nextRunAt });
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:resumed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
@@ -273,14 +240,12 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 完成任务
-   */
+  /** Completes the task. */
   public complete(): void {
     this._props.status = ScheduleTaskStatus.Completed;
     this._props.updatedAt = new Date();
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:completed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
@@ -289,9 +254,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 取消任务
-   */
+  /** Cancels the task. */
   public cancel(reason: string): void {
     if (this._props.status === ScheduleTaskStatus.Completed) {
       throw new Error('Cannot cancel a completed task');
@@ -299,7 +262,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     this._props.status = ScheduleTaskStatus.Cancelled;
     this._props.updatedAt = new Date();
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:cancelled', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
@@ -308,14 +271,12 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 标记失败
-   */
+  /** Marks the task as failed. */
   public fail(error: string): void {
     this._props.status = ScheduleTaskStatus.Failed;
     this._props.updatedAt = new Date();
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:failed', {
       taskId: this.id,
       sourceModule: this._props.sourceModule,
@@ -325,21 +286,19 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  // ===== 调度配置管理 =====
+  // ===== Schedule Configuration Management =====
 
-  /**
-   * 更新调度配置
-   */
+  /** Updates the schedule configuration. */
   public updateSchedule(schedule: Partial<any>): void {
     const oldCron = this._props.schedule.cronExpression;
     this._props.schedule = this._props.schedule.with(schedule);
     this._props.updatedAt = new Date();
 
-    // 重新计算下次执行时间 (使用当前时间作为默认值)
+    // Recalculate next execution time (uses current time as default)
     const nextRunAt = Date.now();
     this._props.execution = this._props.execution.with({ nextRunAt });
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:schedule-updated', {
       taskId: this.id,
       previousCronExpression: oldCron,
@@ -348,42 +307,40 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 更新 Cron 表达式
-   */
+  /** Updates the cron expression. */
   public updateCronExpression(cronExpression: string): void {
     this.updateSchedule({ cronExpression });
   }
 
   /**
-   * 计算下次执行时间
-   * 接口签名: calculateNextRun(): number
+   * Calculates the next run time.
+   * @returns Timestamp in milliseconds
    */
   public calculateNextRun(): number {
-    // 使用当前时间作为默认值 (计算逻辑可以在外部实现)
+    // Uses current time as default (calculation logic can be implemented externally)
     return Date.now();
   }
 
-  // ===== 执行信息管理 =====
+  // ===== Execution Info Management =====
 
   /**
-   * 执行任务
+   * Executes the task.
    *
    * @description
-   * 1. 验证任务是否可执行（状态、启用、到期）
-   * 2. 发布 schedule:task:triggered 领域事件
-   * 3. 更新 nextRunAt（由外部 recordExecution 记录结果）
+   * 1. Validates task is executable (status, enabled, due)
+   * 2. Publishes schedule:task:triggered domain event
+   * 3. Updates nextRunAt (result recorded externally via recordExecution)
    *
-   * @returns 是否成功触发执行
+   * @returns Whether execution was successfully triggered
    */
   public execute(): boolean {
-    // 1. 检查任务是否可执行
+    // 1. Check if the task can execute
     if (!this.canExecute()) {
       return false;
     }
 
-    // 2. 发布领域事件（通知其他模块任务被触发）
-    // 完整序列化 metadata DTO 以确保正确传递
+    // 2. Publish domain event (notify other modules that the task was triggered)
+    // Fully serialize metadata DTO to ensure correct propagation
     const metadataDTO = this._props.metadata.toServerDTO();
     this.addDomainEvent('schedule:task:triggered', {
       taskId: this.id,
@@ -397,28 +354,26 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return true;
   }
 
-  /**
-   * 检查任务是否可执行
-   */
+  /** Checks whether the task can be executed. */
   public canExecute(): boolean {
-    // 任务必须是活跃状态
+    // Task must be active
     if (this._props.status !== ScheduleTaskStatus.Active) {
       return false;
     }
 
-    // 任务必须启用
+    // Task must be enabled
     if (!this._props.enabled) {
       return false;
     }
 
-    // 检查是否到期
+    // Check if due
     const now = Date.now();
     const nextRun = this._props.execution.nextRunAt;
     if (!nextRun || nextRun > now) {
       return false;
     }
 
-    // 检查是否达到最大执行次数
+    // Check if max executions reached
     const maxExecutions = this._props.schedule.maxExecutions;
     if (maxExecutions !== null && this._props.execution.executionCount >= maxExecutions) {
       return false;
@@ -427,9 +382,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return true;
   }
 
-  /**
-   * 记录执行
-   */
+  /** Records an execution result. */
   public recordExecution(
     status: ExecutionStatus,
     duration: number,
@@ -453,8 +406,8 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
     this.addExecution(execution);
 
-    // 更新执行信息
-    const nextRunAt = Date.now(); // 使用当前时间作为默认值
+    // Update execution info
+    const nextRunAt = Date.now(); // Uses current time as default
     this._props.execution = this._props.execution.updateAfterExecution({
       executedAt: Date.now(),
       status,
@@ -464,7 +417,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
     this._props.updatedAt = new Date();
 
-    // 发布事件
+    // Publish event
     this.addDomainEvent('schedule:task:executed', {
       taskId: this.id,
       executionId: execution.id,
@@ -479,109 +432,87 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return execution;
   }
 
-  /**
-   * 更新执行信息
-   */
+  /** Updates the execution info. */
   public updateExecutionInfo(updates: Partial<any>): void {
     this._props.execution = this._props.execution.with(updates);
     this._props.updatedAt = new Date();
   }
 
-  /**
-   * 重置失败计数
-   */
+  /** Resets the consecutive failure count. */
   public resetFailures(): void {
     this._props.execution = this._props.execution.resetFailures();
     this._props.updatedAt = new Date();
   }
 
-  // ===== 重试策略管理 =====
+  // ===== Retry Policy Management =====
 
-  /**
-   * 更新重试策略
-   */
+  /** Updates the retry policy. */
   public updateRetryPolicy(policy: Partial<any>): void {
     this._props.retryPolicy = this._props.retryPolicy.with(policy);
     this._props.updatedAt = new Date();
   }
 
-  /**
-   * 判断是否应该重试
-   */
+  /** Determines whether the task should be retried. */
   public shouldRetry(): boolean {
     const execInfo = this._props.execution;
     return this._props.retryPolicy.shouldRetry(execInfo.consecutiveFailures);
   }
 
-  /**
-   * 计算下次重试延迟
-   */
+  /** Calculates the delay before the next retry. */
   public calculateNextRetryDelay(): number {
     const execInfo = this._props.execution;
     return this._props.retryPolicy.calculateNextRetryDelay(execInfo.consecutiveFailures);
   }
 
-  // ===== 元数据管理 =====
+  // ===== Metadata Management =====
 
-  /**
-   * 更新元数据
-   */
+  /** Updates the task metadata. */
   public updateMetadata(metadata: Partial<any>): void {
     this._props.metadata = this._props.metadata.with(metadata);
     this._props.updatedAt = new Date();
   }
 
-  /**
-   * 更新 Payload
-   */
+  /** Updates the payload. */
   public updatePayload(payload: Record<string, any>): void {
     this._props.metadata = this._props.metadata.setPayload(payload);
     this._props.updatedAt = new Date();
   }
 
-  /**
-   * 添加标签
-   */
+  /** Adds a tag. */
   public addTag(tag: string): void {
     this._props.metadata = this._props.metadata.addTag(tag);
     this._props.updatedAt = new Date();
   }
 
-  /**
-   * 移除标签
-   */
+  /** Removes a tag. */
   public removeTag(tag: string): void {
     this._props.metadata = this._props.metadata.removeTag(tag);
     this._props.updatedAt = new Date();
   }
 
-  // ===== 启用/禁用 =====
+  // ===== Enable/Disable =====
 
-  /**
-   * 启用任务
-   */
+  /** Enables the task. */
   public enable(): void {
     this._props.enabled = true;
-    // 如果当前是暂停状态，自动切换为活跃
+    // If currently paused, auto-transition to active
     if (this._props.status === ScheduleTaskStatus.Paused) {
       this._props.status = ScheduleTaskStatus.Active;
     }
     this._props.updatedAt = new Date();
   }
 
-  /**
-   * 禁用任务
-   */
+  /** Disables the task. */
   public disable(): void {
     this._props.enabled = false;
-    // 如果当前是活跃状态，自动切换为暂停
+    // If currently active, auto-transition to paused
     if (this._props.status === ScheduleTaskStatus.Active) {
       this._props.status = ScheduleTaskStatus.Paused;
     }
     this._props.updatedAt = new Date();
   }
 
-  // ===== 状态检查 =====
+  // ===== Status Checks =====
 
   public isActive(): boolean {
     return this._props.status === ScheduleTaskStatus.Active;
@@ -607,11 +538,9 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return this._props.schedule.isExpired;
   }
 
-  // ===== UI 辅助方法 =====
+  // ===== UI Helper Methods =====
 
-  /**
-   * 获取状态显示文本
-   */
+  /** Returns the display text for the current status. */
   public getStatusDisplay(): string {
     const statusMap: Record<ScheduleTaskStatus, string> = {
       [ScheduleTaskStatus.Active]: '活跃',
@@ -623,9 +552,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return statusMap[this._props.status] || this._props.status;
   }
 
-  /**
-   * 获取状态颜色
-   */
+  /** Returns the color for the current status. */
   public getStatusColor(): string {
     const colorMap: Record<ScheduleTaskStatus, string> = {
       [ScheduleTaskStatus.Active]: 'green',
@@ -637,9 +564,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return colorMap[this._props.status] || 'gray';
   }
 
-  /**
-   * 获取来源模块显示文本
-   */
+  /** Returns the display text for the source module. */
   public getSourceModuleDisplay(): string {
     const moduleMap: Record<SourceModule, string> = {
       [SourceModule.Reminder]: '提醒模块',
@@ -652,9 +577,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return moduleMap[this._props.sourceModule] || this._props.sourceModule;
   }
 
-  /**
-   * 格式化下次运行时间
-   */
+  /** Formats the next run time as a localized string. */
   public getNextRunAtFormatted(): string {
     if (!this._props.execution.nextRunAt) return '-';
     const date = new Date(this._props.execution.nextRunAt);
@@ -670,9 +593,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 格式化上次运行时间
-   */
+  /** Formats the last run time as a localized string. */
   public getLastRunAtFormatted(): string {
     if (!this._props.execution.lastRunAt) return '-';
     const date = new Date(this._props.execution.lastRunAt);
@@ -688,9 +609,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     });
   }
 
-  /**
-   * 获取执行摘要
-   */
+  /** Returns an execution summary string. */
   public getExecutionSummary(): string {
     const count = this._props.execution.executionCount;
     const failures = this._props.execution.consecutiveFailures;
@@ -698,9 +617,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return `已执行 ${count} 次，成功 ${successCount} 次`;
   }
 
-  /**
-   * 获取健康状态
-   */
+  /** Returns the health status based on consecutive failures. */
   public getHealthStatus(): string {
     const failures = this._props.execution.consecutiveFailures;
     if (failures === 0) return 'healthy';
@@ -708,19 +625,15 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return 'critical';
   }
 
-  /**
-   * 检查是否过期
-   */
+  /** Checks whether the task is overdue. */
   public isOverdue(): boolean {
     if (!this._props.execution.nextRunAt) return false;
     return this._props.execution.nextRunAt < Date.now();
   }
 
-  // ===== 转换方法 =====
+  // ===== Conversion Methods =====
 
-  /**
-   * 转换为 Server DTO
-   */
+  /** Converts to a Server DTO. */
   public toServerDTO(includeChildren: boolean = false): ScheduleTaskServerDTO {
     return {
       id: this.id,
@@ -743,9 +656,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     };
   }
 
-  /**
-   * 转换为 Client DTO (用于客户端)
-   */
+  /** Converts to a Client DTO for frontend consumption. */
   public toClientDTO(includeChildren: boolean = false): ScheduleTaskClientDTO {
     return {
       id: this.id,
@@ -765,7 +676,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
       updatedAt: this._props.updatedAt.getTime(),
       deletedAt: this._props.deletedAt?.getTime() ?? null,
       executions: includeChildren ? this._executions.map((e) => e.toClientDTO()) : null,
-      // UI 辅助属性
+      // UI helper properties
       statusDisplay: this.getStatusDisplay(),
       statusColor: this.getStatusColor(),
       sourceModuleDisplay: this.getSourceModuleDisplay(),
@@ -778,11 +689,9 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     };
   }
 
-  // ===== 静态工厂方法 =====
+  // ===== Static Factory Methods =====
 
-  /**
-   * 创建新任务
-   */
+  /** Creates a new task. */
   public static create(params: {
     identityId: string;
     name: string;
@@ -824,7 +733,7 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
 
     const task = new ScheduleTask(state);
 
-    // 发布创建事件
+    // Publish creation event
     task.addDomainEvent('schedule:task:created', {
       taskId: task.id,
       name: params.name,
@@ -837,16 +746,12 @@ export class ScheduleTask extends AggregateRoot<ScheduleTaskId> {
     return task;
   }
 
-  /**
-   * 从已有状态加载聚合根（用于持久化重建）
-   */
+  /** Loads an aggregate root from existing state (for persistence reconstruction). */
   public static load(state: ScheduleTaskState): ScheduleTask {
     return new ScheduleTask(state);
   }
 
-  /**
-   * 从 DTO 创建 (兼容旧代码)
-   */
+  /** Creates from a DTO (legacy compatibility). */
   public static fromDTO(dto: any): ScheduleTask {
     const state: ScheduleTaskState = {
       id: dto.id ? ScheduleTaskId.of(dto.id) : ScheduleTaskId.generate(),

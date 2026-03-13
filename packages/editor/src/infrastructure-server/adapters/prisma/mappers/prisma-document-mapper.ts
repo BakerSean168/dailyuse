@@ -11,9 +11,7 @@ import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
 import { DocumentMetadata } from '@/domain-shared/value-objects/document-metadata';
 
 export class PrismaDocumentMapper {
-  /**
-   * Prisma Document â†?Domain Document entity
-   */
+  /** Maps a Prisma Document row to a Domain Document entity. */
   static toDomain(data: PrismaDocument): Document {
     const mappedIndexStatus = PrismaDocumentMapper.mapPrismaStatusToIndexStatus(data.status);
     return Document.load({
@@ -43,9 +41,7 @@ export class PrismaDocumentMapper {
     } as any);
   }
 
-  /**
-   * Domain Document â†?Prisma write data
-   */
+  /** Maps a Domain Document entity to Prisma write data. */
   static toPersistence(document: Document) {
     const dto = document.toServerDTO();
     return {
@@ -66,21 +62,18 @@ export class PrismaDocumentMapper {
     };
   }
 
-  /**
-   * Map Prisma status â†?Domain IndexStatus
-   */
+  /** Maps a Prisma status string to a Domain IndexStatus. */
   static mapPrismaStatusToIndexStatus(status: string): IndexStatus {
     if (status === 'PUBLISHED') return IndexStatus.Indexed;
     if (status === 'ARCHIVED') return IndexStatus.Outdated;
     return IndexStatus.NotIndexed;
   }
 
-  /**
-   * Map Domain IndexStatus â†?Prisma status string
-   */
+  /** Maps a Domain IndexStatus to a Prisma status string. */
   static mapIndexStatusToPrismaStatus(indexStatus: IndexStatus): string {
     if (indexStatus === IndexStatus.Indexed) return 'PUBLISHED';
-    if (indexStatus === IndexStatus.Outdated || indexStatus === IndexStatus.Failed) return 'ARCHIVED';
+    if (indexStatus === IndexStatus.Outdated || indexStatus === IndexStatus.Failed)
+      return 'ARCHIVED';
     return 'DRAFT';
   }
 
@@ -91,15 +84,13 @@ export class PrismaDocumentMapper {
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return hash.toString(16);
   }
 
-  /**
-   * Batch conversion: Prisma â†?Domain
-   */
+  /** Batch converts Prisma Document rows to Domain entities. */
   static toDomainList(rows: PrismaDocument[]): Document[] {
     return rows.map((row) => PrismaDocumentMapper.toDomain(row));
   }

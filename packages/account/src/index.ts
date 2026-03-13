@@ -1,30 +1,29 @@
 /**
  * @dailyuse/account
  *
- * 账户模块 - 用户账户管理
+ * Account module - User account management.
  *
- * 【分层架构�?
+ * Layered architecture:
  *
- * contracts      �?类型定义、DTO、事件、API Schema
- * domain-shared  �?值对象工厂（前后端共享）
- * domain-server  �?聚合根、仓储接�?
- * domain-client  �?客户端领域模�?
- * application-server �?用例（服务端�?
- * application-client �?客户端服�?
- * infrastructure-server �?Prisma 仓储实现
- * infrastructure-client �?HTTP/IPC 适配�?
- * api            �?Express API 模块
+ * contracts               - Type definitions, DTOs, events, API schemas
+ * domain-shared           - Value object factories (shared between client and server)
+ * domain-server           - Aggregate roots, repository interfaces
+ * domain-client           - Client-side domain model
+ * application-server      - Use cases (server-side)
+ * application-client      - Client-side services
+ * infrastructure-server   - Prisma repository implementations
+ * infrastructure-client   - HTTP/IPC adapters
+ * api                     - Express API module
  *
- * 【使用示例�?
- *
+ * @example
  * ```typescript
- * // 1. 导入契约
+ * // 1. Import contracts
  * import type { AccountClientDTO } from '@dailyuse/contracts/account';
  *
- * // 2. 导入服务端聚合根
+ * // 2. Import server-side aggregate root
  * import { Account } from '@dailyuse/account/domain-server';
  *
- * // 3. 导入 API 模块（在 apps/api 中）
+ * // 3. Import API module (in apps/api)
  * import { AccountApiModule } from '@dailyuse/account/api';
  * bootstrapper.register(AccountApiModule);
  * ```

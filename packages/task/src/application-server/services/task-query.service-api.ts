@@ -1,16 +1,8 @@
 /**
  * Task Query Service
- * Story 2.5: 支持排序参数和过滤选项 - 后端扩展
  *
- * 负责�?
- * - 查询任务列表（支持排序和过滤�?
- * - 计算任务优先�?
- * - 应用多种排序策略
- * - 应用多种过滤条件
- *
- * 依赖�?
- * - Story 2.1: 优先级计算逻辑
- * - Story 2.2: API 集成
+ * Handles task list queries with sorting and filtering support,
+ * priority calculation, and multiple sort/filter strategies.
  */
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
@@ -24,9 +16,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { TaskSortBy, TaskFilterBy } from './task-query.validator';
 
 /**
- * 任务查询服务
- *
- * 提供灵活的任务查询、排序和过滤功能
+ * Task query service providing flexible querying, sorting, and filtering.
  */
 export class TaskQueryService {
   private templateRepository: ITaskTemplateRepository;
@@ -36,19 +26,19 @@ export class TaskQueryService {
   }
 
   /**
-   * 按指定字段和过滤条件查询任务
+   * Queries tasks with specified sorting and filtering.
    *
-   * 流程:
-   * 1. 获取所有活跃任�?
-   * 2. 转换�?DTO 并计算优先级
-   * 3. 按过滤条件过�?
-   * 4. 按排序字段排�?
+   * Steps:
+   * 1. Fetch all active tasks
+   * 2. Convert to DTOs and calculate priority
+   * 3. Apply filter conditions
+   * 4. Sort by specified field
    *
-   * @param identityId 账户 ID
-   * @param sortBy 排序字段 (default: priority)
-   * @param filterBy 过滤条件数组 (AND 关系)
-   * @param currentTime 当前时间（用于优先级计算和相对日期过滤）
-   * @returns 排序和过滤后的任�?DTO 数组（包�?priority 字段�?
+   * @param identityId - Account ID
+   * @param sortBy - Sort field (default: priority)
+   * @param filterBy - Filter conditions (AND logic)
+   * @param currentTime - Current time for priority calculation and relative date filtering
+   * @returns Sorted and filtered task DTOs with priority field
    */
   async getTasksWithSortingAndFiltering(
     identityId: string,
@@ -56,41 +46,47 @@ export class TaskQueryService {
     filterBy: TaskFilterBy[] = [],
     currentTime: Date = new Date(),
   ): Promise<Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>> {
-    // Step 1: 获取所有活跃任�?
+    // Step 1: Fetch all active tasks
     const templates = await this.getAllActiveTemplates(identityId);
 
-    // Step 2: 转换�?DTO 并计算优先级
+    // Step 2: Convert to DTOs and calculate priority
     const dtos = templates.map((t) => t.toServerDTO());
     const enriched = this.enrichWithPriority(dtos, currentTime);
 
-    // Step 3: 按过滤条件过�?
+    // Step 3: Apply filter conditions
     let filtered = enriched;
     if (filterBy.length > 0) {
       filtered = this.applyFilters(enriched, filterBy, currentTime);
     }
 
-    // Step 4: 按排序字段排�?
+    // Step 4: Sort by specified field
     return this.applySort(filtered, sortBy, currentTime);
   }
 
   /**
-   * 计算单个任务的优先级
+   * Calculates priority for a single task.
    *
-   * 公式: priority = (importance * 0.6) + (timeRemaining * 0.4)
-   * 范围: 0-100
+   * Formula: priority = (importance * 0.6) + (timeRemaining * 0.4)
+   * Range: 0-100
    *
-   * @param importance 重要性等级（转换为数值）
-   * @param dueDate 截止日期（毫秒时间戳，null 表示无期限）
-   * @param currentTime 当前时间
-   * @returns 优先级分�?(0-100)
+   * @param importance - Importance level (mapped to numeric value)
+   * @param dueDate - Due date as timestamp in ms, null means no deadline
+   * @param currentTime - Current time
+   * @returns Priority score (0-100)
    */
   private calculatePriority(
     importance: ImportanceLevel,
     dueDate: number | null,
     currentTime: Date,
   ): number {
-    // 重要性映射到数值（0-100�?
-    const importanceMap: { Vital: number; Important: number; Moderate: number; Minor: number; Trivial: number } = {
+    // Map importance to numeric value (0-100)
+    const importanceMap: {
+      Vital: number;
+      Important: number;
+      Moderate: number;
+      Minor: number;
+      Trivial: number;
+    } = {
       Vital: 100,
       Important: 80,
       Moderate: 60,
@@ -100,45 +96,46 @@ export class TaskQueryService {
 
     const importanceScore = importanceMap[importance] || 60;
 
-    // 如果无期限，仅返回重要性分�?
+    // If no deadline, return only the importance score
     if (!dueDate) {
-      return importanceScore * 0.6; // 加权 60% 的重要�?
+      return importanceScore * 0.6; // 60% importance weight
     }
 
-    // 计算时间紧迫度（dueDate - currentTime�?
+    // Calculate time urgency (dueDate - currentTime)
     const dueDateObj = new Date(dueDate);
     const timeRemainingMs = dueDateObj.getTime() - currentTime.getTime();
     const timeRemainingDays = Math.max(0, timeRemainingMs / (1000 * 60 * 60 * 24));
 
-    // 时间紧迫度评分：时间越少越紧�?
+    // Urgency score: less time remaining = more urgent
     let urgencyScore = 0;
     if (timeRemainingDays === 0) {
-      urgencyScore = 100; // 今天到期
+      urgencyScore = 100; // Due today
     } else if (timeRemainingDays <= 1) {
-      urgencyScore = 90; // 1天内
+      urgencyScore = 90; // Within 1 day
     } else if (timeRemainingDays <= 3) {
-      urgencyScore = 75; // 3天内
+      urgencyScore = 75; // Within 3 days
     } else if (timeRemainingDays <= 7) {
-      urgencyScore = 50; // 1周内
+      urgencyScore = 50; // Within 1 week
     } else {
-      urgencyScore = Math.max(10, 100 - timeRemainingDays * 5); // 递减
+      urgencyScore = Math.max(10, 100 - timeRemainingDays * 5); // Decreasing
     }
 
-    // 加权计算优先�?
+    // Weighted priority calculation
     const priority = importanceScore * 0.6 + urgencyScore * 0.4;
-    return Math.min(100, Math.max(0, priority)); // 限制�?0-100
+    return Math.min(100, Math.max(0, priority)); // Clamp to 0-100
   }
 
-  /**
-   * 为任�?DTO 列表添加优先级字�?
-   */
+  /** Enriches task DTOs with a calculated priority field. */
   private enrichWithPriority(
     dtos: (TaskTemplateServerDTO | TaskTemplateClientDTO)[],
     currentTime: Date,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     return dtos.map((dto) => {
       // Handle dueDate access: TaskTemplateClientDTO has dueDate directly, TaskTemplateServerDTO uses timeConfig.startDate
-      const dueDate = 'dueDate' in dto ? (dto.dueDate as number | null) : (dto.timeConfig?.startDate as number | null);
+      const dueDate =
+        'dueDate' in dto
+          ? (dto.dueDate as number | null)
+          : (dto.timeConfig?.startDate as number | null);
       return {
         ...dto,
         priority: this.calculatePriority(dto.importance, dueDate, currentTime),
@@ -147,12 +144,12 @@ export class TaskQueryService {
   }
 
   /**
-   * 按过滤条件过滤任�?
+   * Filters tasks by the given conditions.
    *
-   * @param dtos 任务 DTO 数组
-   * @param filters 过滤条件
-   * @param currentTime 当前时间
-   * @returns 过滤后的 DTO 数组
+   * @param dtos - Task DTOs
+   * @param filters - Filter conditions
+   * @param currentTime - Current time
+   * @returns Filtered DTOs
    */
   private applyFilters(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
@@ -160,18 +157,18 @@ export class TaskQueryService {
     currentTime: Date,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     return dtos.filter((dto) => {
-      // 所有过滤条件必须满�?(AND 关系)
+      // All filter conditions must be satisfied (AND logic)
       return filters.every((filter) => this.matchesFilter(dto, filter, currentTime));
     });
   }
 
   /**
-   * 检查任务是否匹配单个过滤条�?
+   * Checks whether a task matches a single filter condition.
    *
-   * @param dto 任务 DTO
-   * @param filter 过滤条件
-   * @param currentTime 当前时间
-   * @returns true 如果匹配
+   * @param dto - Task DTO
+   * @param filter - Filter condition
+   * @param currentTime - Current time
+   * @returns True if the task matches
    */
   private matchesFilter(
     dto: (TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number },
@@ -190,7 +187,10 @@ export class TaskQueryService {
 
     if (filter.startsWith('dueDate:')) {
       const dateFilter = filter.split(':')[1];
-      const dueDate = 'dueDate' in dto ? (dto.dueDate as number | null) : (dto.timeConfig?.startDate as number | null);
+      const dueDate =
+        'dueDate' in dto
+          ? (dto.dueDate as number | null)
+          : (dto.timeConfig?.startDate as number | null);
       return this.matchesDueDateFilter(dueDate ?? null, dateFilter, currentTime);
     }
 
@@ -198,9 +198,8 @@ export class TaskQueryService {
   }
 
   /**
-   * 检查重要性是否匹配过滤条�?
-   *
-   * 过滤逻辑: filterBy=importance:important 返回 importance >= Important 的任<
+   * Checks whether importance matches the filter.
+   * Filter logic: `filterBy=importance:important` returns tasks with importance >= Important.
    */
   private matchesImportanceFilter(importance: ImportanceLevel, level: string): boolean {
     const importanceLevels = [
@@ -215,24 +214,20 @@ export class TaskQueryService {
     const taskLevelIndex = importanceLevels.findIndex((l) => l === importance);
 
     if (filterLevelIndex === -1) {
-      return true; // 无效的过滤条件，不过�?
+      return true; // Invalid filter condition, skip filtering
     }
 
     // importance >= filterLevel
     return taskLevelIndex >= filterLevelIndex;
   }
 
-  /**
-   * 检查状态是否匹配过滤条�?
-   */
+  /** Checks whether status matches the filter condition. */
   private matchesStatusFilter(status: TaskTemplateStatus, statusFilter: string): boolean {
-    // 状态过滤（精确匹配�?
+    // Exact match on status
     return status.toLowerCase() === statusFilter.toLowerCase();
   }
 
-  /**
-   * 检查截止日期是否匹配过滤条�?
-   */
+  /** Checks whether due date matches the filter condition. */
   private matchesDueDateFilter(
     dueDate: number | null,
     dateFilter: string,
@@ -265,19 +260,19 @@ export class TaskQueryService {
   }
 
   /**
-   * 按指定字段排序任�?
+   * Sorts tasks by the specified field.
    *
-   * @param dtos 任务 DTO 数组
-   * @param sortBy 排序字段
-   * @param currentTime 当前时间
-   * @returns 排序后的 DTO 数组
+   * @param dtos - Task DTOs
+   * @param sortBy - Sort field
+   * @param currentTime - Current time
+   * @returns Sorted DTOs
    */
   private applySort(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
     sortBy: TaskSortBy,
     currentTime: Date,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
-    const sorted = [...dtos]; // 避免修改原数�?
+    const sorted = [...dtos]; // Avoid mutating original array
 
     switch (sortBy) {
       case TaskSortBy.PRIORITY:
@@ -293,65 +288,67 @@ export class TaskQueryService {
         return this.sortByImportance(sorted);
 
       default:
-        return this.sortByPriority(sorted); // 默认按优先级排序
+        return this.sortByPriority(sorted); // Default: sort by priority
     }
   }
 
-  /**
-   * 按优先级降序排序
-   */
+  /** Sorts by priority descending. */
   private sortByPriority(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     return dtos.sort((a, b) => b.priority - a.priority);
   }
 
-  /**
-   * 按截止日期升序排序，无期限任务排在最�?
-   */
+  /** Sorts by due date ascending; tasks with no due date are placed last. */
   private sortByDueDate(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     return dtos.sort((a, b) => {
-      const aDueDate = 'dueDate' in a ? (a.dueDate as number | null) : (a.timeConfig?.startDate as number | null);
-      const bDueDate = 'dueDate' in b ? (b.dueDate as number | null) : (b.timeConfig?.startDate as number | null);
+      const aDueDate =
+        'dueDate' in a ? (a.dueDate as number | null) : (a.timeConfig?.startDate as number | null);
+      const bDueDate =
+        'dueDate' in b ? (b.dueDate as number | null) : (b.timeConfig?.startDate as number | null);
       const aHasDue = aDueDate != null;
       const bHasDue = bDueDate != null;
 
-      // 无期限的任务排在最后
+      // Tasks without a due date go last
       if (!aHasDue && bHasDue) return 1;
       if (aHasDue && !bHasDue) return -1;
 
-      // 都没有期限，保持原顺序
+      // Both have no due date, preserve original order
       if (!aHasDue && !bHasDue) return 0;
 
-      // 都有期限，按升序排列
+      // Both have due dates, sort ascending
       return (aDueDate as number) - (bDueDate as number);
     });
   }
 
-  /**
-   * 按创建时间降序排序（最新创建的在前�?
-   */
+  /** Sorts by creation time descending (newest first). */
   private sortByCreatedAt(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
     return dtos.sort((a, b) => {
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bTime - aTime; // 降序
+      return bTime - aTime; // Descending
     });
   }
 
   /**
-   * 按重要性降序排�?
+   * Sorts by importance descending.
    *
-   * 顺序: Vital > Important > Moderate > Minor > Trivial
+   * Order: Vital > Important > Moderate > Minor > Trivial
    */
   private sortByImportance(
     dtos: Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }>,
   ): Array<(TaskTemplateServerDTO | TaskTemplateClientDTO) & { priority: number }> {
-    const importanceValues: { Vital: number; Important: number; Moderate: number; Minor: number; Trivial: number } = {
+    const importanceValues: {
+      Vital: number;
+      Important: number;
+      Moderate: number;
+      Minor: number;
+      Trivial: number;
+    } = {
       Vital: 5,
       Important: 4,
       Moderate: 3,
@@ -362,16 +359,15 @@ export class TaskQueryService {
     return dtos.sort((a, b) => {
       const aValue = importanceValues[a.importance] || 0;
       const bValue = importanceValues[b.importance] || 0;
-      return bValue - aValue; // 降序
+      return bValue - aValue; // Descending
     });
   }
 
   /**
-   * 获取所有活跃任�?
-   * 私有方法
+   * Fetches all active task templates for a given account.
    *
-   * @param identityId 账户 ID
-   * @returns 活跃任务列表
+   * @param identityId - Account ID
+   * @returns List of active task templates
    */
   private async getAllActiveTemplates(identityId: string): Promise<TaskTemplate[]> {
     const activeStatuses = [TaskTemplateStatus.Active, TaskTemplateStatus.Paused];

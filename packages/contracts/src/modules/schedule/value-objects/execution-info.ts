@@ -1,6 +1,5 @@
 /**
  * Execution Info Value Object
- * 执行信息值对�?
  */
 
 import type { ExecutionStatus } from './execution-status';
@@ -14,31 +13,29 @@ export const ExecutionHealthStatus = {
 export type ExecutionHealthStatus =
   (typeof ExecutionHealthStatus)[keyof typeof ExecutionHealthStatus];
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 执行信息 - Server 接口
- */
+/** Execution info - Server interface. */
 export interface IExecutionInfoServer {
-  /** 下次执行时间 */
+  /** Next execution time */
   nextRunAt: number | null;
 
-  /** 上次执行时间 */
+  /** Last execution time */
   lastRunAt: number | null;
 
-  /** 已执行次�?*/
+  /** Total execution count */
   executionCount: number;
 
-  /** 上次执行状�?*/
+  /** Last execution status */
   lastExecutionStatus: ExecutionStatus | null;
 
-  /** 上次执行时长（毫秒） */
+  /** Last execution duration (ms) */
   lastExecutionDuration: number | null;
 
-  /** 连续失败次数 */
+  /** Consecutive failure count */
   consecutiveFailures: number;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -60,50 +57,48 @@ export interface IExecutionInfoServer {
     nextRunAt: number | null;
   }): IExecutionInfoServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 执行信息 - Client 接口
- */
+/** Execution info - Client interface. */
 export interface IExecutionInfoClient {
-  /** 下次执行时间 */
+  /** Next execution time */
   nextRunAt: Date | null;
 
-  /** 上次执行时间 */
+  /** Last execution time */
   lastRunAt: Date | null;
 
-  /** 已执行次�?*/
+  /** Total execution count */
   executionCount: number;
 
-  /** 上次执行状�?*/
+  /** Last execution status */
   lastExecutionStatus: ExecutionStatus | null;
 
-  /** 连续失败次数 */
+  /** Consecutive failure count */
   consecutiveFailures: number;
 
-  // UI 辅助属�?
-  /** 下次执行时间格式�?*/
-  nextRunAtFormatted: string | null; // "2025-01-01 09:00" | "30 分钟�?
+  // UI helper properties
+  /** Formatted next run time */
+  nextRunAtFormatted: string | null; // "2025-01-01 09:00" | "In 30 minutes"
 
-  /** 上次执行时间格式�?*/
-  lastRunAtFormatted: string | null; // "2 小时�?
+  /** Formatted last run time */
+  lastRunAtFormatted: string | null; // "2 hours ago"
 
-  /** 上次执行时长格式�?*/
-  lastExecutionDurationFormatted: string | null; // "1.2 �?
+  /** Formatted last execution duration */
+  lastExecutionDurationFormatted: string | null; // "1.2s"
 
-  /** 执行次数格式�?*/
-  executionCountFormatted: string; // "已执�?100 �?
+  /** Formatted execution count */
+  executionCountFormatted: string; // "Executed 100 times"
 
-  /** 健康状�?*/
-  healthStatus: ExecutionHealthStatus; // 基于连续失败次数
+  /** Health status */
+  healthStatus: ExecutionHealthStatus; // Based on consecutive failure count
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Execution Info Server DTO
@@ -145,7 +140,7 @@ export interface ExecutionInfoPersistenceDTO {
   consecutive_failures: number;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type ExecutionInfoServer = IExecutionInfoServer;
 export type ExecutionInfoClient = IExecutionInfoClient;

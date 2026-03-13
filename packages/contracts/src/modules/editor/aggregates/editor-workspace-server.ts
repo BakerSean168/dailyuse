@@ -1,30 +1,36 @@
 /**
  * Editor Workspace Aggregate Root - Server Interface
- * 编辑器工作区聚合�?- 服务端接�?
  */
 
-import type { EditorWorkspaceId, EditorSessionId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
+import type {
+  EditorWorkspaceId,
+  EditorSessionId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+  PersistenceDate,
+} from '../../../primitives';
 import type { ProjectType } from '../value-objects/project-type';
 
 import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '../value-objects';
 
 import type { EditorSessionServerDTO } from '../entities/editor-session-server';
 
-// ============ 类型别名（向后兼容，简化使用） ============
+// ============ Type Aliases (backward compatibility) ============
 
 /**
- * 工作区布局类型别名
- * @deprecated 使用 WorkspaceLayoutServerDTO 代替
+ * Workspace layout type alias.
+ * @deprecated Use WorkspaceLayoutServerDTO instead.
  */
 export type WorkspaceLayout = WorkspaceLayoutServerDTO;
 
 /**
- * 工作区设置类型别�?
- * @deprecated 使用 WorkspaceSettingsServerDTO 代替
+ * Workspace settings type alias.
+ * @deprecated Use WorkspaceSettingsServerDTO instead.
  */
 export type WorkspaceSettings = WorkspaceSettingsServerDTO;
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Editor Workspace Server DTO
@@ -35,29 +41,29 @@ export interface EditorWorkspaceServerDTO {
   name: string;
   description: string | null;
 
-  // 关联项目
+  // Associated project
   projectPath: string;
   projectType: ProjectType;
 
-  // 工作区配�?
+  // Workspace configuration
   layout: WorkspaceLayoutServerDTO;
   settings: WorkspaceSettingsServerDTO;
 
-  // 子实体：会话列表
+  // Child entities: session list
   sessions: EditorSessionServerDTO[];
 
-  // 状�?
+  // Status
   isActive: boolean;
   lastActiveSessionId: EditorSessionId | null;
 
-  // �?时间戳统一使用 TransferDate
+  // Timestamps use TransferDate
   lastAccessedAt: TransferDate | null;
   createdAt: TransferDate;
   updatedAt: TransferDate;
 }
 
 /**
- * Editor Workspace Persistence DTO (数据库映�?
+ * Editor Workspace Persistence DTO (database mapping).
  */
 export interface EditorWorkspacePersistenceDTO {
   id: EditorWorkspaceId;
@@ -79,11 +85,9 @@ export interface EditorWorkspacePersistenceDTO {
   updatedAt: PersistenceDate;
 }
 
-// ============ 领域事件 ============
+// ============ Domain Events ============
 
-/**
- * 工作区创建事�?
- */
+/** Workspace created event. */
 export interface EditorWorkspaceCreatedEvent {
   type: 'editor.workspace.created';
   aggregateId: string; // workspaceId
@@ -94,9 +98,7 @@ export interface EditorWorkspaceCreatedEvent {
   };
 }
 
-/**
- * 工作区更新事�?
- */
+/** Workspace updated event. */
 export interface EditorWorkspaceUpdatedEvent {
   type: 'editor.workspace.updated';
   aggregateId: string;
@@ -108,9 +110,7 @@ export interface EditorWorkspaceUpdatedEvent {
   };
 }
 
-/**
- * 工作区删除事�?
- */
+/** Workspace deleted event. */
 export interface EditorWorkspaceDeletedEvent {
   type: 'editor.workspace.deleted';
   aggregateId: string;
@@ -121,9 +121,7 @@ export interface EditorWorkspaceDeletedEvent {
   };
 }
 
-/**
- * 工作区激活事�?
- */
+/** Workspace activated event. */
 export interface EditorWorkspaceActivatedEvent {
   type: 'editor.workspace.activated';
   aggregateId: string;

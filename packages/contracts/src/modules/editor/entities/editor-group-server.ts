@@ -1,28 +1,34 @@
 /**
  * EditorGroup Entity - Server Interface
- * 编辑器分组实�?- 服务端接�?
  */
 
-import type { EditorGroupId, EditorSessionId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
+import type {
+  EditorGroupId,
+  EditorSessionId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+  PersistenceDate,
+} from '../../../primitives';
 import type { EditorGroupClientDTO } from './editor-group-client';
 
-// 从实体导入类�?
+// Entity imports
 import type { EditorTabServerDTO, EditorTabPersistenceDTO } from './editor-tab-server';
 
 /**
  * Editor Group Server DTO
- * 编辑器分组服务端 DTO
  */
 export interface EditorGroupServerDTO {
   id: EditorGroupId;
-  sessionId: EditorSessionId; // 所属会�?ID
-  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
+  sessionId: EditorSessionId; // Parent session ID
+  workspaceId: EditorWorkspaceId; // Parent workspace ID (aggregate root FK)
   identityId: IdentityId;
-  groupIndex: number; // 分组索引（在会话中的位置�?
-  activeTabIndex: number; // 当前活动标签索引
-  name: string | null; // 分组名称（可选）
+  groupIndex: number; // Group index (position within session)
+  activeTabIndex: number; // Currently active tab index
+  name: string | null; // Group name (optional)
 
-  // 子实体：标签列表
+  // Child entities: tab list
   tabs: EditorTabServerDTO[];
 
   createdAt: TransferDate;
@@ -30,8 +36,7 @@ export interface EditorGroupServerDTO {
 }
 
 /**
- * Editor Group Persistence DTO
- * 编辑器分组持久化 DTO（数据库字段，snake_case�?
+ * Editor Group Persistence DTO (database fields, snake_case).
  */
 export interface EditorGroupPersistenceDTO {
   id: EditorGroupId;
@@ -42,8 +47,8 @@ export interface EditorGroupPersistenceDTO {
   active_tab_index: number;
   name: string | null;
 
-  // 子实体：标签列表 (JSON 存储)
-  tabs?: EditorTabPersistenceDTO[]; // �?使用 PersistenceDTO 类型
+  // Child entities: tab list (JSON storage)
+  tabs?: EditorTabPersistenceDTO[]; // Uses PersistenceDTO type
 
   createdAt: PersistenceDate;
   updatedAt: PersistenceDate;

@@ -1,6 +1,5 @@
 /**
  * Task Priority Calculator Service Tests
- * 任务优先级计算服务测�?
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';

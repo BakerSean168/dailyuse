@@ -17,7 +17,7 @@ import type {
 /**
  * TaskInstanceHttpAdapter
  *
- * HTTP 实现的任务实�?API 客户�?
+ * HTTP implementation of the task instance API client.
  */
 export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
   private readonly baseUrl = '/task-instances';
@@ -45,7 +45,7 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
-  // ===== Task Instance 状态管�?=====
+  // ===== Task Instance State Management =====
 
   async startTaskInstance(id: string): Promise<Result<TaskInstanceClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/start`);
@@ -65,7 +65,7 @@ export class TaskInstanceHttpAdapter implements ITaskInstanceApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/skip`, request);
   }
 
-  // ===== 批量操作 =====
+  // ===== Batch Operations =====
 
   async checkExpiredInstances(): Promise<
     Result<{

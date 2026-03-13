@@ -1,7 +1,7 @@
 /**
  * Login Service
  *
- * 用户登录应用服务
+ * Application service for user login.
  */
 
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
@@ -30,26 +30,26 @@ export class Login {
   }
 
   /**
-   * 执行登录
+   * Execute login flow.
    */
   async execute(input: LoginByEmailReq, cx: Context): Promise<LoginByEmailRes> {
     logger.info('[Login] Starting login', { email: input.email });
 
     try {
-      // 1. 通过领域服务验证凭据（内部处理失败尝试计数）
+      // 1. Verify credentials via domain service (tracks failed attempts internally)
       const identity = await this.domainLoginService.loginByEmail({
         email: input.email,
         password: input.password,
       });
 
-      // 2. 创建会话（领域事件在内部创建�?
+      // 2. Create session (domain events created internally)
       const { AuthSession: session, tokens } = AuthSession.start({
         identityId: identity.id,
         deviceId: cx.deviceId,
         tokenProvider: this.tokenProvider,
       });
 
-      // 3. 保存会话（仓储层自动发送领域事件）
+      // 3. Save session (repository dispatches domain events automatically)
       await this.sessionRepository.save(session);
 
       logger.info('[Login] Login successful', {
@@ -59,7 +59,7 @@ export class Login {
 
       const sessionDto = session.toClientDTO(true);
 
-      // 4. 返回 AuthResponse
+      // 4. Return AuthResponse
       return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

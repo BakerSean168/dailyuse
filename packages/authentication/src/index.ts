@@ -1,27 +1,27 @@
 /**
  * @dailyuse/authentication
  *
- * 认证模块 - 身份认证与会话管�?
+ * Authentication module - identity authentication and session management.
  *
- * 【分层架构�?
+ * Layered Architecture:
  *
- * contracts      �?类型定义、DTO、事件、API Schema
- * domain-shared  �?值对象、IPasswordHasher（前后端共享�?
- * domain-server  �?聚合根（AuthIdentity, AuthSession）、仓储接�?
- * application-server �?用例服务（Login, Register, Logout 等）
- * infrastructure-server �?Prisma 仓储、Argon2 加密、Passport 策略
- * api            �?Express API 模块
+ * contracts              - Type definitions, DTOs, events, API schemas
+ * domain-shared          - Value objects, IPasswordHasher (shared between client/server)
+ * domain-server          - Aggregate roots (AuthIdentity, AuthSession), repository interfaces
+ * application-server     - Use case services (Login, Register, Logout, etc.)
+ * infrastructure-server  - Prisma repositories, Argon2 hashing, Passport strategies
+ * api                    - Express API module
  *
- * 【使用示例�?
+ * Usage example:
  *
  * ```typescript
- * // 1. 导入契约
+ * // 1. Import contracts
  * import type { AuthIdentityServerDTO } from '@dailyuse/contracts/authentication';
  *
- * // 2. 导入服务端聚合根
+ * // 2. Import server-side aggregate roots
  * import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
  *
- * // 3. 导入 API 模块（在 apps/api 中）
+ * // 3. Import API module (in apps/api)
  * import { AuthenticationApiModule } from '@dailyuse/authentication/api';
  * bootstrapper.register(AuthenticationApiModule);
  * ```

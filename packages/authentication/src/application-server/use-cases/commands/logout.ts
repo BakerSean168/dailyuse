@@ -1,7 +1,7 @@
 /**
  * Logout Service
  *
- * 用户登出应用服务
+ * Application service for user logout.
  */
 
 import type { IAuthSessionRepository } from '@/domain-server';
@@ -19,31 +19,31 @@ export class Logout {
   constructor(private readonly sessionRepository: IAuthSessionRepository) {}
 
   /**
-   * 执行登出（登出当前会话）
+   * Execute logout (revokes current session).
    */
   async execute(input: LogoutReq, cx: Context): Promise<LogoutRes> {
     logger.info('[Logout] Starting logout', { identityId: cx.identityId });
 
     try {
-      // 1. 查找当前用户的所有活跃会�?
+      // 1. Find all active sessions for the current user
       const sessions = await this.sessionRepository.findByIdentityId(IdentityId.of(cx.identityId));
 
-      // 2. 撤销所有会话（领域事件在内部创建）
+      // 2. Revoke all sessions (domain events created internally)
       for (const session of sessions) {
         if (session.isValid()) {
           session.revoke();
-          await this.sessionRepository.save(session); // 仓储层自动发送领域事�?
+          await this.sessionRepository.save(session); // Repository dispatches domain events automatically
         }
       }
 
       logger.info('[Logout] Logout successful', {
         identityId: cx.identityId,
-        revokedSessions: sessions.length
+        revokedSessions: sessions.length,
       });
     } catch (error) {
       logger.error('[Logout] Logout failed', {
         identityId: cx.identityId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

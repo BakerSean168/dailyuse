@@ -1,6 +1,5 @@
 /**
  * TaskTemplate Aggregate Root - Server Interface
- * 任务模板聚合�?
  */
 
 import type {
@@ -22,14 +21,14 @@ import type {
   TaskReminderConfigDTO,
   TaskGoalBinding,
   TaskGoalBindingDTO,
-  ChecklistItemDefinition, 
+  ChecklistItemDefinition,
   ChecklistItemDefinitionDTO,
 } from '../value-objects';
 
-// 导入共享类型
+// Import shared types
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * TaskTemplate Server DTO
@@ -61,13 +60,13 @@ export interface TaskTemplateServerDTO {
   isBlocked?: boolean;
   blockingReason: string | null;
 
-  // === 其他 ===
+  // === Other ===
   folderId: string | null;
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;
   deletedAt: TransferDate | null;
-  instances?: TaskInstanceServerDTO[]; 
+  instances?: TaskInstanceServerDTO[];
 }
 
 /**
@@ -116,8 +115,10 @@ export interface TaskTemplatePersistenceDTO {
   isBlocked?: boolean;
   blockingReason: string | null;
 
-  // === 其他 ===
-  folderId: string | null;  version: number;  createdAt: PersistenceDate;
+  // === Other ===
+  folderId: string | null;
+  version: number;
+  createdAt: PersistenceDate;
   updatedAt: PersistenceDate;
   deletedAt: PersistenceDate | null;
 }

@@ -15,9 +15,7 @@ import { IdentityId } from '@dailyuse/domain-shared/shared';
 import { UserPreferencesSchema } from '@dailyuse/contracts/setting';
 
 export class PrismaUserSettingMapper {
-  /**
-   * Prisma �?Domain
-   */
+  /** Converts a Prisma record to a Domain UserSetting aggregate. */
   static toDomain(data: PrismaUserSetting): UserSetting {
     const preferences = UserPreferencesSchema.parse((data as { preferences: unknown }).preferences);
 
@@ -33,9 +31,7 @@ export class PrismaUserSettingMapper {
     return UserSetting.load(state);
   }
 
-  /**
-   * Domain �?Prisma write data
-   */
+  /** Converts a Domain UserSetting to Prisma write data. */
   static toPersistence(setting: UserSetting): Record<string, unknown> {
     return {
       id: setting.id,

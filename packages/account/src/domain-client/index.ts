@@ -1,6 +1,7 @@
 /**
  * Account Module - Domain Client
- * 客户端领域模�?
+ *
+ * Client-side domain model exports.
  */
 
 // ===== Aggregates =====

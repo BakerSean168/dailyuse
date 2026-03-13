@@ -11,9 +11,7 @@ import type { CalendarEntryState } from '../../../../domain-server/aggregates/ca
 import { ScheduleId } from '../../../../domain-shared/value-objects/schedule-id';
 
 export class PrismaScheduleMapper {
-  /**
-   * Prisma Schedule â†?Domain CalendarEntry aggregate
-   */
+  /** Converts a Prisma Schedule to a Domain CalendarEntry aggregate. */
   static toDomain(data: PrismaSchedule): CalendarEntry {
     const state: CalendarEntryState = {
       id: ScheduleId.of(data.id),
@@ -24,9 +22,7 @@ export class PrismaScheduleMapper {
       endTime: data.endTime.getTime(),
       duration: data.duration,
       hasConflict: data.hasConflict,
-      conflictingEntries: data.conflictingSchedules
-        ? JSON.parse(data.conflictingSchedules)
-        : null,
+      conflictingEntries: data.conflictingSchedules ? JSON.parse(data.conflictingSchedules) : null,
       priority: data.priority,
       location: data.location,
       attendees: data.attendees ? JSON.parse(data.attendees) : null,
@@ -36,9 +32,7 @@ export class PrismaScheduleMapper {
     return CalendarEntry.load(state);
   }
 
-  /**
-   * Domain CalendarEntry â†?Prisma write data
-   */
+  /** Converts a Domain CalendarEntry to Prisma write data. */
   static toPersistence(schedule: CalendarEntry) {
     return {
       id: schedule.id,
@@ -49,9 +43,10 @@ export class PrismaScheduleMapper {
       endTime: new Date(schedule.endTime),
       duration: schedule.duration,
       hasConflict: schedule.hasConflict,
-      conflictingSchedules: schedule.conflictingEntries && schedule.conflictingEntries.length > 0
-        ? JSON.stringify(schedule.conflictingEntries)
-        : null,
+      conflictingSchedules:
+        schedule.conflictingEntries && schedule.conflictingEntries.length > 0
+          ? JSON.stringify(schedule.conflictingEntries)
+          : null,
       priority: schedule.priority ?? null,
       location: schedule.location ?? null,
       attendees: schedule.attendees ? JSON.stringify(schedule.attendees) : null,
@@ -60,9 +55,7 @@ export class PrismaScheduleMapper {
     };
   }
 
-  /**
-   * Batch conversion: Prisma â†?Domain
-   */
+  /** Batch converts Prisma records to Domain aggregates. */
   static toDomainList(rows: PrismaSchedule[]): CalendarEntry[] {
     return rows.map((row) => PrismaScheduleMapper.toDomain(row));
   }

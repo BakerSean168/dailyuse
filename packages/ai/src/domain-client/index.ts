@@ -1,25 +1,24 @@
 /**
  * AI Module - Domain Client
- * AI 模块 - 领域客户�?
  *
- * 【模块职责�?
- * 管理 AI 功能的客户端领域模型，包括对话管理、消息处理等
+ * Manages client-side domain models for AI features, including
+ * conversation management and message handling.
  *
- * 【包含内容�?
- * - 聚合根（Aggregates）：AIConversation
- * - 实体（Entities）：Message
- * - 值对象（Value Objects）：�?domain-shared 导入
+ * Contents:
+ * - Aggregates: AIConversation
+ * - Entities: Message
+ * - Value Objects: imported from domain-shared
  *
- * 【依赖规则�?
- * �?允许依赖�?
- * - @dailyuse/utils（基类：AggregateRoot, Entity�?
- * - @dailyuse/contracts（DTO 接口、Client 接口�?
- * - @dailyuse/domain-shared（值对象、枚举）
+ * Dependency rules:
+ * Allowed:
+ * - @dailyuse/utils (base classes: AggregateRoot, Entity)
+ * - @dailyuse/contracts (DTO interfaces, Client interfaces)
+ * - @dailyuse/domain-shared (value objects, enums)
  *
- * �?禁止依赖�?
- * - @dailyuse/domain-server（服务端领域模型�?
- * - @dailyuse/infrastructure-*（基础设施层）
- * - @dailyuse/application-*（应用层�?
+ * Forbidden:
+ * - @dailyuse/domain-server (server-side domain models)
+ * - @dailyuse/infrastructure-* (infrastructure layer)
+ * - @dailyuse/application-* (application layer)
  */
 
 // ===== Aggregates =====

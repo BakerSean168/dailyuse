@@ -1,24 +1,21 @@
 /**
  * Document Metadata Value Object
- * 文档元数据值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 文档元数�?- Server 接口
- */
+/** Document Metadata - Server interface. */
 export interface IDocumentMetadataServer {
   tags: string[];
   category: string | null;
   wordCount: number | null;
   characterCount: number | null;
-  readingTime: number | null; // �?
+  readingTime: number | null; // In seconds
   encoding: string | null;
   language: string | null;
   customFields?: Record<string, any> | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -28,12 +25,10 @@ export interface IDocumentMetadataServer {
     >,
   ): IDocumentMetadataServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 文档元数�?- Client 接口
- */
+/** Document Metadata - Client interface. */
 export interface IDocumentMetadataClient {
   tags: string[];
   category: string | null;
@@ -41,16 +36,16 @@ export interface IDocumentMetadataClient {
   characterCount: number | null;
   readingTime: number | null;
 
-  // UI 辅助属�?
+  // UI helper properties
   wordCountFormatted: string | null; // "1,234 words"
   readingTimeFormatted: string | null; // "5 min read"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Document Metadata Server DTO
@@ -93,7 +88,7 @@ export interface DocumentMetadataPersistenceDTO {
   custom_fields: string | null; // JSON string
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type DocumentMetadataServer = IDocumentMetadataServer;
 export type DocumentMetadataClient = IDocumentMetadataClient;

@@ -13,12 +13,12 @@ import { WorkspaceLayout } from '@/domain-shared/value-objects/workspace-layout'
 import { WorkspaceSettings } from '@/domain-shared/value-objects/workspace-settings';
 
 export class PrismaEditorWorkspaceMapper {
-  /**
-   * Prisma EditorWorkspace �?Domain EditorWorkspace aggregate
-   */
+  /** Maps a Prisma EditorWorkspace row to a Domain EditorWorkspace aggregate. */
   static toDomain(data: PrismaEditorWorkspace): EditorWorkspace {
-    const layoutData = typeof data.layout === 'string' ? JSON.parse(data.layout as string) : data.layout;
-    const settingsData = typeof data.setting === 'string' ? JSON.parse(data.setting as string) : data.setting;
+    const layoutData =
+      typeof data.layout === 'string' ? JSON.parse(data.layout as string) : data.layout;
+    const settingsData =
+      typeof data.setting === 'string' ? JSON.parse(data.setting as string) : data.setting;
 
     return EditorWorkspace.load({
       id: EditorWorkspaceId.of(data.id),
@@ -38,9 +38,7 @@ export class PrismaEditorWorkspaceMapper {
     } as any);
   }
 
-  /**
-   * Domain EditorWorkspace �?Prisma write data
-   */
+  /** Maps a Domain EditorWorkspace aggregate to Prisma write data. */
   static toPersistence(workspace: EditorWorkspace): Prisma.EditorWorkspaceUncheckedCreateInput {
     const dto = workspace.toServerDTO();
     return {
@@ -59,9 +57,7 @@ export class PrismaEditorWorkspaceMapper {
     };
   }
 
-  /**
-   * Batch conversion: Prisma �?Domain
-   */
+  /** Batch converts Prisma EditorWorkspace rows to Domain aggregates. */
   static toDomainList(rows: PrismaEditorWorkspace[]): EditorWorkspace[] {
     return rows.map((row) => PrismaEditorWorkspaceMapper.toDomain(row));
   }

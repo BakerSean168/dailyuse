@@ -1,31 +1,31 @@
 import type { SessionStatus as ISessionStatus } from '@dailyuse/contracts/authentication';
 
 /**
- * 🔐 会话状�?- 用户登录会话的生命周期状�?
+ * Session status - lifecycle state of a user login session.
  *
- * Branded Type：运行时�?string，编译时具有类型安全�?
+ * Branded type: string at runtime, with compile-time type safety.
  */
 export type SessionStatus = ISessionStatus & { readonly __brand: unique symbol };
 
 /**
- * 合法值集�?- Single Source of Truth
+ * Valid values set - Single Source of Truth.
  */
 const VALUES: ISessionStatus[] = ['Active', 'Expired', 'Revoked'];
 
 /**
- * 伴生对象 - 提供静态方法和行为逻辑
+ * Companion object providing static methods and behavior logic.
  */
 export const SessionStatus = {
-  // ================= 常量定义 =================
+  // ================= Constants =================
 
   Active: 'Active' as SessionStatus,
   Expired: 'Expired' as SessionStatus,
   Revoked: 'Revoked' as SessionStatus,
 
-  // ================= 工厂方法 =================
+  // ================= Factory Methods =================
 
   /**
-   * 🏭 工厂方法：验证并转换
+   * Factory method: validates and converts a string to SessionStatus.
    */
   of(value: string): SessionStatus {
     if (!this.isValid(value)) {
@@ -34,55 +34,54 @@ export const SessionStatus = {
     return value as SessionStatus;
   },
 
-  // ================= 类型守卫 =================
+  // ================= Type Guards =================
 
   /**
-   * 🛡�?类型守卫：运行时类型检�?
+   * Type guard: runtime type check for SessionStatus values.
    */
   isValid(value: string): value is SessionStatus {
     return VALUES.includes(value as ISessionStatus);
   },
 
   /**
-   * 📋 获取所有可用�?
+   * Returns all available session status values.
    */
   getAll(): SessionStatus[] {
     return VALUES as SessionStatus[];
   },
 
-  // ================= 行为方法 (State Logic) =================
+  // ================= Behavior Methods (State Logic) =================
 
   /**
-   * 会话是否处于活跃状�?
+   * Checks whether the session is active.
    */
   isActive(status: SessionStatus): boolean {
     return status === this.Active;
   },
 
   /**
-   * 会话是否已过�?
+   * Checks whether the session has expired.
    */
   isExpired(status: SessionStatus): boolean {
     return status === this.Expired;
   },
 
   /**
-   * 会话是否已被撤销（用户主动登出）
+   * Checks whether the session has been revoked (user actively logged out).
    */
   isRevoked(status: SessionStatus): boolean {
     return status === this.Revoked;
   },
 
   /**
-   * 会话是否已终止（过期或撤销�?
+   * Checks whether the session has been terminated (expired or revoked).
    */
   isTerminated(status: SessionStatus): boolean {
     return this.isExpired(status) || this.isRevoked(status);
   },
 
   /**
-   * 是否可以恢复为活跃状�?
-   * （如 INACTIVE 可以通过用户交互恢复�?
+   * Checks whether the session can be recovered to active status.
    */
   isRecoverable(status: SessionStatus): boolean {
     return false;

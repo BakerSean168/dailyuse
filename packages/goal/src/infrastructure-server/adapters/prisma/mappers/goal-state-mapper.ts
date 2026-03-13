@@ -1,7 +1,7 @@
 /**
  * Goal State Mapper
  *
- * Converts GoalPersistenceDTO �?GoalState for domain reconstruction.
+ * Converts GoalPersistenceDTO → GoalState for domain reconstruction.
  * Shared by Prisma and SQLite mappers.
  */
 
@@ -10,7 +10,12 @@ import { GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalId, GoalFolderId, GoalReviewId, KeyResultId } from '@/domain-shared';
-import { KeyResult, GoalReview, GoalReminderConfig, KeyResultWeightSnapshot } from '@/domain-server';
+import {
+  KeyResult,
+  GoalReview,
+  GoalReminderConfig,
+  KeyResultWeightSnapshot,
+} from '@/domain-server';
 import type { GoalState } from '@/domain-server';
 
 /**
@@ -27,8 +32,7 @@ export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
     : null;
 
   const keyResults = (dto.keyResults || []).map((kr) => {
-    const progress =
-      typeof kr.progress === 'string' ? JSON.parse(kr.progress) : kr.progress;
+    const progress = typeof kr.progress === 'string' ? JSON.parse(kr.progress) : kr.progress;
     return KeyResult.load({
       id: KeyResultId.of(kr.id),
       title: kr.title,
@@ -54,7 +58,7 @@ export function persistenceDtoToGoalState(dto: GoalPersistenceDTO): GoalState {
     const keyResultSnapshots =
       typeof r.keyResultSnapshots === 'string'
         ? JSON.parse(r.keyResultSnapshots)
-        : r.keyResultSnapshots ?? [];
+        : (r.keyResultSnapshots ?? []);
     return GoalReview.load({
       id: GoalReviewId.of(r.id),
       goalId: GoalId.of(r.goalId),

@@ -1,11 +1,7 @@
 export interface IPasswordHasher {
-  /**
-   * 将明文加密为 Hash
-   */
+  /** Hashes a plaintext password. */
   hash(plain: string): Promise<string>;
 
-  /**
-   * 比对明文�?Hash 是否匹配
-   */
+  /** Compares a plaintext password against a hash. */
   compare(plain: string, hashed: string): Promise<boolean>;
 }

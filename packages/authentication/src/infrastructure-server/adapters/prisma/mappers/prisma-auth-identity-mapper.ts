@@ -1,19 +1,19 @@
 /**
  * Prisma AuthIdentity Aggregate Root Mapper
  *
- * 聚合根映射器（Boss Mapper）：
- * - toDomain:  Prisma DB rows �?AuthIdentity 聚合�?(直接通过 ServerDTO)
- * - toPersistence: AuthIdentity 聚合�?�?Prisma write data (含关联表)
+ * Aggregate root mapper (orchestrator):
+ * - toDomain:      Prisma DB rows -> AuthIdentity aggregate root (via ServerDTO)
+ * - toPersistence: AuthIdentity aggregate root -> Prisma write data (with relations)
  *
- * 调度�?Mapper 处理各关联表的映射：
- * - PrismaAuthIdentifierMapper  �?auth_identifiers �?
- * - PrismaAuthCredentialMapper  �?auth_credentials �?
- * - PrismaOAuthBindingMapper    �?auth_oauth_bindings �?
+ * Delegates to sub-mappers for each related table:
+ * - PrismaAuthIdentifierMapper  (auth_identifiers table)
+ * - PrismaAuthCredentialMapper  (auth_credentials table)
+ * - PrismaOAuthBindingMapper    (auth_oauth_bindings table)
  *
- * 设计原则�?
- * - Repository 只和聚合�?Mapper 打交�?
- * - 聚合�?Mapper 负责调度�?Mapper
- * - PersistenceDTO 已移除，mapper 直接�?DB Row �?ServerDTO 之间转换
+ * Design principles:
+ * - Repository only interacts with the aggregate root mapper
+ * - Aggregate root mapper orchestrates sub-mappers
+ * - No PersistenceDTO; mapper converts directly between DB Row and ServerDTO
  */
 
 import type {
@@ -69,12 +69,12 @@ export interface AuthIdentityPrismaWriteData {
 // ============ Mapper ============
 
 export class PrismaAuthIdentityMapper {
-  // ========== DB �?Domain ==========
+  // ========== DB -> Domain ==========
 
   /**
-   * Prisma row (with relations) �?AuthIdentity 聚合�?
+   * Prisma row (with relations) -> AuthIdentity aggregate root.
    *
-   * 路径：DB Rows �?Domain Objects �?AuthIdentity.load()
+   * Path: DB Rows -> Domain Objects -> AuthIdentity.load()
    */
   static toDomain(row: PrismaAuthIdentityWithRelations): AuthIdentity {
     const serverDTO = PrismaAuthIdentityMapper.toServerDTO(row);
@@ -133,10 +133,10 @@ export class PrismaAuthIdentityMapper {
   }
 
   /**
-   * Prisma row (with relations) �?AuthIdentityServerDTO
+   * Prisma row (with relations) -> AuthIdentityServerDTO.
    *
-   * �?Prisma 返回的多表数据组装成领域层的 ServerDTO�?
-   * 委托�?Mapper 处理各关联表的转换�?
+   * Assembles multi-table Prisma data into a domain-layer ServerDTO.
+   * Delegates to sub-mappers for each related table conversion.
    */
   static toServerDTO(row: PrismaAuthIdentityWithRelations): AuthIdentityServerDTO {
     return {
@@ -146,7 +146,7 @@ export class PrismaAuthIdentityMapper {
       lastFailedAttempt: row.lastFailedAttempt?.getTime() ?? null,
       lockedUntil: row.lockedUntil?.getTime() ?? null,
 
-      // 调度�?Mapper
+      // Delegate to sub-mappers
       identifiers: row.identifiers.map(PrismaAuthIdentifierMapper.toDomainDTO),
       oauthBindings: row.oauthBindings.map(PrismaOAuthBindingMapper.toDomainDTO),
       credentials: row.credentials.map(PrismaAuthCredentialMapper.toDomainDTO),
@@ -158,13 +158,13 @@ export class PrismaAuthIdentityMapper {
     };
   }
 
-  // ========== Domain �?DB ==========
+  // ========== Domain -> DB ==========
 
   /**
-   * AuthIdentity 聚合�?�?Prisma 写入数据
+   * AuthIdentity aggregate root -> Prisma write data.
    *
-   * 路径：AuthIdentity.toServerDTO() �?Prisma write data
-   * 委托�?Mapper 处理关联表的转换�?
+   * Path: AuthIdentity.toServerDTO() -> Prisma write data.
+   * Delegates to sub-mappers for related table conversions.
    */
   static toPersistence(identity: AuthIdentity): AuthIdentityPrismaWriteData {
     const dto = identity.toServerDTO();

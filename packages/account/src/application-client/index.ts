@@ -1,6 +1,7 @@
 /**
  * Account Application Client Layer
- * 客户端应用服�?
+ *
+ * Client-side application services for the Account module.
  */
 
 export { AccountClientService } from './services/account-client-service';
@@ -19,8 +20,10 @@ export function setAccountApplicationService(service: any) {
 export const accountApplicationService: any = new Proxy({} as any, {
   get(_target, prop) {
     if (!_accountApplicationService) {
-      throw new Error('accountApplicationService not initialized. Call setAccountApplicationService first.');
+      throw new Error(
+        'accountApplicationService not initialized. Call setAccountApplicationService first.',
+      );
     }
     return (_accountApplicationService as any)[prop];
-  }
+  },
 });

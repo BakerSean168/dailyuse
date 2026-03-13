@@ -1,15 +1,14 @@
 /**
- * SessionManager - 会话管理�?
+ * SessionManager - Session lifecycle manager.
  *
- * 负责会话的恢复、自动登录、定期清理等功能
- * 整合 TokenManager �?Repository，提供完整的会话生命周期管理
+ * Coordinates TokenManager and Repository to provide full session lifecycle management.
  *
- * 核心功能�?
- * - 应用启动时恢复上次会�?
- * - 使用 Remember-Me Token 实现自动登录
- * - 会话状态监控和自动刷新
- * - 过期会话清理
- * - 设备指纹管理
+ * Core features:
+ * - Restore the previous session on application startup
+ * - Auto-login via Remember-Me / Refresh Token
+ * - Session state monitoring and automatic token refresh
+ * - Expired session cleanup
+ * - Device fingerprint management
  */
 
 import crypto from 'node:crypto';
@@ -43,23 +42,17 @@ import { getNetworkStateManager } from './NetworkStateManager';
 
 // ============ Internal Types ============
 
-/**
- * 扩展的会话恢复结果（包含领域对象�?
- */
+/** Extended session restore result (includes domain objects). */
 export interface SessionRestoreResult extends ContractSessionRestoreResult {
   session?: AuthSession;
 }
 
-/**
- * 扩展的自动登录结果（包含领域对象�?
- */
+/** Extended auto-login result (includes domain objects). */
 export interface AutoLoginResult extends ContractAutoLoginResult {
   session?: AuthSession;
 }
 
-/**
- * 会话状态（扩展 DTO 包含设备信息�?
- */
+/** Session status (extends DTO with device info). */
 export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
   device: DeviceInfoClientDTO;
 }
@@ -67,13 +60,13 @@ export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
 // ============ SessionManager ============
 
 /**
- * 会话管理�?
+ * Session manager.
  *
- * 提供完整的会话生命周期管理，包括�?
- * - 会话恢复和自动登�?
- * - Token 刷新和状态监�?
- * - 设备信息管理
- * - 会话清理
+ * Provides full session lifecycle management including:
+ * - Session restore and auto-login
+ * - Token refresh and status monitoring
+ * - Device info management
+ * - Session cleanup
  */
 export class SessionManager {
   private static instance: SessionManager | null = null;
@@ -96,7 +89,7 @@ export class SessionManager {
   private isInitialized = false;
   private activityTimer: NodeJS.Timeout | null = null;
 
-  // API 回调（用于与后端通信�?
+  // API callbacks (for communicating with the backend)
   private apiRefreshToken:
     | ((request: RefreshSessionRequest) => Promise<RefreshSessionResponse>)
     | null = null;
@@ -115,9 +108,7 @@ export class SessionManager {
     this.logger.info('SessionManager created');
   }
 
-  /**
-   * 获取单例实例
-   */
+  /** Get the singleton instance. */
   static getInstance(
     sessionRepository: IAuthSessionRepository,
     identityRepository: IAuthIdentityRepository,
@@ -129,9 +120,7 @@ export class SessionManager {
     return SessionManager.instance;
   }
 
-  /**
-   * 重置单例（仅用于测试�?
-   */
+  /** Reset the singleton instance (for testing only). */
   static resetInstance(): void {
     if (SessionManager.instance) {
       SessionManager.instance.cleanup();
@@ -142,12 +131,12 @@ export class SessionManager {
   // ============ Initialization ============
 
   /**
-   * 初始�?SessionManager
+   * Initialize the SessionManager.
    *
-   * 应在应用启动时调用，执行�?
-   * 1. 生成设备信息
-   * 2. 尝试恢复上次会话
-   * 3. 启动自动刷新
+   * Should be called at application startup. Steps:
+   * 1. Generate device info
+   * 2. Attempt to restore the previous session
+   * 3. Start auto-refresh
    */
   async initialize(): Promise<SessionRestoreResult> {
     if (this.isInitialized) {
@@ -161,14 +150,14 @@ export class SessionManager {
 
     this.logger.info('Initializing SessionManager');
 
-    // 1. 生成设备信息
+    // 1. Generate device info
     this.deviceInfo = this.generateDeviceInfo();
     this.logger.debug('Device info generated', { deviceId: this.deviceInfo.deviceId });
 
-    // 2. 尝试恢复会话
+    // 2. Attempt to restore session
     const restoreResult = await this.restoreSession();
 
-    // 3. 如果有有效会话，启动自动刷新
+    // 3. If a valid session exists, start auto-refresh
     if (restoreResult.ok && this.currentSession) {
       this.startAutoRefresh();
       this.startActivityTracking();
@@ -183,9 +172,7 @@ export class SessionManager {
     return restoreResult;
   }
 
-  /**
-   * 清理资源
-   */
+  /** Clean up resources. */
   cleanup(): void {
     this.logger.info('Cleaning up SessionManager');
     this.stopAutoRefresh();
@@ -197,26 +184,25 @@ export class SessionManager {
   // ============ Session Restore ============
 
   /**
-   * 恢复会话
+   * Restore the session from local storage.
    *
-   * 尝试从本地存储恢复上次的会话�?
-   * 1. 加载 Token
-   * 2. 查找对应的会话记�?
-   * 3. 验证会话有效�?
-   * 4. 如果 Access Token 过期�?Refresh Token 有效，标记需要刷�?
+   * 1. Load tokens
+   * 2. Find the corresponding session record
+   * 3. Validate the session
+   * 4. If the access token is expired but the refresh token is valid, flag for refresh
    */
   async restoreSession(): Promise<SessionRestoreResult> {
     this.logger.info('Attempting to restore session');
 
     try {
-      // 1. 加载 Token
+      // 1. Load tokens
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
         this.logger.info('No tokens found, no session to restore');
         return { ok: false, needsReLogin: true };
       }
 
-      // 2. 检�?Refresh Token 是否过期
+      // 2. Check if the refresh token is expired
       const now = Date.now();
       if (now > tokenData.refreshTokenExpiresAt) {
         this.logger.info('Refresh token expired, need re-login');
@@ -224,13 +210,13 @@ export class SessionManager {
         return { ok: false, needsReLogin: true };
       }
 
-      // 3. 查找会话记录
+      // 3. Find the session record
       const session = await this.sessionRepository.findById(
         tokenData.sessionId as unknown as AuthSessionId,
       );
       if (!session) {
         this.logger.warn('Session not found in database', { sessionId: tokenData.sessionId });
-        // 尝试通过账户查找最近的活跃会话
+        // Try to find the most recent active session by identity
         const activeSessions = await this.sessionRepository.findByIdentityId(
           tokenData.identityId as unknown as IdentityId,
         );
@@ -238,11 +224,11 @@ export class SessionManager {
           this.logger.info('No persisted session found, reconstructing runtime session from token');
           this.currentSession = await this.restoreRuntimeSessionFromToken(tokenData);
         } else {
-          // 使用最近的活跃会话
+          // Use the most recent active session
           this.currentSession = activeSessions[0];
         }
       } else {
-        // 4. 验证会话有效�?
+        // 4. Validate the session
         if (!session.isValid()) {
           this.logger.info('Session is invalid (revoked/expired)');
           await this.tokenManager.clearTokens();
@@ -251,7 +237,7 @@ export class SessionManager {
         this.currentSession = session;
       }
 
-      // 5. 检查是否需要刷�?Access Token
+      // 5. Check if the access token needs refreshing
       const needsRefresh = now > tokenData.accessTokenExpiresAt;
       if (needsRefresh) {
         this.logger.info('Access token expired, needs refresh');
@@ -278,31 +264,30 @@ export class SessionManager {
   // ============ Auto Login ============
 
   /**
-   * 自动登录
+   * Auto-login using stored refresh token.
    *
-   * 使用存储�?Refresh Token 自动刷新会话�?
-   * 1. 检查是否有有效�?Refresh Token
-   * 2. 调用 API 刷新 Token
-   * 3. 更新本地会话�?Token 存储
+   * 1. Check for a valid refresh token
+   * 2. Call the API to refresh the token
+   * 3. Update local session and token storage
    */
   async autoLogin(): Promise<AutoLoginResult> {
     this.logger.info('Attempting auto login');
 
     try {
-      // 1. 检�?Token
+      // 1. Check tokens
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
         return { ok: false, authenticated: false, error: 'No tokens available' };
       }
 
-      // 2. 检查 Refresh Token 是否过期
+      // 2. Check if the refresh token is expired
       if (Date.now() > tokenData.refreshTokenExpiresAt) {
         this.logger.info('Refresh token expired');
         await this.tokenManager.clearTokens();
         return { ok: false, authenticated: false, error: 'Refresh token expired' };
       }
 
-      // 3. 如果 Access Token 仍然有效，直接恢复会话
+      // 3. If the access token is still valid, restore the session directly
       if (Date.now() < tokenData.accessTokenExpiresAt) {
         const restoreResult = await this.restoreSession();
         if (restoreResult.ok) {
@@ -316,7 +301,7 @@ export class SessionManager {
         }
       }
 
-      // 4. 需要刷�?Token
+      // 4. Token needs refreshing
       const refreshResult = await this.refreshSession();
       if (!refreshResult.ok) {
         return { ok: false, authenticated: false, error: refreshResult.error };
@@ -338,9 +323,9 @@ export class SessionManager {
   // ============ Session Refresh ============
 
   /**
-   * 刷新会话
+   * Refresh the session.
    *
-   * 使用 Refresh Token 获取新的 Access Token
+   * Uses the refresh token to obtain a new access token.
    */
   async refreshSession(): Promise<RefreshSessionResponse> {
     this.logger.info('Refreshing session');
@@ -351,27 +336,27 @@ export class SessionManager {
         return { ok: false, error: 'No tokens to refresh' };
       }
 
-      // 如果没有 API 回调，使用本地刷新
+      // If no API callback is set, use local refresh
       if (!this.apiRefreshToken) {
         return await this.localRefresh(tokenData);
       }
 
-      // 调用 API 刷新
+      // Call the API to refresh
       const result = await this.apiRefreshToken({
         refreshToken: tokenData.refreshToken,
         sessionId: tokenData.sessionId,
       });
 
       if (result.ok && result.accessToken) {
-        // 更新 Token
+        // Update tokens
         await this.tokenManager.updateAccessToken(result.accessToken, result.expiresIn ?? 3600);
 
-        // 如果返回了新�?Refresh Token（Sliding Window），也更新它
+        // If a new refresh token was returned (sliding window), update it too
         if (result.refreshToken) {
           await this.tokenManager.updateRefreshToken(result.refreshToken);
         }
 
-        // 更新会话
+        // Update the session
         if (this.currentSession) {
           this.currentSession.updateRefreshTokenHash(result.accessToken);
           await this.sessionRepository.save(this.currentSession);
@@ -388,18 +373,18 @@ export class SessionManager {
   }
 
   /**
-   * 本地刷新（离线模式）
+   * Local refresh (offline mode).
    *
-   * 在离线模式下，只是延长本地会话的有效�?
+   * In offline mode, simply extends the local session's validity.
    */
   private async localRefresh(tokenData: TokenData): Promise<RefreshSessionResponse> {
     this.logger.info('Performing local refresh (offline mode)');
 
-    // 生成新的本地 Token（实际上只是更新过期时间�?
-    const newExpiresIn = 3600; // 1 小时
+    // Generate a new local token (effectively just updates the expiry)
+    const newExpiresIn = 3600; // 1 hour
     await this.tokenManager.updateAccessToken(tokenData.accessToken, newExpiresIn);
 
-    // 更新会话
+    // Update the session
     if (this.currentSession) {
       this.currentSession.updateRefreshTokenHash(tokenData.accessToken);
       await this.sessionRepository.save(this.currentSession);
@@ -415,13 +400,13 @@ export class SessionManager {
   // ============ Login/Logout ============
 
   /**
-   * 登录 (Network-Aware Hybrid)
+   * Login (network-aware hybrid).
    *
-   * 1. 在线时：尝试远程 API 登录 → 成功后缓存离线凭据 → ONLINE_USER
-   * 2. 在线但远程失败（网络错误）：降级到本地验证 → OFFLINE_USER
-   * 3. 在线但认证失败（401/403）：直接返回错误，不降级
-   * 4. 离线时：使用本地存储的凭据验证 → OFFLINE_USER
-   * 5. 无本地凭据：返回错误提示需要首次在线登录
+   * 1. Online: try remote API login -> cache offline credentials on success -> ONLINE_USER
+   * 2. Online but network error: fall back to local verification -> OFFLINE_USER
+   * 3. Online but auth failure (401/403): return error directly, no fallback
+   * 4. Offline: verify against locally stored credentials -> OFFLINE_USER
+   * 5. No local credentials: return error requiring initial online login
    */
   async login(request: LoginRequest): Promise<LoginResponse> {
     this.logger.info('Login attempt', { identifier: request.identifier });
@@ -490,10 +475,10 @@ export class SessionManager {
   }
 
   /**
-   * 本地登录（离线密码验证）
+   * Local login (offline password verification).
    *
-   * 使用本地 AuthIdentity + Argon2 验证密码，
-   * 创建本地会话，返回 OFFLINE_USER 模式。
+   * Verifies the password against local AuthIdentity + Argon2,
+   * creates a local session, and returns OFFLINE_USER mode.
    */
   private async localLogin(request: LoginRequest): Promise<LoginResponse> {
     this.logger.info('Attempting local login', { identifier: request.identifier });
@@ -503,11 +488,11 @@ export class SessionManager {
 
     if (!verification.ok) {
       const errorMessages: Record<string, string> = {
-        NO_LOCAL_CREDENTIALS: '需要首次在线登录以缓存凭据',
-        INVALID_PASSWORD: '密码错误',
-        ACCOUNT_LOCKED: '账户已锁定，请稍后重试',
-        OFFLINE_AUTH_UNAVAILABLE: '离线认证服务不可用',
-        OFFLINE_STORAGE_ERROR: '内部错误，请联系开发者',
+        NO_LOCAL_CREDENTIALS: 'Initial online login required to cache credentials',
+        INVALID_PASSWORD: 'Invalid password',
+        ACCOUNT_LOCKED: 'Account is locked, please try again later',
+        OFFLINE_AUTH_UNAVAILABLE: 'Offline authentication service unavailable',
+        OFFLINE_STORAGE_ERROR: 'Internal error, please contact the developer',
       };
       return {
         ok: false,
@@ -559,27 +544,25 @@ export class SessionManager {
     };
   }
 
-  /**
-   * 登出
-   */
+  /** Log out. */
   async logout(): Promise<{ ok: boolean; error?: string }> {
     this.logger.info('Logout');
 
     try {
-      // 停止自动刷新
+      // Stop auto-refresh
       this.stopAutoRefresh();
       this.stopActivityTracking();
 
-      // 撤销当前会话
+      // Revoke the current session
       if (this.currentSession) {
         this.currentSession.revoke();
         await this.sessionRepository.save(this.currentSession);
       }
 
-      // 清除 Token
+      // Clear tokens
       await this.tokenManager.clearTokens();
 
-      // 清除当前会话
+      // Clear the current session
       this.currentSession = null;
 
       this.logger.info('Logout successful');
@@ -593,10 +576,9 @@ export class SessionManager {
   // ============ Online Session Creation ============
 
   /**
-   * 创建在线登录会话
+   * Create a local session after a successful online login.
    *
-   * 在线登录成功后调用，创建本地 AuthSession 并设置为当前会话。
-   * 确保 getCurrentSession() / getCurrentIdentityId() 在在线登录后返回正确值。
+   * Ensures getCurrentSession() / getCurrentIdentityId() return correct values.
    */
   async createOnlineSession(params: {
     identityId: string;
@@ -625,9 +607,7 @@ export class SessionManager {
 
   // ============ Session Status ============
 
-  /**
-   * 获取会话状�?
-   */
+  /** Get session status. */
   async getStatus(): Promise<SessionStatus> {
     const tokenStatus = await this.tokenManager.getStatus();
     const deviceInfo = this.getDeviceInfo();
@@ -644,16 +624,12 @@ export class SessionManager {
     };
   }
 
-  /**
-   * 获取当前会话
-   */
+  /** Get the current session. */
   getCurrentSession(): AuthSession | null {
     return this.currentSession;
   }
 
-  /**
-   * 获取设备信息
-   */
+  /** Get device info. */
   getDeviceInfo(): DeviceInfoClientDTO {
     if (!this.deviceInfo) {
       this.deviceInfo = this.generateDeviceInfo();
@@ -664,9 +640,9 @@ export class SessionManager {
   // ============ Cleanup ============
 
   /**
-   * 清理过期会话
+   * Clean up expired sessions.
    *
-   * 删除所有过期的会话记录
+   * Removes all expired session records.
    */
   async cleanupExpiredSessions(): Promise<number> {
     this.logger.info('Cleaning up expired sessions');
@@ -682,9 +658,7 @@ export class SessionManager {
     }
   }
 
-  /**
-   * 清理账户的所有会话（除当前会话外�?
-   */
+  /** Clean up all sessions for an identity (except the current one). */
   async cleanupOtherSessions(identityId: string): Promise<number> {
     this.logger.info('Cleaning up other sessions', { identityId });
 
@@ -712,9 +686,7 @@ export class SessionManager {
 
   // ============ API Callbacks ============
 
-  /**
-   * 设置 API 回调
-   */
+  /** Set API callbacks. */
   setApiCallbacks(callbacks: {
     refreshToken?: (request: RefreshSessionRequest) => Promise<RefreshSessionResponse>;
     login?: (request: LoginRequest) => Promise<LoginResponse>;
@@ -727,9 +699,9 @@ export class SessionManager {
   // ============ Offline Auth Dependencies ============
 
   /**
-   * 注入离线认证依赖
-   * @param identityRepository - 身份聚合根仓储（用于离线密码验证）
-   * @param passwordHasher - 密码哈希器（Argon2）
+   * Inject offline authentication dependencies.
+   * @param identityRepository - Identity aggregate repository (for offline password verification)
+   * @param passwordHasher - Password hasher (Argon2)
    */
   setOfflineAuthDependencies(
     identityRepository: IAuthIdentityRepository,
@@ -743,14 +715,15 @@ export class SessionManager {
   // ============ Offline Credential Management (Phase 2) ============
 
   /**
-   * 保存离线凭据
+   * Save offline credentials.
    *
-   * 在线登录/注册成功后调用，将用户的邮箱+密码哈希持久化到本地 SQLite，
-   * 以便后续离线登录时验证。使用服务端的 identityId 以保持数据一致性。
+   * Called after a successful online login/registration. Persists the user's email
+   * and password hash to local SQLite for subsequent offline login verification.
+   * Uses the server-side identityId for data consistency.
    *
-   * @param email - 用户邮箱
-   * @param plainPassword - 用户明文密码（将使用 Argon2 本地哈希后存储）
-   * @param identityId - 服务端返回的身份 ID（保持一致）
+   * @param email - User email
+   * @param plainPassword - Plain-text password (hashed locally with Argon2 before storage)
+   * @param identityId - Server-assigned identity ID
    */
   async saveOfflineCredentials(
     email: string,
@@ -811,11 +784,11 @@ export class SessionManager {
   }
 
   /**
-   * 离线密码验证
+   * Verify credentials offline.
    *
-   * 使用本地存储的 AuthIdentity 验证用户密码。
-   * 包含失败计数和锁定机制（由 AuthIdentity 聚合根管理）。
-   * 返回服务端的 identityId（如果有映射），否则返回本地 ID。
+   * Validates the user's password against a locally stored AuthIdentity.
+   * Includes failed-attempt counting and lockout (managed by the AuthIdentity aggregate).
+   * Returns the server-side identityId when available, otherwise the local ID.
    */
   private async verifyOfflineCredentials(
     email: string,
@@ -880,10 +853,10 @@ export class SessionManager {
   // ============ Guest Identity Management (Phase 4) ============
 
   /**
-   * 获取或创建持久化的访客身份 ID
+   * Get or create a persistent guest identity ID.
    *
-   * 访客 ID 存储在 auth_sessions 元数据中，应用重启后保持不变。
-   * 用户升级到云账户后可通过 clearGuestIdentity() 清除。
+   * The guest ID is stored in auth_sessions metadata and persists across app restarts.
+   * Can be cleared via clearGuestIdentity() when the user upgrades to a cloud account.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
     // Try to load existing guest ID from session repository metadata
@@ -929,9 +902,7 @@ export class SessionManager {
     return guestId;
   }
 
-  /**
-   * 清除访客身份（用户升级到云账户时调用）
-   */
+  /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
     const guestSessions = await this.sessionRepository.findByIdentityId(
       'guest' as unknown as IdentityId,
@@ -945,9 +916,7 @@ export class SessionManager {
 
   // ============ Private Methods ============
 
-  /**
-   * 生成设备信息
-   */
+  /** Generate device info. */
   private generateDeviceInfo(): DeviceInfoClientDTO {
     const machineId = machineIdSync(true);
     const platform = os.platform();
@@ -968,9 +937,7 @@ export class SessionManager {
     };
   }
 
-  /**
-   * 生成设备指纹
-   */
+  /** Generate a device fingerprint. */
   private generateFingerprint(machineId: string, platform: string, hostname: string): string {
     const data = `${machineId}-${platform}-${hostname}`;
     return crypto.createHash('sha256').update(data).digest('hex');
@@ -1001,9 +968,7 @@ export class SessionManager {
     return session;
   }
 
-  /**
-   * 启动自动刷新
-   */
+  /** Start auto-refresh. */
   private startAutoRefresh(): void {
     this.tokenManager.startAutoRefresh(async () => {
       const result = await this.refreshSession();
@@ -1016,18 +981,14 @@ export class SessionManager {
     });
   }
 
-  /**
-   * 停止自动刷新
-   */
+  /** Stop auto-refresh. */
   private stopAutoRefresh(): void {
     this.tokenManager.stopAutoRefresh();
   }
 
-  /**
-   * 启动活动追踪
-   */
+  /** Start activity tracking. */
   private startActivityTracking(): void {
-    // �?5 分钟记录一次活�?
+    // Record activity every 5 minutes
     this.activityTimer = setInterval(
       async () => {
         if (this.currentSession) {
@@ -1039,9 +1000,7 @@ export class SessionManager {
     );
   }
 
-  /**
-   * 停止活动追踪
-   */
+  /** Stop activity tracking. */
   private stopActivityTracking(): void {
     if (this.activityTimer) {
       clearInterval(this.activityTimer);
@@ -1052,9 +1011,7 @@ export class SessionManager {
 
 // ============ Factory Function ============
 
-/**
- * 创建 SessionManager 实例
- */
+/** Create a SessionManager instance. */
 export function createSessionManager(
   sessionRepository: IAuthSessionRepository,
   identityRepository: IAuthIdentityRepository,

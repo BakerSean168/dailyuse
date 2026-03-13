@@ -1,9 +1,8 @@
 /**
  * Session Layout Value Object
- * 会话布局值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 export const SessionSplitType = {
   Horizontal: 'Horizontal',
   Vertical: 'Vertical',
@@ -12,15 +11,13 @@ export const SessionSplitType = {
 
 export type SessionSplitType = (typeof SessionSplitType)[keyof typeof SessionSplitType];
 
-/**
- * 会话布局 - Server 接口
- */
+/** Session Layout - Server interface. */
 export interface ISessionLayoutServer {
   splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -30,23 +27,21 @@ export interface ISessionLayoutServer {
     >,
   ): ISessionLayoutServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 会话布局 - Client 接口
- */
+/** Session Layout - Client interface. */
 export interface ISessionLayoutClient {
   splitType: SessionSplitType;
   groupCount: number;
   activeGroupIndex: number;
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Session Layout Server DTO
@@ -75,12 +70,12 @@ export interface SessionLayoutPersistenceDTO {
   active_group_index: number;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type SessionLayoutServer = ISessionLayoutServer;
 export type SessionLayoutClient = ISessionLayoutClient;
 
-// ============ 默认�?============
+// ============ Defaults ============
 
 export const DEFAULT_SESSION_LAYOUT: SessionLayoutServerDTO = {
   splitType: 'Horizontal',

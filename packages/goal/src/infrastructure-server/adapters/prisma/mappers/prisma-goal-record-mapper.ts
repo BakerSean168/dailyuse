@@ -10,9 +10,7 @@ import { GoalRecordId, KeyResultId } from '@/domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 export class PrismaGoalRecordMapper {
-  /**
-   * Prisma row �?Domain GoalRecord aggregate
-   */
+  /** Maps a Prisma row to a Domain GoalRecord aggregate. */
   static toDomain(data: PrismaGoalRecord): GoalRecord {
     return GoalRecord.load({
       id: GoalRecordId.of(data.id),
@@ -28,9 +26,7 @@ export class PrismaGoalRecordMapper {
     });
   }
 
-  /**
-   * Batch conversion: Prisma �?Domain
-   */
+  /** Batch converts Prisma GoalRecord rows to Domain aggregates. */
   static toDomainList(rows: PrismaGoalRecord[]): GoalRecord[] {
     return rows.map((row) => PrismaGoalRecordMapper.toDomain(row));
   }

@@ -1,13 +1,10 @@
 /**
  * Workspace Layout Value Object
- * 工作区布局值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 工作区布局 - Server 接口
- */
+/** Workspace Layout - Server interface. */
 export interface IWorkspaceLayoutServer {
   sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
@@ -16,7 +13,7 @@ export interface IWorkspaceLayoutServer {
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -26,12 +23,10 @@ export interface IWorkspaceLayoutServer {
     >,
   ): IWorkspaceLayoutServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 工作区布局 - Client 接口
- */
+/** Workspace Layout - Client interface. */
 export interface IWorkspaceLayoutClient {
   sidebarPosition: 'Left' | 'Right';
   sidebarWidth: number;
@@ -40,12 +35,12 @@ export interface IWorkspaceLayoutClient {
   isSidebarVisible: boolean;
   isPanelVisible: boolean;
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Workspace Layout Server DTO
@@ -83,12 +78,12 @@ export interface WorkspaceLayoutPersistenceDTO {
   is_panel_visible: boolean;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type WorkspaceLayoutServer = IWorkspaceLayoutServer;
 export type WorkspaceLayoutClient = IWorkspaceLayoutClient;
 
-// ============ 默认�?============
+// ============ Defaults ============
 
 export const DEFAULT_WORKSPACE_LAYOUT: WorkspaceLayoutServerDTO = {
   sidebarPosition: 'Left',

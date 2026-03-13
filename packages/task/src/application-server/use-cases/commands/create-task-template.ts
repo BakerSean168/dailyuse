@@ -1,8 +1,8 @@
 /**
  * Create Task Template Service
  *
- * 创建任务模板（循环任务）
- * 创建后自动生成初始实例（100�?最�?00个）
+ * Creates a task template (recurring task) and automatically
+ * generates initial instances upon creation.
  */
 
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
@@ -55,12 +55,12 @@ export class CreateTaskTemplate {
       color: request.color ?? undefined,
     });
 
-    // 保存到仓�?
+    // Save to repository
     await this.templateRepository.save(template);
 
     let instanceCount = 0;
 
-    // 如果状态是 ACTIVE，立即生成初始实�?
+    // If status is ACTIVE, generate initial instances immediately
     if (template.status === TaskTemplateStatus.Active) {
       instanceCount = await this.generateInitialInstances(template);
     }
@@ -71,9 +71,7 @@ export class CreateTaskTemplate {
     });
   }
 
-  /**
-   * 生成初始实例
-   */
+  /** Generates initial task instances for the template. */
   private async generateInitialInstances(template: TaskTemplate): Promise<number> {
     try {
       const instances = this.generationService.generateInstances(template);
@@ -82,7 +80,7 @@ export class CreateTaskTemplate {
         await this.instanceRepository.saveMany(instances);
         await this.templateRepository.save(template);
 
-        // 发布事件
+        // Publish event
         eventBus.send('task:instances:generated' as any, {
           eventType: 'task:instances:generated',
           version: '1.0',
@@ -100,7 +98,7 @@ export class CreateTaskTemplate {
 
       return instances.length;
     } catch (error) {
-      this.logger.error('生成初始实例失败', { error });
+      this.logger.error('Failed to generate initial instances', { error });
       return 0;
     }
   }

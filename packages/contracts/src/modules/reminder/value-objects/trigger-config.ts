@@ -1,43 +1,36 @@
 /**
  * Trigger Config Value Object
- * 触发器配置值对�?
  */
 
 import type { TriggerType } from './trigger-type';
 
-// ============ 子配置接�?============
+// ============ Sub-config Interfaces ============
 
-/**
- * 固定时间触发配置
- */
+/** Fixed-time trigger configuration. */
 export interface FixedTimeTrigger {
-  /** 时间 "HH:mm" 格式（如 "09:00"�?*/
+  /** Time in "HH:mm" format (e.g. "09:00") */
   time: string;
-  /** 时区（可选，默认用户时区�?*/
+  /** Timezone (optional, defaults to user timezone) */
   timezone: string | null;
 }
 
-/**
- * 间隔时间触发配置
- */
+/** Interval trigger configuration. */
 export interface IntervalTrigger {
-  /** 每隔 N 分钟 */
+  /** Every N minutes */
   minutes: number;
-  /** 开始时�?(epoch ms)（可选） */
+  /** Start time (epoch ms, optional) */
   startTime: number | null;
 }
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 触发器配�?- Server 接口
- */
+/** Trigger config - Server interface. */
 export interface ITriggerConfigServer {
   type: TriggerType;
   fixedTime: FixedTimeTrigger | null;
   interval: IntervalTrigger | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -47,26 +40,24 @@ export interface ITriggerConfigServer {
     >,
   ): ITriggerConfigServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 触发器配�?- Client 接口
- */
+/** Trigger config - Client interface. */
 export interface ITriggerConfigClient {
   type: TriggerType;
   fixedTime: FixedTimeTrigger | null;
   interval: IntervalTrigger | null;
 
-  // UI 辅助属�?
-  displayText: string; // "每天 09:00" | "每隔 30 分钟"
+  // UI helper properties
+  displayText: string; // "Daily at 09:00" | "Every 30 minutes"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Trigger Config Server DTO
@@ -96,7 +87,7 @@ export interface TriggerConfigPersistenceDTO {
   interval: string | null; // JSON string
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type TriggerConfigServer = ITriggerConfigServer;
 export type TriggerConfigClient = ITriggerConfigClient;

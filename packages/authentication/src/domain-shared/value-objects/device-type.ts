@@ -1,22 +1,22 @@
 import type { DeviceType as IDeviceType } from '@dailyuse/contracts/authentication';
 
 /**
- * 📱 设备类型 - 登录设备的分�?
+ * Device Type - classification of login devices.
  *
- * Branded Type：运行时�?string，编译时具有类型安全�?
+ * Branded Type: string at runtime, with compile-time type safety.
  */
 export type DeviceType = IDeviceType & { readonly __brand: unique symbol };
 
 /**
- * 合法值集�?- Single Source of Truth
+ * Valid value set - Single Source of Truth
  */
 const VALUES: IDeviceType[] = ['Desktop', 'Mobile', 'Tablet', 'Browser', 'Api', 'Unknown'];
 
 /**
- * 伴生对象 - 提供静态方法和行为逻辑
+ * Companion object - provides static methods and behavior logic.
  */
 export const DeviceType = {
-  // ================= 常量定义 =================
+  // ================= Constants =================
 
   Desktop: 'Desktop' as DeviceType,
   Mobile: 'Mobile' as DeviceType,
@@ -25,10 +25,10 @@ export const DeviceType = {
   Api: 'Api' as DeviceType,
   Unknown: 'Unknown' as DeviceType,
 
-  // ================= 工厂方法 =================
+  // ================= Factory Methods =================
 
   /**
-   * 🏭 工厂方法：验证并转换
+   * Factory method: validates and converts to DeviceType.
    */
   of(value: string): DeviceType {
     if (!this.isValid(value)) {
@@ -37,54 +37,54 @@ export const DeviceType = {
     return value as DeviceType;
   },
 
-  // ================= 类型守卫 =================
+  // ================= Type Guards =================
 
   /**
-   * 🛡�?类型守卫：运行时类型检�?
+   * Type guard: runtime type check.
    */
   isValid(value: string): value is DeviceType {
     return VALUES.includes(value as IDeviceType);
   },
 
   /**
-   * 📋 获取所有可用�?
+   * Returns all available values.
    */
   getAll(): DeviceType[] {
     return VALUES as DeviceType[];
   },
 
-  // ================= 行为方法 (State Logic) =================
+  // ================= Behavior Methods (State Logic) =================
 
   /**
-   * 是否是手机设备（iOS �?Android�?
+   * Checks if the type is a mobile device (iOS or Android).
    */
   isMobile(type: DeviceType): boolean {
     return type === this.Mobile;
   },
 
   /**
-   * 是否是网页端
+   * Checks if the type is a web browser.
    */
   isBrowser(type: DeviceType): boolean {
     return type === this.Browser;
   },
 
   /**
-   * 是否是桌面应�?
+   * Checks if the type is a desktop application.
    */
   isDesktop(type: DeviceType): boolean {
     return type === this.Desktop;
   },
 
   /**
-   * 是否是平板设�?
+   * Checks if the type is a tablet device.
    */
   isTablet(type: DeviceType): boolean {
     return type === this.Tablet;
   },
 
   /**
-   * 是否是小屏幕设备（移动设备和平板�?
+   * Checks if the type is a small-screen device (mobile or tablet).
    */
   isSmallScreen(type: DeviceType): boolean {
     return this.isMobile(type) || this.isTablet(type);

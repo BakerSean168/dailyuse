@@ -1,30 +1,27 @@
 /**
  * Retry Policy Value Object
- * 重试策略值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 重试策略 - Server 接口
- */
+/** Retry policy - Server interface. */
 export interface IRetryPolicyServer {
-  /** 是否启用重试 */
+  /** Whether retry is enabled */
   enabled: boolean;
 
-  /** 最大重试次�?*/
+  /** Maximum retry count */
   maxRetries: number;
 
-  /** 初始重试延迟（毫秒） */
+  /** Initial retry delay (ms) */
   retryDelay: number;
 
-  /** 退避倍数（用于指数退避） */
+  /** Backoff multiplier (for exponential backoff) */
   backoffMultiplier: number;
 
-  /** 最大重试延迟（毫秒�?*/
+  /** Maximum retry delay (ms) */
   maxRetryDelay: number;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -40,47 +37,45 @@ export interface IRetryPolicyServer {
     >,
   ): IRetryPolicyServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 重试策略 - Client 接口
- */
+/** Retry policy - Client interface. */
 export interface IRetryPolicyClient {
-  /** 是否启用重试 */
+  /** Whether retry is enabled */
   enabled: boolean;
 
-  /** 最大重试次�?*/
+  /** Maximum retry count */
   maxRetries: number;
 
-  /** 初始重试延迟 */
+  /** Initial retry delay */
   retryDelay: number;
 
-  /** 退避倍数 */
+  /** Backoff multiplier */
   backoffMultiplier: number;
 
-  /** 最大重试延�?*/
+  /** Maximum retry delay */
   maxRetryDelay: number;
 
-  // UI 辅助属�?
-  /** 重试策略描述 */
-  policyDescription: string; // "最多重�?3 次，延迟 5s ~ 60s"
+  // UI helper properties
+  /** Retry policy description */
+  policyDescription: string; // "Retry up to 3 times, delay 5s ~ 60s"
 
-  /** 启用状态显�?*/
-  enabledDisplay: string; // "已启�? | "已禁�?
+  /** Enabled status display */
+  enabledDisplay: string; // "Enabled" | "Disabled"
 
-  /** 重试延迟格式�?*/
-  retryDelayFormatted: string; // "5 �?
+  /** Formatted retry delay */
+  retryDelayFormatted: string; // "5s"
 
-  /** 最大重试延迟格式化 */
-  maxRetryDelayFormatted: string; // "60 �?
+  /** Formatted max retry delay */
+  maxRetryDelayFormatted: string; // "60s"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Retry Policy Server DTO
@@ -119,7 +114,7 @@ export interface RetryPolicyPersistenceDTO {
   max_retry_delay: number;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type RetryPolicyServer = IRetryPolicyServer;
 export type RetryPolicyClient = IRetryPolicyClient;

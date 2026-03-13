@@ -27,7 +27,7 @@ import type {
 } from '@dailyuse/contracts/task';
 
 // ============ Transport Client Interfaces ============
-// Module only defines what it needs �?concrete implementations injected from App layer.
+// Module only defines what it needs - concrete implementations injected from App layer.
 
 // IResultHttpClient imported from @dailyuse/http-client
 

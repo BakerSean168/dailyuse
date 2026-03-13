@@ -1,21 +1,18 @@
 /**
  * Active Hours Config Value Object
- * 活跃时间段配置值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 活跃时间段配�?- Server 接口
- */
+/** Active hours config - Server interface. */
 export interface IActiveHoursConfigServer {
   enabled: boolean;
-  /** 开始小�?(0-23) */
+  /** Start hour (0-23) */
   startHour: number;
-  /** 结束小时 (0-23) */
+  /** End hour (0-23) */
   endHour: number;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -25,26 +22,24 @@ export interface IActiveHoursConfigServer {
     >,
   ): IActiveHoursConfigServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 活跃时间段配�?- Client 接口
- */
+/** Active hours config - Client interface. */
 export interface IActiveHoursConfigClient {
   enabled: boolean;
   startHour: number;
   endHour: number;
 
-  // UI 辅助属�?
-  displayText: string; // "09:00 - 21:00" | "全天"
+  // UI helper properties
+  displayText: string; // "09:00 - 21:00" | "All day"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Active Hours Config Server DTO
@@ -74,7 +69,7 @@ export interface ActiveHoursConfigPersistenceDTO {
   end_hour: number;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type ActiveHoursConfigServer = IActiveHoursConfigServer;
 export type ActiveHoursConfigClient = IActiveHoursConfigClient;

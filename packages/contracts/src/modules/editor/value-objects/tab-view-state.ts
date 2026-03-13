@@ -1,13 +1,10 @@
 /**
  * Tab View State Value Object
- * 标签页视图状态值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 标签页视图状�?- Server 接口
- */
+/** Tab View State - Server interface. */
 export interface ITabViewStateServer {
   scrollTop: number;
   scrollLeft: number;
@@ -20,7 +17,7 @@ export interface ITabViewStateServer {
     end: { line: number; column: number };
   }> | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -30,12 +27,10 @@ export interface ITabViewStateServer {
     >,
   ): ITabViewStateServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 标签页视图状�?- Client 接口
- */
+/** Tab View State - Client interface. */
 export interface ITabViewStateClient {
   scrollTop: number;
   scrollLeft: number;
@@ -48,12 +43,12 @@ export interface ITabViewStateClient {
     end: { line: number; column: number };
   }> | null;
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Tab View State Server DTO
@@ -97,7 +92,7 @@ export interface TabViewStatePersistenceDTO {
   selections: string | null; // JSON string
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type TabViewStateServer = ITabViewStateServer;
 export type TabViewStateClient = ITabViewStateClient;

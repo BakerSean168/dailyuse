@@ -4,7 +4,7 @@ import { AuthIdentity } from '../aggregates/auth-identity';
 import type { IAuthIdentityRepository } from '../repositories/i-auth-identity.repository';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/domain-shared/shared';
-// 定义业务异常
+// Business exceptions
 export class UserNotFoundForLogoutError extends Error {
   constructor(userId: string) {
     super(`User with ID [${userId}] not found for logout.`);
@@ -20,46 +20,42 @@ export class NotLoggedInError extends Error {
 }
 
 /**
- * 登出领域服务
- * 职责：协调用户登出过程中的业务规则检查、会话清理和状态更�?
+ * Logout Domain Service.
+ * Coordinates business rule checks, session cleanup, and state updates during logout.
  */
 export class LogoutService {
-  
-  // 通过构造函数注入仓储接�?(依赖倒置原则)
-  constructor(
-    private readonly identityRepo: IAuthIdentityRepository
-  ) {}
+  // Repository injected via constructor (Dependency Inversion Principle)
+  constructor(private readonly identityRepo: IAuthIdentityRepository) {}
 
   /**
-   * 核心业务：用户登�?
-   * @param req 登出请求数据 (包含用户ID或会话标�?
-   * @returns 更新状态后的身份聚合根
+   * Core business: user logout.
+   * @param req - Logout request data (contains user ID or session identifier)
+   * @returns The identity aggregate root with updated state
    */
   public async logout(req: LogoutReq, ctx: Context): Promise<AuthIdentity> {
     const { identityId: rawId } = ctx;
     const identityId = rawId as IdentityId;
 
-    // 1. 【查询】根据用户ID查找用户身份
+    // 1. Find user identity by ID
     const identity = await this.identityRepo.findById(identityId);
     if (!identity) {
       throw new UserNotFoundForLogoutError(identityId);
     }
 
-    // 2. 【验证】检查用户当前是否已登录
-    // 这是领域服务职责：涉及跨聚合的业务规则验�?
+    // 2. Verify the user is currently logged in
+    // Domain service responsibility: cross-aggregate business rule validation
     if (!identity.isLoggedIn()) {
       throw new NotLoggedInError();
     }
 
-    // 3. 【清理】清除登录状态、会话和令牌
-    // 在聚合根内部执行业务操作，修改其状�?
+    // 3. Clear login state, session, and tokens
+    // Business operations executed within the aggregate root, modifying its state
     identity.clearLogin();
 
-    // 4. 【持久化】保存更新后的身份到数据�?
-    // 领域事件会在仓储�?save 方法中被隐式处理和发布（�?LoggedOutEvent�?
+    // 4. Persist updated identity to the database
+    // Domain events are implicitly processed and published in the repository's save method (e.g. LoggedOutEvent)
     await this.identityRepo.save(identity);
 
     return identity;
   }
-
 }

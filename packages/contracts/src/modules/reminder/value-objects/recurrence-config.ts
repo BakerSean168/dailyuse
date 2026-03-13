@@ -1,51 +1,42 @@
 /**
  * Recurrence Config Value Object
- * 重复配置值对�?
  */
 
 import type { RecurrenceType } from './recurrence-type';
 import type { WeekDay } from './week-day';
 
-// ============ 子配置接�?============
+// ============ Sub-config Interfaces ============
 
-/**
- * 每日重复配置
- */
+/** Daily recurrence configuration. */
 export interface DailyRecurrence {
-  /** �?N �?*/
+  /** Every N days */
   interval: number;
 }
 
-/**
- * 每周重复配置
- */
+/** Weekly recurrence configuration. */
 export interface WeeklyRecurrence {
-  /** �?N �?*/
+  /** Every N weeks */
   interval: number;
-  /** 星期�?*/
+  /** Days of the week */
   weekDays: WeekDay[];
 }
 
-/**
- * 自定义日期重复配�?
- */
+/** Custom dates recurrence configuration. */
 export interface CustomDaysRecurrence {
-  /** 指定的日期列�?(epoch ms) */
+  /** Specified date list (epoch ms) */
   dates: number[];
 }
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 重复配置 - Server 接口
- */
+/** Recurrence config - Server interface. */
 export interface IRecurrenceConfigServer {
   type: RecurrenceType;
   daily: DailyRecurrence | null;
   weekly: WeeklyRecurrence | null;
   customDays: CustomDaysRecurrence | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -55,27 +46,25 @@ export interface IRecurrenceConfigServer {
     >,
   ): IRecurrenceConfigServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 重复配置 - Client 接口
- */
+/** Recurrence config - Client interface. */
 export interface IRecurrenceConfigClient {
   type: RecurrenceType;
   daily: DailyRecurrence | null;
   weekly: WeeklyRecurrence | null;
   customDays: CustomDaysRecurrence | null;
 
-  // UI 辅助属�?
-  displayText: string; // "每天" | "每周一、三、五" | "指定日期"
+  // UI helper properties
+  displayText: string; // "Daily" | "Mon, Wed, Fri" | "Custom dates"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Recurrence Config Server DTO
@@ -108,7 +97,7 @@ export interface RecurrenceConfigPersistenceDTO {
   custom_days: string | null; // JSON string
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type RecurrenceConfigServer = IRecurrenceConfigServer;
 export type RecurrenceConfigClient = IRecurrenceConfigClient;

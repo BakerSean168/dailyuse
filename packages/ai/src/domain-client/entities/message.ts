@@ -69,7 +69,7 @@ export class Message extends Entity<AiMessageId> {
     return this._props.deletedAt;
   }
 
-  // ===== 计算属�?=====
+  // ===== Computed Properties =====
 
   public get isUser(): boolean {
     return this._props.role === MessageRole.User;

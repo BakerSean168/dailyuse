@@ -20,7 +20,7 @@ import type {
 /**
  * TaskTemplateHttpAdapter
  *
- * HTTP 实现的任务模�?API 客户�?
+ * HTTP implementation of the task template API client.
  */
 export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
   private readonly baseUrl = '/task-templates';
@@ -59,7 +59,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
-  // ===== 特殊查询方法 =====
+  // ===== Special Query Methods =====
 
   async getTasksWithPrioritySorting(params?: {
     limit?: number;
@@ -67,7 +67,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.httpClient.get(`${this.baseUrl}/by-priority`, { params });
   }
 
-  // ===== Task Template 状态管�?=====
+  // ===== Task Template State Management =====
 
   async activateTaskTemplate(id: string): Promise<Result<TaskTemplateClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
@@ -81,7 +81,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/archive`);
   }
 
-  // ===== 聚合根控制：任务实例管理 =====
+  // ===== Aggregate Control: Instance Management =====
 
   async generateInstances(
     templateId: string,
@@ -100,7 +100,7 @@ export class TaskTemplateHttpAdapter implements ITaskTemplateApiClient {
     });
   }
 
-  // ===== 聚合根控制：目标关联管理 =====
+  // ===== Aggregate Control: Goal Binding Management =====
 
   async bindToGoal(
     templateId: string,

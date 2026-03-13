@@ -1,10 +1,10 @@
 /**
- * AuthSession 聚合根实�?
+ * AuthSession Aggregate Root
  *
- * 核心职责:
- * 1. 管理用户会话生命周期
- * 2. 支持多设备并发会�?
- * 3. 实现会话续期和撤销逻辑
+ * Core responsibilities:
+ * 1. Manage user session lifecycle
+ * 2. Support concurrent multi-device sessions
+ * 3. Implement session renewal and revocation logic
  */
 
 import type {
@@ -20,15 +20,15 @@ import { SessionStatus, DeviceInfo, AuthSessionId } from '../../domain-shared';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
 import type { ITokenProvider } from '../services/token-provider.interface';
 
-// ================= 常量定义 =================
+// ================= Constants =================
 
-/** Access Token 有效期（毫秒�? 15 分钟 */
+/** Access token duration (ms): 15 minutes */
 export const ACCESS_TOKEN_DURATION_MS = 15 * 60 * 1000;
-/** Refresh Token 有效期（毫秒�? 7 �?*/
+/** Refresh token duration (ms): 7 days */
 export const REFRESH_TOKEN_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
-/** 默认会话有效期（毫秒�? 7 �?*/
+/** Default session duration (ms): 7 days */
 const DEFAULT_SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
-/** 滑动窗口刷新阈值（毫秒�? 1 小时 */
+/** Sliding window refresh threshold (ms): 1 hour */
 const SLIDING_WINDOW_THRESHOLD_MS = 60 * 60 * 1000;
 
 /** Domain state for AuthSession aggregate */
@@ -45,11 +45,11 @@ export interface AuthSessionState {
 }
 
 /**
- * AuthSession 聚合�?
- * 管理用户的登录会�?
+ * AuthSession Aggregate Root.
+ * Manages a user's login session.
  */
 export class AuthSession extends AggregateRoot<AuthSessionId> {
-  // ================= 1. 内部状�?(Backing Fields) =================
+  // ================= 1. Internal State (Backing Fields) =================
   private _identityId: IdentityId;
   private _deviceInfo: DeviceInfo;
   private _refreshTokenHash: string | undefined;
@@ -59,7 +59,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   private _lastActiveAt: Date;
   private _isRevoked: boolean;
 
-  // ================= 2. 构造函�?(Private) =================
+  // ================= 2. Constructor (Private) =================
   private constructor(state: AuthSessionState) {
     super(state.id);
 
@@ -73,7 +73,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     this._isRevoked = state.isRevoked;
   }
 
-  // ================= 3. 公共属�?(Getters) =================
+  // ================= 3. Public Properties (Getters) =================
   get identityId(): IdentityId {
     return this._identityId;
   }
@@ -106,10 +106,10 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     return this._isRevoked;
   }
 
-  // ================= 4. 工厂方法 (Factories) =================
+  // ================= 4. Factory Methods =================
 
   /**
-   * 🏭 业务工厂：创建一个新的会�?
+   * Business factory: creates a new session.
    */
   public static create(params: {
     id: AuthSessionId;
@@ -172,29 +172,29 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * 🏭 恢复工厂：从领域状态恢复
+   * Recovery factory: restores from domain state.
    */
   public static load(state: AuthSessionState): AuthSession {
     return new AuthSession(state);
   }
 
-  // ================= 5. 业务行为 (Business Actions) =================
+  // ================= 5. Business Actions =================
 
   /**
-   * �?检查会话是否有�?
+   * Checks whether the session is valid.
    */
   public isValid(): boolean {
-    // 1. 检查是否被撤销
+    // 1. Check if revoked
     if (this._isRevoked) {
       return false;
     }
 
-    // 2. 检查状�?
+    // 2. Check status
     if (!SessionStatus.isActive(this._status)) {
       return false;
     }
 
-    // 3. 检查是否过�?
+    // 3. Check if expired
     if (this.isExpired()) {
       return false;
     }
@@ -203,15 +203,15 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * �?检查会话是否过�?
+   * Checks whether the session has expired.
    */
   public isExpired(): boolean {
     return this._expiresAt.getTime() < Date.now();
   }
 
   /**
-   * �?刷新会话活跃时间（滑动窗口）
-   * 只有当距离上次刷新超过阈值时才刷�?
+   * Refreshes session activity timestamp (sliding window).
+   * Only refreshes when time since last activity exceeds the threshold.
    */
   public touch(): boolean {
     if (!this.isValid()) {
@@ -221,7 +221,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     const now = Date.now();
     const timeSinceLastActive = now - this._lastActiveAt.getTime();
 
-    // 只有超过阈值才刷新，避免频繁更�?
+    // Only refresh if threshold exceeded, to avoid frequent updates
     if (timeSinceLastActive < SLIDING_WINDOW_THRESHOLD_MS) {
       return false;
     }
@@ -231,7 +231,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * �?续期会话
+   * Extends session expiration.
    */
   public extend(durationMs?: number): void {
     if (!this.isValid()) {
@@ -246,11 +246,11 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * �?撤销会话（用户登出）
+   * Revokes the session (user logout).
    */
   public revoke(): void {
     if (this._isRevoked) {
-      return; // 幂等
+      return; // Idempotent
     }
 
     this._isRevoked = true;
@@ -262,18 +262,18 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * �?标记会话过期
+   * Marks the session as expired.
    */
   public markExpired(): void {
     if (SessionStatus.isExpired(this._status)) {
-      return; // 幂等
+      return; // Idempotent
     }
 
     this._status = SessionStatus.Expired;
   }
 
   /**
-   * �?更新刷新令牌哈希
+   * Updates the refresh token hash.
    */
   public updateRefreshTokenHash(hash: string): void {
     if (!this.isValid()) {
@@ -285,7 +285,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * �?获取会话剩余有效时间（秒�?
+   * Returns the remaining session validity in seconds.
    */
   public getRemainingSeconds(): number {
     if (!this.isValid()) {
@@ -296,10 +296,10 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
     return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   }
 
-  // ================= 6. 序列�?(Serialization) =================
+  // ================= 6. Serialization =================
 
   /**
-   * 转换�?Server DTO
+   * Converts to Server DTO.
    */
   public toServerDTO(): AuthSessionServerDTO {
     return {
@@ -316,7 +316,7 @@ export class AuthSession extends AggregateRoot<AuthSessionId> {
   }
 
   /**
-   * 转换�?Client DTO
+   * Converts to Client DTO.
    */
   public toClientDTO(isCurrentSession: boolean = false): AuthSessionClientDTO {
     return {

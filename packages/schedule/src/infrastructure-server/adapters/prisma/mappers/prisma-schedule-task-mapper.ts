@@ -28,9 +28,7 @@ export type PrismaScheduleTaskWithExecutions = PrismaScheduleTask & {
 };
 
 export class PrismaScheduleTaskMapper {
-  /**
-   * Prisma record �?ScheduleTask aggregate root (with optional executions)
-   */
+  /** Converts a Prisma record to a ScheduleTask aggregate root (with optional executions). */
   static toDomain(data: PrismaScheduleTaskWithExecutions): ScheduleTask {
     const state: ScheduleTaskState = {
       id: ScheduleTaskId.of(data.id),
@@ -107,9 +105,7 @@ export class PrismaScheduleTaskMapper {
     return task;
   }
 
-  /**
-   * ScheduleTask aggregate �?Prisma write data
-   */
+  /** Converts a ScheduleTask aggregate to Prisma write data. */
   static toPersistence(task: ScheduleTask) {
     const metadataDTO = task.metadata.toServerDTO();
 

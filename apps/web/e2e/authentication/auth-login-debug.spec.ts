@@ -1,23 +1,22 @@
 /**
- * Authentication Login Debug - 登录调试测试
- * 专门用于调试和排查登录问题的测试套件
- * 包含详细的日志和截图
+ * Authentication Login Debug - Test suite for debugging login issues.
+ * Includes detailed logging and screenshots.
  */
 
 import { test, expect } from '@playwright/test';
 import { WEB_CONFIG, TIMEOUT_CONFIG, API_CONFIG, TEST_USERS } from '../config';
 
-test.describe('Login Debug - 登录调试', () => {
+test.describe('Login Debug', () => {
   test.beforeEach(async ({ page }) => {
     console.log('\n' + '='.repeat(80));
-    console.log('🔍 登录调试测试开始');
+    console.log('Login debug test starting');
     console.log('='.repeat(80));
-    console.log(`API 地址: ${API_CONFIG.FULL_URL}`);
-    console.log(`Web 地址: ${WEB_CONFIG.BASE_URL}`);
-    console.log(`测试用户: ${TEST_USERS.MAIN.username}`);
+    console.log(`API URL: ${API_CONFIG.FULL_URL}`);
+    console.log(`Web URL: ${WEB_CONFIG.BASE_URL}`);
+    console.log(`Test user: ${TEST_USERS.MAIN.username}`);
     console.log('='.repeat(80) + '\n');
 
-    // 设置详细的网络日志
+    // Set up detailed network logging
     page.on('request', (request) => {
       if (request.url().includes('/api/')) {
         console.log(`📤 [REQUEST] ${request.method()} ${request.url()}`);
@@ -37,14 +36,14 @@ test.describe('Login Debug - 登录调试', () => {
         const status = response.status();
         const statusEmoji = status >= 200 && status < 300 ? '✅' : '❌';
         console.log(`📥 [RESPONSE] ${statusEmoji} ${status} ${response.url()}`);
-        
+
         try {
           const body = await response.text();
           if (body) {
             console.log(`   Response:`, body.substring(0, 500));
           }
         } catch (e) {
-          console.log(`   (无法读取响应体)`);
+          console.log(`   (Unable to read response body)`);
         }
       }
     });
@@ -61,220 +60,235 @@ test.describe('Login Debug - 登录调试', () => {
     });
   });
 
-  test('[DEBUG] 完整登录流程调试', async ({ page }) => {
-    console.log('\n�� 步骤 1: 导航到登录页\n');
-    
+  test('[DEBUG] Full login flow debug', async ({ page }) => {
+    console.log('\nStep 1: Navigate to login page\n');
+
     await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.LOGIN_PATH), {
       waitUntil: 'domcontentloaded',
       timeout: TIMEOUT_CONFIG.NAVIGATION,
     });
 
-    console.log(`   当前 URL: ${page.url()}`);
+    console.log(`   Current URL: ${page.url()}`);
     await page.screenshot({ path: '/tmp/01-login-page-loaded.png' });
-    console.log('   📸 截图已保存: /tmp/01-login-page-loaded.png');
+    console.log('   Screenshot saved: /tmp/01-login-page-loaded.png');
 
-    // 清理存储
-    console.log('\n📍 步骤 2: 清理 localStorage\n');
+    // Clear storage
+    console.log('\nStep 2: Clear localStorage\n');
     await page.evaluate(() => {
-      console.log('[清理前] localStorage keys:', Object.keys(localStorage));
+      console.log('[Before clear] localStorage keys:', Object.keys(localStorage));
       localStorage.clear();
       sessionStorage.clear();
-      console.log('[清理后] localStorage keys:', Object.keys(localStorage));
+      console.log('[After clear] localStorage keys:', Object.keys(localStorage));
     });
 
-    // 等待页面完全加载
+    // Wait for page to fully load
     await page.waitForLoadState('networkidle');
-    console.log('   ✅ 页面加载完成');
+    console.log('   Page load complete');
 
-    // 查找登录标签
-    console.log('\n📍 步骤 3: 查找并点击登录标签\n');
-    
+    // Find login tab
+    console.log('\nStep 3: Find and click login tab\n');
+
     const loginTab = page.locator('button.v-tab, [role="tab"]').filter({ hasText: /登录|Login/i });
     const loginTabCount = await loginTab.count();
-    console.log(`   找到 ${loginTabCount} 个登录标签`);
+    console.log(`   Found ${loginTabCount} login tab(s)`);
 
     if (loginTabCount > 0) {
       await loginTab.first().click();
-      console.log('   ✅ 已点击登录标签');
+      console.log('   Clicked login tab');
       await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
     } else {
-      console.log('   ⚠️  未找到登录标签，可能已经在登录表单');
+      console.log('   Login tab not found, may already be on the login form');
     }
 
     await page.screenshot({ path: '/tmp/02-login-tab-selected.png' });
-    console.log('   📸 截图已保存: /tmp/02-login-tab-selected.png');
+    console.log('   Screenshot saved: /tmp/02-login-tab-selected.png');
 
-    // 查找用户名输入框
-    console.log('\n📍 步骤 4: 定位用户名输入框\n');
-    
-    // 尝试多种定位方式
+    // Find username input
+    console.log('\nStep 4: Locate username input\n');
+
+    // Try multiple locator strategies
     const usernameStrategies = [
-      { name: '通过 label "用户名" 定位', locator: page.locator('label:has-text("用户名")').locator('..').locator('input') },
-      { name: '通过 placeholder 定位', locator: page.locator('input[placeholder*="用户名"]') },
-      { name: '通过 name 属性定位', locator: page.locator('input[name="username"]') },
-      { name: '通过 v-combobox 定位', locator: page.locator('.v-combobox input') },
+      {
+        name: 'By label',
+        locator: page.locator('label:has-text("用户名")').locator('..').locator('input'),
+      },
+      { name: 'By placeholder', locator: page.locator('input[placeholder*="用户名"]') },
+      { name: 'By name attribute', locator: page.locator('input[name="username"]') },
+      { name: 'By v-combobox', locator: page.locator('.v-combobox input') },
     ];
 
     let usernameInput = null;
     for (const strategy of usernameStrategies) {
       const count = await strategy.locator.count();
-      console.log(`   ${strategy.name}: 找到 ${count} 个元素`);
+      console.log(`   ${strategy.name}: found ${count} element(s)`);
       if (count > 0 && (await strategy.locator.first().isVisible())) {
         usernameInput = strategy.locator.first();
-        console.log(`   ✅ 使用策略: ${strategy.name}`);
+        console.log(`   Using strategy: ${strategy.name}`);
         break;
       }
     }
 
     if (!usernameInput) {
-      console.log('   ❌ 未找到用户名输入框');
+      console.log('   Username input not found');
       await page.screenshot({ path: '/tmp/03-error-no-username-input.png' });
-      throw new Error('无法找到用户名输入框');
+      throw new Error('Unable to find username input');
     }
 
-    // 填写用户名
-    console.log(`\n📍 步骤 5: 填写用户名 "${TEST_USERS.MAIN.username}"\n`);
+    // Fill in username
+    console.log(`\nStep 5: Fill username "${TEST_USERS.MAIN.username}"\n`);
     await usernameInput.click();
     await page.waitForTimeout(100);
     await usernameInput.fill(TEST_USERS.MAIN.username);
     const usernameValue = await usernameInput.inputValue();
-    console.log(`   输入框值: "${usernameValue}"`);
-    
+    console.log(`   Input value: "${usernameValue}"`);
+
     if (usernameValue !== TEST_USERS.MAIN.username) {
-      console.log('   ⚠️  用户名填写可能失败，重试一次');
+      console.log('   Username fill may have failed, retrying');
       await usernameInput.clear();
       await usernameInput.fill(TEST_USERS.MAIN.username);
     }
 
     await page.screenshot({ path: '/tmp/04-username-filled.png' });
-    console.log('   📸 截图已保存: /tmp/04-username-filled.png');
+    console.log('   Screenshot saved: /tmp/04-username-filled.png');
 
-    // 查找密码输入框
-    console.log('\n📍 步骤 6: 定位密码输入框\n');
-    
+    // Find password input
+    console.log('\nStep 6: Locate password input\n');
+
     const passwordStrategies = [
-      { name: '通过 label "密码" 定位', locator: page.locator('label:has-text("密码")').locator('..').locator('input[type="password"]') },
-      { name: '通过 placeholder 定位', locator: page.locator('input[type="password"][placeholder*="密码"]') },
-      { name: '通过 name 属性定位', locator: page.locator('input[type="password"][name="password"]') },
-      { name: '通过类型定位 (第一个)', locator: page.locator('input[type="password"]').first() },
+      {
+        name: 'By label',
+        locator: page
+          .locator('label:has-text("密码")')
+          .locator('..')
+          .locator('input[type="password"]'),
+      },
+      {
+        name: 'By placeholder',
+        locator: page.locator('input[type="password"][placeholder*="密码"]'),
+      },
+      {
+        name: 'By name attribute',
+        locator: page.locator('input[type="password"][name="password"]'),
+      },
+      { name: 'By type (first)', locator: page.locator('input[type="password"]').first() },
     ];
 
     let passwordInput = null;
     for (const strategy of passwordStrategies) {
       const count = await strategy.locator.count();
-      console.log(`   ${strategy.name}: 找到 ${count} 个元素`);
+      console.log(`   ${strategy.name}: found ${count} element(s)`);
       if (count > 0 && (await strategy.locator.first().isVisible())) {
         passwordInput = strategy.locator.first();
-        console.log(`   ✅ 使用策略: ${strategy.name}`);
+        console.log(`   Using strategy: ${strategy.name}`);
         break;
       }
     }
 
     if (!passwordInput) {
-      console.log('   ❌ 未找到密码输入框');
+      console.log('   Password input not found');
       await page.screenshot({ path: '/tmp/05-error-no-password-input.png' });
-      throw new Error('无法找到密码输入框');
+      throw new Error('Unable to find password input');
     }
 
-    // 填写密码
-    console.log(`\n📍 步骤 7: 填写密码\n`);
+    // Fill in password
+    console.log(`\nStep 7: Fill password\n`);
     await passwordInput.click();
     await page.waitForTimeout(100);
     await passwordInput.fill(TEST_USERS.MAIN.password);
-    console.log('   ✅ 密码已填写');
+    console.log('   Password filled');
 
     await page.screenshot({ path: '/tmp/06-password-filled.png' });
-    console.log('   📸 截图已保存: /tmp/06-password-filled.png');
 
-    // 查找登录按钮
-    console.log('\n📍 步骤 8: 查找登录按钮\n');
-    
+    // Find login button
+    console.log('\nStep 8: Find login button\n');
+
     const loginButtonStrategies = [
-      { name: '通过 type="submit" 和文本定位', locator: page.locator('button[type="submit"]:has-text("登录")') },
-      { name: '通过文本定位', locator: page.locator('button:has-text("登录")') },
-      { name: '通过 data-testid 定位', locator: page.locator('[data-testid="login-button"]') },
+      {
+        name: 'By type="submit" and text',
+        locator: page.locator('button[type="submit"]:has-text("登录")'),
+      },
+      { name: 'By text', locator: page.locator('button:has-text("登录")') },
+      { name: 'By data-testid', locator: page.locator('[data-testid="login-button"]') },
     ];
 
     let loginButton = null;
     for (const strategy of loginButtonStrategies) {
       const count = await strategy.locator.count();
-      console.log(`   ${strategy.name}: 找到 ${count} 个元素`);
+      console.log(`   ${strategy.name}: found ${count} element(s)`);
       if (count > 0 && (await strategy.locator.first().isVisible())) {
         loginButton = strategy.locator.first();
-        console.log(`   ✅ 使用策略: ${strategy.name}`);
+        console.log(`   Using strategy: ${strategy.name}`);
         break;
       }
     }
 
     if (!loginButton) {
-      console.log('   ❌ 未找到登录按钮');
+      console.log('   Login button not found');
       await page.screenshot({ path: '/tmp/07-error-no-login-button.png' });
-      throw new Error('无法找到登录按钮');
+      throw new Error('Unable to find login button');
     }
 
-    // 点击登录按钮
-    console.log('\n📍 步骤 9: 点击登录按钮\n');
-    
-    // 开始监听网络请求
-    const loginRequest = page.waitForRequest(
-      (req) => req.url().includes('/auth/login') || req.url().includes('/login'),
-      { timeout: TIMEOUT_CONFIG.API_REQUEST }
-    ).catch(() => null);
+    // Click login button
+    console.log('\nStep 9: Click login button\n');
+
+    // Start listening for network requests
+    const loginRequest = page
+      .waitForRequest((req) => req.url().includes('/auth/login') || req.url().includes('/login'), {
+        timeout: TIMEOUT_CONFIG.API_REQUEST,
+      })
+      .catch(() => null);
 
     await loginButton.click();
-    console.log('   ✅ 已点击登录按钮');
+    console.log('   Clicked login button');
 
-    // 等待网络请求
-    console.log('   ⏳ 等待登录 API 请求...');
+    // Wait for network request
+    console.log('   Waiting for login API request...');
     const request = await loginRequest;
-    
+
     if (request) {
-      console.log(`   ✅ 检测到登录请求: ${request.url()}`);
+      console.log(`   Detected login request: ${request.url()}`);
     } else {
-      console.log('   ⚠️  未检测到登录 API 请求');
+      console.log('   No login API request detected');
     }
 
-    // 等待响应
+    // Wait for response
     await page.waitForTimeout(TIMEOUT_CONFIG.LONG_WAIT);
     await page.screenshot({ path: '/tmp/08-after-login-click.png' });
-    console.log('   📸 截图已保存: /tmp/08-after-login-click.png');
+    console.log('   Screenshot saved: /tmp/08-after-login-click.png');
 
-    // 检查是否有错误提示
-    console.log('\n📍 步骤 10: 检查登录结果\n');
-    
+    // Check for error messages
+    console.log('\nStep 10: Check login result\n');
+
     const errorSnackbar = page.locator('.v-snackbar:visible, [role="alert"]:visible');
     const hasError = await errorSnackbar.isVisible().catch(() => false);
-    
+
     if (hasError) {
       const errorText = await errorSnackbar.textContent();
-      console.log(`   ❌ 发现错误提示: "${errorText}"`);
+      console.log(`   Error message found: "${errorText}"`);
       await page.screenshot({ path: '/tmp/09-login-error.png' });
-      console.log('   📸 错误截图: /tmp/09-login-error.png');
     }
 
-    // 检查 URL 是否改变
+    // Check if URL has changed
     const currentUrl = page.url();
-    console.log(`   当前 URL: ${currentUrl}`);
-    
+    console.log(`   Current URL: ${currentUrl}`);
+
     if (currentUrl.includes(WEB_CONFIG.LOGIN_PATH)) {
-      console.log('   ⚠️  仍在登录页面，登录可能失败');
+      console.log('   Still on login page, login may have failed');
     } else {
-      console.log('   ✅ 已离开登录页面');
+      console.log('   Left login page');
     }
 
-    // 检查 localStorage
+    // Check localStorage
     const authInfo = await page.evaluate(() => {
       const read = (key: string) =>
-        localStorage.getItem(key) || sessionStorage.getItem(key) ? '已存在' : '不存在';
+        localStorage.getItem(key) || sessionStorage.getItem(key) ? 'exists' : 'missing';
 
       return {
         accessToken: read('access_token'),
         refreshToken: read('refresh_token'),
         rememberToken: read('remember_token'),
         userInfo:
-          read('auth') === '已存在' || read('authentication') === '已存在'
-            ? '已存在'
-            : '不存在',
+          read('auth') === 'exists' || read('authentication') === 'exists' ? 'exists' : 'missing',
         allKeys: {
           local: Object.keys(localStorage),
           session: Object.keys(sessionStorage),
@@ -282,7 +296,7 @@ test.describe('Login Debug - 登录调试', () => {
       };
     });
 
-    console.log('   localStorage 状态:');
+    console.log('   localStorage status:');
     console.log(`     - access_token: ${authInfo.accessToken}`);
     console.log(`     - refresh_token: ${authInfo.refreshToken}`);
     console.log(`     - remember_token: ${authInfo.rememberToken}`);
@@ -291,29 +305,28 @@ test.describe('Login Debug - 登录调试', () => {
     console.log(`     - sessionStorage keys: ${authInfo.allKeys.session.join(', ')}`);
 
     await page.screenshot({ path: '/tmp/10-final-state.png' });
-    console.log('   📸 最终状态截图: /tmp/10-final-state.png');
 
     console.log('\n' + '='.repeat(80));
-    console.log('🏁 登录调试测试结束');
+    console.log('Login debug test finished');
     console.log('='.repeat(80) + '\n');
 
-    // 断言：登录应该成功
+    // Assert: login should succeed
     expect(currentUrl).not.toContain(WEB_CONFIG.LOGIN_PATH);
-  expect(authInfo.accessToken).toBe('已存在');
+    expect(authInfo.accessToken).toBe('exists');
   });
 
-  test('[DEBUG] 测试 API 健康检查', async ({ page }) => {
-    console.log('\n🏥 测试 API 健康检查\n');
+  test('[DEBUG] API health check', async ({ page }) => {
+    console.log('\nTesting API health check\n');
 
     const healthUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.API_PREFIX}${API_CONFIG.HEALTH_ENDPOINT}`;
-    console.log(`   健康检查 URL: ${healthUrl}`);
+    console.log(`   Health check URL: ${healthUrl}`);
 
     await page.goto(healthUrl);
     const content = await page.textContent('body');
-    
-    console.log(`   响应内容: ${content}`);
-    
+
+    console.log(`   Response content: ${content}`);
+
     expect(content).toContain('ok');
-    console.log('   ✅ API 健康检查通过');
+    console.log('   API health check passed');
   });
 });

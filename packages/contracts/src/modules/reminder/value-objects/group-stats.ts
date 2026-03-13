@@ -1,26 +1,23 @@
 /**
  * Group Stats Value Object
- * 分组统计信息值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 分组统计信息 - Server 接口
- */
+/** Group stats - Server interface. */
 export interface IGroupStatsServer {
-  /** 总模板数 */
+  /** Total template count */
   totalTemplates: number;
-  /** 实际启用的模板数 */
+  /** Actually active template count */
   activeTemplates: number;
-  /** 实际暂停的模板数 */
+  /** Actually paused template count */
   pausedTemplates: number;
-  /** selfEnabled = true 的模板数 */
+  /** Templates with selfEnabled = true */
   selfEnabledTemplates: number;
-  /** selfEnabled = false 的模板数 */
+  /** Templates with selfEnabled = false */
   selfPausedTemplates: number;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -30,12 +27,10 @@ export interface IGroupStatsServer {
     >,
   ): IGroupStatsServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 分组统计信息 - Client 接口
- */
+/** Group stats - Client interface. */
 export interface IGroupStatsClient {
   totalTemplates: number;
   activeTemplates: number;
@@ -43,16 +38,16 @@ export interface IGroupStatsClient {
   selfEnabledTemplates: number;
   selfPausedTemplates: number;
 
-  // UI 辅助属�?
-  templateCountText: string; // "5 个提�?
-  activeStatusText: string; // "3 个活�?
+  // UI helper properties
+  templateCountText: string; // "5 reminders"
+  activeStatusText: string; // "3 active"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Group Stats Server DTO
@@ -89,7 +84,7 @@ export interface GroupStatsPersistenceDTO {
   self_paused_templates: number;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type GroupStatsServer = IGroupStatsServer;
 export type GroupStatsClient = IGroupStatsClient;

@@ -1,11 +1,10 @@
 /**
  * Rule Aggregate Root - Domain Client
- * 规则聚合�?- 领域客户�?
  *
- * Client 端的规则提供�?
- * - 规则浏览和搜�?
- * - UI 展示逻辑（格式化、状态标签）
- * - 乐观更新支持
+ * Provides client-side rule capabilities:
+ * - Rule browsing and search
+ * - UI display logic (formatting, status labels)
+ * - Optimistic update support
  */
 
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
@@ -17,10 +16,10 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
 import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 
-// ================= 内部状态接�?=================
+// ================= Internal State Interface =================
 
 /**
- * Rule 客户端内部状态
+ * Internal state for the Rule client-side aggregate.
  */
 export interface RuleState {
   id: RuleId;
@@ -39,126 +38,102 @@ export interface RuleState {
   updatedAt: Date;
 }
 
-// ================= 聚合根实�?=================
+// ================= Aggregate Root Implementation =================
 
 /**
- * Rule 聚合�?- Client �?
+ * Rule Aggregate Root - Client side.
  *
- * 提供规则的客户端视图，支持：
- * - �?API 响应创建实例
- * - UI 辅助方法（状态格式化、标签过滤）
- * - 数据转换（toDTO�?
+ * Provides a client-side view of a rule, supporting:
+ * - Instance creation from API responses
+ * - UI helper methods (status formatting, tag filtering)
+ * - Data conversion (toDTO)
  */
 export class Rule extends AggregateRoot<RuleId> {
   private readonly _props: RuleState;
 
-  // ================= 构造函�?(Private) =================
+  // ================= Constructor (Private) =================
 
   private constructor(state: RuleState) {
     super(state.id);
     this._props = state;
   }
 
-  // ================= 公共属�?(Getters) =================
+  // ================= Public Properties (Getters) =================
 
   /**
-   * 规则编码（例如：DDD-001�?
+   * Rule code (e.g. DDD-001).
    */
   get code(): string {
     return this._props.code;
   }
 
-  /**
-   * 规则标题
-   */
+  /** Rule title. */
   get title(): string {
     return this._props.title;
   }
 
-  /**
-   * 规则描述
-   */
+  /** Rule description. */
   get description(): string {
     return this._props.description;
   }
 
-  /**
-   * 严重程度：Mandatory（强制）�?Recommended（推荐）
-   */
+  /** Severity level: Mandatory or Recommended. */
   get severity(): RuleSeverity {
     return this._props.severity;
   }
 
-  /**
-   * 规则状态：Draft（草稿）、Active（生效）、Deprecated（废弃）
-   */
+  /** Rule status: Draft, Active, or Deprecated. */
   get status(): RuleStatus {
     return this._props.status;
   }
 
-  /**
-   * 废弃原因（仅当状态为 Deprecated 时有值）
-   */
+  /** Deprecation reason (only set when status is Deprecated). */
   get deprecationReason(): string | null {
     return this._props.deprecationReason;
   }
 
-  /**
-   * 替代规则�?ID（仅当状态为 Deprecated 时有值）
-   */
+  /** Replacement rule ID (only set when status is Deprecated). */
   get replacementRuleId(): RuleId | null {
     return this._props.replacementRuleId;
   }
 
-  /**
-   * 代码中的实际应用位置（文件路径或 URL�?
-   */
+  /** Live reference location in code (file path or URL). */
   get liveReferenceLocation(): string | null {
     return this._props.liveReferenceLocation;
   }
 
-  /**
-   * 标签列表（例如：['ddd', 'entity', 'value-object']�?
-   */
+  /** Tag list (e.g. ['ddd', 'entity', 'value-object']). */
   get tags(): RuleTag[] {
     return this._props.tags;
   }
 
-  /**
-   * 代码示例列表（Good Example 和 Bad Example）
-   */
+  /** Code snippet list (good examples and bad examples). */
   get codeSnippets(): CodeSnippet[] {
     return this._props.codeSnippets;
   }
 
-  /**
-   * 创建�?ID
-   */
+  /** Author identity ID. */
   get authorId(): IdentityId {
     return this._props.authorId;
   }
 
-  /**
-   * 创建时间
-   */
+  /** Creation timestamp. */
   get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  /**
-   * 更新时间
-   */
+  /** Last updated timestamp. */
   get updatedAt(): Date {
     return this._props.updatedAt;
   }
 
-  // ================= UI 辅助方法 =================
+  // ================= UI Helper Methods =================
 
   /**
-   * 获取状态的中文显示名称
+   * Returns the display label for the current status.
    *
    * @example
-   * rule.displayStatus // '生效�?
+   * rule.displayStatus // 'Active'
    */
   get displayStatus(): string {
     const statusMap: Record<RuleStatus, string> = {
@@ -170,10 +145,10 @@ export class Rule extends AggregateRoot<RuleId> {
   }
 
   /**
-   * 获取严重程度的中文显示名�?
+   * Returns the display label for the severity level.
    *
    * @example
-   * rule.displaySeverity // '强制执行'
+   * rule.displaySeverity // 'Mandatory'
    */
   get displaySeverity(): string {
     const severityMap: Record<RuleSeverity, string> = {
@@ -184,7 +159,7 @@ export class Rule extends AggregateRoot<RuleId> {
   }
 
   /**
-   * 获取严重程度�?UI 标签颜色
+   * Returns the UI label color for the severity level.
    *
    * @returns 'error' | 'warning'
    */
@@ -193,7 +168,7 @@ export class Rule extends AggregateRoot<RuleId> {
   }
 
   /**
-   * 获取状态的 UI 标签颜色
+   * Returns the UI label color for the status.
    *
    * @returns 'success' | 'info' | 'default'
    */
@@ -206,24 +181,20 @@ export class Rule extends AggregateRoot<RuleId> {
     return colorMap[this._props.status];
   }
 
-  /**
-   * 获取所�?Good Example 代码示例
-   */
+  /** Returns all "good example" code snippets. */
   get goodExamples(): CodeSnippet[] {
     return this._props.codeSnippets.filter((s) => s.type === 'GoodExample');
   }
 
-  /**
-   * 获取所有 Bad Example 代码示例
-   */
+  /** Returns all "bad example" code snippets. */
   get badExamples(): CodeSnippet[] {
     return this._props.codeSnippets.filter((s) => s.type === 'BadExample');
   }
 
   /**
-   * 检查规则是否包含指定标�?
+   * Checks whether the rule has the specified tag.
    *
-   * @param tag - 标签名（不区分大小写�?
+   * @param tag - Tag name (case-insensitive)
    * @example
    * rule.hasTag('ddd') // true
    */
@@ -231,34 +202,28 @@ export class Rule extends AggregateRoot<RuleId> {
     return this._props.tags.some((t) => t.value.toLowerCase() === tag.toLowerCase());
   }
 
-  /**
-   * 检查规则是否已废弃
-   */
+  /** Checks whether the rule is deprecated. */
   public isDeprecated(): boolean {
     return this._props.status === 'Deprecated';
   }
 
-  /**
-   * 检查规则是否为草稿
-   */
+  /** Checks whether the rule is a draft. */
   public isDraft(): boolean {
     return this._props.status === 'Draft';
   }
 
-  /**
-   * 检查规则是否已生效
-   */
+  /** Checks whether the rule is active. */
   public isActive(): boolean {
     return this._props.status === 'Active';
   }
 
-  // ================= 工厂方法 (Factory Methods) =================
+  // ================= Factory Methods =================
 
   /**
-   * 从状态创建 Rule 实例
+   * Creates a Rule instance from state.
    *
-   * @param state - Rule 内部状态
-   * @returns Rule 实例
+   * @param state - Rule internal state
+   * @returns Rule instance
    *
    * @example
    * const rule = Rule.load(state);
@@ -267,12 +232,12 @@ export class Rule extends AggregateRoot<RuleId> {
     return new Rule(state);
   }
 
-  // ================= DTO 转换 =================
+  // ================= DTO Conversion =================
 
   /**
-   * 转换�?Client DTO
+   * Converts to a Client DTO.
    *
-   * @returns RuleClientDTO（可用于 API 请求�?
+   * @returns RuleClientDTO for API requests
    *
    * @example
    * const dto = rule.toDTO();

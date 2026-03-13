@@ -2,7 +2,7 @@
  * Authentication API Module Definition
  *
  * Implements IApiModule standard interface:
- * 1. Composition Root (AuthenticationContainer �?UseCases �?Handlers)
+ * 1. Composition Root (AuthenticationContainer -> UseCases -> Handlers)
  * 2. Route definition and mounting
  * 3. Initialization task registration
  *
@@ -68,7 +68,7 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root �?create container with shared database client
+    // 1. Composition Root - create container with shared database client
     const container = AuthenticationContainer.getInstance();
     const eventBusAdapter = createEventBusAdapter(eventBus);
     const { identityRepository, sessionRepository } =

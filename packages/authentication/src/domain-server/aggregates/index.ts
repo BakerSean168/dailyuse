@@ -1,6 +1,6 @@
 /**
  * Authentication Aggregates
- * 认证模块聚合根导�?
+ * Aggregate root exports for the authentication module.
  */
 
 export { AuthIdentity } from './auth-identity';

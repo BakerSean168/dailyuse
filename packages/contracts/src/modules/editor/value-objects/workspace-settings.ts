@@ -1,13 +1,10 @@
 /**
  * Workspace Settings Value Object
- * 工作区设置值对�?
  */
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 工作区设�?- Server 接口
- */
+/** Workspace Settings - Server interface. */
 export interface IWorkspaceSettingsServer {
   theme: string | null;
   fontSize: number | null;
@@ -19,10 +16,10 @@ export interface IWorkspaceSettingsServer {
   minimap: boolean | null;
   autoSave: {
     enabled: boolean;
-    interval: number; // �?
+    interval: number; // In seconds
   } | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -32,12 +29,10 @@ export interface IWorkspaceSettingsServer {
     >,
   ): IWorkspaceSettingsServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 工作区设�?- Client 接口
- */
+/** Workspace Settings - Client interface. */
 export interface IWorkspaceSettingsClient {
   theme: string;
   fontSize: number;
@@ -52,15 +47,15 @@ export interface IWorkspaceSettingsClient {
     interval: number;
   };
 
-  // UI 辅助属�?
-  autoSaveFormatted: string; // "�?30 �?
+  // UI helper properties
+  autoSaveFormatted: string; // e.g. "every 30 seconds"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Workspace Settings Server DTO
@@ -114,12 +109,12 @@ export interface WorkspaceSettingsPersistenceDTO {
   auto_save: string | null; // JSON string
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type WorkspaceSettingsServer = IWorkspaceSettingsServer;
 export type WorkspaceSettingsClient = IWorkspaceSettingsClient;
 
-// ============ 默认�?============
+// ============ Defaults ============
 
 export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettingsServerDTO = {
   theme: 'default',

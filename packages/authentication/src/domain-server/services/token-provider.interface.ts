@@ -1,56 +1,46 @@
 import type { Result } from '@dailyuse/contracts/result';
 
-// 1. 定义 Token 载荷 (Payload) 的标准结�?
-// 领域层决定了 Token 里必须包含哪些信息（�?userId, role 等）
+// 1. Standard structure for token payloads
+// The domain layer defines what information a token must contain (e.g. userId, role)
 export interface AccessTokenPayload {
-  identityId: string;       // Subject (通常�?User ID)
+  identityId: string; // Subject (typically the user ID)
   role?: string;
-  sessionId: string; // 建议放入 sessionId，方便关联会�?
+  sessionId: string; // Include sessionId for session correlation
 }
 
 export interface RefreshTokenPayload {
   identityId: string;
-  sessionId: string; // Refresh Token 必须绑定 Session
-  // jti?: string;   // 可选：JWT ID，用于防重放
+  sessionId: string; // Refresh token must be bound to a session
+  // jti?: string;   // Optional: JWT ID for replay prevention
 }
 
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresIn: number; // Access Token 的过期时间（秒，符合 OAuth2 标准�?
+  expiresIn: number; // Access token expiration time in seconds (per OAuth2 standard)
 }
 
-// 2. 定义接口 (Interface)
+// 2. Token provider interface
 export interface ITokenProvider {
-  /**
-   * 生成 Access Token (短效)
-   */
+  /** Generates a short-lived access token. */
   generateAccessToken(payload: AccessTokenPayload): string;
 
-  /**
-   * 生成 Refresh Token (长效)
-   */
+  /** Generates a long-lived refresh token. */
   generateRefreshToken(payload: RefreshTokenPayload): string;
 
-  /**
-   * 验证 Token 并解析载�?
-   */
+  /** Verifies a token and parses its payload. */
   verifyAccessToken(token: string): Result<AccessTokenPayload>;
-  
-  /**
-   * 验证 Refresh Token
-   */
+
+  /** Verifies a refresh token. */
   verifyRefreshToken(token: string): Result<RefreshTokenPayload>;
-  
-  /**
-   * 生成 Token 对的快捷方法
-   */
+
+  /** Convenience method for generating a token pair. */
   generateAuthTokens(payload: { identityId: string; sessionId: string }): AuthTokens;
 
-/**
- * �?Token 进行哈希处理（用于存�?Refresh Token 哈希�?
- * @param token 明文 Token
- * @returns 哈希�?
- */
+  /**
+   * Hashes a token (for storing refresh token hashes).
+   * @param token - The plaintext token
+   * @returns The hash value
+   */
   hash(token: string): string;
 }

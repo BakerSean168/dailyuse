@@ -1,32 +1,29 @@
 /**
  * Schedule Config Value Object
- * 调度配置值对�?
  */
 
 import type { Timezone } from './timezone';
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 调度配置 - Server 接口
- */
+/** Schedule config - Server interface. */
 export interface IScheduleConfigServer {
-  /** Cron 表达�?*/
+  /** Cron expression */
   cronExpression: string;
 
-  /** 时区 */
+  /** Timezone */
   timezone: Timezone;
 
-  /** 开始日期（可选，null 表示立即开始） */
+  /** Start date (optional, null means start immediately) */
   startDate: number | null;
 
-  /** 结束日期（可选，null 表示永不结束�?*/
+  /** End date (optional, null means never ends) */
   endDate: number | null;
 
-  /** 最大执行次数（可选，null 表示无限�?*/
+  /** Maximum execution count (optional, null means unlimited) */
   maxExecutions: number | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -42,50 +39,48 @@ export interface IScheduleConfigServer {
     >,
   ): IScheduleConfigServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 调度配置 - Client 接口
- */
+/** Schedule config - Client interface. */
 export interface IScheduleConfigClient {
-  /** Cron 表达�?*/
+  /** Cron expression */
   cronExpression: string;
 
-  /** 时区 */
+  /** Timezone */
   timezone: Timezone;
 
-  /** 开始日�?*/
+  /** Start date */
   startDate: Date | null;
 
-  /** 结束日期 */
+  /** End date */
   endDate: Date | null;
 
-  /** 最大执行次�?*/
+  /** Maximum execution count */
   maxExecutions: number | null;
 
-  // UI 辅助属�?
-  /** Cron 表达式的人类可读描述 */
-  cronDescription: string; // "每天 9:00"
+  // UI helper properties
+  /** Human-readable cron description */
+  cronDescription: string; // "Daily at 9:00"
 
-  /** 时区显示名称 */
-  timezoneDisplay: string; // "上海 (UTC+8)"
+  /** Timezone display name */
+  timezoneDisplay: string; // "Shanghai (UTC+8)"
 
-  /** 开始日期格式化 */
+  /** Formatted start date */
   startDateFormatted: string | null; // "2025-01-01 09:00"
 
-  /** 结束日期格式�?*/
+  /** Formatted end date */
   endDateFormatted: string | null;
 
-  /** 最大执行次数格式化 */
-  maxExecutionsFormatted: string; // "无限" | "100 �?
+  /** Formatted max executions */
+  maxExecutionsFormatted: string; // "Unlimited" | "100 times"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Schedule Config Server DTO
@@ -125,7 +120,7 @@ export interface ScheduleConfigPersistenceDTO {
   maxExecutions: number | null;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type ScheduleConfigServer = IScheduleConfigServer;
 export type ScheduleConfigClient = IScheduleConfigClient;

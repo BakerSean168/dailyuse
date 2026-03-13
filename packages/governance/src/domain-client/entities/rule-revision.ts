@@ -1,11 +1,10 @@
 /**
  * RuleRevision Entity - Domain Client
- * 规则修订记录实体 - 领域客户�?
  *
- * Client 端的修订记录提供�?
- * - 审计历史查看
- * - 变更详情展示
- * - UI 辅助方法（时间格式化、变更摘要）
+ * Provides client-side revision record capabilities:
+ * - Audit history viewing
+ * - Change detail display
+ * - UI helper methods (time formatting, change summaries)
  */
 
 import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revision-client';
@@ -13,10 +12,10 @@ import { Entity } from '@dailyuse/utils';
 import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
-// ================= 内部状态接�?=================
+// ================= Internal State Interface =================
 
 /**
- * RuleRevision 客户端内部状�?
+ * Internal state for the RuleRevision client-side entity.
  */
 export interface RuleRevisionState {
   id: RuleRevisionId;
@@ -30,24 +29,24 @@ export interface RuleRevisionState {
   createdAt: Date;
 }
 
-// ================= 实体实现 =================
+// ================= Entity Implementation =================
 
 /**
- * RuleRevision 实体 - Client 端
+ * RuleRevision Entity - Client side.
  *
- * 提供修订记录的客户端视图，支持：
- * - 从 API 响应创建实例
- * - UI 辅助方法（变更摘要、字段对比）
- * - 数据转换（toDTO）
+ * Provides a client-side view of revision records, supporting:
+ * - Instance creation from API responses
+ * - UI helper methods (change summaries, field comparisons)
+ * - Data conversion (toDTO)
  */
 export class RuleRevision extends Entity<RuleRevisionId> {
   private readonly _props: RuleRevisionState;
 
-  // ================= 构造函�?(Private) =================
+  // ================= Constructor (Private) =================
 
   private constructor(state: RuleRevisionState) {
     super(state.id);
-    // 防御性复制，确保不可变�?
+    // Defensive copy to ensure immutability
     this._props = {
       ...state,
       changedFields: [...state.changedFields],
@@ -56,71 +55,55 @@ export class RuleRevision extends Entity<RuleRevisionId> {
     };
   }
 
-  // ================= 公共属�?(Getters) =================
+  // ================= Public Properties (Getters) =================
 
-  /**
-   * 关联的规�?ID
-   */
+  /** Associated rule ID. */
   get ruleId(): RuleId {
     return this._props.ruleId;
   }
 
-  /**
-   * 修订版本号（�?1 开始递增�?
-   */
+  /** Revision number (incrementing from 1). */
   get revisionNumber(): number {
     return this._props.revisionNumber;
   }
 
-  /**
-   * 修改�?ID
-   */
+  /** Author identity ID. */
   get authorId(): IdentityId {
     return this._props.authorId;
   }
 
-  /**
-   * 变更的字段列�?
-   */
+  /** List of changed field names. */
   get changedFields(): readonly string[] {
     return this._props.changedFields;
   }
 
-  /**
-   * 修改前的�?
-   */
+  /** Previous field values before the change. */
   get previousValues(): Record<string, unknown> {
     return { ...this._props.previousValues };
   }
 
-  /**
-   * 修改后的�?
-   */
+  /** New field values after the change. */
   get newValues(): Record<string, unknown> {
     return { ...this._props.newValues };
   }
 
-  /**
-   * 变更类型
-   */
+  /** Type of change. */
   get changeType(): 'Created' | 'Updated' | 'Deprecated' | 'Reactivated' {
     return this._props.changeType;
   }
 
-  /**
-   * 创建时间
-   */
+  /** Creation timestamp. */
   get createdAt(): Date {
     return this._props.createdAt;
   }
 
-  // ================= UI 辅助方法 =================
+  // ================= UI Helper Methods =================
 
   /**
-   * 获取变更类型的中文显示名�?
+   * Returns the display label for the change type.
    *
    * @example
-   * revision.displayChangeType // '已更�?
+   * revision.displayChangeType // 'Updated'
    */
   get displayChangeType(): string {
     const typeMap: Record<typeof this._props.changeType, string> = {
@@ -133,7 +116,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   }
 
   /**
-   * 获取变更类型�?UI 标签颜色
+   * Returns the UI label color for the change type.
    *
    * @returns 'success' | 'info' | 'warning' | 'error'
    */
@@ -151,9 +134,9 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   }
 
   /**
-   * 获取相对时间格式（例如：'5分钟�?�?2小时�?�?
+   * Returns a relative time string (e.g. '5 minutes ago', '2 hours ago').
    *
-   * @returns 相对时间字符�?
+   * @returns Relative time string
    */
   get relativeCreatedAt(): string {
     const now = new Date();
@@ -167,16 +150,16 @@ export class RuleRevision extends Entity<RuleRevisionId> {
     if (diffHours < 24) return `${diffHours}小时前`;
     if (diffDays < 30) return `${diffDays}天前`;
 
-    // 超过 30 天，显示具体日期
+    // Beyond 30 days, show the exact date
     return this._props.createdAt.toLocaleDateString('zh-CN');
   }
 
   /**
-   * 生成变更摘要（用于列表展示）
+   * Generates a change summary for list display.
    *
    * @example
    * revision.changeSummary
-   * // '更新了字段：标题, 严重程度'
+   * // 'Updated fields: title, severity'
    */
   get changeSummary(): string {
     if (this._props.changeType === 'Created') {
@@ -195,15 +178,15 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   }
 
   /**
-   * 获取指定字段的变更详�?
+   * Returns the change details for a specific field.
    *
-   * @param field - 字段�?
+   * @param field - Field name
    * @returns { before: unknown, after: unknown } | null
    *
    * @example
    * const change = revision.getFieldChange('title');
    * if (change) {
-   *   console.log(`�?"${change.before}" 改为 "${change.after}"`);
+   *   console.log(`Changed from "${change.before}" to "${change.after}"`);
    * }
    */
   public getFieldChange(field: string): { before: unknown; after: unknown } | null {
@@ -217,25 +200,25 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   }
 
   /**
-   * 检查是否修改了指定字段
+   * Checks whether the specified field was changed in this revision.
    *
-   * @param field - 字段�?
+   * @param field - Field name
    * @example
    * if (revision.hasFieldChanged('severity')) {
-   *   console.log('严重程度已变�?);
+   *   console.log('Severity was changed');
    * }
    */
   public hasFieldChanged(field: string): boolean {
     return this._props.changedFields.includes(field);
   }
 
-  // ================= 工厂方法 (Factory Methods) =================
+  // ================= Factory Methods =================
 
   /**
-   * 从状态创建 RuleRevision 实例
+   * Creates a RuleRevision instance from state.
    *
-   * @param state - RuleRevision 内部状态
-   * @returns RuleRevision 实例
+   * @param state - RuleRevision internal state
+   * @returns RuleRevision instance
    *
    * @example
    * const revision = RuleRevision.load(state);
@@ -244,12 +227,12 @@ export class RuleRevision extends Entity<RuleRevisionId> {
     return new RuleRevision(state);
   }
 
-  // ================= DTO 转换 =================
+  // ================= DTO Conversion =================
 
   /**
-   * 转换�?Client DTO
+   * Converts to a Client DTO.
    *
-   * @returns RuleRevisionClientDTO（可用于 API 请求�?
+   * @returns RuleRevisionClientDTO for API requests
    *
    * @example
    * const dto = revision.toDTO();

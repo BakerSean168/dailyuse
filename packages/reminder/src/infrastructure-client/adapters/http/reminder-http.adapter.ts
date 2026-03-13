@@ -25,7 +25,7 @@ import type {
 /**
  * ReminderHttpAdapter
  *
- * HTTP 实现的提�?API 客户�?
+ * HTTP implementation of the Reminder API client.
  */
 export class ReminderHttpAdapter implements IReminderApiClient {
   private readonly templatesUrl = '/reminders/templates';
@@ -33,7 +33,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  // ===== 模板 CRUD =====
+  // ===== Template CRUD =====
 
   async createReminderTemplate(
     request: CreateReminderTemplateReq,
@@ -102,7 +102,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get('/reminders/upcoming', { params });
   }
 
-  // ===== 分组 CRUD =====
+  // ===== Group CRUD =====
 
   async createReminderGroup(
     request: CreateReminderGroupReq,

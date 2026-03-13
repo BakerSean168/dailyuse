@@ -1,8 +1,8 @@
 /**
  * Account Client Service
- * 客户端应用服�?�?协调 API 调用和客户端领域模型
  *
- * 所有方法返回 Result<T>，由 Composable 层处理成功/失败。
+ * Coordinates API calls and client-side domain model mapping.
+ * All methods return Result<T>, with success/failure handled by the Composable layer.
  */
 
 import type { Result } from '@dailyuse/contracts/result';

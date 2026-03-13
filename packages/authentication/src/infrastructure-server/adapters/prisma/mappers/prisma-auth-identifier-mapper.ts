@@ -1,11 +1,11 @@
 /**
  * Prisma AuthIdentifier Sub-Mapper
  *
- * 子表映射器：处理 auth_identifiers �?�?AuthIdentifierDTO 值对�?
+ * Sub-table mapper: handles auth_identifiers <-> AuthIdentifierDTO conversion.
  *
- * 职责�?
- * - DB Row �?AuthIdentifierDTO (读数�?
- * - AuthIdentifierDTO �?Prisma CreateInput (写数�?
+ * Responsibilities:
+ * - DB Row -> AuthIdentifierDTO (read path)
+ * - AuthIdentifierDTO -> Prisma CreateInput (write path)
  */
 
 import type { Prisma } from '@dailyuse/database';
@@ -14,7 +14,7 @@ import type { PrismaAuthIdentifierRow } from '../../../types';
 
 export class PrismaAuthIdentifierMapper {
   /**
-   * Row �?Domain DTO (读数�?
+   * Row -> Domain DTO (read path).
    */
   static toDomainDTO(row: PrismaAuthIdentifierRow): AuthIdentifierDTO {
     if (row.type === 'Email') {
@@ -35,7 +35,7 @@ export class PrismaAuthIdentifierMapper {
   }
 
   /**
-   * Domain DTO �?Prisma CreateInput (写数�?
+   * Domain DTO -> Prisma CreateInput (write path).
    */
   static toPrismaCreate(
     identifier: AuthIdentifierDTO,

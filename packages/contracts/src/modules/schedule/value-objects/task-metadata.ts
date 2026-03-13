@@ -1,29 +1,26 @@
 /**
  * Task Metadata Value Object
- * 任务元数据值对�?
  */
 
 import type { TaskPriority } from './task-priority';
 
-// ============ 接口定义 ============
+// ============ Interface Definitions ============
 
-/**
- * 任务元数�?- Server 接口
- */
+/** Task metadata - Server interface. */
 export interface ITaskMetadataServer {
-  /** 业务数据（JSON�?*/
+  /** Business data (JSON) */
   payload: Record<string, unknown>;
 
-  /** 标签列表 */
+  /** Tag list */
   tags: string[];
 
-  /** 优先�?*/
+  /** Priority */
   priority: TaskPriority;
 
-  /** 超时时间（毫秒，null 表示不超时） */
+  /** Timeout (ms, null means no timeout) */
   timeout: number | null;
 
-  // 值对象方�?
+  // Value object methods
   with(
     updates: Partial<
       Omit<
@@ -33,47 +30,45 @@ export interface ITaskMetadataServer {
     >,
   ): ITaskMetadataServer;
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-/**
- * 任务元数�?- Client 接口
- */
+/** Task metadata - Client interface. */
 export interface ITaskMetadataClient {
-  /** 业务数据 */
+  /** Business data */
   payload: Record<string, unknown>;
 
-  /** 标签列表 */
+  /** Tag list */
   tags: string[];
 
-  /** 优先�?*/
+  /** Priority */
   priority: TaskPriority;
 
-  /** 超时时间 */
+  /** Timeout */
   timeout: number | null;
 
-  // UI 辅助属�?
-  /** 优先级显�?*/
-  priorityDisplay: string; // "�? | "普�? | "�? | "紧�?
+  // UI helper properties
+  /** Priority display text */
+  priorityDisplay: string; // "Low" | "Normal" | "High" | "Urgent"
 
-  /** 优先级颜�?*/
+  /** Priority color */
   priorityColor: string; // "gray" | "blue" | "orange" | "red"
 
-  /** 标签显示 */
+  /** Tags display text */
   tagsDisplay: string; // "tag1, tag2, tag3"
 
-  /** 超时时间格式�?*/
-  timeoutFormatted: string; // "30 �? | "无限�?
+  /** Formatted timeout */
+  timeoutFormatted: string; // "30s" | "No limit"
 
-  /** Payload 摘要 */
-  payloadSummary: string; // "3 个字�?
+  /** Payload summary */
+  payloadSummary: string; // "3 fields"
 
-  // 值对象方�?
+  // Value object methods
 
-  // DTO 转换方法
+  // DTO conversion methods
 }
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Task Metadata Server DTO
@@ -110,7 +105,7 @@ export interface TaskMetadataPersistenceDTO {
   timeout: number | null;
 }
 
-// ============ 类型导出 ============
+// ============ Type Exports ============
 
 export type TaskMetadataServer = ITaskMetadataServer;
 export type TaskMetadataClient = ITaskMetadataClient;

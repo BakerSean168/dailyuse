@@ -1,6 +1,7 @@
 /**
  * Account Aggregate Root - Domain Client
- * 账户聚合�?- 客户�?
+ *
+ * Read-only client-side representation of the Account aggregate.
  */
 
 import type { AccountClientDTO } from '@dailyuse/contracts/account';

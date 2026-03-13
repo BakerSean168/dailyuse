@@ -1,6 +1,5 @@
 /**
  * Resource Entity - Server Interface
- * 资源实体 - 服务端接�?
  */
 import type {
   ResourceId,
@@ -20,24 +19,24 @@ import type {
   ExternalLink,
 } from '../value-objects';
 
-// ============ DTO 定义 ============
+// ============ DTO Definitions ============
 
 /**
  * Resource Server DTO
  */
 export interface ResourceServerDTO {
   id: string;
-  repositoryId: string; // 外键 - 聚合根ID
+  repositoryId: string; // Foreign key - aggregate root ID
   identityId: string;
-  folderId: string | null; // 外键 - 所属文件夹
+  folderId: string | null; // Foreign key - parent folder
 
   name: string;
 
   type: ResourceType;
   path: string;
 
-  content: string | null; // Markdown 内容 (TEXT)
-  externalLinks: ExternalLink[] | null; // 外部链接列表 (ARRAY)
+  content: string | null; // Markdown content (TEXT)
+  externalLinks: ExternalLink[] | null; // External links list (ARRAY)
 
   // file
   mimeType: string | null;
@@ -50,7 +49,7 @@ export interface ResourceServerDTO {
   stats: ResourceStatsDTO; // JSONB
   status: ResourceStatus;
 
-  // 同步字段
+  // Sync fields
   version: number;
   createdAt: TransferDate;
   updatedAt: TransferDate;

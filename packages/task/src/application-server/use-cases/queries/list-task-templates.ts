@@ -1,8 +1,8 @@
 /**
  * List Task Templates Service
  *
- * 获取任务模板列表（按账户�?
- * 获取时自动检查并补充实例
+ * Retrieves task templates by account, automatically checking
+ * and replenishing instances for active templates.
  */
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
@@ -35,7 +35,7 @@ export class ListTaskTemplates {
   async execute(request: QueryTaskTemplatesReq): Promise<Result<QueryTaskTemplatesRes>> {
     let templates: TaskTemplate[];
 
-    // 根据不同条件查询
+    // Query by different conditions
     if (request.status && request.status.length > 0) {
       templates = await this.templateRepository.findByStatus(
         request.identityId,
@@ -51,11 +51,11 @@ export class ListTaskTemplates {
       templates = await this.templateRepository.findByIdentityId(request.identityId);
     }
 
-    // 自动检查并补充每个 ACTIVE 模板的实例（异步执行，不阻塞�?
+    // Auto-check and replenish instances for each ACTIVE template (async, non-blocking)
     for (const template of templates) {
       if (template.status === TaskTemplateStatus.Active) {
         this.checkAndRefillInstances(template).catch((error) => {
-          console.error(`�?补充模板 "${template.title}" 实例失败:`, error);
+          console.error(`Failed to replenish instances for template "${template.title}":`, error);
         });
       }
     }
@@ -66,9 +66,7 @@ export class ListTaskTemplates {
     });
   }
 
-  /**
-   * 检查并补充模板实例
-   */
+  /** Checks and replenishes instances for a template if needed. */
   private async checkAndRefillInstances(template: TaskTemplate): Promise<void> {
     try {
       if (this.generationService.shouldRefillInstances(template)) {
@@ -91,7 +89,7 @@ export class ListTaskTemplates {
         }
       }
     } catch (error) {
-      console.error(`�?[ListTaskTemplates] 补充实例失败:`, error);
+      console.error(`[ListTaskTemplates] Failed to replenish instances:`, error);
     }
   }
 }

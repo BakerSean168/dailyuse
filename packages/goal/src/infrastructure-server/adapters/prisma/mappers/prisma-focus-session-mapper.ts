@@ -11,9 +11,7 @@ import { IdentityId } from '@dailyuse/domain-shared';
 import { FocusSessionId, GoalId } from '@/domain-shared';
 
 export class PrismaFocusSessionMapper {
-  /**
-   * Prisma row â†?Domain FocusSession entity
-   */
+  /** Maps a Prisma row to a Domain FocusSession entity. */
   static toDomain(data: PrismaFocusSession): FocusSession {
     return FocusSession.load({
       id: FocusSessionId.of(data.id),
@@ -37,9 +35,7 @@ export class PrismaFocusSessionMapper {
     });
   }
 
-  /**
-   * Batch conversion: Prisma â†?Domain
-   */
+  /** Batch converts Prisma FocusSession rows to Domain entities. */
   static toDomainList(rows: PrismaFocusSession[]): FocusSession[] {
     return rows.map((row) => PrismaFocusSessionMapper.toDomain(row));
   }

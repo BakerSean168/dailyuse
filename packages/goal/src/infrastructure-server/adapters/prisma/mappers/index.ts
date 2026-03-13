@@ -1,8 +1,8 @@
 /**
  * Prisma Mappers - Goal Module
- * 
- * 统一导出 Goal 模块的所�?Prisma 数据映射器�?
- * 每个 Mapper 实现 领域实体 �?Prisma 数据模型 的双向转换�?
+ *
+ * Barrel export for all Goal module Prisma data mappers.
+ * Each mapper handles bidirectional conversion between domain entities and Prisma models.
  */
 
 export { PrismaGoalMapper, type PrismaGoalWithRelations } from './prisma-goal-mapper';

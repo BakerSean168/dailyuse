@@ -1,7 +1,7 @@
 /**
  * Register Service
  *
- * 用户注册应用服务
+ * Application service for user registration.
  */
 
 import type { IAuthIdentityRepository, IAuthSessionRepository } from '@/domain-server';
@@ -31,28 +31,28 @@ export class Register {
   }
 
   /**
-   * 执行注册
+   * Execute registration flow.
    */
   async execute(input: RegisterByEmailReq, cx: Context): Promise<AuthResponseDTO> {
-    // 1. 通过 RegistrationService 创建 AuthIdentity（含密码哈希和唯一性检查）
+    // 1. Create AuthIdentity via RegistrationService (handles password hashing and uniqueness check)
     const identity = await this.domainRegistrationService.registerByEmail({
       email: input.email,
       password: input.password,
     });
 
-    // 2. 创建会话（领域事件在内部创建�?
+    // 2. Create session (domain events created internally)
     const { AuthSession: session, tokens } = AuthSession.start({
       identityId: identity.id,
       deviceId: cx.deviceId,
       tokenProvider: this.tokenProvider,
     });
 
-    // 3. 保存会话（仓储层自动发送领域事件）
+    // 3. Save session (repository dispatches domain events automatically)
     await this.sessionRepository.save(session);
 
     const sessionDto = session.toClientDTO(true);
 
-    // 4. 返回 AuthResponse
+    // 4. Return AuthResponse
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,

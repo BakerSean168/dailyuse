@@ -1,6 +1,7 @@
 /**
  * Account Domain-Shared Layer
- * 值对象实�?- 前后端共�?
+ *
+ * Value object implementations shared between client and server.
  */
 
 export { AccountSettings } from './value-objects/account-settings';

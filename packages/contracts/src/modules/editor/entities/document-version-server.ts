@@ -1,34 +1,39 @@
 /**
  * DocumentVersion Entity - Server Interface
- * 文档版本实体 - 服务端接�?
  */
 
-import type { DocumentVersionId, DocumentId, EditorWorkspaceId, IdentityId, TransferDate, DomainDate, PersistenceDate } from '../../../primitives';
+import type {
+  DocumentVersionId,
+  DocumentId,
+  EditorWorkspaceId,
+  IdentityId,
+  TransferDate,
+  DomainDate,
+  PersistenceDate,
+} from '../../../primitives';
 import type { VersionChangeType } from '../value-objects/version-change-type';
 import type { DocumentVersionClientDTO } from './document-version-client';
 
 /**
  * Document Version Server DTO
- * 文档版本服务�?DTO
  */
 export interface DocumentVersionServerDTO {
   id: DocumentVersionId;
-  documentId: DocumentId; // 所属文�?ID
-  workspaceId: EditorWorkspaceId; // 所属工作区 ID（聚合根外键�?
+  documentId: DocumentId; // Parent document ID
+  workspaceId: EditorWorkspaceId; // Parent workspace ID (aggregate root FK)
   identityId: IdentityId;
-  versionNumber: number; // 版本号（递增�?
+  versionNumber: number; // Auto-incrementing version number
   changeType: VersionChangeType;
-  contentHash: string; // 内容哈希�?
-  contentDiff: string | null; // 内容差异（diff 格式�?
-  changeDescription: string | null; // 变更描述
-  previousVersionId: DocumentVersionId | null; // 上一个版�?ID
-  createdBy: string | null; // 创建�?
+  contentHash: string; // Content hash
+  contentDiff: string | null; // Content diff
+  changeDescription: string | null; // Change description
+  previousVersionId: DocumentVersionId | null; // Previous version ID
+  createdBy: string | null; // Creator
   createdAt: TransferDate;
 }
 
 /**
- * Document Version Persistence DTO
- * 文档版本持久�?DTO（数据库字段，snake_case�?
+ * Document Version Persistence DTO (database fields, snake_case).
  */
 export interface DocumentVersionPersistenceDTO {
   id: DocumentVersionId;
