@@ -25,10 +25,14 @@
 
     // 路径别名：仅用于包内部导入
     "paths": {
-      "@/*": ["./src/*"]
-
-      // 依赖的包通过编译时依赖引用
-      // TypeScript 会从它们的 dist 目录读取类型
+      "@/*": ["./src/*"],
+      "@dailyuse/utils": ["../../packages/utils/src/index.ts"],
+      "@dailyuse/utils/*": ["../../packages/utils/src/*/index.ts"],
+      "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/*": [
+        "../../packages/contracts/src/modules/*/index.ts",
+        "../../packages/contracts/src/*/index.ts"
+      ]
     }
   },
 
