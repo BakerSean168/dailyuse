@@ -99,6 +99,7 @@
     },
     "typecheck": {
       "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
       "options": {
         "command": "tsc --noEmit",
         "cwd": "apps/desktop"

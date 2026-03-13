@@ -23,6 +23,7 @@
     },
     "typecheck": {
       "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
       "options": {
         "command": "tsc --noEmit",
         "cwd": "packages/app-vue"

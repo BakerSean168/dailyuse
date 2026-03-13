@@ -20,6 +20,12 @@ export default mergeConfig(
         '../../packages/authentication/src/infrastructure-client/index.ts',
       '@dailyuse/ai/application-client': '../../packages/ai/src/application-client/index.ts',
       '@dailyuse/ai/infrastructure-client': '../../packages/ai/src/infrastructure-client/index.ts',
+      '@dailyuse/goal/infrastructure-client':
+        '../../packages/goal/src/infrastructure-client/index.ts',
+      '@dailyuse/repository/infrastructure-client':
+        '../../packages/repository/src/infrastructure-client/index.ts',
+      '@dailyuse/task/infrastructure-client':
+        '../../packages/task/src/infrastructure-client/index.ts',
     },
   }),
   defineConfig({

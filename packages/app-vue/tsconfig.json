@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
@@ -39,6 +40,7 @@
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/schedule/domain-client": ["../../packages/schedule/src/domain-client/index.ts"],
       "@dailyuse/task/domain-client": ["../../packages/task/src/domain-client/index.ts"],
       "@dailyuse/repository/domain-client": ["../../packages/repository/src/domain-client/index.ts"]
     }
