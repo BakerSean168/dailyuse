@@ -118,7 +118,11 @@ export class UpdateRuleUseCase {
         changeType: 'Updated',
       });
 
-      saveResult = await this.ruleRepository.saveWithRevision(rule, revision);
+      if (!revision.ok) {
+        return error(revision.error.code, revision.error.message, revision.error.details);
+      }
+
+      saveResult = await this.ruleRepository.saveWithRevision(rule, revision.data);
     } else {
       saveResult = await this.ruleRepository.save(rule);
     }

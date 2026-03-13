@@ -166,8 +166,12 @@ export class CreateRuleUseCase {
       changeType: 'Created',
     });
 
+    if (!revision.ok) {
+      return error(revision.error.code, revision.error.message, revision.error.details);
+    }
+
     // Persist rule + revision atomically
-    const saveResult = await this.ruleRepository.saveWithRevision(rule, revision);
+    const saveResult = await this.ruleRepository.saveWithRevision(rule, revision.data);
     if (!saveResult.ok) {
       return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
     }
