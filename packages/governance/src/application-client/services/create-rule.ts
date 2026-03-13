@@ -13,42 +13,15 @@ import { ruleFromDTO } from '../mappers/rule-dto-mapper';
 
 /**
  * Create Rule
+ *
+ * Use case for creating rules via HTTP API. Requires IRuleApiClient dependency
+ * injected via constructor for proper separation of concerns and testability.
  */
 export class CreateRule {
-  private static instance: CreateRule;
-
-  private constructor(private readonly apiClient: IRuleApiClient) {}
+  constructor(private readonly apiClient: IRuleApiClient) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(apiClient: IRuleApiClient): CreateRule {
-    CreateRule.instance = new CreateRule(apiClient);
-    return CreateRule.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(apiClient?: IRuleApiClient): CreateRule {
-    if (!CreateRule.instance) {
-      if (!apiClient) {
-        throw new Error('CreateRule: API client is required for initial instance creation');
-      }
-      CreateRule.instance = CreateRule.createInstance(apiClient);
-    }
-    return CreateRule.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    CreateRule.instance = undefined as unknown as CreateRule;
-  }
-
-  /**
-   * 执行用例
+   * Execute: Create rule via API and return domain-model Rule
    */
   async execute(req: CreateRuleReq): Promise<Result<Rule>> {
     const result = await this.apiClient.createRule(req);

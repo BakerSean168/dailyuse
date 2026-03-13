@@ -13,42 +13,15 @@ import { ruleFromDTO } from '../mappers/rule-dto-mapper';
 
 /**
  * Update Rule
+ *
+ * Use case for updating rules via HTTP API. Requires IRuleApiClient dependency
+ * injected via constructor for proper separation of concerns and testability.
  */
 export class UpdateRule {
-  private static instance: UpdateRule;
-
-  private constructor(private readonly apiClient: IRuleApiClient) {}
+  constructor(private readonly apiClient: IRuleApiClient) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(apiClient: IRuleApiClient): UpdateRule {
-    UpdateRule.instance = new UpdateRule(apiClient);
-    return UpdateRule.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(apiClient?: IRuleApiClient): UpdateRule {
-    if (!UpdateRule.instance) {
-      if (!apiClient) {
-        throw new Error('UpdateRule: API client is required for initial instance creation');
-      }
-      UpdateRule.instance = UpdateRule.createInstance(apiClient);
-    }
-    return UpdateRule.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    UpdateRule.instance = undefined as unknown as UpdateRule;
-  }
-
-  /**
-   * 执行用例：更新规则
+   * Execute: Update rule via API and return domain-model Rule
    */
   async execute(ruleId: string, req: UpdateRuleReq): Promise<Result<Rule>> {
     const result = await this.apiClient.updateRule(ruleId, req);

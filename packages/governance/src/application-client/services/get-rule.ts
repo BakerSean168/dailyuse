@@ -13,42 +13,15 @@ import { ruleFromDTO } from '../mappers/rule-dto-mapper';
 
 /**
  * Get Rule
+ *
+ * Use case for fetching rules by ID or code via HTTP API. Requires IRuleApiClient
+ * dependency injected via constructor for proper separation of concerns and testability.
  */
 export class GetRule {
-  private static instance: GetRule;
-
-  private constructor(private readonly apiClient: IRuleApiClient) {}
+  constructor(private readonly apiClient: IRuleApiClient) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(apiClient: IRuleApiClient): GetRule {
-    GetRule.instance = new GetRule(apiClient);
-    return GetRule.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(apiClient?: IRuleApiClient): GetRule {
-    if (!GetRule.instance) {
-      if (!apiClient) {
-        throw new Error('GetRule: API client is required for initial instance creation');
-      }
-      GetRule.instance = GetRule.createInstance(apiClient);
-    }
-    return GetRule.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    GetRule.instance = undefined as unknown as GetRule;
-  }
-
-  /**
-   * 执行用例：通过 ID 或 code 获取规则
+   * Execute: Get rule by ID or code via API and return domain-model Rule
    */
   async execute(req: GetRuleReq): Promise<Result<Rule>> {
     const result = await this.apiClient.getRule(req);

@@ -17,42 +17,15 @@ interface ListRulesResult {
 
 /**
  * List Rules
+ *
+ * Use case for listing rules via HTTP API. Requires IRuleApiClient dependency
+ * injected via constructor for proper separation of concerns and testability.
  */
 export class ListRules {
-  private static instance: ListRules;
-
-  private constructor(private readonly apiClient: IRuleApiClient) {}
+  constructor(private readonly apiClient: IRuleApiClient) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(apiClient: IRuleApiClient): ListRules {
-    ListRules.instance = new ListRules(apiClient);
-    return ListRules.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(apiClient?: IRuleApiClient): ListRules {
-    if (!ListRules.instance) {
-      if (!apiClient) {
-        throw new Error('ListRules: API client is required for initial instance creation');
-      }
-      ListRules.instance = ListRules.createInstance(apiClient);
-    }
-    return ListRules.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    ListRules.instance = undefined as unknown as ListRules;
-  }
-
-  /**
-   * 执行用例：获取规则列表
+   * Execute: List rules via API with pagination
    */
   async execute(query?: ListRulesQuery): Promise<Result<ListRulesResult>> {
     const result = await this.apiClient.listRules(query);

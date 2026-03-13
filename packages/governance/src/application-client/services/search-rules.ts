@@ -17,42 +17,15 @@ interface SearchRulesResult {
 
 /**
  * Search Rules
+ *
+ * Use case for searching rules via HTTP API. Requires IRuleApiClient dependency
+ * injected via constructor for proper separation of concerns and testability.
  */
 export class SearchRules {
-  private static instance: SearchRules;
-
-  private constructor(private readonly apiClient: IRuleApiClient) {}
+  constructor(private readonly apiClient: IRuleApiClient) {}
 
   /**
-   * 创建服务实例（支持依赖注入）
-   */
-  static createInstance(apiClient: IRuleApiClient): SearchRules {
-    SearchRules.instance = new SearchRules(apiClient);
-    return SearchRules.instance;
-  }
-
-  /**
-   * 获取服务单例
-   */
-  static getInstance(apiClient?: IRuleApiClient): SearchRules {
-    if (!SearchRules.instance) {
-      if (!apiClient) {
-        throw new Error('SearchRules: API client is required for initial instance creation');
-      }
-      SearchRules.instance = SearchRules.createInstance(apiClient);
-    }
-    return SearchRules.instance;
-  }
-
-  /**
-   * 重置实例（用于测试）
-   */
-  static resetInstance(): void {
-    SearchRules.instance = undefined as unknown as SearchRules;
-  }
-
-  /**
-   * 执行用例：搜索规则
+   * Execute: Search rules via API with pagination
    */
   async execute(query: SearchRulesQuery): Promise<Result<SearchRulesResult>> {
     const result = await this.apiClient.searchRules(query);
