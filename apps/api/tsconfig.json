@@ -65,6 +65,10 @@
       // 项目内部别名：@/ 指向 src 目录
       "@/*": ["./src/*"],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
+      "@dailyuse/contracts/*": [
+        "../../packages/contracts/src/modules/*/index.ts",
+        "../../packages/contracts/src/*/index.ts"
+      ],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"]
 
       // 其他 @dailyuse/* 仍优先通过 package.json exports → dist 解析

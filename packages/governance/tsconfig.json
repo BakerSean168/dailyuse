@@ -27,6 +27,10 @@
     "paths": {
       "@/*": ["./src/*"],
       "@dailyuse/contracts": ["../contracts/src/index.ts"],
+      "@dailyuse/contracts/*": [
+        "../contracts/src/modules/*/index.ts",
+        "../contracts/src/*/index.ts"
+      ],
       "@dailyuse/http-client": ["../http-client/src/index.ts"]
     }
   },

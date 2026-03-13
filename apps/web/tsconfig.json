@@ -73,7 +73,10 @@
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
       ],
-      "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"]
+      "@dailyuse/contracts/*": [
+        "../../packages/contracts/src/modules/*/index.ts",
+        "../../packages/contracts/src/*/index.ts"
+      ]
 
       // 其他 @dailyuse/* 包通过 package.json dependencies + exports → dist 解析。
       // 这样让 build 阶段回到真实包边界，而不是长期依赖源码直连。

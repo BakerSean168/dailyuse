@@ -27,7 +27,10 @@
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
       ],
-      "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"],
+      "@dailyuse/contracts/*": [
+        "../../packages/contracts/src/modules/*/index.ts",
+        "../../packages/contracts/src/*/index.ts"
+      ],
       "@dailyuse/editor/electron-entry": ["../../packages/editor/src/electron-entry/index.ts"],
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/*": [
