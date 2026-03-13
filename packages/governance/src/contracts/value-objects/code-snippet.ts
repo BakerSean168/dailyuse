@@ -19,6 +19,13 @@ export interface CodeSnippetDTO {
 
 // ============ Persistence DTO (持久化层) ============
 
+/**
+ * CodeSnippet Persistence DTO — database storage format.
+ * 代码片段持久化 DTO — 数据库存储格式。
+ *
+ * @internal Repository implementation detail. Consumers should use CodeSnippetDTO.
+ * @internal 仓储实现细节，消费者应使用 CodeSnippetDTO。
+ */
 export interface CodeSnippetPersistenceDTO {
   id: string;
   language: string;

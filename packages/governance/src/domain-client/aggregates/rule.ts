@@ -28,6 +28,9 @@ import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 /**
  * Internal state for the Rule client-side aggregate.
  * 规则客户端聚合根的内部状态。
+ *
+ * @internal Hydration state for client-side mappers only. Not part of the public API.
+ * @internal 仅供客户端映射器使用的水化状态，非公开 API。
  */
 export interface RuleState {
   id: RuleId;

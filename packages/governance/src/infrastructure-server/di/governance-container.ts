@@ -1,19 +1,21 @@
 /**
- * GovernanceContainer — 依赖注入容器（Singleton）
+ * GovernanceContainer — Singleton DI container.
+ * GovernanceContainer — 单例依赖注入容器。
  *
- * 【规范说明：DI 容器模式 - 参考 governance 活文档】
+ * Manages Repository bindings for the Governance module:
+ * 管理 Governance 模块的仓储绑定：
+ * - Runtime registration of Repository implementations
+ *   运行时注册 Repository 实现
+ * - Runtime resolution with null-safety checks
+ *   运行时获取（带空值校验，确保已注册）
+ * - reset() for test scenarios with mock implementations
+ *   支持 reset() 用于测试场景替换 Mock 实现
  *
- * 单例容器，负责管理 Governance 模块的 Repository 绑定：
- * - 运行时注册 Repository 实现
- * - 运行时获取 Repository（带空值校验，确保已注册）
- * - 支持 reset() 用于测试场景替换 Mock 实现
+ * @internal Low-level DI container — consumers should use GovernanceModule facade instead.
+ * @internal 底层 DI 容器 — 消费者应使用 GovernanceModule 门面。
  *
- * 【设计原则】
- * - Singleton：全局唯一实例，保证绑定一致性
- * - 运行时校验：未注册时抛出明确错误，快速暴露配置问题
- * - 可测试性：`reset()` 允许在测试中替换为 Mock Repository
- *
- * @see {@link GovernanceModule} 在组合根中使用容器完成依赖注入
+ * @see {@link GovernanceModule} Use the composition root facade for dependency injection.
+ * @see {@link GovernanceModule} 使用组合根门面进行依赖注入。
  */
 
 import type { IRuleRepository, IRuleRevisionRepository } from '../../domain-server';

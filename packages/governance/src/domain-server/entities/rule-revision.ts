@@ -48,8 +48,14 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 // ================= Props Object（参数对象） =================
 
 /**
- * RuleRevision entity state — used to hydrate from persistence via `RuleRevision.load()`.
+ * RuleRevision entity internal state — used to hydrate from persistence via `RuleRevision.load()`.
  * Uses domain types (value objects), not DTOs.
+ *
+ * RuleRevision 实体内部状态 — 用于通过 `RuleRevision.load()` 从持久化层恢复。
+ * 使用领域类型（值对象），而非 DTO。
+ *
+ * @internal Hydration state for repository mappers only. Not part of the public API.
+ * @internal 仅供仓储映射器使用的水化状态，非公开 API。
  */
 export interface RuleRevisionState {
   /** 修订记录 ID */

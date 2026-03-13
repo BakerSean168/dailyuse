@@ -37,9 +37,14 @@ export interface RuleServerDTO {
 // ============ Persistence DTO (持久化层) ============
 
 /**
- * Rule Persistence DTO
- * 数据库存储用
- * 注意：使用 camelCase 命名
+ * Rule Persistence DTO — database storage format.
+ * 规则持久化 DTO — 数据库存储格式。
+ *
+ * Uses plain string types for JSON serialization.
+ * 使用纯字符串类型以支持 JSON 序列化。
+ *
+ * @internal Repository implementation detail. Consumers should use RuleClientDTO or RuleServerDTO.
+ * @internal 仓储实现细节，消费者应使用 RuleClientDTO 或 RuleServerDTO。
  */
 export interface RulePersistenceDTO {
   id: string;

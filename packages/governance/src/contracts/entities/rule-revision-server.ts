@@ -32,11 +32,14 @@ export interface RuleRevisionServerDTO {
 // ============ Persistence DTO (持久化层) ============
 
 /**
- * Persistence DTO (Database)
- * 数据库持久化使用的数据结构
- * 
- * - changedFields, previousValues, newValues 存储为 JSON 字符串
- * - createdAt 存储为 Date 对象
+ * RuleRevision Persistence DTO — database storage format.
+ * 规则修订持久化 DTO — 数据库存储格式。
+ *
+ * changedFields, previousValues, newValues are stored as JSON strings.
+ * changedFields、previousValues、newValues 存储为 JSON 字符串。
+ *
+ * @internal Repository implementation detail. Consumers should use RuleRevisionClientDTO or RuleRevisionServerDTO.
+ * @internal 仓储实现细节，消费者应使用 RuleRevisionClientDTO 或 RuleRevisionServerDTO。
  */
 export interface RuleRevisionPersistenceDTO {
   id: string;

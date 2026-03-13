@@ -25,6 +25,9 @@ type ChangeType = 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
  *
  * JSON fields: changed_fields (string[]), previous_values, new_values (Record).
  * JSON 字段：changed_fields (string[])、previous_values、new_values (Record)。
+ *
+ * @internal Persistence row format — not part of the public API.
+ * @internal 持久化行格式 — 非公开 API。
  */
 export interface PowerSyncRuleRevisionRow {
   id: string;
@@ -38,7 +41,7 @@ export interface PowerSyncRuleRevisionRow {
   created_at: string;
 }
 
-/** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 */
+/** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 @internal */
 export interface PowerSyncRuleRevisionWriteRow extends PowerSyncRuleRevisionRow {}
 
 /**
@@ -84,6 +87,9 @@ function toDate(value: string | null | undefined): Date {
 /**
  * Mapper for converting between PowerSync rows and domain RuleRevision entities.
  * 用于 PowerSync 行数据与领域 RuleRevision 实体之间转换的映射器。
+ *
+ * @internal Persistence mapper — not part of the public API.
+ * @internal 持久化映射器 — 非公开 API。
  */
 export class PowerSyncRuleRevisionMapper {
   /**

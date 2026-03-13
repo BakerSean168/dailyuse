@@ -24,6 +24,9 @@ import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-
 /**
  * Internal state for the RuleRevision client-side entity.
  * RuleRevision 客户端实体的内部状态。
+ *
+ * @internal Hydration state for client-side mappers only. Not part of the public API.
+ * @internal 仅供客户端映射器使用的水化状态，非公开 API。
  */
 export interface RuleRevisionState {
   id: RuleRevisionId;

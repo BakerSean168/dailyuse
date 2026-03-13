@@ -25,6 +25,13 @@ import type {
 } from '../../contracts/api/rules';
 import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
+/**
+ * Options for fetching rules with filters.
+ * 带筛选条件获取规则的选项。
+ *
+ * @internal Service implementation detail — use RuleClientService methods directly.
+ * @internal 服务实现细节 — 请直接使用 RuleClientService 方法。
+ */
 export interface FetchRulesOptions {
   status?: string | string[];
   severity?: string | string[];
@@ -33,6 +40,13 @@ export interface FetchRulesOptions {
   offset?: number;
 }
 
+/**
+ * Options for searching rules by keyword.
+ * 按关键词搜索规则的选项。
+ *
+ * @internal Service implementation detail — use RuleClientService.searchRules() directly.
+ * @internal 服务实现细节 — 请直接使用 RuleClientService.searchRules()。
+ */
 export interface SearchRulesOptions {
   query: string;
   status?: string | string[];

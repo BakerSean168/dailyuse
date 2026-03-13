@@ -79,11 +79,16 @@ export * from './application-client';
 // Infrastructure-Server: Repositories, persistence (server-side)
 // Infrastructure-Client: Local storage, caching (client-side)
 export {
+  /** @internal Concrete Prisma implementation — use IRuleRepository interface instead. Prisma 具体实现 — 请使用 IRuleRepository 接口。 */
   RulePrismaRepository,
+  /** @internal Concrete Prisma implementation — use IRuleRevisionRepository interface instead. Prisma 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
   RuleRevisionPrismaRepository,
+  /** @internal Concrete PowerSync implementation — use IRuleRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRepository 接口。 */
   PowerSyncRuleRepository,
+  /** @internal Concrete PowerSync implementation — use IRuleRevisionRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
   PowerSyncRuleRevisionRepository,
   GovernancePowerSyncModule,
+  /** @internal DI container — use GovernanceModule facade instead. DI 容器 — 请使用 GovernanceModule 门面。 */
   GovernanceContainer,
   GovernanceModule,
   type GovernanceModuleRepositories,

@@ -18,8 +18,11 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { Context } from '@dailyuse/contracts/shared';
 
 /**
- * Execution Context
- * 执行上下文 - 由中间件从 token 中提取
+ * Execution context — extracted from auth token by middleware.
+ * 执行上下文 — 由中间件从认证 token 中提取。
+ *
+ * @internal Use-case implementation detail — not part of the public API.
+ * @internal 用例实现细节 — 非公开 API。
  */
 export interface ExecutionContext {
   identityId: IdentityId;

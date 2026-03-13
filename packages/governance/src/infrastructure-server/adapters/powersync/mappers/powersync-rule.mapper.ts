@@ -30,6 +30,9 @@ import type { CodeSnippetPersistenceDTO } from '../../../../contracts/value-obje
  * All fields are stored as strings in SQLite; JSON fields (tags, examples)
  * are serialized as JSON strings.
  * 所有字段在 SQLite 中以字符串存储；JSON 字段（标签、示例）以 JSON 字符串序列化。
+ *
+ * @internal Persistence row format — not part of the public API.
+ * @internal 持久化行格式 — 非公开 API。
  */
 export interface PowerSyncRuleRow {
   id: string;
@@ -49,7 +52,7 @@ export interface PowerSyncRuleRow {
   updated_at: string;
 }
 
-/** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 */
+/** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 @internal */
 export interface PowerSyncRuleWriteRow extends PowerSyncRuleRow {}
 
 /**
@@ -65,6 +68,9 @@ function toDate(value: string | null | undefined): Date {
 /**
  * Mapper for converting between PowerSync rows and domain Rule aggregates.
  * 用于 PowerSync 行数据与领域 Rule 聚合根之间转换的映射器。
+ *
+ * @internal Persistence mapper — not part of the public API.
+ * @internal 持久化映射器 — 非公开 API。
  */
 export class PowerSyncRuleMapper {
   /**
