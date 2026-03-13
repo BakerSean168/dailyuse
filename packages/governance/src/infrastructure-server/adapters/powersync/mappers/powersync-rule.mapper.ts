@@ -1,3 +1,19 @@
+/**
+ * PowerSync Rule Mapper - Persistence ↔ Domain Translation
+ * PowerSync 规则映射器 - 持久化 ↔ 领域转换
+ *
+ * Translates between PowerSync SQLite rows and domain Rule aggregates.
+ * 在 PowerSync SQLite 行数据与领域 Rule 聚合根之间进行转换。
+ *
+ * Handles:
+ * 处理：
+ * - JSON serialization/deserialization for tags and code snippets
+ *   标签和代码片段的 JSON 序列化/反序列化
+ * - Date string ↔ Date object conversion
+ *   日期字符串 ↔ Date 对象转换
+ * - Branded type casting (string → RuleId, RuleSeverity, etc.)
+ *   品牌类型转换（string → RuleId, RuleSeverity 等）
+ */
 import { Rule } from '../../../../domain-server/aggregates/rule';
 import { RuleId } from '../../../../domain-shared/value-objects/rule-id';
 import { RuleTag } from '../../../../domain-shared/value-objects/rule-tag';
@@ -7,6 +23,14 @@ import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { CodeSnippetPersistenceDTO } from '../../../../contracts/value-objects/code-snippet';
 
+/**
+ * Represents a row in the PowerSync `rules` table.
+ * 表示 PowerSync `rules` 表中的一行数据。
+ *
+ * All fields are stored as strings in SQLite; JSON fields (tags, examples)
+ * are serialized as JSON strings.
+ * 所有字段在 SQLite 中以字符串存储；JSON 字段（标签、示例）以 JSON 字符串序列化。
+ */
 export interface PowerSyncRuleRow {
   id: string;
   code: string;
@@ -25,15 +49,36 @@ export interface PowerSyncRuleRow {
   updated_at: string;
 }
 
+/** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 */
 export interface PowerSyncRuleWriteRow extends PowerSyncRuleRow {}
 
+/**
+ * Safely parses a date string, falling back to current date on failure.
+ * 安全解析日期字符串，解析失败时回退到当前日期。
+ */
 function toDate(value: string | null | undefined): Date {
   if (!value) return new Date();
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
+/**
+ * Mapper for converting between PowerSync rows and domain Rule aggregates.
+ * 用于 PowerSync 行数据与领域 Rule 聚合根之间转换的映射器。
+ */
 export class PowerSyncRuleMapper {
+  /**
+   * Converts a PowerSync row to a domain Rule aggregate.
+   * 将 PowerSync 行数据转换为领域 Rule 聚合根。
+   *
+   * Deserializes JSON fields (tags, good_examples, bad_examples) and
+   * reconstructs value objects (RuleTag, CodeSnippet).
+   * 反序列化 JSON 字段（tags、good_examples、bad_examples）并重建值对象。
+   *
+   * @param row - Raw SQLite row data 原始 SQLite 行数据
+   * @returns Hydrated Rule domain aggregate 水合后的 Rule 领域聚合根
+   * @throws If tag values in persistence are invalid 如果持久化中的标签值无效则抛出异常
+   */
   static toDomain(row: PowerSyncRuleRow): Rule {
     const tags = (JSON.parse(row.tags || '[]') as string[]).map((tagValue) => {
       const result = RuleTag.create(tagValue);
@@ -67,6 +112,16 @@ export class PowerSyncRuleMapper {
     });
   }
 
+  /**
+   * Converts a domain Rule aggregate to a PowerSync persistence row.
+   * 将领域 Rule 聚合根转换为 PowerSync 持久化行数据。
+   *
+   * Serializes value objects to JSON strings and dates to ISO strings.
+   * 将值对象序列化为 JSON 字符串，日期序列化为 ISO 字符串。
+   *
+   * @param rule - Domain Rule aggregate 领域 Rule 聚合根
+   * @returns Flat row suitable for SQLite INSERT/UPDATE 适用于 SQLite INSERT/UPDATE 的扁平行数据
+   */
   static toPersistence(rule: Rule): PowerSyncRuleWriteRow {
     return {
       id: rule.id,
@@ -87,6 +142,7 @@ export class PowerSyncRuleMapper {
     };
   }
 
+  /** Batch converts multiple rows to domain aggregates. 批量将多行数据转换为领域聚合根。 */
   static toDomainMany(rows: PowerSyncRuleRow[]): Rule[] {
     return rows.map((row) => PowerSyncRuleMapper.toDomain(row));
   }
