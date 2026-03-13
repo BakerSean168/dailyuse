@@ -78,7 +78,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project desktop"
+        "command": "vitest run --config apps/desktop/vitest.config.ts"
       }
     },
     "test:ipc": {

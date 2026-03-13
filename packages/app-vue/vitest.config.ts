@@ -20,6 +20,7 @@ export default mergeConfig(
     },
   }),
   defineConfig({
+    root: __dirname,
     plugins: [vue()],
     test: {
       name: 'app-vue',

@@ -34,7 +34,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project app-vue"
+        "command": "vitest run --config packages/app-vue/vitest.config.ts"
       }
     }
   }
