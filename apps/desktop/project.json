@@ -52,16 +52,16 @@
     "dist": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "electron-builder",
+        "command": "electron-builder --publish never",
         "cwd": "apps/desktop",
         "parallel": false
       },
       "configurations": {
         "windows": {
-          "command": "electron-builder --win --x64"
+          "command": "electron-builder --win --x64 --publish never"
         },
         "linux": {
-          "command": "electron-builder --linux AppImage deb rpm --x64"
+          "command": "electron-builder --linux AppImage deb rpm --x64 --publish never"
         }
       }
     },
