@@ -25,7 +25,9 @@
 
     // 路径别名：仅用于包内部导入
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@dailyuse/contracts": ["../contracts/src/index.ts"],
+      "@dailyuse/http-client": ["../http-client/src/index.ts"]
     }
   },
 

@@ -34,6 +34,7 @@
         "../../packages/contracts/src/modules/*/index.ts",
         "../../packages/contracts/src/*/index.ts"
       ],
+      "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/ai/application-client": ["../../packages/ai/src/application-client/index.ts"],
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"

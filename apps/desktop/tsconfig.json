@@ -21,6 +21,7 @@
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"

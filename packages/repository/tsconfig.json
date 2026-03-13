@@ -7,6 +7,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@dailyuse/database": ["../database/src/index.ts"],
+      "@dailyuse/http-client": ["../http-client/src/index.ts"],
       "@dailyuse/domain-shared": ["../domain-shared/src/index.ts"],
       "@dailyuse/domain-shared/shared": ["../domain-shared/src/shared/index.ts"],
       "@dailyuse/contracts": ["../contracts/src/index.ts"],

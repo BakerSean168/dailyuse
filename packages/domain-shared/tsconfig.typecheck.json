@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@dailyuse/contracts": ["../contracts/src/index.ts"],
+      "@dailyuse/http-client": ["../http-client/src/index.ts"]
+    }
+  }
+}

@@ -35,37 +35,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: 📦 Setup pnpm
-        run: |
-          corepack enable
-          pnpm --version
-
-      - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-
-      - name: 🔍 Derive SHAs for affected
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
-          else
-            NX_BASE_VALUE="${{ github.event.before }}"
-            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
-              NX_BASE_VALUE=$(git rev-parse HEAD~1)
-            fi
-          fi
-          NX_HEAD_VALUE="${{ github.sha }}"
-          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
-          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
-          echo "Using NX_BASE=$NX_BASE_VALUE"
-          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🧹 Lint affected projects
         env:
@@ -80,47 +53,7 @@ jobs:
             pnpm exec nx affected -t lint --parallel=3 --outputStyle=static
           fi
 
-  build-packages:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: 📦 Setup pnpm
-        run: |
-          corepack enable
-          pnpm --version
-
-      - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-
-      - name: 🏗️ Build packages (for type declarations)
-        env:
-          NODE_OPTIONS: --require=${{ github.workspace }}/tools/ci/node-process-bootstrap.cjs
-        run: pnpm exec nx run-many -t build --all --exclude=api,web,desktop --outputStyle=static
-
-      - name: 📦 Upload package artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: packages-build
-          path: |
-            packages/*/dist
-            packages/database/src/generated/prisma
-          if-no-files-found: error
-          retention-days: 1
-
   typecheck:
-    needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -130,43 +63,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: 📦 Setup pnpm
-        run: |
-          corepack enable
-          pnpm --version
-
-      - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-
-      - name: 📦 Download package artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: packages-build
-          path: .
-
-      - name: 🔍 Derive SHAs for affected
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
-          else
-            NX_BASE_VALUE="${{ github.event.before }}"
-            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
-              NX_BASE_VALUE=$(git rev-parse HEAD~1)
-            fi
-          fi
-          NX_HEAD_VALUE="${{ github.sha }}"
-          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
-          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
-          echo "Using NX_BASE=$NX_BASE_VALUE"
-          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🔍 Typecheck affected projects
         env:
@@ -174,7 +74,6 @@ jobs:
         run: pnpm exec nx affected -t typecheck --parallel=3 --outputStyle=static
 
   test:
-    needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -184,43 +83,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: 📦 Setup pnpm
-        run: |
-          corepack enable
-          pnpm --version
-
-      - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-
-      - name: 📦 Download package artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: packages-build
-          path: .
-
-      - name: 🔍 Derive SHAs for affected
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
-          else
-            NX_BASE_VALUE="${{ github.event.before }}"
-            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
-              NX_BASE_VALUE=$(git rev-parse HEAD~1)
-            fi
-          fi
-          NX_HEAD_VALUE="${{ github.sha }}"
-          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
-          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
-          echo "Using NX_BASE=$NX_BASE_VALUE"
-          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🧪 Test affected projects
         env:
@@ -228,7 +94,6 @@ jobs:
         run: pnpm exec nx affected -t test --parallel=3 --exclude=daily-use --passWithNoTests --outputStyle=static
 
   build:
-    needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -238,43 +103,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+      - name: 🛠️ Prepare workspace
+        uses: ./.github/actions/setup-nx-affected-job
         with:
           node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: 📦 Setup pnpm
-        run: |
-          corepack enable
-          pnpm --version
-
-      - name: 📥 Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=append-only
-
-      - name: 📦 Download package artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: packages-build
-          path: .
-
-      - name: 🔍 Derive SHAs for affected
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            NX_BASE_VALUE=$(git merge-base HEAD "origin/${{ github.base_ref }}")
-          else
-            NX_BASE_VALUE="${{ github.event.before }}"
-            if [ -z "$NX_BASE_VALUE" ] || [ "$NX_BASE_VALUE" = "0000000000000000000000000000000000000000" ]; then
-              NX_BASE_VALUE=$(git rev-parse HEAD~1)
-            fi
-          fi
-          NX_HEAD_VALUE="${{ github.sha }}"
-          echo "NX_BASE=$NX_BASE_VALUE" >> "$GITHUB_ENV"
-          echo "NX_HEAD=$NX_HEAD_VALUE" >> "$GITHUB_ENV"
-          echo "Using NX_BASE=$NX_BASE_VALUE"
-          echo "Using NX_HEAD=$NX_HEAD_VALUE"
 
       - name: 🏗️ Build affected apps
         env:
