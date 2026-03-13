@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { RuleExampleType } from '../domain/rule.enums';
+import type { SnippetType } from '../value-objects/snippet-type';
 
 export const RuleExampleInputSchema = z.object({
   title: z.string().min(1).max(120).optional(),
@@ -17,5 +17,5 @@ export type RuleExampleInput = z.infer<typeof RuleExampleInputSchema>;
 export type RuleExamplesInput = z.infer<typeof RuleExamplesInputSchema>;
 
 export interface RuleExampleDTO extends RuleExampleInput {
-  type: RuleExampleType;
+  type: SnippetType;
 }

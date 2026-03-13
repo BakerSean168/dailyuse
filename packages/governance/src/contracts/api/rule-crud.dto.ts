@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import type { RuleClientDTO } from '../aggregates';
-import { RuleSeverityValues, RuleStatusValues } from '../domain/rule.enums';
+import { RuleStatus } from '../value-objects/rule-status';
+import { RuleSeverity } from '../value-objects/rule-severity';
 import { RuleExamplesInputSchema } from '../dtos/rule-example.dto';
+
+const RuleStatusValues = Object.values(RuleStatus);
+const RuleSeverityValues = Object.values(RuleSeverity);
 
 export const CreateRuleSchema = z.object({
   code: z.string().min(1, 'Rule code is required').max(64),
