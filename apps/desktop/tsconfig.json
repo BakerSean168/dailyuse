@@ -21,12 +21,14 @@
       "@dailyuse/ai/infrastructure-client": [
         "../../packages/ai/src/infrastructure-client/index.ts"
       ],
+      "@dailyuse/ipc-client": ["../../packages/ipc-client/src/index.ts"],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/contracts": ["../../packages/contracts/src/index.ts"],
       "@dailyuse/contracts/notification": [
         "../../packages/contracts/src/modules/notification/index.ts"
       ],
       "@dailyuse/contracts/*": ["../../packages/contracts/src/modules/*/index.ts"],
+      "@dailyuse/editor/electron-entry": ["../../packages/editor/src/electron-entry/index.ts"],
       "@dailyuse/assets": ["../../packages/assets/src/index.ts"],
       "@dailyuse/assets/*": [
         "../../packages/assets/src/*/index.ts",

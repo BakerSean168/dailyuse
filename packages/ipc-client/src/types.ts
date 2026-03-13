@@ -31,7 +31,7 @@ export interface ElectronBridge {
    * 调用主进程 handler 并等待返回
    * 对应 ipcMain.handle(channel, handler)
    */
-  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+  invoke(channel: string, ...args: unknown[]): Promise<unknown>;
 
   /**
    * 监听主进程发来的消息

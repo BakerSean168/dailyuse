@@ -53,7 +53,7 @@
       "inputs": ["default", "^production"],
       "cache": true,
       "options": {
-        "command": "vitest run --project web"
+        "command": "vitest run --config apps/web/vitest.config.ts"
       }
     },
     "lint": {

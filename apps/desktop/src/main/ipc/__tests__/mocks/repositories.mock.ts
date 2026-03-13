@@ -6,7 +6,7 @@
 
 import { vi } from 'vitest';
 import { Goal } from '@dailyuse/goal/domain-server';
-import type { GoalServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus, type GoalServerDTO } from '@dailyuse/contracts/goal';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 // ===== Goal Repository Mock =====
@@ -149,31 +149,66 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
   return {
     id: `goal-${goalCounter}-${now}` as any,
     identityId: 'test-account-uuid' as any,
-    folderId: null as any,
-    title: `Test Goal ${goalCounter}`,
+    name: `Test Goal ${goalCounter}`,
     description: 'Test goal description',
-    status: 'ACTIVE' as GoalStatus,
+    color: '#3B82F6',
+    feasibilityAnalysis: null,
+    motivation: null,
+    status: GoalStatus.Active,
     importance: ImportanceLevel.Moderate,
-    // urgency: UrgencyLevel.Medium, // REMOVED - priority now computed from importance + targetDate
-    category: null as any,
-    color: null as any,
+    category: null,
+    tags: [],
     startDate: null,
     targetDate: null,
     completedAt: null,
     archivedAt: null,
+    folderId: null,
+    parentGoalId: null,
     sortOrder: goalCounter,
-    tags: [],
+    reminderConfig: null,
+    priority: 0,
     keyResults: [],
-    reviews: [],
+    weightSnapshots: [],
+    goalReviews: [],
+    version: 1,
     createdAt: now,
     updatedAt: now,
+    deletedAt: null,
     ...overrides,
-  } as unknown as GoalServerDTO;
+  };
 }
 
 export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
   const dto = createMockGoalDTO(overrides);
-  return Goal.fromPersistenceDTO(dto);
+  return Goal.load({
+    id: dto.id as any,
+    identityId: dto.identityId as any,
+    name: dto.name,
+    description: dto.description,
+    color: dto.color,
+    feasibilityAnalysis: dto.feasibilityAnalysis,
+    motivation: dto.motivation,
+    status: dto.status,
+    importance: dto.importance,
+    priority: dto.priority ?? 0,
+    category: dto.category,
+    tags: [...dto.tags],
+    startDate: dto.startDate ? new Date(dto.startDate) : null,
+    targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+    completedAt: dto.completedAt ? new Date(dto.completedAt) : null,
+    archivedAt: dto.archivedAt ? new Date(dto.archivedAt) : null,
+    folderId: dto.folderId as any,
+    parentGoalId: dto.parentGoalId as any,
+    sortOrder: dto.sortOrder,
+    reminderConfig: null,
+    keyResults: [],
+    goalReviews: [],
+    weightSnapshots: [],
+    version: dto.version,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+  });
 }
 
 /**

@@ -114,7 +114,7 @@ export class IpcClientImpl implements IpcClient {
    * 带超时的 IPC 调用
    */
   private invokeWithTimeout<T>(channel: string, ...args: unknown[]): Promise<T> {
-    const invokePromise = this.bridge!.invoke<T>(channel, ...args);
+    const invokePromise = this.bridge!.invoke(channel, ...args) as Promise<T>;
 
     if (this.timeout <= 0) {
       return invokePromise;

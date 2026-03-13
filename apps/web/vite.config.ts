@@ -3,6 +3,11 @@ import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
+import {
+  createContractsAliasEntries,
+  createUiVueSourceAliasEntries,
+  createWorkspaceSourceAliasEntries,
+} from '../../vite.workspace-aliases';
 
 const webDevWorkspaceEntries = [
   ['@dailyuse/app-vue', '../../packages/app-vue/src/index.ts'],
@@ -44,19 +49,21 @@ export default defineConfig(({ mode, command }) => {
   // Dev mode: serve command or non-production mode
   const isDev = command === 'serve' || mode !== 'production';
 
-  const devWorkspaceAliases: Record<string, string> = isDev
-    ? Object.fromEntries(
-        webDevWorkspaceEntries.map(([importPath, sourcePath]) => [
-          importPath,
-          path.resolve(__dirname, sourcePath),
-        ]),
-      )
+  const devWorkspaceAliases = isDev
+    ? [
+        ...createUiVueSourceAliasEntries(workspaceRoot),
+        ...createContractsAliasEntries(workspaceRoot),
+        ...createWorkspaceSourceAliasEntries(workspaceRoot, webDevWorkspaceEntries),
+      ]
     : {};
 
-  const resolveAliases: Record<string, string> = {
-    '@': path.resolve(__dirname, './src'),
-    ...devWorkspaceAliases,
-  };
+  const resolveAliases = [
+    ...(Array.isArray(devWorkspaceAliases) ? devWorkspaceAliases : []),
+    {
+      find: '@',
+      replacement: path.resolve(__dirname, './src'),
+    },
+  ];
 
   // Proxy target for API requests (local dev only)
   const proxyTarget = env.PROXY_TARGET_URL || env.API_URL || 'http://localhost:3000';

@@ -20,6 +20,7 @@
       "@dailyuse/contracts/reminder": ["../contracts/src/modules/reminder/index.ts"],
       "@dailyuse/utils": ["../utils/src/index.ts"],
       "@dailyuse/utils/result": ["../utils/src/result/index.ts"],
+      "@dailyuse/patterns": ["../patterns/src/index.ts"],
       "@dailyuse/patterns/scheduler": ["../patterns/src/scheduler/index.ts"]
     }
   },

@@ -1,6 +1,8 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 import path from 'node:path';
+import type { Alias } from 'vite';
+import { createContractsAliasEntries } from './vite.workspace-aliases';
 
 /**
  * Shared Vitest configuration for all projects
@@ -34,14 +36,17 @@ interface SharedConfigOptions {
   environment?: 'node' | 'happy-dom' | 'jsdom';
   /** Additional path aliases */
   aliases?: Record<string, string>;
+  /** Additional alias entries that must precede the generic @/@/ aliases */
+  aliasEntries?: Alias[];
 }
 
 /**
  * Create a shared configuration for a project
  */
 export function createSharedConfig(options: SharedConfigOptions) {
-  const { projectRoot, environment = 'node', aliases = {} } = options;
+  const { projectRoot, environment = 'node', aliases = {}, aliasEntries = [] } = options;
   const projectSrc = path.resolve(projectRoot, './src');
+  const workspaceRoot = path.resolve(projectRoot, '../..');
 
   const resolvedAliases = Object.fromEntries(
     Object.entries(aliases).map(([key, value]) => [
@@ -50,22 +55,35 @@ export function createSharedConfig(options: SharedConfigOptions) {
     ]),
   );
 
+  const resolvedAliasEntries = aliasEntries.map((entry) => ({
+    ...entry,
+    replacement:
+      typeof entry.replacement === 'string' && entry.replacement.startsWith('.')
+        ? path.resolve(projectRoot, entry.replacement)
+        : entry.replacement,
+  }));
+
   // Common aliases for all projects
   const baseAliases = {
     ...resolvedAliases,
     '@': projectSrc,
     '@/': `${projectSrc}/`,
-    '@dailyuse/contracts': path.resolve(projectRoot, '../../packages/contracts/src'),
     '@dailyuse/utils': path.resolve(projectRoot, '../../packages/utils/src'),
   };
 
-  const aliasEntries = Object.entries(baseAliases)
+  const baseAliasEntries = Object.entries(baseAliases)
     .sort(([a], [b]) => b.length - a.length)
     .map(([find, replacement]) => ({ find, replacement }));
 
+  const finalAliasEntries = [
+    ...resolvedAliasEntries,
+    ...createContractsAliasEntries(workspaceRoot),
+    ...baseAliasEntries,
+  ];
+
   return defineConfig({
     resolve: {
-      alias: aliasEntries,
+      alias: finalAliasEntries,
     },
     test: {
       globals: true,

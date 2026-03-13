@@ -10,7 +10,7 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import type { IRepositoryContentPort } from '../application-server';
-import { EditorContainer } from '../infrastructure-server';
+import { EditorContainer } from '../infrastructure-server/di/editor-container';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('EditorElectron');

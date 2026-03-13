@@ -4,11 +4,18 @@ import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
+import {
+  createContractsAliasEntries,
+  createUiVueSourceAliasEntries,
+  createWorkspaceSourceAliasEntries,
+} from '../../vite.workspace-aliases';
 
 const desktopRendererDevWorkspaceEntries = [
   ['@dailyuse/app-vue', '../../packages/app-vue/src/index.ts'],
   ['@dailyuse/ai/application-client', '../../packages/ai/src/application-client/index.ts'],
   ['@dailyuse/ai/infrastructure-client', '../../packages/ai/src/infrastructure-client/index.ts'],
+  ['@dailyuse/ipc-client', '../../packages/ipc-client/src/index.ts'],
+  ['@dailyuse/editor/electron-entry', '../../packages/editor/src/electron-entry/index.ts'],
 ] as const;
 
 // Native modules — must be externalized (cannot be bundled by Vite)
@@ -59,25 +66,46 @@ const workspacePkgs = [
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode !== 'production';
-  const devWorkspaceAliases: Record<string, string> = isDev
-    ? Object.fromEntries(
-        desktopRendererDevWorkspaceEntries.map(([importPath, sourcePath]) => [
-          importPath,
-          path.resolve(__dirname, sourcePath),
-        ]),
-      )
-    : {};
+  const workspaceRoot = path.resolve(__dirname, '../..');
+  const devWorkspaceAliases = isDev
+    ? [
+        ...createUiVueSourceAliasEntries(workspaceRoot),
+        ...createContractsAliasEntries(workspaceRoot),
+        ...createWorkspaceSourceAliasEntries(workspaceRoot, desktopRendererDevWorkspaceEntries),
+      ]
+    : [];
 
-  const rendererAliases: Record<string, string> = {
-    '@': path.resolve(__dirname, './src'),
-    '@main': path.resolve(__dirname, './src/main'),
-    '@preload': path.resolve(__dirname, './src/preload'),
-    '@renderer': path.resolve(__dirname, './src/renderer'),
-    crypto: 'crypto-browserify',
-    stream: 'stream-browserify',
-    buffer: 'buffer',
+  const rendererAliases = [
     ...devWorkspaceAliases,
-  };
+    {
+      find: '@main',
+      replacement: path.resolve(__dirname, './src/main'),
+    },
+    {
+      find: '@preload',
+      replacement: path.resolve(__dirname, './src/preload'),
+    },
+    {
+      find: '@renderer',
+      replacement: path.resolve(__dirname, './src/renderer'),
+    },
+    {
+      find: '@',
+      replacement: path.resolve(__dirname, './src'),
+    },
+    {
+      find: 'crypto',
+      replacement: 'crypto-browserify',
+    },
+    {
+      find: 'stream',
+      replacement: 'stream-browserify',
+    },
+    {
+      find: 'buffer',
+      replacement: 'buffer',
+    },
+  ];
 
   return {
     resolve: {
@@ -113,11 +141,20 @@ export default defineConfig(({ command, mode }) => {
           entry: path.resolve(__dirname, 'src/main/main.ts'),
           vite: {
             resolve: {
-              alias: {
-                '@main': path.resolve(__dirname, './src/main'),
-                '@preload': path.resolve(__dirname, './src/preload'),
-                '@renderer': path.resolve(__dirname, './src/renderer'),
-              },
+              alias: [
+                {
+                  find: '@main',
+                  replacement: path.resolve(__dirname, './src/main'),
+                },
+                {
+                  find: '@preload',
+                  replacement: path.resolve(__dirname, './src/preload'),
+                },
+                {
+                  find: '@renderer',
+                  replacement: path.resolve(__dirname, './src/renderer'),
+                },
+              ],
             },
             build: {
               outDir: 'dist-electron',
