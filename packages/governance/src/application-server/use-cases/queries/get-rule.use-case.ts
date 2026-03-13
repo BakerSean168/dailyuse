@@ -11,7 +11,8 @@ import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 import type { RuleId } from '../../../contracts/primitives/ids';
 
 /**
- * Get Rule Use Case
+ * Get Rule Use Case.
+ * 获取规则用例。
  */
 export class GetRuleUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

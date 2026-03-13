@@ -457,8 +457,10 @@ To prevent drift between adapters:
 
 ## ADR-G5: Layered Export Structure
 
-**Date**: Phase 2.3 (Planned)  
-**Status**: Pending Implementation
+**Date**: Phase 2.3 (2026-03-13)  
+**Status**: Approved  
+**Affected Files**: 21 files across all layers annotated with @internal  
+**Commit**: 80ffed6f9
 
 ### Problem
 
@@ -480,13 +482,52 @@ Developers are unclear which exports are:
 
 ### Options Considered
 
-Will be evaluated in Phase 2.3. See `/packages/governance/ARCHITECTURE.md` for details.
+| Option                                    | Pros                                        | Cons                                               | Recommendation        |
+| ----------------------------------------- | ------------------------------------------- | -------------------------------------------------- | --------------------- |
+| **Remove internal exports from barrels**  | Smaller public API surface                  | Breaking change; consumers may depend on internals | ❌ Not recommended    |
+| **@internal JSDoc annotations**           | Non-breaking; clear intent; tooling support | Still importable; relies on convention             | ✅ **Chosen**         |
+| **Separate public/internal entry points** | Clean separation                            | Complex build config; hard to maintain             | ⏳ Future improvement |
+| **TypeScript path restrictions**          | Compile-time enforcement                    | Requires workspace-level config changes            | ⏳ Future improvement |
+
+### Decision
+
+**Use `@internal` JSDoc annotations on implementation-detail exports** to clarify public vs. internal API boundaries without breaking backward compatibility.
+
+```typescript
+/**
+ * @internal Infrastructure adapter — not part of public API.
+ * @internal 基础设施适配器 - 非公共 API。
+ */
+export class RuleHttpAdapter implements IRuleApiClient { ... }
+```
+
+### Rationale
+
+1. **Non-Breaking**: No consumer code changes required
+2. **Convention-Based**: IDE tooling and documentation generators respect @internal
+3. **Gradual Migration**: Can later enforce with lint rules or separate entry points
+4. **Backward Compatible**: 100% — all existing imports continue to work
+5. **Documentation Value**: Developers immediately see which exports are stable
+
+### Trade-offs
+
+- **Not Enforced**: @internal is advisory; consumers can still import internals
+- **Discipline Required**: Must consistently apply @internal to new internal exports
+- **No Compile-Time Check**: TypeScript doesn't prevent importing @internal members
+
+### Consequences
+
+- ✅ 21 files annotated across all layers
+- ✅ Zero breaking changes
+- ✅ Clear documentation of public vs. internal API
+- ⚠️ Requires ongoing discipline to maintain annotations
+- ⚠️ Future work: lint rule to warn on importing @internal exports
 
 ### References
 
 - **Related ADR**: ADR-G3 (DI Pattern)
-- **Implementation**: Phase 2.3
-- **Documentation**: `/packages/governance/ARCHITECTURE.md` (to be created)
+- **Implementation**: Phase 2.3 (80ffed6f9)
+- **Documentation**: `/packages/governance/ARCHITECTURE.md`
 
 ---
 
@@ -498,7 +539,7 @@ Will be evaluated in Phase 2.3. See `/packages/governance/ARCHITECTURE.md` for d
 | G2  | Error Code Standardization | ✅ Approved | High (45+ codes → 7)            | 48894fd62 |
 | G3  | Pure DI Over Singleton     | ✅ Approved | Medium (boilerplate -162 lines) | 3fd0099c0 |
 | G4  | Dual Adapter Pattern       | ✅ Approved | Medium (clear offline story)    | 48894fd62 |
-| G5  | Export Structure Clarity   | ⏳ Pending  | Medium (API clarity)            | Phase 2.3 |
+| G5  | Export Structure Clarity   | ✅ Approved | Medium (API clarity)            | 80ffed6f9 |
 
 ---
 
@@ -506,7 +547,7 @@ Will be evaluated in Phase 2.3. See `/packages/governance/ARCHITECTURE.md` for d
 
 - **Governance Package**: `/packages/governance/`
 - **Package README**: `/packages/governance/README.md`
-- **Architecture Overview**: `/packages/governance/ARCHITECTURE.md` (to be created in Phase 2.1)
+- **Architecture Overview**: `/packages/governance/ARCHITECTURE.md`
 - **Implementation Progress**: `/docs/architecture/optimization-progress.md`
 - **Related Result Pattern**: `/docs/architecture/result-pattern.md`
 - **Infrastructure Architecture**: `/docs/architecture/infrastructure-server.md`
@@ -515,4 +556,4 @@ Will be evaluated in Phase 2.3. See `/packages/governance/ARCHITECTURE.md` for d
 
 **Document Status**: Active  
 **Last Updated**: 2026-03-13  
-**Next Review**: After Phase 2.1 completion
+**Next Review**: Before merging to main

@@ -16,9 +16,11 @@ export interface RuleViewModel extends RuleClientDTO {
 }
 
 /**
- * Rule Client Mapper
+ * Rule Client Mapper.
+ * 规则客户端映射器。
  *
- * Maps client DTOs to view models with UI-specific enhancements
+ * Maps client DTOs to view models with UI-specific enhancements.
+ * 将客户端 DTO 映射为包含 UI 增强属性的视图模型。
  */
 export class RuleClientMapper {
   /**

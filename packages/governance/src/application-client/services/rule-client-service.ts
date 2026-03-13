@@ -54,9 +54,11 @@ export interface SearchRulesOptions {
 }
 
 /**
- * Rule Client Service
+ * Rule Client Service.
+ * 规则客户端服务。
  *
- * Framework-agnostic service for client-side rule operations
+ * Framework-agnostic service for client-side rule operations.
+ * 用于客户端规则操作的框架无关服务。
  */
 export class RuleClientService {
   constructor(private readonly apiClient: IRuleApiClient) {}

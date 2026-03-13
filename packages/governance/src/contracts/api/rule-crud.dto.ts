@@ -1,3 +1,11 @@
+/**
+ * Rule CRUD DTO - Zod validation schemas for rule operations.
+ * 规则 CRUD 数据传输对象 - 规则操作的 Zod 校验模式。
+ *
+ * Defines create/update request schemas with runtime validation.
+ * 定义带运行时校验的创建/更新请求模式。
+ */
+
 import { z } from 'zod';
 import type { RuleClientDTO } from '../aggregates';
 import { RuleStatus } from '../value-objects/rule-status';

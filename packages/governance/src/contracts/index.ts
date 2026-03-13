@@ -1,6 +1,5 @@
 /**
- * Example Module Exports
- * 示例模块 - 统一导出子文件夹中的命名导出的内容
+ * Governance Module Exports. 治理模块 - 统一导出子文件夹中的命名导出的内容。
  */
 
 // ============ Aggregates ============

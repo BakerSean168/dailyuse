@@ -1,8 +1,11 @@
 /**
- * IRuleRevisionRepository - Repository interface for RuleRevision entity
- * 
- * Provides read-only access to revision history
+ * IRuleRevisionRepository - Repository interface for RuleRevision entity.
+ * IRuleRevisionRepository - RuleRevision 实体的仓储接口。
+ *
+ * Provides read-only access to revision history.
+ * 提供修订历史的只读访问。
  * (RuleRevisions are created automatically by Rule aggregate, not directly)
+ * （RuleRevision 由 Rule 聚合根自动创建，不可直接操作）
  */
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -10,9 +13,11 @@ import type { RuleRevision } from '../entities/rule-revision';
 import { RuleId, RuleRevisionId } from '../../domain-shared/value-objects';
 
 /**
- * Rule Revision repository interface
- * 
- * Read-only repository for audit trail access
+ * Rule Revision repository interface.
+ * 规则修订记录仓储接口。
+ *
+ * Read-only repository for audit trail access.
+ * 用于审计记录访问的只读仓储。
  */
 export interface IRuleRevisionRepository {
   /**
@@ -30,7 +35,7 @@ export interface IRuleRevisionRepository {
    */
   findByRuleIdAndNumber(
     ruleId: RuleId,
-    revisionNumber: number
+    revisionNumber: number,
   ): Promise<Result<RuleRevision | null>>;
 
   /**
@@ -40,6 +45,7 @@ export interface IRuleRevisionRepository {
 }
 
 /**
- * DI token for IRuleRevisionRepository binding
+ * DI token for IRuleRevisionRepository binding.
+ * IRuleRevisionRepository 绑定的依赖注入 token。
  */
 export const RULE_REVISION_REPOSITORY_TOKEN = Symbol('IRuleRevisionRepository');

@@ -1,6 +1,9 @@
 /**
- * Governance Queries
- * Read operations that retrieve governance rules
+ * Governance Queries - Barrel Export.
+ * 治理查询 - 统一导出。
+ *
+ * Read operations that retrieve governance rules.
+ * 检索治理规则的读操作。
  */
 
 export * from './get-rule.use-case';

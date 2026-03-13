@@ -1,9 +1,12 @@
 /**
- * Governance Module — Electron Entry Point
+ * Governance Module — Electron Entry Point.
+ * 治理模块 — Electron 入口点。
  *
  * Self-contained Composition Root for the Governance module in Electron main process.
+ * 治理模块在 Electron 主进程中的自包含组合根。
  * Instantiates PowerSync repositories, wires through GovernanceModule,
  * and registers IPC handlers using the GovernanceController.
+ * 实例化 PowerSync 仓储，通过 GovernanceModule 连接，并使用 GovernanceController 注册 IPC 处理器。
  *
  * @module governance/electron-entry
  */

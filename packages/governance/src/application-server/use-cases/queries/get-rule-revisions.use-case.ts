@@ -13,7 +13,8 @@ import type {
 } from '../../../contracts/api/rule-revisions';
 
 /**
- * Get Rule Revisions Use Case
+ * Get Rule Revisions Use Case.
+ * 获取规则修订记录用例。
  */
 export class GetRuleRevisionsUseCase {
   constructor(private readonly revisionRepository: IRuleRevisionRepository) {}

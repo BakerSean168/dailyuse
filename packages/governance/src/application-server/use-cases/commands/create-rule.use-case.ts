@@ -29,9 +29,11 @@ export interface ExecutionContext {
 }
 
 /**
- * Create Rule Use Case
+ * Create Rule Use Case.
+ * 创建规则用例。
  *
- * Dependencies injected via constructor (standard dependency injection)
+ * Dependencies injected via constructor (standard dependency injection).
+ * 通过构造函数注入依赖（标准依赖注入）。
  */
 export class CreateRuleUseCase {
   constructor(

@@ -1,8 +1,11 @@
 /**
- * Rule HTTP Adapter
+ * Rule HTTP Adapter.
+ * 规则 HTTP 适配器。
  *
  * HTTP implementation of IRuleApiClient.
+ * IRuleApiClient 的 HTTP 实现。
  * Implements rule API operations using HTTP REST calls.
+ * 使用 HTTP REST 调用实现规则 API 操作。
  */
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -25,9 +28,11 @@ import type {
 } from '../types';
 
 /**
- * Rule HTTP Adapter
+ * Rule HTTP Adapter.
+ * 规则 HTTP 适配器。
  *
  * Implements IRuleApiClient using HTTP REST API calls.
+ * 使用 HTTP REST API 调用实现 IRuleApiClient。
  */
 export class RuleHttpAdapter implements IRuleApiClient {
   private readonly baseUrl = '/governance/rules';

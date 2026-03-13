@@ -1,6 +1,6 @@
 /**
- * Example Module - Configuration Constants
- * 
+ * Governance Module - Configuration Constants. 治理模块 - 配置常量。
+ *
  * 【规范说明：配置常量】
  * 定义模块的配置常量，用于：
  * - 业务规则配置
@@ -9,9 +9,9 @@
  */
 
 /**
- * Example 实例生成配置
+ * Governance generation config. 治理实例生成配置。
  */
-export const EXAMPLE_GENERATION_CONFIG = {
+export const GOVERNANCE_GENERATION_CONFIG = {
   /**
    * 默认批次大小
    */
@@ -29,9 +29,9 @@ export const EXAMPLE_GENERATION_CONFIG = {
 } as const;
 
 /**
- * Example 查看范围配置
+ * Governance view config. 治理查看范围配置。
  */
-export const EXAMPLE_VIEW_CONFIG = {
+export const GOVERNANCE_VIEW_CONFIG = {
   /**
    * 默认列表页大小
    */
@@ -54,9 +54,9 @@ export const EXAMPLE_VIEW_CONFIG = {
 } as const;
 
 /**
- * Example 验证配置
+ * Governance validation config. 治理验证配置。
  */
-export const EXAMPLE_VALIDATION_CONFIG = {
+export const GOVERNANCE_VALIDATION_CONFIG = {
   /**
    * 名称最小长度
    */

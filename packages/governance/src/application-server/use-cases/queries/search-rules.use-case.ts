@@ -15,7 +15,8 @@ import type { ExecutionContext } from '../commands/create-rule.use-case';
 type SearchFilters = Partial<Omit<SearchRulesQuery, 'query'>>;
 
 /**
- * Search Rules Use Case
+ * Search Rules Use Case.
+ * 搜索规则用例。
  */
 export class SearchRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

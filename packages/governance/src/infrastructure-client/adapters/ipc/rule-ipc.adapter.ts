@@ -1,8 +1,11 @@
 /**
- * Rule IPC Adapter
+ * Rule IPC Adapter.
+ * 规则 IPC 适配器。
  *
  * IPC implementation of IRuleApiClient for Electron desktop.
+ * 面向 Electron 桌面端的 IRuleApiClient IPC 实现。
  * Communicates with main process which handles actual data operations.
+ * 与处理实际数据操作的主进程通信。
  */
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -24,9 +27,11 @@ import type {
 } from '../types';
 
 /**
- * Rule IPC Adapter
+ * Rule IPC Adapter.
+ * 规则 IPC 适配器。
  *
  * Implements IRuleApiClient using Electron IPC for desktop app.
+ * 使用 Electron IPC 为桌面应用实现 IRuleApiClient。
  */
 export class RuleIpcAdapter implements IRuleApiClient {
   private readonly channel = 'governance:rule';

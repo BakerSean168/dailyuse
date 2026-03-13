@@ -11,7 +11,8 @@ import type { RuleId } from '../../../contracts/primitives/ids';
 import type { ExecutionContext } from './create-rule.use-case';
 
 /**
- * Delete Rule Use Case
+ * Delete Rule Use Case.
+ * 删除规则用例。
  */
 export class DeleteRuleUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

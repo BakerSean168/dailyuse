@@ -15,7 +15,8 @@ import type { RuleId } from '../../../contracts/primitives/ids';
 import type { ExecutionContext } from './create-rule.use-case';
 
 /**
- * Update Rule Use Case
+ * Update Rule Use Case.
+ * 更新规则用例。
  */
 export class UpdateRuleUseCase {
   constructor(

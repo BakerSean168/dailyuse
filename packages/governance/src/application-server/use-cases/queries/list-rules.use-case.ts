@@ -12,7 +12,8 @@ import type { ListRulesQuery, ListRulesRes } from '../../../contracts/api/rules'
 import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 
 /**
- * List Rules Use Case
+ * List Rules Use Case.
+ * 列出规则用例。
  */
 export class ListRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}

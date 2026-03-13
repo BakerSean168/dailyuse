@@ -1,10 +1,12 @@
 /**
- * IRuleRepository - Repository interface for Rule aggregate
- * 
+ * IRuleRepository - Repository interface for Rule aggregate.
+ * IRuleRepository - Rule 聚合根的仓储接口。
+ *
  * Demonstrates dependency inversion:
- * - Domain defines interface
- * - Infrastructure implements it
- * - DI token for container binding
+ * 演示依赖倒置：
+ * - Domain defines interface / 领域层定义接口
+ * - Infrastructure implements it / 基础设施层实现接口
+ * - DI token for container binding / DI token 用于容器绑定
  */
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -14,7 +16,8 @@ import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import type { RuleStatus } from '../../contracts/value-objects/rule-status';
 
 /**
- * Filter object for rule queries
+ * Filter object for rule queries.
+ * 规则查询的筛选对象。
  */
 export interface RuleFilter {
   status?: RuleStatus;
@@ -23,7 +26,8 @@ export interface RuleFilter {
 }
 
 /**
- * Rule repository interface
+ * Rule repository interface.
+ * 规则仓储接口。
  */
 export interface IRuleRepository {
   /**
@@ -68,6 +72,7 @@ export interface IRuleRepository {
 }
 
 /**
- * DI token for IRuleRepository binding
+ * DI token for IRuleRepository binding.
+ * IRuleRepository 绑定的依赖注入 token。
  */
 export const RULE_REPOSITORY_TOKEN = Symbol('IRuleRepository');
