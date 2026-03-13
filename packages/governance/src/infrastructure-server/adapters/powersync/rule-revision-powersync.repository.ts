@@ -35,7 +35,7 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
       );
       return ok(undefined);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to save revision');
+      return error('INTERNAL_ERROR', 'Failed to save revision');
     }
   }
 
@@ -47,7 +47,7 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
       );
       return ok(PowerSyncRuleRevisionMapper.toDomainMany(rows));
     } catch {
-      return error('DATABASE_ERROR', 'Failed to find revisions');
+      return error('INTERNAL_ERROR', 'Failed to find revisions');
     }
   }
 
@@ -62,7 +62,7 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
       );
       return ok(row ? PowerSyncRuleRevisionMapper.toDomain(row) : null);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to find revision');
+      return error('INTERNAL_ERROR', 'Failed to find revision');
     }
   }
 
@@ -74,7 +74,7 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
       );
       return ok(result.count);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to count revisions');
+      return error('INTERNAL_ERROR', 'Failed to count revisions');
     }
   }
 }

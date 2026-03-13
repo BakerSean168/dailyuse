@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { error } from '@dailyuse/contracts/result';
 import type {
   IRuleApiClient,
   IResultHttpClient,
@@ -46,7 +46,7 @@ export class RuleHttpAdapter implements IRuleApiClient {
     } else if (req.code) {
       return this.httpClient.get(`${this.baseUrl}/by-code/${req.code}`);
     }
-    return fail({ code: 'VALIDATION_ERROR', message: 'Must provide either id or code' });
+    return error('VALIDATION_ERROR', 'Must provide either id or code');
   }
 
   async updateRule(ruleId: string, req: UpdateRuleReq): Promise<Result<UpdateRuleRes>> {

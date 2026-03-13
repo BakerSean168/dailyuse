@@ -91,7 +91,7 @@ describe('DeleteRuleUseCase', () => {
 
   it('should return error when findById fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(error('DB_ERROR', 'Database connection failed')),
+      findById: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Database connection failed')),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -99,14 +99,14 @@ describe('DeleteRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 
   it('should return error when hard delete fails', async () => {
     const rule = createRuleFixture({ status: RuleStatus.Draft });
     const ruleRepo = createMockRepo<IRuleRepository>({
       findById: vi.fn().mockResolvedValue(ok(rule)),
-      delete: vi.fn().mockResolvedValue(error('DB_ERROR', 'Delete failed')),
+      delete: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Delete failed')),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -114,14 +114,14 @@ describe('DeleteRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 
   it('should return error when save after deprecate fails', async () => {
     const rule = createRuleFixture({ status: RuleStatus.Active });
     const ruleRepo = createMockRepo<IRuleRepository>({
       findById: vi.fn().mockResolvedValue(ok(rule)),
-      save: vi.fn().mockResolvedValue(error('DB_ERROR', 'Save failed')),
+      save: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Save failed')),
     });
     const useCase = new DeleteRuleUseCase(ruleRepo);
 
@@ -129,6 +129,6 @@ describe('DeleteRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });

@@ -61,7 +61,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', 'Failed to save rule');
+      return error('INTERNAL_ERROR', 'Failed to save rule');
     }
   }
 
@@ -94,7 +94,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', 'Failed to save rule with revision');
+      return error('INTERNAL_ERROR', 'Failed to save rule with revision');
     }
   }
 
@@ -114,7 +114,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by ID`);
+      return error('INTERNAL_ERROR', `Failed to find rule by ID`);
     }
   }
 
@@ -134,7 +134,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by code`);
+      return error('INTERNAL_ERROR', `Failed to find rule by code`);
     }
   }
 
@@ -183,7 +183,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rules`);
+      return error('INTERNAL_ERROR', `Failed to find rules`);
     }
   }
 
@@ -243,7 +243,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to search rules`);
+      return error('INTERNAL_ERROR', `Failed to search rules`);
     }
   }
 
@@ -266,7 +266,7 @@ export class RulePrismaRepository implements IRuleRepository {
         return error('NOT_FOUND', `Rule with ID '${id}' not found`);
       }
 
-      return error('DATABASE_ERROR', `Failed to delete rule`);
+      return error('INTERNAL_ERROR', `Failed to delete rule`);
     }
   }
 

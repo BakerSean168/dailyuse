@@ -36,7 +36,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save revision`);
+      return error('INTERNAL_ERROR', `Failed to save revision`);
     }
   }
 
@@ -54,7 +54,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(revisions);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revisions`);
+      return error('INTERNAL_ERROR', `Failed to find revisions`);
     }
   }
 
@@ -83,7 +83,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(revision);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revision`);
+      return error('INTERNAL_ERROR', `Failed to find revision`);
     }
   }
 
@@ -98,7 +98,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(count);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to count revisions`);
+      return error('INTERNAL_ERROR', `Failed to count revisions`);
     }
   }
 }

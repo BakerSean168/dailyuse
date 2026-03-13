@@ -149,7 +149,7 @@ describe('ListRulesUseCase', () => {
 
   it('should propagate repository errors', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findAll: vi.fn().mockResolvedValue(error('DB_ERROR', 'Connection failed')),
+      findAll: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Connection failed')),
     });
     const useCase = new ListRulesUseCase(ruleRepo);
 
@@ -157,6 +157,6 @@ describe('ListRulesUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });

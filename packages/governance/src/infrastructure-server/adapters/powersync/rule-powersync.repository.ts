@@ -85,7 +85,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       }
       return ok(undefined);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to save rule');
+      return error('INTERNAL_ERROR', 'Failed to save rule');
     }
   }
 
@@ -184,7 +184,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to save rule with revision');
+      return error('INTERNAL_ERROR', 'Failed to save rule with revision');
     }
   }
 
@@ -195,7 +195,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       ]);
       return ok(row ? PowerSyncRuleMapper.toDomain(row) : null);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to find rule by ID');
+      return error('INTERNAL_ERROR', 'Failed to find rule by ID');
     }
   }
 
@@ -207,7 +207,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       );
       return ok(row ? PowerSyncRuleMapper.toDomain(row) : null);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to find rule by code');
+      return error('INTERNAL_ERROR', 'Failed to find rule by code');
     }
   }
 
@@ -220,7 +220,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       );
       return ok(PowerSyncRuleMapper.toDomainMany(rows));
     } catch {
-      return error('DATABASE_ERROR', 'Failed to find rules');
+      return error('INTERNAL_ERROR', 'Failed to find rules');
     }
   }
 
@@ -245,7 +245,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
 
       return ok(PowerSyncRuleMapper.toDomainMany(rows));
     } catch {
-      return error('DATABASE_ERROR', 'Failed to search rules');
+      return error('INTERNAL_ERROR', 'Failed to search rules');
     }
   }
 
@@ -257,7 +257,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       }
       return ok(undefined);
     } catch {
-      return error('DATABASE_ERROR', 'Failed to delete rule');
+      return error('INTERNAL_ERROR', 'Failed to delete rule');
     }
   }
 

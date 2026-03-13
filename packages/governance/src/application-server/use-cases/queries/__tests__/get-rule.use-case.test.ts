@@ -133,7 +133,7 @@ describe('GetRuleUseCase', () => {
 
   it('should propagate repository errors', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(error('DB_ERROR', 'Connection failed')),
+      findById: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Connection failed')),
     });
     const useCase = new GetRuleUseCase(ruleRepo);
 
@@ -141,6 +141,6 @@ describe('GetRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });

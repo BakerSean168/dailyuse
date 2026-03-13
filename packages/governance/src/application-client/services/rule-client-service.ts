@@ -133,7 +133,7 @@ export class RuleClientService {
     const result = await this.apiClient.deleteRule({ id });
     if (!result.ok) return result;
     if (!result.data.success) {
-      return error('DELETE_FAILED', 'Rule delete operation failed');
+      return error('INTERNAL_ERROR', 'Rule delete operation failed');
     }
     return ok(undefined);
   }

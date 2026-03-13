@@ -85,7 +85,7 @@ describe('CreateRuleUseCase', () => {
 
   it('should return error when findByCode fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findByCode: vi.fn().mockResolvedValue(error('DB_ERROR', 'Database connection failed')),
+      findByCode: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Database connection failed')),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
@@ -94,7 +94,7 @@ describe('CreateRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 
   it('should return error for invalid severity', async () => {
@@ -131,7 +131,7 @@ describe('CreateRuleUseCase', () => {
   it('should return error when saveWithRevision fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
       findByCode: vi.fn().mockResolvedValue(ok(null)),
-      saveWithRevision: vi.fn().mockResolvedValue(error('DB_ERROR', 'Save failed')),
+      saveWithRevision: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Save failed')),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
       countByRuleId: vi.fn().mockResolvedValue(ok(0)),
@@ -142,7 +142,7 @@ describe('CreateRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 
   it('should return error when countByRuleId fails', async () => {
@@ -150,7 +150,7 @@ describe('CreateRuleUseCase', () => {
       findByCode: vi.fn().mockResolvedValue(ok(null)),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
-      countByRuleId: vi.fn().mockResolvedValue(error('DB_ERROR', 'Count failed')),
+      countByRuleId: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Count failed')),
     });
     const useCase = new CreateRuleUseCase(ruleRepo, revisionRepo);
 
@@ -158,6 +158,6 @@ describe('CreateRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });

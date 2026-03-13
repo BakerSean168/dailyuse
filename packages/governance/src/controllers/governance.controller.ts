@@ -9,7 +9,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { error } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import {
@@ -71,25 +71,17 @@ export class GovernanceController {
     const message = result.error.message ?? '';
 
     if (result.error.code === 'CONFLICT' && /code|duplicate|exists/i.test(message)) {
-      return fail({
-        code: 'DUPLICATE_CODE',
-        message: '规则编码重复，请使用唯一 code',
-        details: result.error.details,
-      });
+      return error('DUPLICATE_CODE', '规则编码重复，请使用唯一 code', result.error.details);
     }
 
     if (
       (result.error.code === 'BUSINESS_ERROR' || result.error.code === 'VALIDATION_ERROR') &&
       /transition|cannot transition|deprecat|reactivat|draft|active|status/i.test(message)
     ) {
-      return fail({
-        code: 'INVALID_TRANSITION',
-        message: '规则状态流转不合法',
-        details: [
-          { code: 'INVALID_TRANSITION', message: message },
-          ...(result.error.details ?? []),
-        ],
-      });
+      return error('INVALID_TRANSITION', '规则状态流转不合法', [
+        { code: 'INVALID_TRANSITION', message: message },
+        ...(result.error.details ?? []),
+      ]);
     }
 
     return result;
@@ -103,11 +95,7 @@ export class GovernanceController {
   async createRule(input: unknown, ctx: Context): Promise<Result<CreateRuleRes>> {
     const parsed = CreateRuleSchema.safeParse(input);
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.normalizeRuleMutationError(
       await this.useCases.createRule(parsed.data, this.toExecutionContext(ctx)),
@@ -117,11 +105,7 @@ export class GovernanceController {
   async updateRule(id: string, input: unknown, ctx: Context): Promise<Result<UpdateRuleRes>> {
     const parsed = UpdateRuleSchema.safeParse(input);
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.normalizeRuleMutationError(
       await this.useCases.updateRule(id, parsed.data, this.toExecutionContext(ctx)),
@@ -131,11 +115,7 @@ export class GovernanceController {
   async deleteRule(id: string, ctx: Context): Promise<Result<DeleteRuleRes>> {
     const parsed = DeleteRuleSchema.safeParse({ id });
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.useCases.deleteRule(parsed.data, this.toExecutionContext(ctx));
   }
@@ -143,11 +123,7 @@ export class GovernanceController {
   async getRuleByCode(code: string): Promise<Result<GetRuleRes>> {
     const parsed = GetRuleSchema.safeParse({ code });
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.useCases.getRule(parsed.data);
   }
@@ -155,11 +131,7 @@ export class GovernanceController {
   async getRuleById(id: string): Promise<Result<GetRuleRes>> {
     const parsed = GetRuleSchema.safeParse({ id });
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.useCases.getRule(parsed.data);
   }
@@ -167,11 +139,7 @@ export class GovernanceController {
   async listRules(query: ListRulesQuery): Promise<Result<ListRulesRes>> {
     const parsed = ListRulesQuerySchema.safeParse(query);
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.useCases.listRules(parsed.data);
   }
@@ -179,11 +147,7 @@ export class GovernanceController {
   async searchRules(query: SearchRulesQuery, ctx?: Context): Promise<Result<SearchRulesRes>> {
     const parsed = SearchRulesQuerySchema.safeParse(query);
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
 
     const { query: keyword, ...filters } = parsed.data;
@@ -200,11 +164,7 @@ export class GovernanceController {
       ...query,
     });
     if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
+      return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
     return this.useCases.getRevisions(parsed.data);
   }

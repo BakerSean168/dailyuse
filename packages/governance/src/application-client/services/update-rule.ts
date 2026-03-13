@@ -5,6 +5,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { ok } from '@dailyuse/contracts/result';
 import type { UpdateRuleReq } from '../../contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
@@ -52,6 +53,6 @@ export class UpdateRule {
   async execute(ruleId: string, req: UpdateRuleReq): Promise<Result<Rule>> {
     const result = await this.apiClient.updateRule(ruleId, req);
     if (!result.ok) return result;
-    return { ok: true, data: ruleFromDTO(result.data) };
+    return ok(ruleFromDTO(result.data));
   }
 }
