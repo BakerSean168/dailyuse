@@ -10,8 +10,6 @@
 export { RuleId } from './rule-id';
 export { RuleRevisionId } from './rule-revision-id';
 export { RuleTag } from './rule-tag';
-/** @internal Persistence format — use RuleTagDTO instead. 持久化格式 — 请使用 RuleTagDTO。 */
-export type { RuleTagPersistenceDTO } from './rule-tag';
 export { CodeSnippet } from './code-snippet';
 /** @internal Persistence format — use CodeSnippetDTO instead. 持久化格式 — 请使用 CodeSnippetDTO。 */
 export type { CodeSnippetPersistenceDTO } from './code-snippet';

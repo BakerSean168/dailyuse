@@ -14,19 +14,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleTagDTO } from '../../contracts/value-objects/rule-tag';
 
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * RuleTag Persistence DTO — database storage format.
- * 规则标签持久化 DTO — 数据库存储格式。
- *
- * @internal Repository implementation detail. Consumers should use RuleTagDTO.
- * @internal 仓储实现细节，消费者应使用 RuleTagDTO。
- */
-export interface RuleTagPersistenceDTO {
-  value: string;
-}
-
 /**
  * 内部 Props 接口
  * 用于值对象内部存储
@@ -84,14 +71,6 @@ export class RuleTag extends ValueObject<RuleTagProps> {
    * 从 DTO 恢复值对象（不做规范化，假定已规范化）
    */
   public static fromDTO(dto: RuleTagDTO): RuleTag {
-    return new RuleTag({ value: dto.value });
-  }
-
-  // ================= 工厂方法 3: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: RuleTagPersistenceDTO): RuleTag {
     return new RuleTag({ value: dto.value });
   }
 
@@ -166,15 +145,6 @@ export class RuleTag extends ValueObject<RuleTagProps> {
    * 转换为 DTO（用于 API 传输或前端展示）
    */
   public toDTO(): RuleTagDTO {
-    return {
-      value: this.props.value,
-    };
-  }
-
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): RuleTagPersistenceDTO {
     return {
       value: this.props.value,
     };
