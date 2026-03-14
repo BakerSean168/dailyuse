@@ -531,8 +531,8 @@ describe('Rule Aggregate Root', () => {
 
       const changeResult = rule.changeSeverity(RuleSeverity.Recommended);
       expect(changeResult.ok).toBe(true);
-      // updatedAt should NOT change on no-op
-      expect(rule.updatedAt).toBe(before);
+      // updatedAt should NOT change on no-op (use toEqual since getter returns defensive copy)
+      expect(rule.updatedAt).toEqual(before);
     });
 
     it('should not emit event when severity is the same', () => {

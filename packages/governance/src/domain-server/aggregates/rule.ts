@@ -414,30 +414,39 @@ export class Rule extends AggregateRoot<RuleId> {
   // ============ Mutation Methods ============
 
   /**
-   * Updates rule content (title, description, tags, live reference)
+   * Updates rule content (title, description, tags, live reference).
+   * Atomic: validates all fields first, then applies mutations only if all pass.
    *
-   * Emits: rule:updated event
+   * 更新规则内容（标题、描述、标签、实际引用位置）。
+   * 原子性：先校验所有字段，仅当全部通过后才应用变更。
+   *
+   * Emits: governance:rule-updated event
    */
   update(props: UpdateRuleProps): Result<void> {
-    const changedFields: string[] = [];
+    // ---- Phase 1: Validate all fields (no mutations) ----
 
-    if (props.title) {
+    const changedFields: string[] = [];
+    let validatedTitle: string | undefined;
+    let validatedDescription: string | undefined;
+    let validatedTags: RuleTag[] | undefined;
+
+    if (props.title !== undefined) {
       if (props.title.length < 3 || props.title.length > 100) {
         return error('VALIDATION_ERROR', 'Title must be 3-100 characters');
       }
-      this._props.title = props.title;
+      validatedTitle = props.title;
       changedFields.push('title');
     }
 
-    if (props.description) {
+    if (props.description !== undefined) {
       if (props.description.length < 10 || props.description.length > 5000) {
         return error('VALIDATION_ERROR', 'Description must be 10-5000 characters');
       }
-      this._props.description = props.description;
+      validatedDescription = props.description;
       changedFields.push('description');
     }
 
-    if (props.tags) {
+    if (props.tags !== undefined) {
       if (props.tags.length === 0) {
         return error('VALIDATION_ERROR', 'At least one tag is required');
       }
@@ -447,43 +456,57 @@ export class Rule extends AggregateRoot<RuleId> {
         return error(failedTag.error.code, failedTag.error.message, failedTag.error.details);
       }
 
-      const nextTags: RuleTag[] = [];
+      validatedTags = [];
       for (const tagResult of tagResults) {
         if (tagResult.ok) {
-          nextTags.push(tagResult.data);
+          validatedTags.push(tagResult.data);
         }
       }
-
-      this._props.tags = nextTags;
       changedFields.push('tags');
     }
 
     if (props.liveReferenceLocation !== undefined) {
-      this._props.liveReferenceLocation = props.liveReferenceLocation;
       changedFields.push('liveReferenceLocation');
     }
 
-    if (changedFields.length > 0) {
-      this._props.updatedAt = new Date();
+    // ---- Phase 2: Apply all mutations (all validations passed) ----
 
-      const eventPayload: GovernanceEventMap['governance:rule-updated'] = {
-        ruleId: this.id,
-        changedFields,
-      };
-
-      if (props.title) {
-        eventPayload.title = this._props.title;
-      }
-
-      if (props.tags) {
-        eventPayload.tags = this._props.tags.map((tag) => tag.value);
-      }
-
-      this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>(
-        'governance:rule-updated',
-        eventPayload,
-      );
+    if (changedFields.length === 0) {
+      return ok(undefined);
     }
+
+    if (validatedTitle !== undefined) {
+      this._props.title = validatedTitle;
+    }
+    if (validatedDescription !== undefined) {
+      this._props.description = validatedDescription;
+    }
+    if (validatedTags !== undefined) {
+      this._props.tags = validatedTags;
+    }
+    if (props.liveReferenceLocation !== undefined) {
+      this._props.liveReferenceLocation = props.liveReferenceLocation;
+    }
+
+    this._props.updatedAt = new Date();
+
+    const eventPayload: GovernanceEventMap['governance:rule-updated'] = {
+      ruleId: this.id,
+      changedFields,
+    };
+
+    if (validatedTitle !== undefined) {
+      eventPayload.title = this._props.title;
+    }
+
+    if (validatedTags !== undefined) {
+      eventPayload.tags = this._props.tags.map((tag) => tag.value);
+    }
+
+    this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>(
+      'governance:rule-updated',
+      eventPayload,
+    );
 
     return ok(undefined);
   }
@@ -492,11 +515,21 @@ export class Rule extends AggregateRoot<RuleId> {
    * Changes severity level.
    * 变更严重级别。
    *
+   * Cannot change severity of a Deprecated rule — reactivate first.
+   * 不能变更已废弃规则的严重级别 — 需先重新激活。
+   *
    * Emits: governance:rule-severity-changed event
    */
   changeSeverity(newSeverity: RuleSeverity): Result<void> {
+    if (this._props.status === RuleStatus.Deprecated) {
+      return error(
+        'BUSINESS_ERROR',
+        'Cannot change severity of a Deprecated rule. Reactivate the rule first.',
+      );
+    }
+
     if (this._props.severity === newSeverity) {
-      return ok(undefined); // No change needed
+      return ok(undefined); // No change needed. 无需变更。
     }
 
     const previousSeverity = this._props.severity;
@@ -540,7 +573,11 @@ export class Rule extends AggregateRoot<RuleId> {
   }
 
   /**
-   * Removes tag (validates min 1 remains)
+   * Removes tag (validates min 1 remains).
+   * 移除标签（确保至少保留 1 个）。
+   *
+   * No-op if the tag does not exist on the rule.
+   * 若标签不存在于规则上，则无操作。
    */
   removeTag(rawTag: string): Result<void> {
     const tagResult = RuleTag.create(rawTag);
@@ -548,21 +585,50 @@ export class Rule extends AggregateRoot<RuleId> {
       return error(tagResult.error.code, tagResult.error.message, tagResult.error.details);
     }
 
+    const tag = tagResult.data;
+
+    // Check if tag actually exists before applying removal. 移除前检查标签是否存在。
+    const tagExists = this._props.tags.some((t) => t.equals(tag));
+    if (!tagExists) {
+      return ok(undefined); // Tag not present — no-op. 标签不存在 — 无操作。
+    }
+
     if (this._props.tags.length <= 1) {
       return error('BUSINESS_ERROR', 'Cannot remove last tag - at least one tag is required');
     }
 
-    const tag = tagResult.data;
     this._props.tags = this._props.tags.filter((t) => !t.equals(tag));
     this._props.updatedAt = new Date();
 
     return ok(undefined);
   }
 
+  /** Maximum number of code snippets per rule. 每条规则最大代码片段数。 */
+  private static readonly MAX_CODE_SNIPPETS = 20;
+
   /**
-   * Adds code snippet (Good or Bad example)
+   * Adds code snippet (Good or Bad example).
+   * 添加代码示例（Good 或 Bad）。
+   *
+   * Validates:
+   * - No duplicate snippet IDs. 不允许重复 ID。
+   * - Maximum 20 snippets per rule. 每条规则最多 20 个片段。
    */
   addCodeSnippet(snippet: CodeSnippet): Result<void> {
+    // Check for duplicate snippet ID. 检查 ID 是否重复。
+    const duplicate = this._props.codeSnippets.some((s) => s.id === snippet.id);
+    if (duplicate) {
+      return error('BUSINESS_ERROR', `Code snippet with ID '${snippet.id}' already exists`);
+    }
+
+    // Check upper bound. 检查上限。
+    if (this._props.codeSnippets.length >= Rule.MAX_CODE_SNIPPETS) {
+      return error(
+        'BUSINESS_ERROR',
+        `Cannot add more than ${Rule.MAX_CODE_SNIPPETS} code snippets per rule`,
+      );
+    }
+
     this._props.codeSnippets.push(snippet);
     this._props.updatedAt = new Date();
     return ok(undefined);
@@ -626,22 +692,22 @@ export class Rule extends AggregateRoot<RuleId> {
     return [...this._props.tags];
   }
   get codeSnippets(): ReadonlyArray<CodeSnippet> {
-    return this._props.codeSnippets;
+    return [...this._props.codeSnippets];
   }
-  get goodExamples(): CodeSnippet[] {
+  get goodExamples(): ReadonlyArray<CodeSnippet> {
     return this._props.codeSnippets.filter((snippet) => snippet.isGoodExample);
   }
-  get badExamples(): CodeSnippet[] {
+  get badExamples(): ReadonlyArray<CodeSnippet> {
     return this._props.codeSnippets.filter((snippet) => snippet.isBadExample);
   }
   get authorId(): IdentityId {
     return this._props.authorId;
   }
   get createdAt(): Date {
-    return this._props.createdAt;
+    return new Date(this._props.createdAt.getTime());
   }
   get updatedAt(): Date {
-    return this._props.updatedAt;
+    return new Date(this._props.updatedAt.getTime());
   }
 
   // ================= 序列化方法 =================
