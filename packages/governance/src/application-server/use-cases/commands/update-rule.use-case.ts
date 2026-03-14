@@ -10,7 +10,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import { error } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { UpdateRuleReq, UpdateRuleRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 import type { RuleId } from '../../../contracts/primitives/ids';
 import type { ExecutionContext } from './create-rule.use-case';
 
@@ -133,24 +132,6 @@ export class UpdateRuleUseCase {
     }
 
     // Convert to ClientDTO and return
-    const dto: RuleClientDTO = {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
-
-    return ok(dto);
+    return ok(rule.toClientDTO());
   }
 }

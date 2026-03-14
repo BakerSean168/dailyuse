@@ -506,6 +506,23 @@ describe('Rule Aggregate Root', () => {
       expect(rule.severity).toBe(RuleSeverity.Mandatory);
     });
 
+    it('should emit governance:rule-severity-changed event', () => {
+      const result = Rule.create(validCreateProps({ severity: RuleSeverity.Recommended }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents(); // clear create event
+
+      rule.changeSeverity(RuleSeverity.Mandatory);
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('governance:rule-severity-changed');
+      expect(events[0].payload).toMatchObject({
+        code: 'DDD-001',
+        previousSeverity: RuleSeverity.Recommended,
+        newSeverity: RuleSeverity.Mandatory,
+      });
+    });
+
     it('should be a no-op when severity is the same', () => {
       const result = Rule.create(validCreateProps({ severity: RuleSeverity.Recommended }));
       if (!result.ok) return;
@@ -516,6 +533,17 @@ describe('Rule Aggregate Root', () => {
       expect(changeResult.ok).toBe(true);
       // updatedAt should NOT change on no-op
       expect(rule.updatedAt).toBe(before);
+    });
+
+    it('should not emit event when severity is the same', () => {
+      const result = Rule.create(validCreateProps({ severity: RuleSeverity.Recommended }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents(); // clear create event
+
+      rule.changeSeverity(RuleSeverity.Recommended);
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(0);
     });
   });
 

@@ -179,7 +179,7 @@ export class Rule extends AggregateRoot<RuleId> {
       Mandatory: '强制执行',
       Recommended: '建议遵守',
     };
-    return this._props.severity;
+    return severityMap[this._props.severity];
   }
 
   /**

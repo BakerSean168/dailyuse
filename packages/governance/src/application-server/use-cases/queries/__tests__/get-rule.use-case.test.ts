@@ -10,7 +10,7 @@ import { RuleSeverity } from '../../../../contracts/value-objects/rule-severity'
 // ============ Helpers ============
 
 function createRuleFixture(overrides?: Record<string, any>) {
-  return {
+  const fixture = {
     id: 'rule-id-1',
     code: 'DDD-001',
     title: 'Use Aggregates',
@@ -31,7 +31,25 @@ function createRuleFixture(overrides?: Record<string, any>) {
     createdAt: new Date('2026-02-01T00:00:00.000Z'),
     updatedAt: new Date('2026-02-10T00:00:00.000Z'),
     ...overrides,
-  } as any;
+  };
+  fixture.toClientDTO = () => ({
+    id: fixture.id,
+    code: fixture.code,
+    title: fixture.title,
+    description: fixture.description,
+    severity: fixture.severity,
+    status: fixture.status,
+    deprecationReason: fixture.deprecationReason,
+    replacementRuleId: fixture.replacementRuleId,
+    liveReferenceLocation: fixture.liveReferenceLocation,
+    tags: fixture.tags.map((tag: any) => tag.toDTO()),
+    goodExamples: fixture.goodExamples.map((ex: any) => ex.toDTO()),
+    badExamples: fixture.badExamples.map((ex: any) => ex.toDTO()),
+    authorId: fixture.authorId,
+    createdAt: fixture.createdAt.getTime(),
+    updatedAt: fixture.updatedAt.getTime(),
+  });
+  return fixture as any;
 }
 
 // ============ Tests ============

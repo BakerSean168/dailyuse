@@ -93,11 +93,21 @@ export class PowerSyncRuleMapper {
     });
 
     const goodExamples = (JSON.parse(row.good_examples || '[]') as CodeSnippetPersistenceDTO[]).map(
-      (dto) => CodeSnippet.fromPersistenceDTO(dto),
+      (dto) => {
+        const result = CodeSnippet.fromPersistenceDTO(dto);
+        if (!result.ok)
+          throw new Error(`Invalid good-example in persistence: ${result.error.message}`);
+        return result.data;
+      },
     );
 
     const badExamples = (JSON.parse(row.bad_examples || '[]') as CodeSnippetPersistenceDTO[]).map(
-      (dto) => CodeSnippet.fromPersistenceDTO(dto),
+      (dto) => {
+        const result = CodeSnippet.fromPersistenceDTO(dto);
+        if (!result.ok)
+          throw new Error(`Invalid bad-example in persistence: ${result.error.message}`);
+        return result.data;
+      },
     );
 
     return Rule.load({

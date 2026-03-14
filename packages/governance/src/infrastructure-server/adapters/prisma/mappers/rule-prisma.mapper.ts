@@ -78,8 +78,17 @@ export class RulePrismaMapper {
     });
 
     const codeSnippets = [
-      ...goodExamplesJson.map((dto) => CodeSnippet.fromPersistenceDTO(dto)),
-      ...badExamplesJson.map((dto) => CodeSnippet.fromPersistenceDTO(dto)),
+      ...goodExamplesJson.map((dto) => {
+        const result = CodeSnippet.fromPersistenceDTO(dto);
+        if (!result.ok)
+          throw new Error(`Invalid good-example in database: ${result.error.message}`);
+        return result.data;
+      }),
+      ...badExamplesJson.map((dto) => {
+        const result = CodeSnippet.fromPersistenceDTO(dto);
+        if (!result.ok) throw new Error(`Invalid bad-example in database: ${result.error.message}`);
+        return result.data;
+      }),
     ];
 
     return Rule.load({

@@ -7,7 +7,6 @@ import type { IRuleRepository } from '@/domain-server/repositories/i-rule-reposi
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { GetRuleReq, GetRuleRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 import type { RuleId } from '../../../contracts/primitives/ids';
 
 /**
@@ -43,23 +42,7 @@ export class GetRuleUseCase {
     const rule = ruleResult.data;
 
     // Convert to ClientDTO
-    const dto: RuleClientDTO = {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
+    const dto = rule.toClientDTO();
 
     return ok(dto);
   }

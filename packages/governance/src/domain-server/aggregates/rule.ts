@@ -489,17 +489,29 @@ export class Rule extends AggregateRoot<RuleId> {
   }
 
   /**
-   * Changes severity level
+   * Changes severity level.
+   * 变更严重级别。
    *
-   * Validates: Cannot directly deprecate MANDATORY rule
+   * Emits: governance:rule-severity-changed event
    */
   changeSeverity(newSeverity: RuleSeverity): Result<void> {
     if (this._props.severity === newSeverity) {
       return ok(undefined); // No change needed
     }
 
+    const previousSeverity = this._props.severity;
     this._props.severity = newSeverity;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<GovernanceEventMap['governance:rule-severity-changed']>(
+      'governance:rule-severity-changed',
+      {
+        ruleId: this.id,
+        code: this._props.code,
+        previousSeverity,
+        newSeverity,
+      },
+    );
 
     return ok(undefined);
   }
@@ -610,8 +622,8 @@ export class Rule extends AggregateRoot<RuleId> {
   get liveReferenceLocation(): string | null {
     return this._props.liveReferenceLocation ?? null;
   }
-  get tags(): RuleTag[] {
-    return this._props.tags;
+  get tags(): ReadonlyArray<RuleTag> {
+    return [...this._props.tags];
   }
   get codeSnippets(): ReadonlyArray<CodeSnippet> {
     return this._props.codeSnippets;

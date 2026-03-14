@@ -22,6 +22,7 @@ export type { RuleUpdatedEvent } from './rule-updated.event';
 export type { RuleDeprecatedEvent } from './rule-deprecated.event';
 export type { RuleReactivatedEvent } from './rule-reactivated.event';
 export type { RuleStatusChangedEvent } from './rule-status-changed.event';
+export type { RuleSeverityChangedEvent } from './rule-severity-changed.event';
 
 /**
  * 所有 Governance 模块领域事件的联合类型
@@ -32,4 +33,5 @@ export type GovernanceDomainEvent =
   | import('./rule-updated.event').RuleUpdatedEvent
   | import('./rule-deprecated.event').RuleDeprecatedEvent
   | import('./rule-reactivated.event').RuleReactivatedEvent
-  | import('./rule-status-changed.event').RuleStatusChangedEvent;
+  | import('./rule-status-changed.event').RuleStatusChangedEvent
+  | import('./rule-severity-changed.event').RuleSeverityChangedEvent;

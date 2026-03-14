@@ -8,7 +8,6 @@ import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { SearchRulesQuery, SearchRulesRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 import { RuleStatus } from '../../../contracts/value-objects/rule-status';
 import type { ExecutionContext } from '../commands/create-rule.use-case';
 
@@ -76,7 +75,7 @@ export class SearchRulesUseCase {
     const offset = (page - 1) * pageSize;
     const items = scoredRules
       .slice(offset, offset + pageSize)
-      .map(({ rule }) => this.toClientDTO(rule));
+      .map(({ rule }) => rule.toClientDTO());
 
     return ok({
       items,
@@ -124,25 +123,5 @@ export class SearchRulesUseCase {
     if (status === RuleStatus.Draft) return 10;
     if (status === RuleStatus.Deprecated) return 5;
     return 0;
-  }
-
-  private toClientDTO(rule: Rule): RuleClientDTO {
-    return {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
   }
 }

@@ -33,8 +33,16 @@ export function ruleFromDTO(dto: RuleClientDTO): Rule {
     liveReferenceLocation: dto.liveReferenceLocation,
     tags: dto.tags.map((t) => RuleTag.fromDTO(t)),
     codeSnippets: [
-      ...dto.goodExamples.map((e) => CodeSnippet.fromDTO(e)),
-      ...dto.badExamples.map((e) => CodeSnippet.fromDTO(e)),
+      ...dto.goodExamples.map((e) => {
+        const result = CodeSnippet.fromDTO(e);
+        if (!result.ok) throw new Error(`Invalid good-example in DTO: ${result.error.message}`);
+        return result.data;
+      }),
+      ...dto.badExamples.map((e) => {
+        const result = CodeSnippet.fromDTO(e);
+        if (!result.ok) throw new Error(`Invalid bad-example in DTO: ${result.error.message}`);
+        return result.data;
+      }),
     ],
     authorId: dto.authorId,
     createdAt: new Date(dto.createdAt),
