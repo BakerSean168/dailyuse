@@ -21,17 +21,17 @@ import { RuleId, RuleRevisionId } from '../../domain-shared/value-objects';
  */
 export interface IRuleRevisionRepository {
   /**
-   * Saves revision (insert only - revisions are immutable)
+   * Saves revision (insert only — revisions are immutable). 保存修订记录（仅插入 — 修订记录不可变）。
    */
   save(revision: RuleRevision): Promise<Result<void>>;
 
   /**
-   * Finds all revisions for a rule
+   * Finds all revisions for a rule. 查找指定规则的所有修订记录。
    */
   findByRuleId(ruleId: RuleId): Promise<Result<RuleRevision[]>>;
 
   /**
-   * Finds specific revision by rule ID and revision number
+   * Finds specific revision by rule ID and revision number. 根据规则 ID 和修订编号查找特定修订记录。
    */
   findByRuleIdAndNumber(
     ruleId: RuleId,
@@ -39,7 +39,7 @@ export interface IRuleRevisionRepository {
   ): Promise<Result<RuleRevision | null>>;
 
   /**
-   * Counts total revisions for a rule
+   * Counts total revisions for a rule. 统计指定规则的修订记录总数。
    */
   countByRuleId(ruleId: RuleId): Promise<Result<number>>;
 }

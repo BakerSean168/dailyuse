@@ -15,9 +15,6 @@ import { ok, error } from '@dailyuse/contracts/result';
 import type { CreateRuleReq, CreateRuleRes } from '../../../contracts/api/rules';
 import type { ExecutionContext } from '../execution-context';
 
-/** @deprecated Import from '../execution-context' instead. 请改从 '../execution-context' 导入。 */
-export type { ExecutionContext } from '../execution-context';
-
 /**
  * Create Rule Use Case.
  * 创建规则用例。

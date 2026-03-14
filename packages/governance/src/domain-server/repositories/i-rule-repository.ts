@@ -32,37 +32,37 @@ export interface RuleFilter {
  */
 export interface IRuleRepository {
   /**
-   * Saves rule (insert or update)
+   * Saves rule (insert or update). 保存规则（插入或更新）。
    */
   save(rule: Rule): Promise<Result<void>>;
 
   /**
-   * Saves rule and revision atomically in a single transaction
+   * Saves rule and revision atomically in a single transaction. 在单个事务中原子保存规则和修订记录。
    */
   saveWithRevision(rule: Rule, revision: RuleRevision): Promise<Result<void>>;
 
   /**
-   * Finds rule by ID
+   * Finds rule by ID. 根据 ID 查找规则。
    */
   findById(id: RuleId): Promise<Result<Rule | null>>;
 
   /**
-   * Finds rule by unique code
+   * Finds rule by unique code. 根据唯一代码查找规则。
    */
   findByCode(code: string): Promise<Result<Rule | null>>;
 
   /**
-   * Finds all rules matching filter
+   * Finds all rules matching filter. 查找所有匹配筛选条件的规则。
    */
   findAll(filter?: RuleFilter): Promise<Result<Rule[]>>;
 
   /**
-   * Searches rules by keyword (title, description, code, tags)
+   * Searches rules by keyword (title, description, code, tags). 按关键词搜索规则（标题、描述、代码、标签）。
    */
   search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>>;
 
   /**
-   * Deletes rule (soft delete for rules with revisions)
+   * Deletes rule (hard delete for Draft, soft delete for others). 删除规则（草稿硬删除，其他软删除）。
    */
   delete(id: RuleId): Promise<Result<void>>;
 

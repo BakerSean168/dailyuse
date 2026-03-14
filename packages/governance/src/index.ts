@@ -7,7 +7,7 @@
  * 架构治理规则管理，包含：
  * - 创建、编辑、删除规则
  * - 状态流转：Draft → Active → Deprecated
- * - 严重性管理：Mandatory / Recommended / Optional
+ * - 严重性管理：Mandatory / Recommended
  * - 版本追踪：RuleRevision 记录每次变更
  *
  * 【分层架构】

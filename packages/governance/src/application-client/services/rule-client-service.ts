@@ -80,7 +80,7 @@ export class RuleClientService {
   }
 
   /**
-   * Fetches all rules with optional filters
+   * Fetches all rules with optional filters. 获取所有规则（可选筛选条件）。
    */
   async fetchRules(options?: FetchRulesOptions): Promise<Result<RuleClientDTO[]>> {
     const query: ListRulesQuery = {
@@ -100,7 +100,7 @@ export class RuleClientService {
   }
 
   /**
-   * Fetches single rule by ID
+   * Fetches single rule by ID. 根据 ID 获取单个规则。
    */
   async fetchRuleById(id: string): Promise<Result<RuleClientDTO | null>> {
     const result = await this.apiClient.getRule({ id });
@@ -109,7 +109,7 @@ export class RuleClientService {
   }
 
   /**
-   * Searches rules by keyword
+   * Searches rules by keyword. 按关键词搜索规则。
    */
   async searchRules(options: SearchRulesOptions): Promise<Result<RuleClientDTO[]>> {
     const query: SearchRulesQuery = {
@@ -125,7 +125,7 @@ export class RuleClientService {
   }
 
   /**
-   * Creates new rule (Tech Lead/Architect only)
+   * Creates new rule (Tech Lead/Architect only). 创建新规则（仅限技术负责人/架构师）。
    */
   async createRule(data: CreateRuleReq): Promise<Result<{ ruleId: string }>> {
     const result = await this.apiClient.createRule(data);
@@ -134,7 +134,7 @@ export class RuleClientService {
   }
 
   /**
-   * Updates existing rule (Tech Lead/Architect only)
+   * Updates existing rule (Tech Lead/Architect only). 更新已有规则（仅限技术负责人/架构师）。
    */
   async updateRule(id: string, data: UpdateRuleReq): Promise<Result<void>> {
     const result = await this.apiClient.updateRule(id, data);
@@ -143,7 +143,7 @@ export class RuleClientService {
   }
 
   /**
-   * Deletes rule (Tech Lead/Architect only)
+   * Deletes rule (Tech Lead/Architect only). 删除规则（仅限技术负责人/架构师）。
    */
   async deleteRule(id: string): Promise<Result<void>> {
     const result = await this.apiClient.deleteRule({ id });

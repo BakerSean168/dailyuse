@@ -67,8 +67,10 @@ const CodeExampleInputSchema = z.object({
  *
  * Defaults are sourced from GOVERNANCE_VIEW_CONFIG (single source of truth).
  * 默认值来自 GOVERNANCE_VIEW_CONFIG（唯一事实来源）。
+ *
+ * @internal Shared within governance module only. 仅在治理模块内部共享。
  */
-const PaginationSchema = z.object({
+export const PaginationSchema = z.object({
   page: z.number().int().min(1).optional().default(1),
   pageSize: z
     .number()

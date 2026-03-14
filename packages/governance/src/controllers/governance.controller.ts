@@ -1,11 +1,16 @@
 /**
  * Governance Controller
+ * 治理控制器
  *
  * Encapsulates Zod validation and use case orchestration.
+ * 封装 Zod 验证和用例编排。
+ *
  * Shared by both Express (HTTP) and IPC transport layers.
+ * 供 Express（HTTP）和 IPC 传输层共用。
  *
  * Accepts standard Context from the adapter and converts to
  * ExecutionContext internally for the domain layer.
+ * 接受适配器的标准 Context，内部转换为领域层的 ExecutionContext。
  */
 
 import type { Result } from '@dailyuse/contracts/result';
@@ -43,20 +48,33 @@ import type {
 
 // ============ Use Case Port ============
 
+/**
+ * Use case port — contract for the controller's use case dependencies.
+ * 用例端口 — 控制器用例依赖的契约。
+ *
+ * @internal Controller implementation detail. 控制器实现细节。
+ */
 export interface GovernanceUseCases {
+  /** Creates a new rule. 创建新规则。 */
   createRule: (req: CreateRuleReq, cx: ExecutionContext) => Promise<Result<CreateRuleRes>>;
+  /** Updates an existing rule. 更新已有规则。 */
   updateRule: (
     id: string,
     req: UpdateRuleReq,
     cx: ExecutionContext,
   ) => Promise<Result<UpdateRuleRes>>;
+  /** Deletes a rule (soft or hard). 删除规则（软删除或硬删除）。 */
   deleteRule: (req: DeleteRuleReq, cx: ExecutionContext) => Promise<Result<DeleteRuleRes>>;
+  /** Gets a single rule by ID or code. 根据 ID 或代码获取单个规则。 */
   getRule: (req: GetRuleReq) => Promise<Result<GetRuleRes>>;
+  /** Lists rules with optional filters and pagination. 列出规则（可选筛选和分页）。 */
   listRules: (query: ListRulesQuery) => Promise<Result<ListRulesRes>>;
+  /** Searches rules by keyword with relevance scoring. 按关键词搜索规则（含相关性评分）。 */
   searchRules: (
     req: SearchRulesQueryInput,
     cx?: ExecutionContext,
   ) => Promise<Result<SearchRulesRes>>;
+  /** Gets revision history for a rule. 获取规则的修订历史。 */
   getRevisions: (query: GetRuleRevisionsQuery) => Promise<Result<GetRuleRevisionsRes>>;
 }
 

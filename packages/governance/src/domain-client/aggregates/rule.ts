@@ -124,13 +124,13 @@ export class Rule extends AggregateRoot<RuleId> {
   }
 
   /** Tag list (e.g. ['ddd', 'entity', 'value-object']). 标签列表（例如 ['ddd', 'entity', 'value-object']）。 */
-  get tags(): RuleTag[] {
-    return this._props.tags;
+  get tags(): ReadonlyArray<RuleTag> {
+    return [...this._props.tags];
   }
 
   /** Code snippet list (good examples and bad examples). 代码片段列表（好示例和坏示例）。 */
-  get codeSnippets(): CodeSnippet[] {
-    return this._props.codeSnippets;
+  get codeSnippets(): ReadonlyArray<CodeSnippet> {
+    return [...this._props.codeSnippets];
   }
 
   /** Author identity ID. 作者身份 ID。 */

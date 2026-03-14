@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { RuleId, RuleRevisionId } from '../primitives/ids';
 import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
-import { GOVERNANCE_VIEW_CONFIG } from '../configs/config';
+import { PaginationSchema } from './rules';
 
 // ============================================================================
 // GET Operation - 获取修订记录历史
@@ -26,17 +26,11 @@ import { GOVERNANCE_VIEW_CONFIG } from '../configs/config';
  * - page: 页码（从1开始）
  * - pageSize: 每页数量（默认20）
  */
-export const GetRuleRevisionsQuerySchema = z.object({
-  ruleId: brandedId<RuleId>(),
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z
-    .number()
-    .int()
-    .min(1)
-    .max(GOVERNANCE_VIEW_CONFIG.MAX_PAGE_SIZE)
-    .optional()
-    .default(GOVERNANCE_VIEW_CONFIG.DEFAULT_PAGE_SIZE),
-});
+export const GetRuleRevisionsQuerySchema = z
+  .object({
+    ruleId: brandedId<RuleId>(),
+  })
+  .merge(PaginationSchema);
 
 export type GetRuleRevisionsQuery = z.infer<typeof GetRuleRevisionsQuerySchema>;
 
