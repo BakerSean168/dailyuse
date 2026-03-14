@@ -17,6 +17,7 @@ import { RuleId } from '../../../../domain-shared/value-objects/rule-id';
 import { RuleRevisionId } from '../../../../domain-shared/value-objects/rule-revision-id';
 import type { ChangeType } from '../../../../domain-shared/value-objects/change-type';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
+import { toDate, parseStringArray, parseRecord } from '../../mapper-helpers';
 
 /**
  * Represents a row in the PowerSync `rule_revisions` table.
@@ -42,46 +43,6 @@ export interface PowerSyncRuleRevisionRow {
 
 /** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 @internal */
 export interface PowerSyncRuleRevisionWriteRow extends PowerSyncRuleRevisionRow {}
-
-/**
- * Safely parses a JSON string as a string array, returning [] on failure.
- * 安全地将 JSON 字符串解析为字符串数组，失败时返回空数组。
- */
-function parseStringArray(value: string | null | undefined): string[] {
-  if (!value) return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is string => typeof item === 'string');
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Safely parses a JSON string as an object record, returning {} on failure.
- * 安全地将 JSON 字符串解析为对象记录，失败时返回空对象。
- */
-function parseRecord(value: string | null | undefined): Record<string, unknown> {
-  if (!value) return {};
-  try {
-    const parsed: unknown = JSON.parse(value);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return parsed as Record<string, unknown>;
-  } catch {
-    return {};
-  }
-}
-
-/**
- * Safely parses a date string, falling back to current date on failure.
- * 安全解析日期字符串，解析失败时回退到当前日期。
- */
-function toDate(value: string | null | undefined): Date {
-  if (!value) return new Date();
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-}
 
 /**
  * Mapper for converting between PowerSync rows and domain RuleRevision entities.

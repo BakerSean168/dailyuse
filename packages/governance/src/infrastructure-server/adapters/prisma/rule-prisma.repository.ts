@@ -23,6 +23,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
+import { withCause } from '../mapper-helpers';
 
 /**
  * Prisma Rule Repository
@@ -61,7 +62,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', 'Failed to save rule');
+      return error('INTERNAL_ERROR', withCause('Failed to save rule', err));
     }
   }
 
@@ -94,7 +95,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('INTERNAL_ERROR', 'Failed to save rule with revision');
+      return error('INTERNAL_ERROR', withCause('Failed to save rule with revision', err));
     }
   }
 
@@ -114,7 +115,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('INTERNAL_ERROR', `Failed to find rule by ID`);
+      return error('INTERNAL_ERROR', withCause('Failed to find rule by ID', err));
     }
   }
 
@@ -134,7 +135,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('INTERNAL_ERROR', `Failed to find rule by code`);
+      return error('INTERNAL_ERROR', withCause('Failed to find rule by code', err));
     }
   }
 
@@ -183,7 +184,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('INTERNAL_ERROR', `Failed to find rules`);
+      return error('INTERNAL_ERROR', withCause('Failed to find rules', err));
     }
   }
 
@@ -243,7 +244,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('INTERNAL_ERROR', `Failed to search rules`);
+      return error('INTERNAL_ERROR', withCause('Failed to search rules', err));
     }
   }
 
@@ -266,7 +267,7 @@ export class RulePrismaRepository implements IRuleRepository {
         return error('NOT_FOUND', `Rule with ID '${id}' not found`);
       }
 
-      return error('INTERNAL_ERROR', `Failed to delete rule`);
+      return error('INTERNAL_ERROR', withCause('Failed to delete rule', err));
     }
   }
 
@@ -281,7 +282,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return count > 0;
     } catch {
-      // If query fails, assume doesn't exist
+      // If query fails, assume doesn't exist. 查询失败时假设不存在。
       return false;
     }
   }

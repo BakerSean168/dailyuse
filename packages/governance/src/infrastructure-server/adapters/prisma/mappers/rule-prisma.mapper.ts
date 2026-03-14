@@ -22,37 +22,7 @@ import { CodeSnippet } from '../../../../domain-shared/value-objects/code-snippe
 import type { RuleStatus } from '../../../../domain-shared/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-severity';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain-shared/value-objects/code-snippet';
-
-// ---------------------------------------------------------------------------
-// SQLite 兼容帮助函数
-// ---------------------------------------------------------------------------
-
-/**
- * 从数据库字段安全地还原 Date。
- *
- * SQLite 通过 Prisma 返回的 DateTime 已是 JS Date，但如果原始值来自
- * 手动插入的 ISO 字符串（seed / 测试固件），Prisma 有时会以 string 返回。
- * 统一处理两种情况，避免 Invalid Date。
- */
-function fromDbDate(value: Date | string): Date {
-  if (value instanceof Date) return value;
-  const d = new Date(value);
-  if (isNaN(d.getTime())) throw new Error(`Invalid date from DB: ${String(value)}`);
-  return d;
-}
-
-/**
- * 将 JSON 字段字符串安全反序列化。
- * SQLite 不支持原生 JSON 类型，Prisma 以 String 列存储，此处统一处理。
- */
-function parseJson<T>(value: string | null | undefined, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-}
+import { fromDbDate, parseJson } from '../../mapper-helpers';
 
 // ---------------------------------------------------------------------------
 // Mapper

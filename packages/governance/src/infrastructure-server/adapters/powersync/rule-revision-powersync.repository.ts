@@ -18,6 +18,7 @@ import {
   PowerSyncRuleRevisionMapper,
   type PowerSyncRuleRevisionRow,
 } from './mappers/powersync-rule-revision.mapper';
+import { withCause } from '../mapper-helpers';
 
 /**
  * PowerSync-backed RuleRevision repository.
@@ -58,8 +59,8 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
         ],
       );
       return ok(undefined);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to save revision');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to save revision', err));
     }
   }
 
@@ -77,8 +78,8 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
         [ruleId],
       );
       return ok(PowerSyncRuleRevisionMapper.toDomainMany(rows));
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to find revisions');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to find revisions', err));
     }
   }
 
@@ -100,8 +101,8 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
         [ruleId, revisionNumber],
       );
       return ok(row ? PowerSyncRuleRevisionMapper.toDomain(row) : null);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to find revision');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to find revision', err));
     }
   }
 
@@ -119,8 +120,8 @@ export class PowerSyncRuleRevisionRepository implements IRuleRevisionRepository 
         [ruleId],
       );
       return ok(result.count);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to count revisions');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to count revisions', err));
     }
   }
 }

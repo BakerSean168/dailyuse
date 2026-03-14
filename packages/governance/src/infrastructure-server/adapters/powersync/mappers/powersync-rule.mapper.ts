@@ -22,6 +22,7 @@ import type { RuleStatus } from '../../../../domain-shared/value-objects/rule-st
 import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-severity';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain-shared/value-objects/code-snippet';
+import { toDate } from '../../mapper-helpers';
 
 /**
  * Represents a row in the PowerSync `rules` table.
@@ -54,16 +55,6 @@ export interface PowerSyncRuleRow {
 
 /** Write row type (currently identical to read row). 写入行类型（当前与读取行类型相同）。 @internal */
 export interface PowerSyncRuleWriteRow extends PowerSyncRuleRow {}
-
-/**
- * Safely parses a date string, falling back to current date on failure.
- * 安全解析日期字符串，解析失败时回退到当前日期。
- */
-function toDate(value: string | null | undefined): Date {
-  if (!value) return new Date();
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-}
 
 /**
  * Mapper for converting between PowerSync rows and domain Rule aggregates.

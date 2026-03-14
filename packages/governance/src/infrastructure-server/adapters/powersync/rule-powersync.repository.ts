@@ -28,6 +28,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { PowerSyncRuleMapper, type PowerSyncRuleRow } from './mappers/powersync-rule.mapper';
 import { PowerSyncRuleRevisionMapper } from './mappers/powersync-rule-revision.mapper';
+import { withCause } from '../mapper-helpers';
 
 /**
  * PowerSync-backed Rule repository for offline-capable desktop.
@@ -119,8 +120,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         );
       }
       return ok(undefined);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to save rule');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to save rule', err));
     }
   }
 
@@ -231,8 +232,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       });
 
       return ok(undefined);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to save rule with revision');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to save rule with revision', err));
     }
   }
 
@@ -250,8 +251,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         id,
       ]);
       return ok(row ? PowerSyncRuleMapper.toDomain(row) : null);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to find rule by ID');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to find rule by ID', err));
     }
   }
 
@@ -269,8 +270,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         [code],
       );
       return ok(row ? PowerSyncRuleMapper.toDomain(row) : null);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to find rule by code');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to find rule by code', err));
     }
   }
 
@@ -292,8 +293,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         params,
       );
       return ok(PowerSyncRuleMapper.toDomainMany(rows));
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to find rules');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to find rules', err));
     }
   }
 
@@ -330,8 +331,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       );
 
       return ok(PowerSyncRuleMapper.toDomainMany(rows));
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to search rules');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to search rules', err));
     }
   }
 
@@ -349,8 +350,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
         return error('NOT_FOUND', `Rule with ID '${id}' not found`);
       }
       return ok(undefined);
-    } catch {
-      return error('INTERNAL_ERROR', 'Failed to delete rule');
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to delete rule', err));
     }
   }
 
