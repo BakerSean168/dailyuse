@@ -15,9 +15,8 @@
 import { RuleRevision } from '../../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../../domain-shared/value-objects/rule-id';
 import { RuleRevisionId } from '../../../../domain-shared/value-objects/rule-revision-id';
+import type { ChangeType } from '../../../../domain-shared/value-objects/change-type';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-
-type ChangeType = 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
 
 /**
  * Represents a row in the PowerSync `rule_revisions` table.

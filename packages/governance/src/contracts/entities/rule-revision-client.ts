@@ -10,6 +10,7 @@
 
 import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
 import type { RuleRevisionId, RuleId } from '../primitives/ids';
+import type { ChangeType } from '../value-objects/change-type';
 
 // ============ Transfer DTO (传输层) ============
 
@@ -25,6 +26,6 @@ export interface RuleRevisionClientDTO {
   changedFields: string[];
   previousValues: Record<string, unknown>;
   newValues: Record<string, unknown>;
-  changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
+  changeType: ChangeType;
   createdAt: TransferDate;
 }

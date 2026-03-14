@@ -18,6 +18,8 @@ import { Entity } from '@dailyuse/utils';
 import type { RuleId } from '../../contracts/primitives/ids';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
+import type { ChangeType } from '../../domain-shared/value-objects/change-type';
+import type { ChangeType as IChangeType } from '../../contracts/value-objects/change-type';
 // ================= Internal State Interface =================
 // ================= 内部状态接口 =================
 
@@ -36,7 +38,7 @@ export interface RuleRevisionState {
   changedFields: readonly string[];
   previousValues: Record<string, unknown>;
   newValues: Record<string, unknown>;
-  changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
+  changeType: ChangeType;
   createdAt: Date;
 }
 
@@ -108,7 +110,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   }
 
   /** Type of change. 更改类型。 */
-  get changeType(): 'Created' | 'Updated' | 'Deprecated' | 'Reactivated' {
+  get changeType(): ChangeType {
     return this._props.changeType;
   }
 
@@ -128,13 +130,13 @@ export class RuleRevision extends Entity<RuleRevisionId> {
    * revision.displayChangeType // '已更新'
    */
   get displayChangeType(): string {
-    const typeMap: Record<typeof this._props.changeType, string> = {
+    const typeMap: Record<IChangeType, string> = {
       Created: '新建',
       Updated: '已更新',
       Deprecated: '已废弃',
       Reactivated: '重新激活',
     };
-    return typeMap[this._props.changeType];
+    return typeMap[this._props.changeType as IChangeType];
   }
 
   /**
@@ -144,16 +146,13 @@ export class RuleRevision extends Entity<RuleRevisionId> {
    * @returns 'success' | 'info' | 'warning' | 'error'
    */
   get changeTypeColor(): 'success' | 'info' | 'warning' | 'error' {
-    const colorMap: Record<
-      typeof this._props.changeType,
-      'success' | 'info' | 'warning' | 'error'
-    > = {
+    const colorMap: Record<IChangeType, 'success' | 'info' | 'warning' | 'error'> = {
       Created: 'success',
       Updated: 'info',
       Deprecated: 'warning',
       Reactivated: 'success',
     };
-    return colorMap[this._props.changeType];
+    return colorMap[this._props.changeType as IChangeType];
   }
 
   /**

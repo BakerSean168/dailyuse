@@ -21,7 +21,7 @@ import { RuleTag } from '../../../../domain-shared/value-objects/rule-tag';
 import { CodeSnippet } from '../../../../domain-shared/value-objects/code-snippet';
 import type { RuleStatus } from '../../../../domain-shared/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-severity';
-import type { CodeSnippetPersistenceDTO } from '../../../../contracts/value-objects/code-snippet';
+import type { CodeSnippetPersistenceDTO } from '../../../../domain-shared/value-objects/code-snippet';
 
 // ---------------------------------------------------------------------------
 // SQLite 兼容帮助函数
@@ -69,7 +69,7 @@ export class RulePrismaMapper {
     const goodExamplesJson = parseJson<CodeSnippetPersistenceDTO[]>(raw.goodExamples, []);
     const badExamplesJson = parseJson<CodeSnippetPersistenceDTO[]>(raw.badExamples, []);
 
-    const tagObjects = tags.map(tagValue => {
+    const tagObjects = tags.map((tagValue) => {
       const result = RuleTag.create(tagValue);
       if (!result.ok) {
         throw new Error(`Invalid tag in database: ${tagValue}`);
@@ -78,8 +78,8 @@ export class RulePrismaMapper {
     });
 
     const codeSnippets = [
-      ...goodExamplesJson.map(dto => CodeSnippet.fromPersistenceDTO(dto)),
-      ...badExamplesJson.map(dto => CodeSnippet.fromPersistenceDTO(dto)),
+      ...goodExamplesJson.map((dto) => CodeSnippet.fromPersistenceDTO(dto)),
+      ...badExamplesJson.map((dto) => CodeSnippet.fromPersistenceDTO(dto)),
     ];
 
     return Rule.load({
@@ -119,15 +119,15 @@ export class RulePrismaMapper {
       deprecationReason: rule.deprecationReason ?? null,
       replacementRuleId: rule.replacementRuleId ?? null,
       liveReferenceLocation: rule.liveReferenceLocation ?? null,
-      tags: JSON.stringify(rule.tags.map(tag => tag.value)),
-      goodExamples: JSON.stringify(rule.goodExamples.map(s => s.toPersistenceDTO())),
-      badExamples: JSON.stringify(rule.badExamples.map(s => s.toPersistenceDTO())),
+      tags: JSON.stringify(rule.tags.map((tag) => tag.value)),
+      goodExamples: JSON.stringify(rule.goodExamples.map((s) => s.toPersistenceDTO())),
+      badExamples: JSON.stringify(rule.badExamples.map((s) => s.toPersistenceDTO())),
       authorId: rule.authorId,
     };
   }
 
   /** 批量转换（read-side 常用） */
   static toDomainMany(raws: PrismaRule[]): Rule[] {
-    return raws.map(raw => RulePrismaMapper.toDomain(raw));
+    return raws.map((raw) => RulePrismaMapper.toDomain(raw));
   }
 }

@@ -17,8 +17,4 @@
 // ============ RuleRevision Entity (Client/Server 分离) ============
 export type { RuleRevisionClientDTO } from './rule-revision-client';
 
-export type {
-  RuleRevisionServerDTO,
-  /** @internal Persistence format — use RuleRevisionServerDTO or RuleRevisionClientDTO instead. 持久化格式 — 请使用 RuleRevisionServerDTO 或 RuleRevisionClientDTO。 */
-  RuleRevisionPersistenceDTO,
-} from './rule-revision-server';
+export type { RuleRevisionServerDTO } from './rule-revision-server';

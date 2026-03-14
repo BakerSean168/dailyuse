@@ -21,7 +21,7 @@ import { CodeSnippet } from '../../../../domain-shared/value-objects/code-snippe
 import type { RuleStatus } from '../../../../domain-shared/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-severity';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { CodeSnippetPersistenceDTO } from '../../../../contracts/value-objects/code-snippet';
+import type { CodeSnippetPersistenceDTO } from '../../../../domain-shared/value-objects/code-snippet';
 
 /**
  * Represents a row in the PowerSync `rules` table.

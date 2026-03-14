@@ -43,6 +43,7 @@ import type { RuleRevisionClientDTO } from '../../contracts/entities/rule-revisi
 import type { RuleRevisionServerDTO } from '../../contracts/entities/rule-revision-server';
 import { RuleRevisionId } from '../../domain-shared/value-objects/rule-revision-id';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
+import type { ChangeType } from '../../domain-shared/value-objects/change-type';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 
 // ================= Props Object（参数对象） =================
@@ -80,7 +81,7 @@ export interface RuleRevisionState {
   newValues: Record<string, unknown>;
 
   /** 变更类型 */
-  changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
+  changeType: ChangeType;
 
   /** 创建时间 */
   createdAt: Date;
@@ -191,7 +192,7 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   get newValues(): Readonly<Record<string, unknown>> {
     return this._props.newValues;
   }
-  get changeType(): 'Created' | 'Updated' | 'Deprecated' | 'Reactivated' {
+  get changeType(): ChangeType {
     return this._props.changeType;
   }
   get createdAt(): Date {

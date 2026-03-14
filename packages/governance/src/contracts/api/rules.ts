@@ -3,17 +3,17 @@
  * Governance Module - Rules API
  * 规则治理模块 - 规则 CRUD 操作
  * ============================================================================
- * 
+ *
  * 【文件组织原则】
  * - 按业务功能域划分文件，而非按技术类型（Request/Response）划分
  * - 相关的 Schema、Request、Response 类型都放在同一个文件中
  * - 文件名使用 kebab-case
- * 
+ *
  * 【命名规范】
  * - Schema: {Operation}{Entity}Schema  (例: CreateRuleSchema)
  * - Request: {Operation}{Entity}Req    (例: CreateRuleReq)
  * - Response: {Operation}{Entity}Res   (例: CreateRuleRes)
- * 
+ *
  * 【Zod Schema 设计原则】
  * - 使用 Zod 进行 Runtime Validation
  * - 通过 z.infer 自动推导 TypeScript 类型
@@ -22,6 +22,11 @@
 
 import { z } from 'zod';
 import type { RuleClientDTO } from '../aggregates/rule-client';
+import { RuleStatus } from '../value-objects/rule-status';
+import { RuleSeverity } from '../value-objects/rule-severity';
+
+const RuleStatusValues = Object.values(RuleStatus);
+const RuleSeverityValues = Object.values(RuleSeverity);
 
 // ============================================================================
 // CREATE Operation - 创建规则
@@ -29,7 +34,7 @@ import type { RuleClientDTO } from '../aggregates/rule-client';
 
 /**
  * 创建规则请求 Schema
- * 
+ *
  * 【设计说明】
  * - 不包含 id: 由后端生成
  * - 不包含 status: 新建时默认为 'Draft'
@@ -37,7 +42,7 @@ import type { RuleClientDTO } from '../aggregates/rule-client';
  * - code 必须匹配格式：PREFIX-NUMBER (例如: DDD-001)
  * - 至少需要 1 个 Good Example 和 1 个 Bad Example
  * - 至少需要 1 个标签
- * 
+ *
  * 【验证规则】
  * - code: 必填，格式 PREFIX-NUMBER
  * - title: 必填，3-100字符
@@ -49,44 +54,44 @@ import type { RuleClientDTO } from '../aggregates/rule-client';
  * - liveReferenceLocation: 可选，最多500字符
  */
 export const CreateRuleSchema = z.object({
-  code: z.string()
-    .regex(/^[A-Z]+-[0-9]+$/, '规则编码必须符合格式：PREFIX-NUMBER (例如: DDD-001)'),
-  
-  title: z.string()
-    .min(3, '标题至少3个字符')
-    .max(100, '标题不能超过100字符'),
-  
-  description: z.string()
-    .min(10, '描述至少10个字符')
-    .max(5000, '描述不能超过5000字符'),
-  
+  code: z.string().regex(/^[A-Z]+-[0-9]+$/, '规则编码必须符合格式：PREFIX-NUMBER (例如: DDD-001)'),
+
+  title: z.string().min(3, '标题至少3个字符').max(100, '标题不能超过100字符'),
+
+  description: z.string().min(10, '描述至少10个字符').max(5000, '描述不能超过5000字符'),
+
   severity: z.enum(['Mandatory', 'Recommended'], {
     message: '严重程度必须是 Mandatory 或 Recommended',
   }),
-  
-  tags: z.array(z.string().min(1).max(50))
-    .min(1, '至少需要1个标签'),
-  
-  goodExamples: z.array(z.object({
-    language: z.string().min(1, '语言不能为空'),
-    content: z.string().min(1, '示例内容不能为空'),
-    caption: z.string().max(200, '标题不能超过200字符').optional(),
-  })).min(1, '至少需要1个 Good Example'),
-  
-  badExamples: z.array(z.object({
-    language: z.string().min(1, '语言不能为空'),
-    content: z.string().min(1, '示例内容不能为空'),
-    caption: z.string().max(200, '标题不能超过200字符').optional(),
-  })).min(1, '至少需要1个 Bad Example'),
-  
-  liveReferenceLocation: z.string()
-    .max(500, '实际应用位置不能超过500字符')
-    .optional(),
+
+  tags: z.array(z.string().min(1).max(50)).min(1, '至少需要1个标签'),
+
+  goodExamples: z
+    .array(
+      z.object({
+        language: z.string().min(1, '语言不能为空'),
+        content: z.string().min(1, '示例内容不能为空'),
+        caption: z.string().max(200, '标题不能超过200字符').optional(),
+      }),
+    )
+    .min(1, '至少需要1个 Good Example'),
+
+  badExamples: z
+    .array(
+      z.object({
+        language: z.string().min(1, '语言不能为空'),
+        content: z.string().min(1, '示例内容不能为空'),
+        caption: z.string().max(200, '标题不能超过200字符').optional(),
+      }),
+    )
+    .min(1, '至少需要1个 Bad Example'),
+
+  liveReferenceLocation: z.string().max(500, '实际应用位置不能超过500字符').optional(),
 });
 
 /**
  * 创建规则请求类型
- * 
+ *
  * 【类型推导】
  * 使用 z.infer<typeof Schema> 从 Zod Schema 自动推导类型
  * 这样确保 Runtime Validation 和 Compile-time Type Check 完全一致
@@ -95,7 +100,7 @@ export type CreateRuleReq = z.infer<typeof CreateRuleSchema>;
 
 /**
  * 创建规则响应类型
- * 
+ *
  * 【响应设计】
  * - 直接返回完整的 RuleClientDTO 对象
  * - DTO 来自 aggregates 层
@@ -108,12 +113,12 @@ export type CreateRuleRes = RuleClientDTO;
 
 /**
  * 更新规则请求 Schema
- * 
+ *
  * 【PATCH 语义】
  * - 所有字段都是可选的（.optional()）
  * - 仅更新提供的字段
  * - id 通过 URL 参数传递，不在 body 中
- * 
+ *
  * 【验证规则】
  * - title: 可选，3-100字符
  * - description: 可选，10-5000字符
@@ -121,24 +126,13 @@ export type CreateRuleRes = RuleClientDTO;
  * - liveReferenceLocation: 可选，最多500字符
  */
 export const UpdateRuleSchema = z.object({
-  title: z.string()
-    .min(3, '标题至少3个字符')
-    .max(100, '标题不能超过100字符')
-    .optional(),
-  
-  description: z.string()
-    .min(10, '描述至少10个字符')
-    .max(5000, '描述不能超过5000字符')
-    .optional(),
-  
-  tags: z.array(z.string().min(1).max(50))
-    .min(1, '标签列表不能为空')
-    .optional(),
-  
-  liveReferenceLocation: z.string()
-    .max(500, '实际应用位置不能超过500字符')
-    .optional()
-    .nullable(), // 允许 null 来清空字段
+  title: z.string().min(3, '标题至少3个字符').max(100, '标题不能超过100字符').optional(),
+
+  description: z.string().min(10, '描述至少10个字符').max(5000, '描述不能超过5000字符').optional(),
+
+  tags: z.array(z.string().min(1).max(50)).min(1, '标签列表不能为空').optional(),
+
+  liveReferenceLocation: z.string().max(500, '实际应用位置不能超过500字符').optional().nullable(), // 允许 null 来清空字段
 });
 
 export type UpdateRuleReq = z.infer<typeof UpdateRuleSchema>;
@@ -151,17 +145,22 @@ export type UpdateRuleRes = RuleClientDTO;
 
 /**
  * 获取规则请求 Schema
- * 
+ *
  * 【设计说明】
  * - id 通过 URL 参数传递
  * - 可选择通过 code 查询
  */
-export const GetRuleSchema = z.object({
-  id: z.string().uuid('无效的规则 ID').optional(),
-  code: z.string().regex(/^[A-Z]+-[0-9]+$/).optional(),
-}).refine(data => data.id || data.code, {
-  message: '必须提供 id 或 code',
-});
+export const GetRuleSchema = z
+  .object({
+    id: z.string().uuid('无效的规则 ID').optional(),
+    code: z
+      .string()
+      .regex(/^[A-Z]+-[0-9]+$/)
+      .optional(),
+  })
+  .refine((data) => data.id || data.code, {
+    message: '必须提供 id 或 code',
+  });
 
 export type GetRuleReq = z.infer<typeof GetRuleSchema>;
 
@@ -173,7 +172,7 @@ export type GetRuleRes = RuleClientDTO;
 
 /**
  * 删除规则请求 Schema
- * 
+ *
  * 【设计说明】
  * - id 通过 URL 参数传递
  */
@@ -191,7 +190,7 @@ export type DeleteRuleRes = { success: boolean };
 
 /**
  * 列出规则查询 Schema
- * 
+ *
  * 【查询参数】
  * - status: 按状态过滤（Draft, Active, Deprecated）
  * - tags: 按标签过滤（AND 逻辑）
@@ -200,9 +199,9 @@ export type DeleteRuleRes = { success: boolean };
  * - pageSize: 每页数量（默认20）
  */
 export const ListRulesQuerySchema = z.object({
-  status: z.enum(['Draft', 'Active', 'Deprecated']).optional(),
+  status: z.enum(RuleStatusValues).optional(),
   tags: z.array(z.string()).optional(),
-  severity: z.enum(['Mandatory', 'Recommended']).optional(),
+  severity: z.enum(RuleSeverityValues).optional(),
   page: z.number().int().min(1).optional().default(1),
   pageSize: z.number().int().min(1).max(100).optional().default(20),
 });
@@ -222,7 +221,7 @@ export type ListRulesRes = {
 
 /**
  * 搜索规则查询 Schema
- * 
+ *
  * 【查询参数】
  * - query: 关键词搜索（标题、描述、标签）
  * - status: 按状态过滤
@@ -233,9 +232,9 @@ export type ListRulesRes = {
  */
 export const SearchRulesQuerySchema = z.object({
   query: z.string().min(1, '搜索关键词不能为空'),
-  status: z.enum(['Draft', 'Active', 'Deprecated']).optional(),
+  status: z.enum(RuleStatusValues).optional(),
   tags: z.array(z.string()).optional(),
-  severity: z.enum(['Mandatory', 'Recommended']).optional(),
+  severity: z.enum(RuleSeverityValues).optional(),
   page: z.number().int().min(1).optional().default(1),
   pageSize: z.number().int().min(1).max(100).optional().default(20),
 });

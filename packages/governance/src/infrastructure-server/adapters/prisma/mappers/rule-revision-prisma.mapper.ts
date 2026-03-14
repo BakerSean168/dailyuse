@@ -69,9 +69,9 @@ function parseRecord(value: string | null | undefined): Record<string, unknown> 
 }
 
 // ---------------------------------------------------------------------------
-// ChangeType 合法值（与 Prisma schema 中枚举保持同步）
+// ChangeType — imported from domain-shared value object
 // ---------------------------------------------------------------------------
-type ChangeType = 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
+import type { ChangeType } from '../../../../domain-shared/value-objects/change-type';
 
 // ---------------------------------------------------------------------------
 // Mapper
@@ -106,9 +106,7 @@ export class RuleRevisionPrismaMapper {
    * - changedFields / previousValues / newValues 序列化为 JSON 字符串
    * - Set 类型的 changedFields 需先展开为数组
    */
-  static toPersistence(
-    revision: RuleRevision
-  ): Omit<PrismaRuleRevision, never> {
+  static toPersistence(revision: RuleRevision): Omit<PrismaRuleRevision, never> {
     return {
       id: revision.id,
       ruleId: revision.ruleId,
@@ -124,6 +122,6 @@ export class RuleRevisionPrismaMapper {
 
   /** 批量转换（read-side 常用） */
   static toDomainMany(raws: PrismaRuleRevision[]): RuleRevision[] {
-    return raws.map(raw => RuleRevisionPrismaMapper.toDomain(raw));
+    return raws.map((raw) => RuleRevisionPrismaMapper.toDomain(raw));
   }
 }

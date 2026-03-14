@@ -13,11 +13,25 @@
 import { ValueObject } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type {
-  CodeSnippetDTO,
-  CodeSnippetPersistenceDTO,
-} from '../../contracts/value-objects/code-snippet';
+import type { CodeSnippetDTO } from '../../contracts/value-objects/code-snippet';
 import type { CodeSnippetId } from '../../contracts/primitives/ids';
+
+// ============ Persistence DTO (持久化层) ============
+
+/**
+ * CodeSnippet Persistence DTO — database storage format.
+ * 代码片段持久化 DTO — 数据库存储格式。
+ *
+ * @internal Repository implementation detail. Consumers should use CodeSnippetDTO.
+ * @internal 仓储实现细节，消费者应使用 CodeSnippetDTO。
+ */
+export interface CodeSnippetPersistenceDTO {
+  id: string;
+  language: string;
+  content: string;
+  type: string;
+  caption: string | null;
+}
 import { Language, type Language as LanguageValue } from './language';
 import { SnippetType, type SnippetType as SnippetTypeValue } from './snippet-type';
 
