@@ -9,6 +9,8 @@
  * @internal 映射器辅助函数 — 消费者应使用 RuleClientService。
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import { Rule } from '../../domain-client/aggregates/rule';
 import { CodeSnippet } from '../../domain-shared/value-objects/code-snippet';
@@ -16,36 +18,48 @@ import { RuleTag } from '../../domain-shared/value-objects/rule-tag';
 
 /**
  * Converts a RuleClientDTO to a client-side Rule aggregate.
+ * Returns Result instead of throwing on invalid CodeSnippet data.
+ *
  * 将 RuleClientDTO 转换为客户端 Rule 聚合根。
+ * 对无效的 CodeSnippet 数据返回 Result 而非抛出异常。
  *
  * @internal
  */
-export function ruleFromDTO(dto: RuleClientDTO): Rule {
-  return Rule.load({
-    id: dto.id,
-    code: dto.code,
-    title: dto.title,
-    description: dto.description,
-    severity: dto.severity,
-    status: dto.status,
-    deprecationReason: dto.deprecationReason,
-    replacementRuleId: dto.replacementRuleId,
-    liveReferenceLocation: dto.liveReferenceLocation,
-    tags: dto.tags.map((t) => RuleTag.fromDTO(t)),
-    codeSnippets: [
-      ...dto.goodExamples.map((e) => {
-        const result = CodeSnippet.fromDTO(e);
-        if (!result.ok) throw new Error(`Invalid good-example in DTO: ${result.error.message}`);
-        return result.data;
-      }),
-      ...dto.badExamples.map((e) => {
-        const result = CodeSnippet.fromDTO(e);
-        if (!result.ok) throw new Error(`Invalid bad-example in DTO: ${result.error.message}`);
-        return result.data;
-      }),
-    ],
-    authorId: dto.authorId,
-    createdAt: new Date(dto.createdAt),
-    updatedAt: new Date(dto.updatedAt),
-  });
+export function ruleFromDTO(dto: RuleClientDTO): Result<Rule> {
+  const codeSnippets: CodeSnippet[] = [];
+
+  for (const e of dto.goodExamples) {
+    const result = CodeSnippet.fromDTO(e);
+    if (!result.ok) {
+      return error('VALIDATION_ERROR', `Invalid good-example in DTO: ${result.error.message}`);
+    }
+    codeSnippets.push(result.data);
+  }
+
+  for (const e of dto.badExamples) {
+    const result = CodeSnippet.fromDTO(e);
+    if (!result.ok) {
+      return error('VALIDATION_ERROR', `Invalid bad-example in DTO: ${result.error.message}`);
+    }
+    codeSnippets.push(result.data);
+  }
+
+  return ok(
+    Rule.load({
+      id: dto.id,
+      code: dto.code,
+      title: dto.title,
+      description: dto.description,
+      severity: dto.severity,
+      status: dto.status,
+      deprecationReason: dto.deprecationReason,
+      replacementRuleId: dto.replacementRuleId,
+      liveReferenceLocation: dto.liveReferenceLocation,
+      tags: dto.tags.map((t) => RuleTag.fromDTO(t)),
+      codeSnippets,
+      authorId: dto.authorId,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
+    }),
+  );
 }

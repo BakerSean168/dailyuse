@@ -19,6 +19,7 @@ contracts (契约层)
 - DTO（Client / Server / Persistence）
 - 领域事件
 - API Schema (Zod)
+- RPC/Event 映射（Protocol）
 
 domain-shared (共享领域层)
 - 值对象工厂（ID 生成、验证）
@@ -27,17 +28,37 @@ domain-shared (共享领域层)
 
 domain-server (服务端领域层)
 - 聚合根（Rule）
+- 实体（RuleRevision）
 - 仓储接口（IRuleRepository）
 - 领域服务（RuleDomainService）
 
-application-server (应用层)
+domain-client (客户端领域层)
+- 客户端聚合根（Rule — UI 辅助方法）
+
+application-server (服务端应用层)
 - Use Cases（Commands + Queries）
 - 执行上下文（ExecutionContext）
 
-infrastructure-server (基础设施层)
+application-client (客户端应用层)
+- 客户端服务（CreateRule, GetRule, ListRules 等）
+- DTO 映射器（ruleFromDTO）
+
+infrastructure-server (服务端基础设施层)
 - Prisma 仓储实现
+- PowerSync 仓储实现
 - DI 容器（GovernanceContainer）
 - 模块组合根（GovernanceModule）
+
+infrastructure-client (客户端基础设施层)
+- HTTP 适配器（RuleHttpAdapter）
+- IPC 适配器（RuleIpcAdapter）
+
+api (API 层)
+- 路由定义（routes）
+- 模块初始化（initialization）
+
+controllers (控制器层)
+- 输入校验、编排、响应序列化
 ```
 
 ## 使用示例
@@ -65,25 +86,25 @@ const result = Rule.create({
 });
 
 // 状态流转
-rule.activate();    // Draft → Active
+rule.activate(); // Draft → Active
 rule.deprecate(reason); // Active → Deprecated
 ```
 
 ## 核心规范展示
 
-| 规范 | 说明 | 位置 |
-|------|------|------|
-| Branded Types | 防止 ID 混用 | `domain-shared/value-objects/rule-id.ts` |
-| Const Object 枚举 | 替代 TypeScript enum | `domain-shared/value-objects/rule-status.ts` |
-| DTO 分层 | Client / Server / Persistence | `contracts/aggregates/` |
-| 时间防腐层 | TransferDate / DomainDate / PersistenceDate | `contracts/aggregates/` |
-| 富血模型 | 聚合根内聚业务逻辑 | `domain-server/aggregates/rule.ts` |
-| 工厂方法模式 | `create()` / `load()` | `domain-server/aggregates/rule.ts` |
-| 领域事件 | 状态变更时发布事件 | `domain-server/aggregates/rule.ts` |
-| 仓储模式 | 依赖倒置原则 | `domain-server/repositories/` |
-| 状态机 | 状态转换规则封装 | `domain-shared/value-objects/rule-status.ts` |
-| Result 模式 | 业务方法返回 Result | 全部领域方法 |
-| 组合根 | 依赖注入入口 | `infrastructure-server/governance.module.ts` |
+| 规范              | 说明                                        | 位置                                         |
+| ----------------- | ------------------------------------------- | -------------------------------------------- |
+| Branded Types     | 防止 ID 混用                                | `domain-shared/value-objects/rule-id.ts`     |
+| Const Object 枚举 | 替代 TypeScript enum                        | `domain-shared/value-objects/rule-status.ts` |
+| DTO 分层          | Client / Server / Persistence               | `contracts/aggregates/`                      |
+| 时间防腐层        | TransferDate / DomainDate / PersistenceDate | `contracts/aggregates/`                      |
+| 富血模型          | 聚合根内聚业务逻辑                          | `domain-server/aggregates/rule.ts`           |
+| 工厂方法模式      | `create()` / `load()`                       | `domain-server/aggregates/rule.ts`           |
+| 领域事件          | 状态变更时发布事件                          | `domain-server/aggregates/rule.ts`           |
+| 仓储模式          | 依赖倒置原则                                | `domain-server/repositories/`                |
+| 状态机            | 状态转换规则封装                            | `domain-shared/value-objects/rule-status.ts` |
+| Result 模式       | 业务方法返回 Result                         | 全部领域方法                                 |
+| 组合根            | 依赖注入入口                                | `infrastructure-server/governance.module.ts` |
 
 ## 文件结构
 

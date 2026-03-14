@@ -42,6 +42,12 @@ interface RuleTagProps {
  * - value: 标签值（自动规范化为 lowercase-kebab-case）
  */
 export class RuleTag extends ValueObject<RuleTagProps> {
+  /**
+   * Maximum allowed length for a tag value.
+   * 标签值的最大允许长度。
+   */
+  private static readonly MAX_LENGTH = 50;
+
   private constructor(props: RuleTagProps) {
     super(props);
   }
@@ -97,6 +103,14 @@ export class RuleTag extends ValueObject<RuleTagProps> {
     // 验证不为空
     if (props.value.length === 0) {
       return error('VALIDATION_ERROR', 'Tag cannot be empty');
+    }
+
+    // 验证最大长度
+    if (props.value.length > RuleTag.MAX_LENGTH) {
+      return error(
+        'VALIDATION_ERROR',
+        `Tag must not exceed ${RuleTag.MAX_LENGTH} characters (got ${props.value.length})`,
+      );
     }
 
     // 验证格式（只允许小写字母、数字和连字符）

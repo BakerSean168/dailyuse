@@ -202,9 +202,10 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   // ================= 序列化方法 =================
 
   /**
-   * 转换为 Server DTO（用于内部服务通信）
+   * Shared DTO serialization (both server and client DTOs have identical shape).
+   * 共享 DTO 序列化（服务端和客户端 DTO 结构完全一致）。
    */
-  toServerDTO(): RuleRevisionServerDTO {
+  private _toDTO(): RuleRevisionServerDTO & RuleRevisionClientDTO {
     return {
       id: this.id,
       ruleId: this._props.ruleId,
@@ -219,19 +220,16 @@ export class RuleRevision extends Entity<RuleRevisionId> {
   }
 
   /**
+   * 转换为 Server DTO（用于内部服务通信）
+   */
+  toServerDTO(): RuleRevisionServerDTO {
+    return this._toDTO();
+  }
+
+  /**
    * 转换为 Client DTO（用于 API 响应）
    */
   toClientDTO(): RuleRevisionClientDTO {
-    return {
-      id: this.id,
-      ruleId: this._props.ruleId,
-      revisionNumber: this._props.revisionNumber,
-      authorId: this._props.authorId,
-      changedFields: [...this._props.changedFields],
-      previousValues: { ...this._props.previousValues },
-      newValues: { ...this._props.newValues },
-      changeType: this._props.changeType,
-      createdAt: this._props.createdAt.getTime(),
-    };
+    return this._toDTO();
   }
 }

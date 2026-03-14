@@ -5,6 +5,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { error } from '@dailyuse/contracts/result';
 import type { SearchRulesQuery } from '../../contracts/api/rules';
 import { Rule } from '../../domain-client/aggregates/rule';
 import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
@@ -35,7 +36,12 @@ export class SearchRules {
     if (!result.ok) return result;
 
     const response = result.data;
-    const rules = response.items.map((dto) => ruleFromDTO(dto));
+    const rules: Rule[] = [];
+    for (const dto of response.items) {
+      const mapped = ruleFromDTO(dto);
+      if (!mapped.ok) return error(mapped.error.code, mapped.error.message, mapped.error.details);
+      rules.push(mapped.data);
+    }
 
     return {
       ok: true,
