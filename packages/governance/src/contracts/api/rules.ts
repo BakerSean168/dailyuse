@@ -18,6 +18,13 @@
  * - 使用 Zod 进行 Runtime Validation
  * - 通过 z.infer 自动推导 TypeScript 类型
  * - Schema 和 Type 成对出现，永远不分离
+ *
+ * 【Validation Constants / 验证常量】
+ * All validation limits (min/max lengths, array bounds, page sizes) are defined
+ * inline within Zod schemas below. These schemas are the **single source of truth**
+ * for validation — domain entities re-use or mirror these values independently.
+ * 所有验证限制（最小/最大长度、数组边界、页面大小）均在下方 Zod Schema 中内联定义。
+ * 这些 Schema 是验证的唯一事实来源 — 领域实体独立复用或对齐这些值。
  */
 
 import { z } from 'zod';
@@ -60,7 +67,7 @@ export const CreateRuleSchema = z.object({
 
   description: z.string().min(10, '描述至少10个字符').max(5000, '描述不能超过5000字符'),
 
-  severity: z.enum(['Mandatory', 'Recommended'], {
+  severity: z.enum(RuleSeverityValues, {
     message: '严重程度必须是 Mandatory 或 Recommended',
   }),
 
@@ -122,6 +129,7 @@ export type CreateRuleRes = RuleClientDTO;
  * 【验证规则】
  * - title: 可选，3-100字符
  * - description: 可选，10-5000字符
+ * - severity: 可选，Mandatory 或 Recommended（仅 Draft 规则可变更）
  * - tags: 可选数组，如果提供则至少1个
  * - liveReferenceLocation: 可选，最多500字符
  */
@@ -129,6 +137,13 @@ export const UpdateRuleSchema = z.object({
   title: z.string().min(3, '标题至少3个字符').max(100, '标题不能超过100字符').optional(),
 
   description: z.string().min(10, '描述至少10个字符').max(5000, '描述不能超过5000字符').optional(),
+
+  /** Severity change is only allowed for Draft rules. 仅草稿规则允许变更严重级别。 */
+  severity: z
+    .enum(RuleSeverityValues, {
+      message: '严重程度必须是 Mandatory 或 Recommended',
+    })
+    .optional(),
 
   tags: z.array(z.string().min(1).max(50)).min(1, '标签列表不能为空').optional(),
 
@@ -207,6 +222,12 @@ export const ListRulesQuerySchema = z.object({
 });
 
 export type ListRulesQuery = z.infer<typeof ListRulesQuerySchema>;
+
+/**
+ * List query input type (before Zod defaults are applied). page/pageSize are optional.
+ * 列表查询输入类型（Zod 默认值应用前）。page/pageSize 为可选。
+ */
+export type ListRulesQueryInput = z.input<typeof ListRulesQuerySchema>;
 
 export type ListRulesRes = {
   items: RuleClientDTO[];

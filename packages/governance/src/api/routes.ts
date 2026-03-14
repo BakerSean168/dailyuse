@@ -83,7 +83,32 @@ const RuleResponseSchema = z.object({
   title: z.string(),
   description: z.string(),
   severity: z.string(),
+  status: z.string(),
+  deprecationReason: z.string().nullable().optional(),
+  replacementRuleId: brandedId<RuleId>().nullable().optional(),
+  liveReferenceLocation: z.string().nullable().optional(),
   tags: z.array(z.string()),
+  goodExamples: z
+    .array(
+      z.object({
+        id: z.string(),
+        language: z.string(),
+        content: z.string(),
+        caption: z.string().optional(),
+      }),
+    )
+    .optional(),
+  badExamples: z
+    .array(
+      z.object({
+        id: z.string(),
+        language: z.string(),
+        content: z.string(),
+        caption: z.string().optional(),
+      }),
+    )
+    .optional(),
+  authorId: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });
@@ -194,7 +219,7 @@ export function registerGovernanceCrudRoutes(
     (req) => controller.getRuleByCode(req.params!.code),
   );
 
-  // GET /:id/revisions — 获取修订历史 (must be before /:id)
+  // GET /search — 搜索规则
   r.route(
     {
       method: 'get',
@@ -244,6 +269,8 @@ export function registerGovernanceCrudRoutes(
           z.object({
             items: z.array(RuleRevisionResponseSchema),
             total: z.number(),
+            page: z.number(),
+            pageSize: z.number(),
           }),
           '获取成功',
         ),
@@ -285,6 +312,8 @@ export function registerGovernanceCrudRoutes(
           z.object({
             items: z.array(RuleResponseSchema),
             total: z.number(),
+            page: z.number(),
+            pageSize: z.number(),
           }),
           '获取成功',
         ),
