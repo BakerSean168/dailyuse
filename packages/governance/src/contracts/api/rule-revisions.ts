@@ -9,7 +9,10 @@
  */
 
 import { z } from 'zod';
+import { brandedId } from '@dailyuse/contracts/primitives';
+import type { RuleId, RuleRevisionId } from '../primitives/ids';
 import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
+import { GOVERNANCE_VIEW_CONFIG } from '../configs/config';
 
 // ============================================================================
 // GET Operation - 获取修订记录历史
@@ -24,9 +27,15 @@ import type { RuleRevisionClientDTO } from '../entities/rule-revision-client';
  * - pageSize: 每页数量（默认20）
  */
 export const GetRuleRevisionsQuerySchema = z.object({
-  ruleId: z.string().uuid('无效的规则 ID'),
+  ruleId: brandedId<RuleId>(),
   page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(20),
+  pageSize: z
+    .number()
+    .int()
+    .min(1)
+    .max(GOVERNANCE_VIEW_CONFIG.MAX_PAGE_SIZE)
+    .optional()
+    .default(GOVERNANCE_VIEW_CONFIG.DEFAULT_PAGE_SIZE),
 });
 
 export type GetRuleRevisionsQuery = z.infer<typeof GetRuleRevisionsQuerySchema>;
@@ -52,7 +61,7 @@ export type GetRuleRevisionsRes = {
  * 获取单个修订记录查询 Schema
  */
 export const GetRuleRevisionSchema = z.object({
-  id: z.string().uuid('无效的修订记录 ID'),
+  id: brandedId<RuleRevisionId>(),
 });
 
 export type GetRuleRevisionReq = z.infer<typeof GetRuleRevisionSchema>;
