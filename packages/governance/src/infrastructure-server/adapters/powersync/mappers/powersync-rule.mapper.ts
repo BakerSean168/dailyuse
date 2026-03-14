@@ -22,7 +22,7 @@ import type { RuleStatus } from '../../../../domain-shared/value-objects/rule-st
 import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-severity';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import type { CodeSnippetPersistenceDTO } from '../../../../domain-shared/value-objects/code-snippet';
-import { toDate } from '../../mapper-helpers';
+import { toDate, parseJson } from '../../mapper-helpers';
 
 /**
  * Represents a row in the PowerSync `rules` table.
@@ -77,13 +77,13 @@ export class PowerSyncRuleMapper {
    * @throws If tag values in persistence are invalid 如果持久化中的标签值无效则抛出异常
    */
   static toDomain(row: PowerSyncRuleRow): Rule {
-    const tags = (JSON.parse(row.tags || '[]') as string[]).map((tagValue) => {
+    const tags = parseJson<string[]>(row.tags, []).map((tagValue) => {
       const result = RuleTag.create(tagValue);
       if (!result.ok) throw new Error(`Invalid tag in persistence: ${tagValue}`);
       return result.data;
     });
 
-    const goodExamples = (JSON.parse(row.good_examples || '[]') as CodeSnippetPersistenceDTO[]).map(
+    const goodExamples = parseJson<CodeSnippetPersistenceDTO[]>(row.good_examples, []).map(
       (dto) => {
         const result = CodeSnippet.fromPersistenceDTO(dto);
         if (!result.ok)
@@ -92,14 +92,12 @@ export class PowerSyncRuleMapper {
       },
     );
 
-    const badExamples = (JSON.parse(row.bad_examples || '[]') as CodeSnippetPersistenceDTO[]).map(
-      (dto) => {
-        const result = CodeSnippet.fromPersistenceDTO(dto);
-        if (!result.ok)
-          throw new Error(`Invalid bad-example in persistence: ${result.error.message}`);
-        return result.data;
-      },
-    );
+    const badExamples = parseJson<CodeSnippetPersistenceDTO[]>(row.bad_examples, []).map((dto) => {
+      const result = CodeSnippet.fromPersistenceDTO(dto);
+      if (!result.ok)
+        throw new Error(`Invalid bad-example in persistence: ${result.error.message}`);
+      return result.data;
+    });
 
     return Rule.load({
       id: row.id as RuleId,

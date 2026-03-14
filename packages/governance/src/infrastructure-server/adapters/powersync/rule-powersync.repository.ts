@@ -26,9 +26,13 @@ import type { RuleRevision } from '../../../domain-server/entities/rule-revision
 import type { RuleId } from '../../../domain-shared/value-objects/rule-id';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import { PowerSyncRuleMapper, type PowerSyncRuleRow } from './mappers/powersync-rule.mapper';
+import {
+  PowerSyncRuleMapper,
+  type PowerSyncRuleRow,
+  type PowerSyncRuleWriteRow,
+} from './mappers/powersync-rule.mapper';
 import { PowerSyncRuleRevisionMapper } from './mappers/powersync-rule-revision.mapper';
-import { withCause } from '../mapper-helpers';
+import { withCause, escapeSqlLike } from '../mapper-helpers';
 
 /**
  * PowerSync-backed Rule repository for offline-capable desktop.
@@ -43,6 +47,88 @@ export class PowerSyncRuleRepository implements IRuleRepository {
   constructor(private readonly db: IElectronDatabase) {}
 
   /**
+   * Upserts a rule row into the database (insert if new, update if existing).
+   * 向数据库 upsert 规则行（新增则插入，已存在则更新）。
+   *
+   * Extracted to avoid SQL duplication between save() and saveWithRevision().
+   * 提取为独立方法以避免 save() 和 saveWithRevision() 之间的 SQL 重复。
+   *
+   * @param executor - Database or transaction executor 数据库或事务执行器
+   * @param row - Mapped persistence row 映射后的持久化行数据
+   */
+  private async _upsertRule(
+    executor: Pick<IElectronDatabase, 'execute' | 'getOptional'>,
+    row: PowerSyncRuleWriteRow,
+  ): Promise<void> {
+    const existing = await executor.getOptional<{ id: string }>(
+      `SELECT id FROM rules WHERE id = ? LIMIT 1`,
+      [row.id],
+    );
+
+    if (existing) {
+      await executor.execute(
+        `UPDATE rules
+         SET code = ?,
+             title = ?,
+             description = ?,
+             severity = ?,
+             status = ?,
+             deprecation_reason = ?,
+             replacement_rule_id = ?,
+             live_reference_location = ?,
+             tags = ?,
+             good_examples = ?,
+             bad_examples = ?,
+             author_id = ?,
+             updated_at = ?
+         WHERE id = ?`,
+        [
+          row.code,
+          row.title,
+          row.description,
+          row.severity,
+          row.status,
+          row.deprecation_reason,
+          row.replacement_rule_id,
+          row.live_reference_location,
+          row.tags,
+          row.good_examples,
+          row.bad_examples,
+          row.author_id,
+          row.updated_at,
+          row.id,
+        ],
+      );
+    } else {
+      await executor.execute(
+        `INSERT INTO rules (
+           id, code, title, description, severity, status,
+           deprecation_reason, replacement_rule_id, live_reference_location,
+           tags, good_examples, bad_examples, author_id,
+           created_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          row.id,
+          row.code,
+          row.title,
+          row.description,
+          row.severity,
+          row.status,
+          row.deprecation_reason,
+          row.replacement_rule_id,
+          row.live_reference_location,
+          row.tags,
+          row.good_examples,
+          row.bad_examples,
+          row.author_id,
+          row.created_at,
+          row.updated_at,
+        ],
+      );
+    }
+  }
+
+  /**
    * Saves a rule (upsert: insert if new, update if existing).
    * 保存规则（存在则更新，不存在则插入）。
    *
@@ -53,72 +139,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
   async save(rule: Rule): Promise<Result<void>> {
     try {
       const row = PowerSyncRuleMapper.toPersistence(rule);
-      const existing = await this.db.getOptional<{ id: string }>(
-        `SELECT id FROM rules WHERE id = ? LIMIT 1`,
-        [row.id],
-      );
-
-      if (existing) {
-        await this.db.execute(
-          `UPDATE rules
-           SET code = ?,
-               title = ?,
-               description = ?,
-               severity = ?,
-               status = ?,
-               deprecation_reason = ?,
-               replacement_rule_id = ?,
-               live_reference_location = ?,
-               tags = ?,
-               good_examples = ?,
-               bad_examples = ?,
-               author_id = ?,
-               updated_at = ?
-           WHERE id = ?`,
-          [
-            row.code,
-            row.title,
-            row.description,
-            row.severity,
-            row.status,
-            row.deprecation_reason,
-            row.replacement_rule_id,
-            row.live_reference_location,
-            row.tags,
-            row.good_examples,
-            row.bad_examples,
-            row.author_id,
-            row.updated_at,
-            row.id,
-          ],
-        );
-      } else {
-        await this.db.execute(
-          `INSERT INTO rules (
-             id, code, title, description, severity, status,
-             deprecation_reason, replacement_rule_id, live_reference_location,
-             tags, good_examples, bad_examples, author_id,
-             created_at, updated_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            row.id,
-            row.code,
-            row.title,
-            row.description,
-            row.severity,
-            row.status,
-            row.deprecation_reason,
-            row.replacement_rule_id,
-            row.live_reference_location,
-            row.tags,
-            row.good_examples,
-            row.bad_examples,
-            row.author_id,
-            row.created_at,
-            row.updated_at,
-          ],
-        );
-      }
+      await this._upsertRule(this.db, row);
       return ok(undefined);
     } catch (err) {
       return error('INTERNAL_ERROR', withCause('Failed to save rule', err));
@@ -144,72 +165,7 @@ export class PowerSyncRuleRepository implements IRuleRepository {
       const revRow = PowerSyncRuleRevisionMapper.toPersistence(revision);
 
       await this.db.writeTransaction(async (tx) => {
-        const existing = await tx.getOptional<{ id: string }>(
-          `SELECT id FROM rules WHERE id = ? LIMIT 1`,
-          [ruleRow.id],
-        );
-
-        if (existing) {
-          await tx.execute(
-            `UPDATE rules
-             SET code = ?,
-                 title = ?,
-                 description = ?,
-                 severity = ?,
-                 status = ?,
-                 deprecation_reason = ?,
-                 replacement_rule_id = ?,
-                 live_reference_location = ?,
-                 tags = ?,
-                 good_examples = ?,
-                 bad_examples = ?,
-                 author_id = ?,
-                 updated_at = ?
-             WHERE id = ?`,
-            [
-              ruleRow.code,
-              ruleRow.title,
-              ruleRow.description,
-              ruleRow.severity,
-              ruleRow.status,
-              ruleRow.deprecation_reason,
-              ruleRow.replacement_rule_id,
-              ruleRow.live_reference_location,
-              ruleRow.tags,
-              ruleRow.good_examples,
-              ruleRow.bad_examples,
-              ruleRow.author_id,
-              ruleRow.updated_at,
-              ruleRow.id,
-            ],
-          );
-        } else {
-          await tx.execute(
-            `INSERT INTO rules (
-               id, code, title, description, severity, status,
-               deprecation_reason, replacement_rule_id, live_reference_location,
-               tags, good_examples, bad_examples, author_id,
-               created_at, updated_at
-             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              ruleRow.id,
-              ruleRow.code,
-              ruleRow.title,
-              ruleRow.description,
-              ruleRow.severity,
-              ruleRow.status,
-              ruleRow.deprecation_reason,
-              ruleRow.replacement_rule_id,
-              ruleRow.live_reference_location,
-              ruleRow.tags,
-              ruleRow.good_examples,
-              ruleRow.bad_examples,
-              ruleRow.author_id,
-              ruleRow.created_at,
-              ruleRow.updated_at,
-            ],
-          );
-        }
+        await this._upsertRule(tx, ruleRow);
 
         await tx.execute(
           `INSERT INTO rule_revisions (
@@ -359,21 +315,18 @@ export class PowerSyncRuleRepository implements IRuleRepository {
    * Checks if a rule with the given code already exists.
    * 检查指定代码的规则是否已存在。
    *
-   * Used for uniqueness validation before creating new rules.
-   * 用于创建新规则前的唯一性校验。
-   *
    * @param code - Rule code to check 要检查的规则代码
-   * @returns true if exists, false otherwise (also false on error)
+   * @returns Result<boolean> - ok(true) if exists, ok(false) if not
    */
-  async exists(code: string): Promise<boolean> {
+  async exists(code: string): Promise<Result<boolean>> {
     try {
       const row = await this.db.getOptional<{ id: string }>(
         `SELECT id FROM rules WHERE code = ? LIMIT 1`,
         [code],
       );
-      return row !== null;
-    } catch {
-      return false;
+      return ok(row !== null);
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to check rule existence', err));
     }
   }
 }
@@ -386,7 +339,8 @@ export class PowerSyncRuleRepository implements IRuleRepository {
  * 支持按以下条件过滤：
  * - status: single value or array (IN clause) 状态：单值或数组（IN 子句）
  * - severity: exact match 严重级别：精确匹配
- * - tags: LIKE match on JSON-stringified tags column 标签：JSON 序列化标签列的 LIKE 匹配
+ * - tags: LIKE match on JSON-stringified tags column (escaped for SQL safety)
+ *   标签：JSON 序列化标签列的 LIKE 匹配（已进行 SQL 安全转义）
  *
  * @param filter - Optional filter criteria 可选的过滤条件
  * @returns Object with sql string and params array SQL 字符串和参数数组
@@ -414,9 +368,9 @@ function buildFilterWhere(filter?: RuleFilter): { sql: string; params: unknown[]
   }
 
   if (filter.tags && filter.tags.length > 0) {
-    const tagConditions = filter.tags.map(() => `tags LIKE ?`);
+    const tagConditions = filter.tags.map(() => `tags LIKE ? ESCAPE '\\'`);
     conditions.push(`(${tagConditions.join(' OR ')})`);
-    params.push(...filter.tags.map((t) => `%"${t}"%`));
+    params.push(...filter.tags.map((t) => `%"${escapeSqlLike(t)}"%`));
   }
 
   if (conditions.length === 0) return { sql: '', params: [] };

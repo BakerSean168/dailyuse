@@ -123,3 +123,24 @@ export function parseRecord(value: string | null | undefined): Record<string, un
     return {};
   }
 }
+
+// ---------------------------------------------------------------------------
+// SQL helpers. SQL 辅助函数。
+// ---------------------------------------------------------------------------
+
+/**
+ * Escapes special characters in a string before embedding it inside a SQL LIKE pattern.
+ * 在将字符串嵌入 SQL LIKE 模式之前转义特殊字符。
+ *
+ * Handles the four characters with special meaning in LIKE:
+ * 处理在 LIKE 中有特殊含义的四个字符：
+ * - `%` (any sequence), `_` (any single char), `\` (escape char), `"` (JSON delimiter)
+ *   `%`（任意序列）、`_`（任意单字符）、`\`（转义字符）、`"`（JSON 分隔符）
+ */
+export function escapeSqlLike(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_')
+    .replace(/"/g, '\\"');
+}

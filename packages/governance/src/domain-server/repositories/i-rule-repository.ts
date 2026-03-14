@@ -67,9 +67,14 @@ export interface IRuleRepository {
   delete(id: RuleId): Promise<Result<void>>;
 
   /**
-   * Checks if rule code exists
+   * Checks if a rule with the given code already exists.
+   * 检查指定代码的规则是否已存在。
+   *
+   * @param code - Rule code to check 要检查的规则代码
+   * @returns Result<boolean> - ok(true) if exists, ok(false) if not, error on failure
+   *          ok(true) 如果存在，ok(false) 如果不存在，失败时返回 error
    */
-  exists(code: string): Promise<boolean>;
+  exists(code: string): Promise<Result<boolean>>;
 }
 
 /**
