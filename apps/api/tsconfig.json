@@ -69,7 +69,27 @@
         "../../packages/contracts/src/modules/*/index.ts",
         "../../packages/contracts/src/*/index.ts"
       ],
-      "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"]
+      "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
+      "@dailyuse/utils": ["../../packages/utils/src/index.ts"],
+      "@dailyuse/utils/*": ["../../packages/utils/src/*/index.ts"],
+      "@dailyuse/governance": ["../../packages/governance/dist/index.d.ts"],
+      "@dailyuse/governance/api": ["../../packages/governance/dist/api/index.d.ts"],
+      "@dailyuse/account": ["../../packages/account/dist/index.d.ts"],
+      "@dailyuse/account/api": ["../../packages/account/dist/api/index.d.ts"],
+      "@dailyuse/authentication": ["../../packages/authentication/dist/index.d.ts"],
+      "@dailyuse/authentication/api": ["../../packages/authentication/dist/api/index.d.ts"],
+      "@dailyuse/goal": ["../../packages/goal/dist/index.d.ts"],
+      "@dailyuse/goal/api": ["../../packages/goal/dist/api/index.d.ts"],
+      "@dailyuse/reminder": ["../../packages/reminder/dist/index.d.ts"],
+      "@dailyuse/reminder/api": ["../../packages/reminder/dist/api/index.d.ts"],
+      "@dailyuse/setting": ["../../packages/setting/dist/index.d.ts"],
+      "@dailyuse/setting/api": ["../../packages/setting/dist/api/index.d.ts"],
+      "@dailyuse/task": ["../../packages/task/dist/index.d.ts"],
+      "@dailyuse/task/api": ["../../packages/task/dist/api/index.d.ts"],
+      "@dailyuse/ai": ["../../packages/ai/dist/index.d.ts"],
+      "@dailyuse/ai/api": ["../../packages/ai/dist/api/index.d.ts"],
+      "@dailyuse/ai/application-server": ["../../packages/ai/dist/application-server/index.d.ts"],
+      "@dailyuse/repository": ["../../packages/repository/dist/index.d.ts"]
 
       // 其他 @dailyuse/* 仍优先通过 package.json exports → dist 解析
     }
