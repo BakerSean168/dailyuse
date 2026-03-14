@@ -14,6 +14,7 @@ import type { Rule } from '../aggregates/rule';
 import type { RuleRevision } from '../entities/rule-revision';
 import { RuleId } from '../../domain-shared/value-objects/rule-id';
 import type { RuleStatus } from '../../contracts/value-objects/rule-status';
+import type { RuleSeverity } from '../../contracts/value-objects/rule-severity';
 
 /**
  * Filter object for rule queries.
@@ -22,7 +23,7 @@ import type { RuleStatus } from '../../contracts/value-objects/rule-status';
 export interface RuleFilter {
   status?: RuleStatus;
   tags?: string[];
-  severity?: string;
+  severity?: RuleSeverity;
 }
 
 /**

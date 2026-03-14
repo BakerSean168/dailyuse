@@ -23,8 +23,5 @@ export * from './configs';
 // ============ API Requests/Responses ============
 export * from './api';
 
-// ============ DTOs ============
-// export * from './dtos'; // 暂无组合 DTO，待需要时再导出
-
 // ============ Primitives ============
 export * from './primitives';

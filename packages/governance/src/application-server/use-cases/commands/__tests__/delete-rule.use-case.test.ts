@@ -2,7 +2,7 @@ import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import { ok, error } from '@dailyuse/contracts/result';
 import { DeleteRuleUseCase } from '../delete-rule.use-case';
-import type { ExecutionContext } from '../create-rule.use-case';
+import type { ExecutionContext } from '../../execution-context';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { DeleteRuleReq } from '../../../../contracts/api/rules';
 import { RuleStatus } from '../../../../contracts/value-objects/rule-status';

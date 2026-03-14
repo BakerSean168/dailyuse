@@ -6,7 +6,7 @@
  *
  * 【事件命名规范】
  * - 使用过去时态：Created, Deleted, Updated
- * - 包含聚合根名称：ExampleCreatedEvent
+ * - 包含聚合根名称：RuleCreatedEvent
  * - 后缀使用 Event
  */
 

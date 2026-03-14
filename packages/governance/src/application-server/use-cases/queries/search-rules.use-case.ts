@@ -9,7 +9,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { SearchRulesQuery, SearchRulesRes } from '../../../contracts/api/rules';
 import { RuleStatus } from '../../../contracts/value-objects/rule-status';
-import type { ExecutionContext } from '../commands/create-rule.use-case';
+import type { ExecutionContext } from '../execution-context';
 
 type SearchFilters = Partial<Omit<SearchRulesQuery, 'query'>>;
 
@@ -118,7 +118,7 @@ export class SearchRulesUseCase {
     return score;
   }
 
-  private statusWeight(status: string): number {
+  private statusWeight(status: RuleStatus): number {
     if (status === RuleStatus.Active) return 15;
     if (status === RuleStatus.Draft) return 10;
     if (status === RuleStatus.Deprecated) return 5;

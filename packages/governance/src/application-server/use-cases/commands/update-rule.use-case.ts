@@ -11,7 +11,7 @@ import { error } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { UpdateRuleReq, UpdateRuleRes } from '../../../contracts/api/rules';
 import type { RuleId } from '../../../contracts/primitives/ids';
-import type { ExecutionContext } from './create-rule.use-case';
+import type { ExecutionContext } from '../execution-context';
 
 /**
  * Update Rule Use Case.

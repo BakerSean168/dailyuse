@@ -13,19 +13,10 @@ import type { Language as RuleLanguage } from '@/domain-shared/value-objects/lan
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { CreateRuleReq, CreateRuleRes } from '../../../contracts/api/rules';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '../execution-context';
 
-/**
- * Execution context — extracted from auth token by middleware.
- * 执行上下文 — 由中间件从认证 token 中提取。
- *
- * @internal Use-case implementation detail — not part of the public API.
- * @internal 用例实现细节 — 非公开 API。
- */
-export interface ExecutionContext {
-  identityId: IdentityId;
-}
+/** @deprecated Import from '../execution-context' instead. 请改从 '../execution-context' 导入。 */
+export type { ExecutionContext } from '../execution-context';
 
 /**
  * Create Rule Use Case.
