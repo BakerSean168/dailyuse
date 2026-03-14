@@ -569,6 +569,13 @@ export class Rule extends AggregateRoot<RuleId> {
     this._props.tags.push(tag);
     this._props.updatedAt = new Date();
 
+    // Emit domain event for tag addition. 标签添加后发布领域事件。
+    this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>('governance:rule-updated', {
+      ruleId: this.id,
+      changedFields: ['tags'],
+      tags: this._props.tags.map((t) => t.value),
+    });
+
     return ok(undefined);
   }
 
@@ -599,6 +606,13 @@ export class Rule extends AggregateRoot<RuleId> {
 
     this._props.tags = this._props.tags.filter((t) => !t.equals(tag));
     this._props.updatedAt = new Date();
+
+    // Emit domain event for tag removal. 标签移除后发布领域事件。
+    this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>('governance:rule-updated', {
+      ruleId: this.id,
+      changedFields: ['tags'],
+      tags: this._props.tags.map((t) => t.value),
+    });
 
     return ok(undefined);
   }
@@ -631,6 +645,13 @@ export class Rule extends AggregateRoot<RuleId> {
 
     this._props.codeSnippets.push(snippet);
     this._props.updatedAt = new Date();
+
+    // Emit domain event for snippet addition. 代码片段添加后发布领域事件。
+    this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>('governance:rule-updated', {
+      ruleId: this.id,
+      changedFields: ['codeSnippets'],
+    });
+
     return ok(undefined);
   }
 
@@ -658,6 +679,12 @@ export class Rule extends AggregateRoot<RuleId> {
 
     this._props.codeSnippets = remaining;
     this._props.updatedAt = new Date();
+
+    // Emit domain event for snippet removal. 代码片段移除后发布领域事件。
+    this.addDomainEvent<GovernanceEventMap['governance:rule-updated']>('governance:rule-updated', {
+      ruleId: this.id,
+      changedFields: ['codeSnippets'],
+    });
 
     return ok(undefined);
   }
