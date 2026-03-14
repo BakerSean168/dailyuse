@@ -17,9 +17,7 @@ import {
   GovernanceModule,
 } from '../infrastructure-server';
 import { GovernanceContainer } from '../infrastructure-server/di/governance-container';
-import {
-  registerGovernanceCrudRoutes,
-} from './routes';
+import { registerGovernanceCrudRoutes } from './routes';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
 import { registerGovernanceInitializationTasks } from './initialization';
 
@@ -69,24 +67,21 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
     });
 
     const handlers: GovernanceUseCases = {
-      createRule: (req, cx) =>
-        governanceModule.createRule.execute(req, cx),
-      updateRule: (id, req, cx) =>
-        governanceModule.updateRule.execute(id, req, cx),
-      deleteRule: (req, cx) =>
-        governanceModule.deleteRule.execute(req, cx),
-      getRule: (req) =>
-        governanceModule.getRule.execute(req),
-      listRules: (query) =>
-        governanceModule.listRules.execute(query),
-      searchRules: (query, filters, cx) =>
-        governanceModule.searchRules.execute(query, filters, cx),
-      getRevisions: (query) =>
-        governanceModule.getRevisions.execute(query),
+      createRule: (req, cx) => governanceModule.createRule.execute(req, cx),
+      updateRule: (id, req, cx) => governanceModule.updateRule.execute(id, req, cx),
+      deleteRule: (req, cx) => governanceModule.deleteRule.execute(req, cx),
+      getRule: (req) => governanceModule.getRule.execute(req),
+      listRules: (query) => governanceModule.listRules.execute(query),
+      searchRules: (req, cx) => governanceModule.searchRules.execute(req, cx),
+      getRevisions: (query) => governanceModule.getRevisions.execute(query),
     };
 
     // 2. 创建路由（注入平台中间件）
-    const governanceRoutes = registerGovernanceCrudRoutes(handlers, middleware, context.openApiRegistry);
+    const governanceRoutes = registerGovernanceCrudRoutes(
+      handlers,
+      middleware,
+      context.openApiRegistry,
+    );
 
     // 3. 挂载到主路由（模块自决前缀）
     router.use('/governance/rules', governanceRoutes);

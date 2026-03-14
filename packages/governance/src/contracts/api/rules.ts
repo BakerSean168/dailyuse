@@ -239,6 +239,12 @@ export const SearchRulesQuerySchema = z.object({
   pageSize: z.number().int().min(1).max(100).optional().default(20),
 });
 
+/**
+ * Search query input type (before Zod defaults are applied). page/pageSize are optional.
+ * 搜索查询输入类型（Zod 默认值应用前）。page/pageSize 为可选。
+ */
+export type SearchRulesQueryInput = z.input<typeof SearchRulesQuerySchema>;
+
 export type SearchRulesQuery = z.infer<typeof SearchRulesQuerySchema>;
 
 export type SearchRulesRes = {

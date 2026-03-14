@@ -7,11 +7,9 @@ import type { IRuleRepository, RuleFilter } from '@/domain-server/repositories/i
 import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { SearchRulesQuery, SearchRulesRes } from '../../../contracts/api/rules';
+import type { SearchRulesQueryInput, SearchRulesRes } from '../../../contracts/api/rules';
 import { RuleStatus } from '../../../contracts/value-objects/rule-status';
 import type { ExecutionContext } from '../execution-context';
-
-type SearchFilters = Partial<Omit<SearchRulesQuery, 'query'>>;
 
 /**
  * Search Rules Use Case.
@@ -21,7 +19,8 @@ export class SearchRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}
 
   /**
-   * Execute: Search with relevance scoring and status weighting
+   * Execute: Search with relevance scoring and status weighting.
+   * 执行：带有相关性评分和状态权重的搜索。
    *
    * Relevance priority:
    * - title exact > title partial > code > description > tags
@@ -30,26 +29,25 @@ export class SearchRulesUseCase {
    * - Active > Draft > Deprecated
    */
   async execute(
-    query: string,
-    filters: SearchFilters = {},
-    _cx?: ExecutionContext,
+    req: SearchRulesQueryInput,
+    cx?: ExecutionContext,
   ): Promise<Result<SearchRulesRes>> {
     const startedAt = Date.now();
 
-    const normalizedQuery = query.trim();
+    const normalizedQuery = req.query.trim();
     if (normalizedQuery.length === 0) {
       return error('VALIDATION_ERROR', 'Search query cannot be empty');
     }
 
     const filter: RuleFilter = {};
-    if (filters.status) {
-      filter.status = filters.status;
+    if (req.status) {
+      filter.status = req.status;
     }
-    if (filters.severity) {
-      filter.severity = filters.severity;
+    if (req.severity) {
+      filter.severity = req.severity;
     }
-    if (filters.tags) {
-      filter.tags = filters.tags;
+    if (req.tags) {
+      filter.tags = req.tags;
     }
 
     const rulesResult = await this.ruleRepository.search(normalizedQuery, filter);
@@ -70,8 +68,8 @@ export class SearchRulesUseCase {
       });
 
     const total = scoredRules.length;
-    const page = filters.page ?? 1;
-    const pageSize = filters.pageSize ?? 20;
+    const page = req.page ?? 1;
+    const pageSize = req.pageSize ?? 20;
     const offset = (page - 1) * pageSize;
     const items = scoredRules
       .slice(offset, offset + pageSize)

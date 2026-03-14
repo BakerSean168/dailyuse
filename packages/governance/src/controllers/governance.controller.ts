@@ -35,6 +35,7 @@ import type {
   ListRulesQuery,
   ListRulesRes,
   SearchRulesQuery,
+  SearchRulesQueryInput,
   SearchRulesRes,
   UpdateRuleReq,
   UpdateRuleRes,
@@ -53,8 +54,7 @@ export interface GovernanceUseCases {
   getRule: (req: GetRuleReq) => Promise<Result<GetRuleRes>>;
   listRules: (query: ListRulesQuery) => Promise<Result<ListRulesRes>>;
   searchRules: (
-    query: string,
-    filters: Omit<SearchRulesQuery, 'query'>,
+    req: SearchRulesQueryInput,
     cx?: ExecutionContext,
   ) => Promise<Result<SearchRulesRes>>;
   getRevisions: (query: GetRuleRevisionsQuery) => Promise<Result<GetRuleRevisionsRes>>;
@@ -150,9 +150,8 @@ export class GovernanceController {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
 
-    const { query: keyword, ...filters } = parsed.data;
     const executionContext = ctx ? this.toExecutionContext(ctx) : undefined;
-    return this.useCases.searchRules(keyword, filters, executionContext);
+    return this.useCases.searchRules(parsed.data, executionContext);
   }
 
   async getRevisions(

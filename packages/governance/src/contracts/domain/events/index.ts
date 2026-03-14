@@ -19,6 +19,7 @@
 // Rule Events
 export type { RuleCreatedEvent } from './rule-created.event';
 export type { RuleUpdatedEvent } from './rule-updated.event';
+export type { RuleDeletedEvent } from './rule-deleted.event';
 export type { RuleDeprecatedEvent } from './rule-deprecated.event';
 export type { RuleReactivatedEvent } from './rule-reactivated.event';
 export type { RuleStatusChangedEvent } from './rule-status-changed.event';
@@ -31,6 +32,7 @@ export type { RuleSeverityChangedEvent } from './rule-severity-changed.event';
 export type GovernanceDomainEvent =
   | import('./rule-created.event').RuleCreatedEvent
   | import('./rule-updated.event').RuleUpdatedEvent
+  | import('./rule-deleted.event').RuleDeletedEvent
   | import('./rule-deprecated.event').RuleDeprecatedEvent
   | import('./rule-reactivated.event').RuleReactivatedEvent
   | import('./rule-status-changed.event').RuleStatusChangedEvent

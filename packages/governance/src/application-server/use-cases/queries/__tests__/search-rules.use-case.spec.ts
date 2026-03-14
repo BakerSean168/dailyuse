@@ -97,7 +97,7 @@ describe('SearchRulesUseCase', () => {
     );
 
     const useCase = new SearchRulesUseCase(repository);
-    const result = await useCase.execute('Entity Props Pattern');
+    const result = await useCase.execute({ query: 'Entity Props Pattern' });
 
     expect(result.ok).toBe(true);
     if (!result.ok) {
@@ -112,7 +112,7 @@ describe('SearchRulesUseCase', () => {
     const repository = createRepositoryMock(async () => ok([]));
     const useCase = new SearchRulesUseCase(repository);
 
-    const result = await useCase.execute('   ');
+    const result = await useCase.execute({ query: '   ' });
 
     expect(result.ok).toBe(false);
     if (result.ok) {
@@ -153,7 +153,7 @@ describe('SearchRulesUseCase', () => {
     );
 
     const useCase = new SearchRulesUseCase(repository);
-    const result = await useCase.execute('Factory Method Pattern', { page: 2, pageSize: 1 });
+    const result = await useCase.execute({ query: 'Factory Method Pattern', page: 2, pageSize: 1 });
 
     expect(result.ok).toBe(true);
     if (!result.ok) {

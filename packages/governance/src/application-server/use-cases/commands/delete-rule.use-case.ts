@@ -40,6 +40,9 @@ export class DeleteRuleUseCase {
     const rule = ruleResult.data;
 
     // Hard delete if Draft without revisions
+    // TODO: Dispatch RuleDeletedEvent via event bus after hard delete.
+    // The aggregate is destroyed so addDomainEvent() cannot be used here.
+    // 待办：硬删除后通过事件总线发布 RuleDeletedEvent，聚合已销毁无法使用 addDomainEvent()。
     if (rule.status === 'Draft') {
       const deleteResult = await this.ruleRepository.delete(rule.id);
       if (!deleteResult.ok) {

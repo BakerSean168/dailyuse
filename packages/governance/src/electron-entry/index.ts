@@ -50,7 +50,7 @@ export const GovernanceElectronModule: IElectronModule = {
       deleteRule: (req, cx) => governanceModule.deleteRule.execute(req, cx),
       getRule: (req) => governanceModule.getRule.execute(req),
       listRules: (query) => governanceModule.listRules.execute(query),
-      searchRules: (query, filters, cx) => governanceModule.searchRules.execute(query, filters, cx),
+      searchRules: (req, cx) => governanceModule.searchRules.execute(req, cx),
       getRevisions: (query) => governanceModule.getRevisions.execute(query),
     };
 

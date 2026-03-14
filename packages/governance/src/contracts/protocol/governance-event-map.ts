@@ -1,6 +1,7 @@
 import type {
   RuleCreatedEvent,
   RuleUpdatedEvent,
+  RuleDeletedEvent,
   RuleDeprecatedEvent,
   RuleReactivatedEvent,
   RuleStatusChangedEvent,
@@ -65,4 +66,10 @@ export type GovernanceEventMap = {
    * 规则严重级别发生变更时发出
    */
   'governance:rule-severity-changed': RuleSeverityChangedEvent;
+
+  /**
+   * Rule deleted event. Emitted after a rule is hard-deleted.
+   * 规则删除事件。规则被硬删除后发出。
+   */
+  'governance:rule-deleted': RuleDeletedEvent;
 };
