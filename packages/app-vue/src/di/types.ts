@@ -14,8 +14,7 @@
  *    vite-plugin-dts 生成 .d.ts 时会沿 tsconfig paths 追踪到外部包源码目录，
  *    违反 `rootDir: "./src"`。内联 `import()` 类型表达式不触发此行为。
  *
- * 对于 governance (Rule) 模块，DI 直接注入的是 IRuleApiClient（纯接口，无 private），
- * 直接 re-export 即可。
+ * 对于 governance (Rule) 模块，DI 注入的是 GovernanceClientService 的结构化接口。
  */
 
 import type { Component } from 'vue';
@@ -28,33 +27,15 @@ type PublicInterface<T> = { [K in keyof T]: T[K] };
 
 // ── Service Interfaces (structural, no private members) ──
 
-export type IAccountService = PublicInterface<
-  any
->;
-export type IAuthService = PublicInterface<
-  any
->;
-export type IGoalService = PublicInterface<
-  any
->;
-export type ITaskService = PublicInterface<
-  any
->;
-export type IScheduleService = PublicInterface<
-  any
->;
-export type IReminderService = PublicInterface<
-  any
->;
-export type IRepositoryService = PublicInterface<
-  any
->;
-export type INotificationService = PublicInterface<
-  any
->;
-export type ISettingService = PublicInterface<
-  any
->;
+export type IAccountService = PublicInterface<any>;
+export type IAuthService = PublicInterface<any>;
+export type IGoalService = PublicInterface<any>;
+export type ITaskService = PublicInterface<any>;
+export type IScheduleService = PublicInterface<any>;
+export type IReminderService = PublicInterface<any>;
+export type IRepositoryService = PublicInterface<any>;
+export type INotificationService = PublicInterface<any>;
+export type ISettingService = PublicInterface<any>;
 export interface IAIService {
   createProvider(request: unknown): Promise<unknown>;
   updateProvider(id: string, request: unknown): Promise<unknown>;
@@ -76,8 +57,10 @@ export interface IAIService {
   createKnowledgeNote(request: unknown): Promise<unknown>;
 }
 
-// ── Governance（纯接口，无 private）──
-export type { IRuleApiClient as IRuleService } from '@dailyuse/governance/infrastructure-client';
+// ── Governance（结构化 service interface）──
+export type IRuleService = PublicInterface<
+  import('@dailyuse/governance/application-client').GovernanceClientService
+>;
 
 // ── Dashboard（纯接口，无 private）──
 export type { IDashboardApiClient as IDashboardService } from '../modules/dashboard/types';

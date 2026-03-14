@@ -7,4 +7,3 @@
 export type { IRuleApiClient } from '../contracts/api/rule-api-client.port';
 
 export * from './services';
-export * from './mappers';

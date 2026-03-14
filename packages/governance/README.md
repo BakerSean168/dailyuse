@@ -1,6 +1,6 @@
 # @dailyuse/governance
 
-治理模块（活文档） — 通过 **架构规则管理** 业务场景展示项目全部编码范式
+治理模块（活文档）— 通过 **架构规则管理** 业务场景展示项目当前最优雅的 DDD / Clean Architecture / Result / Zod / split-route 实践
 
 ## 业务场景
 
@@ -40,8 +40,8 @@ application-server (服务端应用层)
 - 执行上下文（ExecutionContext）
 
 application-client (客户端应用层)
-- 客户端服务（CreateRule, GetRule, ListRules 等）
-- DTO 映射器（ruleFromDTO）
+- GovernanceClientService（单一 facade，前端注入用 application service）
+- 直接返回 RuleClientDTO（客户端视图模型）
 
 infrastructure-server (服务端基础设施层)
 - Prisma 仓储实现
@@ -54,12 +54,19 @@ infrastructure-client (客户端基础设施层)
 - IPC 适配器（RuleIpcAdapter）
 
 api (API 层)
-- 路由定义（routes）
+- 分拆路由定义（routes/*，按 feature 拆分）
 - 模块初始化（initialization）
 
 controllers (控制器层)
 - 输入校验、编排、响应序列化
 ```
+
+## 前端缓存建议
+
+- `GovernanceClientService` 负责调用后端并返回 `RuleClientDTO`
+- Pinia 负责缓存 POJO / DTO
+- UI composable 按需调用 `Rule.fromClientDTO()` 水化 richer client entity
+- 不建议在 Pinia 中直接存储 class 实例
 
 ## 使用示例
 
@@ -119,7 +126,7 @@ src/
 ├── application-client/     # 客户端应用层 — 客户端服务
 ├── domain-client/          # 客户端领域 — 视图模型
 ├── infrastructure-client/  # 客户端基础设施 — HTTP/IPC 适配器
-├── api/                    # API 模块 — 路由、启动
+├── api/                    # API 模块 — 分拆路由、启动、初始化
 └── index.ts                # 主入口 — 统一导出
 ```
 
@@ -130,4 +137,11 @@ src/
 > governance 中的每个文件都包含详细的 JSDoc 注释，解释 DDD 模式和设计决策。
 > 新模块开发时，可以直接参考本模块的实现模式。
 >
-> 📖 参见 [docs/governance/INDEX.md](../../docs/governance/INDEX.md) 获取完整的模式索引。
+> 📖 从 [docs/governance/README.md](../../docs/governance/README.md) 开始获取轻量导航、速查卡与变更手册。
+
+## 推荐阅读顺序
+
+1. `../../docs/governance/README.md` — 模块入口与学习路径
+2. `../../docs/governance/QUICK_REFERENCE.md` — 一页速查
+3. `ARCHITECTURE.md` — 深度架构说明
+4. `IMPLEMENTATION_GUIDE.md` — 具体实现与扩展方式

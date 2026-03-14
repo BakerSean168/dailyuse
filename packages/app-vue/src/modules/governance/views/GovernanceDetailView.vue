@@ -10,7 +10,7 @@
       {{ error }}
     </div>
 
-    <template v-if="currentRule">
+    <template v-if="displayRule">
       <!-- Breadcrumb & Actions -->
       <div class="flex items-center justify-between mb-6">
         <nav class="flex items-center gap-1 text-sm text-muted-foreground">
@@ -21,19 +21,19 @@
             {{ t('governance.detail.breadcrumbRules') }}
           </router-link>
           <ChevronRight :size="14" />
-          <span class="text-foreground">{{ currentRule.code }}</span>
+          <span class="text-foreground">{{ displayRule.code }}</span>
         </nav>
 
         <div class="flex items-center gap-2">
           <router-link
-            :to="{ name: 'governance-history', params: { id: currentRule.id } }"
+            :to="{ name: 'governance-history', params: { id: displayRule.id } }"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm hover:bg-muted transition-colors"
           >
             <History :size="14" />
             {{ t('governance.detail.history') }}
           </router-link>
           <router-link
-            :to="{ name: 'governance-editor-edit', params: { id: currentRule.id } }"
+            :to="{ name: 'governance-editor-edit', params: { id: displayRule.id } }"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm hover:bg-muted transition-colors"
           >
             <Pencil :size="14" />
@@ -52,18 +52,18 @@
       <!-- Header -->
       <div class="mb-8">
         <div class="flex items-center gap-3 mb-2">
-          <h1 class="text-2xl font-bold">{{ currentRule.title }}</h1>
-          <RuleStatusBadge :status="currentRule.status" />
+          <h1 class="text-2xl font-bold">{{ displayRule.title }}</h1>
+          <RuleStatusBadge :status="displayRule.status" />
           <span
             class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium"
             :class="
-              currentRule.severity === 'Mandatory'
+              displayRule.severity === 'Mandatory'
                 ? 'bg-destructive/15 text-destructive dark:bg-destructive/30 dark:text-destructive'
                 : 'bg-info/15 text-info dark:bg-info/30 dark:text-info'
             "
           >
             {{
-              currentRule.severity === 'Mandatory'
+              displayRule.severity === 'Mandatory'
                 ? t('governance.detail.severityMandatory')
                 : t('governance.detail.severityRecommended')
             }}
@@ -72,23 +72,23 @@
 
         <div class="flex items-center gap-1.5 mb-2 flex-wrap">
           <span
-            v-for="tag in currentRule.tags"
-            :key="typeof tag === 'string' ? tag : tag.value"
+            v-for="tag in displayRule.tags"
+            :key="tag.value"
             class="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-info/15 text-info dark:bg-info/30 dark:text-info"
           >
-            {{ typeof tag === 'string' ? tag : tag.value }}
+            {{ tag.value }}
           </span>
         </div>
 
         <p class="text-xs text-muted-foreground">
-          {{ t('governance.detail.codePrefix') }}: {{ currentRule.code }} ·
-          {{ t('governance.detail.updatedAt') }} {{ formatDate(currentRule.updatedAt) }}
+          {{ t('governance.detail.codePrefix') }}: {{ displayRule.code }} ·
+          {{ t('governance.detail.updatedAt') }} {{ formatDate(displayRule.updatedAt) }}
         </p>
       </div>
 
       <!-- Deprecation Warning -->
       <div
-        v-if="currentRule.status === 'Deprecated'"
+        v-if="displayRule.status === 'Deprecated'"
         class="flex items-start gap-3 p-4 rounded-md bg-warning/10 dark:bg-warning/20 border border-warning/40 dark:border-warning/50 mb-6"
       >
         <AlertTriangle :size="20" class="text-warning dark:text-warning shrink-0 mt-0.5" />
@@ -97,15 +97,15 @@
             {{ t('governance.detail.deprecatedWarning') }}
           </h3>
           <p
-            v-if="currentRule.deprecationReason"
+            v-if="displayRule.deprecationReason"
             class="text-sm text-warning dark:text-warning mt-1"
           >
-            {{ currentRule.deprecationReason }}
+            {{ displayRule.deprecationReason }}
           </p>
-          <p v-if="currentRule.replacementRuleId" class="text-sm mt-1">
+          <p v-if="displayRule.replacementRuleId" class="text-sm mt-1">
             {{ t('governance.detail.replacementRule') }}
             <router-link
-              :to="{ name: 'governance-detail', params: { id: currentRule.replacementRuleId } }"
+              :to="{ name: 'governance-detail', params: { id: displayRule.replacementRuleId } }"
               class="text-primary hover:underline"
             >
               {{ t('governance.detail.viewReplacement') }}
@@ -120,12 +120,12 @@
           <h2 class="text-sm font-medium">{{ t('governance.detail.description') }}</h2>
         </div>
         <div class="p-4">
-          <div class="text-sm whitespace-pre-wrap leading-7">{{ currentRule.description }}</div>
+          <div class="text-sm whitespace-pre-wrap leading-7">{{ displayRule.description }}</div>
         </div>
       </div>
 
       <!-- Live Reference -->
-      <div v-if="currentRule.liveReferenceLocation" class="border rounded-lg mb-6">
+      <div v-if="displayRule.liveReferenceLocation" class="border rounded-lg mb-6">
         <div class="px-4 py-3 border-b bg-muted/30">
           <h2 class="text-sm font-medium flex items-center gap-1.5">
             <Link :size="14" />
@@ -134,20 +134,20 @@
         </div>
         <div class="p-4">
           <code class="text-sm text-primary bg-primary/5 px-2 py-1 rounded">
-            {{ currentRule.liveReferenceLocation }}
+            {{ displayRule.liveReferenceLocation }}
           </code>
         </div>
       </div>
 
       <!-- Good Examples -->
-      <div v-if="currentRule.goodExamples.length > 0" class="mb-6">
+      <div v-if="displayRule.goodExamples.length > 0" class="mb-6">
         <h2 class="text-sm font-medium mb-3 flex items-center gap-1.5">
           <CheckCircle :size="16" class="text-success" />
-          {{ t('governance.detail.goodExamples', { count: currentRule.goodExamples.length }) }}
+          {{ t('governance.detail.goodExamples', { count: displayRule.goodExamples.length }) }}
         </h2>
         <div class="space-y-3">
           <CodeSnippetView
-            v-for="(snippet, index) in currentRule.goodExamples"
+            v-for="(snippet, index) in displayRule.goodExamples"
             :key="`good-${index}`"
             :snippet="snippet"
           />
@@ -155,14 +155,14 @@
       </div>
 
       <!-- Bad Examples -->
-      <div v-if="currentRule.badExamples.length > 0" class="mb-6">
+      <div v-if="displayRule.badExamples.length > 0" class="mb-6">
         <h2 class="text-sm font-medium mb-3 flex items-center gap-1.5">
           <XCircle :size="16" class="text-destructive" />
-          {{ t('governance.detail.badExamples', { count: currentRule.badExamples.length }) }}
+          {{ t('governance.detail.badExamples', { count: displayRule.badExamples.length }) }}
         </h2>
         <div class="space-y-3">
           <CodeSnippetView
-            v-for="(snippet, index) in currentRule.badExamples"
+            v-for="(snippet, index) in displayRule.badExamples"
             :key="`bad-${index}`"
             :snippet="snippet"
           />
@@ -229,7 +229,7 @@
       <div class="relative bg-background rounded-lg shadow-lg w-full max-w-[400px] p-6 z-10">
         <h3 class="text-lg font-semibold mb-2">{{ t('governance.detail.confirmDeleteTitle') }}</h3>
         <p class="text-sm text-muted-foreground mb-6">
-          {{ t('governance.detail.confirmDeleteMsg', { title: currentRule?.title }) }}
+          {{ t('governance.detail.confirmDeleteMsg', { title: displayRule?.title }) }}
         </p>
         <div class="flex justify-end gap-2">
           <button
@@ -252,7 +252,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
@@ -278,6 +278,7 @@ const router = useRouter();
 const { t, locale } = useI18n();
 const {
   currentRule,
+  currentRuleEntity,
   revisions,
   isLoading,
   isSaving,
@@ -290,11 +291,12 @@ const { trackDetail } = usePerformanceMonitor();
 
 const showDeleteDialog = ref(false);
 const showRevisions = ref(false);
+const displayRule = computed(() => currentRuleEntity.value ?? currentRule.value);
 
 async function loadRule(id: string) {
   await trackDetail(async () => {
     await fetchRule(id);
-    if (currentRule.value) {
+    if (displayRule.value) {
       await fetchRevisions(id);
     }
   });
@@ -305,16 +307,16 @@ function confirmDelete() {
 }
 
 async function handleDelete() {
-  if (!currentRule.value) return;
-  const success = await deleteRule(currentRule.value.id);
+  if (!displayRule.value) return;
+  const success = await deleteRule(displayRule.value.id);
   if (success) {
     showDeleteDialog.value = false;
     router.push({ name: 'governance-list' });
   }
 }
 
-function formatDate(dateStr: string | number): string {
-  return new Date(dateStr).toLocaleString(locale.value, {
+function formatDate(dateValue: Date | string | number): string {
+  return new Date(dateValue).toLocaleString(locale.value, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

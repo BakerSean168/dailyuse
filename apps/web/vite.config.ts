@@ -10,17 +10,17 @@ import {
 } from '../../vite.workspace-aliases';
 
 const webDevWorkspaceEntries = [
-  ['@dailyuse/app-vue', '../../packages/app-vue/src/index.ts'],
+  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
   [
     '@dailyuse/authentication/application-client',
-    '../../packages/authentication/src/application-client/index.ts',
+    'packages/authentication/src/application-client/index.ts',
   ],
   [
     '@dailyuse/authentication/infrastructure-client',
-    '../../packages/authentication/src/infrastructure-client/index.ts',
+    'packages/authentication/src/infrastructure-client/index.ts',
   ],
-  ['@dailyuse/ai/application-client', '../../packages/ai/src/application-client/index.ts'],
-  ['@dailyuse/ai/infrastructure-client', '../../packages/ai/src/infrastructure-client/index.ts'],
+  ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
+  ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
 ] as const;
 
 /**
@@ -49,16 +49,21 @@ export default defineConfig(({ mode, command }) => {
   // Dev mode: serve command or non-production mode
   const isDev = command === 'serve' || mode !== 'production';
 
+  const directWorkspaceAliases = createWorkspaceSourceAliasEntries(
+    workspaceRoot,
+    webDevWorkspaceEntries,
+  );
+
   const devWorkspaceAliases = isDev
     ? [
         ...createUiVueSourceAliasEntries(workspaceRoot),
         ...createContractsAliasEntries(workspaceRoot),
-        ...createWorkspaceSourceAliasEntries(workspaceRoot, webDevWorkspaceEntries),
       ]
-    : {};
+    : [];
 
   const resolveAliases = [
-    ...(Array.isArray(devWorkspaceAliases) ? devWorkspaceAliases : []),
+    ...directWorkspaceAliases,
+    ...devWorkspaceAliases,
     {
       find: '@',
       replacement: path.resolve(__dirname, './src'),

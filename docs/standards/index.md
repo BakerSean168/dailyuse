@@ -52,11 +52,10 @@ updated: 2025-01-22T00:00:00
 
 governance 模块作为项目的**代码活文档**，展示了全部 DDD 最佳实践。
 
-- [🏛 Governance 模式索引](../governance/INDEX.md) — 全部模式的速查入口
-- [📖 聚合根模式](../governance/pattern-aggregate-root.md)
-- [📖 值对象模式](../governance/pattern-value-object.md)
-- [📖 仓储与领域事件模式](../governance/pattern-repository-events.md)
-- [📖 状态机模式](../governance/pattern-state-machine.md)
+- [🏛 Governance 活文档入口](../governance/README.md) — 模块入口与学习路径
+- [⚡ Governance 快速参考卡](../governance/QUICK_REFERENCE.md) — 一页式分层与改动入口
+- [🛠 Governance 变更手册](../governance/CHANGE_PLAYBOOK.md) — 常见改动的最短路径
+- [🧭 Governance 决策记录](../governance/DECISIONS.md) — 关键设计选择与边界说明
 
 ### 实践指南 (How-to Guides)
 

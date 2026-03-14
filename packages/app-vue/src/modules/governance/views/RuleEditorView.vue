@@ -312,13 +312,22 @@ const props = defineProps<{
 
 const router = useRouter();
 const { t } = useI18n();
-const { currentRule, isLoading, isSaving, error, allTags, fetchRule, createRule, updateRule } =
-  useGovernance();
+const {
+  currentRule,
+  currentRuleEntity,
+  isLoading,
+  isSaving,
+  error,
+  allTags,
+  fetchRule,
+  createRule,
+  updateRule,
+} = useGovernance();
 
 const isEdit = computed(() => !!props.id);
 
 interface SnippetForm {
-  language: string;
+  language: CreateRuleReq['goodExamples'][number]['language'];
   content: string;
   caption: string;
 }
@@ -339,7 +348,7 @@ const severityOptions = computed(() => [
   { label: t('governance.editor.severityRecommended'), value: 'Recommended' },
 ]);
 
-const languageOptions = [
+const languageOptions: Array<{ label: string; value: SnippetForm['language'] }> = [
   { label: 'TypeScript', value: 'TypeScript' },
   { label: 'JSON', value: 'JSON' },
   { label: 'YAML', value: 'YAML' },
@@ -408,19 +417,20 @@ async function handleSubmit() {
 async function loadEditData() {
   if (props.id) {
     const rule = await fetchRule(props.id);
-    if (rule) {
-      form.code = rule.code;
-      form.title = rule.title;
-      form.description = rule.description;
-      form.severity = rule.severity;
-      form.tags = rule.tags.map((t) => (typeof t === 'string' ? t : t.value));
-      form.liveReferenceLocation = rule.liveReferenceLocation ?? '';
-      form.goodExamples = rule.goodExamples.map((e) => ({
+    const displayRule = currentRuleEntity.value ?? currentRule.value;
+    if (displayRule) {
+      form.code = displayRule.code;
+      form.title = displayRule.title;
+      form.description = displayRule.description;
+      form.severity = displayRule.severity;
+      form.tags = displayRule.tags.map((t) => ('value' in t ? t.value : t));
+      form.liveReferenceLocation = displayRule.liveReferenceLocation ?? '';
+      form.goodExamples = displayRule.goodExamples.map((e) => ({
         language: e.language,
         content: e.content,
         caption: e.caption ?? '',
       }));
-      form.badExamples = rule.badExamples.map((e) => ({
+      form.badExamples = displayRule.badExamples.map((e) => ({
         language: e.language,
         content: e.content,
         caption: e.caption ?? '',

@@ -3,7 +3,7 @@
 **Purpose**: How to use `@dailyuse/governance` as a reference for DDD best practices  
 **Target Audience**: Package developers building new features  
 **Status**: Active  
-**Last Updated**: 2026-03-13
+**Last Updated**: 2026-03-14
 
 ---
 
@@ -13,18 +13,16 @@
 
 ```typescript
 import type { RuleClientDTO } from '@dailyuse/governance/contracts';
-import { CreateRule, GetRule, ListRules } from '@dailyuse/governance/application-client';
+import { GovernanceClientService } from '@dailyuse/governance/application-client';
 
 // 1. Create an API client
 const apiClient = new ApiClient({ baseUrl: 'http://localhost:3000' });
 
-// 2. Instantiate services
-const createRuleService = new CreateRule(apiClient);
-const getRuleService = new GetRule(apiClient);
-const listRulesService = new ListRules(apiClient);
+// 2. Instantiate service facade
+const governanceClientService = new GovernanceClientService(apiClient);
 
-// 3. Use services
-const result = await createRuleService.execute({
+// 3. Use the facade
+const result = await governanceClientService.createRule({
   code: 'DDD-001',
   title: 'Use aggregate roots for complex entities',
   description: 'Aggregate roots...',
@@ -530,17 +528,13 @@ export class GovernanceController {
 5. **Create Client Services**
 
    ```
-   application-client/services/create-your-entity.ts
-   application-client/services/get-your-entity.ts
-   application-client/services/list-your-entities.ts
-   application-client/services/update-your-entity.ts
-   application-client/services/delete-your-entity.ts
+   application-client/services/governance-client-service.ts
    ```
 
 6. **Create Controller & Routes**
    ```
    controllers/your-entity.controller.ts
-   api/routes/your-entity.routes.ts
+   api/routes/your-module-feature.routes.ts
    ```
 
 ---

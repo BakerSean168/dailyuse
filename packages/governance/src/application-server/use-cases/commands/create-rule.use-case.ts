@@ -7,6 +7,7 @@ import type { IRuleRepository } from '@/domain-server/repositories/i-rule-reposi
 import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import { Rule } from '@/domain-server/aggregates/rule';
 import { RuleRevision } from '@/domain-server/entities/rule-revision';
+import { ChangeType } from '@/domain-shared/value-objects/change-type';
 import { RuleSeverity } from '@/domain-shared/value-objects/rule-severity';
 import { Language } from '@/domain-shared/value-objects/language';
 import type { Language as RuleLanguage } from '@/domain-shared/value-objects/language';
@@ -155,7 +156,7 @@ export class CreateRuleUseCase {
         badExamples: rule.badExamples.map((example) => example.toDTO()),
         liveReferenceLocation: rule.liveReferenceLocation,
       },
-      changeType: 'Created',
+      changeType: ChangeType.Created,
     });
 
     if (!revision.ok) {

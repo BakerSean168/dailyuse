@@ -13,6 +13,7 @@ import { toast } from 'vue-sonner';
 import { AccountClientService } from '@dailyuse/account/application-client';
 import { AuthClientService } from '@dailyuse/authentication/application-client';
 import { GoalClientService } from '@dailyuse/goal/application-client';
+import { GovernanceClientService } from '@dailyuse/governance/application-client';
 import { TaskClientService } from '@dailyuse/task/application-client';
 import { ScheduleClientService } from '@dailyuse/schedule/application-client';
 import { ReminderClientService } from '@dailyuse/reminder/application-client';
@@ -120,7 +121,7 @@ export function installIpcServices(app: App): void {
   );
 
   const governanceAdapters = createGovernanceIpcAdapters(resultIpcClient);
-  app.provide(RULE_SERVICE_KEY, governanceAdapters.rule);
+  app.provide(RULE_SERVICE_KEY, new GovernanceClientService(governanceAdapters.rule));
 
   // ── Dashboard ──
   app.provide(DASHBOARD_SERVICE_KEY, createDashboardIpcAdapter(resultIpcClient));

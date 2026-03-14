@@ -6,6 +6,7 @@
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import { RuleRevision } from '@/domain-server/entities/rule-revision';
+import { ChangeType } from '@/domain-shared/value-objects/change-type';
 import type { Result } from '@dailyuse/contracts/result';
 import { error } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
@@ -115,7 +116,7 @@ export class UpdateRuleUseCase {
         changedFields,
         previousValues,
         newValues,
-        changeType: 'Updated',
+        changeType: ChangeType.Updated,
       });
 
       if (!revision.ok) {

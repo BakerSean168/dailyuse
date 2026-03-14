@@ -17,7 +17,7 @@ import {
   GovernanceModule,
 } from '../infrastructure-server';
 import { GovernanceContainer } from '../infrastructure-server/di/governance-container';
-import { registerGovernanceCrudRoutes } from './routes';
+import { registerGovernanceRoutes } from './routes';
 import type { GovernanceUseCases } from '../controllers/governance.controller';
 import { registerGovernanceInitializationTasks } from './initialization';
 
@@ -77,7 +77,7 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
     };
 
     // 2. 创建路由（注入平台中间件）
-    const governanceRoutes = registerGovernanceCrudRoutes(
+    const governanceRoutes = registerGovernanceRoutes(
       handlers,
       middleware,
       context.openApiRegistry,

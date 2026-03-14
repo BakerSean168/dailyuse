@@ -42,6 +42,7 @@ import { AccountClientService } from '@dailyuse/account/application-client';
 import { createAccountHttpAdapter } from '@dailyuse/account/infrastructure-client';
 import { AuthClientService } from '@dailyuse/authentication/application-client';
 import { createAuthHttpAdapter } from '@dailyuse/authentication/infrastructure-client';
+import { GovernanceClientService } from '@dailyuse/governance/application-client';
 import { createRuleHttpAdapter } from '@dailyuse/governance/infrastructure-client';
 import { GoalClientService } from '@dailyuse/goal/application-client';
 import { createGoalHttpAdapters } from '@dailyuse/goal/infrastructure-client';
@@ -68,7 +69,7 @@ import { resultHttpClient } from './http';
 
 const authService = new AuthClientService(createAuthHttpAdapter(resultHttpClient));
 const accountService = new AccountClientService(createAccountHttpAdapter(resultHttpClient));
-const ruleApiClient = createRuleHttpAdapter(resultHttpClient);
+const ruleService = new GovernanceClientService(createRuleHttpAdapter(resultHttpClient));
 
 const goalAdapters = createGoalHttpAdapters(resultHttpClient);
 const goalService = new GoalClientService(goalAdapters.goal, goalAdapters.folder);
@@ -121,7 +122,7 @@ export function installWebServices(app: App): void {
   // ── Domain Services ──
   app.provide(ACCOUNT_SERVICE_KEY, accountService);
   app.provide(AUTH_SERVICE_KEY, authService);
-  app.provide(RULE_SERVICE_KEY, ruleApiClient);
+  app.provide(RULE_SERVICE_KEY, ruleService);
   app.provide(GOAL_SERVICE_KEY, goalService);
   app.provide(NOTIFICATION_SERVICE_KEY, notificationService);
   app.provide(REMINDER_SERVICE_KEY, reminderService);

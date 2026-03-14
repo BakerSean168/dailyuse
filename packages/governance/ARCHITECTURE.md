@@ -1,7 +1,7 @@
 # Governance Package - Architecture Overview
 
 **Purpose**: Reference architecture for DDD best practices in `@dailyuse/governance`  
-**Status**: Active (Phase 5.5)  
+**Status**: Active (Phase 5.9 in progress)  
 **Created**: 2026-03-13  
 **Audience**: Package developers, architects, new team members
 
@@ -586,26 +586,64 @@ export { GovernanceController };
 
 ---
 
-### Layer 7: Application-Client (Client Services)
+### Layer 7: API Routes (Resource-First)
 
-**Location**: `packages/governance/src/application-client/services/`
+**Location**: `packages/governance/src/api/routes/`
+
+**Responsibility**: Register resource-first HTTP routes with stable ordering and shared OpenAPI helpers
+
+**Contents**:
+
+| Module                                | Purpose                    | Examples                              |
+| ------------------------------------- | -------------------------- | ------------------------------------- |
+| `governance-rules.routes.ts`          | Rule resource routes       | Create / List / Search / Get / Update |
+| `governance-rule-revisions.routes.ts` | Rule revision sub-resource | Get revisions                         |
+| `governance-route-shared.ts`          | Shared route helpers       | Query parsing, response schemas       |
+| `index.ts`                            | Resource-first aggregator  | rules + rule revisions                |
+
+**Key Pattern**: Follow ADR-021 while preserving layer-specific boundaries
+
+- Domain layer: aggregate / entity oriented
+- Application layer: command / query oriented
+- Route layer: resource / feature oriented
+
+```typescript
+// ✅ Governance route aggregator (resource-first)
+export function registerGovernanceRoutes(
+  handlers: GovernanceUseCases,
+  middleware: PlatformMiddleware,
+  openApiRegistry?: GovernanceOpenApiRegistry,
+): Router {
+  const controller = new GovernanceController(handlers);
+  const router = Router();
+
+  router.use(registerGovernanceRulesRoutes(controller, middleware, openApiRegistry));
+  router.use(registerGovernanceRuleRevisionsRoutes(controller, middleware, openApiRegistry));
+
+  return router;
+}
+```
+
+### Layer 8: Application-Client (Client Services)
+
+**Location**: `packages/governance/src/application-client/services/governance-client-service.ts`
 
 **Responsibility**: Provide client-side API for consuming governance features
 
 **Contents**:
 
-| Module | Purpose         | Examples                             |
-| ------ | --------------- | ------------------------------------ |
-| `*.ts` | Client services | `CreateRule`, `GetRule`, `ListRules` |
+| Module                         | Purpose               | Examples                  |
+| ------------------------------ | --------------------- | ------------------------- |
+| `governance-client-service.ts` | Client facade service | `GovernanceClientService` |
 
-**Key Pattern**: Pure dependency injection, return Result
+**Key Pattern**: Single facade + pure dependency injection + Result
 
 ```typescript
-// ✅ Client service with pure DI
-export class CreateRule {
+// ✅ Client facade with pure DI
+export class GovernanceClientService {
   constructor(private apiClient: ApiClient) {}
 
-  async execute(request: CreateRuleRequest): Promise<Result<RuleClientDTO>> {
+  async createRule(request: CreateRuleRequest): Promise<Result<RuleClientDTO>> {
     try {
       const response = await this.apiClient.post('/rules', request);
 
@@ -623,9 +661,9 @@ export class CreateRule {
 
 // Usage
 const apiClient = new ApiClient({ baseUrl: 'http://localhost:3000' });
-const createRuleService = new CreateRule(apiClient);
+const governanceClientService = new GovernanceClientService(apiClient);
 
-const result = await createRuleService.execute({
+const result = await governanceClientService.createRule({
   code: 'DDD-001',
   // ...
 });
@@ -641,7 +679,7 @@ if (!result.ok) {
 
 ```typescript
 // From @dailyuse/governance/application-client
-export { CreateRule, GetRule, ListRules, UpdateRule, DeleteRule, SearchRules };
+export { GovernanceClientService };
 ```
 
 ---
@@ -780,7 +818,7 @@ export * from '@dailyuse/governance/infrastructure-client';
 // Includes:
 // - Types: RuleServerDTO, RuleClientDTO, RuleStatus, etc.
 // - Constants: RuleSeverity values, Languages
-// - Client Services: CreateRule, GetRule, ListRules, etc.
+// - Client Service: GovernanceClientService
 ```
 
 ### What's Internal (Can Change)
@@ -1046,6 +1084,6 @@ error('INTERNAL_ERROR', 'Failed to delete rule');
 
 ---
 
-**Status**: Active (Phase 5.5)  
+**Status**: Active (Phase 5.9 in progress)  
 **Last Updated**: 2026-03-14  
 **Audience**: Package developers, architects, onboarding engineers

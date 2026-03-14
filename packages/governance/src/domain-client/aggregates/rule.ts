@@ -13,6 +13,8 @@
  * - 乐观更新支持
  */
 
+import type { Result } from '@dailyuse/contracts/result';
+import { ok, error } from '@dailyuse/contracts/result';
 import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type { RuleStatus } from '../../contracts/value-objects/rule-status';
 import type { RuleSeverity } from '../../contracts/value-objects/rule-severity';
@@ -259,6 +261,55 @@ export class Rule extends AggregateRoot<RuleId> {
    */
   public static load(state: RuleState): Rule {
     return new Rule(state);
+  }
+
+  /**
+   * Hydrates a client-side Rule entity from RuleClientDTO.
+   * 从 RuleClientDTO 水化客户端 Rule 实体。
+   */
+  public static fromClientDTO(dto: RuleClientDTO): Result<Rule> {
+    const codeSnippets: CodeSnippet[] = [];
+
+    for (const example of dto.goodExamples) {
+      const result = CodeSnippet.fromDTO(example);
+      if (!result.ok) {
+        return error(
+          'VALIDATION_ERROR',
+          `Invalid good-example in RuleClientDTO: ${result.error.message}`,
+        );
+      }
+      codeSnippets.push(result.data);
+    }
+
+    for (const example of dto.badExamples) {
+      const result = CodeSnippet.fromDTO(example);
+      if (!result.ok) {
+        return error(
+          'VALIDATION_ERROR',
+          `Invalid bad-example in RuleClientDTO: ${result.error.message}`,
+        );
+      }
+      codeSnippets.push(result.data);
+    }
+
+    return ok(
+      Rule.load({
+        id: dto.id,
+        code: dto.code,
+        title: dto.title,
+        description: dto.description,
+        severity: dto.severity,
+        status: dto.status,
+        deprecationReason: dto.deprecationReason,
+        replacementRuleId: dto.replacementRuleId,
+        liveReferenceLocation: dto.liveReferenceLocation,
+        tags: dto.tags.map((tag) => RuleTag.fromDTO(tag)),
+        codeSnippets,
+        authorId: dto.authorId,
+        createdAt: new Date(dto.createdAt),
+        updatedAt: new Date(dto.updatedAt),
+      }),
+    );
   }
 
   // ================= DTO Conversion =================
