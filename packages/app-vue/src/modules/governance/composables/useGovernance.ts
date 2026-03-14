@@ -12,9 +12,8 @@
  * - 仅在 UI 需要 richer behavior 时水化 domain-client Rule 实体
  */
 
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Rule } from '@dailyuse/governance/domain-client';
 import { useGovernanceStore } from '../stores/governanceStore';
 import { RULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -27,14 +26,22 @@ import type {
   UpdateRuleReq,
 } from '../types';
 
-function hydrateRule(dto: RuleClientDTO | null): Rule | null {
+type HydratedRule = RuleClientDTO & {
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  hasTag(tag: string): boolean;
+};
+
+async function hydrateRule(dto: RuleClientDTO | null): Promise<HydratedRule | null> {
   if (!dto) return null;
+
+  const { Rule } = await import('@dailyuse/governance/domain-client');
   const result = Rule.fromClientDTO(dto);
   if (!result.ok) {
     console.error('[governance] failed to hydrate Rule entity', result.error);
     return null;
   }
-  return result.data;
+  return result.data as unknown as HydratedRule;
 }
 
 export function useGovernance() {
@@ -54,12 +61,35 @@ export function useGovernance() {
   const allTags = computed(() => store.allTags);
   const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
+  const ruleEntities = shallowRef<HydratedRule[]>([]);
+  const currentRuleEntity = shallowRef<HydratedRule | null>(null);
 
-  /** Hydrated entities for richer UI-only behavior. 提供 richer UI 行为的按需水化实体。 */
-  const ruleEntities = computed(
-    () => rules.value.map((rule) => hydrateRule(rule)).filter(Boolean) as Rule[],
+  async function refreshHydratedRules(): Promise<void> {
+    const entities = await Promise.all(rules.value.map((rule) => hydrateRule(rule)));
+    ruleEntities.value = entities.filter(
+      (rule: HydratedRule | null): rule is HydratedRule => rule !== null,
+    );
+  }
+
+  async function refreshCurrentRuleEntity(): Promise<void> {
+    currentRuleEntity.value = await hydrateRule(currentRule.value);
+  }
+
+  watch(
+    rules,
+    () => {
+      void refreshHydratedRules();
+    },
+    { immediate: true },
   );
-  const currentRuleEntity = computed(() => hydrateRule(currentRule.value));
+
+  watch(
+    currentRule,
+    () => {
+      void refreshCurrentRuleEntity();
+    },
+    { immediate: true },
+  );
 
   async function fetchRules(): Promise<void> {
     store.setLoading(true);
@@ -176,7 +206,8 @@ export function useGovernance() {
     }
   }
 
-  async function fetchRevisions(_ruleId: string): Promise<void> {
+  async function fetchRevisions(ruleId: string): Promise<void> {
+    void ruleId;
     console.warn('[governance] fetchRevisions not yet available in GovernanceClientService');
     store.setRevisions([] as RuleRevisionClientDTO[]);
   }

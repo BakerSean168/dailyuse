@@ -298,7 +298,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ChevronRight, Plus, CheckCircle, XCircle, Trash2 } from 'lucide-vue-next';
@@ -416,7 +416,7 @@ async function handleSubmit() {
 
 async function loadEditData() {
   if (props.id) {
-    const rule = await fetchRule(props.id);
+    await fetchRule(props.id);
     const displayRule = currentRuleEntity.value ?? currentRule.value;
     if (displayRule) {
       form.code = displayRule.code;

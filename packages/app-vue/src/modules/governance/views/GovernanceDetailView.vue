@@ -253,7 +253,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   ChevronRight,
@@ -273,7 +273,6 @@ const props = defineProps<{
   id: string;
 }>();
 
-const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
 const {

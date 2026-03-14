@@ -91,7 +91,9 @@ export const useGovernanceStore = defineStore('governance', {
 
     /** Filters rules by tag. 按标签过滤规则。 */
     getRulesByTag: (state) => (tag: string) =>
-      Object.values(state.rulesById).filter((rule) => rule.tags.some((item) => item.value === tag)),
+      Object.values(state.rulesById).filter((rule: RuleClientDTO) =>
+        rule.tags.some((item: RuleClientDTO['tags'][number]) => item.value === tag),
+      ),
 
     /** Filters rules by severity. 按严重级别过滤规则。 */
     getRulesBySeverity: (state) => (severity: RuleSeverity) =>
@@ -100,8 +102,8 @@ export const useGovernanceStore = defineStore('governance', {
     /** All unique tags from current cache. 当前缓存中的所有唯一标签。 */
     allTags: (state): string[] => {
       const tags = new Set<string>();
-      Object.values(state.rulesById).forEach((rule) => {
-        rule.tags.forEach((tag) => tags.add(tag.value));
+      Object.values(state.rulesById).forEach((rule: RuleClientDTO) => {
+        rule.tags.forEach((tag: RuleClientDTO['tags'][number]) => tags.add(tag.value));
       });
       return Array.from(tags).sort();
     },
@@ -167,7 +169,8 @@ export const useGovernanceStore = defineStore('governance', {
 
     /** Removes a rule from cache and current list. 从缓存和当前列表中移除规则。 */
     removeRule(ruleId: string) {
-      const { [ruleId]: _removed, ...rest } = this.rulesById;
+      const rest = { ...this.rulesById };
+      delete rest[ruleId];
       this.rulesById = rest;
       this.ruleIds = this.ruleIds.filter((id) => id !== ruleId);
       this.pagination.total = Math.max(0, this.pagination.total - 1);
