@@ -1,7 +1,9 @@
 /**
  * Goal Module - Infrastructure Server
+ * 目标模块 - 服务端基础设施层
  *
  * Repository implementations for Goal domain.
+ * 目标领域的仓储实现。
  *
  * 遵循 Governance 模块架构：
  * - 此层只包含仓储实现、映射器、端口定义
@@ -22,5 +24,20 @@ export { GoalFolderPowerSyncRepository } from './adapters/powersync/goal-folder-
 export { GoalRecordPowerSyncRepository } from './adapters/powersync/goal-record-powersync.repository';
 
 // ============ Composition Root ============
+export {
+  createGoalModule,
+  createGoalUseCases,
+  type GoalApplicationPort,
+  type GoalModuleDependencies,
+  type GoalModuleInstance,
+  type GoalModuleRuntimeContribution,
+  type GoalModuleUseCases,
+  type GoalRuntimeContributionsInput,
+} from './goal.module';
+export { createGoalPowerSyncModule } from './powersync';
+
+// ============ Backward Compatibility (deprecated) ============
+/** @deprecated Use createGoalModule(deps) instead. 请使用 createGoalModule(deps) 代替。 */
 export { GoalModule, type GoalModuleRepositories } from './goal.module';
+/** @deprecated Use createGoalModule(deps) instead — no singleton container needed. 请使用 createGoalModule(deps) 代替 — 不再需要单例容器。 */
 export { GoalContainer } from './di/goal-container';

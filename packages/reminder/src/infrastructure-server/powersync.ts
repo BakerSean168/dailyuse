@@ -1,14 +1,25 @@
-import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
-import type { IReminderGroupRepository } from '../domain-server/repositories/IReminderGroupRepository';
-import type { IReminderResponseRepository } from '../domain-server/repositories/IReminderResponseRepository';
-import type { IUserReminderPreferenceRepository } from '../domain-server/repositories/IUserReminderPreferenceRepository';
-import { ReminderContainer } from './di/reminder-container';
+/**
+ * Reminder PowerSync Module Factory.
+ * 提醒模块 PowerSync 工厂。
+ *
+ * Thin factory that selects PowerSync repository adapters and delegates
+ * to the shared composition root.
+ *
+ * 精简的工厂函数，选择 PowerSync 仓储适配器并委托给共享的组合根。
+ */
+
+import {
+  createReminderModule,
+  type ReminderModuleInstance,
+  type ReminderRuntimeContributionsInput,
+} from './reminder.module';
 import {
   ReminderTemplatePowerSyncRepository,
   ReminderGroupPowerSyncRepository,
   ReminderResponsePowerSyncRepository,
   UserReminderPreferencePowerSyncRepository,
 } from './adapters/powersync';
+import { createReminderTriggerCronJob } from './cron/reminder-trigger-cron-job';
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -17,32 +28,28 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-export class ReminderPowerSyncModule {
-  public readonly reminderTemplateRepository: IReminderTemplateRepository;
-  public readonly reminderGroupRepository: IReminderGroupRepository;
-  public readonly reminderResponseRepository: IReminderResponseRepository;
-  public readonly userReminderPreferenceRepository: IUserReminderPreferenceRepository;
-
-  constructor(dbConnection: Queryable) {
-    const reminderTemplateRepository = new ReminderTemplatePowerSyncRepository(dbConnection);
-    const reminderGroupRepository = new ReminderGroupPowerSyncRepository(dbConnection);
-    const reminderResponseRepository = new ReminderResponsePowerSyncRepository(dbConnection);
-    const userReminderPreferenceRepository = new UserReminderPreferencePowerSyncRepository(
-      dbConnection,
-    );
-
-    const container = ReminderContainer.getInstance();
-    container.reset();
-    container.setReminderTemplateRepository(reminderTemplateRepository);
-    container.setReminderGroupRepository(reminderGroupRepository);
-    container.setReminderResponseRepository(reminderResponseRepository);
-    container.setUserReminderPreferenceRepository(userReminderPreferenceRepository);
-
-    this.reminderTemplateRepository = container.getReminderTemplateRepository();
-    this.reminderGroupRepository = container.getReminderGroupRepository();
-    this.reminderResponseRepository = container.getReminderResponseRepository();
-    this.userReminderPreferenceRepository = userReminderPreferenceRepository;
-  }
+/**
+ * Creates a ReminderModuleInstance backed by PowerSync repositories.
+ * 创建一个由 PowerSync 仓储驱动的 ReminderModuleInstance。
+ */
+export function createReminderPowerSyncModule(
+  db: Queryable,
+  runtimeContributions?: ReminderRuntimeContributionsInput,
+): ReminderModuleInstance {
+  const reminderTemplateRepository = new ReminderTemplatePowerSyncRepository(db);
+  const reminderGroupRepository = new ReminderGroupPowerSyncRepository(db);
+  return createReminderModule({
+    reminderTemplateRepository,
+    reminderGroupRepository,
+    reminderResponseRepository: new ReminderResponsePowerSyncRepository(db),
+    userReminderPreferenceRepository: new UserReminderPreferencePowerSyncRepository(db),
+    runtimeContributions:
+      runtimeContributions ??
+      createReminderTriggerCronJob({
+        reminderTemplateRepository,
+        reminderGroupRepository,
+      }),
+  });
 }
 
 export {
@@ -50,5 +57,4 @@ export {
   ReminderGroupPowerSyncRepository,
   ReminderResponsePowerSyncRepository,
   UserReminderPreferencePowerSyncRepository,
-  ReminderContainer,
 };

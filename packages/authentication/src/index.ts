@@ -1,53 +1,102 @@
 /**
  * @dailyuse/authentication
  *
- * Authentication module - identity authentication and session management.
+ * 认证模块 - 身份认证与会话管理
+ * Authentication module — identity authentication and session management.
  *
- * Layered Architecture:
+ * 【分层架构】
  *
- * contracts              - Type definitions, DTOs, events, API schemas
- * domain-shared          - Value objects, IPasswordHasher (shared between client/server)
- * domain-server          - Aggregate roots (AuthIdentity, AuthSession), repository interfaces
- * application-server     - Use case services (Login, Register, Logout, etc.)
- * infrastructure-server  - Prisma repositories, Argon2 hashing, Passport strategies
- * api                    - Express API module
+ * ```
+ * ┌─────────────────────────────────────────────────────────┐
+ * │  contracts (契约层)                                      │
+ * │  - 类型定义（interface/type）                            │
+ * │  - DTO（Client/Server/Persistence）                     │
+ * │  - 领域事件                                              │
+ * │  - API Schema (Zod)                                     │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  domain-shared (共享领域层)                              │
+ * │  - IPasswordHasher                                      │
+ * │  - 前后端可共享的业务规则                                │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  domain-server (服务端领域层)                            │
+ * │  - 聚合根（AuthIdentity, AuthSession）                  │
+ * │  - 仓储接口（IAuthIdentityRepository, etc.）            │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  application-server (服务端应用层)                       │
+ * │  - 用例服务（Login, Register, Logout, etc.）            │
+ * ├─────────────────────────────────────────────────────────┤
+ * │  infrastructure-server (服务端基础设施层)                │
+ * │  - Prisma / PowerSync 仓储实现                          │
+ * │  - 组合根 createAuthenticationModule()                  │
+ * └─────────────────────────────────────────────────────────┘
+ * ```
  *
- * Usage example:
+ * 【使用示例】
  *
  * ```typescript
- * // 1. Import contracts
+ * // 1. 导入契约层类型
  * import type { AuthIdentityServerDTO } from '@dailyuse/contracts/authentication';
  *
- * // 2. Import server-side aggregate roots
+ * // 2. 导入聚合根
  * import { AuthIdentity, AuthSession } from '@dailyuse/authentication/domain-server';
  *
- * // 3. Import API module (in apps/api)
+ * // 3. 使用组合根
+ * import { createAuthenticationModule } from '@dailyuse/authentication/infrastructure-server';
+ * const module = createAuthenticationModule({ identityRepository, sessionRepository, passwordHasher, tokenProvider });
+ * const result = await module.api.login(data, cx);
+ *
+ * // 4. 注册 API 模块 (in apps/api)
  * import { AuthenticationApiModule } from '@dailyuse/authentication/api';
  * bootstrapper.register(AuthenticationApiModule);
  * ```
  */
 
-// ================= Contracts Layer =================
+// ================= Contracts Layer (契约层) =================
+// Type definitions, DTOs, Events, API Schemas
 export * from '@dailyuse/contracts/authentication';
 
-// ================= Domain Layer =================
+// ================= Domain Layer (领域层) =================
+// Domain-Server: Aggregates, entities, repositories (server-side)
 export { AuthIdentity } from './domain-server';
 export { AuthSession } from './domain-server';
 export type { IAuthIdentityRepository, IAuthSessionRepository } from './domain-server';
 
-// ================= Application Layer =================
+// ================= Application Layer (应用层) =================
+// Application-Server: Use cases (server-side)
+// Application-Client: Client services, API client ports
 export * from './application-server';
 export * from './application-client';
 
-// ================= Infrastructure Layer =================
+// ================= Infrastructure Layer (基础设施层) =================
+// Infrastructure-Server: Repositories, persistence, composition root (server-side)
+// Infrastructure-Client: HTTP/IPC adapters (client-side)
 export {
+  /** @internal Concrete Prisma implementation — use IAuthIdentityRepository interface instead. Prisma 具体实现 — 请使用 IAuthIdentityRepository 接口。 */
   PrismaAuthIdentityRepository,
+  /** @internal Concrete Prisma implementation — use IAuthSessionRepository interface instead. Prisma 具体实现 — 请使用 IAuthSessionRepository 接口。 */
   PrismaAuthSessionRepository,
+  /** @internal Concrete PowerSync implementation — use IAuthIdentityRepository interface instead. PowerSync 具体实现 — 请使用 IAuthIdentityRepository 接口。 */
   PowerSyncAuthIdentityRepository,
+  /** @internal Concrete PowerSync implementation — use IAuthSessionRepository interface instead. PowerSync 具体实现 — 请使用 IAuthSessionRepository 接口。 */
   PowerSyncAuthSessionRepository,
-  Argon2Hasher,
-  AuthenticationContainer,
-  AuthenticationRepositoryFactory,
-  AuthenticationModule,
+  createAuthenticationModule,
+  createAuthenticationPowerSyncModule,
+  type AuthenticationApplicationPort,
+  type AuthenticationModuleDependencies,
+  type AuthenticationModuleInstance,
+  type AuthenticationModuleRuntimeContribution,
+  type AuthenticationModuleUseCases,
 } from './infrastructure-server';
+
 export * from './infrastructure-client';
+
+// ================= Legacy (deprecated) =================
+
+/** @deprecated Use `createAuthenticationModule()` instead. 请使用 `createAuthenticationModule()` 代替。 */
+export { Argon2Hasher } from './infrastructure-server';
+/** @deprecated Use `createAuthenticationModule()` instead. 请使用 `createAuthenticationModule()` 代替。 */
+export { AuthenticationModule } from './infrastructure-server';
+/** @deprecated Legacy DI container — use `createAuthenticationModule()` factory instead. 旧版 DI 容器 — 请使用 `createAuthenticationModule()` 工厂函数代替。 */
+export { AuthenticationContainer } from './infrastructure-server';
+/** @deprecated Legacy repository factory — pass repos directly to `createAuthenticationModule()`. 旧版仓储工厂 — 请直接将仓储传入 `createAuthenticationModule()`。 */
+export { AuthenticationRepositoryFactory } from './infrastructure-server';

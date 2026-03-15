@@ -1,30 +1,42 @@
 /**
- * Notification Module - Infrastructure Server
+ * Infrastructure Server Layer - Barrel Export.
+ * 基础设施服务端层 - 统一导出。
  *
- * Ports and Adapters for Notification module persistence.
+ * Server-side infrastructure:
+ * 服务端基础设施：
+ * - Repository implementations (Prisma, PowerSync)
+ *   仓储实现（Prisma、PowerSync）
+ * - Persistence mappers
+ *   持久化映射器
+ * - Explicit composition root and runtime assembly
+ *   显式组合根与运行时组装
  */
 
-// DI Module
-export { NotificationModule } from './notification.module';
-export { NotificationPowerSyncModule } from './powersync';
-export { NotificationContainer } from './di/notification-container';
-
-// DI Factory
-export { NotificationRepositoryFactory } from './di';
-
-// Ports - Repository interfaces are exported from domain-server layer
-// Use @dailyuse/notification/domain-server for INotificationRepository etc.
-
-// Prisma Adapters
+// ============ Adapters - Prisma ============
+/** @internal Concrete Prisma implementation — use INotificationRepository interface instead. Prisma 具体实现 — 请使用 INotificationRepository 接口。 */
 export {
   NotificationPrismaRepository,
   NotificationPreferencePrismaRepository,
   NotificationTemplatePrismaRepository,
 } from './adapters/prisma';
 
-// PowerSync Adapters
+// ============ Adapters - PowerSync ============
+/** @internal Concrete PowerSync implementation — use repository interfaces instead. PowerSync 具体实现 — 请使用仓储接口。 */
 export {
   PowerSyncNotificationRepository,
   PowerSyncNotificationPreferenceRepository,
   PowerSyncNotificationTemplateRepository,
 } from './adapters/powersync';
+
+// ============ Composition Root ============
+export {
+  createNotificationModule,
+  createNotificationUseCases,
+  type NotificationApplicationPort,
+  type NotificationModuleDependencies,
+  type NotificationModuleInstance,
+  type NotificationModuleRuntimeContribution,
+  type NotificationModuleUseCases,
+  type NotificationRuntimeContributionsInput,
+} from './notification.module';
+export { createNotificationPowerSyncModule } from './powersync';

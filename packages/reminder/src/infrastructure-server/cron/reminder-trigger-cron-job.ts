@@ -1,131 +1,84 @@
-// @ts-nocheck
 /**
- * Reminder Trigger Cron Job
- * 
- * 鑱岃矗锛?
- * - 姣忓垎閽熸壂鎻忛渶瑕佽Е鍙戠殑鎻愰啋妯℃澘
- * - 璋冪敤 ReminderSchedulerService 鎵ц瑙﹀彂閫昏緫
- * - Record瑙﹀彂鍘嗗彶
- * - Update涓嬫瑙﹀彂鏃堕棿
- * 
- * 瑙﹀彂棰戠巼锛氭瘡鍒嗛挓鎵ц涓€娆?
+ * Reminder Trigger Cron Job — factory-based, container-free.
+ * 提醒触发定时任务 —— 基于工厂模式，无容器依赖。
+ *
+ * 职责：
+ * - 每分钟扫描需要触发的提醒模板
+ * - 调用 ReminderSchedulerService 执行触发逻辑
+ * - Record 触发历史
+ * - Update 下次触发时间
+ *
+ * 触发频率：每分钟执行一次
  * Cron Expression: '* * * * *'
+ *
+ * Dependencies are injected via the factory function, not via a singleton container.
+ * 依赖通过工厂函数注入，而非单例容器。
  */
 
 import * as cron from 'node-cron';
-import { ReminderContainer } from '../di/ReminderContainer';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
 import { ReminderSchedulerService } from '../../domain-server/services/ReminderSchedulerService';
 import { ReminderTriggerService } from '../../domain-server/services/ReminderTriggerService';
+import { ReminderTemplateControlService } from '../../domain-server/services/ReminderTemplateControlService';
 import { createLogger } from '@dailyuse/utils';
+import type { ReminderModuleRuntimeContribution } from '../reminder.module';
 
 const logger = createLogger('ReminderTriggerCronJob');
 
-class ReminderTriggerCronJob {
-  private static instance: ReminderTriggerCronJob | null = null;
-  private cronTask: cron.ScheduledTask | null = null;
-  private isRunning = false;
-  private schedulerService: ReminderSchedulerService | null = null;
+// ---------------------------------------------------------------------------
+// Dependencies — what the cron job needs from the outside world.
+// 依赖 —— 定时任务向外部索取的全部依赖。
+// ---------------------------------------------------------------------------
 
-  private constructor() {}
+export interface ReminderTriggerCronJobDependencies {
+  readonly reminderTemplateRepository: IReminderTemplateRepository;
+  readonly reminderGroupRepository: IReminderGroupRepository;
+}
 
-  /**
-   * Get鍗曚緥瀹炰緥
-   */
-  static async getInstance(): Promise<ReminderTriggerCronJob> {
-    if (!ReminderTriggerCronJob.instance) {
-      ReminderTriggerCronJob.instance = new ReminderTriggerCronJob();
-      await ReminderTriggerCronJob.instance.initialize();
-    }
-    return ReminderTriggerCronJob.instance;
-  }
+// ---------------------------------------------------------------------------
+// Factory — creates a ReminderModuleRuntimeContribution that manages the cron lifecycle.
+// 工厂 —— 创建一个管理定时任务生命周期的 ReminderModuleRuntimeContribution。
+// ---------------------------------------------------------------------------
 
-  /**
-   * 鍒濆鍖栬皟搴︽湇鍔?
-   */
-  private async initialize(): Promise<void> {
-    try {
-      const container = ReminderContainer.getInstance();
-      const templateRepo = container.getReminderTemplateRepository();
-      const groupRepo = container.getReminderGroupRepository();
-      
-      // Create ControlService（需要 group repository）
-      const controlService = container.getControlService();
-      
-      // Create TriggerService
-      const triggerService = new ReminderTriggerService(
-        templateRepo,
-        controlService,
-      );
+/**
+ * Creates a cron-based runtime contribution that scans for due reminders every minute.
+ * 创建一个每分钟扫描到期提醒的定时任务运行时贡献。
+ *
+ * Wire this into `createReminderModule({ runtimeContributions: ... })`.
+ * 将此贡献接入 `createReminderModule({ runtimeContributions: ... })`。
+ */
+export function createReminderTriggerCronJob(
+  deps: ReminderTriggerCronJobDependencies,
+): ReminderModuleRuntimeContribution {
+  const { reminderTemplateRepository, reminderGroupRepository } = deps;
 
-      // Create SchedulerService
-      this.schedulerService = new ReminderSchedulerService(
-        templateRepo,
-        triggerService,
-      );
+  // Assemble domain services once / 一次性组装领域服务
+  const controlService = new ReminderTemplateControlService(
+    reminderTemplateRepository,
+    reminderGroupRepository,
+  );
+  const triggerService = new ReminderTriggerService(reminderTemplateRepository, controlService);
+  const schedulerService = new ReminderSchedulerService(reminderTemplateRepository, triggerService);
 
-      logger.info('ReminderSchedulerService initialized successfully');
-    } catch (error) {
-      logger.error('Failed to initialize ReminderSchedulerService', { error });
-      throw error;
-    }
-  }
+  let cronTask: cron.ScheduledTask | null = null;
+  let isRunning = false;
 
-  /**
-   * 鍚姩瀹氭椂浠诲姟
-   */
-  start(): void {
-    if (this.cronTask) {
-      logger.warn('Cron job already started');
-      return;
-    }
-
-    // 姣忓垎閽熸墽琛屼竴娆?
-    this.cronTask = cron.schedule('* * * * *', async () => {
-      await this.execute();
-    });
-
-    // 鎵嬪姩鍚姩浠诲姟
-    this.cronTask.start();
-    
-    logger.info('Reminder trigger cron job started (runs every minute)');
-  }
-
-  /**
-   * 鍋滄瀹氭椂浠诲姟
-   */
-  stop(): void {
-    if (this.cronTask) {
-      this.cronTask.stop();
-      this.cronTask = null;
-      logger.info('Reminder trigger cron job stopped');
-    }
-  }
-
-  /**
-   * 鎵ц瑙﹀彂閫昏緫
-   */
-  private async execute(): Promise<void> {
-    if (this.isRunning) {
+  async function execute(): Promise<void> {
+    if (isRunning) {
       logger.debug('Previous job still running, skipping this execution');
       return;
     }
 
-    if (!this.schedulerService) {
-      logger.error('SchedulerService not initialized');
-      return;
-    }
-
-    this.isRunning = true;
+    isRunning = true;
     const startTime = Date.now();
 
     try {
       logger.debug('Starting reminder trigger scan...');
 
-      // 璋冪敤璋冨害鏈嶅姟鎵ц瑙﹀彂
-      const result = await this.schedulerService.schedule();
-
+      const result = await schedulerService.schedule();
       const duration = Date.now() - startTime;
-      
+
       logger.info('Reminder trigger scan completed', {
         totalProcessed: result.totalCount,
         totalTriggered: result.successCount,
@@ -133,11 +86,10 @@ class ReminderTriggerCronJob {
         duration: `${duration}ms`,
       });
 
-      // 濡傛灉鏈夊け璐ョ殑鎻愰啋锛岃褰曡缁嗕俊鎭?
       if (result.failedCount > 0) {
         logger.warn('Some reminders failed to trigger', {
           failedCount: result.failedCount,
-          details: result.details.filter(d => !d.success),
+          details: result.details.filter((d) => !d.ok),
         });
       }
     } catch (error) {
@@ -147,49 +99,30 @@ class ReminderTriggerCronJob {
         duration: `${duration}ms`,
       });
     } finally {
-      this.isRunning = false;
+      isRunning = false;
     }
   }
 
-  /**
-   * 鎵嬪姩瑙﹀彂鎵ц锛堢敤浜庢祴璇曪級
-   */
-  async manualTrigger(): Promise<void> {
-    logger.info('Manual trigger requested');
-    await this.execute();
-  }
+  return {
+    start() {
+      if (cronTask) {
+        logger.warn('Cron job already started');
+        return;
+      }
 
-  /**
-   * Get浠诲姟鐘舵€?
-   */
-  getStatus(): { isRunning: boolean; isScheduled: boolean } {
-    return {
-      isRunning: this.isRunning,
-      isScheduled: this.cronTask !== null,
-    };
-  }
+      cronTask = cron.schedule('* * * * *', async () => {
+        await execute();
+      });
+      cronTask.start();
+      logger.info('Reminder trigger cron job started (runs every minute)');
+    },
+
+    stop() {
+      if (cronTask) {
+        cronTask.stop();
+        cronTask = null;
+        logger.info('Reminder trigger cron job stopped');
+      }
+    },
+  };
 }
-
-// 瀵煎嚭鍗曚緥宸ュ巶鍑芥暟
-export const startReminderTriggerCronJob = async (): Promise<void> => {
-  const job = await ReminderTriggerCronJob.getInstance();
-  job.start();
-};
-
-export const stopReminderTriggerCronJob = async (): Promise<void> => {
-  const job = await ReminderTriggerCronJob.getInstance();
-  job.stop();
-};
-
-export const manualTriggerReminders = async (): Promise<void> => {
-  const job = await ReminderTriggerCronJob.getInstance();
-  await job.manualTrigger();
-};
-
-export const getReminderCronJobStatus = async (): Promise<{
-  isRunning: boolean;
-  isScheduled: boolean;
-}> => {
-  const job = await ReminderTriggerCronJob.getInstance();
-  return job.getStatus();
-};

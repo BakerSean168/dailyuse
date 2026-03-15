@@ -2,29 +2,12 @@
  * Notification Application Client Layer
  * 通知模块客户端应用层
  *
- * 简化版 - 只导出必要的类型和事件
+ * Constructor-injected client service for notification management.
+ * 使用构造函数注入的通知管理客户端服务。
  */
 
-// ===== Port Interfaces =====
+// ===== Port Interfaces / 端口接口 =====
 export type { INotificationApiClient } from '../infrastructure-client/adapters/types';
 
-// Client Service
+// ===== Client Service / 客户端服务 =====
 export { NotificationClientService } from './notification-client-service';
-
-// Singleton placeholder
-let _notificationApplicationService: any = null;
-
-export function setNotificationApplicationService(service: any) {
-  _notificationApplicationService = service;
-}
-
-export const notificationApplicationService: any = new Proxy({} as any, {
-  get(_target, prop) {
-    if (!_notificationApplicationService) {
-      throw new Error(
-        'notificationApplicationService not initialized. Call setNotificationApplicationService first.',
-      );
-    }
-    return (_notificationApplicationService as any)[prop];
-  },
-});

@@ -1,10 +1,11 @@
 /**
  * Goal API Module Definition
+ * 目标模块 API 定义
  *
  * 实现 IApiModule 标准接口，内部自治完成：
  * 1. Composition Root（创建 Repo → UseCase → Handler）
  * 2. 路由定义与挂载
- * 3. 初始化任务注册
+ * 3. 运行时贡献注册
  *
  * 遵循 Governance 模块的参考实现模式。
  */
@@ -12,16 +13,26 @@
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import {
+  createGoalModule,
   GoalPrismaRepository,
   GoalFolderPrismaRepository,
   GoalRecordPrismaRepository,
-  GoalModule,
+  type GoalModuleInstance,
 } from '../infrastructure-server';
-import { GoalContainer } from '../infrastructure-server/di/goal-container';
 import { registerGoalRoutes, registerGoalFolderRoutes_ } from './routes/index';
-import { registerGoalInitializationTasks } from './initialization';
+import {
+  createGoalTransportHandlers,
+  createGoalFolderTransportHandlers,
+} from './transport-handlers';
+import { createGoalRuntimeContribution } from './runtime';
 import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
 
+/**
+ * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
+ *
+ * 此类型在 goal 包内本地定义，避免对 apps/api 的循环依赖。
+ * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
+ */
 export interface GoalApiModuleContext {
   readonly app: import('express').Express;
   readonly router: Router;
@@ -39,69 +50,44 @@ export interface GoalApiModuleDef {
   destroy?(): void;
 }
 
+let activeGoalModule: GoalModuleInstance | null = null;
+
 export const GoalApiModule: GoalApiModuleDef = {
   name: 'Goal',
 
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. 创建 Repository
+    // 1. Composition Root — 组装依赖（使用共享数据库单例）
     const prismaClient = db as PrismaClient;
-    const goalRepository = new GoalPrismaRepository(prismaClient);
-    const goalFolderRepository = new GoalFolderPrismaRepository(prismaClient);
-    const goalRecordRepository = new GoalRecordPrismaRepository(prismaClient);
-
-    // 2. 使用共享组合根创建 Use Cases / Services
-    const goalModule = new GoalModule({
-      goalRepository,
-      goalFolderRepository,
-      goalRecordRepository,
+    const goalModule = createGoalModule({
+      goalRepository: new GoalPrismaRepository(prismaClient),
+      goalFolderRepository: new GoalFolderPrismaRepository(prismaClient),
+      goalRecordRepository: new GoalRecordPrismaRepository(prismaClient),
+      runtimeContributions: createGoalRuntimeContribution(),
     });
+    activeGoalModule = goalModule;
+    goalModule.start();
 
-    // 3. 创建 Handlers（函数引用）
-    const handlers = {
-      createGoal: goalModule.createGoal,
-      getGoal: goalModule.getGoal,
-      listGoals: goalModule.listGoals,
-      updateGoal: goalModule.updateGoal,
-      deleteGoal: goalModule.deleteGoal,
-      archiveGoal: goalModule.archiveGoal,
-      activateGoal: goalModule.activateGoal,
-      searchGoals: goalModule.searchGoals,
-      addKeyResult: goalModule.addKeyResult,
-      updateKeyResult: goalModule.updateKeyResult,
-      updateKeyResultProgress: goalModule.updateKeyResultProgress,
-      deleteKeyResult: goalModule.deleteKeyResult,
-      addReview: goalModule.addReview,
-      listReviews: goalModule.listReviews,
-      updateReview: goalModule.updateReview,
-      deleteReview: goalModule.deleteReview,
-      createRecord: goalModule.createRecord,
-      listRecords: goalModule.listRecords,
-      deleteRecord: goalModule.deleteRecord,
-      completeGoal: goalModule.completeGoal,
-    };
+    // 2. Transport handlers (thin mapping from api port to controller ports)
+    // 传输层处理器（从 api 端口到控制器端口的薄映射）
+    const goalHandlers = createGoalTransportHandlers(goalModule.api);
+    const folderHandlers = createGoalFolderTransportHandlers(goalModule.api);
 
-    // 4. 注册路由（同时注册 OpenAPI 文档）
-    const goalRoutes = registerGoalRoutes(handlers, middleware, context.openApiRegistry);
+    // 3. 创建路由并挂载（注入平台中间件，同时注册 OpenAPI 文档）
+    const goalRoutes = registerGoalRoutes(goalHandlers, middleware, context.openApiRegistry);
     router.use('/goals', goalRoutes);
 
-    // 4b. 注册文件夹路由
-    const folderHandlers = {
-      createGoalFolder: goalModule.createGoalFolder,
-      getGoalFolder: goalModule.getGoalFolder,
-      listGoalFolders: goalModule.listGoalFolders,
-      updateGoalFolder: goalModule.updateGoalFolder,
-      deleteGoalFolder: goalModule.deleteGoalFolder,
-    };
-    const folderRoutes = registerGoalFolderRoutes_(folderHandlers, middleware, context.openApiRegistry);
+    const folderRoutes = registerGoalFolderRoutes_(
+      folderHandlers,
+      middleware,
+      context.openApiRegistry,
+    );
     router.use('/goal-folders', folderRoutes);
-
-    // 5. 注册初始化任务
-    registerGoalInitializationTasks();
   },
 
   destroy() {
-    GoalContainer.getInstance().reset();
+    activeGoalModule?.dispose();
+    activeGoalModule = null;
   },
 };

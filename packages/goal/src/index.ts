@@ -11,7 +11,7 @@
  * domain-client       → 客户端领域模型
  * application-server  → 用例服务（服务端）
  * application-client  → 客户端服务
- * infrastructure-server → Prisma/PowerSync 仓储实现、DI 模块
+ * infrastructure-server → Prisma/PowerSync 仓储实现、组合根
  * infrastructure-client → HTTP/IPC 适配器
  *
  * 【使用示例】
@@ -23,8 +23,10 @@
  * // 2. 导入服务端聚合根
  * import { Goal, GoalFolder } from '@dailyuse/goal/domain-server';
  *
- * // 3. 导入基础设施模块
- * import { GoalModule } from '@dailyuse/goal/infrastructure-server';
+ * // 3. 使用组合根
+ * import { createGoalModule } from '@dailyuse/goal/infrastructure-server';
+ * const module = createGoalModule({ goalRepository, goalFolderRepository, goalRecordRepository });
+ * const result = await module.useCases.createGoal.execute(req, cx);
  * ```
  */
 
@@ -57,6 +59,30 @@ export * from './application-server';
 export * from './application-client';
 
 // ================= Infrastructure Layer =================
-export * from './infrastructure-server';
+export {
+  // Prisma adapters
+  GoalPrismaRepository,
+  GoalFolderPrismaRepository,
+  FocusModePrismaRepository,
+  FocusSessionPrismaRepository,
+  PrismaWeightSnapshotRepository,
+  GoalRecordPrismaRepository,
+  // PowerSync adapters
+  GoalPowerSyncRepository,
+  GoalFolderPowerSyncRepository,
+  GoalRecordPowerSyncRepository,
+  // Composition root
+  createGoalModule,
+  createGoalUseCases,
+  createGoalPowerSyncModule,
+  type GoalModuleDependencies,
+  type GoalModuleInstance,
+  type GoalModuleRuntimeContribution,
+  type GoalModuleUseCases,
+  // Backward compatibility (deprecated)
+  GoalModule,
+  type GoalModuleRepositories,
+  GoalContainer,
+} from './infrastructure-server';
 export * from './infrastructure-client';
 export * from './electron-entry';

@@ -1,7 +1,17 @@
 /**
- * Task Module Initialization Tasks
+ * Task Module Initialization Tasks (Legacy).
+ * 任务模块初始化任务（遗留）。
  *
  * Registers event handlers and background tasks to InitializationManager.
+ * 将事件处理器和后台任务注册到 InitializationManager。
+ *
+ * @deprecated Replaced by {@link createTaskRuntimeContribution} in `./runtime.ts`.
+ *             The new pattern uses instance-owned start/stop lifecycle instead of
+ *             global InitializationManager registration.
+ * @deprecated 已被 `./runtime.ts` 中的 {@link createTaskRuntimeContribution} 取代。
+ *             新模式使用实例级的 start/stop 生命周期，而非全局 InitializationManager 注册。
+ *
+ * @see {@link createTaskRuntimeContribution} for the replacement.
  */
 
 import {
@@ -34,6 +44,10 @@ const taskJobsInitTask: InitializationTask = {
   },
 };
 
+/**
+ * @deprecated Use `createTaskRuntimeContribution()` from `./runtime.ts` instead.
+ * @deprecated 请使用 `./runtime.ts` 中的 `createTaskRuntimeContribution()`。
+ */
 export function registerTaskInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
   manager.registerTask(taskEventHandlersInitTask);

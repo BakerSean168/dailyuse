@@ -1,6 +1,16 @@
 /**
- * Notification Module Initialization Tasks
+ * Notification Module Initialization Tasks (LEGACY)
+ * 通知模块初始化任务（遗留文件）
  *
+ * @deprecated This file is superseded by `./runtime.ts` which uses the
+ * composition-root lifecycle pattern (start/stop) instead of the
+ * InitializationManager singleton. No internal consumers remain —
+ * kept only for reference during the migration period.
+ *
+ * 此文件已被 `./runtime.ts` 取代，后者使用组合根生命周期模式（start/stop）
+ * 而非 InitializationManager 单例。内部已无消费者 —— 仅在迁移期间保留作参考。
+ *
+ * @see ./runtime.ts for the new implementation
  * Register event handlers and background tasks to InitializationManager.
  */
 

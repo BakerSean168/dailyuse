@@ -1,20 +1,41 @@
-﻿/**
- * Task Module - Composition Root
- * 任务模块组合根
+/**
+ * createTaskModule — explicit composition root for the task server runtime.
+ * createTaskModule —— 任务模块服务端运行时的显式组合根。
  *
- * 负责初始化 Prisma 仓储和应用服务
+ * The outer app selects concrete adapters and passes them in here.
+ * This module then assembles the application layer exactly once and exposes a
+ * stable facade to HTTP / IPC transports.
+ *
+ * 外层应用负责选择具体适配器并传入这里。
+ * 组合根只做一次组装，然后向 HTTP / IPC 等传输层暴露稳定门面。
+ *
+ * Task uses this file as the package's "living documentation" example for
+ * the target monorepo pattern: one composition root per module, constructor
+ * injection only, no hidden service locator.
  */
 
-import type { PrismaClient } from '@dailyuse/database';
-import type { ITaskTemplateRepository } from '../domain-server/repositories/ITaskTemplateRepository';
+import type { Result } from '@dailyuse/contracts/result';
+import type {
+  ITaskTemplateRepository,
+  TaskFilters,
+} from '../domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
 import type { ITaskDependencyRepository } from '../domain-server/repositories/ITaskDependencyRepository';
 import type { ITaskFolderRepository } from '../domain-server/repositories/ITaskFolderRepository';
-import { TaskContainer } from './di/task-container';
-import { TaskTemplatePrismaRepository } from './adapters/prisma/task-template-prisma.repository';
-import { TaskInstancePrismaRepository } from './adapters/prisma/task-instance-prisma.repository';
-import { TaskDependencyPrismaRepository } from './adapters/prisma/task-dependency-prisma.repository';
-import { TaskFolderPrismaRepository } from './adapters/prisma/task-folder-prisma.repository';
+import type {
+  CreateTaskTemplateReq,
+  UpdateTaskTemplateReq,
+  GenerateInstancesReq,
+  BindToGoalReq,
+  CompleteTaskInstanceReq,
+  SkipTaskInstanceReq,
+  QueryTaskTemplatesReq,
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  TaskDependencyServerDTO,
+  DependencyChainServerDTO,
+  DependencyType,
+} from '@dailyuse/contracts/task';
 import { CreateTaskTemplate } from '../application-server/use-cases/commands/create-task-template';
 import { GetTaskTemplate } from '../application-server/use-cases/queries/get-task-template';
 import { ListTaskTemplates } from '../application-server/use-cases/queries/list-task-templates';
@@ -44,112 +65,298 @@ import { ListTaskDependencies } from '../application-server/use-cases/queries/li
 import { GetDependencyChain } from '../application-server/use-cases/queries/get-dependency-chain';
 import { ValidateTaskDependency } from '../application-server/use-cases/queries/validate-task-dependency';
 
+// ---------------------------------------------------------------------------
+// 1. Dependencies — everything the task server runtime needs from the outside.
+//    依赖 — 任务模块服务端运行时向外部索取的全部依赖。
+// ---------------------------------------------------------------------------
+
 /**
- * Task Module
- * Composition Root for Task domain
+ * Optional runtime side effects the module owns.
+ * 模块拥有的可选运行时副作用。
+ *
+ * A contribution is the unit we start/stop together with the module instance.
+ * This replaces the older global InitializationManager registration.
  */
-export class TaskModule {
-  public readonly taskTemplateRepository: ITaskTemplateRepository;
-  public readonly taskInstanceRepository: ITaskInstanceRepository;
-  public readonly taskDependencyRepository: ITaskDependencyRepository;
-  public readonly taskFolderRepository?: ITaskFolderRepository;
+export interface TaskModuleRuntimeContribution {
+  start(): void;
+  stop(): void;
+}
 
-  public readonly createTaskTemplate: CreateTaskTemplate;
-  public readonly getTaskTemplate: GetTaskTemplate;
-  public readonly listTaskTemplates: ListTaskTemplates;
-  public readonly updateTaskTemplate: UpdateTaskTemplate;
-  public readonly activateTaskTemplate: ActivateTaskTemplate;
-  public readonly pauseTaskTemplate: PauseTaskTemplate;
-  public readonly archiveTaskTemplate: ArchiveTaskTemplate;
-  public readonly deleteTaskTemplate: DeleteTaskTemplate;
-  public readonly getTaskInstance: GetTaskInstance;
-  public readonly listTaskInstancesByAccount: ListTaskInstancesByAccount;
-  public readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
-  public readonly listTaskInstancesByStatus: ListTaskInstancesByStatus;
-  public readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRange;
-  public readonly completeTaskInstance: CompleteTaskInstance;
-  public readonly skipTaskInstance: SkipTaskInstance;
-  public readonly startTaskInstance: StartTaskInstance;
-  public readonly deleteTaskInstance: DeleteTaskInstance;
-  public readonly generateTaskInstances: GenerateTaskInstances;
-  public readonly bindTaskToGoal: BindTaskToGoal;
-  public readonly unbindTaskFromGoal: UnbindTaskFromGoal;
-  public readonly checkExpiredInstances: CheckExpiredInstances;
-  public readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
-  public readonly createTaskDependency: CreateTaskDependency;
-  public readonly deleteTaskDependency: DeleteTaskDependency;
-  public readonly updateTaskDependency: UpdateTaskDependency;
-  public readonly listTaskDependencies: ListTaskDependencies;
-  public readonly getDependencyChain: GetDependencyChain;
-  public readonly validateTaskDependency: ValidateTaskDependency;
+export type TaskRuntimeContributionsInput =
+  | TaskModuleRuntimeContribution
+  | readonly TaskModuleRuntimeContribution[];
 
-  constructor(dbConnection: PrismaClient) {
-    // 1. Initialize Repositories
-    const taskTemplateRepository = new TaskTemplatePrismaRepository(dbConnection);
-    const taskInstanceRepository = new TaskInstancePrismaRepository(dbConnection);
-    const taskDependencyRepository = new TaskDependencyPrismaRepository(dbConnection);
-    const taskFolderRepository = new TaskFolderPrismaRepository(dbConnection);
+/**
+ * Everything the task server runtime needs from the outside world.
+ * 任务模块服务端运行时向外部索取的全部依赖。
+ *
+ * Refactor rule for other modules:
+ * - only put ports or runtime contributions here
+ * - never put transport objects (Express req/res, ipcMain, Router) here
+ * - never hide these dependencies behind a singleton container
+ */
+export interface TaskModuleDependencies {
+  readonly taskTemplateRepository: ITaskTemplateRepository;
+  readonly taskInstanceRepository: ITaskInstanceRepository;
+  readonly taskDependencyRepository: ITaskDependencyRepository;
+  readonly taskFolderRepository?: ITaskFolderRepository;
+  readonly runtimeContributions?: TaskRuntimeContributionsInput;
+}
 
-    // 2. Register repositories in DI container
-    const container = TaskContainer.getInstance();
-    container.reset();
-    container.setTaskTemplateRepository(taskTemplateRepository);
-    container.setTaskInstanceRepository(taskInstanceRepository);
-    container.setTaskDependencyRepository(taskDependencyRepository);
-    container.setTaskFolderRepository(taskFolderRepository);
+// ---------------------------------------------------------------------------
+// 2. Use Cases — lower-level assembled use case collection.
+//    已完成接线的底层 use case 集合。
+// ---------------------------------------------------------------------------
 
-    this.taskTemplateRepository = container.getTaskTemplateRepository();
-    this.taskInstanceRepository = container.getTaskInstanceRepository();
-    this.taskDependencyRepository = container.getTaskDependencyRepository();
-    this.taskFolderRepository = taskFolderRepository;
+/**
+ * Lower-level assembled use cases.
+ * 已完成接线的底层 use case 集合。
+ *
+ * We keep this type because tests and low-level assembly sometimes need direct
+ * access to use-case objects, but transports should prefer `TaskApplicationPort`.
+ */
+export interface TaskModuleUseCases {
+  // Template commands
+  readonly createTaskTemplate: CreateTaskTemplate;
+  readonly updateTaskTemplate: UpdateTaskTemplate;
+  readonly activateTaskTemplate: ActivateTaskTemplate;
+  readonly pauseTaskTemplate: PauseTaskTemplate;
+  readonly archiveTaskTemplate: ArchiveTaskTemplate;
+  readonly deleteTaskTemplate: DeleteTaskTemplate;
+  readonly generateTaskInstances: GenerateTaskInstances;
+  readonly bindTaskToGoal: BindTaskToGoal;
+  readonly unbindTaskFromGoal: UnbindTaskFromGoal;
 
-    // 3. Initialize Application Services
-    this.createTaskTemplate = new CreateTaskTemplate(
-      this.taskTemplateRepository,
-      this.taskInstanceRepository,
-    );
-    this.getTaskTemplate = new GetTaskTemplate(this.taskTemplateRepository);
-    this.listTaskTemplates = new ListTaskTemplates(
-      this.taskTemplateRepository,
-      this.taskInstanceRepository,
-    );
-    this.updateTaskTemplate = new UpdateTaskTemplate(this.taskTemplateRepository);
-    this.activateTaskTemplate = new ActivateTaskTemplate(
-      this.taskTemplateRepository,
-      this.taskInstanceRepository,
-    );
-    this.pauseTaskTemplate = new PauseTaskTemplate(
-      this.taskTemplateRepository,
-      this.taskInstanceRepository,
-    );
-    this.archiveTaskTemplate = new ArchiveTaskTemplate(this.taskTemplateRepository);
-    this.deleteTaskTemplate = new DeleteTaskTemplate(this.taskTemplateRepository);
+  // Template queries
+  readonly getTaskTemplate: GetTaskTemplate;
+  readonly listTaskTemplates: ListTaskTemplates;
+  readonly listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
 
-    this.getTaskInstance = new GetTaskInstance(this.taskInstanceRepository);
-    this.listTaskInstancesByAccount = new ListTaskInstancesByAccount(this.taskInstanceRepository);
-    this.listTaskInstancesByTemplate = new ListTaskInstancesByTemplate(this.taskInstanceRepository);
-    this.listTaskInstancesByStatus = new ListTaskInstancesByStatus(this.taskInstanceRepository);
-    this.getTaskInstancesByDateRange = new GetTaskInstancesByDateRange(this.taskInstanceRepository);
-    this.completeTaskInstance = new CompleteTaskInstance(
-      this.taskInstanceRepository,
-      this.taskTemplateRepository,
-    );
-    this.skipTaskInstance = new SkipTaskInstance(this.taskInstanceRepository);
-    this.startTaskInstance = new StartTaskInstance(this.taskInstanceRepository);
-    this.deleteTaskInstance = new DeleteTaskInstance(this.taskInstanceRepository);
-    this.generateTaskInstances = new GenerateTaskInstances(
-      this.taskTemplateRepository,
-      this.taskInstanceRepository,
-    );
-    this.bindTaskToGoal = new BindTaskToGoal(this.taskTemplateRepository);
-    this.unbindTaskFromGoal = new UnbindTaskFromGoal(this.taskTemplateRepository);
-    this.checkExpiredInstances = new CheckExpiredInstances(this.taskInstanceRepository);
-    this.listTaskTemplatesByPriority = new ListTaskTemplatesByPriority(this.taskTemplateRepository);
-    this.createTaskDependency = new CreateTaskDependency(this.taskDependencyRepository);
-    this.deleteTaskDependency = new DeleteTaskDependency(this.taskDependencyRepository);
-    this.updateTaskDependency = new UpdateTaskDependency(this.taskDependencyRepository);
-    this.listTaskDependencies = new ListTaskDependencies(this.taskDependencyRepository);
-    this.getDependencyChain = new GetDependencyChain(this.taskDependencyRepository);
-    this.validateTaskDependency = new ValidateTaskDependency(this.taskDependencyRepository);
+  // Instance commands
+  readonly completeTaskInstance: CompleteTaskInstance;
+  readonly skipTaskInstance: SkipTaskInstance;
+  readonly startTaskInstance: StartTaskInstance;
+  readonly deleteTaskInstance: DeleteTaskInstance;
+  readonly checkExpiredInstances: CheckExpiredInstances;
+
+  // Instance queries
+  readonly getTaskInstance: GetTaskInstance;
+  readonly listTaskInstancesByAccount: ListTaskInstancesByAccount;
+  readonly listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
+  readonly listTaskInstancesByStatus: ListTaskInstancesByStatus;
+  readonly getTaskInstancesByDateRange: GetTaskInstancesByDateRange;
+
+  // Dependency commands
+  readonly createTaskDependency: CreateTaskDependency;
+  readonly deleteTaskDependency: DeleteTaskDependency;
+  readonly updateTaskDependency: UpdateTaskDependency;
+
+  // Dependency queries
+  readonly listTaskDependencies: ListTaskDependencies;
+  readonly getDependencyChain: GetDependencyChain;
+  readonly validateTaskDependency: ValidateTaskDependency;
+}
+
+// ---------------------------------------------------------------------------
+// 3. Application Port — transport-neutral callable surface.
+//    传输层无关的可调用应用层门面。
+// ---------------------------------------------------------------------------
+
+/** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
+export interface TaskApplicationPort {
+  // Template commands
+  createTaskTemplate: CreateTaskTemplate;
+  updateTaskTemplate: UpdateTaskTemplate;
+  activateTaskTemplate: ActivateTaskTemplate;
+  pauseTaskTemplate: PauseTaskTemplate;
+  archiveTaskTemplate: ArchiveTaskTemplate;
+  deleteTaskTemplate: DeleteTaskTemplate;
+  generateTaskInstances: GenerateTaskInstances;
+  bindTaskToGoal: BindTaskToGoal;
+  unbindTaskFromGoal: UnbindTaskFromGoal;
+
+  // Template queries
+  getTaskTemplate: GetTaskTemplate;
+  listTaskTemplates: ListTaskTemplates;
+  listTaskTemplatesByPriority: ListTaskTemplatesByPriority;
+
+  // Instance commands
+  completeTaskInstance: CompleteTaskInstance;
+  skipTaskInstance: SkipTaskInstance;
+  startTaskInstance: StartTaskInstance;
+  deleteTaskInstance: DeleteTaskInstance;
+  checkExpiredInstances: CheckExpiredInstances;
+
+  // Instance queries
+  getTaskInstance: GetTaskInstance;
+  listTaskInstancesByAccount: ListTaskInstancesByAccount;
+  listTaskInstancesByTemplate: ListTaskInstancesByTemplate;
+  listTaskInstancesByStatus: ListTaskInstancesByStatus;
+  getTaskInstancesByDateRange: GetTaskInstancesByDateRange;
+
+  // Dependency commands
+  createTaskDependency: CreateTaskDependency;
+  deleteTaskDependency: DeleteTaskDependency;
+  updateTaskDependency: UpdateTaskDependency;
+
+  // Dependency queries
+  listTaskDependencies: ListTaskDependencies;
+  getDependencyChain: GetDependencyChain;
+  validateTaskDependency: ValidateTaskDependency;
+}
+
+// ---------------------------------------------------------------------------
+// 4. Module Instance — the primary return type.
+//    模块实例 — 主组合根返回类型。
+// ---------------------------------------------------------------------------
+
+/**
+ * Primary task composition root return type.
+ * 任务模块主组合根返回类型。
+ *
+ * `api` is the transport-facing surface.
+ * `useCases` is kept for low-level tests and diagnostics.
+ * `start` / `dispose` own runtime side effects.
+ */
+export interface TaskModuleInstance {
+  readonly taskTemplateRepository: ITaskTemplateRepository;
+  readonly taskInstanceRepository: ITaskInstanceRepository;
+  readonly taskDependencyRepository: ITaskDependencyRepository;
+  readonly taskFolderRepository?: ITaskFolderRepository;
+  readonly useCases: TaskModuleUseCases;
+  readonly api: TaskApplicationPort;
+  start(): void;
+  dispose(): void;
+}
+
+// ---------------------------------------------------------------------------
+// 5. Assembly helpers and factory.
+//    组装函数和工厂。
+// ---------------------------------------------------------------------------
+
+function normalizeRuntimeContributions(
+  runtimeContributions?: TaskRuntimeContributionsInput,
+): readonly TaskModuleRuntimeContribution[] {
+  if (!runtimeContributions) {
+    return [];
   }
+
+  if (Array.isArray(runtimeContributions)) {
+    return Array.from(runtimeContributions);
+  }
+
+  return [runtimeContributions as TaskModuleRuntimeContribution];
+}
+
+/**
+ * Pure assembly helper used by the factory and tests.
+ * 纯组装函数：给定依赖对象，返回已经接好线的 use case 集合。
+ */
+export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskModuleUseCases {
+  const { taskTemplateRepository, taskInstanceRepository, taskDependencyRepository } = dependencies;
+
+  return {
+    // Template commands
+    createTaskTemplate: new CreateTaskTemplate(taskTemplateRepository, taskInstanceRepository),
+    updateTaskTemplate: new UpdateTaskTemplate(taskTemplateRepository),
+    activateTaskTemplate: new ActivateTaskTemplate(taskTemplateRepository, taskInstanceRepository),
+    pauseTaskTemplate: new PauseTaskTemplate(taskTemplateRepository, taskInstanceRepository),
+    archiveTaskTemplate: new ArchiveTaskTemplate(taskTemplateRepository),
+    deleteTaskTemplate: new DeleteTaskTemplate(taskTemplateRepository),
+    generateTaskInstances: new GenerateTaskInstances(
+      taskTemplateRepository,
+      taskInstanceRepository,
+    ),
+    bindTaskToGoal: new BindTaskToGoal(taskTemplateRepository),
+    unbindTaskFromGoal: new UnbindTaskFromGoal(taskTemplateRepository),
+
+    // Template queries
+    getTaskTemplate: new GetTaskTemplate(taskTemplateRepository),
+    listTaskTemplates: new ListTaskTemplates(taskTemplateRepository, taskInstanceRepository),
+    listTaskTemplatesByPriority: new ListTaskTemplatesByPriority(taskTemplateRepository),
+
+    // Instance commands
+    completeTaskInstance: new CompleteTaskInstance(taskInstanceRepository, taskTemplateRepository),
+    skipTaskInstance: new SkipTaskInstance(taskInstanceRepository),
+    startTaskInstance: new StartTaskInstance(taskInstanceRepository),
+    deleteTaskInstance: new DeleteTaskInstance(taskInstanceRepository),
+    checkExpiredInstances: new CheckExpiredInstances(taskInstanceRepository),
+
+    // Instance queries
+    getTaskInstance: new GetTaskInstance(taskInstanceRepository),
+    listTaskInstancesByAccount: new ListTaskInstancesByAccount(taskInstanceRepository),
+    listTaskInstancesByTemplate: new ListTaskInstancesByTemplate(taskInstanceRepository),
+    listTaskInstancesByStatus: new ListTaskInstancesByStatus(taskInstanceRepository),
+    getTaskInstancesByDateRange: new GetTaskInstancesByDateRange(taskInstanceRepository),
+
+    // Dependency commands
+    createTaskDependency: new CreateTaskDependency(taskDependencyRepository),
+    deleteTaskDependency: new DeleteTaskDependency(taskDependencyRepository),
+    updateTaskDependency: new UpdateTaskDependency(taskDependencyRepository),
+
+    // Dependency queries
+    listTaskDependencies: new ListTaskDependencies(taskDependencyRepository),
+    getDependencyChain: new GetDependencyChain(taskDependencyRepository),
+    validateTaskDependency: new ValidateTaskDependency(taskDependencyRepository),
+  };
+}
+
+/**
+ * Canonical composition root.
+ * 规范化的任务模块主组合根。
+ *
+ * This is the file other modules should copy first when migrating away from a
+ * container-based assembly. The expected reading order is:
+ * 1. define `Dependencies`
+ * 2. define transport-neutral `ApplicationPort`
+ * 3. assemble use cases once
+ * 4. wrap them in `api`
+ * 5. let the module instance own `start` / `dispose`
+ */
+export function createTaskModule(dependencies: TaskModuleDependencies): TaskModuleInstance {
+  const {
+    taskTemplateRepository,
+    taskInstanceRepository,
+    taskDependencyRepository,
+    taskFolderRepository,
+  } = dependencies;
+
+  const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+  const useCases = createTaskUseCases(dependencies);
+  let started = false;
+
+  // The API facade simply exposes the assembled use cases.
+  // API 门面只是直接暴露已组装好的 use case。
+  const api: TaskApplicationPort = { ...useCases };
+
+  return {
+    taskTemplateRepository,
+    taskInstanceRepository,
+    taskDependencyRepository,
+    taskFolderRepository,
+    useCases,
+    api,
+    start(): void {
+      if (started) {
+        return;
+      }
+
+      for (const runtime of runtimeContributions) {
+        runtime.start();
+      }
+
+      started = true;
+    },
+    dispose(): void {
+      if (!started) {
+        return;
+      }
+
+      for (const runtime of [...runtimeContributions].reverse()) {
+        runtime.stop();
+      }
+
+      started = false;
+    },
+  };
 }

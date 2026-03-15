@@ -5,4 +5,3 @@
  */
 
 export { AccountApiModule } from './module';
-export { registerAccountInitializationTasks } from './initialization';

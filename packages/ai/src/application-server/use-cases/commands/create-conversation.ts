@@ -2,7 +2,6 @@ import type { IAIConversationRepository } from '../../../domain-server/repositor
 import { AIConversation } from '../../../domain-server/aggregates/ai-conversation';
 import type { CreateConversationReq, CreateConversationRes } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
-// import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
  * Create Conversation Service
@@ -10,10 +9,7 @@ import { eventBus } from '@dailyuse/utils';
 export class CreateConversation {
   constructor(private readonly conversationRepository: IAIConversationRepository) {}
 
-  async execute(
-    identityId: string,
-    input: CreateConversationReq,
-  ): Promise<CreateConversationRes> {
+  async execute(identityId: string, input: CreateConversationReq): Promise<CreateConversationRes> {
     const conversation = AIConversation.create({
       identityId,
       name: input.name || 'New Conversation',

@@ -20,7 +20,6 @@ import {
   PowerSyncAuthIdentityRepository,
   PowerSyncAuthSessionRepository,
   Argon2Hasher,
-  AuthenticationContainer,
 } from '@dailyuse/authentication/infrastructure-server';
 import { fail } from '@dailyuse/contracts/result';
 import { createLogger } from '@dailyuse/utils';
@@ -94,6 +93,14 @@ const Ch = {
 
 const allChannels = Object.values(Ch);
 
+// ── Module-level state (lifecycle-managed references) ────────────
+// 模块级状态（生命周期管理的引用）
+// These are set during register() and cleaned up during destroy(),
+// following the same pattern as GovernanceElectronModule.
+// 在 register() 中赋值，在 destroy() 中清理，与治理模块保持一致。
+let activeDesktopService: AuthDesktopApplicationService | null = null;
+let activeNetworkManager: ReturnType<typeof getNetworkStateManager> | null = null;
+
 // ── Module ───────────────────────────────────────────────────────
 
 export const DesktopAuthElectronModule: IElectronModule = {
@@ -109,17 +116,21 @@ export const DesktopAuthElectronModule: IElectronModule = {
     const passwordHasher = new Argon2Hasher();
 
     // 2. Desktop Application Service (guest mode, token/session mgmt, etc.)
+    // 桌面应用服务（访客模式、令牌/会话管理等）
     const desktopService = new AuthDesktopApplicationService(logger);
     desktopService.setRepositories(sessionRepository, identityRepository);
     desktopService.setAccountRepository(accountRepository);
     desktopService.setOfflineAuthDependencies(identityRepository, passwordHasher);
     registerDesktopAuthService(desktopService);
+    activeDesktopService = desktopService;
 
-    // 3. Initialize network state
+    // 3. Initialize network state — retained for lifecycle cleanup in destroy().
+    // 初始化网络状态 — 保留引用以便在 destroy() 中清理。
     const networkManager = getNetworkStateManager({}, logger);
     networkManager
       .initialize()
       .catch((err) => logger.error('NetworkStateManager init failed', { error: err }));
+    activeNetworkManager = networkManager;
 
     // ══════════════════════════════════════════════════════════════
     // Core Auth Handlers
@@ -219,11 +230,26 @@ export const DesktopAuthElectronModule: IElectronModule = {
   },
 
   destroy(): void {
+    // 1. Remove all IPC handlers.
+    // 移除所有 IPC 处理器。
     for (const ch of allChannels) {
       ipcMain.removeHandler(ch);
     }
-    AuthenticationContainer.getInstance().reset();
+
+    // 2. Clean up desktop service (stops session timers, resets state).
+    // 清理桌面服务（停止会话计时器、重置状态）。
+    activeDesktopService?.cleanup();
+    activeDesktopService = null;
+
+    // 3. Clean up network manager (stops health-check interval, removes listeners).
+    // 清理网络管理器（停止健康检查定时器、移除监听器）。
+    activeNetworkManager?.cleanup();
+    activeNetworkManager = null;
+
+    // 4. Clear the global desktop auth service reference.
+    // 清除全局桌面认证服务引用。
     clearDesktopAuthService();
+
     logger.info('Desktop Authentication module destroyed');
   },
 };

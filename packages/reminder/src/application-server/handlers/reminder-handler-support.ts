@@ -1,8 +1,12 @@
 import { createLogger } from '@dailyuse/utils';
-import type { ReminderTemplateServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import type {
+  ReminderTemplateServerDTO,
+  ReminderGroupServerDTO,
+} from '@dailyuse/contracts/reminder';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskFactory, ScheduleContainer } from '@dailyuse/schedule';
-import { ReminderContainer } from '@/infrastructure-server/di/reminder-container';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
 import type {
   ReminderBusEvent,
   ReminderGroupAction,
@@ -17,8 +21,19 @@ type SSEManager = {
 
 const logger = createLogger('ReminderHandlerSupport');
 
+/**
+ * Event handler support — provides SSE emission and snapshot enrichment.
+ * 事件处理支持 —— 提供 SSE 推送和快照填充能力。
+ *
+ * Dependencies are now injected via constructor instead of the legacy ReminderContainer.
+ * 依赖现在通过构造函数注入，而非旧版 ReminderContainer。
+ */
 export class ReminderHandlerSupport {
-  constructor(private readonly sseManager: SSEManager) {}
+  constructor(
+    private readonly sseManager: SSEManager,
+    private readonly reminderTemplateRepository: IReminderTemplateRepository,
+    private readonly reminderGroupRepository: IReminderGroupRepository,
+  ) {}
 
   async emitTemplateRefresh<TPayload>(
     event: ReminderBusEvent<TPayload>,
@@ -204,8 +219,7 @@ export class ReminderHandlerSupport {
 
   private async fetchTemplateSnapshot(id: string): Promise<ReminderTemplateServerDTO | undefined> {
     try {
-      const repo = ReminderContainer.getInstance().getReminderTemplateRepository();
-      const template = await repo.findById(id);
+      const template = await this.reminderTemplateRepository.findById(id);
       return template?.toServerDTO();
     } catch (error) {
       logger.error('[ReminderHandlerSupport] Failed to fetch template snapshot', { id, error });
@@ -215,8 +229,7 @@ export class ReminderHandlerSupport {
 
   private async fetchGroupSnapshot(id: string): Promise<ReminderGroupServerDTO | undefined> {
     try {
-      const repo = ReminderContainer.getInstance().getReminderGroupRepository();
-      const group = await repo.findById(id);
+      const group = await this.reminderGroupRepository.findById(id);
       return group?.toServerDTO();
     } catch (error) {
       logger.error('[ReminderHandlerSupport] Failed to fetch group snapshot', { id, error });

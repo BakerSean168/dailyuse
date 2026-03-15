@@ -6,7 +6,6 @@
 
 import type { IAIProviderConfigRepository } from '../../../domain-server/repositories/IAIProviderConfigRepository';
 import type { AIProviderConfigClientDTO } from '@dailyuse/contracts/ai';
-// import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
  * List Providers Service

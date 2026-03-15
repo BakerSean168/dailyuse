@@ -1,63 +1,63 @@
 import * as path from 'node:path';
 import { app } from 'electron';
-import { ResourceType, RepositoryStatus } from '@dailyuse/contracts/repository';
+import { ResourceType } from '@dailyuse/contracts/repository';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
 } from '@dailyuse/ai/application-server';
-import { CreateResource, FsStorageAdapter } from '@dailyuse/repository';
-import { RepositoryPowerSyncModule } from '@dailyuse/repository/infrastructure-server';
+import { FsStorageAdapter } from '@dailyuse/repository';
+import {
+  createRepositoryPowerSyncModule,
+  type RepositoryModuleInstance,
+} from '@dailyuse/repository/infrastructure-server';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
+/**
+ * Adapter that persists AI knowledge notes via the repository module's
+ * application port — never bypassing it with raw repository access.
+ *
+ * 通过仓库模块的应用层门面持久化 AI 知识笔记的适配器 ——
+ * 绝不绕过门面直接访问原始仓储。
+ */
 export class DesktopKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
-  private readonly repositoryModule: RepositoryPowerSyncModule;
-  private readonly createResource: CreateResource;
+  private readonly repositoryModule: RepositoryModuleInstance;
 
   constructor(db: IElectronDatabase) {
-    this.repositoryModule = new RepositoryPowerSyncModule(db);
-
     const storageBaseDir = path.join(app.getPath('userData'), 'repository-storage');
     const storagePort = new FsStorageAdapter(storageBaseDir);
 
-    this.createResource = new CreateResource(
-      this.repositoryModule.resourceRepository,
-      this.repositoryModule.repositoryRepository,
-      storagePort,
-    );
+    this.repositoryModule = createRepositoryPowerSyncModule(db, { storagePort });
   }
 
   async createKnowledgeNote(
     input: CreateKnowledgeNotePersistenceInput,
   ): Promise<CreateKnowledgeNotePersistenceResult> {
-    const repository = await this.resolveRepository(input.identityId);
-    const result = await this.createResource.execute({
-      repositoryId: String(repository.id),
-      identityId: input.identityId,
-      name: input.fileName,
-      type: ResourceType.File,
-      path: input.path,
-      content: input.content,
-    });
-
-    return { resource: result.resource };
-  }
-
-  private async resolveRepository(identityId: string) {
-    const activeRepositories =
-      await this.repositoryModule.repositoryRepository.findByIdentityIdAndStatus(
-        identityId,
-        RepositoryStatus.Active,
-      );
-
-    const repository =
-      activeRepositories[0] ??
-      (await this.repositoryModule.repositoryRepository.findByIdentityId(identityId))[0];
-
-    if (!repository) {
+    // Resolve the active repository through the application port.
+    // 通过应用层门面解析活跃仓库。
+    const repoResult = await this.repositoryModule.api.findActiveRepository(input.identityId);
+    if (!repoResult.ok) {
       throw new Error('No repository available for current user');
     }
+    const repository = repoResult.data as { id: string };
 
-    return repository;
+    // Create the resource through the application port.
+    // 通过应用层门面创建资源。
+    const createResult = await this.repositoryModule.api.createResource(
+      {
+        repositoryId: String(repository.id),
+        name: input.fileName,
+        type: ResourceType.File,
+        content: input.content,
+      },
+      { identityId: input.identityId, deviceId: 'local-device' },
+    );
+
+    if (!createResult.ok) {
+      throw new Error('Failed to create knowledge note resource');
+    }
+
+    return { resource: createResult.data as ResourceClientDTO };
   }
 }

@@ -23,7 +23,10 @@
  * // 2. 导入服务端聚合根
  * import { Repository } from '@dailyuse/repository/domain-server';
  *
- * // 3. 导入基础设施模块
+ * // 3. 导入组合根（推荐）
+ * import { createRepositoryModule } from '@dailyuse/repository/infrastructure-server';
+ *
+ * // 3b. 导入遗留类模块（向后兼容）
  * import { RepositoryModule } from '@dailyuse/repository/infrastructure-server';
  * ```
  */

@@ -1,17 +1,23 @@
 /**
- * Task Module — Electron Entry Point
+ * Task Module — Electron Entry Point.
+ * 任务模块 — Electron 入口点。
  *
- * Self-contained Composition Root for the Task module in Electron main process.
- * Delegates to the existing `TaskModule` DI container for repos + services,
- * then registers IPC handlers.
+ * Self-contained task runtime assembly for Electron main process.
+ * 任务模块在 Electron 主进程中的自包含运行时组装。
+ * Instantiates PowerSync repositories through the module factory,
+ * and registers IPC handlers using transport handlers.
+ * 通过模块工厂实例化 PowerSync 仓储，并使用传输层处理器注册 IPC 处理器。
  *
  * @module task/electron-entry
  */
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { TaskPowerSyncModule, TaskContainer } from '../infrastructure-server/powersync';
+import { createTaskPowerSyncModule } from '../infrastructure-server/powersync';
+import { createTaskTransportHandlers } from '../api/transport-handlers';
+import { createTaskRuntimeContribution } from '../api/runtime';
 import { createLogger } from '@dailyuse/utils';
+import type { TaskModuleInstance } from '../infrastructure-server';
 
 const logger = createLogger('TaskElectron');
 
@@ -40,77 +46,94 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+let activeTaskModule: TaskModuleInstance | null = null;
 
 export const TaskElectronModule: IElectronModule = {
   name: 'Task',
 
   register(ctx: IElectronModuleContext): void {
-    // 1. Composition Root — TaskModule wires repos + use cases internally
-    const taskModule = new TaskPowerSyncModule(ctx.db as any);
+    const { db } = ctx;
 
-    // 2. IPC Handlers — delegate to TaskModule use cases
-    ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) => taskModule.listTaskTemplates.execute(params));
+    // 1. Composition Root — PowerSync factory wires repos + use cases + runtime contribution
+    //    组合根 — PowerSync 工厂组装仓储、用例和运行时贡献
+    const runtimeContribution = createTaskRuntimeContribution();
+    const taskModule = createTaskPowerSyncModule(db as any, runtimeContribution);
+    activeTaskModule = taskModule;
+    taskModule.start();
+
+    // 2. Transport handlers — map flat API to controller-specific interfaces
+    //    传输层处理器 — 将扁平 API 映射到控制器专用接口
+    const handlers = createTaskTransportHandlers(taskModule.api);
+
+    // 3. IPC Handlers — delegate to use cases via transport handlers
+    //    IPC 处理器 — 通过传输层处理器委托给用例
+
+    // --- Template channels ---
+    ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) =>
+      handlers.template.listTemplates.execute(params),
+    );
     ipcMain.handle(Ch.TEMPLATE_GET, (_, payload) =>
-      taskModule.getTaskTemplate.execute(payload?.id ?? payload, payload?.includeChildren ?? false),
-    );
-    ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => taskModule.createTaskTemplate.execute(dto));
-    ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, payload) =>
-      taskModule.updateTaskTemplate.execute(payload?.id, payload),
-    );
-    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, payload) =>
-      taskModule.deleteTaskTemplate.execute(payload?.id ?? payload),
-    );
-    ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, payload) =>
-      taskModule.archiveTaskTemplate.execute(payload?.id ?? payload),
-    );
-    ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, payload) =>
-      taskModule.activateTaskTemplate.execute(payload?.id ?? payload),
-    );
-    ipcMain.handle(Ch.TEMPLATE_PAUSE, (_, payload) =>
-      taskModule.pauseTaskTemplate.execute(payload?.id ?? payload),
-    );
-    ipcMain.handle(Ch.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
-      taskModule.generateTaskInstances.execute(payload?.templateId, payload?.request),
-    );
-    ipcMain.handle(Ch.TEMPLATE_GET_INSTANCES, (_, payload) =>
-      taskModule.listTaskInstancesByTemplate.execute(payload?.templateId),
-    );
-    ipcMain.handle(Ch.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
-      taskModule.listTaskTemplatesByPriority.execute(
-        payload?.identityId ?? '',
-        payload?.params?.limit,
+      handlers.template.getTemplate.execute(
+        payload?.id ?? payload,
+        payload?.includeChildren ?? false,
       ),
     );
+    ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) => handlers.template.createTemplate.execute(dto));
+    ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, payload) =>
+      handlers.template.updateTemplate.execute(payload?.id, payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_DELETE, (_, payload) =>
+      handlers.template.deleteTemplate.execute(payload?.id ?? payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, payload) =>
+      handlers.template.archiveTemplate.execute(payload?.id ?? payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, payload) =>
+      handlers.template.activateTemplate.execute(payload?.id ?? payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_PAUSE, (_, payload) =>
+      handlers.template.pauseTemplate.execute(payload?.id ?? payload),
+    );
+    ipcMain.handle(Ch.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
+      handlers.template.generateInstances.execute(payload?.templateId, payload?.request),
+    );
+    ipcMain.handle(Ch.TEMPLATE_GET_INSTANCES, (_, payload) =>
+      handlers.template.listInstancesByTemplate.execute(payload?.templateId),
+    );
+    ipcMain.handle(Ch.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
+      handlers.template.listByPriority.execute(payload?.identityId ?? '', payload?.params?.limit),
+    );
     ipcMain.handle(Ch.TEMPLATE_BIND_GOAL, (_, payload) =>
-      taskModule.bindTaskToGoal.execute(payload?.templateId, payload?.request),
+      handlers.template.bindToGoal.execute(payload?.templateId, payload?.request),
     );
     ipcMain.handle(Ch.TEMPLATE_UNBIND_GOAL, (_, payload) =>
-      taskModule.unbindTaskFromGoal.execute(payload?.templateId),
+      handlers.template.unbindFromGoal.execute(payload?.templateId),
     );
 
+    // --- Instance channels ---
     ipcMain.handle(Ch.INSTANCE_LIST, (_, params) =>
-      taskModule.listTaskInstancesByAccount.execute(params),
+      handlers.instance.listByAccount.execute(params),
     );
     ipcMain.handle(Ch.INSTANCE_GET, (_, payload) =>
-      taskModule.getTaskInstance.execute(payload?.id ?? payload),
+      handlers.instance.getTaskInstance.execute(payload?.id ?? payload),
     );
     ipcMain.handle(Ch.INSTANCE_CREATE, (_, payload) =>
-      taskModule.startTaskInstance.execute(payload?.id ?? payload),
+      handlers.instance.start.execute(payload?.id ?? payload),
     );
     ipcMain.handle(Ch.INSTANCE_UPDATE, () => {
       throw new Error('task:instance:update is not supported');
     });
     ipcMain.handle(Ch.INSTANCE_DELETE, (_, payload) =>
-      taskModule.deleteTaskInstance.execute(payload?.id ?? payload),
+      handlers.instance.deleteInstance.execute(payload?.id ?? payload),
     );
     ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, payload) =>
-      taskModule.completeTaskInstance.execute(payload?.id ?? payload, payload?.request),
+      handlers.instance.complete.execute(payload?.id ?? payload, payload?.request),
     );
     ipcMain.handle(Ch.INSTANCE_SKIP, (_, payload) =>
-      taskModule.skipTaskInstance.execute(payload?.id ?? payload, payload?.request),
+      handlers.instance.skip.execute(payload?.id ?? payload, payload?.request),
     );
     ipcMain.handle(Ch.INSTANCE_CHECK_EXPIRED, (_, payload) =>
-      taskModule.checkExpiredInstances.execute(payload?.identityId ?? ''),
+      handlers.instance.checkExpired.execute(payload?.identityId ?? ''),
     );
 
     logger.info('Task module registered');
@@ -120,7 +143,8 @@ export const TaskElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
-    TaskContainer.getInstance().reset();
+    activeTaskModule?.dispose();
+    activeTaskModule = null;
     logger.info('Task module destroyed');
   },
 };

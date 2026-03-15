@@ -6,7 +6,6 @@
 
 import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
 import { eventBus } from '@dailyuse/utils';
-// import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
  * Delete Conversation Service
@@ -16,7 +15,7 @@ export class DeleteConversation {
 
   async execute(id: string, identityId: string): Promise<void> {
     const conversation = await this.conversationRepository.findById(id);
-    
+
     if (!conversation) {
       return; // 已删除视为成?
     }

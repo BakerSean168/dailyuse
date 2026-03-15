@@ -1,33 +1,38 @@
 /**
- * Goal Module — Electron Entry Point
+ * Goal Module — Electron Entry Point.
+ * 目标模块 — Electron 入口点。
  *
- * Self-contained Composition Root for the Goal module in Electron main process.
- * Instantiates PowerSync-backed repositories, domain services, application
- * services, and registers IPC handlers.
+ * Self-contained goal runtime assembly for Electron main process.
+ * 目标模块在 Electron 主进程中的自包含运行时组装。
+ * Instantiates PowerSync repositories through the module factory,
+ * and registers IPC handlers using controllers.
+ * 通过模块工厂实例化 PowerSync 仓储，并使用控制器注册 IPC 处理器。
  *
  * @module goal/electron-entry
  */
 
 import { ipcMain } from 'electron';
-import { type IElectronModule, type IElectronModuleContext } from '@dailyuse/contracts/electron';
+import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import { createGoalPowerSyncModule } from '../infrastructure-server/powersync';
+import { GoalController } from '../controllers/goal.controller';
+import { GoalFolderController } from '../controllers/goal-folder.controller';
 import {
-  GoalModule,
-  GoalPowerSyncRepository,
-  GoalFolderPowerSyncRepository,
-  GoalRecordPowerSyncRepository,
-  GoalContainer,
-} from '../infrastructure-server';
+  createGoalTransportHandlers,
+  createGoalFolderTransportHandlers,
+} from '../api/transport-handlers';
+import { createGoalRuntimeContribution } from '../api/runtime';
 import { createLogger } from '@dailyuse/utils';
 import type { IGoalRecordRepository, IGoalRepository } from '../domain-server';
 import type { Context } from '@dailyuse/contracts/shared';
-import { GoalController } from '../controllers/goal.controller';
-import { GoalFolderController } from '../controllers/goal-folder.controller';
+import type { GoalModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
+
 const logger = createLogger('GoalElectron');
 
 /**
  * Module-scoped goal repository — set during register(), used by cross-module
  * event handlers (e.g. task-completion → goal-progress).
+ * 模块作用域的目标仓储 — 在 register() 时设置，供跨模块事件处理器使用。
  */
 let _goalRepository: IGoalRepository | null = null;
 let _goalRecordRepository: IGoalRecordRepository | null = null;
@@ -67,6 +72,7 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+let activeGoalModule: GoalModuleInstance | null = null;
 
 export const GoalElectronModule: IElectronModule = {
   name: 'Goal',
@@ -74,48 +80,25 @@ export const GoalElectronModule: IElectronModule = {
   register(ctx: IElectronModuleContext): void {
     const { db } = ctx;
 
-    // 1. Repositories
-    const goalRepository = new GoalPowerSyncRepository(db);
-    const goalFolderRepository = new GoalFolderPowerSyncRepository(db);
-    const goalRecordRepository = new GoalRecordPowerSyncRepository(db);
-    const goalModule = new GoalModule({
-      goalRepository,
-      goalFolderRepository,
-      goalRecordRepository,
-    });
-    const goalController = new GoalController({
-      createGoal: goalModule.createGoal,
-      getGoal: goalModule.getGoal,
-      listGoals: goalModule.listGoals,
-      updateGoal: goalModule.updateGoal,
-      deleteGoal: goalModule.deleteGoal,
-      archiveGoal: goalModule.archiveGoal,
-      activateGoal: goalModule.activateGoal,
-      completeGoal: goalModule.completeGoal,
-      searchGoals: goalModule.searchGoals,
-      addKeyResult: goalModule.addKeyResult,
-      updateKeyResult: goalModule.updateKeyResult,
-      updateKeyResultProgress: goalModule.updateKeyResultProgress,
-      deleteKeyResult: goalModule.deleteKeyResult,
-      addReview: goalModule.addReview,
-      listReviews: goalModule.listReviews,
-      updateReview: goalModule.updateReview,
-      deleteReview: goalModule.deleteReview,
-      createRecord: goalModule.createRecord,
-      listRecords: goalModule.listRecords,
-      deleteRecord: goalModule.deleteRecord,
-    });
-    const goalFolderController = new GoalFolderController({
-      createGoalFolder: goalModule.createGoalFolder,
-      getGoalFolder: goalModule.getGoalFolder,
-      listGoalFolders: goalModule.listGoalFolders,
-      updateGoalFolder: goalModule.updateGoalFolder,
-      deleteGoalFolder: goalModule.deleteGoalFolder,
-    });
+    // 1. Composition Root — PowerSync 适配器 + 运行时贡献
+    const goalModule = createGoalPowerSyncModule(db);
+    activeGoalModule = goalModule;
+    goalModule.start();
+
+    // Expose repositories for cross-module use
+    // 暴露仓储供跨模块使用
     _goalRepository = goalModule.goalRepository;
     _goalRecordRepository = goalModule.goalRecordRepository;
 
-    // 4. IPC Handlers
+    // 2. Controllers (Zod validation + use case orchestration)
+    // 控制器（Zod 校验 + 用例编排）
+    const goalController = new GoalController(createGoalTransportHandlers(goalModule.api));
+    const goalFolderController = new GoalFolderController(
+      createGoalFolderTransportHandlers(goalModule.api),
+    );
+
+    // 3. IPC Handlers — all mutating channels go through auth + controller validation.
+    // IPC 处理器 — 所有变更通道都经过认证 + 控制器校验。
     ipcMain.handle(Ch.LIST, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
         goalController.list({ ...(params ?? {}), identityId: requestContext.identityId }),
@@ -132,10 +115,26 @@ export const GoalElectronModule: IElectronModule = {
         ),
       ),
     );
-    ipcMain.handle(Ch.UPDATE, (_, dto) => goalModule.updateGoal.execute(dto.id, dto));
-    ipcMain.handle(Ch.DELETE, (_, id) => goalModule.deleteGoal.execute(id));
-    ipcMain.handle(Ch.ARCHIVE, (_, id) => goalModule.archiveGoal.execute(id));
-    ipcMain.handle(Ch.RESTORE, (_, id) => goalModule.activateGoal.execute(id));
+    // Issue #4 fix: route update through auth + controller validation
+    // 问题 #4 修复：将更新操作路由到认证 + 控制器校验
+    ipcMain.handle(Ch.UPDATE, async (_, dto) =>
+      withAuthenticatedValue(ctx, async () => goalController.update(dto.id, dto)),
+    );
+    // Issue #4 fix: route delete through auth + controller validation
+    // 问题 #4 修复：将删除操作路由到认证 + 控制器校验
+    ipcMain.handle(Ch.DELETE, async (_, id) =>
+      withAuthenticatedValue(ctx, async () => goalController.delete(id)),
+    );
+    // Issue #4 fix: route archive through auth + controller validation
+    // 问题 #4 修复：将归档操作路由到认证 + 控制器校验
+    ipcMain.handle(Ch.ARCHIVE, async (_, id) =>
+      withAuthenticatedValue(ctx, async () => goalController.archive(id)),
+    );
+    // Issue #4 fix: route restore/activate through auth + controller validation
+    // 问题 #4 修复：将恢复/激活操作路由到认证 + 控制器校验
+    ipcMain.handle(Ch.RESTORE, async (_, id) =>
+      withAuthenticatedValue(ctx, async () => goalController.activate(id)),
+    );
     ipcMain.handle(Ch.ACTIVATE, (_, id) => goalController.activate(id));
     ipcMain.handle(Ch.COMPLETE, (_, id) => goalController.complete(id));
     ipcMain.handle(Ch.SEARCH, async (_event, params) =>
@@ -149,12 +148,14 @@ export const GoalElectronModule: IElectronModule = {
         goalController.cloneGoal(goalId, params ?? {}, requestContext),
       ),
     );
-    ipcMain.handle(Ch.UPDATE_PROGRESS, (_, dto) =>
-      goalModule.updateKeyResultProgress.execute(
-        dto.goalId,
-        dto.keyResultId,
-        dto.currentValue,
-        dto.note,
+    // Issue #4 fix: route update-progress through auth + controller validation
+    // 问题 #4 修复：将更新进度操作路由到认证 + 控制器校验
+    ipcMain.handle(Ch.UPDATE_PROGRESS, async (_, dto) =>
+      withAuthenticatedValue(ctx, async () =>
+        goalController.updateKeyResultProgress(dto.goalId, dto.keyResultId, {
+          newValue: dto.currentValue,
+          note: dto.note,
+        }),
       ),
     );
     ipcMain.handle(Ch.KEY_RESULT_BATCH_UPDATE_WEIGHTS, (_, goalId, request) =>
@@ -189,7 +190,8 @@ export const GoalElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
-    GoalContainer.getInstance().reset();
+    activeGoalModule?.dispose();
+    activeGoalModule = null;
     _goalRepository = null;
     _goalRecordRepository = null;
     logger.info('Goal module destroyed');

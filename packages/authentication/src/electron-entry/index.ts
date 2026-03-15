@@ -1,54 +1,28 @@
 /**
- * Authentication Module — Electron Entry Point
+ * Authentication Module — Electron Entry Point.
+ * 认证模块 — Electron 入口点。
  *
- * Legacy shared Electron entry for the Authentication package.
+ * @deprecated This entry point is fully superseded by
+ * `DesktopAuthElectronModule` in apps/desktop. It is no longer exported
+ * because registering both modules would cause duplicate ipcMain.handle()
+ * calls on the same channels, crashing the process.
  *
- * Desktop now owns auth runtime composition from
- * `apps/desktop/src/main/modules/authentication/desktop-auth.electron-module.ts`
- * so this package entry no longer wires the old SQLite repositories against the
- * shared `IElectronDatabase` contract.
+ * @deprecated 此入口已被 apps/desktop 中的 DesktopAuthElectronModule 完全取代。
+ * 不再导出该模块，因为同时注册两个模块会导致 ipcMain.handle() 在相同通道上
+ * 重复注册，从而使进程崩溃。
  *
+ * @see apps/desktop/src/main/modules/authentication/desktop-auth.electron-module.ts
  * @module authentication/electron-entry
  */
 
-import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AuthenticationContainer } from '../infrastructure-server';
-import { fail } from '@dailyuse/contracts/result';
-import { createLogger } from '@dailyuse/utils';
-
-const logger = createLogger('AuthenticationElectron');
-
-const Ch = {
-  LOGIN: 'auth:login',
-  REGISTER: 'auth:register',
-  LOGOUT: 'auth:logout',
-  GET_CURRENT_USER: 'auth:get-current-user',
-  CHECK_AUTH: 'auth:check',
-  REFRESH_TOKEN: 'auth:refresh-token',
-} as const;
-
-const channels = Object.values(Ch);
-
-export const AuthenticationElectronModule: IElectronModule = {
-  name: 'Authentication',
-
-  register(_ctx: IElectronModuleContext): void {
-    const message =
-      'AuthenticationElectronModule is deprecated for desktop PowerSync runtime. Use apps/desktop desktop-auth.electron-module instead.';
-
-    for (const channel of channels) {
-      ipcMain.handle(channel, async () => fail({ code: 'NOT_SUPPORTED', message }));
-    }
-
-    logger.warn(message);
-  },
-
-  destroy(): void {
-    for (const ch of channels) {
-      ipcMain.removeHandler(ch);
-    }
-    AuthenticationContainer.getInstance().reset();
-    logger.info('Authentication module destroyed');
-  },
-};
+// Intentionally empty — no exports.
+// 有意留空 — 无导出。
+//
+// Previously exported `AuthenticationElectronModule` which registered
+// IPC handlers returning NOT_SUPPORTED on auth:* channels. Those channels
+// are now exclusively owned by DesktopAuthElectronModule and registering
+// duplicates would throw at runtime.
+// 之前导出的 AuthenticationElectronModule 会在 auth:* 通道上注册返回
+// NOT_SUPPORTED 的 IPC 处理器。这些通道现在专属于 DesktopAuthElectronModule，
+// 重复注册会导致运行时错误。
+export {};

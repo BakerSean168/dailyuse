@@ -1,31 +1,27 @@
 /**
  * Repository API Initialization
+ * 仓库 API 初始化
  *
- * Registers container initialization task with the global InitializationManager.
+ * @deprecated The composition root (`createRepositoryModule`) now owns its own
+ *             lifecycle via `start()` / `dispose()`. This file is kept only for
+ *             backward compatibility with callers that import the function.
+ *
+ * @deprecated 组合根 (`createRepositoryModule`) 现在通过 `start()` / `dispose()`
+ *             管理自身生命周期。此文件仅为向后兼容保留。
+ *
+ * @see {@link createRepositoryRuntimeContribution} in `./runtime.ts`
  */
 
-import {
-  InitializationManager,
-  InitializationPhase,
-  createLogger,
-  type InitializationTask,
-} from '@dailyuse/utils';
-import { RepositoryContainer } from '../infrastructure-server/di/repository-container-v2';
+import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RepositoryApiInitialization');
 
-const repositoryContainerInitTask: InitializationTask = {
-  name: 'repositoryContainerInit',
-  phase: InitializationPhase.APP_STARTUP,
-  priority: 25,
-  initialize: async () => {
-    RepositoryContainer.getInstance();
-    logger.info('✓ Repository container initialized');
-  },
-};
-
+/**
+ * @deprecated No-op stub. Use `createRepositoryRuntimeContribution()` instead.
+ * @deprecated 空操作桩。请使用 `createRepositoryRuntimeContribution()` 代替。
+ */
 export function registerRepositoryInitializationTasks(): void {
-  const manager = InitializationManager.getInstance();
-  manager.registerTask(repositoryContainerInitTask);
-  logger.info('Repository initialization tasks registered');
+  logger.info(
+    'registerRepositoryInitializationTasks() is deprecated — lifecycle managed by composition root',
+  );
 }

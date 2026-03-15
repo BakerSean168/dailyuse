@@ -1,26 +1,38 @@
 # Setting Composition Root
 
-`@dailyuse/setting` 是 governance 之后迁移的第二个模块参考实现。
+`@dailyuse/setting` is the second module migrated to the governance reference pattern.
 
-## 关键代码位置
+## Key Code Locations
 
-- 组合根：`packages/setting/src/infrastructure-server/setting.module.ts`
-- API 装配：`packages/setting/src/api/module.ts`
-- runtime 贡献：`packages/setting/src/api/runtime.ts`
-- transport 映射：`packages/setting/src/api/transport-handlers.ts`
-- Electron 装配：`packages/setting/src/electron-entry/index.ts`
+| File                                          | Purpose                                       |
+| --------------------------------------------- | --------------------------------------------- |
+| `src/infrastructure-server/setting.module.ts` | Composition root (`createSettingModule`)      |
+| `src/api/module.ts`                           | API transport assembly                        |
+| `src/api/runtime.ts`                          | Runtime contribution (lifecycle side-effects) |
+| `src/api/transport-handlers.ts`               | Transport mapping layer                       |
+| `src/electron-entry/index.ts`                 | Electron / IPC transport assembly             |
+| `src/application-client/index.ts`             | Client service facade + factory               |
 
-## 迁移要点
+## Migration Summary
 
-- 用 `createSettingModule(deps)` 替代 `SettingContainer`
-- 把旧 initialization 改成 `start()` / `dispose()` 生命周期
-- transport 只消费 `module.api`
-- Prisma / PowerSync 适配器都在外层选择
+- `createSettingModule(deps)` replaced `SettingContainer`
+- Old global initialization converted to `start()` / `dispose()` lifecycle
+- Transport only consumes `module.api`
+- Prisma / PowerSync adapters selected at the transport layer
+- Client service returns `Result<T>` without throwing
+- Singleton proxy removed
 
-## 和 governance 的对应关系
+## Correspondence With Governance
 
-- `createSettingModule` 对应 `createGovernanceModule`
-- `createSettingRuntimeContribution` 对应 `createGovernanceRuntimeContribution`
-- `createSettingTransportHandlers` 对应 `createGovernanceTransportHandlers`
+| Setting                            | Governance                            |
+| ---------------------------------- | ------------------------------------- |
+| `createSettingModule`              | `createGovernanceModule`              |
+| `createSettingRuntimeContribution` | `createGovernanceRuntimeContribution` |
+| `createSettingTransportHandlers`   | `createGovernanceTransportHandlers`   |
+| `SettingClientService`             | _(no client layer in governance yet)_ |
 
-如果要继续迁移下一个模块，优先对照 governance 的 `REFACTOR_PLAYBOOK.md`，然后看 setting 的最小实践版本。
+## Next Steps
+
+See `REFACTOR_PLAYBOOK.md` for the full migration checklist and pattern reference.
+When migrating the next module, use governance's `REFACTOR_PLAYBOOK.md` as the primary reference
+and setting as the minimal working example.

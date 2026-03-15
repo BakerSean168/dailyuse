@@ -1,15 +1,32 @@
 /**
- * AI Module — Electron Entry Point
+ * AI Module — Electron Entry Point.
+ * AI 模块 — Electron 入口点。
+ *
+ * Self-contained AI runtime assembly for Electron main process.
+ * AI 模块在 Electron 主进程中的自包含运行时组装。
+ * Instantiates PowerSync repositories through the module factory,
+ * and registers IPC handlers using the module's ApplicationPort.
+ * 通过模块工厂实例化 PowerSync 仓储，并使用模块的 ApplicationPort 注册 IPC 处理器。
+ *
+ * Follows the governance reference pattern:
+ * 1. Composition Root via `createAIPowerSyncModule(db, options)`
+ * 2. IPC handler registration using the module's `api` facade
+ * 3. `destroy()` for graceful cleanup
+ *
+ * @module ai/electron-entry
  */
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { AIContainer, AIPowerSyncModule } from '../infrastructure-server/powersync';
+import { createAIPowerSyncModule, type AIModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
-import { DesktopAIRuntime } from './services/desktop-ai-runtime';
 import type { IKnowledgeNotePersistencePort } from '../application-server';
 
 const logger = createLogger('AIElectron');
+
+// ---------------------------------------------------------------------------
+// IPC Channel Constants — IPC 频道常量
+// ---------------------------------------------------------------------------
 
 const Ch = {
   PROVIDER_CREATE: 'ai:provider:create',
@@ -31,6 +48,10 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function resolveIdentityId(payload: unknown): string {
   if (typeof payload === 'string') return payload;
@@ -63,6 +84,20 @@ function createKnowledgeNoteSubpathResolver(ctx: IElectronModuleContext) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Electron Module Factory — Electron 模块工厂
+// ---------------------------------------------------------------------------
+
+let activeAIModule: AIModuleInstance | null = null;
+
+/**
+ * Creates the AI Electron module with injected external collaborators.
+ * 创建注入了外部协作者的 AI Electron 模块。
+ *
+ * Knowledge-note persistence comes from the host application because it
+ * depends on the repository module's file-storage implementation.
+ * 知识笔记持久化来自宿主应用，因为它依赖 repository 模块的文件存储实现。
+ */
 export function createAIElectronModule(options: {
   createKnowledgeNotePersistence(context: IElectronModuleContext): IKnowledgeNotePersistencePort;
 }): IElectronModule {
@@ -70,63 +105,74 @@ export function createAIElectronModule(options: {
     name: 'AI',
 
     register(ctx: IElectronModuleContext): void {
-      const mod = new AIPowerSyncModule(ctx.db);
-      const desktopRuntime = new DesktopAIRuntime(
-        mod.providerConfigRepository,
-        options.createKnowledgeNotePersistence(ctx),
-        createKnowledgeNoteSubpathResolver(ctx),
-      );
+      // ---------------------------------------------------------------
+      // 1. Composition Root — 使用 PowerSync 便捷工厂
+      //    Uses the PowerSync convenience factory with explicit deps.
+      // ---------------------------------------------------------------
+      const aiModule = createAIPowerSyncModule(ctx.db, {
+        knowledgeNotePersistence: options.createKnowledgeNotePersistence(ctx),
+        getKnowledgeNoteSubpath: createKnowledgeNoteSubpathResolver(ctx),
+      });
+      activeAIModule = aiModule;
+      aiModule.start();
 
+      // ---------------------------------------------------------------
+      // 2. IPC Handlers — 通过 api 门面统一注册
+      //    Registered via the module's api facade consistently.
+      // ---------------------------------------------------------------
+
+      // -- Provider Config --
       ipcMain.handle(Ch.PROVIDER_CREATE, async (_, dto) =>
-        mod.providerConfigService.createProvider(resolveIdentityId(dto), dto),
+        aiModule.api.createProvider(resolveIdentityId(dto), dto),
       );
       ipcMain.handle(Ch.PROVIDER_LIST, async (_, params) => ({
-        data: await mod.providerConfigService.listProviders(resolveIdentityId(params)),
+        data: await aiModule.api.listProviders(resolveIdentityId(params)),
       }));
-      ipcMain.handle(Ch.PROVIDER_GET, async (_, id) => mod.providerConfigService.getProvider(id));
+      ipcMain.handle(Ch.PROVIDER_GET, async (_, id) => aiModule.api.getProvider(id));
       ipcMain.handle(Ch.PROVIDER_UPDATE, async (_, payload) =>
-        mod.providerConfigService.updateProvider(String(payload.id), payload),
+        aiModule.api.updateProvider(String(payload.id), payload),
       );
-      ipcMain.handle(Ch.PROVIDER_DELETE, async (_, id) =>
-        mod.providerConfigService.deleteProvider(id),
-      );
-      ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) =>
-        mod.providerConfigService.testConnection(dto),
-      );
+      ipcMain.handle(Ch.PROVIDER_DELETE, async (_, id) => aiModule.api.deleteProvider(id));
+      ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) => aiModule.api.testConnection(dto));
       ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
-        mod.providerConfigService.setDefaultProvider(dto.providerId, resolveIdentityId(dto)),
+        aiModule.api.setDefaultProvider(dto.providerId, resolveIdentityId(dto)),
       );
 
+      // -- Goal Generation --
       ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
-        mod.goalGenerationService.generateGoal({
+        aiModule.api.generateGoal({
           identityId: resolveIdentityId(dto),
           ...dto,
         }),
       );
 
+      // -- Conversations --
       ipcMain.handle(Ch.CONVERSATION_CREATE, async (_, dto) =>
-        mod.conversationService.createConversation(resolveIdentityId(dto), dto.name),
+        aiModule.api.createConversation(resolveIdentityId(dto), dto.name),
       );
       ipcMain.handle(Ch.CONVERSATION_UPDATE, async (_, dto) =>
-        mod.conversationService.updateConversation(String(dto.id), { name: String(dto.name) }),
+        aiModule.api.updateConversation(String(dto.id), {
+          name: String(dto.name),
+        }),
       );
       ipcMain.handle(Ch.CONVERSATION_LIST, async (_, dto) =>
-        mod.conversationService.listConversations(
+        aiModule.api.listConversations(
           resolveIdentityId(dto),
           Number(dto?.page ?? 1),
           Number(dto?.pageSize ?? 20),
         ),
       );
       ipcMain.handle(Ch.CONVERSATION_GET, async (_, id) => {
-        const conversation = await mod.conversationService.getConversation(String(id), true);
+        const conversation = await aiModule.api.getConversation(String(id), true);
         return conversation?.toClientDTO() ?? null;
       });
       ipcMain.handle(Ch.CONVERSATION_DELETE, async (_, id) =>
-        mod.conversationService.deleteConversation(String(id)),
+        aiModule.api.deleteConversation(String(id)),
       );
 
+      // -- Chat Messages --
       ipcMain.handle(Ch.MESSAGE_SEND, async (_, dto) =>
-        mod.chatService.sendMessage(
+        aiModule.api.sendMessage(
           resolveIdentityId(dto),
           String(dto.conversationId),
           String(dto.content),
@@ -134,10 +180,7 @@ export function createAIElectronModule(options: {
         ),
       );
       ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) => {
-        const conversation = await mod.conversationService.getConversation(
-          String(dto.conversationId),
-          true,
-        );
+        const conversation = await aiModule.api.getConversation(String(dto.conversationId), true);
         const messages =
           conversation?.getAllMessages().map((message) => message.toClientDTO()) ?? [];
         return {
@@ -148,18 +191,20 @@ export function createAIElectronModule(options: {
         };
       });
 
+      // -- Knowledge Notes --
       ipcMain.handle(Ch.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
-        desktopRuntime.knowledgeNoteService.createKnowledgeNote(resolveIdentityId(dto), dto),
+        aiModule.api.createKnowledgeNote(resolveIdentityId(dto), dto),
       );
 
       logger.info('AI module registered');
     },
 
     destroy(): void {
-      AIContainer.getInstance().reset();
       for (const channel of channels) {
         ipcMain.removeHandler(channel);
       }
+      activeAIModule?.dispose();
+      activeAIModule = null;
       logger.info('AI module destroyed');
     },
   };

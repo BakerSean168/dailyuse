@@ -158,7 +158,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getTemplate(req.params!.id),
+    (req, ctx) => controller.getTemplate(req.params!.id, ctx),
   );
 
   // PUT /templates/:id
@@ -177,7 +177,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
   );
 
   // DELETE /templates/:id
@@ -193,7 +193,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteTemplate(req.params!.id),
+    (req, ctx) => controller.deleteTemplate(req.params!.id, ctx),
   );
 
   // ==================== Template Actions ====================
@@ -243,7 +243,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.toggleTemplate(req.params!.id),
+    (req, ctx) => controller.toggleTemplate(req.params!.id, ctx),
   );
 
   // POST /templates/:id/move
@@ -291,7 +291,13 @@ export function registerReminderTemplateRoutes(
       summary: '记录提醒响应',
       request: {
         params: z.object({ id: brandedId<ReminderTemplateId>() }),
-        body: { content: { 'application/json': { schema: z.object({ action: z.string(), note: z.string().optional() }) } } },
+        body: {
+          content: {
+            'application/json': {
+              schema: z.object({ action: z.string(), note: z.string().optional() }),
+            },
+          },
+        },
       },
       responses: {
         201: successResponse(z.object({}).passthrough(), '记录成功'),
@@ -299,7 +305,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.recordResponse(req.params!.id, req.body),
+    (req, ctx) => controller.recordResponse(req.params!.id, req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -361,7 +367,13 @@ export function registerReminderTemplateRoutes(
       summary: '应用频率调整',
       request: {
         params: z.object({ id: brandedId<ReminderTemplateId>() }),
-        body: { content: { 'application/json': { schema: z.object({ action: z.string(), customInterval: z.number().optional() }) } } },
+        body: {
+          content: {
+            'application/json': {
+              schema: z.object({ action: z.string(), customInterval: z.number().optional() }),
+            },
+          },
+        },
       },
       responses: {
         200: successResponse(z.object({}).passthrough(), '调整成功'),
@@ -369,7 +381,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.adjustFrequency(req.params!.id, req.body),
+    (req, ctx) => controller.adjustFrequency(req.params!.id, req.body, ctx),
   );
 
   // POST /templates/:id/frequency-adjustment/reject
@@ -385,7 +397,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.rejectFrequencyAdjustment(req.params!.id),
+    (_req, ctx) => controller.rejectFrequencyAdjustment(_req.params!.id, ctx),
   );
 
   return router;

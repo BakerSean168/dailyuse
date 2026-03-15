@@ -16,10 +16,10 @@ import type { IpcResult } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 import {
   PowerSyncAccountRepository,
-  AccountModule,
-  AccountContainer,
+  createAccountModule,
+  type AccountModuleInstance,
 } from '../infrastructure-server';
-import { registerAccountEventListeners } from '../application-server/handlers';
+import { createAccountEventListenerRuntime } from '../application-server/handlers';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountElectron');
@@ -35,6 +35,7 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+let activeAccountModule: AccountModuleInstance | null = null;
 
 async function withAuth<T>(
   ctx: IElectronModuleContext,
@@ -58,17 +59,19 @@ export const AccountElectronModule: IElectronModule = {
   register(ctx: IElectronModuleContext): void {
     // 1. Composition Root — PowerSync repository + AccountModule facade
     const accountRepository = new PowerSyncAccountRepository(ctx.db as any);
-    const accountModule = new AccountModule({ accountRepository });
-
-    // 2. Cross-module event listeners (auth:identity-created → auto-create account)
-    registerAccountEventListeners(accountRepository);
+    const accountModule = createAccountModule({
+      accountRepository,
+      runtimeContributions: createAccountEventListenerRuntime(accountRepository),
+    });
+    activeAccountModule = accountModule;
+    accountModule.start();
 
     // 3. IPC Handlers — delegate to AccountModule use cases
     ipcMain.handle(Ch.LIST, (_event, params) => accountModule.accountRepository.findAll(params));
 
     ipcMain.handle(Ch.GET, async () => {
       return withAuth(ctx, async (identityId) => {
-        const profile = await accountModule.getProfile.execute(identityId);
+        const profile = await accountModule.api.getProfile(identityId);
         if (!profile) {
           return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
         }
@@ -78,7 +81,7 @@ export const AccountElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.GET_CURRENT, async () => {
       return withAuth(ctx, async (identityId) => {
-        const profile = await accountModule.getProfile.execute(identityId);
+        const profile = await accountModule.api.getProfile(identityId);
         if (!profile) {
           return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
         }
@@ -88,7 +91,7 @@ export const AccountElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.GET_CURRENT_ALIAS, async () => {
       return withAuth(ctx, async (identityId) => {
-        const profile = await accountModule.getProfile.execute(identityId);
+        const profile = await accountModule.api.getProfile(identityId);
         if (!profile) {
           return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
         }
@@ -98,18 +101,18 @@ export const AccountElectronModule: IElectronModule = {
 
     ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
       return withAuth(ctx, async (identityId) => {
-        const result = await accountModule.updateProfile.execute(identityId, payload);
+        const result = await accountModule.api.updateProfile(identityId, payload);
         return ok(result.account);
       });
     });
 
     ipcMain.handle(Ch.CHECK_AVAILABILITY, (_event, data: any) =>
-      accountModule.checkAvailability.execute(data),
+      accountModule.api.checkAvailability(data),
     );
 
     ipcMain.handle(Ch.CLOSE, async (_event, payload: any) => {
       return withAuth(ctx, async (identityId) => {
-        const result = await accountModule.closeAccount.execute(identityId, payload ?? {});
+        const result = await accountModule.api.closeAccount(identityId, payload ?? {});
         return ok(result);
       });
     });
@@ -121,7 +124,8 @@ export const AccountElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
-    AccountContainer.getInstance().reset();
+    activeAccountModule?.dispose();
+    activeAccountModule = null;
     logger.info('Account module destroyed');
   },
 };
