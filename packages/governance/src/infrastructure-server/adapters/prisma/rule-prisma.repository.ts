@@ -23,6 +23,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { RulePrismaMapper } from './mappers/rule-prisma.mapper';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
+import { withCause } from '../mapper-helpers';
 
 /**
  * Prisma Rule Repository
@@ -61,7 +62,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', 'Failed to save rule');
+      return error('INTERNAL_ERROR', withCause('Failed to save rule', err));
     }
   }
 
@@ -94,7 +95,7 @@ export class RulePrismaRepository implements IRuleRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', 'Failed to save rule with revision');
+      return error('INTERNAL_ERROR', withCause('Failed to save rule with revision', err));
     }
   }
 
@@ -114,7 +115,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by ID`);
+      return error('INTERNAL_ERROR', withCause('Failed to find rule by ID', err));
     }
   }
 
@@ -134,7 +135,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rule = RulePrismaMapper.toDomain(prismaRule);
       return ok(rule);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rule by code`);
+      return error('INTERNAL_ERROR', withCause('Failed to find rule by code', err));
     }
   }
 
@@ -183,20 +184,22 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find rules`);
+      return error('INTERNAL_ERROR', withCause('Failed to find rules', err));
     }
   }
 
   /**
-   * Searches rules by keyword
+   * Searches rules by keyword across code, title, description, and tags.
+   * 通过关键词在代码、标题、描述和标签中搜索规则。
    *
-   * Searches in:
-   * - code
-   * - title
-   * - description
-   * - tags (JSON string)
+   * Keyword conditions use OR (match any field).
+   * Tag filter conditions are ANDed with keywords (must satisfy both).
+   * 关键词条件使用 OR（匹配任一字段）。
+   * 标签过滤条件与关键词使用 AND（必须同时满足）。
    *
-   * Returns results ordered by relevance (not implemented in MVP)
+   * @param query - Search keyword 搜索关键词
+   * @param filter - Optional additional filters 可选的附加过滤条件
+   * @returns Result containing matched Rule aggregates
    */
   async search(query: string, filter?: RuleFilter): Promise<Result<Rule[]>> {
     try {
@@ -211,18 +214,19 @@ export class RulePrismaRepository implements IRuleRepository {
         { description: { contains: keyword } },
       ];
 
-      const where: Prisma.RuleWhereInput = {
-        OR: keywordConditions,
-      };
+      const where: Prisma.RuleWhereInput = {};
+      const andClauses: Prisma.RuleWhereInput[] = [{ OR: keywordConditions }];
 
       if (filter?.tags && filter.tags.length > 0) {
         const tagConditions: Prisma.RuleWhereInput[] = filter.tags.map((tag) => ({
           tags: { contains: `"${tag}"` },
         }));
-        where.OR = [...keywordConditions, ...tagConditions];
+        andClauses.push({ OR: tagConditions });
       }
 
-      // Apply additional filters
+      where.AND = andClauses;
+
+      // Apply additional filters. 应用附加过滤条件。
       if (filter?.status) {
         if (Array.isArray(filter.status)) {
           where.status = { in: filter.status };
@@ -243,7 +247,7 @@ export class RulePrismaRepository implements IRuleRepository {
       const rules = RulePrismaMapper.toDomainMany(prismaRules);
       return ok(rules);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to search rules`);
+      return error('INTERNAL_ERROR', withCause('Failed to search rules', err));
     }
   }
 
@@ -266,23 +270,26 @@ export class RulePrismaRepository implements IRuleRepository {
         return error('NOT_FOUND', `Rule with ID '${id}' not found`);
       }
 
-      return error('DATABASE_ERROR', `Failed to delete rule`);
+      return error('INTERNAL_ERROR', withCause('Failed to delete rule', err));
     }
   }
 
   /**
-   * Checks if rule code exists
+   * Checks if a rule with the given code already exists.
+   * 检查指定代码的规则是否已存在。
+   *
+   * @param code - Rule code to check 要检查的规则代码
+   * @returns Result<boolean> - ok(true) if exists, ok(false) if not
    */
-  async exists(code: string): Promise<boolean> {
+  async exists(code: string): Promise<Result<boolean>> {
     try {
       const count = await this.prisma.rule.count({
         where: { code },
       });
 
-      return count > 0;
-    } catch {
-      // If query fails, assume doesn't exist
-      return false;
+      return ok(count > 0);
+    } catch (err) {
+      return error('INTERNAL_ERROR', withCause('Failed to check rule existence', err));
     }
   }
 }

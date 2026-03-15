@@ -7,7 +7,7 @@
  * 架构治理规则管理，包含：
  * - 创建、编辑、删除规则
  * - 状态流转：Draft → Active → Deprecated
- * - 严重性管理：Mandatory / Recommended / Optional
+ * - 严重性管理：Mandatory / Recommended
  * - 版本追踪：RuleRevision 记录每次变更
  *
  * 【分层架构】
@@ -79,11 +79,16 @@ export * from './application-client';
 // Infrastructure-Server: Repositories, persistence (server-side)
 // Infrastructure-Client: Local storage, caching (client-side)
 export {
+  /** @internal Concrete Prisma implementation — use IRuleRepository interface instead. Prisma 具体实现 — 请使用 IRuleRepository 接口。 */
   RulePrismaRepository,
+  /** @internal Concrete Prisma implementation — use IRuleRevisionRepository interface instead. Prisma 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
   RuleRevisionPrismaRepository,
+  /** @internal Concrete PowerSync implementation — use IRuleRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRepository 接口。 */
   PowerSyncRuleRepository,
+  /** @internal Concrete PowerSync implementation — use IRuleRevisionRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
   PowerSyncRuleRevisionRepository,
   GovernancePowerSyncModule,
+  /** @internal DI container — use GovernanceModule facade instead. DI 容器 — 请使用 GovernanceModule 门面。 */
   GovernanceContainer,
   GovernanceModule,
   type GovernanceModuleRepositories,

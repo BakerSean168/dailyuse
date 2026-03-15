@@ -1,35 +1,54 @@
 /**
+ * useGovernance - Governance module main composable
  * useGovernance - 治理模块主 composable
  *
- * 通过 DI 注入的 IRuleApiClient 与后端交互。
- * API Client 返回 Result<T>，Composable 负责 Result 解包 + Store 更新 + 消息提示。
- *
- * NOTE: IRuleApiClient 尚未提供 revisions 相关方法，
- * fetchRevisions 暂为空操作。待接口扩展后实现。
- *
- * @module governance/composables
+ * Responsibilities:
+ * - Calls the injected GovernanceClientService
+ * - Keeps Pinia as normalized POJO cache
+ * - Hydrates domain-client Rule entities only when needed by the UI
+ * 职责：
+ * - 调用注入的 GovernanceClientService
+ * - 让 Pinia 作为规范化 POJO 缓存
+ * - 仅在 UI 需要 richer behavior 时水化 domain-client Rule 实体
  */
 
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGovernanceStore } from '../stores/governanceStore';
 import { RULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import type {
-  RuleClientDTO,
   CreateRuleReq,
-  UpdateRuleReq,
-  RuleStatus,
+  RuleClientDTO,
+  RuleRevisionClientDTO,
   RuleSeverity,
+  RuleStatus,
+  UpdateRuleReq,
 } from '../types';
+
+type HydratedRule = RuleClientDTO & {
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  hasTag(tag: string): boolean;
+};
+
+async function hydrateRule(dto: RuleClientDTO | null): Promise<HydratedRule | null> {
+  if (!dto) return null;
+
+  const { Rule } = await import('@dailyuse/governance/domain-client');
+  const result = Rule.fromClientDTO(dto);
+  if (!result.ok) {
+    console.error('[governance] failed to hydrate Rule entity', result.error);
+    return null;
+  }
+  return result.data as unknown as HydratedRule;
+}
 
 export function useGovernance() {
   const store = useGovernanceStore();
   const savingId = ref<string | null>(null);
-  const apiClient = useStrictInject(RULE_SERVICE_KEY, 'RuleService');
+  const service = useStrictInject(RULE_SERVICE_KEY, 'RuleService');
   const { t } = useI18n();
-
-  // ============ Computed State ============
 
   const rules = computed(() => store.rules);
   const currentRule = computed(() => store.currentRule);
@@ -42,18 +61,41 @@ export function useGovernance() {
   const allTags = computed(() => store.allTags);
   const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
+  const ruleEntities = shallowRef<HydratedRule[]>([]);
+  const currentRuleEntity = shallowRef<HydratedRule | null>(null);
 
-  // ============ API Actions ============
+  async function refreshHydratedRules(): Promise<void> {
+    const entities = await Promise.all(rules.value.map((rule) => hydrateRule(rule)));
+    ruleEntities.value = entities.filter(
+      (rule: HydratedRule | null): rule is HydratedRule => rule !== null,
+    );
+  }
 
-  /**
-   * 加载规则列表
-   */
+  async function refreshCurrentRuleEntity(): Promise<void> {
+    currentRuleEntity.value = await hydrateRule(currentRule.value);
+  }
+
+  watch(
+    rules,
+    () => {
+      void refreshHydratedRules();
+    },
+    { immediate: true },
+  );
+
+  watch(
+    currentRule,
+    () => {
+      void refreshCurrentRuleEntity();
+    },
+    { immediate: true },
+  );
+
   async function fetchRules(): Promise<void> {
     store.setLoading(true);
     store.setError(null);
     try {
-      const query = store.currentListQuery;
-      const result = await apiClient.listRules(query);
+      const result = await service.listRules(store.currentListQuery);
       if (result.ok) {
         store.setRules(result.data.items ?? [], result.data.total ?? 0);
       } else {
@@ -64,14 +106,17 @@ export function useGovernance() {
     }
   }
 
-  /**
-   * 获取单个规则
-   */
   async function fetchRule(id: string): Promise<RuleClientDTO | null> {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await apiClient.getRule({ id });
+      const cached = store.getRuleById(id);
+      if (cached) {
+        store.setCurrentRule(cached);
+        return cached;
+      }
+
+      const result = await service.getRule({ id });
       if (result.ok) {
         store.setCurrentRule(result.data);
         return result.data;
@@ -83,16 +128,14 @@ export function useGovernance() {
     }
   }
 
-  /**
-   * 创建规则
-   */
   async function createRule(req: CreateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await apiClient.createRule(req);
+      const result = await service.createRule(req);
       if (result.ok) {
         store.addRule(result.data);
+        store.setCurrentRule(result.data);
         return result.data;
       }
       store.setError(result.error.message || t('governance.error.createRuleFailed'));
@@ -102,16 +145,14 @@ export function useGovernance() {
     }
   }
 
-  /**
-   * 更新规则
-   */
   async function updateRule(id: string, req: UpdateRuleReq): Promise<RuleClientDTO | null> {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await apiClient.updateRule(id, req);
+      const result = await service.updateRule(id, req);
       if (result.ok) {
         store.updateRule(result.data);
+        store.setCurrentRule(result.data);
         return result.data;
       }
       store.setError(result.error.message || t('governance.error.updateRuleFailed'));
@@ -121,14 +162,11 @@ export function useGovernance() {
     }
   }
 
-  /**
-   * 删除规则
-   */
   async function deleteRule(id: string): Promise<boolean> {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await apiClient.deleteRule({ id });
+      const result = await service.deleteRule({ id });
       if (result.ok) {
         store.removeRule(id);
         return true;
@@ -140,19 +178,17 @@ export function useGovernance() {
     }
   }
 
-  /**
-   * 搜索规则
-   */
   async function searchRules(query: string): Promise<void> {
     store.setSearchQuery(query);
     if (!query.trim()) {
       await fetchRules();
       return;
     }
+
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await apiClient.searchRules({
+      const result = await service.searchRules({
         query,
         status: store.filter.status ?? undefined,
         tags: store.filter.tags.length > 0 ? store.filter.tags : undefined,
@@ -170,48 +206,38 @@ export function useGovernance() {
     }
   }
 
-  /**
-   * 加载修订历史
-   *
-   * TODO: IRuleApiClient 尚未提供 revisions 相关方法，
-   * 待 @dailyuse/governance 接口扩展后实现。
-   */
-  async function fetchRevisions(_ruleId: string): Promise<void> {
-    console.warn('[governance] fetchRevisions not yet available in IRuleApiClient');
-    store.setRevisions([]);
+  async function fetchRevisions(ruleId: string): Promise<void> {
+    void ruleId;
+    console.warn('[governance] fetchRevisions not yet available in GovernanceClientService');
+    store.setRevisions([] as RuleRevisionClientDTO[]);
   }
-
-  // ============ Filters ============
 
   function setFilterStatus(status: RuleStatus | null): void {
     store.setFilterStatus(status);
-    fetchRules();
+    void fetchRules();
   }
 
   function setFilterSeverity(severity: RuleSeverity | null): void {
     store.setFilterSeverity(severity);
-    fetchRules();
+    void fetchRules();
   }
 
   function toggleFilterTag(tag: string): void {
     store.toggleFilterTag(tag);
-    fetchRules();
+    void fetchRules();
   }
 
   function clearFilters(): void {
     store.clearFilters();
-    fetchRules();
+    void fetchRules();
   }
 
   function setPage(page: number): void {
     store.setPage(page);
-    fetchRules();
+    void fetchRules();
   }
 
-  // ============ Return ============
-
   return {
-    // State
     rules,
     currentRule,
     revisions,
@@ -223,8 +249,8 @@ export function useGovernance() {
     pagination,
     allTags,
     hasActiveFilter,
-
-    // Actions
+    ruleEntities,
+    currentRuleEntity,
     fetchRules,
     fetchRule,
     createRule,
@@ -232,8 +258,6 @@ export function useGovernance() {
     deleteRule,
     searchRules,
     fetchRevisions,
-
-    // Filters
     setFilterStatus,
     setFilterSeverity,
     toggleFilterTag,

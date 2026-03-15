@@ -21,57 +21,12 @@ import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { RuleRevision } from '../../../../domain-server/entities/rule-revision';
 import { RuleId } from '../../../../domain-shared/value-objects/rule-id';
 import { RuleRevisionId } from '../../../../domain-shared/value-objects/rule-revision-id';
+import { fromDbDate, parseStringArray, parseRecord } from '../../mapper-helpers';
 
 // ---------------------------------------------------------------------------
-// SQLite 兼容帮助函数
+// ChangeType — imported from domain-shared value object
 // ---------------------------------------------------------------------------
-
-/**
- * 从数据库字段安全还原 Date。
- * SQLite Prisma 返回的 DateTime 通常已是 JS Date，
- * 但 seed 数据或手动插入的 ISO 字符串需统一处理。
- */
-function fromDbDate(value: Date | string): Date {
-  if (value instanceof Date) return value;
-  const d = new Date(value);
-  if (isNaN(d.getTime())) throw new Error(`Invalid date from DB: ${String(value)}`);
-  return d;
-}
-
-/**
- * 反序列化 SQLite TEXT 列存储的 JSON 字符串数组。
- * 防御 null / 非数组 / 损坏数据。
- */
-function parseStringArray(value: string | null | undefined): string[] {
-  if (!value) return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item): item is string => typeof item === 'string');
-  } catch {
-    return [];
-  }
-}
-
-/**
- * 反序列化 SQLite TEXT 列存储的 JSON 对象。
- * 防御 null / 非对象 / 损坏数据。
- */
-function parseRecord(value: string | null | undefined): Record<string, unknown> {
-  if (!value) return {};
-  try {
-    const parsed: unknown = JSON.parse(value);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return parsed as Record<string, unknown>;
-  } catch {
-    return {};
-  }
-}
-
-// ---------------------------------------------------------------------------
-// ChangeType 合法值（与 Prisma schema 中枚举保持同步）
-// ---------------------------------------------------------------------------
-type ChangeType = 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
+import type { ChangeType } from '../../../../domain-shared/value-objects/change-type';
 
 // ---------------------------------------------------------------------------
 // Mapper
@@ -106,9 +61,7 @@ export class RuleRevisionPrismaMapper {
    * - changedFields / previousValues / newValues 序列化为 JSON 字符串
    * - Set 类型的 changedFields 需先展开为数组
    */
-  static toPersistence(
-    revision: RuleRevision
-  ): Omit<PrismaRuleRevision, never> {
+  static toPersistence(revision: RuleRevision): Omit<PrismaRuleRevision, never> {
     return {
       id: revision.id,
       ruleId: revision.ruleId,
@@ -124,6 +77,6 @@ export class RuleRevisionPrismaMapper {
 
   /** 批量转换（read-side 常用） */
   static toDomainMany(raws: PrismaRuleRevision[]): RuleRevision[] {
-    return raws.map(raw => RuleRevisionPrismaMapper.toDomain(raw));
+    return raws.map((raw) => RuleRevisionPrismaMapper.toDomain(raw));
   }
 }

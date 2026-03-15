@@ -7,21 +7,20 @@ import type { IRuleRepository, RuleFilter } from '@/domain-server/repositories/i
 import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { SearchRulesQuery, SearchRulesRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
+import type { SearchRulesQueryInput, SearchRulesRes } from '../../../contracts/api/rules';
 import { RuleStatus } from '../../../contracts/value-objects/rule-status';
-import type { ExecutionContext } from '../commands/create-rule.use-case';
-
-type SearchFilters = Partial<Omit<SearchRulesQuery, 'query'>>;
+import type { ExecutionContext } from '../execution-context';
 
 /**
- * Search Rules Use Case
+ * Search Rules Use Case.
+ * 搜索规则用例。
  */
 export class SearchRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}
 
   /**
-   * Execute: Search with relevance scoring and status weighting
+   * Execute: Search with relevance scoring and status weighting.
+   * 执行：带有相关性评分和状态权重的搜索。
    *
    * Relevance priority:
    * - title exact > title partial > code > description > tags
@@ -30,26 +29,25 @@ export class SearchRulesUseCase {
    * - Active > Draft > Deprecated
    */
   async execute(
-    query: string,
-    filters: SearchFilters = {},
-    _cx?: ExecutionContext,
+    req: SearchRulesQueryInput,
+    cx?: ExecutionContext,
   ): Promise<Result<SearchRulesRes>> {
     const startedAt = Date.now();
 
-    const normalizedQuery = query.trim();
+    const normalizedQuery = req.query.trim();
     if (normalizedQuery.length === 0) {
       return error('VALIDATION_ERROR', 'Search query cannot be empty');
     }
 
     const filter: RuleFilter = {};
-    if (filters.status) {
-      filter.status = filters.status;
+    if (req.status) {
+      filter.status = req.status;
     }
-    if (filters.severity) {
-      filter.severity = filters.severity;
+    if (req.severity) {
+      filter.severity = req.severity;
     }
-    if (filters.tags) {
-      filter.tags = filters.tags;
+    if (req.tags) {
+      filter.tags = req.tags;
     }
 
     const rulesResult = await this.ruleRepository.search(normalizedQuery, filter);
@@ -70,12 +68,12 @@ export class SearchRulesUseCase {
       });
 
     const total = scoredRules.length;
-    const page = filters.page ?? 1;
-    const pageSize = filters.pageSize ?? 20;
+    const page = req.page ?? 1;
+    const pageSize = req.pageSize ?? 20;
     const offset = (page - 1) * pageSize;
     const items = scoredRules
       .slice(offset, offset + pageSize)
-      .map(({ rule }) => this.toClientDTO(rule));
+      .map(({ rule }) => rule.toClientDTO());
 
     return ok({
       items,
@@ -118,30 +116,10 @@ export class SearchRulesUseCase {
     return score;
   }
 
-  private statusWeight(status: string): number {
+  private statusWeight(status: RuleStatus): number {
     if (status === RuleStatus.Active) return 15;
     if (status === RuleStatus.Draft) return 10;
     if (status === RuleStatus.Deprecated) return 5;
     return 0;
-  }
-
-  private toClientDTO(rule: Rule): RuleClientDTO {
-    return {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
   }
 }

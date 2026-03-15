@@ -41,8 +41,12 @@ describe('RuleRevision Entity', () => {
 
   describe('create()', () => {
     it('should create a revision with auto-generated id', () => {
-      const revision = RuleRevision.create(validCreateProps());
+      const result = RuleRevision.create(validCreateProps());
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       expect(revision.id).toBeTruthy();
       expect(revision.revisionNumber).toBe(1);
       expect(revision.authorId).toBe('test-author');
@@ -55,29 +59,41 @@ describe('RuleRevision Entity', () => {
 
     it('should use provided id when given', () => {
       const customId = RuleRevisionId.generate();
-      const revision = RuleRevision.create({
+      const result = RuleRevision.create({
         ...validCreateProps(),
         id: customId,
       });
-      expect(revision.id).toBe(customId);
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      expect(result.data.id).toBe(customId);
     });
 
-    it('should throw when changedFields is empty', () => {
-      expect(() => {
-        RuleRevision.create(validCreateProps({ changedFields: [] }));
-      }).toThrow('RuleRevision must have at least one changed field');
+    it('should return error when changedFields is empty', () => {
+      const result = RuleRevision.create(validCreateProps({ changedFields: [] }));
+
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+
+      expect(result.error.code).toBe('VALIDATION_ERROR');
+      expect(result.error.message).toBe('RuleRevision must have at least one changed field');
     });
 
     it('should support all change types', () => {
       const types = ['Created', 'Updated', 'Deprecated', 'Reactivated'] as const;
       for (const changeType of types) {
-        const revision = RuleRevision.create(validCreateProps({ changeType }));
-        expect(revision.changeType).toBe(changeType);
+        const result = RuleRevision.create(validCreateProps({ changeType }));
+
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
+
+        expect(result.data.changeType).toBe(changeType);
       }
     });
 
     it('should store complex previousValues and newValues', () => {
-      const revision = RuleRevision.create(
+      const result = RuleRevision.create(
         validCreateProps({
           changedFields: ['tags', 'severity'],
           previousValues: { tags: [{ value: 'ddd' }], severity: 'Recommended' },
@@ -85,6 +101,10 @@ describe('RuleRevision Entity', () => {
         }),
       );
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       expect(revision.previousValues).toEqual({
         tags: [{ value: 'ddd' }],
         severity: 'Recommended',
@@ -124,8 +144,12 @@ describe('RuleRevision Entity', () => {
   describe('immutability', () => {
     it('should not expose internal changedFields array by reference', () => {
       const props = validCreateProps({ changedFields: ['title', 'description'] });
-      const revision = RuleRevision.create(props);
+      const result = RuleRevision.create(props);
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       // Mutating the original props should not affect the entity
       props.changedFields.push('severity');
       expect(revision.changedFields).toEqual(['title', 'description']);
@@ -135,8 +159,12 @@ describe('RuleRevision Entity', () => {
       const props = validCreateProps({
         previousValues: { title: 'Old' },
       });
-      const revision = RuleRevision.create(props);
+      const result = RuleRevision.create(props);
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       // Mutating the original props
       props.previousValues.title = 'Mutated';
       expect(revision.previousValues).toEqual({ title: 'Old' });
@@ -146,8 +174,12 @@ describe('RuleRevision Entity', () => {
       const props = validCreateProps({
         newValues: { title: 'New' },
       });
-      const revision = RuleRevision.create(props);
+      const result = RuleRevision.create(props);
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       props.newValues.title = 'Mutated';
       expect(revision.newValues).toEqual({ title: 'New' });
     });
@@ -158,7 +190,7 @@ describe('RuleRevision Entity', () => {
   describe('getters', () => {
     it('should expose all properties via getters', () => {
       const ruleId = RuleId.generate();
-      const revision = RuleRevision.create({
+      const result = RuleRevision.create({
         ruleId,
         revisionNumber: 5,
         authorId: 'user-456' as any,
@@ -168,6 +200,10 @@ describe('RuleRevision Entity', () => {
         changeType: 'Deprecated',
       });
 
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       expect(revision.ruleId).toBe(ruleId);
       expect(revision.revisionNumber).toBe(5);
       expect(revision.authorId).toBe('user-456');
@@ -200,7 +236,12 @@ describe('RuleRevision Entity', () => {
     });
 
     it('should return defensive copies in DTO', () => {
-      const revision = RuleRevision.create(validCreateProps());
+      const result = RuleRevision.create(validCreateProps());
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       const dto1 = revision.toServerDTO();
       const dto2 = revision.toServerDTO();
 
@@ -223,7 +264,12 @@ describe('RuleRevision Entity', () => {
     });
 
     it('should return defensive copies in DTO', () => {
-      const revision = RuleRevision.create(validCreateProps());
+      const result = RuleRevision.create(validCreateProps());
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      const revision = result.data;
       const dto = revision.toClientDTO();
 
       dto.changedFields.push('extra');

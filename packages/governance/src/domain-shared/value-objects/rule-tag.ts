@@ -12,7 +12,7 @@
 import { ValueObject } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type { RuleTagDTO, RuleTagPersistenceDTO } from '../../contracts/value-objects/rule-tag';
+import type { RuleTagDTO } from '../../contracts/value-objects/rule-tag';
 
 /**
  * 内部 Props 接口
@@ -29,6 +29,12 @@ interface RuleTagProps {
  * - value: 标签值（自动规范化为 lowercase-kebab-case）
  */
 export class RuleTag extends ValueObject<RuleTagProps> {
+  /**
+   * Maximum allowed length for a tag value.
+   * 标签值的最大允许长度。
+   */
+  private static readonly MAX_LENGTH = 50;
+
   private constructor(props: RuleTagProps) {
     super(props);
   }
@@ -68,14 +74,6 @@ export class RuleTag extends ValueObject<RuleTagProps> {
     return new RuleTag({ value: dto.value });
   }
 
-  // ================= 工厂方法 3: 从持久化 DTO 恢复 =================
-  /**
-   * 从数据库持久化 DTO 恢复值对象
-   */
-  public static fromPersistenceDTO(dto: RuleTagPersistenceDTO): RuleTag {
-    return new RuleTag({ value: dto.value });
-  }
-
   // ================= 内部校验逻辑 =================
   /**
    * 集中校验逻辑
@@ -84,6 +82,14 @@ export class RuleTag extends ValueObject<RuleTagProps> {
     // 验证不为空
     if (props.value.length === 0) {
       return error('VALIDATION_ERROR', 'Tag cannot be empty');
+    }
+
+    // 验证最大长度
+    if (props.value.length > RuleTag.MAX_LENGTH) {
+      return error(
+        'VALIDATION_ERROR',
+        `Tag must not exceed ${RuleTag.MAX_LENGTH} characters (got ${props.value.length})`,
+      );
     }
 
     // 验证格式（只允许小写字母、数字和连字符）
@@ -139,15 +145,6 @@ export class RuleTag extends ValueObject<RuleTagProps> {
    * 转换为 DTO（用于 API 传输或前端展示）
    */
   public toDTO(): RuleTagDTO {
-    return {
-      value: this.props.value,
-    };
-  }
-
-  /**
-   * 转换为持久化 DTO（用于数据库存储）
-   */
-  public toPersistenceDTO(): RuleTagPersistenceDTO {
     return {
       value: this.props.value,
     };

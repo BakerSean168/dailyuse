@@ -15,7 +15,7 @@ function createRuleFixture(params: {
   tags?: string[];
 }) {
   const tags = (params.tags ?? []).map((value) => ({ value, toDTO: () => ({ value }) }));
-  return {
+  const fixture: any = {
     id: params.id,
     code: params.code,
     title: params.title,
@@ -32,6 +32,24 @@ function createRuleFixture(params: {
     createdAt: new Date('2026-02-01T00:00:00.000Z'),
     updatedAt: params.updatedAt,
   };
+  fixture.toClientDTO = () => ({
+    id: fixture.id,
+    code: fixture.code,
+    title: fixture.title,
+    description: fixture.description,
+    severity: fixture.severity,
+    status: fixture.status,
+    deprecationReason: fixture.deprecationReason ?? null,
+    replacementRuleId: fixture.replacementRuleId ?? null,
+    liveReferenceLocation: fixture.liveReferenceLocation ?? null,
+    tags: fixture.tags.map((tag: any) => tag.toDTO()),
+    goodExamples: fixture.goodExamples.map((ex: any) => ex.toDTO()),
+    badExamples: fixture.badExamples.map((ex: any) => ex.toDTO()),
+    authorId: fixture.authorId,
+    createdAt: fixture.createdAt.getTime(),
+    updatedAt: fixture.updatedAt.getTime(),
+  });
+  return fixture;
 }
 
 function createRepositoryMock(searchImpl: IRuleRepository['search']): IRuleRepository {
@@ -79,7 +97,7 @@ describe('SearchRulesUseCase', () => {
     );
 
     const useCase = new SearchRulesUseCase(repository);
-    const result = await useCase.execute('Entity Props Pattern');
+    const result = await useCase.execute({ query: 'Entity Props Pattern' });
 
     expect(result.ok).toBe(true);
     if (!result.ok) {
@@ -94,7 +112,7 @@ describe('SearchRulesUseCase', () => {
     const repository = createRepositoryMock(async () => ok([]));
     const useCase = new SearchRulesUseCase(repository);
 
-    const result = await useCase.execute('   ');
+    const result = await useCase.execute({ query: '   ' });
 
     expect(result.ok).toBe(false);
     if (result.ok) {
@@ -135,7 +153,7 @@ describe('SearchRulesUseCase', () => {
     );
 
     const useCase = new SearchRulesUseCase(repository);
-    const result = await useCase.execute('Factory Method Pattern', { page: 2, pageSize: 1 });
+    const result = await useCase.execute({ query: 'Factory Method Pattern', page: 2, pageSize: 1 });
 
     expect(result.ok).toBe(true);
     if (!result.ok) {

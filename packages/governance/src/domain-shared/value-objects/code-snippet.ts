@@ -13,11 +13,25 @@
 import { ValueObject } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
-import type {
-  CodeSnippetDTO,
-  CodeSnippetPersistenceDTO,
-} from '../../contracts/value-objects/code-snippet';
+import type { CodeSnippetDTO } from '../../contracts/value-objects/code-snippet';
 import type { CodeSnippetId } from '../../contracts/primitives/ids';
+
+// ============ Persistence DTO (持久化层) ============
+
+/**
+ * CodeSnippet Persistence DTO — database storage format.
+ * 代码片段持久化 DTO — 数据库存储格式。
+ *
+ * @internal Repository implementation detail. Consumers should use CodeSnippetDTO.
+ * @internal 仓储实现细节，消费者应使用 CodeSnippetDTO。
+ */
+export interface CodeSnippetPersistenceDTO {
+  id: string;
+  language: string;
+  content: string;
+  type: string;
+  caption: string | null;
+}
 import { Language, type Language as LanguageValue } from './language';
 import { SnippetType, type SnippetType as SnippetTypeValue } from './snippet-type';
 
@@ -101,49 +115,73 @@ export class CodeSnippet extends ValueObject<CodeSnippetProps> {
 
   // ================= 工厂方法 2: 从 DTO 恢复 =================
   /**
-   * 从 DTO 恢复值对象
-   * 用于：从 API 响应或客户端数据还原对象
+   * Restores a CodeSnippet from a transfer DTO (with validation via Result).
+   * 从传输 DTO 恢复值对象（通过 Result 进行校验）。
+   *
+   * Used when hydrating from API responses or client-side data.
+   * 用于从 API 响应或客户端数据还原对象。
    */
-  public static fromDTO(dto: CodeSnippetDTO): CodeSnippet {
+  public static fromDTO(dto: CodeSnippetDTO): Result<CodeSnippet> {
     const languageResult = Language.create(dto.language);
     if (!languageResult.ok) {
-      throw new Error(languageResult.error.message);
+      return error(
+        languageResult.error.code,
+        languageResult.error.message,
+        languageResult.error.details,
+      );
     }
 
     const snippetTypeResult = SnippetType.create(dto.type);
     if (!snippetTypeResult.ok) {
-      throw new Error(snippetTypeResult.error.message);
+      return error(
+        snippetTypeResult.error.code,
+        snippetTypeResult.error.message,
+        snippetTypeResult.error.details,
+      );
     }
 
-    return new CodeSnippet({
-      ...dto,
-      language: languageResult.data,
-      type: snippetTypeResult.data,
-    });
+    return ok(
+      new CodeSnippet({
+        ...dto,
+        language: languageResult.data,
+        type: snippetTypeResult.data,
+      }),
+    );
   }
 
   // ================= 工厂方法 3: 从持久化 DTO 恢复 =================
   /**
-   * 从数据库持久化 DTO 恢复值对象
+   * Restores a CodeSnippet from a persistence DTO (with validation via Result).
+   * 从数据库持久化 DTO 恢复值对象（通过 Result 进行校验）。
    */
-  public static fromPersistenceDTO(dto: CodeSnippetPersistenceDTO): CodeSnippet {
+  public static fromPersistenceDTO(dto: CodeSnippetPersistenceDTO): Result<CodeSnippet> {
     const languageResult = Language.create(dto.language);
     if (!languageResult.ok) {
-      throw new Error(languageResult.error.message);
+      return error(
+        languageResult.error.code,
+        languageResult.error.message,
+        languageResult.error.details,
+      );
     }
 
     const snippetTypeResult = SnippetType.create(dto.type);
     if (!snippetTypeResult.ok) {
-      throw new Error(snippetTypeResult.error.message);
+      return error(
+        snippetTypeResult.error.code,
+        snippetTypeResult.error.message,
+        snippetTypeResult.error.details,
+      );
     }
 
-    return new CodeSnippet({
-      id: dto.id as CodeSnippetId,
-      language: languageResult.data,
-      content: dto.content,
-      type: snippetTypeResult.data,
-      caption: dto.caption,
-    });
+    return ok(
+      new CodeSnippet({
+        id: dto.id as CodeSnippetId,
+        language: languageResult.data,
+        content: dto.content,
+        type: snippetTypeResult.data,
+        caption: dto.caption,
+      }),
+    );
   }
 
   // ================= 内部校验逻辑 =================

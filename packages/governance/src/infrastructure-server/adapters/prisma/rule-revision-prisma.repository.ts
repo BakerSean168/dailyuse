@@ -12,6 +12,7 @@ import { RuleId } from '../../../domain-shared/value-objects';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import { RuleRevisionPrismaMapper } from './mappers/rule-revision-prisma.mapper';
+import { withCause } from '../mapper-helpers';
 
 /**
  * Prisma RuleRevision Repository
@@ -36,7 +37,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(undefined);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to save revision`);
+      return error('INTERNAL_ERROR', withCause('Failed to save revision', err));
     }
   }
 
@@ -54,7 +55,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(revisions);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revisions`);
+      return error('INTERNAL_ERROR', withCause('Failed to find revisions', err));
     }
   }
 
@@ -83,7 +84,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(revision);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to find revision`);
+      return error('INTERNAL_ERROR', withCause('Failed to find revision', err));
     }
   }
 
@@ -98,7 +99,7 @@ export class RuleRevisionPrismaRepository implements IRuleRevisionRepository {
 
       return ok(count);
     } catch (err) {
-      return error('DATABASE_ERROR', `Failed to count revisions`);
+      return error('INTERNAL_ERROR', withCause('Failed to count revisions', err));
     }
   }
 }

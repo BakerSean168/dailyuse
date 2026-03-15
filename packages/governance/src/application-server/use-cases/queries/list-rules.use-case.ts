@@ -5,14 +5,13 @@
 
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { RuleFilter } from '@/domain-server/repositories/i-rule-repository';
-import type { Rule } from '@/domain-server/aggregates/rule';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { ListRulesQuery, ListRulesRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 
 /**
- * List Rules Use Case
+ * List Rules Use Case.
+ * 列出规则用例。
  */
 export class ListRulesUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}
@@ -52,7 +51,7 @@ export class ListRulesUseCase {
     const paginatedRules = rules.slice(offset, offset + pageSize);
 
     // Map to DTOs
-    const dtos = paginatedRules.map((rule) => this.toClientDTO(rule));
+    const dtos = paginatedRules.map((rule) => rule.toClientDTO());
 
     return ok({
       items: dtos,
@@ -60,25 +59,5 @@ export class ListRulesUseCase {
       page,
       pageSize,
     });
-  }
-
-  private toClientDTO(rule: Rule): RuleClientDTO {
-    return {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
   }
 }

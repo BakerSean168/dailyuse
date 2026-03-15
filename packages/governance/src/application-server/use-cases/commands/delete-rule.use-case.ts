@@ -8,10 +8,12 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { DeleteRuleReq, DeleteRuleRes } from '../../../contracts/api/rules';
 import type { RuleId } from '../../../contracts/primitives/ids';
-import type { ExecutionContext } from './create-rule.use-case';
+import { RuleStatus } from '../../../contracts/value-objects/rule-status';
+import type { ExecutionContext } from '../execution-context';
 
 /**
- * Delete Rule Use Case
+ * Delete Rule Use Case.
+ * 删除规则用例。
  */
 export class DeleteRuleUseCase {
   constructor(private readonly ruleRepository: IRuleRepository) {}
@@ -39,7 +41,10 @@ export class DeleteRuleUseCase {
     const rule = ruleResult.data;
 
     // Hard delete if Draft without revisions
-    if (rule.status === 'Draft') {
+    // TODO: Dispatch RuleDeletedEvent via event bus after hard delete.
+    // The aggregate is destroyed so addDomainEvent() cannot be used here.
+    // 待办：硬删除后通过事件总线发布 RuleDeletedEvent，聚合已销毁无法使用 addDomainEvent()。
+    if (rule.status === RuleStatus.Draft) {
       const deleteResult = await this.ruleRepository.delete(rule.id);
       if (!deleteResult.ok) {
         return error(
@@ -57,7 +62,7 @@ export class DeleteRuleUseCase {
     const deprecateResult = rule.deprecate(reason);
     if (!deprecateResult.ok) {
       // If already deprecated, treat as success
-      if (rule.status === 'Deprecated') {
+      if (rule.status === RuleStatus.Deprecated) {
         return ok({ success: true });
       }
       return error(

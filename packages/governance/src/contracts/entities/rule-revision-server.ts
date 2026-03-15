@@ -8,8 +8,9 @@
  * - 内部实现细节
  */
 
-import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
 import type { RuleRevisionId, RuleId } from '../primitives/ids';
+import type { ChangeType } from '../value-objects/change-type';
 
 // ============ Transfer DTO (传输层) ============
 
@@ -25,27 +26,6 @@ export interface RuleRevisionServerDTO {
   changedFields: string[];
   previousValues: Record<string, unknown>;
   newValues: Record<string, unknown>;
-  changeType: 'Created' | 'Updated' | 'Deprecated' | 'Reactivated';
+  changeType: ChangeType;
   createdAt: TransferDate;
-}
-
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Persistence DTO (Database)
- * 数据库持久化使用的数据结构
- * 
- * - changedFields, previousValues, newValues 存储为 JSON 字符串
- * - createdAt 存储为 Date 对象
- */
-export interface RuleRevisionPersistenceDTO {
-  id: string;
-  ruleId: string;
-  revisionNumber: number;
-  authorId: string;
-  changedFields: string; // JSON array
-  previousValues: string | null; // JSON object
-  newValues: string | null; // JSON object
-  changeType: string;
-  createdAt: PersistenceDate;
 }

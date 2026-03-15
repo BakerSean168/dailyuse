@@ -3,7 +3,7 @@
  * 规则聚合根 - 服务端契约
  */
 
-import type { TransferDate, PersistenceDate, IdentityId } from '@dailyuse/contracts/primitives';
+import type { TransferDate, IdentityId } from '@dailyuse/contracts/primitives';
 import type { RuleId } from '../primitives/ids';
 import type { RuleTagDTO } from '../value-objects/rule-tag';
 import type { RuleStatus } from '../value-objects/rule-status';
@@ -32,29 +32,4 @@ export interface RuleServerDTO {
   authorId: IdentityId;
   createdAt: TransferDate;
   updatedAt: TransferDate;
-}
-
-// ============ Persistence DTO (持久化层) ============
-
-/**
- * Rule Persistence DTO
- * 数据库存储用
- * 注意：使用 camelCase 命名
- */
-export interface RulePersistenceDTO {
-  id: string;
-  code: string;
-  title: string;
-  description: string;
-  severity: string;
-  status: string;
-  deprecationReason: string | null;
-  replacementRuleId: string | null;
-  liveReferenceLocation: string | null;
-  tags: string; // JSON array
-  goodExamples: string; // JSON array of CodeSnippetPersistenceDTO
-  badExamples: string; // JSON array of CodeSnippetPersistenceDTO
-  authorId: string;
-  createdAt: PersistenceDate;
-  updatedAt: PersistenceDate;
 }

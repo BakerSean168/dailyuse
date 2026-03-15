@@ -21,38 +21,8 @@ import { RuleTag } from '../../../../domain-shared/value-objects/rule-tag';
 import { CodeSnippet } from '../../../../domain-shared/value-objects/code-snippet';
 import type { RuleStatus } from '../../../../domain-shared/value-objects/rule-status';
 import type { RuleSeverity } from '../../../../domain-shared/value-objects/rule-severity';
-import type { CodeSnippetPersistenceDTO } from '../../../../contracts/value-objects/code-snippet';
-
-// ---------------------------------------------------------------------------
-// SQLite 兼容帮助函数
-// ---------------------------------------------------------------------------
-
-/**
- * 从数据库字段安全地还原 Date。
- *
- * SQLite 通过 Prisma 返回的 DateTime 已是 JS Date，但如果原始值来自
- * 手动插入的 ISO 字符串（seed / 测试固件），Prisma 有时会以 string 返回。
- * 统一处理两种情况，避免 Invalid Date。
- */
-function fromDbDate(value: Date | string): Date {
-  if (value instanceof Date) return value;
-  const d = new Date(value);
-  if (isNaN(d.getTime())) throw new Error(`Invalid date from DB: ${String(value)}`);
-  return d;
-}
-
-/**
- * 将 JSON 字段字符串安全反序列化。
- * SQLite 不支持原生 JSON 类型，Prisma 以 String 列存储，此处统一处理。
- */
-function parseJson<T>(value: string | null | undefined, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-}
+import type { CodeSnippetPersistenceDTO } from '../../../../domain-shared/value-objects/code-snippet';
+import { fromDbDate, parseJson } from '../../mapper-helpers';
 
 // ---------------------------------------------------------------------------
 // Mapper
@@ -69,7 +39,7 @@ export class RulePrismaMapper {
     const goodExamplesJson = parseJson<CodeSnippetPersistenceDTO[]>(raw.goodExamples, []);
     const badExamplesJson = parseJson<CodeSnippetPersistenceDTO[]>(raw.badExamples, []);
 
-    const tagObjects = tags.map(tagValue => {
+    const tagObjects = tags.map((tagValue) => {
       const result = RuleTag.create(tagValue);
       if (!result.ok) {
         throw new Error(`Invalid tag in database: ${tagValue}`);
@@ -78,8 +48,17 @@ export class RulePrismaMapper {
     });
 
     const codeSnippets = [
-      ...goodExamplesJson.map(dto => CodeSnippet.fromPersistenceDTO(dto)),
-      ...badExamplesJson.map(dto => CodeSnippet.fromPersistenceDTO(dto)),
+      ...goodExamplesJson.map((dto) => {
+        const result = CodeSnippet.fromPersistenceDTO(dto);
+        if (!result.ok)
+          throw new Error(`Invalid good-example in database: ${result.error.message}`);
+        return result.data;
+      }),
+      ...badExamplesJson.map((dto) => {
+        const result = CodeSnippet.fromPersistenceDTO(dto);
+        if (!result.ok) throw new Error(`Invalid bad-example in database: ${result.error.message}`);
+        return result.data;
+      }),
     ];
 
     return Rule.load({
@@ -119,15 +98,15 @@ export class RulePrismaMapper {
       deprecationReason: rule.deprecationReason ?? null,
       replacementRuleId: rule.replacementRuleId ?? null,
       liveReferenceLocation: rule.liveReferenceLocation ?? null,
-      tags: JSON.stringify(rule.tags.map(tag => tag.value)),
-      goodExamples: JSON.stringify(rule.goodExamples.map(s => s.toPersistenceDTO())),
-      badExamples: JSON.stringify(rule.badExamples.map(s => s.toPersistenceDTO())),
+      tags: JSON.stringify(rule.tags.map((tag) => tag.value)),
+      goodExamples: JSON.stringify(rule.goodExamples.map((s) => s.toPersistenceDTO())),
+      badExamples: JSON.stringify(rule.badExamples.map((s) => s.toPersistenceDTO())),
       authorId: rule.authorId,
     };
   }
 
   /** 批量转换（read-side 常用） */
   static toDomainMany(raws: PrismaRule[]): Rule[] {
-    return raws.map(raw => RulePrismaMapper.toDomain(raw));
+    return raws.map((raw) => RulePrismaMapper.toDomain(raw));
   }
 }

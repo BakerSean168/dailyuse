@@ -7,28 +7,21 @@ import type { IRuleRepository } from '@/domain-server/repositories/i-rule-reposi
 import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import { Rule } from '@/domain-server/aggregates/rule';
 import { RuleRevision } from '@/domain-server/entities/rule-revision';
+import { ChangeType } from '@/domain-shared/value-objects/change-type';
 import { RuleSeverity } from '@/domain-shared/value-objects/rule-severity';
 import { Language } from '@/domain-shared/value-objects/language';
 import type { Language as RuleLanguage } from '@/domain-shared/value-objects/language';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 import type { CreateRuleReq, CreateRuleRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
-import type { IdentityId } from '@dailyuse/contracts/primitives';
-import type { Context } from '@dailyuse/contracts/shared';
+import type { ExecutionContext } from '../execution-context';
 
 /**
- * Execution Context
- * 执行上下文 - 由中间件从 token 中提取
- */
-export interface ExecutionContext {
-  identityId: IdentityId;
-}
-
-/**
- * Create Rule Use Case
+ * Create Rule Use Case.
+ * 创建规则用例。
  *
- * Dependencies injected via constructor (standard dependency injection)
+ * Dependencies injected via constructor (standard dependency injection).
+ * 通过构造函数注入依赖（标准依赖注入）。
  */
 export class CreateRuleUseCase {
   constructor(
@@ -163,34 +156,20 @@ export class CreateRuleUseCase {
         badExamples: rule.badExamples.map((example) => example.toDTO()),
         liveReferenceLocation: rule.liveReferenceLocation,
       },
-      changeType: 'Created',
+      changeType: ChangeType.Created,
     });
 
+    if (!revision.ok) {
+      return error(revision.error.code, revision.error.message, revision.error.details);
+    }
+
     // Persist rule + revision atomically
-    const saveResult = await this.ruleRepository.saveWithRevision(rule, revision);
+    const saveResult = await this.ruleRepository.saveWithRevision(rule, revision.data);
     if (!saveResult.ok) {
       return error(saveResult.error.code, saveResult.error.message, saveResult.error.details);
     }
 
     // Convert to ClientDTO and return
-    const dto: RuleClientDTO = {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
-
-    return ok(dto);
+    return ok(rule.toClientDTO());
   }
 }

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { CreateRuleSchema } from '../rules';
+import { Language } from '../../value-objects/language';
 
 const baseExample = {
-  language: 'typescript',
+  language: Language.TypeScript,
   content: 'class Rule { constructor(private readonly props) {} }',
   caption: 'Props object example',
 };

@@ -16,13 +16,3 @@ export interface CodeSnippetDTO {
   type: SnippetType;
   caption: string | null;
 }
-
-// ============ Persistence DTO (持久化层) ============
-
-export interface CodeSnippetPersistenceDTO {
-  id: string;
-  language: string;
-  content: string;
-  type: string;
-  caption: string | null;
-}

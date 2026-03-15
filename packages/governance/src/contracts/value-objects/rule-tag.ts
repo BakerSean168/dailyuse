@@ -8,9 +8,3 @@
 export interface RuleTagDTO {
   value: string;
 }
-
-// ============ Persistence DTO (持久化层) ============
-
-export interface RuleTagPersistenceDTO {
-  value: string;
-}

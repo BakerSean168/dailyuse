@@ -6,16 +6,17 @@
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import { RuleRevision } from '@/domain-server/entities/rule-revision';
+import { ChangeType } from '@/domain-shared/value-objects/change-type';
 import type { Result } from '@dailyuse/contracts/result';
 import { error } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 import type { UpdateRuleReq, UpdateRuleRes } from '../../../contracts/api/rules';
-import type { RuleClientDTO } from '../../../contracts/aggregates/rule-client';
 import type { RuleId } from '../../../contracts/primitives/ids';
-import type { ExecutionContext } from './create-rule.use-case';
+import type { ExecutionContext } from '../execution-context';
 
 /**
- * Update Rule Use Case
+ * Update Rule Use Case.
+ * 更新规则用例。
  */
 export class UpdateRuleUseCase {
   constructor(
@@ -115,10 +116,14 @@ export class UpdateRuleUseCase {
         changedFields,
         previousValues,
         newValues,
-        changeType: 'Updated',
+        changeType: ChangeType.Updated,
       });
 
-      saveResult = await this.ruleRepository.saveWithRevision(rule, revision);
+      if (!revision.ok) {
+        return error(revision.error.code, revision.error.message, revision.error.details);
+      }
+
+      saveResult = await this.ruleRepository.saveWithRevision(rule, revision.data);
     } else {
       saveResult = await this.ruleRepository.save(rule);
     }
@@ -128,24 +133,6 @@ export class UpdateRuleUseCase {
     }
 
     // Convert to ClientDTO and return
-    const dto: RuleClientDTO = {
-      id: rule.id,
-      code: rule.code,
-      title: rule.title,
-      description: rule.description,
-      severity: rule.severity,
-      status: rule.status,
-      deprecationReason: rule.deprecationReason,
-      replacementRuleId: rule.replacementRuleId,
-      liveReferenceLocation: rule.liveReferenceLocation,
-      tags: rule.tags.map((tag) => tag.toDTO()),
-      goodExamples: rule.goodExamples.map((ex) => ex.toDTO()),
-      badExamples: rule.badExamples.map((ex) => ex.toDTO()),
-      authorId: rule.authorId,
-      createdAt: rule.createdAt.getTime(),
-      updatedAt: rule.updatedAt.getTime(),
-    };
-
-    return ok(dto);
+    return ok(rule.toClientDTO());
   }
 }

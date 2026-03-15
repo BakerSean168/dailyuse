@@ -1,23 +1,23 @@
-# Example Module - 活文档（Living Documentation）
+# Governance Module - 活文档（Living Documentation）
 
-这个模块是一个**参考实现**，展示如何在 `@dailyuse/contracts` 中构建一个标准的业务模块。
+这个模块是一个**参考实现**，展示如何在 `@dailyuse/governance` 中构建一个标准的 DDD 业务模块。
 
 ## 📚 文件结构
 
 ```
-example/
+governance/
 ├── aggregates/          # 聚合根定义（DDD）
-│   ├── example-client.ts       # 客户端视图（前端/API 消费者）
-│   ├── example-server.ts       # 服务端视图 + 领域事件
+│   ├── rule-client.ts         # 客户端视图（前端/API 消费者）
+│   ├── rule-server.ts         # 服务端视图 + 领域事件
 │   └── index.ts                # 导出汇总
 ├── entities/            # 实体定义（有 ID 的子对象）
-│   ├── example-tag-client.ts   # 标签实体（客户端）
-│   ├── example-tag-server.ts   # 标签实体（服务端）
+│   ├── rule-revision-client.ts # 修订实体（客户端）
+│   ├── rule-revision-server.ts # 修订实体（服务端）
 │   └── index.ts                # 导出汇总
 ├── value-objects/       # 值对象（不可变）
-│   ├── example-status.ts       # 状态枚举
-│   ├── example-property.ts     # 复杂值对象
-│   ├── example-time-range.ts   # 时间范围（展示时间类型）
+│   ├── rule-status.ts         # 状态枚举
+│   ├── rule-severity.ts       # 严重级别
+│   ├── change-type.ts         # 变更类型
 │   └── index.ts                # 导出汇总
 ├── api/                 # REST API 定义
 │   ├── requests.ts      # 请求数据结构
@@ -25,13 +25,15 @@ example/
 │   ├── endpoints.ts     # 路由定义
 │   └── index.ts         # 导出汇总
 ├── protocol/            # 模块间通信协议
-│   ├── example-event-map.ts    # 事件定义
-│   ├── example-rpc-map.ts      # RPC 定义
+│   ├── governance-event-map.ts  # 事件定义
+│   ├── governance-rpc-map.ts    # RPC 定义
 │   └── index.ts                # 导出汇总
 ├── configs/             # 配置常量
 │   ├── config.ts        # 配置定义
 │   └── index.ts         # 导出汇总
-├── dtos/                # 特殊 DTO（统计、报表等）
+├── domain/              # 领域定义（事件、仓储接口）
+│   ├── events/          # 领域事件类型
+│   ├── repositories/    # 仓储接口
 │   └── index.ts         # 导出汇总
 ├── index.ts             # 模块主入口
 └── README.md            # 本文件
@@ -48,43 +50,47 @@ example/
 
 ### 1. **Aggregate Root（聚合根）vs Entity（实体）**
 
-| 特性 | Aggregate Root | Entity |
-|------|----------------|--------|
-| 定义 | 聚合的顶级实体 | 聚合内的子实体或独立实体 |
-| 位置 | `aggregates/` | `entities/` |
-| 访问 | 外部可直接访问 | 外部只能通过聚合根访问 |
-| 例子 | Example（主对象） | ExampleTag（标签子对象） |
+| 特性 | Aggregate Root | Entity                     |
+| ---- | -------------- | -------------------------- |
+| 定义 | 聚合的顶级实体 | 聚合内的子实体或独立实体   |
+| 位置 | `aggregates/`  | `entities/`                |
+| 访问 | 外部可直接访问 | 外部只能通过聚合根访问     |
+| 例子 | Rule（主对象） | RuleRevision（修订子对象） |
 
 ### 2. **Value Objects（值对象）**
 
 **特点：**
+
 - 不可变（Immutable）
 - 无唯一标识（ID）
 - 相等性通过值判断
 
 **示例：**
-1. [example-status.ts](./value-objects/example-status.ts) - 状态枚举（简单值对象）
-2. [example-property.ts](./value-objects/example-property.ts) - 复杂值对象（带验证）
-3. [example-time-range.ts](./value-objects/example-time-range.ts) - 时间范围（展示时间类型选择）
+
+1. [rule-status.ts](./value-objects/rule-status.ts) - 状态枚举（简单值对象）
+2. [rule-severity.ts](./value-objects/rule-severity.ts) - 严重级别（简单值对象）
+3. [change-type.ts](./value-objects/change-type.ts) - 变更类型（展示 const-object 模式）
 
 ### 3. **时间类型选择规范（防腐层设计）**
 
 项目使用防腐层（Anti-Corruption Layer）设计，通过类型别名隔离外部实现细节：
 
-| 层级 | 类型 | 实际类型 | 使用场景 | 示例 |
-|------|------|----------|-----------|------|
-| **传输层** | `TransferDate` | `number` | API 请求/响应、DTO | `1704067200000` |
-| **业务逻辑层** | `DomainDate` | `Date` | 领域计算、规则验证 | `new Date()` |
-| **持久化层** | `PersistenceDate` | `Date` | Prisma/ORM 持久化 | `new Date()` |
+| 层级           | 类型              | 实际类型 | 使用场景           | 示例            |
+| -------------- | ----------------- | -------- | ------------------ | --------------- |
+| **传输层**     | `TransferDate`    | `number` | API 请求/响应、DTO | `1704067200000` |
+| **业务逻辑层** | `DomainDate`      | `Date`   | 领域计算、规则验证 | `new Date()`    |
+| **持久化层**   | `PersistenceDate` | `Date`   | Prisma/ORM 持久化  | `new Date()`    |
 
 **防腐层优势：**
+
 - ✅ **隔离变化**：未来如需改变时间存储格式（如改为 bigint），只需修改 `primitives/` 下的类型定义
 - ✅ **类型安全**：编译时检查，防止类型混用
 - ✅ **统一规范**：全项目使用一致的时间处理模式
 
 **实际应用示例：**
-- **Entities**: [example-tag-server.ts](./entities/example-tag-server.ts) - 展示实体中 3 种时间类型
-- **Value Objects**: [example-time-range.ts](./value-objects/example-time-range.ts) - 展示时间范围处理和类型转换
+
+- **Entities**: [rule-revision-server.ts](./entities/rule-revision-server.ts) - 展示实体中时间类型
+- **Value Objects**: [change-type.ts](./value-objects/change-type.ts) - 展示 const-object 模式
 
 ### 4. **Protocol（协议）**
 
@@ -95,13 +101,13 @@ example/
 
 ```typescript
 // 事件：异步通知其他模块
-export type ExampleEventMap = {
-  'example:created': { id: string; name: string };
+export type GovernanceEventMap = {
+  'governance:rule-created': { code: string; title: string };
 };
 
 // RPC：同步请求其他模块
-export type ExampleRpcMap = {
-  'example:check-existence': [{ id: string }, boolean];
+export type GovernanceRpcMap = {
+  'governance:check-rule-existence': [{ code: string }, boolean];
 };
 ```
 
@@ -134,7 +140,9 @@ export const MyStatus = {
 // MyProperty - 复杂值对象
 export function createMyProperty(input: MyPropertyDTO): MyProperty {
   // 验证逻辑
-  return { /* 不可变对象 */ };
+  return {
+    /* 不可变对象 */
+  };
 }
 ```
 
@@ -210,6 +218,7 @@ export const MY_GENERATION_CONFIG = {
 ```
 
 **区分：**
+
 - `configs/` → 可调整参数（如 `DEFAULT_PAGE_SIZE: 20`）
 - `value-objects/` → 固定概念（如 `Status.Active`）
 
@@ -227,8 +236,8 @@ export type MyResponse = MyClientDTO;
 
 // Endpoints（路由定义）
 export const MY_API_ENDPOINTS = {
-  create: { method: 'POST', path: '/api/my', /* ... */ },
-  get: { method: 'GET', path: '/api/my/:id', /* ... */ },
+  create: { method: 'POST', path: '/api/my' /* ... */ },
+  get: { method: 'GET', path: '/api/my/:id' /* ... */ },
 };
 ```
 
@@ -266,8 +275,9 @@ export * from './api';
 ### 1. 在 `contracts/src/modules/yourModule/` 下创建
 
 ```bash
-cp -r contracts/src/modules/example contracts/src/modules/yourModule
-# 然后修改所有 Example → YourModule 的引用
+cp -r packages/governance/src/contracts packages/your-module/src/contracts
+# Then rename all Rule → YourEntity references
+# 然后修改所有 Rule → YourEntity 的引用
 ```
 
 ### 2. 更新 `contracts/package.json`
@@ -301,10 +311,10 @@ import { YOUR_MODULE_API_ENDPOINTS } from '@dailyuse/contracts/your-module';
 当你有了这个参考实现后，可以这样指导 AI：
 
 ```
-"Generate a UserOrder module based on the architecture 
-in contracts/src/modules/example. Follow the same patterns 
-for aggregates, value objects, and API definitions. 
-Use ExampleServer as the pattern for domain modeling."
+"Generate a UserOrder module based on the architecture
+in @dailyuse/governance contracts. Follow the same patterns
+for aggregates, value objects, and API definitions.
+Use RuleServer as the pattern for domain modeling."
 ```
 
 ## ⚠️ 常见错误
@@ -312,52 +322,63 @@ Use ExampleServer as the pattern for domain modeling."
 ### ❌ 混淆 DTO 和 Domain Model
 
 ```typescript
+// ❌ Wrong: returning server model directly to API
 // ❌ 错误：直接返回 Server 模型给 API
-export async function getExample(id: string): Promise<ExampleServer> {
-  // ExampleServer 包含内部字段，不应该序列化
+export async function getRule(id: string): Promise<RuleServer> {
+  // RuleServer contains internal fields that should not be serialized
+  // RuleServer 包含内部字段，不应该序列化
 }
 
+// ✅ Correct: convert to Client DTO first
 // ✅ 正确：先转换到 Client DTO
-export async function getExample(id: string): Promise<ExampleClient> {
-  const server = await service.findById(id);
-  return toClientDTO(server);
+export async function getRule(id: string): Promise<RuleClient> {
+  const rule = await service.findById(id);
+  return rule.toClientDTO();
 }
 ```
 
 ### ❌ 在 Value Object 中放入可变逻辑
 
 ```typescript
-// ❌ 错误
-export class ExampleStatus {
-  public setValue(newValue: string) { // ❌ 可变！
+// ❌ Wrong: mutable value object
+// ❌ 错误：可变的值对象
+export class RuleStatus {
+  public setValue(newValue: string) {
+    // ❌ Mutable! 可变！
     this.value = newValue;
   }
 }
 
+// ✅ Correct: use const object as const
 // ✅ 正确：使用 const object as const
-export const ExampleStatus = {
+export const RuleStatus = {
   Draft: 'Draft',
   Active: 'Active',
 } as const;
-// 如果需要改变，创建新的状态对象
-const newStatus = ExampleStatus.Active;
+// To change, create a new status reference
+// 如果需要改变，创建新的状态引用
+const newStatus = RuleStatus.Active;
 ```
 
 ### ❌ 忘记领域事件
 
 ```typescript
+// ❌ Wrong: no event after creation
 // ❌ 错误：创建后没有事件
-async function createExample(request: CreateExampleRequest) {
-  const example = new ExampleServer(/* ... */);
-  await repository.save(example);
-  // 其他模块无法知道创建了新 Example
+async function createRule(request: CreateRuleRequest) {
+  const rule = RuleServer.create(/* ... */);
+  await repository.save(rule);
+  // Other modules have no way to know a new Rule was created
+  // 其他模块无法知道创建了新 Rule
 }
 
-// ✅ 正确
-async function createExample(request: CreateExampleRequest) {
-  const example = new ExampleServer(/* ... */);
-  await repository.save(example);
-  await eventBus.publish(ExampleCreatedEvent);
+// ✅ Correct: publish domain event
+// ✅ 正确：发布领域事件
+async function createRule(request: CreateRuleRequest) {
+  const rule = RuleServer.create(/* ... */);
+  await repository.save(rule);
+  await eventBus.publish(RuleCreatedEvent);
+  // Other modules can subscribe to this event
   // 其他模块可以订阅此事件
 }
 ```
@@ -369,19 +390,23 @@ async function createExample(request: CreateExampleRequest) {
 - **Event Sourcing**：为什么使用事件而不是状态存储
 - **Aggregate Design**：如何设计合理的聚合边界
 
-## 🎓 示例项目结构
+## 🎓 Reference Implementation Files / 参考实现文件
 
+If this document feels too dense, browse these actual implementation files:
 如果你觉得这个文档太密集，可以查看这些文件的完整实现：
 
-1. [example-status.ts](./value-objects/example-status.ts) - 简单枚举
-2. [example-property.ts](./value-objects/example-property.ts) - 复杂值对象
-3. [example-client.ts](./aggregates/example-client.ts) - 前端聚合根
-4. [example-server.ts](./aggregates/example-server.ts) - 后端聚合根 + 事件
-5. [requests.ts](./api/requests.ts) - API 请求定义
-6. [endpoints.ts](./api/endpoints.ts) - API 路由定义
+1. [rule-status.ts](./value-objects/rule-status.ts) - Simple const-object enum. 简单枚举值对象
+2. [rule-severity.ts](./value-objects/rule-severity.ts) - Const-object value object with labels. 带标签的值对象
+3. [change-type.ts](./value-objects/change-type.ts) - Change type value object. 变更类型值对象
+4. [rule-client.ts](./aggregates/rule-client.ts) - Client-side aggregate root. 前端聚合根
+5. [rule-server.ts](./aggregates/rule-server.ts) - Server-side aggregate root + domain events. 后端聚合根 + 事件
+6. [rules.ts](./api/rules.ts) - API schema definitions (Zod). API 请求/响应定义
+7. [endpoints.ts](./api/endpoints.ts) - API route definitions. API 路由定义
 
-每个文件都有详细的中文注释！
+Every file has bilingual comments (English + Chinese)!
+每个文件都有中英双语注释！
 
 ---
 
-**这个模块就是活文档。新同学可以直接 Copy & Paste，改改数据结构就能用。** 🚀
+**This module IS the living documentation. New team members can Copy & Paste, adjust the data structures, and ship.**
+**这个模块就是活文档。新同学可以直接 Copy & Paste，改改数据结构就能用。**

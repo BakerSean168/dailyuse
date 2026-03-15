@@ -1,18 +1,20 @@
 import type {
   RuleCreatedEvent,
   RuleUpdatedEvent,
+  RuleDeletedEvent,
   RuleDeprecatedEvent,
   RuleReactivatedEvent,
   RuleStatusChangedEvent,
+  RuleSeverityChangedEvent,
 } from '../domain/events';
 
 /**
  * Governance Module - Event Map
  * 规则治理模块 - 事件映射
- * 
+ *
  * 【规范说明：事件映射】
  * 定义模块发出的所有领域事件，用于模块间异步通信。
- * 
+ *
  * 【事件命名规范】
  * 格式：{module}:{action}
  * - governance:rule-created - 规则创建
@@ -20,11 +22,11 @@ import type {
  * - governance:rule-deprecated - 规则废弃
  * - governance:rule-reactivated - 规则重新激活
  * - governance:rule-status-changed - 规则状态变更（通用）
- * 
+ *
  * 【使用场景】
  * - 事件发布：eventBus.publish('governance:rule-created', payload)
  * - 事件订阅：eventBus.subscribe('governance:rule-created', handler)
- * 
+ *
  * utils 的 addDomainEvent 能接收 type 和 payload，自动生成 aggregateId 和 occurredAt，
  * 所以 Event 中不需要包含这些字段
  */
@@ -58,4 +60,16 @@ export type GovernanceEventMap = {
    * 规则状态发生任何变更时发出
    */
   'governance:rule-status-changed': RuleStatusChangedEvent;
+
+  /**
+   * 规则严重级别变更事件
+   * 规则严重级别发生变更时发出
+   */
+  'governance:rule-severity-changed': RuleSeverityChangedEvent;
+
+  /**
+   * Rule deleted event. Emitted after a rule is hard-deleted.
+   * 规则删除事件。规则被硬删除后发出。
+   */
+  'governance:rule-deleted': RuleDeletedEvent;
 };

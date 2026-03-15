@@ -35,6 +35,14 @@ const governanceEventHandlers: {
       `[Governance] Rule status changed: ${payload.code} (${payload.previousStatus} → ${payload.newStatus})`,
     );
   },
+  'governance:rule-severity-changed': (payload) => {
+    logger.info(
+      `[Governance] Rule severity changed: ${payload.code} (${payload.previousSeverity} → ${payload.newSeverity})`,
+    );
+  },
+  'governance:rule-deleted': (payload) => {
+    logger.warn(`[Governance] Rule deleted: ${payload.code}`);
+  },
 };
 
 const governanceEventHandlersInitTask: InitializationTask = {

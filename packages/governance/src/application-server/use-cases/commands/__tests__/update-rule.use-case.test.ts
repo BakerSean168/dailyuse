@@ -2,7 +2,7 @@ import { vi, describe, it, expect } from 'vitest';
 import { createMockRepo } from '@dailyuse/test-utils';
 import { ok, error } from '@dailyuse/contracts/result';
 import { UpdateRuleUseCase } from '../update-rule.use-case';
-import type { ExecutionContext } from '../create-rule.use-case';
+import type { ExecutionContext } from '../../execution-context';
 import type { IRuleRepository } from '@/domain-server/repositories/i-rule-repository';
 import type { IRuleRevisionRepository } from '@/domain-server/repositories/i-rule-revision-repository';
 import { Rule } from '@/domain-server/aggregates/rule';
@@ -137,7 +137,7 @@ describe('UpdateRuleUseCase', () => {
 
   it('should return error when findById fails', async () => {
     const ruleRepo = createMockRepo<IRuleRepository>({
-      findById: vi.fn().mockResolvedValue(error('DB_ERROR', 'Database failed')),
+      findById: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Database failed')),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>();
     const useCase = new UpdateRuleUseCase(ruleRepo, revisionRepo);
@@ -146,7 +146,7 @@ describe('UpdateRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 
   it('should return validation error for title too short', async () => {
@@ -170,7 +170,7 @@ describe('UpdateRuleUseCase', () => {
     const rule = createTestRule();
     const ruleRepo = createMockRepo<IRuleRepository>({
       findById: vi.fn().mockResolvedValue(ok(rule)),
-      saveWithRevision: vi.fn().mockResolvedValue(error('DB_ERROR', 'Save failed')),
+      saveWithRevision: vi.fn().mockResolvedValue(error('INTERNAL_ERROR', 'Save failed')),
     });
     const revisionRepo = createMockRepo<IRuleRevisionRepository>({
       countByRuleId: vi.fn().mockResolvedValue(ok(0)),
@@ -181,6 +181,6 @@ describe('UpdateRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('DB_ERROR');
+    expect(result.error.code).toBe('INTERNAL_ERROR');
   });
 });

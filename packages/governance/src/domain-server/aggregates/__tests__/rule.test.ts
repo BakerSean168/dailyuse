@@ -506,6 +506,23 @@ describe('Rule Aggregate Root', () => {
       expect(rule.severity).toBe(RuleSeverity.Mandatory);
     });
 
+    it('should emit governance:rule-severity-changed event', () => {
+      const result = Rule.create(validCreateProps({ severity: RuleSeverity.Recommended }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents(); // clear create event
+
+      rule.changeSeverity(RuleSeverity.Mandatory);
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('governance:rule-severity-changed');
+      expect(events[0].payload).toMatchObject({
+        code: 'DDD-001',
+        previousSeverity: RuleSeverity.Recommended,
+        newSeverity: RuleSeverity.Mandatory,
+      });
+    });
+
     it('should be a no-op when severity is the same', () => {
       const result = Rule.create(validCreateProps({ severity: RuleSeverity.Recommended }));
       if (!result.ok) return;
@@ -514,8 +531,19 @@ describe('Rule Aggregate Root', () => {
 
       const changeResult = rule.changeSeverity(RuleSeverity.Recommended);
       expect(changeResult.ok).toBe(true);
-      // updatedAt should NOT change on no-op
-      expect(rule.updatedAt).toBe(before);
+      // updatedAt should NOT change on no-op (use toEqual since getter returns defensive copy)
+      expect(rule.updatedAt).toEqual(before);
+    });
+
+    it('should not emit event when severity is the same', () => {
+      const result = Rule.create(validCreateProps({ severity: RuleSeverity.Recommended }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents(); // clear create event
+
+      rule.changeSeverity(RuleSeverity.Recommended);
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(0);
     });
   });
 
@@ -531,6 +559,33 @@ describe('Rule Aggregate Root', () => {
       expect(addResult.ok).toBe(true);
       expect(rule.tags).toHaveLength(2);
       expect(rule.tags.map((t) => t.value)).toContain('new-tag');
+    });
+
+    it('should emit governance:rule-updated event on successful add', () => {
+      const result = Rule.create(validCreateProps());
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents(); // clear create event
+
+      rule.addTag('new-tag');
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('governance:rule-updated');
+      expect(events[0].payload).toMatchObject({
+        changedFields: ['tags'],
+        tags: ['ddd', 'new-tag'],
+      });
+    });
+
+    it('should not emit event when tag is duplicate', () => {
+      const result = Rule.create(validCreateProps({ tags: ['ddd'] }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents();
+
+      rule.addTag('ddd');
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(0);
     });
 
     it('should normalize the tag', () => {
@@ -563,6 +618,33 @@ describe('Rule Aggregate Root', () => {
       expect(removeResult.ok).toBe(true);
       expect(rule.tags).toHaveLength(1);
       expect(rule.tags[0].value).toBe('architecture');
+    });
+
+    it('should emit governance:rule-updated event on successful remove', () => {
+      const result = Rule.create(validCreateProps({ tags: ['ddd', 'architecture'] }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents();
+
+      rule.removeTag('ddd');
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('governance:rule-updated');
+      expect(events[0].payload).toMatchObject({
+        changedFields: ['tags'],
+        tags: ['architecture'],
+      });
+    });
+
+    it('should not emit event when tag does not exist', () => {
+      const result = Rule.create(validCreateProps({ tags: ['ddd', 'architecture'] }));
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents();
+
+      rule.removeTag('nonexistent');
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(0);
     });
 
     it('should reject removing the last tag', () => {
@@ -599,6 +681,29 @@ describe('Rule Aggregate Root', () => {
       const addResult = rule.addCodeSnippet(snippetResult.data);
       expect(addResult.ok).toBe(true);
       expect(rule.codeSnippets).toHaveLength(initialCount + 1);
+    });
+
+    it('should emit governance:rule-updated event on successful add', () => {
+      const result = Rule.create(validCreateProps());
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents();
+
+      const snippetResult = CodeSnippet.create({
+        language: Language.TypeScript,
+        content: 'const y = 2;',
+        type: 'GoodExample',
+        caption: null,
+      });
+      if (!snippetResult.ok) return;
+
+      rule.addCodeSnippet(snippetResult.data);
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('governance:rule-updated');
+      expect(events[0].payload).toMatchObject({
+        changedFields: ['codeSnippets'],
+      });
     });
   });
 
@@ -655,6 +760,29 @@ describe('Rule Aggregate Root', () => {
       const removeResult = rule.removeCodeSnippet(firstGood.id);
       expect(removeResult.ok).toBe(true);
       expect(rule.goodExamples).toHaveLength(1);
+    });
+
+    it('should emit governance:rule-updated event on successful remove', () => {
+      const result = Rule.create(
+        validCreateProps({
+          goodExamples: [
+            { language: Language.TypeScript, content: 'const a = 1;' },
+            { language: Language.TypeScript, content: 'const b = 2;' },
+          ],
+        }),
+      );
+      if (!result.ok) return;
+      const rule = result.data;
+      rule.pullDomainEvents();
+
+      const firstGood = rule.goodExamples[0];
+      rule.removeCodeSnippet(firstGood.id);
+      const events = rule.pullDomainEvents();
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('governance:rule-updated');
+      expect(events[0].payload).toMatchObject({
+        changedFields: ['codeSnippets'],
+      });
     });
   });
 

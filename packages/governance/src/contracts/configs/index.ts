@@ -1,9 +1,9 @@
 /**
- * Example Module - Configs Export
+ * Governance Module - Configs Export. 治理模块 - 配置导出。
  */
 
 export {
-  EXAMPLE_GENERATION_CONFIG,
-  EXAMPLE_VIEW_CONFIG,
-  EXAMPLE_VALIDATION_CONFIG,
+  GOVERNANCE_GENERATION_CONFIG,
+  GOVERNANCE_VIEW_CONFIG,
+  GOVERNANCE_VALIDATION_CONFIG,
 } from './config';

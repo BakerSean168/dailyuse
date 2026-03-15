@@ -1,12 +1,15 @@
 /**
- * Rule HTTP Adapter
+ * Rule HTTP Adapter.
+ * 规则 HTTP 适配器。
  *
  * HTTP implementation of IRuleApiClient.
+ * IRuleApiClient 的 HTTP 实现。
  * Implements rule API operations using HTTP REST calls.
+ * 使用 HTTP REST 调用实现规则 API 操作。
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { fail } from '@dailyuse/contracts/result';
+import { error } from '@dailyuse/contracts/result';
 import type {
   IRuleApiClient,
   IResultHttpClient,
@@ -25,9 +28,11 @@ import type {
 } from '../types';
 
 /**
- * Rule HTTP Adapter
+ * Rule HTTP Adapter.
+ * 规则 HTTP 适配器。
  *
  * Implements IRuleApiClient using HTTP REST API calls.
+ * 使用 HTTP REST API 调用实现 IRuleApiClient。
  */
 export class RuleHttpAdapter implements IRuleApiClient {
   private readonly baseUrl = '/governance/rules';
@@ -46,7 +51,7 @@ export class RuleHttpAdapter implements IRuleApiClient {
     } else if (req.code) {
       return this.httpClient.get(`${this.baseUrl}/by-code/${req.code}`);
     }
-    return fail({ code: 'VALIDATION_ERROR', message: 'Must provide either id or code' });
+    return error('VALIDATION_ERROR', 'Must provide either id or code');
   }
 
   async updateRule(ruleId: string, req: UpdateRuleReq): Promise<Result<UpdateRuleRes>> {
