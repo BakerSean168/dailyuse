@@ -71,7 +71,7 @@
       ],
       "@dailyuse/http-client": ["../../packages/http-client/src/index.ts"],
       "@dailyuse/utils": ["../../packages/utils/src/index.ts"],
-      "@dailyuse/utils/*": ["../../packages/utils/src/*/index.ts"],
+      "@dailyuse/utils/*": ["../../packages/utils/src/*/index.ts", "../../packages/utils/src/*.ts"],
       "@dailyuse/governance": ["../../packages/governance/dist/index.d.ts"],
       "@dailyuse/governance/api": ["../../packages/governance/dist/api/index.d.ts"],
       "@dailyuse/account": ["../../packages/account/dist/index.d.ts"],
