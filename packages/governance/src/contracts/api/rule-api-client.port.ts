@@ -27,6 +27,7 @@ import type {
   SearchRulesQuery,
   SearchRulesRes,
 } from './rules';
+import type { GetRuleRevisionsQuery, GetRuleRevisionsRes } from './rule-revisions';
 
 /**
  * Rule API Client Interface.
@@ -53,4 +54,7 @@ export interface IRuleApiClient {
 
   /** Search rules by keyword. 关键词搜索规则。 */
   searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>>;
+
+  /** List rule revisions for a rule. 获取某条规则的修订历史。 */
+  getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>>;
 }

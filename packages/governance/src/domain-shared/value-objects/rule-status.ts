@@ -56,7 +56,7 @@ export const RuleStatus = {
     if (!this.isValid(value)) {
       return error(
         'VALIDATION_ERROR',
-        `Invalid RuleStatus: "${value}". Valid values: ${VALUES.join(', ')}`
+        `Invalid RuleStatus: "${value}". Valid values: ${VALUES.join(', ')}`,
       );
     }
     return ok(value as RuleStatus);
@@ -106,23 +106,23 @@ export const RuleStatus = {
   canTransitionTo(
     from: RuleStatus,
     to: RuleStatus,
-    context?: { severity?: RuleSeverity }
+    context?: { severity?: RuleSeverity },
   ): Result<true> {
     if (from === to) return ok(true);
 
     /** 合法转换矩阵 */
     const validTransitions: Record<IRuleStatus, Set<IRuleStatus>> = {
-      'Draft': new Set(['Active']),
-      'Active': new Set(['Deprecated']),
-      'Deprecated': new Set(['Active']),
+      Draft: new Set(['Active']),
+      Active: new Set(['Deprecated']),
+      Deprecated: new Set(['Active']),
     };
 
     const allowedTargets = validTransitions[from as IRuleStatus];
     if (!allowedTargets?.has(to as IRuleStatus)) {
       const validList = Array.from(allowedTargets || []).join(', ') || 'none';
       return error(
-        'BUSINESS_ERROR',
-        `Cannot transition from ${from} to ${to}. Valid: ${validList}`
+        'INVALID_TRANSITION',
+        `Cannot transition from ${from} to ${to}. Valid: ${validList}`,
       );
     }
 
@@ -130,8 +130,8 @@ export const RuleStatus = {
     if (from === this.Active && to === this.Deprecated) {
       if (context?.severity === RuleSeverity.Mandatory) {
         return error(
-          'BUSINESS_ERROR',
-          'Cannot deprecate MANDATORY rule. Downgrade to RECOMMENDED first.'
+          'INVALID_TRANSITION',
+          'Cannot deprecate MANDATORY rule. Downgrade to RECOMMENDED first.',
         );
       }
     }

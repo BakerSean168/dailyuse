@@ -8,8 +8,8 @@
  *   仓储实现（Prisma、PowerSync）
  * - Persistence mappers
  *   持久化映射器
- * - DI container and composition root
- *   DI 容器和组合根
+ * - Explicit composition root and runtime assembly
+ *   显式组合根与运行时组装
  */
 
 // ============ Adapters - Prisma ============
@@ -23,7 +23,13 @@ export { RuleRevisionPrismaRepository } from './adapters/prisma/rule-revision-pr
 export { PowerSyncRuleRepository, PowerSyncRuleRevisionRepository } from './adapters/powersync';
 
 // ============ Composition Root ============
-export { GovernanceModule, type GovernanceModuleRepositories } from './governance.module';
-export { GovernancePowerSyncModule } from './powersync';
-/** @internal DI container — use GovernanceModule facade instead. DI 容器 — 请使用 GovernanceModule 门面。 */
-export { GovernanceContainer } from './di/governance-container';
+export {
+  createGovernanceModule,
+  createGovernanceUseCases,
+  type GovernanceApplicationPort,
+  type GovernanceModuleDependencies,
+  type GovernanceModuleInstance,
+  type GovernanceModuleRuntimeContribution,
+  type GovernanceModuleUseCases,
+} from './governance.module';
+export { createGovernancePowerSyncModule } from './powersync';

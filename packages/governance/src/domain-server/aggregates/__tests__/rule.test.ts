@@ -317,7 +317,7 @@ describe('Rule Aggregate Root', () => {
       const result = rule.deprecate('Trying to deprecate mandatory rule.');
       expect(result.ok).toBe(false);
       if (result.ok) return;
-      expect(result.error.code).toBe('BUSINESS_ERROR');
+      expect(result.error.code).toBe('INVALID_TRANSITION');
       expect(result.error.message).toContain('MANDATORY');
     });
 
@@ -329,7 +329,7 @@ describe('Rule Aggregate Root', () => {
       const deprecateResult = rule.deprecate('Cannot deprecate a draft rule directly.');
       expect(deprecateResult.ok).toBe(false);
       if (deprecateResult.ok) return;
-      expect(deprecateResult.error.code).toBe('BUSINESS_ERROR');
+      expect(deprecateResult.error.code).toBe('INVALID_TRANSITION');
     });
 
     it('should reject empty deprecation reason', () => {

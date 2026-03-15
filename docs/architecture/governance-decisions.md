@@ -284,7 +284,7 @@ const createRuleService = new CreateRule(apiClient);
 ### Trade-offs
 
 - **No Convenience Singleton**: Cannot use `CreateRule.getInstance()`; must instantiate explicitly
-- **Container Required**: Larger applications need explicit DI container (GovernanceModule pattern)
+- **Explicit Composition Required**: Larger applications need explicit factory assembly (`createGovernanceModule` pattern)
 - **More Verbose at Init**: Application startup needs explicit service wiring
 
 ### Consequences
@@ -293,7 +293,7 @@ const createRuleService = new CreateRule(apiClient);
 - ✅ Easier to test (just `new CreateRule(mockApiClient)`)
 - ✅ No `resetInstance()` needed in tests
 - ✅ Aligns with server-side DDD patterns
-- ⚠️ Requires explicit composition in application layer (or use GovernanceModule)
+- ⚠️ Requires explicit composition in application layer (or use `createGovernanceModule`)
 - ⚠️ Different pattern from some legacy code (migration needed over time)
 
 ### Composition Pattern
@@ -409,32 +409,27 @@ export class RulePowerSyncRepository implements IRuleRepository {
 - ✅ Clear offline capability for desktop
 - ⚠️ Must maintain two repository implementations
 - ⚠️ Interface changes require two edits
-- ⚠️ Factory pattern complexity (currently handled well in GovernanceModule)
+- ⚠️ Factory pattern complexity (currently handled in `createGovernanceModule`)
 
 ### Factory Pattern for Adapter Selection
 
 ```typescript
-// ✅ Factory pattern in GovernanceModule
-export class GovernanceModule {
-  static create(config: GovernanceModuleConfig): GovernanceModule {
-    let ruleRepository: IRuleRepository;
+// ✅ Factory pattern in governance composition root
+function createGovernanceModule(config: GovernanceModuleConfig) {
+  const ruleRepository =
+    config.environment === 'api'
+      ? new RulePrismaRepository(config.prisma)
+      : new RulePowerSyncRepository(config.powerSync);
 
-    if (config.environment === 'api') {
-      ruleRepository = new RulePrismaRepository(config.prisma);
-    } else if (config.environment === 'desktop') {
-      ruleRepository = new RulePowerSyncRepository(config.powerSync);
-    } else {
-      throw new Error('Unknown environment');
-    }
-
-    return new GovernanceModule(ruleRepository /* ... */);
-  }
+  return {
+    api: {
+      // ... callable application port
+    },
+  };
 }
 
-// Usage: Transparent to application
-const module = GovernanceModule.create(config);
-const createRuleUseCase = module.getCreateRuleUseCase();
-// Works identically whether using Prisma or PowerSync
+// Usage: transport consumes module.api
+const module = createGovernanceModule(config);
 ```
 
 ### Monitoring Adapter Consistency

@@ -25,6 +25,8 @@ import type {
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
 } from '../types';
 
 /**
@@ -68,6 +70,15 @@ export class RuleHttpAdapter implements IRuleApiClient {
 
   async searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>> {
     return this.httpClient.get(`${this.baseUrl}/search`, { params: query });
+  }
+
+  async getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {
+    return this.httpClient.get(`${this.baseUrl}/${query.ruleId}/revisions`, {
+      params: {
+        page: query.page,
+        pageSize: query.pageSize,
+      },
+    });
   }
 }
 

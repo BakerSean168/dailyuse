@@ -53,7 +53,7 @@ export class CreateRuleUseCase {
     }
 
     if (existingResult.data !== null) {
-      return error('CONFLICT', `Rule with code '${req.code}' already exists`);
+      return error('DUPLICATE_CODE', `Rule with code '${req.code}' already exists`);
     }
 
     const severityResult = RuleSeverity.create(req.severity);

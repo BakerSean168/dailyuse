@@ -12,14 +12,14 @@
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
 import {
+  createGovernanceModule,
   RulePrismaRepository,
   RuleRevisionPrismaRepository,
-  GovernanceModule,
+  type GovernanceModuleInstance,
 } from '../infrastructure-server';
-import { GovernanceContainer } from '../infrastructure-server/di/governance-container';
 import { registerGovernanceRoutes } from './routes';
-import type { GovernanceUseCases } from '../controllers/governance.controller';
-import { registerGovernanceInitializationTasks } from './initialization';
+import { createGovernanceTransportHandlers } from './transport-handlers';
+import { createGovernanceRuntimeContribution } from './runtime';
 
 /**
  * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
@@ -38,18 +38,13 @@ export interface GovernanceApiModuleContext {
   readonly openApiRegistry?: import('@dailyuse/utils/result').OpenApiRegistryLike;
 }
 
-export interface GovernanceApiModuleOptions {
-  /** 自定义路由前缀（默认 '/governance/rules'） */
-  routePrefix?: string;
-  /** 是否同时挂载短路径 '/rules'（默认 true） */
-  enableShortPath?: boolean;
-}
-
 export interface GovernanceApiModuleDef {
   readonly name: string;
   register(context: GovernanceApiModuleContext): void;
   destroy?(): void;
 }
+
+let activeGovernanceModule: GovernanceModuleInstance | null = null;
 
 export const GovernanceApiModule: GovernanceApiModuleDef = {
   name: 'Governance',
@@ -59,22 +54,17 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
     const prismaClient = db as PrismaClient;
-    const ruleRepository = new RulePrismaRepository(prismaClient);
-    const revisionRepository = new RuleRevisionPrismaRepository(prismaClient);
-    const governanceModule = new GovernanceModule({
-      ruleRepository,
-      revisionRepository,
+    const governanceModule = createGovernanceModule({
+      // The application edge decides which adapter implementation to use.
+      // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
+      ruleRepository: new RulePrismaRepository(prismaClient),
+      revisionRepository: new RuleRevisionPrismaRepository(prismaClient),
+      runtimeContributions: createGovernanceRuntimeContribution(),
     });
+    activeGovernanceModule = governanceModule;
+    governanceModule.start();
 
-    const handlers: GovernanceUseCases = {
-      createRule: (req, cx) => governanceModule.createRule.execute(req, cx),
-      updateRule: (id, req, cx) => governanceModule.updateRule.execute(id, req, cx),
-      deleteRule: (req, cx) => governanceModule.deleteRule.execute(req, cx),
-      getRule: (req) => governanceModule.getRule.execute(req),
-      listRules: (query) => governanceModule.listRules.execute(query),
-      searchRules: (req, cx) => governanceModule.searchRules.execute(req, cx),
-      getRevisions: (query) => governanceModule.getRevisions.execute(query),
-    };
+    const handlers = createGovernanceTransportHandlers(governanceModule.api);
 
     // 2. 创建路由（注入平台中间件）
     const governanceRoutes = registerGovernanceRoutes(
@@ -86,12 +76,10 @@ export const GovernanceApiModule: GovernanceApiModuleDef = {
     // 3. 挂载到主路由（模块自决前缀）
     router.use('/governance/rules', governanceRoutes);
     router.use('/rules', governanceRoutes);
-
-    // 4. 注册初始化任务（事件处理器等）
-    registerGovernanceInitializationTasks();
   },
 
   destroy() {
-    GovernanceContainer.getInstance().reset();
+    activeGovernanceModule?.dispose();
+    activeGovernanceModule = null;
   },
 };

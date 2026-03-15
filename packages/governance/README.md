@@ -46,8 +46,8 @@ application-client (客户端应用层)
 infrastructure-server (服务端基础设施层)
 - Prisma 仓储实现
 - PowerSync 仓储实现
-- DI 容器（GovernanceContainer）
-- 模块组合根（GovernanceModule）
+- 显式组合根（createGovernanceModule）
+- 内部组装辅助（createGovernanceUseCases，仅基础设施层使用）
 
 infrastructure-client (客户端基础设施层)
 - HTTP 适配器（RuleHttpAdapter）
@@ -55,7 +55,7 @@ infrastructure-client (客户端基础设施层)
 
 api (API 层)
 - 分拆路由定义（routes/*，按 feature 拆分）
-- 模块初始化（initialization）
+- 模块 runtime 贡献（start / stop）
 
 controllers (控制器层)
 - 输入校验、编排、响应序列化
@@ -111,7 +111,7 @@ rule.deprecate(reason); // Active → Deprecated
 | 仓储模式          | 依赖倒置原则                                | `domain-server/repositories/`                |
 | 状态机            | 状态转换规则封装                            | `domain-shared/value-objects/rule-status.ts` |
 | Result 模式       | 业务方法返回 Result                         | 全部领域方法                                 |
-| 组合根            | 依赖注入入口                                | `infrastructure-server/governance.module.ts` |
+| 组合根            | 显式依赖注入入口                            | `infrastructure-server/governance.module.ts` |
 
 ## 文件结构
 
@@ -121,7 +121,7 @@ src/
 ├── domain-shared/          # 共享领域 — ID 工厂、状态机逻辑、值对象
 ├── domain-server/          # 服务端领域 — 聚合根、仓储接口、领域服务
 ├── application-server/     # 应用层 — Use Cases (Commands + Queries)
-├── infrastructure-server/  # 基础设施 — Prisma 仓储、DI 容器、组合根
+├── infrastructure-server/  # 基础设施 — Prisma 仓储、显式组合根
 ├── controllers/            # 控制器 — 输入校验、编排
 ├── application-client/     # 客户端应用层 — 客户端服务
 ├── domain-client/          # 客户端领域 — 视图模型
@@ -136,6 +136,9 @@ src/
 >
 > governance 中的每个文件都包含详细的 JSDoc 注释，解释 DDD 模式和设计决策。
 > 新模块开发时，可以直接参考本模块的实现模式。
+>
+> `COMPOSITION_ROOT.md` 提供了当前推荐的 server 端注入蓝图与治理模块实践。
+> `REFACTOR_PLAYBOOK.md` 提供了迁移其他模块时的最短阅读路径与代码定位图。
 >
 > 📖 从 [docs/governance/README.md](../../docs/governance/README.md) 开始获取轻量导航、速查卡与变更手册。
 

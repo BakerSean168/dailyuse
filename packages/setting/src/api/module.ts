@@ -11,12 +11,14 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok, fail } from '@dailyuse/contracts/result';
-import { SettingModule } from '../infrastructure-server';
-import { SettingContainer } from '../infrastructure-server/di/setting-container';
+import {
+  createSettingModule,
+  UserSettingPrismaRepository,
+  type SettingModuleInstance,
+} from '../infrastructure-server';
 import { registerSettingRoutes } from './routes';
-import type { SettingUseCases } from '../controllers/setting.controller';
-import { registerSettingInitializationTasks } from './initialization';
+import { createSettingTransportHandlers } from './transport-handlers';
+import { createSettingRuntimeContribution } from './runtime';
 
 export interface SettingApiModuleContext {
   readonly app: import('express').Express;
@@ -35,6 +37,8 @@ export interface SettingApiModuleDef {
   destroy?(): void;
 }
 
+let activeSettingModule: SettingModuleInstance | null = null;
+
 export const SettingApiModule: SettingApiModuleDef = {
   name: 'Setting',
 
@@ -42,48 +46,25 @@ export const SettingApiModule: SettingApiModuleDef = {
     const { router, middleware, db } = context;
 
     // 1. Composition Root — 组装依赖（使用共享数据库单例）
-    const settingModule = new SettingModule(db as PrismaClient);
+    const settingModule = createSettingModule({
+      userSettingRepository: new UserSettingPrismaRepository(db as PrismaClient),
+      runtimeContributions: createSettingRuntimeContribution(),
+    });
+    activeSettingModule = settingModule;
+    settingModule.start();
 
     // 2. 创建路由处理器
-    const handlers: SettingUseCases = {
-      getUserSetting: async (ctx) => ok(await settingModule.getUserSetting.execute(ctx.identityId)),
-      patchUserSetting: async (data, ctx) =>
-        ok(
-          await settingModule.patchUserSetting.execute(
-            ctx.identityId,
-            data.category as any,
-            data.patch,
-          ),
-        ),
-      resetUserSetting: async (ctx, category) =>
-        ok(await settingModule.resetUserSetting.execute(ctx.identityId, category)),
-      exportSettings: async (ctx) => ok(await settingModule.exportSettings.execute(ctx.identityId)),
-      importSettings: async (data, ctx) => {
-        let importData: Record<string, any>;
-        try {
-          importData = JSON.parse(data.data) as Record<string, any>;
-        } catch {
-          return fail({ code: 'VALIDATION_ERROR' as const, message: 'Invalid JSON in data field' });
-        }
-        const result = await settingModule.importSettings.execute(ctx.identityId, importData, {
-          merge: !data.overwrite,
-        });
-        return ok(result);
-      },
-      getDefaultSettings: () => ok(settingModule.getDefaultSettings.execute()),
-    };
+    const handlers = createSettingTransportHandlers(settingModule.api);
 
     // 3. 注册路由
     const settingRoutes = registerSettingRoutes(handlers, middleware, context.openApiRegistry);
 
     // 4. 挂载到 API 路由
     router.use('/settings', settingRoutes);
-
-    // 5. 注册初始化任务
-    registerSettingInitializationTasks();
   },
 
   destroy() {
-    SettingContainer.getInstance().reset();
+    activeSettingModule?.dispose();
+    activeSettingModule = null;
   },
 };

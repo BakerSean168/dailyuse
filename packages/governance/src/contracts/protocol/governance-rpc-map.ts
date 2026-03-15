@@ -24,8 +24,6 @@ import type {
   SearchRulesRes,
   GetRuleRevisionsQuery,
   GetRuleRevisionsRes,
-  GetRuleRevisionReq,
-  GetRuleRevisionRes,
 } from '../api';
 
 export type GovernanceRpcMap = {
@@ -53,7 +51,4 @@ export type GovernanceRpcMap = {
 
   /** 获取规则修订历史 */
   'governance:rule-revision:list': [GetRuleRevisionsQuery, GetRuleRevisionsRes];
-
-  /** 获取单个修订记录详情 */
-  'governance:rule-revision:get': [GetRuleRevisionReq, GetRuleRevisionRes];
 };

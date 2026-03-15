@@ -37,7 +37,7 @@
 │  ├─ Prisma Repository: For API server            │
 │  ├─ PowerSync Repository: For Desktop            │
 │  ├─ Mappers: Domain ↔ Persistence               │
-│  └─ Composition Root: DI container              │
+│  └─ Composition Root: factory assembly          │
 └────────────────┬────────────────────────────────────┘
                  │
                  ▼

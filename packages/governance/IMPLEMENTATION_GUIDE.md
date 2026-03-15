@@ -48,25 +48,20 @@ if (!result.ok) {
 ### For Desktop Development
 
 ```typescript
-import { GovernanceModule } from '@dailyuse/governance/infrastructure-server';
+import { createGovernancePowerSyncModule } from '@dailyuse/governance/infrastructure-server';
 
 // 1. Initialize module with PowerSync
-const module = GovernanceModule.create({
-  environment: 'desktop',
-  powerSync: powerSyncDatabase,
-  // ... other config
-});
+const module = createGovernancePowerSyncModule(powerSyncDatabase);
+module.start();
 
-// 2. Get use-cases (works identically to API)
-const createRuleUseCase = module.getCreateRuleUseCase();
-const updateRuleUseCase = module.getUpdateRuleUseCase();
-
-// 3. Execute use-cases (same Result pattern)
-const result = await createRuleUseCase.execute({
-  code: 'DDD-002',
-  // ... rest of data
-  authorId: 'user-456',
-});
+// 2. Execute application port methods directly
+const result = await module.api.createRule(
+  {
+    code: 'DDD-002',
+    // ... rest of data
+  },
+  { identityId: 'user-456' },
+);
 
 if (!result.ok) {
   // Same error handling as API
@@ -75,6 +70,8 @@ if (!result.ok) {
   // Same success handling as API
   ui.showSuccess(`Rule ${result.data.id} created`);
 }
+
+module.dispose();
 ```
 
 ---
