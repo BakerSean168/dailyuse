@@ -13,6 +13,8 @@
  *   4. Hand off to the lifecycle manager (window creation, shutdown)
  */
 
+import path from 'node:path';
+import { app } from 'electron';
 import { openPowerSyncLocalOnly } from './database/powersync';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { registerAppLifecycleHandlers } from './lifecycle';
@@ -29,6 +31,7 @@ import { NotificationElectronModule } from '@dailyuse/notification/electron-entr
 import { SettingElectronModule } from '@dailyuse/setting/electron-entry';
 import { createAIElectronModule } from '@dailyuse/ai/electron-entry';
 import { RepositoryElectronModule } from '@dailyuse/repository/electron-entry';
+import { createRepositoryPowerSyncModule, FsStorageAdapter } from '@dailyuse/repository';
 import { createEditorElectronModule } from '@dailyuse/editor/electron-entry';
 import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { DesktopAuthElectronModule } from './modules/authentication/desktop-auth.electron-module';
@@ -36,8 +39,9 @@ import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
 
 const AIElectronModule = createAIElectronModule({
-  createKnowledgeNotePersistence: (context) =>
-    new DesktopKnowledgeNotePersistenceAdapter(context.db),
+  createKnowledgeNotePersistence: (context: {
+    db: Parameters<typeof createRepositoryPowerSyncModule>[0];
+  }) => new DesktopKnowledgeNotePersistenceAdapter(context.db),
 });
 
 /** Kept as module-level for graceful shutdown access. */
@@ -55,6 +59,11 @@ async function initializeApp(): Promise<void> {
   console.log('[App] PowerSync business database initialized');
 
   // 2. Bootstrap business modules
+  const repositoryStorageDir = path.join(app.getPath('userData'), 'repository-storage');
+  const editorRepositoryModule = createRepositoryPowerSyncModule(db, {
+    storagePort: new FsStorageAdapter(repositoryStorageDir),
+  });
+
   bootstrapper = new ElectronBootstrapper(db);
   await bootstrapper
     // Core services
@@ -73,10 +82,26 @@ async function initializeApp(): Promise<void> {
     .register(RepositoryElectronModule)
     .register(
       createEditorElectronModule({
-        // TODO: provide a real IRepositoryContentPort once FileSystemStorageAdapter is implemented
         contentPort: {
-          getContent: async () => ({ resourceId: '', name: '', content: null }),
-          saveContent: async () => {},
+          getContent: async (resourceId) => {
+            const result = await editorRepositoryModule.api.getResource(resourceId);
+            if (!result.ok || !result.data) {
+              return { resourceId, name: '', content: null };
+            }
+
+            const resource = result.data as { id: string; name: string; content: string | null };
+            return {
+              resourceId: resource.id,
+              name: resource.name,
+              content: resource.content,
+            };
+          },
+          saveContent: async ({ resourceId, content }) => {
+            const result = await editorRepositoryModule.api.updateResource(resourceId, { content });
+            if (!result.ok) {
+              throw new Error(result.error.message || 'Failed to persist editor content');
+            }
+          },
         },
       }),
     )

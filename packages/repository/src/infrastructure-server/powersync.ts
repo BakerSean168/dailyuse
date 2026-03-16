@@ -1,49 +1,69 @@
+/**
+ * createRepositoryPowerSyncModule — convenience factory for PowerSync (Electron).
+ * createRepositoryPowerSyncModule —— PowerSync（Electron）便捷工厂。
+ *
+ * Creates all PowerSync repository adapters, then delegates to the canonical
+ * composition root `createRepositoryModule`.
+ *
+ * 创建所有 PowerSync 仓储适配器，然后委托给规范组合根 `createRepositoryModule`。
+ */
+
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
-import type { IRepositoryRepository } from '../domain-server/repositories/IRepositoryRepository';
-import type { IResourceRepository } from '../domain-server/repositories/IResourceRepository';
-import type { IFolderRepository } from '../domain-server/repositories/IFolderRepository';
-import type { IResourceBookmarkRepository } from '../domain-server/repositories/IResourceBookmarkRepository';
-import { RepositorySyncApplicationService } from '../application-server/use-cases/commands/repository-sync-application-service';
-import { RepositoryContainer } from './di/repository-container-v2';
+import type { IStoragePort } from '../application-server/ports/IStoragePort';
 import {
   PowerSyncRepositoryRepository,
   PowerSyncResourceRepository,
   PowerSyncFolderRepository,
   ResourceBookmarkPowerSyncRepository,
 } from './adapters/powersync';
+import {
+  createRepositoryModule,
+  type RepositoryModuleInstance,
+  type RepositoryRuntimeContributionsInput,
+} from './repository.module';
 
-export class RepositoryPowerSyncModule {
-  public readonly repositoryRepository: IRepositoryRepository;
-  public readonly resourceRepository: IResourceRepository;
-  public readonly folderRepository: IFolderRepository;
-  public readonly resourceBookmarkRepository: IResourceBookmarkRepository;
+// ---------------------------------------------------------------------------
+// PowerSync module factory — PowerSync 模块工厂
+// ---------------------------------------------------------------------------
 
-  public readonly syncService: RepositorySyncApplicationService;
-
-  constructor(dbConnection: IElectronDatabase) {
-    const repositoryRepository = new PowerSyncRepositoryRepository(dbConnection);
-    const resourceRepository = new PowerSyncResourceRepository(dbConnection);
-    const folderRepository = new PowerSyncFolderRepository(dbConnection);
-
-    const container = RepositoryContainer.getInstance();
-    container.reset();
-    container.registerRepositoryRepository(repositoryRepository);
-    container.registerResourceRepository(resourceRepository);
-    container.registerFolderRepository(folderRepository);
-
-    this.repositoryRepository = container.getRepositoryRepository();
-    this.resourceRepository = container.getResourceRepository();
-    this.folderRepository = container.getFolderRepository();
-    this.resourceBookmarkRepository = new ResourceBookmarkPowerSyncRepository(dbConnection);
-
-    this.syncService = new RepositorySyncApplicationService();
-  }
+export interface CreateRepositoryPowerSyncModuleOptions {
+  readonly storagePort: IStoragePort;
+  readonly runtimeContributions?: RepositoryRuntimeContributionsInput;
 }
+
+/**
+ * Creates a fully-wired repository module backed by PowerSync adapters.
+ * 创建基于 PowerSync 适配器的完整仓库模块。
+ *
+ * @param dbConnection - PowerSync database connection / PowerSync 数据库连接
+ * @param options      - Storage port and optional runtime contributions / 存储端口和可选运行时贡献
+ */
+export function createRepositoryPowerSyncModule(
+  dbConnection: IElectronDatabase,
+  options: CreateRepositoryPowerSyncModuleOptions,
+): RepositoryModuleInstance {
+  const repositoryRepository = new PowerSyncRepositoryRepository(dbConnection);
+  const resourceRepository = new PowerSyncResourceRepository(dbConnection);
+  const folderRepository = new PowerSyncFolderRepository(dbConnection);
+  const resourceBookmarkRepository = new ResourceBookmarkPowerSyncRepository(dbConnection);
+
+  return createRepositoryModule({
+    repositoryRepository,
+    resourceRepository,
+    folderRepository,
+    resourceBookmarkRepository,
+    storagePort: options.storagePort,
+    runtimeContributions: options.runtimeContributions,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Re-exports — 重新导出
+// ---------------------------------------------------------------------------
 
 export {
   PowerSyncRepositoryRepository,
   PowerSyncResourceRepository,
   PowerSyncFolderRepository,
   ResourceBookmarkPowerSyncRepository,
-  RepositoryContainer,
 };

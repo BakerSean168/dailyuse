@@ -1,3 +1,14 @@
+/**
+ * AI Client Service — thin facade over API client ports.
+ * AI 客户端服务 —— API 客户端端口的薄门面。
+ *
+ * This is the single entry point for UI layers to interact with the AI module.
+ * All methods delegate directly to the underlying API client adapters.
+ *
+ * 这是 UI 层与 AI 模块交互的唯一入口。
+ * 所有方法直接委托给底层 API 客户端适配器。
+ */
+
 import type {
   AIKnowledgeNoteApiClient,
   IAIGoalApiClient,
@@ -16,6 +27,10 @@ import type {
   UpdateAIProviderConfigReq,
 } from '@dailyuse/contracts/ai';
 
+/**
+ * Thin facade over AI API client ports for UI consumption.
+ * 供 UI 层使用的 AI API 客户端端口薄门面。
+ */
 export class AIClientService {
   constructor(
     private readonly providerApi: IAIProviderConfigApiClient,

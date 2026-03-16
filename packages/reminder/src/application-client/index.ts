@@ -1,30 +1,16 @@
 /**
  * Reminder Application Module (Client)
+ * 提醒模块客户端应用层
  *
  * Constructor-injected application service for reminder management.
+ * 使用构造函数注入的提醒管理客户端服务。
+ *
  * Uses Result<T> pattern for consistent error handling.
+ * 使用 Result<T> 模式实现一致的错误处理。
  */
 
-// ===== Port Interfaces =====
+// ===== Port Interfaces / 端口接口 =====
 export type { IReminderApiClient } from '../infrastructure-client/adapters/types';
 
+// ===== Client Service / 客户端服务 =====
 export { ReminderClientService } from './reminder-client-service';
-
-// ===== Singleton Proxy =====
-// Singleton placeholder - will be replaced during module initialization
-let _reminderApplicationService: any = null;
-
-export function setReminderApplicationService(service: any) {
-  _reminderApplicationService = service;
-}
-
-export const reminderApplicationService: any = new Proxy({} as any, {
-  get(_target, prop) {
-    if (!_reminderApplicationService) {
-      throw new Error(
-        'reminderApplicationService not initialized. Call setReminderApplicationService first.',
-      );
-    }
-    return (_reminderApplicationService as any)[prop];
-  },
-});

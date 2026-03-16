@@ -1,27 +1,34 @@
 /**
  * Notification API Module Definition
+ * 通知 API 模块定义
  *
- * Implements IApiModule standard interface:
- * 1. Composition Root (NotificationModule → Services → Handlers)
- * 2. Route definition and mounting
- * 3. Initialization task registration
+ * 实现 IApiModule 标准接口，内部自治完成：
+ * 1. Composition Root（创建 Repo → UseCase → Handler）
+ * 2. 路由定义与挂载
+ * 3. 初始化任务注册（通过 runtime contribution）
  *
- * Middleware comes from context.middleware, no dependency on apps/api internals.
+ * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
 import { Router } from 'express';
 import type { Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
-import { NotificationModule } from '../infrastructure-server';
-import { NotificationContainer } from '../infrastructure-server/di/notification-container';
+import {
+  createNotificationModule,
+  NotificationPrismaRepository,
+  NotificationPreferencePrismaRepository,
+  NotificationTemplatePrismaRepository,
+  type NotificationModuleInstance,
+} from '../infrastructure-server';
 import { registerNotificationRoutes } from './routes';
-import type { NotificationUseCases } from '../controllers/notification.controller';
-import { registerNotificationInitializationTasks } from './initialization';
+import { createNotificationTransportHandlers } from './transport-handlers';
+import { createNotificationRuntimeContribution } from './runtime';
 
 /**
- * Module registration context (structurally compatible with IApiModuleContext from apps/api).
- * Locally defined to avoid circular dependency on apps/api.
+ * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）
+ *
+ * 此类型在 notification 包内本地定义，避免对 apps/api 的循环依赖。
+ * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
  */
 export interface NotificationApiModuleContext {
   readonly app: Express;
@@ -36,9 +43,11 @@ export interface NotificationApiModuleContext {
 
 export interface NotificationApiModuleDef {
   readonly name: string;
-  register(context: NotificationApiModuleContext): Promise<void> | void;
-  destroy?(): Promise<void> | void;
+  register(context: NotificationApiModuleContext): void;
+  destroy?(): void;
 }
+
+let activeNotificationModule: NotificationModuleInstance | null = null;
 
 export const NotificationApiModule: NotificationApiModuleDef = {
   name: 'Notification',
@@ -46,65 +55,36 @@ export const NotificationApiModule: NotificationApiModuleDef = {
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root — assemble dependencies using shared database singleton
+    // 1. Composition Root — 组装依赖（使用共享数据库单例）
+    // The application edge decides which adapter implementation to use.
+    // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
     const prismaClient = db as PrismaClient;
-    const notificationModule = new NotificationModule('prisma', prismaClient);
+    const notificationModule = createNotificationModule({
+      notificationRepository: new NotificationPrismaRepository(prismaClient),
+      preferenceRepository: new NotificationPreferencePrismaRepository(prismaClient),
+      templateRepository: new NotificationTemplatePrismaRepository(prismaClient),
+      runtimeContributions: createNotificationRuntimeContribution(),
+    });
+    activeNotificationModule = notificationModule;
+    notificationModule.start();
 
-    // 2. Create route handlers delegating to application services
-    const handlers: NotificationUseCases = {
-      createNotification: async (data) =>
-        ok(await notificationModule.notificationService.createNotification(data)),
-      listNotifications: async (query) =>
-        ok(await notificationModule.notificationService.listNotifications(query)),
-      getNotification: async (id) =>
-        ok(await notificationModule.notificationService.getNotification(id)),
-      updateNotification: async (_id, _data) => ok(_data),
-      deleteNotification: async (id) => {
-        await notificationModule.notificationService.deleteNotification(id);
-        return ok(undefined);
-      },
-      markAsRead: async (id) => ok(await notificationModule.notificationService.markAsRead(id)),
-      markAllAsRead: async (identityId) => {
-        await notificationModule.notificationService.markAllAsRead(identityId);
-        return ok({ count: 0 });
-      },
-      getUnreadCount: async (identityId) => {
-        const count = await notificationModule.notificationService.getUnreadCount(identityId);
-        return ok({ count });
-      },
-      batchMarkAsRead: async (data) => {
-        await notificationModule.notificationService.markAsRead(data.notificationIds?.[0]);
-        return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
-      },
-      batchDelete: async (data) => {
-        await Promise.all(
-          (data.notificationIds ?? []).map((id: string) =>
-            notificationModule.notificationService.deleteNotification(id),
-          ),
-        );
-        return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
-      },
-      cleanupOldNotifications: async (data) => {
-        await notificationModule.notificationService.clearAll(data.identityId);
-        return ok({ success: true, affected: 0 });
-      },
-    };
+    // 2. Transport handlers — convert module facade to controller signatures.
+    // 传输处理器 — 将模块门面转换为控制器签名。
+    const handlers = createNotificationTransportHandlers(notificationModule.api);
 
-    // 3. Register routes (inject platform middleware)
+    // 3. 创建路由（注入平台中间件）
     const notificationRoutes = registerNotificationRoutes(
       handlers,
       middleware,
       context.openApiRegistry,
     );
 
-    // 4. Mount to main router
+    // 4. 挂载到主路由（模块自决前缀）
     router.use('/notifications', notificationRoutes);
-
-    // 5. Register initialization tasks (event listeners etc.)
-    registerNotificationInitializationTasks();
   },
 
   destroy() {
-    NotificationContainer.getInstance().reset();
+    activeNotificationModule?.dispose();
+    activeNotificationModule = null;
   },
 };

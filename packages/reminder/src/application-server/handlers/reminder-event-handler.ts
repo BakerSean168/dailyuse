@@ -4,9 +4,14 @@
  * 事件注册器：按用例委派到独立 handler
  * - ReminderTemplate Created/Updated/Enabled/Paused/Deleted/Moved
  * - ReminderGroup Created/Updated/Enabled/Paused/ControlModeSwitched/Deleted
+ *
+ * Dependencies are now injected explicitly instead of relying on the legacy container.
+ * 依赖现在通过显式注入，而非依赖旧版容器。
  */
 
 import { createLogger, eventBus } from '@dailyuse/utils';
+import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
+import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
 import {
   ReminderHandlerSupport,
   ReminderTemplateCreatedHandler,
@@ -42,16 +47,26 @@ type SSEManager = {
   sendMessage(identityId: string, eventName: string, data: unknown): boolean;
 };
 
+export interface ReminderEventHandlerDependencies {
+  readonly sseManager: SSEManager;
+  readonly reminderTemplateRepository: IReminderTemplateRepository;
+  readonly reminderGroupRepository: IReminderGroupRepository;
+}
+
 export class ReminderEventHandler {
   private static isInitialized = false;
 
-  static async initialize(sseManager: SSEManager): Promise<void> {
+  static async initialize(deps: ReminderEventHandlerDependencies): Promise<void> {
     if (this.isInitialized) {
       logger.warn('[ReminderEventHandler] Already initialized, skipping');
       return;
     }
 
-    const support = new ReminderHandlerSupport(sseManager);
+    const support = new ReminderHandlerSupport(
+      deps.sseManager,
+      deps.reminderTemplateRepository,
+      deps.reminderGroupRepository,
+    );
 
     const templateCreatedHandler = new ReminderTemplateCreatedHandler(support);
     const templateUpdatedHandler = new ReminderTemplateUpdatedHandler(support);

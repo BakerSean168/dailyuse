@@ -2,23 +2,25 @@
  * Governance Module — Electron Entry Point.
  * 治理模块 — Electron 入口点。
  *
- * Self-contained Composition Root for the Governance module in Electron main process.
- * 治理模块在 Electron 主进程中的自包含组合根。
- * Instantiates PowerSync repositories, wires through GovernanceModule,
+ * Self-contained governance runtime assembly for Electron main process.
+ * 治理模块在 Electron 主进程中的自包含运行时组装。
+ * Instantiates PowerSync repositories through the module factory,
  * and registers IPC handlers using the GovernanceController.
- * 实例化 PowerSync 仓储，通过 GovernanceModule 连接，并使用 GovernanceController 注册 IPC 处理器。
+ * 通过模块工厂实例化 PowerSync 仓储，并使用 GovernanceController 注册 IPC 处理器。
  *
  * @module governance/electron-entry
  */
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { GovernancePowerSyncModule, GovernanceContainer } from '../infrastructure-server/powersync';
+import { createGovernancePowerSyncModule } from '../infrastructure-server/powersync';
 import { GovernanceController } from '../controllers/governance.controller';
-import type { GovernanceUseCases } from '../controllers/governance.controller';
 import { createLogger } from '@dailyuse/utils';
 import type { Context } from '@dailyuse/contracts/shared';
 import type { ListRulesQuery, SearchRulesQuery, GetRuleRevisionsQuery } from '../contracts';
+import { createGovernanceTransportHandlers } from '../api/transport-handlers';
+import { createGovernanceRuntimeContribution } from '../api/runtime';
+import type { GovernanceModuleInstance } from '../infrastructure-server';
 
 const logger = createLogger('GovernanceElectron');
 
@@ -29,10 +31,11 @@ const Ch = {
   DELETE: 'governance:rule:delete',
   LIST: 'governance:rule:list',
   SEARCH: 'governance:rule:search',
-  REVISIONS: 'governance:rule:revisions',
+  REVISIONS: 'governance:rule-revision:list',
 } as const;
 
 const channels = Object.values(Ch);
+let activeGovernanceModule: GovernanceModuleInstance | null = null;
 
 export const GovernanceElectronModule: IElectronModule = {
   name: 'Governance',
@@ -41,20 +44,14 @@ export const GovernanceElectronModule: IElectronModule = {
     const { db } = ctx;
 
     // 1. Composition Root
-    const governanceModule = new GovernancePowerSyncModule(db);
+    const governanceModule = createGovernancePowerSyncModule(db);
+    activeGovernanceModule = governanceModule;
+    governanceModule.start();
 
     // 2. Controller (Zod validation + use case orchestration)
-    const useCases: GovernanceUseCases = {
-      createRule: (req, cx) => governanceModule.createRule.execute(req, cx),
-      updateRule: (id, req, cx) => governanceModule.updateRule.execute(id, req, cx),
-      deleteRule: (req, cx) => governanceModule.deleteRule.execute(req, cx),
-      getRule: (req) => governanceModule.getRule.execute(req),
-      listRules: (query) => governanceModule.listRules.execute(query),
-      searchRules: (req, cx) => governanceModule.searchRules.execute(req, cx),
-      getRevisions: (query) => governanceModule.getRevisions.execute(query),
-    };
-
-    const controller = new GovernanceController(useCases);
+    const controller = new GovernanceController(
+      createGovernanceTransportHandlers(governanceModule.api),
+    );
 
     // 3. IPC Handlers
     const electronContext: Context = { identityId: 'desktop-user', deviceId: 'electron-app' };
@@ -95,7 +92,8 @@ export const GovernanceElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
-    GovernanceContainer.getInstance().reset();
+    activeGovernanceModule?.dispose();
+    activeGovernanceModule = null;
     logger.info('Governance module destroyed');
   },
 };

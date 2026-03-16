@@ -232,25 +232,6 @@ export function registerNotificationRoutes(
     (req) => controller.get(req.params!.id),
   );
 
-  // PUT /:id — Update notification
-  r.route(
-    {
-      method: 'put',
-      path: '/:id',
-      summary: '更新通知',
-      request: {
-        params: z.object({ id: brandedId<NotificationId>() }),
-        body: { content: { 'application/json': { schema: UpdateNotificationSchema } } },
-      },
-      responses: {
-        200: successResponse(NotificationResponseSchema, '更新成功'),
-        404: errorResponse('通知不存在'),
-      },
-    },
-    [auth],
-    (req) => controller.update(req.params!.id, req.body),
-  );
-
   // DELETE /:id — Delete notification
   r.route(
     {

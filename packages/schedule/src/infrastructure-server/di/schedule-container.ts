@@ -2,6 +2,17 @@ import type { IScheduleRepository } from '../../domain-server/repositories/ISche
 import type { IScheduleExecutionRepository } from '../../domain-server/repositories/IScheduleExecutionRepository';
 import type { IScheduleTaskRepository } from '../../domain-server/repositories/IScheduleTaskRepository';
 
+/**
+ * @deprecated The schedule module no longer uses this container internally.
+ *             Use {@link createScheduleModule} composition root instead.
+ *             Kept only for backward compatibility with external callers
+ *             (e.g. reminder module's `reminder-handler-support.ts`).
+ * @deprecated 调度模块内部已不再使用该容器。
+ *             请改用 {@link createScheduleModule} 组合根。
+ *             当前仅为兼容外部调用方保留（如 reminder 模块的 `reminder-handler-support.ts`）。
+ *
+ * @see {@link createScheduleModule} from '../schedule.module'
+ */
 export class ScheduleContainer {
   private static instance: ScheduleContainer;
   private scheduleRepository?: IScheduleRepository;

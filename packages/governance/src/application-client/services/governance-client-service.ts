@@ -16,12 +16,14 @@ import type { RuleClientDTO } from '../../contracts/aggregates/rule-client';
 import type {
   CreateRuleReq,
   DeleteRuleRes,
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
   ListRulesQuery,
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
   UpdateRuleReq,
-} from '../../contracts/api/rules';
+} from '../../contracts/api';
 import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
 /** Governance frontend service facade. 治理前端服务门面。 */
@@ -56,5 +58,10 @@ export class GovernanceClientService {
   /** Searches rules by keyword. 按关键词搜索规则。 */
   async searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>> {
     return this.ruleApiClient.searchRules(query);
+  }
+
+  /** Gets revision history for a rule. 获取规则修订历史。 */
+  async getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {
+    return this.ruleApiClient.getRevisions(query);
   }
 }

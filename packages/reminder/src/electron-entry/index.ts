@@ -1,19 +1,28 @@
 /**
- * Reminder Module — Electron Entry Point
+ * Reminder Module — Electron Entry Point.
+ * 提醒模块 — Electron 入口点。
+ *
+ * Self-contained reminder runtime assembly for Electron main process.
+ * 提醒模块在 Electron 主进程中的自包含运行时组装。
+ *
+ * Uses the same composition root as the API module (createReminderPowerSyncModule),
+ * and registers IPC handlers using the shared ReminderController.
+ *
+ * 使用与 API 模块相同的组合根（createReminderPowerSyncModule），
+ * 并通过共享的 ReminderController 注册 IPC 处理器。
  *
  * @module reminder/electron-entry
  */
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import { ok } from '@dailyuse/contracts/result';
-import { IdentityId } from '@dailyuse/domain-shared';
-import { ReminderPowerSyncModule, ReminderContainer } from '../infrastructure-server/powersync';
+import { createReminderPowerSyncModule } from '../infrastructure-server/powersync';
+import { ReminderController } from '../controllers/reminder.controller';
+import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils';
-import { ReminderTemplate } from '../domain-server/aggregates/reminder-template';
-import { ReminderGroup } from '../domain-server/aggregates/reminder-group';
-import { ReminderController, type ReminderUseCases } from '../controllers/reminder.controller';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import type { ReminderModuleInstance } from '../infrastructure-server';
+import { fail } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ReminderElectron');
 
@@ -25,200 +34,133 @@ const Ch = {
   TEMPLATE_DELETE: 'reminder:template:delete',
   TEMPLATE_TOGGLE_ENABLED: 'reminder:template:toggle-enabled',
   TEMPLATE_MOVE_TO_GROUP: 'reminder:template:move-to-group',
+  TEMPLATE_GET_BY_USER: 'reminder:template:get-by-user',
+  TEMPLATE_SEARCH: 'reminder:template:search',
+  TEMPLATE_SCHEDULE_STATUS: 'reminder:template:schedule-status',
+  UPCOMING_GET: 'reminder:upcoming:get',
   GROUP_LIST: 'reminder:group:list',
+  GROUP_GET: 'reminder:group:get',
   GROUP_CREATE: 'reminder:group:create',
   GROUP_UPDATE: 'reminder:group:update',
   GROUP_DELETE: 'reminder:group:delete',
+  GROUP_GET_BY_USER: 'reminder:group:get-by-user',
+  GROUP_TOGGLE_STATUS: 'reminder:group:toggle-status',
+  GROUP_TOGGLE_CONTROL_MODE: 'reminder:group:toggle-control-mode',
 } as const;
 
 const channels = Object.values(Ch);
+let activeReminderModule: ReminderModuleInstance | null = null;
 
 export const ReminderElectronModule: IElectronModule = {
   name: 'Reminder',
 
   register(ctx: IElectronModuleContext): void {
-    const mod = new ReminderPowerSyncModule(ctx.db);
+    // 1. Composition Root — same factory as API, different adapters
+    //    组合根 — 与 API 相同的工厂，不同的适配器
+    const reminderModule = createReminderPowerSyncModule(ctx.db);
+    activeReminderModule = reminderModule;
+    reminderModule.start();
 
-    const templateRepo = mod.reminderTemplateRepository;
-    const groupRepo = mod.reminderGroupRepository;
-    const controller = new ReminderController({
-      createTemplate: async (data, requestContext) => {
-        const normalizedInput = {
-          ...data,
-          activeTime: {
-            activatedAt: data.activeTime?.startDate,
-          },
-          activeHours: data.activeHours
-            ? {
-                enabled: true,
-                startHour: data.activeHours.startHour,
-                endHour: data.activeHours.endHour,
-              }
-            : undefined,
-          recurrence: data.recurrence
-            ? { ...data.recurrence, weekly: data.recurrence.weekly ?? null }
-            : undefined,
-          notificationConfig: {
-            ...data.notificationConfig,
-            actions: data.notificationConfig?.actions ?? null,
-          },
-        };
-        const template = ReminderTemplate.create({
-          ...normalizedInput,
-          identityId: IdentityId.of(requestContext.identityId),
-        });
-        await templateRepo.save(template);
-        return ok(template.toClientDTO());
-      },
-      listTemplates: async (requestContext) => {
-        const templates = await templateRepo.findByIdentityId(requestContext.identityId);
-        const data = templates.map((template) => template.toClientDTO());
-        return ok({
-          templates: data,
-          total: data.length,
-          page: 1,
-          pageSize: data.length,
-          hasMore: false,
-        });
-      },
-      getUpcomingReminders: async () => ok({ data: [], total: 0 }),
-      getTemplate: async (id) => ok(await templateRepo.findById(id)),
-      updateTemplate: async (id, data) => {
-        const existing = await templateRepo.findById(id);
-        if (!existing) {
-          throw new Error('Template not found');
-        }
+    // 2. Controller (Zod validation + use case orchestration via shared transport handlers)
+    //    控制器（Zod 验证 + 通过共享传输处理器的用例编排）
+    const controller = new ReminderController(createReminderTransportHandlers(reminderModule.api));
 
-        const normalizedUpdates: Record<string, unknown> = { ...data };
-        if (data.activeTime) {
-          normalizedUpdates.activeTime = { activatedAt: data.activeTime.startDate };
-        }
-        if (data.activeHours) {
-          normalizedUpdates.activeHours = {
-            enabled: true,
-            startHour: data.activeHours.startHour,
-            endHour: data.activeHours.endHour,
-          };
-        }
-        if (data.recurrence) {
-          normalizedUpdates.recurrence = {
-            ...data.recurrence,
-            weekly: data.recurrence.weekly ?? null,
-          };
-        }
-        if (data.notificationConfig) {
-          normalizedUpdates.notificationConfig = {
-            ...data.notificationConfig,
-            actions: data.notificationConfig.actions ?? null,
-          };
-        }
+    // 3. IPC Handlers — thin transport mapping
+    //    IPC 处理器 — 精简的传输层映射
 
-        existing.update(normalizedUpdates as Parameters<ReminderTemplate['update']>[0]);
-        await templateRepo.save(existing);
-        return ok(existing.toClientDTO());
-      },
-      deleteTemplate: async (id) => {
-        await templateRepo.delete(id);
-        return ok(undefined);
-      },
-      enableTemplate: async () => ok(undefined),
-      pauseTemplate: async () => ok(undefined),
-      toggleTemplate: async () => ok(undefined),
-      moveTemplate: async () => ok(undefined),
-      getTemplateHistory: async () => ok(undefined),
-      recordResponse: async () => ok(undefined),
-      getTemplateResponses: async () => ok(undefined),
-      getResponseStats: async () => ok(undefined),
-      analyzeFrequency: async () => ok(undefined),
-      adjustFrequency: async () => ok(undefined),
-      rejectFrequencyAdjustment: async () => ok(undefined),
-      createGroup: async (data, requestContext) => {
-        const group = ReminderGroup.create({
-          ...data,
-          identityId: requestContext.identityId,
-        });
-        await groupRepo.save(group);
-        return ok(group.toClientDTO());
-      },
-      listGroups: async (requestContext) => {
-        const groups = await groupRepo.findByIdentityId(requestContext.identityId);
-        const data = groups.map((group) => group.toClientDTO());
-        return ok({
-          groups: data,
-          total: data.length,
-          page: 1,
-          pageSize: data.length,
-          hasMore: false,
-        });
-      },
-      getGroup: async (id) => ok(await groupRepo.findById(id)),
-      updateGroup: async (id, data) => {
-        const existing = await groupRepo.findById(id);
-        if (!existing) {
-          throw new Error('Group not found');
-        }
-
-        const updated = ReminderGroup.load({
-          id: existing.id,
-          identityId: existing.identityId as string,
-          name: data.name ?? existing.name,
-          description: 'description' in data ? (data.description ?? null) : existing.description,
-          controlMode: data.controlMode ?? existing.controlMode,
-          enabled: existing.enabled,
-          status: existing.status,
-          order: data.order ?? existing.order,
-          color: 'color' in data ? (data.color ?? null) : existing.color,
-          icon: 'icon' in data ? (data.icon ?? null) : existing.icon,
-          stats: existing.stats as any,
-          createdAt: existing.createdAt,
-          updatedAt: new Date(),
-          deletedAt: existing.deletedAt?.getTime() ?? null,
-          version: existing.version,
-        });
-        await groupRepo.save(updated);
-        return ok(updated.toClientDTO());
-      },
-      deleteGroup: async (id) => {
-        await groupRepo.delete(id);
-        return ok(undefined);
-      },
-      switchGroupControlMode: async () => ok(undefined),
-      batchGroupTemplates: async () => ok(undefined),
-      toggleGroup: async () => ok(undefined),
-      getPreferences: async () => ok(undefined),
-      updatePreferences: async () => ok(undefined),
-    } satisfies ReminderUseCases);
-
-    // Template handlers
+    // Template handlers / 模板处理器
     ipcMain.handle(Ch.TEMPLATE_LIST, async () =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.listTemplates(requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_GET, (_event, id) => controller.getTemplate(id));
+    ipcMain.handle(Ch.TEMPLATE_GET_BY_USER, async () =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.listTemplates(requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.TEMPLATE_GET, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.getTemplate(id, requestContext),
+      ),
+    );
     ipcMain.handle(Ch.TEMPLATE_CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.createTemplate(dto, requestContext),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_UPDATE, async (_event, id, dto) =>
-      withAuthenticatedValue(ctx, async () => controller.updateTemplate(id, dto)),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.updateTemplate(id, dto, requestContext),
+      ),
     );
-    ipcMain.handle(Ch.TEMPLATE_DELETE, (_event, id) => controller.deleteTemplate(id));
+    ipcMain.handle(Ch.TEMPLATE_DELETE, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.deleteTemplate(id, requestContext),
+      ),
+    );
 
-    // Group handlers
+    // Toggle template enabled/paused state.
+    // 切换模板启用/暂停状态。
+    ipcMain.handle(Ch.TEMPLATE_TOGGLE_ENABLED, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.toggleTemplate(id, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, groupId) =>
+      withAuthenticatedValue(ctx, async () => controller.moveTemplate(id, { groupId })),
+    );
+    ipcMain.handle(Ch.TEMPLATE_SEARCH, async () =>
+      fail({ code: 'NOT_IMPLEMENTED', message: 'Template search is not implemented' }),
+    );
+    ipcMain.handle(Ch.TEMPLATE_SCHEDULE_STATUS, async () =>
+      fail({ code: 'NOT_IMPLEMENTED', message: 'Template schedule status is not implemented' }),
+    );
+    ipcMain.handle(Ch.UPCOMING_GET, async (_event, params) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.getUpcomingReminders(params ?? {}, requestContext),
+      ),
+    );
+
+    // Group handlers / 分组处理器
     ipcMain.handle(Ch.GROUP_LIST, async () =>
       withAuthenticatedValue(ctx, async (requestContext) => controller.listGroups(requestContext)),
+    );
+    ipcMain.handle(Ch.GROUP_GET_BY_USER, async () =>
+      withAuthenticatedValue(ctx, async (requestContext) => controller.listGroups(requestContext)),
+    );
+    ipcMain.handle(Ch.GROUP_GET, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.getGroup(id, requestContext),
+      ),
     );
     ipcMain.handle(Ch.GROUP_CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.createGroup(dto, requestContext),
       ),
     );
+    // Accept requestContext for consistency; updateGroup does not use it yet.
+    // 为一致性接收 requestContext；updateGroup 目前尚未使用。
     ipcMain.handle(Ch.GROUP_UPDATE, async (_event, id, dto) =>
-      withAuthenticatedValue(ctx, async () => controller.updateGroup(id, dto)),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.updateGroup(id, dto, requestContext),
+      ),
     );
-    ipcMain.handle(Ch.GROUP_DELETE, (_event, id) => controller.deleteGroup(id));
+    ipcMain.handle(Ch.GROUP_DELETE, async (_event, id) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.deleteGroup(id, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.GROUP_TOGGLE_STATUS, async (_event, id) =>
+      withAuthenticatedValue(ctx, async () => controller.toggleGroup(id)),
+    );
+    ipcMain.handle(Ch.GROUP_TOGGLE_CONTROL_MODE, async (_event, id, mode) =>
+      withAuthenticatedValue(ctx, async () =>
+        controller.switchGroupControlMode(id, {
+          mode: typeof mode === 'string' ? mode : mode?.mode,
+        }),
+      ),
+    );
 
     logger.info('Reminder module registered');
   },
@@ -227,7 +169,8 @@ export const ReminderElectronModule: IElectronModule = {
     for (const ch of channels) {
       ipcMain.removeHandler(ch);
     }
-    ReminderContainer.getInstance().reset();
+    activeReminderModule?.dispose();
+    activeReminderModule = null;
     logger.info('Reminder module destroyed');
   },
 };

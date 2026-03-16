@@ -1,29 +1,43 @@
 /**
  * Task API Module Definition
+ * 任务 API 模块定义
  *
  * Implements IApiModule standard interface, self-contained:
- * 1. Composition Root (creates Repo → Service → Controller)
+ * 实现 IApiModule 标准接口，内部自治完成：
+ * 1. Composition Root (creates Repo -> UseCase -> Handler)
+ *    组合根（创建 Repo → UseCase → Handler）
  * 2. Route definition and mounting
- * 3. Initialization task registration
+ *    路由定义与挂载
+ * 3. Runtime contribution lifecycle
+ *    运行时贡献生命周期
  *
  * Middleware from context.middleware, no dependency on apps/api internals.
+ * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { TaskModule } from '../infrastructure-server/task.module';
-import { TaskContainer } from '../infrastructure-server/di/task-container';
+import { createTaskModule, type TaskModuleInstance } from '../infrastructure-server/task.module';
+import { TaskTemplatePrismaRepository } from '../infrastructure-server/adapters/prisma/task-template-prisma.repository';
+import { TaskInstancePrismaRepository } from '../infrastructure-server/adapters/prisma/task-instance-prisma.repository';
+import { TaskDependencyPrismaRepository } from '../infrastructure-server/adapters/prisma/task-dependency-prisma.repository';
+import { TaskFolderPrismaRepository } from '../infrastructure-server/adapters/prisma/task-folder-prisma.repository';
 import { TaskTemplateController } from './controllers/task-template.controller';
 import { TaskInstanceController } from './controllers/task-instance.controller';
 import { TaskDependencyController } from './controllers/task-dependency.controller';
 import { registerTaskRoutes } from './routes';
-import { registerTaskInitializationTasks } from './initialization';
+import { createTaskTransportHandlers } from './transport-handlers';
+import { createTaskRuntimeContribution } from './runtime';
 
 /**
- * Module registration context (aligned with apps/api IApiModuleContext)
+ * Module registration context (aligned with apps/api IApiModuleContext).
+ * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）。
  *
  * Defined locally in task package to avoid circular dependency with apps/api.
  * TypeScript structural typing ensures compatibility as long as field signatures match.
+ *
+ * 此类型在 task 包内本地定义，避免对 apps/api 的循环依赖。
+ * 只要字段签名一致，TypeScript 结构类型系统会自动兼容。
  */
 export interface TaskApiModuleContext {
   readonly app: import('express').Express;
@@ -37,7 +51,7 @@ export interface TaskApiModuleContext {
 }
 
 export interface TaskApiModuleOptions {
-  /** Custom route prefix (default '/tasks') */
+  /** Custom route prefix (default '/tasks'). 自定义路由前缀（默认 '/tasks'）。 */
   routePrefix?: string;
 }
 
@@ -47,53 +61,39 @@ export interface TaskApiModuleDef {
   destroy?(): void;
 }
 
+let activeTaskModule: TaskModuleInstance | null = null;
+
 export const TaskApiModule: TaskApiModuleDef = {
   name: 'Task',
 
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root — TaskModule assembles repositories and configures TaskContainer
-    const taskModule = new TaskModule(db as PrismaClient);
+    // 1. Composition Root — assemble dependencies (using shared database singleton)
+    //    组合根 — 组装依赖（使用共享数据库单例）
+    const prismaClient = db as PrismaClient;
+    const taskModule = createTaskModule({
+      // The application edge decides which adapter implementation to use.
+      // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
+      taskTemplateRepository: new TaskTemplatePrismaRepository(prismaClient),
+      taskInstanceRepository: new TaskInstancePrismaRepository(prismaClient),
+      taskDependencyRepository: new TaskDependencyPrismaRepository(prismaClient),
+      taskFolderRepository: new TaskFolderPrismaRepository(prismaClient),
+      runtimeContributions: createTaskRuntimeContribution(),
+    });
+    activeTaskModule = taskModule;
+    taskModule.start();
 
-    // 2. Create controllers with application services
-    const templateController = new TaskTemplateController({
-      createTemplate: taskModule.createTaskTemplate,
-      getTemplate: taskModule.getTaskTemplate,
-      listTemplates: taskModule.listTaskTemplates,
-      updateTemplate: taskModule.updateTaskTemplate,
-      deleteTemplate: taskModule.deleteTaskTemplate,
-      activateTemplate: taskModule.activateTaskTemplate,
-      pauseTemplate: taskModule.pauseTaskTemplate,
-      archiveTemplate: taskModule.archiveTaskTemplate,
-      listByPriority: taskModule.listTaskTemplatesByPriority,
-      generateInstances: taskModule.generateTaskInstances,
-      bindToGoal: taskModule.bindTaskToGoal,
-      unbindFromGoal: taskModule.unbindTaskFromGoal,
-      listInstancesByTemplate: taskModule.listTaskInstancesByTemplate,
-    });
-    const instanceController = new TaskInstanceController({
-      getTaskInstance: taskModule.getTaskInstance,
-      listByAccount: taskModule.listTaskInstancesByAccount,
-      listByTemplate: taskModule.listTaskInstancesByTemplate,
-      listByStatus: taskModule.listTaskInstancesByStatus,
-      getByDateRange: taskModule.getTaskInstancesByDateRange,
-      complete: taskModule.completeTaskInstance,
-      skip: taskModule.skipTaskInstance,
-      start: taskModule.startTaskInstance,
-      deleteInstance: taskModule.deleteTaskInstance,
-      checkExpired: taskModule.checkExpiredInstances,
-    });
-    const dependencyController = new TaskDependencyController({
-      createDependency: taskModule.createTaskDependency,
-      deleteDependency: taskModule.deleteTaskDependency,
-      updateDependency: taskModule.updateTaskDependency,
-      listDependencies: taskModule.listTaskDependencies,
-      getDependencyChain: taskModule.getDependencyChain,
-      validateDependency: taskModule.validateTaskDependency,
-    });
+    // 2. Create transport handlers then controllers
+    //    创建传输层处理器然后创建控制器
+    const handlers = createTaskTransportHandlers(taskModule.api);
+
+    const templateController = new TaskTemplateController(handlers.template);
+    const instanceController = new TaskInstanceController(handlers.instance);
+    const dependencyController = new TaskDependencyController(handlers.dependency);
 
     // 3. Register routes (inject platform middleware)
+    //    注册路由（注入平台中间件）
     registerTaskRoutes(
       {
         templateController,
@@ -104,12 +104,10 @@ export const TaskApiModule: TaskApiModuleDef = {
       router,
       context.openApiRegistry,
     );
-
-    // 4. Register initialization tasks (event handlers, background jobs)
-    registerTaskInitializationTasks();
   },
 
   destroy() {
-    TaskContainer.getInstance().reset();
+    activeTaskModule?.dispose();
+    activeTaskModule = null;
   },
 };

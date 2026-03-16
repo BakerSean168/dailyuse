@@ -34,29 +34,41 @@ export interface ReminderUseCases {
   createTemplate(data: CreateReminderTemplateReq, ctx: Context): Promise<Result<unknown>>;
   listTemplates(ctx: Context): Promise<Result<unknown>>;
   getUpcomingReminders(params: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
-  getTemplate(id: string): Promise<Result<unknown>>;
-  updateTemplate(id: string, data: UpdateReminderTemplateReq): Promise<Result<unknown>>;
-  deleteTemplate(id: string): Promise<Result<unknown>>;
+  getTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
+  updateTemplate(
+    id: string,
+    data: UpdateReminderTemplateReq,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  deleteTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   // Template Actions
   enableTemplate(id: string): Promise<Result<unknown>>;
   pauseTemplate(id: string): Promise<Result<unknown>>;
-  toggleTemplate(id: string): Promise<Result<unknown>>;
+  toggleTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   moveTemplate(id: string, groupId: string): Promise<Result<unknown>>;
   getTemplateHistory(id: string): Promise<Result<unknown>>;
   // Template Responses
-  recordResponse(templateId: string, data: { action: string; note?: string }): Promise<Result<unknown>>;
+  recordResponse(
+    templateId: string,
+    data: { action: string; note?: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
   getTemplateResponses(templateId: string): Promise<Result<unknown>>;
   getResponseStats(templateId: string): Promise<Result<unknown>>;
   // Frequency Analysis
   analyzeFrequency(templateId: string): Promise<Result<unknown>>;
-  adjustFrequency(templateId: string, data: { action: string; customInterval?: number }): Promise<Result<unknown>>;
-  rejectFrequencyAdjustment(templateId: string): Promise<Result<unknown>>;
+  adjustFrequency(
+    templateId: string,
+    data: { action: string; customInterval?: number },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  rejectFrequencyAdjustment(templateId: string, ctx: Context): Promise<Result<unknown>>;
   // Group CRUD
   createGroup(data: CreateReminderGroupReq, ctx: Context): Promise<Result<unknown>>;
   listGroups(ctx: Context): Promise<Result<unknown>>;
-  getGroup(id: string): Promise<Result<unknown>>;
-  updateGroup(id: string, data: UpdateReminderGroupReq): Promise<Result<unknown>>;
-  deleteGroup(id: string): Promise<Result<unknown>>;
+  getGroup(id: string, ctx: Context): Promise<Result<unknown>>;
+  updateGroup(id: string, data: UpdateReminderGroupReq, ctx: Context): Promise<Result<unknown>>;
+  deleteGroup(id: string, ctx: Context): Promise<Result<unknown>>;
   switchGroupControlMode(id: string, data: SwitchGroupControlModeReq): Promise<Result<unknown>>;
   batchGroupTemplates(id: string, data: BatchGroupTemplatesReq): Promise<Result<unknown>>;
   toggleGroup(id: string): Promise<Result<unknown>>;
@@ -101,11 +113,11 @@ export class ReminderController {
     return this.useCases.getUpcomingReminders(parsed.data, ctx);
   }
 
-  async getTemplate(id: string): Promise<Result<unknown>> {
-    return this.useCases.getTemplate(id);
+  async getTemplate(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getTemplate(id, ctx);
   }
 
-  async updateTemplate(id: string, input: unknown): Promise<Result<unknown>> {
+  async updateTemplate(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = UpdateReminderTemplateSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -114,11 +126,11 @@ export class ReminderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateTemplate(id, parsed.data);
+    return this.useCases.updateTemplate(id, parsed.data, ctx);
   }
 
-  async deleteTemplate(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteTemplate(id);
+  async deleteTemplate(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.deleteTemplate(id, ctx);
   }
 
   // ==================== Group Operations ====================
@@ -139,11 +151,11 @@ export class ReminderController {
     return this.useCases.listGroups(ctx);
   }
 
-  async getGroup(id: string): Promise<Result<unknown>> {
-    return this.useCases.getGroup(id);
+  async getGroup(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.getGroup(id, ctx);
   }
 
-  async updateGroup(id: string, input: unknown): Promise<Result<unknown>> {
+  async updateGroup(id: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = UpdateReminderGroupSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -152,11 +164,11 @@ export class ReminderController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.updateGroup(id, parsed.data);
+    return this.useCases.updateGroup(id, parsed.data, ctx);
   }
 
-  async deleteGroup(id: string): Promise<Result<unknown>> {
-    return this.useCases.deleteGroup(id);
+  async deleteGroup(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.deleteGroup(id, ctx);
   }
 
   async switchGroupControlMode(id: string, input: unknown): Promise<Result<unknown>> {
@@ -193,8 +205,8 @@ export class ReminderController {
     return this.useCases.pauseTemplate(id);
   }
 
-  async toggleTemplate(id: string): Promise<Result<unknown>> {
-    return this.useCases.toggleTemplate(id);
+  async toggleTemplate(id: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.toggleTemplate(id, ctx);
   }
 
   async moveTemplate(id: string, input: unknown): Promise<Result<unknown>> {
@@ -211,15 +223,19 @@ export class ReminderController {
 
   // ==================== Response Operations ====================
 
-  async recordResponse(templateId: string, input: unknown): Promise<Result<unknown>> {
+  async recordResponse(templateId: string, input: unknown, ctx: Context): Promise<Result<unknown>> {
     const action = (input as any)?.action;
     if (!action || typeof action !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'action is required' });
     }
-    return this.useCases.recordResponse(templateId, {
-      action,
-      note: (input as any)?.note,
-    });
+    return this.useCases.recordResponse(
+      templateId,
+      {
+        action,
+        note: (input as any)?.note,
+      },
+      ctx,
+    );
   }
 
   async getTemplateResponses(templateId: string): Promise<Result<unknown>> {
@@ -236,19 +252,27 @@ export class ReminderController {
     return this.useCases.analyzeFrequency(templateId);
   }
 
-  async adjustFrequency(templateId: string, input: unknown): Promise<Result<unknown>> {
+  async adjustFrequency(
+    templateId: string,
+    input: unknown,
+    ctx: Context,
+  ): Promise<Result<unknown>> {
     const action = (input as any)?.action;
     if (!action || typeof action !== 'string') {
       return fail({ code: 'VALIDATION_ERROR', message: 'action is required (apply | custom)' });
     }
-    return this.useCases.adjustFrequency(templateId, {
-      action,
-      customInterval: (input as any)?.customInterval,
-    });
+    return this.useCases.adjustFrequency(
+      templateId,
+      {
+        action,
+        customInterval: (input as any)?.customInterval,
+      },
+      ctx,
+    );
   }
 
-  async rejectFrequencyAdjustment(templateId: string): Promise<Result<unknown>> {
-    return this.useCases.rejectFrequencyAdjustment(templateId);
+  async rejectFrequencyAdjustment(templateId: string, ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.rejectFrequencyAdjustment(templateId, ctx);
   }
 
   // ==================== Group Actions ====================

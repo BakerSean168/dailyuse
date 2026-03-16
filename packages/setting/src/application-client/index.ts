@@ -1,68 +1,80 @@
 /**
  * Setting Application Client Layer
+ *
+ * Provides the client-side facade over any transport adapter (HTTP / IPC).
+ * Consumers should depend on `ISettingApiClient` (the port) and inject a
+ * concrete adapter from `infrastructure-client`.
  */
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 import type { ISettingApiClient } from '../infrastructure-client/adapters/types';
 
-// ===== Port Interfaces =====
+// Re-export the port so consumers can import from the application layer.
 export type { ISettingApiClient } from '../infrastructure-client/adapters/types';
 
+// ─── Client Application Port ────────────────────────────────────────────────
+
 /**
- * Setting Client Service — Facade over ISettingApiClient
+ * High-level client-side operations for the setting module.
+ *
+ * Unlike the server-side `SettingApplicationPort`, this port returns
+ * `Result<T>` directly so the UI layer can decide how to handle errors.
  */
-export class SettingClientService {
-  constructor(private readonly apiClient: ISettingApiClient) {}
-
-  async getUserSettings(): Promise<UserSettingClientDTO> {
-    const result = await this.apiClient.getUserSettings();
-    if (!result.ok) throw new Error(result.error?.message ?? 'Failed to get user settings');
-    return result.data;
-  }
-
-  async patchCategory(
+export interface SettingClientPort {
+  getUserSettings(): Promise<Result<UserSettingClientDTO>>;
+  patchCategory(
     category: PreferenceCategory,
     patch: Record<string, unknown>,
-  ): Promise<UserSettingClientDTO> {
-    const result = await this.apiClient.patchCategory(category, patch);
-    if (!result.ok) throw new Error(result.error?.message ?? 'Failed to patch settings');
-    return result.data;
+  ): Promise<Result<UserSettingClientDTO>>;
+  resetUserSettings(category?: string): Promise<Result<UserSettingClientDTO>>;
+  exportSettings(): Promise<Result<string>>;
+  importSettings(data: string): Promise<Result<UserSettingClientDTO>>;
+}
+
+// ─── Client Service ──────────────────────────────────────────────────────────
+
+/**
+ * Setting Client Service — thin facade that delegates to an `ISettingApiClient`.
+ *
+ * Returns `Result<T>` (no throwing) so the caller keeps full control.
+ */
+export class SettingClientService implements SettingClientPort {
+  constructor(private readonly apiClient: ISettingApiClient) {}
+
+  getUserSettings(): Promise<Result<UserSettingClientDTO>> {
+    return this.apiClient.getUserSettings();
   }
 
-  async resetUserSettings(category?: string): Promise<UserSettingClientDTO> {
-    const result = await this.apiClient.resetUserSettings(category);
-    if (!result.ok) throw new Error(result.error?.message ?? 'Failed to reset settings');
-    return result.data;
+  patchCategory(
+    category: PreferenceCategory,
+    patch: Record<string, unknown>,
+  ): Promise<Result<UserSettingClientDTO>> {
+    return this.apiClient.patchCategory(category, patch);
   }
 
-  async exportSettings(): Promise<string> {
-    const result = await this.apiClient.exportSettings();
-    if (!result.ok) throw new Error(result.error?.message ?? 'Failed to export settings');
-    return result.data;
+  resetUserSettings(category?: string): Promise<Result<UserSettingClientDTO>> {
+    return this.apiClient.resetUserSettings(category);
   }
 
-  async importSettings(data: string): Promise<UserSettingClientDTO> {
-    const result = await this.apiClient.importSettings(data);
-    if (!result.ok) throw new Error(result.error?.message ?? 'Failed to import settings');
-    return result.data;
+  exportSettings(): Promise<Result<string>> {
+    return this.apiClient.exportSettings();
+  }
+
+  importSettings(data: string): Promise<Result<UserSettingClientDTO>> {
+    return this.apiClient.importSettings(data);
   }
 }
 
-// Singleton placeholder
-let _settingApplicationService: any = null;
+// ─── Factory ─────────────────────────────────────────────────────────────────
 
-export function setSettingApplicationService(service: any) {
-  _settingApplicationService = service;
+/**
+ * Create a `SettingClientService` from any transport adapter.
+ *
+ * ```ts
+ * const client = createSettingClientService(new SettingHttpAdapter(httpClient));
+ * ```
+ */
+export function createSettingClientService(apiClient: ISettingApiClient): SettingClientService {
+  return new SettingClientService(apiClient);
 }
-
-export const settingApplicationService: any = new Proxy({} as any, {
-  get(_target, prop) {
-    if (!_settingApplicationService) {
-      throw new Error(
-        'settingApplicationService not initialized. Call setSettingApplicationService first.',
-      );
-    }
-    return (_settingApplicationService as any)[prop];
-  },
-});

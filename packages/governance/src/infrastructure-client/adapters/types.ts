@@ -29,6 +29,10 @@ export type {
   SearchRulesQuery,
   SearchRulesRes,
 } from '../../contracts/api/rules';
+export type {
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
+} from '../../contracts/api/rule-revisions';
 
 // IResultHttpClient imported from @dailyuse/http-client
 

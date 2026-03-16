@@ -164,7 +164,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.getTemplate(req.params!.id),
+    (req, ctx) => controller.getTemplate(req.params!.id, ctx),
   );
 
   // PUT /templates/:id — Update template
@@ -183,7 +183,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.updateTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.updateTemplate(req.params!.id, req.body, ctx),
   );
 
   // DELETE /templates/:id — Delete template
@@ -199,7 +199,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteTemplate(req.params!.id),
+    (req, ctx) => controller.deleteTemplate(req.params!.id, ctx),
   );
 
   // ────────── Group Routes ──────────
@@ -248,7 +248,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.getGroup(req.params!.id),
+    (req, ctx) => controller.getGroup(req.params!.id, ctx),
   );
 
   // PUT /groups/:id — Update group
@@ -267,7 +267,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.updateGroup(req.params!.id, req.body),
+    (req, ctx) => controller.updateGroup(req.params!.id, req.body, ctx),
   );
 
   // DELETE /groups/:id — Delete group
@@ -283,7 +283,7 @@ export function registerReminderRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteGroup(req.params!.id),
+    (req, ctx) => controller.deleteGroup(req.params!.id, ctx),
   );
 
   // POST /groups/:id/control-mode — Switch group control mode

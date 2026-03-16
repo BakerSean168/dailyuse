@@ -108,7 +108,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.getGroup(req.params!.id),
+    (req, ctx) => controller.getGroup(req.params!.id, ctx),
   );
 
   // PUT /groups/:id
@@ -127,7 +127,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.updateGroup(req.params!.id, req.body),
+    (req, ctx) => controller.updateGroup(req.params!.id, req.body, ctx),
   );
 
   // DELETE /groups/:id
@@ -143,7 +143,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.deleteGroup(req.params!.id),
+    (req, ctx) => controller.deleteGroup(req.params!.id, ctx),
   );
 
   // ==================== Group Actions ====================

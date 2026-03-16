@@ -8,7 +8,6 @@ import type { IAIProviderConfigRepository } from '../../../domain-server/reposit
 import type { GenerateGoalsReq, GenerateGoalsRes } from '@dailyuse/contracts/ai';
 import { GoalCategory } from '@dailyuse/contracts/ai';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-// import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
  * Generate Goal Service

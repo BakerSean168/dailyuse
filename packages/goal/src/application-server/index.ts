@@ -20,6 +20,7 @@ export {
   ArchiveGoal,
   ActivateGoal,
   CompleteGoal,
+  PermanentlyDeleteGoal,
   SearchGoals,
   // GoalFolder Services
   ListGoalFolders,

@@ -2,33 +2,42 @@
  * @dailyuse/schedule
  *
  * 调度模块 - 日程与时间管理
+ * Schedule Module - Calendar & Time Management
  *
- * 【分层架构】
+ * 【分层架构 / Layered Architecture】
  *
  * contracts           → 类型定义、DTO、事件、API Schema（@dailyuse/contracts/schedule）
+ *                       Type definitions, DTOs, events, API schemas
  * domain-shared       → 值对象（前后端共享）
+ *                       Value objects (shared front/back)
  * domain-server       → 聚合根、仓储接口、领域服务、计算器
+ *                       Aggregates, repository interfaces, domain services
  * domain-client       → 客户端领域模型
+ *                       Client-side domain models
  * application-server  → 用例服务（服务端）、调度器
+ *                       Use cases (server), scheduler
  * application-client  → 客户端服务
- * infrastructure-server → Prisma/SQLite 仓储实现、DI 模块、调度引导
+ *                       Client services
+ * infrastructure-server → Prisma/PowerSync 仓储实现、组合根、调度引导
+ *                         Prisma/PowerSync repos, composition root, bootstrap
  * infrastructure-client → HTTP/IPC 适配器
+ *                         HTTP/IPC adapters
  *
- * 【使用示例】
+ * 【使用示例 / Usage】
  *
  * ```typescript
- * // 1. 导入契约
+ * // 1. 导入契约 / Import contracts
  * import type { ScheduleServerDTO } from '@dailyuse/contracts/schedule';
  *
- * // 2. 导入服务端聚合根
+ * // 2. 导入服务端聚合根 / Import server aggregates
  * import { Schedule, ScheduleTask } from '@dailyuse/schedule/domain-server';
  *
- * // 3. 导入基础设施模块
- * import { ScheduleModule } from '@dailyuse/schedule/infrastructure-server';
+ * // 3. 使用组合根 / Use composition root
+ * import { createScheduleModule } from '@dailyuse/schedule/infrastructure-server';
+ * const module = createScheduleModule({ scheduleRepository, scheduleExecutionRepository, scheduleTaskRepository });
+ * const result = await module.api.createTask(data, ctx);
  * ```
  */
-
-// ================= Contracts Layer =================
 
 // ================= Domain Layer =================
 export * from './domain-server';

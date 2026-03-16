@@ -20,30 +20,74 @@
  * // 1. 导入契约
  * import type { AIConversationDTO } from '@dailyuse/contracts/ai';
  *
- * // 2. 导入服务端领域
- * import { AIConversation } from '@dailyuse/ai/domain-server';
+ * // 2. 使用组合根 (推荐)
+ * import { createAIModule } from '@dailyuse/ai/infrastructure-server';
+ * const module = createAIModule({
+ *   conversationRepository,
+ *   providerConfigRepository,
+ * });
+ * const result = await module.api.createProvider(identityId, req);
  *
  * // 3. 导入客户端应用服务
- * import { AiApplicationService } from '@dailyuse/ai/application-client';
+ * import { AIClientService } from '@dailyuse/ai/application-client';
  * ```
  */
 
-// ================= Contracts Layer =================
+// ================= Contracts Layer (契约层) =================
 export * from '@dailyuse/contracts/ai';
 
-// ================= Domain Layer =================
+// ================= Domain Layer (领域层) =================
 // domain-shared and domain-client are available via subpath exports only
 // (e.g., @dailyuse/ai/domain-shared, @dailyuse/ai/domain-client)
 export * from './domain-server';
 
-// ================= Application Layer =================
+// ================= Application Layer (应用层) =================
 export * from './application-server';
 // application-client is available via subpath export only
 // (e.g., @dailyuse/ai/application-client) to avoid name conflicts
 
-// ================= Infrastructure Layer =================
-export * from './infrastructure-server';
+// ================= Infrastructure Layer (基础设施层) =================
+export {
+  // -- Composition Root (canonical entry point) --
+  createAIModule,
+  createAIUseCases,
+  createAIServices,
+  createAIPowerSyncModule,
+  type AIModuleDependencies,
+  type AIModuleInstance,
+  type AIModuleUseCases,
+  type AIModuleServices,
+  type AIApplicationPort,
+  type AIModuleRuntimeContribution,
+  type AIRuntimeContributionsInput,
+  type AIModulePowerSyncOptions,
+
+  // -- Legacy classes (backward compatibility) --
+  /** @deprecated Use `createAIModule()` instead. 请使用 `createAIModule()` 替代。 */
+  AIModule,
+  /** @deprecated Use `createAIPowerSyncModule()` instead. 请使用 `createAIPowerSyncModule()` 替代。 */
+  AIPowerSyncModule,
+
+  // -- Prisma Adapters --
+  /** @internal Concrete Prisma implementation — use IAIConversationRepository interface instead. Prisma 具体实现 — 请使用 IAIConversationRepository 接口。 */
+  AIConversationPrismaRepository,
+  /** @internal Concrete Prisma implementation — use IAIProviderConfigRepository interface instead. Prisma 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
+  AIProviderConfigPrismaRepository,
+
+  // -- PowerSync Adapters --
+  /** @internal Concrete PowerSync implementation — use IAIConversationRepository interface instead. PowerSync 具体实现 — 请使用 IAIConversationRepository 接口。 */
+  PowerSyncAIConversationRepository,
+  /** @internal Concrete PowerSync implementation — use IAIProviderConfigRepository interface instead. PowerSync 具体实现 — 请使用 IAIProviderConfigRepository 接口。 */
+  PowerSyncAIProviderConfigRepository,
+
+  // -- Legacy DI --
+  /** @deprecated Use `createAIModule()` composition root instead. 请使用 `createAIModule()` 组合根替代。 */
+  AIRepositoryFactory,
+  /** @deprecated Use `createAIModule()` composition root instead. 请使用 `createAIModule()` 组合根替代。 */
+  AIContainer,
+} from './infrastructure-server';
+
 export * from './infrastructure-client';
 
-// ================= API Layer =================
+// ================= API Layer (API 层) =================
 export * from './api';

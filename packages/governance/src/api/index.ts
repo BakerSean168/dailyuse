@@ -17,4 +17,3 @@
  */
 
 export { GovernanceApiModule } from './module';
-export type { GovernanceApiModuleOptions } from './module';

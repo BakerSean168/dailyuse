@@ -2,35 +2,61 @@
  * @dailyuse/editor
  *
  * 编辑器模块 - 文档编辑与协同
+ * Editor module - document editing and collaboration
  *
- * 【分层架构】
+ * 【分层架构 / Layered Architecture】
  *
  * contracts           → 类型定义、DTO、事件、API Schema（@dailyuse/contracts/editor）
+ *                       Type definitions, DTOs, events, API Schema
  * domain-shared       → 值对象（前后端共享）
+ *                       Value objects (shared between client and server)
  * domain-server       → 聚合根、仓储接口、领域服务
+ *                       Aggregates, repository interfaces, domain services
  * domain-client       → 客户端领域模型
+ *                       Client-side domain models
  * application-server  → 用例服务（服务端）
- * infrastructure-server → PowerSync/Prisma 仓储实现、DI 容器
+ *                       Use case services (server-side)
+ * infrastructure-server → 仓储实现、组合根
+ *                         Repository implementations, composition root
  *
- * 【使用示例】
+ * 【使用示例 / Usage】
  *
  * ```typescript
- * // 1. 导入契约
+ * // 1. Import contracts / 导入契约
  * import type { EditorWorkspaceServerDTO } from '@dailyuse/contracts/editor';
  *
- * // 2. 导入服务端聚合根
+ * // 2. Import server aggregate / 导入服务端聚合根
  * import { EditorWorkspace } from '@dailyuse/editor/domain-server';
+ *
+ * // 3. Use composition root / 使用组合根
+ * import { createEditorModule } from '@dailyuse/editor/infrastructure-server';
+ * const module = createEditorModule({ workspaceRepository, documentRepository });
+ * const result = await module.api.createWorkspace(props, context);
  * ```
  */
 
-// ================= Contracts Layer =================
+// ================= Contracts Layer (契约层) =================
+// Type definitions, DTOs, Events, API Schemas
 export * from '@dailyuse/contracts/editor';
 
-// ================= Domain Layer =================
+// ================= Domain Layer (领域层) =================
 export * from './domain-server';
 
-// ================= Application Layer =================
+// ================= Application Layer (应用层) =================
 export * from './application-server';
 
-// ================= Infrastructure Layer =================
-export * from './infrastructure-server';
+// ================= Infrastructure Layer (基础设施层) =================
+export {
+  /** @internal Concrete Prisma implementation — use IEditorWorkspaceRepository interface instead. Prisma 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
+  EditorWorkspacePrismaRepository,
+  /** @internal Concrete Prisma implementation — use IDocumentRepository interface instead. Prisma 具体实现 — 请使用 IDocumentRepository 接口。 */
+  DocumentPrismaRepository,
+  /** @internal Concrete PowerSync implementation — use IEditorWorkspaceRepository interface instead. PowerSync 具体实现 — 请使用 IEditorWorkspaceRepository 接口。 */
+  PowerSyncEditorWorkspaceRepository,
+  createEditorModule,
+  createEditorPowerSyncModule,
+  type EditorApplicationPort,
+  type EditorModuleDependencies,
+  type EditorModuleInstance,
+  type EditorModuleRuntimeContribution,
+} from './infrastructure-server';

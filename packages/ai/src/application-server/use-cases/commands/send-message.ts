@@ -9,7 +9,6 @@ import { Message } from '../../../domain-server/entities/message';
 import type { SendMessageReq, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
-// import { AIContainer } from '@dailyuse/ai/infrastructure-server';
 
 /**
  * Send Message Service

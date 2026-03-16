@@ -1,57 +1,69 @@
-import { ResourceType, RepositoryStatus } from '@dailyuse/contracts/repository';
+import { ResourceType } from '@dailyuse/contracts/repository';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { PrismaClient } from '@dailyuse/database';
 import type {
   CreateKnowledgeNotePersistenceInput,
   CreateKnowledgeNotePersistenceResult,
   IKnowledgeNotePersistencePort,
 } from '@dailyuse/ai/application-server';
-import { CreateResource, FsStorageAdapter, RepositoryModule } from '@dailyuse/repository';
+import {
+  createRepositoryModule,
+  RepositoryPrismaRepository,
+  ResourcePrismaRepository,
+  FolderPrismaRepository,
+  ResourceBookmarkPrismaRepository,
+  FsStorageAdapter,
+  type RepositoryModuleInstance,
+} from '@dailyuse/repository';
 
+/**
+ * Adapter that persists AI knowledge notes via the repository module's
+ * application port — never bypassing it with raw repository access.
+ *
+ * 通过仓库模块的应用层门面持久化 AI 知识笔记的适配器 ——
+ * 绝不绕过门面直接访问原始仓储。
+ */
 export class RepositoryKnowledgeNotePersistenceAdapter implements IKnowledgeNotePersistencePort {
-  private readonly repositoryModule: RepositoryModule;
-  private readonly createResource: CreateResource;
+  private readonly repositoryModule: RepositoryModuleInstance;
 
   constructor(db: PrismaClient, storageBaseDir: string) {
-    this.repositoryModule = new RepositoryModule('prisma', db);
     const storagePort = new FsStorageAdapter(storageBaseDir);
-    this.createResource = new CreateResource(
-      this.repositoryModule.resourceRepository,
-      this.repositoryModule.repositoryRepository,
+    this.repositoryModule = createRepositoryModule({
+      repositoryRepository: new RepositoryPrismaRepository(db),
+      resourceRepository: new ResourcePrismaRepository(db),
+      folderRepository: new FolderPrismaRepository(db),
+      resourceBookmarkRepository: new ResourceBookmarkPrismaRepository(db),
       storagePort,
-    );
+    });
   }
 
   async createKnowledgeNote(
     input: CreateKnowledgeNotePersistenceInput,
   ): Promise<CreateKnowledgeNotePersistenceResult> {
-    const repository = await this.resolveRepository(input.identityId);
-    const result = await this.createResource.execute({
-      repositoryId: String(repository.id),
-      identityId: input.identityId,
-      name: input.fileName,
-      type: ResourceType.File,
-      path: input.path,
-      content: input.content,
-    });
-
-    return { resource: result.resource };
-  }
-
-  private async resolveRepository(identityId: string) {
-    const activeRepositories =
-      await this.repositoryModule.repositoryRepository.findByIdentityIdAndStatus(
-        identityId,
-        RepositoryStatus.Active,
-      );
-
-    const repository =
-      activeRepositories[0] ??
-      (await this.repositoryModule.repositoryRepository.findByIdentityId(identityId))[0];
-
-    if (!repository) {
+    // Resolve the active repository through the application port.
+    // 通过应用层门面解析活跃仓库。
+    const repoResult = await this.repositoryModule.api.findActiveRepository(input.identityId);
+    if (!repoResult.ok) {
       throw new Error('No repository available for current user');
     }
+    const repository = repoResult.data as { id: string };
 
-    return repository;
+    // Create the resource through the application port.
+    // 通过应用层门面创建资源。
+    const createResult = await this.repositoryModule.api.createResource(
+      {
+        repositoryId: String(repository.id),
+        name: input.fileName,
+        type: ResourceType.File,
+        content: input.content,
+      },
+      { identityId: input.identityId, deviceId: 'api-server' },
+    );
+
+    if (!createResult.ok) {
+      throw new Error('Failed to create knowledge note resource');
+    }
+
+    return { resource: createResult.data as ResourceClientDTO };
   }
 }

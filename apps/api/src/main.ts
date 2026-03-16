@@ -32,7 +32,7 @@ import { ScheduleApiModule } from '@dailyuse/schedule/api';
 import { SettingApiModule } from '@dailyuse/setting/api';
 import { TaskApiModule } from '@dailyuse/task/api';
 import { createAIApiModule } from '@dailyuse/ai';
-import { SettingModule } from '@dailyuse/setting';
+import { createSettingModule, UserSettingPrismaRepository } from '@dailyuse/setting';
 // 基础设施模块（直接在 API 内部定义）
 import { PowerSyncApiModule } from './modules/powersync/module.js';
 import { DashboardApiModule } from './modules/dashboard/module.js';
@@ -51,8 +51,10 @@ const AIApiModule = createAIApiModule({
       process.env.REPOSITORY_STORAGE_PATH || '/tmp/dailyuse-repository-storage',
     ),
   getKnowledgeNoteSubpath: async (identityId: any, context: any) => {
-    const settingModule = new SettingModule(context.db);
-    const setting = await settingModule.getUserSetting.execute(identityId);
+    const settingModule = createSettingModule({
+      userSettingRepository: new UserSettingPrismaRepository(context.db),
+    });
+    const setting = await settingModule.api.getUserSetting(identityId);
     return setting.preferences.ai.knowledgeNoteSubpath;
   },
 });

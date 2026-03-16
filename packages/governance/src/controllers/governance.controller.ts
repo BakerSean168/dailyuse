@@ -81,30 +81,6 @@ export interface GovernanceUseCases {
 export class GovernanceController {
   constructor(private readonly useCases: GovernanceUseCases) {}
 
-  private normalizeRuleMutationError<T>(result: Result<T>): Result<T> {
-    if (result.ok) {
-      return result;
-    }
-
-    const message = result.error.message ?? '';
-
-    if (result.error.code === 'CONFLICT' && /code|duplicate|exists/i.test(message)) {
-      return error('DUPLICATE_CODE', '规则编码重复，请使用唯一 code', result.error.details);
-    }
-
-    if (
-      (result.error.code === 'BUSINESS_ERROR' || result.error.code === 'VALIDATION_ERROR') &&
-      /transition|cannot transition|deprecat|reactivat|draft|active|status/i.test(message)
-    ) {
-      return error('INVALID_TRANSITION', '规则状态流转不合法', [
-        { code: 'INVALID_TRANSITION', message: message },
-        ...(result.error.details ?? []),
-      ]);
-    }
-
-    return result;
-  }
-
   /** Convert standard Context to Governance ExecutionContext */
   private toExecutionContext(ctx: Context): ExecutionContext {
     return { identityId: ctx.identityId as IdentityId };
@@ -115,9 +91,7 @@ export class GovernanceController {
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
-    return this.normalizeRuleMutationError(
-      await this.useCases.createRule(parsed.data, this.toExecutionContext(ctx)),
-    );
+    return this.useCases.createRule(parsed.data, this.toExecutionContext(ctx));
   }
 
   async updateRule(id: string, input: unknown, ctx: Context): Promise<Result<UpdateRuleRes>> {
@@ -125,9 +99,7 @@ export class GovernanceController {
     if (!parsed.success) {
       return error('VALIDATION_ERROR', '参数验证失败', formatZodErrors(parsed.error.issues));
     }
-    return this.normalizeRuleMutationError(
-      await this.useCases.updateRule(id, parsed.data, this.toExecutionContext(ctx)),
-    );
+    return this.useCases.updateRule(id, parsed.data, this.toExecutionContext(ctx));
   }
 
   async deleteRule(id: string, ctx: Context): Promise<Result<DeleteRuleRes>> {

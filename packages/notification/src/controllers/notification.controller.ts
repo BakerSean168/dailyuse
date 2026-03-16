@@ -9,7 +9,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
 import {
   CreateNotificationSchema,
-  UpdateNotificationSchema,
   NotificationQuerySchema,
   MarkAsReadBatchSchema,
   DeleteNotificationsBatchSchema,
@@ -17,7 +16,6 @@ import {
 } from '@dailyuse/contracts/notification';
 import type {
   CreateNotificationReq,
-  UpdateNotificationReq,
   NotificationQuery,
   MarkAsReadBatchReq,
   DeleteNotificationsBatchReq,
@@ -31,7 +29,6 @@ export interface NotificationUseCases {
   createNotification(data: CreateNotificationReq): Promise<Result<unknown>>;
   listNotifications(query: NotificationQuery): Promise<Result<unknown>>;
   getNotification(id: string): Promise<Result<unknown>>;
-  updateNotification(id: string, data: UpdateNotificationReq): Promise<Result<unknown>>;
   deleteNotification(id: string): Promise<Result<unknown>>;
   markAsRead(id: string): Promise<Result<unknown>>;
   markAllAsRead(identityId: string): Promise<Result<unknown>>;
@@ -72,18 +69,6 @@ export class NotificationController {
 
   async get(id: string): Promise<Result<unknown>> {
     return this.useCases.getNotification(id);
-  }
-
-  async update(id: string, input: unknown): Promise<Result<unknown>> {
-    const parsed = UpdateNotificationSchema.safeParse(input);
-    if (!parsed.success) {
-      return fail({
-        code: 'VALIDATION_ERROR',
-        message: '参数验证失败',
-        details: formatZodErrors(parsed.error.issues),
-      });
-    }
-    return this.useCases.updateNotification(id, parsed.data);
   }
 
   async delete(id: string): Promise<Result<unknown>> {

@@ -67,7 +67,7 @@ describe('CreateRuleUseCase', () => {
     expect(saveWithRevision).toHaveBeenCalledTimes(1);
   });
 
-  it('should return CONFLICT when code already exists', async () => {
+  it('should return DUPLICATE_CODE when code already exists', async () => {
     const existingRule = {} as any; // non-null means existing
     const ruleRepo = createMockRepo<IRuleRepository>({
       findByCode: vi.fn().mockResolvedValue(ok(existingRule)),
@@ -79,7 +79,7 @@ describe('CreateRuleUseCase', () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe('CONFLICT');
+    expect(result.error.code).toBe('DUPLICATE_CODE');
     expect(result.error.message).toContain('DDD-001');
   });
 

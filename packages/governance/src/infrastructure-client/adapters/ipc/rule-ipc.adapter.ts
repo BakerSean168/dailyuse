@@ -24,6 +24,8 @@ import type {
   ListRulesRes,
   SearchRulesQuery,
   SearchRulesRes,
+  GetRuleRevisionsQuery,
+  GetRuleRevisionsRes,
 } from '../types';
 
 /**
@@ -35,6 +37,7 @@ import type {
  */
 export class RuleIpcAdapter implements IRuleApiClient {
   private readonly channel = 'governance:rule';
+  private readonly revisionChannel = 'governance:rule-revision';
 
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
@@ -62,6 +65,10 @@ export class RuleIpcAdapter implements IRuleApiClient {
 
   async searchRules(query: SearchRulesQuery): Promise<Result<SearchRulesRes>> {
     return this.ipcClient.invoke(`${this.channel}:search`, query);
+  }
+
+  async getRevisions(query: GetRuleRevisionsQuery): Promise<Result<GetRuleRevisionsRes>> {
+    return this.ipcClient.invoke(`${this.revisionChannel}:list`, query);
   }
 }
 

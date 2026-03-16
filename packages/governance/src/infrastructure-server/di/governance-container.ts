@@ -1,6 +1,6 @@
 /**
- * GovernanceContainer — Singleton DI container.
- * GovernanceContainer — 单例依赖注入容器。
+ * GovernanceContainer — legacy singleton DI container.
+ * GovernanceContainer —— 遗留单例依赖注入容器。
  *
  * Manages Repository bindings for the Governance module:
  * 管理 Governance 模块的仓储绑定：
@@ -11,11 +11,12 @@
  * - reset() for test scenarios with mock implementations
  *   支持 reset() 用于测试场景替换 Mock 实现
  *
- * @internal Low-level DI container — consumers should use GovernanceModule facade instead.
- * @internal 底层 DI 容器 — 消费者应使用 GovernanceModule 门面。
+ * @deprecated The governance module no longer uses this container internally.
+ *             It is kept only for backward compatibility with older callers.
+ * @deprecated Governance 模块内部已不再使用该容器；当前仅为兼容旧调用方保留。
  *
- * @see {@link GovernanceModule} Use the composition root facade for dependency injection.
- * @see {@link GovernanceModule} 使用组合根门面进行依赖注入。
+ * @see {@link createGovernanceModule} Use the composition root factory for dependency injection.
+ * @see {@link createGovernanceModule} 使用组合根工厂进行依赖注入。
  */
 
 import type { IRuleRepository, IRuleRevisionRepository } from '../../domain-server';

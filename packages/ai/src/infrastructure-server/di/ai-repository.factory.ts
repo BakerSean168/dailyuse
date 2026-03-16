@@ -1,6 +1,14 @@
 /**
  * AI Repository Factory
- * Provides repository implementations for different data sources
+ * AI 仓储工厂
+ *
+ * Provides repository implementations for different data sources.
+ * 根据不同数据源提供仓储实现。
+ *
+ * @deprecated Use `createAIModule()` or `createAIPowerSyncModule()` composition roots instead.
+ *   The composition root now handles repository creation internally, making this factory unnecessary.
+ * @deprecated 请使用 `createAIModule()` 或 `createAIPowerSyncModule()` 组合根替代。
+ *   组合根现在在内部处理仓储创建，不再需要此工厂。
  */
 
 import type { PrismaClient } from '@dailyuse/database';
@@ -16,7 +24,11 @@ import {
 } from '../adapters/powersync';
 
 /**
- * AI Repository Factory
+ * @deprecated Use `createAIModule()` or `createAIPowerSyncModule()` composition roots instead.
+ * @deprecated 请使用 `createAIModule()` 或 `createAIPowerSyncModule()` 组合根替代。
+ *
+ * Provides repository implementations for different data sources.
+ * 根据不同数据源提供仓储实现。
  */
 export class AIRepositoryFactory {
   /**

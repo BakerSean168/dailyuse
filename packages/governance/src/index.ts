@@ -45,9 +45,9 @@
  * import { Rule, IRuleRepository } from '@dailyuse/governance/domain-server';
  *
  * // 4. 使用组合根
- * import { GovernanceModule } from '@dailyuse/governance/infrastructure-server';
- * const module = new GovernanceModule({ ruleRepository, revisionRepository });
- * const result = await module.createRule.execute(props, context);
+ * import { createGovernanceModule } from '@dailyuse/governance/infrastructure-server';
+ * const module = createGovernanceModule({ ruleRepository, revisionRepository });
+ * const result = await module.api.createRule(props, context);
  * ```
  */
 
@@ -87,11 +87,13 @@ export {
   PowerSyncRuleRepository,
   /** @internal Concrete PowerSync implementation — use IRuleRevisionRepository interface instead. PowerSync 具体实现 — 请使用 IRuleRevisionRepository 接口。 */
   PowerSyncRuleRevisionRepository,
-  GovernancePowerSyncModule,
-  /** @internal DI container — use GovernanceModule facade instead. DI 容器 — 请使用 GovernanceModule 门面。 */
-  GovernanceContainer,
-  GovernanceModule,
-  type GovernanceModuleRepositories,
+  createGovernanceModule,
+  createGovernancePowerSyncModule,
+  type GovernanceApplicationPort,
+  type GovernanceModuleDependencies,
+  type GovernanceModuleInstance,
+  type GovernanceModuleRuntimeContribution,
+  type GovernanceModuleUseCases,
 } from './infrastructure-server';
 
 export * from './infrastructure-client';

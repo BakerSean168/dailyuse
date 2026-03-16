@@ -10,12 +10,15 @@
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
-import { PrismaAccountRepository, AccountModule } from '../infrastructure-server';
-import { AccountContainer } from '../infrastructure-server/di/account-container';
+import {
+  PrismaAccountRepository,
+  createAccountModule,
+  type AccountModuleInstance,
+} from '../infrastructure-server';
 import { registerAccountRoutes } from './routes';
-import type { AccountUseCases } from '../controllers/account.controller';
-import { registerAccountInitializationTasks } from './initialization';
+import { createAccountTransportHandlers } from './transport-handlers';
+import { createAccountRuntimeContribution } from './runtime';
+import { createAccountEventListenerRuntime } from '../application-server/handlers/register-account-event-listeners';
 
 /**
  * Module context (structurally compatible with IApiModuleContext from apps/api).
@@ -38,6 +41,8 @@ export interface AccountApiModuleDef {
   destroy?(): void;
 }
 
+let activeAccountModule: AccountModuleInstance | null = null;
+
 export const AccountApiModule: AccountApiModuleDef = {
   name: 'Account',
 
@@ -46,36 +51,27 @@ export const AccountApiModule: AccountApiModuleDef = {
 
     // 1. Composition Root — 使用共享数据库单例
     const accountRepository = new PrismaAccountRepository(db as PrismaClient);
-    const accountModule = new AccountModule({ accountRepository });
-
-    // 1.5 设置 Container（供事件监听器使用）
-    AccountContainer.getInstance().setAccountRepository(accountRepository);
+    const accountModule = createAccountModule({
+      accountRepository,
+      runtimeContributions: createAccountRuntimeContribution(
+        createAccountEventListenerRuntime(accountRepository),
+      ),
+    });
+    activeAccountModule = accountModule;
+    accountModule.start();
 
     // 2. 创建路由处理器
-    const handlers: AccountUseCases = {
-      getProfile: async (ctx) =>
-        ok((await accountModule.getProfile.execute(ctx.identityId)) as any),
-      updateProfile: async (data, ctx) =>
-        ok((await accountModule.updateProfile.execute(ctx.identityId, data)) as any),
-      checkAvailability: async (data) =>
-        ok((await accountModule.checkAvailability.execute(data)) as any),
-      closeAccount: async (data, ctx) => {
-        await accountModule.closeAccount.execute(ctx.identityId, data);
-        return ok(undefined as any);
-      },
-    };
+    const handlers = createAccountTransportHandlers(accountModule.api);
 
     // 3. 注册路由
     const accountRoutes = registerAccountRoutes(handlers, middleware, context.openApiRegistry);
 
     // 4. 挂载 API 路由
     router.use('/accounts', accountRoutes);
-
-    // 5. 注册初始化任务（事件监听等）
-    registerAccountInitializationTasks();
   },
 
   destroy() {
-    AccountContainer.getInstance().reset();
+    activeAccountModule?.dispose();
+    activeAccountModule = null;
   },
 };

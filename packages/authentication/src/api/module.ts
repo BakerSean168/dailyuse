@@ -1,49 +1,43 @@
 /**
- * Authentication API Module Definition
+ * Authentication API Module Definition.
+ * 认证 API 模块定义。
  *
  * Implements IApiModule standard interface:
- * 1. Composition Root (AuthenticationContainer -> UseCases -> Handlers)
- * 2. Route definition and mounting
- * 3. Initialization task registration
+ * 实现 IApiModule 标准接口，内部自治完成：
+ *
+ * 1. Composition Root (create concrete repos → create module → start)
+ *    组合根（创建具体仓储 → 创建模块 → 启动）
+ * 2. Transport handler creation via createAuthenticationTransportHandlers
+ *    通过 createAuthenticationTransportHandlers 创建传输层处理器
+ * 3. Route definition and mounting
+ *    路由定义与挂载
  *
  * Middleware comes from context.middleware, no dependency on apps/api internals.
+ * 中间件来自 context.middleware，不依赖 apps/api 内部实现。
  */
 
 import { Router } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok, fail } from '@dailyuse/contracts/result';
 import { eventBus } from '@dailyuse/utils';
 import { createEventBusAdapter } from '@dailyuse/patterns';
 import {
-  AuthenticationContainer,
-  AuthenticationRepositoryFactory,
-  AuthenticationModule,
+  createAuthenticationModule,
+  PrismaAuthIdentityRepository,
+  PrismaAuthSessionRepository,
+  Argon2Hasher,
+  JwtTokenProvider,
+  type AuthenticationModuleInstance,
 } from '../infrastructure-server';
-import { UserAlreadyExistsError } from '../domain-server/services/registration';
-import { UserNotFoundError, InvalidPasswordError } from '../domain-server/services/login';
-// Commented out temporarily:
-// import {
-//   ChangePassword,
-//   ForgotPassword,
-//   ResetPassword,
-//   Enable2FA,
-//   Verify2FA,
-//   Disable2FA,
-//   GetActiveSessions,
-//   RevokeSession,
-//   RevokeAllSessions,
-//   CreateApiKey,
-//   ListApiKeys,
-//   RevokeApiKey,
-// } from '../application-server';
 import { registerAuthenticationRoutes } from './routes';
-import type { AuthenticationUseCases } from '../controllers/auth.controller';
-import { registerAuthenticationInitializationTasks } from './initialization';
-import { JwtTokenProvider } from '@/infrastructure-server/services/jwt-token-provider';
+import { createAuthenticationTransportHandlers } from './transport-handlers';
+import { createAuthenticationRuntimeContribution } from './runtime';
 
 /**
  * Module context (structurally compatible with IApiModuleContext from apps/api).
+ * 模块注册上下文（与 apps/api 的 IApiModuleContext 对齐）。
+ *
  * Locally defined to avoid circular dependency on apps/api.
+ * 此类型在 authentication 包内本地定义，避免对 apps/api 的循环依赖。
  */
 export interface AuthenticationApiModuleContext {
   readonly app: import('express').Express;
@@ -62,30 +56,20 @@ export interface AuthenticationApiModuleDef {
   destroy?(): void;
 }
 
+let activeAuthenticationModule: AuthenticationModuleInstance | null = null;
+
 export const AuthenticationApiModule: AuthenticationApiModuleDef = {
   name: 'Authentication',
 
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Composition Root - create container with shared database client
-    const container = AuthenticationContainer.getInstance();
+    // ── 1. Composition Root — 组装依赖（使用共享数据库单例）──
+    const prismaClient = db as PrismaClient;
     const eventBusAdapter = createEventBusAdapter(eventBus);
-    const { identityRepository, sessionRepository } =
-      AuthenticationRepositoryFactory.createAllRepositories(
-        'prisma',
-        db as PrismaClient,
-        eventBusAdapter,
-      );
-    container.setIdentityRepository(identityRepository);
-    container.setSessionRepository(sessionRepository);
-    const identityRepo = container.getIdentityRepository();
-    const sessionRepo = container.getSessionRepository();
-    const passwordHasher = container.getPasswordHasher();
 
     // Initialize token provider with configuration
-    // Uses JWT_SECRET (shared with authMiddleware) for access tokens,
-    // and REFRESH_TOKEN_SECRET (falling back to JWT_SECRET) for refresh tokens.
+    // 使用环境变量初始化令牌提供者
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       throw new Error('JWT_SECRET environment variable is required');
@@ -98,103 +82,30 @@ export const AuthenticationApiModule: AuthenticationApiModuleDef = {
       7 * 24 * 60 * 60 * 1000, // 7 days for refresh token
     );
 
-    // 2. Create use-case service instances via composition root
-    const authenticationModule = new AuthenticationModule({
-      identityRepository: identityRepo,
-      sessionRepository: sessionRepo,
-      passwordHasher,
+    const authenticationModule = createAuthenticationModule({
+      // The application edge decides which adapter implementation to use.
+      // 模块内部只关心端口，不关心数据源来自 Prisma 还是其他实现。
+      identityRepository: new PrismaAuthIdentityRepository(prismaClient, eventBusAdapter),
+      sessionRepository: new PrismaAuthSessionRepository(prismaClient, eventBusAdapter),
+      passwordHasher: new Argon2Hasher(),
       tokenProvider,
+      runtimeContributions: createAuthenticationRuntimeContribution(),
     });
+    activeAuthenticationModule = authenticationModule;
+    authenticationModule.start();
 
-    // Commented out temporarily:
-    // const changePasswordService = new ChangePassword(identityRepo, passwordHasher);
-    // const forgotPasswordService = new ForgotPassword(identityRepo);
-    // const resetPasswordService = new ResetPassword(identityRepo, passwordHasher);
-    // const enable2faService = new Enable2FA(identityRepo);
-    // const verify2faService = new Verify2FA(identityRepo);
-    // const disable2faService = new Disable2FA(identityRepo);
-    // const getActiveSessionsService = new GetActiveSessions(sessionRepo);
-    // const revokeSessionService = new RevokeSession(sessionRepo);
-    // const revokeAllSessionsService = new RevokeAllSessions(sessionRepo);
-    // const createApiKeyService = new CreateApiKey(identityRepo);
-    // const listApiKeysService = new ListApiKeys(identityRepo);
-    // const revokeApiKeyService = new RevokeApiKey(identityRepo);
+    // ── 2. Create transport handlers — 创建传输层处理器 ──
+    const handlers = createAuthenticationTransportHandlers(authenticationModule.api);
 
-    // 3. Build handler map
-    const handlers: AuthenticationUseCases = {
-      register: async (data, cx) => {
-        try {
-          return ok(await authenticationModule.register.execute(data, cx));
-        } catch (err) {
-          if (err instanceof UserAlreadyExistsError) {
-            return fail({ code: 'CONFLICT', message: err.message });
-          }
-          throw err;
-        }
-      },
-      registerByPhone: async (_data, _cx) =>
-        fail({
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Phone registration is not implemented on the server yet',
-        }),
-      login: async (data, cx) => {
-        try {
-          return ok(await authenticationModule.login.execute(data, cx));
-        } catch (err) {
-          // Security: don't distinguish "user not found" vs "wrong password"
-          if (err instanceof UserNotFoundError || err instanceof InvalidPasswordError) {
-            return fail({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
-          }
-          throw err;
-        }
-      },
-      loginByPhone: async (_data, _cx) =>
-        fail({
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Phone login is not implemented on the server yet',
-        }),
-      sendSmsCode: async (_data) =>
-        fail({
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'SMS verification is not implemented on the server yet',
-        }),
-      logout: async (cx) => {
-        await authenticationModule.logout.execute(undefined as void, cx);
-        return ok(undefined as void);
-      },
-      refreshToken: async (data, cx) =>
-        ok(await authenticationModule.refreshToken.execute(data, cx)),
-      getCurrentUser: async (cx, sessionId) =>
-        ok(await authenticationModule.getCurrentUser.execute(cx.identityId, sessionId)),
-      listSessions: async (cx, sessionId) =>
-        ok(await authenticationModule.listSessions.execute(cx.identityId, sessionId)),
-      revokeSession: async (data, cx) => {
-        await authenticationModule.revokeSession.execute(data, cx);
-        return ok(undefined as void);
-      },
-      changePassword: async (data, cx) => {
-        await authenticationModule.changePassword.execute(data, cx);
-        return ok(undefined as void);
-      },
-      forgotPassword: async (_data) =>
-        fail({
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Forgot password is not implemented on the server yet',
-        }),
-      resetPassword: async (_data) =>
-        fail({
-          code: 'SERVICE_UNAVAILABLE',
-          message: 'Password reset is not implemented on the server yet',
-        }),
-    };
-
-    // 4. Register routes
+    // ── 3. Register routes — 注册路由（注入平台中间件）──
     const authRoutes = registerAuthenticationRoutes(handlers, middleware, context.openApiRegistry);
 
-    // 5. Mount onto API router
+    // ── 4. Mount onto API router — 挂载到主路由（模块自决前缀）──
     router.use('/auth', authRoutes);
+  },
 
-    // 6. Register initialization tasks (event handlers)
-    registerAuthenticationInitializationTasks();
+  destroy() {
+    activeAuthenticationModule?.dispose();
+    activeAuthenticationModule = null;
   },
 };

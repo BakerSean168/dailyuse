@@ -1,16 +1,12 @@
-import { GovernanceModule, type GovernanceModuleRepositories } from './governance.module';
-import { GovernanceContainer } from './di/governance-container';
+import { createGovernanceModule, type GovernanceModuleInstance } from './governance.module';
 import { PowerSyncRuleRepository, PowerSyncRuleRevisionRepository } from './adapters/powersync';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
 
-export class GovernancePowerSyncModule extends GovernanceModule {
-  constructor(db: IElectronDatabase) {
-    const repositories: GovernanceModuleRepositories = {
-      ruleRepository: new PowerSyncRuleRepository(db),
-      revisionRepository: new PowerSyncRuleRevisionRepository(db),
-    };
-    super(repositories);
-  }
+export function createGovernancePowerSyncModule(db: IElectronDatabase): GovernanceModuleInstance {
+  return createGovernanceModule({
+    ruleRepository: new PowerSyncRuleRepository(db),
+    revisionRepository: new PowerSyncRuleRevisionRepository(db),
+  });
 }
 
-export { PowerSyncRuleRepository, PowerSyncRuleRevisionRepository, GovernanceContainer };
+export { PowerSyncRuleRepository, PowerSyncRuleRevisionRepository };

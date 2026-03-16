@@ -1,15 +1,25 @@
 /**
  * Notification API Module
+ * 通知 API 模块
  *
- * Self-contained API module entry — exposed to ApiBootstrapper via register():
- * - Internally completes Composition Root assembly
- * - Uses platform-level middleware via context.middleware (auth, rbac)
- * - Mounts routes via context.router
+ * 自治的 API 模块入口 — 通过 register() 暴露给 ApiBootstrapper：
+ * - 内部完成 Composition Root 组装
+ * - 通过 context.middleware 使用平台级中间件（auth, rbac）
+ * - 通过 context.router 挂载路由
  *
- * Route prefix: /notifications
+ * apps/api 只需一行代码：
+ * ```typescript
+ * .register(NotificationApiModule)
+ * ```
+ *
+ * 路由前缀：/notifications
  */
 
 export { NotificationApiModule } from './module';
 export type { NotificationApiModuleContext, NotificationApiModuleDef } from './module';
-export { registerNotificationInitializationTasks } from './initialization';
+export {
+  createNotificationRuntimeContribution,
+  type NotificationRuntimeContribution,
+} from './runtime';
+export { createNotificationTransportHandlers } from './transport-handlers';
 export { NotificationController, type NotificationUseCases } from '../controllers';

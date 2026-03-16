@@ -1,28 +1,47 @@
 /**
  * Editor API Module Definition
+ * 编辑器 API 模块定义
  *
- * Composition root for the Editor module:
- * 1. Creates repositories with PrismaClient
- * 2. Wires handlers directly to repository methods
- * 3. Registers routes and initialization tasks
+ * Thin API module following the governance canonical pattern:
+ * 遵循治理模块规范模式的薄 API 模块：
+ *
+ * 1. Composition Root — assemble dependencies via createEditorModule()
+ *    组合根 — 通过 createEditorModule() 组装依赖
+ * 2. Transport handlers — map module facade to controller port
+ *    传输处理器 — 将模块门面映射到控制器端口
+ * 3. Route registration — mount routes to Express router
+ *    路由注册 — 将路由挂载到 Express 路由器
+ *
+ * All business logic lives in the composition root (editor.module.ts).
+ * This file is pure plumbing.
+ *
+ * 所有业务逻辑都在组合根（editor.module.ts）中。
+ * 此文件只是纯粹的管道连接。
  */
 
 import type { Router, Express, RequestHandler } from 'express';
 import type { PrismaClient } from '@dailyuse/database';
-import { ok } from '@dailyuse/contracts/result';
-import type { IdentityId, EditorWorkspaceId } from '@dailyuse/contracts/primitives';
-import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO, DocumentMetadataServerDTO } from '@dailyuse/contracts/editor';
 import {
+  createEditorModule,
   EditorWorkspacePrismaRepository,
   DocumentPrismaRepository,
+  type EditorModuleInstance,
 } from '../infrastructure-server';
-import { EditorContainer } from '../infrastructure-server/di/editor-container';
-import { EditorWorkspace } from '../domain-server';
-import { Document } from '../domain-server';
 import { registerEditorRoutes } from './routes';
-import type { EditorUseCases } from '../controllers/editor.controller';
-import { registerEditorInitializationTasks } from './initialization';
+import { createEditorTransportHandlers } from './transport-handlers';
+import { createEditorRuntimeContribution } from './runtime';
 
+// ---------------------------------------------------------------------------
+// Module context — 模块注册上下文
+// ---------------------------------------------------------------------------
+
+/**
+ * Registration context (structurally compatible with apps/api's IApiModuleContext).
+ * 注册上下文（与 apps/api 的 IApiModuleContext 结构兼容）。
+ *
+ * Locally defined to avoid circular dependency on apps/api.
+ * 在本地定义以避免对 apps/api 的循环依赖。
+ */
 export interface EditorApiModuleContext {
   readonly app: Express;
   readonly router: Router;
@@ -40,118 +59,47 @@ export interface EditorApiModuleDef {
   destroy?(): Promise<void> | void;
 }
 
+// ---------------------------------------------------------------------------
+// Module singleton — 模块单例
+// ---------------------------------------------------------------------------
+
+let activeEditorModule: EditorModuleInstance | null = null;
+
+// ---------------------------------------------------------------------------
+// API Module — API 模块
+// ---------------------------------------------------------------------------
+
 export const EditorApiModule: EditorApiModuleDef = {
   name: 'Editor',
 
   register(context) {
     const { router, middleware, db } = context;
 
-    // 1. Create repositories
+    // 1. Composition Root — assemble dependencies (uses shared database singleton)
+    //    组合根 — 组装依赖（使用共享数据库单例）
     const prismaClient = db as PrismaClient;
-    const workspaceRepo = new EditorWorkspacePrismaRepository(prismaClient);
-    const documentRepo = new DocumentPrismaRepository(prismaClient);
+    const editorModule = createEditorModule({
+      // The application edge decides which adapter implementation to use.
+      // 应用边界决定使用哪个适配器实现。
+      workspaceRepository: new EditorWorkspacePrismaRepository(prismaClient),
+      documentRepository: new DocumentPrismaRepository(prismaClient),
+      runtimeContributions: createEditorRuntimeContribution(),
+    });
+    activeEditorModule = editorModule;
+    editorModule.start();
 
-    // 2. Wire handlers directly to repository methods
-    const handlers: EditorUseCases = {
-      createWorkspace: async (data, ctx) => {
-        const workspace = EditorWorkspace.create({
-          identityId: ctx.identityId as IdentityId,
-          name: data.name,
-          description: data.description ?? undefined,
-          projectPath: data.projectPath,
-          projectType: data.projectType as any,
-          layout: (data.layout as unknown as WorkspaceLayoutServerDTO) ?? undefined,
-          settings: (data.settings as unknown as WorkspaceSettingsServerDTO) ?? undefined,
-        });
-        await workspaceRepo.save(workspace);
-        return ok(workspace.toServerDTO());
-      },
+    // 2. Transport handlers — map module facade to controller port
+    //    传输处理器 — 将模块门面映射到控制器端口
+    const handlers = createEditorTransportHandlers(editorModule.api);
 
-      listWorkspaces: async (ctx) => {
-        const workspaces = await workspaceRepo.findByIdentityId(ctx.identityId);
-        return ok({
-          workspaces: workspaces.map((w) => w.toServerDTO()),
-          total: workspaces.length,
-        });
-      },
-
-      getWorkspace: async (id) => {
-        const workspace = await workspaceRepo.findById(id);
-        return ok(workspace?.toServerDTO() ?? null);
-      },
-
-      updateWorkspace: async (id, data) => {
-        const workspace = await workspaceRepo.findById(id);
-        if (!workspace) return ok(null);
-        if (data.name !== undefined) workspace.updateName(data.name);
-        if (data.description !== undefined) workspace.updateDescription(data.description ?? null);
-        if (data.layout != null) workspace.updateLayout(data.layout);
-        if (data.settings != null) workspace.updateSettings(data.settings);
-        await workspaceRepo.save(workspace);
-        return ok(workspace.toServerDTO());
-      },
-
-      deleteWorkspace: async (id) => {
-        await workspaceRepo.delete(id);
-        return ok(undefined);
-      },
-
-      createDocument: async (data, ctx) => {
-        const doc = Document.create({
-          workspaceId: data.workspaceId as unknown as EditorWorkspaceId,
-          identityId: ctx.identityId as IdentityId,
-          path: data.path,
-          name: data.name,
-          language: data.language as any,
-          content: data.content,
-          metadata: (data.metadata as unknown as DocumentMetadataServerDTO) ?? undefined,
-        });
-        await documentRepo.save(doc);
-        return ok(doc.toServerDTO());
-      },
-
-      listDocuments: async (params, ctx) => {
-        const documents = params.workspaceId
-          ? await documentRepo.findByWorkspaceId(params.workspaceId)
-          : await documentRepo.findByIdentityId(ctx.identityId);
-        return ok({
-          documents: documents.map((d) => d.toServerDTO()),
-          total: documents.length,
-        });
-      },
-
-      getDocument: async (id) => {
-        const doc = await documentRepo.findById(id);
-        return ok(doc?.toServerDTO() ?? null);
-      },
-
-      updateDocument: async (id, data) => {
-        const doc = await documentRepo.findById(id);
-        if (!doc) return ok(null);
-        if (data.content !== undefined) doc.updateContent(data.content);
-        if (data.metadata != null) {
-          const merged = { ...doc.metadata, ...data.metadata } as DocumentMetadataServerDTO;
-          doc.updateMetadata(merged);
-        }
-        await documentRepo.save(doc);
-        return ok(doc.toServerDTO());
-      },
-
-      deleteDocument: async (id) => {
-        await documentRepo.delete(id);
-        return ok(undefined);
-      },
-    };
-
-    // 3. Register routes
+    // 3. Route registration — mount routes (module decides its own prefix)
+    //    路由注册 — 挂载路由（模块自决前缀）
     const editorRoutes = registerEditorRoutes(handlers, middleware, context.openApiRegistry);
     router.use('/editor', editorRoutes);
-
-    // 4. Register initialization tasks
-    registerEditorInitializationTasks();
   },
 
   destroy() {
-    EditorContainer.getInstance().reset();
+    activeEditorModule?.dispose();
+    activeEditorModule = null;
   },
 };

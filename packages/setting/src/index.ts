@@ -1,34 +1,37 @@
 /**
  * @dailyuse/setting
  *
- * 设置模块 - 用户偏好管理
+ * User preference management module.
  *
- * 【分层架构】
+ * ## Layer Architecture
  *
- * contracts              → 类型定义、DTO、Preference 接口、事件（@dailyuse/contracts/setting）
- * domain-shared          → 值对象（SettingId）
- * domain-server          → 聚合根（UserSetting）、仓储接口、领域错误
- * domain-client          → 客户端领域模型
- * application-server     → 用例服务（Get/Update/Reset/Export/Import）
- * application-client     → 客户端服务
- * infrastructure-server  → Prisma 仓储实现、DI 模块
- * infrastructure-client  → HTTP/IPC 适配器
+ * contracts              → type definitions, DTOs, preferences, events  (@dailyuse/contracts/setting)
+ * domain-shared          → value objects (SettingId)
+ * domain-server          → aggregate roots (UserSetting), repository ports, domain errors
+ * domain-client          → client-side domain model
+ * application-server     → use cases (Get/Patch/Reset/Export/Import)
+ * application-client     → client service facade
+ * infrastructure-server  → Prisma / PowerSync repository adapters, composition root
+ * infrastructure-client  → HTTP / IPC transport adapters
  *
- * 【使用示例】
+ * ## Quick Start
  *
- * ```typescript
- * // 1. 导入 Preference 类型
- * import type { AppearancePreferences, UserSettingClientDTO } from '@dailyuse/contracts/setting';
+ * ```ts
+ * // Server — composition root
+ * import { createSettingModule } from '@dailyuse/setting/infrastructure-server';
  *
- * // 2. 导入聚合根
- * import { UserSetting } from '@dailyuse/setting/domain-server';
+ * // Client — service + adapter
+ * import { createSettingClientService } from '@dailyuse/setting/application-client';
+ * import { SettingHttpAdapter }         from '@dailyuse/setting/infrastructure-client';
  *
- * // 3. 导入基础设施模块
- * import { SettingModule } from '@dailyuse/setting/infrastructure-server';
+ * // Contracts (types only)
+ * import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
  * ```
  */
 
 // ================= Contracts Layer =================
+// Re-exported for convenience; prefer importing directly from
+// `@dailyuse/contracts/setting` when possible.
 export * from '@dailyuse/contracts/setting';
 
 // ================= Domain Layer =================
@@ -36,8 +39,39 @@ export * from './domain-server';
 
 // ================= Application Layer =================
 export * from './application-server';
-export * from './application-client';
+export {
+  SettingClientService,
+  createSettingClientService,
+  type SettingClientPort,
+  type ISettingApiClient,
+} from './application-client';
 
 // ================= Infrastructure Layer =================
-export * from './infrastructure-server';
-export * from './infrastructure-client';
+// Server
+export {
+  createSettingModule,
+  createSettingUseCases,
+  type SettingApplicationPort,
+  type SettingModuleDependencies,
+  type SettingModuleInstance,
+  type SettingModuleRuntimeContribution,
+  type SettingModuleUseCases,
+} from './infrastructure-server';
+
+export {
+  UserSettingPrismaRepository,
+  UserSettingPowerSyncRepository,
+  createSettingPowerSyncModule,
+} from './infrastructure-server';
+
+// Client
+export {
+  SettingHttpAdapter,
+  createSettingHttpAdapters,
+  type SettingHttpAdapters,
+  SettingIpcAdapter,
+  createSettingIpcAdapters,
+  type SettingIpcAdapters,
+  type IResultHttpClient,
+  type IResultIpcClient,
+} from './infrastructure-client';

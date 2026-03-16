@@ -1,3 +1,20 @@
+/**
+ * createGoalModule — explicit composition root for the goal server runtime.
+ * createGoalModule —— 目标模块服务端运行时的显式组合根。
+ *
+ * The outer app selects concrete adapters and passes them in here.
+ * This module then assembles the application layer exactly once and exposes a
+ * stable facade to HTTP / IPC transports.
+ *
+ * 外层应用负责选择具体适配器并传入这里。
+ * 组合根只做一次组装，然后向 HTTP / IPC 等传输层暴露稳定门面。
+ *
+ * Goal uses the governance module as reference pattern: one composition root per
+ * module, constructor injection only, no hidden service locator.
+ * 目标模块以 governance 模块为参考模式：每个模块只有一个组合根，
+ * 只使用构造函数注入，不使用隐藏的服务定位器。
+ */
+
 import type {
   IGoalRepository,
   IGoalFolderRepository,
@@ -30,15 +47,420 @@ import {
   CreateGoalRecord,
   ListGoalRecords,
   DeleteGoalRecord,
+  PermanentlyDeleteGoal,
 } from '../application-server';
-import { GoalContainer } from './di/goal-container';
+import type { Result } from '@dailyuse/contracts/result';
+import type {
+  CreateGoalReq,
+  CreateGoalRes,
+  UpdateGoalReq,
+  UpdateGoalRes,
+  DeleteGoalRes,
+  GetGoalRes,
+  QueryGoalsReq,
+  QueryGoalsRes,
+  GoalClientDTO,
+  GoalFolderClientDTO,
+  GoalRecordClientDTO,
+  QueryGoalFoldersReq,
+  QueryGoalFoldersRes,
+  CreateGoalFolderReq,
+  UpdateGoalFolderReq,
+  UpdateGoalFolderRes,
+  GoalServerDTO,
+} from '@dailyuse/contracts/goal';
+import type { Context } from '@dailyuse/contracts/shared';
+import type { IdentityId } from '@dailyuse/domain-shared';
+import type {
+  ListGoalRecordsParams,
+  ListGoalRecordsResult,
+} from '../application-server/use-cases/queries/list-goal-records';
+import type { ListGoalReviewsResult } from '../application-server/use-cases/queries/list-goal-reviews';
 
-export interface GoalModuleRepositories {
+// ---------------------------------------------------------------------------
+// Dependencies — everything the goal server runtime needs from the outside.
+// 依赖 — 目标模块服务端运行时向外部索取的全部依赖。
+//
+// Refactor rule (same as governance):
+// - only put ports or runtime contributions here
+// - never put transport objects (Express req/res, ipcMain, Router) here
+// - never hide these dependencies behind a singleton container
+// ---------------------------------------------------------------------------
+
+export type GoalRuntimeContributionsInput =
+  | GoalModuleRuntimeContribution
+  | readonly GoalModuleRuntimeContribution[];
+
+export interface GoalModuleDependencies {
   readonly goalRepository: IGoalRepository;
   readonly goalFolderRepository: IGoalFolderRepository;
   readonly goalRecordRepository: IGoalRecordRepository;
+  readonly runtimeContributions?: GoalRuntimeContributionsInput;
 }
 
+/**
+ * Module-owned runtime side effects.
+ * 模块拥有的运行时副作用。
+ *
+ * A contribution is the unit we start/stop together with the module instance.
+ * This is the replacement for older global initialization hooks.
+ * 贡献是我们与模块实例一起启动/停止的单元。
+ * 这是旧的全局初始化钩子的替代品。
+ */
+export interface GoalModuleRuntimeContribution {
+  start(): void;
+  stop(): void;
+}
+
+// ---------------------------------------------------------------------------
+// Use Cases — lower-level assembled use case collection.
+// 用例 — 已完成接线的底层 use case 集合。
+//
+// We keep this type because tests and low-level assembly sometimes need direct
+// access to use-case objects, but transports should prefer `GoalApplicationPort`.
+// 保留此类型供测试和底层组装直接使用，传输层应优先使用 `GoalApplicationPort`。
+// ---------------------------------------------------------------------------
+
+export interface GoalModuleUseCases {
+  // Goal CRUD / 目标增删改查
+  readonly createGoal: CreateGoal;
+  readonly getGoal: GetGoal;
+  readonly listGoals: ListGoals;
+  readonly updateGoal: UpdateGoal;
+  readonly deleteGoal: DeleteGoal;
+  readonly permanentlyDeleteGoal: PermanentlyDeleteGoal;
+  readonly archiveGoal: ArchiveGoal;
+  readonly activateGoal: ActivateGoal;
+  readonly completeGoal: CompleteGoal;
+  readonly searchGoals: SearchGoals;
+
+  // Folder CRUD / 文件夹增删改查
+  readonly listGoalFolders: ListGoalFolders;
+  readonly createGoalFolder: CreateGoalFolder;
+  readonly getGoalFolder: GetGoalFolder;
+  readonly updateGoalFolder: UpdateGoalFolder;
+  readonly deleteGoalFolder: DeleteGoalFolder;
+
+  // Key Result / 关键结果
+  readonly addKeyResult: AddGoalKeyResult;
+  readonly updateKeyResult: UpdateGoalKeyResult;
+  readonly updateKeyResultProgress: UpdateGoalKeyResultProgress;
+  readonly deleteKeyResult: DeleteGoalKeyResult;
+
+  // Review / 复盘
+  readonly addReview: AddGoalReview;
+  readonly listReviews: ListGoalReviews;
+  readonly updateReview: UpdateGoalReview;
+  readonly deleteReview: DeleteGoalReview;
+
+  // Record / 进度记录
+  readonly createRecord: CreateGoalRecord;
+  readonly listRecords: ListGoalRecords;
+  readonly deleteRecord: DeleteGoalRecord;
+}
+
+// ---------------------------------------------------------------------------
+// Application Port — transport-neutral callable application surface.
+// 应用端口 — 传输层无关的可调用应用层门面。
+//
+// This is the type that HTTP / Electron / IPC transports should consume.
+// It mirrors the use case execute signatures but decouples transports from
+// use-case class instances, exactly as governance's GovernanceApplicationPort.
+// 这是 HTTP / Electron / IPC 传输层应使用的类型。
+// 它镜像用例的 execute 签名，但将传输层与用例类实例解耦，
+// 与治理模块的 GovernanceApplicationPort 完全一致。
+// ---------------------------------------------------------------------------
+
+/** Transport-neutral callable application surface. 传输层无关的可调用应用层门面。 */
+export interface GoalApplicationPort {
+  // Goal CRUD / 目标增删改查
+  createGoal(input: CreateGoalReq, context: Context): Promise<Result<CreateGoalRes>>;
+  getGoal(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
+  listGoals(input: QueryGoalsReq): Promise<Result<QueryGoalsRes>>;
+  updateGoal(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
+  deleteGoal(id: string): Promise<Result<DeleteGoalRes>>;
+  permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
+  archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
+  activateGoal(id: string): Promise<Result<GoalClientDTO>>;
+  completeGoal(id: string): Promise<{ goal: GoalServerDTO }>;
+  searchGoals(identityId: string, query: string): Promise<Result<QueryGoalsRes>>;
+
+  // Folder CRUD / 文件夹增删改查
+  listGoalFolders(input: QueryGoalFoldersReq): Promise<QueryGoalFoldersRes>;
+  createGoalFolder(
+    identityId: IdentityId,
+    input: CreateGoalFolderReq,
+  ): Promise<GoalFolderClientDTO>;
+  getGoalFolder(id: string): Promise<GoalFolderClientDTO | null>;
+  updateGoalFolder(
+    id: string,
+    identityId: string,
+    input: UpdateGoalFolderReq,
+  ): Promise<UpdateGoalFolderRes>;
+  deleteGoalFolder(id: string, identityId: string): Promise<void>;
+
+  // Key Result / 关键结果
+  addKeyResult(
+    goalId: string,
+    keyResult: {
+      title: string;
+      valueType: string;
+      aggregationMethod?: string;
+      targetValue: number;
+      currentValue?: number;
+      unit?: string;
+      weight: number;
+    },
+  ): Promise<Result<GoalClientDTO>>;
+  updateKeyResult(
+    goalId: string,
+    keyResultId: string,
+    updates: {
+      title?: string;
+      description?: string;
+      weight?: number;
+      targetValue?: number;
+      unit?: string;
+    },
+  ): Promise<Result<GoalClientDTO>>;
+  updateKeyResultProgress(
+    goalId: string,
+    keyResultId: string,
+    currentValue: number,
+    note?: string,
+  ): Promise<Result<GoalClientDTO>>;
+  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<GoalClientDTO>>;
+
+  // Review / 复盘
+  addReview(
+    goalId: string,
+    params: {
+      title: string;
+      content: string;
+      reviewType: string;
+      rating?: number;
+      achievements?: string;
+      challenges?: string;
+      nextActions?: string;
+    },
+  ): Promise<Result<GoalClientDTO>>;
+  listReviews(goalId: string): Promise<Result<ListGoalReviewsResult>>;
+  updateReview(
+    goalId: string,
+    reviewId: string,
+    params: {
+      title?: string;
+      content?: string;
+      rating?: number | null;
+      achievements?: string | null;
+      challenges?: string | null;
+      nextActions?: string | null;
+    },
+  ): Promise<Result<GoalClientDTO>>;
+  deleteReview(goalId: string, reviewId: string): Promise<Result<void>>;
+
+  // Record / 进度记录
+  createRecord(
+    goalId: string,
+    keyResultId: string,
+    params: { value: number; note?: string },
+    identityId: string,
+  ): Promise<Result<GoalRecordClientDTO>>;
+  listRecords(params: ListGoalRecordsParams): Promise<Result<ListGoalRecordsResult>>;
+  deleteRecord(recordId: string): Promise<Result<void>>;
+}
+
+/**
+ * Primary goal composition root return type.
+ * 目标模块主组合根返回类型。
+ *
+ * `api` is the transport-facing surface.
+ * `api` 是面向传输层的门面。
+ * `useCases` is kept for low-level tests and diagnostics.
+ * `useCases` 保留供底层测试和诊断使用。
+ * `start` / `dispose` own runtime side effects (event subscriptions, etc.).
+ * `start` / `dispose` 负责运行时副作用（事件订阅等）。
+ */
+export interface GoalModuleInstance {
+  readonly goalRepository: IGoalRepository;
+  readonly goalFolderRepository: IGoalFolderRepository;
+  readonly goalRecordRepository: IGoalRecordRepository;
+  readonly useCases: GoalModuleUseCases;
+  readonly api: GoalApplicationPort;
+  start(): void;
+  dispose(): void;
+}
+
+// ---------------------------------------------------------------------------
+// Pure assembly helper — can be used by tests directly.
+// 纯组装函数 — 可以直接被测试使用。
+// ---------------------------------------------------------------------------
+
+export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseCases {
+  const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
+
+  const goalPolicy = new GoalPolicy();
+  const goalProgressCalculator = new GoalProgressCalculator(goalRecordRepository);
+
+  return {
+    // Goal CRUD / 目标增删改查
+    createGoal: new CreateGoal(goalRepository, goalPolicy),
+    getGoal: new GetGoal(goalRepository),
+    listGoals: new ListGoals(goalRepository),
+    updateGoal: new UpdateGoal(goalRepository, goalPolicy),
+    deleteGoal: new DeleteGoal(goalRepository, goalPolicy),
+    permanentlyDeleteGoal: new PermanentlyDeleteGoal(goalRepository, goalPolicy),
+    archiveGoal: new ArchiveGoal(goalRepository, goalPolicy),
+    activateGoal: new ActivateGoal(goalRepository, goalPolicy),
+    completeGoal: new CompleteGoal(goalRepository, goalPolicy),
+    searchGoals: new SearchGoals(goalRepository),
+
+    // Folder CRUD / 文件夹增删改查
+    listGoalFolders: new ListGoalFolders(goalFolderRepository),
+    createGoalFolder: new CreateGoalFolder(goalFolderRepository),
+    getGoalFolder: new GetGoalFolder(goalFolderRepository),
+    updateGoalFolder: new UpdateGoalFolder(goalFolderRepository),
+    deleteGoalFolder: new DeleteGoalFolder(goalFolderRepository),
+
+    // Key Result / 关键结果
+    addKeyResult: new AddGoalKeyResult(goalRepository, goalPolicy),
+    updateKeyResult: new UpdateGoalKeyResult(goalRepository, goalPolicy),
+    updateKeyResultProgress: new UpdateGoalKeyResultProgress(goalRepository, goalPolicy),
+    deleteKeyResult: new DeleteGoalKeyResult(goalRepository, goalPolicy),
+
+    // Review / 复盘
+    addReview: new AddGoalReview(goalRepository, goalPolicy),
+    listReviews: new ListGoalReviews(goalRepository),
+    updateReview: new UpdateGoalReview(goalRepository, goalPolicy),
+    deleteReview: new DeleteGoalReview(goalRepository, goalPolicy),
+
+    // Record / 进度记录
+    createRecord: new CreateGoalRecord(
+      goalRepository,
+      goalRecordRepository,
+      goalProgressCalculator,
+    ),
+    listRecords: new ListGoalRecords(goalRecordRepository),
+    deleteRecord: new DeleteGoalRecord(goalRecordRepository),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Runtime contribution normalization helper.
+// 运行时贡献规范化辅助函数。
+// ---------------------------------------------------------------------------
+
+function normalizeRuntimeContributions(
+  input?: GoalModuleRuntimeContribution | ReadonlyArray<GoalModuleRuntimeContribution>,
+): readonly GoalModuleRuntimeContribution[] {
+  if (!input) return [];
+  if (Array.isArray(input)) return Array.from(input);
+  return [input as GoalModuleRuntimeContribution];
+}
+
+// ---------------------------------------------------------------------------
+// Canonical composition root.
+// 规范化的目标模块主组合根。
+//
+// Reading order (same as governance):
+// 1. define `Dependencies`
+// 2. define transport-neutral `ApplicationPort`
+// 3. assemble use cases once
+// 4. wrap them in `api`
+// 5. let the module instance own `start` / `dispose`
+// ---------------------------------------------------------------------------
+
+export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstance {
+  const { goalRepository, goalFolderRepository, goalRecordRepository } = deps;
+  const runtimeContributions = normalizeRuntimeContributions(deps.runtimeContributions);
+  const useCases = createGoalUseCases(deps);
+  let started = false;
+
+  const api: GoalApplicationPort = {
+    // Goal CRUD / 目标增删改查
+    createGoal: (input, context) => useCases.createGoal.execute(input, context),
+    getGoal: (id, includeChildren) => useCases.getGoal.execute(id, includeChildren),
+    listGoals: (input) => useCases.listGoals.execute(input),
+    updateGoal: (id, input) => useCases.updateGoal.execute(id, input),
+    deleteGoal: (id) => useCases.deleteGoal.execute(id),
+    permanentlyDeleteGoal: (id) => useCases.permanentlyDeleteGoal.execute(id),
+    archiveGoal: (id) => useCases.archiveGoal.execute(id),
+    activateGoal: (id) => useCases.activateGoal.execute(id),
+    completeGoal: (id) => useCases.completeGoal.execute(id),
+    searchGoals: (identityId, query) => useCases.searchGoals.execute(identityId, query),
+
+    // Folder CRUD / 文件夹增删改查
+    listGoalFolders: (input) => useCases.listGoalFolders.execute(input),
+    createGoalFolder: (identityId, input) => useCases.createGoalFolder.execute(identityId, input),
+    getGoalFolder: (id) => useCases.getGoalFolder.execute(id),
+    updateGoalFolder: (id, identityId, input) =>
+      useCases.updateGoalFolder.execute(id, identityId, input),
+    deleteGoalFolder: (id, identityId) => useCases.deleteGoalFolder.execute(id, identityId),
+
+    // Key Result / 关键结果
+    addKeyResult: (goalId, keyResult) => useCases.addKeyResult.execute(goalId, keyResult),
+    updateKeyResult: (goalId, keyResultId, updates) =>
+      useCases.updateKeyResult.execute(goalId, keyResultId, updates),
+    updateKeyResultProgress: (goalId, keyResultId, currentValue, note) =>
+      useCases.updateKeyResultProgress.execute(goalId, keyResultId, currentValue, note),
+    deleteKeyResult: (goalId, keyResultId) => useCases.deleteKeyResult.execute(goalId, keyResultId),
+
+    // Review / 复盘
+    addReview: (goalId, params) => useCases.addReview.execute(goalId, params),
+    listReviews: (goalId) => useCases.listReviews.execute(goalId),
+    updateReview: (goalId, reviewId, params) =>
+      useCases.updateReview.execute(goalId, reviewId, params),
+    deleteReview: (goalId, reviewId) => useCases.deleteReview.execute(goalId, reviewId),
+
+    // Record / 进度记录
+    createRecord: (goalId, keyResultId, params, identityId) =>
+      useCases.createRecord.execute(goalId, keyResultId, params, identityId),
+    listRecords: (params) => useCases.listRecords.execute(params),
+    deleteRecord: (recordId) => useCases.deleteRecord.execute(recordId),
+  };
+
+  return {
+    goalRepository,
+    goalFolderRepository,
+    goalRecordRepository,
+    useCases,
+    api,
+
+    start(): void {
+      if (started) return;
+      for (const runtime of runtimeContributions) {
+        runtime.start();
+      }
+      started = true;
+    },
+
+    dispose(): void {
+      if (!started) return;
+      for (const runtime of [...runtimeContributions].reverse()) {
+        runtime.stop();
+      }
+      started = false;
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Backward compatibility — legacy class facade.
+// 向后兼容 — 旧类门面。
+//
+// @deprecated Use `createGoalModule(deps)` instead.
+// @deprecated 请使用 `createGoalModule(deps)` 代替。
+// Retained temporarily so existing callers don't break during migration.
+// 临时保留以便迁移期间现有调用者不会中断。
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use GoalModuleDependencies instead. 请使用 GoalModuleDependencies 代替。 */
+export type GoalModuleRepositories = Pick<
+  GoalModuleDependencies,
+  'goalRepository' | 'goalFolderRepository' | 'goalRecordRepository'
+>;
+
+/** @deprecated Use createGoalModule(deps) factory instead. 请使用 createGoalModule(deps) 工厂函数代替。 */
 export class GoalModule {
   public readonly goalRepository: IGoalRepository;
   public readonly goalFolderRepository: IGoalFolderRepository;
@@ -76,49 +498,41 @@ export class GoalModule {
   public readonly completeGoal: CompleteGoal;
 
   constructor(repositories: GoalModuleRepositories) {
-    const container = GoalContainer.getInstance();
-    container.reset();
-    container.setGoalRepository(repositories.goalRepository);
-    container.setGoalFolderRepository(repositories.goalFolderRepository);
-    container.setGoalRecordRepository(repositories.goalRecordRepository);
+    const useCases = createGoalUseCases(repositories);
 
-    this.goalRepository = container.getGoalRepository();
-    this.goalFolderRepository = container.getGoalFolderRepository();
-    this.goalRecordRepository = container.getGoalRecordRepository();
+    this.goalRepository = repositories.goalRepository;
+    this.goalFolderRepository = repositories.goalFolderRepository;
+    this.goalRecordRepository = repositories.goalRecordRepository;
 
     this.goalPolicy = new GoalPolicy();
-    this.goalProgressCalculator = new GoalProgressCalculator(this.goalRecordRepository);
+    this.goalProgressCalculator = new GoalProgressCalculator(repositories.goalRecordRepository);
 
-    this.createGoal = new CreateGoal(this.goalRepository, this.goalPolicy);
-    this.getGoal = new GetGoal(this.goalRepository);
-    this.listGoals = new ListGoals(this.goalRepository);
-    this.updateGoal = new UpdateGoal(this.goalRepository, this.goalPolicy);
-    this.deleteGoal = new DeleteGoal(this.goalRepository, this.goalPolicy);
-    this.archiveGoal = new ArchiveGoal(this.goalRepository, this.goalPolicy);
-    this.activateGoal = new ActivateGoal(this.goalRepository, this.goalPolicy);
-    this.searchGoals = new SearchGoals(this.goalRepository);
+    this.createGoal = useCases.createGoal;
+    this.getGoal = useCases.getGoal;
+    this.listGoals = useCases.listGoals;
+    this.updateGoal = useCases.updateGoal;
+    this.deleteGoal = useCases.deleteGoal;
+    this.archiveGoal = useCases.archiveGoal;
+    this.activateGoal = useCases.activateGoal;
+    this.searchGoals = useCases.searchGoals;
 
-    this.listGoalFolders = new ListGoalFolders(this.goalFolderRepository);
-    this.createGoalFolder = new CreateGoalFolder(this.goalFolderRepository);
-    this.getGoalFolder = new GetGoalFolder(this.goalFolderRepository);
-    this.updateGoalFolder = new UpdateGoalFolder(this.goalFolderRepository);
-    this.deleteGoalFolder = new DeleteGoalFolder(this.goalFolderRepository);
+    this.listGoalFolders = useCases.listGoalFolders;
+    this.createGoalFolder = useCases.createGoalFolder;
+    this.getGoalFolder = useCases.getGoalFolder;
+    this.updateGoalFolder = useCases.updateGoalFolder;
+    this.deleteGoalFolder = useCases.deleteGoalFolder;
 
-    this.addKeyResult = new AddGoalKeyResult(this.goalRepository, this.goalPolicy);
-    this.updateKeyResult = new UpdateGoalKeyResult(this.goalRepository, this.goalPolicy);
-    this.updateKeyResultProgress = new UpdateGoalKeyResultProgress(this.goalRepository, this.goalPolicy);
-    this.deleteKeyResult = new DeleteGoalKeyResult(this.goalRepository, this.goalPolicy);
-    this.addReview = new AddGoalReview(this.goalRepository, this.goalPolicy);
-    this.listReviews = new ListGoalReviews(this.goalRepository);
-    this.updateReview = new UpdateGoalReview(this.goalRepository, this.goalPolicy);
-    this.deleteReview = new DeleteGoalReview(this.goalRepository, this.goalPolicy);
-    this.createRecord = new CreateGoalRecord(
-      this.goalRepository,
-      this.goalRecordRepository,
-      this.goalProgressCalculator,
-    );
-    this.listRecords = new ListGoalRecords(this.goalRecordRepository);
-    this.deleteRecord = new DeleteGoalRecord(this.goalRecordRepository);
-    this.completeGoal = new CompleteGoal(this.goalRepository, this.goalPolicy);
+    this.addKeyResult = useCases.addKeyResult;
+    this.updateKeyResult = useCases.updateKeyResult;
+    this.updateKeyResultProgress = useCases.updateKeyResultProgress;
+    this.deleteKeyResult = useCases.deleteKeyResult;
+    this.addReview = useCases.addReview;
+    this.listReviews = useCases.listReviews;
+    this.updateReview = useCases.updateReview;
+    this.deleteReview = useCases.deleteReview;
+    this.createRecord = useCases.createRecord;
+    this.listRecords = useCases.listRecords;
+    this.deleteRecord = useCases.deleteRecord;
+    this.completeGoal = useCases.completeGoal;
   }
 }
