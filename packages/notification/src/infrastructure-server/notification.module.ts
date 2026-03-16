@@ -27,6 +27,7 @@ import {
   GetUnreadNotifications,
   GetNotificationPreference,
 } from '../application-server';
+import { toNotificationClientDTO } from '../application-server/use-cases/commands/notification-dto-converters';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 
@@ -240,6 +241,7 @@ export function createNotificationModule(
       const q = (query ?? {}) as {
         identityId?: string;
         includeRead?: boolean;
+        page?: number;
         limit?: number;
         offset?: number;
       };
@@ -249,12 +251,23 @@ export function createNotificationModule(
           message: 'identityId is required for listing notifications / 列出通知需要 identityId',
         });
       }
-      const result = await useCases.getUserNotifications.execute(q.identityId, {
+      const limit = q.limit ?? 20;
+      const offset = q.offset ?? Math.max(((q.page ?? 1) - 1) * limit, 0);
+      const allNotifications = await useCases.getUserNotifications.execute(q.identityId, {
         includeRead: q.includeRead,
-        limit: q.limit,
-        offset: q.offset,
       });
-      return ok(result);
+      const notifications = await useCases.getUserNotifications.execute(q.identityId, {
+        includeRead: q.includeRead,
+        limit,
+        offset,
+      });
+      return ok({
+        notifications,
+        total: allNotifications.length,
+        page: q.page ?? 1,
+        pageSize: limit,
+        hasMore: offset + notifications.length < allNotifications.length,
+      });
     },
 
     // Delegate to repository — no dedicated use case exists yet.
@@ -283,11 +296,16 @@ export function createNotificationModule(
 
     markAsRead: async (id) => {
       await useCases.markAsRead.execute(id);
-      return ok(undefined);
+      const notification = await notificationRepository.findById(id);
+      if (!notification) {
+        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
+      }
+      return ok(toNotificationClientDTO(notification.toServerDTO()));
     },
     markAllAsRead: async (identityId) => {
+      const count = await useCases.getUnreadNotifications.getCount(identityId);
       await useCases.markAsRead.executeAll(identityId);
-      return ok({ count: 0 });
+      return ok({ count });
     },
     getUnreadCount: async (identityId) => {
       const count = await useCases.getUnreadNotifications.getCount(identityId);

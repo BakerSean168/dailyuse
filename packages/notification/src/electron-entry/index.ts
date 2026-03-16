@@ -36,6 +36,14 @@ const Ch = {
 const channels = Object.values(Ch);
 let activeNotificationModule: NotificationModuleInstance | null = null;
 
+function toAuthFailure(error: unknown) {
+  if (error instanceof Error && error.message === 'AUTH_RESTORING') {
+    return fail({ code: 'AUTH_RESTORING', message: 'Authentication restore in progress' });
+  }
+
+  return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
+}
+
 export const NotificationElectronModule: IElectronModule = {
   name: 'Notification',
 
@@ -62,13 +70,27 @@ export const NotificationElectronModule: IElectronModule = {
 
     // 3. IPC Handlers — preserve all existing channels.
     // IPC 处理器 — 保留所有现有通道。
-    ipcMain.handle(Ch.LIST, (_, params) => handlers.listNotifications(params));
+    ipcMain.handle(Ch.LIST, async (_, params) => {
+      try {
+        const requestContext = await ctx.auth.requireRequestContext();
+        return handlers.listNotifications({
+          ...(params ?? {}),
+          identityId: requestContext.identityId,
+        });
+      } catch (error) {
+        return toAuthFailure(error);
+      }
+    });
     ipcMain.handle(Ch.GET, (_, id) => handlers.getNotification(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => handlers.createNotification(dto));
     ipcMain.handle(Ch.MARK_READ, (_, id) => handlers.markAsRead(id));
     ipcMain.handle(Ch.MARK_ALL_READ, async () => {
-      const identityId = await ctx.auth.requireIdentityId();
-      return handlers.markAllAsRead(identityId);
+      try {
+        const identityId = await ctx.auth.requireIdentityId();
+        return handlers.markAllAsRead(identityId);
+      } catch (error) {
+        return toAuthFailure(error);
+      }
     });
     ipcMain.handle(Ch.DELETE, (_, id) => handlers.deleteNotification(id));
     ipcMain.handle(Ch.CLEAR_ALL, async (_, ids) => {
@@ -78,8 +100,12 @@ export const NotificationElectronModule: IElectronModule = {
       return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
     });
     ipcMain.handle(Ch.GET_UNREAD_COUNT, async () => {
-      const identityId = await ctx.auth.requireIdentityId();
-      return handlers.getUnreadCount(identityId);
+      try {
+        const identityId = await ctx.auth.requireIdentityId();
+        return handlers.getUnreadCount(identityId);
+      } catch (error) {
+        return toAuthFailure(error);
+      }
     });
     logger.info('Notification module registered');
   },

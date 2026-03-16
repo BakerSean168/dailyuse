@@ -70,6 +70,7 @@ export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
  */
 export class SessionManager {
   private static instance: SessionManager | null = null;
+  private static readonly GUEST_ID_PREFIX = 'GuestIdentity';
 
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
@@ -859,19 +860,29 @@ export class SessionManager {
    * Can be cleared via clearGuestIdentity() when the user upgrades to a cloud account.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
-    // Try to load existing guest ID from session repository metadata
-    const existingGuestSessions = await this.sessionRepository.findByIdentityId(
-      'guest' as unknown as IdentityId,
-    );
-    if (existingGuestSessions.length > 0) {
-      const guestSession = existingGuestSessions[0];
-      this.currentSession = guestSession;
-      this.logger.info('Restored existing guest identity', { sessionId: guestSession.id });
-      return guestSession.identityId;
+    const cachedGuestId = this.tokenManager.getCachedTokenData()?.identityId;
+    if (cachedGuestId && this.isGuestIdentity(cachedGuestId)) {
+      const existingGuestSessions = await this.sessionRepository.findByIdentityId(
+        cachedGuestId as unknown as IdentityId,
+      );
+      if (existingGuestSessions.length > 0) {
+        const guestSession = existingGuestSessions[0];
+        this.currentSession = guestSession;
+        this.logger.info('Restored existing guest identity', {
+          guestId: cachedGuestId,
+          sessionId: guestSession.id,
+        });
+        return guestSession.identityId;
+      }
+
+      this.logger.info('Reusing cached guest identity without stored session', {
+        guestId: cachedGuestId,
+      });
+      return cachedGuestId;
     }
 
     // Create new persistent guest identity
-    const guestId = `guest-${this.getDeviceInfo().deviceId.substring(0, 8)}`;
+    const guestId = `${SessionManager.GUEST_ID_PREFIX}_${generateUUID()}`;
 
     const deviceInfo = this.getDeviceInfo();
     const device = DeviceInfo.create(deviceInfo as any);
@@ -904,14 +915,21 @@ export class SessionManager {
 
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
-    const guestSessions = await this.sessionRepository.findByIdentityId(
-      'guest' as unknown as IdentityId,
-    );
-    for (const session of guestSessions) {
-      session.revoke();
-      await this.sessionRepository.save(session);
+    const cachedGuestId = this.tokenManager.getCachedTokenData()?.identityId;
+    if (cachedGuestId && this.isGuestIdentity(cachedGuestId)) {
+      const guestSessions = await this.sessionRepository.findByIdentityId(
+        cachedGuestId as unknown as IdentityId,
+      );
+      for (const session of guestSessions) {
+        session.revoke();
+        await this.sessionRepository.save(session);
+      }
     }
     this.logger.info('Guest identity cleared');
+  }
+
+  private isGuestIdentity(identityId: string | null | undefined): identityId is string {
+    return Boolean(identityId?.startsWith(`${SessionManager.GUEST_ID_PREFIX}_`));
   }
 
   // ============ Private Methods ============

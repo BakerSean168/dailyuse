@@ -6,7 +6,7 @@
  * goal progress, task board summary, upcoming schedule, quick actions.
  */
 
-import { onMounted, onBeforeUnmount, computed, nextTick, ref } from 'vue';
+import { onMounted, onBeforeUnmount, computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDashboard } from '../modules/dashboard/composables/useDashboard';
 import {
@@ -69,15 +69,60 @@ const {
 } = useDashboard();
 
 const chartReady = ref(false);
+const chartContainerRef = ref<HTMLElement | null>(null);
+let chartFrameId: number | null = null;
+
+function cancelChartInit() {
+  if (chartFrameId !== null) {
+    cancelAnimationFrame(chartFrameId);
+    chartFrameId = null;
+  }
+}
+
+function ensureChartReady() {
+  cancelChartInit();
+
+  const attempt = () => {
+    const container = chartContainerRef.value;
+    if (!container) {
+      chartReady.value = false;
+      return;
+    }
+
+    if (container.clientWidth > 0 && container.clientHeight > 0) {
+      chartReady.value = true;
+      chartFrameId = null;
+      return;
+    }
+
+    chartReady.value = false;
+    chartFrameId = requestAnimationFrame(attempt);
+  };
+
+  chartFrameId = requestAnimationFrame(attempt);
+}
 
 onMounted(() => {
   void fetchDashboard();
   void nextTick(() => {
-    chartReady.value = true;
+    ensureChartReady();
+  });
+});
+
+watch(isLoading, (loading) => {
+  if (loading) {
+    chartReady.value = false;
+    cancelChartInit();
+    return;
+  }
+
+  void nextTick(() => {
+    ensureChartReady();
   });
 });
 
 onBeforeUnmount(() => {
+  cancelChartInit();
   chartReady.value = false;
 });
 
@@ -313,15 +358,17 @@ function navigateTo(path: string) {
               </CardTitle>
             </CardHeader>
             <CardContent class="px-4 pb-4">
-              <template v-if="isLoading">
-                <Skeleton class="h-[220px] w-full rounded-lg" />
-              </template>
-              <template v-else-if="chartReady">
-                <v-chart class="h-[220px] w-full" :option="trendChartOption" autoresize />
-              </template>
-              <template v-else>
-                <Skeleton class="h-[220px] w-full rounded-lg" />
-              </template>
+              <div ref="chartContainerRef" class="h-[220px] w-full">
+                <template v-if="isLoading">
+                  <Skeleton class="h-[220px] w-full rounded-lg" />
+                </template>
+                <template v-else-if="chartReady">
+                  <v-chart class="h-[220px] w-full" :option="trendChartOption" autoresize />
+                </template>
+                <template v-else>
+                  <Skeleton class="h-[220px] w-full rounded-lg" />
+                </template>
+              </div>
             </CardContent>
           </Card>
 

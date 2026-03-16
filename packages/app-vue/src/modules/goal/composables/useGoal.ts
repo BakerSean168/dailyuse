@@ -61,9 +61,9 @@ export function useGoal() {
     try {
       const searchQuery = store.searchQuery || undefined;
       const params = {
-        status: store.filterStatus || undefined,
+        status: store.filterStatus ? [store.filterStatus] : undefined,
         page: store.pagination.page,
-        limit: store.pagination.pageSize,
+        pageSize: store.pagination.pageSize,
       };
 
       const result = searchQuery
