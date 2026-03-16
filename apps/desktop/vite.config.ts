@@ -11,11 +11,11 @@ import {
 } from '../../vite.workspace-aliases';
 
 const desktopRendererDevWorkspaceEntries = [
-  ['@dailyuse/app-vue', '../../packages/app-vue/src/index.ts'],
-  ['@dailyuse/ai/application-client', '../../packages/ai/src/application-client/index.ts'],
-  ['@dailyuse/ai/infrastructure-client', '../../packages/ai/src/infrastructure-client/index.ts'],
-  ['@dailyuse/ipc-client', '../../packages/ipc-client/src/index.ts'],
-  ['@dailyuse/editor/electron-entry', '../../packages/editor/src/electron-entry/index.ts'],
+  ['@dailyuse/app-vue', 'packages/app-vue/src/index.ts'],
+  ['@dailyuse/ai/application-client', 'packages/ai/src/application-client/index.ts'],
+  ['@dailyuse/ai/infrastructure-client', 'packages/ai/src/infrastructure-client/index.ts'],
+  ['@dailyuse/ipc-client', 'packages/ipc-client/src/index.ts'],
+  ['@dailyuse/editor/electron-entry', 'packages/editor/src/electron-entry/index.ts'],
 ] as const;
 
 // Native modules — must be externalized (cannot be bundled by Vite)
