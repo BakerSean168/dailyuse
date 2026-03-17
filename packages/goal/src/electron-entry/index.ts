@@ -121,10 +121,7 @@ export const GoalElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.CREATE, async (_event, dto) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.create(
-          { ...dto, identityId: requestContext.identityId },
-          requestContext as Context,
-        ),
+        goalController.create(dto, requestContext as Context),
       ),
     );
     // Issue #4 fix: route update through auth + controller validation
