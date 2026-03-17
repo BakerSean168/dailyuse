@@ -14,7 +14,7 @@ export function createIdType<T extends string>(prefix: string) {
     // 自动获得还原能力
     of(value: string): T {
       // 自动校验前缀 (可选，增加安全性)
-      if (!value.startsWith(prefix + '_')) {
+      if (!value || typeof value !== 'string' || !value.startsWith(prefix + '_')) {
         console.warn(`ID ${value} does not start with expected prefix ${prefix}`);
       }
       return value as T;
