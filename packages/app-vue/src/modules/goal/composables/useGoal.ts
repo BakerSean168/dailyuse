@@ -12,6 +12,7 @@ import { useGoalStore } from '../stores/goalStore';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { sanitizeForIpc } from '../../../shared/utils/ipc';
+import type { ResultError } from '@dailyuse/contracts/result';
 import type {
   Goal,
   GoalFolder,
@@ -51,9 +52,26 @@ export function useGoal() {
   const hasActiveFilter = computed(() => store.hasActiveFilter);
   const isSaving = computed(() => savingId.value !== null);
 
-  function handleError(msg: string): void {
+  function handleError(msg: string, err?: ResultError, scope?: string): void {
     store.setError(msg);
-    console.error(msg);
+    if (!err) {
+      console.error(msg);
+      return;
+    }
+
+    const details = err.details?.map((detail) => ({
+      field: detail.field,
+      code: detail.code,
+      message: detail.message,
+      value: detail.value,
+    }));
+
+    console.error(`[goal] ${scope ?? 'error'}`, {
+      code: err.code,
+      message: err.message,
+      details,
+      context: err.context,
+    });
   }
 
   async function fetchGoals() {
@@ -77,7 +95,11 @@ export function useGoal() {
           result.data.pagination?.total ?? 0,
         );
       } else {
-        handleError(result.error.message || t('goal.error.loadListFailed'));
+        handleError(
+          result.error.message || t('goal.error.loadListFailed'),
+          result.error,
+          'fetchGoals',
+        );
       }
     } catch (e: any) {
       handleError(e?.message || t('goal.error.loadListException'));
@@ -100,7 +122,7 @@ export function useGoal() {
         store.setCurrentGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || t('goal.error.loadFailed'));
+        handleError(result.error.message || t('goal.error.loadFailed'), result.error, 'fetchGoal');
         return null;
       }
     } finally {
@@ -118,7 +140,11 @@ export function useGoal() {
         store.addGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || t('goal.error.createFailed'));
+        handleError(
+          result.error.message || t('goal.error.createFailed'),
+          result.error,
+          'createGoal',
+        );
         return null;
       }
     } finally {
@@ -136,7 +162,11 @@ export function useGoal() {
         store.updateGoal(dto);
         return dto;
       } else {
-        handleError(result.error.message || t('goal.error.updateFailed'));
+        handleError(
+          result.error.message || t('goal.error.updateFailed'),
+          result.error,
+          'updateGoal',
+        );
         return null;
       }
     } finally {
@@ -153,7 +183,11 @@ export function useGoal() {
         store.removeGoal(id);
         return true;
       } else {
-        handleError(result.error.message || t('goal.error.deleteFailed'));
+        handleError(
+          result.error.message || t('goal.error.deleteFailed'),
+          result.error,
+          'deleteGoal',
+        );
         return false;
       }
     } finally {
@@ -166,7 +200,11 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalFolders((result.data ?? []).map((f: GoalFolder) => f.toDTO()));
     } else {
-      handleError(result.error.message || t('goal.error.loadFoldersFailed'));
+      handleError(
+        result.error.message || t('goal.error.loadFoldersFailed'),
+        result.error,
+        'fetchFolders',
+      );
     }
   }
 
@@ -177,7 +215,11 @@ export function useGoal() {
       store.addGoalFolder(dto);
       return dto;
     } else {
-      handleError(result.error.message || t('goal.error.createFolderFailed'));
+      handleError(
+        result.error.message || t('goal.error.createFolderFailed'),
+        result.error,
+        'createFolder',
+      );
       return null;
     }
   }
@@ -189,7 +231,11 @@ export function useGoal() {
       store.updateGoalFolder(dto);
       return dto;
     } else {
-      handleError(result.error.message || t('goal.error.updateFolderFailed'));
+      handleError(
+        result.error.message || t('goal.error.updateFolderFailed'),
+        result.error,
+        'updateFolder',
+      );
       return null;
     }
   }
@@ -200,7 +246,11 @@ export function useGoal() {
       store.removeGoalFolder(id);
       return true;
     } else {
-      handleError(result.error.message || t('goal.error.deleteFolderFailed'));
+      handleError(
+        result.error.message || t('goal.error.deleteFolderFailed'),
+        result.error,
+        'deleteFolder',
+      );
       return false;
     }
   }
@@ -210,7 +260,11 @@ export function useGoal() {
     if (result.ok) {
       store.setKeyResults((result.data.keyResults ?? []).map((kr: KeyResult) => kr.toDTO()));
     } else {
-      handleError(result.error.message || t('goal.error.loadKRFailed'));
+      handleError(
+        result.error.message || t('goal.error.loadKRFailed'),
+        result.error,
+        'fetchKeyResults',
+      );
     }
   }
 
@@ -221,7 +275,11 @@ export function useGoal() {
       store.addKeyResult(dto);
       return dto;
     } else {
-      handleError(result.error.message || t('goal.error.addKRFailed'));
+      handleError(
+        result.error.message || t('goal.error.addKRFailed'),
+        result.error,
+        'addKeyResult',
+      );
       return null;
     }
   }
@@ -233,7 +291,11 @@ export function useGoal() {
       store.updateKeyResult(dto);
       return dto;
     } else {
-      handleError(result.error.message || t('goal.error.updateKRFailed'));
+      handleError(
+        result.error.message || t('goal.error.updateKRFailed'),
+        result.error,
+        'updateKeyResult',
+      );
       return null;
     }
   }
@@ -244,7 +306,11 @@ export function useGoal() {
       store.removeKeyResult(krId);
       return true;
     } else {
-      handleError(result.error.message || t('goal.error.deleteKRFailed'));
+      handleError(
+        result.error.message || t('goal.error.deleteKRFailed'),
+        result.error,
+        'deleteKeyResult',
+      );
       return false;
     }
   }
@@ -254,7 +320,11 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalRecords((result.data.records ?? []).map((r: GoalRecord) => r.toDTO()));
     } else {
-      handleError(result.error.message || t('goal.error.loadRecordsFailed'));
+      handleError(
+        result.error.message || t('goal.error.loadRecordsFailed'),
+        result.error,
+        'fetchRecords',
+      );
     }
   }
 
@@ -266,7 +336,11 @@ export function useGoal() {
       store.addGoalRecord(dto);
       return dto;
     } else {
-      handleError(result.error.message || t('goal.error.createRecordFailed'));
+      handleError(
+        result.error.message || t('goal.error.createRecordFailed'),
+        result.error,
+        'createRecord',
+      );
       return null;
     }
   }
@@ -299,7 +373,11 @@ export function useGoal() {
         store.setGoalReviews(result.data.reviews ?? result.data.goal.reviews ?? []);
         return result.data;
       } else {
-        handleError(result.error.message || t('goal.error.loadAggregateViewFailed'));
+        handleError(
+          result.error.message || t('goal.error.loadAggregateViewFailed'),
+          result.error,
+          'getGoalAggregateView',
+        );
         return null;
       }
     } finally {
@@ -312,7 +390,11 @@ export function useGoal() {
     if (result.ok) {
       store.setGoalReviews((result.data.reviews ?? []).map((r: GoalReview) => r.toDTO()));
     } else {
-      handleError(result.error.message || t('goal.error.loadReviewsFailed'));
+      handleError(
+        result.error.message || t('goal.error.loadReviewsFailed'),
+        result.error,
+        'fetchReviews',
+      );
     }
   }
 
@@ -323,7 +405,11 @@ export function useGoal() {
       store.addGoalReview(dto);
       return dto;
     } else {
-      handleError(result.error.message || t('goal.error.createReviewFailed'));
+      handleError(
+        result.error.message || t('goal.error.createReviewFailed'),
+        result.error,
+        'createReview',
+      );
       return null;
     }
   }
