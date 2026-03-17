@@ -126,112 +126,15 @@ apps/desktop/src/renderer/modules/goal/presentation/
 
 **Each file is one use case service class:**
 
-```typescript
-// packages/application-client/src/goal/services/create-goal.ts
-
-import type { CreateGoalRequest, GoalDTO } from '@dailyuse/contracts/goal';
-import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
-
-/**
- * CreateGoal Use Case
- *
- * Single responsibility: Create a new goal
- * - Framework-agnostic
- * - Returns GoalDTO from @dailyuse/contracts/goal
- * - Dependency injection: API client from container
- */
-export class CreateGoal {
-  private static instance: CreateGoal;
-
-  constructor(private readonly apiClient: IGoalApiClient) {}
-
-  static createInstance(apiClient?: IGoalApiClient): CreateGoal {
-    const container = GoalContainer.getInstance();
-    const client = apiClient || container.getApiClient();
-    CreateGoal.instance = new CreateGoal(client);
-    return CreateGoal.instance;
-  }
-
-  static getInstance(): CreateGoal {
-    if (!CreateGoal.instance) {
-      CreateGoal.instance = CreateGoal.createInstance();
-    }
-    return CreateGoal.instance;
-  }
-
-  async execute(request: CreateGoalRequest): Promise<GoalDTO> {
-    return this.apiClient.createGoal(request);
-  }
-}
-```
+旧的 singleton/container 代码示例已删除。
+当前推荐模式是直接构造 `CreateGoal(apiClient)`，由 composition root 负责依赖装配。
 
 ### 2. Orchestrator - GoalApplicationService
 
 **Coordinates all use case services into one unified API:**
 
-```typescript
-// packages/application-client/src/goal/goal-application.service.ts
-
-import type { CreateGoalRequest, UpdateGoalRequest, GoalDTO } from '@dailyuse/contracts/goal';
-import {
-  CreateGoal,
-  ListGoals,
-  UpdateGoal,
-  DeleteGoal,
-  GetGoal,
-  ActivateGoal,
-  CompleteGoal,
-} from './services';
-
-/**
- * Goal Application Service
- *
- * Orchestrates individual use case services
- * - Provides unified API
- * - Framework-agnostic
- * - All types from @dailyuse/contracts (no local types)
- * - Ready for Web, Desktop, API, CLI
- */
-export class GoalApplicationService {
-  // ===== CRUD Operations =====
-
-  async createGoal(req: CreateGoalRequest): Promise<GoalDTO> {
-    return CreateGoal.getInstance().execute(req);
-  }
-
-  async listGoals(): Promise<GoalDTO[]> {
-    return ListGoals.getInstance().execute();
-  }
-
-  async getGoal(uuid: string): Promise<GoalDTO> {
-    return GetGoal.getInstance().execute(uuid);
-  }
-
-  async updateGoal(uuid: string, req: UpdateGoalRequest): Promise<GoalDTO> {
-    return UpdateGoal.getInstance().execute(uuid, req);
-  }
-
-  async deleteGoal(uuid: string): Promise<void> {
-    return DeleteGoal.getInstance().execute(uuid);
-  }
-
-  // ===== Status Operations =====
-
-  async activateGoal(uuid: string): Promise<GoalDTO> {
-    return ActivateGoal.getInstance().execute(uuid);
-  }
-
-  async completeGoal(uuid: string): Promise<GoalDTO> {
-    return CompleteGoal.getInstance().execute(uuid);
-  }
-}
-
-/**
- * Singleton - single entry point for all goal operations
- */
-export const goalApplicationService = new GoalApplicationService();
-```
+旧的 `getInstance()` / singleton orchestrator 示例已删除。
+当前推荐把 use case/service 实例作为普通依赖在模块或应用入口中组装。
 
 ### 2. Framework-Agnostic Composable (apps/web)
 
@@ -478,7 +381,7 @@ See [React/Zustand Infinite Loop Troubleshooting Guide](../../troubleshooting/RE
 
 | Risk                            | Likelihood | Mitigation                                                    |
 | ------------------------------- | ---------- | ------------------------------------------------------------- |
-| Container initialization fails  | Low        | Ensure GoalContainer in infrastructure-client is robust       |
+| Composition root wiring fails   | Low        | Keep module assembly explicit and covered by tests            |
 | Breaking changes in Use Cases   | Low        | Deprecate gradually via ApplicationService wrapper            |
 | Framework-specific logic needed | Medium     | Add optional adapters in ApplicationService (backward compat) |
 

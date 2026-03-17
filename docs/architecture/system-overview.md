@@ -261,13 +261,14 @@ DailyUse/
 
 #### @dailyuse/infrastructure-server
 
+> 注：这里仍包含旧的容器式描述。当前实现更推荐 composition root + module runtime。
+
 **功能**: 服务端基础设施�? \*_用�?_: DI 容器、仓储实�?
 
 **关键组件**:
 
-- `GoalContainer` - 目标模块 DI 容器
-- `TaskContainer` - 任务模块 DI 容器
-- `ScheduleContainer` - 日程模块 DI 容器
+- 显式 composition roots
+- Prisma / PowerSync repository adapters
 - SQLite Repository 适配�?
 
 ---
@@ -392,7 +393,7 @@ Desktop 应用采用 Electron 多进程架构：
 �? �?             Main Process (Node.js)                    �?�?
 �? �? ┌──────────────────────────────────────────────────�? �?�?
 �? �? �?@dailyuse/infrastructure-server                  �? �?�?
-�? �? �?   �?GoalContainer, TaskContainer, etc.          �? �?�?
+�? �? �?   �?module factories / runtime assembly         �? �?�?
 �? �? �?   �?SQLite Repository Adapters                  �? �?�?
 �? �? └──────────────────────────────────────────────────�? �?�?
 �? �? ┌──────────────────────────────────────────────────�? �?�?

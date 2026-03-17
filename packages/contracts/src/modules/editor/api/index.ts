@@ -24,6 +24,8 @@ export {
   type UpdateDocumentReq,
 } from './editor-document.dto';
 
+export { SearchEditorDocumentsSchema, type SearchEditorDocumentsReq } from './editor-search.dto';
+
 export * from './response-schemas';
 import type {
   WorkspaceLayoutServerDTO,
@@ -278,7 +280,8 @@ export interface UpdateSearchEngineProgressRequest {
  * 搜索请求
  */
 export interface SearchRequest {
-  searchEngineId: string;
+  searchEngineId?: string;
+  workspaceId?: string;
   query: string;
   limit?: number;
   offset?: number;

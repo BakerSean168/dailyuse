@@ -8,33 +8,32 @@ import type {
   ReorderResourceBookmarksRequestDTO,
 } from '../dtos';
 import type {
-  CreateRepositoryReq,
-  UpdateRepositoryReq,
-  GetRepositoryReq,
-  ListRepositoryReq,
-  CreateResourceReq,
-  UpdateResourceReq,
-  GetResourceReq,
-  ListResourceReq,
+  CreateRepositoryZodReq,
+  UpdateRepositoryZodReq,
+  CreateResourceZodReq,
+  UpdateResourceZodReq,
 } from '../api';
 
 // === Repository Module RPC Map ===
 export type RepositoryRpcMap = {
   // === Repository Operations ===
-  'repository:create': [CreateRepositoryReq, RepositoryClientDTO];
-  'repository:update': [UpdateRepositoryReq, RepositoryClientDTO];
-  'repository:get': [GetRepositoryReq, RepositoryClientDTO];
-  'repository:list': [ListRepositoryReq, RepositoryClientDTO[]];
+  'repository:create': [CreateRepositoryZodReq, RepositoryClientDTO];
+  'repository:update': [{ repositoryId: string } & UpdateRepositoryZodReq, RepositoryClientDTO];
+  'repository:get': [{ repositoryId: string }, RepositoryClientDTO];
+  'repository:list': [{ status?: string; type?: string }, RepositoryClientDTO[]];
   'repository:current': [void, RepositoryClientDTO | null];
   'repository:delete': [{ repositoryId: string; hardDelete?: boolean }, { ok: boolean }];
   'repository:archive': [{ repositoryId: string }, RepositoryClientDTO];
   'repository:unarchive': [{ repositoryId: string }, RepositoryClientDTO];
 
   // === Resource Operations ===
-  'resource:create': [{ repositoryId: string } & CreateResourceReq, ResourceClientDTO];
-  'resource:update': [UpdateResourceReq, ResourceClientDTO];
-  'resource:get': [GetResourceReq, ResourceClientDTO];
-  'resource:list': [ListResourceReq, ResourceClientDTO[]];
+  'resource:create': [{ repositoryId: string } & CreateResourceZodReq, ResourceClientDTO];
+  'resource:update': [{ resourceId: string } & UpdateResourceZodReq, ResourceClientDTO];
+  'resource:get': [{ resourceId: string }, ResourceClientDTO];
+  'resource:list': [
+    { repositoryId: string; folderId?: string; status?: string },
+    ResourceClientDTO[],
+  ];
   'resource:delete': [{ resourceId: string; hardDelete?: boolean }, { ok: boolean }];
   'resource:search': [{ repositoryId: string; keyword: string }, ResourceClientDTO[]];
   'resource:move': [{ resourceId: string; targetFolderId: string }, ResourceClientDTO];

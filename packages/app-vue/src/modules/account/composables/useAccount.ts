@@ -79,13 +79,27 @@ export function useAccount() {
     }
   }
 
-  async function updateSettings(_req: UpdateAccountSettingsReq): Promise<boolean> {
+  async function updateSettings(req: UpdateAccountSettingsReq): Promise<boolean> {
     accountStore.setLoading(true);
-    void _req;
-    // TODO: AccountClientService 尚未暴露 updateSettings，暂时通过 apiClient 调用
-    toast.success(t('account.toast.settingsUpdated'));
+    accountStore.setError(null);
+    const result = await accountService.updateSettings(req);
     accountStore.setLoading(false);
-    return true;
+    if (result.ok) {
+      const current = accountStore.currentAccount;
+      if (current) {
+        accountStore.setCurrentAccount({
+          ...current,
+          settings: result.data,
+        });
+      }
+      toast.success(t('account.toast.settingsUpdated'));
+      return true;
+    }
+
+    const message = result.error.message || t('account.toast.updateFailed');
+    accountStore.setError(message);
+    toast.error(t('account.toast.updateFailed'), { description: message });
+    return false;
   }
 
   async function closeAccount(req: CloseAccountReq): Promise<boolean> {

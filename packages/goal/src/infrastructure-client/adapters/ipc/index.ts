@@ -33,15 +33,10 @@ export interface GoalIpcAdapters {
  * // apps/desktop/src/renderer/modules/goal/infrastructure/ipc/index.ts
  * const ipcClient = createResultIpcClient();
  * const adapters = createGoalIpcAdapters(ipcClient);
- * GoalContainer.getInstance()
- *   .registerApiClient(adapters.goal)
- *   .registerFolderApiClient(adapters.folder)
- *   .registerFocusApiClient(adapters.focus);
+ * // register adapters in the app composition root
  * ```
  */
-export function createGoalIpcAdapters(
-  ipcClient: IResultIpcClient,
-): GoalIpcAdapters {
+export function createGoalIpcAdapters(ipcClient: IResultIpcClient): GoalIpcAdapters {
   return {
     goal: new GoalIpcAdapter(ipcClient),
     folder: new GoalFolderIpcAdapter(ipcClient),

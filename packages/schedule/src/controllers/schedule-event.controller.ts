@@ -10,17 +10,32 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateScheduleRequestSchema,
+  type CreateScheduleRequest,
   UpdateScheduleRequestSchema,
+  type UpdateScheduleRequest,
+  DetectConflictsRequestSchema,
+  type DetectConflictsRequest,
+  ResolveConflictRequestSchema,
+  type ResolveConflictRequest,
+  type GetSchedulesByTimeRangeRequest,
 } from '@dailyuse/contracts/schedule';
 import { formatZodErrors } from '@dailyuse/utils/result';
-import type { ScheduleEventApplicationService } from '../application-server/services/schedule-event-application-service';
-import type { ScheduleConflictDetectionService } from '../application-server/services/schedule-conflict-detection-service';
 
 // ============ Use Case Port ============
 
 export interface ScheduleEventUseCases {
-  scheduleEventService: ScheduleEventApplicationService;
-  conflictDetectionService?: ScheduleConflictDetectionService;
+  createEvent(data: CreateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
+  getEvent(id: string): Promise<Result<unknown>>;
+  listEvents(query: GetSchedulesByTimeRangeRequest, ctx: Context): Promise<Result<unknown>>;
+  updateEvent(id: string, data: UpdateScheduleRequest): Promise<Result<unknown>>;
+  deleteEvent(id: string): Promise<Result<unknown>>;
+  getConflicts(id: string): Promise<Result<unknown>>;
+  detectConflicts(data: DetectConflictsRequest): Promise<Result<unknown>>;
+  createEventWithConflictDetection(
+    data: CreateScheduleRequest,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  resolveConflict(id: string, data: ResolveConflictRequest): Promise<Result<unknown>>;
 }
 
 /**
@@ -29,13 +44,7 @@ export interface ScheduleEventUseCases {
  * Provides validated use-case calls for CalendarEntry (schedule events).
  */
 export class ScheduleEventController {
-  private readonly service: ScheduleEventApplicationService;
-  private readonly conflictService?: ScheduleConflictDetectionService;
-
-  constructor(useCases: ScheduleEventUseCases) {
-    this.service = useCases.scheduleEventService;
-    this.conflictService = useCases.conflictDetectionService;
-  }
+  constructor(private readonly useCases: ScheduleEventUseCases) {}
 
   // ==================== Event CRUD ====================
 
@@ -48,39 +57,16 @@ export class ScheduleEventController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    try {
-      const event = await this.service.createSchedule({
-        identityId: ctx.identityId,
-        title: parsed.data.name,
-        startTime: parsed.data.startTime,
-        endTime: parsed.data.endTime,
-        description: parsed.data.description,
-        location: parsed.data.location,
-        priority: parsed.data.priority,
-        attendees: parsed.data.attendees,
-      });
-      return ok(event);
-    } catch (err: unknown) {
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
+
+    if (parsed.data.autoDetectConflicts) {
+      return this.createWithConflictDetection(input, ctx);
     }
+
+    return this.useCases.createEvent(parsed.data, ctx);
   }
 
   async get(id: string): Promise<Result<unknown>> {
-    try {
-      const event = await this.service.getSchedule(id);
-      if (!event) {
-        return fail({ code: 'NOT_FOUND', message: '日程不存在' });
-      }
-      return ok(event);
-    } catch (err: unknown) {
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
+    return this.useCases.getEvent(id);
   }
 
   async getByTimeRange(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>> {
@@ -94,16 +80,15 @@ export class ScheduleEventController {
       });
     }
 
-    try {
-      const identityId = (query.identityId as string) || ctx.identityId;
-      const events = await this.service.getSchedulesByRange(identityId, startTime, endTime);
-      return ok(events);
-    } catch (err: unknown) {
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
+    return this.useCases.listEvents(
+      {
+        startTime,
+        endTime,
+        identityId: ((query.identityId as string) ||
+          ctx.identityId) as GetSchedulesByTimeRangeRequest['identityId'],
+      },
+      ctx,
+    );
   }
 
   async update(id: string, input: unknown): Promise<Result<unknown>> {
@@ -115,82 +100,32 @@ export class ScheduleEventController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    try {
-      const event = await this.service.updateSchedule(id, {
-        title: parsed.data.name,
-        startTime: parsed.data.startTime,
-        endTime: parsed.data.endTime,
-        description: parsed.data.description,
-        location: parsed.data.location,
-        priority: parsed.data.priority,
-        attendees: parsed.data.attendees,
-      });
-      return ok(event);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('not found')) {
-        return fail({ code: 'NOT_FOUND', message: err.message });
-      }
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
+    return this.useCases.updateEvent(id, parsed.data);
   }
 
   async delete(id: string): Promise<Result<unknown>> {
-    try {
-      await this.service.deleteSchedule(id);
-      return ok(null);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('not found')) {
-        return fail({ code: 'NOT_FOUND', message: err.message });
-      }
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
+    return this.useCases.deleteEvent(id);
   }
 
   // ==================== Conflict Detection ====================
 
   async getConflicts(id: string): Promise<Result<unknown>> {
-    if (!this.conflictService) {
-      return fail({ code: 'NOT_IMPLEMENTED', message: 'Conflict detection service not configured' });
-    }
-    try {
-      const result = await this.conflictService.getScheduleConflicts(id);
-      return ok(result);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('not found')) {
-        return fail({ code: 'NOT_FOUND', message: err.message });
-      }
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
+    return this.useCases.getConflicts(id);
   }
 
   async detectConflicts(input: unknown): Promise<Result<unknown>> {
-    if (!this.conflictService) {
-      return fail({ code: 'NOT_IMPLEMENTED', message: 'Conflict detection service not configured' });
-    }
-    try {
-      const result = await this.conflictService.detectConflictsForSchedule(input as any);
-      return ok(result);
-    } catch (err: unknown) {
+    const parsed = DetectConflictsRequestSchema.safeParse(input);
+    if (!parsed.success) {
       return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
       });
     }
+    return this.useCases.detectConflicts(parsed.data);
   }
 
   async createWithConflictDetection(input: unknown, ctx: Context): Promise<Result<unknown>> {
-    if (!this.conflictService) {
-      return fail({ code: 'NOT_IMPLEMENTED', message: 'Conflict detection service not configured' });
-    }
     const parsed = CreateScheduleRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -199,71 +134,18 @@ export class ScheduleEventController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    try {
-      // First detect conflicts
-      const draftDto = {
-        id: '',
-        identityId: ctx.identityId,
-        title: parsed.data.name,
-        startTime: parsed.data.startTime,
-        endTime: parsed.data.endTime,
-        description: parsed.data.description ?? null,
-        location: parsed.data.location ?? null,
-        priority: parsed.data.priority ?? null,
-        attendees: parsed.data.attendees ?? null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      const conflicts = await this.conflictService.detectConflictsForSchedule(draftDto as any);
-
-      // Create the event regardless
-      const event = await this.service.createSchedule({
-        identityId: ctx.identityId,
-        title: parsed.data.name,
-        startTime: parsed.data.startTime,
-        endTime: parsed.data.endTime,
-        description: parsed.data.description,
-        location: parsed.data.location,
-        priority: parsed.data.priority,
-        attendees: parsed.data.attendees,
-      });
-      return ok({ event, conflicts });
-    } catch (err: unknown) {
-      return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
+    return this.useCases.createEventWithConflictDetection(parsed.data, ctx);
   }
 
   async resolveConflict(id: string, input: unknown): Promise<Result<unknown>> {
-    // Conflict resolution strategy: update the event with new times or mark as acknowledged
-    const strategy = (input as any)?.strategy;
-    if (!strategy) {
-      return fail({ code: 'VALIDATION_ERROR', message: 'strategy is required (reschedule | acknowledge)' });
-    }
-    try {
-      if (strategy === 'reschedule' && (input as any)?.startTime && (input as any)?.endTime) {
-        const event = await this.service.updateSchedule(id, {
-          startTime: (input as any).startTime,
-          endTime: (input as any).endTime,
-        });
-        return ok(event);
-      }
-      // acknowledge strategy — just return current event
-      const event = await this.service.getSchedule(id);
-      if (!event) {
-        return fail({ code: 'NOT_FOUND', message: '日程不存在' });
-      }
-      return ok({ ...event, conflictAcknowledged: true });
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('not found')) {
-        return fail({ code: 'NOT_FOUND', message: err.message });
-      }
+    const parsed = ResolveConflictRequestSchema.safeParse(input);
+    if (!parsed.success) {
       return fail({
-        code: 'INTERNAL_ERROR',
-        message: err instanceof Error ? err.message : 'Unknown error',
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
       });
     }
+    return this.useCases.resolveConflict(id, parsed.data);
   }
 }

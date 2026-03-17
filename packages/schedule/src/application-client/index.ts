@@ -14,7 +14,6 @@ export type {
 export { ScheduleClientService } from './schedule-client-service';
 
 // ===== Singleton Proxy =====
-// Singleton placeholder - will be replaced during module initialization
 let _scheduleApplicationService: any = null;
 
 export function setScheduleApplicationService(service: any) {

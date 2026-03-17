@@ -1,4 +1,5 @@
 import type { IAIProviderConfigApiClient, IResultIpcClient } from '../types';
+import { AIChannels } from '@dailyuse/contracts/electron';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
@@ -10,13 +11,11 @@ import type {
 } from '@dailyuse/contracts/ai';
 
 export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
-  private readonly channel = 'ai:provider';
-
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async createProvider(request: CreateAIProviderConfigReq): Promise<AIProviderConfigClientDTO> {
     const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
-      `${this.channel}:create`,
+      AIChannels.PROVIDER_CREATE,
       request,
     );
     if (!result.ok) throw new Error(result.error.message);
@@ -25,7 +24,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
 
   async getProviders(): Promise<AIProviderConfigSummary[]> {
     const result = await this.ipcClient.invoke<{ data: AIProviderConfigSummary[] }>(
-      `${this.channel}:list`,
+      AIChannels.PROVIDER_LIST,
     );
     if (!result.ok) throw new Error(result.error.message);
     return result.data.data;
@@ -33,7 +32,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
 
   async getProviderById(id: string): Promise<AIProviderConfigClientDTO> {
     const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
-      `${this.channel}:get`,
+      AIChannels.PROVIDER_GET,
       id,
     );
     if (!result.ok) throw new Error(result.error.message);
@@ -45,7 +44,7 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
     request: UpdateAIProviderConfigReq,
   ): Promise<AIProviderConfigClientDTO> {
     const result = await this.ipcClient.invoke<AIProviderConfigClientDTO>(
-      `${this.channel}:update`,
+      AIChannels.PROVIDER_UPDATE,
       {
         id,
         ...request,
@@ -56,18 +55,21 @@ export class AIProviderConfigIpcAdapter implements IAIProviderConfigApiClient {
   }
 
   async deleteProvider(id: string): Promise<void> {
-    const result = await this.ipcClient.invoke<void>(`${this.channel}:delete`, id);
+    const result = await this.ipcClient.invoke<void>(AIChannels.PROVIDER_DELETE, id);
     if (!result.ok) throw new Error(result.error.message);
   }
 
   async testConnection(request: TestAIProviderReq): Promise<TestAIProviderRes> {
-    const result = await this.ipcClient.invoke<TestAIProviderRes>(`${this.channel}:test`, request);
+    const result = await this.ipcClient.invoke<TestAIProviderRes>(
+      AIChannels.PROVIDER_TEST,
+      request,
+    );
     if (!result.ok) throw new Error(result.error.message);
     return result.data;
   }
 
   async setDefaultProvider(request: SetDefaultAIProviderReq): Promise<void> {
-    const result = await this.ipcClient.invoke<void>(`${this.channel}:set-default`, request);
+    const result = await this.ipcClient.invoke<void>(AIChannels.PROVIDER_SET_DEFAULT, request);
     if (!result.ok) throw new Error(result.error.message);
   }
 }

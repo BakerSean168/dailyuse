@@ -44,7 +44,6 @@ const Ch = {
 
   // Desktop-specific (AuthDesktopApplicationService)
   ENTER_GUEST_MODE: 'auth:enter-guest-mode',
-  ENTER_OFFLINE_MODE: 'auth:enter-offline-mode',
   GET_CURRENT_USER: 'auth:get-current-user',
   GET_STATUS: 'auth:get-status',
   INITIALIZE: 'auth:initialize',
@@ -154,7 +153,6 @@ export const DesktopAuthElectronModule: IElectronModule = {
     // ══════════════════════════════════════════════════════════════
 
     ipcMain.handle(Ch.ENTER_GUEST_MODE, () => desktopService.enterGuestMode());
-    ipcMain.handle(Ch.ENTER_OFFLINE_MODE, () => desktopService.enterOfflineMode());
     ipcMain.handle(Ch.GET_STATUS, () => desktopService.getStatus());
     ipcMain.handle(Ch.INITIALIZE, () => desktopService.initialize());
     ipcMain.handle(Ch.AUTO_LOGIN, () => desktopService.autoLogin());

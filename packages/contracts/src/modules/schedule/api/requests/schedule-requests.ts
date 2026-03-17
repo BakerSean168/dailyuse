@@ -22,7 +22,7 @@ export const ResolutionStrategySchema = z.enum([
 export type ResolutionStrategy = z.infer<typeof ResolutionStrategySchema>;
 
 export const CreateScheduleRequestSchema = z.object({
-  identityId: brandedId<IdentityId>(),
+  identityId: brandedId<IdentityId>().optional(),
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   startTime: z.number().positive(),
@@ -71,7 +71,7 @@ export const ResolveConflictRequestSchema = z.object({
  * Request DTO for creating a new schedule with automatic conflict detection
  */
 export interface CreateScheduleRequest {
-  identityId: IdentityId;
+  identityId?: IdentityId;
   name: string;
   description?: string;
   startTime: number;

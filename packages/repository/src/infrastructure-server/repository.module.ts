@@ -209,6 +209,7 @@ export interface RepositoryApplicationPort {
       content?: string;
     },
   ): Promise<Result<unknown>>;
+  moveResource(id: string, targetFolderId: string): Promise<Result<unknown>>;
   deleteResource(id: string): Promise<Result<unknown>>;
   uploadResources(
     data: {
@@ -552,6 +553,15 @@ function buildApplicationPort(
       }
 
       return ok(currentResource.toClientDTO());
+    },
+    moveResource: async (id, targetFolderId) => {
+      const resource = await resourceRepository.findById(id);
+      if (!resource) throw new Error(`Resource not found: ${id}`);
+      const baseName = resource.name;
+      const parentPath = targetFolderId ? `/${targetFolderId}` : '';
+      resource.moveTo(targetFolderId as any, `${parentPath}/${baseName}`);
+      await resourceRepository.save(resource);
+      return ok(resource.toClientDTO());
     },
     deleteResource: async (id) => {
       const resource = await resourceRepository.findById(id);

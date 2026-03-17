@@ -1,4 +1,5 @@
 import type { AIKnowledgeNoteApiClient, IResultIpcClient } from '../types';
+import { AIChannels } from '@dailyuse/contracts/electron';
 import type { CreateKnowledgeNoteReq, CreateKnowledgeNoteRes } from '@dailyuse/contracts/ai';
 
 export class AIKnowledgeNoteIpcAdapter implements AIKnowledgeNoteApiClient {
@@ -6,7 +7,7 @@ export class AIKnowledgeNoteIpcAdapter implements AIKnowledgeNoteApiClient {
 
   async createKnowledgeNote(request: CreateKnowledgeNoteReq): Promise<CreateKnowledgeNoteRes> {
     const result = await this.ipcClient.invoke<CreateKnowledgeNoteRes>(
-      'ai:knowledge-note:create',
+      AIChannels.KNOWLEDGE_NOTE_CREATE,
       request,
     );
     if (!result.ok) throw new Error(result.error.message);

@@ -22,7 +22,6 @@ import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../infrastructure-server';
-import { fail } from '@dailyuse/contracts/result';
 
 const logger = createLogger('ReminderElectron');
 
@@ -35,8 +34,6 @@ const Ch = {
   TEMPLATE_TOGGLE_ENABLED: 'reminder:template:toggle-enabled',
   TEMPLATE_MOVE_TO_GROUP: 'reminder:template:move-to-group',
   TEMPLATE_GET_BY_USER: 'reminder:template:get-by-user',
-  TEMPLATE_SEARCH: 'reminder:template:search',
-  TEMPLATE_SCHEDULE_STATUS: 'reminder:template:schedule-status',
   UPCOMING_GET: 'reminder:upcoming:get',
   GROUP_LIST: 'reminder:group:list',
   GROUP_GET: 'reminder:group:get',
@@ -45,7 +42,7 @@ const Ch = {
   GROUP_DELETE: 'reminder:group:delete',
   GROUP_GET_BY_USER: 'reminder:group:get-by-user',
   GROUP_TOGGLE_STATUS: 'reminder:group:toggle-status',
-  GROUP_TOGGLE_CONTROL_MODE: 'reminder:group:toggle-control-mode',
+  GROUP_SWITCH_CONTROL_MODE: 'reminder:group:switch-control-mode',
 } as const;
 
 const channels = Object.values(Ch);
@@ -110,12 +107,6 @@ export const ReminderElectronModule: IElectronModule = {
     ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, groupId) =>
       withAuthenticatedValue(ctx, async () => controller.moveTemplate(id, { groupId })),
     );
-    ipcMain.handle(Ch.TEMPLATE_SEARCH, async () =>
-      fail({ code: 'NOT_IMPLEMENTED', message: 'Template search is not implemented' }),
-    );
-    ipcMain.handle(Ch.TEMPLATE_SCHEDULE_STATUS, async () =>
-      fail({ code: 'NOT_IMPLEMENTED', message: 'Template schedule status is not implemented' }),
-    );
     ipcMain.handle(Ch.UPCOMING_GET, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
         controller.getUpcomingReminders(params ?? {}, requestContext),
@@ -154,12 +145,8 @@ export const ReminderElectronModule: IElectronModule = {
     ipcMain.handle(Ch.GROUP_TOGGLE_STATUS, async (_event, id) =>
       withAuthenticatedValue(ctx, async () => controller.toggleGroup(id)),
     );
-    ipcMain.handle(Ch.GROUP_TOGGLE_CONTROL_MODE, async (_event, id, mode) =>
-      withAuthenticatedValue(ctx, async () =>
-        controller.switchGroupControlMode(id, {
-          mode: typeof mode === 'string' ? mode : mode?.mode,
-        }),
-      ),
+    ipcMain.handle(Ch.GROUP_SWITCH_CONTROL_MODE, async (_event, id, data) =>
+      withAuthenticatedValue(ctx, async () => controller.switchGroupControlMode(id, data)),
     );
 
     logger.info('Reminder module registered');

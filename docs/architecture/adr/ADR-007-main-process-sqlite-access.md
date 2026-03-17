@@ -21,6 +21,9 @@ updated: 2025-12-06
 
 > 说明：本 ADR 作为历史记录保留，不再反映当前实现。当前 desktop 主进程已切换为 PowerSync-only 本地运行时。
 
+> 补充：文中的 `GoalContainer` / `TaskContainer` 注入示例已过时。
+> 现在更推荐显式 module factories / composition roots。
+
 ## 背景
 
 在 Desktop 应用中，主进程需要访问本地 SQLite 数据库来持久化用户数据。需要决定数据库访问的架构方式。
@@ -217,23 +220,9 @@ export class SqliteGoalRepository implements IGoalRepository {
 
 ### 3. 主进程 DI 配置
 
-```typescript
-// apps/desktop/src/main/di/desktop-main.composition-root.ts
-import { GoalContainer, TaskContainer /* ... */ } from '@dailyuse/infrastructure-server';
-import { SqliteGoalRepository } from './sqlite-adapters/goal.sqlite-repository';
-import { SqliteTaskRepository } from './sqlite-adapters/task.sqlite-repository';
-// ...
-
-export function configureMainProcessDependencies(): void {
-  // Goal Module
-  GoalContainer.getInstance().registerGoalRepository(new SqliteGoalRepository());
-
-  // Task Module
-  TaskContainer.getInstance().registerTaskRepository(new SqliteTaskRepository());
-
-  // ... 其他模块
-}
-```
+旧的容器注册示例已删除。
+当前推荐做法是在 bootstrap / module entry 中显式构造 repository adapter，
+再把它传入对应模块的 composition root。
 
 ## 性能考虑
 

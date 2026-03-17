@@ -19,6 +19,7 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
+import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { ResultError } from '@dailyuse/contracts/result';
 
 export function useReminder() {
@@ -49,7 +50,7 @@ export function useReminder() {
     }
 
     try {
-      const status = (await api.invoke('auth:get-status')) as {
+      const status = (await api.invoke(AuthChannels.GET_STATUS)) as {
         authenticated?: boolean;
         runtimeState?: string;
       };
@@ -59,8 +60,10 @@ export function useReminder() {
       }
 
       if (status?.runtimeState === 'RESTORING' || status?.runtimeState === 'UNINITIALIZED') {
-        await api.invoke('auth:initialize');
-        const refreshed = (await api.invoke('auth:get-status')) as { authenticated?: boolean };
+        await api.invoke(AuthChannels.INITIALIZE);
+        const refreshed = (await api.invoke(AuthChannels.GET_STATUS)) as {
+          authenticated?: boolean;
+        };
         return Boolean(refreshed?.authenticated);
       }
     } catch (error) {

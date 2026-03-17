@@ -12,12 +12,14 @@ import {
   CreateEditorWorkspaceSchema,
   UpdateEditorWorkspaceSchema,
   CreateDocumentSchema,
+  SearchEditorDocumentsSchema,
   UpdateDocumentSchema,
 } from '@dailyuse/contracts/editor';
 import type {
   CreateEditorWorkspaceReq,
   UpdateEditorWorkspaceReq,
   CreateDocumentReq,
+  SearchRequest,
   UpdateDocumentReq,
 } from '@dailyuse/contracts/editor';
 import { formatZodErrors } from '@dailyuse/utils/result';
@@ -38,6 +40,7 @@ export interface EditorUseCases {
   getDocument(id: string): Promise<Result<unknown>>;
   updateDocument(id: string, data: UpdateDocumentReq): Promise<Result<unknown>>;
   deleteDocument(id: string): Promise<Result<unknown>>;
+  searchDocuments(request: SearchRequest, ctx: Context): Promise<Result<unknown>>;
 }
 
 export class EditorController {
@@ -120,5 +123,18 @@ export class EditorController {
 
   async deleteDocument(id: string): Promise<Result<unknown>> {
     return this.useCases.deleteDocument(id);
+  }
+
+  async searchDocuments(input: unknown, ctx: Context): Promise<Result<unknown>> {
+    const parsed = SearchEditorDocumentsSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid search request',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+
+    return this.useCases.searchDocuments(parsed.data, ctx);
   }
 }

@@ -2,6 +2,6 @@
  * Setting Composables - Barrel Export
  */
 
-export { useUserSetting, useUserSettingData } from './useUserSetting';
+export { useUserSetting } from './useUserSetting';
 export { useLocaleSync } from './useLocaleSync';
 export { applyThemeMode, useThemeSync } from './useThemeSync';

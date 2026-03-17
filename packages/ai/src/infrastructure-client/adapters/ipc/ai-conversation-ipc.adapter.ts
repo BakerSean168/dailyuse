@@ -1,4 +1,5 @@
 import type { IAIConversationApiClient, IResultIpcClient } from '../types';
+import { AIChannels } from '@dailyuse/contracts/electron';
 import type {
   AIConversationClientDTO,
   ConversationListRes,
@@ -7,13 +8,11 @@ import type {
 } from '@dailyuse/contracts/ai';
 
 export class AIConversationIpcAdapter implements IAIConversationApiClient {
-  private readonly channel = 'ai:chat:conversation';
-
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async createConversation(request: CreateConversationReq): Promise<AIConversationClientDTO> {
     const result = await this.ipcClient.invoke<AIConversationClientDTO>(
-      `${this.channel}:create`,
+      AIChannels.CONVERSATION_CREATE,
       request,
     );
     if (!result.ok) throw new Error(result.error.message);
@@ -24,10 +23,13 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
     id: string,
     request: UpdateConversationReq,
   ): Promise<AIConversationClientDTO> {
-    const result = await this.ipcClient.invoke<AIConversationClientDTO>(`${this.channel}:update`, {
-      id,
-      ...request,
-    });
+    const result = await this.ipcClient.invoke<AIConversationClientDTO>(
+      AIChannels.CONVERSATION_UPDATE,
+      {
+        id,
+        ...request,
+      },
+    );
     if (!result.ok) throw new Error(result.error.message);
     return result.data;
   }
@@ -36,19 +38,25 @@ export class AIConversationIpcAdapter implements IAIConversationApiClient {
     page?: number;
     pageSize?: number;
   }): Promise<ConversationListRes> {
-    const result = await this.ipcClient.invoke<ConversationListRes>(`${this.channel}:list`, params);
+    const result = await this.ipcClient.invoke<ConversationListRes>(
+      AIChannels.CONVERSATION_LIST,
+      params,
+    );
     if (!result.ok) throw new Error(result.error.message);
     return result.data;
   }
 
   async getConversationById(id: string): Promise<AIConversationClientDTO> {
-    const result = await this.ipcClient.invoke<AIConversationClientDTO>(`${this.channel}:get`, id);
+    const result = await this.ipcClient.invoke<AIConversationClientDTO>(
+      AIChannels.CONVERSATION_GET,
+      id,
+    );
     if (!result.ok) throw new Error(result.error.message);
     return result.data;
   }
 
   async deleteConversation(id: string): Promise<void> {
-    const result = await this.ipcClient.invoke<void>(`${this.channel}:delete`, id);
+    const result = await this.ipcClient.invoke<void>(AIChannels.CONVERSATION_DELETE, id);
     if (!result.ok) throw new Error(result.error.message);
   }
 }

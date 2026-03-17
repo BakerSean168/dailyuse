@@ -6,11 +6,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
-import type {
-  IReminderApiClient,
-  ReminderTemplatesResponse,
-  ReminderGroupsResponse,
-} from '../types';
+import type { IReminderApiClient } from '../types';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
@@ -19,8 +15,8 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
-  TemplateScheduleStatusRes,
 } from '@dailyuse/contracts/reminder';
+import type { ControlMode } from '@dailyuse/contracts/reminder';
 
 /**
  * ReminderHttpAdapter
@@ -45,15 +41,12 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get(`${this.templatesUrl}/${id}`);
   }
 
-  async getReminderTemplates(params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<Result<ReminderTemplatesResponse>> {
-    return this.httpClient.get(this.templatesUrl, { params });
+  async getReminderTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.httpClient.get(this.templatesUrl);
   }
 
-  async getUserTemplates(identityId: string): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.httpClient.get(`${this.templatesUrl}/user/${identityId}`);
+  async getUserTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.httpClient.get(`${this.templatesUrl}/mine`);
   }
 
   async updateReminderTemplate(
@@ -73,24 +66,11 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   async moveTemplateToGroup(
     templateId: string,
-    targetGroupId: string | null,
+    targetGroupId: string,
   ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.post(`${this.templatesUrl}/${templateId}/move`, {
       targetGroupId,
     });
-  }
-
-  async searchTemplates(
-    identityId: string,
-    query: string,
-  ): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.httpClient.get(`${this.templatesUrl}/search`, {
-      params: { identityId, query },
-    });
-  }
-
-  async getTemplateScheduleStatus(templateId: string): Promise<Result<TemplateScheduleStatusRes>> {
-    return this.httpClient.get(`${this.templatesUrl}/${templateId}/schedule-status`);
   }
 
   async getUpcomingReminders(params?: {
@@ -114,15 +94,12 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get(`${this.groupsUrl}/${id}`);
   }
 
-  async getReminderGroups(params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<Result<ReminderGroupsResponse>> {
-    return this.httpClient.get(this.groupsUrl, { params });
+  async getReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+    return this.httpClient.get(this.groupsUrl);
   }
 
-  async getUserReminderGroups(identityId: string): Promise<Result<ReminderGroupClientDTO[]>> {
-    return this.httpClient.get(`${this.groupsUrl}/user/${identityId}`);
+  async getUserReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+    return this.httpClient.get(`${this.groupsUrl}/mine`);
   }
 
   async updateReminderGroup(
@@ -140,8 +117,11 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.post(`${this.groupsUrl}/${id}/toggle-status`, {});
   }
 
-  async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.httpClient.post(`${this.groupsUrl}/${id}/toggle-control-mode`, {});
+  async switchReminderGroupControlMode(
+    id: string,
+    mode: ControlMode,
+  ): Promise<Result<ReminderGroupClientDTO>> {
+    return this.httpClient.post(`${this.groupsUrl}/${id}/control-mode`, { mode });
   }
 }
 

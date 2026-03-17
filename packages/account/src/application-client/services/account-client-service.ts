@@ -13,6 +13,8 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
   AccountClientDTO,
 } from '@dailyuse/contracts/account';
 import { Account } from '../../domain-client';
@@ -55,6 +57,12 @@ export class AccountClientService {
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
     return this.apiClient.checkAvailability(request);
+  }
+
+  async updateSettings(
+    request: UpdateAccountSettingsReq,
+  ): Promise<Result<UpdateAccountSettingsRes>> {
+    return this.apiClient.updateSettings(request);
   }
 
   async closeAccount(request: CloseAccountReq): Promise<Result<void>> {

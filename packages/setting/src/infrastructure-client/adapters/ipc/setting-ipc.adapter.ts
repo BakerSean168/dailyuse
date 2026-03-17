@@ -3,14 +3,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type {
-  IResultIpcClient,
-  ISettingApiClient,
-} from '../types';
-import type {
-  UserSettingClientDTO,
-  PreferenceCategory,
-} from '@dailyuse/contracts/setting';
+import type { IResultIpcClient, ISettingApiClient } from '../types';
+import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 
 export class SettingIpcAdapter implements ISettingApiClient {
   private readonly channel = 'setting';
@@ -21,7 +15,10 @@ export class SettingIpcAdapter implements ISettingApiClient {
     return this.ipcClient.invoke(`${this.channel}:all`);
   }
 
-  async patchCategory(category: PreferenceCategory, patch: Record<string, unknown>): Promise<Result<UserSettingClientDTO>> {
+  async patchCategory(
+    category: PreferenceCategory,
+    patch: Record<string, unknown>,
+  ): Promise<Result<UserSettingClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:patch`, { category, patch });
   }
 
@@ -33,8 +30,11 @@ export class SettingIpcAdapter implements ISettingApiClient {
     return this.ipcClient.invoke(`${this.channel}:export`);
   }
 
-  async importSettings(data: string): Promise<Result<UserSettingClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:import`, { data });
+  async importSettings(
+    data: string,
+    options?: { merge?: boolean },
+  ): Promise<Result<UserSettingClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:import`, { data, options });
   }
 }
 

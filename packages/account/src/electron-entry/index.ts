@@ -30,6 +30,7 @@ const Ch = {
   GET_CURRENT_ALIAS: 'account:current',
   GET_CURRENT: 'account:get-me',
   UPDATE_PROFILE: 'account:update-profile',
+  UPDATE_SETTINGS: 'account:update-settings',
   CHECK_AVAILABILITY: 'account:check-availability',
   CLOSE: 'account:close',
 } as const;
@@ -103,6 +104,13 @@ export const AccountElectronModule: IElectronModule = {
       return withAuth(ctx, async (identityId) => {
         const result = await accountModule.api.updateProfile(identityId, payload);
         return ok(result.account);
+      });
+    });
+
+    ipcMain.handle(Ch.UPDATE_SETTINGS, async (_event, payload: any) => {
+      return withAuth(ctx, async (identityId) => {
+        const result = await accountModule.api.updateSettings(identityId, payload);
+        return ok(result);
       });
     });
 

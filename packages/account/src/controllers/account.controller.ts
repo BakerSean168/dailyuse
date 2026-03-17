@@ -10,6 +10,7 @@ import { fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   UpdateAccountSchema,
+  UpdateAccountSettingsSchema,
   CheckAvailabilitySchema,
   CloseAccountSchema,
 } from '@dailyuse/contracts/account';
@@ -17,6 +18,8 @@ import type {
   GetAccountRes,
   UpdateAccountReq,
   UpdateAccountRes,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
@@ -29,6 +32,10 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 export interface AccountUseCases {
   getProfile(ctx: Context): Promise<Result<GetAccountRes>>;
   updateProfile(data: UpdateAccountReq, ctx: Context): Promise<Result<UpdateAccountRes>>;
+  updateSettings(
+    data: UpdateAccountSettingsReq,
+    ctx: Context,
+  ): Promise<Result<UpdateAccountSettingsRes>>;
   checkAvailability(data: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>>;
   closeAccount(data: CloseAccountReq, ctx: Context): Promise<Result<CloseAccountRes>>;
 }
@@ -62,6 +69,18 @@ export class AccountController {
       });
     }
     return this.useCases.checkAvailability(parsed.data);
+  }
+
+  async updateSettings(input: unknown, ctx: Context): Promise<Result<UpdateAccountSettingsRes>> {
+    const parsed = UpdateAccountSettingsSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail({
+        code: 'VALIDATION_ERROR',
+        message: '参数验证失败',
+        details: formatZodErrors(parsed.error.issues),
+      });
+    }
+    return this.useCases.updateSettings(parsed.data, ctx);
   }
 
   async closeAccount(input: unknown, ctx: Context): Promise<Result<CloseAccountRes>> {

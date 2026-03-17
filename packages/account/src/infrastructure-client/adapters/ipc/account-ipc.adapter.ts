@@ -6,6 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { AccountChannels } from '@dailyuse/contracts/electron';
 import type { IAccountApiClient, IResultIpcClient } from '../types';
 import type {
   AccountClientDTO,
@@ -13,33 +14,33 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
 } from '@dailyuse/contracts/account';
-
-const CHANNELS = {
-  GET_PROFILE: 'account:get',
-  GET_CURRENT: 'account:get-me',
-  UPDATE_PROFILE: 'account:update-profile',
-  CHECK_AVAILABILITY: 'account:check-availability',
-  CLOSE_ACCOUNT: 'account:close',
-} as const;
 
 export class AccountIpcAdapter implements IAccountApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getMyProfile(): Promise<Result<AccountClientDTO>> {
-    return this.ipcClient.invoke(CHANNELS.GET_CURRENT);
+    return this.ipcClient.invoke(AccountChannels.GET_ME);
   }
 
   async updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>> {
-    return this.ipcClient.invoke(CHANNELS.UPDATE_PROFILE, request);
+    return this.ipcClient.invoke(AccountChannels.UPDATE_PROFILE, request);
+  }
+
+  async updateSettings(
+    request: UpdateAccountSettingsReq,
+  ): Promise<Result<UpdateAccountSettingsRes>> {
+    return this.ipcClient.invoke(AccountChannels.UPDATE_SETTINGS, request);
   }
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {
-    return this.ipcClient.invoke(CHANNELS.CHECK_AVAILABILITY, request);
+    return this.ipcClient.invoke(AccountChannels.CHECK_AVAILABILITY, request);
   }
 
   async closeAccount(request: CloseAccountReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.CLOSE_ACCOUNT, request);
+    return this.ipcClient.invoke(AccountChannels.CLOSE, request);
   }
 }
 

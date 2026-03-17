@@ -14,9 +14,3 @@ export type { AuthenticationRuntimeContribution } from './runtime';
 
 // Transport handler factory
 export { createAuthenticationTransportHandlers } from './transport-handlers';
-
-/**
- * @deprecated Use `createAuthenticationRuntimeContribution()` instead.
- * 已废弃：请使用 `createAuthenticationRuntimeContribution()` 代替。
- */
-export { registerAuthenticationInitializationTasks } from './initialization';

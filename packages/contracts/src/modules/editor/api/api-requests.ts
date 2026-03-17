@@ -272,7 +272,8 @@ export interface UpdateSearchEngineProgressRequest {
  * 搜索请求
  */
 export interface SearchRequest {
-  searchEngineId: SearchEngineId;
+  searchEngineId?: SearchEngineId;
+  workspaceId?: EditorWorkspaceId;
   query: string;
   limit?: number;
   offset?: number;

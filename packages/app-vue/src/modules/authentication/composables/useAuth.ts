@@ -20,6 +20,7 @@ import type {
   AuthResponseDTO,
   RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
+import { WindowChannels } from '@dailyuse/contracts/electron';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
@@ -42,7 +43,7 @@ export function useAuth() {
     toast.success(title, { description });
 
     if (hasDesktopWindowBridge()) {
-      await (window as any).electronAPI!.invoke('window:transition-to-main');
+      await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
       return true;
     }
 
@@ -222,7 +223,7 @@ export function useAuth() {
       store.reset();
       toast.success(t('auth.toast.loggedOut'));
       if (hasDesktopWindowBridge()) {
-        await (window as any).electronAPI!.invoke('window:transition-to-login');
+        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_LOGIN);
       } else {
         await router.push('/auth');
       }
@@ -251,7 +252,7 @@ export function useAuth() {
         } as any);
         store.setAccessToken('guest-local-token');
         toast.success('已进入访客模式', { description: '数据仅保存在本地' });
-        await (window as any).electronAPI!.invoke('window:transition-to-main');
+        await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
         return true;
       }
       const message = result.error?.message || '进入访客模式失败';

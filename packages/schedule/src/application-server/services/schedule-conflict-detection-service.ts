@@ -12,7 +12,9 @@ export class ScheduleConflictDetectionService {
    * - Loads other schedules in the same account that overlap the time window
    * - Uses the Domain Schedule aggregate to perform conflict detection
    */
-  async detectConflictsForSchedule(scheduleDto: CalendarEntryServerDTO): Promise<ConflictDetectionResult> {
+  async detectConflictsForSchedule(
+    scheduleDto: CalendarEntryServerDTO,
+  ): Promise<ConflictDetectionResult> {
     const { identityId, startTime, endTime, id } = scheduleDto;
 
     // Parse timestamps
@@ -40,9 +42,13 @@ export class ScheduleConflictDetectionService {
       description: scheduleDto.description ?? null,
       startTime: Number(scheduleDto.startTime),
       endTime: Number(scheduleDto.endTime),
-      duration: scheduleDto.duration ?? Math.round((Number(scheduleDto.endTime) - Number(scheduleDto.startTime)) / 60000),
+      duration:
+        scheduleDto.duration ??
+        Math.round((Number(scheduleDto.endTime) - Number(scheduleDto.startTime)) / 60000),
       hasConflict: scheduleDto.hasConflict ?? false,
-      conflictingEntries: scheduleDto.conflictingEntries ? [...scheduleDto.conflictingEntries] : null,
+      conflictingEntries: scheduleDto.conflictingEntries
+        ? [...scheduleDto.conflictingEntries]
+        : null,
       priority: scheduleDto.priority ?? null,
       location: scheduleDto.location ?? null,
       attendees: scheduleDto.attendees ? [...scheduleDto.attendees] : null,
@@ -54,6 +60,20 @@ export class ScheduleConflictDetectionService {
     // Perform conflict detection using domain logic
     const result = target.detectConflicts(otherAggregates);
 
+    // Persist conflict state on the target aggregate
+    if (result.hasConflict) {
+      const conflictingIds = result.conflicts.map((c) => c.scheduleId);
+      target.markAsConflicting(conflictingIds);
+    } else if (target.hasConflict) {
+      // Clear stale conflict state if no conflicts found
+      target.clearConflicts();
+    }
+
+    // Save if we have a valid persisted entity (non-empty id means it exists in the repo)
+    if (scheduleDto.id) {
+      await this.scheduleRepository.save(target);
+    }
+
     return result;
   }
 
@@ -61,7 +81,7 @@ export class ScheduleConflictDetectionService {
    * Get conflicts for an existing schedule by its UUID.
    * Queries the schedule from repository and detects conflicts with other schedules
    * in the same time window.
-   * 
+   *
    * @param scheduleId - UUID of the schedule to check for conflicts
    * @returns ConflictDetectionResult with detected conflicts and suggestions
    * @throws Error if schedule not found
@@ -69,14 +89,14 @@ export class ScheduleConflictDetectionService {
   async getScheduleConflicts(scheduleId: string): Promise<ConflictDetectionResult> {
     // Find the schedule (repository returns domain aggregate)
     const scheduleAggregate = await this.scheduleRepository.findById(scheduleId);
-    
+
     if (!scheduleAggregate) {
       throw new Error(`Schedule not found: ${scheduleId}`);
     }
 
     // Convert aggregate to DTO for detectConflictsForSchedule method
     const scheduleDto = scheduleAggregate.toServerDTO();
-    
+
     return this.detectConflictsForSchedule(scheduleDto);
   }
 }

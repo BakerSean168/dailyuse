@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { SETTING_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { PreferenceCategory, UserSettingPreferences } from '@dailyuse/contracts/setting';
 
 export function useUserSetting() {
@@ -65,7 +66,10 @@ export function useUserSetting() {
   ) {
     store.setError(null);
     try {
-      const data = await service.patchCategory(category, partial as Record<string, unknown>);
+      const data = await service.patchCategory(
+        category,
+        sanitizeForIpc(partial) as Record<string, unknown>,
+      );
       store.setUserSetting(data);
       return data;
     } catch (e: unknown) {
@@ -96,7 +100,7 @@ export function useUserSetting() {
   async function importSettings(data: unknown) {
     store.setError(null);
     try {
-      const result = await service.importSettings(data as string);
+      const result = await service.importSettings(sanitizeForIpc(data) as string);
       store.setUserSetting(result);
     } catch (e: unknown) {
       handleError((e as Error).message || t('setting.errors.importFailed'));
@@ -118,6 +122,3 @@ export function useUserSetting() {
     importSettings,
   };
 }
-
-/** Backward compatible alias */
-export const useUserSettingData = useUserSetting;

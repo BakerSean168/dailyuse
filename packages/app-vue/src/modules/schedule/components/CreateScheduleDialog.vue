@@ -306,11 +306,11 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { MapPin, X, Loader2, Calendar as CalendarIcon } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
-import type { ScheduleJobClientDTO } from '@dailyuse/contracts/schedule';
+import type { CalendarEntryClientDTO } from '@dailyuse/contracts/schedule';
 
 interface Props {
   modelValue: boolean;
-  schedule?: ScheduleJobClientDTO | null;
+  schedule?: CalendarEntryClientDTO | null;
   loading?: boolean;
 }
 

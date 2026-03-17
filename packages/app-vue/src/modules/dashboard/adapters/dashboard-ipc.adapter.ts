@@ -1,4 +1,5 @@
 import type { Result } from '@dailyuse/contracts/result';
+import { DashboardChannels } from '@dailyuse/contracts/electron';
 import type { IDashboardApiClient, DashboardData } from '../types';
 
 interface IResultIpcClient {
@@ -9,7 +10,7 @@ export class DashboardIpcAdapter implements IDashboardApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async getDashboardStats(): Promise<Result<DashboardData>> {
-    return this.ipcClient.invoke<DashboardData>('dashboard:get-stats');
+    return this.ipcClient.invoke<DashboardData>(DashboardChannels.GET_STATS);
   }
 }
 

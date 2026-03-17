@@ -14,7 +14,7 @@ updated: 2025-11-23T15:00:00
 
 **状态**: ✅ 已采纳  
 **日期**: 2024-08-20  
-**决策者**: @BakerSean168  
+**决策者**: @BakerSean168
 
 ## 背景
 
@@ -43,21 +43,25 @@ DailyUse 是一个功能丰富的个人效率管理系统，包含目标管理�
 ### 为什么选择 DDD？
 
 ✅ **业务逻辑清晰**
+
 - 领域模型直接反映业务概念
 - Entity、Value Object 等概念与业务语言一致
 - 非技术人员也能理解代码结构
 
 ✅ **高内聚低耦合**
+
 - 每个领域模块独立
 - 通过领域事件进行模块间通信
 - 易于单独测试和演进
 
 ✅ **前后端共享**
+
 - 领域模型可在前后端复用
 - 减少类型不一致问题
 - 统一的业务规则
 
 ✅ **长期可维护**
+
 - 业务逻辑集中在领域层
 - 技术细节隔离在基础设施层
 - 重构不影响业务逻辑
@@ -65,16 +69,19 @@ DailyUse 是一个功能丰富的个人效率管理系统，包含目标管理�
 ### 为什么不选其他方案？
 
 ❌ **传统三层架构**
+
 - Service 层容易变成"贫血模型"
 - 业务逻辑分散
 - 难以应对复杂业务场景
 
 ❌ **MVC模式**
+
 - 更适合 CRUD 应用
 - 缺少领域概念
 - 不适合复杂业务逻辑
 
 ❌ **Clean Architecture**
+
 - 过于抽象，学习曲线陡峭
 - 对小型团队来说过度设计
 - DDD 提供更具体的实践指导
@@ -183,9 +190,9 @@ export class GoalProgressService {
   calculateProgress(goal: Goal): number {
     const keyResults = goal.getKeyResults();
     const totalWeight = keyResults.reduce((sum, kr) => sum + kr.weight, 0);
-    
+
     return keyResults.reduce((progress, kr) => {
-      return progress + (kr.progress * kr.weight / totalWeight);
+      return progress + (kr.progress * kr.weight) / totalWeight;
     }, 0);
   }
 }
@@ -230,7 +237,7 @@ export interface GoalCompletedEvent {
 goal.complete();
 eventBus.publish<GoalCompletedEvent>({
   type: 'goal.completed',
-  payload: { goalUuid: goal.uuid, completedAt: new Date() }
+  payload: { goalUuid: goal.uuid, completedAt: new Date() },
 });
 ```
 
@@ -331,7 +338,7 @@ packages/
 export interface GoalServerDTO {
   uuid: string;
   title: string;
-  deadline: number;      // timestamp
+  deadline: number; // timestamp
   status: GoalStatus;
   createdAt: number;
   updatedAt: number;
@@ -351,7 +358,7 @@ export interface GoalClient extends GoalClientDTO {
   // 业务方法
   complete(): void;
   pause(): void;
-  
+
   // DTO 转换
   toClientDTO(): GoalClientDTO;
   toServerDTO(): GoalServerDTO;
@@ -366,9 +373,13 @@ export class Goal implements GoalClient {
   // ...
 
   // 静态工厂方法
-  static fromServerDTO(dto: GoalServerDTO): Goal { /* ... */ }
-  static fromClientDTO(dto: GoalClientDTO): Goal { /* ... */ }
-  
+  static fromServerDTO(dto: GoalServerDTO): Goal {
+    /* ... */
+  }
+  static fromClientDTO(dto: GoalClientDTO): Goal {
+    /* ... */
+  }
+
   // 业务方法实现
   complete(): void {
     if (this._status === GoalStatus.COMPLETED) {
@@ -395,10 +406,10 @@ export class Goal implements GoalClient {
 │  └─────────────────────────────────────────────────────┘    │
 │                           ↑                                  │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │  ModuleContainer (模块级容器)                         │    │
-│  │    ├─ GoalContainer                                  │    │
-│  │    ├─ TaskContainer                                  │    │
-│  │    ├─ ScheduleContainer                              │    │
+│  │  Module Assembly                                     │    │
+│  │    ├─ module factories                               │    │
+│  │    ├─ repository adapters                            │    │
+│  │    ├─ runtime contributions                          │    │
 │  │    └─ ...                                            │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                           ↑                                  │
@@ -410,85 +421,24 @@ export class Goal implements GoalClient {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### Container 管理内容
+#### 当前建议
 
-| 类型 | 是否由 Container 管理 | 说明 |
-|------|----------------------|------|
-| **API Clients (Adapters)** | ✅ 是 | HTTP/IPC/WebSocket 适配器 |
-| **Repositories** | ✅ 是 | 数据持久化层实现 |
-| **Application Services** | ⚠️ 可选 | 大型项目推荐管理 |
-| **Domain Services** | ⚠️ 可选 | 跨聚合业务逻辑 |
-| **Entities/Value Objects** | ❌ 否 | 由工厂方法创建 |
-
-#### 实际代码示例
-
-```typescript
-// packages/infrastructure-client/src/di/containers/DIContainer.ts
-export class DIContainer {
-  private static instance: DIContainer;
-  private readonly dependencies = new Map<string, unknown>();
-
-  static getInstance(): DIContainer {
-    if (!DIContainer.instance) {
-      DIContainer.instance = new DIContainer();
-    }
-    return DIContainer.instance;
-  }
-
-  register<T>(key: string, dependency: T): void {
-    this.dependencies.set(key, dependency);
-  }
-
-  resolve<T>(key: string): T {
-    const dep = this.dependencies.get(key);
-    if (!dep) throw new Error(`Dependency not found: ${key}`);
-    return dep as T;
-  }
-}
-
-// packages/infrastructure-client/src/di/containers/GoalContainer.ts
-export class GoalContainer {
-  registerGoalApiClient(client: IGoalApiClient): void {
-    DIContainer.getInstance().register(DependencyKeys.GOAL_API_CLIENT, client);
-  }
-
-  getGoalApiClient(): IGoalApiClient {
-    return DIContainer.getInstance().resolve<IGoalApiClient>(
-      DependencyKeys.GOAL_API_CLIENT
-    );
-  }
-}
-
-// packages/infrastructure-client/src/di/composition-roots/web.composition-root.ts
-export function configureWebDependencies(httpClient: HttpClient): void {
-  const goalContainer = GoalContainer.getInstance();
-  goalContainer.registerGoalApiClient(new GoalHttpAdapter(httpClient));
-  
-  const taskContainer = TaskContainer.getInstance();
-  taskContainer.registerTaskApiClient(new TaskHttpAdapter(httpClient));
-  // ...
-}
-```
+当前实现不再推荐通过全局 Container 管理客户端适配器或仓储。
+更推荐在 composition root 中显式创建 adapter / repository / module instance，并通过构造参数传递依赖。
 
 ### Application Service (Use Case) 写法
 
-#### 推荐模式：构造函数注入 + 静态工厂
+#### 推荐模式：构造函数注入
 
 ```typescript
 // packages/application-client/src/goal/services/create-goal.ts
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import type { CreateGoalRequest } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client/goal';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 export class CreateGoal {
   // 构造函数注入 - 便于测试
   constructor(private readonly apiClient: IGoalApiClient) {}
-
-  // 静态工厂 - 从 Container 获取依赖
-  static fromContainer(container = GoalContainer.getInstance()): CreateGoal {
-    return new CreateGoal(container.getGoalApiClient());
-  }
 
   // 执行用例
   async execute(input: CreateGoalRequest): Promise<Goal> {
@@ -504,12 +454,12 @@ export const createGoal = (input: CreateGoalRequest): Promise<Goal> =>
 
 #### 为什么这样设计？
 
-| 特性 | 好处 |
-|------|------|
-| **构造函数注入** | 依赖显式声明，易于单元测试 |
-| **静态工厂方法** | 生产环境使用方便，自动获取依赖 |
-| **便捷函数导出** | 简化调用：`await createGoal({...})` |
-| **Use Case 分离** | 每个用例一个类，职责单一 |
+| 特性              | 好处                                |
+| ----------------- | ----------------------------------- |
+| **构造函数注入**  | 依赖显式声明，易于单元测试          |
+| **静态工厂方法**  | 生产环境使用方便，自动获取依赖      |
+| **便捷函数导出**  | 简化调用：`await createGoal({...})` |
+| **Use Case 分离** | 每个用例一个类，职责单一            |
 
 ### Ports & Adapters (端口与适配器)
 
@@ -573,16 +523,19 @@ export class GoalIpcAdapter implements IGoalApiClient {
 ### 正面影响
 
 ✅ **代码质量提升**
+
 - 业务逻辑集中，易于理解
 - 类型安全，减少 bug
 - 测试覆盖率提高 35%
 
 ✅ **开发效率提升**
+
 - 新功能开发更快（模块独立）
 - 重构成本降低 40%
 - 代码复用率提高
 
 ✅ **团队协作改善**
+
 - 统一的业务语言
 - 清晰的模块边界
 - 并行开发不冲突
@@ -590,16 +543,19 @@ export class GoalIpcAdapter implements IGoalApiClient {
 ### 负面影响
 
 ⚠️ **学习成本**
+
 - 团队需要学习 DDD 概念
 - 初期开发速度较慢
 - 需要更多的前期设计
 
 ⚠️ **代码量增加**
+
 - 更多的抽象层
 - 更多的接口定义
 - 约 20% 的代码增量
 
 ⚠️ **过度设计风险**
+
 - 简单 CRUD 可能过度设计
 - 需要权衡复杂度
 
@@ -629,21 +585,21 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
 ### 主流 DDD 项目参考
 
-| 项目 | Stars | 特点 |
-|------|-------|------|
-| [domain-driven-hexagon](https://github.com/Sairyss/domain-driven-hexagon) | 14k+ | NestJS + 六边形架构，完整 CQRS |
-| [ddd-forum](https://github.com/stemmlerjs/ddd-forum) | 2k+ | TypeScript + Clean Architecture |
-| [IDDD_Samples](https://github.com/VaughnVernon/IDDD_Samples) | 4k+ | Java 参考实现，Event Sourcing |
+| 项目                                                                      | Stars | 特点                            |
+| ------------------------------------------------------------------------- | ----- | ------------------------------- |
+| [domain-driven-hexagon](https://github.com/Sairyss/domain-driven-hexagon) | 14k+  | NestJS + 六边形架构，完整 CQRS  |
+| [ddd-forum](https://github.com/stemmlerjs/ddd-forum)                      | 2k+   | TypeScript + Clean Architecture |
+| [IDDD_Samples](https://github.com/VaughnVernon/IDDD_Samples)              | 4k+   | Java 参考实现，Event Sourcing   |
 
 ### DailyUse 的架构选择
 
-| 方面 | 主流方案 | DailyUse 选择 | 理由 |
-|------|---------|---------------|------|
-| **DI 框架** | TSyringe/InversifyJS | 自定义 DIContainer | 轻量、无装饰器依赖 |
-| **CQRS** | 完全分离 Commands/Queries | 暂未分离 | 复杂度权衡，后续可演进 |
-| **Domain Events** | 完整实现 | 基础实现 | 按需引入 |
-| **Ports 位置** | Application 层 | Infrastructure 层 | 简化依赖关系 |
-| **Client/Server 分离** | 通常不分 | 分离 (domain-client/domain-server) | 支持多端共享 |
+| 方面                   | 主流方案                  | DailyUse 选择                      | 理由                   |
+| ---------------------- | ------------------------- | ---------------------------------- | ---------------------- |
+| **DI 框架**            | TSyringe/InversifyJS      | 自定义 DIContainer                 | 轻量、无装饰器依赖     |
+| **CQRS**               | 完全分离 Commands/Queries | 暂未分离                           | 复杂度权衡，后续可演进 |
+| **Domain Events**      | 完整实现                  | 基础实现                           | 按需引入               |
+| **Ports 位置**         | Application 层            | Infrastructure 层                  | 简化依赖关系           |
+| **Client/Server 分离** | 通常不分                  | 分离 (domain-client/domain-server) | 支持多端共享           |
 
 ### Vertical Slicing vs Horizontal Layering
 
@@ -692,11 +648,15 @@ packages/
 ```typescript
 // 当前：Use Case 同时处理读写
 export class GetGoal {
-  async execute(uuid: string): Promise<Goal> { /* ... */ }
+  async execute(uuid: string): Promise<Goal> {
+    /* ... */
+  }
 }
 
 export class CreateGoal {
-  async execute(input: CreateGoalRequest): Promise<Goal> { /* ... */ }
+  async execute(input: CreateGoalRequest): Promise<Goal> {
+    /* ... */
+  }
 }
 
 // 未来：Commands 和 Queries 分离

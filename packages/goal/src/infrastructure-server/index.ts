@@ -35,9 +35,3 @@ export {
   type GoalRuntimeContributionsInput,
 } from './goal.module';
 export { createGoalPowerSyncModule } from './powersync';
-
-// ============ Backward Compatibility (deprecated) ============
-/** @deprecated Use createGoalModule(deps) instead. 请使用 createGoalModule(deps) 代替。 */
-export { GoalModule, type GoalModuleRepositories } from './goal.module';
-/** @deprecated Use createGoalModule(deps) instead — no singleton container needed. 请使用 createGoalModule(deps) 代替 — 不再需要单例容器。 */
-export { GoalContainer } from './di/goal-container';

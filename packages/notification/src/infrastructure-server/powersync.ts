@@ -38,6 +38,7 @@ export function createNotificationPowerSyncModule(
   runtimeContributions?: NotificationRuntimeContributionsInput,
 ): NotificationModuleInstance {
   return createNotificationModule({
+    db,
     notificationRepository: new PowerSyncNotificationRepository(db),
     preferenceRepository: new PowerSyncNotificationPreferenceRepository(db),
     templateRepository: new PowerSyncNotificationTemplateRepository(db),

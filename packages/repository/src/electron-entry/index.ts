@@ -22,6 +22,7 @@ import { createRepositoryPowerSyncModule } from '../infrastructure-server/powers
 import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storage.adapter';
 import type { RepositoryModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
+import type { SearchResponse } from '@dailyuse/contracts/repository';
 
 const logger = createLogger('RepositoryElectron');
 
@@ -187,6 +188,12 @@ export const RepositoryElectronModule: IElectronModule = {
       return result.ok ? result.data : null;
     });
     ipcMain.handle(Ch.RESOURCE_UPDATE, async (_, dto) => {
+      // Resource move takes priority — delegate to moveResource if targetFolderId is present.
+      // 资源移动优先 — 若存在 targetFolderId，委托给 moveResource。
+      if (dto.targetFolderId !== undefined) {
+        const result = await api.moveResource(dto.id, dto.targetFolderId);
+        return result.ok ? result.data : null;
+      }
       const result = await api.updateResource(dto.id, {
         name: dto.name,
         metadata: dto.metadata,
@@ -245,7 +252,28 @@ export const RepositoryElectronModule: IElectronModule = {
 
     // Folder CRUD / 文件夹增删改查
     ipcMain.handle(Ch.FOLDER_LIST, async (_, params) => {
-      const repositoryId = params?.repositoryId ?? params;
+      if (params && typeof params === 'object' && 'folderId' in params) {
+        const folderId = String((params as { folderId: unknown }).folderId);
+        const folder = await repositoryModule.folderRepository.findById(folderId);
+        if (!folder) {
+          return { folders: [], resources: [] };
+        }
+
+        const [folders, resources] = await Promise.all([
+          repositoryModule.folderRepository.findByParentId(folderId),
+          repositoryModule.resourceRepository.findByFolderId(folderId),
+        ]);
+
+        return {
+          folders: folders.map((item) => item.toClientDTO()),
+          resources: resources.map((item) => item.toClientDTO()),
+        };
+      }
+
+      const repositoryId =
+        params && typeof params === 'object' && 'repositoryId' in params
+          ? String((params as { repositoryId: unknown }).repositoryId)
+          : String(params);
       const result = await api.getFolderTree(repositoryId);
       return result.ok ? result.data : [];
     });
@@ -282,7 +310,76 @@ export const RepositoryElectronModule: IElectronModule = {
     });
 
     // Search / 搜索
-    ipcMain.handle(Ch.SEARCH, async () => []);
+    ipcMain.handle(Ch.SEARCH, async (_, request) => {
+      const startedAt = Date.now();
+      const query = typeof request?.query === 'string' ? request.query.trim() : '';
+      const repositoryId = typeof request?.repositoryId === 'string' ? request.repositoryId : '';
+
+      if (!query || !repositoryId) {
+        const empty: SearchResponse = {
+          results: [],
+          totalResults: 0,
+          totalMatches: 0,
+          searchTime: Date.now() - startedAt,
+          query,
+          mode: request?.mode ?? 'all',
+        };
+        return empty;
+      }
+
+      const resources = await repositoryModule.resourceRepository.findByRepositoryId(repositoryId);
+      const normalizedQuery = request?.caseSensitive ? query : query.toLowerCase();
+      const results = resources
+        .map((resource) => {
+          const dto = resource.toClientDTO();
+          const haystacks = [dto.name, dto.path, dto.content ?? ''];
+          const matches = haystacks.flatMap((value, index) => {
+            const source = request?.caseSensitive ? value : value.toLowerCase();
+            const matchIndex = source.indexOf(normalizedQuery);
+            if (matchIndex < 0) return [];
+
+            return [
+              {
+                lineNumber: index + 1,
+                lineContent: value,
+                startIndex: matchIndex,
+                endIndex: matchIndex + query.length,
+              },
+            ];
+          });
+
+          if (matches.length === 0) {
+            return null;
+          }
+
+          return {
+            resourceId: dto.id,
+            resourceName: dto.name,
+            resourcePath: dto.path,
+            resourceType: dto.type,
+            matchType: (dto.name.toLowerCase().includes(normalizedQuery.toLowerCase())
+              ? 'filename'
+              : 'content') as SearchResponse['results'][number]['matchType'],
+            matches,
+            matchCount: matches.length,
+            createdAt: new Date(dto.createdAt).toISOString(),
+            updatedAt: new Date(dto.updatedAt).toISOString(),
+            size: dto.size,
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      const response: SearchResponse = {
+        results,
+        totalResults: results.length,
+        totalMatches: results.reduce((sum, item) => sum + item.matchCount, 0),
+        searchTime: Date.now() - startedAt,
+        query,
+        mode: request?.mode ?? 'all',
+      };
+
+      return response;
+    });
 
     logger.info('Repository module registered');
   },

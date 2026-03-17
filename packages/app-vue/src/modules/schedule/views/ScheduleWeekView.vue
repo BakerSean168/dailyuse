@@ -53,7 +53,12 @@ import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import { useSchedule } from '../composables/useSchedule';
 
 const { t } = useI18n();
-const { tasks: schedules, isLoading, fetchTasks, createTask } = useSchedule();
+const {
+  calendarEntries: schedules,
+  isLoading,
+  fetchCalendarEntries,
+  createCalendarEntry,
+} = useSchedule();
 
 const showCreateDialog = ref(false);
 
@@ -63,11 +68,11 @@ function handleEventClick(event: any) {
 }
 
 function handleWeekChange(_start: Date, _end: Date) {
-  fetchTasks();
+  fetchCalendarEntries(_start.getTime(), _end.getTime());
 }
 
 async function handleCreate(data: Record<string, unknown>) {
-  const result = await createTask(data);
+  const result = await createCalendarEntry(data as any);
   if (result) {
     showCreateDialog.value = false;
     toast.success(t('schedule.toast.scheduleCreated'));
@@ -75,6 +80,15 @@ async function handleCreate(data: Record<string, unknown>) {
 }
 
 onMounted(async () => {
-  await fetchTasks();
+  const now = new Date();
+  const weekStart = new Date(now);
+  const day = weekStart.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  weekStart.setDate(weekStart.getDate() + diff);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  await fetchCalendarEntries(weekStart.getTime(), weekEnd.getTime());
 });
 </script>

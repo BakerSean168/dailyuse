@@ -8,7 +8,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm tsup",
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && pnpm tsup --clean=false",
         "cwd": "packages/authentication"
       },
       "dependsOn": ["^build", "database:build"]

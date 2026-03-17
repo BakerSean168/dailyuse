@@ -11,17 +11,6 @@ import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { getI18nGlobal } from '../../../plugins/i18n';
 import type { DashboardData } from '../types';
 
-// Re-export types from the canonical location for backwards compatibility
-export type {
-  DashboardStats,
-  ActivityItem,
-  TrendDay,
-  GoalProgressItem,
-  TaskBoardSummary,
-  ScheduleItem,
-  DashboardData,
-} from '../types';
-
 // ── Default empty state ──
 
 const emptyData: DashboardData = {

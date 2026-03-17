@@ -3,35 +3,22 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/editor/src",
   "projectType": "library",
-  "tags": [
-    "scope:editor",
-    "type:lib",
-    "layer:domain"
-  ],
+  "tags": ["scope:editor", "type:lib", "layer:domain"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
+      "outputs": ["{projectRoot}/dist"],
       "options": {
-        "command": "tsup",
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
         "cwd": "packages/editor"
       },
-      "dependsOn": [
-        "^build",
-        "database:build"
-      ]
+      "dependsOn": ["^build", "database:build"]
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": [
-        "{options.outputFile}"
-      ],
+      "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "packages/editor/**/*.{ts,js}"
-        ]
+        "lintFilePatterns": ["packages/editor/**/*.{ts,js}"]
       }
     },
     "typecheck": {

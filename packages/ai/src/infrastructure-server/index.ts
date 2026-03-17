@@ -14,7 +14,6 @@ export {
   createAIModule,
   createAIUseCases,
   createAIServices,
-  AIModule,
   type AIModuleDependencies,
   type AIModuleInstance,
   type AIModuleUseCases,
@@ -28,18 +27,7 @@ export {
 // PowerSync convenience factory
 // PowerSync 便捷工厂
 // ---------------------------------------------------------------------------
-export {
-  createAIPowerSyncModule,
-  AIPowerSyncModule,
-  type AIModulePowerSyncOptions,
-} from './powersync';
-
-// ---------------------------------------------------------------------------
-// DI — legacy container & factory
-// DI — 遗留容器和工厂
-// ---------------------------------------------------------------------------
-export { AIRepositoryFactory } from './di';
-export { AIContainer } from './di/ai-container';
+export { createAIPowerSyncModule, type AIModulePowerSyncOptions } from './powersync';
 
 // ---------------------------------------------------------------------------
 // Ports (Interfaces)

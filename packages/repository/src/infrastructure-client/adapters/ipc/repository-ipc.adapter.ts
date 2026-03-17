@@ -80,7 +80,7 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
       resources: ResourceClientDTO[];
     }>
   > {
-    return this.ipcClient.invoke(`${this.channel}:folder:list`, folderId);
+    return this.ipcClient.invoke(`${this.channel}:folder:list`, { folderId });
   }
 
   async renameFolder(id: string, name: string): Promise<Result<FolderClientDTO>> {
@@ -88,7 +88,7 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   }
 
   async moveFolder(id: string, targetParentId: string): Promise<Result<FolderClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:update`, { id, targetParentId });
+    return this.ipcClient.invoke(`${this.channel}:folder:update`, { id, parentId: targetParentId });
   }
 
   async deleteFolder(id: string): Promise<Result<void>> {
@@ -98,7 +98,7 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
   // ===== File Tree =====
 
   async getFileTree(repositoryId: string): Promise<Result<FileTreeResponse>> {
-    return this.ipcClient.invoke(`${this.channel}:folder:list`, repositoryId);
+    return this.ipcClient.invoke(`${this.channel}:folder:list`, { repositoryId });
   }
 
   // ===== Search =====

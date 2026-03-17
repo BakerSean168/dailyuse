@@ -24,17 +24,19 @@ import type {
 } from '../infrastructure-client/adapters/types';
 
 export class NotificationClientService {
-  constructor(
-    private readonly notificationApi: INotificationApiClient,
-  ) {}
+  constructor(private readonly notificationApi: INotificationApiClient) {}
 
   // ===== Notification Operations =====
 
-  async createNotification(request: CreateNotificationRequest): Promise<Result<NotificationClientDTO>> {
+  async createNotification(
+    request: CreateNotificationRequest,
+  ): Promise<Result<NotificationClientDTO>> {
     return this.notificationApi.createNotification(request);
   }
 
-  async findNotifications(query?: QueryNotificationsRequest): Promise<Result<NotificationListResponse>> {
+  async findNotifications(
+    query?: QueryNotificationsRequest,
+  ): Promise<Result<NotificationListResponse>> {
     return this.notificationApi.findNotifications(query);
   }
 
@@ -55,6 +57,10 @@ export class NotificationClientService {
   }
 
   async batchDeleteNotifications(ids: string[]): Promise<Result<CountResult>> {
+    return this.notificationApi.batchDeleteNotifications(ids);
+  }
+
+  async dismissAll(ids: string[]): Promise<Result<CountResult>> {
     return this.notificationApi.batchDeleteNotifications(ids);
   }
 

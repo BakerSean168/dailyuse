@@ -56,16 +56,28 @@ const Ch = {
   UPDATE: 'goal:update',
   DELETE: 'goal:delete',
   ARCHIVE: 'goal:archive',
-  RESTORE: 'goal:restore',
+  PAUSE: 'goal:pause',
   ACTIVATE: 'goal:activate',
   COMPLETE: 'goal:complete',
   SEARCH: 'goal:search',
   AGGREGATE: 'goal:aggregate',
   CLONE: 'goal:clone',
-  FOLDER_GET: 'goal:folder:get',
-  UPDATE_PROGRESS: 'goal:update-progress',
+  PROGRESS_BREAKDOWN: 'goal:progressBreakdown',
+  KEY_RESULT_ADD: 'goal:keyResult:add',
+  KEY_RESULT_LIST: 'goal:keyResult:list',
+  KEY_RESULT_UPDATE: 'goal:keyResult:update',
+  KEY_RESULT_DELETE: 'goal:keyResult:delete',
   KEY_RESULT_BATCH_UPDATE_WEIGHTS: 'goal:keyResult:batchUpdateWeights',
+  REVIEW_CREATE: 'goal:review:create',
+  REVIEW_LIST: 'goal:review:list',
+  REVIEW_UPDATE: 'goal:review:update',
+  REVIEW_DELETE: 'goal:review:delete',
+  RECORD_CREATE: 'goal:record:create',
+  RECORD_LIST_BY_KEY_RESULT: 'goal:record:listByKeyResult',
+  RECORD_LIST_BY_GOAL: 'goal:record:listByGoal',
+  RECORD_DELETE: 'goal:record:delete',
   FOLDER_LIST: 'goal:folder:list',
+  FOLDER_GET: 'goal:folder:get',
   FOLDER_CREATE: 'goal:folder:create',
   FOLDER_UPDATE: 'goal:folder:update',
   FOLDER_DELETE: 'goal:folder:delete',
@@ -117,8 +129,8 @@ export const GoalElectronModule: IElectronModule = {
     );
     // Issue #4 fix: route update through auth + controller validation
     // 问题 #4 修复：将更新操作路由到认证 + 控制器校验
-    ipcMain.handle(Ch.UPDATE, async (_, dto) =>
-      withAuthenticatedValue(ctx, async () => goalController.update(dto.id, dto)),
+    ipcMain.handle(Ch.UPDATE, async (_, id, dto) =>
+      withAuthenticatedValue(ctx, async () => goalController.update(id, dto)),
     );
     // Issue #4 fix: route delete through auth + controller validation
     // 问题 #4 修复：将删除操作路由到认证 + 控制器校验
@@ -130,36 +142,65 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.ARCHIVE, async (_, id) =>
       withAuthenticatedValue(ctx, async () => goalController.archive(id)),
     );
-    // Issue #4 fix: route restore/activate through auth + controller validation
-    // 问题 #4 修复：将恢复/激活操作路由到认证 + 控制器校验
-    ipcMain.handle(Ch.RESTORE, async (_, id) =>
+    ipcMain.handle(Ch.PAUSE, async (_, id) =>
+      withAuthenticatedValue(ctx, async () => goalController.archive(id)),
+    );
+    ipcMain.handle(Ch.ACTIVATE, async (_, id) =>
       withAuthenticatedValue(ctx, async () => goalController.activate(id)),
     );
-    ipcMain.handle(Ch.ACTIVATE, (_, id) => goalController.activate(id));
-    ipcMain.handle(Ch.COMPLETE, (_, id) => goalController.complete(id));
+    ipcMain.handle(Ch.COMPLETE, async (_, id) =>
+      withAuthenticatedValue(ctx, async () => goalController.complete(id)),
+    );
     ipcMain.handle(Ch.SEARCH, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
         goalController.search(String(params?.query ?? ''), requestContext),
       ),
     );
     ipcMain.handle(Ch.AGGREGATE, (_, id) => goalController.getAggregate(id));
+    ipcMain.handle(Ch.PROGRESS_BREAKDOWN, (_, id) => goalController.getProgressBreakdown(id));
     ipcMain.handle(Ch.CLONE, async (_event, goalId, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
         goalController.cloneGoal(goalId, params ?? {}, requestContext),
       ),
     );
-    // Issue #4 fix: route update-progress through auth + controller validation
-    // 问题 #4 修复：将更新进度操作路由到认证 + 控制器校验
-    ipcMain.handle(Ch.UPDATE_PROGRESS, async (_, dto) =>
+    ipcMain.handle(Ch.KEY_RESULT_ADD, async (_, goalId, dto) =>
+      withAuthenticatedValue(ctx, async () => goalController.addKeyResult(goalId, dto)),
+    );
+    ipcMain.handle(Ch.KEY_RESULT_LIST, (_, goalId) => goalController.getKeyResults(goalId));
+    ipcMain.handle(Ch.KEY_RESULT_UPDATE, async (_, goalId, keyResultId, dto) =>
       withAuthenticatedValue(ctx, async () =>
-        goalController.updateKeyResultProgress(dto.goalId, dto.keyResultId, {
-          newValue: dto.currentValue,
-          note: dto.note,
-        }),
+        goalController.updateKeyResult(goalId, keyResultId, dto),
       ),
+    );
+    ipcMain.handle(Ch.KEY_RESULT_DELETE, async (_, goalId, keyResultId) =>
+      withAuthenticatedValue(ctx, async () => goalController.deleteKeyResult(goalId, keyResultId)),
     );
     ipcMain.handle(Ch.KEY_RESULT_BATCH_UPDATE_WEIGHTS, (_, goalId, request) =>
       goalController.batchUpdateKeyResultWeights(goalId, request?.updates ?? []),
+    );
+    ipcMain.handle(Ch.REVIEW_CREATE, async (_, goalId, dto) =>
+      withAuthenticatedValue(ctx, async () => goalController.addReview(goalId, dto)),
+    );
+    ipcMain.handle(Ch.REVIEW_LIST, (_, goalId) => goalController.listReviews(goalId));
+    ipcMain.handle(Ch.REVIEW_UPDATE, async (_, goalId, reviewId, dto) =>
+      withAuthenticatedValue(ctx, async () => goalController.updateReview(goalId, reviewId, dto)),
+    );
+    ipcMain.handle(Ch.REVIEW_DELETE, async (_, goalId, reviewId) =>
+      withAuthenticatedValue(ctx, async () => goalController.deleteReview(goalId, reviewId)),
+    );
+    ipcMain.handle(Ch.RECORD_CREATE, async (_, goalId, keyResultId, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.createRecord(goalId, keyResultId, dto, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.RECORD_LIST_BY_KEY_RESULT, (_, goalId, keyResultId, params) =>
+      goalController.listRecordsByKeyResult(goalId, keyResultId, params ?? undefined),
+    );
+    ipcMain.handle(Ch.RECORD_LIST_BY_GOAL, (_, goalId, params) =>
+      goalController.listRecordsByGoal(goalId, params ?? undefined),
+    );
+    ipcMain.handle(Ch.RECORD_DELETE, async (_, _goalId, _keyResultId, recordId) =>
+      withAuthenticatedValue(ctx, async () => goalController.deleteRecord(recordId)),
     );
     ipcMain.handle(Ch.FOLDER_LIST, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>

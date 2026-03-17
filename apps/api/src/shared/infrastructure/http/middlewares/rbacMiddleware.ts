@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
-import { createResponseBuilder } from '@dailyuse/contracts/result';
+import { createHttpResponseBuilder } from '@dailyuse/contracts/result';
 
-const responseBuilder = createResponseBuilder();
+const responseBuilder = createHttpResponseBuilder();
 
 function normalizeRoles(input: unknown): string[] {
   if (!input) {
@@ -9,13 +9,13 @@ function normalizeRoles(input: unknown): string[] {
   }
 
   if (Array.isArray(input)) {
-    return input.map(value => String(value).trim()).filter(Boolean);
+    return input.map((value) => String(value).trim()).filter(Boolean);
   }
 
   if (typeof input === 'string') {
     return input
       .split(',')
-      .map(value => value.trim())
+      .map((value) => value.trim())
       .filter(Boolean);
   }
 
@@ -40,7 +40,7 @@ export function requireRole(allowedRoles: string[]) {
       return;
     }
 
-    const hasRole = roles.some(role => allowedRoles.includes(role));
+    const hasRole = roles.some((role) => allowedRoles.includes(role));
     if (!hasRole) {
       res.status(403).json(responseBuilder.forbidden('Insufficient role permissions'));
       return;

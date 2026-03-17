@@ -209,12 +209,12 @@ export class GoalClientService {
 
   async listGoals(params?: {
     page?: number;
-    limit?: number;
+    pageSize?: number;
     query?: string;
-    status?: string;
-    dirId?: string;
-    startDate?: string;
-    endDate?: string;
+    status?: string[];
+    folderId?: string;
+    startDate?: number;
+    endDate?: number;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.getGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({
@@ -261,9 +261,9 @@ export class GoalClientService {
   async searchGoals(params: {
     query: string;
     page?: number;
-    limit?: number;
-    status?: string;
-    dirId?: string;
+    pageSize?: number;
+    status?: string[];
+    folderId?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
     return mapResult(result, (data: QueryGoalsRes) => ({

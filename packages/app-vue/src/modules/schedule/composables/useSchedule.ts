@@ -9,10 +9,12 @@ import { useI18n } from 'vue-i18n';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { SCHEDULE_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type {
   ScheduleExecutionClientDTO,
   CreateScheduleTaskRequest,
   CalendarEntryClientDTO,
+  CreateScheduleRequest,
 } from '@dailyuse/contracts/schedule';
 import type { ScheduleTask } from '@dailyuse/schedule/domain-client';
 
@@ -76,7 +78,9 @@ export function useSchedule() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createTask(data as unknown as CreateScheduleTaskRequest);
+      const result = await service.createTask(
+        sanitizeForIpc(data) as unknown as CreateScheduleTaskRequest,
+      );
       if (result.ok) {
         const dto = result.data.toDTO();
         store.addTask(dto);
@@ -162,7 +166,7 @@ export function useSchedule() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.getSchedulesByTimeRange({ startTime, endTime });
+      const result = await service.getSchedulesByTimeRange(sanitizeForIpc({ startTime, endTime }));
       if (result.ok) {
         store.setCalendarEntries(result.data);
         return result.data;
@@ -175,17 +179,27 @@ export function useSchedule() {
   }
 
   async function createCalendarEntry(data: {
-    title: string;
+    name: string;
     startTime: number;
     endTime: number;
+    duration: number;
     description?: string;
+    priority?: number;
+    location?: string;
+    attendees?: string[];
+    autoDetectConflicts?: boolean;
   }) {
     store.setError(null);
     try {
-      const result = await service.createSchedule(data as any);
+      const request = sanitizeForIpc(data) as unknown as CreateScheduleRequest;
+      const result = data.autoDetectConflicts
+        ? await service.createScheduleWithConflictDetection(request)
+        : await service.createSchedule(request);
+
       if (result.ok) {
-        store.setCalendarEntries([...store.calendarEntries, result.data]);
-        return result.data;
+        const createdEntry = 'schedule' in result.data ? result.data.schedule : result.data;
+        store.setCalendarEntries([...store.calendarEntries, createdEntry]);
+        return createdEntry;
       }
       handleError(result.error.message || t('schedule.error.createCalendarEntryFailed'));
       return null;

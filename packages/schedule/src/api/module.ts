@@ -25,7 +25,10 @@ import {
 import { ScheduleEventController } from '../controllers/schedule-event.controller';
 import { registerScheduleRoutes } from './routes';
 import { registerScheduleEventRoutes } from './schedule-event.routes';
-import { createScheduleTransportHandlers } from './transport-handlers';
+import {
+  createScheduleEventTransportHandlers,
+  createScheduleTransportHandlers,
+} from './transport-handlers';
 import { createScheduleRuntimeContribution } from './runtime';
 
 /**
@@ -112,8 +115,7 @@ export const ScheduleApiModule: ScheduleApiModuleDef = {
     // 3b. Register schedule event routes (calendar entries)
     // 3b. 注册日程事件路由（日历条目）
     const eventController = new ScheduleEventController({
-      scheduleEventService: scheduleModule.useCases.scheduleEventService,
-      conflictDetectionService: scheduleModule.useCases.conflictDetectionService,
+      ...createScheduleEventTransportHandlers(scheduleModule.eventApi),
     });
     const eventRoutes = registerScheduleEventRoutes(
       eventController,

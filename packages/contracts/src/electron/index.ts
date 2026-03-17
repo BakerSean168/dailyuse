@@ -8,6 +8,7 @@
  */
 
 export type { IElectronAuthContext } from './auth-context';
+export * from './ipc-channels';
 export type {
   IElectronDatabase,
   IElectronDatabaseQueryResult,

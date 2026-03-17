@@ -241,7 +241,30 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
   }
 
   async countByCategory(_identityId: string): Promise<Record<NotificationCategory, number>> {
-    throw new Error('Not implemented - extract from apps/desktop');
+    const rows = await this.db.getAll<{ category: NotificationCategory; count: number }>(
+      `SELECT category, COUNT(*) as count
+         FROM notifications
+        WHERE identity_id = ?
+          AND deleted_at IS NULL
+        GROUP BY category`,
+      [_identityId],
+    );
+
+    const counts = {
+      Task: 0,
+      Goal: 0,
+      Schedule: 0,
+      Reminder: 0,
+      Account: 0,
+      System: 0,
+      Other: 0,
+    } as Record<NotificationCategory, number>;
+
+    for (const row of rows) {
+      counts[row.category] = Number(row.count ?? 0);
+    }
+
+    return counts;
   }
 
   async markManyAsRead(ids: string[]): Promise<void> {

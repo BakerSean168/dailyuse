@@ -6,6 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { AuthChannels } from '@dailyuse/contracts/electron';
 import type { IAuthApiClient, IResultIpcClient } from '../types';
 import type {
   LoginByEmailReq,
@@ -29,90 +30,71 @@ import type {
   RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
 
-const CHANNELS = {
-  LOGIN_EMAIL: 'auth:login',
-  LOGIN_PHONE: 'auth:login',
-  REGISTER_EMAIL: 'auth:register',
-  REGISTER_PHONE: 'auth:register',
-  SEND_SMS: 'auth:send-sms-code',
-  REFRESH_TOKEN: 'auth:refresh-token',
-  LOGOUT: 'auth:logout',
-  GET_CURRENT_USER: 'auth:get-current-user',
-  LIST_SESSIONS: 'auth:session:list',
-  REVOKE_SESSION: 'auth:session:revoke',
-  CHANGE_PASSWORD: 'auth:change-password',
-  FORGOT_PASSWORD: 'auth:forgot-password',
-  RESET_PASSWORD: 'auth:reset-password',
-  ENTER_GUEST_MODE: 'auth:enter-guest-mode',
-  REMEMBERED_ACCOUNTS_LIST: 'auth:remembered-accounts:list',
-  REMEMBERED_ACCOUNTS_REMOVE: 'auth:remembered-accounts:remove',
-} as const;
-
 export class AuthIpcAdapter implements IAuthApiClient {
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
   async loginByEmail(req: LoginByEmailReq): Promise<Result<LoginByEmailRes>> {
-    return this.ipcClient.invoke(CHANNELS.LOGIN_EMAIL, req);
+    return this.ipcClient.invoke(AuthChannels.LOGIN, req);
   }
 
   async loginByPhone(req: LoginByPhoneReq): Promise<Result<LoginByPhoneRes>> {
-    return this.ipcClient.invoke(CHANNELS.LOGIN_PHONE, req);
+    return this.ipcClient.invoke(AuthChannels.LOGIN, req);
   }
 
   async registerByEmail(req: RegisterByEmailReq): Promise<Result<RegisterByEmailRes>> {
-    return this.ipcClient.invoke(CHANNELS.REGISTER_EMAIL, req);
+    return this.ipcClient.invoke(AuthChannels.REGISTER, req);
   }
 
   async registerByPhone(req: RegisterByPhoneReq): Promise<Result<RegisterByPhoneRes>> {
-    return this.ipcClient.invoke(CHANNELS.REGISTER_PHONE, req);
+    return this.ipcClient.invoke(AuthChannels.REGISTER, req);
   }
 
   async sendSmsCode(req: SendSmsCodeReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.SEND_SMS, req);
+    return this.ipcClient.invoke(AuthChannels.SEND_SMS_CODE, req);
   }
 
   async refreshToken(req: RefreshTokenReq): Promise<Result<RefreshTokenRes>> {
-    return this.ipcClient.invoke(CHANNELS.REFRESH_TOKEN, req);
+    return this.ipcClient.invoke(AuthChannels.REFRESH_TOKEN, req);
   }
 
   async logout(): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.LOGOUT);
+    return this.ipcClient.invoke(AuthChannels.LOGOUT);
   }
 
   async getCurrentUser(): Promise<Result<GetCurrentUserRes>> {
-    return this.ipcClient.invoke(CHANNELS.GET_CURRENT_USER);
+    return this.ipcClient.invoke(AuthChannels.GET_CURRENT_USER);
   }
 
   async listSessions(): Promise<Result<ListSessionsRes>> {
-    return this.ipcClient.invoke(CHANNELS.LIST_SESSIONS);
+    return this.ipcClient.invoke(AuthChannels.SESSION_LIST);
   }
 
   async revokeSession(req: RevokeSessionReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.REVOKE_SESSION, req);
+    return this.ipcClient.invoke(AuthChannels.SESSION_REVOKE, req);
   }
 
   async changePassword(req: ChangePasswordReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.CHANGE_PASSWORD, req);
+    return this.ipcClient.invoke(AuthChannels.CHANGE_PASSWORD, req);
   }
 
   async forgotPassword(req: ForgotPasswordReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.FORGOT_PASSWORD, req);
+    return this.ipcClient.invoke(AuthChannels.FORGOT_PASSWORD, req);
   }
 
   async resetPassword(req: ResetPasswordReq): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.RESET_PASSWORD, req);
+    return this.ipcClient.invoke(AuthChannels.RESET_PASSWORD, req);
   }
 
   async enterGuestMode(): Promise<Result<GuestModeRes>> {
-    return this.ipcClient.invoke(CHANNELS.ENTER_GUEST_MODE);
+    return this.ipcClient.invoke(AuthChannels.ENTER_GUEST_MODE);
   }
 
   async listRememberedAccounts(): Promise<Result<RememberedDesktopAccountDTO[]>> {
-    return this.ipcClient.invoke(CHANNELS.REMEMBERED_ACCOUNTS_LIST);
+    return this.ipcClient.invoke(AuthChannels.REMEMBERED_ACCOUNTS_LIST);
   }
 
   async removeRememberedAccount(identityId: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(CHANNELS.REMEMBERED_ACCOUNTS_REMOVE, identityId);
+    return this.ipcClient.invoke(AuthChannels.REMEMBERED_ACCOUNTS_REMOVE, identityId);
   }
 }
 

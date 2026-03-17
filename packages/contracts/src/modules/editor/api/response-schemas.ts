@@ -33,3 +33,22 @@ export const DocumentResponseSchema = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
 });
+
+export const SearchResponseSchema = z.object({
+  results: z.array(
+    z.object({
+      documentId: brandedId<DocumentId>(),
+      documentPath: z.string(),
+      documentName: z.string(),
+      snippet: z.string(),
+      score: z.number(),
+      highlights: z.array(
+        z.object({
+          line: z.number().int().positive(),
+          text: z.string(),
+        }),
+      ),
+    }),
+  ),
+  total: z.number().int().min(0),
+});

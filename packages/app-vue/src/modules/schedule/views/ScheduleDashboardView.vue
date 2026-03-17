@@ -112,7 +112,7 @@ import type { CalendarEventItem } from '../composables/useCalendarView';
 
 const { t } = useI18n();
 const { events, isLoading, fetchForRange, windowStart, windowEnd } = useCalendarView();
-const { tasks: scheduleTasks, createTask } = useSchedule();
+const { tasks: scheduleTasks, createCalendarEntry } = useSchedule();
 const task = useTask();
 
 const showCreateDialog = ref(false);
@@ -192,9 +192,12 @@ function switchToDayView(date: Date | null) {
 }
 
 async function handleCreateSchedule(data: Record<string, unknown>) {
-  const result = await createTask(data);
+  const result = await createCalendarEntry(data as any);
   if (result) {
     showCreateDialog.value = false;
+    if (windowStart.value && windowEnd.value) {
+      await fetchForRange(windowStart.value, windowEnd.value);
+    }
     toast.success(t('schedule.toast.scheduleCreated'));
   }
 }

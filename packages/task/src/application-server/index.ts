@@ -2,12 +2,9 @@
  * Task Application Module (Server)
  *
  * 提供 Task 模块的所有 Application Services、Use Cases 和 Event Handlers
- * 
+ *
  * 类型定义请从 @dailyuse/contracts/task 导入
  */
-
-// ===== Container (from infrastructure-server) =====
-// export { TaskContainer } from '@/infrastructure-server';
 
 // ===== Use Cases (CQRS Commands and Queries) =====
 export * from './use-cases';

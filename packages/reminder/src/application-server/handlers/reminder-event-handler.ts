@@ -10,6 +10,7 @@
  */
 
 import { createLogger, eventBus } from '@dailyuse/utils';
+import type { IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
 import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
 import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
 import {
@@ -51,6 +52,7 @@ export interface ReminderEventHandlerDependencies {
   readonly sseManager: SSEManager;
   readonly reminderTemplateRepository: IReminderTemplateRepository;
   readonly reminderGroupRepository: IReminderGroupRepository;
+  readonly scheduleTaskRepository?: IScheduleTaskRepository;
 }
 
 export class ReminderEventHandler {
@@ -66,6 +68,7 @@ export class ReminderEventHandler {
       deps.sseManager,
       deps.reminderTemplateRepository,
       deps.reminderGroupRepository,
+      deps.scheduleTaskRepository,
     );
 
     const templateCreatedHandler = new ReminderTemplateCreatedHandler(support);

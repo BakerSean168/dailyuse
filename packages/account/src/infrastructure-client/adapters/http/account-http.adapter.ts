@@ -14,6 +14,8 @@ import type {
   CheckAvailabilityReq,
   CheckAvailabilityRes,
   CloseAccountReq,
+  UpdateAccountSettingsReq,
+  UpdateAccountSettingsRes,
 } from '@dailyuse/contracts/account';
 
 export class AccountHttpAdapter implements IAccountApiClient {
@@ -27,6 +29,12 @@ export class AccountHttpAdapter implements IAccountApiClient {
 
   async updateMyProfile(request: UpdateAccountReq): Promise<Result<AccountClientDTO>> {
     return this.httpClient.put(`${this.baseUrl}/me`, request);
+  }
+
+  async updateSettings(
+    request: UpdateAccountSettingsReq,
+  ): Promise<Result<UpdateAccountSettingsRes>> {
+    return this.httpClient.patch(`${this.baseUrl}/me/settings`, request);
   }
 
   async checkAvailability(request: CheckAvailabilityReq): Promise<Result<CheckAvailabilityRes>> {

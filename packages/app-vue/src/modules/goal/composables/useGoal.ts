@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import { useGoalStore } from '../stores/goalStore';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type {
   Goal,
   GoalFolder,
@@ -111,7 +112,7 @@ export function useGoal() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createGoal(req);
+      const result = await service.createGoal(sanitizeForIpc(req));
       if (result.ok) {
         const dto = result.data.toDTO();
         store.addGoal(dto);
@@ -129,7 +130,7 @@ export function useGoal() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.updateGoal(id, req);
+      const result = await service.updateGoal(id, sanitizeForIpc(req));
       if (result.ok) {
         const dto = result.data.toDTO();
         store.updateGoal(dto);
@@ -170,7 +171,7 @@ export function useGoal() {
   }
 
   async function createFolder(req: CreateGoalFolderReq) {
-    const result = await service.createGoalFolder(req);
+    const result = await service.createGoalFolder(sanitizeForIpc(req));
     if (result.ok) {
       const dto = result.data.toDTO();
       store.addGoalFolder(dto);
@@ -182,7 +183,7 @@ export function useGoal() {
   }
 
   async function updateFolder(id: string, req: UpdateGoalFolderReq) {
-    const result = await service.updateGoalFolder(id, req);
+    const result = await service.updateGoalFolder(id, sanitizeForIpc(req));
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateGoalFolder(dto);
@@ -214,7 +215,7 @@ export function useGoal() {
   }
 
   async function addKeyResult(goalId: string, req: AddKeyResultReq) {
-    const result = await service.createKeyResult(goalId, req);
+    const result = await service.createKeyResult(goalId, sanitizeForIpc(req));
     if (result.ok) {
       const dto = result.data.toDTO();
       store.addKeyResult(dto);
@@ -226,7 +227,7 @@ export function useGoal() {
   }
 
   async function updateKeyResult(goalId: string, krId: string, req: UpdateKeyResultReq) {
-    const result = await service.updateKeyResult(goalId, krId, req);
+    const result = await service.updateKeyResult(goalId, krId, sanitizeForIpc(req));
     if (result.ok) {
       const dto = result.data.toDTO();
       store.updateKeyResult(dto);
@@ -259,7 +260,7 @@ export function useGoal() {
 
   async function createRecord(goalId: string, req: CreateGoalRecordReq) {
     const { keyResultId, ...rest } = req;
-    const result = await service.createGoalRecord(goalId, keyResultId, rest);
+    const result = await service.createGoalRecord(goalId, keyResultId, sanitizeForIpc(rest));
     if (result.ok) {
       const dto = result.data.toDTO();
       store.addGoalRecord(dto);
@@ -316,7 +317,7 @@ export function useGoal() {
   }
 
   async function createReview(goalId: string, req: CreateGoalReviewReq) {
-    const result = await service.createGoalReview(goalId, req);
+    const result = await service.createGoalReview(goalId, sanitizeForIpc(req));
     if (result.ok) {
       const dto = result.data.toDTO();
       store.addGoalReview(dto);

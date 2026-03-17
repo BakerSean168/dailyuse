@@ -23,7 +23,6 @@
 - Three repository ports: `INotificationRepository`, `INotificationPreferenceRepository`, `INotificationTemplateRepository`
 - Five assembled use cases: `CreateNotification`, `MarkNotificationAsRead`, `GetUserNotifications`, `GetUnreadNotifications`, `GetNotificationPreference`
 - `NotificationContainer` still exported but marked `@deprecated`
-- Client-side singleton proxy (`notificationApplicationService`) still present — not yet cleaned up
 
 ## Correspondence With Governance
 
@@ -40,8 +39,7 @@
 ## Next Steps
 
 - Remove deprecated `NotificationContainer` and `NotificationRepositoryFactory` once all callers are updated
-- Clean up client-side singleton proxy (`notificationApplicationService` / `setNotificationApplicationService`)
 - Add `createNotificationClientService(adapter)` factory (similar to setting's `createSettingClientService`)
-- Some `NotificationApplicationPort` methods still return stub data — implement full domain service delegation
+- Continue pruning compatibility facades after downstream callers are migrated
 
 See `REFACTOR_PLAYBOOK.md` for the full migration checklist and pattern reference.

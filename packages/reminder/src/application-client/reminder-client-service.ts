@@ -21,72 +21,18 @@ import type {
   CreateReminderGroupReq,
   UpdateReminderGroupReq,
   GetUpcomingRemindersRes,
-  TemplateScheduleStatusRes,
 } from '@dailyuse/contracts/reminder';
-import type {
-  IReminderApiClient,
-  ReminderTemplatesResponse,
-  ReminderGroupsResponse,
-} from '../infrastructure-client/adapters/types';
-
-function normalizeTemplatesResponse(input: unknown): ReminderTemplatesResponse {
-  if (Array.isArray(input)) {
-    return {
-      templates: input as ReminderTemplateClientDTO[],
-      total: input.length,
-      page: 1,
-      pageSize: input.length,
-      hasMore: false,
-    };
-  }
-
-  const raw = (input ?? {}) as Partial<ReminderTemplatesResponse> & {
-    data?: ReminderTemplateClientDTO[];
-  };
-  const templates = raw.templates ?? raw.data ?? [];
-
-  return {
-    templates,
-    total: raw.total ?? templates.length,
-    page: raw.page ?? 1,
-    pageSize: raw.pageSize ?? templates.length,
-    hasMore: raw.hasMore ?? false,
-  };
-}
-
-function normalizeGroupsResponse(input: unknown): ReminderGroupsResponse {
-  if (Array.isArray(input)) {
-    return {
-      groups: input as ReminderGroupClientDTO[],
-      total: input.length,
-      page: 1,
-      pageSize: input.length,
-      hasMore: false,
-    };
-  }
-
-  const raw = (input ?? {}) as Partial<ReminderGroupsResponse> & {
-    data?: ReminderGroupClientDTO[];
-  };
-  const groups = raw.groups ?? raw.data ?? [];
-
-  return {
-    groups,
-    total: raw.total ?? groups.length,
-    page: raw.page ?? 1,
-    pageSize: raw.pageSize ?? groups.length,
-    hasMore: raw.hasMore ?? false,
-  };
-}
+import type { ControlMode } from '@dailyuse/contracts/reminder';
+import type { IReminderApiClient } from '../infrastructure-client/adapters/types';
 
 export class ReminderClientService {
-  constructor(
-    private readonly reminderApi: IReminderApiClient,
-  ) {}
+  constructor(private readonly reminderApi: IReminderApiClient) {}
 
   // ===== 模板 CRUD =====
 
-  async createReminderTemplate(request: CreateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>> {
+  async createReminderTemplate(
+    request: CreateReminderTemplateReq,
+  ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.reminderApi.createReminderTemplate(request);
   }
 
@@ -94,19 +40,18 @@ export class ReminderClientService {
     return this.reminderApi.getReminderTemplate(id);
   }
 
-  async getReminderTemplates(params?: { page?: number; limit?: number }): Promise<Result<ReminderTemplatesResponse>> {
-    const result = await this.reminderApi.getReminderTemplates(params);
-    if (!result.ok) {
-      return result;
-    }
-    return { ...result, data: normalizeTemplatesResponse(result.data as unknown) };
+  async getReminderTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.reminderApi.getReminderTemplates();
   }
 
-  async getUserTemplates(identityId: string): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.reminderApi.getUserTemplates(identityId);
+  async getUserTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+    return this.reminderApi.getUserTemplates();
   }
 
-  async updateReminderTemplate(id: string, request: UpdateReminderTemplateReq): Promise<Result<ReminderTemplateClientDTO>> {
+  async updateReminderTemplate(
+    id: string,
+    request: UpdateReminderTemplateReq,
+  ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.reminderApi.updateReminderTemplate(id, request);
   }
 
@@ -118,25 +63,27 @@ export class ReminderClientService {
     return this.reminderApi.toggleTemplateEnabled(id);
   }
 
-  async moveTemplateToGroup(templateId: string, targetGroupId: string | null): Promise<Result<ReminderTemplateClientDTO>> {
+  async moveTemplateToGroup(
+    templateId: string,
+    targetGroupId: string,
+  ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.reminderApi.moveTemplateToGroup(templateId, targetGroupId);
   }
 
-  async searchTemplates(identityId: string, query: string): Promise<Result<ReminderTemplateClientDTO[]>> {
-    return this.reminderApi.searchTemplates(identityId, query);
-  }
-
-  async getTemplateScheduleStatus(templateId: string): Promise<Result<TemplateScheduleStatusRes>> {
-    return this.reminderApi.getTemplateScheduleStatus(templateId);
-  }
-
-  async getUpcomingReminders(params?: { days?: number; limit?: number; importanceLevel?: string; type?: string }): Promise<Result<GetUpcomingRemindersRes>> {
+  async getUpcomingReminders(params?: {
+    days?: number;
+    limit?: number;
+    importanceLevel?: string;
+    type?: string;
+  }): Promise<Result<GetUpcomingRemindersRes>> {
     return this.reminderApi.getUpcomingReminders(params);
   }
 
   // ===== 分组 CRUD =====
 
-  async createReminderGroup(request: CreateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>> {
+  async createReminderGroup(
+    request: CreateReminderGroupReq,
+  ): Promise<Result<ReminderGroupClientDTO>> {
     return this.reminderApi.createReminderGroup(request);
   }
 
@@ -144,19 +91,18 @@ export class ReminderClientService {
     return this.reminderApi.getReminderGroup(id);
   }
 
-  async getReminderGroups(params?: { page?: number; limit?: number }): Promise<Result<ReminderGroupsResponse>> {
-    const result = await this.reminderApi.getReminderGroups(params);
-    if (!result.ok) {
-      return result;
-    }
-    return { ...result, data: normalizeGroupsResponse(result.data as unknown) };
+  async getReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+    return this.reminderApi.getReminderGroups();
   }
 
-  async getUserReminderGroups(identityId: string): Promise<Result<ReminderGroupClientDTO[]>> {
-    return this.reminderApi.getUserReminderGroups(identityId);
+  async getUserReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+    return this.reminderApi.getUserReminderGroups();
   }
 
-  async updateReminderGroup(id: string, request: UpdateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>> {
+  async updateReminderGroup(
+    id: string,
+    request: UpdateReminderGroupReq,
+  ): Promise<Result<ReminderGroupClientDTO>> {
     return this.reminderApi.updateReminderGroup(id, request);
   }
 
@@ -168,7 +114,10 @@ export class ReminderClientService {
     return this.reminderApi.toggleReminderGroupStatus(id);
   }
 
-  async toggleReminderGroupControlMode(id: string): Promise<Result<ReminderGroupClientDTO>> {
-    return this.reminderApi.toggleReminderGroupControlMode(id);
+  async switchReminderGroupControlMode(
+    id: string,
+    mode: ControlMode,
+  ): Promise<Result<ReminderGroupClientDTO>> {
+    return this.reminderApi.switchReminderGroupControlMode(id, mode);
   }
 }

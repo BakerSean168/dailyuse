@@ -37,7 +37,12 @@ import type { Result } from '@dailyuse/contracts/result';
 import { ok, fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
+  CreateScheduleRequest,
+  DetectConflictsRequest,
+  GetSchedulesByTimeRangeRequest,
+  ResolveConflictRequest,
   CreateScheduleTaskRequest,
+  UpdateScheduleRequest,
   UpdateScheduleTaskRequest,
 } from '@dailyuse/contracts/schedule';
 
@@ -113,6 +118,21 @@ export interface ScheduleApplicationPort {
   updateTaskMetadata(id: string, metadata: Record<string, unknown>): Promise<Result<unknown>>;
 }
 
+export interface ScheduleEventApplicationPort {
+  createEvent(data: CreateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
+  getEvent(id: string): Promise<Result<unknown>>;
+  listEvents(query: GetSchedulesByTimeRangeRequest, ctx: Context): Promise<Result<unknown>>;
+  updateEvent(id: string, data: UpdateScheduleRequest): Promise<Result<unknown>>;
+  deleteEvent(id: string): Promise<Result<unknown>>;
+  getConflicts(id: string): Promise<Result<unknown>>;
+  detectConflicts(data: DetectConflictsRequest): Promise<Result<unknown>>;
+  createEventWithConflictDetection(
+    data: CreateScheduleRequest,
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  resolveConflict(id: string, data: ResolveConflictRequest): Promise<Result<unknown>>;
+}
+
 /**
  * Primary schedule composition root return type.
  * 调度模块主组合根返回类型。
@@ -127,8 +147,60 @@ export interface ScheduleModuleInstance {
   readonly scheduleTaskRepository: IScheduleTaskRepository;
   readonly useCases: ScheduleModuleUseCases;
   readonly api: ScheduleApplicationPort;
+  readonly eventApi: ScheduleEventApplicationPort;
   start(): void;
   dispose(): void;
+}
+
+function toCreateSchedulePayload(data: CreateScheduleRequest, identityId: string) {
+  return {
+    identityId,
+    title: data.name,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    description: data.description,
+    location: data.location,
+    priority: data.priority,
+    attendees: data.attendees,
+  };
+}
+
+function toUpdateSchedulePayload(data: UpdateScheduleRequest) {
+  return {
+    title: data.name,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    description: data.description,
+    location: data.location,
+    priority: data.priority,
+    attendees: data.attendees,
+  };
+}
+
+function toDraftScheduleDto(
+  identityId: string,
+  data: Pick<
+    CreateScheduleRequest,
+    'name' | 'startTime' | 'endTime' | 'description' | 'location' | 'priority' | 'attendees'
+  >,
+  id = '',
+) {
+  const now = Date.now();
+  return {
+    id,
+    identityId,
+    title: data.name,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    duration: Math.max(Math.round((data.endTime - data.startTime) / 60000), 0),
+    hasConflict: false,
+    description: data.description ?? undefined,
+    location: data.location ?? undefined,
+    priority: data.priority ?? undefined,
+    attendees: data.attendees ?? undefined,
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 /**
@@ -283,12 +355,312 @@ export function createScheduleModule(
     },
   };
 
+  const eventApi: ScheduleEventApplicationPort = {
+    createEvent: async (data, ctx) => {
+      try {
+        const event = await useCases.scheduleEventService.createSchedule(
+          toCreateSchedulePayload(data, ctx.identityId),
+        );
+        return ok(event);
+      } catch (err: unknown) {
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    getEvent: async (id) => {
+      try {
+        const event = await useCases.scheduleEventService.getSchedule(id);
+        if (!event) {
+          return fail({ code: 'NOT_FOUND', message: '日程不存在' });
+        }
+        return ok(event);
+      } catch (err: unknown) {
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    listEvents: async (query, ctx) => {
+      try {
+        const identityId = query.identityId || ctx.identityId;
+        const events = await useCases.scheduleEventService.getSchedulesByRange(
+          identityId,
+          query.startTime,
+          query.endTime,
+        );
+        return ok(events);
+      } catch (err: unknown) {
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    updateEvent: async (id, data) => {
+      try {
+        const event = await useCases.scheduleEventService.updateSchedule(
+          id,
+          toUpdateSchedulePayload(data),
+        );
+        return ok(event);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.message.includes('not found')) {
+          return fail({ code: 'NOT_FOUND', message: err.message });
+        }
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    deleteEvent: async (id) => {
+      try {
+        await useCases.scheduleEventService.deleteSchedule(id);
+        return ok(null);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.message.includes('not found')) {
+          return fail({ code: 'NOT_FOUND', message: err.message });
+        }
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    getConflicts: async (id) => {
+      try {
+        const result = await useCases.conflictDetectionService.getScheduleConflicts(id);
+        return ok(result);
+      } catch (err: unknown) {
+        if (err instanceof Error && err.message.includes('not found')) {
+          return fail({ code: 'NOT_FOUND', message: err.message });
+        }
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    detectConflicts: async (data) => {
+      try {
+        const result = await useCases.conflictDetectionService.detectConflictsForSchedule({
+          id: data.excludeId ?? '',
+          identityId: data.userId,
+          title: '',
+          startTime: data.startTime,
+          endTime: data.endTime,
+          duration: Math.max(Math.round((data.endTime - data.startTime) / 60000), 0),
+          hasConflict: false,
+          description: undefined,
+          location: undefined,
+          priority: undefined,
+          attendees: undefined,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        } as any);
+        return ok(result);
+      } catch (err: unknown) {
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    createEventWithConflictDetection: async (data, ctx) => {
+      try {
+        const conflicts = await useCases.conflictDetectionService.detectConflictsForSchedule(
+          toDraftScheduleDto(ctx.identityId, data),
+        );
+        const event = await useCases.scheduleEventService.createSchedule(
+          toCreateSchedulePayload(data, ctx.identityId),
+        );
+        return ok({ event, conflicts });
+      } catch (err: unknown) {
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+    resolveConflict: async (id, data) => {
+      const { resolution, newStartTime, newEndTime, newDuration } = data;
+
+      try {
+        const currentEvent = await useCases.scheduleEventService.getSchedule(id);
+        if (!currentEvent) {
+          return fail({ code: 'NOT_FOUND', message: '日程不存在' });
+        }
+
+        switch (resolution) {
+          case 'REJECT': {
+            return fail({
+              code: 'CONFLICT_REJECTED',
+              message: 'Schedule conflict was rejected by the user',
+            });
+          }
+
+          case 'AUTO': {
+            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
+            if (!conflicts.hasConflict || conflicts.suggestions.length === 0) {
+              return ok({
+                schedule: currentEvent,
+                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
+              });
+            }
+
+            const suggestion = conflicts.suggestions[0];
+            const event = await useCases.scheduleEventService.updateSchedule(id, {
+              startTime: suggestion.newStartTime,
+              endTime: suggestion.newEndTime,
+            });
+            return ok({
+              schedule: event,
+              conflicts,
+              applied: {
+                strategy: resolution,
+                previousStartTime: currentEvent.startTime,
+                previousEndTime: currentEvent.endTime,
+                changes: [
+                  `Auto-resolved using ${suggestion.type}: moved to ${suggestion.newStartTime}-${suggestion.newEndTime}`,
+                ],
+              },
+            });
+          }
+
+          case 'ADJUST_START_TIME': {
+            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
+            if (!conflicts.hasConflict) {
+              return ok({
+                schedule: currentEvent,
+                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
+              });
+            }
+
+            const latestOverlapEnd = Math.max(...conflicts.conflicts.map((c) => c.overlapEnd));
+            const duration = currentEvent.endTime - currentEvent.startTime;
+            const adjustedStartTime = newStartTime ?? latestOverlapEnd;
+            const adjustedEndTime = adjustedStartTime + duration;
+            const event = await useCases.scheduleEventService.updateSchedule(id, {
+              startTime: adjustedStartTime,
+              endTime: adjustedEndTime,
+            });
+            return ok({
+              schedule: event,
+              conflicts,
+              applied: {
+                strategy: resolution,
+                previousStartTime: currentEvent.startTime,
+                previousEndTime: currentEvent.endTime,
+                changes: [
+                  `Adjusted start time from ${currentEvent.startTime} to ${adjustedStartTime}`,
+                ],
+              },
+            });
+          }
+
+          case 'ADJUST_END_TIME': {
+            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
+            if (!conflicts.hasConflict) {
+              return ok({
+                schedule: currentEvent,
+                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
+              });
+            }
+
+            const earliestOverlapStart = Math.min(
+              ...conflicts.conflicts.map((c) => c.overlapStart),
+            );
+            const adjustedEndTime = newEndTime ?? earliestOverlapStart;
+            if (adjustedEndTime <= currentEvent.startTime) {
+              return fail({
+                code: 'VALIDATION_ERROR',
+                message: 'Cannot adjust end time: would result in zero or negative duration',
+              });
+            }
+
+            const event = await useCases.scheduleEventService.updateSchedule(id, {
+              endTime: adjustedEndTime,
+            });
+            return ok({
+              schedule: event,
+              conflicts,
+              applied: {
+                strategy: resolution,
+                previousStartTime: currentEvent.startTime,
+                previousEndTime: currentEvent.endTime,
+                changes: [`Adjusted end time from ${currentEvent.endTime} to ${adjustedEndTime}`],
+              },
+            });
+          }
+
+          case 'ADJUST_DURATION': {
+            const conflicts = await useCases.conflictDetectionService.getScheduleConflicts(id);
+            if (!conflicts.hasConflict) {
+              return ok({
+                schedule: currentEvent,
+                applied: { strategy: resolution, changes: ['No conflicts to resolve'] },
+              });
+            }
+
+            const earliestOverlapStart = Math.min(
+              ...conflicts.conflicts.map((c) => c.overlapStart),
+            );
+            const adjustedEndTime = newDuration
+              ? currentEvent.startTime + newDuration * 60000
+              : earliestOverlapStart;
+            if (adjustedEndTime <= currentEvent.startTime) {
+              return fail({
+                code: 'VALIDATION_ERROR',
+                message: 'Cannot adjust duration: would result in zero or negative duration',
+              });
+            }
+
+            const event = await useCases.scheduleEventService.updateSchedule(id, {
+              endTime: adjustedEndTime,
+            });
+            return ok({
+              schedule: event,
+              conflicts,
+              applied: {
+                strategy: resolution,
+                previousStartTime: currentEvent.startTime,
+                previousEndTime: currentEvent.endTime,
+                changes: [
+                  `Adjusted duration: end time changed from ${currentEvent.endTime} to ${adjustedEndTime}`,
+                ],
+              },
+            });
+          }
+
+          default: {
+            return fail({
+              code: 'VALIDATION_ERROR',
+              message: `Unknown resolution strategy: ${resolution}`,
+            });
+          }
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error && err.message.includes('not found')) {
+          return fail({ code: 'NOT_FOUND', message: err.message });
+        }
+        return fail({
+          code: 'INTERNAL_ERROR',
+          message: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    },
+  };
+
   return {
     scheduleRepository,
     scheduleExecutionRepository,
     scheduleTaskRepository,
     useCases,
     api,
+    eventApi,
     start(): void {
       if (started) {
         return;

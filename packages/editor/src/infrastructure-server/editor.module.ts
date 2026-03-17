@@ -23,11 +23,13 @@ import type {
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
   DocumentMetadataServerDTO,
+  SearchRequest,
 } from '@dailyuse/contracts/editor';
 import { ok, type Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import { EditorWorkspace } from '../domain-server/aggregates/editor-workspace';
 import { Document } from '../domain-server/entities/document';
+import { SearchDocumentsUseCase } from '../application-server';
 
 // ---------------------------------------------------------------------------
 // Dependencies — 外部依赖接口
@@ -130,6 +132,7 @@ export interface EditorApplicationPort {
   getDocument(id: string): Promise<Result<unknown>>;
   updateDocument(id: string, data: UpdateDocumentReq): Promise<Result<unknown>>;
   deleteDocument(id: string): Promise<Result<unknown>>;
+  searchDocuments(request: SearchRequest, ctx: Context): Promise<Result<unknown>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +196,7 @@ function normalizeRuntimeContributions(
 export function createEditorModule(dependencies: EditorModuleDependencies): EditorModuleInstance {
   const { workspaceRepository, documentRepository } = dependencies;
   const runtimeContributions = normalizeRuntimeContributions(dependencies.runtimeContributions);
+  const searchDocuments = new SearchDocumentsUseCase(workspaceRepository, documentRepository);
   let started = false;
 
   // Build the transport-neutral application port.
@@ -293,6 +297,11 @@ export function createEditorModule(dependencies: EditorModuleDependencies): Edit
     deleteDocument: async (id) => {
       await documentRepository.delete(id);
       return ok(undefined);
+    },
+
+    searchDocuments: async (request, ctx) => {
+      const result = await searchDocuments.execute(ctx.identityId, request);
+      return ok(result);
     },
   };
 

@@ -34,7 +34,6 @@
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
 import type { Context } from '@dailyuse/contracts/shared';
-import { error as resultError } from '@dailyuse/contracts/result';
 import type { IRepositoryContentPort } from '../application-server';
 import { createEditorPowerSyncModule } from '../infrastructure-server/powersync';
 import type { EditorModuleInstance } from '../infrastructure-server';
@@ -47,20 +46,16 @@ const logger = createLogger('EditorElectron');
 // ---------------------------------------------------------------------------
 
 const Ch = {
-  /** Workspace operations exposed as "document" channels for legacy compat. */
-  /** 工作区操作以 "document" 通道名暴露，保持向后兼容。 */
-  DOCUMENT_LIST: 'editor:document:list',
-  DOCUMENT_GET: 'editor:document:get',
-  DOCUMENT_CREATE: 'editor:document:create',
-  DOCUMENT_UPDATE: 'editor:document:update',
-  DOCUMENT_DELETE: 'editor:document:delete',
-  DOCUMENT_SAVE: 'editor:document:save',
-  /** Raw content bridge — delegates to IRepositoryContentPort. */
-  /** 原始内容桥接 — 委托给 IRepositoryContentPort。 */
-  GET_CONTENT: 'editor:content:get',
-  SAVE_CONTENT: 'editor:content:save',
-  AUTO_SAVE: 'editor:content:auto-save',
-  SEARCH: 'editor:search',
+  DOCUMENT_LIST: 'editor:list-documents',
+  DOCUMENT_GET: 'editor:get-document',
+  DOCUMENT_CREATE: 'editor:create-document',
+  DOCUMENT_UPDATE: 'editor:update-document',
+  DOCUMENT_DELETE: 'editor:delete-document',
+  DOCUMENT_SAVE: 'editor:save-document',
+  GET_CONTENT: 'editor:get-content',
+  SAVE_CONTENT: 'editor:save-content',
+  AUTO_SAVE: 'editor:auto-save-content',
+  SEARCH: 'editor:search-documents',
 } as const;
 
 const channels = Object.values(Ch);
@@ -213,11 +208,10 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       });
 
       // -- Search channel -- 搜索通道 --
-      // @todo Implement full-text search once a search index adapter is available.
-      // @todo 在搜索索引适配器可用后实现全文搜索。
-      ipcMain.handle(Ch.SEARCH, (_event, _query: unknown) =>
-        resultError('NOT_IMPLEMENTED', 'Editor search is not yet implemented / 编辑器搜索尚未实现'),
-      );
+      ipcMain.handle(Ch.SEARCH, async (_event, query: unknown) => {
+        const requestContext = await ctx.auth.requireRequestContext();
+        return api.searchDocuments((query ?? {}) as any, requestContext);
+      });
 
       logger.info('Editor module registered — all IPC channels wired');
     },

@@ -640,15 +640,6 @@ export class AuthDesktopApplicationService {
   }
 
   /**
-   * @deprecated Use enterGuestMode() instead
-   */
-  async enterOfflineMode(): Promise<
-    IpcResult<{ identityId: string; mode: string; message: string }>
-  > {
-    return this.enterGuestMode();
-  }
-
-  /**
    * 登出
    * @returns IpcResult<void> - 统一的响应格式
    */

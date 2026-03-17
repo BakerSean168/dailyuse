@@ -3,14 +3,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import type {
-  IResultHttpClient,
-  ISettingApiClient,
-} from '../types';
-import type {
-  UserSettingClientDTO,
-  PreferenceCategory,
-} from '@dailyuse/contracts/setting';
+import type { IResultHttpClient, ISettingApiClient } from '../types';
+import type { UserSettingClientDTO, PreferenceCategory } from '@dailyuse/contracts/setting';
 
 export class SettingHttpAdapter implements ISettingApiClient {
   private readonly baseUrl = '/settings';
@@ -21,7 +15,10 @@ export class SettingHttpAdapter implements ISettingApiClient {
     return this.httpClient.get(this.baseUrl);
   }
 
-  async patchCategory(category: PreferenceCategory, patch: Record<string, unknown>): Promise<Result<UserSettingClientDTO>> {
+  async patchCategory(
+    category: PreferenceCategory,
+    patch: Record<string, unknown>,
+  ): Promise<Result<UserSettingClientDTO>> {
     return this.httpClient.patch(`${this.baseUrl}/${category}`, patch);
   }
 
@@ -33,7 +30,13 @@ export class SettingHttpAdapter implements ISettingApiClient {
     return this.httpClient.get(`${this.baseUrl}/export`);
   }
 
-  async importSettings(data: string): Promise<Result<UserSettingClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/import`, { data });
+  async importSettings(
+    data: string,
+    options?: { merge?: boolean },
+  ): Promise<Result<UserSettingClientDTO>> {
+    return this.httpClient.post(`${this.baseUrl}/import`, {
+      data,
+      ...(options ? { options } : {}),
+    });
   }
 }

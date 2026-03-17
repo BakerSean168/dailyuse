@@ -11,7 +11,7 @@
  * // ✅ 推荐：从子路径导入（极致 Tree-Shaking）
  * import { GoalServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
  * import { TaskTemplateServer, TaskType } from '@dailyuse/contracts/task';
- * import { ApiResponse, ResponseCode } from '@dailyuse/contracts/response';
+ * import { HttpResponse, ResultCode } from '@dailyuse/contracts/result';
  *
  * // ✅ 命名空间导入（避免命名冲突）
  * import * as GoalContracts from '@dailyuse/contracts/goal';
@@ -32,7 +32,7 @@
  * - @dailyuse/contracts/document   - 文档模块
  * - @dailyuse/contracts/ai         - AI模块
  * - @dailyuse/contracts/dashboard  - 仪表盘模块
- * - @dailyuse/contracts/response   - 响应系统（旧，保留兼容）
+ * - @dailyuse/contracts/response   - 响应系统（旧）
  * - @dailyuse/contracts/result     - Result Pattern (新，推荐)
  * - @dailyuse/contracts/shared     - 共享类型
  */
@@ -42,14 +42,6 @@
 // ============================================================
 export { brandedId } from './primitives';
 export type { IdentityId } from './primitives';
-
-// ============================================================
-// 响应系统（旧版已移除，请使用 @dailyuse/contracts/result）
-// ============================================================
-// NOTE: ./response 模块已被删除，相关类型现在通过
-// @dailyuse/contracts/result 的 Legacy compatibility 导出提供：
-// - ResponseCode, ResponseBuilder, createResponseBuilder
-// - ApiResponse, SuccessResponse, ErrorResponse
 
 // ============================================================
 // Result Pattern（Protocol Agnostic 统一结果类型，推荐）
@@ -92,10 +84,6 @@ export {
   ResultCodeToHttpStatus,
   isClientError,
   isServerError,
-  // Legacy compatibility
-  ResponseCode,
-  ResponseBuilder,
-  createResponseBuilder,
 } from './result';
 
 export type {
@@ -112,8 +100,4 @@ export type {
   IpcResult,
   HttpResponse,
   HttpResponseOptions,
-  // Legacy compatibility
-  ApiResponse,
-  SuccessResponse,
-  ErrorResponse,
 } from './result';

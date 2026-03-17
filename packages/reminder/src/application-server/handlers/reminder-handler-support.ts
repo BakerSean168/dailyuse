@@ -4,7 +4,8 @@ import type {
   ReminderGroupServerDTO,
 } from '@dailyuse/contracts/reminder';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleTaskFactory, ScheduleContainer } from '@dailyuse/schedule';
+import { ScheduleTaskFactory } from '@dailyuse/schedule';
+import type { IScheduleTaskRepository } from '@dailyuse/schedule/domain-server';
 import type { IReminderTemplateRepository } from '../../domain-server/repositories/IReminderTemplateRepository';
 import type { IReminderGroupRepository } from '../../domain-server/repositories/IReminderGroupRepository';
 import type {
@@ -33,6 +34,7 @@ export class ReminderHandlerSupport {
     private readonly sseManager: SSEManager,
     private readonly reminderTemplateRepository: IReminderTemplateRepository,
     private readonly reminderGroupRepository: IReminderGroupRepository,
+    private readonly scheduleTaskRepository?: IScheduleTaskRepository,
   ) {}
 
   async emitTemplateRefresh<TPayload>(
@@ -129,6 +131,11 @@ export class ReminderHandlerSupport {
     }
 
     try {
+      if (!this.scheduleTaskRepository) {
+        logger.warn('[ReminderHandlerSupport] ScheduleTaskRepository not configured');
+        return;
+      }
+
       const factory = new ScheduleTaskFactory();
       const scheduleTask = factory.createFromSourceEntity({
         identityId: event.identityId,
@@ -137,8 +144,7 @@ export class ReminderHandlerSupport {
         sourceEntity: reminder,
       });
 
-      const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-      await repository.save(scheduleTask);
+      await this.scheduleTaskRepository.save(scheduleTask);
 
       logger.info('[ReminderHandlerSupport] ScheduleTask created for reminder', {
         reminderId: reminder.id,
@@ -169,15 +175,22 @@ export class ReminderHandlerSupport {
   }
 
   async deleteScheduleTaskForReminder(reminderId: string): Promise<void> {
-    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-    const tasks = await repository.findBySourceEntity(SourceModule.Reminder, reminderId);
+    if (!this.scheduleTaskRepository) {
+      logger.warn('[ReminderHandlerSupport] ScheduleTaskRepository not configured', { reminderId });
+      return;
+    }
+
+    const tasks = await this.scheduleTaskRepository.findBySourceEntity(
+      SourceModule.Reminder,
+      reminderId,
+    );
     if (tasks.length === 0) {
       logger.warn('[ReminderHandlerSupport] No ScheduleTask found for delete', { reminderId });
       return;
     }
 
     for (const task of tasks) {
-      await repository.deleteById(task.id);
+      await this.scheduleTaskRepository.deleteById(task.id);
     }
 
     logger.info('[ReminderHandlerSupport] ScheduleTask deleted for reminder', {
@@ -190,8 +203,18 @@ export class ReminderHandlerSupport {
     reminderId: string,
     action: 'enable' | 'pause',
   ): Promise<void> {
-    const repository = ScheduleContainer.getInstance().getScheduleTaskRepository();
-    const tasks = await repository.findBySourceEntity(SourceModule.Reminder, reminderId);
+    if (!this.scheduleTaskRepository) {
+      logger.warn('[ReminderHandlerSupport] ScheduleTaskRepository not configured', {
+        reminderId,
+        action,
+      });
+      return;
+    }
+
+    const tasks = await this.scheduleTaskRepository.findBySourceEntity(
+      SourceModule.Reminder,
+      reminderId,
+    );
 
     if (tasks.length === 0) {
       logger.warn('[ReminderHandlerSupport] No ScheduleTask found for state update', {
@@ -207,7 +230,7 @@ export class ReminderHandlerSupport {
       } else {
         task.disable();
       }
-      await repository.save(task);
+      await this.scheduleTaskRepository.save(task);
     }
 
     logger.info('[ReminderHandlerSupport] ScheduleTask state updated', {

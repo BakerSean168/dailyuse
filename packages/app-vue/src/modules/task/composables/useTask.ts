@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n';
 import { useTaskStore } from '../stores/taskStore';
 import { TASK_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
+import { sanitizeForIpc } from '../../../shared/utils/ipc';
 import type { CreateTaskTemplateReq, UpdateTaskTemplateReq } from '@dailyuse/contracts/task';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/task/domain-client';
 
@@ -46,11 +47,13 @@ export function useTask() {
     store.setLoading(true);
     store.setError(null);
     try {
-      const result = await service.listTemplates({
-        ...query,
-        page: store.pagination.page,
-        limit: store.pagination.pageSize,
-      });
+      const result = await service.listTemplates(
+        sanitizeForIpc({
+          ...query,
+          page: store.pagination.page,
+          limit: store.pagination.pageSize,
+        }),
+      );
       if (result.ok) {
         store.setTemplates(
           (result.data.templates ?? []).map((t: TaskTemplate) => t.toDTO()),
@@ -85,7 +88,7 @@ export function useTask() {
     savingId.value = 'new';
     store.setError(null);
     try {
-      const result = await service.createTemplate(req);
+      const result = await service.createTemplate(sanitizeForIpc(req));
       if (result.ok) {
         const dto = result.data.toDTO();
         store.addTemplate(dto);
@@ -103,7 +106,7 @@ export function useTask() {
     savingId.value = id;
     store.setError(null);
     try {
-      const result = await service.updateTemplate(id, req);
+      const result = await service.updateTemplate(id, sanitizeForIpc(req));
       if (result.ok) {
         const dto = result.data.toDTO();
         store.updateTemplate(dto);
@@ -176,7 +179,7 @@ export function useTask() {
     store.setError(null);
     try {
       const result = await service.listInstances(
-        query as Parameters<typeof service.listInstances>[0],
+        sanitizeForIpc(query) as Parameters<typeof service.listInstances>[0],
       );
       if (result.ok) {
         store.setInstances((result.data ?? []).map((i: TaskInstance) => i.toDTO()));

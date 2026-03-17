@@ -33,15 +33,10 @@ export interface TaskIpcAdapters {
  * // apps/desktop/src/renderer/modules/task/infrastructure/ipc/index.ts
  * const ipcClient = createIpcClient();
  * const adapters = createTaskIpcAdapters(ipcClient);
- * TaskContainer.getInstance()
- *   .registerTemplateApiClient(adapters.template)
- *   .registerInstanceApiClient(adapters.instance)
- *   .registerDependencyApiClient(adapters.dependency)
+ * // register adapters in the app composition root
  * ```
  */
-export function createTaskIpcAdapters(
-  ipcClient: IResultIpcClient,
-): TaskIpcAdapters {
+export function createTaskIpcAdapters(ipcClient: IResultIpcClient): TaskIpcAdapters {
   return {
     template: new TaskTemplateIpcAdapter(ipcClient),
     instance: new TaskInstanceIpcAdapter(ipcClient),

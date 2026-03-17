@@ -6,6 +6,8 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
+import { AIChannels } from '@dailyuse/contracts/electron';
 import type { IGoalApiClient, IResultIpcClient } from '../types';
 import type {
   GoalClientDTO,
@@ -40,12 +42,12 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   async getGoals(params?: {
     page?: number;
-    limit?: number;
+    pageSize?: number;
     query?: string;
-    status?: string;
-    dirId?: string;
-    startDate?: string;
-    endDate?: string;
+    status?: string[];
+    folderId?: string;
+    startDate?: number;
+    endDate?: number;
     includeChildren?: boolean;
   }): Promise<Result<QueryGoalsRes>> {
     return this.ipcClient.invoke(`${this.channel}:list`, params);
@@ -69,8 +71,8 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(`${this.channel}:activate`, id);
   }
 
-  async pauseGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:pause`, id);
+  async pauseGoal(_id: string): Promise<Result<GoalClientDTO>> {
+    return this.ipcClient.invoke(`${this.channel}:pause`, _id);
   }
 
   async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
@@ -86,9 +88,9 @@ export class GoalIpcAdapter implements IGoalApiClient {
   async searchGoals(params: {
     query: string;
     page?: number;
-    limit?: number;
-    status?: string;
-    dirId?: string;
+    pageSize?: number;
+    status?: string[];
+    folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.ipcClient.invoke(`${this.channel}:search`, params);
   }
@@ -198,10 +200,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(`${this.channel}:aggregate`, goalId);
   }
 
-  async cloneGoal(
-    goalId: string,
-    request: CloneGoalReq,
-  ): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(goalId: string, request: CloneGoalReq): Promise<Result<GoalClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:clone`, goalId, request);
   }
 
@@ -225,6 +224,34 @@ export class GoalIpcAdapter implements IGoalApiClient {
       generatedAt: number;
     }>
   > {
-    return this.ipcClient.invoke('ai:generateKeyResults', request);
+    const result = await this.ipcClient.invoke<{
+      goal: { title: string; description?: string };
+      keyResults?: Array<{
+        title: string;
+        description?: string;
+        targetValue?: number;
+        unit?: string;
+      }>;
+      tokenUsage: unknown;
+      generatedAt: number;
+    }>(AIChannels.GOAL_GENERATE, {
+      idea: [request.goalTitle, request.goalDescription, request.goalContext]
+        .filter(Boolean)
+        .join('\n\n'),
+      includeKeyResults: true,
+    });
+
+    if (!result.ok) {
+      return fail(result.error);
+    }
+
+    return {
+      ok: true,
+      data: {
+        keyResults: result.data.keyResults ?? [],
+        tokenUsage: result.data.tokenUsage,
+        generatedAt: result.data.generatedAt,
+      },
+    };
   }
 }

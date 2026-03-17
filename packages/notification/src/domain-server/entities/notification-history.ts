@@ -5,10 +5,13 @@
 
 import { Entity } from '@dailyuse/utils';
 import { NotificationHistoryId } from '../../domain-shared/value-objects/notification-history-id';
-import type { NotificationId, NotificationHistoryId as INotificationHistoryId } from '@dailyuse/contracts/primitives';
+import type {
+  NotificationId,
+  NotificationHistoryId as INotificationHistoryId,
+} from '@dailyuse/contracts/primitives';
 
 // ============ 本地类型定义 ============
-// TODO: 这些类型应该移到 @dailyuse/contracts/notification
+// Kept local for now because these history DTOs are not yet shared across transports.
 
 /**
  * NotificationHistory Server DTO

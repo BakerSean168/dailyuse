@@ -11,7 +11,9 @@
  */
 
 import type { ScheduleUseCases } from '../controllers/schedule.controller';
+import type { ScheduleEventUseCases } from '../controllers/schedule-event.controller';
 import type { ScheduleApplicationPort } from '../infrastructure-server';
+import type { ScheduleEventApplicationPort } from '../infrastructure-server';
 
 /**
  * Creates transport handlers from the application port.
@@ -22,5 +24,11 @@ import type { ScheduleApplicationPort } from '../infrastructure-server';
  * ScheduleApplicationPort 和 ScheduleUseCases 形状一致，直接透传即可。
  */
 export function createScheduleTransportHandlers(api: ScheduleApplicationPort): ScheduleUseCases {
+  return api;
+}
+
+export function createScheduleEventTransportHandlers(
+  api: ScheduleEventApplicationPort,
+): ScheduleEventUseCases {
   return api;
 }

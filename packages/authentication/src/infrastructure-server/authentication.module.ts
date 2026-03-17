@@ -44,6 +44,8 @@ import type {
 } from '@dailyuse/contracts/authentication';
 import {
   ChangePassword,
+  ForgotPassword,
+  ResetPassword,
   GetCurrentUser,
   Login,
   ListSessions,
@@ -51,9 +53,13 @@ import {
   Register,
   RefreshToken,
   RevokeSession,
+  InvalidResetCodeError,
 } from '../application-server';
 import { UserAlreadyExistsError } from '../domain-server/services/registration';
 import { UserNotFoundError, InvalidPasswordError } from '../domain-server/services/login';
+import { UserNotFoundError as ResetPasswordUserNotFoundError } from '../application-server/use-cases/commands/reset-password';
+import { InMemoryPasswordResetCodeStore } from './services/in-memory-password-reset-code-store';
+import { ConsoleEmailSender } from './services/console-email-sender';
 
 // ---------------------------------------------------------------------------
 // Dependencies — 依赖接口
@@ -116,6 +122,8 @@ export interface AuthenticationModuleUseCases {
   readonly listSessions: ListSessions;
   readonly revokeSession: RevokeSession;
   readonly changePassword: ChangePassword;
+  readonly forgotPassword: ForgotPassword;
+  readonly resetPassword: ResetPassword;
 }
 
 // ---------------------------------------------------------------------------
@@ -179,6 +187,9 @@ export function createAuthenticationUseCases(
 ): AuthenticationModuleUseCases {
   const { identityRepository, sessionRepository, passwordHasher, tokenProvider } = dependencies;
 
+  const codeStore = new InMemoryPasswordResetCodeStore();
+  const emailSender = new ConsoleEmailSender();
+
   return {
     login: new Login(identityRepository, sessionRepository, passwordHasher, tokenProvider),
     logout: new Logout(sessionRepository),
@@ -188,6 +199,13 @@ export function createAuthenticationUseCases(
     listSessions: new ListSessions(sessionRepository),
     revokeSession: new RevokeSession(sessionRepository),
     changePassword: new ChangePassword(identityRepository, sessionRepository, passwordHasher),
+    forgotPassword: new ForgotPassword(identityRepository, codeStore, emailSender),
+    resetPassword: new ResetPassword(
+      identityRepository,
+      sessionRepository,
+      codeStore,
+      passwordHasher,
+    ),
   };
 }
 
@@ -303,17 +321,29 @@ export function createAuthenticationModule(
       return ok(undefined as void);
     },
 
-    forgotPassword: async (_data) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Forgot password is not implemented on the server yet',
-      }),
+    forgotPassword: async (data) => {
+      try {
+        await useCases.forgotPassword.execute(data);
+        return ok(undefined as void);
+      } catch (error) {
+        return fail({ code: 'INTERNAL_ERROR', message: String(error) });
+      }
+    },
 
-    resetPassword: async (_data) =>
-      fail({
-        code: 'SERVICE_UNAVAILABLE',
-        message: 'Password reset is not implemented on the server yet',
-      }),
+    resetPassword: async (data) => {
+      try {
+        await useCases.resetPassword.execute(data);
+        return ok(undefined as void);
+      } catch (error) {
+        if (error instanceof InvalidResetCodeError) {
+          return fail({ code: 'VALIDATION_ERROR', message: error.message });
+        }
+        if (error instanceof ResetPasswordUserNotFoundError) {
+          return fail({ code: 'NOT_FOUND', message: error.message });
+        }
+        return fail({ code: 'INTERNAL_ERROR', message: String(error) });
+      }
+    },
   };
 
   return {
@@ -344,37 +374,4 @@ export function createAuthenticationModule(
       started = false;
     },
   };
-}
-
-// ---------------------------------------------------------------------------
-// Legacy class facade — 旧类门面（向后兼容）
-// ---------------------------------------------------------------------------
-
-/**
- * @deprecated Use `createAuthenticationModule()` factory function instead.
- * 已废弃：请使用 `createAuthenticationModule()` 工厂函数代替。
- *
- * Kept for backward compatibility during migration. Will be removed in a future release.
- */
-export class AuthenticationModule {
-  public readonly login: Login;
-  public readonly logout: Logout;
-  public readonly register: Register;
-  public readonly refreshToken: RefreshToken;
-  public readonly getCurrentUser: GetCurrentUser;
-  public readonly listSessions: ListSessions;
-  public readonly revokeSession: RevokeSession;
-  public readonly changePassword: ChangePassword;
-
-  constructor(dependencies: Omit<AuthenticationModuleDependencies, 'runtimeContributions'>) {
-    const useCases = createAuthenticationUseCases(dependencies);
-    this.login = useCases.login;
-    this.logout = useCases.logout;
-    this.register = useCases.register;
-    this.refreshToken = useCases.refreshToken;
-    this.getCurrentUser = useCases.getCurrentUser;
-    this.listSessions = useCases.listSessions;
-    this.revokeSession = useCases.revokeSession;
-    this.changePassword = useCases.changePassword;
-  }
 }
