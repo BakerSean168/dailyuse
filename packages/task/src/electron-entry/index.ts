@@ -107,12 +107,13 @@ export const TaskElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext) =>
-        handlers.template.createTemplate.execute({
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await handlers.template.createTemplate.execute({
           ...(dto ?? {}),
           identityId: requestContext.identityId,
-        }),
-      ),
+        });
+        return result.ok ? result.data.template : result;
+      }),
     );
     ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
@@ -130,14 +131,16 @@ export const TaskElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, payload) =>
-      withAuthenticatedValue(ctx, async () =>
-        handlers.template.activateTemplate.execute(payload?.id ?? payload),
-      ),
+      withAuthenticatedValue(ctx, async () => {
+        const result = await handlers.template.activateTemplate.execute(payload?.id ?? payload);
+        return result.ok ? result.data.template : result;
+      }),
     );
     ipcMain.handle(Ch.TEMPLATE_PAUSE, (_, payload) =>
-      withAuthenticatedValue(ctx, async () =>
-        handlers.template.pauseTemplate.execute(payload?.id ?? payload),
-      ),
+      withAuthenticatedValue(ctx, async () => {
+        const result = await handlers.template.pauseTemplate.execute(payload?.id ?? payload);
+        return result.ok ? result.data.template : result;
+      }),
     );
     ipcMain.handle(Ch.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>

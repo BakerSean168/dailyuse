@@ -55,6 +55,7 @@ import {
   type DeviceInfoUI,
   type ListSessionsRes,
   type RememberedDesktopAccountDTO,
+  type TokenStorageData,
 } from '@dailyuse/contracts/authentication';
 import {
   TokenManager,
@@ -65,7 +66,6 @@ import {
   getRememberedAccountsService,
 } from '../infrastructure';
 import {
-  connectPowerSync,
   disconnectPowerSync,
   openPowerSyncLocalOnly,
   promotePowerSyncToSync,
@@ -223,10 +223,12 @@ export class AuthDesktopApplicationService {
       this.runtimeState = AuthRuntimeState.RESTORING;
       const result = await this.sessionManager.initialize();
 
-      // Determine auth mode from token (default to ONLINE_USER if available)
+      // Determine auth mode from the restored identity/token pair.
+      // Local-only guest/offline sessions also persist tokens, so
+      // "token exists" is not a reliable indicator for ONLINE_USER.
       if (result.ok && result.session) {
         const tokenData = await this.tokenManager.loadTokens();
-        this.authMode = tokenData ? AuthMode.ONLINE_USER : AuthMode.OFFLINE_USER;
+        this.authMode = this.resolveRestoredAuthMode(result.session.identityId, tokenData);
         this.runtimeState = AuthRuntimeState.AUTHENTICATED;
 
         const credentialIdentity = await this.credentialRepository?.findById(
@@ -613,6 +615,7 @@ export class AuthDesktopApplicationService {
       const guestId = await this.sessionManager.getOrCreateGuestIdentity();
       this.authMode = AuthMode.GUEST;
       this.runtimeState = AuthRuntimeState.AUTHENTICATED;
+      await this.ensureAccountProjection(guestId, null);
 
       // Open local-only PowerSync for guest data
       openPowerSyncLocalOnly().catch((err) =>
@@ -1158,7 +1161,7 @@ export class AuthDesktopApplicationService {
         if (authMode === AuthMode.ONLINE_USER) {
           await promotePowerSyncToSync();
           this.logger.info('PowerSync sync mode ensured in background');
-        } else if (authMode === AuthMode.OFFLINE_USER) {
+        } else if (authMode === AuthMode.OFFLINE_USER || authMode === AuthMode.GUEST) {
           await openPowerSyncLocalOnly();
           this.logger.info('PowerSync local-only mode initialized in background');
         }
@@ -1201,6 +1204,45 @@ export class AuthDesktopApplicationService {
     return null;
   }
 
+  private resolveRestoredAuthMode(
+    identityId: string,
+    tokenData: TokenStorageData | null,
+  ): AuthMode {
+    if (this.isGuestIdentityId(identityId)) {
+      return AuthMode.GUEST;
+    }
+
+    if (this.isLocalOnlyTokenData(tokenData)) {
+      return AuthMode.OFFLINE_USER;
+    }
+
+    return tokenData ? AuthMode.ONLINE_USER : AuthMode.OFFLINE_USER;
+  }
+
+  private isGuestIdentityId(identityId: string | null | undefined): identityId is string {
+    return Boolean(identityId?.startsWith('GuestIdentity_'));
+  }
+
+  private isLocalOnlyTokenData(tokenData: TokenStorageData | null): boolean {
+    if (!tokenData) {
+      return false;
+    }
+
+    return (
+      (tokenData.accessToken === 'local-token' && tokenData.refreshToken === 'local-token') ||
+      (tokenData.accessToken === 'guest-local-token' &&
+        tokenData.refreshToken === 'guest-local-token')
+    );
+  }
+
+  private getProjectionFallbackEmail(identityId: string): string | null {
+    if (this.isGuestIdentityId(identityId)) {
+      return 'guest@local';
+    }
+
+    return null;
+  }
+
   private async ensureAccountProjection(identityId: string, email: string | null): Promise<void> {
     if (!this.accountRepository) {
       return;
@@ -1211,7 +1253,8 @@ export class AuthDesktopApplicationService {
       return;
     }
 
-    const normalizedEmail = email?.trim().toLowerCase() ?? null;
+    const normalizedEmail =
+      email?.trim().toLowerCase() ?? this.getProjectionFallbackEmail(identityId);
     if (!normalizedEmail) {
       this.logger.warn('Skip account projection bootstrap due to missing email', {
         identityId,

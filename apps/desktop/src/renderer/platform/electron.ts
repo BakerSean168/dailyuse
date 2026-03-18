@@ -6,6 +6,7 @@
  * Called once during app startup.
  */
 import type { App } from 'vue';
+import { RendererEventChannels } from '@dailyuse/contracts/electron';
 
 import {
   useAccountStore,
@@ -33,7 +34,7 @@ export function initElectronFeatures(app: App): void {
 }
 
 function setupTraySync(): void {
-  api?.on('tray:action', (...args: unknown[]) => {
+  api?.on(RendererEventChannels.TRAY_ACTION, (...args: unknown[]) => {
     const action = args[1] as string | undefined;
     if (action) {
       console.log('[Electron] Tray action:', action);
@@ -42,7 +43,7 @@ function setupTraySync(): void {
 }
 
 function setupShortcuts(): void {
-  api?.on('shortcut:triggered', (...args: unknown[]) => {
+  api?.on(RendererEventChannels.SHORTCUT_TRIGGERED, (...args: unknown[]) => {
     const shortcut = args[1] as string | undefined;
     if (shortcut) {
       console.log('[Electron] Shortcut triggered:', shortcut);
@@ -146,7 +147,7 @@ const MODULE_INVALIDATORS: Record<string, () => void> = {
  * components can react immediately if desired.
  */
 function setupDbChangeListener(): void {
-  api?.on('db:changed', (...args: unknown[]) => {
+  api?.on(RendererEventChannels.DB_CHANGED, (...args: unknown[]) => {
     const payload = args[0] as { tables: string[] } | undefined;
     if (!payload?.tables?.length) return;
 

@@ -266,6 +266,12 @@ export const DesktopFeatureChannels = {
   TRAY_STOP_FLASH: 'desktop:tray:stopFlash',
 } as const;
 
+export const RendererEventChannels = {
+  TRAY_ACTION: 'tray:action',
+  SHORTCUT_TRIGGERED: 'shortcut:triggered',
+  DB_CHANGED: 'db:changed',
+} as const;
+
 export const CacheChannels = {
   STATS: 'cache:stats',
   CLEAR: 'cache:clear',

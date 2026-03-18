@@ -13,13 +13,13 @@
               ? t('task.templateDialog.editTitle')
               : t('task.templateDialog.createTitle')
           }}</DialogTitle>
-          <p class="text-sm text-muted-foreground mt-0">
+          <DialogDescription class="mt-0 text-sm text-muted-foreground">
             {{
               mode === 'edit'
                 ? t('task.templateDialog.editSubtitle')
                 : t('task.templateDialog.createSubtitle')
             }}
-          </p>
+          </DialogDescription>
         </div>
       </DialogHeader>
 
@@ -56,6 +56,7 @@ import { useI18n } from 'vue-i18n';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,

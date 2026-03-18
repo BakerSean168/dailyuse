@@ -71,6 +71,8 @@ export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
 export class SessionManager {
   private static instance: SessionManager | null = null;
   private static readonly GUEST_ID_PREFIX = 'GuestIdentity';
+  private static readonly LOCAL_ACCESS_TOKEN = 'local-token';
+  private static readonly GUEST_ACCESS_TOKEN = 'guest-local-token';
 
   private readonly logger: ILogger;
   private readonly tokenManager: TokenManager;
@@ -519,8 +521,8 @@ export class SessionManager {
     this.currentSession = session;
 
     await this.tokenManager.saveTokens({
-      accessToken: 'local-token',
-      refreshToken: 'local-token',
+      accessToken: SessionManager.LOCAL_ACCESS_TOKEN,
+      refreshToken: SessionManager.LOCAL_ACCESS_TOKEN,
       accessTokenExpiresIn: 3600,
       refreshTokenExpiresIn: 30 * 24 * 3600,
       identityId: session?.identityId,
@@ -538,7 +540,7 @@ export class SessionManager {
     return {
       ok: true,
       sessionId: session?.id,
-      accessToken: 'local-token',
+      accessToken: SessionManager.LOCAL_ACCESS_TOKEN,
       identityId: session?.identityId,
       expiresIn: 3600,
       authMode: AuthMode.OFFLINE_USER,
@@ -901,8 +903,8 @@ export class SessionManager {
 
     // Save guest tokens locally
     await this.tokenManager.saveTokens({
-      accessToken: 'local-token',
-      refreshToken: 'local-token',
+      accessToken: SessionManager.GUEST_ACCESS_TOKEN,
+      refreshToken: SessionManager.GUEST_ACCESS_TOKEN,
       accessTokenExpiresIn: 365 * 24 * 3600, // 1 year for guest
       refreshTokenExpiresIn: 365 * 24 * 3600,
       identityId: guestId as unknown as IdentityId,
