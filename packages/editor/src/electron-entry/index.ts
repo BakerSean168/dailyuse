@@ -23,8 +23,8 @@
  * 此文件遵循治理模块的规范模式：
  * - Composition root via PowerSync factory
  *   通过 PowerSync 工厂的组合根
- * - Static Electron context for desktop-local operations
- *   桌面本地操作使用静态 Electron 上下文
+ * - Authenticated request context for user-scoped operations
+ *   用户范围操作使用认证的请求上下文
  * - All handlers delegate to `module.api` facade
  *   所有处理器委托给 `module.api` 门面
  *
@@ -33,11 +33,11 @@
 
 import { ipcMain } from 'electron';
 import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import type { Context } from '@dailyuse/contracts/shared';
 import type { IRepositoryContentPort } from '../application-server';
 import { createEditorPowerSyncModule } from '../infrastructure-server/powersync';
 import type { EditorModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
+import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('EditorElectron');
 
@@ -106,14 +106,10 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
 
       const { api } = editorModule;
 
-      // 2. Static Electron context for desktop-local operations.
-      //    桌面本地操作使用的静态 Electron 上下文。
-      //    Follows the governance canonical pattern (see governance/electron-entry).
-      //    遵循治理模块的规范模式（参见 governance/electron-entry）。
-      const electronContext: Context = { identityId: 'desktop-user', deviceId: 'electron-app' };
-
-      // 3. IPC Handlers — register ALL declared channels through module.api.
+      // 2. IPC Handlers — register ALL declared channels through module.api.
       //    IPC 处理器 — 通过 module.api 注册所有已声明的通道。
+      //    All user-scoped operations use authenticated request context.
+      //    所有用户范围操作使用认证的请求上下文。
 
       // -- Document CRUD channels -- 文档 CRUD 通道 --
       // These channels use "document" naming. They route to the api facade's
@@ -123,13 +119,17 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       ipcMain.handle(
         Ch.DOCUMENT_LIST,
         (_event, query?: { workspaceId?: string; folderId?: string }) =>
-          api.listDocuments(
-            { workspaceId: query?.workspaceId, folderId: query?.folderId },
-            electronContext,
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            api.listDocuments(
+              { workspaceId: query?.workspaceId, folderId: query?.folderId },
+              requestContext,
+            ),
           ),
       );
 
-      ipcMain.handle(Ch.DOCUMENT_GET, (_event, id: string) => api.getDocument(id));
+      ipcMain.handle(Ch.DOCUMENT_GET, (_event, id: string) =>
+        withAuthenticatedValue(ctx, async () => api.getDocument(id)),
+      );
 
       ipcMain.handle(
         Ch.DOCUMENT_CREATE,
@@ -143,26 +143,32 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
             content: string;
             metadata?: unknown;
           },
-        ) => api.createDocument(data, electronContext),
+        ) =>
+          withAuthenticatedValue(ctx, async (requestContext) =>
+            api.createDocument(data, requestContext),
+          ),
       );
 
       ipcMain.handle(
         Ch.DOCUMENT_UPDATE,
-        (_event, payload: { id: string; content?: string; metadata?: unknown }) => {
-          const { id, ...data } = payload;
-          return api.updateDocument(id, data);
-        },
+        (_event, payload: { id: string; content?: string; metadata?: unknown }) =>
+          withAuthenticatedValue(ctx, async () => {
+            const { id, ...data } = payload;
+            return api.updateDocument(id, data);
+          }),
       );
 
       ipcMain.handle(Ch.DOCUMENT_DELETE, (_event, payload: { id: string }) =>
-        api.deleteDocument(payload.id),
+        withAuthenticatedValue(ctx, async () => api.deleteDocument(payload.id)),
       );
 
       // DOCUMENT_SAVE — persist content through the editor document facade.
       // 文档保存 — 通过编辑器文档门面持久化内容。
-      ipcMain.handle(Ch.DOCUMENT_SAVE, async (_event, payload: { id: string; content: string }) => {
-        return api.updateDocument(payload.id, { content: payload.content });
-      });
+      ipcMain.handle(Ch.DOCUMENT_SAVE, async (_event, payload: { id: string; content: string }) =>
+        withAuthenticatedValue(ctx, async () =>
+          api.updateDocument(payload.id, { content: payload.content }),
+        ),
+      );
 
       // -- Content bridge channels -- 内容桥接通道 --
       // Editor content channels first operate on editor documents.
@@ -170,48 +176,54 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       // injected repository-content bridge for external resource editing.
       // 编辑器内容通道优先操作编辑器文档；若给定 id 不是编辑器文档，
       // 则回退到注入的仓库内容桥接，以支持外部资源编辑。
-      ipcMain.handle(Ch.GET_CONTENT, async (_event, resourceId: string) => {
-        const documentResult = await api.getDocument(resourceId);
-        if (documentResult.ok && documentResult.data) {
-          const document = documentResult.data as {
-            id: string;
-            name: string;
-            content: string | null;
-          };
-          return {
-            resourceId: document.id,
-            name: document.name,
-            content: document.content,
-          };
-        }
+      ipcMain.handle(Ch.GET_CONTENT, async (_event, resourceId: string) =>
+        withAuthenticatedValue(ctx, async () => {
+          const documentResult = await api.getDocument(resourceId);
+          if (documentResult.ok && documentResult.data) {
+            const document = documentResult.data as {
+              id: string;
+              name: string;
+              content: string | null;
+            };
+            return {
+              resourceId: document.id,
+              name: document.name,
+              content: document.content,
+            };
+          }
 
-        return contentPort.getContent(resourceId);
-      });
+          return contentPort.getContent(resourceId);
+        }),
+      );
       ipcMain.handle(
         Ch.SAVE_CONTENT,
-        async (_event, dto: { resourceId: string; content: string }) => {
+        async (_event, dto: { resourceId: string; content: string }) =>
+          withAuthenticatedValue(ctx, async () => {
+            const documentResult = await api.getDocument(dto.resourceId);
+            if (documentResult.ok && documentResult.data) {
+              return api.updateDocument(dto.resourceId, { content: dto.content });
+            }
+
+            return contentPort.saveContent(dto);
+          }),
+      );
+      ipcMain.handle(Ch.AUTO_SAVE, async (_event, dto: { resourceId: string; content: string }) =>
+        withAuthenticatedValue(ctx, async () => {
           const documentResult = await api.getDocument(dto.resourceId);
           if (documentResult.ok && documentResult.data) {
             return api.updateDocument(dto.resourceId, { content: dto.content });
           }
 
           return contentPort.saveContent(dto);
-        },
+        }),
       );
-      ipcMain.handle(Ch.AUTO_SAVE, async (_event, dto: { resourceId: string; content: string }) => {
-        const documentResult = await api.getDocument(dto.resourceId);
-        if (documentResult.ok && documentResult.data) {
-          return api.updateDocument(dto.resourceId, { content: dto.content });
-        }
-
-        return contentPort.saveContent(dto);
-      });
 
       // -- Search channel -- 搜索通道 --
-      ipcMain.handle(Ch.SEARCH, async (_event, query: unknown) => {
-        const requestContext = await ctx.auth.requireRequestContext();
-        return api.searchDocuments((query ?? {}) as any, requestContext);
-      });
+      ipcMain.handle(Ch.SEARCH, async (_event, query: unknown) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          api.searchDocuments((query ?? {}) as any, requestContext),
+        ),
+      );
 
       logger.info('Editor module registered — all IPC channels wired');
     },

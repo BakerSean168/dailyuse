@@ -113,7 +113,8 @@ export const GoalElectronModule: IElectronModule = {
     // IPC 处理器 — 所有变更通道都经过认证 + 控制器校验。
     ipcMain.handle(Ch.LIST, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.list({ ...(params ?? {}), identityId: requestContext.identityId }),
+        // Pass filters only - identityId is injected from requestContext inside controller
+        goalController.list(params ?? {}, requestContext),
       ),
     );
     ipcMain.handle(Ch.GET, (_event, id, includeChildren = true) =>
@@ -201,7 +202,8 @@ export const GoalElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.FOLDER_LIST, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalFolderController.list({ ...(params ?? {}), identityId: requestContext.identityId }),
+        // Pass filters only - identityId is injected from requestContext inside controller
+        goalFolderController.list(params ?? {}, requestContext),
       ),
     );
     ipcMain.handle(Ch.FOLDER_GET, (_event, id) => goalFolderController.get(id));

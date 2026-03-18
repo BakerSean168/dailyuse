@@ -10,7 +10,7 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import type { TaskTemplate } from '@/domain-server/aggregates/task-template';
 import { TaskInstanceGenerationService } from '@/domain-server/services/TaskInstanceGenerationService';
 import type {
-  QueryTaskTemplatesReq,
+  QueryTaskTemplatesInternal,
   QueryTaskTemplatesRes,
   TaskTemplateStatus as TaskTemplateStatusType,
 } from '@dailyuse/contracts/task';
@@ -32,7 +32,7 @@ export class ListTaskTemplates {
     this.generationService = new TaskInstanceGenerationService();
   }
 
-  async execute(request: QueryTaskTemplatesReq): Promise<Result<QueryTaskTemplatesRes>> {
+  async execute(request: QueryTaskTemplatesInternal): Promise<Result<QueryTaskTemplatesRes>> {
     let templates: TaskTemplate[];
 
     // Query by different conditions

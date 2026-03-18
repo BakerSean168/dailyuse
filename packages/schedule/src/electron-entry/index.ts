@@ -168,7 +168,9 @@ export const ScheduleElectronModule: IElectronModule = {
       withAuthenticatedValue(ctx, async () => eventController.getConflicts(id)),
     );
     ipcMain.handle(EventCh.DETECT_CONFLICTS, async (_event, params) =>
-      withAuthenticatedValue(ctx, async () => eventController.detectConflicts(params)),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        eventController.detectConflicts(params, requestContext),
+      ),
     );
     ipcMain.handle(EventCh.CREATE_WITH_CONFLICT_DETECTION, async (_event, request) =>
       withAuthenticatedValue(ctx, async (requestContext) =>

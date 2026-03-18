@@ -101,7 +101,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.create(req.body),
+    (req, ctx) => controller.create(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -117,23 +117,25 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) =>
-      controller.list({
-        identityId: parseString(req.query?.identityId),
-        type: parseString(req.query?.type),
-        category: parseString(req.query?.category),
-        status: parseString(req.query?.status),
-        isRead: parseBoolean(req.query?.isRead),
-        relatedEntityType: parseString(req.query?.relatedEntityType),
-        relatedEntityId: parseString(req.query?.relatedEntityId),
-        startDate: parseNumber(req.query?.startDate),
-        endDate: parseNumber(req.query?.endDate),
-        keyword: parseString(req.query?.keyword),
-        page: parseNumber(req.query?.page),
-        limit: parseNumber(req.query?.limit),
-        sortBy: parseString(req.query?.sortBy),
-        sortOrder: parseString(req.query?.sortOrder),
-      }),
+    (req, ctx) =>
+      controller.list(
+        {
+          type: parseString(req.query?.type),
+          category: parseString(req.query?.category),
+          status: parseString(req.query?.status),
+          isRead: parseBoolean(req.query?.isRead),
+          relatedEntityType: parseString(req.query?.relatedEntityType),
+          relatedEntityId: parseString(req.query?.relatedEntityId),
+          startDate: parseNumber(req.query?.startDate),
+          endDate: parseNumber(req.query?.endDate),
+          keyword: parseString(req.query?.keyword),
+          page: parseNumber(req.query?.page),
+          limit: parseNumber(req.query?.limit),
+          sortBy: parseString(req.query?.sortBy),
+          sortOrder: parseString(req.query?.sortOrder),
+        },
+        ctx,
+      ),
   );
 
   // POST /batch-read — Batch mark as read (must be before /:id)
@@ -185,7 +187,7 @@ export function registerNotificationRoutes(
       },
     },
     [auth],
-    (req) => controller.cleanup(req.body),
+    (req, ctx) => controller.cleanup(req.body, ctx),
   );
 
   // GET /unread-count — Get unread notification count (must be before /:id)

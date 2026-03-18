@@ -16,7 +16,7 @@ import {
   CreateGoalSchema,
   UpdateGoalSchema,
   CloneGoalSchema,
-  QueryGoalsSchema,
+  ListGoalFiltersSchema,
   AddKeyResultSchema,
   UpdateKeyResultSchema,
   UpdateKeyResultProgressSchema,
@@ -32,13 +32,15 @@ import type {
   ProgressBreakdown,
   CloneGoalReq,
   UpdateGoalReq,
-  QueryGoalsReq,
+  ListGoalFilters,
+  ListGoalsQuery,
   AddKeyResultReq,
   UpdateKeyResultReq,
   UpdateKeyResultProgressReq,
   CreateGoalReviewReq,
 } from '@dailyuse/contracts/goal';
 import type { Context } from '@dailyuse/contracts/shared';
+import type { IdentityId } from '@dailyuse/contracts/primitives';
 import { formatZodErrors } from '@dailyuse/utils/result';
 import type {
   CreateGoal,
@@ -115,8 +117,8 @@ export class GoalController {
     return this.useCases.createGoal.execute(parsed.data, ctx);
   }
 
-  async list(query: unknown): Promise<Result<unknown>> {
-    const parsed = QueryGoalsSchema.safeParse(query);
+  async list(filters: unknown, ctx: Context): Promise<Result<unknown>> {
+    const parsed = ListGoalFiltersSchema.safeParse(filters);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',
@@ -124,7 +126,12 @@ export class GoalController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.listGoals.execute(parsed.data);
+    // Construct internal query with identityId from context
+    const query: ListGoalsQuery = {
+      ...parsed.data,
+      identityId: ctx.identityId as IdentityId,
+    };
+    return this.useCases.listGoals.execute(query);
   }
 
   async search(query: string, ctx: Context): Promise<Result<unknown>> {
@@ -260,11 +267,7 @@ export class GoalController {
     });
   }
 
-  async cloneGoal(
-    goalId: string,
-    params: unknown,
-    ctx: Context,
-  ): Promise<Result<GoalClientDTO>> {
+  async cloneGoal(goalId: string, params: unknown, ctx: Context): Promise<Result<GoalClientDTO>> {
     const parsedParams = CloneGoalSchema.safeParse(params ?? {});
     if (!parsedParams.success) {
       return fail({

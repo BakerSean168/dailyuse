@@ -1,48 +1,158 @@
+import { z } from 'zod';
 import { Router, type RequestHandler } from 'express';
-import type { OpenApiRegistryLike } from '@dailyuse/utils/result';
+import {
+  RouteRegistrar,
+  type OpenApiRegistryLike,
+  successResponse,
+  errorResponse,
+} from '@dailyuse/utils/result';
+import {
+  CreateAIProviderConfigSchema,
+  UpdateAIProviderConfigSchema,
+  TestAIProviderSchema,
+} from '@dailyuse/contracts/ai';
 import type { AIProviderConfigController } from '../controllers/ai-provider-config.controller';
 
 interface PlatformMiddleware {
   readonly auth: RequestHandler;
+  requireRole?(roles: string[]): RequestHandler;
 }
 
 export function registerAIProviderRoutes(
   controller: AIProviderConfigController,
   middleware: PlatformMiddleware,
-  _openApiRegistry?: OpenApiRegistryLike | null,
+  openApiRegistry?: OpenApiRegistryLike | null,
 ): Router {
   const router = Router();
   const { auth } = middleware;
 
-  router.post('/', auth, (req, res, next) =>
-    controller
-      .create(req.body, (req as any).identityId)
-      .then(res.json.bind(res))
-      .catch(next),
+  const r = new RouteRegistrar(router, openApiRegistry ?? null, {
+    basePath: '/api/v1/ai/providers',
+    defaultTags: ['AI Provider'],
+    defaultSecurity: [{ bearerAuth: [] }],
+  });
+
+  // POST / — Create provider
+  r.route(
+    {
+      method: 'post',
+      path: '/',
+      summary: '创建 AI 提供商配置',
+      request: {
+        body: { content: { 'application/json': { schema: CreateAIProviderConfigSchema } } },
+      },
+      responses: {
+        201: successResponse(z.any(), '创建成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.create(req.body, ctx.identityId),
+    { successStatus: 201 },
   );
-  router.patch('/:id', auth, (req, res, next) =>
-    controller.update(req.params.id, req.body).then(res.json.bind(res)).catch(next),
+
+  // GET / — List providers
+  r.route(
+    {
+      method: 'get',
+      path: '/',
+      summary: '获取 AI 提供商配置列表',
+      responses: {
+        200: successResponse(z.any(), '获取成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.list(ctx.identityId),
   );
-  router.get('/', auth, (req, res, next) =>
-    controller
-      .list((req as any).identityId)
-      .then(res.json.bind(res))
-      .catch(next),
+
+  // GET /:id — Get provider
+  r.route(
+    {
+      method: 'get',
+      path: '/:id',
+      summary: '获取 AI 提供商配置',
+      request: {
+        params: z.object({ id: z.string() }),
+      },
+      responses: {
+        200: successResponse(z.any(), '获取成功'),
+        404: errorResponse('未找到'),
+      },
+    },
+    [auth],
+    (req) => controller.get(req.params!.id),
   );
-  router.get('/:id', auth, (req, res, next) =>
-    controller.get(req.params.id).then(res.json.bind(res)).catch(next),
+
+  // PATCH /:id — Update provider
+  r.route(
+    {
+      method: 'patch',
+      path: '/:id',
+      summary: '更新 AI 提供商配置',
+      request: {
+        params: z.object({ id: z.string() }),
+        body: { content: { 'application/json': { schema: UpdateAIProviderConfigSchema } } },
+      },
+      responses: {
+        200: successResponse(z.any(), '更新成功'),
+        400: errorResponse('参数错误'),
+        404: errorResponse('未找到'),
+      },
+    },
+    [auth],
+    (req) => controller.update(req.params!.id, req.body),
   );
-  router.delete('/:id', auth, (req, res, next) =>
-    controller.delete(req.params.id).then(res.json.bind(res)).catch(next),
+
+  // DELETE /:id — Delete provider
+  r.route(
+    {
+      method: 'delete',
+      path: '/:id',
+      summary: '删除 AI 提供商配置',
+      request: {
+        params: z.object({ id: z.string() }),
+      },
+      responses: {
+        200: successResponse(z.object({}), '删除成功'),
+        404: errorResponse('未找到'),
+      },
+    },
+    [auth],
+    (req) => controller.delete(req.params!.id),
   );
-  router.post('/test', auth, (req, res, next) =>
-    controller.test(req.body).then(res.json.bind(res)).catch(next),
+
+  // POST /test — Test provider connection
+  r.route(
+    {
+      method: 'post',
+      path: '/test',
+      summary: '测试 AI 提供商连接',
+      request: { body: { content: { 'application/json': { schema: TestAIProviderSchema } } } },
+      responses: {
+        200: successResponse(z.any(), '测试成功'),
+        400: errorResponse('参数错误'),
+      },
+    },
+    [auth],
+    (req) => controller.test(req.body),
   );
-  router.post('/:id/set-default', auth, (req, res, next) =>
-    controller
-      .setDefault(req.params.id, (req as any).identityId)
-      .then(res.json.bind(res))
-      .catch(next),
+
+  // POST /:id/set-default — Set default provider
+  r.route(
+    {
+      method: 'post',
+      path: '/:id/set-default',
+      summary: '设置默认 AI 提供商',
+      request: {
+        params: z.object({ id: z.string() }),
+      },
+      responses: {
+        200: successResponse(z.object({}), '设置成功'),
+        404: errorResponse('未找到'),
+      },
+    },
+    [auth],
+    (req, ctx) => controller.setDefault(req.params!.id, ctx.identityId),
   );
 
   return router;

@@ -1,6 +1,6 @@
 /**
  * Goal - Folder Operations
- * 
+ *
  * 目标文件夹管理
  */
 
@@ -20,7 +20,10 @@ export const CreateGoalFolderSchema = z.object({
   name: z.string().min(1, '文件夹名称不能为空').max(256),
   description: z.string().max(2000).optional(),
   icon: z.string().max(100).optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .optional(),
   parentFolderId: brandedId<GoalFolderId>().optional(),
 });
 
@@ -38,7 +41,11 @@ export const UpdateGoalFolderSchema = z.object({
   name: z.string().min(1).max(256).optional(),
   description: z.string().max(2000).nullable().optional(),
   icon: z.string().max(100).nullable().optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i).nullable().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i)
+    .nullable()
+    .optional(),
   parentFolderId: brandedId<GoalFolderId>().nullable().optional(),
 });
 
@@ -66,14 +73,32 @@ export type DeleteGoalFolderRes = GoalFolderClientDTO;
 // ============================================================================
 
 /**
- * 查询文件夹列表 Schema
+ * Public transport DTO for listing goal folders - excludes identityId
+ * 公共传输 DTO 用于列表目标文件夹 - 不包含 identityId
  */
-export const QueryGoalFoldersSchema = z.object({
-  identityId: brandedId<IdentityId>(),
+export const ListGoalFolderFiltersSchema = z.object({
   parentFolderId: brandedId<GoalFolderId>().optional(),
   includeSystemFolders: z.boolean().default(false).optional(),
   sortBy: z.enum(['name', 'createdAt', 'sortOrder']).default('name').optional(),
   sortOrder: z.enum(['asc', 'desc']).default('asc').optional(),
+});
+
+export type ListGoalFolderFilters = z.infer<typeof ListGoalFolderFiltersSchema>;
+
+/**
+ * Internal application query - used by controller/use case
+ * 内部应用查询 - 由控制器/用例使用
+ */
+export interface ListGoalFoldersQuery extends ListGoalFolderFilters {
+  identityId: IdentityId;
+}
+
+/**
+ * @deprecated Use ListGoalFolderFiltersSchema for public transport, ListGoalFoldersQuery for internal use
+ * 查询文件夹列表 Schema (保留以兼容)
+ */
+export const QueryGoalFoldersSchema = ListGoalFolderFiltersSchema.extend({
+  identityId: brandedId<IdentityId>(),
 });
 
 export type QueryGoalFoldersReq = z.infer<typeof QueryGoalFoldersSchema>;

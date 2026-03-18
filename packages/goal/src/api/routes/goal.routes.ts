@@ -17,7 +17,7 @@ import {
   CreateGoalSchema,
   UpdateGoalSchema,
   CloneGoalSchema,
-  QueryGoalsSchema,
+  ListGoalFiltersSchema,
   GoalClientDTOSchema,
   QueryGoalsResSchema,
   GoalRecordClientDTOSchema,
@@ -25,7 +25,7 @@ import {
   KeyResultClientDTOSchema,
   GetGoalAggregateResSchema,
 } from '@dailyuse/contracts/goal';
-import type { CloneGoalReq, QueryGoalsReq } from '@dailyuse/contracts/goal';
+import type { CloneGoalReq, ListGoalFilters } from '@dailyuse/contracts/goal';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type { GoalController } from '../../controllers/goal.controller';
@@ -105,7 +105,7 @@ export function registerGoalCrudRoutes(
       method: 'get',
       path: '/',
       summary: '获取目标列表',
-      request: { query: QueryGoalsSchema },
+      request: { query: ListGoalFiltersSchema },
       responses: {
         200: successResponse(QueryGoalsResSchema, '获取成功'),
       },
@@ -115,32 +115,35 @@ export function registerGoalCrudRoutes(
       const includeKeyResults =
         parseBoolean(req.query?.includeKeyResults) ?? parseBoolean(req.query?.includeChildren);
       const pageSize = parseNumber(req.query?.pageSize) ?? parseNumber(req.query?.limit);
-      const status = parseStringArray(req.query?.status) as QueryGoalsReq['status'];
-      const importance = parseStringArray(req.query?.importance) as QueryGoalsReq['importance'];
-      const folderId = (req.query?.folderId ?? req.query?.dirId) as QueryGoalsReq['folderId'];
+      const status = parseStringArray(req.query?.status) as ListGoalFilters['status'];
+      const importance = parseStringArray(req.query?.importance) as ListGoalFilters['importance'];
+      const folderId = (req.query?.folderId ?? req.query?.dirId) as ListGoalFilters['folderId'];
 
-      return controller.list({
-        identityId: ctx.identityId,
-        status,
-        importance,
-        category: req.query?.category as string | undefined,
-        tags: parseStringArray(req.query?.tags),
-        folderId,
-        query: req.query?.query as string | undefined,
-        startDate: parseNumber(req.query?.startDate),
-        endDate: parseNumber(req.query?.endDate),
-        sortBy: req.query?.sortBy as
-          | 'createdAt'
-          | 'updatedAt'
-          | 'targetDate'
-          | 'priority'
-          | undefined,
-        sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
-        page: parseNumber(req.query?.page),
-        pageSize,
-        includeKeyResults,
-        includeReviews: parseBoolean(req.query?.includeReviews),
-      });
+      // Pass filters to controller - identityId is injected from ctx inside controller
+      return controller.list(
+        {
+          status,
+          importance,
+          category: req.query?.category as string | undefined,
+          tags: parseStringArray(req.query?.tags),
+          folderId,
+          query: req.query?.query as string | undefined,
+          startDate: parseNumber(req.query?.startDate),
+          endDate: parseNumber(req.query?.endDate),
+          sortBy: req.query?.sortBy as
+            | 'createdAt'
+            | 'updatedAt'
+            | 'targetDate'
+            | 'priority'
+            | undefined,
+          sortOrder: req.query?.sortOrder as 'asc' | 'desc' | undefined,
+          page: parseNumber(req.query?.page),
+          pageSize,
+          includeKeyResults,
+          includeReviews: parseBoolean(req.query?.includeReviews),
+        },
+        ctx,
+      );
     },
   );
 

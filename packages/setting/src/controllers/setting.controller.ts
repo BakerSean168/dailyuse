@@ -10,7 +10,7 @@ import { fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   PatchUserSettingSchema,
-  ResetUserSettingSchema,
+  ResetUserSettingPublicSchema,
   ExportSettingsSchema,
   ImportSettingsSchema,
 } from '@dailyuse/contracts/setting';
@@ -48,7 +48,7 @@ export class SettingController {
   }
 
   async resetUserSetting(input: unknown, ctx: Context): Promise<Result<unknown>> {
-    const parsed = ResetUserSettingSchema.safeParse(input);
+    const parsed = ResetUserSettingPublicSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
         code: 'VALIDATION_ERROR',

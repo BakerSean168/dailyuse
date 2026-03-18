@@ -23,6 +23,7 @@ import { FsStorageAdapter } from '../infrastructure-server/adapters/fs/fs-storag
 import type { RepositoryModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
 import type { SearchResponse } from '@dailyuse/contracts/repository';
+import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('RepositoryElectron');
 
@@ -53,28 +54,6 @@ const Ch = {
 
 const channels = Object.values(Ch);
 
-/**
- * Resolve identity ID from IPC params.
- * 从 IPC 参数中解析身份 ID。
- */
-function resolveIdentityId(params: unknown): string {
-  if (
-    params &&
-    typeof params === 'object' &&
-    'identityId' in params &&
-    typeof (params as { identityId?: unknown }).identityId === 'string' &&
-    (params as { identityId: string }).identityId.length > 0
-  ) {
-    return (params as { identityId: string }).identityId;
-  }
-
-  if (typeof params === 'string' && params.length > 0) {
-    return params;
-  }
-
-  return 'local-user';
-}
-
 let activeRepositoryModule: RepositoryModuleInstance | null = null;
 
 export const RepositoryElectronModule: IElectronModule = {
@@ -103,47 +82,38 @@ export const RepositoryElectronModule: IElectronModule = {
     // 3. IPC Handlers — thin transport mapping via api facade
     //    IPC 处理器 — 通过 api 门面进行精简的传输层映射
 
-    /**
-     * Build a Context from IPC params for methods that require it.
-     * 从 IPC 参数构建 Context，用于需要上下文的方法。
-     *
-     * In Electron (local-only), deviceId defaults to 'local-device'.
-     * 在 Electron（本地模式）中，deviceId 默认为 'local-device'。
-     */
-    const buildCtx = (params: unknown): import('@dailyuse/contracts/shared').Context => ({
-      identityId: resolveIdentityId(params),
-      deviceId:
-        params && typeof params === 'object' && 'deviceId' in params
-          ? String((params as Record<string, unknown>).deviceId)
-          : 'local-device',
-    });
-
     // Repository CRUD / 仓库增删改查
-    ipcMain.handle(Ch.LIST, async (_, params) => {
-      const result = await api.listRepositories({}, buildCtx(params));
-      return result.ok ? result.data : [];
-    });
-    ipcMain.handle(Ch.CURRENT, async (_, params) => {
-      const result = await api.getCurrentRepository(buildCtx(params));
-      return result.ok ? result.data : null;
-    });
+    ipcMain.handle(Ch.LIST, (_, _params) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.listRepositories({}, requestContext);
+        return result.ok ? result.data : [];
+      }),
+    );
+    ipcMain.handle(Ch.CURRENT, (_, _params) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.getCurrentRepository(requestContext);
+        return result.ok ? result.data : null;
+      }),
+    );
     ipcMain.handle(Ch.GET, async (_, id) => {
       const result = await api.getRepository(id);
       return result.ok ? result.data : null;
     });
-    ipcMain.handle(Ch.CREATE, async (_, dto) => {
-      const result = await api.createRepository(
-        {
-          name: dto.name,
-          type: dto.type,
-          path: dto.path,
-          description: dto.description,
-          config: dto.config,
-        },
-        buildCtx(dto),
-      );
-      return result.ok ? result.data : null;
-    });
+    ipcMain.handle(Ch.CREATE, (_, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.createRepository(
+          {
+            name: dto.name,
+            type: dto.type,
+            path: dto.path,
+            description: dto.description,
+            config: dto.config,
+          },
+          requestContext,
+        );
+        return result.ok ? result.data : null;
+      }),
+    );
     ipcMain.handle(Ch.UPDATE, async (_, dto) => {
       const result = await api.updateRepository(dto.id, { config: dto.config });
       return result.ok ? result.data : null;
@@ -163,30 +133,34 @@ export const RepositoryElectronModule: IElectronModule = {
       const result = await api.getResource(id);
       return result.ok ? result.data : null;
     });
-    ipcMain.handle(Ch.RESOURCE_CREATE, async (_, dto) => {
-      const result = await api.createResource(
-        {
-          repositoryId: dto.repositoryId,
-          folderId: dto.folderId,
-          name: dto.name,
-          type: dto.type,
-          content: dto.content,
-        },
-        buildCtx(dto),
-      );
-      return result.ok ? result.data : null;
-    });
-    ipcMain.handle(Ch.RESOURCE_UPLOAD, async (_, payload) => {
-      const result = await api.uploadResources(
-        {
-          repositoryId: payload.repositoryId,
-          files: payload.files,
-          metadata: payload.metadata,
-        },
-        buildCtx(payload),
-      );
-      return result.ok ? result.data : null;
-    });
+    ipcMain.handle(Ch.RESOURCE_CREATE, (_, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.createResource(
+          {
+            repositoryId: dto.repositoryId,
+            folderId: dto.folderId,
+            name: dto.name,
+            type: dto.type,
+            content: dto.content,
+          },
+          requestContext,
+        );
+        return result.ok ? result.data : null;
+      }),
+    );
+    ipcMain.handle(Ch.RESOURCE_UPLOAD, (_, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.uploadResources(
+          {
+            repositoryId: payload.repositoryId,
+            files: payload.files,
+            metadata: payload.metadata,
+          },
+          requestContext,
+        );
+        return result.ok ? result.data : null;
+      }),
+    );
     ipcMain.handle(Ch.RESOURCE_UPDATE, async (_, dto) => {
       // Resource move takes priority — delegate to moveResource if targetFolderId is present.
       // 资源移动优先 — 若存在 targetFolderId，委托给 moveResource。
@@ -207,48 +181,58 @@ export const RepositoryElectronModule: IElectronModule = {
     });
 
     // Bookmark CRUD / 书签增删改查
-    ipcMain.handle(Ch.BOOKMARK_LIST, async (_, params) => {
-      const result = await api.listResourceBookmarks(params.repositoryId, buildCtx(params));
-      return result.ok ? result.data : [];
-    });
-    ipcMain.handle(Ch.BOOKMARK_CREATE, async (_, payload) => {
-      const result = await api.createResourceBookmark(
-        payload.repositoryId,
-        {
-          resourceId: payload.request.resourceId,
-          aliasName: payload.request.aliasName,
-          icon: payload.request.icon,
-          color: payload.request.color,
-        },
-        buildCtx(payload),
-      );
-      return result.ok ? result.data : null;
-    });
-    ipcMain.handle(Ch.BOOKMARK_UPDATE, async (_, payload) => {
-      const result = await api.updateResourceBookmark(
-        payload.repositoryId,
-        payload.bookmarkId,
-        {
-          aliasName: payload.request.aliasName,
-          icon: payload.request.icon,
-          color: payload.request.color,
-        },
-        buildCtx(payload),
-      );
-      return result.ok ? result.data : null;
-    });
-    ipcMain.handle(Ch.BOOKMARK_REORDER, async (_, payload) => {
-      const result = await api.reorderResourceBookmarks(
-        payload.repositoryId,
-        { bookmarkIds: payload.request.bookmarkIds },
-        buildCtx(payload),
-      );
-      return result.ok ? result.data : [];
-    });
-    ipcMain.handle(Ch.BOOKMARK_DELETE, async (_, payload) => {
-      await api.deleteResourceBookmark(payload.repositoryId, payload.bookmarkId, buildCtx(payload));
-      return undefined;
-    });
+    ipcMain.handle(Ch.BOOKMARK_LIST, (_, params) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.listResourceBookmarks(params.repositoryId, requestContext);
+        return result.ok ? result.data : [];
+      }),
+    );
+    ipcMain.handle(Ch.BOOKMARK_CREATE, (_, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.createResourceBookmark(
+          payload.repositoryId,
+          {
+            resourceId: payload.request.resourceId,
+            aliasName: payload.request.aliasName,
+            icon: payload.request.icon,
+            color: payload.request.color,
+          },
+          requestContext,
+        );
+        return result.ok ? result.data : null;
+      }),
+    );
+    ipcMain.handle(Ch.BOOKMARK_UPDATE, (_, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.updateResourceBookmark(
+          payload.repositoryId,
+          payload.bookmarkId,
+          {
+            aliasName: payload.request.aliasName,
+            icon: payload.request.icon,
+            color: payload.request.color,
+          },
+          requestContext,
+        );
+        return result.ok ? result.data : null;
+      }),
+    );
+    ipcMain.handle(Ch.BOOKMARK_REORDER, (_, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.reorderResourceBookmarks(
+          payload.repositoryId,
+          { bookmarkIds: payload.request.bookmarkIds },
+          requestContext,
+        );
+        return result.ok ? result.data : [];
+      }),
+    );
+    ipcMain.handle(Ch.BOOKMARK_DELETE, (_, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        await api.deleteResourceBookmark(payload.repositoryId, payload.bookmarkId, requestContext);
+        return undefined;
+      }),
+    );
 
     // Folder CRUD / 文件夹增删改查
     ipcMain.handle(Ch.FOLDER_LIST, async (_, params) => {
@@ -277,18 +261,20 @@ export const RepositoryElectronModule: IElectronModule = {
       const result = await api.getFolderTree(repositoryId);
       return result.ok ? result.data : [];
     });
-    ipcMain.handle(Ch.FOLDER_CREATE, async (_, dto) => {
-      const result = await api.createFolder(
-        {
-          repositoryId: dto.repositoryId,
-          name: dto.name,
-          parentId: dto.parentId,
-          order: dto.order,
-        },
-        buildCtx(dto),
-      );
-      return result.ok ? result.data : null;
-    });
+    ipcMain.handle(Ch.FOLDER_CREATE, (_, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext) => {
+        const result = await api.createFolder(
+          {
+            repositoryId: dto.repositoryId,
+            name: dto.name,
+            parentId: dto.parentId,
+            order: dto.order,
+          },
+          requestContext,
+        );
+        return result.ok ? result.data : null;
+      }),
+    );
     ipcMain.handle(Ch.FOLDER_UPDATE, async (_, dto) => {
       // Folder update maps to rename or move via the application port.
       // 文件夹更新通过应用层门面映射为重命名或移动操作。

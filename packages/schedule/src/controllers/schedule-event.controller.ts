@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import { fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateScheduleRequestSchema,
@@ -14,10 +14,10 @@ import {
   UpdateScheduleRequestSchema,
   type UpdateScheduleRequest,
   DetectConflictsRequestSchema,
-  type DetectConflictsRequest,
   ResolveConflictRequestSchema,
   type ResolveConflictRequest,
-  type GetSchedulesByTimeRangeRequest,
+  type GetSchedulesByTimeRangeInternalQuery,
+  type DetectConflictsInternalQuery,
 } from '@dailyuse/contracts/schedule';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -26,11 +26,11 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 export interface ScheduleEventUseCases {
   createEvent(data: CreateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
   getEvent(id: string): Promise<Result<unknown>>;
-  listEvents(query: GetSchedulesByTimeRangeRequest, ctx: Context): Promise<Result<unknown>>;
+  listEvents(query: GetSchedulesByTimeRangeInternalQuery, ctx: Context): Promise<Result<unknown>>;
   updateEvent(id: string, data: UpdateScheduleRequest): Promise<Result<unknown>>;
   deleteEvent(id: string): Promise<Result<unknown>>;
   getConflicts(id: string): Promise<Result<unknown>>;
-  detectConflicts(data: DetectConflictsRequest): Promise<Result<unknown>>;
+  detectConflicts(data: DetectConflictsInternalQuery): Promise<Result<unknown>>;
   createEventWithConflictDetection(
     data: CreateScheduleRequest,
     ctx: Context,
@@ -80,15 +80,14 @@ export class ScheduleEventController {
       });
     }
 
-    return this.useCases.listEvents(
-      {
-        startTime,
-        endTime,
-        identityId: ((query.identityId as string) ||
-          ctx.identityId) as GetSchedulesByTimeRangeRequest['identityId'],
-      },
-      ctx,
-    );
+    // Use ONLY ctx.identityId - never accept identityId from query params
+    const internalQuery: GetSchedulesByTimeRangeInternalQuery = {
+      startTime,
+      endTime,
+      identityId: ctx.identityId as GetSchedulesByTimeRangeInternalQuery['identityId'],
+    };
+
+    return this.useCases.listEvents(internalQuery, ctx);
   }
 
   async update(id: string, input: unknown): Promise<Result<unknown>> {
@@ -113,7 +112,7 @@ export class ScheduleEventController {
     return this.useCases.getConflicts(id);
   }
 
-  async detectConflicts(input: unknown): Promise<Result<unknown>> {
+  async detectConflicts(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = DetectConflictsRequestSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -122,7 +121,16 @@ export class ScheduleEventController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.detectConflicts(parsed.data);
+
+    // Inject identityId from context - never from request
+    const internalQuery: DetectConflictsInternalQuery = {
+      startTime: parsed.data.startTime,
+      endTime: parsed.data.endTime,
+      excludeId: parsed.data.excludeId,
+      identityId: ctx.identityId as DetectConflictsInternalQuery['identityId'],
+    };
+
+    return this.useCases.detectConflicts(internalQuery);
   }
 
   async createWithConflictDetection(input: unknown, ctx: Context): Promise<Result<unknown>> {

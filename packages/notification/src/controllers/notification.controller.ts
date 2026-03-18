@@ -7,6 +7,7 @@
 
 import type { Result } from '@dailyuse/contracts/result';
 import { fail } from '@dailyuse/contracts/result';
+import type { Context } from '@dailyuse/contracts/shared';
 import {
   CreateNotificationSchema,
   NotificationQuerySchema,
@@ -23,11 +24,25 @@ import type {
 } from '@dailyuse/contracts/notification';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
+// ============ Internal Types (with identityId) ============
+
+interface CreateNotificationInternal extends CreateNotificationReq {
+  identityId: string;
+}
+
+interface NotificationQueryInternal extends NotificationQuery {
+  identityId: string;
+}
+
+interface CleanupOldNotificationsInternal extends CleanupOldNotificationsReq {
+  identityId: string;
+}
+
 // ============ Use Case Port ============
 
 export interface NotificationUseCases {
-  createNotification(data: CreateNotificationReq): Promise<Result<unknown>>;
-  listNotifications(query: NotificationQuery): Promise<Result<unknown>>;
+  createNotification(data: CreateNotificationInternal): Promise<Result<unknown>>;
+  listNotifications(query: NotificationQueryInternal): Promise<Result<unknown>>;
   getNotification(id: string): Promise<Result<unknown>>;
   deleteNotification(id: string): Promise<Result<unknown>>;
   markAsRead(id: string): Promise<Result<unknown>>;
@@ -35,7 +50,7 @@ export interface NotificationUseCases {
   getUnreadCount(identityId: string): Promise<Result<unknown>>;
   batchMarkAsRead(data: MarkAsReadBatchReq): Promise<Result<unknown>>;
   batchDelete(data: DeleteNotificationsBatchReq): Promise<Result<unknown>>;
-  cleanupOldNotifications(data: CleanupOldNotificationsReq): Promise<Result<unknown>>;
+  cleanupOldNotifications(data: CleanupOldNotificationsInternal): Promise<Result<unknown>>;
 }
 
 export class NotificationController {
@@ -43,7 +58,7 @@ export class NotificationController {
 
   // ==================== CRUD Operations ====================
 
-  async create(input: unknown): Promise<Result<unknown>> {
+  async create(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CreateNotificationSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -52,10 +67,13 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.createNotification(parsed.data);
+    return this.useCases.createNotification({
+      ...parsed.data,
+      identityId: ctx.identityId,
+    });
   }
 
-  async list(query: Record<string, unknown>): Promise<Result<unknown>> {
+  async list(query: Record<string, unknown>, ctx: Context): Promise<Result<unknown>> {
     const parsed = NotificationQuerySchema.safeParse(query);
     if (!parsed.success) {
       return fail({
@@ -64,7 +82,10 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.listNotifications(parsed.data);
+    return this.useCases.listNotifications({
+      ...parsed.data,
+      identityId: ctx.identityId,
+    });
   }
 
   async get(id: string): Promise<Result<unknown>> {
@@ -113,7 +134,7 @@ export class NotificationController {
     return this.useCases.batchDelete(parsed.data);
   }
 
-  async cleanup(input: unknown): Promise<Result<unknown>> {
+  async cleanup(input: unknown, ctx: Context): Promise<Result<unknown>> {
     const parsed = CleanupOldNotificationsSchema.safeParse(input);
     if (!parsed.success) {
       return fail({
@@ -122,6 +143,9 @@ export class NotificationController {
         details: formatZodErrors(parsed.error.issues),
       });
     }
-    return this.useCases.cleanupOldNotifications(parsed.data);
+    return this.useCases.cleanupOldNotifications({
+      ...parsed.data,
+      identityId: ctx.identityId,
+    });
   }
 }

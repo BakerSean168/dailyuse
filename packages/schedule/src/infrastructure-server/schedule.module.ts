@@ -38,8 +38,8 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import type {
   CreateScheduleRequest,
-  DetectConflictsRequest,
-  GetSchedulesByTimeRangeRequest,
+  DetectConflictsInternalQuery,
+  GetSchedulesByTimeRangeInternalQuery,
   ResolveConflictRequest,
   CreateScheduleTaskRequest,
   UpdateScheduleRequest,
@@ -121,11 +121,11 @@ export interface ScheduleApplicationPort {
 export interface ScheduleEventApplicationPort {
   createEvent(data: CreateScheduleRequest, ctx: Context): Promise<Result<unknown>>;
   getEvent(id: string): Promise<Result<unknown>>;
-  listEvents(query: GetSchedulesByTimeRangeRequest, ctx: Context): Promise<Result<unknown>>;
+  listEvents(query: GetSchedulesByTimeRangeInternalQuery, ctx: Context): Promise<Result<unknown>>;
   updateEvent(id: string, data: UpdateScheduleRequest): Promise<Result<unknown>>;
   deleteEvent(id: string): Promise<Result<unknown>>;
   getConflicts(id: string): Promise<Result<unknown>>;
-  detectConflicts(data: DetectConflictsRequest): Promise<Result<unknown>>;
+  detectConflicts(data: DetectConflictsInternalQuery): Promise<Result<unknown>>;
   createEventWithConflictDetection(
     data: CreateScheduleRequest,
     ctx: Context,
@@ -385,9 +385,9 @@ export function createScheduleModule(
     },
     listEvents: async (query, ctx) => {
       try {
-        const identityId = query.identityId || ctx.identityId;
+        // Use identityId from the internal query (already injected from ctx by controller)
         const events = await useCases.scheduleEventService.getSchedulesByRange(
-          identityId,
+          query.identityId,
           query.startTime,
           query.endTime,
         );
@@ -448,7 +448,7 @@ export function createScheduleModule(
       try {
         const result = await useCases.conflictDetectionService.detectConflictsForSchedule({
           id: data.excludeId ?? '',
-          identityId: data.userId,
+          identityId: data.identityId,
           title: '',
           startTime: data.startTime,
           endTime: data.endTime,

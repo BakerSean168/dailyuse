@@ -22,7 +22,6 @@ export const ResolutionStrategySchema = z.enum([
 export type ResolutionStrategy = z.infer<typeof ResolutionStrategySchema>;
 
 export const CreateScheduleRequestSchema = z.object({
-  identityId: brandedId<IdentityId>().optional(),
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   startTime: z.number().positive(),
@@ -46,7 +45,6 @@ export const UpdateScheduleRequestSchema = z.object({
 });
 
 export const DetectConflictsRequestSchema = z.object({
-  userId: brandedId<IdentityId>(),
   startTime: z.number().positive(),
   endTime: z.number().positive(),
   excludeId: brandedId<ScheduleId>().optional(),
@@ -55,7 +53,6 @@ export const DetectConflictsRequestSchema = z.object({
 export const GetSchedulesByTimeRangeRequestSchema = z.object({
   startTime: z.number().positive(),
   endTime: z.number().positive(),
-  identityId: brandedId<IdentityId>().optional(),
 });
 
 export const ResolveConflictRequestSchema = z.object({
@@ -71,7 +68,6 @@ export const ResolveConflictRequestSchema = z.object({
  * Request DTO for creating a new schedule with automatic conflict detection
  */
 export interface CreateScheduleRequest {
-  identityId?: IdentityId;
   name: string;
   description?: string;
   startTime: number;
@@ -101,7 +97,6 @@ export interface UpdateScheduleRequest {
  * Request DTO for detecting schedule conflicts for a given time range
  */
 export interface DetectConflictsRequest {
-  userId: IdentityId;
   startTime: number;
   endTime: number;
   excludeId?: ScheduleId;
@@ -113,7 +108,6 @@ export interface DetectConflictsRequest {
 export interface GetSchedulesByTimeRangeRequest {
   startTime: number;
   endTime: number;
-  identityId?: IdentityId;
 }
 
 /**
@@ -124,6 +118,29 @@ export interface ResolveConflictRequest {
   newStartTime?: number;
   newEndTime?: number;
   newDuration?: number;
+}
+
+// ============ Internal Types (for server-side use only) ============
+
+/**
+ * Internal query type for getting schedules within a time range with identity
+ * Used by controllers/modules when assembling queries from context
+ */
+export interface GetSchedulesByTimeRangeInternalQuery {
+  startTime: number;
+  endTime: number;
+  identityId: IdentityId;
+}
+
+/**
+ * Internal query type for detecting conflicts with identity
+ * Used by controllers/modules when assembling queries from context
+ */
+export interface DetectConflictsInternalQuery {
+  startTime: number;
+  endTime: number;
+  excludeId?: ScheduleId;
+  identityId: IdentityId;
 }
 
 // ============ Response Types ============

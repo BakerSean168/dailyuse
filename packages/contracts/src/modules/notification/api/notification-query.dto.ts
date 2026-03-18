@@ -1,13 +1,12 @@
 /**
  * Notification Query Operations
- * 
+ *
  * This file contains DTOs for querying and listing notifications.
  * Supports filtering, pagination, and sorting of notification records.
  */
 
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
-import type { IdentityId } from '../../../primitives';
 import type { NotificationListResultDTO } from '../dtos';
 import {
   NotificationType,
@@ -21,7 +20,6 @@ import {
 // ============================================================================
 
 export const NotificationQuerySchema = z.object({
-  identityId: brandedId<IdentityId>().optional(),
   type: z.enum(NotificationType).optional(),
   category: z.enum(NotificationCategory).optional(),
   status: z.enum(NotificationStatus).optional(),
@@ -33,7 +31,10 @@ export const NotificationQuerySchema = z.object({
   keyword: z.string().optional(),
   page: z.number().int().min(1).default(1).optional(),
   limit: z.number().int().min(1).max(100).default(20).optional(),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'sentAt', 'importance', 'urgency']).default('createdAt').optional(),
+  sortBy: z
+    .enum(['createdAt', 'updatedAt', 'sentAt', 'importance', 'urgency'])
+    .default('createdAt')
+    .optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
 });
 

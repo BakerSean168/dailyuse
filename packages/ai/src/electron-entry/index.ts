@@ -21,6 +21,7 @@ import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contract
 import { createAIPowerSyncModule, type AIModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
 import type { IKnowledgeNotePersistencePort } from '../application-server';
+import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('AIElectron');
 
@@ -52,15 +53,6 @@ const channels = Object.values(Ch);
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function resolveIdentityId(payload: unknown): string {
-  if (typeof payload === 'string') return payload;
-  if (payload && typeof payload === 'object') {
-    const value = payload as Record<string, unknown>;
-    return String(value.identityId ?? value.accountId ?? 'local-user');
-  }
-  return 'local-user';
-}
 
 function createKnowledgeNoteSubpathResolver(ctx: IElectronModuleContext) {
   return async (identityId: string): Promise<string> => {
@@ -123,77 +115,107 @@ export function createAIElectronModule(options: {
 
       // -- Provider Config --
       ipcMain.handle(Ch.PROVIDER_CREATE, async (_, dto) =>
-        aiModule.api.createProvider(resolveIdentityId(dto), dto),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.createProvider(requestContext.identityId, dto),
+        ),
       );
-      ipcMain.handle(Ch.PROVIDER_LIST, async (_, params) => ({
-        data: await aiModule.api.listProviders(resolveIdentityId(params)),
-      }));
-      ipcMain.handle(Ch.PROVIDER_GET, async (_, id) => aiModule.api.getProvider(id));
+      ipcMain.handle(Ch.PROVIDER_LIST, async () =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.listProviders(requestContext.identityId),
+        ),
+      );
+      ipcMain.handle(Ch.PROVIDER_GET, async (_, id) =>
+        withAuthenticatedValue(ctx, async () => aiModule.api.getProvider(id)),
+      );
       ipcMain.handle(Ch.PROVIDER_UPDATE, async (_, payload) =>
-        aiModule.api.updateProvider(String(payload.id), payload),
+        withAuthenticatedValue(ctx, async () =>
+          aiModule.api.updateProvider(String(payload.id), payload),
+        ),
       );
-      ipcMain.handle(Ch.PROVIDER_DELETE, async (_, id) => aiModule.api.deleteProvider(id));
-      ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) => aiModule.api.testConnection(dto));
+      ipcMain.handle(Ch.PROVIDER_DELETE, async (_, id) =>
+        withAuthenticatedValue(ctx, async () => aiModule.api.deleteProvider(id)),
+      );
+      ipcMain.handle(Ch.PROVIDER_TEST, async (_, dto) =>
+        withAuthenticatedValue(ctx, async () => aiModule.api.testConnection(dto)),
+      );
       ipcMain.handle(Ch.PROVIDER_SET_DEFAULT, async (_, dto) =>
-        aiModule.api.setDefaultProvider(dto.providerId, resolveIdentityId(dto)),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.setDefaultProvider(dto.providerId, requestContext.identityId),
+        ),
       );
 
       // -- Goal Generation --
       ipcMain.handle(Ch.GOAL_GENERATE, async (_, dto) =>
-        aiModule.api.generateGoal({
-          identityId: resolveIdentityId(dto),
-          ...dto,
-        }),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.generateGoal({
+            identityId: requestContext.identityId,
+            ...dto,
+          }),
+        ),
       );
 
       // -- Conversations --
       ipcMain.handle(Ch.CONVERSATION_CREATE, async (_, dto) =>
-        aiModule.api.createConversation(resolveIdentityId(dto), dto.name),
-      );
-      ipcMain.handle(Ch.CONVERSATION_UPDATE, async (_, dto) =>
-        aiModule.api.updateConversation(String(dto.id), {
-          name: String(dto.name),
-        }),
-      );
-      ipcMain.handle(Ch.CONVERSATION_LIST, async (_, dto) =>
-        aiModule.api.listConversations(
-          resolveIdentityId(dto),
-          Number(dto?.page ?? 1),
-          Number(dto?.pageSize ?? 20),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.createConversation(requestContext.identityId, dto.name),
         ),
       );
-      ipcMain.handle(Ch.CONVERSATION_GET, async (_, id) => {
-        const conversation = await aiModule.api.getConversation(String(id), true);
-        return conversation?.toClientDTO() ?? null;
-      });
+      ipcMain.handle(Ch.CONVERSATION_UPDATE, async (_, dto) =>
+        withAuthenticatedValue(ctx, async () =>
+          aiModule.api.updateConversation(String(dto.id), {
+            name: String(dto.name),
+          }),
+        ),
+      );
+      ipcMain.handle(Ch.CONVERSATION_LIST, async (_, dto) =>
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.listConversations(
+            requestContext.identityId,
+            Number(dto?.page ?? 1),
+            Number(dto?.pageSize ?? 20),
+          ),
+        ),
+      );
+      ipcMain.handle(Ch.CONVERSATION_GET, async (_, id) =>
+        withAuthenticatedValue(ctx, async () => {
+          const conversation = await aiModule.api.getConversation(String(id), true);
+          return conversation?.toClientDTO() ?? null;
+        }),
+      );
       ipcMain.handle(Ch.CONVERSATION_DELETE, async (_, id) =>
-        aiModule.api.deleteConversation(String(id)),
+        withAuthenticatedValue(ctx, async () => aiModule.api.deleteConversation(String(id))),
       );
 
       // -- Chat Messages --
       ipcMain.handle(Ch.MESSAGE_SEND, async (_, dto) =>
-        aiModule.api.sendMessage(
-          resolveIdentityId(dto),
-          String(dto.conversationId),
-          String(dto.content),
-          dto.providerId,
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.sendMessage(
+            requestContext.identityId,
+            String(dto.conversationId),
+            String(dto.content),
+            dto.providerId,
+          ),
         ),
       );
-      ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) => {
-        const conversation = await aiModule.api.getConversation(String(dto.conversationId), true);
-        const messages =
-          conversation?.getAllMessages().map((message) => message.toClientDTO()) ?? [];
-        return {
-          data: messages,
-          total: messages.length,
-          page: Number(dto?.page ?? 1),
-          pageSize: Number(dto?.pageSize ?? 50),
-        };
-      });
+      ipcMain.handle(Ch.MESSAGE_LIST, async (_, dto) =>
+        withAuthenticatedValue(ctx, async () => {
+          const conversation = await aiModule.api.getConversation(String(dto.conversationId), true);
+          const messages =
+            conversation?.getAllMessages().map((message) => message.toClientDTO()) ?? [];
+          return {
+            data: messages,
+            total: messages.length,
+            page: Number(dto?.page ?? 1),
+            pageSize: Number(dto?.pageSize ?? 50),
+          };
+        }),
+      );
 
       // -- Knowledge Notes --
       ipcMain.handle(Ch.KNOWLEDGE_NOTE_CREATE, async (_, dto) =>
-        aiModule.api.createKnowledgeNote(resolveIdentityId(dto), dto),
+        withAuthenticatedValue(ctx, async (requestContext) =>
+          aiModule.api.createKnowledgeNote(requestContext.identityId, dto),
+        ),
       );
 
       logger.info('AI module registered');

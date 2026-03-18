@@ -21,10 +21,11 @@ import {
   GenerateInstancesSchema,
   BindToGoalSchema,
   TaskInstanceResponseSchema,
+  ListTaskTemplateFiltersSchema,
 } from '@dailyuse/contracts/task';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { TaskTemplateId } from '@dailyuse/contracts/primitives';
-import type { QueryTaskTemplatesReq, TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateStatus, ListTaskTemplateFilters } from '@dailyuse/contracts/task';
 import type { TaskTemplateController } from '../controllers/task-template.controller';
 
 // ============ Types ============
@@ -71,7 +72,7 @@ export function registerTaskTemplateRoutes(
       },
     },
     [auth],
-    (req, ctx) => controller.createTemplate(req.body, ctx.identityId),
+    (req, ctx) => controller.createTemplate(req.body, ctx),
     { successStatus: 201 },
   );
 
@@ -96,16 +97,17 @@ export function registerTaskTemplateRoutes(
     [auth],
     (req, ctx) => {
       const status = getFirstQueryValue(req.query?.status) as TaskTemplateStatus | undefined;
-      const folderId = getFirstQueryValue(req.query?.folderId) as QueryTaskTemplatesReq['folderId'];
-      const goalId = getFirstQueryValue(req.query?.goalId) as QueryTaskTemplatesReq['goalId'];
+      const folderId = getFirstQueryValue(
+        req.query?.folderId,
+      ) as ListTaskTemplateFilters['folderId'];
+      const goalId = getFirstQueryValue(req.query?.goalId) as ListTaskTemplateFilters['goalId'];
       const tags = getFirstQueryValue(req.query?.tags)?.split(',');
 
-      return controller.listTemplates(ctx.identityId, {
-        status,
-        folderId,
-        goalId,
-        tags,
-      });
+      // Pass filters and full context (identity injected inside controller)
+      return controller.listTemplates(
+        { status: status ? [status] : undefined, folderId, goalId, tags },
+        ctx,
+      );
     },
   );
 
@@ -126,10 +128,7 @@ export function registerTaskTemplateRoutes(
     },
     [auth],
     (req, ctx) =>
-      controller.listByPriority(
-        ctx.identityId,
-        req.query?.limit ? Number(req.query.limit) : undefined,
-      ),
+      controller.listByPriority(ctx, req.query?.limit ? Number(req.query.limit) : undefined),
   );
 
   // GET /:id — Get template by ID

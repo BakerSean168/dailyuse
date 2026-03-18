@@ -21,7 +21,7 @@ import {
 } from '@dailyuse/utils/result';
 import {
   PatchUserSettingSchema,
-  ResetUserSettingSchema,
+  ResetUserSettingPublicSchema,
   ExportSettingsSchema,
   ImportSettingsSchema,
   UserSettingResponseSchema,
@@ -95,7 +95,9 @@ export function registerSettingRoutes(
       method: 'post',
       path: '/reset',
       summary: '重置用户设置',
-      request: { body: { content: { 'application/json': { schema: ResetUserSettingSchema } } } },
+      request: {
+        body: { content: { 'application/json': { schema: ResetUserSettingPublicSchema } } },
+      },
       responses: {
         200: successResponse(UserSettingResponseSchema, '重置成功'),
       },

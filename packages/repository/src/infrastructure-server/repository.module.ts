@@ -511,7 +511,7 @@ function buildApplicationPort(
     createResource: async (data, ctx) => {
       const result = await useCases.createResource.execute({
         repositoryId: data.repositoryId,
-        identityId: ctx.identityId || 'api-user',
+        identityId: ctx.identityId,
         folderId: data.folderId,
         name: data.name,
         type: data.type as any,
@@ -573,7 +573,7 @@ function buildApplicationPort(
     uploadResources: async (data, ctx) => {
       const result = await useCases.uploadResources.execute({
         repositoryId: data.repositoryId,
-        identityId: ctx.identityId || 'api-user',
+        identityId: ctx.identityId,
         files: data.files as any,
         metadata: data.metadata as any,
       });

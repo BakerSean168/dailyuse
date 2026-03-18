@@ -83,7 +83,17 @@ export function registerRepositoryCrudRoutes(
   );
 
   router.post('/:repoId/resources/upload', auth, upload.array('files'), async (req, res) => {
-    const ctx = { identityId: (req as any).user?.identityId ?? '', deviceId: 'unknown' } as any;
+    const ctx = (req as any).ctx;
+    if (!ctx?.identityId) {
+      res.status(401).json({
+        ok: false,
+        code: 401,
+        message: 'Authentication required',
+        error: { code: 'AUTH_REQUIRED', message: 'Authentication required' },
+        timestamp: Date.now(),
+      });
+      return;
+    }
     try {
       const tags = parseUploadTags(req.body?.tags);
       const metadata: UploadResourcesRequestDTO = {
@@ -388,10 +398,7 @@ export function registerRepositoryCrudRoutes(
       },
     },
     [auth],
-    (req) =>
-      controller.createResource(req.params!.repoId, req.body, {
-        identityId: req.user?.identityId || 'api-user',
-      } as any),
+    (req, ctx) => controller.createResource(req.params!.repoId, req.body, ctx),
     { successStatus: 201 },
   );
 
