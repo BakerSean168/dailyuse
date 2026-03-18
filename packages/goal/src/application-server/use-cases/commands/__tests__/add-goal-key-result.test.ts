@@ -96,7 +96,7 @@ describe('AddGoalKeyResult', () => {
     await expect(useCase.execute(goal.id, aKeyResultInput({ weight: 6 }))).rejects.toThrow();
   });
 
-  it('should return the goal DTO with children on success', async () => {
+  it('should return the newly created key result DTO on success', async () => {
     const goal = createTestGoal('Goal with KR');
     vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
@@ -104,8 +104,7 @@ describe('AddGoalKeyResult', () => {
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.name).toBe('Goal with KR');
-      expect(result.data.keyResults).toBeDefined();
+      expect(result.data.title).toBe('My KR');
     }
   });
 

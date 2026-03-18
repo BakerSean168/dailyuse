@@ -29,6 +29,8 @@ describe('createIdType', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       'ID ExampleId_legacy-id is not in expected "Prefix_uuid" format',
     );
+
+    warnSpy.mockRestore();
   });
 
   it('accepts cross-module prefixed uuid values but preserves a prefix mismatch warning', () => {
@@ -39,6 +41,8 @@ describe('createIdType', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       'ID GuestIdentity_550e8400-e29b-41d4-a716-446655440000 does not start with expected prefix ExampleId',
     );
+
+    warnSpy.mockRestore();
   });
 
   it('exposes a strict shape check helper', () => {

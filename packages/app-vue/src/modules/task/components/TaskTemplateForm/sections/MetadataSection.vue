@@ -8,22 +8,6 @@
     </CardHeader>
     <CardContent>
       <div class="grid grid-cols-12 gap-4">
-        <!-- 任务类型 -->
-        <div class="col-span-12 md:col-span-6">
-          <Label for="task-type-select">{{ t('task.metadata.taskType') }}</Label>
-          <Select v-model="taskType">
-            <SelectTrigger id="task-type-select" class="mt-1">
-              <SelectValue :placeholder="t('task.metadata.selectType')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem :value="TaskType.OneTime">{{ t('task.metadata.oneTime') }}</SelectItem>
-              <SelectItem :value="TaskType.Recurring">{{
-                t('task.metadata.recurring')
-              }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <!-- 重要性 -->
         <div class="col-span-12 md:col-span-6">
           <Label for="importance-select">{{ t('task.metadata.importance') }}</Label>
@@ -143,7 +127,6 @@ import {
 import { Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { TaskType } from '@dailyuse/contracts/task';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -227,16 +210,6 @@ const importance = computed({
   set: (value: ImportanceLevel) => {
     updateTemplate((template) => {
       template.importance = value;
-    });
-  },
-});
-
-// 任务类型
-const taskType = computed({
-  get: () => props.modelValue.taskType ?? TaskType.Recurring,
-  set: (value: TaskType) => {
-    updateTemplate((template) => {
-      template.taskType = value;
     });
   },
 });

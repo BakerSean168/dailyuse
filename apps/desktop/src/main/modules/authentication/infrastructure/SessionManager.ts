@@ -863,7 +863,14 @@ export class SessionManager {
    */
   async getOrCreateGuestIdentity(): Promise<string> {
     const tokenData = this.tokenManager.getCachedTokenData();
-    const cachedGuestId = tokenData?.identityId;
+    let cachedGuestId = tokenData?.identityId;
+
+    // Migrate legacy GuestIdentity_ to standard IdentityId_
+    if (cachedGuestId && cachedGuestId.startsWith('GuestIdentity_')) {
+      cachedGuestId = cachedGuestId.replace('GuestIdentity_', 'IdentityId_');
+      this.logger.info('Migrated legacy GuestIdentity_ prefix to IdentityId_', { newId: cachedGuestId });
+    }
+
     if (cachedGuestId && this.isGuestToken(tokenData)) {
       const existingGuestSessions = await this.sessionRepository.findByIdentityId(
         cachedGuestId as unknown as IdentityId,
@@ -919,7 +926,12 @@ export class SessionManager {
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
     const tokenData = this.tokenManager.getCachedTokenData();
-    const cachedGuestId = tokenData?.identityId;
+    let cachedGuestId = tokenData?.identityId;
+
+    if (cachedGuestId && cachedGuestId.startsWith('GuestIdentity_')) {
+      cachedGuestId = cachedGuestId.replace('GuestIdentity_', 'IdentityId_');
+    }
+
     if (cachedGuestId && this.isGuestToken(tokenData)) {
       const guestSessions = await this.sessionRepository.findByIdentityId(
         cachedGuestId as unknown as IdentityId,
