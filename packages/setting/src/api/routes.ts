@@ -4,7 +4,7 @@
  * Routes:
  *   GET    /              — 获取用户设置
  *   PATCH  /:category     — 按分类更新用户设置 (PatchUserSettingSchema)
- *   POST   /reset         — 重置用户设置 (ResetUserSettingSchema)
+ *   POST   /reset         — 重置用户设置 (ResetUserSettingPublicSchema)
  *   POST   /export        — 导出设置 (ExportSettingsSchema)
  *   POST   /import        — 导入设置 (ImportSettingsSchema)
  *   GET    /defaults      — 获取默认设置

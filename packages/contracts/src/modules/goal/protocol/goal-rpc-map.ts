@@ -12,7 +12,7 @@ import type {
   CreateGoalRes,
   GetGoalReq,
   GetGoalRes,
-  QueryGoalsReq,
+  ListGoalFilters,
   QueryGoalsRes,
 
   // Key Result Operations  
@@ -24,7 +24,7 @@ import type {
   // Goal Folder Operations
   CreateGoalFolderReq,
   CreateGoalFolderRes,
-  QueryGoalFoldersReq,
+  ListGoalFolderFilters,
   QueryGoalFoldersRes,
 
   // Focus Session Operations
@@ -45,7 +45,7 @@ export type GoalRpcMap = {
   // Goal CRUD
   'goal:create': [CreateGoalReq, CreateGoalRes];
   'goal:get': [GetGoalReq, GetGoalRes];
-  'goal:list': [QueryGoalsReq, QueryGoalsRes];
+  'goal:list': [ListGoalFilters, QueryGoalsRes];
 
   // Key Result Operations
   'key-result:add': [AddKeyResultReq, AddKeyResultRes];
@@ -53,7 +53,7 @@ export type GoalRpcMap = {
 
   // Goal Folder Operations
   'goal-folder:create': [CreateGoalFolderReq, CreateGoalFolderRes];
-  'goal-folder:list': [QueryGoalFoldersReq, QueryGoalFoldersRes];
+  'goal-folder:list': [ListGoalFolderFilters, QueryGoalFoldersRes];
 
   // Focus Session Operations
   'focus:get-status': [GetFocusStatusReq, GetFocusStatusRes];

@@ -132,16 +132,6 @@ export interface ListGoalsQuery extends ListGoalFilters {
   identityId: IdentityId;
 }
 
-/**
- * @deprecated Use ListGoalFiltersSchema for public transport, ListGoalsQuery for internal use
- * 查询目标列表 Schema (保留以兼容)
- */
-export const QueryGoalsSchema = ListGoalFiltersSchema.extend({
-  identityId: brandedId<IdentityId>(),
-});
-
-export type QueryGoalsReq = z.infer<typeof QueryGoalsSchema>;
-
 // QueryGoalsRes 由 response-schemas.ts 中 QueryGoalsResSchema 的 z.infer 导出
 
 // ============================================================================
@@ -232,16 +222,6 @@ export interface ExportGoalsQuery extends ExportGoalFilters {
   identityId: IdentityId;
 }
 
-/**
- * @deprecated Use ExportGoalFiltersSchema for public transport, ExportGoalsQuery for internal use
- * 导出目标 Schema (保留以兼容)
- */
-export const ExportGoalsSchema = ExportGoalFiltersSchema.extend({
-  identityId: brandedId<IdentityId>(),
-});
-
-export type ExportGoalsReq = z.infer<typeof ExportGoalsSchema>;
-
 export interface ExportGoalsRes {
   data: string | Uint8Array;
   filename: string;
@@ -268,16 +248,6 @@ export type ImportGoalPayload = z.infer<typeof ImportGoalPayloadSchema>;
 export interface ImportGoalsCommand extends ImportGoalPayload {
   identityId: IdentityId;
 }
-
-/**
- * @deprecated Use ImportGoalPayloadSchema for public transport, ImportGoalsCommand for internal use
- * 导入目标 Schema (保留以兼容)
- */
-export const ImportGoalsSchema = ImportGoalPayloadSchema.extend({
-  identityId: brandedId<IdentityId>(),
-});
-
-export type ImportGoalsReq = z.infer<typeof ImportGoalsSchema>;
 
 export interface ImportGoalsRes {
   importedCount: number;

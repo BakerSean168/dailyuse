@@ -1,9 +1,9 @@
 import type {
-  GetUserSettingReq,
+  GetUserSettingPublic,
   GetUserSettingRes,
   PatchUserSettingReq,
   PatchUserSettingRes,
-  ResetUserSettingReq,
+  ResetUserSettingPublic,
   ResetUserSettingRes,
   ExportSettingsReq,
   ExportSettingsRes,
@@ -12,9 +12,9 @@ import type {
 } from '../api';
 
 export type SettingRpcMap = {
-  'setting:all': [GetUserSettingReq, GetUserSettingRes];
+  'setting:all': [GetUserSettingPublic, GetUserSettingRes];
   'setting:patch': [PatchUserSettingReq, PatchUserSettingRes];
-  'setting:reset': [ResetUserSettingReq, ResetUserSettingRes];
+  'setting:reset': [ResetUserSettingPublic, ResetUserSettingRes];
   'setting:export': [ExportSettingsReq, ExportSettingsRes];
   'setting:import': [ImportSettingsReq, ImportSettingsRes];
 };

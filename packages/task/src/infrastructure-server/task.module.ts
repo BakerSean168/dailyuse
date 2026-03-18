@@ -29,7 +29,6 @@ import type {
   BindToGoalReq,
   CompleteTaskInstanceReq,
   SkipTaskInstanceReq,
-  QueryTaskTemplatesReq,
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,
   TaskDependencyServerDTO,

@@ -21,6 +21,9 @@ export interface AuthenticationState {
   // 当前认证身份
   currentIdentity: AuthIdentityClientDTO | null;
 
+  // 认证模式
+  authMode: string | null;
+
   // 访问令牌
   accessToken: string | null;
 
@@ -48,6 +51,7 @@ export interface AuthenticationState {
 export const useAuthenticationStore = defineStore('authentication', {
   state: (): AuthenticationState => ({
     currentIdentity: null,
+    authMode: null,
     accessToken: null,
     refreshToken: null,
     activeSessions: [],
@@ -93,6 +97,10 @@ export const useAuthenticationStore = defineStore('authentication', {
 
     clearCurrentIdentity() {
       this.currentIdentity = null;
+    },
+
+    setAuthMode(mode: string | null) {
+      this.authMode = mode;
     },
 
     // ========== Token Actions ==========
@@ -153,11 +161,15 @@ export const useAuthenticationStore = defineStore('authentication', {
       }
       this.setCurrentIdentity(data.identity);
       this.setCurrentSession(data.session);
+      if ((data as any).authMode) {
+        this.setAuthMode((data as any).authMode);
+      }
     },
 
     // ========== Lifecycle ==========
     reset() {
       this.currentIdentity = null;
+      this.authMode = null;
       this.accessToken = null;
       this.refreshToken = null;
       this.activeSessions = [];
@@ -171,6 +183,12 @@ export const useAuthenticationStore = defineStore('authentication', {
 
   persist: {
     // 持久化令牌和身份（isAuthenticated is now a derived getter）
-    pick: ['accessToken', 'refreshToken', 'currentIdentity', 'tokenExpiresAt'] as string[],
+    pick: [
+      'accessToken',
+      'refreshToken',
+      'currentIdentity',
+      'authMode',
+      'tokenExpiresAt',
+    ] as string[],
   },
 });

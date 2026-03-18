@@ -5,7 +5,7 @@ import type {
   UpdateTaskTemplateRes,
   GetTaskTemplateReq,
   GetTaskTemplateRes,
-  QueryTaskTemplatesReq,
+  ListTaskTemplateFilters,
   QueryTaskTemplatesRes,
   GenerateInstancesReq,
   GenerateInstancesRes,
@@ -27,7 +27,7 @@ export type TaskRpcMap = {
   'task:create-template': [CreateTaskTemplateReq, CreateTaskTemplateRes];
   'task:update-template': [UpdateTaskTemplateReq, UpdateTaskTemplateRes];
   'task:get-template': [GetTaskTemplateReq, GetTaskTemplateRes];
-  'task:list-templates': [QueryTaskTemplatesReq, QueryTaskTemplatesRes];
+  'task:list-templates': [ListTaskTemplateFilters, QueryTaskTemplatesRes];
   'task:generate-instances': [GenerateInstancesReq, GenerateInstancesRes];
   'task:bind-goal': [BindToGoalReq, BindToGoalRes];
   'task:unbind-goal': [UnbindFromGoalReq, UnbindFromGoalRes];

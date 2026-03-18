@@ -6,7 +6,7 @@
 
 import type { IGoalFolderRepository } from '@/domain-server';
 import { GoalFolder } from '@/domain-server';
-import type { QueryGoalFoldersReq, QueryGoalFoldersRes } from '@dailyuse/contracts/goal';
+import type { ListGoalFoldersQuery, QueryGoalFoldersRes } from '@dailyuse/contracts/goal';
 
 /**
  * List Goal Folders Service
@@ -14,7 +14,7 @@ import type { QueryGoalFoldersReq, QueryGoalFoldersRes } from '@dailyuse/contrac
 export class ListGoalFolders {
   constructor(private readonly goalFolderRepository: IGoalFolderRepository) {}
 
-  async execute(input: QueryGoalFoldersReq): Promise<QueryGoalFoldersRes> {
+  async execute(input: ListGoalFoldersQuery): Promise<QueryGoalFoldersRes> {
     const folders = await this.goalFolderRepository.findByIdentityId(input.identityId);
 
     return {

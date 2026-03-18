@@ -93,16 +93,6 @@ export interface ListGoalFoldersQuery extends ListGoalFolderFilters {
   identityId: IdentityId;
 }
 
-/**
- * @deprecated Use ListGoalFolderFiltersSchema for public transport, ListGoalFoldersQuery for internal use
- * 查询文件夹列表 Schema (保留以兼容)
- */
-export const QueryGoalFoldersSchema = ListGoalFolderFiltersSchema.extend({
-  identityId: brandedId<IdentityId>(),
-});
-
-export type QueryGoalFoldersReq = z.infer<typeof QueryGoalFoldersSchema>;
-
 export interface QueryGoalFoldersRes {
   data: GoalFolderClientDTO[];
   total: number;

@@ -615,7 +615,12 @@ export class AuthDesktopApplicationService {
       const guestId = await this.sessionManager.getOrCreateGuestIdentity();
       this.authMode = AuthMode.GUEST;
       this.runtimeState = AuthRuntimeState.AUTHENTICATED;
-      await this.ensureAccountProjection(guestId, null);
+
+      // Guest 登录成功条件：已拿到 guest identity、已切换到 AuthMode.GUEST
+      // Account 投影在后台执行，失败不阻塞登录流程
+      this.ensureAccountProjection(guestId, null).catch((err) =>
+        this.logger.warn('Account projection failed in guest mode (non-blocking)', { error: err }),
+      );
 
       // Open local-only PowerSync for guest data
       openPowerSyncLocalOnly().catch((err) =>
@@ -1236,8 +1241,9 @@ export class AuthDesktopApplicationService {
   }
 
   private getProjectionFallbackEmail(identityId: string): string | null {
+    // Guest 身份不使用 fallback email，避免创建带有无效邮箱的 Account
     if (this.isGuestIdentityId(identityId)) {
-      return 'guest@local';
+      return null;
     }
 
     return null;

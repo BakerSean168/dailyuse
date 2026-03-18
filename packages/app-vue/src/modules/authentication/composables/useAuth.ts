@@ -20,6 +20,7 @@ import type {
   AuthResponseDTO,
   RememberedDesktopAccountDTO,
 } from '@dailyuse/contracts/authentication';
+import { AuthMode } from '@dailyuse/contracts/authentication';
 import { WindowChannels } from '@dailyuse/contracts/electron';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AUTH_SERVICE_KEY } from '../../../di/keys';
@@ -244,12 +245,27 @@ export function useAuth() {
       const result = await service.enterGuestMode();
       if (result.ok) {
         const guestData = result.data;
+        const now = Date.now();
         // Set a synthetic identity so isAuthenticated becomes true
+        // Note: No email identifier - guest mode has no email
         store.setCurrentIdentity({
           id: guestData.identityId,
-          email: 'guest@local',
-          status: 'ACTIVE',
-        } as any);
+          status: 'Active',
+          failedLoginAttempts: 0,
+          lastFailedAttempt: null,
+          lockedUntil: null,
+          identifiers: [], // Guest has no identifiers (no email, no phone)
+          credentials: [],
+          hasPassword: false,
+          hasEmail: false,
+          hasPhone: false,
+          hasOAuth: false,
+          version: 1,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+        });
+        store.setAuthMode(AuthMode.GUEST);
         store.setAccessToken('guest-local-token');
         toast.success('已进入访客模式', { description: '数据仅保存在本地' });
         await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);

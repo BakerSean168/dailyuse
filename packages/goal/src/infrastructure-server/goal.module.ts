@@ -57,12 +57,12 @@ import type {
   UpdateGoalRes,
   DeleteGoalRes,
   GetGoalRes,
-  QueryGoalsReq,
+  ListGoalsQuery,
   QueryGoalsRes,
   GoalClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
-  QueryGoalFoldersReq,
+  ListGoalFoldersQuery,
   QueryGoalFoldersRes,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
@@ -176,7 +176,7 @@ export interface GoalApplicationPort {
   // Goal CRUD / 目标增删改查
   createGoal(input: CreateGoalReq, context: Context): Promise<Result<CreateGoalRes>>;
   getGoal(id: string, includeChildren?: boolean): Promise<Result<GetGoalRes>>;
-  listGoals(input: QueryGoalsReq): Promise<Result<QueryGoalsRes>>;
+  listGoals(input: ListGoalsQuery): Promise<Result<QueryGoalsRes>>;
   updateGoal(id: string, input: UpdateGoalReq): Promise<Result<UpdateGoalRes>>;
   deleteGoal(id: string): Promise<Result<DeleteGoalRes>>;
   permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
@@ -186,7 +186,7 @@ export interface GoalApplicationPort {
   searchGoals(identityId: string, query: string): Promise<Result<QueryGoalsRes>>;
 
   // Folder CRUD / 文件夹增删改查
-  listGoalFolders(input: QueryGoalFoldersReq): Promise<QueryGoalFoldersRes>;
+  listGoalFolders(input: ListGoalFoldersQuery): Promise<QueryGoalFoldersRes>;
   createGoalFolder(
     identityId: IdentityId,
     input: CreateGoalFolderReq,

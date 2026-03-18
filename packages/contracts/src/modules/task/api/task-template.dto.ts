@@ -88,22 +88,6 @@ export interface QueryTaskTemplatesInternal {
   goalId?: GoalId;
   tags?: string[];
 }
-
-/**
- * @deprecated Use ListTaskTemplateFiltersSchema for public transport, QueryTaskTemplatesInternal for internal use
- */
-export const QueryTaskTemplatesSchema = z.object({
-  identityId: brandedId<IdentityId>(),
-  status: z.array(z.string()).optional(),
-  folderId: brandedId<TaskFolderId>().optional(),
-  goalId: brandedId<GoalId>().optional(),
-  tags: z.array(z.string()).optional(),
-});
-
-/**
- * @deprecated Use ListTaskTemplateFilters for public transport, QueryTaskTemplatesInternal for internal use
- */
-export type QueryTaskTemplatesReq = z.infer<typeof QueryTaskTemplatesSchema>;
 export interface QueryTaskTemplatesRes {
   templates: TaskTemplateClientDTO[];
   total: number;
