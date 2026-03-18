@@ -70,7 +70,7 @@ export interface SessionStatus extends Omit<SessionStatusDTO, 'device'> {
  */
 export class SessionManager {
   private static instance: SessionManager | null = null;
-  private static readonly GUEST_ID_PREFIX = 'GuestIdentity';
+  private static readonly GUEST_ID_PREFIX = 'IdentityId';
   private static readonly LOCAL_ACCESS_TOKEN = 'local-token';
   private static readonly GUEST_ACCESS_TOKEN = 'guest-local-token';
 
@@ -862,8 +862,9 @@ export class SessionManager {
    * Can be cleared via clearGuestIdentity() when the user upgrades to a cloud account.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
-    const cachedGuestId = this.tokenManager.getCachedTokenData()?.identityId;
-    if (cachedGuestId && this.isGuestIdentity(cachedGuestId)) {
+    const tokenData = this.tokenManager.getCachedTokenData();
+    const cachedGuestId = tokenData?.identityId;
+    if (cachedGuestId && this.isGuestToken(tokenData)) {
       const existingGuestSessions = await this.sessionRepository.findByIdentityId(
         cachedGuestId as unknown as IdentityId,
       );
@@ -917,8 +918,9 @@ export class SessionManager {
 
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
-    const cachedGuestId = this.tokenManager.getCachedTokenData()?.identityId;
-    if (cachedGuestId && this.isGuestIdentity(cachedGuestId)) {
+    const tokenData = this.tokenManager.getCachedTokenData();
+    const cachedGuestId = tokenData?.identityId;
+    if (cachedGuestId && this.isGuestToken(tokenData)) {
       const guestSessions = await this.sessionRepository.findByIdentityId(
         cachedGuestId as unknown as IdentityId,
       );
@@ -930,8 +932,12 @@ export class SessionManager {
     this.logger.info('Guest identity cleared');
   }
 
-  private isGuestIdentity(identityId: string | null | undefined): identityId is string {
-    return Boolean(identityId?.startsWith(`${SessionManager.GUEST_ID_PREFIX}_`));
+  private isGuestToken(tokenData: { accessToken?: string; refreshToken?: string } | null): boolean {
+    if (!tokenData) return false;
+    return (
+      tokenData.accessToken === SessionManager.GUEST_ACCESS_TOKEN &&
+      tokenData.refreshToken === SessionManager.GUEST_ACCESS_TOKEN
+    );
   }
 
   // ============ Private Methods ============

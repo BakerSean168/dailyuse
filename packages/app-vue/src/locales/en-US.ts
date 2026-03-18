@@ -599,7 +599,7 @@ export default {
     logoutHint: 'You can safely sign out here and return to the login page right away.',
     logoutConfirm: {
       title: 'Log out of your account?',
-      description: 'You will return to the sign-in page and need to log in again to continue.',
+      description: 'You will return to the sign-in page, and all unsynced local data will be permanently deleted. You need to log in again to continue.',
       confirmText: 'Log Out',
       cancelText: 'Cancel',
     },
