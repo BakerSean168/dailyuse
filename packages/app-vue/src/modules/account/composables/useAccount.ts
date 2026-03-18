@@ -43,7 +43,7 @@ export function useAccount() {
     if (authStore.authMode === AuthMode.GUEST) {
       // Create a mock profile for guest
       accountStore.setCurrentAccount({
-        id: 'guest',
+        id: authStore.currentIdentity?.id as any,
         email: null,
         profile: {
           nickname: '本地访客',
