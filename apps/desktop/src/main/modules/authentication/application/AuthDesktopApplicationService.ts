@@ -1213,7 +1213,7 @@ export class AuthDesktopApplicationService {
     identityId: string,
     tokenData: TokenStorageData | null,
   ): AuthMode {
-    if (this.isGuestIdentityId(identityId)) {
+    if (this.isGuestTokenData(tokenData)) {
       return AuthMode.GUEST;
     }
 
@@ -1224,8 +1224,14 @@ export class AuthDesktopApplicationService {
     return tokenData ? AuthMode.ONLINE_USER : AuthMode.OFFLINE_USER;
   }
 
-  private isGuestIdentityId(identityId: string | null | undefined): identityId is string {
-    return Boolean(identityId?.startsWith('GuestIdentity_'));
+  private isGuestTokenData(tokenData: TokenStorageData | null): boolean {
+    if (!tokenData) {
+      return false;
+    }
+    return (
+      tokenData.accessToken === 'guest-local-token' &&
+      tokenData.refreshToken === 'guest-local-token'
+    );
   }
 
   private isLocalOnlyTokenData(tokenData: TokenStorageData | null): boolean {
@@ -1234,18 +1240,13 @@ export class AuthDesktopApplicationService {
     }
 
     return (
-      (tokenData.accessToken === 'local-token' && tokenData.refreshToken === 'local-token') ||
-      (tokenData.accessToken === 'guest-local-token' &&
-        tokenData.refreshToken === 'guest-local-token')
+      tokenData.accessToken === 'local-token' && tokenData.refreshToken === 'local-token'
     );
   }
 
   private getProjectionFallbackEmail(identityId: string): string | null {
-    // Guest 身份不使用 fallback email，避免创建带有无效邮箱的 Account
-    if (this.isGuestIdentityId(identityId)) {
-      return null;
-    }
-
+    // 无法直接通过 id 判断访客（已使用标准 IdentityId）
+    // 当前业务中访客和未同步账号都没有有效邮箱，默认返回 null 即可。
     return null;
   }
 

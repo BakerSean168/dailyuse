@@ -588,7 +588,7 @@ export default {
     logoutHint: '你可以在这里安全退出当前账户，会立即返回登录页。',
     logoutConfirm: {
       title: '确认退出登录？',
-      description: '退出后将返回登录页，如需继续使用需要重新登录。',
+      description: '退出后将返回登录页，并清除所有未同步的本地数据，此操作无法恢复。如需继续使用需要重新登录。',
       confirmText: '退出登录',
       cancelText: '取消',
     },
