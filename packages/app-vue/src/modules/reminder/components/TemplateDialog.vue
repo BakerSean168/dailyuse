@@ -119,22 +119,6 @@
               </div>
             </div>
 
-            <div>
-              <Label>{{ t('reminder.templateDialog.labelReminderType') }}</Label>
-              <Select v-model="formData.type">
-                <SelectTrigger class="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="OneTime">{{
-                    t('reminder.templateDialog.optionOneTime')
-                  }}</SelectItem>
-                  <SelectItem value="Recurring">{{
-                    t('reminder.templateDialog.optionRecurring')
-                  }}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <!-- Time Configuration -->
@@ -252,7 +236,7 @@
           </div>
 
           <!-- Recurrence (only for Recurring type) -->
-          <Collapsible v-if="formData.type === 'Recurring'" v-model:open="showRecurrence">
+          <Collapsible v-model:open="showRecurrence">
             <CollapsibleTrigger as-child>
               <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
                 <span class="flex items-center gap-2">
@@ -776,7 +760,7 @@ function buildPayload(): CreateReminderTemplateReq {
 
   // Build recurrence (optional)
   let recurrence: CreateReminderTemplateReq['recurrence'] | undefined;
-  if (formData.type === 'Recurring' && formData.recurrenceType) {
+  if (formData.recurrenceType) {
     if (formData.recurrenceType === 'Daily') {
       recurrence = {
         type: 'Daily' as const,
@@ -813,7 +797,7 @@ function buildPayload(): CreateReminderTemplateReq {
 
   return {
     title: formData.title,
-    type: formData.type as any,
+    type: 'Recurring',
     trigger,
     activeTime,
     notificationConfig,
