@@ -675,6 +675,8 @@ export default {
     templateDialog: {
       titleCreate: 'Create Reminder Template',
       titleEdit: 'Edit Reminder Template',
+      descCreate: 'Configure timing, recurrence rules, and notification details for this template.',
+      descEdit: 'Update the reminder template settings, trigger conditions, and display details.',
       btnCancel: 'Cancel',
       btnDone: 'Done',
       btnPick: 'Pick',
@@ -752,6 +754,8 @@ export default {
     groupDialog: {
       titleCreate: 'Create Group',
       titleEdit: 'Edit Group',
+      descCreate: 'Configure the group name, icon, color, and control behavior for reminders.',
+      descEdit: 'Update the reminder group details, visual style, and control mode.',
       btnCancel: 'Cancel',
       btnDone: 'Done',
       btnPick: 'Pick',

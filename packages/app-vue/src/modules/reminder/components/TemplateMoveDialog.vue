@@ -1,108 +1,118 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="max-w-md">
-      <DialogHeader>
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-md flex-col overflow-hidden p-0">
+      <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <div class="flex items-center gap-2">
           <FolderInput class="h-5 w-5 text-primary" />
           <DialogTitle>{{ t('reminder.templateMove.title') }}</DialogTitle>
         </div>
+        <DialogDescription class="text-sm text-muted-foreground">
+          Choose a new group for this reminder template or move it back to the root list.
+        </DialogDescription>
       </DialogHeader>
 
-      <div class="space-y-4">
-        <!-- Current Template Info -->
-        <Alert v-if="template">
-          <Info class="h-4 w-4" />
-          <AlertTitle>{{ t('reminder.templateMove.currentTemplate') }}</AlertTitle>
-          <AlertDescription>
-            <div class="flex items-center gap-2 mt-1">
-              <Bell class="h-4 w-4" />
-              <span class="font-medium">{{ template.name }}</span>
-            </div>
-            <div v-if="template.groupId" class="flex items-center gap-2 mt-1 text-xs">
-              <Folder class="h-3 w-3" />
-              <span>{{ t('reminder.templateMove.currentGroup') }} {{ getCurrentGroupName() }}</span>
-            </div>
-          </AlertDescription>
-        </Alert>
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+        <div class="space-y-4 py-2">
+          <!-- Current Template Info -->
+          <Alert v-if="template">
+            <Info class="h-4 w-4" />
+            <AlertTitle>{{ t('reminder.templateMove.currentTemplate') }}</AlertTitle>
+            <AlertDescription>
+              <div class="flex items-center gap-2 mt-1">
+                <Bell class="h-4 w-4" />
+                <span class="font-medium">{{ template.name }}</span>
+              </div>
+              <div v-if="template.groupId" class="flex items-center gap-2 mt-1 text-xs">
+                <Folder class="h-3 w-3" />
+                <span
+                  >{{ t('reminder.templateMove.currentGroup') }} {{ getCurrentGroupName() }}</span
+                >
+              </div>
+            </AlertDescription>
+          </Alert>
 
-        <!-- Target Group Selection -->
-        <div class="space-y-2">
-          <Label>{{ t('reminder.templateMove.targetGroup') }}</Label>
-          <Select v-model="selectedGroupId" :disabled="moveToRoot">
-            <SelectTrigger>
-              <SelectValue :placeholder="t('reminder.templateMove.selectTargetGroup')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="group in groupOptions"
-                :key="group.id"
-                :value="group.id"
-                :disabled="group.id === template?.groupId"
-              >
-                <div class="flex items-center gap-2">
-                  <component :is="getGroupIcon(group.icon)" class="h-4 w-4" />
-                  <span>{{ group.name }}</span>
-                  <Badge v-if="group.id === template?.groupId" variant="outline" class="ml-auto"
-                    >> {{ t('reminder.templateMove.current') }}
-                  </Badge>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <!-- Move to Root Option -->
-        <div class="flex items-center space-x-2">
-          <Checkbox
-            id="move-to-root"
-            v-model:checked="moveToRoot"
-            @update:checked="handleMoveToRootChange"
-          />
-          <Label
-            for="move-to-root"
-            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-          >
-            {{ t('reminder.templateMove.removeFromAllGroups') }}
-          </Label>
-        </div>
-
-        <!-- Warning Alert -->
-        <Alert v-if="moveToRoot" variant="destructive">
-          <AlertCircle class="h-4 w-4" />
-          <AlertTitle>{{ t('reminder.templateMove.warning') }}</AlertTitle>
-          <AlertDescription>
-            {{ t('reminder.templateMove.warningDescription') }}
-          </AlertDescription>
-        </Alert>
-
-        <!-- Target Group Info -->
-        <Card v-if="selectedGroupId && !moveToRoot" class="p-4">
-          <h4 class="text-sm font-semibold mb-2">
-            {{ t('reminder.templateMove.targetGroupInfo') }}
-          </h4>
-          <div class="space-y-2 text-sm">
-            <div class="flex items-center gap-2">
-              <Info class="h-4 w-4 text-muted-foreground" />
-              <span>{{ t('reminder.templateMove.name') }} {{ getGroupName(selectedGroupId) }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <Hash class="h-4 w-4 text-muted-foreground" />
-              <span
-                >{{ t('reminder.templateMove.templates') }}
-                {{ getGroupTemplateCount(selectedGroupId) }}</span
-              >
-            </div>
-            <div class="flex items-center gap-2">
-              <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
-              <span
-                >{{ t('reminder.templateMove.status') }} {{ getGroupStatus(selectedGroupId) }}</span
-              >
-            </div>
+          <!-- Target Group Selection -->
+          <div class="space-y-2">
+            <Label>{{ t('reminder.templateMove.targetGroup') }}</Label>
+            <Select v-model="selectedGroupId" :disabled="moveToRoot">
+              <SelectTrigger>
+                <SelectValue :placeholder="t('reminder.templateMove.selectTargetGroup')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="group in groupOptions"
+                  :key="group.id"
+                  :value="group.id"
+                  :disabled="group.id === template?.groupId"
+                >
+                  <div class="flex items-center gap-2">
+                    <component :is="getGroupIcon(group.icon)" class="h-4 w-4" />
+                    <span>{{ group.name }}</span>
+                    <Badge v-if="group.id === template?.groupId" variant="outline" class="ml-auto"
+                      >> {{ t('reminder.templateMove.current') }}
+                    </Badge>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </Card>
+
+          <!-- Move to Root Option -->
+          <div class="flex items-center space-x-2">
+            <Checkbox
+              id="move-to-root"
+              v-model:checked="moveToRoot"
+              @update:checked="handleMoveToRootChange"
+            />
+            <Label
+              for="move-to-root"
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              {{ t('reminder.templateMove.removeFromAllGroups') }}
+            </Label>
+          </div>
+
+          <!-- Warning Alert -->
+          <Alert v-if="moveToRoot" variant="destructive">
+            <AlertCircle class="h-4 w-4" />
+            <AlertTitle>{{ t('reminder.templateMove.warning') }}</AlertTitle>
+            <AlertDescription>
+              {{ t('reminder.templateMove.warningDescription') }}
+            </AlertDescription>
+          </Alert>
+
+          <!-- Target Group Info -->
+          <Card v-if="selectedGroupId && !moveToRoot" class="p-4">
+            <h4 class="text-sm font-semibold mb-2">
+              {{ t('reminder.templateMove.targetGroupInfo') }}
+            </h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex items-center gap-2">
+                <Info class="h-4 w-4 text-muted-foreground" />
+                <span
+                  >{{ t('reminder.templateMove.name') }} {{ getGroupName(selectedGroupId) }}</span
+                >
+              </div>
+              <div class="flex items-center gap-2">
+                <Hash class="h-4 w-4 text-muted-foreground" />
+                <span
+                  >{{ t('reminder.templateMove.templates') }}
+                  {{ getGroupTemplateCount(selectedGroupId) }}</span
+                >
+              </div>
+              <div class="flex items-center gap-2">
+                <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
+                <span
+                  >{{ t('reminder.templateMove.status') }}
+                  {{ getGroupStatus(selectedGroupId) }}</span
+                >
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
 
-      <DialogFooter class="flex-row justify-end gap-2">
+      <DialogFooter class="shrink-0 flex-row justify-end gap-2 border-t p-6 pt-4">
         <Button variant="ghost" @click="close" :disabled="isMoving">
           {{ t('reminder.templateMove.cancel') }}
         </Button>
@@ -132,9 +142,10 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';

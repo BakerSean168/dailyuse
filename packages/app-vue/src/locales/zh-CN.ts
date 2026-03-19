@@ -664,6 +664,8 @@ export default {
     templateDialog: {
       titleCreate: '创建提醒模板',
       titleEdit: '编辑提醒模板',
+      descCreate: '配置提醒模板的时间、重复规则和通知内容。',
+      descEdit: '更新提醒模板设置，调整触发条件和展示信息。',
       btnCancel: '取消',
       btnDone: '完成',
       btnPick: '选择',
@@ -740,6 +742,8 @@ export default {
     groupDialog: {
       titleCreate: '创建分组',
       titleEdit: '编辑分组',
+      descCreate: '配置提醒分组的名称、图标、颜色和控制方式。',
+      descEdit: '更新提醒分组信息，调整展示样式和控制模式。',
       btnCancel: '取消',
       btnDone: '完成',
       btnPick: '选择',

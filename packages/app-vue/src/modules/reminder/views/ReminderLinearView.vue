@@ -125,6 +125,7 @@
       ref="templateDialogRef"
       :template="editingTemplate"
       :group-options="groups"
+      :saving="isSaving"
       @save="handleSaveTemplate"
       @update="handleUpdateTemplate"
     />
@@ -132,6 +133,7 @@
     <GroupDialog
       ref="groupDialogRef"
       :group="editingGroup"
+      :saving="isSaving"
       @save="handleSaveGroup"
       @update="handleUpdateGroup"
     />
@@ -170,6 +172,7 @@ const {
   templates,
   groups,
   isLoading,
+  isSaving,
   fetchTemplates,
   fetchGroups,
   createTemplate,
@@ -259,18 +262,25 @@ function handleStatusChanged(tpl: any, _enabled: boolean) {
 
 async function handleSaveTemplate(data: Record<string, unknown>) {
   const result = await createTemplate(data as any);
-  if (result) toast.success(t('reminder.toast.templateCreated'));
+  if (result) {
+    toast.success(t('reminder.toast.templateCreated'));
+    templateDialogRef.value?.close();
+  }
 }
 
 async function handleUpdateTemplate(id: string, data: Record<string, unknown>) {
   const result = await updateTemplate(id, data as any);
-  if (result) toast.success(t('reminder.toast.templateUpdated'));
+  if (result) {
+    toast.success(t('reminder.toast.templateUpdated'));
+    templateDialogRef.value?.close();
+  }
 }
 
 async function handleSaveGroup(data: Record<string, unknown>) {
   const result = await createGroup(data as any);
   if (result) {
     toast.success(t('reminder.toast.groupCreated'));
+    groupDialogRef.value?.close();
   }
 }
 
@@ -278,6 +288,7 @@ async function handleUpdateGroup(id: string, data: Record<string, unknown>) {
   const result = await updateGroup(id, data as any);
   if (result) {
     toast.success(t('reminder.toast.groupUpdated'));
+    groupDialogRef.value?.close();
   }
   await fetchGroups();
 }

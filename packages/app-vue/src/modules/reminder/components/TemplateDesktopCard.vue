@@ -1,11 +1,14 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden">
-      <DialogHeader class="shrink-0">
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden p-0">
+      <DialogHeader class="shrink-0 px-6 pt-6 pb-4">
         <div class="flex items-center gap-2">
           <component :is="getTemplateIcon()" class="h-6 w-6 text-primary" />
           <DialogTitle>{{ template?.name || 'Template Details' }}</DialogTitle>
         </div>
+        <DialogDescription class="text-sm text-muted-foreground">
+          Review reminder template details, status, and scheduling information.
+        </DialogDescription>
         <div class="flex items-center gap-2 mt-2">
           <Badge :variant="template?.effectiveEnabled ? 'default' : 'secondary'">
             {{ template?.effectiveEnabled ? 'Running' : 'Paused' }}
@@ -17,148 +20,144 @@
         </div>
       </DialogHeader>
 
-      <div class="min-h-0 flex-1">
-        <ScrollArea class="h-full">
-          <div v-if="template" class="space-y-6 px-1 py-4 pr-4">
-            <!-- Basic Info -->
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+        <div v-if="template" class="space-y-6 py-2">
+          <!-- Basic Info -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold flex items-center gap-2">
+              <Info class="h-4 w-4" />
+              Basic Information
+            </h3>
+            <Separator />
+
             <div class="space-y-3">
-              <h3 class="text-sm font-semibold flex items-center gap-2">
-                <Info class="h-4 w-4" />
-                Basic Information
-              </h3>
-              <Separator />
-
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <FileText class="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">Title</p>
-                    <p class="text-sm text-muted-foreground">{{ template.name }}</p>
-                  </div>
+              <div class="flex items-start gap-3">
+                <FileText class="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Title</p>
+                  <p class="text-sm text-muted-foreground">{{ template.name }}</p>
                 </div>
+              </div>
 
-                <div v-if="template.description" class="flex items-start gap-3">
-                  <AlignLeft class="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">Description</p>
-                    <p class="text-sm text-muted-foreground">{{ template.description }}</p>
-                  </div>
+              <div v-if="template.description" class="flex items-start gap-3">
+                <AlignLeft class="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Description</p>
+                  <p class="text-sm text-muted-foreground">{{ template.description }}</p>
                 </div>
+              </div>
 
-                <div class="flex items-start gap-3">
-                  <Clock class="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">Trigger</p>
-                    <Badge variant="outline" class="mt-1">
-                      {{ template.triggerText || 'Not set' }}
+              <div class="flex items-start gap-3">
+                <Clock class="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Trigger</p>
+                  <Badge variant="outline" class="mt-1">
+                    {{ template.triggerText || 'Not set' }}
+                  </Badge>
+                </div>
+              </div>
+
+              <div v-if="template.trigger" class="flex items-start gap-3">
+                <Settings class="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Trigger Configuration</p>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    <Badge variant="secondary"
+                      >Type: {{ template.trigger.type || 'unknown' }}</Badge
+                    >
+                    <Badge v-if="template.trigger.interval" variant="secondary">
+                      Interval: {{ template.trigger.interval.minutes }} min
+                    </Badge>
+                    <Badge v-if="template.trigger.fixedTime" variant="secondary">
+                      Time: {{ template.trigger.fixedTime.time }}
                     </Badge>
                   </div>
                 </div>
-
-                <div v-if="template.trigger" class="flex items-start gap-3">
-                  <Settings class="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">Trigger Configuration</p>
-                    <div class="flex flex-wrap gap-1 mt-1">
-                      <Badge variant="secondary"
-                        >Type: {{ template.trigger.type || 'unknown' }}</Badge
-                      >
-                      <Badge v-if="template.trigger.interval" variant="secondary">
-                        Interval: {{ template.trigger.interval.minutes }} min
-                      </Badge>
-                      <Badge v-if="template.trigger.fixedTime" variant="secondary">
-                        Time: {{ template.trigger.fixedTime.time }}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
+          </div>
 
-            <!-- Statistics -->
+          <!-- Statistics -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold flex items-center gap-2">
+              <BarChart3 class="h-4 w-4" />
+              Statistics
+            </h3>
+            <Separator />
+
+            <div class="grid grid-cols-3 gap-4">
+              <Card class="p-4 text-center">
+                <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
+                <div class="text-xs text-muted-foreground">Total Instances</div>
+              </Card>
+              <Card class="p-4 text-center">
+                <div class="text-2xl font-bold text-success">{{ stats.completed }}</div>
+                <div class="text-xs text-muted-foreground">Completed</div>
+              </Card>
+              <Card class="p-4 text-center">
+                <div class="text-2xl font-bold text-warning">{{ stats.pending }}</div>
+                <div class="text-xs text-muted-foreground">Pending</div>
+              </Card>
+            </div>
+          </div>
+
+          <!-- Time Info -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-semibold flex items-center gap-2">
+              <Calendar class="h-4 w-4" />
+              Time Information
+            </h3>
+            <Separator />
+
             <div class="space-y-3">
-              <h3 class="text-sm font-semibold flex items-center gap-2">
-                <BarChart3 class="h-4 w-4" />
-                Statistics
-              </h3>
-              <Separator />
-
-              <div class="grid grid-cols-3 gap-4">
-                <Card class="p-4 text-center">
-                  <div class="text-2xl font-bold text-primary">{{ stats.total }}</div>
-                  <div class="text-xs text-muted-foreground">Total Instances</div>
-                </Card>
-                <Card class="p-4 text-center">
-                  <div class="text-2xl font-bold text-success">{{ stats.completed }}</div>
-                  <div class="text-xs text-muted-foreground">Completed</div>
-                </Card>
-                <Card class="p-4 text-center">
-                  <div class="text-2xl font-bold text-warning">{{ stats.pending }}</div>
-                  <div class="text-xs text-muted-foreground">Pending</div>
-                </Card>
-              </div>
-            </div>
-
-            <!-- Time Info -->
-            <div class="space-y-3">
-              <h3 class="text-sm font-semibold flex items-center gap-2">
-                <Calendar class="h-4 w-4" />
-                Time Information
-              </h3>
-              <Separator />
-
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <CalendarPlus class="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">Created At</p>
-                    <p class="text-sm text-muted-foreground">
-                      {{ formatDate(template.createdAt) }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <CalendarCheck class="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">Updated At</p>
-                    <p class="text-sm text-muted-foreground">
-                      {{ formatDate(template.updatedAt) }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Status Toggle -->
-            <div class="flex items-center justify-between p-4 border rounded-lg">
-              <div class="flex items-center gap-3">
-                <Power
-                  :class="[
-                    'h-5 w-5',
-                    template.effectiveEnabled ? 'text-success' : 'text-muted-foreground',
-                  ]"
-                />
-                <div>
-                  <p class="text-sm font-medium">Template Status</p>
-                  <p class="text-xs text-muted-foreground">
-                    {{ template.effectiveEnabled ? 'Currently active' : 'Currently paused' }}
+              <div class="flex items-start gap-3">
+                <CalendarPlus class="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Created At</p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ formatDate(template.createdAt) }}
                   </p>
                 </div>
               </div>
-              <Switch
-                :checked="template.effectiveEnabled"
-                :disabled="isTogglingStatus"
-                @update:checked="handleToggleStatus"
-              />
+
+              <div class="flex items-start gap-3">
+                <CalendarCheck class="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">Updated At</p>
+                  <p class="text-sm text-muted-foreground">
+                    {{ formatDate(template.updatedAt) }}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        </ScrollArea>
+
+          <!-- Status Toggle -->
+          <div class="flex items-center justify-between p-4 border rounded-lg">
+            <div class="flex items-center gap-3">
+              <Power
+                :class="[
+                  'h-5 w-5',
+                  template.effectiveEnabled ? 'text-success' : 'text-muted-foreground',
+                ]"
+              />
+              <div>
+                <p class="text-sm font-medium">Template Status</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ template.effectiveEnabled ? 'Currently active' : 'Currently paused' }}
+                </p>
+              </div>
+            </div>
+            <Switch
+              :checked="template.effectiveEnabled"
+              :disabled="isTogglingStatus"
+              @update:checked="handleToggleStatus"
+            />
+          </div>
+        </div>
       </div>
 
-      <Separator />
-
-      <DialogFooter class="shrink-0">
+      <DialogFooter class="shrink-0 border-t p-6 pt-4">
         <Button variant="default" @click="handleEdit">
           <Pencil class="h-4 w-4 mr-2" />
           Edit Template
@@ -195,15 +194,15 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Card } from '@dailyuse/ui-vue-shadcn';
 import { Switch } from '@dailyuse/ui-vue-shadcn';
-import { ScrollArea } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import type { ReminderTemplateCardModel } from '../types';
 
