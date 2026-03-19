@@ -45,11 +45,6 @@ export interface RepositoryState {
   /** 侧边栏是否折叠 */
   sidebarCollapsed: boolean;
 
-  /** 打开的标签页 IDs */
-  openTabIds: string[];
-  /** 当前激活的标签页 ID */
-  activeTabId: string | null;
-
   isLoading: boolean;
   error: string | null;
   isInitialized: boolean;
@@ -71,8 +66,6 @@ export const useRepositoryStore = defineStore('repository', {
     recentInsertions: [],
     sidebarMode: 'files',
     sidebarCollapsed: false,
-    openTabIds: [],
-    activeTabId: null,
     isLoading: false,
     error: null,
     isInitialized: false,
@@ -90,7 +83,7 @@ export const useRepositoryStore = defineStore('repository', {
         images: [],
         videos: [],
         audio: [],
-        documents: [],
+        files: [],
         other: [],
       };
       for (const r of Array.isArray(this.resources) ? this.resources : []) {
@@ -111,7 +104,7 @@ export const useRepositoryStore = defineStore('repository', {
           ext === '.docx' ||
           ext === '.txt'
         ) {
-          groups.documents.push(r);
+          groups.files.push(r);
         } else {
           groups.other.push(r);
         }
@@ -141,8 +134,6 @@ export const useRepositoryStore = defineStore('repository', {
       this.treeNodes = [];
       this.persistedBookmarks = [];
       this.recentInsertions = [];
-      this.openTabIds = [];
-      this.activeTabId = null;
       this.resetBookmarkUiState();
     },
 
@@ -159,19 +150,12 @@ export const useRepositoryStore = defineStore('repository', {
     },
     removeResource(id: string) {
       this.resources = this.resources.filter((r) => r.id !== id);
-      this.openTabIds = this.openTabIds.filter((tabId) => tabId !== id);
-      if (this.activeTabId === id) {
-        this.activeTabId = this.openTabIds[0] ?? null;
-      }
       if (this.currentResource?.id === id) {
         this.currentResource = null;
       }
     },
     setCurrentResource(r: ResourceClientDTO | null) {
       this.currentResource = r;
-      if (r) {
-        this.openTab(r.id);
-      }
     },
 
     // ── Tree Nodes ──
@@ -242,40 +226,6 @@ export const useRepositoryStore = defineStore('repository', {
       this.sidebarCollapsed = !this.sidebarCollapsed;
     },
 
-    // ── Tabs ──
-    openTab(resourceId: string) {
-      if (!this.openTabIds.includes(resourceId)) {
-        this.openTabIds.push(resourceId);
-      }
-      this.activeTabId = resourceId;
-    },
-    closeTab(resourceId: string) {
-      this.openTabIds = this.openTabIds.filter((id) => id !== resourceId);
-      if (this.activeTabId === resourceId) {
-        this.activeTabId = this.openTabIds[this.openTabIds.length - 1] ?? null;
-      }
-    },
-    closeOtherTabs(keepId: string) {
-      this.openTabIds = [keepId];
-      this.activeTabId = keepId;
-    },
-    closeTabsToRight(fromId: string) {
-      const idx = this.openTabIds.indexOf(fromId);
-      if (idx >= 0) {
-        this.openTabIds = this.openTabIds.slice(0, idx + 1);
-        if (!this.openTabIds.includes(this.activeTabId!)) {
-          this.activeTabId = fromId;
-        }
-      }
-    },
-    closeAllTabs() {
-      this.openTabIds = [];
-      this.activeTabId = null;
-    },
-    setActiveTab(id: string) {
-      this.activeTabId = id;
-    },
-
     // ── Common ──
     setLoading(v: boolean) {
       this.isLoading = v;
@@ -297,8 +247,6 @@ export const useRepositoryStore = defineStore('repository', {
       'sidebarMode',
       'sidebarCollapsed',
       'currentRepositoryId',
-      'openTabIds',
-      'activeTabId',
       'persistedBookmarks',
       'recentInsertions',
     ] as string[],

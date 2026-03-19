@@ -22,7 +22,7 @@ export const Default: Story = {
   args: {
     content: `# 欢迎使用编辑器\n\n这是一个 Markdown 编辑器组件。\n\n## 功能特性\n\n- 实时预览\n- 语法高亮\n- [[内部链接]] 支持\n- 文件拖放上传\n\n## 代码示例\n\n\`\`\`typescript\nconst message = 'Hello World';\nconsole.log(message);\n\`\`\``,
     fileName: '学习笔记.md',
-    folderPath: '知识库/技术文档',
+    folderPath: '知识库/技术笔记',
     isSaving: false,
     isDirty: false,
   },
@@ -30,7 +30,7 @@ export const Default: Story = {
 
 export const Saving: Story = {
   args: {
-    content: '# 保存中的文档\n\n内容正在保存...',
+    content: '# 保存中的笔记\n\n内容正在保存...',
     fileName: 'draft.md',
     folderPath: '草稿',
     isSaving: true,
@@ -40,7 +40,7 @@ export const Saving: Story = {
 
 export const DirtyState: Story = {
   args: {
-    content: '# 已修改的文档\n\n这个文档有未保存的修改。',
+    content: '# 已修改的笔记\n\n这篇笔记有未保存的修改。',
     fileName: 'notes.md',
     folderPath: '日记',
     isSaving: false,

@@ -40,7 +40,7 @@ Some items have already been removed. Others are still active compatibility brid
 - Removed deprecated public exports for authentication, goal, and ai legacy module/container wrappers.
 - Removed notification compatibility facade exports and deleted the facade implementation file.
 - Removed the reminder `schedule-shim.d.ts` shim and refactored reminder handler support away from `ScheduleContainer`.
-- Renamed editor desktop IPC channels away from the old `editor:document:*` / `editor:content:*` compatibility naming.
+- Renamed editor desktop IPC channels away from the old document-era `editor:document:*` / `editor:content:*` compatibility naming.
 - Migrated the API RBAC middleware off legacy result-builder exports and stopped re-exporting those legacy result helpers from the contracts root.
 - Removed duplicate legacy repository API request interfaces from contracts and aligned the repository RPC map to canonical Zod-derived request types.
 - Implemented governance revisions loading, notification dismiss-all, and account settings update end to end.
@@ -274,7 +274,7 @@ These should not be deleted until callers are migrated.
   - `packages/editor/src/electron-entry/index.ts`
   - `packages/contracts/src/electron/ipc-channels.ts`
 - Why this is debt:
-  - editor workspace/document operations still ride old `editor:document:*` channel names for compatibility
+- editor workspace/resource operations still ride old `editor:document:*` channel names for compatibility
   - some content operations also bridge into repository content paths
 - Removal risk: high
 - Blockers:

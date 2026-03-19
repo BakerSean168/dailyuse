@@ -29,7 +29,6 @@
  * - @dailyuse/contracts/schedule   - 调度模块
  * - @dailyuse/contracts/setting    - 设置模块
  * - @dailyuse/contracts/notification - 通知模块
- * - @dailyuse/contracts/document   - 文档模块
  * - @dailyuse/contracts/ai         - AI模块
  * - @dailyuse/contracts/dashboard  - 仪表盘模块
  * - @dailyuse/contracts/response   - 响应系统（旧）

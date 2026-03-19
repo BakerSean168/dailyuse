@@ -2,16 +2,16 @@ import type { TabType as ITabType } from '@dailyuse/contracts/editor';
 
 /**
  * TabType 枚举类型
- * 
+ *
  * 【规范说明：枚举与常量对象规范】
  */
 
 export type TabType = ITabType & { readonly __brand: unique symbol };
 
-const VALUES: ITabType[] = ['Document', 'Preview', 'Diff', 'Settings', 'Search', 'Welcome'];
+const VALUES: ITabType[] = ['Resource', 'Preview', 'Diff', 'Settings', 'Search', 'Welcome'];
 
 export const TabType = {
-  Document: 'Document' as TabType,
+  Resource: 'Resource' as TabType,
   Preview: 'Preview' as TabType,
   Diff: 'Diff' as TabType,
   Settings: 'Settings' as TabType,
@@ -34,7 +34,7 @@ export const TabType = {
   },
 
   isContent(type: TabType): boolean {
-    return type === this.Document || type === this.Preview;
+    return type === this.Resource || type === this.Preview;
   },
 
   isUtility(type: TabType): boolean {

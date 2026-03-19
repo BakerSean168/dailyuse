@@ -6,7 +6,7 @@ import { EditorSession } from '../../../domain-server/entities/editor-session';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import { SessionRestorer } from '../../../domain-server/services/SessionRestorer';
 import { IdentityId as IdentityIdType } from '@dailyuse/domain-shared/shared';
-import type { 
+import type {
   EditorWorkspaceServerDTO,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,
@@ -238,6 +238,11 @@ export class EditorWorkspaceApplicationService {
     return true;
   }
 
+  async getSession(sessionId: string): Promise<EditorSessionServerDTO | null> {
+    const session = await this.loadSessionWithGroups(sessionId);
+    return session ? session.toServerDTO() : null;
+  }
+
   // ===== Group 管理 =====
 
   /**
@@ -273,6 +278,7 @@ export class EditorWorkspaceApplicationService {
     groupId: string;
     groupIndex?: number;
     name?: string;
+    activeTabIndex?: number;
     splitDirection?: SplitDirection;
   }): Promise<EditorGroupServerDTO> {
     const group = await this.groupRepository.findById(params.groupId);
@@ -286,6 +292,9 @@ export class EditorWorkspaceApplicationService {
     if (params.name !== undefined) {
       group.rename(params.name);
     }
+    if (params.activeTabIndex !== undefined && params.activeTabIndex >= 0) {
+      group.setActiveTab(params.activeTabIndex);
+    }
 
     await this.groupRepository.save(group);
 
@@ -295,11 +304,7 @@ export class EditorWorkspaceApplicationService {
   /**
    * 删除组
    */
-  async removeGroup(
-    workspaceId: string,
-    sessionId: string,
-    groupId: string,
-  ): Promise<boolean> {
+  async removeGroup(workspaceId: string, sessionId: string, groupId: string): Promise<boolean> {
     const session = await this.loadSessionWithGroups(sessionId);
     if (!session) {
       throw new Error(`Session not found: ${sessionId}`);
@@ -319,7 +324,7 @@ export class EditorWorkspaceApplicationService {
     workspaceId: string;
     sessionId: string;
     groupId: string;
-    documentId?: string;
+    resourceId?: string;
     tabIndex: number;
     tabType: TabType;
     title: string;
@@ -331,7 +336,7 @@ export class EditorWorkspaceApplicationService {
       throw new Error(`Session not found: ${params.sessionId}`);
     }
 
-    const tab = session.openTab(params.documentId ?? '', {
+    const tab = session.openTab(params.resourceId ?? '', {
       groupId: params.groupId,
       tabType: params.tabType,
       viewState: params.viewState,
@@ -490,7 +495,3 @@ export class EditorWorkspaceApplicationService {
     return this.restorer.restore(session, groups);
   }
 }
-
-
-
-

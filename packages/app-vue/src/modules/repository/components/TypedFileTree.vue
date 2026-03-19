@@ -1,6 +1,6 @@
 <!--
   TypedFileTree - Type-based fixed resource navigation
-  Resources are grouped by type (Notes/Images/Videos/Audio/Documents/Other)
+  Resources are grouped by type (Notes/Images/Videos/Audio/Files/Other)
   for repository-first authoring instead of user-managed folders.
 -->
 
@@ -229,12 +229,12 @@ const typeGroups = computed(() => [
     count: (props.resourcesByType.audio || []).length,
   },
   {
-    key: 'documents',
-    label: t('repository.fileTypes.documents'),
+    key: 'files',
+    label: t('repository.fileTypes.files'),
     icon: FileIcon,
     iconClass: 'text-warning',
-    resources: props.resourcesByType.documents || [],
-    count: (props.resourcesByType.documents || []).length,
+    resources: props.resourcesByType.files || [],
+    count: (props.resourcesByType.files || []).length,
   },
   {
     key: 'other',

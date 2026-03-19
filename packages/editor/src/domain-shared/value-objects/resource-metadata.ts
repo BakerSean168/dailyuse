@@ -1,34 +1,36 @@
 /**
- * DocumentMetadata 值对象
- * 
- * 文档元数据：标签、分类、字数、阅读时间等
+ * ResourceMetadata 值对象
+ *
+ * 资源元数据：标签、分类、字数、阅读时间等
  * 不可变性（所有修改返回新实例）
  */
 
 import { ValueObject } from '@dailyuse/utils';
 import type {
-  IDocumentMetadataServer,
-  DocumentMetadataServerDTO,
-  DocumentMetadataPersistenceDTO,
+  IResourceMetadataServer,
+  ResourceMetadataServerDTO,
+  ResourceMetadataPersistenceDTO,
 } from '@dailyuse/contracts/editor';
 
 /**
- * DocumentMetadata 值对象实现
+ * ResourceMetadata 值对象实现
  */
-export class DocumentMetadata extends ValueObject<DocumentMetadataServerDTO> implements IDocumentMetadataServer {
-
-  private constructor(props: DocumentMetadataServerDTO) {
+export class ResourceMetadata
+  extends ValueObject<ResourceMetadataServerDTO>
+  implements IResourceMetadataServer
+{
+  private constructor(props: ResourceMetadataServerDTO) {
     super(props);
   }
 
   // ================= 工厂方法 =================
-  
-  public static create(props: DocumentMetadataServerDTO): DocumentMetadata {
-    return new DocumentMetadata(props);
+
+  public static create(props: ResourceMetadataServerDTO): ResourceMetadata {
+    return new ResourceMetadata(props);
   }
 
-  public static createEmpty(): DocumentMetadata {
-    return new DocumentMetadata({
+  public static createEmpty(): ResourceMetadata {
+    return new ResourceMetadata({
       tags: [],
       category: null,
       wordCount: null,
@@ -40,12 +42,12 @@ export class DocumentMetadata extends ValueObject<DocumentMetadataServerDTO> imp
     });
   }
 
-  public static fromDTO(dto: DocumentMetadataServerDTO): DocumentMetadata {
-    return new DocumentMetadata(dto);
+  public static fromDTO(dto: ResourceMetadataServerDTO): ResourceMetadata {
+    return new ResourceMetadata(dto);
   }
 
-  public static fromPersistenceDTO(dto: DocumentMetadataPersistenceDTO): DocumentMetadata {
-    return new DocumentMetadata({
+  public static fromPersistenceDTO(dto: ResourceMetadataPersistenceDTO): ResourceMetadata {
+    return new ResourceMetadata({
       tags: JSON.parse(dto.tags),
       category: dto.category,
       wordCount: dto.word_count,
@@ -95,31 +97,29 @@ export class DocumentMetadata extends ValueObject<DocumentMetadataServerDTO> imp
 
   // ================= 行为方法 =================
 
-  public with(
-    updates: Partial<DocumentMetadataServerDTO>,
-  ): DocumentMetadata {
-    return new DocumentMetadata({ ...this.props, ...updates });
+  public with(updates: Partial<ResourceMetadataServerDTO>): ResourceMetadata {
+    return new ResourceMetadata({ ...this.props, ...updates });
   }
 
-  public addTag(tag: string): DocumentMetadata {
+  public addTag(tag: string): ResourceMetadata {
     if (this.props.tags.includes(tag)) return this;
     return this.with({ tags: [...this.props.tags, tag] });
   }
 
-  public removeTag(tag: string): DocumentMetadata {
-    return this.with({ tags: this.props.tags.filter(t => t !== tag) });
+  public removeTag(tag: string): ResourceMetadata {
+    return this.with({ tags: this.props.tags.filter((t) => t !== tag) });
   }
 
-  public setCategory(category: string | null): DocumentMetadata {
+  public setCategory(category: string | null): ResourceMetadata {
     return this.with({ category });
   }
 
-  public updateStats(wordCount: number, characterCount: number): DocumentMetadata {
+  public updateStats(wordCount: number, characterCount: number): ResourceMetadata {
     const readingTime = Math.ceil(wordCount / 200); // 200 words per minute
     return this.with({ wordCount, characterCount, readingTime });
   }
 
-  public setCustomField(key: string, value: any): DocumentMetadata {
+  public setCustomField(key: string, value: any): ResourceMetadata {
     const currentFields = this.props.customFields ?? {};
     return this.with({ customFields: { ...currentFields, [key]: value } });
   }
@@ -150,7 +150,7 @@ export class DocumentMetadata extends ValueObject<DocumentMetadataServerDTO> imp
 
   // ================= 序列化 =================
 
-  public toServerDTO(): DocumentMetadataServerDTO {
+  public toServerDTO(): ResourceMetadataServerDTO {
     return {
       tags: [...this.props.tags],
       category: this.props.category,
@@ -159,13 +159,14 @@ export class DocumentMetadata extends ValueObject<DocumentMetadataServerDTO> imp
       readingTime: this.props.readingTime,
       encoding: this.props.encoding,
       language: this.props.language,
-      customFields: this.props.customFields !== undefined && this.props.customFields !== null
-        ? { ...this.props.customFields }
-        : null,
+      customFields:
+        this.props.customFields !== undefined && this.props.customFields !== null
+          ? { ...this.props.customFields }
+          : null,
     };
   }
 
-  public toPersistenceDTO(): DocumentMetadataPersistenceDTO {
+  public toPersistenceDTO(): ResourceMetadataPersistenceDTO {
     return {
       tags: JSON.stringify(this.props.tags),
       category: this.props.category,
@@ -174,9 +175,10 @@ export class DocumentMetadata extends ValueObject<DocumentMetadataServerDTO> imp
       reading_time: this.props.readingTime,
       encoding: this.props.encoding,
       language: this.props.language,
-      custom_fields: this.props.customFields !== undefined && this.props.customFields !== null
-        ? JSON.stringify(this.props.customFields)
-        : null,
+      custom_fields:
+        this.props.customFields !== undefined && this.props.customFields !== null
+          ? JSON.stringify(this.props.customFields)
+          : null,
     };
   }
 }

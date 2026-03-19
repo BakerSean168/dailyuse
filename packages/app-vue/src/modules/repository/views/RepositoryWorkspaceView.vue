@@ -102,7 +102,7 @@
           <TabManager
             v-if="openTabs.length > 0"
             :tabs="openTabs"
-            :active-tab-id="store.activeTabId"
+            :active-tab-id="editorWorkspaceStore.activeTabId"
             @switch-tab="handleSwitchTab"
             @close-tab="handleCloseTab"
             @toggle-pin="handleTogglePin"
@@ -346,7 +346,7 @@ import ReferenceRepairDialog from '../../editor/components/ReferenceRepairDialog
 import ResourcePickerDialog from '../../editor/components/ResourcePickerDialog.vue';
 import SelfContainedExportDialog from '../../editor/components/SelfContainedExportDialog.vue';
 import MediaViewer from '../../editor/components/MediaViewer.vue';
-import { useResourceReferenceIndex } from '../../editor/composables/useResourceReferenceIndex';
+import { useEditorWorkspaceBootstrap, useResourceReferenceIndex } from '../../editor/composables';
 import {
   useResourceInsertion,
   getResourceInsertionFeedback,
@@ -359,6 +359,7 @@ import {
 import type { ResolvedMarkdownResourceReference } from '../../editor/utils/markdownResourceReferences';
 import { repairBrokenMarkdownReference } from '../../editor/utils/resourceReferenceIndex';
 import ResourceDetailPanel from '../components/ResourceDetailPanel.vue';
+import { useEditorWorkspaceStore } from '../../editor/stores/editorWorkspaceStore';
 
 import type {
   ResourceClientDTO,
@@ -378,6 +379,7 @@ const props = withDefaults(
 
 const { t } = useI18n();
 const store = useRepositoryStore();
+const editorWorkspaceStore = useEditorWorkspaceStore();
 const {
   repositoryId,
   bookmarks,
@@ -411,6 +413,7 @@ const {
 } = useResourceInsertion();
 const { getInboundReferences, getUnresolvedReferences, getDeleteImpact } =
   useResourceReferenceIndex();
+const { hydrateWorkspace, bindWorkspaceLifecycle } = useEditorWorkspaceBootstrap(repositoryId);
 
 // ── Local state ──
 const showImportDialog = ref(false);
@@ -449,8 +452,8 @@ const sidebarModes = computed(() => [
 
 // ── Active resource ──
 const activeResource = computed(() => {
-  if (!store.activeTabId) return null;
-  return store.resources.find((r) => r.id === store.activeTabId) ?? null;
+  if (!editorWorkspaceStore.activeResourceId) return null;
+  return store.resources.find((r) => r.id === editorWorkspaceStore.activeResourceId) ?? null;
 });
 const resourceDetailOpen = computed(() => activeResource.value != null);
 const activeInboundReferences = computed(() =>
@@ -486,16 +489,18 @@ const repairCandidates = computed(() => {
 // ── Tabs ──
 const openTabs = computed<ResourceTab[]>(
   () =>
-    store.openTabIds
-      .map((id) => {
-        const resource = store.resources.find((r) => r.id === id);
+    editorWorkspaceStore.openTabs
+      .map((tab) => {
+        if (!tab.resourceId) return null;
+        const resource = store.resources.find((r) => r.id === tab.resourceId);
         if (!resource) return null;
         return {
-          id: resource.id,
+          id: tab.id,
           name: resource.name,
           icon: getResourceIcon(resource),
-          isDirty: isDirty.value && store.activeTabId === resource.id,
-          isPinned: pinnedTabIds.value.has(resource.id),
+          isDirty:
+            tab.isDirty || (isDirty.value && editorWorkspaceStore.activeResourceId === resource.id),
+          isPinned: tab.isPinned || pinnedTabIds.value.has(resource.id),
         };
       })
       .filter(Boolean) as ResourceTab[],
@@ -506,10 +511,13 @@ onMounted(async () => {
   store.setSidebarMode(props.initialSidebarMode);
   await initRepository();
   if (repositoryId.value) {
+    await hydrateWorkspace();
     await fetchResources();
     await fetchBookmarks();
   }
 });
+
+bindWorkspaceLifecycle();
 
 // ── File operations ──
 function handleSelectResource(resource: ResourceClientDTO) {
@@ -541,9 +549,9 @@ function handleRefresh() {
 
 // ── Save ──
 function handleSaveContent(content: string) {
-  if (!store.activeTabId) return;
+  if (!editorWorkspaceStore.activeResourceId) return;
   isDirty.value = false;
-  saveResourceContent(store.activeTabId, content);
+  saveResourceContent(editorWorkspaceStore.activeResourceId, content);
 }
 
 // ── Editor toolbar handlers ──
@@ -782,14 +790,15 @@ watch(activeResource, (resource) => {
 });
 
 // ── Tabs ──
-function handleSwitchTab(id: string) {
-  store.setActiveTab(id);
-  const resource = store.resources.find((r) => r.id === id);
+async function handleSwitchTab(id: string) {
+  await editorWorkspaceStore.setActiveTab(id);
+  const resourceId = editorWorkspaceStore.activeResourceId;
+  const resource = store.resources.find((r) => r.id === resourceId);
   if (resource) store.setCurrentResource(resource);
 }
 
-function handleCloseTab(id: string) {
-  store.closeTab(id);
+async function handleCloseTab(id: string) {
+  await editorWorkspaceStore.closeTab(id);
 }
 
 function handleTogglePin(id: string) {
@@ -800,16 +809,16 @@ function handleTogglePin(id: string) {
   }
 }
 
-function handleCloseOthers(id: string) {
-  store.closeOtherTabs(id);
+async function handleCloseOthers(id: string) {
+  await editorWorkspaceStore.closeOtherTabs(id);
 }
 
-function handleCloseRight(id: string) {
-  store.closeTabsToRight(id);
+async function handleCloseRight(id: string) {
+  await editorWorkspaceStore.closeTabsToRight(id);
 }
 
-function handleCloseAll() {
-  store.closeAllTabs();
+async function handleCloseAll() {
+  await editorWorkspaceStore.closeAllTabs();
   store.setCurrentResource(null);
 }
 

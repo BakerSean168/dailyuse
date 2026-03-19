@@ -25,7 +25,7 @@ export type ResourceInsertionTemplate =
   | 'attachment-link'
   | 'media';
 
-export type ResourceInsertionKind = 'image' | 'note' | 'document' | 'media' | 'other';
+export type ResourceInsertionKind = 'image' | 'note' | 'file' | 'media' | 'other';
 
 export interface ResourceInsertionItem {
   resource: ResourceClientDTO;
@@ -420,7 +420,7 @@ export function classifyResourceInsertionKind(
     mimeType === 'application/pdf' ||
     ['.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx'].includes(extension)
   ) {
-    return 'document';
+    return 'file';
   }
 
   return 'other';
@@ -552,7 +552,7 @@ export function resolveInsertionTemplate(
       return 'image';
     case 'note':
       return 'note-link';
-    case 'document':
+    case 'file':
       return 'attachment-link';
     case 'media':
       return 'media';

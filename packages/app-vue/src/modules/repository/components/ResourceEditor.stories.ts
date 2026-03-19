@@ -33,8 +33,8 @@ export const Default: Story = {
 export const Saving: Story = {
   args: {
     resourceId: 'res-1',
-    resourceName: '项目架构文档.md',
-    content: '# 架构文档\n\n正在保存...',
+    resourceName: '项目架构笔记.md',
+    content: '# 架构笔记\n\n正在保存...',
     isSaving: true,
     hasUnsavedChanges: true,
     wordCount: 3,

@@ -217,12 +217,12 @@ exports.Prisma.KnowledgeGenerationTaskScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
   topic: 'topic',
-  documentCount: 'documentCount',
+  resourceCount: 'resourceCount',
   targetAudience: 'targetAudience',
   folderPath: 'folderPath',
   status: 'status',
   progress: 'progress',
-  generatedDocumentIds: 'generatedDocumentIds',
+  generatedResourceIds: 'generatedResourceIds',
   error: 'error',
   createdAt: 'createdAt',
   completedAt: 'completedAt'
@@ -301,54 +301,6 @@ exports.Prisma.AuthSessionScalarFieldEnum = {
   deletedAt: 'deletedAt'
 };
 
-exports.Prisma.DocumentScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  title: 'title',
-  content: 'content',
-  folderPath: 'folderPath',
-  tags: 'tags',
-  status: 'status',
-  currentVersion: 'currentVersion',
-  lastVersionedAt: 'lastVersionedAt',
-  lastEditedAt: 'lastEditedAt',
-  editSessionId: 'editSessionId',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
-exports.Prisma.DocumentVersionScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  documentId: 'documentId',
-  versionNumber: 'versionNumber',
-  title: 'title',
-  content: 'content',
-  changeType: 'changeType',
-  changeDescription: 'changeDescription',
-  changedBy: 'changedBy',
-  restoredFrom: 'restoredFrom',
-  metadata: 'metadata',
-  version: 'version',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.DocumentLinkScalarFieldEnum = {
-  id: 'id',
-  identityId: 'identityId',
-  sourceDocumentId: 'sourceDocumentId',
-  targetDocumentId: 'targetDocumentId',
-  linkText: 'linkText',
-  linkPosition: 'linkPosition',
-  isBroken: 'isBroken',
-  version: 'version',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
-};
-
 exports.Prisma.EditorWorkspaceScalarFieldEnum = {
   id: 'id',
   identityId: 'identityId',
@@ -399,7 +351,7 @@ exports.Prisma.EditorWorkspaceSessionGroupTabScalarFieldEnum = {
   sessionId: 'sessionId',
   workspaceId: 'workspaceId',
   identityId: 'identityId',
-  documentId: 'documentId',
+  resourceId: 'resourceId',
   tabIndex: 'tabIndex',
   tabType: 'tabType',
   title: 'title',
@@ -1223,9 +1175,6 @@ exports.Prisma.ModelName = {
   AuthOAuthBinding: 'AuthOAuthBinding',
   AuthCredential: 'AuthCredential',
   AuthSession: 'AuthSession',
-  Document: 'Document',
-  DocumentVersion: 'DocumentVersion',
-  DocumentLink: 'DocumentLink',
   EditorWorkspace: 'EditorWorkspace',
   EditorWorkspaceSession: 'EditorWorkspaceSession',
   EditorWorkspaceSessionGroup: 'EditorWorkspaceSessionGroup',

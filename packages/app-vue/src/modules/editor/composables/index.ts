@@ -5,3 +5,4 @@ export { useMarkdownEditor } from './useMarkdownEditor';
 export { useEditorLinkIndex } from './useEditorLinkIndex';
 export { useResourceInsertion } from './useResourceInsertion';
 export { useResourceReferenceIndex } from './useResourceReferenceIndex';
+export { useEditorWorkspaceBootstrap } from './useEditorWorkspaceBootstrap';

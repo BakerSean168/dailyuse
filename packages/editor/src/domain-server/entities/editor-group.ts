@@ -126,7 +126,7 @@ export class EditorGroup extends Entity<EditorGroupId> {
 
   // ===== 业务方法 =====
   public addTab(params: {
-    documentId?: string | null;
+    resourceId?: string | null;
     type?: TabType;
     viewState?: Partial<TabViewStateServerDTO>;
     name?: string;
@@ -137,7 +137,7 @@ export class EditorGroup extends Entity<EditorGroupId> {
       sessionId: this._props.sessionId,
       workspaceId: this._props.workspaceId,
       identityId: this._props.identityId,
-      documentId: params.documentId,
+      resourceId: params.resourceId,
       type: params.type,
       viewState: params.viewState,
       name: params.name,
@@ -267,5 +267,4 @@ export class EditorGroup extends Entity<EditorGroupId> {
       formattedUpdatedAt: this._props.updatedAt.toLocaleString(),
     };
   }
-
 }

@@ -1,7 +1,7 @@
 /**
- * 文档语言（格式）枚举
+ * 资源语言（格式）枚举
  */
-export const DocumentLanguage = {
+export const ResourceLanguage = {
   Markdown: 'Markdown',
   Plaintext: 'Plaintext',
   Html: 'Html',
@@ -15,4 +15,4 @@ export const DocumentLanguage = {
   Other: 'Other',
 } as const;
 
-export type DocumentLanguage = (typeof DocumentLanguage)[keyof typeof DocumentLanguage];
+export type ResourceLanguage = (typeof ResourceLanguage)[keyof typeof ResourceLanguage];

@@ -1,0 +1,215 @@
+import { defineStore } from 'pinia';
+import type { EditorSessionClientDTO, EditorTabClientDTO } from '@dailyuse/contracts/editor';
+import {
+  listEditorSessions,
+  createEditorSession,
+  createEditorTab,
+  activateEditorTab,
+  deleteEditorTab,
+  firstGroup,
+} from '../services/editorDesktop.service';
+
+export interface EditorWorkspaceState {
+  workspaceId: string | null;
+  sessions: EditorSessionClientDTO[];
+  activeSessionId: string | null;
+  isHydrated: boolean;
+}
+
+function findTabByResourceId(
+  sessions: EditorSessionClientDTO[],
+  resourceId: string,
+): EditorTabClientDTO | null {
+  for (const session of sessions) {
+    for (const group of session.groups) {
+      const tab = group.tabs.find((item) => item.resourceId === resourceId);
+      if (tab) {
+        return tab;
+      }
+    }
+  }
+
+  return null;
+}
+
+export const useEditorWorkspaceStore = defineStore('editor-workspace', {
+  state: (): EditorWorkspaceState => ({
+    workspaceId: null,
+    sessions: [],
+    activeSessionId: null,
+    isHydrated: false,
+  }),
+
+  getters: {
+    activeSession(state): EditorSessionClientDTO | null {
+      return state.sessions.find((session) => session.id === state.activeSessionId) ?? null;
+    },
+    openTabs(): EditorTabClientDTO[] {
+      return this.activeSession?.groups.flatMap((group) => group.tabs) ?? [];
+    },
+    activeTab(): EditorTabClientDTO | null {
+      const session = this.activeSession;
+      if (!session) {
+        return null;
+      }
+
+      const activeGroup = session.groups[session.activeGroupIndex];
+      if (!activeGroup) {
+        return null;
+      }
+
+      return activeGroup.tabs[activeGroup.activeTabIndex] ?? null;
+    },
+    activeTabId(): string | null {
+      return this.activeTab?.id ?? null;
+    },
+    activeResourceId(): string | null {
+      return this.activeTab?.resourceId ?? null;
+    },
+  },
+
+  actions: {
+    reset() {
+      this.workspaceId = null;
+      this.sessions = [];
+      this.activeSessionId = null;
+      this.isHydrated = false;
+    },
+    setSessions(sessions: EditorSessionClientDTO[]) {
+      this.sessions = sessions;
+      const active = sessions.find((session) => session.isActive) ?? sessions[0] ?? null;
+      this.activeSessionId = active?.id ?? null;
+      this.isHydrated = true;
+    },
+    upsertSession(session: EditorSessionClientDTO) {
+      const index = this.sessions.findIndex((item) => item.id === session.id);
+      if (index >= 0) {
+        this.sessions.splice(index, 1, session);
+      } else {
+        this.sessions.push(session);
+      }
+
+      if (session.isActive || !this.activeSessionId) {
+        this.activeSessionId = session.id;
+      }
+    },
+    async setWorkspace(workspaceId: string | null) {
+      if (!workspaceId) {
+        this.reset();
+        return;
+      }
+
+      if (this.workspaceId === workspaceId && this.isHydrated) {
+        return;
+      }
+
+      this.workspaceId = workspaceId;
+      const sessions = await listEditorSessions(workspaceId);
+      this.setSessions(sessions);
+
+      if (this.sessions.length === 0) {
+        const created = await createEditorSession(workspaceId, 'Main');
+        if (created) {
+          this.setSessions([created]);
+        }
+      }
+    },
+    async openResourceTab(resource: { id: string; name: string }, workspaceId: string) {
+      await this.setWorkspace(workspaceId);
+      const existingTab = findTabByResourceId(this.sessions, resource.id);
+      if (existingTab) {
+        await this.setActiveTab(existingTab.id);
+        return existingTab;
+      }
+
+      const session = this.activeSession;
+      const group = firstGroup(session);
+      if (!session || !group) {
+        return null;
+      }
+
+      const created = await createEditorTab({
+        workspaceId,
+        sessionId: session.id,
+        groupId: group.id,
+        resourceId: resource.id,
+        title: resource.name,
+      });
+
+      if (!created) {
+        return null;
+      }
+
+      await this.setWorkspace(workspaceId);
+      const refreshed = findTabByResourceId(this.sessions, resource.id);
+      if (refreshed) {
+        await this.setActiveTab(refreshed.id);
+      }
+      return refreshed;
+    },
+    async setActiveTab(tabId: string) {
+      for (const session of this.sessions) {
+        const group = session.groups.find((item) => item.tabs.some((tab) => tab.id === tabId));
+        const tab = group?.tabs.find((item) => item.id === tabId);
+        if (!group || !tab || !this.workspaceId) {
+          continue;
+        }
+
+        await activateEditorTab({
+          workspaceId: this.workspaceId,
+          sessionId: session.id,
+          groupId: group.id,
+          tabId,
+        });
+        await this.setWorkspace(this.workspaceId);
+        return;
+      }
+    },
+    async closeTab(tabId: string) {
+      for (const session of this.sessions) {
+        const group = session.groups.find((item) => item.tabs.some((tab) => tab.id === tabId));
+        if (!group || !this.workspaceId) {
+          continue;
+        }
+
+        await deleteEditorTab({
+          workspaceId: this.workspaceId,
+          sessionId: session.id,
+          groupId: group.id,
+          tabId,
+        });
+        await this.setWorkspace(this.workspaceId);
+        return;
+      }
+    },
+    async closeOtherTabs(tabId: string) {
+      const otherTabs = this.openTabs.filter((tab) => tab.id !== tabId);
+      for (const tab of otherTabs) {
+        await this.closeTab(tab.id);
+      }
+    },
+    async closeTabsToRight(tabId: string) {
+      const tabs = this.openTabs;
+      const index = tabs.findIndex((tab) => tab.id === tabId);
+      if (index < 0) {
+        return;
+      }
+
+      for (const tab of tabs.slice(index + 1)) {
+        await this.closeTab(tab.id);
+      }
+    },
+    async closeAllTabs() {
+      for (const tab of [...this.openTabs]) {
+        await this.closeTab(tab.id);
+      }
+    },
+    findTabByResourceId(resourceId: string): EditorTabClientDTO | null {
+      return findTabByResourceId(this.sessions, resourceId);
+    },
+  },
+
+  persist: {
+    pick: ['workspaceId', 'activeSessionId'] as string[],
+  },
+});

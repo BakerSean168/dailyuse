@@ -6,9 +6,7 @@ const meta = {
   component: RepoInfoCard,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
-  decorators: [
-    () => ({ template: '<div style="width: 320px;"><story /></div>' }),
-  ],
+  decorators: [() => ({ template: '<div style="width: 320px;"><story /></div>' })],
   argTypes: {
     repository: { description: '仓库对象' },
     updateLabel: { description: '更新标签文本', control: 'text' },
@@ -22,7 +20,7 @@ export const Default: Story = {
   args: {
     repository: {
       name: '个人知识库',
-      description: '存储个人学习笔记和技术文档。',
+      description: '存储个人学习笔记和技术资料。',
       updatedAt: new Date().toISOString(),
     },
     updateLabel: '更新',
@@ -32,7 +30,7 @@ export const Default: Story = {
 export const NoDescription: Story = {
   args: {
     repository: {
-      name: '项目文档',
+      name: '项目笔记',
       updatedAt: new Date(Date.now() - 86400_000 * 7).toISOString(),
     },
     updateLabel: '更新',

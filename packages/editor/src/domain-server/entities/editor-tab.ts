@@ -10,7 +10,6 @@ import type {
   TabViewStateServerDTO,
 } from '@dailyuse/contracts/editor';
 import type {
-  DocumentId,
   EditorGroupId,
   EditorSessionId,
   EditorTabId,
@@ -27,7 +26,7 @@ export interface EditorTabState {
   sessionId: EditorSessionId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
-  documentId: DocumentId | null;
+  resourceId: string | null;
   tabIndex: number;
   tabType: TabType;
   name: string;
@@ -69,8 +68,8 @@ export class EditorTab extends Entity<EditorTabId> {
     return this._props.identityId;
   }
 
-  public get documentId(): DocumentId | null {
-    return this._props.documentId;
+  public get resourceId(): string | null {
+    return this._props.resourceId;
   }
 
   public get tabIndex(): number {
@@ -126,7 +125,7 @@ export class EditorTab extends Entity<EditorTabId> {
     sessionId: EditorSessionId;
     workspaceId: EditorWorkspaceId;
     identityId: IdentityId;
-    documentId?: string | null;
+    resourceId?: string | null;
     tabIndex: number;
     type?: TabType;
     name?: string;
@@ -150,9 +149,9 @@ export class EditorTab extends Entity<EditorTabId> {
       sessionId: params.sessionId,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
-      documentId: (params.documentId ?? null) as DocumentId | null,
+      resourceId: params.resourceId ?? null,
       tabIndex: params.tabIndex,
-      tabType: params.type ?? TabType.Document,
+      tabType: params.type ?? TabType.Resource,
       name: params.name ?? 'Untitled',
       viewState: defaultViewState,
       isPinned: params.isPinned ?? false,
@@ -222,10 +221,10 @@ export class EditorTab extends Entity<EditorTabId> {
   }
 
   /**
-   * 判断是否为文档标签
+   * 判断是否为资源标签
    */
-  public isDocumentTab(): boolean {
-    return this._props.tabType === TabType.Document;
+  public isResourceTab(): boolean {
+    return this._props.tabType === TabType.Resource;
   }
 
   private updateTimestamp(): void {
@@ -244,12 +243,13 @@ export class EditorTab extends Entity<EditorTabId> {
       sessionId: this._props.sessionId,
       workspaceId: this._props.workspaceId,
       identityId: this._props.identityId,
-      documentId: this._props.documentId,
+      resourceId: this._props.resourceId,
       tabIndex: this._props.tabIndex,
       tabType: this._props.tabType,
       name: this._props.name,
       viewState: this._props.viewState,
       isPinned: this._props.isPinned,
+      isActive: false,
       isDirty: this._props.isDirty,
       lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
       createdAt: this._props.createdAt.getTime(),
@@ -267,12 +267,13 @@ export class EditorTab extends Entity<EditorTabId> {
       sessionId: this._props.sessionId as unknown as string,
       workspaceId: this._props.workspaceId as unknown as string,
       identityId: this._props.identityId as unknown as string,
-      documentId: this._props.documentId as unknown as string | null,
+      resourceId: this._props.resourceId,
       tabIndex: this._props.tabIndex,
       tabType: this._props.tabType,
       name: this._props.name,
       viewState: this._props.viewState,
       isPinned: this._props.isPinned,
+      isActive: false,
       isDirty: this._props.isDirty,
       lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
       formattedLastAccessed: this._props.lastAccessedAt?.toLocaleString() ?? null,
@@ -282,5 +283,4 @@ export class EditorTab extends Entity<EditorTabId> {
       updatedAt: this._props.updatedAt.getTime(),
     };
   }
-
 }

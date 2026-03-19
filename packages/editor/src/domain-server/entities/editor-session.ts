@@ -246,15 +246,18 @@ export class EditorSession extends Entity<EditorSessionId> {
     }
   }
 
-  public openTab(resourceId: string, params?: {
-    groupId?: string;
-    tabType?: TabType;
-    name?: string;
-    viewState?: Partial<TabViewStateServerDTO>;
-    isPinned?: boolean;
-  }): EditorTab {
+  public openTab(
+    resourceId: string,
+    params?: {
+      groupId?: string;
+      tabType?: TabType;
+      name?: string;
+      viewState?: Partial<TabViewStateServerDTO>;
+      isPinned?: boolean;
+    },
+  ): EditorTab {
     const group = this.resolveTargetGroup(params?.groupId);
-    const existing = group.tabs.find((tab) => tab.documentId === resourceId);
+    const existing = group.tabs.find((tab) => tab.resourceId === resourceId);
     if (existing) {
       group.setActiveTabById(existing.id);
       this._props.activeGroupIndex = this._groups.indexOf(group);
@@ -263,7 +266,7 @@ export class EditorSession extends Entity<EditorSessionId> {
     }
 
     const tab = group.addTab({
-      documentId: resourceId,
+      resourceId,
       type: params?.tabType,
       viewState: params?.viewState,
       name: params?.name,
@@ -444,5 +447,4 @@ export class EditorSession extends Entity<EditorSessionId> {
       updatedAt: this._props.updatedAt.getTime(),
     };
   }
-
 }

@@ -1,6 +1,6 @@
 /**
  * Editor Module Value Objects 导出
- * 
+ *
  * 包含：
  * - 枚举类型（Enum-like）
  * - 品牌化 ID 类型
@@ -12,11 +12,10 @@ export * from './editor-workspace-id';
 export * from './editor-session-id';
 export * from './editor-group-id';
 export * from './editor-tab-id';
-export * from './document-id';
 
 // Enum-like Value Objects
 export * from './project-type';
-export * from './document-language';
+export * from './resource-language';
 export * from './version-change-type';
 export * from './tab-type';
 export * from './split-direction';
@@ -31,4 +30,4 @@ export { WorkspaceLayout } from './workspace-layout';
 export { WorkspaceSettings } from './workspace-settings';
 export { SessionLayout } from './session-layout';
 export { TabViewState } from './tab-view-state';
-export { DocumentMetadata } from './document-metadata';
+export { ResourceMetadata } from './resource-metadata';

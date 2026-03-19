@@ -8,11 +8,11 @@
 
 ### 层级定义
 
-| 层级 | 文件夹 | 职责 | 导入来源 |
-|------|--------|------|----------|
-| **Protocol** | `protocol/` | RPC/Event 映射表，定义事件键和请求/响应类型关联 | 从 api/ 导入 |
-| **API** | `api/` | Zod schema、请求/响应类型定义和验证 | 独立定义 |
-| **DTOs** | `dtos/` | 复杂/组合响应类型（聚合、组合、数据传输对象） | 组合或引用 api/ 类型 |
+| 层级         | 文件夹      | 职责                                            | 导入来源             |
+| ------------ | ----------- | ----------------------------------------------- | -------------------- |
+| **Protocol** | `protocol/` | RPC/Event 映射表，定义事件键和请求/响应类型关联 | 从 api/ 导入         |
+| **API**      | `api/`      | Zod schema、请求/响应类型定义和验证             | 独立定义             |
+| **DTOs**     | `dtos/`     | 复杂/组合响应类型（聚合、组合、数据传输对象）   | 组合或引用 api/ 类型 |
 
 ### 层级依赖关系
 
@@ -24,6 +24,7 @@ protocol/ → api/ ← dtos/
 ### 模块事件键命名规范
 
 事件键采用 **namespace:action** 格式：
+
 - **Namespace**: 模块名称（小写）。例如：`auth`, `task`, `goal`, `notification`
 - **Action**: 动作描述（kebab-case）。例如：`login`, `create-task`, `update-goal-status`
 - **完整示例**：
@@ -55,6 +56,7 @@ src/modules/authentication/
 ### 实现指引
 
 1. **定义 API Schema**：在 `api/` 下用 Zod 定义请求和响应schema
+
    ```typescript
    // api/login.ts
    export const LoginByEmailSchema = z.object({
@@ -66,6 +68,7 @@ src/modules/authentication/
    ```
 
 2. **定义 DTOs**：在 `dtos/` 下定义复杂/组合类型
+
    ```typescript
    // dtos/auth-response.dto.ts
    export interface AuthResponseDTO {
@@ -76,6 +79,7 @@ src/modules/authentication/
    ```
 
 3. **定义 RPC 映射**：在 `protocol/` 下用 API 类型构建映射
+
    ```typescript
    // protocol/auth-rpc-map.ts
    import type { LoginByEmailReq, LoginByEmailRes } from '../api/login';
@@ -97,34 +101,32 @@ src/modules/authentication/
 本包采用**子路径导出**模式，支持极致的 Tree-Shaking 和模块隔离。
 
 ### 导入方式
-```typescript
 
+```typescript
 // ✅ 方式: 从子路径导入完整模块（推荐，极致 Tree-Shaking）
 import { GoalServerDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
 import { TaskTemplateServer } from '@dailyuse/contracts/task';
 import { AccountDTO } from '@dailyuse/contracts/account';
-
 ```
 
 ### 子路径列表
 
-| 子路径                               | 说明                        |
-| ------------------------------------ | --------------------------- |
-| `@dailyuse/contracts/task`           | 任务模块契约                |
-| `@dailyuse/contracts/goal`           | 目标模块契约                |
-| `@dailyuse/contracts/reminder`       | 提醒模块契约                |
-| `@dailyuse/contracts/editor`         | 编辑器模块契约              |
-| `@dailyuse/contracts/repository`     | 仓库模块契约                |
-| `@dailyuse/contracts/account`        | 账户模块契约                |
-| `@dailyuse/contracts/authentication` | 认证模块契约                |
-| `@dailyuse/contracts/schedule`       | 调度模块契约                |
-| `@dailyuse/contracts/setting`        | 设置模块契约                |
-| `@dailyuse/contracts/notification`   | 通知模块契约                |
-| `@dailyuse/contracts/document`       | 文档模块契约                |
-| `@dailyuse/contracts/ai`             | AI 模块契约                 |
-| `@dailyuse/contracts/dashboard`      | 仪表盘模块契约              |
-| `@dailyuse/contracts/response`       | API 响应类型                |
-| `@dailyuse/contracts/shared`         | 共享基础类型                |
+| 子路径                               | 说明           |
+| ------------------------------------ | -------------- |
+| `@dailyuse/contracts/task`           | 任务模块契约   |
+| `@dailyuse/contracts/goal`           | 目标模块契约   |
+| `@dailyuse/contracts/reminder`       | 提醒模块契约   |
+| `@dailyuse/contracts/editor`         | 编辑器模块契约 |
+| `@dailyuse/contracts/repository`     | 仓库模块契约   |
+| `@dailyuse/contracts/account`        | 账户模块契约   |
+| `@dailyuse/contracts/authentication` | 认证模块契约   |
+| `@dailyuse/contracts/schedule`       | 调度模块契约   |
+| `@dailyuse/contracts/setting`        | 设置模块契约   |
+| `@dailyuse/contracts/notification`   | 通知模块契约   |
+| `@dailyuse/contracts/ai`             | AI 模块契约    |
+| `@dailyuse/contracts/dashboard`      | 仪表盘模块契约 |
+| `@dailyuse/contracts/response`       | API 响应类型   |
+| `@dailyuse/contracts/shared`         | 共享基础类型   |
 
 ## 根入口导出内容
 

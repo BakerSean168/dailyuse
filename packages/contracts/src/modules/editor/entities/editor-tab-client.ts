@@ -8,9 +8,7 @@ import type {
   EditorSessionId,
   EditorWorkspaceId,
   IdentityId,
-  DocumentId,
   TransferDate,
-  DomainDate,
 } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
 import type { EditorTabServerDTO } from './editor-tab-server';
@@ -27,12 +25,13 @@ export interface EditorTabClientDTO {
   sessionId: string;
   workspaceId: string;
   identityId: string;
-  documentId: string | null;
+  resourceId: string | null;
   tabIndex: number;
   tabType: TabType;
   name: string;
   viewState: TabViewStateClientDTO;
   isPinned: boolean;
+  isActive: boolean;
   isDirty: boolean;
   lastAccessedAt: TransferDate | null;
   createdAt: TransferDate;

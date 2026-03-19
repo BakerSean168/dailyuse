@@ -73,7 +73,7 @@ const i18n = createI18n({
           kinds: {
             image: 'Image',
             note: 'Note',
-            document: 'Document',
+            document: 'File',
             media: 'Media',
             other: 'Other',
           },

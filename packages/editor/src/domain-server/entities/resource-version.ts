@@ -1,28 +1,26 @@
 /**
- * DocumentVersion 实体实现
+ * ResourceVersion 实体实现
  */
 
 import { Entity, generateUUID } from '@dailyuse/utils';
-import {
-  VersionChangeType,
+import { VersionChangeType } from '@dailyuse/contracts/editor';
+import type {
+  ResourceVersionClientDTO,
+  ResourceVersionServerDTO,
 } from '@dailyuse/contracts/editor';
 import type {
-  DocumentVersionClientDTO,
-  DocumentVersionServerDTO,
-} from '@dailyuse/contracts/editor';
-import type {
-  DocumentVersionId,
-  DocumentId,
+  ResourceVersionId,
+  ResourceId,
   EditorWorkspaceId,
   IdentityId,
 } from '@dailyuse/contracts/primitives';
 
 /**
- * DocumentVersion 状态接口（domain types）
+ * ResourceVersion 状态接口（domain types）
  */
-export interface DocumentVersionState {
-  id: DocumentVersionId;
-  documentId: DocumentId;
+export interface ResourceVersionState {
+  id: ResourceVersionId;
+  resourceId: ResourceId;
   workspaceId: EditorWorkspaceId;
   identityId: IdentityId;
   versionNumber: number;
@@ -30,27 +28,27 @@ export interface DocumentVersionState {
   contentHash: string;
   contentDiff: string | null;
   changeDescription: string | null;
-  previousVersionId: DocumentVersionId | null;
+  previousVersionId: ResourceVersionId | null;
   createdBy: string | null;
   createdAt: Date;
 }
 
 /**
- * DocumentVersion 实体
+ * ResourceVersion 实体
  */
-export class DocumentVersion extends Entity<DocumentVersionId> {
+export class ResourceVersion extends Entity<ResourceVersionId> {
   // ===== 私有属性 =====
-  private _props: DocumentVersionState;
+  private _props: ResourceVersionState;
 
   // ===== 构造函数（私有） =====
-  private constructor(state: DocumentVersionState) {
+  private constructor(state: ResourceVersionState) {
     super(state.id);
     this._props = { ...state };
   }
 
   // ===== Getter 属性 =====
-  public get documentId(): DocumentId {
-    return this._props.documentId;
+  public get resourceId(): ResourceId {
+    return this._props.resourceId;
   }
 
   public get workspaceId(): EditorWorkspaceId {
@@ -81,7 +79,7 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
     return this._props.changeDescription;
   }
 
-  public get previousVersionId(): DocumentVersionId | null {
+  public get previousVersionId(): ResourceVersionId | null {
     return this._props.previousVersionId;
   }
 
@@ -98,15 +96,15 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
   /**
    * 从状态恢复实体
    */
-  public static load(state: DocumentVersionState): DocumentVersion {
-    return new DocumentVersion(state);
+  public static load(state: ResourceVersionState): ResourceVersion {
+    return new ResourceVersion(state);
   }
 
   /**
-   * 创建新的文档版本
+   * 创建新的资源版本
    */
   public static create(params: {
-    documentId: DocumentId;
+    resourceId: ResourceId;
     workspaceId: EditorWorkspaceId;
     identityId: IdentityId;
     versionNumber: number;
@@ -114,13 +112,13 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
     contentHash: string;
     contentDiff?: string | null;
     changeDescription?: string | null;
-    previousVersionId?: DocumentVersionId | null;
+    previousVersionId?: ResourceVersionId | null;
     createdBy?: string | null;
-  }): DocumentVersion {
-    const id = generateUUID() as DocumentVersionId;
-    return new DocumentVersion({
+  }): ResourceVersion {
+    const id = generateUUID() as ResourceVersionId;
+    return new ResourceVersion({
       id,
-      documentId: params.documentId,
+      resourceId: params.resourceId,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
       versionNumber: params.versionNumber,
@@ -138,21 +136,21 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
    * 基于上一版本创建新版本
    */
   public static createNext(params: {
-    documentId: DocumentId;
+    resourceId: ResourceId;
     workspaceId: EditorWorkspaceId;
     identityId: IdentityId;
     changeType: VersionChangeType;
     contentHash: string;
     contentDiff?: string | null;
     changeDescription?: string | null;
-    previous?: DocumentVersion | null;
+    previous?: ResourceVersion | null;
     createdBy?: string | null;
-  }): DocumentVersion {
+  }): ResourceVersion {
     const previousVersionId = params.previous?.id ?? null;
     const versionNumber = params.previous ? params.previous.versionNumber + 1 : 1;
 
-    return DocumentVersion.create({
-      documentId: params.documentId,
+    return ResourceVersion.create({
+      resourceId: params.resourceId,
       workspaceId: params.workspaceId,
       identityId: params.identityId,
       versionNumber,
@@ -200,10 +198,10 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
   /**
    * 转换为 ServerDTO
    */
-  public toServerDTO(): DocumentVersionServerDTO {
+  public toServerDTO(): ResourceVersionServerDTO {
     return {
       id: this.id,
-      documentId: this._props.documentId,
+      resourceId: this._props.resourceId,
       workspaceId: this._props.workspaceId,
       identityId: this._props.identityId,
       versionNumber: this._props.versionNumber,
@@ -220,10 +218,10 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
   /**
    * 转换为 ClientDTO
    */
-  public toClientDTO(): DocumentVersionClientDTO {
+  public toClientDTO(): ResourceVersionClientDTO {
     return {
       id: this.id as unknown as string,
-      documentId: this._props.documentId as unknown as string,
+      resourceId: this._props.resourceId as unknown as string,
       workspaceId: this._props.workspaceId as unknown as string,
       identityId: this._props.identityId as unknown as string,
       versionNumber: this._props.versionNumber,
@@ -237,5 +235,4 @@ export class DocumentVersion extends Entity<DocumentVersionId> {
       formattedCreatedAt: this._props.createdAt.toLocaleString(),
     };
   }
-
 }

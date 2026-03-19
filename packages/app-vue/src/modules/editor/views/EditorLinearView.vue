@@ -2,9 +2,9 @@
   <div class="flex h-full flex-col overflow-hidden bg-background">
     <div class="border-b px-4 py-3 flex items-center gap-3">
       <div class="min-w-0 flex-1">
-        <h1 class="text-base font-semibold truncate">{{ documentTitle }}</h1>
+        <h1 class="text-base font-semibold truncate">{{ noteTitle }}</h1>
         <p class="text-xs text-muted-foreground truncate">
-          {{ currentDocument?.path || route.fullPath }}
+          {{ currentNote?.path || route.fullPath }}
         </p>
       </div>
       <Button variant="outline" size="sm" @click="goToWorkspace">
@@ -26,7 +26,7 @@
       </Alert>
     </div>
 
-    <div v-else-if="currentDocument" class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+    <div v-else-if="currentNote" class="flex-1 overflow-hidden flex flex-col lg:flex-row">
       <div class="min-w-0 flex-1 overflow-hidden flex flex-col lg:border-r">
         <EditorToolbar
           :saving="isSaving"
@@ -55,9 +55,9 @@
                 :visible="suggestionState.visible"
                 :search-query="suggestionState.query"
                 :position="suggestionState.position"
-                :exclude-document-id="currentDocument.id"
+                :exclude-note-id="currentNote.id"
                 @select="handleSuggestionSelect"
-                @create-new="handleCreateLinkedDocument"
+                @create-new="handleCreateLinkedNote"
                 @close="closeSuggestion"
               />
             </div>
@@ -91,14 +91,10 @@
           />
         </div>
         <div class="flex-1 min-h-[280px]">
-          <BacklinkPanel :document-id="currentDocument.id" @navigate="navigateToDocument" />
+          <BacklinkPanel :note-id="currentNote.id" @navigate="navigateToNote" />
         </div>
         <div class="h-[360px] border-t">
-          <LinkGraphView
-            :document-id="currentDocument.id"
-            @node-click="navigateToDocument"
-            @close="noop"
-          />
+          <LinkGraphView :note-id="currentNote.id" @node-click="navigateToNote" @close="noop" />
         </div>
       </aside>
     </div>
@@ -159,7 +155,7 @@ import {
   type EditorSelectionRange,
 } from '../composables/useResourceInsertion';
 import { formatWikiLink } from '../utils/wikiLinks';
-import type { LinkIndexDocument } from '../utils/linkIndex';
+import type { LinkIndexNote } from '../utils/linkIndex';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import type { ResolvedMarkdownResourceReference } from '../utils/markdownResourceReferences';
 import type {
@@ -175,10 +171,10 @@ const route = useRoute();
 const router = useRouter();
 const {
   ensureResourcesLoaded,
-  getDocumentById,
-  resolveDocument,
-  createMarkdownDocument,
-  saveDocumentContent,
+  getNoteById,
+  resolveNote,
+  createMarkdownNote,
+  saveNoteContent,
   imageResources,
   resourceItems,
   recentResources,
@@ -194,7 +190,7 @@ const { getUnresolvedReferences } = useResourceReferenceIndex();
 const markdownEditorRef = ref<InstanceType<typeof MarkdownEditor> | null>(null);
 const isLoading = ref(true);
 const loadError = ref<string | null>(null);
-const currentDocument = ref<LinkIndexDocument | null>(null);
+const currentNote = ref<LinkIndexNote | null>(null);
 const editorContent = ref('');
 const isDirty = ref(false);
 const viewMode = ref<'edit' | 'split' | 'preview'>('split');
@@ -210,10 +206,10 @@ const suggestionState = ref({
   position: { x: 0, y: 0 },
 });
 
-const documentId = computed(() => String(route.params.id || ''));
-const documentTitle = computed(() => currentDocument.value?.title || t('editor.linear.untitled'));
+const noteId = computed(() => String(route.params.id || ''));
+const noteTitle = computed(() => currentNote.value?.title || t('editor.linear.untitled'));
 const brokenDiagnostics = computed(() =>
-  currentDocument.value ? getUnresolvedReferences(currentDocument.value.id) : [],
+  currentNote.value ? getUnresolvedReferences(currentNote.value.id) : [],
 );
 const brokenReferences = computed(() => brokenDiagnostics.value.map((item) => item.reference));
 const recentImageResources = computed(() =>
@@ -235,8 +231,8 @@ const repairCandidates = computed(() => {
     .map((item) => item.resource);
 });
 
-async function loadDocument() {
-  if (!documentId.value) {
+async function loadNote() {
+  if (!noteId.value) {
     loadError.value = t('editor.linear.notFound');
     isLoading.value = false;
     return;
@@ -247,21 +243,21 @@ async function loadDocument() {
 
   try {
     await ensureResourcesLoaded();
-    const document = getDocumentById(documentId.value);
+    const note = getNoteById(noteId.value);
 
-    if (!document) {
+    if (!note) {
       loadError.value = t('editor.linear.notFound');
-      currentDocument.value = null;
+      currentNote.value = null;
       return;
     }
 
-    currentDocument.value = document;
-    editorContent.value = document.content;
+    currentNote.value = note;
+    editorContent.value = note.content;
     isDirty.value = false;
   } catch (error) {
-    console.error('Load document failed:', error);
+    console.error('Load note failed:', error);
     loadError.value = error instanceof Error ? error.message : t('editor.linear.loadFailed');
-    currentDocument.value = null;
+    currentNote.value = null;
   } finally {
     isLoading.value = false;
   }
@@ -285,11 +281,11 @@ function handleViewModeChange(mode: 'edit' | 'split' | 'preview') {
 
 function handleEditorChange(content: string) {
   editorContent.value = content;
-  isDirty.value = currentDocument.value != null && content !== currentDocument.value.content;
+  isDirty.value = currentNote.value != null && content !== currentNote.value.content;
 }
 
 async function handleSave() {
-  if (!currentDocument.value) {
+  if (!currentNote.value) {
     return;
   }
 
@@ -297,14 +293,14 @@ async function handleSave() {
     return;
   }
 
-  const success = await saveDocumentContent(currentDocument.value.id, editorContent.value);
+  const success = await saveNoteContent(currentNote.value.id, editorContent.value);
   if (!success) {
     toast.error(t('editor.linear.saveFailed'));
     return;
   }
 
-  currentDocument.value = {
-    ...currentDocument.value,
+  currentNote.value = {
+    ...currentNote.value,
     content: editorContent.value,
   };
   isDirty.value = false;
@@ -312,14 +308,14 @@ async function handleSave() {
 }
 
 async function handlePasteFiles(files: File[], selection: EditorSelectionRange) {
-  if (!currentDocument.value) {
+  if (!currentNote.value) {
     return;
   }
 
   try {
     const result = await insertUploadedImages({
       files,
-      currentNoteName: currentDocument.value.title,
+      currentNoteName: currentNote.value.title,
       insertText: insertTextAtSelection,
       selection,
     });
@@ -405,7 +401,7 @@ async function handleCopyExport() {
 }
 
 function handleDownloadExport() {
-  if (!exportResult.value || !currentDocument.value) {
+  if (!exportResult.value || !currentNote.value) {
     return;
   }
 
@@ -413,7 +409,7 @@ function handleDownloadExport() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${currentDocument.value.title || 'note'}-self-contained.md`;
+  link.download = `${currentNote.value.title || 'note'}-self-contained.md`;
   link.click();
   URL.revokeObjectURL(url);
   toast.success(t('editor.exportDialog.downloadSuccess'));
@@ -442,15 +438,14 @@ function applyRepairCandidate(replacement: ResourceClientDTO) {
     reference,
     replacement,
   });
-  isDirty.value =
-    currentDocument.value != null && editorContent.value !== currentDocument.value.content;
+  isDirty.value = currentNote.value != null && editorContent.value !== currentNote.value.content;
   showRepairDialog.value = false;
   pendingRepairReference.value = null;
   toast.success(t('editor.diagnostics.repaired'));
 }
 
 function handleTriggerSuggestion(payload: { x: number; y: number; query: string }) {
-  if (!currentDocument.value) {
+  if (!currentNote.value) {
     return;
   }
 
@@ -468,24 +463,24 @@ function closeSuggestion() {
   };
 }
 
-function handleSuggestionSelect(document: LinkIndexDocument | null) {
-  if (!document) {
+function handleSuggestionSelect(note: LinkIndexNote | null) {
+  if (!note) {
     return;
   }
 
-  markdownEditorRef.value?.replaceActiveWikiLink(formatWikiLink(document.title));
+  markdownEditorRef.value?.replaceActiveWikiLink(formatWikiLink(note.title));
   closeSuggestion();
   markdownEditorRef.value?.focus();
 }
 
-async function handleCreateLinkedDocument(title: string) {
+async function handleCreateLinkedNote(title: string) {
   const trimmedTitle = title.trim();
   if (!trimmedTitle) {
     return;
   }
 
   try {
-    const created = await createMarkdownDocument(trimmedTitle);
+    const created = await createMarkdownNote(trimmedTitle);
     if (!created) {
       toast.error(t('editor.linear.createLinkedFailed'));
       return;
@@ -496,23 +491,23 @@ async function handleCreateLinkedDocument(title: string) {
     markdownEditorRef.value?.focus();
     toast.success(t('editor.linear.createLinkedSuccess', { name: trimmedTitle }));
   } catch (error) {
-    console.error('Create linked document failed:', error);
+    console.error('Create linked note failed:', error);
     toast.error(t('editor.linear.createLinkedFailed'));
   }
 }
 
 function handleInternalLinkClick(title: string) {
-  const linkedDocument = resolveDocument(title);
-  if (!linkedDocument) {
+  const linkedNote = resolveNote(title);
+  if (!linkedNote) {
     toast.info(`${t('repository.workspace.linkNotFound')}: ${title}`);
     return;
   }
 
-  navigateToDocument(linkedDocument.id);
+  navigateToNote(linkedNote.id);
 }
 
-function navigateToDocument(id: string) {
-  void router.push({ name: 'document-edit', params: { id } });
+function navigateToNote(id: string) {
+  void router.push({ name: 'note-edit', params: { id } });
 }
 
 function goToWorkspace() {
@@ -521,11 +516,11 @@ function goToWorkspace() {
 
 function noop() {}
 
-watch(documentId, () => {
+watch(noteId, () => {
   closeSuggestion();
   showExportDialog.value = false;
   exportResult.value = null;
-  void loadDocument();
+  void loadNote();
 });
 
 watch(error, (message) => {
@@ -535,6 +530,6 @@ watch(error, (message) => {
 });
 
 onMounted(() => {
-  void loadDocument();
+  void loadNote();
 });
 </script>

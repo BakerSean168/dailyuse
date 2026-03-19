@@ -5,4 +5,5 @@
  */
 
 export * from './ports/IRepositoryContentPort';
+export * from './ports/IRepositorySearchPort';
 export * from './use-cases';

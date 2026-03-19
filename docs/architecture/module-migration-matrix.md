@@ -177,7 +177,7 @@ Copy when adding:
 - [x] thin `packages/editor/src/api/module.ts` — 3-step pattern
 - [x] decide whether to add client layer — deferred (IPC-only interface)
 - [x] delete `EditorContainer` singleton
-- [ ] finish real document/content persistence in desktop runtime
+- [ ] finish real resource/content persistence in desktop runtime
 
 ### AI — DONE
 
@@ -232,4 +232,4 @@ All 14 issues from the comprehensive code review have been resolved:
 | Item                           | Reason                                                                                                                                                                                                                    |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | AI controller → `api.*` wiring | 4 controllers in `ai/api/module.ts` wire to `services.*` instead of `api.*`. Requires adding `listMessages` to `AIApplicationPort` and refactoring 4 controller constructors (6+ files). Lower priority — no runtime bug. |
-| Editor desktop persistence     | Desktop now has real repository-backed content bridge and PowerSync document repository, but the overall editor runtime still needs validation before being called fully complete.                                        |
+| Editor desktop persistence     | Desktop now has real repository-backed content bridge and PowerSync resource-backed persistence, but the overall editor runtime still needs validation before being called fully complete.                                |

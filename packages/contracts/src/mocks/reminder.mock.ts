@@ -34,7 +34,7 @@ export function createMockReminderTemplate(
         ? `${faker.number.int({ min: 0, max: 23 }).toString().padStart(2, '0')}:${faker.number.int({ min: 0, max: 59 }).toString().padStart(2, '0')}`
         : null,
       event: faker.datatype.boolean()
-        ? faker.helpers.arrayElement(['task_complete', 'goal_achieve', 'document_save'])
+        ? faker.helpers.arrayElement(['task_complete', 'goal_achieve', 'resource_save'])
         : null,
     },
     recurrence: faker.datatype.boolean()

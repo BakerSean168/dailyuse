@@ -1,7 +1,7 @@
 /**
  * Editor Module Value Objects - Domain Server
  *
- * IDs and class-type VOs only. Enum-like VOs (ProjectType, DocumentLanguage, etc.)
+ * IDs and class-type VOs only. Enum-like VOs (ProjectType, ResourceLanguage, etc.)
  * and types (WorkspaceLayout, WorkspaceSettings) come from @dailyuse/contracts/editor.
  */
 
@@ -14,8 +14,4 @@ export {
 } from '../../domain-shared/value-objects';
 
 // Class-type Value Objects (no conflict with contracts)
-export {
-  SessionLayout,
-  TabViewState,
-  DocumentMetadata,
-} from '../../domain-shared/value-objects';
+export { SessionLayout, TabViewState, ResourceMetadata } from '../../domain-shared/value-objects';

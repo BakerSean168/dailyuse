@@ -226,16 +226,26 @@ export const SettingChannels = {
 } as const;
 
 export const EditorChannels = {
-  DOCUMENT_LIST: 'editor:list-documents',
-  DOCUMENT_GET: 'editor:get-document',
-  DOCUMENT_CREATE: 'editor:create-document',
-  DOCUMENT_UPDATE: 'editor:update-document',
-  DOCUMENT_DELETE: 'editor:delete-document',
-  DOCUMENT_SAVE: 'editor:save-document',
+  WORKSPACE_GET: 'editor:get-workspace',
+  WORKSPACE_CREATE: 'editor:create-workspace',
+  WORKSPACE_UPDATE: 'editor:update-workspace',
+  SESSION_LIST: 'editor:list-sessions',
+  SESSION_GET: 'editor:get-session',
+  SESSION_CREATE: 'editor:create-session',
+  SESSION_UPDATE: 'editor:update-session',
+  SESSION_ACTIVATE: 'editor:activate-session',
+  SESSION_DELETE: 'editor:delete-session',
+  GROUP_CREATE: 'editor:create-group',
+  GROUP_UPDATE: 'editor:update-group',
+  GROUP_DELETE: 'editor:delete-group',
+  TAB_CREATE: 'editor:create-tab',
+  TAB_UPDATE: 'editor:update-tab',
+  TAB_ACTIVATE: 'editor:activate-tab',
+  TAB_DELETE: 'editor:delete-tab',
   GET_CONTENT: 'editor:get-content',
   SAVE_CONTENT: 'editor:save-content',
   AUTO_SAVE: 'editor:auto-save-content',
-  SEARCH: 'editor:search-documents',
+  SEARCH: 'editor:search-resources',
 } as const;
 
 export const GovernanceChannels = {

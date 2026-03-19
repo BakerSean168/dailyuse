@@ -22,8 +22,8 @@ export interface SearchEngineServerDTO {
   name: string;
   description: string | null;
   indexPath: string; // Index storage path
-  indexedDocumentCount: number; // Number of indexed documents
-  totalDocumentCount: number; // Total document count
+  indexedResourceCount: number; // Number of indexed resources
+  totalResourceCount: number; // Total resource count
   lastIndexedAt: TransferDate | null;
   isIndexing: boolean; // Whether indexing is in progress
   indexProgress: number | null; // Index progress (0-100)
@@ -41,8 +41,8 @@ export interface SearchEnginePersistenceDTO {
   name: string;
   description: string | null;
   index_path: string;
-  indexed_document_count: number;
-  total_document_count: number;
+  indexed_resource_count: number;
+  total_resource_count: number;
   last_indexed_at: PersistenceDate | null;
   is_indexing: boolean;
   index_progress: number | null;

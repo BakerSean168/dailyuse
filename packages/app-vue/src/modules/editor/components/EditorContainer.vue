@@ -16,7 +16,7 @@
           :model-value="activeTab.content ?? ''"
           :placeholder="
             t('editor.container.editingTitle', {
-              name: activeTab.title ?? t('editor.container.document'),
+              name: activeTab.title ?? t('editor.container.resource'),
             })
           "
           @update:model-value="handleContentChange"

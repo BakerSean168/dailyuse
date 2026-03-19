@@ -5,7 +5,7 @@ export const ContentType = {
   Article: 'Article',
   Video: 'Video',
   Image: 'Image',
-  Document: 'Document',
+  Resource: 'Resource',
   Other: 'Other',
 } as const;
 

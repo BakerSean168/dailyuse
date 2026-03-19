@@ -10,20 +10,38 @@
 
 import { createEditorModule, type EditorModuleInstance } from './editor.module';
 import {
-  PowerSyncDocumentRepository,
   PowerSyncEditorWorkspaceRepository,
+  PowerSyncEditorSessionRepository,
+  PowerSyncEditorGroupRepository,
+  PowerSyncEditorTabRepository,
 } from './adapters/powersync';
 import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IRepositoryContentPort, IRepositorySearchPort } from '../application-server';
 
 /**
  * Creates an editor module instance backed by PowerSync local database.
  * 创建由 PowerSync 本地数据库支持的编辑器模块实例。
  */
-export function createEditorPowerSyncModule(db: IElectronDatabase): EditorModuleInstance {
+export function createEditorPowerSyncModule(
+  db: IElectronDatabase,
+  ports: {
+    repositoryContentPort: IRepositoryContentPort;
+    repositorySearchPort: IRepositorySearchPort;
+  },
+): EditorModuleInstance {
   return createEditorModule({
     workspaceRepository: new PowerSyncEditorWorkspaceRepository(db),
-    documentRepository: new PowerSyncDocumentRepository(db),
+    sessionRepository: new PowerSyncEditorSessionRepository(db),
+    groupRepository: new PowerSyncEditorGroupRepository(db),
+    tabRepository: new PowerSyncEditorTabRepository(db),
+    repositoryContentPort: ports.repositoryContentPort,
+    repositorySearchPort: ports.repositorySearchPort,
   });
 }
 
-export { PowerSyncDocumentRepository, PowerSyncEditorWorkspaceRepository };
+export {
+  PowerSyncEditorWorkspaceRepository,
+  PowerSyncEditorSessionRepository,
+  PowerSyncEditorGroupRepository,
+  PowerSyncEditorTabRepository,
+};

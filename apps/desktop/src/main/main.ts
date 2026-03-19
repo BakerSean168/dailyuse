@@ -103,6 +103,40 @@ async function initializeApp(): Promise<void> {
             }
           },
         },
+        searchPort: {
+          search: async (request) => {
+            if (!request.workspaceId) {
+              return { results: [], total: 0 };
+            }
+
+            const repositorySearch = await editorRepositoryModule.api.search({
+              repositoryId: request.workspaceId,
+              query: request.query,
+              mode: 'all',
+              page: 1,
+              pageSize: request.limit ?? 20,
+            });
+
+            if (!repositorySearch.ok) {
+              return { results: [], total: 0 };
+            }
+
+            return {
+              results: repositorySearch.data.results.map((item) => ({
+                resourceId: item.resourceId,
+                resourcePath: item.resourcePath,
+                resourceName: item.resourceName,
+                snippet: item.matches[0]?.lineContent ?? '',
+                score: item.matchCount,
+                highlights: item.matches.map((match) => ({
+                  line: match.lineNumber,
+                  text: match.lineContent,
+                })),
+              })),
+              total: repositorySearch.data.totalResults,
+            };
+          },
+        },
       }),
     )
     .init();

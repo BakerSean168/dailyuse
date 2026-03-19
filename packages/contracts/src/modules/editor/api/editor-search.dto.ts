@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { EditorWorkspaceId, SearchEngineId } from '../../../primitives';
 
-export const SearchEditorDocumentsSchema = z.object({
+export const SearchEditorResourcesSchema = z.object({
   query: z.string().trim().min(1).describe('Search query'),
   limit: z.coerce.number().int().positive().max(100).optional(),
   offset: z.coerce.number().int().min(0).optional(),
@@ -14,4 +14,4 @@ export const SearchEditorDocumentsSchema = z.object({
   searchEngineId: brandedId<SearchEngineId>().optional(),
 });
 
-export type SearchEditorDocumentsReq = z.infer<typeof SearchEditorDocumentsSchema>;
+export type SearchEditorResourcesReq = z.infer<typeof SearchEditorResourcesSchema>;

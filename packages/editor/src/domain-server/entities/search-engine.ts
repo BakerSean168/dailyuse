@@ -2,10 +2,7 @@
  * SearchEngine 实体实现
  */
 
-import type {
-  SearchEngineClientDTO,
-  SearchEngineServerDTO,
-} from '@dailyuse/contracts/editor';
+import type { SearchEngineClientDTO, SearchEngineServerDTO } from '@dailyuse/contracts/editor';
 import type {
   SearchEngineId,
   EditorWorkspaceId,
@@ -24,8 +21,8 @@ export interface SearchEngineState {
   name: string;
   description: string | null;
   indexPath: string;
-  indexedDocumentCount: number;
-  totalDocumentCount: number;
+  indexedResourceCount: number;
+  totalResourceCount: number;
   lastIndexedAt: Date | null;
   isIndexing: boolean;
   indexProgress: number | null;
@@ -67,12 +64,12 @@ export class SearchEngine extends Entity<SearchEngineId> {
     return this._props.indexPath;
   }
 
-  public get indexedDocumentCount(): number {
-    return this._props.indexedDocumentCount;
+  public get indexedResourceCount(): number {
+    return this._props.indexedResourceCount;
   }
 
-  public get totalDocumentCount(): number {
-    return this._props.totalDocumentCount;
+  public get totalResourceCount(): number {
+    return this._props.totalResourceCount;
   }
 
   public get lastIndexedAt(): Date | null {
@@ -119,8 +116,8 @@ export class SearchEngine extends Entity<SearchEngineId> {
       name: params.name,
       description: params.description ?? null,
       indexPath: params.indexPath,
-      indexedDocumentCount: 0,
-      totalDocumentCount: 0,
+      indexedResourceCount: 0,
+      totalResourceCount: 0,
       lastIndexedAt: null,
       isIndexing: false,
       indexProgress: null,
@@ -130,17 +127,17 @@ export class SearchEngine extends Entity<SearchEngineId> {
   }
 
   // ===== 业务方法 =====
-  public startIndexing(totalDocumentCount: number): void {
+  public startIndexing(totalResourceCount: number): void {
     this._props.isIndexing = true;
     this._props.indexProgress = 0;
-    this._props.totalDocumentCount = totalDocumentCount;
+    this._props.totalResourceCount = totalResourceCount;
     this._props.updatedAt = new Date();
   }
 
   public updateIndexProgress(progress: number, indexedCount: number): void {
     if (!this._props.isIndexing) return;
     this._props.indexProgress = Math.min(100, Math.max(0, progress));
-    this._props.indexedDocumentCount = indexedCount;
+    this._props.indexedResourceCount = indexedCount;
     this._props.updatedAt = new Date();
   }
 
@@ -172,12 +169,15 @@ export class SearchEngine extends Entity<SearchEngineId> {
     return this._props.indexProgress ?? 0;
   }
 
-  public get hasIndexedDocuments(): boolean {
-    return this._props.indexedDocumentCount > 0;
+  public get hasIndexedResources(): boolean {
+    return this._props.indexedResourceCount > 0;
   }
 
   public get isFullyIndexed(): boolean {
-    return this._props.indexedDocumentCount === this._props.totalDocumentCount && this._props.totalDocumentCount > 0;
+    return (
+      this._props.indexedResourceCount === this._props.totalResourceCount &&
+      this._props.totalResourceCount > 0
+    );
   }
 
   public get lastIndexedAtFormatted(): string | null {
@@ -193,8 +193,8 @@ export class SearchEngine extends Entity<SearchEngineId> {
       name: this._props.name,
       description: this._props.description,
       indexPath: this._props.indexPath,
-      indexedDocumentCount: this._props.indexedDocumentCount,
-      totalDocumentCount: this._props.totalDocumentCount,
+      indexedResourceCount: this._props.indexedResourceCount,
+      totalResourceCount: this._props.totalResourceCount,
       lastIndexedAt: this._props.lastIndexedAt?.getTime() as TransferDate | null,
       isIndexing: this._props.isIndexing,
       indexProgress: this._props.indexProgress,
@@ -211,8 +211,8 @@ export class SearchEngine extends Entity<SearchEngineId> {
       name: this._props.name,
       description: this._props.description,
       indexPath: this._props.indexPath,
-      indexedDocumentCount: this._props.indexedDocumentCount,
-      totalDocumentCount: this._props.totalDocumentCount,
+      indexedResourceCount: this._props.indexedResourceCount,
+      totalResourceCount: this._props.totalResourceCount,
       lastIndexedAt: this._props.lastIndexedAt?.getTime() as TransferDate | null,
       isIndexing: this._props.isIndexing,
       indexProgress: this._props.indexProgress,

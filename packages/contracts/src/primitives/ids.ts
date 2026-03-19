@@ -84,14 +84,11 @@ export type ResourceId = string & { readonly __brand: 'ResourceId' };
 /** 文件夹 ID */
 export type FolderId = string & { readonly __brand: 'FolderId' };
 
-/** 文档 ID */
-export type DocumentId = string & { readonly __brand: 'DocumentId' };
+/** 资源版本 ID */
+export type ResourceVersionId = string & { readonly __brand: 'ResourceVersionId' };
 
-/** 文档版本 ID */
-export type DocumentVersionId = string & { readonly __brand: 'DocumentVersionId' };
-
-/** 文档链接 ID */
-export type DocumentLinkId = string & { readonly __brand: 'DocumentLinkId' };
+/** 资源链接 ID */
+export type ResourceLinkId = string & { readonly __brand: 'ResourceLinkId' };
 
 /** 设置 ID */
 export type SettingId = string & { readonly __brand: 'SettingId' };
@@ -246,7 +243,8 @@ export const ID_PREFIXES = {
   RepositoryId: 'IRepositoryId',
   ResourceId: 'IResourceId',
   FolderId: 'IFolderId',
-  DocumentId: 'IDocumentId',
+  ResourceVersionId: 'IResourceVersionId',
+  ResourceLinkId: 'IResourceLinkId',
 
   // === Setting ===
   SettingId: 'ISettingId',

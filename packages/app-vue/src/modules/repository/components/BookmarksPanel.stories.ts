@@ -27,9 +27,7 @@ const meta = {
   component: BookmarksPanel,
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
-  decorators: [
-    () => ({ template: '<div style="max-width: 320px;"><story /></div>' }),
-  ],
+  decorators: [() => ({ template: '<div style="max-width: 320px;"><story /></div>' })],
   argTypes: {
     bookmarks: { description: '书签列表' },
   },
@@ -41,9 +39,24 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     bookmarks: [
-      mockBookmark({ id: '1', aliasName: 'Vue 3 入门指南', displayName: 'Vue 3 入门指南', sortOrder: 0 }),
-      mockBookmark({ id: '2', aliasName: 'TypeScript 最佳实践', displayName: 'TypeScript 最佳实践', sortOrder: 1 }),
-      mockBookmark({ id: '3', aliasName: 'Prisma ORM 文档', displayName: 'Prisma ORM 文档', sortOrder: 2 }),
+      mockBookmark({
+        id: '1',
+        aliasName: 'Vue 3 入门指南',
+        displayName: 'Vue 3 入门指南',
+        sortOrder: 0,
+      }),
+      mockBookmark({
+        id: '2',
+        aliasName: 'TypeScript 最佳实践',
+        displayName: 'TypeScript 最佳实践',
+        sortOrder: 1,
+      }),
+      mockBookmark({
+        id: '3',
+        aliasName: 'Prisma ORM 指南',
+        displayName: 'Prisma ORM 指南',
+        sortOrder: 2,
+      }),
       mockBookmark({ id: '4', aliasName: '部署流程', displayName: '部署流程', sortOrder: 3 }),
     ],
   },

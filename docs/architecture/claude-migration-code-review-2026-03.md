@@ -102,7 +102,7 @@ Recommended follow-up:
 
 ### Editor
 
-- desktop path is materially improved with PowerSync document persistence and a non-stub content bridge fallback strategy
+- desktop path is materially improved with PowerSync resource-backed persistence and a non-stub content bridge fallback strategy
 
 ### AI
 

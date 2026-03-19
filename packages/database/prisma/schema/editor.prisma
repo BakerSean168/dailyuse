@@ -73,7 +73,7 @@ model EditorWorkspaceSessionGroupTab {
   sessionId   String    @map("session_id")
   workspaceId String    @map("workspace_id")
   identityId  String    @map("identity_id")
-  documentId  String?   @map("document_id")
+  resourceId  String?   @map("resource_id")
   tabIndex    Int       @map("tab_index")
   tabType     String    @map("tab_type")
   title       String

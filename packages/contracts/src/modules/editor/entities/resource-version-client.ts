@@ -1,24 +1,24 @@
 /**
- * DocumentVersion Entity - Client Interface
+ * ResourceVersion Entity - Client Interface
  */
 
 import type {
-  DocumentVersionId,
-  DocumentId,
+  ResourceVersionId,
+  ResourceId,
   EditorWorkspaceId,
   IdentityId,
   TransferDate,
   DomainDate,
 } from '../../../primitives';
 import type { VersionChangeType } from '../value-objects/version-change-type';
-import type { DocumentVersionServerDTO } from './document-version-server';
+import type { ResourceVersionServerDTO } from './resource-version-server';
 
 /**
- * Document Version Client DTO (includes UI formatted fields).
+ * Resource Version Client DTO (includes UI formatted fields).
  */
-export interface DocumentVersionClientDTO {
+export interface ResourceVersionClientDTO {
   id: string;
-  documentId: string;
+  resourceId: string;
   workspaceId: string;
   identityId: string;
   versionNumber: number;

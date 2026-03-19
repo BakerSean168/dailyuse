@@ -1,9 +1,9 @@
 import type {
   EditorWorkspaceUpdatedDomainEvent,
-  EditorDocumentSavedDomainEvent,
+  EditorResourceSavedDomainEvent,
 } from '../domain/events';
 
 export type EditorEventMap = {
   'editor:EditorWorkspaceUpdatedEvent': EditorWorkspaceUpdatedDomainEvent;
-  'editor:EditorDocumentSavedEvent': EditorDocumentSavedDomainEvent;
+  'editor:EditorResourceSavedEvent': EditorResourceSavedDomainEvent;
 };

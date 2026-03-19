@@ -3,13 +3,13 @@ import { useRepository } from '../../repository/composables/useRepository';
 import { useRepositoryStore } from '../../repository/stores/repositoryStore';
 import {
   buildEditorLinkIndex,
-  getBacklinksForDocument,
-  getLinkGraphForDocument,
-  searchLinkIndexDocuments,
+  getBacklinksForNote,
+  getLinkGraphForNote,
+  searchLinkIndexNotes,
   type GraphOptions,
   type LinkGraphData,
-  type LinkIndexDocument,
-  type SearchDocumentsOptions,
+  type LinkIndexNote,
+  type SearchNotesOptions,
 } from '../utils/linkIndex';
 import { useResourceInsertion } from './useResourceInsertion';
 
@@ -19,7 +19,7 @@ export function useEditorLinkIndex() {
   const resourceInsertion = useResourceInsertion();
 
   const index = computed(() => buildEditorLinkIndex(store.resources));
-  const documents = computed(() => index.value.documents);
+  const notes = computed(() => index.value.notes);
 
   async function ensureResourcesLoaded(force = false) {
     await repository.initRepository();
@@ -33,54 +33,51 @@ export function useEditorLinkIndex() {
     }
   }
 
-  function getDocumentById(documentId: string): LinkIndexDocument | null {
-    return index.value.documentsById.get(documentId) ?? null;
+  function getNoteById(noteId: string): LinkIndexNote | null {
+    return index.value.notesById.get(noteId) ?? null;
   }
 
-  function resolveDocument(target: string): LinkIndexDocument | null {
-    return index.value.resolveDocument(target);
+  function resolveNote(target: string): LinkIndexNote | null {
+    return index.value.resolveNote(target);
   }
 
-  function searchDocuments(
-    query: string,
-    options: SearchDocumentsOptions = {},
-  ): LinkIndexDocument[] {
-    return searchLinkIndexDocuments(index.value, query, options);
+  function searchNotes(query: string, options: SearchNotesOptions = {}): LinkIndexNote[] {
+    return searchLinkIndexNotes(index.value, query, options);
   }
 
-  function getBacklinks(documentId: string, limit?: number) {
-    return getBacklinksForDocument(index.value, documentId, limit);
+  function getBacklinks(noteId: string, limit?: number) {
+    return getBacklinksForNote(index.value, noteId, limit);
   }
 
-  function getGraph(documentId: string, depth: number, options?: GraphOptions): LinkGraphData {
-    return getLinkGraphForDocument(index.value, documentId, depth, options);
+  function getGraph(noteId: string, depth: number, options?: GraphOptions): LinkGraphData {
+    return getLinkGraphForNote(index.value, noteId, depth, options);
   }
 
-  async function createMarkdownDocument(title: string, initialContent = '') {
+  async function createMarkdownNote(title: string, initialContent = '') {
     await ensureResourcesLoaded();
 
     const normalizedTitle = title.trim().endsWith('.md') ? title.trim() : `${title.trim()}.md`;
     return repository.createMarkdownNote(normalizedTitle, initialContent);
   }
 
-  async function saveDocumentContent(documentId: string, content: string) {
-    return repository.saveResourceContent(documentId, content);
+  async function saveNoteContent(noteId: string, content: string) {
+    return repository.saveResourceContent(noteId, content);
   }
 
   return {
     index,
-    documents,
+    notes,
     repositoryId: repository.repositoryId,
     isSaving: repository.isSaving,
     error: repository.error,
     ensureResourcesLoaded,
-    getDocumentById,
-    resolveDocument,
-    searchDocuments,
+    getNoteById,
+    resolveNote,
+    searchNotes,
     getBacklinks,
     getGraph,
-    createMarkdownDocument,
-    saveDocumentContent,
+    createMarkdownNote,
+    saveNoteContent,
     imageResources: resourceInsertion.imageResources,
     resourceItems: resourceInsertion.resourceItems,
     recentResources: resourceInsertion.recentResources,

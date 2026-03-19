@@ -2,7 +2,7 @@
  * 标签页类型枚举
  */
 export const TabType = {
-  Document: 'Document',
+  Resource: 'Resource',
   Preview: 'Preview',
   Diff: 'Diff',
   Settings: 'Settings',

@@ -27,7 +27,7 @@ export const Default: Story = {
 export const NoFolder: Story = {
   args: {
     open: true,
-    repositoryName: '项目文档',
+    repositoryName: '项目笔记',
     parentFolderName: '',
   },
 };

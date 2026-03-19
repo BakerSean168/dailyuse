@@ -17,6 +17,7 @@ import type {
 import type { Repository } from '@dailyuse/repository/domain-client';
 import { searchRepositoryResources } from './repositorySearch';
 import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
+import { useEditorWorkspaceStore } from '../../editor/stores/editorWorkspaceStore';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -92,6 +93,7 @@ export function useRepository() {
     'RepositoryService',
   ) as RepositoryServiceLike;
   const store = useRepositoryStore();
+  const editorWorkspaceStore = useEditorWorkspaceStore();
   const savingId = ref<string | null>(null);
   const isUploading = ref(false);
   const uploadProgress = ref<RepositoryUploadProgress>({
@@ -571,7 +573,9 @@ export function useRepository() {
   // ── Tabs convenience ──
   function openResource(resource: ResourceClientDTO) {
     store.setCurrentResource(resource);
-    store.openTab(resource.id);
+    if (store.currentRepositoryId) {
+      void editorWorkspaceStore.openResourceTab(resource, store.currentRepositoryId);
+    }
   }
 
   return {

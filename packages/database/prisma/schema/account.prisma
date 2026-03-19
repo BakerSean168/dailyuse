@@ -30,8 +30,6 @@ model Account {
   identity AuthIdentity @relation(fields: [id], references: [id], onDelete: Cascade)
 
   // 关联的业务模块
-  documents                       Document[]
-  documentVersions                DocumentVersion[]          @relation("AccountDocumentVersionChangedBy")
   editorWorkspaces                EditorWorkspace[]
   editorWorkspaceSessions         EditorWorkspaceSession[]
   editorWorkspaceSessionGroups    EditorWorkspaceSessionGroup[]
@@ -77,8 +75,6 @@ model Account {
   reminderResponses               ReminderResponse[]         @relation("AccountReminderResponses")
   notificationChannels            NotificationChannel[]      @relation("AccountNotificationChannels")
   notificationHistory             NotificationHistory[]      @relation("AccountNotificationHistory")
-  documentVersionsByIdentity      DocumentVersion[]          @relation("AccountDocumentVersions")
-  documentLinks                   DocumentLink[]             @relation("AccountDocumentLinks")
   aiMessages                      AiMessage[]                @relation("AccountAiMessages")
   folders                         Folder[]                   @relation("AccountFolders")
   resources                       Resource[]                 @relation("AccountResources")

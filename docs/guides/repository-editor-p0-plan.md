@@ -361,7 +361,7 @@ Do not delete folder APIs or repositories. P0 should only remove them from main 
 3. Paste a screenshot into the note and verify a new image resource appears under `images` in `TypedFileTree`.
 4. Save and reload the note and verify the Markdown reference remains stable.
 5. Import an image from disk, use insert-existing-image, and verify the inserted path renders in preview.
-6. Repeat in the direct `/document/:id` route if parity is included in the P0 cut.
+6. Repeat in the direct `/note/:id` route if parity is included in the P0 cut.
 
 ## Suggested implementation sequencing decision
 

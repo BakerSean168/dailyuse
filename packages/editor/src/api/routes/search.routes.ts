@@ -4,7 +4,7 @@
 
 import { Router, type RequestHandler } from 'express';
 import { RouteRegistrar, type OpenApiRegistryLike, successResponse } from '@dailyuse/utils/result';
-import { SearchEditorDocumentsSchema, SearchResponseSchema } from '@dailyuse/contracts/editor';
+import { SearchEditorResourcesSchema, SearchResponseSchema } from '@dailyuse/contracts/editor';
 import type { EditorController } from '../../controllers/editor.controller';
 
 interface PlatformMiddleware {
@@ -30,15 +30,15 @@ export function registerSearchRoutes(
     {
       method: 'get',
       path: '/search',
-      summary: '搜索文档',
-      request: { query: SearchEditorDocumentsSchema },
+      summary: '搜索资源',
+      request: { query: SearchEditorResourcesSchema },
       responses: {
         200: successResponse(SearchResponseSchema, '搜索成功'),
       },
     },
     [auth],
     (req, ctx) =>
-      controller.searchDocuments(
+      controller.searchResources(
         {
           query: typeof req.query?.query === 'string' ? req.query.query : '',
           limit:

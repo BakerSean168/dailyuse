@@ -35,9 +35,9 @@ Most previously documented gaps are now closed across backend, HTTP, and desktop
 ### Editor
 
 - Editor search now exists as a canonical module capability instead of desktop-only fallback logic.
-- HTTP route added for editor document search.
+- HTTP route added for editor resource search.
 - Electron IPC search now delegates to the same backend/module search use case.
-- Current implementation is pragmatic workspace-wide document search, not a dedicated indexed search engine.
+- Current implementation is pragmatic workspace-wide resource search, not a dedicated indexed search engine.
 
 ### Notification
 

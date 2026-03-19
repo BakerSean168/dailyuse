@@ -1,11 +1,11 @@
 /**
- * Document Metadata Value Object
+ * Resource Metadata Value Object
  */
 
 // ============ Interface Definitions ============
 
-/** Document Metadata - Server interface. */
-export interface IDocumentMetadataServer {
+/** Resource Metadata - Server interface. */
+export interface IResourceMetadataServer {
   tags: string[];
   category: string | null;
   wordCount: number | null;
@@ -19,17 +19,17 @@ export interface IDocumentMetadataServer {
   with(
     updates: Partial<
       Omit<
-        IDocumentMetadataServer,
+        IResourceMetadataServer,
         'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
       >
     >,
-  ): IDocumentMetadataServer;
+  ): IResourceMetadataServer;
 
   // DTO conversion methods
 }
 
-/** Document Metadata - Client interface. */
-export interface IDocumentMetadataClient {
+/** Resource Metadata - Client interface. */
+export interface IResourceMetadataClient {
   tags: string[];
   category: string | null;
   wordCount: number | null;
@@ -48,9 +48,9 @@ export interface IDocumentMetadataClient {
 // ============ DTO Definitions ============
 
 /**
- * Document Metadata Server DTO
+ * Resource Metadata Server DTO
  */
-export interface DocumentMetadataServerDTO {
+export interface ResourceMetadataServerDTO {
   tags: string[];
   category: string | null;
   wordCount: number | null;
@@ -62,9 +62,9 @@ export interface DocumentMetadataServerDTO {
 }
 
 /**
- * Document Metadata Client DTO
+ * Resource Metadata Client DTO
  */
-export interface DocumentMetadataClientDTO {
+export interface ResourceMetadataClientDTO {
   tags: string[];
   category: string | null;
   wordCount: number | null;
@@ -75,9 +75,9 @@ export interface DocumentMetadataClientDTO {
 }
 
 /**
- * Document Metadata Persistence DTO
+ * Resource Metadata Persistence DTO
  */
-export interface DocumentMetadataPersistenceDTO {
+export interface ResourceMetadataPersistenceDTO {
   tags: string; // JSON.stringify(string[])
   category: string | null;
   word_count: number | null;
@@ -90,5 +90,5 @@ export interface DocumentMetadataPersistenceDTO {
 
 // ============ Type Exports ============
 
-export type DocumentMetadataServer = IDocumentMetadataServer;
-export type DocumentMetadataClient = IDocumentMetadataClient;
+export type ResourceMetadataServer = IResourceMetadataServer;
+export type ResourceMetadataClient = IResourceMetadataClient;

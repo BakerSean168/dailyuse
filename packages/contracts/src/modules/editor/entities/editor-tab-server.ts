@@ -8,9 +8,7 @@ import type {
   EditorSessionId,
   EditorWorkspaceId,
   IdentityId,
-  DocumentId,
   TransferDate,
-  DomainDate,
   PersistenceDate,
 } from '../../../primitives';
 import type { TabType } from '../value-objects/tab-type';
@@ -28,12 +26,13 @@ export interface EditorTabServerDTO {
   sessionId: EditorSessionId; // Parent session ID
   workspaceId: EditorWorkspaceId; // Parent workspace ID (aggregate root FK)
   identityId: IdentityId;
-  documentId: DocumentId | null; // Associated document ID (if document tab)
+  resourceId: string | null; // Associated repository resource ID
   tabIndex: number; // Tab index (position within group)
   tabType: TabType;
   name: string;
   viewState: TabViewStateServerDTO;
   isPinned: boolean;
+  isActive: boolean;
   isDirty: boolean; // Whether there are unsaved changes
   lastAccessedAt: TransferDate | null;
   createdAt: TransferDate;
@@ -49,12 +48,13 @@ export interface EditorTabPersistenceDTO {
   session_id: EditorSessionId;
   workspace_id: EditorWorkspaceId;
   identityId: IdentityId;
-  document_id: DocumentId | null;
+  resource_id: string | null;
   tab_index: number;
   tab_type: TabType;
   name: string;
   view_state: string; // JSON string
   is_pinned: boolean;
+  is_active: boolean;
   is_dirty: boolean;
   lastAccessedAt: PersistenceDate | null;
   createdAt: PersistenceDate;

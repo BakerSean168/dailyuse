@@ -4,4 +4,3 @@
  */
 
 export * from './editor-workspace';
-export * from './document';

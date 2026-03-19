@@ -18,18 +18,18 @@ export interface ILinkedResourceRepository {
   /**
    * 鏍规嵁婧愭枃妗?UUID 鏌ユ壘鎵€鏈夐摼鎺ヨ祫婧?
    */
-  findBySourceDocumentId(sourceDocumentId: string): Promise<LinkedResource[]>;
+  findBySourceResourceId(sourceResourceId: string): Promise<LinkedResource[]>;
 
   /**
    * 鏍规嵁鐩爣鏂囨。 UUID 鏌ユ壘鎵€鏈夐摼鎺ヨ祫婧愶紙鍙嶅悜鏌ユ壘锛?
    */
-  findByTargetDocumentId(targetDocumentId: string): Promise<LinkedResource[]>;
+  findByTargetResourceId(targetResourceId: string): Promise<LinkedResource[]>;
 
   /**
    * 鏍规嵁婧愮被鍨嬫煡鎵鹃摼鎺ヨ祫婧?
    */
   findBySourceType(
-    sourceDocumentId: string,
+    sourceResourceId: string,
     sourceType: LinkedSourceType,
   ): Promise<LinkedResource[]>;
 
@@ -37,7 +37,7 @@ export interface ILinkedResourceRepository {
    * 鏍规嵁鐩爣绫诲瀷鏌ユ壘閾炬帴璧勬簮
    */
   findByTargetType(
-    sourceDocumentId: string,
+    sourceResourceId: string,
     targetType: LinkedTargetType,
   ): Promise<LinkedResource[]>;
 
@@ -69,17 +69,17 @@ export interface ILinkedResourceRepository {
   /**
    * 鍒犻櫎婧愭枃妗ｇ殑鎵€鏈夐摼鎺ヨ祫婧?
    */
-  deleteBySourceDocumentId(sourceDocumentId: string): Promise<void>;
+  deleteBySourceResourceId(sourceResourceId: string): Promise<void>;
 
   /**
    * 鍒犻櫎鐩爣鏂囨。鐨勬墍鏈夐摼鎺ヨ祫婧愶紙褰撴枃妗ｈ鍒犻櫎鏃讹級
    */
-  deleteByTargetDocumentId(targetDocumentId: string): Promise<void>;
+  deleteByTargetResourceId(targetResourceId: string): Promise<void>;
 
   /**
    * 缁熻婧愭枃妗ｇ殑閾炬帴璧勬簮鏁伴噺
    */
-  countBySourceDocumentId(sourceDocumentId: string): Promise<number>;
+  countBySourceResourceId(sourceResourceId: string): Promise<number>;
 
   /**
    * 缁熻鏃犳晥閾炬帴鏁伴噺

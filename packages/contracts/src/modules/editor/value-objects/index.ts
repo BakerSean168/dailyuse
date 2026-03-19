@@ -5,7 +5,7 @@
 
 // ============ Enum Value Objects ============
 export { ProjectType } from './project-type';
-export { DocumentLanguage } from './document-language';
+export { ResourceLanguage } from './resource-language';
 export { VersionChangeType } from './version-change-type';
 export { TabType } from './tab-type';
 export { SplitDirection } from './split-direction';
@@ -60,11 +60,11 @@ export type {
 } from './tab-view-state';
 
 export type {
-  IDocumentMetadataServer,
-  IDocumentMetadataClient,
-  DocumentMetadataServerDTO,
-  DocumentMetadataClientDTO,
-  DocumentMetadataPersistenceDTO,
-  DocumentMetadataServer,
-  DocumentMetadataClient,
-} from './document-metadata';
+  IResourceMetadataServer,
+  IResourceMetadataClient,
+  ResourceMetadataServerDTO,
+  ResourceMetadataClientDTO,
+  ResourceMetadataPersistenceDTO,
+  ResourceMetadataServer,
+  ResourceMetadataClient,
+} from './resource-metadata';
