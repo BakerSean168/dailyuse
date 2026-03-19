@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/test-utils/fixtures';
+import { aOneTimeTask, aTaskInstance } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { GetTaskTemplate } from '../get-task-template';
 
 describe('GetTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
+  let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
   let useCase: GetTaskTemplate;
 
   beforeEach(() => {
@@ -15,7 +17,11 @@ describe('GetTaskTemplate', () => {
       findById: vi.fn(),
       findByIdWithChildren: vi.fn(),
     });
-    useCase = new GetTaskTemplate(templateRepo);
+    instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      findByTemplateId: vi.fn(),
+    });
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([]);
+    useCase = new GetTaskTemplate(templateRepo, instanceRepo);
   });
 
   it('should return null when template does not exist', async () => {
@@ -43,6 +49,28 @@ describe('GetTaskTemplate', () => {
     }
   });
 
+  it('should hydrate stats from instances when includeChildren is false', async () => {
+    const template = aOneTimeTask({ title: 'My Task' });
+    const pendingInstance = await aTaskInstance({ templateId: template.id as any });
+    const completedInstance = await aTaskInstance({ templateId: template.id as any });
+    completedInstance.complete();
+
+    vi.mocked(templateRepo.findById).mockResolvedValue(template);
+    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
+      pendingInstance,
+      completedInstance,
+    ]);
+
+    const result = await useCase.execute(template.id);
+
+    expect(result).toBeOk();
+    if (result.ok && result.data) {
+      expect(result.data.instanceCount).toBe(2);
+      expect(result.data.completedInstanceCount).toBe(1);
+      expect(result.data.completionRate).toBe(50);
+    }
+  });
+
   it('should use findById when includeChildren is false (default)', async () => {
     const template = aOneTimeTask();
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
@@ -61,6 +89,7 @@ describe('GetTaskTemplate', () => {
 
     expect(templateRepo.findByIdWithChildren).toHaveBeenCalledWith(template.id);
     expect(templateRepo.findById).not.toHaveBeenCalled();
+    expect(instanceRepo.findByTemplateId).not.toHaveBeenCalled();
   });
 
   it('should pass includeChildren to toClientDTO', async () => {

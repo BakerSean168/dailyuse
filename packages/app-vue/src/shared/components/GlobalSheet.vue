@@ -19,18 +19,24 @@ const state = _getSheetState();
 </script>
 
 <template>
-  <Sheet :open="state.open" @update:open="(v) => { if (!v) _closeSheet() }">
-    <SheetContent :side="state.side" :class="cn(state.class)">
+  <Sheet
+    :open="state.open"
+    @update:open="
+      (v) => {
+        if (!v) _closeSheet();
+      }
+    "
+  >
+    <SheetContent
+      :side="state.side"
+      :class="cn('flex h-full min-h-0 flex-col overflow-hidden', state.class)"
+    >
       <SheetHeader v-if="state.title || state.description">
         <SheetTitle v-if="state.title">{{ state.title }}</SheetTitle>
         <SheetDescription v-if="state.description">{{ state.description }}</SheetDescription>
       </SheetHeader>
-      <div class="flex-1 overflow-y-auto py-4">
-        <component
-          v-if="state.component"
-          :is="state.component"
-          v-bind="state.componentProps"
-        />
+      <div class="min-h-0 flex-1 overflow-y-auto py-4">
+        <component v-if="state.component" :is="state.component" v-bind="state.componentProps" />
       </div>
     </SheetContent>
   </Sheet>

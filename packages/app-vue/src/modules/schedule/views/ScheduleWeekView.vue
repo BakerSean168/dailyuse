@@ -32,7 +32,6 @@
       <WeekViewCalendar
         v-else
         :schedules="schedules as any"
-        @create="showCreateDialog = true"
         @event-click="handleEventClick"
         @week-change="handleWeekChange"
       />

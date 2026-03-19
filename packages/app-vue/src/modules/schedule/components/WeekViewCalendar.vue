@@ -14,10 +14,6 @@
             t('schedule.calendar.today')
           }}</Button>
         </div>
-        <Button @click="emit('create')">
-          <Plus class="mr-2 h-4 w-4" />
-          {{ t('schedule.calendar.createSchedule') }}
-        </Button>
       </div>
     </CardHeader>
 
@@ -38,6 +34,27 @@
           >
             <div class="text-xs text-muted-foreground">{{ day.dayName }}</div>
             <div class="text-lg font-bold mt-1">{{ day.dateNumber }}</div>
+          </div>
+        </div>
+
+        <div v-if="weekAllDayCount > 0" class="grid grid-cols-8 border-b bg-muted/20">
+          <div class="border-r px-2 py-3 text-right text-xs font-medium text-muted-foreground">
+            {{ t('schedule.calendar.allDay') }}
+          </div>
+          <div
+            v-for="day in weekDays"
+            :key="`${day.date}-all-day`"
+            class="min-h-[56px] space-y-1 border-r px-1.5 py-2"
+          >
+            <button
+              v-for="event in getAllDayEventsForDay(day.date)"
+              :key="event.id"
+              class="block w-full rounded px-2 py-1 text-left text-[11px] text-white"
+              :class="eventBgClass(event)"
+              @click="emit('event-click', event)"
+            >
+              <span class="block truncate">{{ event.title }}</span>
+            </button>
           </div>
         </div>
 
@@ -66,7 +83,7 @@
 
             <!-- Events for this day -->
             <div
-              v-for="event in getEventsForDay(day.date)"
+              v-for="event in getTimedEventsForDay(day.date)"
               :key="event.id"
               class="event-card absolute left-0.5 right-0.5 rounded px-2 py-1 cursor-pointer transition-transform hover:scale-105 z-20 text-white"
               :style="getEventStyle(event)"
@@ -88,7 +105,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Card, CardContent, CardHeader } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { ChevronLeft, ChevronRight, Plus, Loader2, AlertCircle } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import type { CalendarEventItem } from '../composables/useCalendarView';
 
@@ -103,7 +120,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'week-change', startDate: Date, endDate: Date): void;
-  (e: 'create'): void;
   (e: 'event-click', event: CalendarEventItem): void;
 }>();
 
@@ -120,7 +136,7 @@ const weekDays = computed(() => {
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = toDateStr(date);
 
     days.push({
       date: dateStr,
@@ -172,6 +188,7 @@ function formatHour(hour: number): string {
 }
 
 function formatEventTime(event: CalendarEventItem): string {
+  if (event.displayMode === 'all-day') return t('schedule.calendar.allDay');
   const fmt = (ts: number) => {
     const d = new Date(ts);
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
@@ -179,10 +196,28 @@ function formatEventTime(event: CalendarEventItem): string {
   return `${fmt(event.startTime)}-${fmt(event.endTime)}`;
 }
 
-function getEventsForDay(dateStr: string): CalendarEventItem[] {
-  return props.schedules.filter((event) => {
-    return new Date(event.startTime).toISOString().split('T')[0] === dateStr;
-  });
+const weekAllDayCount = computed(
+  () => props.schedules.filter((event) => event.displayMode === 'all-day').length,
+);
+
+function toDateStr(value: Date | number): string {
+  const date = typeof value === 'number' ? new Date(value) : value;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getTimedEventsForDay(dateStr: string): CalendarEventItem[] {
+  return props.schedules.filter(
+    (event) => event.displayMode === 'timed' && toDateStr(event.startTime) === dateStr,
+  );
+}
+
+function getAllDayEventsForDay(dateStr: string): CalendarEventItem[] {
+  return props.schedules.filter(
+    (event) => event.displayMode === 'all-day' && toDateStr(event.startTime) === dateStr,
+  );
 }
 
 function eventBgClass(event: CalendarEventItem): string {

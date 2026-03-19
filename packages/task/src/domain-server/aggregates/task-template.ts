@@ -323,9 +323,21 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     ) {
       const fromDay = TaskTemplate.startOfLocalDay(fromDate);
       const endDate = TaskTemplate.startOfLocalDay(toDate);
+      const maxOccurrences = this._props.recurrenceRule.occurrences;
+      const existingInstanceCount = this._instances.filter(
+        (instance) => !instance.deletedAt,
+      ).length;
+
+      if (maxOccurrences !== null && existingInstanceCount >= maxOccurrences) {
+        return [];
+      }
+
       let currentDate = fromDay;
 
-      while (currentDate <= endDate) {
+      while (
+        currentDate <= endDate &&
+        (maxOccurrences === null || existingInstanceCount + instances.length < maxOccurrences)
+      ) {
         if (this.shouldGenerateInstance(currentDate)) {
           const instance = TaskInstance.create({
             templateId: this.id,
@@ -389,6 +401,14 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     if (
       this._props.recurrenceRule.endDate &&
       candidateDay > TaskTemplate.startOfLocalDay(this._props.recurrenceRule.endDate.getTime())
+    ) {
+      return false;
+    }
+
+    if (
+      this._props.recurrenceRule.occurrences !== null &&
+      this._instances.filter((instance) => !instance.deletedAt).length >=
+        this._props.recurrenceRule.occurrences
     ) {
       return false;
     }

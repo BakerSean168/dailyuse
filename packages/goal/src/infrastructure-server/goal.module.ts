@@ -60,6 +60,7 @@ import type {
   ListGoalsQuery,
   QueryGoalsRes,
   GoalClientDTO,
+  KeyResultClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
   ListGoalFoldersQuery,
@@ -211,7 +212,7 @@ export interface GoalApplicationPort {
       unit?: string;
       weight: number;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResult(
     goalId: string,
     keyResultId: string,
@@ -222,14 +223,14 @@ export interface GoalApplicationPort {
       targetValue?: number;
       unit?: string;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<KeyResultClientDTO>>;
   updateKeyResultProgress(
     goalId: string,
     keyResultId: string,
     currentValue: number,
     note?: string,
-  ): Promise<Result<GoalClientDTO>>;
-  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<KeyResultClientDTO>>;
+  deleteKeyResult(goalId: string, keyResultId: string): Promise<Result<void>>;
 
   // Review / 复盘
   addReview(

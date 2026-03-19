@@ -244,29 +244,19 @@ export function useAuth() {
     try {
       const result = await service.enterGuestMode();
       if (result.ok) {
-        const guestData = result.data;
-        const now = Date.now();
-        // Set a synthetic identity so isAuthenticated becomes true
-        // Note: No email identifier - guest mode has no email
-        store.setCurrentIdentity({
-          id: guestData.identityId,
-          status: 'Active',
-          failedLoginAttempts: 0,
-          lastFailedAttempt: null,
-          lockedUntil: null,
-          identifiers: [], // Guest has no identifiers (no email, no phone)
-          credentials: [],
-          hasPassword: false,
-          hasEmail: false,
-          hasPhone: false,
-          hasOAuth: false,
-          version: 1,
-          createdAt: now,
-          updatedAt: now,
-          deletedAt: null,
-        });
+        const currentUser = await service.getCurrentUser();
+        if (!currentUser.ok) {
+          const message = currentUser.error?.message || '获取访客身份失败';
+          store.setError(message);
+          toast.error('访客模式失败', { description: message });
+          return false;
+        }
+
+        store.setCurrentIdentity(currentUser.data.identity);
+        store.setCurrentSession(currentUser.data.session);
         store.setAuthMode(AuthMode.GUEST);
         store.setAccessToken('guest-local-token');
+        store.setRefreshToken('guest-local-token');
         toast.success('已进入访客模式', { description: '数据仅保存在本地' });
         await (window as any).electronAPI!.invoke(WindowChannels.TRANSITION_TO_MAIN);
         return true;

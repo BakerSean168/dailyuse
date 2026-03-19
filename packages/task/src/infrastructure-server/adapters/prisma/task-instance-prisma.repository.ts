@@ -81,7 +81,7 @@ export class TaskInstancePrismaRepository
 
   async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
-      where: { templateId },
+      where: { templateId, deletedAt: null },
       orderBy: { instanceDate: 'desc' },
     });
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
@@ -89,7 +89,7 @@ export class TaskInstancePrismaRepository
 
   async findByIdentityId(identityId: string): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
-      where: { identityId },
+      where: { identityId, deletedAt: null },
       orderBy: { instanceDate: 'desc' },
     });
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
@@ -107,18 +107,16 @@ export class TaskInstancePrismaRepository
           gte: new Date(startDate),
           lte: new Date(endDate),
         },
+        deletedAt: null,
       },
       orderBy: { instanceDate: 'asc' },
     });
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
-  async findByStatus(
-    identityId: string,
-    status: TaskInstanceStatus,
-  ): Promise<TaskInstance[]> {
+  async findByStatus(identityId: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
     const data = await this.prisma.taskInstance.findMany({
-      where: { identityId, status },
+      where: { identityId, status, deletedAt: null },
       orderBy: { instanceDate: 'desc' },
     });
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
@@ -131,6 +129,7 @@ export class TaskInstancePrismaRepository
         identityId,
         status: 'Pending',
         instanceDate: { lt: now },
+        deletedAt: null,
       },
       orderBy: { instanceDate: 'asc' },
     });
@@ -153,10 +152,7 @@ export class TaskInstancePrismaRepository
     });
   }
 
-  async countFutureInstances(
-    templateId: string,
-    fromDate: number = Date.now(),
-  ): Promise<number> {
+  async countFutureInstances(templateId: string, fromDate: number = Date.now()): Promise<number> {
     return this.prisma.taskInstance.count({
       where: {
         templateId,
@@ -177,16 +173,14 @@ export class TaskInstancePrismaRepository
           gte: new Date(startDate),
           lte: new Date(endDate),
         },
+        deletedAt: null,
       },
       orderBy: { instanceDate: 'asc' },
     });
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
-  async deleteFuturePendingInstances(
-    templateId: string,
-    fromDate: number,
-  ): Promise<void> {
+  async deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void> {
     await this.prisma.taskInstance.deleteMany({
       where: {
         templateId,

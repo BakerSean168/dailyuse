@@ -1,8 +1,8 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="max-w-2xl max-h-[600px] flex flex-col p-0">
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-2xl flex-col overflow-hidden p-0">
       <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b">
+      <div class="shrink-0 border-b px-6 py-4 flex items-center justify-between">
         <Button variant="destructive" @click="close" :disabled="isSaving">
           {{ t('reminder.groupDialog.btnCancel') }}
         </Button>
@@ -15,173 +15,177 @@
       </div>
 
       <!-- Scrollable Content -->
-      <ScrollArea class="flex-1 px-6">
-        <div class="space-y-6 py-6">
-          <!-- Basic Info -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Info class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.groupDialog.sectionBasicInfo') }}
-              </h3>
-            </div>
-            <Separator />
+      <div class="min-h-0 flex-1">
+        <ScrollArea class="h-full">
+          <div class="space-y-6 px-6 py-6">
+            <!-- Basic Info -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 mb-3">
+                <Info class="h-5 w-5 text-primary" />
+                <h3 class="text-sm font-semibold">
+                  {{ t('reminder.groupDialog.sectionBasicInfo') }}
+                </h3>
+              </div>
+              <Separator />
 
-            <div class="flex gap-3">
-              <div class="flex-1">
-                <Label for="group-name">{{ t('reminder.groupDialog.labelName') }}</Label>
-                <Input
-                  id="group-name"
-                  v-model="formData.name"
-                  :placeholder="t('reminder.groupDialog.placeholderName')"
-                  maxlength="50"
-                  autofocus
+              <div class="flex gap-3">
+                <div class="flex-1">
+                  <Label for="group-name">{{ t('reminder.groupDialog.labelName') }}</Label>
+                  <Input
+                    id="group-name"
+                    v-model="formData.name"
+                    :placeholder="t('reminder.groupDialog.placeholderName')"
+                    maxlength="50"
+                    autofocus
+                    class="mt-1.5"
+                  />
+                  <p class="text-xs text-muted-foreground mt-1">{{ formData.name.length }}/50</p>
+                </div>
+                <div class="flex flex-col items-center justify-start pt-6">
+                  <div
+                    class="w-10 h-10 rounded-full cursor-pointer border-2 transition-colors hover:border-primary"
+                    :style="{ backgroundColor: formData.color }"
+                    @click="showColorPicker = !showColorPicker"
+                  />
+                  <Popover v-model:open="showColorPicker">
+                    <PopoverTrigger as-child>
+                      <Button variant="ghost" size="sm" class="mt-1 h-6 text-xs">{{
+                        t('reminder.groupDialog.btnPick')
+                      }}</Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-3">
+                      <div class="grid grid-cols-4 gap-2">
+                        <div
+                          v-for="color in colorOptions"
+                          :key="color"
+                          class="w-8 h-8 rounded-full cursor-pointer border-2 transition-all hover:scale-110"
+                          :class="{
+                            'border-primary': formData.color === color,
+                            'border-transparent': formData.color !== color,
+                          }"
+                          :style="{ backgroundColor: color }"
+                          @click="
+                            formData.color = color;
+                            showColorPicker = false;
+                          "
+                        />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              <div>
+                <Label for="group-description">{{
+                  t('reminder.groupDialog.labelDescription')
+                }}</Label>
+                <Textarea
+                  id="group-description"
+                  v-model="formData.description"
+                  :placeholder="t('reminder.groupDialog.placeholderDescription')"
+                  rows="3"
+                  maxlength="200"
                   class="mt-1.5"
                 />
-                <p class="text-xs text-muted-foreground mt-1">{{ formData.name.length }}/50</p>
-              </div>
-              <div class="flex flex-col items-center justify-start pt-6">
-                <div
-                  class="w-10 h-10 rounded-full cursor-pointer border-2 transition-colors hover:border-primary"
-                  :style="{ backgroundColor: formData.color }"
-                  @click="showColorPicker = !showColorPicker"
-                />
-                <Popover v-model:open="showColorPicker">
-                  <PopoverTrigger as-child>
-                    <Button variant="ghost" size="sm" class="mt-1 h-6 text-xs">{{
-                      t('reminder.groupDialog.btnPick')
-                    }}</Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-3">
-                    <div class="grid grid-cols-4 gap-2">
-                      <div
-                        v-for="color in colorOptions"
-                        :key="color"
-                        class="w-8 h-8 rounded-full cursor-pointer border-2 transition-all hover:scale-110"
-                        :class="{
-                          'border-primary': formData.color === color,
-                          'border-transparent': formData.color !== color,
-                        }"
-                        :style="{ backgroundColor: color }"
-                        @click="
-                          formData.color = color;
-                          showColorPicker = false;
-                        "
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            <div>
-              <Label for="group-description">{{
-                t('reminder.groupDialog.labelDescription')
-              }}</Label>
-              <Textarea
-                id="group-description"
-                v-model="formData.description"
-                :placeholder="t('reminder.groupDialog.placeholderDescription')"
-                rows="3"
-                maxlength="200"
-                class="mt-1.5"
-              />
-              <p class="text-xs text-muted-foreground mt-1">
-                {{ formData.description?.length || 0 }}/200
-              </p>
-            </div>
-          </div>
-
-          <!-- Appearance -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Palette class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.groupDialog.sectionAppearance') }}
-              </h3>
-            </div>
-            <Separator />
-
-            <div class="flex items-center gap-4">
-              <Popover>
-                <PopoverTrigger as-child>
-                  <Button variant="outline" size="lg" class="h-16 w-16">
-                    <component :is="getIcon(formData.icon)" class="h-8 w-8" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent class="w-80">
-                  <div class="space-y-2">
-                    <h4 class="text-sm font-medium">{{ t('reminder.groupDialog.selectIcon') }}</h4>
-                    <div class="grid grid-cols-6 gap-2">
-                      <Button
-                        v-for="icon in iconOptions"
-                        :key="icon.value"
-                        variant="ghost"
-                        size="icon"
-                        @click="formData.icon = icon.value"
-                      >
-                        <component :is="getIcon(icon.value)" class="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <div class="flex-1">
-                <p class="text-sm font-medium">{{ t('reminder.groupDialog.labelIcon') }}</p>
-                <p class="text-xs text-muted-foreground">
-                  {{ t('reminder.groupDialog.currentIcon', { icon: formData.icon }) }}
+                <p class="text-xs text-muted-foreground mt-1">
+                  {{ formData.description?.length || 0 }}/200
                 </p>
               </div>
             </div>
 
-            <div>
-              <Label for="group-order">{{ t('reminder.groupDialog.labelSortOrder') }}</Label>
-              <Input
-                id="group-order"
-                v-model.number="formData.order"
-                type="number"
-                placeholder="0"
-                class="mt-1.5"
-              />
-              <p class="text-xs text-muted-foreground mt-1">
-                {{ t('reminder.groupDialog.hintSortOrder') }}
-              </p>
+            <!-- Appearance -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 mb-3">
+                <Palette class="h-5 w-5 text-primary" />
+                <h3 class="text-sm font-semibold">
+                  {{ t('reminder.groupDialog.sectionAppearance') }}
+                </h3>
+              </div>
+              <Separator />
+
+              <div class="flex items-center gap-4">
+                <Popover>
+                  <PopoverTrigger as-child>
+                    <Button variant="outline" size="lg" class="h-16 w-16">
+                      <component :is="getIcon(formData.icon)" class="h-8 w-8" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent class="w-80">
+                    <div class="space-y-2">
+                      <h4 class="text-sm font-medium">
+                        {{ t('reminder.groupDialog.selectIcon') }}
+                      </h4>
+                      <div class="grid grid-cols-6 gap-2">
+                        <Button
+                          v-for="icon in iconOptions"
+                          :key="icon.value"
+                          variant="ghost"
+                          size="icon"
+                          @click="formData.icon = icon.value"
+                        >
+                          <component :is="getIcon(icon.value)" class="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">{{ t('reminder.groupDialog.labelIcon') }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ t('reminder.groupDialog.currentIcon', { icon: formData.icon }) }}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <Label for="group-order">{{ t('reminder.groupDialog.labelSortOrder') }}</Label>
+                <Input
+                  id="group-order"
+                  v-model.number="formData.order"
+                  type="number"
+                  placeholder="0"
+                  class="mt-1.5"
+                />
+                <p class="text-xs text-muted-foreground mt-1">
+                  {{ t('reminder.groupDialog.hintSortOrder') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Control Mode -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 mb-3">
+                <Settings class="h-5 w-5 text-primary" />
+                <h3 class="text-sm font-semibold">
+                  {{ t('reminder.groupDialog.sectionControlMode') }}
+                </h3>
+              </div>
+              <Separator />
+
+              <RadioGroup v-model="formData.controlMode">
+                <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
+                  <RadioGroupItem value="Individual" id="individual" />
+                  <Label for="individual" class="flex-1 cursor-pointer">
+                    <div class="font-medium">{{ t('reminder.groupDialog.controlIndividual') }}</div>
+                    <div class="text-xs text-muted-foreground">
+                      {{ t('reminder.groupDialog.controlIndividualDesc') }}
+                    </div>
+                  </Label>
+                </div>
+                <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
+                  <RadioGroupItem value="Group" id="group" />
+                  <Label for="group" class="flex-1 cursor-pointer">
+                    <div class="font-medium">{{ t('reminder.groupDialog.controlGroup') }}</div>
+                    <div class="text-xs text-muted-foreground">
+                      {{ t('reminder.groupDialog.controlGroupDesc') }}
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
-
-          <!-- Control Mode -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Settings class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.groupDialog.sectionControlMode') }}
-              </h3>
-            </div>
-            <Separator />
-
-            <RadioGroup v-model="formData.controlMode">
-              <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
-                <RadioGroupItem value="Individual" id="individual" />
-                <Label for="individual" class="flex-1 cursor-pointer">
-                  <div class="font-medium">{{ t('reminder.groupDialog.controlIndividual') }}</div>
-                  <div class="text-xs text-muted-foreground">
-                    {{ t('reminder.groupDialog.controlIndividualDesc') }}
-                  </div>
-                </Label>
-              </div>
-              <div class="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
-                <RadioGroupItem value="Group" id="group" />
-                <Label for="group" class="flex-1 cursor-pointer">
-                  <div class="font-medium">{{ t('reminder.groupDialog.controlGroup') }}</div>
-                  <div class="text-xs text-muted-foreground">
-                    {{ t('reminder.groupDialog.controlGroupDesc') }}
-                  </div>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
     </DialogContent>
   </Dialog>
 </template>

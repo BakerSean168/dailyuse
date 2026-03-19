@@ -14,7 +14,19 @@ export const TaskTimeConfigSchema = z
 export type TaskTimeConfigReq = z.infer<typeof TaskTimeConfigSchema>;
 
 export const RecurrenceConfigSchema = z
-  .custom<RecurrenceRuleDTO>()
+  .custom<RecurrenceRuleDTO>((value) => {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const candidate = value as RecurrenceRuleDTO;
+    return !(
+      candidate.endDate !== null &&
+      candidate.endDate !== undefined &&
+      candidate.occurrences !== null &&
+      candidate.occurrences !== undefined
+    );
+  }, '重复规则不能同时设置结束日期和重复次数')
   .openapi({ type: 'object', description: '循环规则配置' });
 
 export type RecurrenceConfigReq = z.infer<typeof RecurrenceConfigSchema>;

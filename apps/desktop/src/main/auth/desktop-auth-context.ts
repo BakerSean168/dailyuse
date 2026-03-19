@@ -60,7 +60,6 @@ export class DesktopAuthContextProvider {
 
   async requireRequestContext(): Promise<Context> {
     const service = getRegisteredService();
-    const runtimeState = service.getRuntimeState();
     if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
       logger.warn('requireRequestContext rejected: auth restoring');
       throw createAuthResolutionError('AUTH_RESTORING');
@@ -68,8 +67,19 @@ export class DesktopAuthContextProvider {
 
     const context = await this.getRequestContext();
     if (!context) {
+      const currentUser = await service.getCurrentUser();
+      if (currentUser.identity?.id) {
+        const fallbackContext = {
+          identityId: String(currentUser.identity.id),
+          deviceId: 'desktop-app',
+        } satisfies Context;
+
+        logger.warn('requireRequestContext recovered from current user fallback', fallbackContext);
+        return fallbackContext;
+      }
+
       logger.warn('requireRequestContext rejected: no active request context', {
-        runtimeState,
+        runtimeState: service.getRuntimeState(),
         identityId: service.getCurrentIdentityId(),
         sessionId: service.getCurrentSessionId(),
       });

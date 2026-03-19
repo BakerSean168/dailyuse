@@ -1,7 +1,8 @@
 import { IdGenerator } from './id-generator';
 import { isValidUUID } from '../uuid';
 
-const GENERIC_PREFIXED_UUID_REGEX = /^[A-Za-z][A-Za-z0-9]*_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const GENERIC_PREFIXED_UUID_REGEX =
+  /^[A-Za-z][A-Za-z0-9]*_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function hasPrefixedUuidShape(value: string): boolean {
   if (!GENERIC_PREFIXED_UUID_REGEX.test(value)) {
@@ -41,9 +42,8 @@ export function createIdType<T extends string>(prefix: string) {
         return normalized as T;
       }
 
-      // 前缀不匹配时保留旧行为：告警但不阻断，以兼容跨模块共享 ID。
       if (!normalized.startsWith(expectedPrefix)) {
-        console.warn(`ID ${normalized} does not start with expected prefix ${prefix}`);
+        throw new TypeError(`ID ${normalized} does not start with expected prefix ${prefix}`);
       }
       return normalized as T;
     },

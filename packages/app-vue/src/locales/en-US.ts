@@ -39,6 +39,20 @@ export default {
     viewErrorDetails: 'View error details',
     operationFailed: 'Operation failed',
     saving: 'Saving...',
+    colors: {
+      red: 'Red',
+      orange: 'Orange',
+      amber: 'Amber',
+      lime: 'Lime',
+      green: 'Green',
+      teal: 'Teal',
+      cyan: 'Cyan',
+      blue: 'Blue',
+      indigo: 'Indigo',
+      violet: 'Violet',
+      purple: 'Purple',
+      pink: 'Pink',
+    },
   },
 
   // ── Menu actions (from menu-labels.ts) ─────────────────
@@ -599,7 +613,8 @@ export default {
     logoutHint: 'You can safely sign out here and return to the login page right away.',
     logoutConfirm: {
       title: 'Log out of your account?',
-      description: 'You will return to the sign-in page, and all unsynced local data will be permanently deleted. You need to log in again to continue.',
+      description:
+        'You will return to the sign-in page, and all unsynced local data will be permanently deleted. You need to log in again to continue.',
       confirmText: 'Log Out',
       cancelText: 'Cancel',
     },
@@ -2466,6 +2481,8 @@ export default {
       title: 'Basic Info',
       taskTitle: 'Task Title',
       titlePlaceholder: 'Enter task title',
+      titlePlaceholderRequired: 'Enter task title (required)',
+      titleRequired: 'Task title is required',
       description: 'Description',
       descPlaceholder: 'Enter task description (optional)',
     },
@@ -2689,6 +2706,8 @@ export default {
       noDescription: 'No description',
       startsAt: 'Starts at',
       allDay: 'All Day',
+      noTags: 'No tags',
+      noRecurrence: 'Does not repeat',
       linkedGoal: 'Linked Goal',
       totalCount: 'Total:',
       completionRate: 'Rate:',
@@ -3032,6 +3051,7 @@ export default {
       noReferences: 'This resource is not referenced by any note.',
       brokenReferenceWarning: 'Some notes reference this resource through broken markdown paths.',
       delete: 'Delete resource',
+      deleteConfirmTitle: 'Delete Resource',
       deleteConfirm: 'Delete this resource?',
       deleteImpact:
         'This resource is referenced {count} times across {notes} notes. Delete anyway?',

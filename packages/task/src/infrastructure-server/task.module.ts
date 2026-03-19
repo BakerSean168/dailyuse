@@ -261,7 +261,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     activateTaskTemplate: new ActivateTaskTemplate(taskTemplateRepository, taskInstanceRepository),
     pauseTaskTemplate: new PauseTaskTemplate(taskTemplateRepository, taskInstanceRepository),
     archiveTaskTemplate: new ArchiveTaskTemplate(taskTemplateRepository),
-    deleteTaskTemplate: new DeleteTaskTemplate(taskTemplateRepository),
+    deleteTaskTemplate: new DeleteTaskTemplate(taskTemplateRepository, taskInstanceRepository),
     generateTaskInstances: new GenerateTaskInstances(
       taskTemplateRepository,
       taskInstanceRepository,
@@ -270,7 +270,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     unbindTaskFromGoal: new UnbindTaskFromGoal(taskTemplateRepository),
 
     // Template queries
-    getTaskTemplate: new GetTaskTemplate(taskTemplateRepository),
+    getTaskTemplate: new GetTaskTemplate(taskTemplateRepository, taskInstanceRepository),
     listTaskTemplates: new ListTaskTemplates(taskTemplateRepository, taskInstanceRepository),
     listTaskTemplatesByPriority: new ListTaskTemplatesByPriority(taskTemplateRepository),
 

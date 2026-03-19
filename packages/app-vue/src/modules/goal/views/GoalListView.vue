@@ -138,7 +138,9 @@
             <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
               <Target class="h-6 w-6 opacity-50" />
             </div>
-            <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('goal.list.noGoalsFound') }}</h3>
+            <h3 class="mb-1 text-lg font-medium text-foreground">
+              {{ t('goal.list.noGoalsFound') }}
+            </h3>
             <p class="mb-6 text-sm">{{ t('goal.list.createToStart') }}</p>
             <Button @click="openCreateDialog">
               <Plus class="mr-2 h-4 w-4" />
@@ -178,7 +180,7 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-vue-next';
-import { Button, Badge, ScrollArea, Input, Separator } from '@dailyuse/ui-vue-shadcn';
+import { Button, Badge, ScrollArea, Input, Separator, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { GoalCard, GoalDialog, GoalFolderDialog } from '../components';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
@@ -253,7 +255,14 @@ function handleEditGoal(goal: GoalClientDTO) {
 }
 
 async function handleDeleteGoal(id: string) {
-  if (!window.confirm(t('goal.list.confirmDelete'))) return;
+  const confirmed = await useConfirm({
+    title: t('goal.list.confirmDeleteTitle'),
+    description: t('goal.list.confirmDelete'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+  if (!confirmed) return;
   const ok = await deleteGoal(id);
   if (ok) toast.success(t('goal.list.deleted'));
 }
@@ -294,7 +303,15 @@ function handleEditFolder(folder: GoalFolderClientDTO) {
 }
 
 async function handleDeleteFolder(id: string) {
-  if (!window.confirm(t('goal.folder.confirmDelete'))) return;
+  const folder = goalFolders.value.find((item) => item.id === id);
+  const confirmed = await useConfirm({
+    title: t('goal.folder.confirmDeleteTitle'),
+    description: t('goal.folder.confirmDelete', { name: folder?.name ?? '' }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+  if (!confirmed) return;
   const ok = await deleteFolder(id);
   if (ok) {
     if (selectedFolderId.value === id) selectedFolderId.value = null;

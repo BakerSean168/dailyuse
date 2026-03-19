@@ -41,7 +41,6 @@
         v-if="activeView === 'day'"
         :schedules="events"
         :loading="isLoading"
-        @create="showCreateDialog = true"
         @event-click="handleEventClick"
         @day-change="handleDayChange"
       />
@@ -51,7 +50,6 @@
         v-else-if="activeView === 'week'"
         :schedules="events"
         :loading="isLoading"
-        @create="showCreateDialog = true"
         @event-click="handleEventClick"
         @week-change="handleWeekChange"
       />
@@ -61,7 +59,6 @@
         v-else-if="activeView === 'month'"
         :schedules="events"
         :loading="isLoading"
-        @create="showCreateDialog = true"
         @event-click="handleEventClick"
         @month-change="handleMonthChange"
         @day-click="handleDayClick"
@@ -105,7 +102,7 @@ import MonthViewCalendar from '../components/MonthViewCalendar.vue';
 import DayDetailSheet from '../components/DayDetailSheet.vue';
 import TaskEventActionPanel from '../components/TaskEventActionPanel.vue';
 import DevScheduleDebugPanel from '../components/DevScheduleDebugPanel.vue';
-import { useCalendarView } from '../composables/useCalendarView';
+import { toLocalDateKey, useCalendarView } from '../composables/useCalendarView';
 import { useSchedule } from '../composables/useSchedule';
 import { useTask } from '../../task/composables/useTask';
 import type { CalendarEventItem } from '../composables/useCalendarView';
@@ -128,10 +125,8 @@ const selectedTaskEvent = ref<CalendarEventItem | null>(null);
 
 const selectedDayEvents = computed<CalendarEventItem[]>(() => {
   if (!selectedDate.value) return [];
-  const dateStr = toDateStr(selectedDate.value);
-  return events.value.filter((e) => {
-    return new Date(e.startTime).toISOString().split('T')[0] === dateStr;
-  });
+  const dateStr = toLocalDateKey(selectedDate.value);
+  return events.value.filter((e) => toLocalDateKey(e.startTime) === dateStr);
 });
 
 const viewTabs = computed(() => [
@@ -139,10 +134,6 @@ const viewTabs = computed(() => [
   { label: t('schedule.viewTabs.week'), value: 'week' as const, icon: CalendarDays },
   { label: t('schedule.viewTabs.month'), value: 'month' as const, icon: CalendarRange },
 ]);
-
-function toDateStr(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
 
 function handleEventClick(event: CalendarEventItem) {
   if (event.source === 'task') {

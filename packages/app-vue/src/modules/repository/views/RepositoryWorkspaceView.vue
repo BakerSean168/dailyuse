@@ -324,6 +324,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  useConfirm,
 } from '@dailyuse/ui-vue-shadcn';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { useRepository } from '../composables/useRepository';
@@ -733,14 +734,19 @@ async function handleDeleteResource() {
   }
 
   const impact = getDeleteImpact(activeResource.value.id);
-  const confirmed = window.confirm(
-    impact.referenceCount > 0
-      ? t('repository.resourceDetails.deleteImpact', {
-          count: impact.referenceCount,
-          notes: impact.notes.length,
-        })
-      : t('repository.resourceDetails.deleteConfirm'),
-  );
+  const confirmed = await useConfirm({
+    title: t('repository.resourceDetails.deleteConfirmTitle'),
+    description:
+      impact.referenceCount > 0
+        ? t('repository.resourceDetails.deleteImpact', {
+            count: impact.referenceCount,
+            notes: impact.notes.length,
+          })
+        : t('repository.resourceDetails.deleteConfirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
 
   if (!confirmed) {
     return;

@@ -1,8 +1,8 @@
 <template>
   <Dialog :open="visible" @update:open="handleVisibleChange">
-    <DialogContent class="max-w-3xl max-h-[700px] flex flex-col p-0">
+    <DialogContent class="flex max-h-[85vh] min-h-0 max-w-3xl flex-col overflow-hidden p-0">
       <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b">
+      <div class="shrink-0 border-b px-6 py-4 flex items-center justify-between">
         <Button variant="destructive" @click="close" :disabled="saving">{{
           t('reminder.templateDialog.btnCancel')
         }}</Button>
@@ -17,446 +17,428 @@
       </div>
 
       <!-- Content -->
-      <ScrollArea class="flex-1 px-6">
-        <div class="space-y-6 py-6">
-          <!-- Basic Info -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Info class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.templateDialog.sectionBasicInfo') }}
-              </h3>
-            </div>
-            <Separator />
+      <div class="min-h-0 flex-1">
+        <ScrollArea class="h-full">
+          <div class="space-y-6 px-6 py-6">
+            <!-- Basic Info -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 mb-3">
+                <Info class="h-5 w-5 text-primary" />
+                <h3 class="text-sm font-semibold">
+                  {{ t('reminder.templateDialog.sectionBasicInfo') }}
+                </h3>
+              </div>
+              <Separator />
 
-            <div class="flex gap-3">
-              <div class="flex-1">
-                <Label>{{ t('reminder.templateDialog.labelTitle') }}</Label>
-                <Input
-                  v-model="formData.title"
-                  :placeholder="t('reminder.templateDialog.placeholderTitle')"
+              <div class="flex gap-3">
+                <div class="flex-1">
+                  <Label>{{ t('reminder.templateDialog.labelTitle') }}</Label>
+                  <Input
+                    v-model="formData.title"
+                    :placeholder="t('reminder.templateDialog.placeholderTitle')"
+                    class="mt-1.5"
+                  />
+                </div>
+                <div class="flex flex-col items-center justify-start pt-6">
+                  <ColorPickerField
+                    :model-value="formData.color"
+                    button-class="h-10 w-[132px] justify-start gap-2"
+                    :empty-label="t('reminder.templateDialog.btnPick')"
+                    :clear-label="t('reminder.templateDialog.clearColor')"
+                    @update:model-value="formData.color = $event ?? formData.color"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>{{ t('reminder.templateDialog.labelDescription') }}</Label>
+                <Textarea
+                  v-model="formData.description"
+                  :placeholder="t('reminder.templateDialog.placeholderDescription')"
+                  rows="2"
                   class="mt-1.5"
                 />
               </div>
-              <div class="flex flex-col items-center justify-start pt-6">
-                <div
-                  class="w-10 h-10 rounded-full cursor-pointer border-2"
-                  :style="{ backgroundColor: formData.color }"
-                  @click="showColorPicker = !showColorPicker"
-                />
-                <Popover v-model:open="showColorPicker">
-                  <PopoverTrigger as-child>
-                    <Button variant="ghost" size="sm" class="mt-1 h-6 text-xs">{{
-                      t('reminder.templateDialog.btnPick')
-                    }}</Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-3">
-                    <div class="grid grid-cols-4 gap-2">
-                      <div
-                        v-for="color in colorOptions"
-                        :key="color"
-                        class="w-8 h-8 rounded-full cursor-pointer"
-                        :style="{ backgroundColor: color }"
-                        @click="
-                          formData.color = color;
-                          showColorPicker = false;
-                        "
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{{ t('reminder.templateDialog.labelGroup') }}</Label>
+                  <Select v-model="formData.groupId">
+                    <SelectTrigger class="mt-1.5">
+                      <SelectValue :placeholder="t('reminder.templateDialog.placeholderGroup')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="group in groupOptions" :key="group.id" :value="group.id">
+                        {{ group.name }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{{ t('reminder.templateDialog.labelImportance') }}</Label>
+                  <Select v-model="formData.importanceLevel">
+                    <SelectTrigger class="mt-1.5">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Vital">{{
+                        t('reminder.templateDialog.importanceVital')
+                      }}</SelectItem>
+                      <SelectItem value="Important">{{
+                        t('reminder.templateDialog.importanceImportant')
+                      }}</SelectItem>
+                      <SelectItem value="Moderate">{{
+                        t('reminder.templateDialog.importanceModerate')
+                      }}</SelectItem>
+                      <SelectItem value="Minor">{{
+                        t('reminder.templateDialog.importanceMinor')
+                      }}</SelectItem>
+                      <SelectItem value="Trivial">{{
+                        t('reminder.templateDialog.importanceTrivial')
+                      }}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            <div>
-              <Label>{{ t('reminder.templateDialog.labelDescription') }}</Label>
-              <Textarea
-                v-model="formData.description"
-                :placeholder="t('reminder.templateDialog.placeholderDescription')"
-                rows="2"
-                class="mt-1.5"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelGroup') }}</Label>
-                <Select v-model="formData.groupId">
-                  <SelectTrigger class="mt-1.5">
-                    <SelectValue :placeholder="t('reminder.templateDialog.placeholderGroup')" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="group in groupOptions" :key="group.id" :value="group.id">
-                      {{ group.name }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+            <!-- Time Configuration -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 mb-3">
+                <Clock class="h-5 w-5 text-primary" />
+                <h3 class="text-sm font-semibold">
+                  {{ t('reminder.templateDialog.sectionTimeConfig') }}
+                </h3>
               </div>
+              <Separator />
+
               <div>
-                <Label>{{ t('reminder.templateDialog.labelImportance') }}</Label>
-                <Select v-model="formData.importanceLevel">
+                <Label>{{ t('reminder.templateDialog.labelTriggerType') }}</Label>
+                <Select v-model="formData.triggerType">
                   <SelectTrigger class="mt-1.5">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Vital">{{
-                      t('reminder.templateDialog.importanceVital')
+                    <SelectItem value="FixedTime">{{
+                      t('reminder.templateDialog.triggerFixedTime')
                     }}</SelectItem>
-                    <SelectItem value="Important">{{
-                      t('reminder.templateDialog.importanceImportant')
-                    }}</SelectItem>
-                    <SelectItem value="Moderate">{{
-                      t('reminder.templateDialog.importanceModerate')
-                    }}</SelectItem>
-                    <SelectItem value="Minor">{{
-                      t('reminder.templateDialog.importanceMinor')
-                    }}</SelectItem>
-                    <SelectItem value="Trivial">{{
-                      t('reminder.templateDialog.importanceTrivial')
-                    }}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Time Configuration -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Clock class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.templateDialog.sectionTimeConfig') }}
-              </h3>
-            </div>
-            <Separator />
-
-            <div>
-              <Label>{{ t('reminder.templateDialog.labelTriggerType') }}</Label>
-              <Select v-model="formData.triggerType">
-                <SelectTrigger class="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="FixedTime">{{
-                    t('reminder.templateDialog.triggerFixedTime')
-                  }}</SelectItem>
-                  <SelectItem value="Interval">{{
-                    t('reminder.templateDialog.triggerInterval')
-                  }}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div v-if="formData.triggerType === 'FixedTime'">
-              <Label>{{ t('reminder.templateDialog.labelFixedTime') }}</Label>
-              <Input v-model="formData.fixedTime" placeholder="09:00" class="mt-1.5" />
-              <p class="text-xs text-muted-foreground mt-1">
-                {{ t('reminder.templateDialog.hintFixedTime') }}
-              </p>
-            </div>
-
-            <div v-if="formData.triggerType === 'Interval'">
-              <Label>{{ t('reminder.templateDialog.labelInterval') }}</Label>
-              <Input
-                v-model.number="formData.intervalMinutes"
-                type="number"
-                placeholder="60"
-                class="mt-1.5"
-              />
-              <p class="text-xs text-muted-foreground mt-1">
-                {{ t('reminder.templateDialog.hintInterval') }}
-              </p>
-            </div>
-
-            <!-- Active Time (start / end date) -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelStartDate') }}</Label>
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="mt-1.5 h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !formData.startDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        formData.startDate
-                          ? formatDate(formData.startDate)
-                          : t('reminder.templateDialog.pickStartDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="startDateValue"
-                      @update:model-value="handleStartDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelEndDate') }}</Label>
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="mt-1.5 h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !formData.endDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        formData.endDate
-                          ? formatDate(formData.endDate)
-                          : t('reminder.templateDialog.noEndDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="endDateValue"
-                      @update:model-value="handleEndDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  v-if="formData.endDate"
-                  variant="ghost"
-                  size="sm"
-                  class="mt-1 h-6 text-xs text-muted-foreground"
-                  @click="formData.endDate = null"
-                >
-                  {{ t('reminder.templateDialog.clearEndDate') }}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recurrence (only for Recurring type) -->
-          <Collapsible v-model:open="showRecurrence">
-            <CollapsibleTrigger as-child>
-              <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
-                <span class="flex items-center gap-2">
-                  <Repeat class="h-4 w-4" />
-                  {{ t('reminder.templateDialog.sectionRecurrence') }}
-                  <Badge variant="secondary" class="ml-1">{{
-                    t('reminder.templateDialog.badgeOptional')
-                  }}</Badge>
-                </span>
-                <ChevronDown
-                  class="h-4 w-4 transition-transform"
-                  :class="{ 'rotate-180': showRecurrence }"
-                />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent class="mt-3 space-y-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelRecurrenceType') }}</Label>
-                <Select v-model="formData.recurrenceType">
-                  <SelectTrigger class="mt-1.5">
-                    <SelectValue
-                      :placeholder="t('reminder.templateDialog.placeholderRecurrenceType')"
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Daily">{{
-                      t('reminder.templateDialog.recurrenceDaily')
-                    }}</SelectItem>
-                    <SelectItem value="Weekly">{{
-                      t('reminder.templateDialog.recurrenceWeekly')
-                    }}</SelectItem>
-                    <SelectItem value="CustomDays">{{
-                      t('reminder.templateDialog.recurrenceCustomDays')
+                    <SelectItem value="Interval">{{
+                      t('reminder.templateDialog.triggerInterval')
                     }}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <!-- Daily interval -->
-              <div v-if="formData.recurrenceType === 'Daily'">
-                <Label>{{ t('reminder.templateDialog.labelDailyInterval') }}</Label>
+              <div v-if="formData.triggerType === 'FixedTime'">
+                <Label>{{ t('reminder.templateDialog.labelFixedTime') }}</Label>
+                <Input v-model="formData.fixedTime" placeholder="09:00" class="mt-1.5" />
+                <p class="text-xs text-muted-foreground mt-1">
+                  {{ t('reminder.templateDialog.hintFixedTime') }}
+                </p>
+              </div>
+
+              <div v-if="formData.triggerType === 'Interval'">
+                <Label>{{ t('reminder.templateDialog.labelInterval') }}</Label>
                 <Input
-                  v-model.number="formData.dailyInterval"
+                  v-model.number="formData.intervalMinutes"
                   type="number"
-                  min="1"
-                  placeholder="1"
+                  placeholder="60"
                   class="mt-1.5"
                 />
+                <p class="text-xs text-muted-foreground mt-1">
+                  {{ t('reminder.templateDialog.hintInterval') }}
+                </p>
               </div>
 
-              <!-- Weekly -->
-              <div v-if="formData.recurrenceType === 'Weekly'" class="space-y-3">
+              <!-- Active Time (start / end date) -->
+              <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>{{ t('reminder.templateDialog.labelWeeklyInterval') }}</Label>
+                  <Label>{{ t('reminder.templateDialog.labelStartDate') }}</Label>
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button
+                        variant="outline"
+                        class="mt-1.5 h-10 w-full justify-start text-left font-normal"
+                        :class="{ 'text-muted-foreground': !formData.startDate }"
+                      >
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        {{
+                          formData.startDate
+                            ? formatDate(formData.startDate)
+                            : t('reminder.templateDialog.pickStartDate')
+                        }}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        :selected="startDateValue"
+                        @update:model-value="handleStartDateSelect"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label>{{ t('reminder.templateDialog.labelEndDate') }}</Label>
+                  <Popover>
+                    <PopoverTrigger as-child>
+                      <Button
+                        variant="outline"
+                        class="mt-1.5 h-10 w-full justify-start text-left font-normal"
+                        :class="{ 'text-muted-foreground': !formData.endDate }"
+                      >
+                        <CalendarIcon class="mr-2 h-4 w-4" />
+                        {{
+                          formData.endDate
+                            ? formatDate(formData.endDate)
+                            : t('reminder.templateDialog.noEndDate')
+                        }}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        :selected="endDateValue"
+                        @update:model-value="handleEndDateSelect"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    v-if="formData.endDate"
+                    variant="ghost"
+                    size="sm"
+                    class="mt-1 h-6 text-xs text-muted-foreground"
+                    @click="formData.endDate = null"
+                  >
+                    {{ t('reminder.templateDialog.clearEndDate') }}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recurrence (only for Recurring type) -->
+            <Collapsible v-model:open="showRecurrence">
+              <CollapsibleTrigger as-child>
+                <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
+                  <span class="flex items-center gap-2">
+                    <Repeat class="h-4 w-4" />
+                    {{ t('reminder.templateDialog.sectionRecurrence') }}
+                    <Badge variant="secondary" class="ml-1">{{
+                      t('reminder.templateDialog.badgeOptional')
+                    }}</Badge>
+                  </span>
+                  <ChevronDown
+                    class="h-4 w-4 transition-transform"
+                    :class="{ 'rotate-180': showRecurrence }"
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent class="mt-3 space-y-3">
+                <div>
+                  <Label>{{ t('reminder.templateDialog.labelRecurrenceType') }}</Label>
+                  <Select v-model="formData.recurrenceType">
+                    <SelectTrigger class="mt-1.5">
+                      <SelectValue
+                        :placeholder="t('reminder.templateDialog.placeholderRecurrenceType')"
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Daily">{{
+                        t('reminder.templateDialog.recurrenceDaily')
+                      }}</SelectItem>
+                      <SelectItem value="Weekly">{{
+                        t('reminder.templateDialog.recurrenceWeekly')
+                      }}</SelectItem>
+                      <SelectItem value="CustomDays">{{
+                        t('reminder.templateDialog.recurrenceCustomDays')
+                      }}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <!-- Daily interval -->
+                <div v-if="formData.recurrenceType === 'Daily'">
+                  <Label>{{ t('reminder.templateDialog.labelDailyInterval') }}</Label>
                   <Input
-                    v-model.number="formData.weeklyInterval"
+                    v-model.number="formData.dailyInterval"
                     type="number"
                     min="1"
                     placeholder="1"
                     class="mt-1.5"
                   />
                 </div>
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelDaysOfWeek') }}</Label>
-                  <div class="flex flex-wrap gap-2 mt-1.5">
-                    <Button
-                      v-for="day in weekDayOptions"
-                      :key="day.value"
-                      size="sm"
-                      :variant="formData.weekDays.includes(day.value) ? 'default' : 'outline'"
-                      class="h-8 px-3"
-                      @click="toggleWeekDay(day.value)"
-                    >
-                      {{ day.label }}
-                    </Button>
+
+                <!-- Weekly -->
+                <div v-if="formData.recurrenceType === 'Weekly'" class="space-y-3">
+                  <div>
+                    <Label>{{ t('reminder.templateDialog.labelWeeklyInterval') }}</Label>
+                    <Input
+                      v-model.number="formData.weeklyInterval"
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                      class="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>{{ t('reminder.templateDialog.labelDaysOfWeek') }}</Label>
+                    <div class="flex flex-wrap gap-2 mt-1.5">
+                      <Button
+                        v-for="day in weekDayOptions"
+                        :key="day.value"
+                        size="sm"
+                        :variant="formData.weekDays.includes(day.value) ? 'default' : 'outline'"
+                        class="h-8 px-3"
+                        @click="toggleWeekDay(day.value)"
+                      >
+                        {{ day.label }}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- CustomDays info -->
-              <div v-if="formData.recurrenceType === 'CustomDays'">
+                <!-- CustomDays info -->
+                <div v-if="formData.recurrenceType === 'CustomDays'">
+                  <p class="text-xs text-muted-foreground">
+                    {{ t('reminder.templateDialog.hintCustomDays') }}
+                  </p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <!-- Active Hours -->
+            <Collapsible v-model:open="showActiveHours">
+              <CollapsibleTrigger as-child>
+                <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
+                  <span class="flex items-center gap-2">
+                    <Timer class="h-4 w-4" />
+                    {{ t('reminder.templateDialog.sectionActiveHours') }}
+                    <Badge variant="secondary" class="ml-1">{{
+                      t('reminder.templateDialog.badgeOptional')
+                    }}</Badge>
+                  </span>
+                  <ChevronDown
+                    class="h-4 w-4 transition-transform"
+                    :class="{ 'rotate-180': showActiveHours }"
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent class="mt-3 space-y-3">
                 <p class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDialog.hintCustomDays') }}
+                  {{ t('reminder.templateDialog.hintActiveHours') }}
                 </p>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{{ t('reminder.templateDialog.labelStartHour') }}</Label>
+                    <Input
+                      :model-value="formData.activeStartHour ?? undefined"
+                      type="number"
+                      min="0"
+                      max="23"
+                      placeholder="8"
+                      class="mt-1.5"
+                      @update:model-value="
+                        formData.activeStartHour = $event === '' ? null : Number($event)
+                      "
+                    />
+                  </div>
+                  <div>
+                    <Label>{{ t('reminder.templateDialog.labelEndHour') }}</Label>
+                    <Input
+                      :model-value="formData.activeEndHour ?? undefined"
+                      type="number"
+                      min="0"
+                      max="23"
+                      placeholder="22"
+                      class="mt-1.5"
+                      @update:model-value="
+                        formData.activeEndHour = $event === '' ? null : Number($event)
+                      "
+                    />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
-          <!-- Active Hours -->
-          <Collapsible v-model:open="showActiveHours">
-            <CollapsibleTrigger as-child>
-              <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
-                <span class="flex items-center gap-2">
-                  <Timer class="h-4 w-4" />
-                  {{ t('reminder.templateDialog.sectionActiveHours') }}
-                  <Badge variant="secondary" class="ml-1">{{
-                    t('reminder.templateDialog.badgeOptional')
-                  }}</Badge>
-                </span>
-                <ChevronDown
-                  class="h-4 w-4 transition-transform"
-                  :class="{ 'rotate-180': showActiveHours }"
+            <!-- Appearance -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 mb-3">
+                <Palette class="h-5 w-5 text-primary" />
+                <h3 class="text-sm font-semibold">
+                  {{ t('reminder.templateDialog.sectionAppearance') }}
+                </h3>
+              </div>
+              <Separator />
+
+              <div class="flex items-center gap-4">
+                <Popover>
+                  <PopoverTrigger as-child>
+                    <Button variant="outline" size="lg" class="h-16 w-16">
+                      <Bell class="h-8 w-8" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent class="w-80">
+                    <p class="text-sm">{{ t('reminder.templateDialog.iconPickerComingSoon') }}</p>
+                  </PopoverContent>
+                </Popover>
+                <div class="flex-1">
+                  <p class="text-sm font-medium">{{ t('reminder.templateDialog.labelIcon') }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ t('reminder.templateDialog.currentIcon', { icon: formData.icon }) }}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <Label>{{ t('reminder.templateDialog.labelTags') }}</Label>
+                <Input
+                  v-model="tagsInput"
+                  :placeholder="t('reminder.templateDialog.placeholderTags')"
+                  class="mt-1.5"
+                  @blur="updateTags"
                 />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent class="mt-3 space-y-3">
-              <p class="text-xs text-muted-foreground">
-                {{ t('reminder.templateDialog.hintActiveHours') }}
-              </p>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelStartHour') }}</Label>
-                  <Input
-                    :model-value="formData.activeStartHour ?? undefined"
-                    type="number"
-                    min="0"
-                    max="23"
-                    placeholder="8"
-                    class="mt-1.5"
-                    @update:model-value="
-                      formData.activeStartHour = $event === '' ? null : Number($event)
-                    "
-                  />
-                </div>
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelEndHour') }}</Label>
-                  <Input
-                    :model-value="formData.activeEndHour ?? undefined"
-                    type="number"
-                    min="0"
-                    max="23"
-                    placeholder="22"
-                    class="mt-1.5"
-                    @update:model-value="
-                      formData.activeEndHour = $event === '' ? null : Number($event)
-                    "
-                  />
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          <!-- Appearance -->
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 mb-3">
-              <Palette class="h-5 w-5 text-primary" />
-              <h3 class="text-sm font-semibold">
-                {{ t('reminder.templateDialog.sectionAppearance') }}
-              </h3>
-            </div>
-            <Separator />
-
-            <div class="flex items-center gap-4">
-              <Popover>
-                <PopoverTrigger as-child>
-                  <Button variant="outline" size="lg" class="h-16 w-16">
-                    <Bell class="h-8 w-8" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent class="w-80">
-                  <p class="text-sm">{{ t('reminder.templateDialog.iconPickerComingSoon') }}</p>
-                </PopoverContent>
-              </Popover>
-              <div class="flex-1">
-                <p class="text-sm font-medium">{{ t('reminder.templateDialog.labelIcon') }}</p>
-                <p class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDialog.currentIcon', { icon: formData.icon }) }}
-                </p>
               </div>
             </div>
 
-            <div>
-              <Label>{{ t('reminder.templateDialog.labelTags') }}</Label>
-              <Input
-                v-model="tagsInput"
-                :placeholder="t('reminder.templateDialog.placeholderTags')"
-                class="mt-1.5"
-                @blur="updateTags"
-              />
-            </div>
+            <!-- Advanced Settings -->
+            <Accordion type="single" collapsible>
+              <AccordionItem value="advanced">
+                <AccordionTrigger>
+                  <div class="flex items-center gap-2">
+                    <Settings class="h-4 w-4" />
+                    <span>{{ t('reminder.templateDialog.sectionAdvanced') }}</span>
+                    <Badge variant="secondary" class="ml-2">{{
+                      t('reminder.templateDialog.badgeOptional')
+                    }}</Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent class="space-y-3 pt-3">
+                  <p class="text-xs text-muted-foreground">
+                    {{ t('reminder.templateDialog.hintAdvanced') }}
+                  </p>
+                  <div>
+                    <Label>{{ t('reminder.templateDialog.labelNotificationTitle') }}</Label>
+                    <Input
+                      v-model="formData.notificationTitle"
+                      :placeholder="t('reminder.templateDialog.placeholderNotificationTitle')"
+                      class="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>{{ t('reminder.templateDialog.labelNotificationBody') }}</Label>
+                    <Textarea
+                      v-model="formData.notificationBody"
+                      :placeholder="t('reminder.templateDialog.placeholderNotificationBody')"
+                      rows="2"
+                      class="mt-1.5"
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
-
-          <!-- Advanced Settings -->
-          <Accordion type="single" collapsible>
-            <AccordionItem value="advanced">
-              <AccordionTrigger>
-                <div class="flex items-center gap-2">
-                  <Settings class="h-4 w-4" />
-                  <span>{{ t('reminder.templateDialog.sectionAdvanced') }}</span>
-                  <Badge variant="secondary" class="ml-2">{{
-                    t('reminder.templateDialog.badgeOptional')
-                  }}</Badge>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent class="space-y-3 pt-3">
-                <p class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDialog.hintAdvanced') }}
-                </p>
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelNotificationTitle') }}</Label>
-                  <Input
-                    v-model="formData.notificationTitle"
-                    :placeholder="t('reminder.templateDialog.placeholderNotificationTitle')"
-                    class="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelNotificationBody') }}</Label>
-                  <Textarea
-                    v-model="formData.notificationBody"
-                    :placeholder="t('reminder.templateDialog.placeholderNotificationBody')"
-                    rows="2"
-                    class="mt-1.5"
-                  />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
     </DialogContent>
   </Dialog>
 </template>
@@ -505,6 +487,8 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import type { ReminderGroupOption } from '../types';
+import { ColorPickerField } from '../../../shared/components';
+import { defaultNamedColor } from '../../../shared/constants/colorPalette';
 
 const { t, locale } = useI18n();
 
@@ -526,7 +510,6 @@ const emit = defineEmits<{
 
 const visible = ref(false);
 const saving = ref(false);
-const showColorPicker = ref(false);
 const showRecurrence = ref(false);
 const showActiveHours = ref(false);
 const tagsInput = ref('');
@@ -553,22 +536,11 @@ const formData = reactive({
   notificationTitle: '',
   notificationBody: '',
   // Appearance
-  color: '#2196F3',
+  color: defaultNamedColor,
   icon: 'mdi-bell',
   tags: [] as string[],
   groupId: undefined as string | undefined,
 });
-
-const colorOptions = [
-  '#2196F3',
-  '#4CAF50',
-  '#FF9800',
-  '#F44336',
-  '#9C27B0',
-  '#E91E63',
-  '#00BCD4',
-  '#9E9E9E',
-];
 
 const weekDayOptions = computed(() => [
   { label: t('reminder.templateDialog.dayMon'), value: 'Monday' },
@@ -655,7 +627,7 @@ const resetForm = () => {
     activeEndHour: null,
     notificationTitle: '',
     notificationBody: '',
-    color: '#2196F3',
+    color: defaultNamedColor,
     icon: 'mdi-bell',
     tags: [],
     groupId: undefined,
@@ -688,7 +660,7 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
     notificationTitle: template.notificationConfig?.title || '',
     notificationBody: template.notificationConfig?.body || '',
     // Appearance
-    color: template.color || '#2196F3',
+    color: template.color || defaultNamedColor,
     icon: template.icon || 'mdi-bell',
     tags: template.tags ? [...template.tags] : [],
     groupId: template.groupId ?? undefined,

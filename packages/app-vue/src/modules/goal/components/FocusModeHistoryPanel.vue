@@ -117,7 +117,7 @@ import {
 import type { FocusModeClientDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Button } from '@dailyuse/ui-vue-shadcn';
-import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-vue-shadcn';
+import { Card, CardContent, CardHeader, CardTitle, useConfirm } from '@dailyuse/ui-vue-shadcn';
 
 const props = withDefaults(
   defineProps<{
@@ -235,8 +235,16 @@ const handleExtend = (item: FocusModeClientDTO) => {
   }
 };
 
-const handleDeactivate = (item: FocusModeClientDTO) => {
-  if (!confirm(t('goal.focusMode.historyPanel.confirmClose'))) {
+const handleDeactivate = async (item: FocusModeClientDTO) => {
+  const confirmed = await useConfirm({
+    title: t('goal.focusMode.historyPanel.confirmCloseTitle'),
+    description: t('goal.focusMode.historyPanel.confirmClose'),
+    confirmText: t('common.confirm'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) {
     return;
   }
 

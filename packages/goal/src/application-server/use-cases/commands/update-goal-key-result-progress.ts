@@ -4,7 +4,7 @@
 
 import type { IGoalRepository } from '@/domain-server';
 import { GoalPolicy } from '@/domain-server';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { KeyResultClientDTO } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -19,7 +19,7 @@ export class UpdateGoalKeyResultProgress {
     keyResultId: string,
     currentValue: number,
     note?: string,
-  ): Promise<Result<GoalClientDTO>> {
+  ): Promise<Result<KeyResultClientDTO>> {
     const goal = await this.goalRepository.findById(goalId, { includeChildren: true });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${goalId}`);
@@ -29,6 +29,11 @@ export class UpdateGoalKeyResultProgress {
     goal.updateKeyResultProgress(keyResultId, currentValue, note);
     await this.goalRepository.save(goal);
 
-    return ok(goal.toClientDTO(true));
+    const keyResult = goal.getKeyResult(keyResultId);
+    if (!keyResult) {
+      return error('NOT_FOUND', `KeyResult not found: ${keyResultId}`);
+    }
+
+    return ok(keyResult.toClientDTO());
   }
 }

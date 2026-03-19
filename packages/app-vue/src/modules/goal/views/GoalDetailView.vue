@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden">
     <div class="flex items-center gap-3 border-b px-6 py-4">
       <Button variant="ghost" size="sm" @click="$router.back()">
         <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.detail.back') }}
@@ -11,7 +11,7 @@
       </Button>
     </div>
 
-    <ScrollArea v-if="goal" class="flex-1">
+    <ScrollArea v-if="goal" class="min-h-0 flex-1">
       <div class="mx-auto max-w-4xl space-y-6 p-6">
         <!-- 目标概览 -->
         <Card>

@@ -244,7 +244,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
-import { Textarea } from '@dailyuse/ui-vue-shadcn';
+import { Textarea, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import type { KeyResultDraft, KeyResultPreview } from '../types';
@@ -313,12 +313,20 @@ function deselectAll() {
   emit('selectionChange', selectedResults.value);
 }
 
-function clearAll() {
-  if (confirm(t('goal.krPreview.confirmClear'))) {
-    keyResults.value = [];
-    emit('selectionChange', []);
-    props.onSuccess?.(t('goal.krPreview.cleared'));
-  }
+async function clearAll() {
+  const confirmed = await useConfirm({
+    title: t('goal.krPreview.confirmClearTitle'),
+    description: t('goal.krPreview.confirmClear'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
+
+  keyResults.value = [];
+  emit('selectionChange', []);
+  props.onSuccess?.(t('goal.krPreview.cleared'));
 }
 
 function handleEdit(kr: KeyResultPreview, index: number) {
@@ -344,12 +352,20 @@ function saveEdit() {
   cancelEdit();
 }
 
-function handleRemove(index: number) {
-  if (confirm(t('goal.krPreview.confirmRemove'))) {
-    keyResults.value.splice(index, 1);
-    emit('remove', index);
-    props.onSuccess?.(t('goal.krPreview.removed'));
-  }
+async function handleRemove(index: number) {
+  const confirmed = await useConfirm({
+    title: t('goal.krPreview.confirmRemoveTitle'),
+    description: t('goal.krPreview.confirmRemove'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
+
+  keyResults.value.splice(index, 1);
+  emit('remove', index);
+  props.onSuccess?.(t('goal.krPreview.removed'));
 }
 
 function getKRActions(kr: KeyResultPreview, index: number): MenuAction[] {

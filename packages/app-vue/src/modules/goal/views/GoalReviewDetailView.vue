@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col p-6">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden p-6">
     <div class="mb-6 flex items-center gap-3">
       <Button variant="ghost" size="sm" @click="$router.back()">
         <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.reviewDetail.back') }}
@@ -13,7 +13,7 @@
       <div class="text-muted-foreground">{{ t('goal.reviewDetail.loading') }}</div>
     </div>
 
-    <ScrollArea v-else-if="review" class="flex-1">
+    <ScrollArea v-else-if="review" class="min-h-0 flex-1">
       <div class="mx-auto max-w-3xl space-y-6">
         <!-- 评分概览 -->
         <Card>

@@ -168,7 +168,7 @@ export function createSmokeApp(): SmokeTestApp {
     getTemplate: new GetTaskTemplate(templateRepo),
     listTemplates: new ListTaskTemplates(templateRepo, instanceRepo),
     updateTemplate: new UpdateTaskTemplate(templateRepo),
-    deleteTemplate: new DeleteTaskTemplate(templateRepo),
+    deleteTemplate: new DeleteTaskTemplate(templateRepo, instanceRepo),
     activateTemplate: new ActivateTaskTemplate(templateRepo, instanceRepo),
     pauseTemplate: new PauseTaskTemplate(templateRepo, instanceRepo),
     archiveTemplate: new ArchiveTaskTemplate(templateRepo),

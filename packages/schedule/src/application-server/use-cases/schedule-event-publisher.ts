@@ -247,6 +247,30 @@ export class ScheduleEventPublisher {
       }
     });
 
+    this.onAny('task:template:deleted', async (event: any) => {
+      try {
+        if (!event.identityId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing identityId in task:template:deleted event',
+          );
+          return;
+        }
+
+        const taskTemplateId =
+          event.taskTemplateId ?? event.aggregateId ?? event.payload?.taskTemplateId;
+        if (!taskTemplateId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:template:deleted event',
+          );
+          return;
+        }
+
+        await this.handleTaskDeleted(event.identityId, taskTemplateId);
+      } catch (error) {
+        console.error('❌ [ScheduleEventPublisher] Error handling task:template:deleted:', error);
+      }
+    });
+
     // ============ 监听 Reminder 模块事件 ============
 
     /**
@@ -862,6 +886,7 @@ export class ScheduleEventPublisher {
       'task:delete',
       'task:template:paused',
       'task:template:resumed',
+      'task:template:deleted',
       'task:template:schedule-time-changed',
       'task:template:recurrence-changed',
       // Reminder 模块事件

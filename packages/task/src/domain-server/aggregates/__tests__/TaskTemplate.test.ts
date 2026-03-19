@@ -929,6 +929,24 @@ describe('TaskTemplate Aggregate', () => {
         expect(instances.length).toBe(3); // 15, 16, 17
       });
 
+      it('should respect occurrence limits when generating instances', () => {
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(),
+            recurrenceRule: makeDailyRule().setOccurrences(3),
+          }),
+        );
+
+        const from = new Date('2025-06-15T00:00:00Z').getTime();
+        const to = new Date('2025-06-30T00:00:00Z').getTime();
+        const instances = template.generateInstances(from, to);
+
+        expect(instances).toHaveLength(3);
+        expect(template.instances).toHaveLength(3);
+      });
+
       it('should generate weekly instances only on specified days', () => {
         // Wednesday June 18 and Friday June 20 are within range
         const rule = makeWeeklyRule([DayOfWeek.Wednesday, DayOfWeek.Friday]);
@@ -1119,6 +1137,24 @@ describe('TaskTemplate Aggregate', () => {
         );
 
         expect(template.shouldGenerateInstance(Date.now())).toBe(false);
+      });
+
+      it('should return false when occurrence limit has been reached', () => {
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(),
+            recurrenceRule: makeDailyRule().setOccurrences(1),
+          }),
+        );
+
+        const today = new Date('2025-06-15T00:00:00Z').getTime();
+        template.generateInstances(today, new Date('2025-06-15T23:59:59Z').getTime());
+
+        expect(template.shouldGenerateInstance(new Date('2025-06-16T12:00:00Z').getTime())).toBe(
+          false,
+        );
       });
     });
 

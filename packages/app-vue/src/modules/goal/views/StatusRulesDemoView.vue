@@ -1,11 +1,11 @@
 <template>
-  <div class="flex h-full flex-col p-6">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden p-6">
     <div class="mb-6">
       <h2 class="text-lg font-semibold">{{ t('goal.statusRulesDemo.title') }}</h2>
       <p class="text-sm text-muted-foreground">{{ t('goal.statusRulesDemo.subtitle') }}</p>
     </div>
 
-    <ScrollArea class="flex-1">
+    <ScrollArea class="min-h-0 flex-1">
       <div class="mx-auto max-w-3xl space-y-6">
         <!-- 规则编辑器 -->
         <Card>

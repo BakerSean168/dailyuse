@@ -337,6 +337,7 @@ import {
   DialogFooter,
   Alert,
   AlertDescription,
+  useConfirm,
 } from '@dailyuse/ui-vue-shadcn';
 import { Bot, Plus, Pencil, Trash2, GitBranch, Zap, AlertCircle } from 'lucide-vue-next';
 
@@ -546,11 +547,19 @@ const handleRuleToggle = (rule: StatusRule) => {
 };
 
 // 删除规则
-const handleDelete = (ruleId: string) => {
-  if (confirm(t('goal.statusRule.alertDeleteConfirm'))) {
-    ruleEngine.removeRule(ruleId);
-    loadRules();
-  }
+const handleDelete = async (ruleId: string) => {
+  const confirmed = await useConfirm({
+    title: t('goal.statusRule.alertDeleteTitle'),
+    description: t('goal.statusRule.alertDeleteConfirm'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
+
+  ruleEngine.removeRule(ruleId);
+  loadRules();
 };
 
 // 加载规则

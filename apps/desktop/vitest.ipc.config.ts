@@ -19,13 +19,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@dailyuse/infrastructure-server': resolve(
-        __dirname,
-        '../../packages/infrastructure-server/src',
-      ),
-      '@dailyuse/domain-server': resolve(__dirname, '../../packages/domain-server/src'),
-      '@dailyuse/application-server': resolve(__dirname, '../../packages/application-server/src'),
-      '@dailyuse/contracts': resolve(__dirname, '../../packages/contracts/src'),
       '@dailyuse/contracts/authentication': resolve(
         __dirname,
         '../../packages/contracts/src/modules/authentication/index.ts',
@@ -34,6 +27,13 @@ export default defineConfig({
         __dirname,
         '../../packages/contracts/src/result/index.ts',
       ),
+      '@dailyuse/infrastructure-server': resolve(
+        __dirname,
+        '../../packages/infrastructure-server/src',
+      ),
+      '@dailyuse/domain-server': resolve(__dirname, '../../packages/domain-server/src'),
+      '@dailyuse/application-server': resolve(__dirname, '../../packages/application-server/src'),
+      '@dailyuse/contracts': resolve(__dirname, '../../packages/contracts/src'),
       '@dailyuse/utils': resolve(__dirname, '../../packages/utils/src'),
       '@dailyuse/authentication/domain-server': resolve(
         __dirname,

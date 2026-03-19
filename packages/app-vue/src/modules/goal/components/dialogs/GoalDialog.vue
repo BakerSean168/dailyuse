@@ -204,40 +204,13 @@
                 <!-- Color Picker -->
                 <div class="grid gap-2">
                   <Label class="text-sm font-medium">{{ t('goal.dialog.color') }}</Label>
-                  <Popover>
-                    <PopoverTrigger as-child>
-                      <Button variant="outline" class="h-10 w-[140px] justify-start gap-2">
-                        <div
-                          class="h-4 w-4 rounded-full border"
-                          :style="{ backgroundColor: form.color || '#94a3b8' }"
-                        />
-                        <span class="text-sm">{{ form.color || t('goal.dialog.pickColor') }}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-auto p-3" align="start">
-                      <div class="grid grid-cols-4 gap-2">
-                        <button
-                          v-for="c in colorOptions"
-                          :key="c"
-                          class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
-                          :class="
-                            form.color === c ? 'border-foreground scale-110' : 'border-transparent'
-                          "
-                          :style="{ backgroundColor: c }"
-                          @click="form.color = c"
-                        />
-                      </div>
-                      <Button
-                        v-if="form.color"
-                        variant="ghost"
-                        size="sm"
-                        class="mt-2 w-full text-xs"
-                        @click="form.color = ''"
-                      >
-                        {{ t('goal.dialog.clearColor') }}
-                      </Button>
-                    </PopoverContent>
-                  </Popover>
+                  <ColorPickerField
+                    :model-value="form.color || null"
+                    button-class="h-10 w-[140px] justify-start gap-2"
+                    :empty-label="t('goal.dialog.pickColor')"
+                    :clear-label="t('goal.dialog.clearColor')"
+                    @update:model-value="form.color = $event ?? ''"
+                  />
                 </div>
 
                 <!-- Tags -->
@@ -378,9 +351,6 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
   Calendar,
   Collapsible,
   CollapsibleTrigger,
@@ -390,6 +360,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@dailyuse/ui-vue-shadcn';
+import { ColorPickerField } from '../../../../shared/components';
 import {
   Calendar as CalendarIcon,
   ChevronDown,
@@ -461,21 +432,6 @@ const importanceLevelOptions = computed(() => [
   { value: 'Minor', label: t('goal.dialog.importanceMinor') },
   { value: 'Trivial', label: t('goal.dialog.importanceTrivial') },
 ]);
-
-const colorOptions = [
-  '#ef4444',
-  '#f97316',
-  '#f59e0b',
-  '#84cc16',
-  '#22c55e',
-  '#06b6d4',
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#f43f5e',
-  '#14b8a6',
-  '#6366f1',
-];
 
 // ── Tab State ──────────────────────────────────────────────────────────
 

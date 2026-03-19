@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full flex-col p-6">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden p-6">
     <div class="mb-6 flex items-center gap-3">
       <Button variant="ghost" size="sm" @click="$router.back()">
         <ArrowLeft class="mr-1 h-4 w-4" /> {{ t('goal.reviewCreation.back') }}
@@ -8,7 +8,7 @@
       <h2 class="text-lg font-semibold">{{ t('goal.reviewCreation.title') }}</h2>
     </div>
 
-    <ScrollArea class="flex-1">
+    <ScrollArea class="min-h-0 flex-1">
       <div class="mx-auto max-w-2xl space-y-6">
         <!-- 复盘类型 -->
         <div class="space-y-2">

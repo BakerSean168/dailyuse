@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { brandedId } from '../../../primitives';
 import type { GoalId, KeyResultId } from '../../../primitives';
-import type { KeyResultServerDTO } from '../entities';
+import type { KeyResultClientDTO } from '../entities';
 import { KeyResultValueType } from '../value-objects/key-result-value-type';
 import { KeyResultCalculationMethod } from '../value-objects/key-result-calculation-method';
 
@@ -31,7 +31,7 @@ export const AddKeyResultSchema = z.object({
 });
 
 export type AddKeyResultReq = z.infer<typeof AddKeyResultSchema>;
-export type AddKeyResultRes = KeyResultServerDTO;
+export type AddKeyResultRes = KeyResultClientDTO;
 
 // ============================================================================
 // UPDATE Key Result
@@ -50,7 +50,7 @@ export const UpdateKeyResultSchema = z.object({
 });
 
 export type UpdateKeyResultReq = z.infer<typeof UpdateKeyResultSchema>;
-export type UpdateKeyResultRes = KeyResultServerDTO;
+export type UpdateKeyResultRes = KeyResultClientDTO;
 
 // ============================================================================
 // GET Key Results
@@ -66,7 +66,7 @@ export const GetKeyResultsSchema = z.object({
 export type GetKeyResultsReq = z.infer<typeof GetKeyResultsSchema>;
 
 export interface GetKeyResultsRes {
-  data: KeyResultServerDTO[];
+  data: KeyResultClientDTO[];
   total: number;
 }
 
@@ -84,4 +84,4 @@ export const UpdateKeyResultProgressSchema = z.object({
 });
 
 export type UpdateKeyResultProgressReq = z.infer<typeof UpdateKeyResultProgressSchema>;
-export type UpdateKeyResultProgressRes = KeyResultServerDTO;
+export type UpdateKeyResultProgressRes = KeyResultClientDTO;

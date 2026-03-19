@@ -30,43 +30,13 @@
         <!-- 颜色 -->
         <div class="col-span-12 md:col-span-6">
           <Label>{{ t('task.metadata.colorMark') }}</Label>
-          <Popover>
-            <PopoverTrigger as-child>
-              <Button variant="outline" class="mt-1 w-full justify-start gap-2">
-                <div
-                  v-if="color"
-                  class="h-4 w-4 rounded-full border"
-                  :style="{ backgroundColor: color }"
-                />
-                <div v-else class="h-4 w-4 rounded-full border border-dashed" />
-                {{ color || t('task.metadata.selectColor') }}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent class="w-64">
-              <div class="grid grid-cols-6 gap-2">
-                <button
-                  v-for="c in colorSwatches"
-                  :key="c"
-                  type="button"
-                  class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110"
-                  :class="
-                    color === c ? 'border-primary ring-2 ring-primary/30' : 'border-transparent'
-                  "
-                  :style="{ backgroundColor: c }"
-                  @click="color = c"
-                />
-              </div>
-              <Button
-                v-if="color"
-                variant="ghost"
-                size="sm"
-                class="mt-2 w-full"
-                @click="color = null"
-              >
-                {{ t('task.metadata.clearColor') }}
-              </Button>
-            </PopoverContent>
-          </Popover>
+          <ColorPickerField
+            class="mt-1"
+            :model-value="color"
+            :empty-label="t('task.metadata.selectColor')"
+            :clear-label="t('task.metadata.clearColor')"
+            @update:model-value="(value) => (color = value ?? defaultNamedColor)"
+          />
         </div>
 
         <!-- 任务标签 (Story 2.3: 占满整行，因为紧急性已移除) -->
@@ -119,15 +89,13 @@ import {
   SelectItem,
   Badge,
   Input,
-  Button,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
 } from '@dailyuse/ui-vue-shadcn';
 import { Info, X } from 'lucide-vue-next';
 import type { TaskTemplateViewModel } from '../../types';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { useI18n } from 'vue-i18n';
+import { ColorPickerField } from '../../../../../shared/components';
+import { defaultNamedColor } from '../../../../../shared/constants/colorPalette';
 
 const { t } = useI18n();
 
@@ -214,27 +182,11 @@ const importance = computed({
   },
 });
 
-// 颜色
-const colorSwatches = [
-  '#ef4444',
-  '#f97316',
-  '#eab308',
-  '#22c55e',
-  '#06b6d4',
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#f43f5e',
-  '#14b8a6',
-  '#6366f1',
-  '#a855f7',
-];
-
 const color = computed({
-  get: () => props.modelValue.color ?? null,
+  get: () => props.modelValue.color ?? defaultNamedColor,
   set: (value: string | null) => {
     updateTemplate((template) => {
-      template.color = value;
+      template.color = value ?? defaultNamedColor;
     });
   },
 });

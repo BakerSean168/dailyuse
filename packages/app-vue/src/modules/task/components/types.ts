@@ -86,17 +86,21 @@ export interface TaskTemplateViewModel {
   priority?: number;
   recurrenceText?: string;
   tags?: string[];
+  tagSummaryText?: string;
   goalBinding?: TaskGoalBindingViewModel | null;
   timeConfig: TaskTimeConfigViewModel;
   recurrenceRule?: any;
   reminderConfig?: any;
   instanceCount?: number;
+  completedInstanceCount?: number;
+  pendingInstanceCount?: number;
   completionRate?: number;
   formattedCreatedAt?: string;
   /** TaskType enum value mapped for CreateTaskTemplateReq.taskType */
   taskType?: string;
   /** Colour swatch hex string */
   color?: string | null;
+  colorLabel?: string;
 }
 
 export interface TaskTemplateFormProps {

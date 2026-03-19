@@ -33,16 +33,12 @@ describe('createIdType', () => {
     warnSpy.mockRestore();
   });
 
-  it('accepts cross-module prefixed uuid values but preserves a prefix mismatch warning', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('rejects prefixed uuid values with the wrong prefix', () => {
     const foreignId = 'GuestIdentity_550e8400-e29b-41d4-a716-446655440000';
 
-    expect(ExampleId.of(foreignId)).toBe(foreignId);
-    expect(warnSpy).toHaveBeenCalledWith(
+    expect(() => ExampleId.of(foreignId)).toThrow(
       'ID GuestIdentity_550e8400-e29b-41d4-a716-446655440000 does not start with expected prefix ExampleId',
     );
-
-    warnSpy.mockRestore();
   });
 
   it('exposes a strict shape check helper', () => {

@@ -5,6 +5,7 @@
  */
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
@@ -13,7 +14,10 @@ import { ok } from '@dailyuse/contracts/result';
  * Delete Task Template Service
  */
 export class DeleteTaskTemplate {
-  constructor(private readonly templateRepository: ITaskTemplateRepository) {}
+  constructor(
+    private readonly templateRepository: ITaskTemplateRepository,
+    private readonly instanceRepository: ITaskInstanceRepository,
+  ) {}
 
   async execute(id: string, soft = false): Promise<Result<{ success: boolean }>> {
     const template = await this.templateRepository.findById(id);
@@ -23,14 +27,17 @@ export class DeleteTaskTemplate {
     }
 
     if (soft) {
+      await this.instanceRepository.deleteByTemplateId(id);
       await this.templateRepository.softDelete(id);
     } else {
+      await this.instanceRepository.deleteByTemplateId(id);
       await this.templateRepository.delete(id);
     }
 
     // 鍙戝竷鍒犻櫎浜嬩欢
     try {
       eventBus.send('task:template:deleted' as any, {
+        aggregateId: id,
         taskTemplateId: id,
         identityId: template.identityId,
         deletedAt: Date.now(),

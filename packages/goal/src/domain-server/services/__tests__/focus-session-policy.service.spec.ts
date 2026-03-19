@@ -15,8 +15,8 @@ import { IdentityId } from '@dailyuse/domain-shared';
 // Helpers
 // ============================================================
 
-const TEST_IDENTITY = IdentityId.of('IdentityId_test-user-001');
-const OTHER_IDENTITY = IdentityId.of('IdentityId_other-user-002');
+const TEST_IDENTITY = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440001');
+const OTHER_IDENTITY = IdentityId.of('IdentityId_550e8400-e29b-41d4-a716-446655440002');
 
 function createActiveFocusSession(): FocusSession {
   return FocusSession.create({

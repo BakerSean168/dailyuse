@@ -1,6 +1,8 @@
 <template>
   <Dialog :open="visible" @update:open="setVisible">
-    <DialogContent class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex flex-col">
+    <DialogContent
+      class="max-w-[900px] max-h-[85vh] rounded-xl p-0 flex min-h-0 flex-col overflow-hidden"
+    >
       <DialogHeader class="flex flex-row items-center gap-3 p-6 pb-4 shrink-0">
         <component
           :is="mode === 'edit' ? Pencil : PlusCircle"
@@ -66,6 +68,7 @@ import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import type { TaskTemplateViewModel } from '../types';
 import { TaskType } from '@dailyuse/contracts/task';
+import { defaultNamedColor } from '../../../../shared/constants/colorPalette';
 
 const { t } = useI18n();
 
@@ -93,7 +96,7 @@ function createBlankTemplate(): TaskTemplateViewModel {
     instanceCount: 0,
     completionRate: 0,
     taskType: TaskType.Recurring,
-    color: null,
+    color: defaultNamedColor,
   };
 }
 

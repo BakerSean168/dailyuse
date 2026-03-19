@@ -105,14 +105,14 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
 
   async findByTemplateId(templateId: string): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE template_id = ? ORDER BY instance_date DESC',
+      'SELECT * FROM task_instances WHERE template_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
       [templateId],
     );
   }
 
   async findByIdentityId(identityId: string): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE identity_id = ? ORDER BY instance_date DESC',
+      'SELECT * FROM task_instances WHERE identity_id = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
       [identityId],
     );
   }
@@ -123,21 +123,21 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
     endDate: number,
   ): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE identity_id = ? AND instance_date >= ? AND instance_date <= ? ORDER BY instance_date ASC`,
+      `SELECT * FROM task_instances WHERE identity_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [identityId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
     );
   }
 
   async findByStatus(identityId: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
     return this.query(
-      'SELECT * FROM task_instances WHERE identity_id = ? AND status = ? ORDER BY instance_date DESC',
+      'SELECT * FROM task_instances WHERE identity_id = ? AND status = ? AND deleted_at IS NULL ORDER BY instance_date DESC',
       [identityId, status],
     );
   }
 
   async findOverdueInstances(identityId: string): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE identity_id = ? AND status IN ('Pending', 'InProgress') AND instance_date < ? ORDER BY instance_date ASC`,
+      `SELECT * FROM task_instances WHERE identity_id = ? AND status IN ('Pending', 'InProgress') AND instance_date < ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [identityId, new Date().toISOString()],
     );
   }
@@ -170,7 +170,7 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
     endDate: number,
   ): Promise<TaskInstance[]> {
     return this.query(
-      `SELECT * FROM task_instances WHERE template_id = ? AND instance_date >= ? AND instance_date <= ? ORDER BY instance_date ASC`,
+      `SELECT * FROM task_instances WHERE template_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [templateId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
     );
   }

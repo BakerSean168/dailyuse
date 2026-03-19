@@ -84,9 +84,6 @@ export class SessionManager {
   // Maps email → server-side identityId for offline session creation
   // (No longer needed — local AuthIdentity is now stored with the server ID directly)
 
-  // Guest identity persistence (Phase 4)
-  private static readonly GUEST_ID_KEY = 'guest_identity_id';
-
   private currentSession: AuthSession | null = null;
   private deviceInfo: DeviceInfoClientDTO | null = null;
   private isInitialized = false;
@@ -202,6 +199,17 @@ export class SessionManager {
       const tokenData = await this.tokenManager.loadTokens();
       if (!tokenData) {
         this.logger.info('No tokens found, no session to restore');
+        return { ok: false, needsReLogin: true };
+      }
+
+      const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
+      if (!tokenData.identityId.startsWith(expectedIdentityPrefix)) {
+        this.logger.warn('Discarding stored tokens with unsupported identity prefix', {
+          identityId: tokenData.identityId,
+          expectedPrefix: expectedIdentityPrefix,
+        });
+        await this.tokenManager.clearTokens();
+        this.currentSession = null;
         return { ok: false, needsReLogin: true };
       }
 
@@ -857,38 +865,38 @@ export class SessionManager {
 
   /**
    * Get or create a persistent guest identity ID.
-   *
-   * The guest ID is stored in auth_sessions metadata and persists across app restarts.
-   * Can be cleared via clearGuestIdentity() when the user upgrades to a cloud account.
    */
   async getOrCreateGuestIdentity(): Promise<string> {
     const tokenData = this.tokenManager.getCachedTokenData();
-    let cachedGuestId = tokenData?.identityId;
-
-    // Migrate legacy GuestIdentity_ to standard IdentityId_
-    if (cachedGuestId && cachedGuestId.startsWith('GuestIdentity_')) {
-      cachedGuestId = cachedGuestId.replace('GuestIdentity_', 'IdentityId_');
-      this.logger.info('Migrated legacy GuestIdentity_ prefix to IdentityId_', { newId: cachedGuestId });
-    }
+    const cachedGuestId = tokenData?.identityId;
+    const expectedIdentityPrefix = `${SessionManager.GUEST_ID_PREFIX}_`;
 
     if (cachedGuestId && this.isGuestToken(tokenData)) {
-      const existingGuestSessions = await this.sessionRepository.findByIdentityId(
-        cachedGuestId as unknown as IdentityId,
-      );
-      if (existingGuestSessions.length > 0) {
-        const guestSession = existingGuestSessions[0];
-        this.currentSession = guestSession;
-        this.logger.info('Restored existing guest identity', {
-          guestId: cachedGuestId,
-          sessionId: guestSession.id,
+      if (!cachedGuestId.startsWith(expectedIdentityPrefix)) {
+        this.logger.warn('Discarding stale guest token with unsupported identity prefix', {
+          identityId: cachedGuestId,
+          expectedPrefix: expectedIdentityPrefix,
         });
-        return guestSession.identityId;
-      }
+        await this.tokenManager.clearTokens();
+      } else {
+        const existingGuestSessions = await this.sessionRepository.findByIdentityId(
+          cachedGuestId as unknown as IdentityId,
+        );
+        if (existingGuestSessions.length > 0) {
+          const guestSession = existingGuestSessions[0];
+          this.currentSession = guestSession;
+          this.logger.info('Restored existing guest identity', {
+            guestId: cachedGuestId,
+            sessionId: guestSession.id,
+          });
+          return guestSession.identityId;
+        }
 
-      this.logger.info('Reusing cached guest identity without stored session', {
-        guestId: cachedGuestId,
-      });
-      return cachedGuestId;
+        this.logger.info('Reusing cached guest identity without stored session', {
+          guestId: cachedGuestId,
+        });
+        return cachedGuestId;
+      }
     }
 
     // Create new persistent guest identity
@@ -926,11 +934,7 @@ export class SessionManager {
   /** Clear guest identity (called when user upgrades to a cloud account). */
   async clearGuestIdentity(): Promise<void> {
     const tokenData = this.tokenManager.getCachedTokenData();
-    let cachedGuestId = tokenData?.identityId;
-
-    if (cachedGuestId && cachedGuestId.startsWith('GuestIdentity_')) {
-      cachedGuestId = cachedGuestId.replace('GuestIdentity_', 'IdentityId_');
-    }
+    const cachedGuestId = tokenData?.identityId;
 
     if (cachedGuestId && this.isGuestToken(tokenData)) {
       const guestSessions = await this.sessionRepository.findByIdentityId(

@@ -7,7 +7,7 @@
       }
     "
   >
-    <DialogContent class="max-w-[1200px] max-h-[90vh] flex flex-col">
+    <DialogContent class="flex max-h-[90vh] max-w-[1200px] min-h-0 flex-col overflow-hidden">
       <!-- 标题栏 -->
       <DialogHeader class="flex flex-row items-center justify-between">
         <DialogTitle class="flex items-center text-xl">
@@ -76,7 +76,7 @@
       </div>
 
       <!-- 模板卡片列表 -->
-      <ScrollArea class="flex-1" style="max-height: 600px">
+      <ScrollArea class="min-h-0 flex-1" style="max-height: 600px">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-1">
           <Card
             v-for="result in filteredTemplates"

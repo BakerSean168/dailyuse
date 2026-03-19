@@ -3,6 +3,7 @@ import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
 import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { DeleteTaskTemplate } from '../delete-task-template';
 
@@ -19,6 +20,7 @@ import { eventBus } from '@dailyuse/utils';
 
 describe('DeleteTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
+  let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
   let useCase: DeleteTaskTemplate;
 
   beforeEach(() => {
@@ -29,7 +31,10 @@ describe('DeleteTaskTemplate', () => {
       delete: vi.fn().mockResolvedValue(undefined),
       softDelete: vi.fn().mockResolvedValue(undefined),
     });
-    useCase = new DeleteTaskTemplate(templateRepo);
+    instanceRepo = createMockRepo<ITaskInstanceRepository>({
+      deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
+    });
+    useCase = new DeleteTaskTemplate(templateRepo, instanceRepo);
   });
 
   afterEach(() => {
@@ -47,6 +52,7 @@ describe('DeleteTaskTemplate', () => {
     }
     expect(templateRepo.delete).not.toHaveBeenCalled();
     expect(templateRepo.softDelete).not.toHaveBeenCalled();
+    expect(instanceRepo.deleteByTemplateId).not.toHaveBeenCalled();
   });
 
   it('should hard-delete when soft=false (default)', async () => {
@@ -56,6 +62,7 @@ describe('DeleteTaskTemplate', () => {
     const result = await useCase.execute(template.id);
 
     expect(result).toBeOk();
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
     expect(templateRepo.delete).toHaveBeenCalledWith(template.id);
     expect(templateRepo.softDelete).not.toHaveBeenCalled();
   });
@@ -67,6 +74,7 @@ describe('DeleteTaskTemplate', () => {
     const result = await useCase.execute(template.id, true);
 
     expect(result).toBeOk();
+    expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
     expect(templateRepo.softDelete).toHaveBeenCalledWith(template.id);
     expect(templateRepo.delete).not.toHaveBeenCalled();
   });
@@ -80,6 +88,7 @@ describe('DeleteTaskTemplate', () => {
     expect(eventBus.send).toHaveBeenCalledWith(
       'task:template:deleted',
       expect.objectContaining({
+        aggregateId: template.id,
         taskTemplateId: template.id,
         identityId: template.identityId,
         deletedAt: expect.any(Number),

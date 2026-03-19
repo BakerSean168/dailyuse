@@ -8,8 +8,7 @@
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <!-- 显示验证错误 -->
-      <Alert v-if="Object.keys(validationErrors).length > 0" variant="destructive" class="mb-4">
+      <Alert v-if="showValidationErrors" variant="destructive" class="mb-4">
         <AlertDescription>
           <ul class="mb-0 list-disc pl-4">
             <li v-for="(error, key) in validationErrors" :key="key">{{ error }}</li>
@@ -23,9 +22,10 @@
             id="task-template-title"
             v-model="title"
             data-testid="task-template-title-input"
-            :placeholder="t('task.basicInfo.titlePlaceholder')"
+            :placeholder="t('task.basicInfo.titlePlaceholderRequired')"
             maxlength="100"
             class="mt-1"
+            @blur="hasInteracted = true"
           />
         </div>
 
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   Card,
@@ -75,6 +75,7 @@ const emit = defineEmits<{
 }>();
 
 const { validate, validationErrors, isValid } = useBasicInfoValidation();
+const hasInteracted = ref(false);
 
 const updateTemplate = (updater: (template: TaskTemplateViewModel) => void) => {
   const updatedTemplate: TaskTemplateViewModel = {
@@ -105,11 +106,23 @@ const description = computed({
   },
 });
 
+const showValidationErrors = computed(
+  () => hasInteracted.value && Object.keys(validationErrors.value).length > 0,
+);
+
 watch(
   [title, description],
   () => {
-    validate(title.value, description.value || '');
+    validate(title.value, t('task.basicInfo.titleRequired'));
     emit('update:validation', isValid.value);
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.modelValue.id,
+  () => {
+    hasInteracted.value = false;
   },
   { immediate: true },
 );

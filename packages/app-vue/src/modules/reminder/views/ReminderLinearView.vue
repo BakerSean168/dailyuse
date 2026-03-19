@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full overflow-hidden bg-background">
     <!-- Sidebar: Groups -->
-    <aside class="hidden w-64 shrink-0 flex-col border-r bg-sidebar md:flex">
+    <aside class="hidden w-64 shrink-0 flex-col overflow-hidden border-r bg-sidebar md:flex">
       <div class="flex h-14 items-center border-b p-4">
         <div class="flex items-center gap-2 font-semibold">
           <BellRing class="h-5 w-5 text-primary" />
@@ -9,7 +9,7 @@
         </div>
       </div>
 
-      <ScrollArea class="flex-1">
+      <ScrollArea class="min-h-0 flex-1">
         <div class="space-y-1 p-2">
           <div
             class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
@@ -74,7 +74,7 @@
         </div>
       </header>
 
-      <ScrollArea class="flex-1 p-6">
+      <ScrollArea class="min-h-0 flex-1 p-6">
         <div class="mx-auto max-w-5xl">
           <div
             v-if="isLoading"
@@ -152,7 +152,7 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-vue-next';
-import { Button, Badge, ScrollArea, Input } from '@dailyuse/ui-vue-shadcn';
+import { Button, Badge, ScrollArea, Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
@@ -229,7 +229,14 @@ function handleEditTemplate(tpl: any) {
 async function handleDeleteTemplate(tpl: any) {
   const template = templates.value.find((t) => t.id === tpl.id);
   if (!template) return;
-  if (!window.confirm(t('reminder.template.confirmDelete', { name: template.name }))) return;
+  const confirmed = await useConfirm({
+    title: t('reminder.template.confirmDeleteTitle'),
+    description: t('reminder.template.confirmDelete', { name: template.name }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+  if (!confirmed) return;
   const ok = await deleteTemplate(template.id);
   if (ok) toast.success(t('reminder.toast.templateDeleted'));
 }
@@ -303,8 +310,15 @@ function handleEditGroup(group: ReminderGroupFormModel) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleDeleteGroup(group: ReminderGroupFormModel) {
-  if (!window.confirm(t('reminder.group.confirmDelete'))) return;
   if (!group.id) return;
+  const confirmed = await useConfirm({
+    title: t('reminder.group.confirmDeleteTitle'),
+    description: t('reminder.group.confirmDelete', { name: group.name }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+  if (!confirmed) return;
   const ok = await deleteGroup(group.id);
   if (ok) {
     if (selectedGroupId.value === group.id) selectedGroupId.value = null;
