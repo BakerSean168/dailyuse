@@ -50,16 +50,15 @@ describe('ActivateGoal', () => {
     expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
-  it('should activate a completed goal', async () => {
+  it('should reject activating a completed goal', async () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
     vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
     const result = await useCase.execute(goal.id);
 
-    expect(result).toBeOk();
-    expect(goal.status).toBe('Active');
-    expect(goalRepo.save).toHaveBeenCalledWith(goal);
+    expect(result).toBeErrorWithCode('INVALID_STATE');
+    expect(goalRepo.save).not.toHaveBeenCalled();
   });
 
   it('should activate an already active goal (idempotent)', async () => {
@@ -78,12 +77,13 @@ describe('ActivateGoal', () => {
     goal.archive();
     vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
-    await expect(useCase.execute(goal.id)).rejects.toThrow();
+    const result = await useCase.execute(goal.id);
+
+    expect(result).toBeErrorWithCode('INVALID_STATE');
   });
 
   it('should return the goal DTO on success', async () => {
     const goal = createTestGoal('Activate Me');
-    goal.markAsCompleted();
     vi.mocked(goalRepo.findById).mockResolvedValue(goal);
 
     const result = await useCase.execute(goal.id);

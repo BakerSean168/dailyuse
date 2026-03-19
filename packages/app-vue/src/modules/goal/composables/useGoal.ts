@@ -25,7 +25,7 @@ import type {
   CreateGoalReq,
   UpdateGoalReq,
   GetGoalAggregateRes,
-  GoalStatus,
+  GoalSystemView,
   CreateGoalFolderReq,
   UpdateGoalFolderReq,
   AddKeyResultReq,
@@ -78,9 +78,10 @@ export function useGoal() {
     store.setLoading(true);
     store.setError(null);
     try {
+      await service.archiveExpiredGoals?.();
       const searchQuery = store.searchQuery || undefined;
       const params = {
-        status: store.filterStatus ? [store.filterStatus] : undefined,
+        systemView: store.systemView,
         page: store.pagination.page,
         pageSize: store.pagination.pageSize,
       };
@@ -414,8 +415,8 @@ export function useGoal() {
     }
   }
 
-  function setFilterStatus(s: GoalStatus | null) {
-    store.setFilterStatus(s);
+  function setSystemView(v: GoalSystemView) {
+    store.setSystemView(v);
     fetchGoals();
   }
   function setPage(p: number) {
@@ -462,7 +463,7 @@ export function useGoal() {
     getGoalAggregateView,
     fetchReviews,
     createReview,
-    setFilterStatus,
+    setSystemView,
     setPage,
     clearFilters,
     search,

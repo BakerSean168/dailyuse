@@ -7,7 +7,6 @@ import {
   TriggerConfig,
   ActiveTimeConfig,
   ActiveHoursConfig,
-  RecurrenceConfig,
   ResponseMetrics,
   FrequencyAdjustment,
 } from '../../value-objects';
@@ -28,7 +27,6 @@ function makeState(overrides: Partial<ReminderTemplateState> = {}): ReminderTemp
     description: null,
     type: ReminderType.Recurring,
     trigger: TriggerConfig.createFixedTime('08:00'),
-    recurrence: RecurrenceConfig.createDaily(),
     activeTime: ActiveTimeConfig.createAt(now - 60_000),
     activeHours: null,
     notificationConfig: ReminderNotificationConfig.createDefault(),

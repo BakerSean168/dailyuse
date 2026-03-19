@@ -33,10 +33,35 @@ export class GoalPowerSyncRepository
 
   async findByIdentityId(
     identityId: string,
-    options?: { includeChildren?: boolean; status?: string; folderId?: string },
+    options?: {
+      includeChildren?: boolean;
+      status?: string;
+      folderId?: string;
+      systemView?: 'active' | 'completed' | 'expired' | 'deleted';
+    },
   ): Promise<Goal[]> {
     const params: unknown[] = [identityId];
-    const filters = ['g.identity_id = ?', 'g.deleted_at IS NULL'];
+    const filters = ['g.identity_id = ?'];
+
+    switch (options?.systemView) {
+      case 'completed':
+        filters.push(
+          'g.archived_at IS NOT NULL',
+          'g.completed_at IS NOT NULL',
+          'g.deleted_at IS NULL',
+        );
+        break;
+      case 'expired':
+        filters.push('g.archived_at IS NOT NULL', 'g.completed_at IS NULL', 'g.deleted_at IS NULL');
+        break;
+      case 'deleted':
+        filters.push('g.deleted_at IS NOT NULL');
+        break;
+      case 'active':
+      default:
+        filters.push('g.archived_at IS NULL', 'g.deleted_at IS NULL');
+        break;
+    }
 
     if (options?.status) {
       filters.push('g.status = ?');
@@ -76,10 +101,11 @@ export class GoalPowerSyncRepository
   async findByFolderId(folderId: string): Promise<Goal[]> {
     const rows = await this.db.getAll<Record<string, unknown>>(
       `SELECT *
-       FROM goals
-       WHERE folder_id = ?
-         AND deleted_at IS NULL
-       ORDER BY sort_order ASC, created_at DESC`,
+        FROM goals
+        WHERE folder_id = ?
+          AND deleted_at IS NULL
+          AND archived_at IS NULL
+        ORDER BY sort_order ASC, created_at DESC`,
       [folderId],
     );
 

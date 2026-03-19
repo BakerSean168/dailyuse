@@ -55,6 +55,7 @@ const Ch = {
   CREATE: 'goal:create',
   UPDATE: 'goal:update',
   DELETE: 'goal:delete',
+  ARCHIVE_EXPIRED: 'goal:archiveExpired',
   ARCHIVE: 'goal:archive',
   ACTIVATE: 'goal:activate',
   COMPLETE: 'goal:complete',
@@ -134,6 +135,11 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.DELETE, async (_, id) =>
       withAuthenticatedValue(ctx, async () => goalController.delete(id)),
     );
+    ipcMain.handle(Ch.ARCHIVE_EXPIRED, async () =>
+      withAuthenticatedValue(ctx, async (requestContext: Context) =>
+        goalController.archiveExpired(requestContext),
+      ),
+    );
     // Issue #4 fix: route archive through auth + controller validation
     // 问题 #4 修复：将归档操作路由到认证 + 控制器校验
     ipcMain.handle(Ch.ARCHIVE, async (_, id) =>
@@ -147,7 +153,11 @@ export const GoalElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.SEARCH, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext: Context) =>
-        goalController.search(String(params?.query ?? ''), requestContext),
+        goalController.search(
+          String(params?.query ?? ''),
+          requestContext,
+          typeof params?.systemView === 'string' ? params.systemView : undefined,
+        ),
       ),
     );
     ipcMain.handle(Ch.AGGREGATE, (_, id) => goalController.getAggregate(id));

@@ -7,7 +7,7 @@
 
 import type { IGoalRepository } from '@/domain-server';
 import { Goal } from '@/domain-server';
-import type { QueryGoalsRes } from '@dailyuse/contracts/goal';
+import type { GoalSystemView, QueryGoalsRes } from '@dailyuse/contracts/goal';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -17,8 +17,12 @@ import { ok } from '@dailyuse/contracts/result';
 export class SearchGoals {
   constructor(private readonly goalRepository: IGoalRepository) {}
 
-  async execute(identityId: string, query: string): Promise<Result<QueryGoalsRes>> {
-    const allGoals = await this.goalRepository.findByIdentityId(identityId, {});
+  async execute(
+    identityId: string,
+    query: string,
+    systemView?: GoalSystemView,
+  ): Promise<Result<QueryGoalsRes>> {
+    const allGoals = await this.goalRepository.findByIdentityId(identityId, { systemView });
 
     const filteredGoals = allGoals.filter(
       (g) =>

@@ -77,12 +77,14 @@ describe('ListGoals', () => {
     await useCase.execute({
       identityId: 'identity-1',
       includeKeyResults: true,
+      systemView: 'completed',
       status: ['IN_PROGRESS'],
       folderId: 'folder-1',
     });
 
     expect(findByIdentityId).toHaveBeenCalledWith('identity-1', {
       includeChildren: true,
+      systemView: 'completed',
       status: 'IN_PROGRESS',
       folderId: 'folder-1',
     });

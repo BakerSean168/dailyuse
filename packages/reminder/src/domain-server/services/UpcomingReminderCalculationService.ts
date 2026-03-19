@@ -12,20 +12,13 @@
  * - 与业务逻辑耦合最小化
  */
 
-import {
-  ReminderType,
-  ReminderStatus,
-  TriggerType,
-  RecurrenceType,
-} from '@dailyuse/contracts/reminder';
+import { ReminderType, ReminderStatus, TriggerType } from '@dailyuse/contracts/reminder';
 import type {
   FixedTimeTrigger,
   IntervalTrigger,
-  RecurrenceConfigServerDTO,
   ReminderTemplateServerDTO,
   TriggerConfigServerDTO,
 } from '@dailyuse/contracts/reminder';
-import { WeekDay } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 const REMINDER_CALCULATION_DEBUG =
@@ -290,7 +283,6 @@ export class UpcomingReminderCalculationService {
     fixedTime: FixedTimeTrigger,
     afterTime: number,
   ): number | null {
-    const recurrence = reminder.recurrence;
     const [hourStr, minuteStr] = fixedTime.time.split(':');
     const targetHour = parseInt(hourStr, 10);
     const targetMinute = parseInt(minuteStr, 10);
@@ -304,86 +296,15 @@ export class UpcomingReminderCalculationService {
       const checkDate = new Date(searchStartDate);
       checkDate.setDate(checkDate.getDate() + daysOffset);
 
-      // 检查该日期是否应该触发
-      if (this.shouldTriggerOnDate(checkDate, recurrence, reminder.activeTime.activatedAt)) {
-        checkDate.setHours(targetHour, targetMinute, 0, 0);
-        const triggerTime = checkDate.getTime();
+      checkDate.setHours(targetHour, targetMinute, 0, 0);
+      const triggerTime = checkDate.getTime();
 
-        if (triggerTime >= afterTime) {
-          return triggerTime;
-        }
+      if (triggerTime >= afterTime) {
+        return triggerTime;
       }
     }
 
     return null;
-  }
-
-  /**
-   * 检查指定日期是否应该根据重复规则触发
-   */
-  private static shouldTriggerOnDate(
-    date: Date,
-    recurrence: RecurrenceConfigServerDTO | null | undefined,
-    reminderStartDate: number,
-  ): boolean {
-    // 如果没有重复规则，默认每天都应该触发
-    if (!recurrence) {
-      return true;
-    }
-
-    switch (recurrence.type) {
-      case RecurrenceType.Daily: {
-        // 每 N 天
-        if (recurrence.daily?.interval) {
-          // 从提醒的开始日期开始计算间隔
-          const startDate = new Date(reminderStartDate);
-          startDate.setHours(0, 0, 0, 0);
-          const daysDiff = Math.floor(
-            (date.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
-          );
-          return daysDiff % recurrence.daily.interval === 0;
-        }
-        return true;
-      }
-
-      case RecurrenceType.Weekly: {
-        if (recurrence.weekly?.weekDays) {
-          const dayOfWeek = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-          // 转换为 Monday=0, Tuesday=1, ..., Sunday=6
-          const mappedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-          const weekDayMap: Record<WeekDay, number> = {
-            [WeekDay.Monday]: 0,
-            [WeekDay.Tuesday]: 1,
-            [WeekDay.Wednesday]: 2,
-            [WeekDay.Thursday]: 3,
-            [WeekDay.Friday]: 4,
-            [WeekDay.Saturday]: 5,
-            [WeekDay.Sunday]: 6,
-          };
-          return recurrence.weekly.weekDays.some((day) => weekDayMap[day] === mappedDay);
-        }
-        return true;
-      }
-
-      case RecurrenceType.CustomDays: {
-        if (recurrence.customDays?.dates) {
-          const checkDate = new Date(date);
-          checkDate.setHours(0, 0, 0, 0);
-          const checkDateMs = checkDate.getTime();
-
-          // 比较日期（忽略时间）
-          return recurrence.customDays.dates.some((dateMs) => {
-            const d = new Date(dateMs);
-            d.setHours(0, 0, 0, 0);
-            return d.getTime() === checkDateMs;
-          });
-        }
-        return true;
-      }
-
-      default:
-        return true;
-    }
   }
 
   /**
@@ -609,7 +530,6 @@ export class UpcomingReminderCalculationService {
     todayEnd: number,
   ): UpcomingReminderDTO[] {
     const result: UpcomingReminderDTO[] = [];
-    const recurrence = reminder.recurrence;
 
     const [hourStr, minuteStr] = fixedTime.time.split(':');
     const targetHour = parseInt(hourStr, 10);
@@ -620,19 +540,16 @@ export class UpcomingReminderCalculationService {
     const checkDate = new Date(todayStart + offset);
     checkDate.setUTCHours(0, 0, 0, 0);
 
-    // 检查今天是否应该根据重复规则触发
-    if (this.shouldTriggerOnDate(checkDate, recurrence, reminder.activeTime.activatedAt)) {
-      checkDate.setUTCHours(targetHour, targetMinute, 0, 0);
-      const triggerTime = checkDate.getTime() - offset; // 转回 UTC 时间戳
+    checkDate.setUTCHours(targetHour, targetMinute, 0, 0);
+    const triggerTime = checkDate.getTime() - offset; // 转回 UTC 时间戳
 
-      if (triggerTime >= todayStart && triggerTime <= todayEnd) {
-        const dto = this.convertToUpcomingDTO(
-          { ...reminder, nextTriggerAt: triggerTime },
-          Date.now(),
-        );
-        if (dto) {
-          result.push(dto);
-        }
+    if (triggerTime >= todayStart && triggerTime <= todayEnd) {
+      const dto = this.convertToUpcomingDTO(
+        { ...reminder, nextTriggerAt: triggerTime },
+        Date.now(),
+      );
+      if (dto) {
+        result.push(dto);
       }
     }
 

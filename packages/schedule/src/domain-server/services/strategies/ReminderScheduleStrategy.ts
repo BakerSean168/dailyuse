@@ -1,15 +1,19 @@
 /**
  * Reminder 调度策略
- * 
+ *
  * 职责：
- * - 将 Reminder 的触发器配置（TriggerConfig）和重复配置（RecurrenceConfig）转换为调度配置
+ * - 将 Reminder 的触发器配置转换为调度配置
  * - 处理固定时间触发和间隔触发
- * - 支持每日、每周、自定义日期重复
  */
 
 import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts/schedule';
-import type { FixedTimeTrigger, IntervalTrigger, RecurrenceConfigServerDTO, ReminderTemplateServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
-import { ReminderType, ReminderStatus, TriggerType, RecurrenceType, WeekDay } from '@dailyuse/contracts/reminder';
+import type {
+  FixedTimeTrigger,
+  IntervalTrigger,
+  ReminderTemplateServerDTO,
+  TriggerConfigServerDTO,
+} from '@dailyuse/contracts/reminder';
+import { ReminderType, ReminderStatus, TriggerType } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
@@ -36,10 +40,10 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 1. selfEnabled 为 true（自身启用）
    * 2. status 为 ACTIVE
    * 3. 有有效的 trigger 配置
-   * 
+   *
    * 注意：
-   * - RECURRING 类型即使没有 recurrence 配置，也会创建（使用默认配置）
-   * - INTERVAL 触发器会创建周期任务
+   * - 固定时间提醒会创建每日固定时刻任务
+   * - 间隔触发器会创建周期任务
    */
   shouldCreateSchedule(sourceEntity: ReminderTemplateServerDTO): boolean {
     // 必须启用且激活
@@ -52,8 +56,6 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
       return false;
     }
 
-    // ✅ RECURRING 或 ONE_TIME 且有 trigger 即可创建调度任务
-    // （RECURRING 没有 recurrence 时会使用默认的每日配置）
     return true;
   }
 
@@ -64,18 +66,16 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     const reminder = input.sourceEntity as ReminderTemplateServerDTO;
 
     if (!this.shouldCreateSchedule(reminder)) {
-      throw new Error(
-        `Reminder ${reminder.id} does not have valid configuration for scheduling`,
-      );
+      throw new Error(`Reminder ${reminder.id} does not have valid configuration for scheduling`);
     }
 
-    const { trigger, recurrence, activeTime, type } = reminder;
+    const { trigger, activeTime, type } = reminder;
     if (!trigger) {
       throw new Error(`Reminder ${reminder.id} missing trigger configuration`);
     }
 
     // 根据提醒类型和触发器生成 cron 表达式
-    const cronExpression = this.generateCronExpression(trigger, recurrence, type);
+    const cronExpression = this.generateCronExpression(trigger, type);
 
     // 创建调度配置
     // 重构后：startDate/endDate 移除，生效控制由 status 字段负责
@@ -117,21 +117,14 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
 
   /**
    * 生成 cron 表达式
-   * 
+   *
    * 策略：
-   * - FIXED_TIME: 固定时间触发
-   *   - ONE_TIME: 在指定日期时间执行一次
-   *   - RECURRING: 根据重复规则在固定时间触发
-   * - INTERVAL: 间隔触发
-   *   - 每隔 N 分钟触发一次
+   * - FIXED_TIME: 在每天固定时间触发
+   * - INTERVAL: 每隔 N 分钟触发一次
    */
-  private generateCronExpression(
-    trigger: TriggerConfigServerDTO,
-    recurrence: RecurrenceConfigServerDTO | null | undefined,
-    type: ReminderType,
-  ): string {
+  private generateCronExpression(trigger: TriggerConfigServerDTO, type: ReminderType): string {
     if (trigger.type === TriggerType.FixedTime && trigger.fixedTime) {
-      return this.generateFixedTimeCron(trigger.fixedTime, recurrence, type);
+      return this.generateFixedTimeCron(trigger.fixedTime, type);
     } else if (trigger.type === TriggerType.Interval && trigger.interval) {
       return this.generateIntervalCron(trigger.interval);
     }
@@ -143,53 +136,18 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成固定时间 cron
    */
-  private generateFixedTimeCron(
-    fixedTime: FixedTimeTrigger,
-    recurrence: RecurrenceConfigServerDTO | null | undefined,
-    type: ReminderType,
-  ): string {
+  private generateFixedTimeCron(fixedTime: FixedTimeTrigger, type: ReminderType): string {
     // 解析时间字符串 "HH:mm"
     const [hourStr, minuteStr] = fixedTime.time.split(':');
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
 
-    // 一次性提醒：暂时简化为每天该时间（实际执行时会检查日期）
+    // 一次性提醒：调度层按每天该时间检查，实际执行层根据业务状态控制是否只触发一次
     if (type === ReminderType.OneTime) {
       return `0 ${minute} ${hour} * * *`;
     }
 
-    // 循环提醒：根据重复规则
-    // ✅ 当 recurrence 为 null/undefined 时，默认每日触发
-    if (!recurrence) {
-      // 默认：每天该时间触发
-      return `0 ${minute} ${hour} * * *`;
-    }
-
-    switch (recurrence.type) {
-      case RecurrenceType.Daily:
-        // 每 N 天
-        if (recurrence.daily?.interval === 1) {
-          return `0 ${minute} ${hour} * * *`; // 每天
-        } else {
-          // 简化：每天检查，由执行器判断间隔
-          return `0 ${minute} ${hour} * * *`;
-        }
-
-      case RecurrenceType.Weekly:
-        // 每周指定的几天
-        if (recurrence.weekly) {
-          const daysOfWeek = this.convertWeekDaysToCron(recurrence.weekly.weekDays);
-          return `0 ${minute} ${hour} * * ${daysOfWeek}`;
-        }
-        return `0 ${minute} ${hour} * * *`;
-
-      case RecurrenceType.CustomDays:
-        // 自定义日期：简化为每天检查，由执行器判断是否是指定日期
-        return `0 ${minute} ${hour} * * *`;
-
-      default:
-        return `0 ${minute} ${hour} * * *`;
-    }
+    return `0 ${minute} ${hour} * * *`;
   }
 
   /**
@@ -198,62 +156,41 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
   private generateIntervalCron(interval: IntervalTrigger): string {
     const minutes = interval.minutes;
 
-    // 简化：每小时的固定分钟数触发
-    // 例如：每30分钟 → 0,30 * * * *
+    if (minutes <= 0) {
+      return '0 * * * * *';
+    }
+
     if (minutes < 60) {
       if (60 % minutes === 0) {
-        // 可以整除的情况
         const triggers: number[] = [];
         for (let i = 0; i < 60; i += minutes) {
           triggers.push(i);
         }
         return `0 ${triggers.join(',')} * * * *`;
-      } else {
-        // 不能整除，简化为每分钟检查（由执行器判断间隔）
-        return `0 0/${minutes} * * * *`;
       }
+
+      return `0 */${minutes} * * * *`;
     } else if (minutes === 60) {
-      // 每小时
-      return `0 0 * * * *`;
-    } else {
-      // 超过1小时，简化为每小时检查
       return `0 0 * * * *`;
     }
-  }
 
-  /**
-   * 转换星期几到 cron 格式
-   * WeekDay: MONDAY, TUESDAY, ..., SUNDAY
-   * Cron: 1=周一, 2=周二, ..., 0=周日
-   */
-  private convertWeekDaysToCron(weekDays: WeekDay[]): string {
-    if (weekDays.length === 0) {
-      return '*'; // 每天
+    if (minutes % 60 === 0) {
+      const hours = minutes / 60;
+      if (24 % hours === 0) {
+        return `0 0 */${hours} * * *`;
+      }
+
+      return `0 0 * * * *`;
     }
 
-    const cronDays = weekDays.map((day) => {
-      const map: Record<WeekDay, number> = {
-        Monday: 1,
-        Tuesday: 2,
-        Wednesday: 3,
-        Thursday: 4,
-        Friday: 5,
-        Saturday: 6,
-        Sunday: 0,
-      };
-      return map[day];
-    });
-
-    return cronDays.sort((a, b) => a - b).join(',');
+    return `0 * * * * *`;
   }
 
   /**
    * 计算任务优先级
    * 基于 Reminder 的重要性级别
    */
-  private calculatePriority(
-    reminder: ReminderTemplateServerDTO,
-  ): TaskPriority {
+  private calculatePriority(reminder: ReminderTemplateServerDTO): TaskPriority {
     const { importanceLevel } = reminder;
 
     // 根据重要性级别映射
@@ -285,9 +222,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
 
     // 添加通知渠道标签
     if (reminder.notificationConfig.channels) {
-      tags.push(
-        ...reminder.notificationConfig.channels.map((channel) => `channel:${channel}`),
-      );
+      tags.push(...reminder.notificationConfig.channels.map((channel) => `channel:${channel}`));
     }
 
     // 添加用户自定义标签

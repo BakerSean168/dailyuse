@@ -57,6 +57,8 @@ export type {
 // ============ 枚举值对象 ============
 export { GoalStatus } from './goal-status';
 
+export { GoalSystemView } from './goal-system-view';
+
 export { KeyResultValueType } from './key-result-value-type';
 
 export { KeyResultCalculationMethod } from './key-result-calculation-method';

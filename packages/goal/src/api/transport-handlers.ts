@@ -32,6 +32,9 @@ export function createGoalTransportHandlers(api: GoalApplicationPort): GoalUseCa
     listGoals: { execute: api.listGoals } as GoalUseCases['listGoals'],
     updateGoal: { execute: api.updateGoal } as GoalUseCases['updateGoal'],
     deleteGoal: { execute: api.deleteGoal } as GoalUseCases['deleteGoal'],
+    archiveExpiredGoals: {
+      execute: api.archiveExpiredGoals,
+    } as GoalUseCases['archiveExpiredGoals'],
     archiveGoal: { execute: api.archiveGoal } as GoalUseCases['archiveGoal'],
     activateGoal: { execute: api.activateGoal } as GoalUseCases['activateGoal'],
     completeGoal: { execute: api.completeGoal } as GoalUseCases['completeGoal'],

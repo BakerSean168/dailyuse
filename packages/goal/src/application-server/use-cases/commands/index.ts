@@ -2,6 +2,7 @@
 export * from './add-goal-key-result';
 export * from './add-goal-review';
 export * from './archive-goal';
+export * from './archive-expired-goals';
 export * from './complete-goal';
 export * from './create-goal';
 export * from './create-goal-folder';
@@ -17,4 +18,3 @@ export * from './update-goal-folder';
 export * from './update-goal-key-result';
 export * from './update-goal-key-result-progress';
 export * from './update-goal-review';
-

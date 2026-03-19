@@ -15,8 +15,13 @@
  * 而非直接调用仓储。
  *
  * The Editor module depends on the Repository module's storage layer.
+ * In the current product direction, repository resources are the source of truth
+ * for note content. Editor documents are therefore a secondary path and should
+ * not be treated as the primary note store.
  * The host application must provide an `IRepositoryContentPort` implementation.
  * 编辑器模块依赖仓库模块的存储层。
+ * 按当前产品方向，仓储资源才是笔记内容的真值来源；editor document 属于次级路径，
+ * 不应被视为主笔记存储。
  * 宿主应用必须提供 `IRepositoryContentPort` 实现。
  *
  * This file follows the governance canonical pattern:
@@ -38,6 +43,7 @@ import { createEditorPowerSyncModule } from '../infrastructure-server/powersync'
 import type { EditorModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import { fail } from '@dailyuse/contracts/result';
 
 const logger = createLogger('EditorElectron');
 
@@ -59,6 +65,13 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+
+function failRepositoryCanonicalResult(action: string) {
+  return fail({
+    code: 'NOT_SUPPORTED',
+    message: `Editor document ${action} is disabled in desktop mode. Repository resources are the canonical note store.`,
+  });
+}
 
 // ---------------------------------------------------------------------------
 // External dependency interface — 外部依赖接口
@@ -116,59 +129,19 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
       // document methods so semantics and channel names are aligned.
       // 这些通道使用 "document" 命名。它们路由到 api 门面的文档方法，
       // 使语义与通道名对齐。
-      ipcMain.handle(
-        Ch.DOCUMENT_LIST,
-        (_event, query?: { workspaceId?: string; folderId?: string }) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            api.listDocuments(
-              { workspaceId: query?.workspaceId, folderId: query?.folderId },
-              requestContext,
-            ),
-          ),
-      );
+      ipcMain.handle(Ch.DOCUMENT_LIST, () => failRepositoryCanonicalResult('listing'));
 
-      ipcMain.handle(Ch.DOCUMENT_GET, (_event, id: string) =>
-        withAuthenticatedValue(ctx, async () => api.getDocument(id)),
-      );
+      ipcMain.handle(Ch.DOCUMENT_GET, () => failRepositoryCanonicalResult('lookup'));
 
-      ipcMain.handle(
-        Ch.DOCUMENT_CREATE,
-        (
-          _event,
-          data: {
-            workspaceId: string;
-            path: string;
-            name: string;
-            language: string;
-            content: string;
-            metadata?: unknown;
-          },
-        ) =>
-          withAuthenticatedValue(ctx, async (requestContext) =>
-            api.createDocument(data, requestContext),
-          ),
-      );
+      ipcMain.handle(Ch.DOCUMENT_CREATE, () => failRepositoryCanonicalResult('creation'));
 
-      ipcMain.handle(
-        Ch.DOCUMENT_UPDATE,
-        (_event, payload: { id: string; content?: string; metadata?: unknown }) =>
-          withAuthenticatedValue(ctx, async () => {
-            const { id, ...data } = payload;
-            return api.updateDocument(id, data);
-          }),
-      );
+      ipcMain.handle(Ch.DOCUMENT_UPDATE, () => failRepositoryCanonicalResult('updates'));
 
-      ipcMain.handle(Ch.DOCUMENT_DELETE, (_event, payload: { id: string }) =>
-        withAuthenticatedValue(ctx, async () => api.deleteDocument(payload.id)),
-      );
+      ipcMain.handle(Ch.DOCUMENT_DELETE, () => failRepositoryCanonicalResult('deletion'));
 
       // DOCUMENT_SAVE — persist content through the editor document facade.
       // 文档保存 — 通过编辑器文档门面持久化内容。
-      ipcMain.handle(Ch.DOCUMENT_SAVE, async (_event, payload: { id: string; content: string }) =>
-        withAuthenticatedValue(ctx, async () =>
-          api.updateDocument(payload.id, { content: payload.content }),
-        ),
-      );
+      ipcMain.handle(Ch.DOCUMENT_SAVE, () => failRepositoryCanonicalResult('saving'));
 
       // -- Content bridge channels -- 内容桥接通道 --
       // Editor content channels first operate on editor documents.

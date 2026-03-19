@@ -214,96 +214,6 @@
             </div>
           </div>
 
-          <!-- Recurrence (only for Recurring type) -->
-          <Collapsible v-model:open="showRecurrence">
-            <CollapsibleTrigger as-child>
-              <Button variant="ghost" size="sm" class="w-full justify-between px-0 font-medium">
-                <span class="flex items-center gap-2">
-                  <Repeat class="h-4 w-4" />
-                  {{ t('reminder.templateDialog.sectionRecurrence') }}
-                  <Badge variant="secondary" class="ml-1">{{
-                    t('reminder.templateDialog.badgeOptional')
-                  }}</Badge>
-                </span>
-                <ChevronDown
-                  class="h-4 w-4 transition-transform"
-                  :class="{ 'rotate-180': showRecurrence }"
-                />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent class="mt-3 space-y-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelRecurrenceType') }}</Label>
-                <Select v-model="formData.recurrenceType">
-                  <SelectTrigger class="mt-1.5">
-                    <SelectValue
-                      :placeholder="t('reminder.templateDialog.placeholderRecurrenceType')"
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Daily">{{
-                      t('reminder.templateDialog.recurrenceDaily')
-                    }}</SelectItem>
-                    <SelectItem value="Weekly">{{
-                      t('reminder.templateDialog.recurrenceWeekly')
-                    }}</SelectItem>
-                    <SelectItem value="CustomDays">{{
-                      t('reminder.templateDialog.recurrenceCustomDays')
-                    }}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <!-- Daily interval -->
-              <div v-if="formData.recurrenceType === 'Daily'">
-                <Label>{{ t('reminder.templateDialog.labelDailyInterval') }}</Label>
-                <Input
-                  v-model.number="formData.dailyInterval"
-                  type="number"
-                  min="1"
-                  placeholder="1"
-                  class="mt-1.5"
-                />
-              </div>
-
-              <!-- Weekly -->
-              <div v-if="formData.recurrenceType === 'Weekly'" class="space-y-3">
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelWeeklyInterval') }}</Label>
-                  <Input
-                    v-model.number="formData.weeklyInterval"
-                    type="number"
-                    min="1"
-                    placeholder="1"
-                    class="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label>{{ t('reminder.templateDialog.labelDaysOfWeek') }}</Label>
-                  <div class="flex flex-wrap gap-2 mt-1.5">
-                    <Button
-                      v-for="day in weekDayOptions"
-                      :key="day.value"
-                      size="sm"
-                      :variant="formData.weekDays.includes(day.value) ? 'default' : 'outline'"
-                      class="h-8 px-3"
-                      @click="toggleWeekDay(day.value)"
-                    >
-                      {{ day.label }}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- CustomDays info -->
-              <div v-if="formData.recurrenceType === 'CustomDays'">
-                <p class="text-xs text-muted-foreground">
-                  {{ t('reminder.templateDialog.hintCustomDays') }}
-                </p>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
           <!-- Active Hours -->
           <Collapsible v-model:open="showActiveHours">
             <CollapsibleTrigger as-child>
@@ -460,7 +370,6 @@ import {
   Bell,
   Calendar as CalendarIcon,
   ChevronDown,
-  Repeat,
   Timer,
 } from 'lucide-vue-next';
 import {
@@ -523,7 +432,6 @@ const emit = defineEmits<{
 }>();
 
 const visible = ref(false);
-const showRecurrence = ref(false);
 const showActiveHours = ref(false);
 const tagsInput = ref('');
 const saving = computed(() => props.saving);
@@ -538,11 +446,6 @@ const formData = reactive({
   intervalMinutes: 60,
   startDate: Date.now() as number | null,
   endDate: null as number | null,
-  // Recurrence
-  recurrenceType: '' as string,
-  dailyInterval: 1,
-  weeklyInterval: 1,
-  weekDays: [] as string[],
   // Active hours
   activeStartHour: null as number | null,
   activeEndHour: null as number | null,
@@ -555,16 +458,6 @@ const formData = reactive({
   tags: [] as string[],
   groupId: undefined as string | undefined,
 });
-
-const weekDayOptions = computed(() => [
-  { label: t('reminder.templateDialog.dayMon'), value: 'Monday' },
-  { label: t('reminder.templateDialog.dayTue'), value: 'Tuesday' },
-  { label: t('reminder.templateDialog.dayWed'), value: 'Wednesday' },
-  { label: t('reminder.templateDialog.dayThu'), value: 'Thursday' },
-  { label: t('reminder.templateDialog.dayFri'), value: 'Friday' },
-  { label: t('reminder.templateDialog.daySat'), value: 'Saturday' },
-  { label: t('reminder.templateDialog.daySun'), value: 'Sunday' },
-]);
 
 const isEditMode = computed(() => !!props.template?.id);
 const formValid = computed(() => formData.title.trim().length > 0 && formData.startDate !== null);
@@ -606,15 +499,6 @@ function handleEndDateSelect(date: unknown) {
   }
 }
 
-function toggleWeekDay(day: string) {
-  const idx = formData.weekDays.indexOf(day);
-  if (idx >= 0) {
-    formData.weekDays.splice(idx, 1);
-  } else {
-    formData.weekDays.push(day);
-  }
-}
-
 const updateTags = () => {
   formData.tags = tagsInput.value
     .split(',')
@@ -633,10 +517,6 @@ const resetForm = () => {
     intervalMinutes: 60,
     startDate: Date.now(),
     endDate: null,
-    recurrenceType: '',
-    dailyInterval: 1,
-    weeklyInterval: 1,
-    weekDays: [],
     activeStartHour: null,
     activeEndHour: null,
     notificationTitle: '',
@@ -647,7 +527,6 @@ const resetForm = () => {
     groupId: undefined,
   });
   tagsInput.value = '';
-  showRecurrence.value = false;
   showActiveHours.value = false;
 };
 
@@ -662,11 +541,6 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
     intervalMinutes: template.trigger?.interval?.minutes || 60,
     startDate: template.activeTime?.activatedAt ?? Date.now(),
     endDate: null,
-    // Recurrence
-    recurrenceType: template.recurrence?.type || '',
-    dailyInterval: template.recurrence?.daily?.interval || 1,
-    weeklyInterval: template.recurrence?.weekly?.interval || 1,
-    weekDays: template.recurrence?.weekly?.weekDays ? [...template.recurrence.weekly.weekDays] : [],
     // Active hours
     activeStartHour: template.activeHours?.startHour ?? null,
     activeEndHour: template.activeHours?.endHour ?? null,
@@ -681,8 +555,6 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
   });
   tagsInput.value = (template.tags || []).join(', ');
 
-  // Expand collapsible sections if data exists
-  showRecurrence.value = !!template.recurrence;
   showActiveHours.value = !!template.activeHours;
 };
 
@@ -744,33 +616,6 @@ function buildPayload(): CreateReminderTemplateReq {
     actions: null,
   };
 
-  // Build recurrence (optional)
-  let recurrence: CreateReminderTemplateReq['recurrence'] | undefined;
-  if (formData.recurrenceType) {
-    if (formData.recurrenceType === 'Daily') {
-      recurrence = {
-        type: 'Daily' as const,
-        daily: { interval: formData.dailyInterval || 1 },
-        weekly: null,
-        customDays: null,
-      };
-    } else if (formData.recurrenceType === 'Weekly') {
-      recurrence = {
-        type: 'Weekly' as const,
-        daily: null,
-        weekly: { interval: formData.weeklyInterval || 1, weekDays: formData.weekDays as any },
-        customDays: null,
-      };
-    } else if (formData.recurrenceType === 'CustomDays') {
-      recurrence = {
-        type: 'CustomDays' as const,
-        daily: null,
-        weekly: null,
-        customDays: { dates: [] },
-      };
-    }
-  }
-
   // Build activeHours (optional)
   let activeHours: CreateReminderTemplateReq['activeHours'] | undefined;
   if (formData.activeStartHour !== null && formData.activeEndHour !== null) {
@@ -788,7 +633,6 @@ function buildPayload(): CreateReminderTemplateReq {
     activeTime,
     notificationConfig,
     description: formData.description || undefined,
-    recurrence,
     activeHours,
     importanceLevel: formData.importanceLevel as any,
     tags: formData.tags.length > 0 ? formData.tags : undefined,

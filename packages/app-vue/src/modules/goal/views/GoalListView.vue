@@ -1,7 +1,7 @@
 <template>
-  <div class="flex h-screen w-full overflow-hidden bg-background">
+  <div class="flex h-full min-h-0 w-full overflow-hidden bg-background">
     <!-- Sidebar -->
-    <aside class="hidden w-64 shrink-0 flex-col border-r bg-sidebar md:flex">
+    <aside class="hidden min-h-0 w-64 shrink-0 flex-col border-r bg-sidebar md:flex">
       <div class="flex h-14 items-center border-b p-4">
         <div class="flex items-center gap-2 font-semibold">
           <Target class="h-5 w-5 text-primary" />
@@ -12,13 +12,23 @@
       <ScrollArea class="flex-1">
         <div class="space-y-1 p-2">
           <div
+            v-for="view in visibleSystemViews"
+            :key="view.id"
             class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-            :class="!selectedFolderId ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'"
-            @click="selectedFolderId = null"
+            :class="
+              selectedSystemView === view.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
+            "
+            @click="selectSystemView(view.id)"
           >
             <LayoutGrid class="h-4 w-4" />
-            <span>{{ t('goal.list.allGoals') }}</span>
-            <Badge variant="secondary" class="ml-auto text-xs">{{ goals.length }}</Badge>
+            <span>{{ view.label }}</span>
+            <Badge
+              v-if="selectedSystemView === view.id"
+              variant="secondary"
+              class="ml-auto text-xs"
+            >
+              {{ view.count }}
+            </Badge>
           </div>
 
           <ActionableWrapper
@@ -30,11 +40,15 @@
             <div
               class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
               :class="
-                selectedFolderId === folder.id
+                selectedFolderId === folder.id && selectedSystemView === 'active'
                   ? 'bg-accent text-accent-foreground'
                   : 'hover:bg-muted'
               "
-              @click="selectedFolderId = folder.id"
+              @click="
+                selectedFolderId = folder.id;
+                selectedSystemView = 'active';
+                setSystemView('active');
+              "
             >
               <Folder class="h-4 w-4" />
               <span class="truncate">{{ folder.name }}</span>
@@ -57,24 +71,7 @@
         class="z-10 flex h-14 shrink-0 items-center justify-between border-b bg-background/50 px-6 backdrop-blur-sm"
       >
         <div class="flex items-center gap-4">
-          <h1 class="text-lg font-medium text-foreground">{{ t('goal.list.overview') }}</h1>
-          <Separator orientation="vertical" class="mx-2 h-4" />
-          <div class="flex items-center gap-1">
-            <Button
-              v-for="tab in statusTabs"
-              :key="tab.value"
-              variant="ghost"
-              size="sm"
-              :class="[
-                'h-7 px-2 text-muted-foreground hover:text-foreground',
-                selectedStatus === tab.value ? 'bg-secondary font-medium text-foreground' : '',
-              ]"
-              @click="selectedStatus = tab.value"
-            >
-              {{ tab.label }}
-              <span class="ml-1.5 text-xs opacity-50">{{ getGoalCountByStatus(tab.value) }}</span>
-            </Button>
-          </div>
+          <h1 class="text-lg font-medium text-foreground">{{ activeViewLabel }}</h1>
         </div>
 
         <div class="flex items-center gap-2">
@@ -108,7 +105,7 @@
       </header>
 
       <!-- Content Area -->
-      <ScrollArea class="flex-1 p-6">
+      <ScrollArea class="min-h-0 flex-1 p-6">
         <div class="mx-auto max-w-7xl">
           <div
             v-if="isLoading"
@@ -180,12 +177,12 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-vue-next';
-import { Button, Badge, ScrollArea, Input, Separator, useConfirm } from '@dailyuse/ui-vue-shadcn';
+import { Button, Badge, ScrollArea, Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { GoalCard, GoalDialog, GoalFolderDialog } from '../components';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import { useGoal } from '../composables/useGoal';
-import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, GoalFolderClientDTO, GoalSystemView } from '@dailyuse/contracts/goal';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -200,23 +197,48 @@ const {
   deleteFolder,
   createFolder,
   updateFolder,
-  setFilterStatus,
+  setSystemView,
   search,
 } = useGoal();
 
 const selectedFolderId = ref<string | null>(null);
-const selectedStatus = ref('all');
+const selectedSystemView = ref<GoalSystemView>('active');
 const searchQuery = ref('');
 const showGoalDialog = ref(false);
 const dialogMode = ref<'create' | 'edit'>('create');
 const editingGoal = ref<GoalClientDTO | null>(null);
 const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 
-const statusTabs = computed(() => [
-  { label: t('goal.list.statusAll'), value: 'all' },
-  { label: t('goal.list.statusActive'), value: 'Active' },
-  { label: t('goal.list.statusCompleted'), value: 'Completed' },
+const systemViews = computed(() => [
+  {
+    id: 'active' as GoalSystemView,
+    label: t('goal.systemFolders.active'),
+    count: goals.value.length,
+  },
+  {
+    id: 'completed' as GoalSystemView,
+    label: t('goal.systemFolders.completed'),
+    count: goals.value.filter((g) => !!g.archivedAt && !!g.completedAt && !g.deletedAt).length,
+  },
+  {
+    id: 'expired' as GoalSystemView,
+    label: t('goal.systemFolders.expired'),
+    count: goals.value.filter((g) => !!g.archivedAt && !g.completedAt && !g.deletedAt).length,
+  },
+  {
+    id: 'deleted' as GoalSystemView,
+    label: t('goal.systemFolders.deleted'),
+    count: goals.value.filter((g) => !!g.deletedAt).length,
+  },
 ]);
+
+const visibleSystemViews = computed(() => systemViews.value);
+
+const activeViewLabel = computed(
+  () =>
+    systemViews.value.find((view) => view.id === selectedSystemView.value)?.label ??
+    t('goal.systemFolders.active'),
+);
 
 const filteredGoals = computed(() => {
   let result = goals.value;
@@ -224,17 +246,13 @@ const filteredGoals = computed(() => {
   if (selectedFolderId.value) {
     result = result.filter((g) => g.folderId === selectedFolderId.value);
   }
-
-  if (selectedStatus.value !== 'all') {
-    result = result.filter((g) => g.status === selectedStatus.value);
-  }
-
   return result;
 });
 
-function getGoalCountByStatus(status: string): number {
-  if (status === 'all') return goals.value.length;
-  return goals.value.filter((g) => g.status === status).length;
+function selectSystemView(view: GoalSystemView) {
+  selectedSystemView.value = view;
+  selectedFolderId.value = null;
+  setSystemView(view);
 }
 
 function openCreateDialog() {
@@ -315,6 +333,7 @@ async function handleDeleteFolder(id: string) {
   if (ok) {
     if (selectedFolderId.value === id) selectedFolderId.value = null;
     toast.success(t('goal.folder.deleted'));
+    await fetchGoals();
   }
 }
 
@@ -334,6 +353,7 @@ function openCreateFolder() {
 }
 
 onMounted(async () => {
+  setSystemView(selectedSystemView.value);
   await Promise.all([fetchGoals(), fetchFolders()]);
 });
 </script>

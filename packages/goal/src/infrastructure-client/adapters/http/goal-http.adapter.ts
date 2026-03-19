@@ -9,6 +9,7 @@ import type { IGoalApiClient, IResultHttpClient } from '../types';
 import type { GoalId } from '@dailyuse/contracts/primitives';
 import type {
   GoalClientDTO,
+  GoalSystemView,
   KeyResultClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
@@ -43,6 +44,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     pageSize?: number;
     query?: string;
     status?: string[];
+    systemView?: GoalSystemView;
     folderId?: string;
     startDate?: number;
     endDate?: number;
@@ -67,6 +69,10 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
+  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
+    return this.httpClient.post(`${this.baseUrl}/archive-expired`);
+  }
+
   // ===== Goal Status =====
 
   async activateGoal(id: string): Promise<Result<GoalClientDTO>> {
@@ -88,6 +94,7 @@ export class GoalHttpAdapter implements IGoalApiClient {
     page?: number;
     pageSize?: number;
     status?: string[];
+    systemView?: GoalSystemView;
     folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.httpClient.get(`${this.baseUrl}/search`, { params });

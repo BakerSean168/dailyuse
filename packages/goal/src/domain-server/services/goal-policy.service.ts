@@ -25,9 +25,6 @@ export class GoalPolicy {
     if (goal.archivedAt) {
       throw new GoalArchivedError(goal.id);
     }
-    if (goal.status === GoalStatus.Active) {
-      throw new Error('Active goals must be completed before archiving');
-    }
   }
 
   /**

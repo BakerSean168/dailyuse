@@ -30,7 +30,7 @@ export class FocusSessionPolicy {
       throw new Error('无权关联此目标，目标不属于当前账户');
     }
 
-    if (goal.status === GoalStatus.Archived || goal.deletedAt) {
+    if (goal.archivedAt || goal.status === GoalStatus.Archived || goal.deletedAt) {
       throw new Error('不能关联已归档或已删除的目标');
     }
   }

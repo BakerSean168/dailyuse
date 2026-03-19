@@ -152,11 +152,13 @@ describe('FocusSessionPolicy', () => {
       expect(() => policy.ensureGoalIsValid(goal, TEST_IDENTITY)).not.toThrow();
     });
 
-    it('should pass for a valid completed goal belonging to the user', () => {
+    it('should reject a completed goal because it is auto-archived', () => {
       const goal = createTestGoal(TEST_IDENTITY);
       goal.markAsCompleted();
 
-      expect(() => policy.ensureGoalIsValid(goal, TEST_IDENTITY)).not.toThrow();
+      expect(() => policy.ensureGoalIsValid(goal, TEST_IDENTITY)).toThrow(
+        '不能关联已归档或已删除的目标',
+      );
     });
   });
 });

@@ -83,9 +83,7 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        const { goal } = event.payload as {
-          goal: GoalServerDTO;
-        };
+        const { goal } = event as { goal: GoalServerDTO };
 
         await this.handleGoalCreated(event.identityId, goal);
       } catch (error) {
@@ -120,7 +118,7 @@ export class ScheduleEventPublisher {
           );
           return;
         }
-        const { goal } = event.payload as { goal: GoalServerDTO };
+        const { goal } = event as { goal: GoalServerDTO };
         await this.handleGoalScheduleChanged(event.identityId, goal);
       } catch (error) {
         console.error(`❌ [ScheduleEventPublisher] Error handling ${event.eventType}:`, error);

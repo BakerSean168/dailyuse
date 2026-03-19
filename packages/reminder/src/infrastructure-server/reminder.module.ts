@@ -201,9 +201,6 @@ export function createReminderModule(
               endHour: data.activeHours.endHour,
             }
           : undefined,
-        recurrence: data.recurrence
-          ? { ...data.recurrence, weekly: data.recurrence.weekly ?? null }
-          : undefined,
         notificationConfig: {
           ...data.notificationConfig,
           actions: data.notificationConfig?.actions ?? null,
@@ -260,12 +257,6 @@ export function createReminderModule(
           enabled: true,
           startHour: data.activeHours.startHour,
           endHour: data.activeHours.endHour,
-        };
-      }
-      if (data.recurrence) {
-        normalizedUpdates.recurrence = {
-          ...data.recurrence,
-          weekly: data.recurrence.weekly ?? null,
         };
       }
       if (data.notificationConfig) {

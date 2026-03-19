@@ -47,12 +47,6 @@ export class CreateReminderTemplate {
             endHour: input.activeHours.endHour,
           }
         : undefined,
-      recurrence: input.recurrence
-        ? {
-            ...input.recurrence,
-            weekly: input.recurrence.weekly ?? null,
-          }
-        : undefined,
       notificationConfig: {
         ...input.notificationConfig,
         actions: input.notificationConfig.actions ?? null,

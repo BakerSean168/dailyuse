@@ -53,6 +53,7 @@ import { ok, fail } from '@dailyuse/contracts/result';
 import type { Result } from '@dailyuse/contracts/result';
 import type { Context } from '@dailyuse/contracts/shared';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
+import { PathCalculator } from '../domain-server/services/PathCalculator';
 
 // ---------------------------------------------------------------------------
 // Dependencies — 依赖类型
@@ -336,6 +337,7 @@ export function createRepositoryUseCases(
   } = deps;
 
   const createResource = new CreateResource(resourceRepository, repositoryRepository, storagePort);
+  const deleteResource = new DeleteResource(resourceRepository, repositoryRepository, storagePort);
   const updateResourceContent = new UpdateResourceContent(
     resourceRepository,
     repositoryRepository,
@@ -357,11 +359,12 @@ export function createRepositoryUseCases(
     updateResourceContent,
     uploadResources: new UploadResources(
       createResource,
+      deleteResource,
       resourceRepository,
       repositoryRepository,
       folderRepository,
     ),
-    deleteResource: new DeleteResource(resourceRepository, repositoryRepository, storagePort),
+    deleteResource,
     createFolder: new CreateFolder(folderRepository, repositoryRepository, storagePort),
     getFolder: new GetFolder(folderRepository),
     getFolderTree: new GetFolderTree(folderRepository),
@@ -438,7 +441,81 @@ function buildApplicationPort(
   useCases: RepositoryModuleUseCases,
   deps: RepositoryModuleDependencies,
 ): RepositoryApplicationPort {
-  const { resourceRepository } = deps;
+  const { resourceRepository, folderRepository, repositoryRepository, storagePort } = deps;
+
+  async function resolveParentPath(folderId?: string | null): Promise<string | null> {
+    if (!folderId) {
+      return null;
+    }
+
+    const folder = await folderRepository.findById(folderId);
+    if (!folder) {
+      throw new Error(`Folder not found: ${folderId}`);
+    }
+
+    return folder.path;
+  }
+
+  async function ensureResourcePathAvailable(
+    repositoryId: string,
+    path: string,
+    currentResourceId: string,
+  ): Promise<void> {
+    const existing = await resourceRepository.findByRepositoryIdAndPath(repositoryId, path);
+    if (existing && String(existing.id) !== currentResourceId) {
+      throw new Error(`Resource already exists at path: ${path}`);
+    }
+  }
+
+  async function moveResourceInStorage(
+    resourceId: string,
+    nextName?: string,
+    nextFolderId?: string | null,
+  ) {
+    const resource = await resourceRepository.findById(resourceId);
+    if (!resource) {
+      throw new Error(`Resource not found: ${resourceId}`);
+    }
+
+    const repository = await repositoryRepository.findById(String(resource.repositoryId));
+    if (!repository) {
+      throw new Error(`Repository not found: ${resource.repositoryId}`);
+    }
+
+    const targetFolderId = nextFolderId === undefined ? resource.folderId : nextFolderId;
+    const targetName = nextName ?? resource.name;
+    const parentPath = await resolveParentPath(targetFolderId);
+    const targetPath = PathCalculator.buildPath(parentPath, targetName);
+
+    if (targetPath === resource.path) {
+      return resource;
+    }
+
+    await ensureResourcePathAvailable(
+      String(resource.repositoryId),
+      targetPath,
+      String(resource.id),
+    );
+
+    await storagePort.move({
+      repositoryId: String(repository.id),
+      fromPath: resource.path,
+      toPath: targetPath,
+      isFolder: false,
+    });
+
+    if (nextName !== undefined) {
+      resource.rename(targetName);
+    }
+    if (nextFolderId !== undefined) {
+      resource.moveTo(targetFolderId as any, targetPath);
+    } else if (nextName !== undefined) {
+      resource.moveTo(resource.folderId, targetPath);
+    }
+
+    await resourceRepository.save(resource);
+    return resource;
+  }
 
   return {
     // ---- Repository CRUD — 仓库增删改查 ----
@@ -529,13 +606,13 @@ function buildApplicationPort(
       return ok(result.resource);
     },
     updateResource: async (id, data) => {
-      const currentResource = await resourceRepository.findById(id);
+      let currentResource = await resourceRepository.findById(id);
       if (!currentResource) {
         throw new Error(`Resource not found: ${id}`);
       }
 
       if (data.name !== undefined) {
-        currentResource.rename(data.name);
+        currentResource = await moveResourceInStorage(id, data.name);
       }
 
       if (data.metadata !== undefined) {
@@ -555,19 +632,11 @@ function buildApplicationPort(
       return ok(currentResource.toClientDTO());
     },
     moveResource: async (id, targetFolderId) => {
-      const resource = await resourceRepository.findById(id);
-      if (!resource) throw new Error(`Resource not found: ${id}`);
-      const baseName = resource.name;
-      const parentPath = targetFolderId ? `/${targetFolderId}` : '';
-      resource.moveTo(targetFolderId as any, `${parentPath}/${baseName}`);
-      await resourceRepository.save(resource);
+      const resource = await moveResourceInStorage(id, undefined, targetFolderId);
       return ok(resource.toClientDTO());
     },
     deleteResource: async (id) => {
-      const resource = await resourceRepository.findById(id);
-      if (!resource) throw new Error(`Resource not found: ${id}`);
-      resource.delete();
-      await resourceRepository.save(resource);
+      await useCases.deleteResource.execute({ id });
       return ok(undefined);
     },
     uploadResources: async (data, ctx) => {

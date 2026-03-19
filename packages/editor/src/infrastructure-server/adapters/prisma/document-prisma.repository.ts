@@ -39,14 +39,11 @@ export class DocumentPrismaRepository implements IDocumentRepository {
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
-    return this.findByIdentityId(workspaceId);
+    return [];
   }
 
   async findByPath(workspaceId: string, path: string): Promise<Document | null> {
-    const data = await this.prisma.document.findFirst({
-      where: { identityId: workspaceId, folderPath: path, deletedAt: null },
-    });
-    return data ? this.toDomain(data) : null;
+    return null;
   }
 
   async findByContentHash(contentHash: string): Promise<Document[]> {
@@ -59,24 +56,15 @@ export class DocumentPrismaRepository implements IDocumentRepository {
   }
 
   async findDocumentsNeedingIndex(workspaceId: string): Promise<Document[]> {
-    const documents = await this.findByWorkspaceId(workspaceId);
-    return documents.filter((document) =>
-      document.indexStatus === IndexStatus.Outdated || document.indexStatus === IndexStatus.Failed,
-    );
+    return [];
   }
 
   async findByIndexStatus(workspaceId: string, status: IndexStatus): Promise<Document[]> {
-    const documents = await this.findByWorkspaceId(workspaceId);
-    return documents.filter((document) => document.indexStatus === status);
+    return [];
   }
 
   async findRecentlyModified(workspaceId: string, limit: number): Promise<Document[]> {
-    const data = await this.prisma.document.findMany({
-      where: { identityId: workspaceId, deletedAt: null },
-      orderBy: { updatedAt: 'desc' },
-      take: limit,
-    });
-    return data.map((d: PrismaDocument) => this.toDomain(d));
+    return [];
   }
 
   async delete(id: string): Promise<void> {
@@ -92,26 +80,18 @@ export class DocumentPrismaRepository implements IDocumentRepository {
   }
 
   async deleteByWorkspaceId(workspaceId: string): Promise<void> {
-    await this.prisma.document.deleteMany({
-      where: { identityId: workspaceId },
-    });
+    return;
   }
 
   async countByWorkspaceId(workspaceId: string): Promise<number> {
-    return this.prisma.document.count({
-      where: { identityId: workspaceId, deletedAt: null },
-    });
+    return 0;
   }
 
   async countDocumentsNeedingIndex(workspaceId: string): Promise<number> {
-    const documents = await this.findDocumentsNeedingIndex(workspaceId);
-    return documents.length;
+    return 0;
   }
 
   async findByFolderPath(identityId: string, folderPath: string): Promise<Document[]> {
-      const data = await this.prisma.document.findMany({
-          where: { identityId, folderPath, deletedAt: null }
-      });
-      return data.map((d: PrismaDocument) => this.toDomain(d));
+    return [];
   }
 }

@@ -63,6 +63,7 @@ import type {
   ListGoalRecords,
   DeleteGoalRecord,
   CompleteGoal,
+  ArchiveExpiredGoals,
 } from '../application-server';
 
 // ============ Use Case Port ============
@@ -73,6 +74,7 @@ export interface GoalUseCases {
   listGoals: ListGoals;
   updateGoal: UpdateGoal;
   deleteGoal: DeleteGoal;
+  archiveExpiredGoals: ArchiveExpiredGoals;
   archiveGoal: ArchiveGoal;
   activateGoal: ActivateGoal;
   completeGoal: CompleteGoal;
@@ -134,14 +136,14 @@ export class GoalController {
     return this.useCases.listGoals.execute(query);
   }
 
-  async search(query: string, ctx: Context): Promise<Result<unknown>> {
+  async search(query: string, ctx: Context, systemView?: string): Promise<Result<unknown>> {
     if (!query.trim()) {
       return fail({
         code: 'VALIDATION_ERROR',
         message: 'Search query (query) is required',
       });
     }
-    return this.useCases.searchGoals.execute(ctx.identityId, query);
+    return this.useCases.searchGoals.execute(ctx.identityId, query, systemView as any);
   }
 
   async get(id: string, includeChildren = true): Promise<Result<unknown>> {
@@ -162,6 +164,10 @@ export class GoalController {
 
   async delete(id: string): Promise<Result<unknown>> {
     return this.useCases.deleteGoal.execute(id);
+  }
+
+  async archiveExpired(ctx: Context): Promise<Result<unknown>> {
+    return this.useCases.archiveExpiredGoals.execute(ctx.identityId);
   }
 
   // ==================== Goal Status Operations ====================

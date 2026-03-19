@@ -52,20 +52,26 @@ export class AdjustReminderFrequency {
       throw new Error(`Template ${request.templateId} not found`);
     }
 
-    // Get current recurrence details for comparison
-    const originalInterval = template.recurrence?.daily?.interval || 0;
-
-    // Apply adjustment using domain update method
-    if (template.recurrence?.daily) {
-      template.update({
-        recurrence: template.recurrence.with({
-          daily: {
-            ...template.recurrence.daily,
-            interval: request.newInterval,
-          },
-        }),
-      });
+    const trigger = {
+      type: template.trigger.type,
+      fixedTime: template.trigger.fixedTime,
+      interval: template.trigger.interval,
+    };
+    if (trigger.type !== 'Interval' || !trigger.interval) {
+      throw new Error(`Template ${request.templateId} does not use interval trigger`);
     }
+
+    const originalInterval = trigger.interval.minutes;
+
+    template.update({
+      trigger: {
+        ...trigger,
+        interval: {
+          ...trigger.interval,
+          minutes: request.newInterval,
+        },
+      },
+    });
 
     await this.templateRepository.save(template);
 

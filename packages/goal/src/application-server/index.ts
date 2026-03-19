@@ -18,6 +18,7 @@ export {
   UpdateGoal,
   DeleteGoal,
   ArchiveGoal,
+  ArchiveExpiredGoals,
   ActivateGoal,
   CompleteGoal,
   PermanentlyDeleteGoal,

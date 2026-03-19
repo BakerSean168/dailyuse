@@ -42,7 +42,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
              updated_at = ?,
              deleted_at = ?,
              trigger = ?,
-             recurrence = ?,
              active_time = ?,
              active_hours = ?,
              notification_config = ?,
@@ -78,7 +77,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           data.updatedAt,
           data.deletedAt,
           data.trigger,
-          data.recurrence,
           data.activeTime,
           data.activeHours,
           data.notificationConfig,
@@ -105,11 +103,11 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
         `INSERT INTO reminder_templates (
           id, identity_id, name, description, type, self_enabled, status, reminder_group_id,
           importance_level, tags, color, icon, next_trigger_at, version, created_at, updated_at,
-          deleted_at, trigger, recurrence, active_time, active_hours, notification_config, stats,
+          deleted_at, trigger, active_time, active_hours, notification_config, stats,
           click_rate, ignore_rate, avg_response_time, snooze_count, effectiveness_score, sample_size,
           last_analysis_time, original_interval, adjusted_interval, adjustment_reason, adjustment_time,
           is_auto_adjusted, user_confirmed, smart_frequency_enabled
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.id,
           data.identityId,
@@ -129,7 +127,6 @@ export class ReminderTemplatePowerSyncRepository implements IReminderTemplateRep
           data.updatedAt,
           data.deletedAt,
           data.trigger,
-          data.recurrence,
           data.activeTime,
           data.activeHours,
           data.notificationConfig,

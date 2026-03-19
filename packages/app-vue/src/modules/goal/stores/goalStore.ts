@@ -9,12 +9,13 @@
 import { defineStore } from 'pinia';
 import type {
   GoalClientDTO,
+  GoalSystemView,
+  GoalStatus,
   KeyResultClientDTO,
   GoalFolderClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
 } from '@dailyuse/contracts/goal';
-import type { GoalStatus } from '@dailyuse/contracts/goal';
 
 export interface GoalState {
   goals: GoalClientDTO[];
@@ -26,7 +27,7 @@ export interface GoalState {
   isLoading: boolean;
   error: string | null;
   searchQuery: string;
-  filterStatus: GoalStatus | null;
+  systemView: GoalSystemView;
   pagination: { page: number; pageSize: number; total: number };
   isInitialized: boolean;
 }
@@ -42,19 +43,23 @@ export const useGoalStore = defineStore('goal', {
     isLoading: false,
     error: null,
     searchQuery: '',
-    filterStatus: null,
+    systemView: 'active',
     pagination: { page: 1, pageSize: 20, total: 0 },
     isInitialized: false,
   }),
 
   getters: {
     getGoalById: (state) => (id: string) => state.goals.find((g) => g.id === id),
-    getGoalsByStatus: (state) => (status: GoalStatus) => state.goals.filter((g) => g.status === status),
-    getGoalsByFolder: (state) => (folderId: string) => state.goals.filter((g) => g.folderId === folderId),
-    activeGoalCount: (state): number => state.goals.filter((g) => g.status === 'Active').length,
-    completedGoalCount: (state): number => state.goals.filter((g) => g.status === 'Completed').length,
+    getGoalsByStatus: (state) => (status: GoalStatus) =>
+      state.goals.filter((g) => g.status === status),
+    getGoalsByFolder: (state) => (folderId: string) =>
+      state.goals.filter((g) => g.folderId === folderId),
+    activeGoalCount: (state): number =>
+      state.goals.filter((g) => !g.archivedAt && !g.deletedAt).length,
+    completedGoalCount: (state): number =>
+      state.goals.filter((g) => !!g.archivedAt && !!g.completedAt && !g.deletedAt).length,
     totalPages: (state): number => Math.ceil(state.pagination.total / state.pagination.pageSize),
-    hasActiveFilter: (state): boolean => state.filterStatus !== null || state.searchQuery.length > 0,
+    hasActiveFilter: (state): boolean => state.searchQuery.length > 0,
   },
 
   actions: {
@@ -62,7 +67,10 @@ export const useGoalStore = defineStore('goal', {
       this.goals = goals;
       if (total !== undefined) this.pagination.total = total;
     },
-    addGoal(goal: GoalClientDTO) { this.goals.unshift(goal); this.pagination.total++; },
+    addGoal(goal: GoalClientDTO) {
+      this.goals.unshift(goal);
+      this.pagination.total++;
+    },
     updateGoal(goal: GoalClientDTO) {
       const i = this.goals.findIndex((g) => g.id === goal.id);
       if (i !== -1) this.goals[i] = goal;
@@ -73,46 +81,90 @@ export const useGoalStore = defineStore('goal', {
       this.pagination.total--;
       if (this.currentGoal?.id === id) this.currentGoal = null;
     },
-    setCurrentGoal(goal: GoalClientDTO | null) { this.currentGoal = goal; },
+    setCurrentGoal(goal: GoalClientDTO | null) {
+      this.currentGoal = goal;
+    },
 
-    setKeyResults(krs: KeyResultClientDTO[]) { this.keyResults = krs; },
-    addKeyResult(kr: KeyResultClientDTO) { this.keyResults.push(kr); },
+    setKeyResults(krs: KeyResultClientDTO[]) {
+      this.keyResults = krs;
+    },
+    addKeyResult(kr: KeyResultClientDTO) {
+      this.keyResults.push(kr);
+    },
     updateKeyResult(kr: KeyResultClientDTO) {
       const i = this.keyResults.findIndex((k) => k.id === kr.id);
       if (i !== -1) this.keyResults[i] = kr;
     },
-    removeKeyResult(id: string) { this.keyResults = this.keyResults.filter((k) => k.id !== id); },
+    removeKeyResult(id: string) {
+      this.keyResults = this.keyResults.filter((k) => k.id !== id);
+    },
 
-    setGoalFolders(folders: GoalFolderClientDTO[]) { this.goalFolders = folders; },
-    addGoalFolder(f: GoalFolderClientDTO) { this.goalFolders.push(f); },
+    setGoalFolders(folders: GoalFolderClientDTO[]) {
+      this.goalFolders = folders;
+    },
+    addGoalFolder(f: GoalFolderClientDTO) {
+      this.goalFolders.push(f);
+    },
     updateGoalFolder(f: GoalFolderClientDTO) {
       const i = this.goalFolders.findIndex((x) => x.id === f.id);
       if (i !== -1) this.goalFolders[i] = f;
     },
-    removeGoalFolder(id: string) { this.goalFolders = this.goalFolders.filter((f) => f.id !== id); },
+    removeGoalFolder(id: string) {
+      this.goalFolders = this.goalFolders.filter((f) => f.id !== id);
+    },
 
-    setGoalReviews(r: GoalReviewClientDTO[]) { this.goalReviews = r; },
-    addGoalReview(r: GoalReviewClientDTO) { this.goalReviews.push(r); },
+    setGoalReviews(r: GoalReviewClientDTO[]) {
+      this.goalReviews = r;
+    },
+    addGoalReview(r: GoalReviewClientDTO) {
+      this.goalReviews.push(r);
+    },
 
-    setGoalRecords(r: GoalRecordClientDTO[]) { this.goalRecords = r; },
-    addGoalRecord(r: GoalRecordClientDTO) { this.goalRecords.push(r); },
+    setGoalRecords(r: GoalRecordClientDTO[]) {
+      this.goalRecords = r;
+    },
+    addGoalRecord(r: GoalRecordClientDTO) {
+      this.goalRecords.push(r);
+    },
 
-    setSearchQuery(q: string) { this.searchQuery = q; this.pagination.page = 1; },
-    setFilterStatus(s: GoalStatus | null) { this.filterStatus = s; this.pagination.page = 1; },
-    clearFilters() { this.filterStatus = null; this.searchQuery = ''; this.pagination.page = 1; },
+    setSearchQuery(q: string) {
+      this.searchQuery = q;
+      this.pagination.page = 1;
+    },
+    setSystemView(v: GoalSystemView) {
+      this.systemView = v;
+      this.pagination.page = 1;
+    },
+    clearFilters() {
+      this.searchQuery = '';
+      this.pagination.page = 1;
+    },
 
-    setPage(p: number) { this.pagination.page = p; },
-    setPageSize(s: number) { this.pagination.pageSize = s; this.pagination.page = 1; },
+    setPage(p: number) {
+      this.pagination.page = p;
+    },
+    setPageSize(s: number) {
+      this.pagination.pageSize = s;
+      this.pagination.page = 1;
+    },
 
-    setLoading(v: boolean) { this.isLoading = v; },
-    setError(e: string | null) { this.error = e; },
-    setInitialized(v: boolean) { this.isInitialized = v; },
+    setLoading(v: boolean) {
+      this.isLoading = v;
+    },
+    setError(e: string | null) {
+      this.error = e;
+    },
+    setInitialized(v: boolean) {
+      this.isInitialized = v;
+    },
 
-    reset() { this.$reset(); },
+    reset() {
+      this.$reset();
+    },
   },
 
   persist: {
-    pick: ['filterStatus', 'pagination'] as string[],
+    pick: ['systemView', 'pagination'] as string[],
   },
 });
 

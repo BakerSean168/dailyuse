@@ -9,6 +9,7 @@ import { brandedId } from '../../../primitives';
 import type { GoalId, IdentityId, GoalFolderId } from '../../../primitives';
 import type { GoalClientDTO } from '../aggregates';
 import { GoalStatus } from '../value-objects/goal-status';
+import { GoalSystemView } from '../value-objects/goal-system-view';
 import { ImportanceLevel } from '../../../shared/value-objects/importance';
 
 const GoalNameSchema = z
@@ -103,6 +104,7 @@ export type DeleteGoalRes = GoalClientDTO;
  * 公共传输 DTO 用于列表目标 - 不包含 identityId
  */
 export const ListGoalFiltersSchema = z.object({
+  systemView: z.enum(GoalSystemView).optional(),
   status: z.array(z.enum(GoalStatus)).optional(),
   importance: z.array(z.enum(ImportanceLevel)).optional(),
   category: z.string().optional(),

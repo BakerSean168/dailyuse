@@ -26,6 +26,10 @@ export class ActivateGoal {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
+    if (goal.archivedAt || goal.deletedAt) {
+      return error('INVALID_STATE', 'Archived or deleted goals cannot be reactivated');
+    }
+
     this.goalPolicy.ensureGoalCanBeActivated(goal);
     goal.activate();
     await this.goalRepository.save(goal);

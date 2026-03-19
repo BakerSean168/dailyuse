@@ -10,8 +10,6 @@ import type {
   FrequencyAdjustmentDTO,
   NotificationConfigServer,
   NotificationConfigServerDTO,
-  RecurrenceConfigServer,
-  RecurrenceConfigServerDTO,
   ReminderTemplateClientDTO,
   ReminderTemplateServerDTO,
   ResponseMetricsDTO,
@@ -30,7 +28,6 @@ import { ReminderTemplateId } from '../../domain-shared/value-objects/reminder-t
 import { IdentityId } from '@dailyuse/domain-shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
-  RecurrenceConfig,
   NotificationConfig,
   TriggerConfig,
   ActiveTimeConfig,
@@ -51,7 +48,6 @@ export interface ReminderTemplateState {
   description: string | null;
   type: ReminderType;
   trigger: TriggerConfig;
-  recurrence: RecurrenceConfig | null;
   activeTime: ActiveTimeConfig;
   activeHours: ActiveHoursConfig | null;
   notificationConfig: NotificationConfig;
@@ -111,9 +107,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   }
   public get trigger(): TriggerConfigServer {
     return this._props.trigger;
-  }
-  public get recurrence(): RecurrenceConfigServer | null {
-    return this._props.recurrence;
   }
   public get activeTime(): ActiveTimeConfigServer {
     return this._props.activeTime;
@@ -200,7 +193,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     activeTime: ActiveTimeConfigServerDTO;
     notificationConfig: NotificationConfigServerDTO;
     description?: string;
-    recurrence?: RecurrenceConfigServerDTO;
     activeHours?: ActiveHoursConfigServerDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
@@ -215,7 +207,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     const trigger = TriggerConfig.fromDTO(params.trigger);
     const activeTime = ActiveTimeConfig.fromDTO(params.activeTime);
     const notificationConfig = NotificationConfig.fromDTO(params.notificationConfig);
-    const recurrence = params.recurrence ? RecurrenceConfig.fromDTO(params.recurrence) : null;
     const activeHours = params.activeHours ? ActiveHoursConfig.fromDTO(params.activeHours) : null;
 
     const template = new ReminderTemplate({
@@ -225,7 +216,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: params.description ?? null,
       type: params.type,
       trigger,
-      recurrence,
       activeTime,
       activeHours,
       notificationConfig,
@@ -318,7 +308,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     trigger?: TriggerConfigServerDTO;
     activeTime?: ActiveTimeConfigServerDTO;
     notificationConfig?: NotificationConfigServerDTO;
-    recurrence?: RecurrenceConfigServerDTO | null;
     activeHours?: ActiveHoursConfigServerDTO | null;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
@@ -360,11 +349,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     }
     if (updates.notificationConfig !== undefined) {
       this._props.notificationConfig = NotificationConfig.fromDTO(updates.notificationConfig);
-    }
-    if (updates.recurrence !== undefined) {
-      this._props.recurrence = updates.recurrence
-        ? RecurrenceConfig.fromDTO(updates.recurrence)
-        : null;
     }
     if (updates.activeHours !== undefined) {
       this._props.activeHours = updates.activeHours
@@ -780,7 +764,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: this._props.description,
       type: this._props.type,
       trigger: this._props.trigger.toServerDTO(),
-      recurrence: this._props.recurrence?.toServerDTO() ?? null,
       activeTime: this._props.activeTime.toServerDTO(),
       activeHours: this._props.activeHours?.toServerDTO() ?? null,
       notificationConfig: this._props.notificationConfig.toServerDTO(),
@@ -838,14 +821,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       displayText: this._props.trigger.displayText,
     };
 
-    // Build recurrence client DTO manually
-    const recurrenceClientDTO = this._props.recurrence
-      ? {
-          ...this._props.recurrence.toServerDTO(),
-          displayText: (this._props.recurrence as { displayText?: string }).displayText ?? '',
-        }
-      : null;
-
     // Build activeTime client DTO manually - format display text
     const activeTimeServerDTO = this._props.activeTime.toServerDTO();
     const activeTimeClientDTO = {
@@ -884,7 +859,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       description: this._props.description,
       type: this._props.type,
       trigger: triggerClientDTO,
-      recurrence: recurrenceClientDTO,
       activeTime: activeTimeClientDTO,
       activeHours: activeHoursClientDTO,
       notificationConfig: notificationConfigClientDTO,
@@ -909,7 +883,6 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       displayTitle: this._props.title,
       typeText,
       triggerText: this._props.trigger.displayText,
-      recurrenceText: recurrenceClientDTO?.displayText ?? null,
       statusText,
       importanceText,
       nextTriggerText: formatRelativeTime(this._props.nextTriggerAt),

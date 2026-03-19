@@ -1,9 +1,7 @@
 /**
  * Delete Goal Use Case
  *
- * 删除目标（归档）的应用服务
- * 归档后的目标不会在列表中显示，但数据保留。
- * 如需永久删除，请使用 PermanentlyDeleteGoal。
+ * 删除目标（软删除）的应用服务
  */
 
 import type { IGoalRepository } from '@/domain-server';
@@ -14,8 +12,8 @@ import { ok, error } from '@dailyuse/contracts/result';
 
 /**
  * Delete Goal Use Case
- * 
- * 实际执行的是归档操作（archive），而非物理删除。
+ *
+ * 实际执行的是软删除操作，目标进入“已删除”视图。
  */
 export class DeleteGoal {
   constructor(
@@ -26,15 +24,17 @@ export class DeleteGoal {
   /**
    * 检查目标依赖项
    */
-  async checkDependencies(id: string): Promise<Result<{
-    hasKeyResults: boolean;
-    keyResultCount: number;
-    hasReviews: boolean;
-    reviewCount: number;
-    hasTaskLinks: boolean;
-    canDelete: boolean;
-    warnings: string[];
-  }>> {
+  async checkDependencies(id: string): Promise<
+    Result<{
+      hasKeyResults: boolean;
+      keyResultCount: number;
+      hasReviews: boolean;
+      reviewCount: number;
+      hasTaskLinks: boolean;
+      canDelete: boolean;
+      warnings: string[];
+    }>
+  > {
     const goal = await this.goalRepository.findById(id, { includeChildren: true });
     if (!goal) {
       return error('NOT_FOUND', `Goal not found: ${id}`);
@@ -67,7 +67,7 @@ export class DeleteGoal {
   }
 
   /**
-   * 执行归档（原"软删除"）
+   * 执行软删除
    */
   async execute(id: string): Promise<Result<DeleteGoalRes>> {
     const goal = await this.goalRepository.findById(id, { includeChildren: true });
@@ -75,11 +75,8 @@ export class DeleteGoal {
       return error('NOT_FOUND', `Goal not found: ${id}`);
     }
 
-    this.goalPolicy.ensureGoalCanBeArchived(goal);
-
-    const dto = goal.toClientDTO(true);
-    goal.archive();
+    goal.softDelete();
     await this.goalRepository.save(goal);
-    return ok(dto);
+    return ok(goal.toClientDTO(true));
   }
 }

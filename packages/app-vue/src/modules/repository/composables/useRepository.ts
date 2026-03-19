@@ -287,7 +287,11 @@ export function useRepository() {
     initialContent: string = '',
     folderId?: string,
   ): Promise<ResourceClientDTO | null> {
-    const noteName = normalizeNoteName(name ?? buildUntitledNoteName());
+    const requestedName = normalizeNoteName(name ?? buildUntitledNoteName());
+    const noteName = ensureUniqueNoteName(
+      requestedName,
+      store.resources.filter((resource) => resource.folderId === (folderId ?? null)),
+    );
 
     return createResource({
       name: noteName,
@@ -626,6 +630,23 @@ function normalizeNoteName(name: string): string {
   return trimmedName.toLowerCase().endsWith('.md') ? trimmedName : `${trimmedName}.md`;
 }
 
+function ensureUniqueNoteName(name: string, resources: ResourceClientDTO[]): string {
+  const normalizedExistingNames = new Set(resources.map((resource) => resource.name.toLowerCase()));
+  if (!normalizedExistingNames.has(name.toLowerCase())) {
+    return name;
+  }
+
+  const extensionIndex = name.toLowerCase().lastIndexOf('.md');
+  const baseName = extensionIndex >= 0 ? name.slice(0, extensionIndex) : name;
+
+  let suffix = 2;
+  while (normalizedExistingNames.has(`${baseName} ${suffix}.md`.toLowerCase())) {
+    suffix += 1;
+  }
+
+  return `${baseName} ${suffix}.md`;
+}
+
 function isSearchResponse(value: unknown): value is SearchResponse {
   if (!value || typeof value !== 'object') {
     return false;
@@ -693,4 +714,5 @@ function reorderBookmarkCollection(
 export const __test__ = {
   isUploadResponse,
   reorderBookmarkCollection,
+  ensureUniqueNoteName,
 };

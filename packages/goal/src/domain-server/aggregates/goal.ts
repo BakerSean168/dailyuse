@@ -424,6 +424,7 @@ export class Goal extends AggregateRoot<GoalId> {
     goal.addDomainEvent<GoalEventMap['goal:create']>('goal:create', {
       identityId: params.identityId,
       folderId: params.folderId,
+      goal: goal.toServerDTO(true),
     });
 
     return goal;
@@ -675,14 +676,18 @@ export class Goal extends AggregateRoot<GoalId> {
    * ✅ 完成目标
    */
   public markAsCompleted(): void {
-    if (this._props.status === GoalStatus.Completed) return; // 幂等
+    if (this._props.completedAt && this._props.archivedAt) return; // 幂等
 
-    this._props.status = GoalStatus.Completed;
-    this._props.updatedAt = new Date();
+    const now = new Date();
+    this._props.completedAt = this._props.completedAt ?? now;
+    this._props.status = GoalStatus.Archived;
+    this._props.archivedAt = this._props.archivedAt ?? now;
+    this._props.updatedAt = now;
 
     this.addDomainEvent<GoalEventMap['goal:complete']>('goal:complete', {
       finalProgress: this.calculateProgress(),
     });
+    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
   }
 
   /**
@@ -697,34 +702,32 @@ export class Goal extends AggregateRoot<GoalId> {
    */
   public archive(): void {
     if (this._props.archivedAt) return; // 幂等
-    if (this._props.status === GoalStatus.Active) {
-      throw new Error('Active goals must be completed before archiving');
-    }
 
     const now = new Date();
     this._props.status = GoalStatus.Archived;
     this._props.archivedAt = now;
-    this._props.deletedAt = now; // 兼容现有查询过滤
     this._props.updatedAt = now;
 
     this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+  }
+
+  public archiveAsExpired(): void {
+    if (this._props.archivedAt) return;
+    const now = new Date();
+    this._props.status = GoalStatus.Archived;
+    this._props.archivedAt = now;
+    this._props.updatedAt = now;
+    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+  }
+
+  public softDelete(): void {
+    if (this._props.deletedAt) return;
+    const now = new Date();
+    this._props.deletedAt = now;
+    this._props.updatedAt = now;
     this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
       isSoftDelete: true,
     });
-  }
-
-  /**
-   * ✅ 恢复归档的目标
-   *
-   * 将归档目标恢复为已完成状态
-   */
-  public restore(): void {
-    if (!this._props.archivedAt) return; // 非归档状态无需恢复
-
-    this._props.archivedAt = null;
-    this._props.deletedAt = null;
-    this._props.status = GoalStatus.Completed; // 恢复为完成状态（归档前一定是已完成的）
-    this._props.updatedAt = new Date();
   }
 
   /**
@@ -1283,7 +1286,7 @@ export class Goal extends AggregateRoot<GoalId> {
    * 📊 是否已过期
    */
   public isOverdue(): boolean {
-    if (!this._props.targetDate || this._props.status === GoalStatus.Completed) return false;
+    if (!this._props.targetDate || this._props.completedAt || this._props.archivedAt) return false;
     return Date.now() > this._props.targetDate.getTime();
   }
 
@@ -1358,7 +1361,7 @@ export class Goal extends AggregateRoot<GoalId> {
   ): import('@dailyuse/contracts/goal').GoalClientDTO {
     const now = new Date();
     const isOverdue = this._props.targetDate
-      ? this._props.targetDate < now && this._props.status !== GoalStatus.Completed
+      ? this._props.targetDate < now && !this._props.completedAt && !this._props.archivedAt
       : false;
     const daysRemaining = this._props.targetDate
       ? Math.ceil((this._props.targetDate.getTime() - now.getTime()) / DAY_MS)

@@ -16,9 +16,6 @@ import type { ReminderStatus } from '../value-objects/reminder-status';
 
 // 从值对象导入类型
 import type {
-  RecurrenceConfigServerDTO,
-  RecurrenceConfigClientDTO,
-  RecurrenceConfigClient,
   NotificationConfigServerDTO,
   NotificationConfigClientDTO,
   NotificationConfigClient,
@@ -46,7 +43,6 @@ export interface ReminderTemplateClientDTO {
   description: string | null;
   type: ReminderType;
   trigger: TriggerConfigClientDTO;
-  recurrence: RecurrenceConfigClientDTO | null;
   activeTime: ActiveTimeConfigClientDTO;
   activeHours: ActiveHoursConfigClientDTO | null;
   notificationConfig: NotificationConfigClientDTO;
@@ -71,7 +67,6 @@ export interface ReminderTemplateClientDTO {
   displayTitle: string;
   typeText: string; // "一次? | "循环"
   triggerText: string; // "每天 09:00" | "每隔 30 分钟"
-  recurrenceText: string | null; // "每周一、三、五" | "每天"
   statusText: string;
   importanceText: string;
   nextTriggerText: string | null; // "明天 09:00" | "10 分钟?

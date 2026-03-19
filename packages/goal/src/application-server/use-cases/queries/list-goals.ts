@@ -22,6 +22,7 @@ export class ListGoals {
       includeChildren: input.includeKeyResults,
       status: input.status?.[0],
       folderId: input.folderId,
+      systemView: input.systemView,
     });
 
     const normalizedQuery = input.query?.trim().toLowerCase();

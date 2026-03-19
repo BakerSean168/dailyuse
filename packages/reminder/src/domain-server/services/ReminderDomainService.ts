@@ -1,9 +1,11 @@
-import type { ActiveHoursConfigServerDTO, ActiveTimeConfigServerDTO, NotificationConfigServerDTO, RecurrenceConfigServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
-import { ControlMode, ReminderType } from '@dailyuse/contracts/reminder';
 import type {
-  IReminderGroupRepository,
-  IReminderTemplateRepository,
-} from '../repositories';
+  ActiveHoursConfigServerDTO,
+  ActiveTimeConfigServerDTO,
+  NotificationConfigServerDTO,
+  TriggerConfigServerDTO,
+} from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderType } from '@dailyuse/contracts/reminder';
+import type { IReminderGroupRepository, IReminderTemplateRepository } from '../repositories';
 import { ReminderTemplate } from '../aggregates/reminder-template';
 import { ReminderGroup } from '../aggregates/reminder-group';
 import { ReminderTemplateControlService } from './ReminderTemplateControlService';
@@ -55,7 +57,6 @@ export class ReminderDomainService {
     activeTime: ActiveTimeConfigServerDTO;
     notificationConfig: NotificationConfigServerDTO;
     description?: string;
-    recurrence?: RecurrenceConfigServerDTO;
     activeHours?: ActiveHoursConfigServerDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
@@ -70,7 +71,10 @@ export class ReminderDomainService {
       }
     }
 
-    const template = ReminderTemplate.create({ ...params, identityId: params.identityId as IdentityId });
+    const template = ReminderTemplate.create({
+      ...params,
+      identityId: params.identityId as IdentityId,
+    });
     await this.reminderTemplateRepository.save(template);
 
     // TODO: Update group stats if groupId is present

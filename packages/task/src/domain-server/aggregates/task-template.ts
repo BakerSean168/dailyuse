@@ -16,7 +16,7 @@ import { TaskTemplateId } from '../../domain-shared/value-objects/task-template-
 import { TaskFolderId } from '../../domain-shared/value-objects/task-folder-id';
 import { IdentityId } from '@dailyuse/domain-shared';
 import type { GoalId, KeyResultId } from '@dailyuse/contracts/primitives';
-import { startOfDay } from 'date-fns';
+import { differenceInCalendarDays, differenceInCalendarWeeks, startOfDay } from 'date-fns';
 
 import { AggregateRoot } from '@dailyuse/utils';
 import { addDays } from 'date-fns';
@@ -419,10 +419,31 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     switch (rule.frequency) {
       case RecurrenceFrequency.Daily:
-        return true; // Every day
+        if (!this._props.timeConfig?.startDate) {
+          return true;
+        }
+
+        return (
+          differenceInCalendarDays(dateObj, new Date(this._props.timeConfig.startDate.getTime())) %
+            rule.interval ===
+          0
+        );
 
       case RecurrenceFrequency.Weekly:
-        // Check if the date falls on a specified day of the week
+        if (!this._props.timeConfig?.startDate) {
+          return false;
+        }
+
+        if (
+          differenceInCalendarWeeks(dateObj, new Date(this._props.timeConfig.startDate.getTime()), {
+            weekStartsOn: 1,
+          }) %
+            rule.interval !==
+          0
+        ) {
+          return false;
+        }
+
         const dayOfWeek = dateObj.getDay();
         return rule.daysOfWeek.includes(dayOfWeek as any);
 

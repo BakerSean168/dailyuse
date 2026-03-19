@@ -28,6 +28,7 @@ import {
   UpdateGoal,
   DeleteGoal,
   ArchiveGoal,
+  ArchiveExpiredGoals,
   ActivateGoal,
   CompleteGoal,
   SearchGoals,
@@ -131,6 +132,7 @@ export interface GoalModuleUseCases {
   readonly deleteGoal: DeleteGoal;
   readonly permanentlyDeleteGoal: PermanentlyDeleteGoal;
   readonly archiveGoal: ArchiveGoal;
+  readonly archiveExpiredGoals: ArchiveExpiredGoals;
   readonly activateGoal: ActivateGoal;
   readonly completeGoal: CompleteGoal;
   readonly searchGoals: SearchGoals;
@@ -182,9 +184,14 @@ export interface GoalApplicationPort {
   deleteGoal(id: string): Promise<Result<DeleteGoalRes>>;
   permanentlyDeleteGoal(id: string): Promise<Result<{ id: string }>>;
   archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
+  archiveExpiredGoals(identityId: string): Promise<Result<{ archivedCount: number }>>;
   activateGoal(id: string): Promise<Result<GoalClientDTO>>;
   completeGoal(id: string): Promise<{ goal: GoalServerDTO }>;
-  searchGoals(identityId: string, query: string): Promise<Result<QueryGoalsRes>>;
+  searchGoals(
+    identityId: string,
+    query: string,
+    systemView?: string,
+  ): Promise<Result<QueryGoalsRes>>;
 
   // Folder CRUD / 文件夹增删改查
   listGoalFolders(input: ListGoalFoldersQuery): Promise<QueryGoalFoldersRes>;
@@ -312,6 +319,7 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
     deleteGoal: new DeleteGoal(goalRepository, goalPolicy),
     permanentlyDeleteGoal: new PermanentlyDeleteGoal(goalRepository, goalPolicy),
     archiveGoal: new ArchiveGoal(goalRepository, goalPolicy),
+    archiveExpiredGoals: new ArchiveExpiredGoals(goalRepository),
     activateGoal: new ActivateGoal(goalRepository, goalPolicy),
     completeGoal: new CompleteGoal(goalRepository, goalPolicy),
     searchGoals: new SearchGoals(goalRepository),
@@ -386,9 +394,11 @@ export function createGoalModule(deps: GoalModuleDependencies): GoalModuleInstan
     deleteGoal: (id) => useCases.deleteGoal.execute(id),
     permanentlyDeleteGoal: (id) => useCases.permanentlyDeleteGoal.execute(id),
     archiveGoal: (id) => useCases.archiveGoal.execute(id),
+    archiveExpiredGoals: (identityId) => useCases.archiveExpiredGoals.execute(identityId),
     activateGoal: (id) => useCases.activateGoal.execute(id),
     completeGoal: (id) => useCases.completeGoal.execute(id),
-    searchGoals: (identityId, query) => useCases.searchGoals.execute(identityId, query),
+    searchGoals: (identityId, query, systemView) =>
+      useCases.searchGoals.execute(identityId, query, systemView as any),
 
     // Folder CRUD / 文件夹增删改查
     listGoalFolders: (input) => useCases.listGoalFolders.execute(input),

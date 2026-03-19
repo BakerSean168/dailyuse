@@ -16,19 +16,11 @@ export class PowerSyncDocumentRepository implements IDocumentRepository {
   }
 
   async findByWorkspaceId(workspaceId: string): Promise<Document[]> {
-    const rows = await this.db.getAll<PowerSyncDocumentRow>(
-      'SELECT * FROM documents WHERE identity_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC',
-      [workspaceId],
-    );
-    return rows.map((row) => PowerSyncDocumentMapper.toDomain(row));
+    return [];
   }
 
   async findByPath(workspaceId: string, path: string): Promise<Document | null> {
-    const row = await this.db.getOptional<PowerSyncDocumentRow>(
-      'SELECT * FROM documents WHERE identity_id = ? AND folder_path = ? AND deleted_at IS NULL LIMIT 1',
-      [workspaceId, path],
-    );
-    return row ? PowerSyncDocumentMapper.toDomain(row) : null;
+    return null;
   }
 
   async findByContentHash(contentHash: string): Promise<Document[]> {
@@ -41,23 +33,15 @@ export class PowerSyncDocumentRepository implements IDocumentRepository {
   }
 
   async findDocumentsNeedingIndex(workspaceId: string): Promise<Document[]> {
-    const docs = await this.findByWorkspaceId(workspaceId);
-    return docs.filter(
-      (doc) => doc.indexStatus === IndexStatus.Outdated || doc.indexStatus === IndexStatus.Failed,
-    );
+    return [];
   }
 
   async findByIndexStatus(workspaceId: string, status: IndexStatus): Promise<Document[]> {
-    const docs = await this.findByWorkspaceId(workspaceId);
-    return docs.filter((doc) => doc.indexStatus === status);
+    return [];
   }
 
   async findRecentlyModified(workspaceId: string, limit: number): Promise<Document[]> {
-    const rows = await this.db.getAll<PowerSyncDocumentRow>(
-      'SELECT * FROM documents WHERE identity_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT ?',
-      [workspaceId, limit],
-    );
-    return rows.map((row) => PowerSyncDocumentMapper.toDomain(row));
+    return [];
   }
 
   async save(document: Document): Promise<void> {
@@ -123,19 +107,14 @@ export class PowerSyncDocumentRepository implements IDocumentRepository {
   }
 
   async deleteByWorkspaceId(workspaceId: string): Promise<void> {
-    await this.db.execute('DELETE FROM documents WHERE identity_id = ?', [workspaceId]);
+    return;
   }
 
   async countByWorkspaceId(workspaceId: string): Promise<number> {
-    const row = await this.db.getOptional<{ cnt: number }>(
-      'SELECT COUNT(*) as cnt FROM documents WHERE identity_id = ? AND deleted_at IS NULL',
-      [workspaceId],
-    );
-    return Number(row?.cnt ?? 0);
+    return 0;
   }
 
   async countDocumentsNeedingIndex(workspaceId: string): Promise<number> {
-    const docs = await this.findDocumentsNeedingIndex(workspaceId);
-    return docs.length;
+    return 0;
   }
 }

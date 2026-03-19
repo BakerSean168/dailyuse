@@ -10,6 +10,7 @@ import type { IRepositoryRepository } from '../../../domain-server/repositories/
 import type { IFolderRepository } from '../../../domain-server/repositories/IFolderRepository';
 import { PathCalculator } from '../../../domain-server/services/PathCalculator';
 import { CreateResource } from './create-resource';
+import { DeleteResource } from './delete-resource';
 
 export interface UploadResourcesInput {
   repositoryId: string;
@@ -21,6 +22,7 @@ export interface UploadResourcesInput {
 export class UploadResources {
   constructor(
     private readonly createResource: CreateResource,
+    private readonly deleteResource: DeleteResource,
     private readonly resourceRepository: IResourceRepository,
     private readonly repositoryRepository: IRepositoryRepository,
     private readonly folderRepository: IFolderRepository,
@@ -63,9 +65,7 @@ export class UploadResources {
         }
 
         if (existing && input.metadata?.overwritePolicy === 'replace') {
-          await this.resourceRepository.delete(String(existing.id));
-          repository.recordResourceRemoved(existing.size ?? 0);
-          await this.repositoryRepository.save(repository);
+          await this.deleteResource.execute({ id: String(existing.id) });
         }
 
         const binaryContent = Buffer.from(file.contentBase64, 'base64');

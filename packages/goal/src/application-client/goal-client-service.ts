@@ -15,7 +15,7 @@
  */
 
 import type { Result } from '@dailyuse/contracts/result';
-import { map as mapResult } from '@dailyuse/contracts/result';
+import { map as mapResult, ok } from '@dailyuse/contracts/result';
 import type {
   CreateGoalReq,
   UpdateGoalReq,
@@ -28,6 +28,7 @@ import type {
   CreateGoalReviewReq,
   GoalReviewClientDTO,
   GoalClientDTO,
+  GoalSystemView,
   GoalFolderClientDTO,
   KeyResultClientDTO,
   GoalRecordClientDTO,
@@ -196,6 +197,7 @@ export class GoalClientService {
     pageSize?: number;
     query?: string;
     status?: string[];
+    systemView?: GoalSystemView;
     folderId?: string;
     startDate?: number;
     endDate?: number;
@@ -242,6 +244,7 @@ export class GoalClientService {
     page?: number;
     pageSize?: number;
     status?: string[];
+    systemView?: GoalSystemView;
     folderId?: string;
   }): Promise<Result<{ goals: Goal[]; pagination: QueryGoalsRes['pagination'] }>> {
     const result = await this.goalApi.searchGoals(params);
@@ -255,6 +258,10 @@ export class GoalClientService {
         totalPages: 0,
       },
     }));
+  }
+
+  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
+    return this.goalApi.archiveExpiredGoals();
   }
 
   async getGoalAggregateView(id: string): Promise<Result<GetGoalAggregateRes>> {

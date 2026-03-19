@@ -75,14 +75,35 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
       includeChildren?: boolean;
       status?: string;
       folderId?: string;
+      systemView?: 'active' | 'completed' | 'expired' | 'deleted';
     },
   ): Promise<Goal[]> {
-    const where = {
+    const where: Prisma.GoalWhereInput = {
       identityId,
-      deletedAt: null,
       ...(options?.status && { status: options.status }),
       ...(options?.folderId && { folderId: options.folderId }),
     };
+
+    switch (options?.systemView) {
+      case 'completed':
+        where.archivedAt = { not: null };
+        where.completedAt = { not: null };
+        where.deletedAt = null;
+        break;
+      case 'expired':
+        where.archivedAt = { not: null };
+        where.completedAt = null;
+        where.deletedAt = null;
+        break;
+      case 'deleted':
+        where.deletedAt = { not: null };
+        break;
+      case 'active':
+      default:
+        where.archivedAt = null;
+        where.deletedAt = null;
+        break;
+    }
 
     if (options?.includeChildren) {
       const rows = await this.prisma.goal.findMany({
@@ -143,7 +164,7 @@ export class GoalPrismaRepository extends AggregateRepositoryBase<Goal> implemen
 
   async findByFolderId(folderId: string): Promise<Goal[]> {
     const rows = await this.prisma.goal.findMany({
-      where: { folderId, deletedAt: null },
+      where: { folderId, deletedAt: null, archivedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map((row: PrismaGoalWithRelations) =>

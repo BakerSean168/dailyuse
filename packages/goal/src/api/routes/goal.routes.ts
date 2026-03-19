@@ -118,11 +118,13 @@ export function registerGoalCrudRoutes(
       const status = parseStringArray(req.query?.status) as ListGoalFilters['status'];
       const importance = parseStringArray(req.query?.importance) as ListGoalFilters['importance'];
       const folderId = (req.query?.folderId ?? req.query?.dirId) as ListGoalFilters['folderId'];
+      const systemView = req.query?.systemView as ListGoalFilters['systemView'];
 
       // Pass filters to controller - identityId is injected from ctx inside controller
       return controller.list(
         {
           status,
+          systemView,
           importance,
           category: req.query?.category as string | undefined,
           tags: parseStringArray(req.query?.tags),
@@ -154,7 +156,13 @@ export function registerGoalCrudRoutes(
       path: '/search',
       summary: '搜索目标',
       request: {
-        query: z.object({ query: z.string().optional(), status: z.string().optional() }).strict(),
+        query: z
+          .object({
+            query: z.string().optional(),
+            status: z.string().optional(),
+            systemView: z.string().optional(),
+          })
+          .strict(),
       },
       responses: {
         200: successResponse(QueryGoalsResSchema, '搜索成功'),
@@ -162,7 +170,11 @@ export function registerGoalCrudRoutes(
     },
     [auth],
     (req, ctx) =>
-      controller.search(typeof req.query?.query === 'string' ? req.query.query : '', ctx),
+      controller.search(
+        typeof req.query?.query === 'string' ? req.query.query : '',
+        ctx,
+        typeof req.query?.systemView === 'string' ? req.query.systemView : undefined,
+      ),
   );
 
   // GET /:id — 获取目标详情
@@ -229,6 +241,19 @@ export function registerGoalCrudRoutes(
   );
 
   // ==================== Goal Status Operations ====================
+
+  r.route(
+    {
+      method: 'post',
+      path: '/archive-expired',
+      summary: '归档所有已过期目标',
+      responses: {
+        200: successResponse(z.object({ archivedCount: z.number() }), '归档成功'),
+      },
+    },
+    [auth],
+    (_req, ctx) => controller.archiveExpired(ctx),
+  );
 
   // POST /:id/archive — 归档目标
   r.route(

@@ -263,14 +263,10 @@ export function createEditorModule(dependencies: EditorModuleDependencies): Edit
       return ok(doc.toServerDTO());
     },
 
-    listDocuments: async (params, ctx) => {
-      // Note: findByWorkspaceId is used for both cases because the original
-      // DocumentPrismaRepository.findByIdentityId delegates to findByWorkspaceId.
-      // 注意：两种情况都使用 findByWorkspaceId，因为原始的
-      // DocumentPrismaRepository.findByIdentityId 实际委托给 findByWorkspaceId。
-      const documents = await documentRepository.findByWorkspaceId(
-        params.workspaceId ?? ctx.identityId,
-      );
+    listDocuments: async (params, _ctx) => {
+      const documents = params.workspaceId
+        ? await documentRepository.findByWorkspaceId(params.workspaceId)
+        : [];
       return ok({
         documents: documents.map((d: Document) => d.toServerDTO()),
         total: documents.length,

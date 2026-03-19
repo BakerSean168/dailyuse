@@ -247,14 +247,12 @@ describe('Goal lifecycle guards', () => {
     }).toThrow();
   });
 
-  it('should allow modifying after restoring an archived goal', () => {
+  it('should not allow modifying after a completed goal has been auto-archived', () => {
     const goal = createTestGoal();
     goal.markAsCompleted();
-    goal.archive();
-    goal.restore();
 
     expect(() => {
       addKeyResult(goal, { title: 'KR1', targetValue: 100, weight: 3 });
-    }).not.toThrow();
+    }).toThrow();
   });
 });

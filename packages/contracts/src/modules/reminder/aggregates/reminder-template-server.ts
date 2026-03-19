@@ -11,8 +11,6 @@ import type { ReminderHistoryServerDTO } from '../entities/reminder-history-serv
 import type {
   ReminderType,
   ReminderStatus,
-  RecurrenceConfigServer,
-  RecurrenceConfigServerDTO,
   NotificationConfigServer,
   NotificationConfigServerDTO,
   TriggerConfigServer,
@@ -35,7 +33,6 @@ export interface ReminderTemplateServerDTO {
   description?: string | null;
   type: ReminderType;
   trigger: TriggerConfigServerDTO;
-  recurrence?: RecurrenceConfigServerDTO | null;
   activeTime: ActiveTimeConfigServerDTO;
   activeHours?: ActiveHoursConfigServerDTO | null;
   notificationConfig: NotificationConfigServerDTO;
@@ -66,7 +63,6 @@ export interface ReminderTemplatePersistenceDTO {
   description?: string | null;
   type: ReminderType;
   trigger: string; // JSON string
-  recurrence?: string | null; // JSON string
   activeTime: string; // JSON string
   activeHours?: string | null; // JSON string
   notificationConfig: string; // JSON string

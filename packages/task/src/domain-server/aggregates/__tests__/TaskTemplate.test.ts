@@ -60,8 +60,9 @@ function makeDailyRule(interval = 1): RecurrenceRule {
 
 function makeWeeklyRule(
   days: DayOfWeek[] = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday],
+  interval = 1,
 ): RecurrenceRule {
-  return RecurrenceRule.createWeekly(days);
+  return RecurrenceRule.createWeekly(days, interval);
 }
 
 function makeState(overrides: Partial<TaskTemplateState> = {}): TaskTemplateState {
@@ -1121,6 +1122,50 @@ describe('TaskTemplate Aggregate', () => {
         );
 
         expect(template.shouldGenerateInstance(Date.now())).toBe(true);
+      });
+
+      it('should respect daily recurrence interval from start date', () => {
+        const startDate = new Date('2025-06-15T00:00:00.000Z');
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeDailyRule(3),
+          }),
+        );
+
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-15T12:00:00.000Z').getTime()),
+        ).toBe(true);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-16T12:00:00.000Z').getTime()),
+        ).toBe(false);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-18T12:00:00.000Z').getTime()),
+        ).toBe(true);
+      });
+
+      it('should respect weekly recurrence interval and selected weekdays', () => {
+        const startDate = new Date('2025-06-16T00:00:00.000Z');
+        const template = TaskTemplate.load(
+          makeState({
+            taskType: TaskType.Recurring,
+            status: TaskTemplateStatus.Active,
+            timeConfig: makeAllDayTimeConfig(startDate),
+            recurrenceRule: makeWeeklyRule([DayOfWeek.Monday], 2),
+          }),
+        );
+
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-16T12:00:00.000Z').getTime()),
+        ).toBe(true);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-23T12:00:00.000Z').getTime()),
+        ).toBe(false);
+        expect(
+          template.shouldGenerateInstance(new Date('2025-06-30T12:00:00.000Z').getTime()),
+        ).toBe(true);
       });
 
       it('should respect recurrence endDate', () => {

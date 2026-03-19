@@ -11,6 +11,7 @@ import { AIChannels } from '@dailyuse/contracts/electron';
 import type { IGoalApiClient, IResultIpcClient } from '../types';
 import type {
   GoalClientDTO,
+  GoalSystemView,
   KeyResultClientDTO,
   GoalReviewClientDTO,
   GoalRecordClientDTO,
@@ -45,6 +46,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     pageSize?: number;
     query?: string;
     status?: string[];
+    systemView?: GoalSystemView;
     folderId?: string;
     startDate?: number;
     endDate?: number;
@@ -63,6 +65,10 @@ export class GoalIpcAdapter implements IGoalApiClient {
 
   async deleteGoal(id: string): Promise<Result<void>> {
     return this.ipcClient.invoke(`${this.channel}:delete`, id);
+  }
+
+  async archiveExpiredGoals(): Promise<Result<{ archivedCount: number }>> {
+    return this.ipcClient.invoke(`${this.channel}:archiveExpired`);
   }
 
   // ===== Goal Status =====
@@ -86,6 +92,7 @@ export class GoalIpcAdapter implements IGoalApiClient {
     page?: number;
     pageSize?: number;
     status?: string[];
+    systemView?: GoalSystemView;
     folderId?: string;
   }): Promise<Result<QueryGoalsRes>> {
     return this.ipcClient.invoke(`${this.channel}:search`, params);

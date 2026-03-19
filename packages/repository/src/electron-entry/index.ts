@@ -135,7 +135,7 @@ export const RepositoryElectronModule: IElectronModule = {
     });
     ipcMain.handle(Ch.RESOURCE_CREATE, (_, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await api.createResource(
+        return api.createResource(
           {
             repositoryId: dto.repositoryId,
             folderId: dto.folderId,
@@ -145,7 +145,6 @@ export const RepositoryElectronModule: IElectronModule = {
           },
           requestContext,
         );
-        return result.ok ? result.data : null;
       }),
     );
     ipcMain.handle(Ch.RESOURCE_UPLOAD, (_, payload) =>
