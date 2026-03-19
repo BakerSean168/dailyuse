@@ -87,8 +87,8 @@ export interface ITaskInstanceRepository {
   ): Promise<TaskInstance[]>;
 
   /**
-   * 删除模板的未来待处理实例
-   * 用于重新生成实例时清理旧数据
+   * 删除模板从指定时点开始的未完成实例
+   * 用于暂停模板时清理当前及未来无意义的实例
    */
-  deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void>;
+  deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number>;
 }

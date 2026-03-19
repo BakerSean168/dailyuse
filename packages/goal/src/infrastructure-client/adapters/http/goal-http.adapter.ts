@@ -73,10 +73,6 @@ export class GoalHttpAdapter implements IGoalApiClient {
     return this.httpClient.post(`${this.baseUrl}/${id}/activate`);
   }
 
-  async pauseGoal(id: string): Promise<Result<GoalClientDTO>> {
-    return this.httpClient.post(`${this.baseUrl}/${id}/pause`);
-  }
-
   async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
     return this.httpClient.post(`${this.baseUrl}/${id}/complete`);
   }

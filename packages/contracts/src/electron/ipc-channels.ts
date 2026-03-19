@@ -35,7 +35,6 @@ export const GoalChannels = {
   UPDATE: 'goal:update',
   DELETE: 'goal:delete',
   ARCHIVE: 'goal:archive',
-  PAUSE: 'goal:pause',
   ACTIVATE: 'goal:activate',
   COMPLETE: 'goal:complete',
   SEARCH: 'goal:search',

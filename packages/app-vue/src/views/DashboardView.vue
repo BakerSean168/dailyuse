@@ -451,13 +451,6 @@ function navigateTo(path: string) {
                         {{ goal.name }}
                       </span>
                       <div class="flex items-center gap-1.5">
-                        <Badge
-                          v-if="goal.status === 'Paused'"
-                          variant="secondary"
-                          class="text-[10px] px-1.5 py-0"
-                        >
-                          暂停
-                        </Badge>
                         <span class="text-[11px] text-muted-foreground font-mono">
                           {{ goal.progress }}%
                         </span>

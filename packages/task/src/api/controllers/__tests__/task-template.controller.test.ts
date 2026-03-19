@@ -406,7 +406,7 @@ describe('TaskTemplateController', () => {
   describe('pauseTemplate', () => {
     it('should call pauseTemplate use case with id', async () => {
       (useCases.pauseTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok({ template: FAKE_TEMPLATE_DTO, instancesSkipped: 3 }),
+        ok({ template: FAKE_TEMPLATE_DTO, instancesDeleted: 3 }),
       );
 
       await controller.pauseTemplate('tmpl_1');
@@ -416,7 +416,7 @@ describe('TaskTemplateController', () => {
 
     it('should unwrap result.data.template', async () => {
       (useCases.pauseTemplate.execute as ReturnType<typeof vi.fn>).mockResolvedValue(
-        ok({ template: FAKE_TEMPLATE_DTO, instancesSkipped: 3 }),
+        ok({ template: FAKE_TEMPLATE_DTO, instancesDeleted: 3 }),
       );
 
       const result = await controller.pauseTemplate('tmpl_1');

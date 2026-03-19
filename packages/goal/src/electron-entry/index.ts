@@ -56,7 +56,6 @@ const Ch = {
   UPDATE: 'goal:update',
   DELETE: 'goal:delete',
   ARCHIVE: 'goal:archive',
-  PAUSE: 'goal:pause',
   ACTIVATE: 'goal:activate',
   COMPLETE: 'goal:complete',
   SEARCH: 'goal:search',
@@ -138,9 +137,6 @@ export const GoalElectronModule: IElectronModule = {
     // Issue #4 fix: route archive through auth + controller validation
     // 问题 #4 修复：将归档操作路由到认证 + 控制器校验
     ipcMain.handle(Ch.ARCHIVE, async (_, id) =>
-      withAuthenticatedValue(ctx, async () => goalController.archive(id)),
-    );
-    ipcMain.handle(Ch.PAUSE, async (_, id) =>
       withAuthenticatedValue(ctx, async () => goalController.archive(id)),
     );
     ipcMain.handle(Ch.ACTIVATE, async (_, id) =>

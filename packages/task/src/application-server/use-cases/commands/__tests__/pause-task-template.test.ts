@@ -31,8 +31,7 @@ describe('PauseTaskTemplate', () => {
       save: vi.fn().mockResolvedValue(undefined),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
-      findByTemplateId: vi.fn().mockResolvedValue([]),
-      save: vi.fn().mockResolvedValue(undefined),
+      deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
     });
     useCase = new PauseTaskTemplate(templateRepo, instanceRepo);
   });
@@ -61,80 +60,43 @@ describe('PauseTaskTemplate', () => {
     expect(templateRepo.save).toHaveBeenCalledWith(template);
   });
 
-  it('should skip pending instances when pausing', async () => {
+  it('should delete incomplete instances when pausing', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    const pendingInstance = await aTaskInstance({ templateId: template.id as any });
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([pendingInstance]);
+    vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockResolvedValue(1);
 
     const result = await useCase.execute(template.id);
 
     expect(result).toBeOk();
-    expect(pendingInstance.status).toBe('Skipped');
-    expect(instanceRepo.save).toHaveBeenCalledWith(pendingInstance);
+    expect(instanceRepo.deleteIncompleteInstancesFrom).toHaveBeenCalledWith(
+      template.id,
+      expect.any(Number),
+    );
   });
 
-  it('should skip in-progress instances when pausing', async () => {
+  it('should include the deleted instance count', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    const inProgressInstance = await aTaskInstance({ templateId: template.id as any });
-    inProgressInstance.start();
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([inProgressInstance]);
-
-    const result = await useCase.execute(template.id);
-
-    expect(result).toBeOk();
-    expect(inProgressInstance.status).toBe('Skipped');
-  });
-
-  it('should not skip completed or already-skipped instances', async () => {
-    const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    const completedInstance = await aTaskInstance({ templateId: template.id as any });
-    completedInstance.complete();
-    const skippedInstance = await aTaskInstance({ templateId: template.id as any });
-    skippedInstance.skip('Already skipped');
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([
-      completedInstance,
-      skippedInstance,
-    ]);
+    vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockResolvedValue(2);
 
     const result = await useCase.execute(template.id);
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.instancesSkipped).toBe(0);
-    }
-    expect(instanceRepo.save).not.toHaveBeenCalled();
-  });
-
-  it('should return correct count of skipped instances', async () => {
-    const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-    const inst1 = await aTaskInstance({ templateId: template.id as any });
-    const inst2 = await aTaskInstance({ templateId: template.id as any });
-    const inst3 = await aTaskInstance({ templateId: template.id as any });
-    inst3.complete(); // this one shouldn't be skipped
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([inst1, inst2, inst3]);
-
-    const result = await useCase.execute(template.id);
-
-    expect(result).toBeOk();
-    if (result.ok) {
-      expect(result.data.instancesSkipped).toBe(2);
+      expect(result.data.instancesDeleted).toBe(2);
     }
   });
 
-  it('should return 0 skipped instances when there are none', async () => {
+  it('should return 0 deleted instances when there are none', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockResolvedValue([]);
+    vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockResolvedValue(0);
 
     const result = await useCase.execute(template.id);
 
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.instancesSkipped).toBe(0);
+      expect(result.data.instancesDeleted).toBe(0);
     }
   });
 
@@ -151,6 +113,8 @@ describe('PauseTaskTemplate', () => {
           taskTemplateId: template.id,
           identityId: template.identityId,
           pausedAt: expect.any(Number),
+          effectiveFrom: expect.any(Number),
+          instancesDeleted: expect.any(Number),
           reason: 'Taking a break',
         }),
       );
@@ -202,14 +166,14 @@ describe('PauseTaskTemplate', () => {
   it('should handle instance processing errors gracefully', async () => {
     const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
     vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(instanceRepo.findByTemplateId).mockRejectedValue(new Error('DB error'));
+    vi.mocked(instanceRepo.deleteIncompleteInstancesFrom).mockRejectedValue(new Error('DB error'));
 
     const result = await useCase.execute(template.id);
 
-    // Pause itself should still succeed, instance errors are caught
+    // Pause itself should still succeed, delete errors are caught
     expect(result).toBeOk();
     if (result.ok) {
-      expect(result.data.instancesSkipped).toBe(0);
+      expect(result.data.instancesDeleted).toBe(0);
     }
   });
 });

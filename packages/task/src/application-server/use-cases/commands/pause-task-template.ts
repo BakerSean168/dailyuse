@@ -11,7 +11,6 @@
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
@@ -29,61 +28,52 @@ export class PauseTaskTemplate {
   async execute(
     id: string,
     reason?: string,
-  ): Promise<Result<{ template: TaskTemplateClientDTO; instancesSkipped: number }>> {
+  ): Promise<Result<{ template: TaskTemplateClientDTO; instancesDeleted: number }>> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       return error('NOT_FOUND', `TaskTemplate ${id} not found`);
     }
 
-    // 1. 鏆傚仠妯℃澘鐘讹拷?
+    const effectiveFrom = Date.now();
+
+    // 1. 暂停模板
     template.pause();
     await this.templateRepository.save(template);
 
-    // 2. 澶勭悊鏈畬鎴愮殑浠诲姟瀹炰緥
-    const instancesSkipped = await this.handleInstancesOnPause(id);
+    // 2. 删除生效时点之后未完成的实例
+    const instancesDeleted = await this.deleteIncompleteInstancesFrom(id, effectiveFrom);
 
-    // 3. 鍙戝竷鏆傚仠浜嬩欢
+    // 3. 发布暂停事件
     try {
       eventBus.send('task:template:paused' as any, {
         taskTemplateId: template.id,
         identityId: template.identityId,
         pausedAt: Date.now(),
-        reason: reason || '鐢ㄦ埛鎵嬪姩鏆傚仠',
+        effectiveFrom,
+        instancesDeleted,
+        reason: reason || '用户手动暂停模板',
       });
     } catch (error) {
-      console.error(`锟?[PauseTaskTemplate] 鍙戝竷鏆傚仠浜嬩欢澶辫触:`, error);
+      console.error('[PauseTaskTemplate] Failed to publish pause event:', error);
     }
 
     return ok({
       template: template.toClientDTO(),
-      instancesSkipped,
+      instancesDeleted,
     });
   }
 
   /**
-   * 澶勭悊鏆傚仠鏃剁殑浠诲姟瀹炰緥
+   * 删除暂停生效时点之后未完成的实例
    */
-  private async handleInstancesOnPause(templateId: string): Promise<number> {
+  private async deleteIncompleteInstancesFrom(
+    templateId: string,
+    effectiveFrom: number,
+  ): Promise<number> {
     try {
-      const instances = await this.instanceRepository.findByTemplateId(templateId);
-      const pendingInstances = instances.filter(
-        (inst) =>
-          inst.status === TaskInstanceStatus.Pending ||
-          inst.status === TaskInstanceStatus.InProgress,
-      );
-
-      if (pendingInstances.length === 0) {
-        return 0;
-      }
-
-      for (const instance of pendingInstances) {
-        instance.skip('模板已暂停');
-        await this.instanceRepository.save(instance);
-      }
-
-      return pendingInstances.length;
+      return await this.instanceRepository.deleteIncompleteInstancesFrom(templateId, effectiveFrom);
     } catch (error) {
-      console.error(`[PauseTaskTemplate] 澶勭悊瀹炰緥澶辫触:`, error);
+      console.error('[PauseTaskTemplate] Failed to delete incomplete instances:', error);
       return 0;
     }
   }

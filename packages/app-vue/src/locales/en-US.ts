@@ -1504,7 +1504,6 @@ export default {
       overview: 'Overview',
       statusAll: 'All',
       statusActive: 'Active',
-      statusPaused: 'Paused',
       statusCompleted: 'Completed',
       searchGoals: 'Search goals...',
       compare: 'Compare',
@@ -2389,6 +2388,9 @@ export default {
       editSuccess: 'Template updated successfully',
       confirmDelete: 'Confirm delete template "{name}"?',
       confirmDeleteAll: 'Confirm delete all templates? This cannot be undone!',
+      pauseTitle: 'Pause this template?',
+      pauseDescription:
+        'Pausing "{name}" stops future instance generation and deletes incomplete instances from now on. Completed history is kept.',
       allDeleted: 'All templates deleted',
     },
 

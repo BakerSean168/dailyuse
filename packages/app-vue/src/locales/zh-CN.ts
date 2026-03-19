@@ -1484,7 +1484,6 @@ export default {
       overview: '概览',
       statusAll: '全部',
       statusActive: '进行中',
-      statusPaused: '已暂停',
       statusCompleted: '已完成',
       searchGoals: '搜索目标...',
       compare: '对比',
@@ -2368,6 +2367,9 @@ export default {
       editSuccess: '模板更新成功',
       confirmDelete: '确认删除模板「{name}」？',
       confirmDeleteAll: '确认删除所有模板？此操作不可撤销！',
+      pauseTitle: '确认暂停该模板？',
+      pauseDescription:
+        '暂停「{name}」后，将停止继续生成新实例，并删除从现在开始尚未完成的实例。已完成历史会保留。',
       allDeleted: '所有模板已删除',
     },
 

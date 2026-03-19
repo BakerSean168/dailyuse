@@ -227,11 +227,6 @@ export class GoalClientService {
     return mapResult(result, (dto) => goalFromDTO(dto));
   }
 
-  async pauseGoal(id: string): Promise<Result<Goal>> {
-    const result = await this.goalApi.pauseGoal(id);
-    return mapResult(result, (dto) => goalFromDTO(dto));
-  }
-
   async completeGoal(id: string): Promise<Result<Goal>> {
     const result = await this.goalApi.completeGoal(id);
     return mapResult(result, (dto) => goalFromDTO(dto));

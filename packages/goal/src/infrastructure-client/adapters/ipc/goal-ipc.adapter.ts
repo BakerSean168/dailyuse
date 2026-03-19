@@ -71,10 +71,6 @@ export class GoalIpcAdapter implements IGoalApiClient {
     return this.ipcClient.invoke(`${this.channel}:activate`, id);
   }
 
-  async pauseGoal(_id: string): Promise<Result<GoalClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:pause`, _id);
-  }
-
   async completeGoal(id: string): Promise<Result<GoalClientDTO>> {
     return this.ipcClient.invoke(`${this.channel}:complete`, id);
   }

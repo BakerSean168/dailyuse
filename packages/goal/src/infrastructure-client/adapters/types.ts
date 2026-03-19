@@ -74,7 +74,6 @@ export interface IGoalApiClient {
 
   // Goal Status
   activateGoal(id: string): Promise<Result<GoalClientDTO>>;
-  pauseGoal(id: string): Promise<Result<GoalClientDTO>>;
   completeGoal(id: string): Promise<Result<GoalClientDTO>>;
   archiveGoal(id: string): Promise<Result<GoalClientDTO>>;
 

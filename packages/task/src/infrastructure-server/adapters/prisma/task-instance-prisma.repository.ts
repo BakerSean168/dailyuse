@@ -180,13 +180,14 @@ export class TaskInstancePrismaRepository
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
   }
 
-  async deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void> {
-    await this.prisma.taskInstance.deleteMany({
+  async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {
+    const result = await this.prisma.taskInstance.deleteMany({
       where: {
         templateId,
         instanceDate: { gte: new Date(fromDate) },
-        status: 'Pending',
+        status: { in: ['Pending', 'InProgress'] },
       },
     });
+    return result.count;
   }
 }

@@ -108,7 +108,7 @@ export function createMockInstanceRepo(): ITaskInstanceRepository {
     deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
     countFutureInstances: vi.fn().mockResolvedValue(0),
     findByTemplateIdAndDateRange: vi.fn().mockResolvedValue([]),
-    deleteFuturePendingInstances: vi.fn().mockResolvedValue(undefined),
+    deleteIncompleteInstancesFrom: vi.fn().mockResolvedValue(0),
   };
 }
 

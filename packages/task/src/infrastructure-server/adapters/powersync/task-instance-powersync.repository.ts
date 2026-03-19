@@ -175,11 +175,25 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
     );
   }
 
-  async deleteFuturePendingInstances(templateId: string, fromDate: number): Promise<void> {
-    await this.db.execute(
-      `DELETE FROM task_instances WHERE template_id = ? AND instance_date >= ? AND status = 'Pending'`,
+  async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {
+    const before = await this.db.get<{ count: number }>(
+      `SELECT COUNT(*) as count
+         FROM task_instances
+        WHERE template_id = ?
+          AND instance_date >= ?
+          AND status IN ('Pending', 'InProgress')`,
       [templateId, new Date(fromDate).toISOString()],
     );
+
+    await this.db.execute(
+      `DELETE FROM task_instances
+        WHERE template_id = ?
+          AND instance_date >= ?
+          AND status IN ('Pending', 'InProgress')`,
+      [templateId, new Date(fromDate).toISOString()],
+    );
+
+    return Number(before?.count ?? 0);
   }
 
   private async query(sql: string, params: unknown[]): Promise<TaskInstance[]> {

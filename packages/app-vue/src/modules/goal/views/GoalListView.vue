@@ -215,7 +215,6 @@ const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 const statusTabs = computed(() => [
   { label: t('goal.list.statusAll'), value: 'all' },
   { label: t('goal.list.statusActive'), value: 'Active' },
-  { label: t('goal.list.statusPaused'), value: 'Paused' },
   { label: t('goal.list.statusCompleted'), value: 'Completed' },
 ]);
 

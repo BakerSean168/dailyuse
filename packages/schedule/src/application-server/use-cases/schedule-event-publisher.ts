@@ -177,7 +177,15 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        const { taskTemplateId } = event.payload as { taskTemplateId: string };
+        const taskTemplateId =
+          event.taskTemplateId ?? event.aggregateId ?? event.payload?.taskTemplateId;
+        if (!taskTemplateId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:template:paused event',
+          );
+          return;
+        }
+
         console.log(`⏸️  [ScheduleEventPublisher] 处理任务模板暂停: ${taskTemplateId}`);
         // 使用 pause 而不是 delete
         await this.pauseTasksBySource(event.identityId, SourceModule.Task, taskTemplateId);
@@ -198,10 +206,14 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        const { taskTemplateId } = event.payload as {
-          taskTemplateId: string;
-          taskTemplateData?: TaskTemplateServerDTO;
-        };
+        const taskTemplateId =
+          event.taskTemplateId ?? event.aggregateId ?? event.payload?.taskTemplateId;
+        if (!taskTemplateId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:template:resumed event',
+          );
+          return;
+        }
 
         console.log(`▶️  [ScheduleEventPublisher] 处理任务模板恢复: ${taskTemplateId}`);
         // 使用 resume 而不是 recreate

@@ -34,6 +34,7 @@
         @click-template="handleClickTemplate"
         @edit-template="handleEdit"
         @delete-template="handleDelete"
+        @pause-template="handlePause"
         @resume-template="handleResume"
         @delete-all-templates="handleDeleteAll"
       />
@@ -87,6 +88,7 @@ const {
   updateTemplate,
   deleteTemplate,
   activateTemplate,
+  pauseTemplate,
 } = useTask();
 
 const searchQuery = ref('');
@@ -176,6 +178,20 @@ async function handleDelete(template: TaskTemplateViewModel) {
 
 async function handleResume(template: TaskTemplateViewModel) {
   await activateTemplate(template.id);
+}
+
+async function handlePause(template: TaskTemplateViewModel) {
+  const confirmed = await useConfirm({
+    title: t('task.management.pauseTitle'),
+    description: t('task.management.pauseDescription', { name: template.title }),
+    confirmText: t('task.templateCard.pause'),
+    cancelText: t('common.cancel'),
+    variant: 'destructive',
+  });
+
+  if (!confirmed) return;
+
+  await pauseTemplate(template.id);
 }
 
 async function handleDeleteAll() {
