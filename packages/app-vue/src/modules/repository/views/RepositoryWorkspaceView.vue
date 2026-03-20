@@ -346,6 +346,7 @@ import ReferenceRepairDialog from '../../editor/components/ReferenceRepairDialog
 import ResourcePickerDialog from '../../editor/components/ResourcePickerDialog.vue';
 import SelfContainedExportDialog from '../../editor/components/SelfContainedExportDialog.vue';
 import MediaViewer from '../../editor/components/MediaViewer.vue';
+import ActiveDocumentPane from '../../editor/components/ActiveDocumentPane.vue';
 import { useRepositoryWorkspaceScene } from '../../editor/composables';
 import type { EditorWorkspaceSidebarMode } from '../../editor/stores/editorWorkspaceUiStore';
 import {
