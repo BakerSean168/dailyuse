@@ -393,10 +393,12 @@ const props = withDefaults(
   defineProps<{
     mode?: 'create' | 'edit';
     goal?: GoalClientDTO | null;
+    defaultFolderId?: string | null;
   }>(),
   {
     mode: 'create',
     goal: null,
+    defaultFolderId: null,
   },
 );
 
@@ -670,6 +672,7 @@ function handleTargetDateSelect(date: unknown) {
 
 function resetForm() {
   Object.assign(form, defaultForm());
+  form.folderId = props.defaultFolderId ?? '';
   showMotivation.value = false;
   showOrganization.value = false;
   activeTab.value = 'basic';

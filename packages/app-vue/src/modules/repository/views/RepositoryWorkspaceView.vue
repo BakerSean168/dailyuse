@@ -52,13 +52,16 @@
             <TypedFileTree
               v-if="store.sidebarMode === 'files'"
               :resources-by-type="resourcesByType"
+              :tree-nodes="treeNodes"
               :is-loading="isLoading"
-              :selected-id="store.currentResource?.id ?? null"
+              :selected-id="editorWorkspaceStore.activeResourceId"
               @create-note="handleCreateNote"
               @import="showImportDialog = true"
               @refresh="handleRefresh"
               @select="handleSelectResource"
               @open="handleOpenResource"
+              @rename="handleRenameResource"
+              @delete="handleDeleteResourceFromTree"
             />
 
             <!-- Search Mode -->
@@ -293,6 +296,32 @@
       :candidates="repairCandidates"
       @select="applyRepairCandidate"
     />
+
+    <Dialog v-model:open="renameDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{{ t('repository.resourceDetails.renameTitle') }}</DialogTitle>
+          <DialogDescription>
+            {{ t('repository.resourceDetails.renameDescription') }}
+          </DialogDescription>
+        </DialogHeader>
+
+        <Input
+          v-model="renameValue"
+          :placeholder="t('repository.resourceDetails.renamePlaceholder')"
+          @keyup.enter="confirmRenameResource"
+        />
+
+        <DialogFooter>
+          <Button variant="outline" @click="renameDialogOpen = false">
+            {{ t('common.cancel') }}
+          </Button>
+          <Button :disabled="renameSaveDisabled" @click="confirmRenameResource">{{
+            t('common.save')
+          }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -320,6 +349,13 @@ import {
   ResizablePanelGroup,
   ResizableHandle,
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -360,6 +396,8 @@ import type { ResolvedMarkdownResourceReference } from '../../editor/utils/markd
 import { repairBrokenMarkdownReference } from '../../editor/utils/resourceReferenceIndex';
 import ResourceDetailPanel from '../components/ResourceDetailPanel.vue';
 import { useEditorWorkspaceStore } from '../../editor/stores/editorWorkspaceStore';
+import { findNotesFolderId } from '../utils/noteFolder';
+import { normalizeRenamedResourceName } from '../utils/resourceName';
 
 import type {
   ResourceClientDTO,
@@ -384,6 +422,7 @@ const {
   repositoryId,
   bookmarks,
   resourcesByType,
+  treeNodes,
   isLoading,
   isSaving,
   isUploading,
@@ -391,8 +430,10 @@ const {
   bookmarkCapabilities,
   initRepository,
   fetchResources,
+  fetchTreeNodes,
   fetchBookmarks,
   createMarkdownNote,
+  renameResource,
   saveResourceContent,
   uploadResources,
   searchResources,
@@ -442,6 +483,9 @@ const importSummary = ref<{
   successes: ResourceClientDTO[];
   failures: Array<{ fileName: string; message: string; code: string }>;
 } | null>(null);
+const renameDialogOpen = ref(false);
+const renameValue = ref('');
+const renameTarget = ref<ResourceClientDTO | null>(null);
 
 // ── Sidebar mode config ──
 const sidebarModes = computed(() => [
@@ -471,6 +515,15 @@ const recentImageResources = computed(() =>
   recentResources.value.filter((item) => item.item.kind === 'image').map((item) => item.resource),
 );
 const recentResourceItems = computed(() => recentResources.value.map((item) => item.item));
+const normalizedRenameValue = computed(() =>
+  renameTarget.value ? normalizeRenamedResourceName(renameTarget.value, renameValue.value) : '',
+);
+const renameSaveDisabled = computed(
+  () =>
+    !renameTarget.value ||
+    !normalizedRenameValue.value ||
+    normalizedRenameValue.value === renameTarget.value.name,
+);
 const repairCandidates = computed(() => {
   if (!pendingRepairReference.value) {
     return [];
@@ -520,22 +573,33 @@ onMounted(async () => {
 bindWorkspaceLifecycle();
 
 // ── File operations ──
-function handleSelectResource(resource: ResourceClientDTO) {
-  store.setCurrentResource(resource);
+async function handleSelectResource(resource: ResourceClientDTO) {
+  await openResource(resource);
 }
 
-function handleOpenResource(resource: ResourceClientDTO) {
-  openResource(resource);
+async function handleOpenResource(resource: ResourceClientDTO) {
+  await openResource(resource);
 }
 
 async function handleCreateNote() {
-  const note = await createMarkdownNote();
+  const noteFolderId = findNotesFolderId(treeNodes.value);
+  if (!noteFolderId) {
+    toast.error(t('repository.workspace.createNoteFailed'));
+    return;
+  }
+
+  const note = await createMarkdownNote(undefined, '', noteFolderId);
   if (!note) {
     toast.error(t('repository.workspace.createNoteFailed'));
     return;
   }
 
-  openResource(note);
+  const opened = await openResource(note);
+  if (!opened) {
+    toast.error(t('repository.workspace.createNoteFailed'));
+    return;
+  }
+
   toast.success(
     t('repository.workspace.createNoteSuccess', { name: note.displayName || note.name }),
   );
@@ -543,8 +607,54 @@ async function handleCreateNote() {
 
 function handleRefresh() {
   if (repositoryId.value) {
-    fetchResources();
+    void Promise.all([fetchResources(), fetchTreeNodes()]);
   }
+}
+
+async function handleRenameResource(resource: ResourceClientDTO) {
+  renameTarget.value = resource;
+  renameValue.value = resource.name;
+  renameDialogOpen.value = true;
+}
+
+async function confirmRenameResource() {
+  const resource = renameTarget.value;
+  const nextName = normalizedRenameValue.value;
+
+  if (!resource || !nextName || nextName === resource.name) {
+    return;
+  }
+
+  const renamed = await renameResource(resource.id, nextName);
+  if (!renamed) {
+    toast.error(t('repository.resourceDetails.renameFailed'));
+    return;
+  }
+
+  if (editorWorkspaceStore.activeResourceId === resource.id) {
+    await openResource(renamed);
+  }
+
+  renameDialogOpen.value = false;
+  renameTarget.value = null;
+  renameValue.value = '';
+  toast.success(
+    t('repository.resourceDetails.renameSuccess', { name: renamed.displayName || renamed.name }),
+  );
+}
+
+watch(renameDialogOpen, (open) => {
+  if (open) {
+    return;
+  }
+
+  renameTarget.value = null;
+  renameValue.value = '';
+});
+
+async function handleDeleteResourceFromTree(resource: ResourceClientDTO) {
+  store.setCurrentResource(resource);
+  await handleDeleteResource();
 }
 
 // ── Save ──
@@ -582,7 +692,7 @@ function handleInternalLinkClick(title: string) {
     (r) => r.name === title || r.name === `${title}.md` || r.displayName === title,
   );
   if (resource) {
-    openResource(resource);
+    void openResource(resource);
   } else {
     toast.info(`${t('repository.workspace.linkNotFound')}: ${title}`);
   }
@@ -732,7 +842,7 @@ function applyRepairCandidate(replacement: ResourceClientDTO) {
 function handleNavigateToNote(noteId: string) {
   const resource = store.resources.find((item) => item.id === noteId);
   if (resource) {
-    openResource(resource);
+    void openResource(resource);
   }
 }
 
@@ -860,7 +970,7 @@ async function handleSearch(
 function handleSearchSelect(result: SearchResultItem) {
   const resource = store.resources.find((r) => r.id === result.resourceId);
   if (resource) {
-    openResource(resource);
+    void openResource(resource);
   }
 }
 
@@ -921,7 +1031,7 @@ async function handleBatchImport(files: File[], tags: string[]) {
     await fetchResources();
     const firstMarkdown = result.successes.find((resource) => isMarkdown(resource));
     if (firstMarkdown) {
-      openResource(firstMarkdown);
+      void openResource(firstMarkdown);
     }
   }
 

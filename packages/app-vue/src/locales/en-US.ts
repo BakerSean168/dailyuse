@@ -3048,6 +3048,12 @@ export default {
         'This resource is referenced {count} times across {notes} notes. Delete anyway?',
       deleteSuccess: 'Resource deleted',
       deleteFailed: 'Failed to delete resource',
+      renameTitle: 'Rename resource',
+      renameDescription:
+        'Update the resource name. If you omit the extension, the current one is kept.',
+      renamePlaceholder: 'Enter resource name',
+      renameSuccess: 'Resource renamed to {name}',
+      renameFailed: 'Failed to rename resource',
     },
     createResource: {
       title: 'Create Resource',

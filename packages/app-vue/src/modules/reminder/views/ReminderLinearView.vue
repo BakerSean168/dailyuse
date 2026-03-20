@@ -7,6 +7,27 @@
           <BellRing class="h-5 w-5 text-primary" />
           <span>{{ t('reminder.title') }}</span>
         </div>
+
+        <div class="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            :title="t('reminder.action.createReminder')"
+            @click="handleCreateTemplate()"
+          >
+            <Plus class="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            :title="t('reminder.action.createGroup')"
+            @click="openCreateGroup()"
+          >
+            <FolderPlus class="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea class="min-h-0 flex-1">
@@ -40,12 +61,6 @@
           </ActionableWrapper>
         </div>
       </ScrollArea>
-
-      <div class="border-t p-4">
-        <Button variant="ghost" size="sm" class="w-full justify-start" @click="openCreateGroup">
-          <FolderPlus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createGroup') }}
-        </Button>
-      </div>
     </aside>
 
     <!-- Main -->
@@ -67,10 +82,6 @@
               class="h-8 w-full border-transparent bg-secondary/50 pl-8 focus-visible:border-ring focus-visible:bg-background"
             />
           </div>
-          <Button size="sm" class="h-8 gap-2" @click="handleCreateTemplate">
-            <Plus class="h-4 w-4" />
-            {{ t('reminder.action.createReminder') }}
-          </Button>
         </div>
       </header>
 
@@ -125,6 +136,7 @@
       ref="templateDialogRef"
       :template="editingTemplate"
       :group-options="groups"
+      :default-group-id="defaultTemplateGroupId"
       :saving="isSaving"
       @save="handleSaveTemplate"
       @update="handleUpdateTemplate"
@@ -189,6 +201,7 @@ const selectedGroupId = ref<string | null>(null);
 const searchQuery = ref('');
 const selectedTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
+const defaultTemplateGroupId = ref<string | null>(null);
 const templateCardRef = ref<any>(null);
 const templateDialogRef = ref<any>(null);
 const groupDialogRef = ref<any>(null);
@@ -214,8 +227,9 @@ function handleTemplateClick(tpl: any) {
   templateCardRef.value?.open();
 }
 
-function handleCreateTemplate() {
+function handleCreateTemplate(groupId?: string | null) {
   editingTemplate.value = null;
+  defaultTemplateGroupId.value = groupId ?? null;
   templateDialogRef.value?.openForCreate();
 }
 
@@ -224,6 +238,7 @@ function handleEditTemplate(tpl: any) {
   const found = templates.value.find((t) => t.id === tpl.id);
   if (found) {
     editingTemplate.value = found;
+    defaultTemplateGroupId.value = null;
     templateDialogRef.value?.openForEdit(found);
   }
 }
@@ -263,6 +278,7 @@ function handleStatusChanged(tpl: any, _enabled: boolean) {
 async function handleSaveTemplate(data: Record<string, unknown>) {
   const result = await createTemplate(data as any);
   if (result) {
+    defaultTemplateGroupId.value = null;
     toast.success(t('reminder.toast.templateCreated'));
     templateDialogRef.value?.close();
   }
@@ -271,6 +287,7 @@ async function handleSaveTemplate(data: Record<string, unknown>) {
 async function handleUpdateTemplate(id: string, data: Record<string, unknown>) {
   const result = await updateTemplate(id, data as any);
   if (result) {
+    defaultTemplateGroupId.value = null;
     toast.success(t('reminder.toast.templateUpdated'));
     templateDialogRef.value?.close();
   }
@@ -296,6 +313,12 @@ async function handleUpdateGroup(id: string, data: Record<string, unknown>) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getGroupActions(group: ReminderGroupFormModel): MenuAction[] {
   return [
+    {
+      key: 'createReminder',
+      label: menuLabel('createReminder'),
+      icon: Plus,
+      handler: () => handleCreateTemplate(group.id),
+    },
     {
       key: 'edit',
       label: menuLabel('editGroup'),

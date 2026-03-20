@@ -418,11 +418,13 @@ const props = withDefaults(
     template?: ReminderTemplateClientDTO | null;
     groupOptions?: ReminderGroupOption[];
     saving?: boolean;
+    defaultGroupId?: string | null;
   }>(),
   {
     template: null,
     groupOptions: () => [],
     saving: false,
+    defaultGroupId: null,
   },
 );
 
@@ -524,7 +526,7 @@ const resetForm = () => {
     color: defaultNamedColor,
     icon: 'mdi-bell',
     tags: [],
-    groupId: undefined,
+    groupId: props.defaultGroupId ?? undefined,
   });
   tagsInput.value = '';
   showActiveHours.value = false;

@@ -3022,6 +3022,11 @@ export default {
       deleteImpact: '这个资源在 {notes} 篇笔记中被引用了 {count} 次，仍然删除吗？',
       deleteSuccess: '资源已删除',
       deleteFailed: '删除资源失败',
+      renameTitle: '重命名资源',
+      renameDescription: '修改资源名称；如果未输入扩展名，将自动保留原扩展名。',
+      renamePlaceholder: '输入资源名称',
+      renameSuccess: '资源已重命名为 {name}',
+      renameFailed: '重命名资源失败',
     },
     createResource: {
       title: '创建资源',

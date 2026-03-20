@@ -7,6 +7,27 @@
           <Target class="h-5 w-5 text-primary" />
           <span>{{ t('nav.goals') }}</span>
         </div>
+
+        <div class="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            :title="t('goal.list.newGoal')"
+            @click="openCreateDialog()"
+          >
+            <Plus class="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            :title="t('goal.list.newFolder')"
+            @click="openCreateFolder()"
+          >
+            <FolderPlus class="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea class="flex-1">
@@ -56,12 +77,6 @@
           </ActionableWrapper>
         </div>
       </ScrollArea>
-
-      <div class="border-t p-4">
-        <Button variant="ghost" size="sm" class="w-full justify-start" @click="openCreateFolder">
-          <FolderPlus class="mr-2 h-4 w-4" /> {{ t('goal.list.newFolder') }}
-        </Button>
-      </div>
     </aside>
 
     <!-- Main Content -->
@@ -95,11 +110,6 @@
           >
             <LayoutGrid class="h-4 w-4" />
             <span>{{ t('goal.list.compare') }}</span>
-          </Button>
-
-          <Button size="sm" class="h-8 gap-2" @click="openCreateDialog">
-            <Plus class="h-4 w-4" />
-            <span>{{ t('goal.list.newGoal') }}</span>
           </Button>
         </div>
       </header>
@@ -153,6 +163,7 @@
       v-model:open="showGoalDialog"
       :mode="dialogMode"
       :goal="editingGoal"
+      :default-folder-id="defaultGoalFolderId"
       @created="handleGoalCreated"
       @updated="handleGoalUpdated"
     />
@@ -207,6 +218,7 @@ const searchQuery = ref('');
 const showGoalDialog = ref(false);
 const dialogMode = ref<'create' | 'edit'>('create');
 const editingGoal = ref<GoalClientDTO | null>(null);
+const defaultGoalFolderId = ref<string | null>(null);
 const folderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 
 const systemViews = computed(() => [
@@ -255,9 +267,10 @@ function selectSystemView(view: GoalSystemView) {
   setSystemView(view);
 }
 
-function openCreateDialog() {
+function openCreateDialog(folderId?: string | null) {
   editingGoal.value = null;
   dialogMode.value = 'create';
+  defaultGoalFolderId.value = folderId ?? null;
   showGoalDialog.value = true;
 }
 
@@ -268,6 +281,7 @@ function handleViewGoal(goal: GoalClientDTO) {
 function handleEditGoal(goal: GoalClientDTO) {
   editingGoal.value = goal;
   dialogMode.value = 'edit';
+  defaultGoalFolderId.value = null;
   showGoalDialog.value = true;
 }
 
@@ -286,18 +300,26 @@ async function handleDeleteGoal(id: string) {
 
 function handleGoalCreated() {
   showGoalDialog.value = false;
+  defaultGoalFolderId.value = null;
   fetchGoals();
   toast.success(t('goal.list.created'));
 }
 
 function handleGoalUpdated() {
   showGoalDialog.value = false;
+  defaultGoalFolderId.value = null;
   fetchGoals();
   toast.success(t('goal.list.updated'));
 }
 
 function getFolderActions(folder: GoalFolderClientDTO): MenuAction[] {
   return [
+    {
+      key: 'createGoal',
+      label: menuLabel('createGoal'),
+      icon: Plus,
+      handler: () => openCreateDialog(folder.id),
+    },
     {
       key: 'edit',
       label: menuLabel('editFolder'),
