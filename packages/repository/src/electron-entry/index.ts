@@ -28,12 +28,7 @@ import { withAuthenticatedValue } from './authenticated-ipc';
 const logger = createLogger('RepositoryElectron');
 
 const Ch = {
-  LIST: 'repository:list',
   CURRENT: 'repository:current',
-  GET: 'repository:get',
-  CREATE: 'repository:create',
-  UPDATE: 'repository:update',
-  DELETE: 'repository:delete',
   RESOURCE_LIST: 'repository:resource:list',
   RESOURCE_GET: 'repository:resource:get',
   RESOURCE_CREATE: 'repository:resource:create',
@@ -82,46 +77,13 @@ export const RepositoryElectronModule: IElectronModule = {
     // 3. IPC Handlers — thin transport mapping via api facade
     //    IPC 处理器 — 通过 api 门面进行精简的传输层映射
 
-    // Repository CRUD / 仓库增删改查
-    ipcMain.handle(Ch.LIST, (_, _params) =>
-      withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await api.listRepositories({}, requestContext);
-        return result.ok ? result.data : [];
-      }),
-    );
+    // Current repository / 当前仓库
     ipcMain.handle(Ch.CURRENT, (_, _params) =>
       withAuthenticatedValue(ctx, async (requestContext) => {
         const result = await api.getCurrentRepository(requestContext);
         return result.ok ? result.data : null;
       }),
     );
-    ipcMain.handle(Ch.GET, async (_, id) => {
-      const result = await api.getRepository(id);
-      return result.ok ? result.data : null;
-    });
-    ipcMain.handle(Ch.CREATE, (_, dto) =>
-      withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await api.createRepository(
-          {
-            name: dto.name,
-            type: dto.type,
-            path: dto.path,
-            description: dto.description,
-            config: dto.config,
-          },
-          requestContext,
-        );
-        return result.ok ? result.data : null;
-      }),
-    );
-    ipcMain.handle(Ch.UPDATE, async (_, dto) => {
-      const result = await api.updateRepository(dto.id, { config: dto.config });
-      return result.ok ? result.data : null;
-    });
-    ipcMain.handle(Ch.DELETE, async (_, id) => {
-      await api.deleteRepository(id);
-      return undefined;
-    });
 
     // Resource CRUD / 资源增删改查
     ipcMain.handle(Ch.RESOURCE_LIST, async (_, params) => {

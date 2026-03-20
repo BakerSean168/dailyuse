@@ -7,24 +7,12 @@ import type {
   UpdateResourceBookmarkRequestDTO,
   ReorderResourceBookmarksRequestDTO,
 } from '../dtos';
-import type {
-  CreateRepositoryZodReq,
-  UpdateRepositoryZodReq,
-  CreateResourceZodReq,
-  UpdateResourceZodReq,
-} from '../api';
+import type { CreateResourceZodReq, UpdateResourceZodReq } from '../api';
 
 // === Repository Module RPC Map ===
 export type RepositoryRpcMap = {
   // === Repository Operations ===
-  'repository:create': [CreateRepositoryZodReq, RepositoryClientDTO];
-  'repository:update': [{ repositoryId: string } & UpdateRepositoryZodReq, RepositoryClientDTO];
-  'repository:get': [{ repositoryId: string }, RepositoryClientDTO];
-  'repository:list': [{ status?: string; type?: string }, RepositoryClientDTO[]];
   'repository:current': [void, RepositoryClientDTO | null];
-  'repository:delete': [{ repositoryId: string; hardDelete?: boolean }, { ok: boolean }];
-  'repository:archive': [{ repositoryId: string }, RepositoryClientDTO];
-  'repository:unarchive': [{ repositoryId: string }, RepositoryClientDTO];
 
   // === Resource Operations ===
   'resource:create': [{ repositoryId: string } & CreateResourceZodReq, ResourceClientDTO];

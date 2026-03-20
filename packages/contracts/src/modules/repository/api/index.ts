@@ -9,10 +9,6 @@ export {
 } from './bookmark.dto';
 
 export {
-  CreateRepositorySchema,
-  type CreateRepositoryReq as CreateRepositoryZodReq,
-  UpdateRepositorySchema,
-  type UpdateRepositoryReq as UpdateRepositoryZodReq,
   CreateResourceSchema,
   type CreateResourceReq as CreateResourceZodReq,
   UpdateResourceSchema,

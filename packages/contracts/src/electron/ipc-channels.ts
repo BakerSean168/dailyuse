@@ -193,12 +193,7 @@ export const NotificationChannels = {
 } as const;
 
 export const RepositoryChannels = {
-  LIST: 'repository:list',
   CURRENT: 'repository:current',
-  GET: 'repository:get',
-  CREATE: 'repository:create',
-  UPDATE: 'repository:update',
-  DELETE: 'repository:delete',
   RESOURCE_LIST: 'repository:resource:list',
   RESOURCE_GET: 'repository:resource:get',
   RESOURCE_CREATE: 'repository:resource:create',

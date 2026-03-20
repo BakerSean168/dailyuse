@@ -9,7 +9,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   IResultIpcClient,
   IRepositoryApiClient,
-  CreateRepositoryRequest,
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
@@ -50,22 +49,8 @@ export class RepositoryIpcAdapter implements IRepositoryApiClient {
 
   constructor(private readonly ipcClient: IResultIpcClient) {}
 
-  // ===== Repository CRUD =====
-
-  async createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:create`, request);
-  }
-
   async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
     return this.ipcClient.invoke(`${this.channel}:current`);
-  }
-
-  async getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>> {
-    return this.ipcClient.invoke(`${this.channel}:get`, id);
-  }
-
-  async deleteRepository(id: string): Promise<Result<void>> {
-    return this.ipcClient.invoke(`${this.channel}:delete`, id);
   }
 
   // ===== Folder Operations =====

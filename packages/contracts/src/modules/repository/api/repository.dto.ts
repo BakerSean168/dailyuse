@@ -7,26 +7,6 @@ import { z } from 'zod';
 import { brandedId, openApiJsonValue } from '../../../primitives';
 import type { RepositoryId, FolderId } from '../../../primitives';
 
-// ==================== Repository Schemas ====================
-
-export const CreateRepositorySchema = z.object({
-  name: z.string().min(1).max(200).describe('仓库名称'),
-  type: z.string().min(1).max(100).describe('仓库类型'),
-  path: z.string().max(500).optional().describe('仓库路径'),
-  description: z.string().max(2000).optional().describe('仓库描述'),
-  config: z.record(z.string(), openApiJsonValue).optional().describe('仓库配置'),
-});
-
-export type CreateRepositoryReq = z.infer<typeof CreateRepositorySchema>;
-
-export const UpdateRepositorySchema = z.object({
-  name: z.string().min(1).max(200).optional().describe('仓库名称'),
-  description: z.string().max(2000).optional().describe('仓库描述'),
-  config: z.record(z.string(), openApiJsonValue).optional().describe('仓库配置'),
-});
-
-export type UpdateRepositoryReq = z.infer<typeof UpdateRepositorySchema>;
-
 // ==================== Resource Schemas ====================
 
 export const CreateResourceSchema = z.object({

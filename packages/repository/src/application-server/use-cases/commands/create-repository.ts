@@ -7,11 +7,8 @@
 import type { IRepositoryRepository } from '../../../domain-server/repositories/IRepositoryRepository';
 import { Repository } from '../../../domain-server/aggregates/repository';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
-import type {
-  RepositoryClientDTO,
-  RepositoryConfigDTO,
-} from '@dailyuse/contracts/repository';
-import { RepositoryType } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, RepositoryConfigDTO } from '@dailyuse/contracts/repository';
+import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository';
 
 /**
  * Create Repository Input
@@ -36,10 +33,16 @@ export interface CreateRepositoryOutput {
  * Create Repository
  */
 export class CreateRepository {
-
   constructor(private readonly repositoryRepository: IRepositoryRepository) {}
 
   async execute(input: CreateRepositoryInput): Promise<CreateRepositoryOutput> {
+    const existingRepositories = await this.repositoryRepository.findByIdentityId(input.identityId);
+    const existingRepository = pickCanonicalRepository(existingRepositories);
+
+    if (existingRepository) {
+      return { repository: existingRepository.toClientDTO() };
+    }
+
     const repository = Repository.create({
       identityId: IdentityId.of(input.identityId),
       name: input.name,
@@ -53,3 +56,14 @@ export class CreateRepository {
   }
 }
 
+function pickCanonicalRepository(repositories: Repository[]): Repository | null {
+  if (repositories.length === 0) {
+    return null;
+  }
+
+  const activeRepository = repositories.find(
+    (repository) => repository.status === RepositoryStatus.Active,
+  );
+
+  return activeRepository ?? repositories[0] ?? null;
+}

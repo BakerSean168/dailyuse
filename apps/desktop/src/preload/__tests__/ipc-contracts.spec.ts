@@ -357,10 +357,7 @@ describe('desktop IPC contract alignment', () => {
     const recorder = createIpcRecorder();
     const adapter = new RepositoryIpcAdapter(recorder as never);
 
-    await adapter.createRepository({} as never);
     await adapter.getCurrentRepository();
-    await adapter.getRepositoryById('repository-1');
-    await adapter.deleteRepository('repository-1');
     await adapter.createFolder({} as never);
     await adapter.getFolderContents('folder-1');
     await adapter.renameFolder('folder-1', 'Renamed');

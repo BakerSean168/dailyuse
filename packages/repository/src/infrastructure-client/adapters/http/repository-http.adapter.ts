@@ -9,7 +9,6 @@ import type { Result } from '@dailyuse/contracts/result';
 import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   IRepositoryApiClient,
-  CreateRepositoryRequest,
   CreateFolderRequest,
   CreateResourceRequest,
   UpdateResourceRequest,
@@ -47,22 +46,8 @@ export class RepositoryHttpAdapter implements IRepositoryApiClient {
 
   constructor(private readonly httpClient: IResultHttpClient) {}
 
-  // ===== Repository CRUD =====
-
-  async createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>> {
-    return this.httpClient.post(this.baseUrl, request);
-  }
-
   async getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>> {
     return this.httpClient.get(`${this.baseUrl}/current`);
-  }
-
-  async getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>> {
-    return this.httpClient.get(`${this.baseUrl}/${id}`);
-  }
-
-  async deleteRepository(id: string): Promise<Result<void>> {
-    return this.httpClient.delete(`${this.baseUrl}/${id}`);
   }
 
   // ===== Folder Operations =====

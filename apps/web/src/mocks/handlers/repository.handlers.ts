@@ -1,7 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import {
   createMockRepository,
-  createMockRepositoryList,
   createMockResource,
   createMockResourceList,
 } from '@dailyuse/contracts/mocks';
@@ -124,30 +123,6 @@ export function createMockRepositorySearchResponse(
 }
 
 export const repositoryHandlers = [
-  http.get(REPOS, () => {
-    return HttpResponse.json({
-      ok: true,
-      code: 200,
-      message: 'Success',
-      data: createMockRepositoryList(5),
-      timestamp: Date.now(),
-    });
-  }),
-
-  http.post(REPOS, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      {
-        ok: true,
-        code: 200,
-        message: 'Created',
-        data: createMockRepository({ name: body.name as string }),
-        timestamp: Date.now(),
-      },
-      { status: 201 },
-    );
-  }),
-
   http.get(`${REPOS}/current`, () => {
     return HttpResponse.json({
       ok: true,

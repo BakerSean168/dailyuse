@@ -10,6 +10,8 @@ import { ResourceBookmarkMemoryRepository } from '../../infrastructure-server/ad
 import { createRepositoryModule } from '../../infrastructure-server/repository.module';
 import { Repository } from '../../domain-server/aggregates/repository';
 import { Folder } from '../../domain-server/entities/folder';
+import { CreateRepository } from '../use-cases/commands/create-repository';
+import { IdentityId } from '@dailyuse/domain-shared/shared';
 
 describe('Repository resource mutations', () => {
   it('renames a resource in both storage and metadata', async () => {
@@ -137,6 +139,63 @@ describe('Repository resource mutations', () => {
       await expect(
         fs.promises.stat(path.join(tempDir, String(repository.id), 'note.md')),
       ).rejects.toThrow();
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('returns the existing repository when createRepository is called again for the same user', async () => {
+    const repositoryRepository = new RepositoryMemoryRepository();
+    const createRepository = new CreateRepository(repositoryRepository);
+
+    const first = await createRepository.execute({
+      identityId: String(IdentityId.generate()),
+      name: 'Personal Knowledge Base',
+      type: 'Markdown' as any,
+      path: '/repo-1',
+    });
+
+    const second = await createRepository.execute({
+      identityId: first.repository.identityId,
+      name: 'Another Repository',
+      type: 'Mixed' as any,
+      path: '/repo-2',
+    });
+
+    expect(second.repository.id).toBe(first.repository.id);
+    expect(second.repository.name).toBe(first.repository.name);
+
+    const repositories = await repositoryRepository.findByIdentityId(first.repository.identityId);
+    expect(repositories).toHaveLength(1);
+  });
+
+  it('creates a canonical repository when current repository is requested for a new user', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-bootstrap-'));
+
+    try {
+      const module = createRepositoryModule({
+        repositoryRepository: new RepositoryMemoryRepository(),
+        resourceRepository: new ResourceMemoryRepository(),
+        folderRepository: new FolderMemoryRepository(),
+        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
+        storagePort: new FsStorageAdapter(tempDir),
+      });
+
+      const identityId = String(IdentityId.generate());
+      const result = await module.api.getCurrentRepository({ identityId } as any);
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) {
+        throw new Error('Expected current repository result');
+      }
+
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          identityId,
+          name: 'Knowledge Base',
+          type: 'Markdown',
+        }),
+      );
     } finally {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }

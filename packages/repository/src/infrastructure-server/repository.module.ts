@@ -24,13 +24,7 @@ import type { IResourceBookmarkRepository } from '../domain-server/repositories/
 import type { IStoragePort } from '../application-server/ports/IStoragePort';
 import {
   CreateRepository,
-  GetRepository,
-  ListRepositories,
-  UpdateRepositoryConfig,
   UpdateRepositoryStats,
-  DeleteRepository,
-  ArchiveRepository,
-  ActivateRepository,
   GetResource,
   ListResources,
   CreateResource,
@@ -119,13 +113,7 @@ export interface RepositoryModuleRuntimeContribution {
  */
 export interface RepositoryModuleUseCases {
   readonly createRepository: CreateRepository;
-  readonly getRepository: GetRepository;
-  readonly listRepositories: ListRepositories;
-  readonly updateRepositoryConfig: UpdateRepositoryConfig;
   readonly updateRepositoryStats: UpdateRepositoryStats;
-  readonly deleteRepository: DeleteRepository;
-  readonly archiveRepository: ArchiveRepository;
-  readonly activateRepository: ActivateRepository;
   readonly getResource: GetResource;
   readonly listResources: ListResources;
   readonly createResource: CreateResource;
@@ -160,30 +148,7 @@ export interface RepositoryModuleUseCases {
  * 控制器中的 RepositoryUseCases 类型与之结构兼容。
  */
 export interface RepositoryApplicationPort {
-  // Repository CRUD — 仓库增删改查
-  createRepository(
-    data: {
-      name: string;
-      type: string;
-      path?: string;
-      description?: string;
-      config?: Record<string, unknown>;
-    },
-    ctx: Context,
-  ): Promise<Result<unknown>>;
-  listRepositories(
-    filters: { status?: string; type?: string },
-    ctx: Context,
-  ): Promise<Result<unknown>>;
   getCurrentRepository(ctx: Context): Promise<Result<unknown>>;
-  getRepository(id: string): Promise<Result<unknown>>;
-  updateRepository(
-    id: string,
-    data: { config?: Record<string, unknown> },
-  ): Promise<Result<unknown>>;
-  deleteRepository(id: string): Promise<Result<unknown>>;
-  archiveRepository(id: string): Promise<Result<unknown>>;
-  activateRepository(id: string): Promise<Result<unknown>>;
 
   // Resource CRUD — 资源增删改查
   createResource(
@@ -346,13 +311,7 @@ export function createRepositoryUseCases(
 
   return {
     createRepository: new CreateRepository(repositoryRepository),
-    getRepository: new GetRepository(repositoryRepository),
-    listRepositories: new ListRepositories(repositoryRepository),
-    updateRepositoryConfig: new UpdateRepositoryConfig(repositoryRepository),
     updateRepositoryStats: new UpdateRepositoryStats(repositoryRepository),
-    deleteRepository: new DeleteRepository(repositoryRepository),
-    archiveRepository: new ArchiveRepository(repositoryRepository),
-    activateRepository: new ActivateRepository(repositoryRepository),
     getResource: new GetResource(resourceRepository),
     listResources: new ListResources(resourceRepository),
     createResource,
@@ -517,71 +476,47 @@ function buildApplicationPort(
     return resource;
   }
 
+  async function resolveCanonicalRepository(identityId: string) {
+    const activeRepos = await repositoryRepository.findByIdentityIdAndStatus(
+      identityId,
+      RepositoryStatus.Active,
+    );
+    const repository =
+      activeRepos[0] ?? (await repositoryRepository.findByIdentityId(identityId))[0];
+
+    if (!repository) {
+      return fail({
+        code: 'NOT_FOUND',
+        message: `No repository available for identity: ${identityId}`,
+      });
+    }
+
+    return ok(repository.toClientDTO());
+  }
+
+  async function ensureCanonicalRepository(identityId: string) {
+    const existing = await resolveCanonicalRepository(identityId);
+    if (existing.ok) {
+      return existing;
+    }
+
+    if (existing.error.code !== 'NOT_FOUND') {
+      return existing;
+    }
+
+    const created = await useCases.createRepository.execute({
+      identityId,
+      name: 'Knowledge Base',
+      type: 'Markdown' as any,
+      path: 'knowledge-base',
+    });
+
+    return ok(created.repository);
+  }
+
   return {
-    // ---- Repository CRUD — 仓库增删改查 ----
-    createRepository: async (data, ctx) => {
-      const result = await useCases.createRepository.execute({
-        identityId: ctx.identityId,
-        name: data.name,
-        type: data.type as any,
-        path: data.path ?? data.name,
-        description: data.description,
-        config: data.config as any,
-      });
-      return ok(result.repository);
-    },
-    listRepositories: async (filters, ctx) => {
-      const result = await useCases.listRepositories.execute({
-        identityId: ctx.identityId,
-        status: filters.status as any,
-      });
-      return ok(result.repositories);
-    },
     getCurrentRepository: async (ctx) => {
-      const result = await useCases.listRepositories.execute({
-        identityId: ctx.identityId,
-      });
-      const repositories = result.repositories;
-
-      if (repositories.length === 0) {
-        return ok(null);
-      }
-
-      if (repositories.length > 1) {
-        return fail({
-          code: 'CONFLICT',
-          message: 'Single-repository mode expected exactly one repository',
-          context: {
-            count: repositories.length,
-            repositoryIds: repositories.map((repository) => repository.id),
-          },
-        });
-      }
-
-      return ok(repositories[0]);
-    },
-    getRepository: async (id) => {
-      const result = await useCases.getRepository.execute({ id });
-      return ok(result.repository);
-    },
-    updateRepository: async (id, data) => {
-      const result = await useCases.updateRepositoryConfig.execute({
-        id,
-        config: data.config ?? {},
-      });
-      return ok(result.repository);
-    },
-    deleteRepository: async (id) => {
-      await useCases.deleteRepository.execute({ id });
-      return ok(undefined);
-    },
-    archiveRepository: async (id) => {
-      const result = await useCases.archiveRepository.execute({ id });
-      return ok(result.repository);
-    },
-    activateRepository: async (id) => {
-      const result = await useCases.activateRepository.execute({ id });
-      return ok(result.repository);
+      return ensureCanonicalRepository(ctx.identityId);
     },
 
     // ---- Resource CRUD — 资源增删改查 ----
@@ -737,23 +672,7 @@ function buildApplicationPort(
 
     // ---- Repository resolution — 仓库解析 ----
     findActiveRepository: async (identityId) => {
-      // Try active repositories first, fall back to any repository owned by the identity.
-      // 优先查找活跃仓库，回退到该身份拥有的任何仓库。
-      const { repositoryRepository } = deps;
-      const activeRepos = await repositoryRepository.findByIdentityIdAndStatus(
-        identityId,
-        RepositoryStatus.Active,
-      );
-      const repository =
-        activeRepos[0] ?? (await repositoryRepository.findByIdentityId(identityId))[0];
-
-      if (!repository) {
-        return fail({
-          code: 'NOT_FOUND',
-          message: `No repository available for identity: ${identityId}`,
-        });
-      }
-      return ok(repository);
+      return ensureCanonicalRepository(identityId);
     },
   };
 }

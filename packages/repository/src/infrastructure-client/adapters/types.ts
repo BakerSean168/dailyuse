@@ -40,13 +40,6 @@ export interface IResultIpcClient {
 }
 
 // ============ Local Request Types ============
-// 合约包暂未定义，临时本地声明
-
-export interface CreateRepositoryRequest {
-  name: string;
-  type: string;
-  description?: string;
-}
 
 export interface CreateFolderRequest {
   repositoryId: string;
@@ -85,11 +78,7 @@ export interface UploadResourcesRequest extends UploadResourcesRequestDTO {
  * Repository API Client Interface
  */
 export interface IRepositoryApiClient {
-  // ===== Repository CRUD =====
-  createRepository(request: CreateRepositoryRequest): Promise<Result<RepositoryClientDTO>>;
   getCurrentRepository(): Promise<Result<RepositoryClientDTO | null>>;
-  getRepositoryById(id: string): Promise<Result<RepositoryClientDTO>>;
-  deleteRepository(id: string): Promise<Result<void>>;
 
   // ===== Folder Operations =====
   createFolder(request: CreateFolderRequest): Promise<Result<FolderClientDTO>>;
