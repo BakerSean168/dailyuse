@@ -103,7 +103,31 @@ export class ScheduleClientService {
   constructor(
     private readonly eventApi: IScheduleEventApiClient,
     private readonly taskApi: IScheduleTaskApiClient,
-  ) {}
+  ) {
+    this.createSchedule = this.createSchedule.bind(this);
+    this.getSchedule = this.getSchedule.bind(this);
+    this.getSchedulesByAccount = this.getSchedulesByAccount.bind(this);
+    this.getSchedulesByTimeRange = this.getSchedulesByTimeRange.bind(this);
+    this.updateSchedule = this.updateSchedule.bind(this);
+    this.deleteSchedule = this.deleteSchedule.bind(this);
+    this.getScheduleConflicts = this.getScheduleConflicts.bind(this);
+    this.detectConflicts = this.detectConflicts.bind(this);
+    this.createScheduleWithConflictDetection = this.createScheduleWithConflictDetection.bind(this);
+    this.resolveConflict = this.resolveConflict.bind(this);
+    this.createTask = this.createTask.bind(this);
+    this.createTasksBatch = this.createTasksBatch.bind(this);
+    this.getTasks = this.getTasks.bind(this);
+    this.getTaskById = this.getTaskById.bind(this);
+    this.getDueTasks = this.getDueTasks.bind(this);
+    this.getTaskBySource = this.getTaskBySource.bind(this);
+    this.pauseTask = this.pauseTask.bind(this);
+    this.resumeTask = this.resumeTask.bind(this);
+    this.completeTask = this.completeTask.bind(this);
+    this.cancelTask = this.cancelTask.bind(this);
+    this.deleteTask = this.deleteTask.bind(this);
+    this.deleteTasksBatch = this.deleteTasksBatch.bind(this);
+    this.updateTaskMetadata = this.updateTaskMetadata.bind(this);
+  }
 
   // ===== Schedule Event CRUD =====
 

@@ -43,6 +43,8 @@ const REMINDER_CHANNELS = {
   DELETE_GROUP: 'reminder:group:delete',
   TOGGLE_GROUP_STATUS: 'reminder:group:toggle-status',
   SWITCH_GROUP_CONTROL_MODE: 'reminder:group:switch-control-mode',
+  GET_PREFERENCES: 'reminder:preferences:get',
+  UPDATE_PREFERENCES: 'reminder:preferences:update',
 } as const;
 
 export class ReminderIpcAdapter implements IReminderApiClient {
@@ -95,9 +97,11 @@ export class ReminderIpcAdapter implements IReminderApiClient {
 
   async moveTemplateToGroup(
     templateId: string,
-    targetGroupId: string,
+    targetGroupId: string | null,
   ): Promise<Result<ReminderTemplateClientDTO>> {
-    return this.ipcClient.invoke(REMINDER_CHANNELS.MOVE_TEMPLATE, templateId, targetGroupId);
+    return this.ipcClient.invoke(REMINDER_CHANNELS.MOVE_TEMPLATE, templateId, {
+      groupId: targetGroupId,
+    });
   }
 
   async getUpcomingReminders(params?: {
@@ -162,6 +166,14 @@ export class ReminderIpcAdapter implements IReminderApiClient {
     mode: ControlMode,
   ): Promise<Result<ReminderGroupClientDTO>> {
     return this.ipcClient.invoke(REMINDER_CHANNELS.SWITCH_GROUP_CONTROL_MODE, id, { mode });
+  }
+
+  async getPreferences(): Promise<Result<any>> {
+    return this.ipcClient.invoke(REMINDER_CHANNELS.GET_PREFERENCES);
+  }
+
+  async updatePreferences(data: Record<string, unknown>): Promise<Result<any>> {
+    return this.ipcClient.invoke(REMINDER_CHANNELS.UPDATE_PREFERENCES, data);
   }
 }
 

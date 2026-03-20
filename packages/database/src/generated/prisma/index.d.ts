@@ -56058,6 +56058,7 @@ export namespace Prisma {
     identityId: string | null
     bestTimeSlots: string | null
     worstTimeSlots: string | null
+    globalReminderEnabled: boolean | null
     globalSmartFrequency: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -56068,6 +56069,7 @@ export namespace Prisma {
     identityId: string | null
     bestTimeSlots: string | null
     worstTimeSlots: string | null
+    globalReminderEnabled: boolean | null
     globalSmartFrequency: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -56078,6 +56080,7 @@ export namespace Prisma {
     identityId: number
     bestTimeSlots: number
     worstTimeSlots: number
+    globalReminderEnabled: number
     globalSmartFrequency: number
     createdAt: number
     updatedAt: number
@@ -56090,6 +56093,7 @@ export namespace Prisma {
     identityId?: true
     bestTimeSlots?: true
     worstTimeSlots?: true
+    globalReminderEnabled?: true
     globalSmartFrequency?: true
     createdAt?: true
     updatedAt?: true
@@ -56100,6 +56104,7 @@ export namespace Prisma {
     identityId?: true
     bestTimeSlots?: true
     worstTimeSlots?: true
+    globalReminderEnabled?: true
     globalSmartFrequency?: true
     createdAt?: true
     updatedAt?: true
@@ -56110,6 +56115,7 @@ export namespace Prisma {
     identityId?: true
     bestTimeSlots?: true
     worstTimeSlots?: true
+    globalReminderEnabled?: true
     globalSmartFrequency?: true
     createdAt?: true
     updatedAt?: true
@@ -56193,6 +56199,7 @@ export namespace Prisma {
     identityId: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled: boolean
     globalSmartFrequency: boolean
     createdAt: Date
     updatedAt: Date
@@ -56220,6 +56227,7 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -56231,6 +56239,7 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -56242,6 +56251,7 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -56253,12 +56263,13 @@ export namespace Prisma {
     identityId?: boolean
     bestTimeSlots?: boolean
     worstTimeSlots?: boolean
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserReminderPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "bestTimeSlots" | "worstTimeSlots" | "globalSmartFrequency" | "createdAt" | "updatedAt", ExtArgs["result"]["userReminderPreference"]>
+  export type UserReminderPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "bestTimeSlots" | "worstTimeSlots" | "globalReminderEnabled" | "globalSmartFrequency" | "createdAt" | "updatedAt", ExtArgs["result"]["userReminderPreference"]>
   export type UserReminderPreferenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     account?: boolean | AccountDefaultArgs<ExtArgs>
   }
@@ -56285,6 +56296,7 @@ export namespace Prisma {
        * JSON: TimeSlotDTO[]
        */
       worstTimeSlots: string
+      globalReminderEnabled: boolean
       globalSmartFrequency: boolean
       createdAt: Date
       updatedAt: Date
@@ -56716,6 +56728,7 @@ export namespace Prisma {
     readonly identityId: FieldRef<"UserReminderPreference", 'String'>
     readonly bestTimeSlots: FieldRef<"UserReminderPreference", 'String'>
     readonly worstTimeSlots: FieldRef<"UserReminderPreference", 'String'>
+    readonly globalReminderEnabled: FieldRef<"UserReminderPreference", 'Boolean'>
     readonly globalSmartFrequency: FieldRef<"UserReminderPreference", 'Boolean'>
     readonly createdAt: FieldRef<"UserReminderPreference", 'DateTime'>
     readonly updatedAt: FieldRef<"UserReminderPreference", 'DateTime'>
@@ -83363,6 +83376,7 @@ export namespace Prisma {
     identityId: 'identityId',
     bestTimeSlots: 'bestTimeSlots',
     worstTimeSlots: 'worstTimeSlots',
+    globalReminderEnabled: 'globalReminderEnabled',
     globalSmartFrequency: 'globalSmartFrequency',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -87969,6 +87983,7 @@ export namespace Prisma {
     identityId?: StringFilter<"UserReminderPreference"> | string
     bestTimeSlots?: StringFilter<"UserReminderPreference"> | string
     worstTimeSlots?: StringFilter<"UserReminderPreference"> | string
+    globalReminderEnabled?: BoolFilter<"UserReminderPreference"> | boolean
     globalSmartFrequency?: BoolFilter<"UserReminderPreference"> | boolean
     createdAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
@@ -87980,6 +87995,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -87994,6 +88010,7 @@ export namespace Prisma {
     NOT?: UserReminderPreferenceWhereInput | UserReminderPreferenceWhereInput[]
     bestTimeSlots?: StringFilter<"UserReminderPreference"> | string
     worstTimeSlots?: StringFilter<"UserReminderPreference"> | string
+    globalReminderEnabled?: BoolFilter<"UserReminderPreference"> | boolean
     globalSmartFrequency?: BoolFilter<"UserReminderPreference"> | boolean
     createdAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserReminderPreference"> | Date | string
@@ -88005,6 +88022,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -88021,6 +88039,7 @@ export namespace Prisma {
     identityId?: StringWithAggregatesFilter<"UserReminderPreference"> | string
     bestTimeSlots?: StringWithAggregatesFilter<"UserReminderPreference"> | string
     worstTimeSlots?: StringWithAggregatesFilter<"UserReminderPreference"> | string
+    globalReminderEnabled?: BoolWithAggregatesFilter<"UserReminderPreference"> | boolean
     globalSmartFrequency?: BoolWithAggregatesFilter<"UserReminderPreference"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"UserReminderPreference"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserReminderPreference"> | Date | string
@@ -94920,6 +94939,7 @@ export namespace Prisma {
     id: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -94931,6 +94951,7 @@ export namespace Prisma {
     identityId: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -94940,6 +94961,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -94951,6 +94973,7 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -94961,6 +94984,7 @@ export namespace Prisma {
     identityId: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -94970,6 +94994,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -94980,6 +95005,7 @@ export namespace Prisma {
     identityId?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100782,6 +100808,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -100792,6 +100819,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -100802,6 +100830,7 @@ export namespace Prisma {
     identityId?: SortOrder
     bestTimeSlots?: SortOrder
     worstTimeSlots?: SortOrder
+    globalReminderEnabled?: SortOrder
     globalSmartFrequency?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -108181,6 +108210,7 @@ export namespace Prisma {
     id: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -108190,6 +108220,7 @@ export namespace Prisma {
     id: string
     bestTimeSlots: string
     worstTimeSlots: string
+    globalReminderEnabled?: boolean
     globalSmartFrequency?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -110161,6 +110192,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -110170,6 +110202,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     bestTimeSlots?: StringFieldUpdateOperationsInput | string
     worstTimeSlots?: StringFieldUpdateOperationsInput | string
+    globalReminderEnabled?: BoolFieldUpdateOperationsInput | boolean
     globalSmartFrequency?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

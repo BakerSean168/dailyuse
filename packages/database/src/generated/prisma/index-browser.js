@@ -744,6 +744,7 @@ exports.Prisma.UserReminderPreferenceScalarFieldEnum = {
   identityId: 'identityId',
   bestTimeSlots: 'bestTimeSlots',
   worstTimeSlots: 'worstTimeSlots',
+  globalReminderEnabled: 'globalReminderEnabled',
   globalSmartFrequency: 'globalSmartFrequency',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

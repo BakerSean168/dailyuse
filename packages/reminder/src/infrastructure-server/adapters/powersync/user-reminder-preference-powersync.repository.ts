@@ -27,12 +27,14 @@ export class UserReminderPreferencePowerSyncRepository implements IUserReminderP
         `UPDATE user_reminder_preferences
          SET best_time_slots = ?,
              worst_time_slots = ?,
+             global_reminder_enabled = ?,
              global_smart_frequency = ?,
              updated_at = ?
-         WHERE identity_id = ?`,
+          WHERE identity_id = ?`,
         [
           JSON.stringify(dto.bestTimeSlots ?? []),
           JSON.stringify(dto.worstTimeSlots ?? []),
+          dto.globalReminderEnabled ? 1 : 0,
           dto.globalSmartFrequency ? 1 : 0,
           updatedAt,
           dto.identityId,
@@ -41,13 +43,14 @@ export class UserReminderPreferencePowerSyncRepository implements IUserReminderP
     } else {
       await this.db.execute(
         `INSERT INTO user_reminder_preferences (
-          id, identity_id, best_time_slots, worst_time_slots, global_smart_frequency, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          id, identity_id, best_time_slots, worst_time_slots, global_reminder_enabled, global_smart_frequency, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           dto.id,
           dto.identityId,
           JSON.stringify(dto.bestTimeSlots ?? []),
           JSON.stringify(dto.worstTimeSlots ?? []),
+          dto.globalReminderEnabled ? 1 : 0,
           dto.globalSmartFrequency ? 1 : 0,
           createdAt,
           updatedAt,

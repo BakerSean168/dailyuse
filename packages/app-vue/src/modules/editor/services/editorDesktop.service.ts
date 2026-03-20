@@ -5,6 +5,12 @@ import type {
   EditorGroupClientDTO,
 } from '@dailyuse/contracts/editor';
 
+interface EditorContentReadResult {
+  resourceId: string;
+  name: string;
+  content: string | null;
+}
+
 function getElectronApi() {
   return typeof window !== 'undefined' ? window.electronAPI : undefined;
 }
@@ -91,6 +97,83 @@ export async function deleteEditorTab(payload: {
   }
 
   await api.invoke(EditorChannels.TAB_DELETE, payload);
+}
+
+export async function updateEditorTab(payload: {
+  workspaceId: string;
+  sessionId: string;
+  groupId: string;
+  tabId: string;
+  isDirty?: boolean;
+  title?: string;
+  isPinned?: boolean;
+}): Promise<EditorTabClientDTO | null> {
+  const api = getElectronApi();
+  if (!api) {
+    return null;
+  }
+
+  const result = (await api.invoke(EditorChannels.TAB_UPDATE, {
+    tabId: payload.tabId,
+    data: {
+      workspaceId: payload.workspaceId,
+      sessionId: payload.sessionId,
+      groupId: payload.groupId,
+      title: payload.title,
+      isPinned: payload.isPinned,
+      isDirty: payload.isDirty,
+    },
+  })) as { ok?: boolean; data?: EditorTabClientDTO | null };
+
+  return result?.ok ? (result.data ?? null) : null;
+}
+
+export async function getEditorContent(
+  resourceId: string,
+): Promise<EditorContentReadResult | null> {
+  const api = getElectronApi();
+  if (!api) {
+    return null;
+  }
+
+  const result = (await api.invoke(EditorChannels.GET_CONTENT, resourceId)) as {
+    ok?: boolean;
+    data?: EditorContentReadResult | null;
+  };
+
+  return result?.ok ? (result.data ?? null) : null;
+}
+
+export async function saveEditorContent(payload: {
+  resourceId: string;
+  content: string;
+}): Promise<boolean> {
+  const api = getElectronApi();
+  if (!api) {
+    return false;
+  }
+
+  const result = (await api.invoke(EditorChannels.SAVE_CONTENT, payload)) as {
+    ok?: boolean;
+  };
+
+  return Boolean(result?.ok);
+}
+
+export async function autoSaveEditorContent(payload: {
+  resourceId: string;
+  content: string;
+}): Promise<boolean> {
+  const api = getElectronApi();
+  if (!api) {
+    return false;
+  }
+
+  const result = (await api.invoke(EditorChannels.AUTO_SAVE, payload)) as {
+    ok?: boolean;
+  };
+
+  return Boolean(result?.ok);
 }
 
 export function firstGroup(session: EditorSessionClientDTO | null): EditorGroupClientDTO | null {

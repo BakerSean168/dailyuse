@@ -266,6 +266,7 @@ export function createEditorModule(dependencies: EditorModuleDependencies): Edit
           title: data.title,
           viewState: data.viewState ?? undefined,
           isPinned: data.isPinned,
+          isDirty: data.isDirty,
         }),
       ),
 

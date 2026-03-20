@@ -162,6 +162,7 @@ model UserReminderPreference {
   worstTimeSlots String @map("worst_time_slots") /// JSON: TimeSlotDTO[]
 
   // ============ 智能频率 ============
+  globalReminderEnabled Boolean @default(true) @map("global_reminder_enabled")
   globalSmartFrequency Boolean @default(true) @map("global_smart_frequency")
 
   // ============ 审计 ============

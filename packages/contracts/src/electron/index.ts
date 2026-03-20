@@ -8,6 +8,14 @@
  */
 
 export type { IElectronAuthContext } from './auth-context';
+export {
+  createAuthenticatedIpcWrapper,
+  createAuthenticatedIdentityIpcWrapper,
+  withAuthenticatedValue,
+  withAuthenticatedIdentity,
+  type AuthenticatedIpcWrapperOptions,
+  type AuthenticatedIdentityIpcWrapperOptions,
+} from './authenticated-ipc';
 export * from './ipc-channels';
 export type {
   IElectronDatabase,

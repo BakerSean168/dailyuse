@@ -7,7 +7,7 @@
           <DialogTitle>{{ t('reminder.templateMove.title') }}</DialogTitle>
         </div>
         <DialogDescription class="text-sm text-muted-foreground">
-          Choose a new group for this reminder template or move it back to the root list.
+          {{ t('reminder.templateMove.description') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -107,8 +107,27 @@
                   {{ getGroupStatus(selectedGroupId) }}</span
                 >
               </div>
+              <div class="flex items-center gap-2">
+                <Folder class="h-4 w-4 text-muted-foreground" />
+                <span
+                  >{{ t('reminder.templateMove.controlMode') }}
+                  {{ getGroupControlMode(selectedGroupId) }}</span
+                >
+              </div>
+              <div class="flex items-start gap-2">
+                <Info class="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <span>{{ getGroupPolicyText(selectedGroupId) }}</span>
+              </div>
             </div>
           </Card>
+
+          <Alert v-if="previewText">
+            <Info class="h-4 w-4" />
+            <AlertTitle>{{ t('reminder.templateMove.previewTitle') }}</AlertTitle>
+            <AlertDescription>
+              {{ previewText }}
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
 
@@ -128,6 +147,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type {
+  ReminderGroupClientDTO,
+  ReminderTemplateClientDTO,
+} from '@dailyuse/contracts/reminder';
 import {
   FolderInput,
   Info,
@@ -147,6 +170,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@dailyuse/ui-vue-shadcn';
+import { getGroupPolicyText as getGroupPolicySummary } from '../presentation/lifecyclePresentation';
 import { Button } from '@dailyuse/ui-vue-shadcn';
 import { Label } from '@dailyuse/ui-vue-shadcn';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
@@ -161,15 +185,13 @@ import {
   SelectValue,
 } from '@dailyuse/ui-vue-shadcn';
 
-import type { ReminderMoveGroup, ReminderMoveTemplate } from '../types';
-
 const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
-    template?: ReminderMoveTemplate | null;
-    groups?: ReminderMoveGroup[];
-    templates?: ReminderMoveTemplate[];
+    template?: ReminderTemplateClientDTO | null;
+    groups?: ReminderGroupClientDTO[];
+    templates?: ReminderTemplateClientDTO[];
   }>(),
   {
     template: null,
@@ -224,9 +246,41 @@ const getGroupTemplateCount = (groupId: string): number => {
   return props.templates.filter((t) => t.groupId === groupId).length;
 };
 
+const getGroupControlMode = (groupId: string): string => {
+  const group = props.groups.find((g) => g.id === groupId);
+  if (!group) return t('reminder.templateMove.unknown');
+  return group.controlMode === 'Group'
+    ? t('reminder.templateMove.controlModeGroup')
+    : t('reminder.templateMove.controlModeIndividual');
+};
+
+const getGroupPolicyText = (groupId: string): string => {
+  const group = props.groups.find((g) => g.id === groupId);
+  return group ? getGroupPolicySummary(t, group) : t('reminder.templateMove.defaultPolicyText');
+};
+
 const getGroupIcon = (icon?: string) => {
   return icon === 'mdi-folder-open' ? FolderOpen : Folder;
 };
+
+const previewText = computed(() => {
+  if (!props.template) return '';
+  if (moveToRoot.value) {
+    return t('reminder.templateMove.previewRoot');
+  }
+  if (!selectedGroupId.value) return '';
+
+  const group = props.groups.find((item) => item.id === selectedGroupId.value);
+  if (!group) return '';
+
+  if (group.controlMode === 'Group') {
+    return group.enabled
+      ? t('reminder.templateMove.previewGroupEnabled')
+      : t('reminder.templateMove.previewGroupPaused');
+  }
+
+  return t('reminder.templateMove.previewIndividual');
+});
 
 const handleMoveToRootChange = (value: boolean) => {
   if (value) {

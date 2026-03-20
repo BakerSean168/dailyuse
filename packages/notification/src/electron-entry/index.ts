@@ -12,13 +12,18 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
+import {
+  type IElectronModule,
+  type IElectronModuleContext,
+  withAuthenticatedIdentity,
+  withAuthenticatedValue,
+} from '@dailyuse/contracts/electron';
+import { fail } from '@dailyuse/contracts/result';
 import { createNotificationPowerSyncModule } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import { createNotificationTransportHandlers } from '../api/transport-handlers';
 import { createNotificationRuntimeContribution } from '../api/runtime';
 import type { NotificationModuleInstance } from '../infrastructure-server';
-import { fail } from '@dailyuse/contracts/result';
 
 const logger = createLogger('NotificationElectron');
 
@@ -35,14 +40,6 @@ const Ch = {
 
 const channels = Object.values(Ch);
 let activeNotificationModule: NotificationModuleInstance | null = null;
-
-function toAuthFailure(error: unknown) {
-  if (error instanceof Error && error.message === 'AUTH_RESTORING') {
-    return fail({ code: 'AUTH_RESTORING', message: 'Authentication restore in progress' });
-  }
-
-  return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
-}
 
 export const NotificationElectronModule: IElectronModule = {
   name: 'Notification',
@@ -71,26 +68,18 @@ export const NotificationElectronModule: IElectronModule = {
     // 3. IPC Handlers — preserve all existing channels.
     // IPC 处理器 — 保留所有现有通道。
     ipcMain.handle(Ch.LIST, async (_, params) => {
-      try {
-        const requestContext = await ctx.auth.requireRequestContext();
-        return handlers.listNotifications({
+      return withAuthenticatedValue(ctx, (requestContext) =>
+        handlers.listNotifications({
           ...(params ?? {}),
           identityId: requestContext.identityId,
-        });
-      } catch (error) {
-        return toAuthFailure(error);
-      }
+        }),
+      );
     });
     ipcMain.handle(Ch.GET, (_, id) => handlers.getNotification(id));
     ipcMain.handle(Ch.CREATE, (_, dto) => handlers.createNotification(dto));
     ipcMain.handle(Ch.MARK_READ, (_, id) => handlers.markAsRead(id));
     ipcMain.handle(Ch.MARK_ALL_READ, async () => {
-      try {
-        const identityId = await ctx.auth.requireIdentityId();
-        return handlers.markAllAsRead(identityId);
-      } catch (error) {
-        return toAuthFailure(error);
-      }
+      return withAuthenticatedIdentity(ctx, (identityId) => handlers.markAllAsRead(identityId));
     });
     ipcMain.handle(Ch.DELETE, (_, id) => handlers.deleteNotification(id));
     ipcMain.handle(Ch.CLEAR_ALL, async (_, ids) => {
@@ -100,12 +89,7 @@ export const NotificationElectronModule: IElectronModule = {
       return fail({ code: 'VALIDATION_ERROR', message: 'notification ids are required' });
     });
     ipcMain.handle(Ch.GET_UNREAD_COUNT, async () => {
-      try {
-        const identityId = await ctx.auth.requireIdentityId();
-        return handlers.getUnreadCount(identityId);
-      } catch (error) {
-        return toAuthFailure(error);
-      }
+      return withAuthenticatedIdentity(ctx, (identityId) => handlers.getUnreadCount(identityId));
     });
     logger.info('Notification module registered');
   },

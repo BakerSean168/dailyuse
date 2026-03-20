@@ -6,6 +6,7 @@ import {
   createEditorTab,
   activateEditorTab,
   deleteEditorTab,
+  updateEditorTab,
   firstGroup,
 } from '../services/editorDesktop.service';
 
@@ -14,6 +15,12 @@ export interface EditorWorkspaceState {
   sessions: EditorSessionClientDTO[];
   activeSessionId: string | null;
   isHydrated: boolean;
+}
+
+interface OpenEditorResourceParams {
+  resourceId: string;
+  title: string;
+  workspaceId?: string | null;
 }
 
 function findTabByResourceId(
@@ -25,6 +32,26 @@ function findTabByResourceId(
       const tab = group.tabs.find((item) => item.resourceId === resourceId);
       if (tab) {
         return tab;
+      }
+    }
+  }
+
+  return null;
+}
+
+function findTabLocation(
+  sessions: EditorSessionClientDTO[],
+  tabId: string,
+): {
+  session: EditorSessionClientDTO;
+  group: EditorSessionClientDTO['groups'][number];
+  tab: EditorTabClientDTO;
+} | null {
+  for (const session of sessions) {
+    for (const group of session.groups) {
+      const tab = group.tabs.find((item) => item.id === tabId);
+      if (tab) {
+        return { session, group, tab };
       }
     }
   }
@@ -114,9 +141,14 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         }
       }
     },
-    async openResourceTab(resource: { id: string; name: string }, workspaceId: string) {
+    async openResource(params: OpenEditorResourceParams) {
+      const workspaceId = params.workspaceId ?? this.workspaceId;
+      if (!workspaceId) {
+        return null;
+      }
+
       await this.setWorkspace(workspaceId);
-      const existingTab = findTabByResourceId(this.sessions, resource.id);
+      const existingTab = findTabByResourceId(this.sessions, params.resourceId);
       if (existingTab) {
         await this.setActiveTab(existingTab.id);
         return existingTab;
@@ -132,8 +164,8 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         workspaceId,
         sessionId: session.id,
         groupId: group.id,
-        resourceId: resource.id,
-        title: resource.name,
+        resourceId: params.resourceId,
+        title: params.title,
       });
 
       if (!created) {
@@ -141,11 +173,38 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       }
 
       await this.setWorkspace(workspaceId);
-      const refreshed = findTabByResourceId(this.sessions, resource.id);
+      const refreshed = findTabByResourceId(this.sessions, params.resourceId);
       if (refreshed) {
         await this.setActiveTab(refreshed.id);
       }
       return refreshed;
+    },
+    async setTabPinned(tabId: string, isPinned: boolean) {
+      const location = findTabLocation(this.sessions, tabId);
+      if (!location || !this.workspaceId) {
+        return null;
+      }
+
+      if (location.tab.isPinned === isPinned) {
+        return location.tab;
+      }
+
+      const updated = await updateEditorTab({
+        workspaceId: this.workspaceId,
+        sessionId: location.session.id,
+        groupId: location.group.id,
+        tabId,
+        isPinned,
+      });
+
+      if (!updated) {
+        return null;
+      }
+
+      location.tab.isPinned = updated.isPinned;
+      location.tab.updatedAt = updated.updatedAt;
+      location.tab.formattedUpdatedAt = updated.formattedUpdatedAt;
+      return location.tab;
     },
     async setActiveTab(tabId: string) {
       for (const session of this.sessions) {
@@ -203,6 +262,33 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       for (const tab of [...this.openTabs]) {
         await this.closeTab(tab.id);
       }
+    },
+    async syncTabDirtyState(tabId: string, isDirty: boolean) {
+      const location = findTabLocation(this.sessions, tabId);
+      if (!location || !this.workspaceId) {
+        return null;
+      }
+
+      if (location.tab.isDirty === isDirty) {
+        return location.tab;
+      }
+
+      const updated = await updateEditorTab({
+        workspaceId: this.workspaceId,
+        sessionId: location.session.id,
+        groupId: location.group.id,
+        tabId,
+        isDirty,
+      });
+
+      if (!updated) {
+        return null;
+      }
+
+      location.tab.isDirty = updated.isDirty;
+      location.tab.updatedAt = updated.updatedAt;
+      location.tab.formattedUpdatedAt = updated.formattedUpdatedAt;
+      return location.tab;
     },
     findTabByResourceId(resourceId: string): EditorTabClientDTO | null {
       return findTabByResourceId(this.sessions, resourceId);

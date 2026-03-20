@@ -28,7 +28,15 @@ import type { IRuleApiClient } from '../../contracts/api/rule-api-client.port';
 
 /** Governance frontend service facade. 治理前端服务门面。 */
 export class GovernanceClientService {
-  constructor(private readonly ruleApiClient: IRuleApiClient) {}
+  constructor(private readonly ruleApiClient: IRuleApiClient) {
+    this.createRule = this.createRule.bind(this);
+    this.getRule = this.getRule.bind(this);
+    this.updateRule = this.updateRule.bind(this);
+    this.deleteRule = this.deleteRule.bind(this);
+    this.listRules = this.listRules.bind(this);
+    this.searchRules = this.searchRules.bind(this);
+    this.getRevisions = this.getRevisions.bind(this);
+  }
 
   /** Creates a rule and returns DTO directly. 创建规则并直接返回 DTO。 */
   async createRule(req: CreateRuleReq): Promise<Result<RuleClientDTO>> {

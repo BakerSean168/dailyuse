@@ -41,6 +41,7 @@ export interface ReminderGroupState {
   templateCountText: string;
   activeStatusText: string;
   controlDescription: string;
+  effectiveTemplatePolicyText: string;
 }
 
 export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
@@ -167,6 +168,7 @@ export class ReminderGroup extends AggregateRoot<ReminderGroupId> {
       templateCountText: this._props.templateCountText,
       activeStatusText: this._props.activeStatusText,
       controlDescription: this._props.controlDescription,
+      effectiveTemplatePolicyText: this._props.effectiveTemplatePolicyText,
     };
   }
 }

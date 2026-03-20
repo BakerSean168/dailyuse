@@ -612,6 +612,7 @@ const user_reminder_preferences = new Table({
   identity_id: column.text,
   best_time_slots: column.text, // JSON
   worst_time_slots: column.text, // JSON
+  global_reminder_enabled: column.integer, // boolean
   global_smart_frequency: column.integer, // boolean
   created_at: column.text,
   updated_at: column.text,

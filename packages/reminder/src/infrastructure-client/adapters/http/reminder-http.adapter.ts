@@ -66,10 +66,10 @@ export class ReminderHttpAdapter implements IReminderApiClient {
 
   async moveTemplateToGroup(
     templateId: string,
-    targetGroupId: string,
+    targetGroupId: string | null,
   ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.httpClient.post(`${this.templatesUrl}/${templateId}/move`, {
-      targetGroupId,
+      groupId: targetGroupId,
     });
   }
 
@@ -122,6 +122,14 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     mode: ControlMode,
   ): Promise<Result<ReminderGroupClientDTO>> {
     return this.httpClient.post(`${this.groupsUrl}/${id}/control-mode`, { mode });
+  }
+
+  async getPreferences(): Promise<Result<any>> {
+    return this.httpClient.get('/reminders/preferences');
+  }
+
+  async updatePreferences(data: Record<string, unknown>): Promise<Result<any>> {
+    return this.httpClient.patch('/reminders/preferences', data);
   }
 }
 

@@ -66,11 +66,17 @@
                     <SelectValue :placeholder="t('reminder.templateDialog.placeholderGroup')" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__root__">
+                      {{ t('reminder.templateDialog.rootOption') }}
+                    </SelectItem>
                     <SelectItem v-for="group in groupOptions" :key="group.id" :value="group.id">
                       {{ group.name }}
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <p class="mt-1 text-xs text-muted-foreground">
+                  {{ currentGroupHint }}
+                </p>
               </div>
               <div>
                 <Label>{{ t('reminder.templateDialog.labelImportance') }}</Label>
@@ -148,70 +154,9 @@
               </p>
             </div>
 
-            <!-- Active Time (start / end date) -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelStartDate') }}</Label>
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="mt-1.5 h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !formData.startDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        formData.startDate
-                          ? formatDate(formData.startDate)
-                          : t('reminder.templateDialog.pickStartDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="startDateValue"
-                      @update:model-value="handleStartDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <Label>{{ t('reminder.templateDialog.labelEndDate') }}</Label>
-                <Popover>
-                  <PopoverTrigger as-child>
-                    <Button
-                      variant="outline"
-                      class="mt-1.5 h-10 w-full justify-start text-left font-normal"
-                      :class="{ 'text-muted-foreground': !formData.endDate }"
-                    >
-                      <CalendarIcon class="mr-2 h-4 w-4" />
-                      {{
-                        formData.endDate
-                          ? formatDate(formData.endDate)
-                          : t('reminder.templateDialog.noEndDate')
-                      }}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      :selected="endDateValue"
-                      @update:model-value="handleEndDateSelect"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  v-if="formData.endDate"
-                  variant="ghost"
-                  size="sm"
-                  class="mt-1 h-6 text-xs text-muted-foreground"
-                  @click="formData.endDate = null"
-                >
-                  {{ t('reminder.templateDialog.clearEndDate') }}
-                </Button>
-              </div>
-            </div>
+            <p class="text-xs text-muted-foreground">
+              {{ t('reminder.templateDialog.hintLongLived') }}
+            </p>
           </div>
 
           <!-- Active Hours -->
@@ -362,16 +307,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Info,
-  Clock,
-  Palette,
-  Settings,
-  Bell,
-  Calendar as CalendarIcon,
-  ChevronDown,
-  Timer,
-} from 'lucide-vue-next';
+import { Info, Clock, Palette, Settings, Bell, ChevronDown, Timer } from 'lucide-vue-next';
 import {
   Dialog,
   DialogContent,
@@ -400,23 +336,22 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@dailyuse/ui-vue-shadcn';
-import { Calendar } from '@dailyuse/ui-vue-shadcn';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@dailyuse/ui-vue-shadcn';
 import type {
   CreateReminderTemplateReq,
+  ReminderGroupClientDTO,
   UpdateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import type { ReminderGroupOption } from '../types';
 import { ColorPickerField } from '../../../shared/components';
 import { defaultNamedColor } from '../../../shared/constants/colorPalette';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
     template?: ReminderTemplateClientDTO | null;
-    groupOptions?: ReminderGroupOption[];
+    groupOptions?: ReminderGroupClientDTO[];
     saving?: boolean;
     defaultGroupId?: string | null;
   }>(),
@@ -437,69 +372,37 @@ const visible = ref(false);
 const showActiveHours = ref(false);
 const tagsInput = ref('');
 const saving = computed(() => props.saving);
+const currentGroupHint = computed(() => {
+  if (formData.groupId === '__root__' || !formData.groupId) {
+    return t('reminder.templateDialog.currentGroupHintRoot');
+  }
+  const group = props.groupOptions.find((item) => item.id === formData.groupId);
+  return group
+    ? t('reminder.templateDialog.currentGroupHintNamed', { name: group.name })
+    : t('reminder.templateDialog.currentGroupHintSelected');
+});
 
 const formData = reactive({
   title: '',
   description: '',
-  type: 'Recurring' as string,
-  importanceLevel: 'Moderate' as string,
-  triggerType: 'FixedTime' as string,
+  importanceLevel: 'Moderate' as NonNullable<CreateReminderTemplateReq['importanceLevel']>,
+  triggerType: 'FixedTime' as CreateReminderTemplateReq['trigger']['type'],
   fixedTime: '09:00',
   intervalMinutes: 60,
-  startDate: Date.now() as number | null,
-  endDate: null as number | null,
-  // Active hours
   activeStartHour: null as number | null,
   activeEndHour: null as number | null,
-  // Notification
   notificationTitle: '',
   notificationBody: '',
-  // Appearance
   color: defaultNamedColor,
   icon: 'mdi-bell',
-  tags: [] as string[],
-  groupId: undefined as string | undefined,
+  tags: [] as NonNullable<CreateReminderTemplateReq['tags']>,
+  groupId: undefined as CreateReminderTemplateReq['groupId'] | '__root__' | undefined,
 });
 
 const isEditMode = computed(() => !!props.template?.id);
-const formValid = computed(() => formData.title.trim().length > 0 && formData.startDate !== null);
-
-/** Convert epoch timestamp to a Date for the Calendar component */
-const startDateValue = computed(() =>
-  formData.startDate ? new Date(formData.startDate) : undefined,
-);
-const endDateValue = computed(() => (formData.endDate ? new Date(formData.endDate) : undefined));
+const formValid = computed(() => formData.title.trim().length > 0);
 
 // ── Helpers ────────────────────────────────────────────────────────────
-
-function formatDate(ts: number): string {
-  const dateLocale = locale.value === 'zh-CN' ? 'zh-CN' : 'en-US';
-  return new Date(ts).toLocaleDateString(dateLocale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function handleStartDateSelect(date: unknown) {
-  if (date instanceof Date) {
-    formData.startDate = date.getTime();
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    formData.startDate = (date as { toDate: () => Date }).toDate().getTime();
-  } else {
-    formData.startDate = null;
-  }
-}
-
-function handleEndDateSelect(date: unknown) {
-  if (date instanceof Date) {
-    formData.endDate = date.getTime();
-  } else if (date && typeof date === 'object' && 'toDate' in date) {
-    formData.endDate = (date as { toDate: () => Date }).toDate().getTime();
-  } else {
-    formData.endDate = null;
-  }
-}
 
 const updateTags = () => {
   formData.tags = tagsInput.value
@@ -512,13 +415,10 @@ const resetForm = () => {
   Object.assign(formData, {
     title: '',
     description: '',
-    type: 'Recurring',
     importanceLevel: 'Moderate',
     triggerType: 'FixedTime',
     fixedTime: '09:00',
     intervalMinutes: 60,
-    startDate: Date.now(),
-    endDate: null,
     activeStartHour: null,
     activeEndHour: null,
     notificationTitle: '',
@@ -536,13 +436,10 @@ const loadTemplateData = (template: ReminderTemplateClientDTO) => {
   Object.assign(formData, {
     title: template.name,
     description: template.description || '',
-    type: template.type || 'Recurring',
     importanceLevel: template.importanceLevel || 'Moderate',
     triggerType: template.trigger?.type || 'FixedTime',
     fixedTime: template.trigger?.fixedTime?.time || '09:00',
     intervalMinutes: template.trigger?.interval?.minutes || 60,
-    startDate: template.activeTime?.activatedAt ?? Date.now(),
-    endDate: null,
     // Active hours
     activeStartHour: template.activeHours?.startHour ?? null,
     activeEndHour: template.activeHours?.endHour ?? null,
@@ -588,29 +485,26 @@ const handleVisibleChange = (value: boolean) => {
 // ── Build payload ──────────────────────────────────────────────────────
 
 function buildPayload(): CreateReminderTemplateReq {
-  // Build trigger
-  const trigger =
+  const trigger: CreateReminderTemplateReq['trigger'] =
     formData.triggerType === 'FixedTime'
       ? {
-          type: 'FixedTime' as const,
+          type: 'FixedTime',
           fixedTime: { time: formData.fixedTime, timezone: null },
           interval: null,
         }
       : {
-          type: 'Interval' as const,
+          type: 'Interval',
           interval: { minutes: formData.intervalMinutes, startTime: null },
           fixedTime: null,
         };
 
-  // Build activeTime
-  const activeTime = {
-    startDate: formData.startDate ?? Date.now(),
-    endDate: formData.endDate,
+  const activeTime: CreateReminderTemplateReq['activeTime'] = {
+    startDate: Date.now(),
+    endDate: null,
   };
 
-  // Build notificationConfig
-  const notificationConfig = {
-    channels: ['Push' as const, 'InApp' as const],
+  const notificationConfig: CreateReminderTemplateReq['notificationConfig'] = {
+    channels: ['Push', 'InApp'],
     title: formData.notificationTitle || null,
     body: formData.notificationBody || null,
     sound: { enabled: true, soundName: 'default' },
@@ -618,29 +512,28 @@ function buildPayload(): CreateReminderTemplateReq {
     actions: null,
   };
 
-  // Build activeHours (optional)
-  let activeHours: CreateReminderTemplateReq['activeHours'] | undefined;
-  if (formData.activeStartHour !== null && formData.activeEndHour !== null) {
-    activeHours = {
-      startHour: formData.activeStartHour,
-      endHour: formData.activeEndHour,
-      timezone: null,
-    };
-  }
+  const activeHours: CreateReminderTemplateReq['activeHours'] =
+    formData.activeStartHour !== null && formData.activeEndHour !== null
+      ? {
+          startHour: formData.activeStartHour,
+          endHour: formData.activeEndHour,
+          timezone: null,
+        }
+      : undefined;
 
   return {
-    title: formData.title,
+    title: formData.title.trim(),
     type: 'Recurring',
     trigger,
     activeTime,
     notificationConfig,
-    description: formData.description || undefined,
+    description: formData.description.trim() || undefined,
     activeHours,
-    importanceLevel: formData.importanceLevel as any,
+    importanceLevel: formData.importanceLevel,
     tags: formData.tags.length > 0 ? formData.tags : undefined,
     color: formData.color || undefined,
     icon: formData.icon || undefined,
-    groupId: formData.groupId as any,
+    groupId: formData.groupId === '__root__' ? undefined : formData.groupId,
   };
 }
 

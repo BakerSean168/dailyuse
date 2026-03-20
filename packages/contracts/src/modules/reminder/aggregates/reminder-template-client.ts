@@ -50,6 +50,7 @@ export interface ReminderTemplateClientDTO {
   status: ReminderStatus;
   effectiveEnabled: boolean; // 实际启用状态（计算得出?
   groupId: ReminderGroupId | null;
+  groupName?: string | null;
   importanceLevel: ImportanceLevel;
   tags: string[];
   color: string | null;
@@ -74,4 +75,9 @@ export interface ReminderTemplateClientDTO {
   isPaused: boolean;
   lastTriggeredText: string | null; // "3 小时?
   controlledByGroup: boolean; // 是否受组控制
+  lifecycleSource: 'global' | 'group' | 'template';
+  effectiveEnabledReason: string;
+  groupControlMode: 'Group' | 'Individual' | null;
+  groupEnabled: boolean | null;
+  globalReminderEnabled: boolean;
 }

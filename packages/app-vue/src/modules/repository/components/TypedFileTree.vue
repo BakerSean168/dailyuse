@@ -120,11 +120,7 @@
                   :actions="getResourceActions(resource)"
                   :show-more-button="false"
                 >
-                  <div
-                    class="flex items-center gap-1"
-                    @click="$emit('select', resource)"
-                    @dblclick="$emit('open', resource)"
-                  >
+                  <div class="flex items-center gap-1" @click="$emit('open', resource)">
                     <span class="w-5" />
                     <component
                       :is="getFileIcon(resource)"
@@ -202,7 +198,6 @@ const emit = defineEmits<{
   'create-note': [];
   import: [];
   refresh: [];
-  select: [resource: ResourceClientDTO];
   open: [resource: ResourceClientDTO];
   rename: [resource: ResourceClientDTO];
   delete: [resource: ResourceClientDTO];

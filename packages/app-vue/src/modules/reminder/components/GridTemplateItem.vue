@@ -30,6 +30,43 @@
         {{ item.name }}
       </p>
 
+      <div class="space-y-1 text-center">
+        <p class="text-[11px] font-medium text-muted-foreground">
+          {{ lifecycleLabel }}
+        </p>
+        <p class="line-clamp-2 text-[10px] text-muted-foreground">
+          {{ item.effectiveEnabledReason }}
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-1">
+        <span
+          v-if="item.lifecycleSource === 'global'"
+          class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
+        >
+          {{ lifecycleBadgeText }}
+        </span>
+        <span
+          v-else-if="item.lifecycleSource === 'group'"
+          class="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-800"
+        >
+          {{ lifecycleBadgeText }}
+        </span>
+        <span
+          v-else
+          class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800"
+        >
+          {{ lifecycleBadgeText }}
+        </span>
+
+        <span
+          v-if="item.groupName"
+          class="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground"
+        >
+          {{ item.groupName }}
+        </span>
+      </div>
+
       <!-- Status Indicator -->
       <div
         v-if="!isTemplateEnabled"
@@ -41,34 +78,47 @@
 
 <script setup lang="ts">
 import { computed, inject } from 'vue';
-import { Bell, FolderInput, Pencil, Trash2 } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+import { Bell, FolderInput, Pencil, Power, Trash2 } from 'lucide-vue-next';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
-import type { ReminderTemplateViewItem } from '../types';
+import {
+  getTemplateLifecycleBadgeText,
+  getTemplateLifecycleSummary,
+} from '../presentation/lifecyclePresentation';
 
 const props = defineProps<{
-  item: ReminderTemplateViewItem;
+  item: ReminderTemplateClientDTO;
 }>();
 
 const emit = defineEmits<{
-  click: [item: ReminderTemplateViewItem];
-  move: [item: ReminderTemplateViewItem];
-  edit: [item: ReminderTemplateViewItem];
-  delete: [item: ReminderTemplateViewItem];
+  click: [item: ReminderTemplateClientDTO];
+  move: [item: ReminderTemplateClientDTO];
+  edit: [item: ReminderTemplateClientDTO];
+  delete: [item: ReminderTemplateClientDTO];
+  'toggle-enabled': [item: ReminderTemplateClientDTO];
 }>();
 
+const { t } = useI18n();
 const isTemplateEnabled = computed(() => props.item.effectiveEnabled);
+const lifecycleLabel = computed(() => getTemplateLifecycleSummary(t, props.item));
+const lifecycleBadgeText = computed(() => getTemplateLifecycleBadgeText(t, props.item));
 
 // Support both injected callbacks and emits for flexibility
-const onMoveTemplate = inject<(item: ReminderTemplateViewItem) => void>('onMoveTemplate', (item) =>
+const onMoveTemplate = inject<(item: ReminderTemplateClientDTO) => void>('onMoveTemplate', (item) =>
   emit('move', item),
 );
-const onEditTemplate = inject<(item: ReminderTemplateViewItem) => void>('onEditTemplate', (item) =>
+const onEditTemplate = inject<(item: ReminderTemplateClientDTO) => void>('onEditTemplate', (item) =>
   emit('edit', item),
 );
-const onDeleteTemplate = inject<(item: ReminderTemplateViewItem) => void>(
+const onDeleteTemplate = inject<(item: ReminderTemplateClientDTO) => void>(
   'onDeleteTemplate',
   (item) => emit('delete', item),
+);
+const onToggleTemplate = inject<(item: ReminderTemplateClientDTO) => void>(
+  'onToggleTemplate',
+  (item) => emit('toggle-enabled', item),
 );
 
 const onDragStart = (event: DragEvent) => {
@@ -76,6 +126,12 @@ const onDragStart = (event: DragEvent) => {
 };
 
 const menuActions = computed<MenuAction[]>(() => [
+  {
+    key: 'toggle-enabled',
+    label: props.item.effectiveEnabled ? menuLabel('pauseTemplate') : menuLabel('enableTemplate'),
+    icon: Power,
+    handler: () => onToggleTemplate(props.item),
+  },
   {
     key: 'move',
     label: menuLabel('moveToGroup'),

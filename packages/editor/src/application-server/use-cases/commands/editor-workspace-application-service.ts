@@ -361,6 +361,7 @@ export class EditorWorkspaceApplicationService {
     title?: string;
     viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
+    isDirty?: boolean;
   }): Promise<EditorTabServerDTO> {
     const tab = await this.tabRepository.findById(params.tabId);
     if (!tab) {
@@ -378,6 +379,13 @@ export class EditorWorkspaceApplicationService {
     }
     if (params.isPinned !== undefined && tab.isPinned !== params.isPinned) {
       tab.togglePinned();
+    }
+    if (params.isDirty !== undefined && tab.isDirty !== params.isDirty) {
+      if (params.isDirty) {
+        tab.markDirty();
+      } else {
+        tab.markClean();
+      }
     }
 
     await this.tabRepository.save(tab);

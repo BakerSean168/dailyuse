@@ -43,7 +43,13 @@ function accountFromDTO(dto: AccountClientDTO): Account {
 }
 
 export class AccountClientService {
-  constructor(private readonly apiClient: IAccountApiClient) {}
+  constructor(private readonly apiClient: IAccountApiClient) {
+    this.getMyProfile = this.getMyProfile.bind(this);
+    this.updateMyProfile = this.updateMyProfile.bind(this);
+    this.checkAvailability = this.checkAvailability.bind(this);
+    this.updateSettings = this.updateSettings.bind(this);
+    this.closeAccount = this.closeAccount.bind(this);
+  }
 
   async getMyProfile(): Promise<Result<Account>> {
     const result = await this.apiClient.getMyProfile();

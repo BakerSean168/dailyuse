@@ -300,6 +300,12 @@ export class ReminderGroup extends AggregateRoot<string> {
     const statusText = this.status === ReminderStatus.Active ? '活跃' : '暂停';
     const controlDescription =
       this.controlMode === ControlMode.Group ? '所有提醒统一启用' : '提醒独立控制';
+    const effectiveTemplatePolicyText =
+      this.controlMode === ControlMode.Group
+        ? this.enabled
+          ? '组内提醒当前由分组统一启用'
+          : '组内提醒当前由分组统一暂停'
+        : '组内提醒当前保持各自独立控制';
 
     const statsDTO = this._stats.toServerDTO();
 
@@ -331,6 +337,7 @@ export class ReminderGroup extends AggregateRoot<string> {
       templateCountText: `${this._stats.totalTemplates} 个提醒`,
       activeStatusText: `${this._stats.activeTemplates} 个活跃`,
       controlDescription,
+      effectiveTemplatePolicyText,
     };
   }
 }

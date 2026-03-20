@@ -304,6 +304,7 @@ import { useAI } from '../composables/useAI';
 import { useUserSetting } from '../../setting/composables/useUserSetting';
 import { useGoal } from '../../goal/composables/useGoal';
 import { useRepository } from '../../repository/composables/useRepository';
+import { useEditorWorkspaceActions } from '../../editor/composables';
 import { GOAL_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
@@ -345,7 +346,8 @@ type ConversationSummary = {
 const { service, providers, hasProviders, loadProviders } = useAI();
 const { getCategory } = useUserSetting();
 const { createGoal } = useGoal();
-const { resources, openResource, fetchResources, initRepository } = useRepository();
+const { resources, fetchResources, initRepository } = useRepository();
+const { requestOpenResource } = useEditorWorkspaceActions();
 const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 const router = useRouter();
 
@@ -500,7 +502,8 @@ async function handleCreateGoalFromDraft() {
 
     if (editableKeyResults.value.length) {
       for (const item of editableKeyResults.value) {
-        await goalService.createKeyResult(created.id, { ...({} as any),
+        await goalService.createKeyResult(created.id, {
+          ...({} as any),
           title: item.title,
           description: item.description || undefined,
           targetValue: item.targetValue,
@@ -649,7 +652,7 @@ function openCreatedNote() {
   );
 
   if (target) {
-    openResource(target);
+    void requestOpenResource(target.id);
     open.value = false;
     openNoteDialog.value = false;
   }

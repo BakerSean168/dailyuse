@@ -29,6 +29,7 @@ import { RecordReminderResponse } from '../application-server/use-cases/commands
 import { AnalyzeReminderFrequency } from '../application-server/use-cases/queries/analyze-reminder-frequency';
 import { AdjustReminderFrequency } from '../application-server/use-cases/commands/adjust-reminder-frequency';
 import { UserReminderPreferences } from '../domain-server/aggregates/user-reminder-preferences';
+import type { ITemplateEffectiveStatus } from '../domain-server/services/ReminderTemplateControlService';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the reminder runtime needs from the outside world.
@@ -72,11 +73,11 @@ export interface ReminderApplicationPort {
   deleteTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
 
   // Template Actions / 模板操作
-  enableTemplate(id: string): Promise<Result<unknown>>;
-  pauseTemplate(id: string): Promise<Result<unknown>>;
+  enableTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
+  pauseTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   toggleTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
-  moveTemplate(id: string, groupId: string): Promise<Result<unknown>>;
-  getTemplateHistory(id: string): Promise<Result<unknown>>;
+  moveTemplate(id: string, groupId: string | null, ctx: Context): Promise<Result<unknown>>;
+  getTemplateHistory(id: string, ctx: Context): Promise<Result<unknown>>;
 
   // Response Operations / 响应操作
   recordResponse(
@@ -84,11 +85,11 @@ export interface ReminderApplicationPort {
     data: { action: string; note?: string },
     ctx: Context,
   ): Promise<Result<unknown>>;
-  getTemplateResponses(templateId: string): Promise<Result<unknown>>;
-  getResponseStats(templateId: string): Promise<Result<unknown>>;
+  getTemplateResponses(templateId: string, ctx: Context): Promise<Result<unknown>>;
+  getResponseStats(templateId: string, ctx: Context): Promise<Result<unknown>>;
 
   // Frequency Analysis / 频率分析
-  analyzeFrequency(templateId: string): Promise<Result<unknown>>;
+  analyzeFrequency(templateId: string, ctx: Context): Promise<Result<unknown>>;
   adjustFrequency(
     templateId: string,
     data: { action: string; customInterval?: number },
@@ -102,9 +103,17 @@ export interface ReminderApplicationPort {
   getGroup(id: string, ctx: Context): Promise<Result<unknown>>;
   updateGroup(id: string, data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
   deleteGroup(id: string, ctx: Context): Promise<Result<unknown>>;
-  switchGroupControlMode(id: string, data: { mode: string }): Promise<Result<unknown>>;
-  batchGroupTemplates(groupId: string, data: { action: string }): Promise<Result<unknown>>;
-  toggleGroup(id: string): Promise<Result<unknown>>;
+  switchGroupControlMode(
+    id: string,
+    data: { mode: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  batchGroupTemplates(
+    groupId: string,
+    data: { action: string },
+    ctx: Context,
+  ): Promise<Result<unknown>>;
+  toggleGroup(id: string, ctx: Context): Promise<Result<unknown>>;
 
   // Preferences / 偏好设置
   getPreferences(ctx: Context): Promise<Result<unknown>>;
@@ -136,6 +145,89 @@ function normalizeRuntimeContributions(
   if (!input) return [];
   if (Array.isArray(input)) return Array.from(input);
   return [input as ReminderModuleRuntimeContribution];
+}
+
+async function getOwnedTemplateOrFail(
+  reminderTemplateRepository: IReminderTemplateRepository,
+  templateId: string,
+  ctx: Context,
+  options?: Parameters<IReminderTemplateRepository['findById']>[1],
+): Promise<ReminderTemplate | null> {
+  const template = await reminderTemplateRepository.findById(templateId, options);
+  if (!template || String((template as { identityId?: unknown }).identityId) !== ctx.identityId) {
+    return null;
+  }
+
+  return template;
+}
+
+async function getOwnedGroupOrFail(
+  reminderGroupRepository: IReminderGroupRepository,
+  groupId: string,
+  ctx: Context,
+): Promise<ReminderGroup | null> {
+  const group = await reminderGroupRepository.findById(groupId);
+  if (!group || String((group as { identityId?: unknown }).identityId) !== ctx.identityId) {
+    return null;
+  }
+
+  return group;
+}
+
+async function toTemplateClientDTO(
+  reminderDomainService: ReminderDomainService,
+  reminderGroupRepository: IReminderGroupRepository,
+  template: ReminderTemplate,
+): Promise<ReturnType<ReminderTemplate['toClientDTO']>> {
+  const group = template.groupId ? await reminderGroupRepository.findById(template.groupId) : null;
+  const effectiveStatus = await reminderDomainService
+    .getControlService()
+    .calculateEffectiveStatus(template, group);
+  const dto = template.toClientDTO();
+
+  dto.groupName = group?.name ?? null;
+  dto.controlledByGroup = effectiveStatus.lifecycleSource === 'group';
+  dto.lifecycleSource = effectiveStatus.lifecycleSource;
+  dto.effectiveEnabled = effectiveStatus.isEffectivelyEnabled;
+  dto.effectiveEnabledReason = effectiveStatus.statusReason;
+  dto.groupControlMode = effectiveStatus.controlMode;
+  dto.groupEnabled = effectiveStatus.groupEnabled;
+  dto.globalReminderEnabled = effectiveStatus.globalReminderEnabled;
+
+  return dto;
+}
+
+async function toTemplateClientDTOList(
+  reminderDomainService: ReminderDomainService,
+  reminderGroupRepository: IReminderGroupRepository,
+  templates: ReminderTemplate[],
+): Promise<Array<ReturnType<ReminderTemplate['toClientDTO']>>> {
+  const controlService = reminderDomainService.getControlService();
+  const groups = await reminderGroupRepository.findByIds(
+    Array.from(new Set(templates.map((template) => template.groupId).filter(Boolean) as string[])),
+  );
+  const groupMap = new Map(groups.map((group) => [group.id, group]));
+  const effectiveStatuses = await controlService.calculateEffectiveStatusBatch(templates);
+  const statusMap = new Map<string, ITemplateEffectiveStatus>(
+    effectiveStatuses.map((status) => [status.templateId, status]),
+  );
+
+  return templates.map((template) => {
+    const dto = template.toClientDTO();
+    const status = statusMap.get(template.id);
+    const group = template.groupId ? (groupMap.get(template.groupId) ?? null) : null;
+
+    dto.groupName = group?.name ?? null;
+    dto.controlledByGroup = status?.lifecycleSource === 'group';
+    dto.lifecycleSource = status?.lifecycleSource ?? 'template';
+    dto.effectiveEnabled = status?.isEffectivelyEnabled ?? template.effectiveEnabled;
+    dto.effectiveEnabledReason = status?.statusReason ?? '使用模板自身状态';
+    dto.groupControlMode = status?.controlMode ?? null;
+    dto.groupEnabled = status?.groupEnabled ?? null;
+    dto.globalReminderEnabled = status?.globalReminderEnabled ?? true;
+
+    return dto;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -172,6 +264,7 @@ export function createReminderModule(
   const reminderDomainService = new ReminderDomainService(
     reminderTemplateRepository,
     reminderGroupRepository,
+    userReminderPreferenceRepository,
   );
   const recordReminderResponse = new RecordReminderResponse(reminderResponseRepository);
   const analyzeReminderFrequency = new AnalyzeReminderFrequency(
@@ -206,17 +299,22 @@ export function createReminderModule(
           actions: data.notificationConfig?.actions ?? null,
         },
       };
-      const template = ReminderTemplate.create({
+      const template = await reminderDomainService.createReminderTemplate({
         ...normalizedInput,
-        identityId: IdentityId.of(ctx.identityId),
-      } as Parameters<typeof ReminderTemplate.create>[0]);
-      await reminderTemplateRepository.save(template);
-      return ok(template.toClientDTO());
+        identityId: IdentityId.of(ctx.identityId) as unknown as string,
+      } as Parameters<typeof reminderDomainService.createReminderTemplate>[0]);
+      return ok(
+        await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
+      );
     },
 
     async listTemplates(ctx) {
       const templates = await reminderTemplateRepository.findByIdentityId(ctx.identityId);
-      const data = templates.map((t) => t.toClientDTO());
+      const data = await toTemplateClientDTOList(
+        reminderDomainService,
+        reminderGroupRepository,
+        templates,
+      );
       return ok({
         templates: data,
         total: data.length,
@@ -236,16 +334,18 @@ export function createReminderModule(
     },
 
     async getTemplate(id, ctx) {
-      const template = await reminderTemplateRepository.findById(id);
-      if (!template || (template as any).identityId !== ctx.identityId) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
+      if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      return ok(template);
+      return ok(
+        await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
+      );
     },
 
     async updateTemplate(id, data, ctx) {
-      const existing = await reminderTemplateRepository.findById(id);
-      if (!existing || (existing as any).identityId !== ctx.identityId) {
+      const existing = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
+      if (!existing) {
         throw new Error('Template not found');
       }
       const normalizedUpdates: Record<string, unknown> = { ...data };
@@ -266,27 +366,29 @@ export function createReminderModule(
         };
       }
       existing.update(normalizedUpdates as any);
+      await reminderDomainService.syncTemplateEffectiveEnabled(existing);
       await reminderTemplateRepository.save(existing);
-      return ok(existing.toClientDTO());
+      return ok(
+        await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, existing),
+      );
     },
 
     async deleteTemplate(id, ctx) {
-      const existing = await reminderTemplateRepository.findById(id);
-      if (!existing || (existing as any).identityId !== ctx.identityId) {
+      const existing = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
+      if (!existing) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
-      await reminderTemplateRepository.delete(id);
+      await reminderDomainService.deleteTemplate(id, false);
       return ok(undefined);
     },
 
     // ==================== Group CRUD / 分组 CRUD ====================
 
     async createGroup(data, ctx) {
-      const group = ReminderGroup.create({
+      const group = await reminderDomainService.createReminderGroup({
         ...data,
         identityId: ctx.identityId,
-      } as Parameters<typeof ReminderGroup.create>[0]);
-      await reminderGroupRepository.save(group);
+      } as Parameters<typeof reminderDomainService.createReminderGroup>[0]);
       return ok(group.toClientDTO());
     },
 
@@ -303,16 +405,16 @@ export function createReminderModule(
     },
 
     async getGroup(id, ctx) {
-      const group = await reminderGroupRepository.findById(id);
-      if (!group || (group as any).identityId !== ctx.identityId) {
+      const group = await getOwnedGroupOrFail(reminderGroupRepository, id, ctx);
+      if (!group) {
         return fail({ code: 'NOT_FOUND', message: 'Group not found' });
       }
       return ok(group);
     },
 
     async updateGroup(id, data, ctx) {
-      const existing = await reminderGroupRepository.findById(id);
-      if (!existing || (existing as any).identityId !== ctx.identityId) {
+      const existing = await getOwnedGroupOrFail(reminderGroupRepository, id, ctx);
+      if (!existing) {
         throw new Error('Group not found');
       }
       const updated = ReminderGroup.load({
@@ -333,39 +435,52 @@ export function createReminderModule(
         version: existing.version,
       });
       await reminderGroupRepository.save(updated);
+      await reminderDomainService.syncTemplatesEffectiveEnabledByGroup(id);
       return ok(updated.toClientDTO());
     },
 
     async deleteGroup(id, ctx) {
-      const existing = await reminderGroupRepository.findById(id);
-      if (!existing || (existing as any).identityId !== ctx.identityId) {
+      const existing = await getOwnedGroupOrFail(reminderGroupRepository, id, ctx);
+      if (!existing) {
         return fail({ code: 'NOT_FOUND', message: 'Group not found' });
       }
-      await reminderGroupRepository.delete(id);
+      await reminderDomainService.deleteGroup(id, false);
       return ok(undefined);
     },
 
-    async switchGroupControlMode(id, data) {
-      const existing = await reminderGroupRepository.findById(id);
-      if (!existing) throw new Error('Group not found');
+    async switchGroupControlMode(id, data, ctx) {
+      const existing = await getOwnedGroupOrFail(reminderGroupRepository, id, ctx);
+      if (!existing) {
+        return fail({ code: 'NOT_FOUND', message: 'Group not found' });
+      }
       if (data.mode === 'Group') {
         existing.switchToGroupControl();
       } else {
         existing.switchToIndividualControl();
       }
       await reminderGroupRepository.save(existing);
+      await reminderDomainService.syncTemplatesEffectiveEnabledByGroup(id);
       return ok(existing.toClientDTO());
     },
 
-    async batchGroupTemplates(groupId, data) {
-      const templates = await reminderTemplateRepository.findByGroupId(groupId);
+    async batchGroupTemplates(groupId, data, ctx) {
+      const group = await getOwnedGroupOrFail(reminderGroupRepository, groupId, ctx);
+      if (!group) {
+        return fail({ code: 'NOT_FOUND', message: 'Group not found' });
+      }
+
+      const templates = await reminderTemplateRepository.findByGroupId(group.id);
       let successCount = 0;
       for (const t of templates) {
+        if (String((t as { identityId?: unknown }).identityId) !== ctx.identityId) {
+          continue;
+        }
         if (data.action === 'ENABLE') {
           t.enable();
         } else {
           t.pause();
         }
+        await reminderDomainService.syncTemplateEffectiveEnabled(t);
         await reminderTemplateRepository.save(t);
         successCount++;
       }
@@ -374,39 +489,58 @@ export function createReminderModule(
 
     // ==================== Template Actions / 模板操作 ====================
 
-    async enableTemplate(id) {
-      const template = await reminderTemplateRepository.findById(id);
+    async enableTemplate(id, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
       if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       template.enable();
+      await reminderDomainService.syncTemplateEffectiveEnabled(template);
       await reminderTemplateRepository.save(template);
-      return ok(template.toClientDTO());
+      return ok(
+        await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
+      );
     },
 
-    async pauseTemplate(id) {
-      const template = await reminderTemplateRepository.findById(id);
+    async pauseTemplate(id, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
       if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       template.pause();
+      await reminderDomainService.syncTemplateEffectiveEnabled(template);
       await reminderTemplateRepository.save(template);
-      return ok(template.toClientDTO());
+      return ok(
+        await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
+      );
     },
 
     async toggleTemplate(id, ctx) {
-      const template = await reminderTemplateRepository.findById(id);
-      if (!template || (template as any).identityId !== ctx.identityId) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
+      if (!template) {
         return fail({ code: 'NOT_FOUND', message: 'Template not found' });
       }
       template.toggle();
+      await reminderDomainService.syncTemplateEffectiveEnabled(template);
       await reminderTemplateRepository.save(template);
-      return ok(template.toClientDTO());
+      return ok(
+        await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, template),
+      );
     },
 
-    async moveTemplate(id, groupId) {
+    async moveTemplate(id, groupId, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx);
+      if (!template) {
+        return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+      }
+      if (groupId !== null) {
+        const group = await getOwnedGroupOrFail(reminderGroupRepository, groupId, ctx);
+        if (!group) {
+          return fail({ code: 'NOT_FOUND', message: 'Group not found' });
+        }
+      }
       const result = await reminderDomainService.assignTemplateToGroup(id, groupId);
-      return ok(result);
+      return ok(await toTemplateClientDTO(reminderDomainService, reminderGroupRepository, result));
     },
 
-    async getTemplateHistory(id) {
-      const template = await reminderTemplateRepository.findById(id, {
+    async getTemplateHistory(id, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, id, ctx, {
         includeHistory: true,
       } as any);
       if (!template) return fail({ code: 'NOT_FOUND', message: 'Template not found' });
@@ -427,19 +561,31 @@ export function createReminderModule(
       return ok(result);
     },
 
-    async getTemplateResponses(templateId) {
+    async getTemplateResponses(templateId, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, templateId, ctx);
+      if (!template) {
+        return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+      }
       const responses = await recordReminderResponse.getResponsesByTemplate(templateId);
       return ok(responses);
     },
 
-    async getResponseStats(templateId) {
+    async getResponseStats(templateId, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, templateId, ctx);
+      if (!template) {
+        return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+      }
       const stats = await recordReminderResponse.getResponseStats(templateId);
       return ok(stats);
     },
 
     // ==================== Frequency Analysis / 频率分析 ====================
 
-    async analyzeFrequency(templateId) {
+    async analyzeFrequency(templateId, ctx) {
+      const template = await getOwnedTemplateOrFail(reminderTemplateRepository, templateId, ctx);
+      if (!template) {
+        return fail({ code: 'NOT_FOUND', message: 'Template not found' });
+      }
       const result = await analyzeReminderFrequency.execute(templateId);
       return ok(result);
     },
@@ -463,8 +609,13 @@ export function createReminderModule(
 
     // ==================== Group Actions / 分组操作 ====================
 
-    async toggleGroup(id) {
-      const result = await reminderDomainService.toggleGroupAndTemplates(id);
+    async toggleGroup(id, ctx) {
+      const group = await getOwnedGroupOrFail(reminderGroupRepository, id, ctx);
+      if (!group) {
+        return fail({ code: 'NOT_FOUND', message: 'Group not found' });
+      }
+
+      const result = await reminderDomainService.toggleGroupAndTemplates(group.id);
       return ok(result);
     },
 
@@ -472,7 +623,10 @@ export function createReminderModule(
 
     async getPreferences(ctx) {
       const prefs = await userReminderPreferenceRepository.findByIdentityId(ctx.identityId);
-      return ok(prefs);
+      return ok(
+        prefs?.toClientDTO() ??
+          UserReminderPreferences.create({ identityId: ctx.identityId }).toClientDTO(),
+      );
     },
 
     async updatePreferences(data, ctx) {
@@ -485,10 +639,14 @@ export function createReminderModule(
             (data.worstTimeSlots as any) ?? [],
           );
         }
+        if (data.globalReminderEnabled !== undefined) {
+          prefs.toggleGlobalReminderEnabled(!!data.globalReminderEnabled);
+        }
         if (data.globalSmartFrequencyEnabled !== undefined) {
           prefs.toggleGlobalSmartFrequency(!!data.globalSmartFrequencyEnabled);
         }
         await userReminderPreferenceRepository.save(prefs);
+        await reminderDomainService.syncTemplatesEffectiveEnabledByIdentity(ctx.identityId);
         return ok(prefs.toClientDTO());
       }
       if (data.bestTimeSlots || data.worstTimeSlots) {
@@ -497,10 +655,14 @@ export function createReminderModule(
           (data.worstTimeSlots as any) ?? [],
         );
       }
+      if (data.globalReminderEnabled !== undefined) {
+        existing.toggleGlobalReminderEnabled(!!data.globalReminderEnabled);
+      }
       if (data.globalSmartFrequencyEnabled !== undefined) {
         existing.toggleGlobalSmartFrequency(!!data.globalSmartFrequencyEnabled);
       }
       await userReminderPreferenceRepository.save(existing);
+      await reminderDomainService.syncTemplatesEffectiveEnabledByIdentity(ctx.identityId);
       return ok(existing.toClientDTO());
     },
   };

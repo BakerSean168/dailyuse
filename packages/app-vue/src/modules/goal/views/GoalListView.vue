@@ -178,6 +178,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import { useI18n } from 'vue-i18n';
+import type { CreateGoalFolderReq, UpdateGoalFolderReq } from '@dailyuse/contracts/goal';
+import type { GoalFolderId } from '@dailyuse/contracts/primitives';
 import {
   Target,
   Plus,
@@ -361,13 +363,45 @@ async function handleDeleteFolder(id: string) {
 
 async function handleFolderSaved(payload: any) {
   if (payload.id) {
-    const ok = await updateFolder(payload.id, payload);
+    const ok = await updateFolder(payload.id, toUpdateFolderPayload(payload));
     if (ok) toast.success(t('goal.list.updated'));
   } else {
-    const ok = await createFolder(payload);
+    const ok = await createFolder(toCreateFolderPayload(payload));
     if (ok) toast.success(t('goal.list.created'));
   }
   await fetchFolders();
+}
+
+function toCreateFolderPayload(payload: {
+  name: string;
+  description?: string | null;
+  icon?: string | null;
+  color?: string | null;
+  parentFolderId?: string | null;
+}): CreateGoalFolderReq {
+  return {
+    name: payload.name.trim(),
+    description: payload.description ?? undefined,
+    icon: payload.icon ?? undefined,
+    color: payload.color ?? undefined,
+    parentFolderId: (payload.parentFolderId ?? undefined) as GoalFolderId | undefined,
+  };
+}
+
+function toUpdateFolderPayload(payload: {
+  name?: string;
+  description?: string | null;
+  icon?: string | null;
+  color?: string | null;
+  parentFolderId?: string | null;
+}): UpdateGoalFolderReq {
+  return {
+    name: payload.name?.trim(),
+    description: payload.description ?? null,
+    icon: payload.icon ?? null,
+    color: payload.color ?? null,
+    parentFolderId: (payload.parentFolderId ?? null) as GoalFolderId | null,
+  };
 }
 
 function openCreateFolder() {

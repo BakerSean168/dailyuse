@@ -14,7 +14,7 @@
             size="icon"
             class="h-8 w-8"
             :title="t('reminder.action.createReminder')"
-            @click="handleCreateTemplate()"
+            @click="() => handleCreateTemplate(selectedGroupId)"
           >
             <Plus class="h-4 w-4" />
           </Button>
@@ -49,14 +49,24 @@
             :show-more-button="false"
           >
             <div
-              class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+              class="flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
               :class="
                 selectedGroupId === group.id ? 'bg-accent text-accent-foreground' : 'hover:bg-muted'
               "
               @click="selectedGroupId = group.id"
             >
-              <Folder class="h-4 w-4" />
-              <span class="truncate">{{ group.name }}</span>
+              <Folder class="mt-0.5 h-4 w-4 shrink-0" />
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="truncate">{{ group.name }}</span>
+                  <Badge variant="outline" class="ml-auto shrink-0 text-[10px]">
+                    {{ group.stats.totalTemplates }}
+                  </Badge>
+                </div>
+                <p class="mt-1 line-clamp-2 text-[11px] text-muted-foreground/90">
+                  {{ getSidebarGroupSummary(group) }}
+                </p>
+              </div>
             </div>
           </ActionableWrapper>
         </div>
@@ -72,6 +82,30 @@
           {{ t('reminder.linear.templateTitle') }}
         </h1>
         <div class="flex items-center gap-2">
+          <div class="hidden items-center gap-3 rounded-full border bg-card px-3 py-1.5 md:flex">
+            <span class="text-xs text-muted-foreground">{{
+              t('reminder.linear.masterSwitch')
+            }}</span>
+            <Switch
+              :checked="preferences?.globalReminderEnabled ?? true"
+              :disabled="isSaving"
+              @update:checked="handleToggleGlobalReminder"
+            />
+          </div>
+          <div
+            v-if="selectedGroup"
+            class="hidden items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-xs text-muted-foreground md:flex"
+          >
+            <span>{{ selectedGroup.name }}</span>
+            <Badge variant="outline">{{ getGroupControlModeText(t, selectedGroup) }}</Badge>
+            <Badge :variant="selectedGroup.enabled ? 'default' : 'secondary'">
+              {{
+                selectedGroup.enabled
+                  ? t('reminder.linear.groupEnabled')
+                  : t('reminder.linear.groupPaused')
+              }}
+            </Badge>
+          </div>
           <div class="relative hidden w-64 lg:block">
             <Search
               class="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -88,6 +122,68 @@
       <ScrollArea class="min-h-0 flex-1 p-6">
         <div class="mx-auto max-w-5xl">
           <div
+            v-if="preferences && !preferences.globalReminderEnabled"
+            class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="font-medium">{{ t('reminder.linear.globalPausedTitle') }}</p>
+                <p class="mt-1 text-xs text-amber-800">
+                  {{ preferences.summaryText || t('reminder.linear.globalPausedDescription') }}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                class="border-amber-300 bg-transparent text-amber-900 hover:bg-amber-100"
+                :disabled="isSaving"
+                @click="handleToggleGlobalReminder(true)"
+              >
+                {{ t('reminder.linear.reEnableGlobal') }}
+              </Button>
+            </div>
+          </div>
+
+          <div v-if="selectedGroup" class="mb-4 rounded-2xl border bg-card px-4 py-4 shadow-sm">
+            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div class="space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2 class="text-sm font-semibold text-foreground">{{ selectedGroup.name }}</h2>
+                  <Badge variant="outline">{{ getGroupControlModeText(t, selectedGroup) }}</Badge>
+                  <Badge :variant="selectedGroup.enabled ? 'default' : 'secondary'">
+                    {{
+                      selectedGroup.enabled
+                        ? t('reminder.linear.groupEnabled')
+                        : t('reminder.linear.groupPaused')
+                    }}
+                  </Badge>
+                </div>
+                <p class="text-xs text-muted-foreground">
+                  {{ getGroupPolicyText(t, selectedGroup) }}
+                </p>
+                <p v-if="selectedGroup.description" class="text-xs text-muted-foreground">
+                  {{ selectedGroup.description }}
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs text-muted-foreground md:min-w-72">
+                <div class="rounded-xl border bg-background px-3 py-2">
+                  <p class="font-medium text-foreground">
+                    {{ t('reminder.linear.templateCount') }}
+                  </p>
+                  <p class="mt-1">{{ getGroupTemplateCountLabel(t, selectedGroup) }}</p>
+                </div>
+                <div class="rounded-xl border bg-background px-3 py-2">
+                  <p class="font-medium text-foreground">
+                    {{ t('reminder.linear.currentStatus') }}
+                  </p>
+                  <p class="mt-1">{{ getGroupActiveStatusLabel(t, selectedGroup) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
             v-if="isLoading"
             class="flex h-[50vh] items-center justify-center text-muted-foreground"
           >
@@ -103,7 +199,7 @@
             </div>
             <h3 class="mb-1 text-lg font-medium text-foreground">{{ t('reminder.empty') }}</h3>
             <p class="mb-6 text-sm">{{ t('reminder.emptyDescription') }}</p>
-            <Button @click="handleCreateTemplate">
+            <Button @click="() => handleCreateTemplate(selectedGroupId)">
               <Plus class="mr-2 h-4 w-4" /> {{ t('reminder.action.createReminder') }}
             </Button>
           </div>
@@ -117,6 +213,7 @@
               @edit="handleEditTemplate"
               @delete="handleDeleteTemplate"
               @toggle-enabled="handleToggleEnabled"
+              @move="handleMoveTemplate"
             />
           </div>
         </div>
@@ -149,6 +246,14 @@
       @save="handleSaveGroup"
       @update="handleUpdateGroup"
     />
+
+    <TemplateMoveDialog
+      ref="templateMoveDialogRef"
+      :template="movingTemplate"
+      :groups="groups"
+      :templates="templates"
+      @moved="handleTemplateMoved"
+    />
   </div>
 </template>
 
@@ -165,34 +270,52 @@ import {
   Search,
   Pencil,
   Trash2,
+  Power,
 } from 'lucide-vue-next';
-import { Button, Badge, ScrollArea, Input, useConfirm } from '@dailyuse/ui-vue-shadcn';
+import { Button, Badge, ScrollArea, Input, Switch, useConfirm } from '@dailyuse/ui-vue-shadcn';
 import { ActionableWrapper, menuLabel } from '../../../components/shared';
 import type { MenuAction } from '../../../components/shared';
 import GridTemplateItem from '../components/GridTemplateItem.vue';
 import TemplateDesktopCard from '../components/TemplateDesktopCard.vue';
 import TemplateDialog from '../components/TemplateDialog.vue';
 import GroupDialog from '../components/GroupDialog.vue';
+import TemplateMoveDialog from '../components/TemplateMoveDialog.vue';
 import { useReminder } from '../composables/useReminder';
+import {
+  getGroupActiveStatusLabel,
+  getGroupControlModeText,
+  getGroupPolicyText,
+  getGroupSidebarSummary,
+  getGroupTemplateCountLabel,
+} from '../presentation/lifecyclePresentation';
 import type {
+  ControlMode,
+  CreateReminderGroupReq,
   ReminderGroupClientDTO,
   ReminderTemplateClientDTO,
+  UpdateReminderGroupReq,
 } from '@dailyuse/contracts/reminder';
-import type { ReminderGroupFormModel } from '../types';
 
 const {
   templates,
   groups,
   isLoading,
   isSaving,
+  preferences,
   fetchTemplates,
   fetchGroups,
+  fetchPreferences,
   createTemplate,
   updateTemplate,
   deleteTemplate,
+  toggleTemplate,
+  moveTemplateToGroup,
   createGroup,
   updateGroup,
   deleteGroup,
+  toggleGroup,
+  switchGroupControlMode,
+  updatePreferences,
 } = useReminder();
 
 const { t } = useI18n();
@@ -204,8 +327,10 @@ const editingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 const defaultTemplateGroupId = ref<string | null>(null);
 const templateCardRef = ref<any>(null);
 const templateDialogRef = ref<any>(null);
+const templateMoveDialogRef = ref<any>(null);
 const groupDialogRef = ref<any>(null);
 const editingGroup = ref<ReminderGroupClientDTO | null>(null);
+const movingTemplate = ref<ReminderTemplateClientDTO | null>(null);
 
 const filteredTemplates = computed(() => {
   let result = templates.value;
@@ -221,32 +346,36 @@ const filteredTemplates = computed(() => {
   return result;
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- component-local ReminderTemplate type
-function handleTemplateClick(tpl: any) {
-  selectedTemplate.value = templates.value.find((t) => t.id === tpl.id) || null;
+const selectedGroup = computed(
+  () => groups.value.find((group) => group.id === selectedGroupId.value) || null,
+);
+
+function getTemplatesByGroup(groupId: string) {
+  return templates.value.filter((template) => template.groupId === groupId);
+}
+
+function getSidebarGroupSummary(group: ReminderGroupClientDTO) {
+  return getGroupSidebarSummary(t, group, templates.value);
+}
+
+function handleTemplateClick(template: ReminderTemplateClientDTO) {
+  selectedTemplate.value = template;
   templateCardRef.value?.open();
 }
 
 function handleCreateTemplate(groupId?: string | null) {
   editingTemplate.value = null;
-  defaultTemplateGroupId.value = groupId ?? null;
+  defaultTemplateGroupId.value = groupId ?? selectedGroupId.value ?? null;
   templateDialogRef.value?.openForCreate();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleEditTemplate(tpl: any) {
-  const found = templates.value.find((t) => t.id === tpl.id);
-  if (found) {
-    editingTemplate.value = found;
-    defaultTemplateGroupId.value = null;
-    templateDialogRef.value?.openForEdit(found);
-  }
+function handleEditTemplate(template: ReminderTemplateClientDTO) {
+  editingTemplate.value = template;
+  defaultTemplateGroupId.value = null;
+  templateDialogRef.value?.openForEdit(template);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleDeleteTemplate(tpl: any) {
-  const template = templates.value.find((t) => t.id === tpl.id);
-  if (!template) return;
+async function handleDeleteTemplate(template: ReminderTemplateClientDTO) {
   const confirmed = await useConfirm({
     title: t('reminder.template.confirmDeleteTitle'),
     description: t('reminder.template.confirmDelete', { name: template.name }),
@@ -259,19 +388,47 @@ async function handleDeleteTemplate(tpl: any) {
   if (ok) toast.success(t('reminder.toast.templateDeleted'));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleToggleEnabled(tpl: any) {
-  const template = templates.value.find((t) => t.id === tpl.id);
-  if (template) {
-    updateTemplate(template.id, {});
+async function handleToggleEnabled(template: ReminderTemplateClientDTO) {
+  const result = await toggleTemplate(template.id);
+  if (result) {
+    toast.success(
+      result.effectiveEnabled
+        ? t('reminder.toast.templateEnabled')
+        : t('reminder.toast.templatePaused'),
+    );
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleStatusChanged(tpl: any, _enabled: boolean) {
-  const template = templates.value.find((t) => t.id === tpl.id);
-  if (template) {
-    updateTemplate(template.id, {});
+async function handleStatusChanged(template: ReminderTemplateClientDTO, _enabled: boolean) {
+  await handleToggleEnabled(template);
+}
+
+function handleMoveTemplate(template: ReminderTemplateClientDTO) {
+  movingTemplate.value = template;
+  templateMoveDialogRef.value?.open();
+}
+
+async function handleTemplateMoved(templateId: string, groupId: string | null) {
+  const result = await moveTemplateToGroup(templateId, groupId);
+  if (result) {
+    toast.success(
+      groupId ? t('reminder.toast.templateMoved') : t('reminder.toast.templateMovedToRoot'),
+    );
+    movingTemplate.value = null;
+    if (selectedTemplate.value?.id === result.id) {
+      selectedTemplate.value = result;
+    }
+  }
+}
+
+async function handleToggleGlobalReminder(enabled: boolean) {
+  const result = await updatePreferences({ globalReminderEnabled: enabled });
+  if (result) {
+    toast.success(
+      enabled
+        ? t('reminder.toast.globalReminderEnabled')
+        : t('reminder.toast.globalReminderPaused'),
+    );
   }
 }
 
@@ -293,31 +450,57 @@ async function handleUpdateTemplate(id: string, data: Record<string, unknown>) {
   }
 }
 
-async function handleSaveGroup(data: Record<string, unknown>) {
-  const result = await createGroup(data as any);
+async function handleSaveGroup(data: CreateReminderGroupReq) {
+  const result = await createGroup(data);
   if (result) {
     toast.success(t('reminder.toast.groupCreated'));
     groupDialogRef.value?.close();
   }
 }
 
-async function handleUpdateGroup(id: string, data: Record<string, unknown>) {
-  const result = await updateGroup(id, data as any);
+async function handleUpdateGroup(id: string, data: UpdateReminderGroupReq) {
+  const result = await updateGroup(id, data);
   if (result) {
     toast.success(t('reminder.toast.groupUpdated'));
     groupDialogRef.value?.close();
   }
-  await fetchGroups();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getGroupActions(group: ReminderGroupFormModel): MenuAction[] {
+function getGroupActions(group: ReminderGroupClientDTO): MenuAction[] {
   return [
+    {
+      key: 'toggleGroup',
+      label: group.enabled ? t('reminder.action.pauseGroup') : t('reminder.action.enableGroup'),
+      icon: Power,
+      handler: async () => {
+        const result = await toggleGroup(group.id!);
+        if (result) {
+          toast.success(
+            result.enabled ? t('reminder.toast.groupEnabled') : t('reminder.toast.groupPaused'),
+          );
+        }
+      },
+    },
     {
       key: 'createReminder',
       label: menuLabel('createReminder'),
       icon: Plus,
       handler: () => handleCreateTemplate(group.id),
+    },
+    {
+      key: 'switchControlMode',
+      label:
+        group.controlMode === 'Group'
+          ? t('reminder.action.switchToIndividual')
+          : t('reminder.action.switchToGroup'),
+      icon: Pencil,
+      handler: async () => {
+        const nextMode: ControlMode = group.controlMode === 'Group' ? 'Individual' : 'Group';
+        const result = await switchGroupControlMode(group.id, nextMode);
+        if (result) {
+          toast.success(t('reminder.toast.groupControlModeUpdated'));
+        }
+      },
     },
     {
       key: 'edit',
@@ -336,15 +519,12 @@ function getGroupActions(group: ReminderGroupFormModel): MenuAction[] {
   ];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleEditGroup(group: ReminderGroupFormModel) {
-  editingGroup.value = group as ReminderGroupClientDTO;
+function handleEditGroup(group: ReminderGroupClientDTO) {
+  editingGroup.value = group;
   groupDialogRef.value?.openForEdit(group);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleDeleteGroup(group: ReminderGroupFormModel) {
-  if (!group.id) return;
+async function handleDeleteGroup(group: ReminderGroupClientDTO) {
   const confirmed = await useConfirm({
     title: t('reminder.group.confirmDeleteTitle'),
     description: t('reminder.group.confirmDelete', { name: group.name }),
@@ -366,6 +546,6 @@ function openCreateGroup() {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchTemplates(), fetchGroups()]);
+  await Promise.all([fetchTemplates(), fetchGroups(), fetchPreferences()]);
 });
 </script>

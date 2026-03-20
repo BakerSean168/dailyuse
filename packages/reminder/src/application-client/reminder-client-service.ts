@@ -16,6 +16,7 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -26,7 +27,27 @@ import type { ControlMode } from '@dailyuse/contracts/reminder';
 import type { IReminderApiClient } from '../infrastructure-client/adapters/types';
 
 export class ReminderClientService {
-  constructor(private readonly reminderApi: IReminderApiClient) {}
+  constructor(private readonly reminderApi: IReminderApiClient) {
+    this.createReminderTemplate = this.createReminderTemplate.bind(this);
+    this.getReminderTemplate = this.getReminderTemplate.bind(this);
+    this.getReminderTemplates = this.getReminderTemplates.bind(this);
+    this.getUserTemplates = this.getUserTemplates.bind(this);
+    this.updateReminderTemplate = this.updateReminderTemplate.bind(this);
+    this.deleteReminderTemplate = this.deleteReminderTemplate.bind(this);
+    this.toggleTemplateEnabled = this.toggleTemplateEnabled.bind(this);
+    this.moveTemplateToGroup = this.moveTemplateToGroup.bind(this);
+    this.getUpcomingReminders = this.getUpcomingReminders.bind(this);
+    this.createReminderGroup = this.createReminderGroup.bind(this);
+    this.getReminderGroup = this.getReminderGroup.bind(this);
+    this.getReminderGroups = this.getReminderGroups.bind(this);
+    this.getUserReminderGroups = this.getUserReminderGroups.bind(this);
+    this.updateReminderGroup = this.updateReminderGroup.bind(this);
+    this.deleteReminderGroup = this.deleteReminderGroup.bind(this);
+    this.toggleReminderGroupStatus = this.toggleReminderGroupStatus.bind(this);
+    this.switchReminderGroupControlMode = this.switchReminderGroupControlMode.bind(this);
+    this.getPreferences = this.getPreferences.bind(this);
+    this.updatePreferences = this.updatePreferences.bind(this);
+  }
 
   // ===== 模板 CRUD =====
 
@@ -65,7 +86,7 @@ export class ReminderClientService {
 
   async moveTemplateToGroup(
     templateId: string,
-    targetGroupId: string,
+    targetGroupId: string | null,
   ): Promise<Result<ReminderTemplateClientDTO>> {
     return this.reminderApi.moveTemplateToGroup(templateId, targetGroupId);
   }
@@ -119,5 +140,15 @@ export class ReminderClientService {
     mode: ControlMode,
   ): Promise<Result<ReminderGroupClientDTO>> {
     return this.reminderApi.switchReminderGroupControlMode(id, mode);
+  }
+
+  async getPreferences(): Promise<Result<UserReminderPreferencesClientDTO>> {
+    return (this.reminderApi as any).getPreferences();
+  }
+
+  async updatePreferences(
+    data: Record<string, unknown>,
+  ): Promise<Result<UserReminderPreferencesClientDTO>> {
+    return (this.reminderApi as any).updatePreferences(data);
   }
 }

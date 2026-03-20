@@ -10,6 +10,7 @@ import { ReminderTemplate } from '../aggregates/reminder-template';
 import { ReminderGroup } from '../aggregates/reminder-group';
 import { ReminderTemplateControlService } from './ReminderTemplateControlService';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { IUserReminderPreferenceRepository } from '../repositories/IUserReminderPreferenceRepository';
 
 // Local branded type
 type IdentityId = string & { readonly __brand: 'IdentityId' };
@@ -33,11 +34,43 @@ export class ReminderDomainService {
   constructor(
     private readonly reminderTemplateRepository: IReminderTemplateRepository,
     private readonly reminderGroupRepository: IReminderGroupRepository,
+    private readonly userReminderPreferenceRepository?: IUserReminderPreferenceRepository,
   ) {
     this.controlService = new ReminderTemplateControlService(
       reminderTemplateRepository,
       reminderGroupRepository,
+      userReminderPreferenceRepository,
     );
+  }
+
+  private async getGlobalReminderEnabled(identityId: string): Promise<boolean> {
+    if (!this.userReminderPreferenceRepository) {
+      return true;
+    }
+
+    const preferences = await this.userReminderPreferenceRepository.findByIdentityId(identityId);
+    return preferences?.globalReminderEnabled ?? true;
+  }
+
+  public async syncTemplateEffectiveEnabled(template: ReminderTemplate): Promise<void> {
+    const effectiveStatus = await this.controlService.calculateEffectiveStatus(template);
+    template.setEffectiveEnabled(effectiveStatus.isEffectivelyEnabled);
+  }
+
+  public async syncTemplatesEffectiveEnabledByIdentity(identityId: string): Promise<void> {
+    const templates = await this.reminderTemplateRepository.findByIdentityId(identityId);
+    for (const template of templates) {
+      await this.syncTemplateEffectiveEnabled(template);
+      await this.reminderTemplateRepository.save(template);
+    }
+  }
+
+  public async syncTemplatesEffectiveEnabledByGroup(groupId: string): Promise<void> {
+    const templates = await this.reminderTemplateRepository.findByGroupId(groupId);
+    for (const template of templates) {
+      await this.syncTemplateEffectiveEnabled(template);
+      await this.reminderTemplateRepository.save(template);
+    }
   }
 
   /**
@@ -75,6 +108,7 @@ export class ReminderDomainService {
       ...params,
       identityId: params.identityId as IdentityId,
     });
+    await this.syncTemplateEffectiveEnabled(template);
     await this.reminderTemplateRepository.save(template);
 
     // TODO: Update group stats if groupId is present
@@ -182,6 +216,7 @@ export class ReminderDomainService {
 
     // This logic should be on the aggregate
     template.moveToGroup(groupId);
+    await this.syncTemplateEffectiveEnabled(template);
 
     await this.reminderTemplateRepository.save(template);
 
@@ -205,18 +240,7 @@ export class ReminderDomainService {
     group.toggle();
     await this.reminderGroupRepository.save(group);
 
-    // If group control is active, update all templates within the group
-    if (group.controlMode === ControlMode.Group) {
-      const templates = await this.reminderTemplateRepository.findByGroupId(id);
-      for (const template of templates) {
-        if (group.enabled) {
-          template.enable(); // This should check group status internally
-        } else {
-          template.pause();
-        }
-        await this.reminderTemplateRepository.save(template);
-      }
-    }
+    await this.syncTemplatesEffectiveEnabledByGroup(id);
 
     return group;
   }

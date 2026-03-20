@@ -17,6 +17,7 @@ export interface UserReminderPreferencesState {
   identityId: string;
   bestTimeSlots: TimeSlotDTO[];
   worstTimeSlots: TimeSlotDTO[];
+  globalReminderEnabled: boolean;
   globalSmartFrequency: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -31,13 +32,12 @@ export interface UserReminderPreferencesState {
  * - 支持时间段推荐算法
  * - 全局智能频率开关
  */
-export class UserReminderPreferences
-  extends AggregateRoot<string>
-{
+export class UserReminderPreferences extends AggregateRoot<string> {
   // ===== 私有字段 =====
   private _identityId: string;
   private _bestTimeSlots: TimeSlotDTO[];
   private _worstTimeSlots: TimeSlotDTO[];
+  private _globalReminderEnabled: boolean;
   private _globalSmartFrequency: boolean;
   private _createdAt: Date;
   private _updatedAt: Date;
@@ -48,13 +48,13 @@ export class UserReminderPreferences
     this._identityId = state.identityId;
     this._bestTimeSlots = [...state.bestTimeSlots];
     this._worstTimeSlots = [...state.worstTimeSlots];
+    this._globalReminderEnabled = state.globalReminderEnabled;
     this._globalSmartFrequency = state.globalSmartFrequency;
     this._createdAt = state.createdAt;
     this._updatedAt = state.updatedAt;
   }
 
   // ===== Getter 属性 =====
-
 
   public get identityId(): string {
     return this._identityId;
@@ -66,6 +66,10 @@ export class UserReminderPreferences
 
   public get worstTimeSlots(): TimeSlotDTO[] {
     return [...this._worstTimeSlots];
+  }
+
+  public get globalReminderEnabled(): boolean {
+    return this._globalReminderEnabled;
   }
 
   public get globalSmartFrequency(): boolean {
@@ -93,6 +97,7 @@ export class UserReminderPreferences
     identityId: string;
     bestTimeSlots?: TimeSlotDTO[];
     worstTimeSlots?: TimeSlotDTO[];
+    globalReminderEnabled?: boolean;
     globalSmartFrequency?: boolean;
   }): UserReminderPreferences {
     const now = new Date();
@@ -102,6 +107,7 @@ export class UserReminderPreferences
       identityId: params.identityId,
       bestTimeSlots: params.bestTimeSlots ?? [],
       worstTimeSlots: params.worstTimeSlots ?? [],
+      globalReminderEnabled: params.globalReminderEnabled ?? true,
       globalSmartFrequency: params.globalSmartFrequency ?? true,
       createdAt: now,
       updatedAt: now,
@@ -193,6 +199,11 @@ export class UserReminderPreferences
     this._updatedAt = new Date(Date.now());
   }
 
+  public toggleGlobalReminderEnabled(enabled: boolean): void {
+    this._globalReminderEnabled = enabled;
+    this._updatedAt = new Date(Date.now());
+  }
+
   /**
    * 获取响应率最高的时间段
    */
@@ -253,6 +264,7 @@ export class UserReminderPreferences
       identityId: this._identityId,
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
+      globalReminderEnabled: this._globalReminderEnabled,
       globalSmartFrequency: this._globalSmartFrequency,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
@@ -284,12 +296,13 @@ export class UserReminderPreferences
       identityId: this._identityId,
       bestTimeSlots: [...this._bestTimeSlots],
       worstTimeSlots: [...this._worstTimeSlots],
+      globalReminderEnabled: this._globalReminderEnabled,
       globalSmartFrequency: this._globalSmartFrequency,
       createdAt: this._createdAt.getTime(),
       updatedAt: this._updatedAt.getTime(),
       bestTimeSlotsText,
       worstTimeSlotsText,
+      summaryText: this._globalReminderEnabled ? '提醒总开关已开启' : '提醒总开关已关闭',
     };
   }
-
 }

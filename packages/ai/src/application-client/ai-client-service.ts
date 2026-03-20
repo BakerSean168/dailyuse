@@ -38,7 +38,24 @@ export class AIClientService {
     private readonly messageApi: IAIMessageApiClient,
     private readonly goalApi: IAIGoalApiClient,
     private readonly knowledgeNoteApi: AIKnowledgeNoteApiClient,
-  ) {}
+  ) {
+    this.createProvider = this.createProvider.bind(this);
+    this.updateProvider = this.updateProvider.bind(this);
+    this.listProviders = this.listProviders.bind(this);
+    this.getProvider = this.getProvider.bind(this);
+    this.deleteProvider = this.deleteProvider.bind(this);
+    this.testProvider = this.testProvider.bind(this);
+    this.setDefaultProvider = this.setDefaultProvider.bind(this);
+    this.generateGoal = this.generateGoal.bind(this);
+    this.createConversation = this.createConversation.bind(this);
+    this.updateConversation = this.updateConversation.bind(this);
+    this.listConversations = this.listConversations.bind(this);
+    this.getConversation = this.getConversation.bind(this);
+    this.deleteConversation = this.deleteConversation.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
+    this.listMessages = this.listMessages.bind(this);
+    this.createKnowledgeNote = this.createKnowledgeNote.bind(this);
+  }
 
   createProvider(request: CreateAIProviderConfigReq) {
     return this.providerApi.createProvider(request);

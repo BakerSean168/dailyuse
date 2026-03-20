@@ -1,6 +1,6 @@
 import { computed } from 'vue';
-import { useRepository } from '../../repository/composables/useRepository';
 import { useRepositoryStore } from '../../repository/stores/repositoryStore';
+import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
 import {
   buildEditorLinkIndex,
   getBacklinksForNote,
@@ -15,21 +15,21 @@ import { useResourceInsertion } from './useResourceInsertion';
 
 export function useEditorLinkIndex() {
   const store = useRepositoryStore();
-  const repository = useRepository();
+  const repository = useRepositoryResourceGateway();
   const resourceInsertion = useResourceInsertion();
 
   const index = computed(() => buildEditorLinkIndex(store.resources));
   const notes = computed(() => index.value.notes);
 
   async function ensureResourcesLoaded(force = false) {
-    await repository.initRepository();
+    await repository.ensureReady();
 
     if (!repository.repositoryId.value) {
       return;
     }
 
     if (force || store.resources.length === 0) {
-      await repository.fetchResources();
+      await repository.refreshResources();
     }
   }
 
@@ -60,10 +60,6 @@ export function useEditorLinkIndex() {
     return repository.createMarkdownNote(normalizedTitle, initialContent);
   }
 
-  async function saveNoteContent(noteId: string, content: string) {
-    return repository.saveResourceContent(noteId, content);
-  }
-
   return {
     index,
     notes,
@@ -77,7 +73,6 @@ export function useEditorLinkIndex() {
     getBacklinks,
     getGraph,
     createMarkdownNote,
-    saveNoteContent,
     imageResources: resourceInsertion.imageResources,
     resourceItems: resourceInsertion.resourceItems,
     recentResources: resourceInsertion.recentResources,

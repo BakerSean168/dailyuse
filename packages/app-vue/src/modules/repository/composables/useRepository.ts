@@ -9,7 +9,6 @@ import { useRepositoryStore } from '../stores/repositoryStore';
 import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 import { useStrictInject } from '../../../shared/utils/useStrictInject';
 import { AuthChannels } from '@dailyuse/contracts/electron';
-import type { ResultError } from '@dailyuse/contracts/result';
 import type {
   FileTreeResponse,
   ResourceBookmarkClientDTO,
@@ -20,8 +19,6 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type { Repository } from '@dailyuse/repository/domain-client';
 import { searchRepositoryResources } from './repositorySearch';
-import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
-import { useEditorWorkspaceStore } from '../../editor/stores/editorWorkspaceStore';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -144,7 +141,6 @@ export function useRepository() {
     'RepositoryService',
   ) as RepositoryServiceLike;
   const store = useRepositoryStore();
-  const editorWorkspaceStore = useEditorWorkspaceStore();
   const savingId = ref<string | null>(null);
   const isUploading = ref(false);
   const uploadProgress = ref<RepositoryUploadProgress>({
@@ -159,9 +155,7 @@ export function useRepository() {
   const resources = computed(() => store.resources);
   const treeNodes = computed(() => store.treeNodes);
   const resourcesByType = computed(() => store.resourcesByType);
-  const currentResource = computed(() => store.currentResource);
   const bookmarks = computed(() => store.bookmarks);
-  const recentInsertions = computed(() => store.recentInsertions);
   const isLoading = computed(() => store.isLoading);
   const error = computed(() => store.error);
   const isSaving = computed(() => savingId.value !== null);
@@ -322,31 +316,6 @@ export function useRepository() {
     }
 
     return store.resources.find((resource) => resource.id === resourceId) ?? null;
-  }
-
-  function recordRecentInsertion(entry: ResourceInsertionRecentEntry): void {
-    store.recordRecentInsertion(entry);
-  }
-
-  async function saveResourceContent(resourceId: string, content: string) {
-    savingId.value = resourceId;
-    store.setError(null);
-    try {
-      const result = await executeWithAuthRecovery(() =>
-        service.updateResource(resourceId, { content }),
-      );
-      if (result.ok && result.data) {
-        store.updateResource(result.data);
-        return true;
-      } else {
-        handleError(
-          result.ok ? '保存内容返回空数据' : getResultErrorMessage(result, '保存内容失败'),
-        );
-        return false;
-      }
-    } finally {
-      savingId.value = null;
-    }
   }
 
   async function updateResourceMetadata(resourceId: string, metadata: Record<string, unknown>) {
@@ -722,20 +691,6 @@ export function useRepository() {
     return null;
   }
 
-  async function openResource(resource: ResourceClientDTO): Promise<boolean> {
-    if (!store.currentRepositoryId) {
-      return false;
-    }
-
-    const opened = await editorWorkspaceStore.openResourceTab(resource, store.currentRepositoryId);
-    if (!opened) {
-      return false;
-    }
-
-    store.setCurrentResource(resource);
-    return true;
-  }
-
   return {
     currentRepositoryId,
     currentRepository,
@@ -743,9 +698,7 @@ export function useRepository() {
     resources,
     treeNodes,
     resourcesByType,
-    currentResource,
     bookmarks,
-    recentInsertions,
     isLoading,
     isSaving,
     isUploading,
@@ -762,8 +715,6 @@ export function useRepository() {
     deleteResource,
     readResourceAsDataUrl,
     getResourceById,
-    recordRecentInsertion,
-    saveResourceContent,
     updateResourceMetadata,
     uploadResources,
     searchResources,
@@ -772,7 +723,6 @@ export function useRepository() {
     renameBookmark,
     reorderBookmarks,
     removeBookmark,
-    openResource,
   };
 }
 

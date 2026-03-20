@@ -10,9 +10,6 @@ import type {
   TreeNode,
   ResourceBookmarkClientDTO,
 } from '@dailyuse/contracts/repository';
-import type { ResourceInsertionRecentEntry } from '../../editor/composables/useResourceInsertion';
-
-export type SidebarMode = 'files' | 'search' | 'bookmarks';
 
 interface BookmarkUiState {
   aliasById: Record<string, string | null>;
@@ -28,8 +25,6 @@ export interface RepositoryState {
 
   /** 资源列表 */
   resources: ResourceClientDTO[];
-  /** 当前打开的资源 */
-  currentResource: ResourceClientDTO | null;
 
   /** 文件树节点 */
   treeNodes: TreeNode[];
@@ -37,13 +32,6 @@ export interface RepositoryState {
   persistedBookmarks: ResourceBookmarkClientDTO[];
   /** 仅用于当前会话的书签 UI 回退态 */
   bookmarkUiState: BookmarkUiState;
-  /** 最近插入的资源 */
-  recentInsertions: ResourceInsertionRecentEntry[];
-
-  /** 侧边栏模式 */
-  sidebarMode: SidebarMode;
-  /** 侧边栏是否折叠 */
-  sidebarCollapsed: boolean;
 
   isLoading: boolean;
   error: string | null;
@@ -55,7 +43,6 @@ export const useRepositoryStore = defineStore('repository', {
     currentRepository: null,
     currentRepositoryId: null,
     resources: [],
-    currentResource: null,
     treeNodes: [],
     persistedBookmarks: [],
     bookmarkUiState: {
@@ -63,9 +50,6 @@ export const useRepositoryStore = defineStore('repository', {
       orderedIds: null,
       removedIds: [],
     },
-    recentInsertions: [],
-    sidebarMode: 'files',
-    sidebarCollapsed: false,
     isLoading: false,
     error: null,
     isInitialized: false,
@@ -130,10 +114,8 @@ export const useRepositoryStore = defineStore('repository', {
     },
     clearRepositoryScopedState() {
       this.resources = [];
-      this.currentResource = null;
       this.treeNodes = [];
       this.persistedBookmarks = [];
-      this.recentInsertions = [];
       this.resetBookmarkUiState();
     },
 
@@ -150,12 +132,6 @@ export const useRepositoryStore = defineStore('repository', {
     },
     removeResource(id: string) {
       this.resources = this.resources.filter((r) => r.id !== id);
-      if (this.currentResource?.id === id) {
-        this.currentResource = null;
-      }
-    },
-    setCurrentResource(r: ResourceClientDTO | null) {
-      this.currentResource = r;
     },
 
     // ── Tree Nodes ──
@@ -210,22 +186,6 @@ export const useRepositoryStore = defineStore('repository', {
         removedIds: [],
       };
     },
-    setRecentInsertions(items: ResourceInsertionRecentEntry[]) {
-      this.recentInsertions = items;
-    },
-    recordRecentInsertion(entry: ResourceInsertionRecentEntry) {
-      const deduped = this.recentInsertions.filter((item) => item.resourceId !== entry.resourceId);
-      this.recentInsertions = [entry, ...deduped].slice(0, 20);
-    },
-
-    // ── Sidebar ──
-    setSidebarMode(mode: SidebarMode) {
-      this.sidebarMode = mode;
-    },
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed;
-    },
-
     // ── Common ──
     setLoading(v: boolean) {
       this.isLoading = v;
@@ -243,13 +203,7 @@ export const useRepositoryStore = defineStore('repository', {
   },
 
   persist: {
-    pick: [
-      'sidebarMode',
-      'sidebarCollapsed',
-      'currentRepositoryId',
-      'persistedBookmarks',
-      'recentInsertions',
-    ] as string[],
+    pick: ['currentRepositoryId', 'persistedBookmarks'] as string[],
   },
 });
 

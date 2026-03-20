@@ -31,6 +31,28 @@ export function getDesktopAuthService(): AuthDesktopApplicationService {
   return getRegisteredService();
 }
 
+async function resolveRequestContext(
+  service: AuthDesktopApplicationService,
+): Promise<Context | null> {
+  const directContext = service.getCurrentRequestContext();
+  if (directContext) {
+    return directContext;
+  }
+
+  const currentUser = await service.getCurrentUser();
+  if (currentUser.identity?.id) {
+    const fallbackContext = {
+      identityId: String(currentUser.identity.id),
+      deviceId: 'desktop-app',
+    } satisfies Context;
+
+    logger.warn('Recovered request context from current user fallback', fallbackContext);
+    return fallbackContext;
+  }
+
+  return null;
+}
+
 export class DesktopAuthContextProvider {
   async getIdentityId(): Promise<string | null> {
     return getRegisteredService().getCurrentIdentityId();
@@ -55,7 +77,12 @@ export class DesktopAuthContextProvider {
   }
 
   async getRequestContext(): Promise<Context | null> {
-    return getRegisteredService().getCurrentRequestContext();
+    const service = getRegisteredService();
+    if (service.getRuntimeState() === AuthRuntimeState.RESTORING) {
+      return null;
+    }
+
+    return resolveRequestContext(service);
   }
 
   async requireRequestContext(): Promise<Context> {
@@ -65,19 +92,8 @@ export class DesktopAuthContextProvider {
       throw createAuthResolutionError('AUTH_RESTORING');
     }
 
-    const context = await this.getRequestContext();
+    const context = await resolveRequestContext(service);
     if (!context) {
-      const currentUser = await service.getCurrentUser();
-      if (currentUser.identity?.id) {
-        const fallbackContext = {
-          identityId: String(currentUser.identity.id),
-          deviceId: 'desktop-app',
-        } satisfies Context;
-
-        logger.warn('requireRequestContext recovered from current user fallback', fallbackContext);
-        return fallbackContext;
-      }
-
       logger.warn('requireRequestContext rejected: no active request context', {
         runtimeState: service.getRuntimeState(),
         identityId: service.getCurrentIdentityId(),

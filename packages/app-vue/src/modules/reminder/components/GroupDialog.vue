@@ -197,6 +197,11 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type {
+  CreateReminderGroupReq,
+  ReminderGroupClientDTO,
+  UpdateReminderGroupReq,
+} from '@dailyuse/contracts/reminder';
 import {
   Info,
   Palette,
@@ -227,18 +232,17 @@ import { Textarea } from '@dailyuse/ui-vue-shadcn';
 import { RadioGroup, RadioGroupItem } from '@dailyuse/ui-vue-shadcn';
 import { Separator } from '@dailyuse/ui-vue-shadcn';
 import { Popover, PopoverContent, PopoverTrigger } from '@dailyuse/ui-vue-shadcn';
-import type { ReminderGroupFormModel } from '../types';
 
 const props = defineProps<{
-  group?: ReminderGroupFormModel | null;
+  group?: ReminderGroupClientDTO | null;
   saving?: boolean;
 }>();
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  save: [data: Omit<ReminderGroupFormModel, 'id'>];
-  update: [id: string, data: Omit<ReminderGroupFormModel, 'id'>];
+  save: [data: CreateReminderGroupReq];
+  update: [id: string, data: UpdateReminderGroupReq];
 }>();
 
 const visible = ref(false);
@@ -250,7 +254,7 @@ const formData = reactive({
   description: '',
   icon: 'mdi-folder',
   color: '#2196F3',
-  controlMode: 'Individual' as string,
+  controlMode: 'Individual' as CreateReminderGroupReq['controlMode'],
   order: 0,
 });
 
@@ -295,7 +299,7 @@ const resetForm = () => {
   formData.order = 0;
 };
 
-const fillForm = (group: ReminderGroupFormModel) => {
+const fillForm = (group: ReminderGroupClientDTO) => {
   formData.name = group.name;
   formData.description = group.description || '';
   formData.icon = group.icon || 'mdi-folder';
@@ -309,7 +313,7 @@ const open = () => {
   visible.value = true;
 };
 
-const openForEdit = (group: ReminderGroupFormModel) => {
+const openForEdit = (group: ReminderGroupClientDTO) => {
   fillForm(group);
   visible.value = true;
 };
@@ -329,7 +333,7 @@ const handleVisibleChange = (value: boolean) => {
 const handleSave = async () => {
   if (!formValid.value || isSaving.value) return;
 
-  const data: Omit<ReminderGroupFormModel, 'id'> = {
+  const data: CreateReminderGroupReq = {
     name: formData.name.trim(),
     description: formData.description?.trim() || undefined,
     color: formData.color,

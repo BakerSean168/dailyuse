@@ -12,6 +12,7 @@ import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -55,7 +56,7 @@ export interface IReminderApiClient {
   toggleTemplateEnabled(id: string): Promise<Result<ReminderTemplateClientDTO>>;
   moveTemplateToGroup(
     templateId: string,
-    targetGroupId: string,
+    targetGroupId: string | null,
   ): Promise<Result<ReminderTemplateClientDTO>>;
   getUpcomingReminders(params?: {
     days?: number;
@@ -79,4 +80,8 @@ export interface IReminderApiClient {
     id: string,
     mode: ControlMode,
   ): Promise<Result<ReminderGroupClientDTO>>;
+  getPreferences(): Promise<Result<UserReminderPreferencesClientDTO>>;
+  updatePreferences(
+    data: Record<string, unknown>,
+  ): Promise<Result<UserReminderPreferencesClientDTO>>;
 }

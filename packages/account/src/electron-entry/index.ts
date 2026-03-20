@@ -11,8 +11,11 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import type { IpcResult } from '@dailyuse/contracts/result';
+import {
+  type IElectronModule,
+  type IElectronModuleContext,
+  withAuthenticatedIdentity,
+} from '@dailyuse/contracts/electron';
 import { ok, fail } from '@dailyuse/contracts/result';
 import {
   PowerSyncAccountRepository,
@@ -38,22 +41,6 @@ const Ch = {
 const channels = Object.values(Ch);
 let activeAccountModule: AccountModuleInstance | null = null;
 
-async function withAuth<T>(
-  ctx: IElectronModuleContext,
-  handler: (identityId: string) => Promise<IpcResult<T>>,
-): Promise<IpcResult<T>> {
-  try {
-    const identityId = await ctx.auth.requireIdentityId();
-    return await handler(identityId);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'AUTH_RESTORING') {
-      return fail({ code: 'AUTH_RESTORING', message: 'Authentication restore in progress' });
-    }
-
-    return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
-  }
-}
-
 export const AccountElectronModule: IElectronModule = {
   name: 'Account',
 
@@ -71,7 +58,7 @@ export const AccountElectronModule: IElectronModule = {
     ipcMain.handle(Ch.LIST, (_event, params) => accountModule.accountRepository.findAll(params));
 
     ipcMain.handle(Ch.GET, async () => {
-      return withAuth(ctx, async (identityId) => {
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
         const profile = await accountModule.api.getProfile(identityId);
         if (!profile) {
           return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
@@ -81,7 +68,7 @@ export const AccountElectronModule: IElectronModule = {
     });
 
     ipcMain.handle(Ch.GET_CURRENT, async () => {
-      return withAuth(ctx, async (identityId) => {
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
         const profile = await accountModule.api.getProfile(identityId);
         if (!profile) {
           return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
@@ -91,7 +78,7 @@ export const AccountElectronModule: IElectronModule = {
     });
 
     ipcMain.handle(Ch.GET_CURRENT_ALIAS, async () => {
-      return withAuth(ctx, async (identityId) => {
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
         const profile = await accountModule.api.getProfile(identityId);
         if (!profile) {
           return fail({ code: 'ACCOUNT_NOT_FOUND', message: 'Account profile not found' });
@@ -101,14 +88,14 @@ export const AccountElectronModule: IElectronModule = {
     });
 
     ipcMain.handle(Ch.UPDATE_PROFILE, async (_event, payload: any) => {
-      return withAuth(ctx, async (identityId) => {
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
         const result = await accountModule.api.updateProfile(identityId, payload);
         return ok(result.account);
       });
     });
 
     ipcMain.handle(Ch.UPDATE_SETTINGS, async (_event, payload: any) => {
-      return withAuth(ctx, async (identityId) => {
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
         const result = await accountModule.api.updateSettings(identityId, payload);
         return ok(result);
       });
@@ -119,7 +106,7 @@ export const AccountElectronModule: IElectronModule = {
     );
 
     ipcMain.handle(Ch.CLOSE, async (_event, payload: any) => {
-      return withAuth(ctx, async (identityId) => {
+      return withAuthenticatedIdentity(ctx, async (identityId) => {
         const result = await accountModule.api.closeAccount(identityId, payload ?? {});
         return ok(result);
       });

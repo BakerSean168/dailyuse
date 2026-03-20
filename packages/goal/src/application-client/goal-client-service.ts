@@ -178,7 +178,46 @@ export class GoalClientService {
     private readonly goalApi: IGoalApiClient,
     private readonly folderApi: IGoalFolderApiClient,
     private readonly focusApi?: IGoalFocusApiClient,
-  ) {}
+  ) {
+    this.createGoal = this.createGoal.bind(this);
+    this.getGoal = this.getGoal.bind(this);
+    this.listGoals = this.listGoals.bind(this);
+    this.updateGoal = this.updateGoal.bind(this);
+    this.deleteGoal = this.deleteGoal.bind(this);
+    this.activateGoal = this.activateGoal.bind(this);
+    this.completeGoal = this.completeGoal.bind(this);
+    this.archiveGoal = this.archiveGoal.bind(this);
+    this.searchGoals = this.searchGoals.bind(this);
+    this.archiveExpiredGoals = this.archiveExpiredGoals.bind(this);
+    this.getGoalAggregateView = this.getGoalAggregateView.bind(this);
+    this.cloneGoal = this.cloneGoal.bind(this);
+    this.createKeyResult = this.createKeyResult.bind(this);
+    this.getKeyResults = this.getKeyResults.bind(this);
+    this.updateKeyResult = this.updateKeyResult.bind(this);
+    this.deleteKeyResult = this.deleteKeyResult.bind(this);
+    this.batchUpdateKeyResultWeights = this.batchUpdateKeyResultWeights.bind(this);
+    this.getProgressBreakdown = this.getProgressBreakdown.bind(this);
+    this.generateKeyResults = this.generateKeyResults.bind(this);
+    this.createGoalRecord = this.createGoalRecord.bind(this);
+    this.getGoalRecordsByKeyResult = this.getGoalRecordsByKeyResult.bind(this);
+    this.getGoalRecordsByGoal = this.getGoalRecordsByGoal.bind(this);
+    this.deleteGoalRecord = this.deleteGoalRecord.bind(this);
+    this.createGoalReview = this.createGoalReview.bind(this);
+    this.getGoalReviews = this.getGoalReviews.bind(this);
+    this.updateGoalReview = this.updateGoalReview.bind(this);
+    this.deleteGoalReview = this.deleteGoalReview.bind(this);
+    this.createGoalFolder = this.createGoalFolder.bind(this);
+    this.listGoalFolders = this.listGoalFolders.bind(this);
+    this.getGoalFolder = this.getGoalFolder.bind(this);
+    this.updateGoalFolder = this.updateGoalFolder.bind(this);
+    this.deleteGoalFolder = this.deleteGoalFolder.bind(this);
+    this.startFocusSession = this.startFocusSession.bind(this);
+    this.pauseFocusSession = this.pauseFocusSession.bind(this);
+    this.resumeFocusSession = this.resumeFocusSession.bind(this);
+    this.stopFocusSession = this.stopFocusSession.bind(this);
+    this.getFocusStatus = this.getFocusStatus.bind(this);
+    this.getFocusHistory = this.getFocusHistory.bind(this);
+  }
 
   // ===== Goal Management =====
 

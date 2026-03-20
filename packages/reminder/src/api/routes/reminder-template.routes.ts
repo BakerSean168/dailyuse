@@ -211,7 +211,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.enableTemplate(req.params!.id),
+    (req, ctx) => controller.enableTemplate(req.params!.id, ctx),
   );
 
   // POST /templates/:id/pause
@@ -227,7 +227,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.pauseTemplate(req.params!.id),
+    (req, ctx) => controller.pauseTemplate(req.params!.id, ctx),
   );
 
   // POST /templates/:id/toggle
@@ -262,7 +262,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.moveTemplate(req.params!.id, req.body),
+    (req, ctx) => controller.moveTemplate(req.params!.id, req.body, ctx),
   );
 
   // GET /templates/:id/history
@@ -278,7 +278,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getTemplateHistory(req.params!.id),
+    (req, ctx) => controller.getTemplateHistory(req.params!.id, ctx),
   );
 
   // ==================== Response Routes ====================
@@ -322,7 +322,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getTemplateResponses(req.params!.id),
+    (req, ctx) => controller.getTemplateResponses(req.params!.id, ctx),
   );
 
   // GET /templates/:id/responses/stats
@@ -338,7 +338,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.getResponseStats(req.params!.id),
+    (req, ctx) => controller.getResponseStats(req.params!.id, ctx),
   );
 
   // ==================== Frequency Analysis Routes ====================
@@ -356,7 +356,7 @@ export function registerReminderTemplateRoutes(
       },
     },
     [auth],
-    (req) => controller.analyzeFrequency(req.params!.id),
+    (req, ctx) => controller.analyzeFrequency(req.params!.id, ctx),
   );
 
   // POST /templates/:id/frequency-adjustment

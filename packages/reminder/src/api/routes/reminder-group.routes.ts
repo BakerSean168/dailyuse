@@ -164,7 +164,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.switchGroupControlMode(req.params!.id, req.body),
+    (req, ctx) => controller.switchGroupControlMode(req.params!.id, req.body, ctx),
   );
 
   // POST /groups/:id/batch
@@ -183,7 +183,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.batchGroupTemplates(req.params!.id, req.body),
+    (req, ctx) => controller.batchGroupTemplates(req.params!.id, req.body, ctx),
   );
 
   // POST /groups/:id/toggle
@@ -199,7 +199,7 @@ export function registerReminderGroupRoutes(
       },
     },
     [auth],
-    (req) => controller.toggleGroup(req.params!.id),
+    (req, ctx) => controller.toggleGroup(req.params!.id, ctx),
   );
 
   return router;

@@ -63,6 +63,12 @@ export interface ReminderTemplateState {
   isPaused: boolean;
   lastTriggeredText: string | null;
   controlledByGroup: boolean;
+  lifecycleSource: 'global' | 'group' | 'template';
+  effectiveEnabledReason: string;
+  groupControlMode: 'Group' | 'Individual' | null;
+  groupEnabled: boolean | null;
+  globalReminderEnabled: boolean;
+  groupName?: string | null;
 }
 
 export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
@@ -251,6 +257,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       isPaused: this._props.isPaused,
       lastTriggeredText: this._props.lastTriggeredText,
       controlledByGroup: this._props.controlledByGroup,
+      lifecycleSource: this._props.lifecycleSource,
+      effectiveEnabledReason: this._props.effectiveEnabledReason,
+      groupControlMode: this._props.groupControlMode,
+      groupEnabled: this._props.groupEnabled,
+      globalReminderEnabled: this._props.globalReminderEnabled,
+      groupName: this._props.groupName ?? null,
     };
   }
 }

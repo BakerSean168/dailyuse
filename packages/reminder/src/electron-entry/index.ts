@@ -43,6 +43,8 @@ const Ch = {
   GROUP_GET_BY_USER: 'reminder:group:get-by-user',
   GROUP_TOGGLE_STATUS: 'reminder:group:toggle-status',
   GROUP_SWITCH_CONTROL_MODE: 'reminder:group:switch-control-mode',
+  PREFERENCES_GET: 'reminder:preferences:get',
+  PREFERENCES_UPDATE: 'reminder:preferences:update',
 } as const;
 
 const channels = Object.values(Ch);
@@ -104,8 +106,10 @@ export const ReminderElectronModule: IElectronModule = {
         controller.toggleTemplate(id, requestContext),
       ),
     );
-    ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, groupId) =>
-      withAuthenticatedValue(ctx, async () => controller.moveTemplate(id, { groupId })),
+    ipcMain.handle(Ch.TEMPLATE_MOVE_TO_GROUP, async (_event, id, payload) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.moveTemplate(id, payload ?? {}, requestContext),
+      ),
     );
     ipcMain.handle(Ch.UPCOMING_GET, async (_event, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
@@ -143,10 +147,24 @@ export const ReminderElectronModule: IElectronModule = {
       ),
     );
     ipcMain.handle(Ch.GROUP_TOGGLE_STATUS, async (_event, id) =>
-      withAuthenticatedValue(ctx, async () => controller.toggleGroup(id)),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.toggleGroup(id, requestContext),
+      ),
     );
     ipcMain.handle(Ch.GROUP_SWITCH_CONTROL_MODE, async (_event, id, data) =>
-      withAuthenticatedValue(ctx, async () => controller.switchGroupControlMode(id, data)),
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.switchGroupControlMode(id, data, requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.PREFERENCES_GET, async () =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.getPreferences(requestContext),
+      ),
+    );
+    ipcMain.handle(Ch.PREFERENCES_UPDATE, async (_event, dto) =>
+      withAuthenticatedValue(ctx, async (requestContext) =>
+        controller.updatePreferences(dto ?? {}, requestContext),
+      ),
     );
 
     logger.info('Reminder module registered');

@@ -4,7 +4,7 @@ import type {
   RepositoryUploadFailure,
   RepositoryUploadResult,
 } from '../../repository/composables/useRepository';
-import { useRepository } from '../../repository/composables/useRepository';
+import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
 import { serializeMarkdownResourceReference } from '../utils/markdownResourceReferences';
 
 export interface EditorSelectionRange {
@@ -356,14 +356,14 @@ export function createResourceInsertion(
 }
 
 export function useResourceInsertion() {
-  const repository = useRepository();
+  const repository = useRepositoryResourceGateway();
 
   return createResourceInsertion({
     resources: repository.resources,
     uploadResources: (files, tags = []) => repository.uploadResources(files, tags),
     readResourceAsDataUrl: (resource) => repository.readResourceAsDataUrl(resource),
-    recentEntries: repository.recentInsertions,
-    persistRecentEntry: (entry) => repository.recordRecentInsertion(entry),
+    recentEntries: repository.recentEntries,
+    persistRecentEntry: (entry) => repository.persistRecentEntry(entry),
   });
 }
 

@@ -789,10 +789,7 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
   }
 
   public toClientDTO(includeChildren = false): ReminderTemplateClientDTO {
-    // Note: effectiveEnabled and controlledByGroup should ideally be passed in
-    // from an application service that has the context of the group.
-    // Here we default to the template's own state.
-    const effectiveEnabled = this._props.selfEnabled;
+    const effectiveEnabled = this._props.effectiveEnabled;
     const controlledByGroup = !!this._props.groupId;
 
     const typeText = this._props.type === ReminderType.OneTime ? '一次性' : '循环';
@@ -890,6 +887,14 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
       isPaused: this._props.status === ReminderStatus.Paused,
       lastTriggeredText: formatRelativeTime(lastTriggeredAt),
       controlledByGroup: controlledByGroup,
+      lifecycleSource: controlledByGroup ? 'group' : 'template',
+      effectiveEnabledReason: controlledByGroup
+        ? '当前分组接管了提醒启用状态'
+        : '当前使用模板自身启用状态',
+      groupControlMode: controlledByGroup ? 'Group' : null,
+      groupEnabled: controlledByGroup ? effectiveEnabled : null,
+      globalReminderEnabled: true,
+      groupName: null,
     };
 
     if (includeChildren && this._props.history.length > 0) {

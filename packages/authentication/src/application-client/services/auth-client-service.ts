@@ -33,7 +33,24 @@ import type {
 } from '@dailyuse/contracts/authentication';
 
 export class AuthClientService {
-  constructor(private readonly apiClient: IAuthApiClient) {}
+  constructor(private readonly apiClient: IAuthApiClient) {
+    this.loginByEmail = this.loginByEmail.bind(this);
+    this.loginByPhone = this.loginByPhone.bind(this);
+    this.registerByEmail = this.registerByEmail.bind(this);
+    this.registerByPhone = this.registerByPhone.bind(this);
+    this.sendSmsCode = this.sendSmsCode.bind(this);
+    this.refreshToken = this.refreshToken.bind(this);
+    this.logout = this.logout.bind(this);
+    this.getCurrentUser = this.getCurrentUser.bind(this);
+    this.listSessions = this.listSessions.bind(this);
+    this.revokeSession = this.revokeSession.bind(this);
+    this.changePassword = this.changePassword.bind(this);
+    this.forgotPassword = this.forgotPassword.bind(this);
+    this.resetPassword = this.resetPassword.bind(this);
+    this.enterGuestMode = this.enterGuestMode.bind(this);
+    this.listRememberedAccounts = this.listRememberedAccounts.bind(this);
+    this.removeRememberedAccount = this.removeRememberedAccount.bind(this);
+  }
 
   // ========== Login ==========
 

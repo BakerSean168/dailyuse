@@ -5,9 +5,11 @@
  */
 
 import { ipcMain } from 'electron';
-import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contracts/electron';
-import type { IpcResult } from '@dailyuse/contracts/result';
-import { ok, fail } from '@dailyuse/contracts/result';
+import {
+  type IElectronModule,
+  type IElectronModuleContext,
+  withAuthenticatedIdentity,
+} from '@dailyuse/contracts/electron';
 import { createSettingPowerSyncModule } from '../infrastructure-server/powersync';
 import { createLogger } from '@dailyuse/utils';
 import type { SettingModuleInstance } from '../infrastructure-server';
@@ -25,36 +27,6 @@ const Ch = {
 const channels = Object.values(Ch);
 let activeSettingModule: SettingModuleInstance | null = null;
 
-function isIpcResult<T>(value: unknown): value is IpcResult<T> {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'ok' in value &&
-    typeof (value as { ok?: unknown }).ok === 'boolean' &&
-    ('data' in value || 'error' in value)
-  );
-}
-
-/**
- * Resolves identityId from the shared auth context.
- * Falls back to empty string for offline/guest mode rather than throwing.
- */
-async function withAuth<T>(
-  ctx: IElectronModuleContext,
-  handler: (identityId: string) => Promise<T>,
-): Promise<IpcResult<T>> {
-  try {
-    const identityId = await ctx.auth.requireIdentityId();
-    const result = await handler(identityId);
-    return isIpcResult<T>(result) ? result : ok(result);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'AUTH_RESTORING') {
-      return fail({ code: 'AUTH_RESTORING', message: 'Authentication restore in progress' });
-    }
-    return fail({ code: 'AUTH_REQUIRED', message: 'Authentication required' });
-  }
-}
-
 export const SettingElectronModule: IElectronModule = {
   name: 'Setting',
 
@@ -64,14 +36,14 @@ export const SettingElectronModule: IElectronModule = {
     mod.start();
 
     ipcMain.handle(Ch.GET_ALL, () =>
-      withAuth(ctx, (identityId) => mod.api.getUserSetting(identityId)),
+      withAuthenticatedIdentity(ctx, (identityId) => mod.api.getUserSetting(identityId)),
     );
 
     ipcMain.handle(Ch.PATCH, (_, dto) => {
       const payload = (dto && typeof dto === 'object' ? dto : {}) as Record<string, unknown>;
       const category = payload.category as string;
       const patch = (payload.patch as Record<string, unknown>) ?? {};
-      return withAuth(ctx, (identityId) =>
+      return withAuthenticatedIdentity(ctx, (identityId) =>
         mod.api.patchUserSetting(identityId, category as any, patch),
       );
     });
@@ -82,7 +54,9 @@ export const SettingElectronModule: IElectronModule = {
         unknown
       >;
       const category = typeof payload.category === 'string' ? payload.category : undefined;
-      return withAuth(ctx, (identityId) => mod.api.resetUserSetting(identityId, category));
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        mod.api.resetUserSetting(identityId, category),
+      );
     });
 
     ipcMain.handle(Ch.IMPORT, (_, dto) => {
@@ -94,11 +68,13 @@ export const SettingElectronModule: IElectronModule = {
           ? (JSON.parse(raw) as Record<string, unknown>)
           : ((raw as Record<string, unknown>) ?? {});
       const options = payload.options as { merge?: boolean } | undefined;
-      return withAuth(ctx, (identityId) => mod.api.importSettings(identityId, data, options));
+      return withAuthenticatedIdentity(ctx, (identityId) =>
+        mod.api.importSettings(identityId, data, options),
+      );
     });
 
     ipcMain.handle(Ch.EXPORT, () =>
-      withAuth(ctx, async (identityId) => {
+      withAuthenticatedIdentity(ctx, async (identityId) => {
         const exported = await mod.api.exportSettings(identityId);
         return JSON.stringify(exported);
       }),

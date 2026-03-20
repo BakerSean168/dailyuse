@@ -3,12 +3,7 @@
  * 提醒分组聚合?- 客户端接?
  */
 
-import type {
-  ReminderGroupId,
-  IdentityId,
-  TransferDate,
-  DomainDate,
-} from '../../../primitives';
+import type { ReminderGroupId, IdentityId, TransferDate, DomainDate } from '../../../primitives';
 import type { ControlMode } from '../value-objects/control-mode';
 import type { ReminderStatus } from '../value-objects/reminder-status';
 import type { GroupStatsClientDTO } from '../value-objects';
@@ -42,6 +37,7 @@ export interface ReminderGroupClientDTO {
   templateCountText: string; // "5 个提?
   activeStatusText: string; // "3 个活?
   controlDescription: string; // "所有提醒统一启用" | "提醒独立控制"
+  effectiveTemplatePolicyText: string;
 }
 
 /**
