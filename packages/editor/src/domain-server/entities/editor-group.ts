@@ -146,7 +146,7 @@ export class EditorGroup extends Entity<EditorGroupId> {
     });
 
     this._tabs.push(tab);
-    this._props.activeTabIndex = this._tabs.length - 1;
+    this.setActiveTab(this._tabs.length - 1);
     this.updateTimestamp();
 
     return tab;
@@ -167,6 +167,15 @@ export class EditorGroup extends Entity<EditorGroupId> {
     if (tabIndex < 0 || tabIndex >= this._tabs.length) {
       throw new BusinessRuleViolationError('Active tab index must reference an open tab');
     }
+
+    for (const [index, tab] of this._tabs.entries()) {
+      if (index === tabIndex) {
+        tab.activate();
+      } else if (tab.isActive) {
+        tab.deactivate();
+      }
+    }
+
     this._props.activeTabIndex = tabIndex;
     this.updateTimestamp();
   }
@@ -229,8 +238,28 @@ export class EditorGroup extends Entity<EditorGroupId> {
       this._props.activeTabIndex = -1;
       return;
     }
+
+    const persistedActiveIndex = this._tabs.findIndex((tab) => tab.isActive);
+    if (persistedActiveIndex >= 0) {
+      this._props.activeTabIndex = persistedActiveIndex;
+      for (const [index, tab] of this._tabs.entries()) {
+        if (index !== persistedActiveIndex && tab.isActive) {
+          tab.deactivate();
+        }
+      }
+      return;
+    }
+
     if (this._props.activeTabIndex < 0 || this._props.activeTabIndex >= this._tabs.length) {
       this._props.activeTabIndex = this._tabs.length - 1;
+    }
+
+    for (const [index, tab] of this._tabs.entries()) {
+      if (index === this._props.activeTabIndex) {
+        tab.activate();
+      } else if (tab.isActive) {
+        tab.deactivate();
+      }
     }
   }
 

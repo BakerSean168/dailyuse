@@ -233,7 +233,7 @@ export function createEditorModule(dependencies: EditorModuleDependencies): Edit
           sessionId: data.sessionId,
           groupId: id,
           name: data.name ?? undefined,
-          groupIndex: data.activeTabIndex,
+          activeTabIndex: data.activeTabIndex,
         }),
       ),
 

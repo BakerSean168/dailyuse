@@ -174,10 +174,10 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
           setViewMode: editorScene.pane.actions.setViewMode,
           pasteFiles: editorScene.actions.pasteFiles,
           openResourcePicker: () => {
-            editorScene.dialogs.resourcePicker.open = true;
+            editorScene.dialogs.resourcePicker.open.value = true;
           },
           openImagePicker: () => {
-            editorScene.dialogs.imagePicker.open = true;
+            editorScene.dialogs.imagePicker.open.value = true;
           },
           exportSelfContained: editorScene.actions.exportSelfContained,
           openInternalLink: editorScene.actions.openInternalLink,

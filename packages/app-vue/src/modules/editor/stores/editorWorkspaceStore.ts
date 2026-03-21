@@ -13,6 +13,7 @@ import {
 
 export interface EditorWorkspaceState {
   workspaceId: string | null;
+  workspaceLookupId: string | null;
   sessions: EditorSessionClientDTO[];
   activeSessionId: string | null;
   isHydrated: boolean;
@@ -63,6 +64,7 @@ function findTabLocation(
 export const useEditorWorkspaceStore = defineStore('editor-workspace', {
   state: (): EditorWorkspaceState => ({
     workspaceId: null,
+    workspaceLookupId: null,
     sessions: [],
     activeSessionId: null,
     isHydrated: false,
@@ -99,6 +101,7 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
   actions: {
     reset() {
       this.workspaceId = null;
+      this.workspaceLookupId = null;
       this.sessions = [];
       this.activeSessionId = null;
       this.isHydrated = false;
@@ -121,13 +124,55 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         this.activeSessionId = session.id;
       }
     },
+    async reloadWorkspaceSessions(resolvedWorkspaceId?: string | null) {
+      const targetWorkspaceId = resolvedWorkspaceId ?? this.workspaceId;
+      if (!targetWorkspaceId) {
+        return;
+      }
+
+      console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:start', {
+        workspaceId: targetWorkspaceId,
+      });
+      const sessions = await listEditorSessions(targetWorkspaceId);
+      this.setSessions(sessions);
+
+      if (this.sessions.length === 0) {
+        console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:create-default-session', {
+          workspaceId: targetWorkspaceId,
+        });
+        const created = await createEditorSession(targetWorkspaceId, 'Main');
+        if (created) {
+          this.setSessions([created]);
+        } else {
+          console.warn('[EditorWorkspaceStore] reloadWorkspaceSessions:create-default-session-failed', {
+            workspaceId: targetWorkspaceId,
+          });
+        }
+      }
+
+      if (this.sessions.length > 0 && !this.activeSession) {
+        this.activeSessionId = this.sessions[0]?.id ?? null;
+        console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:recover-active-session', {
+          workspaceId: targetWorkspaceId,
+          activeSessionId: this.activeSessionId,
+        });
+      }
+
+      console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:done', {
+        workspaceId: targetWorkspaceId,
+        sessionCount: this.sessions.length,
+        activeSessionId: this.activeSessionId,
+      });
+    },
     async setWorkspace(workspaceId: string | null, forceReload = false) {
       const currentWorkspaceId = this.workspaceId;
+      const currentWorkspaceLookupId = this.workspaceLookupId;
       const hasUsableSession = this.sessions.length > 0 && this.activeSession !== null;
 
       console.info('[EditorWorkspaceStore] setWorkspace:start', {
         nextWorkspaceId: workspaceId,
         currentWorkspaceId,
+        currentWorkspaceLookupId,
         isHydrated: this.isHydrated,
         sessionCount: this.sessions.length,
         activeSessionId: this.activeSessionId,
@@ -140,9 +185,15 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         return;
       }
 
-      if (this.workspaceId === workspaceId && this.isHydrated && hasUsableSession && !forceReload) {
+      if (
+        this.workspaceLookupId === workspaceId &&
+        this.isHydrated &&
+        hasUsableSession &&
+        !forceReload
+      ) {
         console.info('[EditorWorkspaceStore] setWorkspace:skip-rehydrate', {
           workspaceId,
+          resolvedWorkspaceId: this.workspaceId,
           activeSessionId: this.activeSessionId,
           sessionCount: this.sessions.length,
         });
@@ -158,54 +209,30 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       }
 
       if (currentWorkspaceId === workspace.id && this.isHydrated && hasUsableSession && !forceReload) {
+        this.workspaceLookupId = workspaceId;
         this.workspaceId = workspace.id;
         console.info('[EditorWorkspaceStore] setWorkspace:skip-rehydrate-resolved', {
           requestedWorkspaceId: workspaceId,
           resolvedWorkspaceId: workspace.id,
+          previousLookupId: currentWorkspaceLookupId,
           activeSessionId: this.activeSessionId,
           sessionCount: this.sessions.length,
         });
         return;
       }
 
+      this.workspaceLookupId = workspaceId;
       this.workspaceId = workspace.id;
 
-      console.info('[EditorWorkspaceStore] setWorkspace:list-sessions', {
+      console.info('[EditorWorkspaceStore] setWorkspace:reload-sessions', {
         requestedWorkspaceId: workspaceId,
         resolvedWorkspaceId: workspace.id,
       });
-      const sessions = await listEditorSessions(workspace.id);
-      this.setSessions(sessions);
-
-      if (this.sessions.length === 0) {
-        console.info('[EditorWorkspaceStore] setWorkspace:create-default-session', {
-          requestedWorkspaceId: workspaceId,
-          resolvedWorkspaceId: workspace.id,
-          workspaceIdFromStore: this.workspaceId,
-          workspaceFound: Boolean(workspace),
-        });
-        const created = await createEditorSession(workspace.id, 'Main');
-        if (created) {
-          this.setSessions([created]);
-        } else {
-          console.warn('[EditorWorkspaceStore] setWorkspace:create-default-session-failed', {
-            requestedWorkspaceId: workspaceId,
-            resolvedWorkspaceId: workspace.id,
-            workspaceFound: Boolean(workspace),
-          });
-        }
-      }
-
-      if (this.sessions.length > 0 && !this.activeSession) {
-        this.activeSessionId = this.sessions[0]?.id ?? null;
-        console.info('[EditorWorkspaceStore] setWorkspace:recover-active-session', {
-          workspaceId,
-          activeSessionId: this.activeSessionId,
-        });
-      }
+      await this.reloadWorkspaceSessions(workspace.id);
 
       console.info('[EditorWorkspaceStore] setWorkspace:done', {
         requestedWorkspaceId: workspaceId,
+        lookupWorkspaceId: this.workspaceLookupId,
         resolvedWorkspaceId: this.workspaceId,
         sessionCount: this.sessions.length,
         activeSessionId: this.activeSessionId,
@@ -287,7 +314,7 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         return null;
       }
 
-      await this.setWorkspace(workspaceId, true);
+      await this.reloadWorkspaceSessions(workspaceId);
       const refreshed = findTabByResourceId(this.sessions, params.resourceId);
       if (refreshed) {
         console.info('[EditorWorkspaceStore] openResource:activate-refreshed-tab', {
@@ -331,6 +358,14 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       return location.tab;
     },
     async setActiveTab(tabId: string) {
+      if (this.activeTabId === tabId) {
+        console.info('[EditorWorkspaceStore] setActiveTab:skip-already-active', {
+          tabId,
+          workspaceId: this.workspaceId,
+        });
+        return;
+      }
+
       console.info('[EditorWorkspaceStore] setActiveTab:start', {
         tabId,
         workspaceId: this.workspaceId,
@@ -356,7 +391,7 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
           groupId: group.id,
           tabId,
         });
-        await this.setWorkspace(this.workspaceId);
+        await this.reloadWorkspaceSessions(this.workspaceId);
         console.info('[EditorWorkspaceStore] setActiveTab:done', {
           tabId,
           workspaceId: this.workspaceId,
@@ -383,7 +418,7 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
           groupId: group.id,
           tabId,
         });
-        await this.setWorkspace(this.workspaceId);
+        await this.reloadWorkspaceSessions(this.workspaceId);
         return;
       }
     },
@@ -442,6 +477,6 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
   },
 
   persist: {
-    pick: ['workspaceId', 'activeSessionId'] as string[],
+    pick: ['workspaceId', 'workspaceLookupId', 'activeSessionId'] as string[],
   },
 });

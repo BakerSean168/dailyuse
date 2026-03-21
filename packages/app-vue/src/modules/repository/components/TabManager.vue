@@ -7,7 +7,6 @@
           :key="tab.id"
           :value="tab.id"
           class="relative h-9 rounded-none border-b-2 border-transparent px-4 pb-2 pt-2 font-normal data-[state=active]:border-primary data-[state=active]:shadow-none"
-          @click="emit('switch-tab', tab.id)"
           @contextmenu.prevent="handleContextMenu($event, tab)"
         >
           <component :is="tab.icon" class="mr-2 h-4 w-4" />
@@ -24,7 +23,8 @@
             variant="ghost"
             size="icon"
             class="ml-2 h-4 w-4 p-0 hover:bg-accent"
-            @click.stop="emit('close-tab', tab.id)"
+            @mousedown.stop.prevent
+            @click.stop.prevent="emit('close-tab', tab.id)"
           >
             <component :is="XIcon" class="h-3 w-3" />
           </Button>
@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileIcon, PinIcon, PinOffIcon, XIcon, ArrowRightIcon } from 'lucide-vue-next';
 import { Tabs, TabsList, TabsTrigger } from '@dailyuse/ui-vue-shadcn';
@@ -117,7 +117,9 @@ const emit = defineEmits<{
 const localActiveTab = computed({
   get: () => props.activeTabId || '',
   set: (value) => {
-    if (value) emit('switch-tab', value);
+    if (value && value !== props.activeTabId) {
+      emit('switch-tab', value);
+    }
   },
 });
 

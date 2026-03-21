@@ -23,6 +23,7 @@ function toDomain(row: PrismaEditorWorkspaceSessionGroupTab): EditorTab {
       selections: null,
     },
     isPinned: row.isPinned,
+    isActive: row.isActive,
     isDirty: false,
     lastAccessedAt: null,
     createdAt: row.createdAt,

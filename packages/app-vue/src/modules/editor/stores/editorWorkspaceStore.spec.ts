@@ -89,7 +89,14 @@ function createTab(overrides: Record<string, unknown> = {}): EditorTabClientDTO 
 describe('useEditorWorkspaceStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    vi.clearAllMocks();
+    ensureEditorWorkspace.mockReset();
+    listEditorSessions.mockReset();
+    createEditorSession.mockReset();
+    createEditorTab.mockReset();
+    activateEditorTab.mockReset();
+    deleteEditorTab.mockReset();
+    updateEditorTab.mockReset();
+    firstGroup.mockReset();
     ensureEditorWorkspace.mockResolvedValue({ id: 'workspace-1' });
     listEditorSessions.mockResolvedValue([]);
     createEditorSession.mockResolvedValue(null);
@@ -139,6 +146,7 @@ describe('useEditorWorkspaceStore', () => {
 
     listEditorSessions
       .mockResolvedValueOnce([sessionWithoutTab])
+      .mockResolvedValueOnce([sessionWithTab])
       .mockResolvedValueOnce([sessionWithTab]);
     createEditorTab.mockResolvedValueOnce(createdTab);
 
@@ -155,12 +163,7 @@ describe('useEditorWorkspaceStore', () => {
       resourceId: createdTab.resourceId ?? 'resource-1',
       title: createdTab.name,
     });
-    expect(activateEditorTab).toHaveBeenCalledWith({
-      workspaceId: 'workspace-1',
-      sessionId: 'session-1',
-      groupId: 'group-1',
-      tabId: createdTab.id,
-    });
+    expect(activateEditorTab).not.toHaveBeenCalled();
     expect(opened?.id).toBe(createdTab.id);
     expect(store.activeTabId).toBe(createdTab.id);
   });
@@ -197,6 +200,7 @@ describe('useEditorWorkspaceStore', () => {
 
     listEditorSessions
       .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([sessionWithTab])
       .mockResolvedValueOnce([sessionWithTab]);
     createEditorSession.mockResolvedValueOnce(createdSession);
     createEditorTab.mockResolvedValueOnce(createdTab);
@@ -274,6 +278,7 @@ describe('useEditorWorkspaceStore', () => {
     });
     listEditorSessions
       .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([sessionWithTab])
       .mockResolvedValueOnce([sessionWithTab]);
     createEditorSession.mockResolvedValueOnce(createdSession);
     createEditorTab.mockResolvedValueOnce(createdTab);
@@ -320,5 +325,161 @@ describe('useEditorWorkspaceStore', () => {
     expect(listEditorSessions).not.toHaveBeenCalled();
     expect(store.workspaceId).toBe('editor-workspace-1');
     expect(store.activeSessionId).toBe('session-3');
+  });
+
+  it('refreshes the active tab after activating a different tab in the same workspace', async () => {
+    const store = useEditorWorkspaceStore();
+    const firstTab = createTab({
+      id: 'tab-1',
+      resourceId: 'resource-1',
+      tabIndex: 0,
+      isActive: true,
+      name: 'First.md',
+    });
+    const secondTab = createTab({
+      id: 'tab-2',
+      resourceId: 'resource-2',
+      tabIndex: 1,
+      isActive: false,
+      name: 'Second.md',
+    });
+
+    store.workspaceId = 'workspace-1';
+    store.workspaceLookupId = 'repository-1';
+    store.isHydrated = true;
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [firstTab, secondTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+    store.activeSessionId = 'session-1';
+
+    listEditorSessions.mockResolvedValueOnce([
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 1,
+            tabs: [
+              { ...firstTab, isActive: false },
+              { ...secondTab, isActive: true },
+            ],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ]);
+
+    await store.setActiveTab('tab-2');
+
+    expect(activateEditorTab).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
+      sessionId: 'session-1',
+      groupId: 'group-1',
+      tabId: 'tab-2',
+    });
+    expect(listEditorSessions).toHaveBeenCalledWith('workspace-1');
+    expect(store.activeTabId).toBe('tab-2');
+    expect(store.workspaceLookupId).toBe('repository-1');
+  });
+
+  it('refreshes tabs after closing a tab in the same workspace', async () => {
+    const store = useEditorWorkspaceStore();
+    const firstTab = createTab({
+      id: 'tab-1',
+      resourceId: 'resource-1',
+      tabIndex: 0,
+      isActive: false,
+      name: 'First.md',
+    });
+    const secondTab = createTab({
+      id: 'tab-2',
+      resourceId: 'resource-2',
+      tabIndex: 1,
+      isActive: true,
+      name: 'Second.md',
+    });
+
+    store.workspaceId = 'workspace-1';
+    store.workspaceLookupId = 'repository-1';
+    store.isHydrated = true;
+    store.sessions = [
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 1,
+            tabs: [firstTab, secondTab],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ];
+    store.activeSessionId = 'session-1';
+
+    listEditorSessions.mockResolvedValueOnce([
+      createSession({
+        groups: [
+          {
+            id: 'group-1',
+            sessionId: 'session-1',
+            workspaceId: 'workspace-1',
+            identityId: 'identity-1',
+            groupIndex: 0,
+            name: 'Group 1',
+            activeTabIndex: 0,
+            tabs: [{ ...firstTab, isActive: true }],
+            createdAt: 1741564800000,
+            updatedAt: 1741564800000,
+            formattedCreatedAt: '2026-03-10 10:00:00',
+            formattedUpdatedAt: '2026-03-10 10:00:00',
+          },
+        ],
+      }),
+    ]);
+
+    await store.closeTab('tab-2');
+
+    expect(deleteEditorTab).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
+      sessionId: 'session-1',
+      groupId: 'group-1',
+      tabId: 'tab-2',
+    });
+    expect(listEditorSessions).toHaveBeenCalledWith('workspace-1');
+    expect(store.openTabs).toHaveLength(1);
+    expect(store.activeTabId).toBe('tab-1');
+    expect(store.workspaceLookupId).toBe('repository-1');
   });
 });

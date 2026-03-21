@@ -54,6 +54,7 @@ function toDomain(row: TabRow): EditorTab {
     name: row.title,
     viewState: parseViewState(row.view_state),
     isPinned: row.is_pinned === 1,
+    isActive: row.is_active === 1,
     isDirty: false,
     lastAccessedAt: null,
     createdAt: new Date(row.created_at),

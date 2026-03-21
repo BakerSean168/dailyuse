@@ -32,6 +32,7 @@ export interface EditorTabState {
   name: string;
   viewState: TabViewStateServerDTO;
   isPinned: boolean;
+  isActive: boolean;
   isDirty: boolean;
   lastAccessedAt: Date | null;
   createdAt: Date;
@@ -90,6 +91,10 @@ export class EditorTab extends Entity<EditorTabId> {
 
   public get isPinned(): boolean {
     return this._props.isPinned;
+  }
+
+  public get isActive(): boolean {
+    return this._props.isActive;
   }
 
   public get isDirty(): boolean {
@@ -155,6 +160,7 @@ export class EditorTab extends Entity<EditorTabId> {
       name: params.name ?? 'Untitled',
       viewState: defaultViewState,
       isPinned: params.isPinned ?? false,
+      isActive: false,
       isDirty: false,
       lastAccessedAt: now,
       createdAt: now,
@@ -185,6 +191,16 @@ export class EditorTab extends Entity<EditorTabId> {
    */
   public togglePinned(): void {
     this._props.isPinned = !this._props.isPinned;
+    this.updateTimestamp();
+  }
+
+  public activate(): void {
+    this._props.isActive = true;
+    this.recordAccess();
+  }
+
+  public deactivate(): void {
+    this._props.isActive = false;
     this.updateTimestamp();
   }
 
@@ -249,7 +265,7 @@ export class EditorTab extends Entity<EditorTabId> {
       name: this._props.name,
       viewState: this._props.viewState,
       isPinned: this._props.isPinned,
-      isActive: false,
+      isActive: this._props.isActive,
       isDirty: this._props.isDirty,
       lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
       createdAt: this._props.createdAt.getTime(),
@@ -273,7 +289,7 @@ export class EditorTab extends Entity<EditorTabId> {
       name: this._props.name,
       viewState: this._props.viewState,
       isPinned: this._props.isPinned,
-      isActive: false,
+      isActive: this._props.isActive,
       isDirty: this._props.isDirty,
       lastAccessedAt: this._props.lastAccessedAt?.getTime() ?? null,
       formattedLastAccessed: this._props.lastAccessedAt?.toLocaleString() ?? null,
