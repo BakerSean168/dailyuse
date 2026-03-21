@@ -30,6 +30,7 @@ import { AnalyzeReminderFrequency } from '../application-server/use-cases/querie
 import { AdjustReminderFrequency } from '../application-server/use-cases/commands/adjust-reminder-frequency';
 import { UserReminderPreferences } from '../domain-server/aggregates/user-reminder-preferences';
 import type { ITemplateEffectiveStatus } from '../domain-server/services/ReminderTemplateControlService';
+import type { ReminderTemplateListRes, ReminderGroupListRes } from '@dailyuse/contracts/reminder';
 
 // ---------------------------------------------------------------------------
 // Dependencies — everything the reminder runtime needs from the outside world.
@@ -66,7 +67,7 @@ export interface ReminderModuleRuntimeContribution {
 export interface ReminderApplicationPort {
   // Template CRUD / 模板 CRUD
   createTemplate(data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
-  listTemplates(ctx: Context): Promise<Result<unknown>>;
+  listTemplates(ctx: Context): Promise<Result<ReminderTemplateListRes>>;
   getUpcomingReminders(params: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
   getTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   updateTemplate(id: string, data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
@@ -99,7 +100,7 @@ export interface ReminderApplicationPort {
 
   // Group CRUD / 分组 CRUD
   createGroup(data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
-  listGroups(ctx: Context): Promise<Result<unknown>>;
+  listGroups(ctx: Context): Promise<Result<ReminderGroupListRes>>;
   getGroup(id: string, ctx: Context): Promise<Result<unknown>>;
   updateGroup(id: string, data: Record<string, any>, ctx: Context): Promise<Result<unknown>>;
   deleteGroup(id: string, ctx: Context): Promise<Result<unknown>>;

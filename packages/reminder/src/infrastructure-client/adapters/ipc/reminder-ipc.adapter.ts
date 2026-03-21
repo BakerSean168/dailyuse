@@ -9,6 +9,8 @@ import type { IResultIpcClient, IReminderApiClient } from '../types';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -67,7 +69,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
    * Note: The desktop handler resolves identity from auth context and does not
    * support pagination yet — params are forwarded but may be ignored server-side.
    */
-  async getReminderTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+  async getReminderTemplates(): Promise<Result<ReminderTemplateListRes>> {
     return this.ipcClient.invoke(REMINDER_CHANNELS.GET_TEMPLATES);
   }
 
@@ -130,7 +132,7 @@ export class ReminderIpcAdapter implements IReminderApiClient {
    * Desktop handler resolves identity from auth context and does not support
    * pagination yet.
    */
-  async getReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+  async getReminderGroups(): Promise<Result<ReminderGroupListRes>> {
     return this.ipcClient.invoke(REMINDER_CHANNELS.GET_GROUPS);
   }
 

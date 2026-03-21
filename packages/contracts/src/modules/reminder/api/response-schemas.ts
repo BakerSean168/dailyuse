@@ -19,6 +19,14 @@ export const ReminderTemplateResponseSchema = z.object({
   updatedAt: z.number(),
 });
 
+export const ReminderTemplateListResponseSchema = z.object({
+  templates: z.array(ReminderTemplateResponseSchema),
+  total: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+  hasMore: z.boolean(),
+});
+
 /**
  * ReminderGroup Response Schema
  */
@@ -28,6 +36,14 @@ export const ReminderGroupResponseSchema = z.object({
   controlMode: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
+});
+
+export const ReminderGroupListResponseSchema = z.object({
+  groups: z.array(ReminderGroupResponseSchema),
+  total: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+  hasMore: z.boolean(),
 });
 
 /**

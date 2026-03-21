@@ -10,6 +10,8 @@ import type { IReminderApiClient } from '../types';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
   CreateReminderGroupReq,
@@ -41,7 +43,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get(`${this.templatesUrl}/${id}`);
   }
 
-  async getReminderTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+  async getReminderTemplates(): Promise<Result<ReminderTemplateListRes>> {
     return this.httpClient.get(this.templatesUrl);
   }
 
@@ -94,7 +96,7 @@ export class ReminderHttpAdapter implements IReminderApiClient {
     return this.httpClient.get(`${this.groupsUrl}/${id}`);
   }
 
-  async getReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+  async getReminderGroups(): Promise<Result<ReminderGroupListRes>> {
     return this.httpClient.get(this.groupsUrl);
   }
 

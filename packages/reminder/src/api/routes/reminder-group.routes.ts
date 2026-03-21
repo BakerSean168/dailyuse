@@ -27,6 +27,7 @@ import {
   SwitchGroupControlModeSchema,
   BatchGroupTemplatesSchema,
   ReminderGroupResponseSchema,
+  ReminderGroupListResponseSchema,
   ReminderBatchResultSchema,
 } from '@dailyuse/contracts/reminder';
 import { brandedId } from '@dailyuse/contracts/primitives';
@@ -82,13 +83,7 @@ export function registerReminderGroupRoutes(
       path: '/groups',
       summary: '获取提醒分组列表',
       responses: {
-        200: successResponse(
-          z.object({
-            groups: z.array(ReminderGroupResponseSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(ReminderGroupListResponseSchema, '获取成功'),
       },
     },
     [auth],

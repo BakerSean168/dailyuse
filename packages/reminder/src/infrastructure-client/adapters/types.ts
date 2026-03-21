@@ -12,6 +12,8 @@ import type { IResultHttpClient } from '@dailyuse/http-client';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
   UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
@@ -46,7 +48,7 @@ export interface IReminderApiClient {
     request: CreateReminderTemplateReq,
   ): Promise<Result<ReminderTemplateClientDTO>>;
   getReminderTemplate(id: string): Promise<Result<ReminderTemplateClientDTO>>;
-  getReminderTemplates(): Promise<Result<ReminderTemplateClientDTO[]>>;
+  getReminderTemplates(): Promise<Result<ReminderTemplateListRes>>;
   getUserTemplates(): Promise<Result<ReminderTemplateClientDTO[]>>;
   updateReminderTemplate(
     id: string,
@@ -68,7 +70,7 @@ export interface IReminderApiClient {
   // ===== 分组 CRUD =====
   createReminderGroup(request: CreateReminderGroupReq): Promise<Result<ReminderGroupClientDTO>>;
   getReminderGroup(id: string): Promise<Result<ReminderGroupClientDTO>>;
-  getReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>>;
+  getReminderGroups(): Promise<Result<ReminderGroupListRes>>;
   getUserReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>>;
   updateReminderGroup(
     id: string,

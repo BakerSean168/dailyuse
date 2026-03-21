@@ -15,6 +15,8 @@ import type {
   ControlMode,
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
   UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
@@ -101,14 +103,15 @@ export function useReminder() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.getReminderTemplates();
+      let result: Result<ReminderTemplateListRes> = await service.getReminderTemplates();
 
       if (!result.ok && (await maybeRecoverAuth(result.error))) {
         result = await service.getReminderTemplates();
       }
 
       if (result.ok) {
-        store.setTemplates(result.data ?? [], result.data?.length ?? 0);
+        const templates = result.data.templates;
+        store.setTemplates(templates, templates.length);
       } else {
         handleError(result.error.message || t('reminder.error.loadTemplatesFailed'));
       }
@@ -224,14 +227,15 @@ export function useReminder() {
     store.setLoading(true);
     store.setError(null);
     try {
-      let result = await service.getReminderGroups();
+      let result: Result<ReminderGroupListRes> = await service.getReminderGroups();
 
       if (!result.ok && (await maybeRecoverAuth(result.error))) {
         result = await service.getReminderGroups();
       }
 
       if (result.ok) {
-        store.setGroups(result.data ?? []);
+        const groups = result.data.groups;
+        store.setGroups(groups);
       } else {
         handleError(result.error.message || t('reminder.error.loadGroupsFailed'));
       }

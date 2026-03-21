@@ -115,3 +115,11 @@ export interface GetUpcomingRemindersRes {
   data: ReminderTemplateClientDTO[];
   total: number;
 }
+
+export interface ReminderTemplateListRes {
+  templates: ReminderTemplateClientDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}

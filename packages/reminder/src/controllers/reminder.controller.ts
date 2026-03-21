@@ -24,6 +24,8 @@ import type {
   UpdateReminderGroupReq,
   SwitchGroupControlModeReq,
   BatchGroupTemplatesReq,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
 } from '@dailyuse/contracts/reminder';
 import { formatZodErrors } from '@dailyuse/utils/result';
 
@@ -32,7 +34,7 @@ import { formatZodErrors } from '@dailyuse/utils/result';
 export interface ReminderUseCases {
   // Template CRUD
   createTemplate(data: CreateReminderTemplateReq, ctx: Context): Promise<Result<unknown>>;
-  listTemplates(ctx: Context): Promise<Result<unknown>>;
+  listTemplates(ctx: Context): Promise<Result<ReminderTemplateListRes>>;
   getUpcomingReminders(params: Record<string, unknown>, ctx: Context): Promise<Result<unknown>>;
   getTemplate(id: string, ctx: Context): Promise<Result<unknown>>;
   updateTemplate(
@@ -65,7 +67,7 @@ export interface ReminderUseCases {
   rejectFrequencyAdjustment(templateId: string, ctx: Context): Promise<Result<unknown>>;
   // Group CRUD
   createGroup(data: CreateReminderGroupReq, ctx: Context): Promise<Result<unknown>>;
-  listGroups(ctx: Context): Promise<Result<unknown>>;
+  listGroups(ctx: Context): Promise<Result<ReminderGroupListRes>>;
   getGroup(id: string, ctx: Context): Promise<Result<unknown>>;
   updateGroup(id: string, data: UpdateReminderGroupReq, ctx: Context): Promise<Result<unknown>>;
   deleteGroup(id: string, ctx: Context): Promise<Result<unknown>>;

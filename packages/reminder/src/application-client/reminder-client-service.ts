@@ -16,6 +16,8 @@ import type { Result } from '@dailyuse/contracts/result';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
+  ReminderTemplateListRes,
+  ReminderGroupListRes,
   UserReminderPreferencesClientDTO,
   CreateReminderTemplateReq,
   UpdateReminderTemplateReq,
@@ -61,7 +63,7 @@ export class ReminderClientService {
     return this.reminderApi.getReminderTemplate(id);
   }
 
-  async getReminderTemplates(): Promise<Result<ReminderTemplateClientDTO[]>> {
+  async getReminderTemplates(): Promise<Result<ReminderTemplateListRes>> {
     return this.reminderApi.getReminderTemplates();
   }
 
@@ -112,7 +114,7 @@ export class ReminderClientService {
     return this.reminderApi.getReminderGroup(id);
   }
 
-  async getReminderGroups(): Promise<Result<ReminderGroupClientDTO[]>> {
+  async getReminderGroups(): Promise<Result<ReminderGroupListRes>> {
     return this.reminderApi.getReminderGroups();
   }
 

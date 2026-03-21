@@ -24,6 +24,7 @@ import {
   CreateReminderTemplateSchema,
   UpdateReminderTemplateSchema,
   ReminderTemplateResponseSchema,
+  ReminderTemplateListResponseSchema,
 } from '@dailyuse/contracts/reminder';
 import { brandedId } from '@dailyuse/contracts/primitives';
 import type { ReminderTemplateId } from '@dailyuse/contracts/primitives';
@@ -99,13 +100,7 @@ export function registerReminderTemplateRoutes(
       path: '/templates',
       summary: '获取提醒模板列表',
       responses: {
-        200: successResponse(
-          z.object({
-            templates: z.array(ReminderTemplateResponseSchema),
-            total: z.number(),
-          }),
-          '获取成功',
-        ),
+        200: successResponse(ReminderTemplateListResponseSchema, '获取成功'),
       },
     },
     [auth],
