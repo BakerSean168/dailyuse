@@ -13,7 +13,7 @@
         size="icon"
         class="h-8 w-8"
         :title="t('repository.workspace.createNote')"
-        :disabled="rootNoteFolderId === null"
+        :disabled="isLoading"
         @click="$emit('create-note')"
       >
         <FilePlus class="h-4 w-4" />
@@ -304,7 +304,6 @@ function getGroupActions(groupKey: string): MenuAction[] {
         key: 'create-note',
         label: t('repository.workspace.createNote'),
         icon: FilePlus,
-        disabled: rootNoteFolderId.value === null,
         handler: () => emit('create-note'),
       },
       {
