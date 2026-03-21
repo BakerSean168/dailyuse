@@ -1,6 +1,6 @@
 <template>
   <div class="border-b border-border bg-background">
-    <Tabs v-model="localActiveTab" class="w-full">
+    <Tabs :model-value="activeTabValue" @update:model-value="handleActiveTabChange" class="w-full">
       <TabsList class="h-9 w-full justify-start rounded-none border-b-0 bg-transparent p-0">
         <TabsTrigger
           v-for="tab in tabs"
@@ -114,14 +114,7 @@ const emit = defineEmits<{
   'close-all': [];
 }>();
 
-const localActiveTab = computed({
-  get: () => props.activeTabId || '',
-  set: (value) => {
-    if (value && value !== props.activeTabId) {
-      emit('switch-tab', value);
-    }
-  },
-});
+const activeTabValue = computed(() => props.activeTabId || '');
 
 const { t } = useI18n();
 
@@ -134,6 +127,12 @@ const contextMenu = reactive({
 
 function displayName(name: string): string {
   return name.endsWith('.md') ? name.slice(0, -3) : name;
+}
+
+function handleActiveTabChange(value: string | number) {
+  if (typeof value === 'string' && value && value !== props.activeTabId) {
+    emit('switch-tab', value);
+  }
 }
 
 function handleContextMenu(event: MouseEvent, tab: ResourceTab) {

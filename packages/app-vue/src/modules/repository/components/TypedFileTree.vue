@@ -81,9 +81,13 @@
       <div v-else class="space-y-0.5">
         <div v-for="group in typeGroups" :key="group.key">
           <!-- Group Header -->
-          <ActionableWrapper :actions="getGroupActions(group.key)" :show-more-button="false">
+          <ActionableWrapper
+            :actions="getGroupActions(group.key)"
+            :show-more-button="false"
+            wrapper-class="w-full"
+          >
             <div
-              class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+              class="flex w-full items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
               @click="toggleGroup(group.key)"
             >
               <Button variant="ghost" size="icon" class="h-5 w-5 shrink-0 p-0">
@@ -110,40 +114,37 @@
             leave-to-class="opacity-0 max-h-0"
           >
             <div v-show="expandedGroups.has(group.key)" class="ml-4">
-              <div
+              <ActionableWrapper
                 v-for="resource in group.resources"
                 :key="resource.id"
-                class="flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
-                :class="{ 'bg-accent': selectedId === resource.id }"
+                :actions="getResourceActions(resource)"
+                :show-more-button="false"
+                wrapper-class="w-full"
               >
-                <ActionableWrapper
-                  :actions="getResourceActions(resource)"
-                  :show-more-button="false"
+                <div
+                  class="flex w-full min-w-0 items-center gap-1 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer group"
+                  :class="{ 'bg-accent': selectedId === resource.id }"
+                  @click="$emit('open', resource)"
+                  @dblclick.stop="$emit('open', resource)"
                 >
-                  <div
-                    class="flex items-center gap-1"
-                    @click="$emit('open', resource)"
-                    @dblclick.stop="$emit('open', resource)"
+                  <span class="w-5 shrink-0" />
+                  <component
+                    :is="getFileIcon(resource)"
+                    class="h-4 w-4 shrink-0"
+                    :class="getFileIconClass(resource)"
+                  />
+                  <span class="text-sm truncate flex-1" :title="resource.path">{{
+                    resource.displayName || resource.name
+                  }}</span>
+                  <span
+                    v-if="resource.metadata?.tags?.length"
+                    class="text-xs text-muted-foreground shrink-0"
                   >
-                    <span class="w-5" />
-                    <component
-                      :is="getFileIcon(resource)"
-                      class="h-4 w-4 shrink-0"
-                      :class="getFileIconClass(resource)"
-                    />
-                    <span class="text-sm truncate flex-1" :title="resource.path">{{
-                      resource.displayName || resource.name
-                    }}</span>
-                    <span
-                      v-if="resource.metadata?.tags?.length"
-                      class="text-xs text-muted-foreground shrink-0"
-                    >
-                      <Tag class="h-3 w-3 inline" />
-                      {{ resource.metadata.tags.length }}
-                    </span>
-                  </div>
-                </ActionableWrapper>
-              </div>
+                    <Tag class="h-3 w-3 inline" />
+                    {{ resource.metadata.tags.length }}
+                  </span>
+                </div>
+              </ActionableWrapper>
               <div
                 v-if="group.resources.length === 0"
                 class="px-2 py-2 ml-5 text-xs text-muted-foreground italic"
