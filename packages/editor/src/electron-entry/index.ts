@@ -41,6 +41,7 @@ import type { IRepositorySearchPort } from '../application-server';
 import { createEditorPowerSyncModule } from '../infrastructure-server/powersync';
 import type { EditorModuleInstance } from '../infrastructure-server';
 import { createLogger } from '@dailyuse/utils';
+import { fail } from '@dailyuse/contracts/result';
 import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('EditorElectron');
@@ -50,6 +51,7 @@ const logger = createLogger('EditorElectron');
 // ---------------------------------------------------------------------------
 
 const Ch = {
+  WORKSPACE_LIST: 'editor:list-workspaces',
   WORKSPACE_GET: 'editor:get-workspace',
   WORKSPACE_CREATE: 'editor:create-workspace',
   WORKSPACE_UPDATE: 'editor:update-workspace',
@@ -73,6 +75,20 @@ const Ch = {
 } as const;
 
 const channels = Object.values(Ch);
+
+function toLoggableError(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return {
+    message: typeof error === 'string' ? error : JSON.stringify(error),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // External dependency interface — 外部依赖接口
@@ -124,6 +140,20 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
 
       const { api } = editorModule;
 
+      ipcMain.handle(Ch.WORKSPACE_LIST, async () => {
+        logger.info('[EditorIPC] list-workspaces:start');
+        const result = await withAuthenticatedValue(ctx, async (requestContext) =>
+          api.listWorkspaces(requestContext),
+        );
+        if (result.ok) {
+          logger.info('[EditorIPC] list-workspaces:done', {
+            workspaceCount: Array.isArray(result.data) ? result.data.length : 0,
+          });
+        } else {
+          logger.warn('[EditorIPC] list-workspaces:failed', { error: result.error });
+        }
+        return result;
+      });
       ipcMain.handle(Ch.WORKSPACE_GET, async (_event, workspaceId: string) =>
         api.getWorkspace(workspaceId),
       );
@@ -140,21 +170,72 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
           ),
       );
 
-      ipcMain.handle(Ch.SESSION_LIST, async (_event, workspaceId: string) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          api.listSessions(workspaceId, requestContext),
-        ),
-      );
+      ipcMain.handle(Ch.SESSION_LIST, async (_event, workspaceId: string) => {
+        logger.info('[EditorIPC] list-sessions:start', { workspaceId });
+        const result = await withAuthenticatedValue(ctx, async (requestContext) =>
+          {
+            try {
+              return await api.listSessions(workspaceId, requestContext);
+            } catch (error) {
+              const loggableError = toLoggableError(error);
+              logger.error('[EditorIPC] list-sessions:exception', {
+                workspaceId,
+                error: loggableError,
+              });
+              return fail({
+                code: 'INTERNAL_ERROR',
+                message: loggableError.message,
+                context: { workspaceId },
+              });
+            }
+          },
+        );
+        if (result.ok) {
+          logger.info('[EditorIPC] list-sessions:done', {
+            workspaceId,
+            sessionCount: Array.isArray(result.data) ? result.data.length : 0,
+          });
+        } else {
+          logger.warn('[EditorIPC] list-sessions:failed', { workspaceId, error: result.error });
+        }
+        return result;
+      });
       ipcMain.handle(Ch.SESSION_GET, async (_event, sessionId: string) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           api.getSession(sessionId, requestContext),
         ),
       );
-      ipcMain.handle(Ch.SESSION_CREATE, async (_event, dto: unknown) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          api.createSession((dto ?? {}) as any, requestContext),
-        ),
-      );
+      ipcMain.handle(Ch.SESSION_CREATE, async (_event, dto: unknown) => {
+        logger.info('[EditorIPC] create-session:start', { dto });
+        const result = await withAuthenticatedValue(ctx, async (requestContext) =>
+          {
+            try {
+              return await api.createSession((dto ?? {}) as any, requestContext);
+            } catch (error) {
+              const loggableError = toLoggableError(error);
+              logger.error('[EditorIPC] create-session:exception', {
+                dto,
+                error: loggableError,
+              });
+              return fail({
+                code: 'INTERNAL_ERROR',
+                message: loggableError.message,
+              });
+            }
+          },
+        );
+        if (result.ok) {
+          logger.info('[EditorIPC] create-session:done', {
+            sessionId:
+              result.data && typeof result.data === 'object' && 'id' in result.data
+                ? (result.data as { id?: string }).id
+                : null,
+          });
+        } else {
+          logger.warn('[EditorIPC] create-session:failed', { dto, error: result.error });
+        }
+        return result;
+      });
       ipcMain.handle(
         Ch.SESSION_UPDATE,
         async (_event, payload: { sessionId: string; data: unknown }) =>
@@ -198,11 +279,37 @@ export function createEditorElectronModule(params: EditorElectronParams): IElect
           ),
       );
 
-      ipcMain.handle(Ch.TAB_CREATE, async (_event, dto: unknown) =>
-        withAuthenticatedValue(ctx, async (requestContext) =>
-          api.createTab((dto ?? {}) as any, requestContext),
-        ),
-      );
+      ipcMain.handle(Ch.TAB_CREATE, async (_event, dto: unknown) => {
+        logger.info('[EditorIPC] create-tab:start', { dto });
+        const result = await withAuthenticatedValue(ctx, async (requestContext) =>
+          {
+            try {
+              return await api.createTab((dto ?? {}) as any, requestContext);
+            } catch (error) {
+              const loggableError = toLoggableError(error);
+              logger.error('[EditorIPC] create-tab:exception', {
+                dto,
+                error: loggableError,
+              });
+              return fail({
+                code: 'INTERNAL_ERROR',
+                message: loggableError.message,
+              });
+            }
+          },
+        );
+        if (result.ok) {
+          logger.info('[EditorIPC] create-tab:done', {
+            tabId:
+              result.data && typeof result.data === 'object' && 'id' in result.data
+                ? (result.data as { id?: string }).id
+                : null,
+          });
+        } else {
+          logger.warn('[EditorIPC] create-tab:failed', { dto, error: result.error });
+        }
+        return result;
+      });
       ipcMain.handle(Ch.TAB_UPDATE, async (_event, payload: { tabId: string; data: unknown }) =>
         withAuthenticatedValue(ctx, async (requestContext) =>
           api.updateTab(payload.tabId, (payload.data ?? {}) as any, requestContext),

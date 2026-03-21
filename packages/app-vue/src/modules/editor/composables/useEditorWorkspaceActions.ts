@@ -10,17 +10,32 @@ export function useEditorWorkspaceActions() {
   const resourceGateway = useRepositoryResourceGateway();
 
   async function requestOpenResource(resourceId: string) {
+    console.info('[EditorWorkspaceActions] requestOpenResource:start', {
+      resourceId,
+      repositoryId: resourceGateway.repositoryId.value,
+    });
+
     await resourceGateway.ensureReady();
     const resource = await resourceGateway.getResource(resourceId);
     if (!resource) {
+      console.warn('[EditorWorkspaceActions] requestOpenResource:resource-not-found', {
+        resourceId,
+        repositoryId: resourceGateway.repositoryId.value,
+      });
       return null;
     }
 
-    return editorWorkspaceStore.openResource({
+    const opened = await editorWorkspaceStore.openResource({
       resourceId,
       title: resource.displayName || resource.name,
       workspaceId: resourceGateway.repositoryId.value,
     });
+
+    console.info('[EditorWorkspaceActions] requestOpenResource:done', {
+      resourceId,
+      openedTabId: opened?.id ?? null,
+    });
+    return opened;
   }
 
   async function requestSetActiveTab(tabId: string) {

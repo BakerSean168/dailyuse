@@ -247,6 +247,12 @@ export function useRepository() {
     const repositoryId = store.currentRepositoryId;
     savingId.value = 'new';
     store.setError(null);
+    console.info('[Repository] createResource:start', {
+      repositoryId,
+      name: data.name,
+      type: data.type,
+      folderId: data.folderId ?? null,
+    });
     try {
       const result = await executeWithAuthRecovery(() =>
         service.createResource(repositoryId, {
@@ -256,8 +262,19 @@ export function useRepository() {
       if (result.ok && result.data) {
         store.addResource(result.data);
         await fetchTreeNodes();
+        console.info('[Repository] createResource:done', {
+          repositoryId,
+          resourceId: result.data.id,
+          resourceName: result.data.displayName || result.data.name,
+        });
         return result.data;
       } else {
+        console.warn('[Repository] createResource:failed', {
+          repositoryId,
+          ok: result.ok,
+          errorCode: result.error?.code ?? null,
+          errorMessage: result.error?.message ?? null,
+        });
         handleError(
           result.ok ? '创建资源返回空数据' : getResultErrorMessage(result, '创建资源失败'),
         );
@@ -305,17 +322,48 @@ export function useRepository() {
   }
 
   async function getResourceById(resourceId: string): Promise<ResourceClientDTO | null> {
+    console.info('[Repository] getResourceById:start', {
+      resourceId,
+      repositoryId: store.currentRepositoryId,
+    });
+
     if (typeof service.getResource !== 'function') {
-      return store.resources.find((resource) => resource.id === resourceId) ?? null;
+      const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
+      console.info('[Repository] getResourceById:cache-only', {
+        resourceId,
+        hit: Boolean(cached),
+      });
+      return cached;
     }
 
-    const result = await executeWithAuthRecovery(() => service.getResource!(resourceId));
-    if (result.ok && result.data) {
-      store.updateResource(result.data);
-      return result.data;
-    }
+    try {
+      const result = await executeWithAuthRecovery(() => service.getResource!(resourceId));
+      if (result.ok && result.data) {
+        store.updateResource(result.data);
+        console.info('[Repository] getResourceById:done', {
+          resourceId,
+          hit: true,
+          source: 'service',
+        });
+        return result.data;
+      }
 
-    return store.resources.find((resource) => resource.id === resourceId) ?? null;
+      const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
+      console.info('[Repository] getResourceById:fallback-cache', {
+        resourceId,
+        hit: Boolean(cached),
+        errorCode: result.error?.code ?? null,
+      });
+      return cached;
+    } catch (cause) {
+      const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
+      console.warn('[Repository] getResourceById:exception-fallback', {
+        resourceId,
+        hit: Boolean(cached),
+        cause: cause instanceof Error ? cause.message : String(cause),
+      });
+      return cached;
+    }
   }
 
   async function updateResourceMetadata(resourceId: string, metadata: Record<string, unknown>) {
@@ -350,6 +398,13 @@ export function useRepository() {
       requestedName,
       store.resources.filter((resource) => resource.folderId === (folderId ?? null)),
     );
+
+    console.info('[Repository] createMarkdownNote', {
+      repositoryId: store.currentRepositoryId,
+      requestedName,
+      noteName,
+      folderId: folderId ?? null,
+    });
 
     return createResource({
       name: noteName,

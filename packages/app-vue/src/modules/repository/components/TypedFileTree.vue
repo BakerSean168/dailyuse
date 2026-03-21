@@ -120,7 +120,11 @@
                   :actions="getResourceActions(resource)"
                   :show-more-button="false"
                 >
-                  <div class="flex items-center gap-1" @click="$emit('open', resource)">
+                  <div
+                    class="flex items-center gap-1"
+                    @click="$emit('open', resource)"
+                    @dblclick.stop="$emit('open', resource)"
+                  >
                     <span class="w-5" />
                     <component
                       :is="getFileIcon(resource)"

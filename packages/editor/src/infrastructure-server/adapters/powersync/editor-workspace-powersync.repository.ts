@@ -1,4 +1,4 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IEditorWorkspaceRepository } from '../../../domain-server/repositories/IEditorWorkspaceRepository';
 import { EditorWorkspace } from '../../../domain-server/aggregates/editor-workspace';
 import {
@@ -42,14 +42,33 @@ export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepos
   }
 
   async save(workspace: EditorWorkspace): Promise<void> {
+    await this.saveWithExecutor(this.db, workspace);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.execute(`DELETE FROM editor_workspaces WHERE id = ?`, [id]);
+  }
+
+  async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {
+    await this.db.writeTransaction(async (tx) => {
+      for (const workspace of workspaces) {
+        await this.saveWithExecutor(tx, workspace);
+      }
+    });
+  }
+
+  private async saveWithExecutor(
+    executor: IElectronDatabaseTransaction,
+    workspace: EditorWorkspace,
+  ): Promise<void> {
     const d = PowerSyncEditorWorkspaceMapper.toPersistence(workspace);
-    const existing = await this.db.getOptional<{ id: string }>(
+    const existing = await executor.getOptional<{ id: string }>(
       `SELECT id FROM editor_workspaces WHERE id = ? LIMIT 1`,
       [d.id],
     );
 
     if (existing) {
-      await this.db.execute(
+      await executor.execute(
         `UPDATE editor_workspaces
          SET identity_id = ?,
              name = ?,
@@ -81,7 +100,7 @@ export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepos
         ],
       );
     } else {
-      await this.db.execute(
+      await executor.execute(
         `INSERT INTO editor_workspaces (
            id, identity_id, name, description, project_path, project_type,
            layout, setting, is_active, version, created_at, updated_at, accessed_at, deleted_at
@@ -104,18 +123,6 @@ export class PowerSyncEditorWorkspaceRepository implements IEditorWorkspaceRepos
         ],
       );
     }
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.db.execute(`DELETE FROM editor_workspaces WHERE id = ?`, [id]);
-  }
-
-  async saveBatch(workspaces: EditorWorkspace[]): Promise<void> {
-    await this.db.writeTransaction(async () => {
-      for (const workspace of workspaces) {
-        await this.save(workspace);
-      }
-    });
   }
 
   async existsByName(identityId: string, name: string): Promise<boolean> {

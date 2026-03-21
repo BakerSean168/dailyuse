@@ -1,4 +1,4 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IEditorTabRepository } from '../../../domain-server/repositories/IEditorTabRepository';
 import { EditorTab } from '../../../domain-server/entities/editor-tab';
 
@@ -117,14 +117,33 @@ export class PowerSyncEditorTabRepository implements IEditorTabRepository {
   }
 
   async save(tab: EditorTab): Promise<void> {
+    await this.saveWithExecutor(this.db, tab);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.execute('DELETE FROM editor_workspace_session_group_tabs WHERE id = ?', [id]);
+  }
+
+  async saveBatch(tabs: EditorTab[]): Promise<void> {
+    await this.db.writeTransaction(async (tx) => {
+      for (const tab of tabs) {
+        await this.saveWithExecutor(tx, tab);
+      }
+    });
+  }
+
+  private async saveWithExecutor(
+    executor: IElectronDatabaseTransaction,
+    tab: EditorTab,
+  ): Promise<void> {
     const dto = tab.toServerDTO();
-    const existing = await this.db.getOptional<{ id: string }>(
+    const existing = await executor.getOptional<{ id: string }>(
       'SELECT id FROM editor_workspace_session_group_tabs WHERE id = ? LIMIT 1',
       [dto.id],
     );
 
     if (existing) {
-      await this.db.execute(
+      await executor.execute(
         `UPDATE editor_workspace_session_group_tabs
           SET group_id = ?, session_id = ?, workspace_id = ?, identity_id = ?, resource_id = ?, tab_index = ?,
              tab_type = ?, title = ?, view_state = ?, is_pinned = ?, is_active = ?, updated_at = ?
@@ -148,7 +167,7 @@ export class PowerSyncEditorTabRepository implements IEditorTabRepository {
       return;
     }
 
-    await this.db.execute(
+    await executor.execute(
       `INSERT INTO editor_workspace_session_group_tabs (
           id, group_id, session_id, workspace_id, identity_id, resource_id, tab_index, tab_type,
          title, view_state, is_pinned, is_active, version, created_at, updated_at, deleted_at
@@ -170,18 +189,6 @@ export class PowerSyncEditorTabRepository implements IEditorTabRepository {
         new Date(dto.updatedAt).toISOString(),
       ],
     );
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM editor_workspace_session_group_tabs WHERE id = ?', [id]);
-  }
-
-  async saveBatch(tabs: EditorTab[]): Promise<void> {
-    await this.db.writeTransaction(async () => {
-      for (const tab of tabs) {
-        await this.save(tab);
-      }
-    });
   }
 
   async deleteByGroupId(groupId: string): Promise<void> {

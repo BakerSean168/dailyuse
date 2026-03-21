@@ -415,32 +415,32 @@ export class WindowManager {
   }
 
   private attachWindowDiagnostics(window: BrowserWindow, windowType: WindowType): void {
-    window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-      logger.error('Window failed to load content', {
-        windowType,
-        errorCode,
-        errorDescription,
-        validatedURL,
-      });
-    });
+    // window.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    //   logger.error('Window failed to load content', {
+    //     windowType,
+    //     errorCode,
+    //     errorDescription,
+    //     validatedURL,
+    //   });
+    // });
 
-    window.webContents.on('render-process-gone', (_event, details) => {
-      logger.error('Renderer process exited unexpectedly', {
-        windowType,
-        reason: details.reason,
-        exitCode: details.exitCode,
-      });
-    });
+    // window.webContents.on('render-process-gone', (_event, details) => {
+    //   logger.error('Renderer process exited unexpectedly', {
+    //     windowType,
+    //     reason: details.reason,
+    //     exitCode: details.exitCode,
+    //   });
+    // });
 
-    window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-      logger.info('Renderer console message', {
-        windowType,
-        level,
-        message,
-        line,
-        sourceId,
-      });
-    });
+    // window.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    //   logger.info('Renderer console message', {
+    //     windowType,
+    //     level,
+    //     message,
+    //     line,
+    //     sourceId,
+    //   });
+    // });
   }
 
   private getWindowForSender(webContentsId?: number): BrowserWindow | null {

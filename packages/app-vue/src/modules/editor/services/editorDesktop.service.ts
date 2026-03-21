@@ -4,6 +4,7 @@ import type {
   EditorTabClientDTO,
   EditorGroupClientDTO,
 } from '@dailyuse/contracts/editor';
+import { ProjectType } from '@dailyuse/contracts/editor';
 
 interface EditorContentReadResult {
   resourceId: string;
@@ -11,35 +12,101 @@ interface EditorContentReadResult {
   content: string | null;
 }
 
+interface EditorWorkspaceResult {
+  id: string;
+  name?: string | null;
+  projectPath?: string | null;
+}
+
+interface EditorInvokeError {
+  code?: string;
+  message?: string;
+  details?: unknown;
+  context?: Record<string, unknown>;
+}
+
+interface EditorInvokeResult<T> {
+  ok?: boolean;
+  data?: T;
+  error?: EditorInvokeError;
+}
+
+function logInvokeFailure(action: string, result: EditorInvokeResult<unknown> | null | undefined) {
+  if (result?.ok !== false) {
+    return;
+  }
+
+  console.warn(`[EditorDesktopService] ${action}:failed`, {
+    code: result.error?.code,
+    message: result.error?.message,
+    details: result.error?.details,
+    context: result.error?.context,
+  });
+}
+
 function getElectronApi() {
   return typeof window !== 'undefined' ? window.electronAPI : undefined;
 }
 
-export async function createEditorWorkspace(workspaceId: string): Promise<boolean> {
+export async function listEditorWorkspaces(): Promise<EditorWorkspaceResult[]> {
   const api = getElectronApi();
   if (!api) {
-    return false;
+    return [];
   }
 
-  const result = (await api.invoke(EditorChannels.WORKSPACE_CREATE, {
-    workspaceId,
-  })) as { ok?: boolean };
+  const result = (await api.invoke(EditorChannels.WORKSPACE_LIST)) as EditorInvokeResult<
+    EditorWorkspaceResult[]
+  >;
+  logInvokeFailure('list-workspaces', result);
 
-  return Boolean(result?.ok);
+  return result?.ok && Array.isArray(result.data) ? result.data : [];
 }
 
-export async function getEditorWorkspace(workspaceId: string): Promise<{ id: string } | null> {
+export async function createEditorWorkspace(workspaceId: string): Promise<EditorWorkspaceResult | null> {
   const api = getElectronApi();
   if (!api) {
     return null;
   }
 
-  const result = (await api.invoke(EditorChannels.WORKSPACE_GET, workspaceId)) as {
-    ok?: boolean;
-    data?: { id: string } | null;
-  };
+  const result = (await api.invoke(EditorChannels.WORKSPACE_CREATE, {
+    name: workspaceId,
+    projectPath: workspaceId,
+    projectType: ProjectType.Other,
+  })) as EditorInvokeResult<EditorWorkspaceResult | null>;
+  logInvokeFailure('create-workspace', result);
 
   return result?.ok ? (result.data ?? null) : null;
+}
+
+export async function getEditorWorkspace(workspaceId: string): Promise<EditorWorkspaceResult | null> {
+  const api = getElectronApi();
+  if (!api) {
+    return null;
+  }
+
+  const result = (await api.invoke(
+    EditorChannels.WORKSPACE_GET,
+    workspaceId,
+  )) as EditorInvokeResult<EditorWorkspaceResult | null>;
+  logInvokeFailure('get-workspace', result);
+
+  return result?.ok ? (result.data ?? null) : null;
+}
+
+export async function ensureEditorWorkspace(workspaceId: string): Promise<EditorWorkspaceResult | null> {
+  const direct = await getEditorWorkspace(workspaceId);
+  if (direct) {
+    return direct;
+  }
+
+  const existing = (await listEditorWorkspaces()).find(
+    (workspace) => workspace.projectPath === workspaceId,
+  );
+  if (existing) {
+    return existing;
+  }
+
+  return createEditorWorkspace(workspaceId);
 }
 
 export async function listEditorSessions(workspaceId: string): Promise<EditorSessionClientDTO[]> {
@@ -48,10 +115,11 @@ export async function listEditorSessions(workspaceId: string): Promise<EditorSes
     return [];
   }
 
-  const result = (await api.invoke(EditorChannels.SESSION_LIST, workspaceId)) as {
-    ok?: boolean;
-    data?: EditorSessionClientDTO[];
-  };
+  const result = (await api.invoke(
+    EditorChannels.SESSION_LIST,
+    workspaceId,
+  )) as EditorInvokeResult<EditorSessionClientDTO[]>;
+  logInvokeFailure('list-sessions', result);
 
   return result?.ok && Array.isArray(result.data) ? result.data : [];
 }
@@ -68,7 +136,8 @@ export async function createEditorSession(
   const result = (await api.invoke(EditorChannels.SESSION_CREATE, {
     workspaceId,
     name,
-  })) as { ok?: boolean; data?: EditorSessionClientDTO | null };
+  })) as EditorInvokeResult<EditorSessionClientDTO | null>;
+  logInvokeFailure('create-session', result);
 
   return result?.ok ? (result.data ?? null) : null;
 }
@@ -93,7 +162,8 @@ export async function createEditorTab(payload: {
     title: payload.title,
     tabIndex: 0,
     tabType: 'Resource',
-  })) as { ok?: boolean; data?: EditorTabClientDTO | null };
+  })) as EditorInvokeResult<EditorTabClientDTO | null>;
+  logInvokeFailure('create-tab', result);
 
   return result?.ok ? (result.data ?? null) : null;
 }
@@ -150,7 +220,8 @@ export async function updateEditorTab(payload: {
       isPinned: payload.isPinned,
       isDirty: payload.isDirty,
     },
-  })) as { ok?: boolean; data?: EditorTabClientDTO | null };
+  })) as EditorInvokeResult<EditorTabClientDTO | null>;
+  logInvokeFailure('update-tab', result);
 
   return result?.ok ? (result.data ?? null) : null;
 }
@@ -163,10 +234,11 @@ export async function getEditorContent(
     return null;
   }
 
-  const result = (await api.invoke(EditorChannels.GET_CONTENT, resourceId)) as {
-    ok?: boolean;
-    data?: EditorContentReadResult | null;
-  };
+  const result = (await api.invoke(
+    EditorChannels.GET_CONTENT,
+    resourceId,
+  )) as EditorInvokeResult<EditorContentReadResult | null>;
+  logInvokeFailure('get-content', result);
 
   return result?.ok ? (result.data ?? null) : null;
 }
@@ -180,9 +252,11 @@ export async function saveEditorContent(payload: {
     return false;
   }
 
-  const result = (await api.invoke(EditorChannels.SAVE_CONTENT, payload)) as {
-    ok?: boolean;
-  };
+  const result = (await api.invoke(
+    EditorChannels.SAVE_CONTENT,
+    payload,
+  )) as EditorInvokeResult<null>;
+  logInvokeFailure('save-content', result);
 
   return Boolean(result?.ok);
 }
@@ -196,9 +270,11 @@ export async function autoSaveEditorContent(payload: {
     return false;
   }
 
-  const result = (await api.invoke(EditorChannels.AUTO_SAVE, payload)) as {
-    ok?: boolean;
-  };
+  const result = (await api.invoke(
+    EditorChannels.AUTO_SAVE,
+    payload,
+  )) as EditorInvokeResult<null>;
+  logInvokeFailure('auto-save-content', result);
 
   return Boolean(result?.ok);
 }

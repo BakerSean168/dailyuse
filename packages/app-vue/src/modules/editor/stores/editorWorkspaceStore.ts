@@ -8,8 +8,7 @@ import {
   deleteEditorTab,
   updateEditorTab,
   firstGroup,
-  createEditorWorkspace,
-  getEditorWorkspace,
+  ensureEditorWorkspace,
 } from '../services/editorDesktop.service';
 
 export interface EditorWorkspaceState {
@@ -122,43 +121,130 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         this.activeSessionId = session.id;
       }
     },
-    async setWorkspace(workspaceId: string | null) {
+    async setWorkspace(workspaceId: string | null, forceReload = false) {
+      const currentWorkspaceId = this.workspaceId;
+      const hasUsableSession = this.sessions.length > 0 && this.activeSession !== null;
+
+      console.info('[EditorWorkspaceStore] setWorkspace:start', {
+        nextWorkspaceId: workspaceId,
+        currentWorkspaceId,
+        isHydrated: this.isHydrated,
+        sessionCount: this.sessions.length,
+        activeSessionId: this.activeSessionId,
+        forceReload,
+      });
+
       if (!workspaceId) {
+        console.info('[EditorWorkspaceStore] setWorkspace:reset');
         this.reset();
         return;
       }
 
-      if (this.workspaceId === workspaceId && this.isHydrated) {
+      if (this.workspaceId === workspaceId && this.isHydrated && hasUsableSession && !forceReload) {
+        console.info('[EditorWorkspaceStore] setWorkspace:skip-rehydrate', {
+          workspaceId,
+          activeSessionId: this.activeSessionId,
+          sessionCount: this.sessions.length,
+        });
         return;
       }
 
-      this.workspaceId = workspaceId;
-
-      let workspace = await getEditorWorkspace(workspaceId);
+      console.info('[EditorWorkspaceStore] setWorkspace:load-workspace', { workspaceId });
+      const workspace = await ensureEditorWorkspace(workspaceId);
       if (!workspace) {
-        await createEditorWorkspace(workspaceId);
-        workspace = await getEditorWorkspace(workspaceId);
+        console.warn('[EditorWorkspaceStore] setWorkspace:ensure-workspace-failed', { workspaceId });
+        this.reset();
+        return;
       }
 
-      const sessions = await listEditorSessions(workspaceId);
+      if (currentWorkspaceId === workspace.id && this.isHydrated && hasUsableSession && !forceReload) {
+        this.workspaceId = workspace.id;
+        console.info('[EditorWorkspaceStore] setWorkspace:skip-rehydrate-resolved', {
+          requestedWorkspaceId: workspaceId,
+          resolvedWorkspaceId: workspace.id,
+          activeSessionId: this.activeSessionId,
+          sessionCount: this.sessions.length,
+        });
+        return;
+      }
+
+      this.workspaceId = workspace.id;
+
+      console.info('[EditorWorkspaceStore] setWorkspace:list-sessions', {
+        requestedWorkspaceId: workspaceId,
+        resolvedWorkspaceId: workspace.id,
+      });
+      const sessions = await listEditorSessions(workspace.id);
       this.setSessions(sessions);
 
-      if (this.sessions.length === 0 && workspace) {
-        const created = await createEditorSession(workspaceId, 'Main');
+      if (this.sessions.length === 0) {
+        console.info('[EditorWorkspaceStore] setWorkspace:create-default-session', {
+          requestedWorkspaceId: workspaceId,
+          resolvedWorkspaceId: workspace.id,
+          workspaceIdFromStore: this.workspaceId,
+          workspaceFound: Boolean(workspace),
+        });
+        const created = await createEditorSession(workspace.id, 'Main');
         if (created) {
           this.setSessions([created]);
+        } else {
+          console.warn('[EditorWorkspaceStore] setWorkspace:create-default-session-failed', {
+            requestedWorkspaceId: workspaceId,
+            resolvedWorkspaceId: workspace.id,
+            workspaceFound: Boolean(workspace),
+          });
         }
       }
+
+      if (this.sessions.length > 0 && !this.activeSession) {
+        this.activeSessionId = this.sessions[0]?.id ?? null;
+        console.info('[EditorWorkspaceStore] setWorkspace:recover-active-session', {
+          workspaceId,
+          activeSessionId: this.activeSessionId,
+        });
+      }
+
+      console.info('[EditorWorkspaceStore] setWorkspace:done', {
+        requestedWorkspaceId: workspaceId,
+        resolvedWorkspaceId: this.workspaceId,
+        sessionCount: this.sessions.length,
+        activeSessionId: this.activeSessionId,
+      });
     },
     async openResource(params: OpenEditorResourceParams) {
-      const workspaceId = params.workspaceId ?? this.workspaceId;
-      if (!workspaceId) {
+      const requestedWorkspaceId = params.workspaceId ?? this.workspaceId;
+      console.info('[EditorWorkspaceStore] openResource:start', {
+        resourceId: params.resourceId,
+        title: params.title,
+        workspaceId: requestedWorkspaceId,
+        storeWorkspaceId: this.workspaceId,
+        sessionCount: this.sessions.length,
+        activeSessionId: this.activeSessionId,
+      });
+
+      if (!requestedWorkspaceId) {
+        console.warn('[EditorWorkspaceStore] openResource:missing-workspace', {
+          resourceId: params.resourceId,
+        });
         return null;
       }
 
-      await this.setWorkspace(workspaceId);
+      await this.setWorkspace(requestedWorkspaceId);
+      const workspaceId = this.workspaceId;
+      if (!workspaceId) {
+        console.warn('[EditorWorkspaceStore] openResource:missing-resolved-workspace', {
+          resourceId: params.resourceId,
+          requestedWorkspaceId,
+        });
+        return null;
+      }
+
       const existingTab = findTabByResourceId(this.sessions, params.resourceId);
       if (existingTab) {
+        console.info('[EditorWorkspaceStore] openResource:activate-existing-tab', {
+          resourceId: params.resourceId,
+          tabId: existingTab.id,
+        });
         await this.setActiveTab(existingTab.id);
         return existingTab;
       }
@@ -166,9 +252,23 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       const session = this.activeSession;
       const group = firstGroup(session);
       if (!session || !group) {
+        console.warn('[EditorWorkspaceStore] openResource:no-session-or-group', {
+          resourceId: params.resourceId,
+          workspaceId: requestedWorkspaceId,
+          resolvedWorkspaceId: this.workspaceId,
+          hasSession: Boolean(session),
+          hasGroup: Boolean(group),
+          sessionCount: this.sessions.length,
+          activeSessionId: this.activeSessionId,
+        });
         return null;
       }
 
+      console.info('[EditorWorkspaceStore] openResource:create-tab', {
+        resourceId: params.resourceId,
+        sessionId: session.id,
+        groupId: group.id,
+      });
       const created = await createEditorTab({
         workspaceId,
         sessionId: session.id,
@@ -178,14 +278,29 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       });
 
       if (!created) {
+        console.warn('[EditorWorkspaceStore] openResource:create-tab-failed', {
+          resourceId: params.resourceId,
+          workspaceId,
+          sessionId: session.id,
+          groupId: group.id,
+        });
         return null;
       }
 
-      await this.setWorkspace(workspaceId);
+      await this.setWorkspace(workspaceId, true);
       const refreshed = findTabByResourceId(this.sessions, params.resourceId);
       if (refreshed) {
+        console.info('[EditorWorkspaceStore] openResource:activate-refreshed-tab', {
+          resourceId: params.resourceId,
+          tabId: refreshed.id,
+        });
         await this.setActiveTab(refreshed.id);
       }
+
+      console.info('[EditorWorkspaceStore] openResource:done', {
+        resourceId: params.resourceId,
+        openedTabId: refreshed?.id ?? created.id,
+      });
       return refreshed;
     },
     async setTabPinned(tabId: string, isPinned: boolean) {
@@ -216,6 +331,12 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       return location.tab;
     },
     async setActiveTab(tabId: string) {
+      console.info('[EditorWorkspaceStore] setActiveTab:start', {
+        tabId,
+        workspaceId: this.workspaceId,
+        sessionCount: this.sessions.length,
+      });
+
       for (const session of this.sessions) {
         const group = session.groups.find((item) => item.tabs.some((tab) => tab.id === tabId));
         const tab = group?.tabs.find((item) => item.id === tabId);
@@ -223,6 +344,12 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
           continue;
         }
 
+        console.info('[EditorWorkspaceStore] setActiveTab:activate', {
+          tabId,
+          sessionId: session.id,
+          groupId: group.id,
+          workspaceId: this.workspaceId,
+        });
         await activateEditorTab({
           workspaceId: this.workspaceId,
           sessionId: session.id,
@@ -230,8 +357,18 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
           tabId,
         });
         await this.setWorkspace(this.workspaceId);
+        console.info('[EditorWorkspaceStore] setActiveTab:done', {
+          tabId,
+          workspaceId: this.workspaceId,
+        });
         return;
       }
+
+      console.warn('[EditorWorkspaceStore] setActiveTab:tab-not-found', {
+        tabId,
+        workspaceId: this.workspaceId,
+        sessionCount: this.sessions.length,
+      });
     },
     async closeTab(tabId: string) {
       for (const session of this.sessions) {

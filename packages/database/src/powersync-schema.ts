@@ -745,7 +745,7 @@ const editor_workspace_session_group_tabs = new Table({
   session_id: column.text, // FK
   workspace_id: column.text, // FK
   identity_id: column.text,
-  document_id: column.text,
+  resource_id: column.text,
   tab_index: column.integer,
   tab_type: column.text,
   title: column.text,
@@ -754,6 +754,8 @@ const editor_workspace_session_group_tabs = new Table({
   is_active: column.integer, // boolean
   version: column.integer,
   created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
 });
 
 // ──────────────────────────────────────────────

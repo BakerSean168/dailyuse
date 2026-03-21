@@ -1,4 +1,4 @@
-import { computed, onMounted, reactive, toRef, watch, type Ref } from 'vue';
+import { computed, onMounted, reactive, toRef, unref, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Bookmark, FolderTree, Search } from 'lucide-vue-next';
 import { useRepository } from '../../repository/composables/useRepository';
@@ -48,7 +48,8 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
     { key: 'bookmarks' as const, label: t('repository.sidebar.bookmarks'), icon: Bookmark },
   ]);
   const editorWordCount = computed(() => {
-    const text = editorScene.document.content || '';
+    const rawContent = unref(editorScene.document.content);
+    const text = typeof rawContent === 'string' ? rawContent : '';
     const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
     const englishWords = (text.match(/[a-zA-Z]+/g) || []).length;
     return chineseChars + englishWords;

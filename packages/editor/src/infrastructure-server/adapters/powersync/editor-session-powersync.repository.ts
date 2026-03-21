@@ -1,6 +1,7 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IEditorSessionRepository } from '../../../domain-server/repositories/IEditorSessionRepository';
 import { EditorSession } from '../../../domain-server/entities/editor-session';
+import { SessionLayout } from '../../../domain-shared/value-objects/session-layout';
 
 type SessionRow = {
   id: string;
@@ -14,28 +15,32 @@ type SessionRow = {
   deleted_at: string | null;
 };
 
-function parseLayout(layout: string) {
+function parseLayout(layout: string): SessionLayout {
   try {
-    return JSON.parse(layout) as {
-      splitType: string;
-      groupCount: number;
-      activeGroupIndex: number;
-    };
+    return SessionLayout.fromDTO(
+      JSON.parse(layout) as {
+        splitType: 'Horizontal' | 'Vertical' | 'Grid';
+        groupCount: number;
+        activeGroupIndex: number;
+      },
+    );
   } catch {
-    return { splitType: 'Horizontal', groupCount: 1, activeGroupIndex: 0 };
+    return SessionLayout.createDefault();
   }
 }
 
 function toDomain(row: SessionRow): EditorSession {
+  const layout = parseLayout(row.layout);
+
   return EditorSession.load({
     id: row.id as any,
     workspaceId: row.workspace_id as any,
     identityId: row.identity_id as any,
     name: row.name,
     description: null,
-    layout: parseLayout(row.layout) as any,
+    layout,
     isActive: row.is_active === 1,
-    activeGroupIndex: 0,
+    activeGroupIndex: layout.activeGroupIndex,
     groups: [],
     lastAccessedAt: null,
     createdAt: new Date(row.created_at),
@@ -79,14 +84,33 @@ export class PowerSyncEditorSessionRepository implements IEditorSessionRepositor
   }
 
   async save(session: EditorSession): Promise<void> {
+    await this.saveWithExecutor(this.db, session);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.execute('DELETE FROM editor_workspace_sessions WHERE id = ?', [id]);
+  }
+
+  async saveBatch(sessions: EditorSession[]): Promise<void> {
+    await this.db.writeTransaction(async (tx) => {
+      for (const session of sessions) {
+        await this.saveWithExecutor(tx, session);
+      }
+    });
+  }
+
+  private async saveWithExecutor(
+    executor: IElectronDatabaseTransaction,
+    session: EditorSession,
+  ): Promise<void> {
     const dto = session.toServerDTO();
-    const existing = await this.db.getOptional<{ id: string }>(
+    const existing = await executor.getOptional<{ id: string }>(
       'SELECT id FROM editor_workspace_sessions WHERE id = ? LIMIT 1',
       [dto.id],
     );
 
     if (existing) {
-      await this.db.execute(
+      await executor.execute(
         `UPDATE editor_workspace_sessions
          SET workspace_id = ?, identity_id = ?, name = ?, layout = ?, is_active = ?, updated_at = ?
          WHERE id = ?`,
@@ -103,7 +127,7 @@ export class PowerSyncEditorSessionRepository implements IEditorSessionRepositor
       return;
     }
 
-    await this.db.execute(
+    await executor.execute(
       `INSERT INTO editor_workspace_sessions (
          id, workspace_id, identity_id, name, layout, is_active, version, created_at, updated_at, deleted_at
        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, NULL)`,
@@ -118,18 +142,6 @@ export class PowerSyncEditorSessionRepository implements IEditorSessionRepositor
         new Date(dto.updatedAt).toISOString(),
       ],
     );
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM editor_workspace_sessions WHERE id = ?', [id]);
-  }
-
-  async saveBatch(sessions: EditorSession[]): Promise<void> {
-    await this.db.writeTransaction(async () => {
-      for (const session of sessions) {
-        await this.save(session);
-      }
-    });
   }
 
   async deleteByWorkspaceId(workspaceId: string): Promise<void> {

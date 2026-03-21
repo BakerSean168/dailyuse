@@ -1,4 +1,4 @@
-import type { IElectronDatabase } from '@dailyuse/contracts/electron';
+import type { IElectronDatabase, IElectronDatabaseTransaction } from '@dailyuse/contracts/electron';
 import type { IEditorGroupRepository } from '../../../domain-server/repositories/IEditorGroupRepository';
 import { EditorGroup } from '../../../domain-server/entities/editor-group';
 
@@ -60,14 +60,33 @@ export class PowerSyncEditorGroupRepository implements IEditorGroupRepository {
   }
 
   async save(group: EditorGroup): Promise<void> {
+    await this.saveWithExecutor(this.db, group);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.execute('DELETE FROM editor_workspace_session_groups WHERE id = ?', [id]);
+  }
+
+  async saveBatch(groups: EditorGroup[]): Promise<void> {
+    await this.db.writeTransaction(async (tx) => {
+      for (const group of groups) {
+        await this.saveWithExecutor(tx, group);
+      }
+    });
+  }
+
+  private async saveWithExecutor(
+    executor: IElectronDatabaseTransaction,
+    group: EditorGroup,
+  ): Promise<void> {
     const dto = group.toServerDTO();
-    const existing = await this.db.getOptional<{ id: string }>(
+    const existing = await executor.getOptional<{ id: string }>(
       'SELECT id FROM editor_workspace_session_groups WHERE id = ? LIMIT 1',
       [dto.id],
     );
 
     if (existing) {
-      await this.db.execute(
+      await executor.execute(
         `UPDATE editor_workspace_session_groups
          SET session_id = ?, workspace_id = ?, identity_id = ?, group_index = ?, name = ?, updated_at = ?
          WHERE id = ?`,
@@ -84,7 +103,7 @@ export class PowerSyncEditorGroupRepository implements IEditorGroupRepository {
       return;
     }
 
-    await this.db.execute(
+    await executor.execute(
       `INSERT INTO editor_workspace_session_groups (
          id, session_id, workspace_id, identity_id, group_index, name, split_direction, version, created_at, updated_at, deleted_at
        ) VALUES (?, ?, ?, ?, ?, ?, 'Horizontal', 1, ?, ?, NULL)`,
@@ -99,18 +118,6 @@ export class PowerSyncEditorGroupRepository implements IEditorGroupRepository {
         new Date(dto.updatedAt).toISOString(),
       ],
     );
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.db.execute('DELETE FROM editor_workspace_session_groups WHERE id = ?', [id]);
-  }
-
-  async saveBatch(groups: EditorGroup[]): Promise<void> {
-    await this.db.writeTransaction(async () => {
-      for (const group of groups) {
-        await this.save(group);
-      }
-    });
   }
 
   async deleteBySessionId(sessionId: string): Promise<void> {

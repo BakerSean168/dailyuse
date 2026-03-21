@@ -223,6 +223,7 @@ export const SettingChannels = {
 } as const;
 
 export const EditorChannels = {
+  WORKSPACE_LIST: 'editor:list-workspaces',
   WORKSPACE_GET: 'editor:get-workspace',
   WORKSPACE_CREATE: 'editor:create-workspace',
   WORKSPACE_UPDATE: 'editor:update-workspace',
