@@ -43,12 +43,12 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
 
   async function handleCreateNote() {
     const noteFolderId = findNotesFolderId(repository.treeNodes.value);
-    if (!noteFolderId) {
-      toast.error(t('repository.workspace.createNoteFailed'));
-      return;
-    }
 
-    const note = await repository.createMarkdownNote(undefined, '', noteFolderId);
+    const note = await repository.createMarkdownNote(
+      undefined,
+      '',
+      noteFolderId ?? undefined,
+    );
     if (!note) {
       toast.error(t('repository.workspace.createNoteFailed'));
       return;

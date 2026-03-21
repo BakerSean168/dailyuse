@@ -15,6 +15,33 @@ function getElectronApi() {
   return typeof window !== 'undefined' ? window.electronAPI : undefined;
 }
 
+export async function createEditorWorkspace(workspaceId: string): Promise<boolean> {
+  const api = getElectronApi();
+  if (!api) {
+    return false;
+  }
+
+  const result = (await api.invoke(EditorChannels.WORKSPACE_CREATE, {
+    workspaceId,
+  })) as { ok?: boolean };
+
+  return Boolean(result?.ok);
+}
+
+export async function getEditorWorkspace(workspaceId: string): Promise<{ id: string } | null> {
+  const api = getElectronApi();
+  if (!api) {
+    return null;
+  }
+
+  const result = (await api.invoke(EditorChannels.WORKSPACE_GET, workspaceId)) as {
+    ok?: boolean;
+    data?: { id: string } | null;
+  };
+
+  return result?.ok ? (result.data ?? null) : null;
+}
+
 export async function listEditorSessions(workspaceId: string): Promise<EditorSessionClientDTO[]> {
   const api = getElectronApi();
   if (!api) {

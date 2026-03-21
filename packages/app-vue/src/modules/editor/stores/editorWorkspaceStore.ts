@@ -8,6 +8,8 @@ import {
   deleteEditorTab,
   updateEditorTab,
   firstGroup,
+  createEditorWorkspace,
+  getEditorWorkspace,
 } from '../services/editorDesktop.service';
 
 export interface EditorWorkspaceState {
@@ -131,10 +133,17 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       }
 
       this.workspaceId = workspaceId;
+
+      let workspace = await getEditorWorkspace(workspaceId);
+      if (!workspace) {
+        await createEditorWorkspace(workspaceId);
+        workspace = await getEditorWorkspace(workspaceId);
+      }
+
       const sessions = await listEditorSessions(workspaceId);
       this.setSessions(sessions);
 
-      if (this.sessions.length === 0) {
+      if (this.sessions.length === 0 && workspace) {
         const created = await createEditorSession(workspaceId, 'Main');
         if (created) {
           this.setSessions([created]);
