@@ -19,6 +19,7 @@ import type {
 } from '@dailyuse/contracts/repository';
 import type { Repository } from '@dailyuse/repository/domain-client';
 import { searchRepositoryResources } from './repositorySearch';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
 
 export interface RepositoryUploadFailure {
   fileName: string;
@@ -247,12 +248,6 @@ export function useRepository() {
     const repositoryId = store.currentRepositoryId;
     savingId.value = 'new';
     store.setError(null);
-    console.info('[Repository] createResource:start', {
-      repositoryId,
-      name: data.name,
-      type: data.type,
-      folderId: data.folderId ?? null,
-    });
     try {
       const result = await executeWithAuthRecovery(() =>
         service.createResource(repositoryId, {
@@ -262,19 +257,8 @@ export function useRepository() {
       if (result.ok && result.data) {
         store.addResource(result.data);
         await fetchTreeNodes();
-        console.info('[Repository] createResource:done', {
-          repositoryId,
-          resourceId: result.data.id,
-          resourceName: result.data.displayName || result.data.name,
-        });
         return result.data;
       } else {
-        console.warn('[Repository] createResource:failed', {
-          repositoryId,
-          ok: result.ok,
-          errorCode: result.error?.code ?? null,
-          errorMessage: result.error?.message ?? null,
-        });
         handleError(
           result.ok ? '创建资源返回空数据' : getResultErrorMessage(result, '创建资源失败'),
         );
@@ -312,26 +296,21 @@ export function useRepository() {
     }
 
     const mimeType = source.mimeType || guessMimeType(source.name);
-    const normalized = source.content.replace(/\s+/g, '');
+    const normalized = source.content.trim();
 
     if (normalized.startsWith('data:')) {
       return normalized;
     }
 
-    return `data:${mimeType};base64,${normalized}`;
+    return `data:${mimeType};base64,${normalized.replace(/\s+/g, '')}`;
   }
 
   async function getResourceById(resourceId: string): Promise<ResourceClientDTO | null> {
-    console.info('[Repository] getResourceById:start', {
-      resourceId,
-      repositoryId: store.currentRepositoryId,
-    });
-
     if (typeof service.getResource !== 'function') {
       const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
-      console.info('[Repository] getResourceById:cache-only', {
+      logEditorIssue('repository:get-resource:cache-only', {
         resourceId,
-        hit: Boolean(cached),
+        resource: summarizeResourceForDebug(cached),
       });
       return cached;
     }
@@ -340,27 +319,26 @@ export function useRepository() {
       const result = await executeWithAuthRecovery(() => service.getResource!(resourceId));
       if (result.ok && result.data) {
         store.updateResource(result.data);
-        console.info('[Repository] getResourceById:done', {
+        logEditorIssue('repository:get-resource:service-hit', {
           resourceId,
-          hit: true,
-          source: 'service',
+          resource: summarizeResourceForDebug(result.data),
         });
         return result.data;
       }
 
       const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
-      console.info('[Repository] getResourceById:fallback-cache', {
+      logEditorIssue('repository:get-resource:fallback-cache', {
         resourceId,
-        hit: Boolean(cached),
         errorCode: result.error?.code ?? null,
+        resource: summarizeResourceForDebug(cached),
       });
       return cached;
     } catch (cause) {
       const cached = store.resources.find((resource) => resource.id === resourceId) ?? null;
-      console.warn('[Repository] getResourceById:exception-fallback', {
+      logEditorIssue('repository:get-resource:exception-fallback', {
         resourceId,
-        hit: Boolean(cached),
         cause: cause instanceof Error ? cause.message : String(cause),
+        resource: summarizeResourceForDebug(cached),
       });
       return cached;
     }
@@ -398,13 +376,6 @@ export function useRepository() {
       requestedName,
       store.resources.filter((resource) => resource.folderId === (folderId ?? null)),
     );
-
-    console.info('[Repository] createMarkdownNote', {
-      repositoryId: store.currentRepositoryId,
-      requestedName,
-      noteName,
-      folderId: folderId ?? null,
-    });
 
     return createResource({
       name: noteName,

@@ -1,6 +1,7 @@
 import { computed, ref, type Ref } from 'vue';
 import type { EditorSelectionRange } from './useResourceInsertion';
 import type { useActiveEditorDocument } from './useActiveEditorDocument';
+import { logEditorIssue } from '../../../shared/utils/editorIssueDebug';
 
 export interface EditorScenePaneController {
   insertText(text: string): void;
@@ -23,6 +24,14 @@ export function useEditorScenePane(documentState: ReturnType<typeof useActiveEdi
   }
 
   function insertTextAtSelection(text: string, selection?: EditorSelectionRange) {
+    if (!activeDocumentPaneRef.value) {
+      logEditorIssue('editor:insert-missed-pane-ref', {
+        selection: selection ?? null,
+        textLength: text.length,
+      });
+      return;
+    }
+
     activeDocumentPaneRef.value?.insertTextAtSelection(text, selection);
   }
 
@@ -42,8 +51,16 @@ export function useEditorScenePane(documentState: ReturnType<typeof useActiveEdi
     activeDocumentPaneRef.value?.focus();
   }
 
+  function bindActiveDocumentPane(instance: EditorScenePaneController | null) {
+    activeDocumentPaneRef.value = instance;
+    logEditorIssue('editor:pane-ref-bound', {
+      bound: Boolean(instance),
+    });
+  }
+
   return {
     activeDocumentPaneRef,
+    bindActiveDocumentPane,
     viewMode,
     editorContent,
     handleInsertText,

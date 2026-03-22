@@ -200,4 +200,70 @@ describe('Repository resource mutations', () => {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
   });
+
+  it('hydrates binary content as base64 when loading a resource by id', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'repo-read-binary-'));
+
+    try {
+      const storage = new FsStorageAdapter(tempDir);
+      const resourceRepository = new ResourceMemoryRepository();
+      const repositoryRepository = new RepositoryMemoryRepository();
+      const folderRepository = new FolderMemoryRepository();
+      const module = createRepositoryModule({
+        repositoryRepository,
+        resourceRepository,
+        folderRepository,
+        resourceBookmarkRepository: new ResourceBookmarkMemoryRepository(),
+        storagePort: storage,
+      });
+
+      const repository = Repository.create({
+        identityId: 'user-1' as any,
+        name: 'Repo',
+        type: 'personal' as any,
+        path: '/repo',
+      });
+      await repositoryRepository.save(repository);
+
+      const binaryBytes = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]);
+      const created = await module.api.uploadResources(
+        {
+          repositoryId: String(repository.id),
+          files: [
+            {
+              name: 'image.png',
+              mimeType: 'image/png',
+              contentBase64: Buffer.from(binaryBytes).toString('base64'),
+            },
+          ],
+        },
+        { identityId: 'user-1' } as any,
+      );
+
+      expect(created.ok).toBe(true);
+      if (!created.ok) {
+        throw new Error('Expected binary upload result');
+      }
+
+      const resourceId = (created.data as { successes: Array<{ resource: { id: string } }> }).successes[0]
+        ?.resource.id;
+      expect(resourceId).toBeTruthy();
+
+      const loaded = await module.api.getResource(resourceId!);
+      expect(loaded.ok).toBe(true);
+      if (!loaded.ok) {
+        throw new Error('Expected hydrated binary resource');
+      }
+
+      expect(loaded.data).toEqual(
+        expect.objectContaining({
+          mimeType: 'image/png',
+          path: '/images/image.png',
+          content: Buffer.from(binaryBytes).toString('base64'),
+        }),
+      );
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
+    }
+  });
 });

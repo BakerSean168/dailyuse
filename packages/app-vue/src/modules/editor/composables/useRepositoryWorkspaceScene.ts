@@ -151,6 +151,7 @@ export function useRepositoryWorkspaceScene(initialSidebarMode: Ref<EditorWorksp
         content: editorScene.document.content,
         viewMode: editorScene.pane.viewMode,
         paneRef: editorScene.pane.ref,
+        bindPaneRef: editorScene.pane.bindRef,
         status: {
           isSaving: editorScene.document.status.isSaving,
           isDirty: editorScene.document.status.isDirty,

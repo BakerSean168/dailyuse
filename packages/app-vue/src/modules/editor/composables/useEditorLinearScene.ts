@@ -72,6 +72,7 @@ export function useEditorLinearScene() {
       content: editor.document.content,
       viewMode: editor.pane.viewMode,
       paneRef: editor.pane.ref,
+      bindPaneRef: editor.pane.bindRef,
       status: {
         isSaving: editor.document.status.isSaving,
         isDirty: editor.document.status.isDirty,

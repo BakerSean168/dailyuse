@@ -38,12 +38,6 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
   );
 
   async function handleOpenResource(resource: ResourceClientDTO) {
-    console.info('[RepositoryResourceCommands] handleOpenResource:start', {
-      resourceId: resource.id,
-      resourceName: resource.displayName || resource.name,
-      repositoryId: repository.repositoryId.value,
-    });
-
     const opened = await requestOpenResource(resource.id);
     if (!opened) {
       console.warn('[RepositoryResourceCommands] handleOpenResource:open-failed', {
@@ -51,21 +45,10 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
         repositoryId: repository.repositoryId.value,
       });
     }
-
-    console.info('[RepositoryResourceCommands] handleOpenResource:done', {
-      resourceId: resource.id,
-      openedTabId: opened?.id ?? null,
-    });
   }
 
   async function handleCreateNote() {
     const noteFolderId = findNotesFolderId(repository.treeNodes.value);
-
-    console.info('[RepositoryResourceCommands] handleCreateNote:start', {
-      repositoryId: repository.repositoryId.value,
-      noteFolderId,
-      resourceCount: repository.resources.value.length,
-    });
 
     const note = await repository.createMarkdownNote(
       undefined,
@@ -81,13 +64,6 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
       return;
     }
 
-    console.info('[RepositoryResourceCommands] handleCreateNote:created', {
-      noteId: note.id,
-      noteName: note.displayName || note.name,
-      notePath: note.path,
-      repositoryId: repository.repositoryId.value,
-    });
-
     const opened = await requestOpenResource(note.id);
     if (!opened) {
       console.warn('[RepositoryResourceCommands] handleCreateNote:open-failed', {
@@ -98,21 +74,12 @@ export function useRepositoryResourceCommands(activeResource: Ref<ResourceClient
       return;
     }
 
-    console.info('[RepositoryResourceCommands] handleCreateNote:opened', {
-      noteId: note.id,
-      tabId: opened.id,
-      repositoryId: repository.repositoryId.value,
-    });
-
     toast.success(
       t('repository.workspace.createNoteSuccess', { name: note.displayName || note.name }),
     );
   }
 
   function handleRefresh() {
-    console.info('[RepositoryResourceCommands] handleRefresh', {
-      repositoryId: repository.repositoryId.value,
-    });
     if (repository.repositoryId.value) {
       void Promise.all([repository.fetchResources(), repository.fetchTreeNodes()]);
     }

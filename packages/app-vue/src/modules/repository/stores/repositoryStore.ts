@@ -75,11 +75,11 @@ export const useRepositoryStore = defineStore('repository', {
         const ext = r.extension || '';
         if (mime.startsWith('text/markdown') || ext === '.md') {
           groups.notes.push(r);
-        } else if (mime.startsWith('image/')) {
+        } else if (mime.startsWith('image/') || /\.(png|jpe?g|gif|svg|webp|bmp|avif)$/i.test(ext)) {
           groups.images.push(r);
-        } else if (mime.startsWith('video/')) {
+        } else if (mime.startsWith('video/') || /\.(mp4|mov|webm|mkv|avi)$/i.test(ext)) {
           groups.videos.push(r);
-        } else if (mime.startsWith('audio/')) {
+        } else if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac)$/i.test(ext)) {
           groups.audio.push(r);
         } else if (
           mime === 'application/pdf' ||

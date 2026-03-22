@@ -94,6 +94,7 @@ export function useEditorScene(
     },
     pane: {
       ref: pane.activeDocumentPaneRef,
+      bindRef: pane.bindActiveDocumentPane,
       viewMode: pane.viewMode,
       actions: {
         insertText: pane.handleInsertText,

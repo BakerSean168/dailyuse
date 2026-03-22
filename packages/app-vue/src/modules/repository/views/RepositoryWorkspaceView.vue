@@ -130,7 +130,7 @@
               "
             >
               <ActiveDocumentPane
-                ref="workspaceScene.main.editor.paneRef"
+                :ref="workspaceScene.main.editor.bindPaneRef"
                 :content="workspaceScene.main.editor.content"
                 :saving="workspaceScene.main.editor.status.isSaving"
                 :dirty="workspaceScene.main.editor.status.isDirty"
@@ -166,8 +166,11 @@
                 getResourceMediaType(workspaceScene.main.editor.resource)
               "
               :file-path="workspaceScene.main.editor.resource.path || ''"
+              :file-content="workspaceScene.main.editor.resource.content"
               :file-type="getResourceMediaType(workspaceScene.main.editor.resource)!"
               :file-name="workspaceScene.main.editor.resource.name"
+              :mime-type="workspaceScene.main.editor.resource.mimeType"
+              :file-size="workspaceScene.main.editor.resource.size"
             />
 
             <!-- Other non-markdown, non-media files -->

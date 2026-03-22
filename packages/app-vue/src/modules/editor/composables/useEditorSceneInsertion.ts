@@ -6,7 +6,9 @@ import {
   getResourceInsertionFeedback,
   type EditorSelectionRange,
   type ResourceInsertionItem,
+  type ResourceInsertionResult,
 } from './useResourceInsertion';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
 
 interface RecentResourceEntry {
   resource: ResourceClientDTO;
@@ -22,7 +24,7 @@ interface UseEditorSceneInsertionOptions {
     currentNoteName?: string | null;
     insertText: (text: string, selection?: EditorSelectionRange) => void;
     selection?: EditorSelectionRange;
-  }) => Promise<unknown>;
+  }) => Promise<ResourceInsertionResult>;
   insertTextAtSelection: (text: string, selection?: EditorSelectionRange) => void;
 }
 
@@ -39,10 +41,23 @@ export function useEditorSceneInsertion(options: UseEditorSceneInsertionOptions)
 
   async function handlePasteFiles(files: File[], selection: EditorSelectionRange) {
     if (!options.currentResource.value) {
+      logEditorIssue('paste:skip-no-active-resource', {
+        fileCount: files.length,
+        selection,
+      });
       return;
     }
 
     try {
+      logEditorIssue('paste:start', {
+        selection,
+        currentResource: summarizeResourceForDebug(options.currentResource.value),
+        files: files.map((file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        })),
+      });
       const result = await options.insertUploadedImages({
         files,
         currentNoteName:
@@ -50,7 +65,15 @@ export function useEditorSceneInsertion(options: UseEditorSceneInsertionOptions)
         insertText: options.insertTextAtSelection,
         selection,
       });
-      const feedback = getResourceInsertionFeedback(result as never);
+      const feedback = getResourceInsertionFeedback(result);
+      logEditorIssue('paste:result', {
+        selection,
+        insertedTextLength: typeof result.insertedText === 'string' ? result.insertedText.length : 0,
+        insertedResources: result.insertedResources.map((resource) =>
+          summarizeResourceForDebug(resource),
+        ),
+        failures: result.failures,
+      });
 
       if (feedback.hasSuccess) {
         toast.success(
@@ -64,6 +87,10 @@ export function useEditorSceneInsertion(options: UseEditorSceneInsertionOptions)
         );
       }
     } catch (cause) {
+      logEditorIssue('paste:error', {
+        selection,
+        cause: cause instanceof Error ? cause.message : String(cause),
+      });
       console.error('Editor scene paste upload failed:', cause);
       toast.error(options.t('editor.resourceInsertion.uploadFailed'));
     }

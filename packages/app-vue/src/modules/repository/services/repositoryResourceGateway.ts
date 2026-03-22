@@ -24,48 +24,19 @@ export function useRepositoryResourceGateway() {
   const recentState = getRecentInsertionState();
 
   async function ensureReady() {
-    console.info('[RepositoryResourceGateway] ensureReady:start', {
-      repositoryId: repository.repositoryId.value,
-      resourceCount: repository.resources.value.length,
-    });
-
     await repository.initRepository();
 
     if (repository.repositoryId.value && repository.resources.value.length === 0) {
-      console.info('[RepositoryResourceGateway] ensureReady:refresh-resources', {
-        repositoryId: repository.repositoryId.value,
-      });
       await repository.fetchResources();
     }
-
-    console.info('[RepositoryResourceGateway] ensureReady:done', {
-      repositoryId: repository.repositoryId.value,
-      resourceCount: repository.resources.value.length,
-    });
   }
 
   function getCachedResource(resourceId: string): ResourceClientDTO | null {
-    const cached = repository.resources.value.find((item) => item.id === resourceId) ?? null;
-    console.info('[RepositoryResourceGateway] getCachedResource', {
-      resourceId,
-      hit: Boolean(cached),
-      repositoryId: repository.repositoryId.value,
-    });
-    return cached;
+    return repository.resources.value.find((item) => item.id === resourceId) ?? null;
   }
 
   async function getResource(resourceId: string): Promise<ResourceClientDTO | null> {
-    console.info('[RepositoryResourceGateway] getResource:start', {
-      resourceId,
-      repositoryId: repository.repositoryId.value,
-    });
-    const resource = await repository.getResourceById(resourceId);
-    console.info('[RepositoryResourceGateway] getResource:done', {
-      resourceId,
-      hit: Boolean(resource),
-      repositoryId: repository.repositoryId.value,
-    });
-    return resource;
+    return repository.getResourceById(resourceId);
   }
 
   async function refreshResources() {

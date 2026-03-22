@@ -2,6 +2,7 @@ import { useEditorWorkspaceStore } from '../stores/editorWorkspaceStore';
 import { useEditorUnsavedChangesGuard } from './useEditorUnsavedChangesGuard';
 import { useEditorDocumentRegistry } from './useEditorDocumentRegistry';
 import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
+import { logEditorIssue, summarizeResourceForDebug } from '../../../shared/utils/editorIssueDebug';
 
 export function useEditorWorkspaceActions() {
   const editorWorkspaceStore = useEditorWorkspaceStore();
@@ -10,15 +11,10 @@ export function useEditorWorkspaceActions() {
   const resourceGateway = useRepositoryResourceGateway();
 
   async function requestOpenResource(resourceId: string) {
-    console.info('[EditorWorkspaceActions] requestOpenResource:start', {
-      resourceId,
-      repositoryId: resourceGateway.repositoryId.value,
-    });
-
     await resourceGateway.ensureReady();
     const resource = await resourceGateway.getResource(resourceId);
     if (!resource) {
-      console.warn('[EditorWorkspaceActions] requestOpenResource:resource-not-found', {
+      logEditorIssue('workspace:open-resource:not-found', {
         resourceId,
         repositoryId: resourceGateway.repositoryId.value,
       });
@@ -31,8 +27,9 @@ export function useEditorWorkspaceActions() {
       workspaceId: resourceGateway.repositoryId.value,
     });
 
-    console.info('[EditorWorkspaceActions] requestOpenResource:done', {
+    logEditorIssue('workspace:open-resource', {
       resourceId,
+      resource: summarizeResourceForDebug(resource),
       openedTabId: opened?.id ?? null,
     });
     return opened;
@@ -48,7 +45,20 @@ export function useEditorWorkspaceActions() {
 
   async function requestCloseTab(tabId: string) {
     const tab = editorWorkspaceStore.openTabs.find((item) => item.id === tabId) ?? null;
+    logEditorIssue('tabs:close-request', {
+      tabId,
+      resourceId: tab?.resourceId ?? null,
+      resource: summarizeResourceForDebug(
+        tab?.resourceId ? resourceGateway.getCachedResource(tab.resourceId) : null,
+      ),
+      isDirty: tab?.isDirty ?? null,
+    });
     const confirmed = await guard.confirmCloseResource(tab?.resourceId);
+    logEditorIssue('tabs:close-confirm', {
+      tabId,
+      confirmed,
+      resourceId: tab?.resourceId ?? null,
+    });
     if (!confirmed) {
       return false;
     }
@@ -57,6 +67,10 @@ export function useEditorWorkspaceActions() {
     if (tab?.resourceId) {
       registry.disposeDocument(tab.resourceId);
     }
+    logEditorIssue('tabs:close-done', {
+      tabId,
+      remainingTabIds: editorWorkspaceStore.openTabs.map((item) => item.id),
+    });
     return true;
   }
 

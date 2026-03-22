@@ -233,6 +233,11 @@ export class Resource extends Entity<ResourceId> {
   // ===== DTO 转换 =====
 
   public toServerDTO(): ResourceServerDTO {
+    const metadata = {
+      ...this._props.metadata.toDTO(),
+      mimeType: this._props.mimeType,
+    };
+
     return {
       id: String(this.id),
       repositoryId: String(this._props.repositoryId),
@@ -245,7 +250,7 @@ export class Resource extends Entity<ResourceId> {
       size: this._props.size,
       content: this._props.content,
       childrenCount: this._props.childrenCount,
-      metadata: this._props.metadata.toDTO(),
+      metadata,
       stats: this._props.stats.toDTO(),
       status: this._props.status,
       createdAt: this._props.createdAt.getTime(),
@@ -392,6 +397,7 @@ export class Resource extends Entity<ResourceId> {
       childrenCount: params.type === ResourceType.Folder ? 0 : null,
       metadata: params.metadata
         ? ResourceMetadata.create({
+            ...params.metadata,
             tags: params.metadata.tags ?? [],
             wordCount: params.metadata.wordCount ?? null,
             readingTime: params.metadata.readingTime ?? null,

@@ -479,12 +479,38 @@ export class EditorWorkspaceApplicationService {
   private async persistSessionState(session: EditorSession): Promise<void> {
     await this.sessionRepository.save(session);
 
-    if (session.groups.length > 0) {
-      await this.groupRepository.saveBatch(session.groups);
-      const tabs = session.groups.flatMap((group) => group.tabs);
-      if (tabs.length > 0) {
-        await this.tabRepository.saveBatch(tabs);
+    const currentGroups = session.groups;
+    const persistedGroups = await this.groupRepository.findBySessionId(String(session.id));
+    const currentGroupIds = new Set(currentGroups.map((group) => String(group.id)));
+
+    for (const persistedGroup of persistedGroups) {
+      if (!currentGroupIds.has(String(persistedGroup.id))) {
+        await this.tabRepository.deleteByGroupId(String(persistedGroup.id));
+        await this.groupRepository.delete(String(persistedGroup.id));
       }
+    }
+
+    if (currentGroups.length === 0) {
+      return;
+    }
+
+    await this.groupRepository.saveBatch(currentGroups);
+
+    for (const group of currentGroups) {
+      const currentTabs = group.tabs;
+      const persistedTabs = await this.tabRepository.findByGroupId(String(group.id));
+      const currentTabIds = new Set(currentTabs.map((tab) => String(tab.id)));
+
+      for (const persistedTab of persistedTabs) {
+        if (!currentTabIds.has(String(persistedTab.id))) {
+          await this.tabRepository.delete(String(persistedTab.id));
+        }
+      }
+    }
+
+    const tabs = currentGroups.flatMap((group) => group.tabs);
+    if (tabs.length > 0) {
+      await this.tabRepository.saveBatch(tabs);
     }
   }
 

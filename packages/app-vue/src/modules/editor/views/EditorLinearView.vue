@@ -35,7 +35,7 @@
     >
       <div class="min-w-0 flex-1 overflow-hidden flex flex-col lg:border-r">
         <ActiveDocumentPane
-          ref="linearScene.editor.paneRef"
+          :ref="linearScene.editor.bindPaneRef"
           :content="linearScene.editor.content"
           :saving="linearScene.editor.status.isSaving"
           :dirty="linearScene.editor.status.isDirty"

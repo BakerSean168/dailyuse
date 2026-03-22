@@ -129,17 +129,10 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       if (!targetWorkspaceId) {
         return;
       }
-
-      console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:start', {
-        workspaceId: targetWorkspaceId,
-      });
       const sessions = await listEditorSessions(targetWorkspaceId);
       this.setSessions(sessions);
 
       if (this.sessions.length === 0) {
-        console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:create-default-session', {
-          workspaceId: targetWorkspaceId,
-        });
         const created = await createEditorSession(targetWorkspaceId, 'Main');
         if (created) {
           this.setSessions([created]);
@@ -152,35 +145,14 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
 
       if (this.sessions.length > 0 && !this.activeSession) {
         this.activeSessionId = this.sessions[0]?.id ?? null;
-        console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:recover-active-session', {
-          workspaceId: targetWorkspaceId,
-          activeSessionId: this.activeSessionId,
-        });
       }
-
-      console.info('[EditorWorkspaceStore] reloadWorkspaceSessions:done', {
-        workspaceId: targetWorkspaceId,
-        sessionCount: this.sessions.length,
-        activeSessionId: this.activeSessionId,
-      });
     },
     async setWorkspace(workspaceId: string | null, forceReload = false) {
       const currentWorkspaceId = this.workspaceId;
       const currentWorkspaceLookupId = this.workspaceLookupId;
       const hasUsableSession = this.sessions.length > 0 && this.activeSession !== null;
 
-      console.info('[EditorWorkspaceStore] setWorkspace:start', {
-        nextWorkspaceId: workspaceId,
-        currentWorkspaceId,
-        currentWorkspaceLookupId,
-        isHydrated: this.isHydrated,
-        sessionCount: this.sessions.length,
-        activeSessionId: this.activeSessionId,
-        forceReload,
-      });
-
       if (!workspaceId) {
-        console.info('[EditorWorkspaceStore] setWorkspace:reset');
         this.reset();
         return;
       }
@@ -191,16 +163,9 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         hasUsableSession &&
         !forceReload
       ) {
-        console.info('[EditorWorkspaceStore] setWorkspace:skip-rehydrate', {
-          workspaceId,
-          resolvedWorkspaceId: this.workspaceId,
-          activeSessionId: this.activeSessionId,
-          sessionCount: this.sessions.length,
-        });
         return;
       }
 
-      console.info('[EditorWorkspaceStore] setWorkspace:load-workspace', { workspaceId });
       const workspace = await ensureEditorWorkspace(workspaceId);
       if (!workspace) {
         console.warn('[EditorWorkspaceStore] setWorkspace:ensure-workspace-failed', { workspaceId });
@@ -211,43 +176,15 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       if (currentWorkspaceId === workspace.id && this.isHydrated && hasUsableSession && !forceReload) {
         this.workspaceLookupId = workspaceId;
         this.workspaceId = workspace.id;
-        console.info('[EditorWorkspaceStore] setWorkspace:skip-rehydrate-resolved', {
-          requestedWorkspaceId: workspaceId,
-          resolvedWorkspaceId: workspace.id,
-          previousLookupId: currentWorkspaceLookupId,
-          activeSessionId: this.activeSessionId,
-          sessionCount: this.sessions.length,
-        });
         return;
       }
 
       this.workspaceLookupId = workspaceId;
       this.workspaceId = workspace.id;
-
-      console.info('[EditorWorkspaceStore] setWorkspace:reload-sessions', {
-        requestedWorkspaceId: workspaceId,
-        resolvedWorkspaceId: workspace.id,
-      });
       await this.reloadWorkspaceSessions(workspace.id);
-
-      console.info('[EditorWorkspaceStore] setWorkspace:done', {
-        requestedWorkspaceId: workspaceId,
-        lookupWorkspaceId: this.workspaceLookupId,
-        resolvedWorkspaceId: this.workspaceId,
-        sessionCount: this.sessions.length,
-        activeSessionId: this.activeSessionId,
-      });
     },
     async openResource(params: OpenEditorResourceParams) {
       const requestedWorkspaceId = params.workspaceId ?? this.workspaceId;
-      console.info('[EditorWorkspaceStore] openResource:start', {
-        resourceId: params.resourceId,
-        title: params.title,
-        workspaceId: requestedWorkspaceId,
-        storeWorkspaceId: this.workspaceId,
-        sessionCount: this.sessions.length,
-        activeSessionId: this.activeSessionId,
-      });
 
       if (!requestedWorkspaceId) {
         console.warn('[EditorWorkspaceStore] openResource:missing-workspace', {
@@ -268,10 +205,6 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
 
       const existingTab = findTabByResourceId(this.sessions, params.resourceId);
       if (existingTab) {
-        console.info('[EditorWorkspaceStore] openResource:activate-existing-tab', {
-          resourceId: params.resourceId,
-          tabId: existingTab.id,
-        });
         await this.setActiveTab(existingTab.id);
         return existingTab;
       }
@@ -290,12 +223,6 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         });
         return null;
       }
-
-      console.info('[EditorWorkspaceStore] openResource:create-tab', {
-        resourceId: params.resourceId,
-        sessionId: session.id,
-        groupId: group.id,
-      });
       const created = await createEditorTab({
         workspaceId,
         sessionId: session.id,
@@ -317,17 +244,8 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
       await this.reloadWorkspaceSessions(workspaceId);
       const refreshed = findTabByResourceId(this.sessions, params.resourceId);
       if (refreshed) {
-        console.info('[EditorWorkspaceStore] openResource:activate-refreshed-tab', {
-          resourceId: params.resourceId,
-          tabId: refreshed.id,
-        });
         await this.setActiveTab(refreshed.id);
       }
-
-      console.info('[EditorWorkspaceStore] openResource:done', {
-        resourceId: params.resourceId,
-        openedTabId: refreshed?.id ?? created.id,
-      });
       return refreshed;
     },
     async setTabPinned(tabId: string, isPinned: boolean) {
@@ -359,18 +277,8 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
     },
     async setActiveTab(tabId: string) {
       if (this.activeTabId === tabId) {
-        console.info('[EditorWorkspaceStore] setActiveTab:skip-already-active', {
-          tabId,
-          workspaceId: this.workspaceId,
-        });
         return;
       }
-
-      console.info('[EditorWorkspaceStore] setActiveTab:start', {
-        tabId,
-        workspaceId: this.workspaceId,
-        sessionCount: this.sessions.length,
-      });
 
       for (const session of this.sessions) {
         const group = session.groups.find((item) => item.tabs.some((tab) => tab.id === tabId));
@@ -378,13 +286,6 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
         if (!group || !tab || !this.workspaceId) {
           continue;
         }
-
-        console.info('[EditorWorkspaceStore] setActiveTab:activate', {
-          tabId,
-          sessionId: session.id,
-          groupId: group.id,
-          workspaceId: this.workspaceId,
-        });
         await activateEditorTab({
           workspaceId: this.workspaceId,
           sessionId: session.id,
@@ -392,10 +293,6 @@ export const useEditorWorkspaceStore = defineStore('editor-workspace', {
           tabId,
         });
         await this.reloadWorkspaceSessions(this.workspaceId);
-        console.info('[EditorWorkspaceStore] setActiveTab:done', {
-          tabId,
-          workspaceId: this.workspaceId,
-        });
         return;
       }
 

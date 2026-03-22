@@ -4,7 +4,7 @@
       <!-- Image Viewer -->
       <div v-if="fileType === 'image'" class="flex flex-col items-center max-w-full">
         <img
-          :src="filePath"
+          :src="resolvedSource"
           :alt="fileName"
           @load="handleImageLoad"
           @error="handleImageError"
@@ -22,7 +22,7 @@
       <!-- Video Player -->
       <div v-else-if="fileType === 'video'" class="w-full max-w-5xl">
         <video
-          :src="filePath"
+          :src="resolvedSource"
           controls
           @loadedmetadata="handleVideoLoad"
           class="w-full max-h-[calc(100vh-200px)] rounded-lg shadow-lg"
@@ -36,7 +36,7 @@
         <div class="flex flex-col items-center p-12 bg-muted/20 rounded-2xl">
           <Music class="h-16 w-16 text-primary mb-4" />
           <div class="text-lg font-medium mb-4">{{ fileName }}</div>
-          <audio :src="filePath" controls class="w-full max-w-md">
+          <audio :src="resolvedSource" controls class="w-full max-w-md">
             {{ t('editor.mediaViewer.audioNotSupported') }}
           </audio>
         </div>
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Badge } from '@dailyuse/ui-vue-shadcn';
 import { Alert, AlertDescription } from '@dailyuse/ui-vue-shadcn';
@@ -84,9 +84,15 @@ const props = withDefaults(
     filePath: string;
     fileType: 'image' | 'video' | 'audio';
     fileName?: string;
+    fileContent?: string | null;
+    mimeType?: string | null;
+    fileSize?: number | null;
   }>(),
   {
     fileName: 'Untitled',
+    fileContent: null,
+    mimeType: null,
+    fileSize: null,
   },
 );
 
@@ -97,6 +103,24 @@ const imageInfo = ref<{
   height: number;
   size: string;
 } | null>(null);
+const resolvedSource = computed(() => {
+  if (props.fileContent && props.fileContent.trim()) {
+    const trimmed = props.fileContent.trim();
+    if (
+      trimmed.startsWith('data:') ||
+      trimmed.startsWith('blob:') ||
+      trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://') ||
+      trimmed.startsWith('file://')
+    ) {
+      return trimmed;
+    }
+
+    return `data:${props.mimeType || 'application/octet-stream'};base64,${trimmed.replace(/\s+/g, '')}`;
+  }
+
+  return props.filePath;
+});
 
 function handleImageLoad(event: Event) {
   loading.value = false;
@@ -105,7 +129,7 @@ function handleImageLoad(event: Event) {
   imageInfo.value = {
     width: img.naturalWidth,
     height: img.naturalHeight,
-    size: formatFileSize(0),
+    size: formatFileSize(props.fileSize ?? 0),
   };
 }
 
@@ -127,6 +151,15 @@ function formatFileSize(bytes: number): string {
 }
 
 onMounted(() => {
-  loading.value = true;
+  loading.value = Boolean(resolvedSource.value);
 });
+
+watch(
+  () => [resolvedSource.value, props.fileType],
+  () => {
+    error.value = null;
+    imageInfo.value = null;
+    loading.value = Boolean(resolvedSource.value);
+  },
+);
 </script>

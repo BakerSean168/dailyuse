@@ -69,6 +69,43 @@ describe('MarkdownEditor', () => {
     wrapper.unmount();
   });
 
+  it('detects pasted image files even when the clipboard item type is empty', async () => {
+    const wrapper = mount(MarkdownEditor, {
+      props: {
+        modelValue: 'hello',
+      },
+      attachTo: document.body,
+    });
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), 0);
+    });
+
+    const file = new File(['data'], 'shot.png', { type: 'image/png' });
+    const pasteEvent = new Event('paste', { bubbles: true, cancelable: true }) as ClipboardEvent;
+    Object.defineProperty(pasteEvent, 'clipboardData', {
+      value: {
+        items: [
+          {
+            kind: 'file',
+            type: '',
+            getAsFile: () => file,
+          },
+        ],
+        getData: () => '',
+      },
+    });
+
+    const editorRoot = wrapper.element.querySelector('.cm-content') as HTMLElement;
+    editorRoot.dispatchEvent(pasteEvent);
+
+    const emitted = wrapper.emitted('paste-files');
+    expect(emitted).toHaveLength(1);
+    expect(emitted?.[0]?.[0]).toEqual([file]);
+
+    wrapper.unmount();
+  });
+
   it('replaces the current selection via insertTextAtSelection', async () => {
     const wrapper = mount(MarkdownEditor, {
       props: {

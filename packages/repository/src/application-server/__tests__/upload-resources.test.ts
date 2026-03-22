@@ -70,7 +70,9 @@ describe('UploadResources', () => {
       ).toBe('# Hello\nworld');
       expect(
         new Uint8Array(
-          await fs.promises.readFile(path.join(tempDir, String(repository.id), 'image.png')),
+          await fs.promises.readFile(
+            path.join(tempDir, String(repository.id), 'images', 'image.png'),
+          ),
         ),
       ).toEqual(pngBytes);
       expect(
@@ -78,6 +80,7 @@ describe('UploadResources', () => {
           await fs.promises.readFile(path.join(tempDir, String(repository.id), 'doc.pdf')),
         ),
       ).toEqual(pdfBytes);
+      expect(result.successes[1]?.resource.path).toBe('/images/image.png');
     } finally {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }

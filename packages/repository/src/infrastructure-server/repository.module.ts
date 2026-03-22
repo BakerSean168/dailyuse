@@ -402,6 +402,32 @@ function buildApplicationPort(
 ): RepositoryApplicationPort {
   const { resourceRepository, folderRepository, repositoryRepository, storagePort } = deps;
 
+  async function hydrateStoredResourceContent<T extends { repositoryId: string; path: string; content: string | null; mimeType: string }>(
+    resource: T | null,
+  ): Promise<T | null> {
+    if (!resource || resource.content) {
+      return resource;
+    }
+
+    const storedBytes = await storagePort.read({
+      repositoryId: resource.repositoryId,
+      path: resource.path,
+    });
+    if (!storedBytes) {
+      return resource;
+    }
+
+    const textLike =
+      resource.mimeType.startsWith('text/') || resource.mimeType === 'application/json';
+
+    return {
+      ...resource,
+      content: textLike
+        ? Buffer.from(storedBytes).toString('utf8')
+        : Buffer.from(storedBytes).toString('base64'),
+    };
+  }
+
   async function resolveParentPath(folderId?: string | null): Promise<string | null> {
     if (!folderId) {
       return null;
@@ -538,7 +564,7 @@ function buildApplicationPort(
     },
     getResource: async (id) => {
       const result = await useCases.getResource.execute({ id });
-      return ok(result.resource);
+      return ok(await hydrateStoredResourceContent(result.resource));
     },
     updateResource: async (id, data) => {
       let currentResource = await resourceRepository.findById(id);
