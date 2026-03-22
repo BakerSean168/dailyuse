@@ -54,6 +54,10 @@
       "types": "./dist/modules/ai/index.d.ts",
       "import": "./dist/modules/ai/index.js"
     },
+    "./dashboard": {
+      "types": "./dist/modules/dashboard/index.d.ts",
+      "import": "./dist/modules/dashboard/index.js"
+    },
     "./response": {
       "types": "./dist/response/index.d.ts",
       "import": "./dist/response/index.js"

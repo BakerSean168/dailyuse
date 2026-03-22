@@ -74,6 +74,8 @@
       "@dailyuse/ui-core": ["packages/ui-core/src/index.ts"],
       "@dailyuse/app-vue": ["packages/app-vue/src/index.ts"],
       "@dailyuse/ui-vue-shadcn": ["packages/ui-vue-shadcn/src/index.ts"],
+      "@dailyuse/dashboard": ["packages/dashboard/src/index.ts"],
+      "@dailyuse/dashboard/*": ["packages/dashboard/src/*/index.ts", "packages/dashboard/src/*.ts"],
 
       // ✅ 调度服务包
       "@dailyuse/scheduler-server": ["packages/scheduler-server/src/index.ts"],

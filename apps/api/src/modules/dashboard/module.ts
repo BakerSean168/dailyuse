@@ -7,8 +7,10 @@
  */
 
 import { Router } from 'express';
+import type { PrismaClient } from '@dailyuse/database';
 import type { IApiModule, IApiModuleContext } from '../../shared/contracts/api-module.js';
 import type { AuthenticatedRequest } from '../../shared/infrastructure/http/middlewares/authMiddleware.js';
+import { getApiDashboardData } from './dashboard-read-service.js';
 
 export const DashboardApiModule: IApiModule = {
   name: 'Dashboard',
@@ -16,6 +18,7 @@ export const DashboardApiModule: IApiModule = {
   register(context: IApiModuleContext) {
     const { router, middleware, db } = context;
     const dashboardRouter = Router();
+    const prisma = db as PrismaClient;
 
     // GET /dashboard/stats — Aggregated dashboard statistics
     dashboardRouter.get('/stats', middleware.auth, async (req, res) => {
@@ -30,34 +33,7 @@ export const DashboardApiModule: IApiModule = {
           return;
         }
 
-        // Return default/empty dashboard data.
-        // TODO: Wire up real aggregation queries across modules when services are implemented.
-        const now = Date.now();
-        const DAY = 86_400_000;
-
-        const data = {
-          stats: {
-            activeTasks: 0,
-            completedToday: 0,
-            activeGoals: 0,
-            upcomingReminders: 0,
-            unreadNotifications: 0,
-            scheduleConflicts: 0,
-          },
-          activityTimeline: [],
-          trendDays: Array.from({ length: 7 }, (_, i) => {
-            const date = new Date(now - (6 - i) * DAY);
-            return {
-              date: date.toISOString().slice(0, 10),
-              tasksCompleted: 0,
-              tasksCreated: 0,
-              focusMinutes: 0,
-            };
-          }),
-          goalProgress: [],
-          taskBoard: { todo: 0, inProgress: 0, done: 0, overdue: 0 },
-          upcomingSchedule: [],
-        };
+        const data = await getApiDashboardData(prisma, identityId);
 
         res.json({ ok: true, code: 200, message: 'Success', data, timestamp: Date.now() });
       } catch (err) {

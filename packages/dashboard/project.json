@@ -1,0 +1,33 @@
+{
+  "name": "dashboard",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "packages/dashboard/src",
+  "tags": ["scope:shared", "type:lib", "layer:application"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/packages/dashboard/dist"],
+      "options": {
+        "command": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsup --clean=false",
+        "cwd": "packages/dashboard"
+      },
+      "cache": true,
+      "dependsOn": ["contracts:build"]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/dashboard"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/dashboard/**/*.{ts,js}"]
+      }
+    }
+  }
+}
