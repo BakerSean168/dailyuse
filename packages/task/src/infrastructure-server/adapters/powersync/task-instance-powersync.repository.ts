@@ -1,4 +1,7 @@
-import type { ITaskInstanceRepository } from '../../../domain-server/repositories/ITaskInstanceRepository';
+import type {
+  ITaskInstanceRepository,
+  TaskTemplateInstanceStats,
+} from '../../../domain-server/repositories/ITaskInstanceRepository';
 import { TaskInstance } from '../../../domain-server/aggregates/task-instance';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
@@ -173,6 +176,65 @@ export class PowerSyncTaskInstanceRepository implements ITaskInstanceRepository 
       `SELECT * FROM task_instances WHERE template_id = ? AND instance_date >= ? AND instance_date <= ? AND deleted_at IS NULL ORDER BY instance_date ASC`,
       [templateId, new Date(startDate).toISOString(), new Date(endDate).toISOString()],
     );
+  }
+
+  async getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>> {
+    if (templateIds.length === 0) {
+      return {};
+    }
+
+    const placeholders = templateIds.map(() => '?').join(', ');
+    const rows = await this.db.getAll<{
+      templateId: string;
+      status: string;
+      count: number;
+    }>(
+      `SELECT template_id as templateId, status, COUNT(*) as count
+         FROM task_instances
+        WHERE template_id IN (${placeholders})
+          AND deleted_at IS NULL
+        GROUP BY template_id, status`,
+      templateIds,
+    );
+
+    const stats: Record<string, TaskTemplateInstanceStats> = {};
+
+    for (const templateId of templateIds) {
+      stats[templateId] = {
+        templateId,
+        instanceCount: 0,
+        completedInstanceCount: 0,
+        pendingInstanceCount: 0,
+        completionRate: 0,
+      };
+    }
+
+    for (const row of rows) {
+      const stat = stats[row.templateId];
+      if (!stat) {
+        continue;
+      }
+
+      const count = Number(row.count ?? 0);
+      stat.instanceCount += count;
+
+      if (row.status === 'Completed') {
+        stat.completedInstanceCount += count;
+      }
+
+      if (row.status === 'Pending') {
+        stat.pendingInstanceCount += count;
+      }
+    }
+
+    for (const stat of Object.values(stats)) {
+      stat.completionRate =
+        stat.instanceCount > 0
+          ? Math.round((stat.completedInstanceCount / stat.instanceCount) * 100)
+          : 0;
+    }
+
+    return stats;
   }
 
   async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {

@@ -55,6 +55,14 @@ export class CreateTaskTemplate {
       color: request.color ?? undefined,
     });
 
+    if (request.goalBinding) {
+      template.bindToGoal(
+        request.goalBinding.goalId,
+        request.goalBinding.keyResultId,
+        request.goalBinding.goalRecordValue,
+      );
+    }
+
     // Save to repository
     await this.templateRepository.save(template);
 

@@ -8,6 +8,7 @@
 import type { PrismaClient, TaskInstance as PrismaTaskInstance } from '@dailyuse/database';
 import { TaskInstance } from '@/domain-server/aggregates/task-instance';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
+import type { TaskTemplateInstanceStats } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
@@ -178,6 +179,62 @@ export class TaskInstancePrismaRepository
       orderBy: { instanceDate: 'asc' },
     });
     return data.map((d: PrismaTaskInstance) => this.mapToEntity(d));
+  }
+
+  async getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>> {
+    if (templateIds.length === 0) {
+      return {};
+    }
+
+    const grouped = await this.prisma.taskInstance.groupBy({
+      by: ['templateId', 'status'],
+      where: {
+        templateId: { in: templateIds },
+        deletedAt: null,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    const stats: Record<string, TaskTemplateInstanceStats> = {};
+
+    for (const templateId of templateIds) {
+      stats[templateId] = {
+        templateId,
+        instanceCount: 0,
+        completedInstanceCount: 0,
+        pendingInstanceCount: 0,
+        completionRate: 0,
+      };
+    }
+
+    for (const row of grouped) {
+      const stat = stats[row.templateId];
+      if (!stat) {
+        continue;
+      }
+
+      const count = row._count._all;
+      stat.instanceCount += count;
+
+      if (row.status === 'Completed') {
+        stat.completedInstanceCount += count;
+      }
+
+      if (row.status === 'Pending') {
+        stat.pendingInstanceCount += count;
+      }
+    }
+
+    for (const stat of Object.values(stats)) {
+      stat.completionRate =
+        stat.instanceCount > 0
+          ? Math.round((stat.completedInstanceCount / stat.instanceCount) * 100)
+          : 0;
+    }
+
+    return stats;
   }
 
   async deleteIncompleteInstancesFrom(templateId: string, fromDate: number): Promise<number> {

@@ -11,6 +11,14 @@
 import type { TaskInstance } from '../aggregates';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
+export interface TaskTemplateInstanceStats {
+  templateId: string;
+  instanceCount: number;
+  completedInstanceCount: number;
+  pendingInstanceCount: number;
+  completionRate: number;
+}
+
 /**
  * TaskInstance 仓储接口
  */
@@ -85,6 +93,11 @@ export interface ITaskInstanceRepository {
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]>;
+
+  /**
+   * 批量统计模板实例聚合数据
+   */
+  getTemplateStats(templateIds: string[]): Promise<Record<string, TaskTemplateInstanceStats>>;
 
   /**
    * 删除模板从指定时点开始的未完成实例

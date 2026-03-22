@@ -16,6 +16,9 @@ import type { IElectronModule, IElectronModuleContext } from '@dailyuse/contract
 import { createTaskPowerSyncModule } from '../infrastructure-server/powersync';
 import { createTaskTransportHandlers } from '../api/transport-handlers';
 import { createTaskRuntimeContribution } from '../api/runtime';
+import { TaskTemplateController } from '../api/controllers/task-template.controller';
+import { TaskInstanceController } from '../api/controllers/task-instance.controller';
+import { TaskDependencyController } from '../api/controllers/task-dependency.controller';
 import { createLogger } from '@dailyuse/utils';
 import type { TaskModuleInstance } from '../infrastructure-server';
 import { withAuthenticatedValue } from './authenticated-ipc';
@@ -85,6 +88,9 @@ export const TaskElectronModule: IElectronModule = {
     // 2. Transport handlers — map flat API to controller-specific interfaces
     //    传输层处理器 — 将扁平 API 映射到控制器专用接口
     const handlers = createTaskTransportHandlers(taskModule.api);
+    const templateController = new TaskTemplateController(handlers.template);
+    const instanceController = new TaskInstanceController(handlers.instance);
+    const dependencyController = new TaskDependencyController(handlers.dependency);
 
     // 3. IPC Handlers — delegate to use cases via transport handlers
     //    IPC 处理器 — 通过传输层处理器委托给用例
@@ -92,59 +98,54 @@ export const TaskElectronModule: IElectronModule = {
     // --- Template channels ---
     ipcMain.handle(Ch.TEMPLATE_LIST, (_, params) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
-        handlers.template.listTemplates.execute(
+        templateController.listTemplates(
           normalizeTemplateListParams(
             requestContext,
             params && typeof params === 'object' ? (params as Record<string, unknown>) : undefined,
           ) as any,
+          requestContext,
         ),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_GET, (_, payload) =>
-      handlers.template.getTemplate.execute(
+      templateController.getTemplate(
         payload?.id ?? payload,
         payload?.includeChildren ?? false,
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_CREATE, (_, dto) =>
       withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await handlers.template.createTemplate.execute({
-          ...(dto ?? {}),
-          identityId: requestContext.identityId,
-        });
-        return result.ok ? result.data.template : result;
+        return templateController.createTemplate(dto, requestContext);
       }),
     );
     ipcMain.handle(Ch.TEMPLATE_UPDATE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.template.updateTemplate.execute(payload?.id, payload?.request),
+        templateController.updateTemplate(payload?.id, payload?.request),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_DELETE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.template.deleteTemplate.execute(payload?.id ?? payload),
+        templateController.deleteTemplate(payload?.id ?? payload),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_ARCHIVE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.template.archiveTemplate.execute(payload?.id ?? payload),
+        templateController.archiveTemplate(payload?.id ?? payload),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_RESTORE, (_, payload) =>
       withAuthenticatedValue(ctx, async () => {
-        const result = await handlers.template.activateTemplate.execute(payload?.id ?? payload);
-        return result.ok ? result.data.template : result;
+        return templateController.activateTemplate(payload?.id ?? payload);
       }),
     );
     ipcMain.handle(Ch.TEMPLATE_PAUSE, (_, payload) =>
       withAuthenticatedValue(ctx, async () => {
-        const result = await handlers.template.pauseTemplate.execute(payload?.id ?? payload);
-        return result.ok ? result.data.template : result;
+        return templateController.pauseTemplate(payload?.id ?? payload);
       }),
     );
     ipcMain.handle(Ch.TEMPLATE_GENERATE_INSTANCES, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.template.generateInstances.execute(payload?.templateId, payload?.request),
+        templateController.generateInstances(payload?.templateId, payload?.request),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_GET_INSTANCES, (_, payload) =>
@@ -166,17 +167,17 @@ export const TaskElectronModule: IElectronModule = {
     );
     ipcMain.handle(Ch.TEMPLATE_GET_BY_PRIORITY, (_, payload) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
-        handlers.template.listByPriority.execute(requestContext.identityId, payload?.params?.limit),
+        templateController.listByPriority(requestContext, payload?.params?.limit),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_BIND_GOAL, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.template.bindToGoal.execute(payload?.templateId, payload?.request),
+        templateController.bindToGoal(payload?.templateId, payload?.request),
       ),
     );
     ipcMain.handle(Ch.TEMPLATE_UNBIND_GOAL, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.template.unbindFromGoal.execute(payload?.templateId),
+        templateController.unbindFromGoal(payload?.templateId),
       ),
     );
 
@@ -204,11 +205,11 @@ export const TaskElectronModule: IElectronModule = {
       }),
     );
     ipcMain.handle(Ch.INSTANCE_GET, (_, payload) =>
-      handlers.instance.getTaskInstance.execute(payload?.id ?? payload),
+      instanceController.getInstance(payload?.id ?? payload),
     );
     ipcMain.handle(Ch.INSTANCE_CREATE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.instance.start.execute(payload?.id ?? payload),
+        instanceController.startInstance(payload?.id ?? payload),
       ),
     );
     ipcMain.handle(Ch.INSTANCE_UPDATE, () => {
@@ -216,22 +217,22 @@ export const TaskElectronModule: IElectronModule = {
     });
     ipcMain.handle(Ch.INSTANCE_DELETE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.instance.deleteInstance.execute(payload?.id ?? payload),
+        instanceController.deleteInstance(payload?.id ?? payload),
       ),
     );
     ipcMain.handle(Ch.INSTANCE_COMPLETE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.instance.complete.execute(payload?.id ?? payload, payload?.request),
+        instanceController.completeInstance(payload?.id ?? payload, payload?.request ?? {}),
       ),
     );
     ipcMain.handle(Ch.INSTANCE_SKIP, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.instance.skip.execute(payload?.id ?? payload, payload?.request),
+        instanceController.skipInstance(payload?.id ?? payload, payload?.request ?? {}),
       ),
     );
     ipcMain.handle(Ch.INSTANCE_CHECK_EXPIRED, () =>
       withAuthenticatedValue(ctx, async (requestContext) => {
-        const result = await handlers.instance.checkExpired.execute(requestContext.identityId);
+        const result = await instanceController.checkExpired(requestContext.identityId);
         return result.ok ? { count: result.data.length, instances: result.data } : result;
       }),
     );
@@ -239,46 +240,44 @@ export const TaskElectronModule: IElectronModule = {
     // --- Dependency channels ---
     ipcMain.handle(Ch.DEPENDENCY_CREATE, (_, payload) =>
       withAuthenticatedValue(ctx, async (requestContext) =>
-        handlers.dependency.createDependency.execute({
-          predecessorTaskId: payload?.request?.predecessorTaskId,
-          successorTaskId: payload?.request?.successorTaskId ?? payload?.taskId,
-          dependencyType: payload?.request?.dependencyType,
-          lagDays: payload?.request?.lagDays,
-          identityId: requestContext.identityId,
-        }),
+        dependencyController.createDependency(
+          payload?.taskId,
+          payload?.request,
+          requestContext.identityId,
+        ),
       ),
     );
     ipcMain.handle(Ch.DEPENDENCY_LIST, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.dependency.listDependencies.executeDependencies(payload?.taskId),
+        dependencyController.getDependencies(payload?.taskId),
       ),
     );
     ipcMain.handle(Ch.DEPENDENCY_DEPENDENTS, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.dependency.listDependencies.executeDependents(payload?.taskId),
+        dependencyController.getDependents(payload?.taskId),
       ),
     );
     ipcMain.handle(Ch.DEPENDENCY_CHAIN, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.dependency.getDependencyChain.execute(payload?.taskId),
+        dependencyController.getDependencyChain(payload?.taskId),
       ),
     );
     ipcMain.handle(Ch.DEPENDENCY_VALIDATE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.dependency.validateDependency.execute(
-          payload?.predecessorTaskId,
-          payload?.successorTaskId,
-        ),
+        dependencyController.validateDependency({
+          predecessorTaskId: payload?.predecessorTaskId,
+          successorTaskId: payload?.successorTaskId,
+        }),
       ),
     );
     ipcMain.handle(Ch.DEPENDENCY_DELETE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.dependency.deleteDependency.execute(payload?.id ?? payload),
+        dependencyController.deleteDependency(payload?.id ?? payload),
       ),
     );
     ipcMain.handle(Ch.DEPENDENCY_UPDATE, (_, payload) =>
       withAuthenticatedValue(ctx, async () =>
-        handlers.dependency.updateDependency.execute(payload?.id, payload?.request),
+        dependencyController.updateDependency(payload?.id, payload?.request),
       ),
     );
 

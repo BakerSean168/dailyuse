@@ -32,6 +32,9 @@
           :model-value="localTemplate"
           :is-edit-mode="mode === 'edit'"
           :readonly="saving"
+          :goals="goalOptions"
+          :key-results-by-goal="keyResultsByGoal"
+          :on-request-key-results="requestKeyResults"
           @update:model-value="handleTemplateUpdate"
           @update:validation="handleValidationUpdate"
           @close="handleCancel"
@@ -66,11 +69,18 @@ import {
 } from '@dailyuse/ui-vue-shadcn';
 import { Pencil, PlusCircle } from 'lucide-vue-next';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
-import type { TaskTemplateViewModel } from '../types';
+import type {
+  GoalBindingOption,
+  KeyResultBindingOption,
+  TaskTemplateViewModel,
+} from '../types';
 import { TaskType } from '@dailyuse/contracts/task';
 import { defaultNamedColor } from '../../../../shared/constants/colorPalette';
+import { GOAL_SERVICE_KEY } from '../../../../di/keys';
+import { useStrictInject } from '../../../../shared/utils/useStrictInject';
 
 const { t } = useI18n();
+const goalService = useStrictInject(GOAL_SERVICE_KEY, 'GoalService');
 
 function createBlankTemplate(): TaskTemplateViewModel {
   return {
@@ -125,11 +135,92 @@ const localTemplate = ref<TaskTemplateViewModel | null>(
   props.template ? { ...props.template } : props.mode === 'create' ? createBlankTemplate() : null,
 );
 const isValid = ref(false);
+const goalOptions = ref<GoalBindingOption[]>([]);
+const keyResultsByGoal = ref<Record<string, KeyResultBindingOption[]>>({});
+const goalsLoaded = ref(false);
 
 const visible = computed(() => props.modelValue);
 const mode = computed(() => props.mode);
 const saving = computed(() => props.saving);
 const canSave = computed(() => !!localTemplate.value && isValid.value && !saving.value);
+
+function mapGoalOption(goal: any): GoalBindingOption {
+  return {
+    id: String(goal.id),
+    title: goal.name,
+    description: goal.description ?? undefined,
+    status: goal.status,
+  };
+}
+
+function mapKeyResultOption(keyResult: any): KeyResultBindingOption {
+  const progress = keyResult.progress ?? {};
+
+  return {
+    id: String(keyResult.id),
+    title: keyResult.title,
+    weight: Number(keyResult.weight ?? 0),
+    progress: {
+      current: Number(progress.currentValue ?? 0),
+      target: Number(progress.targetValue ?? 0),
+      percentage: Number(progress.progressPercentage ?? 0),
+    },
+  };
+}
+
+async function loadGoals() {
+  if (goalsLoaded.value) {
+    return;
+  }
+
+  const result = await goalService.listGoals({
+    page: 1,
+    pageSize: 200,
+    systemView: 'active',
+  });
+
+  if (!result.ok) {
+    goalOptions.value = [];
+    return;
+  }
+
+  goalOptions.value = result.data.goals.map((goal: any) => mapGoalOption(goal.toDTO()));
+  goalsLoaded.value = true;
+}
+
+async function requestKeyResults(goalId: string): Promise<KeyResultBindingOption[]> {
+  const cached = keyResultsByGoal.value[goalId];
+  if (cached) {
+    return cached;
+  }
+
+  const result = await goalService.getKeyResults(goalId);
+  if (!result.ok) {
+    keyResultsByGoal.value = {
+      ...keyResultsByGoal.value,
+      [goalId]: [],
+    };
+    return [];
+  }
+
+  const mapped = result.data.keyResults.map((keyResult: any) =>
+    mapKeyResultOption(keyResult.toDTO()),
+  );
+  keyResultsByGoal.value = {
+    ...keyResultsByGoal.value,
+    [goalId]: mapped,
+  };
+  return mapped;
+}
+
+async function ensureBindingKeyResults(template: TaskTemplateViewModel | null) {
+  const goalId = template?.goalBinding?.goalId;
+  if (!goalId) {
+    return;
+  }
+
+  await requestKeyResults(goalId);
+}
 
 watch(
   () => props.template,
@@ -141,6 +232,30 @@ watch(
         : null;
   },
   { immediate: true, deep: true },
+);
+
+watch(
+  visible,
+  async (open) => {
+    if (!open) {
+      return;
+    }
+
+    await loadGoals();
+    await ensureBindingKeyResults(localTemplate.value);
+  },
+  { immediate: true },
+);
+
+watch(
+  () => localTemplate.value?.goalBinding?.goalId,
+  async (goalId) => {
+    if (!goalId) {
+      return;
+    }
+
+    await requestKeyResults(goalId);
+  },
 );
 
 const setVisible = (value: boolean) => {

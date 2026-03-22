@@ -153,7 +153,7 @@
               {{ t('goal.list.noGoalsFound') }}
             </h3>
             <p class="mb-6 text-sm">{{ t('goal.list.createToStart') }}</p>
-            <Button @click="openCreateDialog">
+            <Button @click="openCreateDialog()">
               <Plus class="mr-2 h-4 w-4" />
               {{ t('goal.list.createGoal') }}
             </Button>
@@ -273,10 +273,19 @@ function selectSystemView(view: GoalSystemView) {
   setSystemView(view);
 }
 
-function openCreateDialog(folderId?: string | null) {
+function openCreateDialog(folderIdOrEvent?: string | Event | null) {
+  const resolvedFolderId =
+    folderIdOrEvent === null
+      ? null
+      : typeof folderIdOrEvent === 'string'
+        ? folderIdOrEvent
+        : selectedSystemView.value === 'active'
+          ? selectedFolderId.value
+          : null;
+
   editingGoal.value = null;
   dialogMode.value = 'create';
-  defaultGoalFolderId.value = folderId ?? null;
+  defaultGoalFolderId.value = resolvedFolderId ?? null;
   showGoalDialog.value = true;
 }
 

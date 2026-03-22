@@ -5,7 +5,7 @@ import { ImportanceLevel } from '../../../shared/value-objects/importance';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '../aggregates';
 import { TaskType } from '../value-objects';
 import type { RecurrenceRuleDTO, TaskReminderConfigDTO } from '../value-objects';
-import type { TaskTimeConfigDTO } from '../value-objects';
+import type { TaskGoalBindingDTO, TaskTimeConfigDTO } from '../value-objects';
 
 export const TaskTimeConfigSchema = z
   .custom<TaskTimeConfigDTO>()
@@ -35,6 +35,12 @@ export const TaskReminderConfigSchema = z
   .custom<TaskReminderConfigDTO>()
   .openapi({ type: 'object', description: '任务提醒配置' });
 
+export const TaskGoalBindingSchema = z.object({
+  goalId: brandedId<GoalId>(),
+  keyResultId: brandedId<KeyResultId>(),
+  goalRecordValue: z.number().nonnegative(),
+});
+
 // Public transport schema - NO identityId (injected from Context)
 export const CreateTaskTemplateSchema = z.object({
   name: z.string().min(1, '标题不能为空'),
@@ -47,6 +53,7 @@ export const CreateTaskTemplateSchema = z.object({
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).default([]).optional(),
   color: z.string().optional().nullable(),
+  goalBinding: TaskGoalBindingSchema.optional().nullable(),
 });
 
 export type CreateTaskTemplateReq = z.infer<typeof CreateTaskTemplateSchema>;
@@ -77,6 +84,7 @@ export const UpdateTaskTemplateSchema = z.object({
   folderId: brandedId<TaskFolderId>().optional().nullable(),
   tags: z.array(z.string()).optional(),
   color: z.string().optional().nullable(),
+  goalBinding: TaskGoalBindingSchema.optional().nullable(),
 });
 
 export type UpdateTaskTemplateReq = z.infer<typeof UpdateTaskTemplateSchema>;

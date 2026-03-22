@@ -111,6 +111,18 @@ const filteredViewModels = computed(() => {
   );
 });
 
+function toGoalBindingPayload(template: TaskTemplateViewModel) {
+  if (!template.goalBinding?.goalId || !template.goalBinding?.keyResultId) {
+    return null;
+  }
+
+  return {
+    goalId: template.goalBinding.goalId,
+    keyResultId: template.goalBinding.keyResultId,
+    goalRecordValue: template.goalBinding.incrementValue ?? 1,
+  };
+}
+
 function handleCreate() {
   showCreateDialog.value = true;
 }
@@ -125,6 +137,7 @@ async function handleSaveCreate(template: TaskTemplateViewModel) {
     importance: (template.importance as any) ?? 'Moderate',
     tags: template.tags ?? [],
     color: template.color ?? null,
+    goalBinding: toGoalBindingPayload(template),
   });
   if (result) {
     showCreateDialog.value = false;
@@ -154,6 +167,7 @@ async function handleSaveEdit(vm: TaskTemplateViewModel) {
     importance: (vm.importance as any) ?? 'Moderate',
     tags: vm.tags ?? [],
     color: vm.color ?? null,
+    goalBinding: toGoalBindingPayload(vm),
   });
   if (result) {
     showEditDialog.value = false;

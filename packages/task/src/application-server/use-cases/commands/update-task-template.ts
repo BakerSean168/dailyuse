@@ -50,6 +50,18 @@ export class UpdateTaskTemplate {
       template.updateRecurrenceRule(RecurrenceRule.fromDTO(request.recurrenceRule));
     }
 
+    if (request.goalBinding !== undefined) {
+      if (request.goalBinding === null) {
+        template.unlinkFromGoal();
+      } else {
+        template.bindToGoal(
+          request.goalBinding.goalId,
+          request.goalBinding.keyResultId,
+          request.goalBinding.goalRecordValue,
+        );
+      }
+    }
+
     await this.templateRepository.save(template);
 
     return ok(template.toClientDTO());

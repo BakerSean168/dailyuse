@@ -60,8 +60,27 @@ export class ListTaskTemplates {
       }
     }
 
+    const statsByTemplateId =
+      (await this.instanceRepository.getTemplateStats(templates.map((template) => template.id))) ??
+      {};
+
     return ok({
-      templates: templates.map((t) => t.toClientDTO()),
+      templates: templates.map((template) => {
+        const dto = template.toClientDTO();
+        const stats = statsByTemplateId[template.id];
+
+        if (!stats) {
+          return dto;
+        }
+
+        return {
+          ...dto,
+          instanceCount: stats.instanceCount,
+          completedInstanceCount: stats.completedInstanceCount,
+          pendingInstanceCount: stats.pendingInstanceCount,
+          completionRate: stats.completionRate,
+        };
+      }),
       total: templates.length,
     });
   }

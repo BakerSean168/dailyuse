@@ -107,6 +107,9 @@ export interface TaskTemplateFormProps {
   modelValue?: TaskTemplateViewModel | null;
   isEditMode?: boolean;
   readonly?: boolean;
+  goals?: GoalBindingOption[];
+  keyResultsByGoal?: Record<string, KeyResultBindingOption[]>;
+  onRequestKeyResults?: (goalId: string) => Promise<KeyResultBindingOption[] | void> | void;
 }
 
 export interface TaskTemplateFormValidationState {

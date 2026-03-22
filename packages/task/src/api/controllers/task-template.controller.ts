@@ -96,6 +96,7 @@ export class TaskTemplateController {
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,
       color: parsed.data.color,
+      goalBinding: parsed.data.goalBinding,
     };
 
     const result = await this.useCases.createTemplate.execute(createInput);
@@ -171,6 +172,7 @@ export class TaskTemplateController {
       folderId: parsed.data.folderId,
       tags: parsed.data.tags,
       color: parsed.data.color,
+      goalBinding: parsed.data.goalBinding,
     });
   }
 
