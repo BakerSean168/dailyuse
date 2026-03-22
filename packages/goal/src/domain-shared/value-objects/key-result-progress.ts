@@ -195,11 +195,11 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
    * - Last: 最后一个值
    */
   public calculateAggregatedValue(values: number[]): number {
-    if (values.length === 0) return 0;
+    if (values.length === 0) return this.props.initialValue;
 
     switch (this.props.aggregationMethod) {
       case 'Sum':
-        return values.reduce((sum, val) => sum + val, 0);
+        return this.props.initialValue + values.reduce((sum, val) => sum + val, 0);
 
       case 'Average':
         return values.reduce((sum, val) => sum + val, 0) / values.length;
@@ -214,7 +214,7 @@ export class KeyResultProgress extends ValueObject<KeyResultProgressDTO> impleme
         return values[values.length - 1];
 
       default:
-        return 0;
+        return this.props.initialValue;
     }
   }
 

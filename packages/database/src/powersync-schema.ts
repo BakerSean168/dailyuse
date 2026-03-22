@@ -174,6 +174,7 @@ const key_results = new Table({
   description: column.text,
   value_type: column.text,
   aggregation_method: column.text,
+  initial_value: column.real,
   target_value: column.real,
   current_value: column.real,
   unit: column.text,

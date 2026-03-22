@@ -55,6 +55,8 @@ describe('UpdateGoalKeyResult', () => {
       title: 'Updated KR',
       description: undefined,
       weight: 5,
+      startValue: undefined,
+      currentValue: undefined,
       targetValue: undefined,
       unit: undefined,
     });
@@ -132,8 +134,32 @@ describe('UpdateGoalKeyResult', () => {
       title: undefined,
       description: 'New desc',
       weight: undefined,
+      startValue: undefined,
+      currentValue: undefined,
       targetValue: undefined,
       unit: 'books',
+    });
+  });
+
+  it('should pass currentValue updates correctly', async () => {
+    const goal = createGoalFixture();
+    const goalPolicy = { ensureGoalCanBeModified: vi.fn() } as any;
+    const goalRepo = createMockRepo<IGoalRepository>({
+      findById: vi.fn().mockResolvedValue(goal),
+      save: vi.fn().mockResolvedValue(undefined),
+    });
+    const useCase = new UpdateGoalKeyResult(goalRepo, goalPolicy);
+
+    await useCase.execute('goal-id-1', 'kr-1', { currentValue: 11, startValue: 5 });
+
+    expect(goal.updateKeyResult).toHaveBeenCalledWith('kr-1', {
+      title: undefined,
+      description: undefined,
+      weight: undefined,
+      startValue: 5,
+      currentValue: 11,
+      targetValue: undefined,
+      unit: undefined,
     });
   });
 

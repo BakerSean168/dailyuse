@@ -31710,6 +31710,7 @@ export namespace Prisma {
   }
 
   export type KeyResultAvgAggregateOutputType = {
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     weight: number | null
@@ -31718,6 +31719,7 @@ export namespace Prisma {
   }
 
   export type KeyResultSumAggregateOutputType = {
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     weight: number | null
@@ -31733,6 +31735,7 @@ export namespace Prisma {
     description: string | null
     valueType: string | null
     aggregationMethod: string | null
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     unit: string | null
@@ -31752,6 +31755,7 @@ export namespace Prisma {
     description: string | null
     valueType: string | null
     aggregationMethod: string | null
+    initialValue: number | null
     targetValue: number | null
     currentValue: number | null
     unit: string | null
@@ -31771,6 +31775,7 @@ export namespace Prisma {
     description: number
     valueType: number
     aggregationMethod: number
+    initialValue: number
     targetValue: number
     currentValue: number
     unit: number
@@ -31785,6 +31790,7 @@ export namespace Prisma {
 
 
   export type KeyResultAvgAggregateInputType = {
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     weight?: true
@@ -31793,6 +31799,7 @@ export namespace Prisma {
   }
 
   export type KeyResultSumAggregateInputType = {
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     weight?: true
@@ -31808,6 +31815,7 @@ export namespace Prisma {
     description?: true
     valueType?: true
     aggregationMethod?: true
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     unit?: true
@@ -31827,6 +31835,7 @@ export namespace Prisma {
     description?: true
     valueType?: true
     aggregationMethod?: true
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     unit?: true
@@ -31846,6 +31855,7 @@ export namespace Prisma {
     description?: true
     valueType?: true
     aggregationMethod?: true
+    initialValue?: true
     targetValue?: true
     currentValue?: true
     unit?: true
@@ -31952,6 +31962,7 @@ export namespace Prisma {
     description: string | null
     valueType: string
     aggregationMethod: string
+    initialValue: number
     targetValue: number
     currentValue: number
     unit: string | null
@@ -31990,6 +32001,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -32014,6 +32026,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -32035,6 +32048,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -32056,6 +32070,7 @@ export namespace Prisma {
     description?: boolean
     valueType?: boolean
     aggregationMethod?: boolean
+    initialValue?: boolean
     targetValue?: boolean
     currentValue?: boolean
     unit?: boolean
@@ -32067,7 +32082,7 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type KeyResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "goalId" | "title" | "description" | "valueType" | "aggregationMethod" | "targetValue" | "currentValue" | "unit" | "weight" | "order" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["keyResult"]>
+  export type KeyResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identityId" | "goalId" | "title" | "description" | "valueType" | "aggregationMethod" | "initialValue" | "targetValue" | "currentValue" | "unit" | "weight" | "order" | "version" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["keyResult"]>
   export type KeyResultInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     identity?: boolean | AccountDefaultArgs<ExtArgs>
     goal?: boolean | GoalDefaultArgs<ExtArgs>
@@ -32118,6 +32133,10 @@ export namespace Prisma {
        * 聚合方法（sum/average/latest）
        */
       aggregationMethod: string
+      /**
+       * 起始值
+       */
+      initialValue: number
       /**
        * 目标值
        */
@@ -32576,6 +32595,7 @@ export namespace Prisma {
     readonly description: FieldRef<"KeyResult", 'String'>
     readonly valueType: FieldRef<"KeyResult", 'String'>
     readonly aggregationMethod: FieldRef<"KeyResult", 'String'>
+    readonly initialValue: FieldRef<"KeyResult", 'Float'>
     readonly targetValue: FieldRef<"KeyResult", 'Float'>
     readonly currentValue: FieldRef<"KeyResult", 'Float'>
     readonly unit: FieldRef<"KeyResult", 'String'>
@@ -82990,6 +83010,7 @@ export namespace Prisma {
     description: 'description',
     valueType: 'valueType',
     aggregationMethod: 'aggregationMethod',
+    initialValue: 'initialValue',
     targetValue: 'targetValue',
     currentValue: 'currentValue',
     unit: 'unit',
@@ -85958,6 +85979,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"KeyResult"> | string | null
     valueType?: StringFilter<"KeyResult"> | string
     aggregationMethod?: StringFilter<"KeyResult"> | string
+    initialValue?: FloatFilter<"KeyResult"> | number
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
@@ -85981,6 +86003,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrderInput | SortOrder
@@ -86007,6 +86030,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"KeyResult"> | string | null
     valueType?: StringFilter<"KeyResult"> | string
     aggregationMethod?: StringFilter<"KeyResult"> | string
+    initialValue?: FloatFilter<"KeyResult"> | number
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
@@ -86030,6 +86054,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrderInput | SortOrder
@@ -86057,6 +86082,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"KeyResult"> | string | null
     valueType?: StringWithAggregatesFilter<"KeyResult"> | string
     aggregationMethod?: StringWithAggregatesFilter<"KeyResult"> | string
+    initialValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     targetValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     currentValue?: FloatWithAggregatesFilter<"KeyResult"> | number
     unit?: StringNullableWithAggregatesFilter<"KeyResult"> | string | null
@@ -92631,6 +92657,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -92654,6 +92681,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -92673,6 +92701,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92696,6 +92725,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92717,6 +92747,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -92734,6 +92765,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92753,6 +92785,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -99569,6 +99602,7 @@ export namespace Prisma {
     description?: SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrder
@@ -99581,6 +99615,7 @@ export namespace Prisma {
   }
 
   export type KeyResultAvgOrderByAggregateInput = {
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     weight?: SortOrder
@@ -99596,6 +99631,7 @@ export namespace Prisma {
     description?: SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrder
@@ -99615,6 +99651,7 @@ export namespace Prisma {
     description?: SortOrder
     valueType?: SortOrder
     aggregationMethod?: SortOrder
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     unit?: SortOrder
@@ -99627,6 +99664,7 @@ export namespace Prisma {
   }
 
   export type KeyResultSumOrderByAggregateInput = {
+    initialValue?: SortOrder
     targetValue?: SortOrder
     currentValue?: SortOrder
     weight?: SortOrder
@@ -109086,6 +109124,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -109107,6 +109146,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -110976,6 +111016,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"KeyResult"> | string | null
     valueType?: StringFilter<"KeyResult"> | string
     aggregationMethod?: StringFilter<"KeyResult"> | string
+    initialValue?: FloatFilter<"KeyResult"> | number
     targetValue?: FloatFilter<"KeyResult"> | number
     currentValue?: FloatFilter<"KeyResult"> | number
     unit?: StringNullableFilter<"KeyResult"> | string | null
@@ -115845,6 +115886,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -115866,6 +115908,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -117563,6 +117606,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -117585,6 +117629,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -117762,6 +117807,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -117784,6 +117830,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -118426,6 +118473,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -118448,6 +118496,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -118698,6 +118747,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -118720,6 +118770,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -132414,6 +132465,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -133992,6 +134044,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -134013,6 +134066,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -134033,6 +134087,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135200,6 +135255,7 @@ export namespace Prisma {
     description?: string | null
     valueType: string
     aggregationMethod: string
+    initialValue?: number
     targetValue: number
     currentValue?: number
     unit?: string | null
@@ -135355,6 +135411,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135376,6 +135433,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null
@@ -135396,6 +135454,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     valueType?: StringFieldUpdateOperationsInput | string
     aggregationMethod?: StringFieldUpdateOperationsInput | string
+    initialValue?: FloatFieldUpdateOperationsInput | number
     targetValue?: FloatFieldUpdateOperationsInput | number
     currentValue?: FloatFieldUpdateOperationsInput | number
     unit?: NullableStringFieldUpdateOperationsInput | string | null

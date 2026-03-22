@@ -71,7 +71,11 @@
                 setSystemView('active');
               "
             >
-              <Folder class="h-4 w-4" />
+              <span
+                class="h-2.5 w-2.5 rounded-full border border-border/60"
+                :style="{ backgroundColor: folder.color || 'hsl(var(--muted-foreground))' }"
+              />
+              <Folder class="h-4 w-4" :style="{ color: folder.color || undefined }" />
               <span class="truncate">{{ folder.name }}</span>
             </div>
           </ActionableWrapper>

@@ -335,6 +335,7 @@ export class GoalController {
       title: parsed.data.title,
       valueType: parsed.data.valueType,
       aggregationMethod: parsed.data.calculationMethod,
+      startValue: parsed.data.startValue,
       targetValue: parsed.data.targetValue,
       currentValue: parsed.data.currentValue,
       unit: parsed.data.unit,
@@ -355,6 +356,8 @@ export class GoalController {
       title: parsed.data.title,
       description: parsed.data.description ?? undefined,
       weight: parsed.data.weight,
+      startValue: parsed.data.startValue,
+      currentValue: parsed.data.currentValue,
       targetValue: parsed.data.targetValue,
       unit: parsed.data.unit ?? undefined,
     });

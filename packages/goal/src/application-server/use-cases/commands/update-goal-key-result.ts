@@ -21,6 +21,8 @@ export class UpdateGoalKeyResult {
       title?: string;
       description?: string;
       weight?: number;
+      startValue?: number;
+      currentValue?: number;
       targetValue?: number;
       unit?: string;
     },
@@ -40,6 +42,8 @@ export class UpdateGoalKeyResult {
       title: updates.title,
       description: updates.description,
       weight: updates.weight,
+      startValue: updates.startValue,
+      currentValue: updates.currentValue,
       targetValue: updates.targetValue,
       unit: updates.unit,
     });

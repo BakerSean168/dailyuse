@@ -40,15 +40,18 @@ function addKeyResult(
   goal: Goal,
   params: {
     title: string;
+    startValue?: number;
     targetValue: number;
     currentValue?: number;
     weight: number;
+    aggregationMethod?: string;
   },
 ) {
   return goal.createAndAddKeyResult({
     title: params.title,
     valueType: 'NUMERIC',
-    aggregationMethod: 'Last',
+    aggregationMethod: params.aggregationMethod ?? 'Last',
+    startValue: params.startValue,
     targetValue: params.targetValue,
     currentValue: params.currentValue ?? 0,
     weight: params.weight,
@@ -138,6 +141,28 @@ describe('GoalProgressCalculator', () => {
       expect(result.oldValue).toBe(0);
       // The recalculated value depends on the aggregation method (default LAST)
       expect(result.newValue).toBe(50);
+    });
+
+    it('should preserve the configured start value for cumulative records', async () => {
+      const goal = createTestGoal();
+      const kr = addKeyResult(goal, {
+        title: 'KR1',
+        startValue: 41,
+        targetValue: 50,
+        currentValue: 41,
+        weight: 3,
+        aggregationMethod: 'Sum',
+      });
+
+      vi.mocked(mockRepo.findByKeyResultId).mockResolvedValue([
+        createMockRecord(0.5),
+        createMockRecord(1),
+      ]);
+
+      const result = await calculator.recalculateKeyResultProgress(goal, kr.id);
+
+      expect(result.newValue).toBe(42.5);
+      expect(goal.getKeyResult(kr.id)?.progress.currentValue).toBe(42.5);
     });
 
     it('should return old and new percentages in the result DTO', async () => {

@@ -218,6 +218,7 @@
                   :tags="form.tags"
                   :label="t('goal.dialog.tags')"
                   :hint="t('goal.dialog.tagsHint')"
+                  :placeholder="t('goal.dialog.tagsPlaceholder')"
                   @update:tags="form.tags = $event"
                 />
 
@@ -794,6 +795,9 @@ async function saveKrs(goalId: string): Promise<boolean> {
       if (kr.valueType !== 'Binary' && kr.initialValue !== original.progress.initialValue) {
         req.startValue = kr.initialValue;
       }
+      if (kr.valueType !== 'Binary' && kr.currentValue !== original.progress.currentValue) {
+        req.currentValue = kr.currentValue;
+      }
 
       if (Object.keys(req).length > 0) {
         const result = await updateKeyResult(goalId, kr._existingId, req);
@@ -806,6 +810,7 @@ async function saveKrs(goalId: string): Promise<boolean> {
         title: kr.title.trim(),
         valueType: kr.valueType as AddKeyResultReq['valueType'],
         calculationMethod: kr.calculationMethod as AddKeyResultReq['calculationMethod'],
+        startValue: kr.initialValue,
         targetValue: kr.valueType === 'Binary' ? 1 : kr.targetValue,
         currentValue: kr.currentValue,
         weight: kr.weight,

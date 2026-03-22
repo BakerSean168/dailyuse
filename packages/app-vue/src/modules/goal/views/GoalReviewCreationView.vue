@@ -36,10 +36,10 @@
 
         <!-- 评分 -->
         <div class="space-y-2">
-          <Label>{{ t('goal.reviewCreation.overallRating') }} (1-10)</Label>
+          <Label>{{ t('goal.reviewCreation.overallRating') }} (1-5)</Label>
           <div class="flex items-center gap-2">
-            <Input v-model.number="form.rating" type="number" min="1" max="10" class="w-24" />
-            <span class="text-sm text-muted-foreground">/ 10</span>
+            <Input v-model.number="form.rating" type="number" min="1" max="5" class="w-24" />
+            <span class="text-sm text-muted-foreground">/ 5</span>
           </div>
         </div>
 
@@ -134,7 +134,7 @@ const { createReview, isSaving } = useGoal();
 
 const form = reactive({
   reviewType: ReviewType.Weekly,
-  rating: 7,
+  rating: 3,
   title: '',
   content: '',
   achievements: '',

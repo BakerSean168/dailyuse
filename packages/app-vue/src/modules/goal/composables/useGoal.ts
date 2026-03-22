@@ -334,7 +334,7 @@ export function useGoal() {
     const result = await service.createGoalRecord(goalId, keyResultId, sanitizeForIpc(rest));
     if (result.ok) {
       const dto = result.data.toDTO();
-      store.addGoalRecord(dto);
+      await Promise.all([fetchKeyResults(goalId), fetchRecords(goalId)]);
       return dto;
     } else {
       handleError(

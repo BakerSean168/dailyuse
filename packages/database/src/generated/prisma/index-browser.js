@@ -418,6 +418,7 @@ exports.Prisma.KeyResultScalarFieldEnum = {
   description: 'description',
   valueType: 'valueType',
   aggregationMethod: 'aggregationMethod',
+  initialValue: 'initialValue',
   targetValue: 'targetValue',
   currentValue: 'currentValue',
   unit: 'unit',

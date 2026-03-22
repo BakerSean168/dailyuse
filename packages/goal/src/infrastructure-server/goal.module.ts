@@ -61,6 +61,7 @@ import type {
   ListGoalsQuery,
   QueryGoalsRes,
   GoalClientDTO,
+  GoalReviewClientDTO,
   KeyResultClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
@@ -214,6 +215,7 @@ export interface GoalApplicationPort {
       title: string;
       valueType: string;
       aggregationMethod?: string;
+      startValue?: number;
       targetValue: number;
       currentValue?: number;
       unit?: string;
@@ -227,6 +229,8 @@ export interface GoalApplicationPort {
       title?: string;
       description?: string;
       weight?: number;
+      startValue?: number;
+      currentValue?: number;
       targetValue?: number;
       unit?: string;
     },
@@ -251,7 +255,7 @@ export interface GoalApplicationPort {
       challenges?: string;
       nextActions?: string;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<GoalReviewClientDTO>>;
   listReviews(goalId: string): Promise<Result<ListGoalReviewsResult>>;
   updateReview(
     goalId: string,
@@ -264,7 +268,7 @@ export interface GoalApplicationPort {
       challenges?: string | null;
       nextActions?: string | null;
     },
-  ): Promise<Result<GoalClientDTO>>;
+  ): Promise<Result<GoalReviewClientDTO>>;
   deleteReview(goalId: string, reviewId: string): Promise<Result<void>>;
 
   // Record / 进度记录
@@ -349,7 +353,7 @@ export function createGoalUseCases(deps: GoalModuleDependencies): GoalModuleUseC
       goalRecordRepository,
       goalProgressCalculator,
     ),
-    listRecords: new ListGoalRecords(goalRecordRepository),
+    listRecords: new ListGoalRecords(goalRecordRepository, goalRepository),
     deleteRecord: new DeleteGoalRecord(goalRecordRepository),
   };
 }

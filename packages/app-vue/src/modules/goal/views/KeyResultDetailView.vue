@@ -194,9 +194,12 @@ const keyResultUnit = computed(() => keyResult.value?.progress?.unit ?? '');
 
 const progressPercent = computed(() => {
   if (!keyResult.value?.progress) return 0;
-  const { currentValue = 0, targetValue = 0 } = keyResult.value.progress;
-  if (!targetValue) return 0;
-  return Math.min(100, Math.round((currentValue / targetValue) * 100));
+  const { initialValue = 0, currentValue = 0, targetValue = 0 } = keyResult.value.progress;
+  if (targetValue === initialValue) return 100;
+  return Math.min(
+    100,
+    Math.max(0, Math.round(((currentValue - initialValue) / (targetValue - initialValue)) * 100)),
+  );
 });
 
 const sortedRecords = computed(() =>

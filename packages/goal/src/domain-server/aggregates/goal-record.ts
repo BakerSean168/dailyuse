@@ -219,13 +219,16 @@ export class GoalRecord extends AggregateRoot<GoalRecordId> {
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(goalId: string): import('@dailyuse/contracts/goal').GoalRecordClientDTO {
+  public toClientDTO(
+    goalId: string,
+    valueAfter: number = this._props.value,
+  ): import('@dailyuse/contracts/goal').GoalRecordClientDTO {
     return {
       id: this.id,
       keyResultId: this._props.keyResultId,
       goalId: goalId as import('@dailyuse/contracts/goal').GoalRecordClientDTO['goalId'],
       value: this._props.value,
-      valueAfter: this._props.value, // Use value as snapshot for now
+      valueAfter,
       comment: this._props.note,
       version: this._props.version,
       createdAt: this._props.createdAt.getTime(),

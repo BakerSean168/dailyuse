@@ -403,6 +403,7 @@ export class GoalPowerSyncRepository
                description = ?,
                value_type = ?,
                aggregation_method = ?,
+               initial_value = ?,
                target_value = ?,
                current_value = ?,
                unit = ?,
@@ -419,6 +420,7 @@ export class GoalPowerSyncRepository
             keyResult.description,
             progress.valueType ?? 'Incremental',
             progress.aggregationMethod ?? 'Last',
+            progress.initialValue ?? 0,
             progress.targetValue ?? 100,
             progress.currentValue ?? 0,
             progress.unit ?? null,
@@ -434,9 +436,9 @@ export class GoalPowerSyncRepository
         await tx.execute(
           `INSERT INTO key_results (
              id, identity_id, goal_id, title, description,
-             value_type, aggregation_method, target_value, current_value,
+             value_type, aggregation_method, initial_value, target_value, current_value,
              unit, weight, "order", version, created_at, updated_at, deleted_at
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             keyResult.id,
             identityId,
@@ -445,6 +447,7 @@ export class GoalPowerSyncRepository
             keyResult.description,
             progress.valueType ?? 'Incremental',
             progress.aggregationMethod ?? 'Last',
+            progress.initialValue ?? 0,
             progress.targetValue ?? 100,
             progress.currentValue ?? 0,
             progress.unit ?? null,

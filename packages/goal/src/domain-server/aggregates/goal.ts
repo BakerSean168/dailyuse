@@ -863,6 +863,7 @@ export class Goal extends AggregateRoot<GoalId> {
     description?: string | null;
     valueType: string;
     aggregationMethod?: string;
+    startValue?: number;
     targetValue: number;
     currentValue?: number;
     unit?: string;
@@ -879,7 +880,7 @@ export class Goal extends AggregateRoot<GoalId> {
       title: params.title,
       description: params.description ?? undefined,
       progress: {
-        initialValue: 0,
+        initialValue: params.startValue ?? 0,
         currentValue: params.currentValue ?? 0,
         targetValue: params.targetValue,
         valueType: params.valueType as any,
@@ -912,6 +913,8 @@ export class Goal extends AggregateRoot<GoalId> {
       title?: string;
       description?: string | null;
       weight?: number;
+      startValue?: number;
+      currentValue?: number;
       targetValue?: number;
       unit?: string | null;
     },
@@ -930,6 +933,12 @@ export class Goal extends AggregateRoot<GoalId> {
     if (updates.weight !== undefined) {
       Goal.validateKeyResultWeight(updates.weight);
       keyResult.updateWeight(updates.weight);
+    }
+    if (updates.startValue !== undefined) {
+      keyResult.updateInitialValue(updates.startValue);
+    }
+    if (updates.currentValue !== undefined) {
+      keyResult.updateProgress(updates.currentValue);
     }
     if (updates.targetValue !== undefined) {
       keyResult.updateTargetValue(updates.targetValue);
@@ -1471,7 +1480,7 @@ export class Goal extends AggregateRoot<GoalId> {
    * @throws {GoalReviewRatingInvalidError} 当评分不在0-10之间时
    */
   public static validateReviewRating(rating?: number): void {
-    if (rating !== undefined && (rating < 0 || rating > 10)) {
+    if (rating !== undefined && (rating < 1 || rating > 5)) {
       throw new GoalReviewRatingInvalidError(rating);
     }
   }

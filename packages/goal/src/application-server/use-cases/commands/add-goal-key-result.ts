@@ -20,6 +20,7 @@ export class AddGoalKeyResult {
       title: string;
       valueType: string;
       aggregationMethod?: string;
+      startValue?: number;
       targetValue: number;
       currentValue?: number;
       unit?: string;

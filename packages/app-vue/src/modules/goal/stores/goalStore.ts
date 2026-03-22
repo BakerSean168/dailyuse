@@ -87,16 +87,37 @@ export const useGoalStore = defineStore('goal', {
 
     setKeyResults(krs: KeyResultClientDTO[]) {
       this.keyResults = krs;
+      if (this.currentGoal) {
+        this.currentGoal = { ...this.currentGoal, keyResults: [...krs] };
+      }
     },
     addKeyResult(kr: KeyResultClientDTO) {
       this.keyResults.push(kr);
+      if (this.currentGoal) {
+        this.currentGoal = {
+          ...this.currentGoal,
+          keyResults: [...(this.currentGoal.keyResults ?? []), kr],
+        };
+      }
     },
     updateKeyResult(kr: KeyResultClientDTO) {
       const i = this.keyResults.findIndex((k) => k.id === kr.id);
       if (i !== -1) this.keyResults[i] = kr;
+      if (this.currentGoal?.keyResults) {
+        this.currentGoal = {
+          ...this.currentGoal,
+          keyResults: this.currentGoal.keyResults.map((item) => (item.id === kr.id ? kr : item)),
+        };
+      }
     },
     removeKeyResult(id: string) {
       this.keyResults = this.keyResults.filter((k) => k.id !== id);
+      if (this.currentGoal?.keyResults) {
+        this.currentGoal = {
+          ...this.currentGoal,
+          keyResults: this.currentGoal.keyResults.filter((item) => item.id !== id),
+        };
+      }
     },
 
     setGoalFolders(folders: GoalFolderClientDTO[]) {
@@ -115,9 +136,18 @@ export const useGoalStore = defineStore('goal', {
 
     setGoalReviews(r: GoalReviewClientDTO[]) {
       this.goalReviews = r;
+      if (this.currentGoal) {
+        this.currentGoal = { ...this.currentGoal, reviews: [...r] };
+      }
     },
     addGoalReview(r: GoalReviewClientDTO) {
       this.goalReviews.push(r);
+      if (this.currentGoal) {
+        this.currentGoal = {
+          ...this.currentGoal,
+          reviews: [...(this.currentGoal.reviews ?? []), r],
+        };
+      }
     },
 
     setGoalRecords(r: GoalRecordClientDTO[]) {

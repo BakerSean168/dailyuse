@@ -25,9 +25,9 @@
               </div>
               <div class="flex gap-2">
                 <Badge :variant="goal.status === 'Active' ? 'default' : 'secondary'">{{
-                  goal.status
+                  getStatusLabel(goal.status)
                 }}</Badge>
-                <Badge variant="outline">{{ goal.importance }}</Badge>
+                <Badge variant="outline">{{ getImportanceLabel(goal.importance) }}</Badge>
               </div>
             </div>
           </CardHeader>
@@ -281,6 +281,7 @@ async function handleSaveKR(payload: {
     description: kr.description ?? undefined,
     valueType: kr.progress.valueType,
     calculationMethod: kr.progress.aggregationMethod,
+    startValue: kr.progress.initialValue,
     targetValue: kr.progress.targetValue,
     currentValue: kr.progress.currentValue,
     unit: kr.progress.unit ?? undefined,
@@ -305,6 +306,27 @@ function calculateKRProgress(kr: any): number {
   const initial = kr.progress?.initialValue || 0;
   if (target === initial) return 100;
   return Math.min(100, Math.round(((current - initial) / (target - initial)) * 100));
+}
+
+function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    Active: t('goal.cards.goalStatus.active'),
+    Completed: t('goal.cards.goalStatus.completed'),
+    Archived: t('goal.cards.goalStatus.archived'),
+    Draft: t('goal.cards.goalStatus.draft'),
+  };
+  return labels[status] ?? status;
+}
+
+function getImportanceLabel(importance: string): string {
+  const labels: Record<string, string> = {
+    Vital: t('goal.dialog.importanceVital'),
+    Important: t('goal.dialog.importanceImportant'),
+    Moderate: t('goal.dialog.importanceModerate'),
+    Minor: t('goal.dialog.importanceMinor'),
+    Trivial: t('goal.dialog.importanceTrivial'),
+  };
+  return labels[importance] ?? importance;
 }
 
 onMounted(async () => {
