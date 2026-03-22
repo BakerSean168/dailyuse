@@ -180,7 +180,7 @@ export function createSmokeApp(): SmokeTestApp {
     listByTemplate: new ListTaskInstancesByTemplate(instanceRepo),
     listByStatus: new ListTaskInstancesByStatus(instanceRepo),
     getByDateRange: new GetTaskInstancesByDateRange(instanceRepo),
-    complete: new CompleteTaskInstance(instanceRepo, templateRepo),
+    complete: new CompleteTaskInstance(instanceRepo),
     skip: new SkipTaskInstance(instanceRepo),
     start: new StartTaskInstance(instanceRepo),
     deleteInstance: new DeleteTaskInstance(instanceRepo),

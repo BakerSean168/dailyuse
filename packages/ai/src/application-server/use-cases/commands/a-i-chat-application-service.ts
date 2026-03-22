@@ -11,7 +11,7 @@ import { AIConversation as AIConversationServer } from '../../../domain-server/a
 import { Message as MessageServer } from '../../../domain-server/entities/message';
 import type { MessageClientDTO, SendMessageRes } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
-import { createLogger, eventBus } from '@dailyuse/utils';
+import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AIChatApplicationService');
 
@@ -123,12 +123,6 @@ export class AIChatApplicationService {
     });
     conversation.addMessage(message);
     await this.conversationRepository.save(conversation);
-
-    // Emit events
-    const events = conversation.pullDomainEvents();
-    for (const event of events) {
-      eventBus.send(event.eventType as any, event as any);
-    }
 
     return message.toClientDTO();
   }

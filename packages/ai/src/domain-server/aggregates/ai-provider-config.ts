@@ -5,6 +5,7 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import type {
+  AIEventMap,
   AIModelInfo,
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
@@ -129,12 +130,9 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
       deletedAt: null,
     });
 
-    instance.addDomainEvent('ai.provider_config.created', {
-      identityId: instance._props.identityId,
-      providerConfigId: instance.id,
-      name: instance.name,
-      providerType: instance.providerType,
-      isDefault: instance.isDefault,
+    instance.addDomainEvent<AIEventMap['ai.provider_config.created']>('ai.provider_config.created', {
+      identityId: String(instance._props.identityId),
+      providerConfig: instance.toServerDTO(),
     });
 
     return instance;
@@ -180,11 +178,14 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     this._props.availableModels = models;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent('ai.provider_config.models_updated', {
-      identityId: this._props.identityId,
-      providerConfigId: this.id,
+    this.addDomainEvent<AIEventMap['ai.provider_config.models_updated']>(
+      'ai.provider_config.models_updated',
+      {
+      identityId: String(this._props.identityId),
+      providerConfig: this.toServerDTO(),
       modelCount: models.length,
-    });
+      },
+    );
   }
 
   public activate(): void {
@@ -207,11 +208,13 @@ export class AIProviderConfig extends AggregateRoot<AiProviderConfigId> {
     this._props.isDefault = true;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent('ai.provider_config.set_default', {
-      identityId: this._props.identityId,
-      providerConfigId: this.id,
-      providerName: this._props.name,
-    });
+    this.addDomainEvent<AIEventMap['ai.provider_config.set_default']>(
+      'ai.provider_config.set_default',
+      {
+        identityId: String(this._props.identityId),
+        providerConfig: this.toServerDTO(),
+      },
+    );
   }
 
   public unsetDefault(): void {

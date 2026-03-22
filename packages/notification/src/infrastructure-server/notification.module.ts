@@ -334,7 +334,12 @@ export function createNotificationModule(
     // Delete directly through the repository.
     // 直接通过仓储删除。
     deleteNotification: async (id) => {
-      await notificationRepository.delete(id);
+      const notification = await notificationRepository.findById(id);
+      if (!notification) {
+        return fail({ code: 'NOT_FOUND', message: 'notification not found' });
+      }
+      notification.softDelete();
+      await notificationRepository.save(notification);
       return ok(undefined);
     },
 
@@ -362,10 +367,14 @@ export function createNotificationModule(
       return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
     },
     batchDelete: async (data) => {
-      // Delegate deletion per-ID through repository directly.
-      // 通过仓储直接按 ID 委托删除。
       if (data.notificationIds?.length) {
-        await notificationRepository.deleteMany(data.notificationIds);
+        const notifications = (
+          await Promise.all(data.notificationIds.map((id) => notificationRepository.findById(id)))
+        ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
+        for (const notification of notifications) {
+          notification.softDelete();
+        }
+        await notificationRepository.saveMany(notifications);
       }
       return ok({ success: true, affected: data.notificationIds?.length ?? 0 });
     },

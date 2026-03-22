@@ -27,6 +27,7 @@ import { createScheduleRuntimeContribution } from '../api/runtime';
 import { createScheduleEventTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils';
 import { withAuthenticatedValue } from './authenticated-ipc';
+import type { IScheduleRepository, IScheduleTaskRepository } from '../domain-server';
 
 const logger = createLogger('ScheduleElectron');
 
@@ -69,6 +70,22 @@ const TaskCh = {
 
 const allChannels = [...Object.values(EventCh), ...Object.values(TaskCh)];
 let activeScheduleModule: ScheduleModuleInstance | null = null;
+
+export function getScheduleRepository(): IScheduleRepository {
+  if (!activeScheduleModule) {
+    throw new Error('Schedule module not registered yet');
+  }
+
+  return activeScheduleModule.scheduleRepository;
+}
+
+export function getScheduleTaskRepository(): IScheduleTaskRepository {
+  if (!activeScheduleModule) {
+    throw new Error('Schedule module not registered yet');
+  }
+
+  return activeScheduleModule.scheduleTaskRepository;
+}
 
 export const ScheduleElectronModule: IElectronModule = {
   name: 'Schedule',

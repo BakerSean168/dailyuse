@@ -1,13 +1,7 @@
-/**
- * Goal Updated Event
- * 
- * Triggered when: Goal properties are updated
- * Subscribers: Goal folder stats, User activity log
- * 
- * Note: aggregateId (goalId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
+import type { GoalServerDTO } from '../../aggregates';
+
 export interface GoalUpdatedEvent {
-  /** List of fields that were changed */
+  identityId: string;
+  goal: GoalServerDTO;
   changes: string[];
 }

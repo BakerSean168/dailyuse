@@ -35,6 +35,7 @@ import { GoalStatus, ReminderTriggerType } from '@dailyuse/contracts/goal';
 import type { SnapshotTrigger, GoalReminderConfigDTO } from '@dailyuse/contracts/goal';
 import type {
   GoalServerDTO,
+  GoalReviewServerDTO,
   KeyResultServerDTO,
   ProgressBreakdown,
   KeyResultSnapshotDTO,
@@ -519,18 +520,7 @@ export class Goal extends AggregateRoot<GoalId> {
       }
 
       const changeKeys = Object.keys(params);
-      this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        changes: changeKeys,
-      });
-
-      this.addDomainEvent<GoalEventMap['goal:schedule-time-changed']>(
-        'goal:schedule-time-changed',
-        {
-          identityId: this._props.identityId,
-          goal: this.toServerDTO(true),
-          changes: changeKeys,
-        },
-      );
+      this.emitGoalUpdated(changeKeys);
     }
   }
 
@@ -545,7 +535,6 @@ export class Goal extends AggregateRoot<GoalId> {
       params.startDate !== undefined &&
       params.startDate?.getTime() !== this._props.startDate?.getTime()
     ) {
-      // Note: startDate is readonly, so we can't update it
       hasChanges = true;
     }
 
@@ -558,18 +547,27 @@ export class Goal extends AggregateRoot<GoalId> {
       targetDateChanged = true;
     }
 
-    if (hasChanges) {
-      this._props.updatedAt = new Date();
-
-      // 🔢 targetDate 变更时刷新优先级
-      if (targetDateChanged) {
-        this.refreshPriority();
-      }
-
-      this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        changes: Object.keys(params),
-      });
+    if (!hasChanges) {
+      return;
     }
+
+    this._props.updatedAt = new Date();
+    const changeKeys = Object.keys(params);
+
+    if (targetDateChanged) {
+      this.refreshPriority();
+    }
+
+    this.emitGoalUpdated(changeKeys);
+
+    this.addDomainEvent<GoalEventMap['goal:schedule-time-changed']>(
+      'goal:schedule-time-changed',
+      {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
+        changes: changeKeys,
+      },
+    );
   }
 
   /**
@@ -660,6 +658,8 @@ export class Goal extends AggregateRoot<GoalId> {
 
     // 🎯 触发状态变更事件
     this.addDomainEvent<GoalEventMap['goal:status-change']>('goal:status-change', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
       previousStatus,
       newStatus,
     });
@@ -685,9 +685,12 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.updatedAt = now;
 
     this.addDomainEvent<GoalEventMap['goal:complete']>('goal:complete', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
       finalProgress: this.calculateProgress(),
+      completedAt: this._props.completedAt.getTime(),
     });
-    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+    this.emitGoalArchived(this._props.archivedAt.getTime());
   }
 
   /**
@@ -708,7 +711,7 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.archivedAt = now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+    this.emitGoalArchived(now.getTime());
   }
 
   public archiveAsExpired(): void {
@@ -717,7 +720,7 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.status = GoalStatus.Archived;
     this._props.archivedAt = now;
     this._props.updatedAt = now;
-    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {});
+    this.emitGoalArchived(now.getTime());
   }
 
   public softDelete(): void {
@@ -726,7 +729,11 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.deletedAt = now;
     this._props.updatedAt = now;
     this.addDomainEvent<GoalEventMap['goal:delete']>('goal:delete', {
+      identityId: this._props.identityId,
+      goalId: this.id,
+      goal: this.toServerDTO(true),
       isSoftDelete: true,
+      deletedAt: now.getTime(),
     });
   }
 
@@ -896,7 +903,9 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:key-result-add']>('goal:key-result-add', {
-      keyResultId: keyResult.id,
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      keyResult: keyResult.toServerDTO(),
     });
 
     return keyResult;
@@ -926,6 +935,9 @@ export class Goal extends AggregateRoot<GoalId> {
       throw new GoalKeyResultNotFoundError(keyResultId);
     }
 
+    const previousValue = updates.currentValue === undefined ? null : keyResult.progress.currentValue;
+    const changeKeys = Object.keys(updates);
+
     if (updates.title) keyResult.updateTitle(updates.title);
     if (updates.description !== undefined) {
       keyResult.updateDescription(updates.description || '');
@@ -949,7 +961,15 @@ export class Goal extends AggregateRoot<GoalId> {
 
     this._props.updatedAt = new Date();
 
-    // 注：属性更新不触发专门的事件，由 Goal:update 处理
+    this.addDomainEvent<GoalEventMap['goal:key-result-update']>('goal:key-result-update', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      keyResult: keyResult.toServerDTO(),
+      changes: changeKeys,
+      previousValue,
+      newValue: updates.currentValue ?? null,
+      goalProgress: this.calculateProgress(),
+    });
   }
 
   /**
@@ -1006,18 +1026,19 @@ export class Goal extends AggregateRoot<GoalId> {
       throw new GoalKeyResultNotFoundError(keyResultId);
     }
 
-    const oldProgress = this.calculateProgress();
+    const previousValue = keyResult.progress.currentValue;
     keyResult.recalculateProgress(newValue);
     this._props.updatedAt = new Date();
 
-    const newProgress = this.calculateProgress();
-
-    // 如果进度发生变化，触发进度更新事件
-    if (oldProgress !== newProgress) {
-      this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
-        changes: ['progress'],
-      });
-    }
+    this.addDomainEvent<GoalEventMap['goal:key-result-update']>('goal:key-result-update', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      keyResult: keyResult.toServerDTO(),
+      changes: ['currentValue', 'progress'],
+      previousValue,
+      newValue,
+      goalProgress: this.calculateProgress(),
+    });
 
     return keyResult.toServerDTO();
   }
@@ -1035,7 +1056,10 @@ export class Goal extends AggregateRoot<GoalId> {
       this._props.updatedAt = new Date();
 
       this.addDomainEvent<GoalEventMap['goal:key-result-delete']>('goal:key-result-delete', {
+        identityId: this._props.identityId,
+        goal: this.toServerDTO(true),
         keyResultId: keyResultId,
+        keyResult: removed.toServerDTO(),
       });
 
       return removed;
@@ -1220,7 +1244,9 @@ export class Goal extends AggregateRoot<GoalId> {
     this._props.updatedAt = new Date();
 
     this.addDomainEvent<GoalEventMap['goal:review-add']>('goal:review-add', {
-      reviewId: review.id,
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      review: review.toServerDTO() as GoalReviewServerDTO,
     });
 
     return review;
@@ -1512,6 +1538,22 @@ export class Goal extends AggregateRoot<GoalId> {
     }
 
     return { start, end };
+  }
+
+  private emitGoalUpdated(changes: string[]): void {
+    this.addDomainEvent<GoalEventMap['goal:update']>('goal:update', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      changes,
+    });
+  }
+
+  private emitGoalArchived(archivedAt: number): void {
+    this.addDomainEvent<GoalEventMap['goal:archive']>('goal:archive', {
+      identityId: this._props.identityId,
+      goal: this.toServerDTO(true),
+      archivedAt,
+    });
   }
 
   private calculateTimeProgressRatio(): number | null {

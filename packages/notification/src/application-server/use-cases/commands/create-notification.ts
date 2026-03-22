@@ -8,6 +8,7 @@ import { NotificationPolicy } from '../../../domain-server/services/Notification
 import { createLogger, eventBus } from '@dailyuse/utils';
 import type {
   NotificationClientDTO,
+  NotificationEventMap,
   NotificationType,
   NotificationCategory,
   RelatedEntityType,
@@ -111,7 +112,7 @@ export class CreateNotification {
       // Emit in-app dispatch event so the Vue client (and any other subscriber)
       // receives the notification in real-time via the shared event bus.
       if (resolvedChannels.includes(ChannelTypeEnum.InApp)) {
-        (eventBus as any).send('notification:dispatch_in_app', {
+        const dispatchEvent: NotificationEventMap['notification:dispatch_in_app'] = {
           id: clientDTO.id,
           identityId,
           title: clientDTO.title,
@@ -119,8 +120,9 @@ export class CreateNotification {
           category: clientDTO.category,
           type: clientDTO.type,
           importance: clientDTO.importance,
-          data: clientDTO.metadata ?? undefined,
-        });
+          data: clientDTO.metadata ? { ...clientDTO.metadata } : undefined,
+        };
+        eventBus.send('notification:dispatch_in_app', dispatchEvent);
       }
 
       logger.debug('📬 [应用服务] Notification dispatched via event bus', {

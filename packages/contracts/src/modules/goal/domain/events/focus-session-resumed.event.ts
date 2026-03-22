@@ -1,10 +1,10 @@
-/**
- * Focus Session Resumed Event
- * 
- * Triggered when: Focus session resumes after pause
- * Subscribers: Session tracking
- * 
- * Note: aggregateId (sessionId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
-export interface FocusSessionResumedEvent {}
+import type { FocusSessionServerDTO } from '../../aggregates';
+
+export interface FocusSessionResumedEvent {
+  identityId: string;
+  sessionId: string;
+  goalId: string | null;
+  session: FocusSessionServerDTO;
+  resumedAt: number;
+  pausedDurationMinutes: number;
+}

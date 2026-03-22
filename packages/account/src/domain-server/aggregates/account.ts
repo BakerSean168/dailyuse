@@ -93,6 +93,8 @@ export class Account extends AggregateRoot<IdentityId> {
 
     account.addDomainEvent<AccountEventMap['account:create']>('account:create', {
       identityId: params.id.toString(),
+      accountId: account.id.toString(),
+      account: account.toServerDTO(),
     });
 
     return account;
@@ -113,6 +115,9 @@ export class Account extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:update-profile']>('account:update-profile', {
+      identityId: this.id.toString(),
+      accountId: this.id.toString(),
+      account: this.toServerDTO(),
       changes: ['profile'],
     });
   }
@@ -122,6 +127,9 @@ export class Account extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:update-settings']>('account:update-settings', {
+      identityId: this.id.toString(),
+      accountId: this.id.toString(),
+      account: this.toServerDTO(),
       settingKeys: ['settings'],
     });
   }
@@ -138,7 +146,11 @@ export class Account extends AggregateRoot<IdentityId> {
     this.refreshUpdatedAt();
 
     this.addDomainEvent<AccountEventMap['account:close']>('account:close', {
+      identityId: this.id.toString(),
+      accountId: this.id.toString(),
+      account: this.toServerDTO(),
       reason: 'User initiated closure',
+      closedAt: this.updatedAt.getTime(),
     });
   }
 

@@ -11,6 +11,7 @@
 import { eventBus } from '@dailyuse/utils';
 import { GoalRecord, type KeyResult } from '@dailyuse/goal';
 import { getGoalRecordRepository, getGoalRepository } from '@dailyuse/goal/electron-entry';
+import { getTaskTemplateRepository } from '@dailyuse/task/electron-entry';
 
 let isInitialized = false;
 
@@ -43,7 +44,8 @@ function initializeTaskToGoalProgressListener(): void {
   const bus = eventBus as any;
   bus.on('task:instance:completed', async (event: any) => {
     try {
-      const identityId = event.identityId as string | undefined;
+      const payload = event?.payload ?? event;
+      const identityId = (event?.identityId ?? payload?.identityId) as string | undefined;
       if (!identityId) {
         console.error(
           '❌ [TaskToGoalProgress] Missing identityId in task:instance:completed event',
@@ -51,15 +53,26 @@ function initializeTaskToGoalProgressListener(): void {
         return;
       }
 
-      const { goalBinding, taskInstanceId, title } = event.payload as {
-        goalBinding?: {
-          goalId: string;
-          keyResultId?: string;
-          incrementValue: number;
-        };
+      const { taskInstanceId, taskTemplateId } = payload as {
         taskInstanceId: string;
-        title: string;
+        taskTemplateId: string;
       };
+
+      const taskTemplateRepository = getTaskTemplateRepository();
+      const template = await taskTemplateRepository.findById(taskTemplateId);
+      if (!template) {
+        console.error(`❌ [TaskToGoalProgress] Task template not found: ${taskTemplateId}`);
+        return;
+      }
+
+      const title = template.title;
+      const goalBinding = template.goalBinding
+        ? {
+            goalId: template.goalBinding.goalId,
+            keyResultId: template.goalBinding.keyResultId,
+            incrementValue: template.goalBinding.goalRecordValue,
+          }
+        : undefined;
 
       // If the task is not bound to a goal, ignore
       if (!goalBinding) {

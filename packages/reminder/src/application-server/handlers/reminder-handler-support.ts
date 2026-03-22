@@ -42,17 +42,23 @@ export class ReminderHandlerSupport {
     action: ReminderTemplateAction,
     options?: { includePayloadSnapshot?: boolean; skipSnapshot?: boolean },
   ): Promise<void> {
-    if (!event.identityId) {
+    const identityId = this.getIdentityId(event);
+    const templateId = this.getTemplateId(event);
+    if (!identityId) {
       logger.warn('[ReminderHandlerSupport] Missing identityId for template refresh', {
         action,
-        aggregateId: event.aggregateId,
+        aggregateId: templateId,
       });
       return;
     }
+    if (!templateId) {
+      logger.warn('[ReminderHandlerSupport] Missing templateId for template refresh', { action });
+      return;
+    }
 
-    const payloadObject = this.asRecord(event.payload);
+    const payloadObject = this.getPayloadObject(event);
     const payload: ReminderTemplateRefreshPayload = {
-      templateId: event.aggregateId,
+      templateId,
       reason: action,
       action,
       timestamp: Date.now(),
@@ -67,14 +73,14 @@ export class ReminderHandlerSupport {
           (payloadObject?.reminderData as ReminderTemplateServerDTO | undefined);
       }
       if (!templateSnapshot) {
-        templateSnapshot = await this.fetchTemplateSnapshot(event.aggregateId);
+        templateSnapshot = await this.fetchTemplateSnapshot(templateId);
       }
       if (templateSnapshot) {
         payload.template = templateSnapshot;
       }
     }
 
-    await this.emitSse(event.identityId, 'reminder:template:refresh', payload);
+    await this.emitSse(identityId, 'reminder:template:refresh', payload);
   }
 
   async emitGroupRefresh<TPayload>(
@@ -82,17 +88,23 @@ export class ReminderHandlerSupport {
     action: ReminderGroupAction,
     options?: { skipSnapshot?: boolean },
   ): Promise<void> {
-    if (!event.identityId) {
+    const identityId = this.getIdentityId(event);
+    const groupId = this.getGroupId(event);
+    if (!identityId) {
       logger.warn('[ReminderHandlerSupport] Missing identityId for group refresh', {
         action,
-        aggregateId: event.aggregateId,
+        aggregateId: groupId,
       });
       return;
     }
+    if (!groupId) {
+      logger.warn('[ReminderHandlerSupport] Missing groupId for group refresh', { action });
+      return;
+    }
 
-    const payloadObject = this.asRecord(event.payload);
+    const payloadObject = this.getPayloadObject(event);
     const payload: ReminderGroupRefreshPayload = {
-      groupId: event.aggregateId,
+      groupId,
       reason: action,
       action,
       timestamp: Date.now(),
@@ -100,32 +112,38 @@ export class ReminderHandlerSupport {
     };
 
     if (!options?.skipSnapshot) {
-      const groupSnapshot = await this.fetchGroupSnapshot(event.aggregateId);
+      const groupSnapshot = await this.fetchGroupSnapshot(groupId);
       if (groupSnapshot) {
         payload.group = groupSnapshot;
       }
     }
 
-    await this.emitSse(event.identityId, 'reminder:group:refresh', payload);
+    await this.emitSse(identityId, 'reminder:group:refresh', payload);
   }
 
   async createScheduleTaskForReminder<TPayload>(event: ReminderBusEvent<TPayload>): Promise<void> {
-    if (!event.identityId) {
+    const identityId = this.getIdentityId(event);
+    const templateId = this.getTemplateId(event);
+    if (!identityId) {
       logger.warn('[ReminderHandlerSupport] Missing identityId when creating ScheduleTask', {
-        aggregateId: event.aggregateId,
+        aggregateId: templateId,
       });
       return;
     }
+    if (!templateId) {
+      logger.warn('[ReminderHandlerSupport] Missing templateId when creating ScheduleTask');
+      return;
+    }
 
-    const payloadObject = this.asRecord(event.payload);
+    const payloadObject = this.getPayloadObject(event);
     const reminder =
       (payloadObject?.reminder as ReminderTemplateServerDTO | undefined) ??
       (payloadObject?.reminderData as ReminderTemplateServerDTO | undefined) ??
-      (await this.fetchTemplateSnapshot(event.aggregateId));
+      (await this.fetchTemplateSnapshot(templateId));
 
     if (!reminder) {
       logger.warn('[ReminderHandlerSupport] Reminder snapshot not found for schedule creation', {
-        aggregateId: event.aggregateId,
+        aggregateId: templateId,
       });
       return;
     }
@@ -138,7 +156,7 @@ export class ReminderHandlerSupport {
 
       const factory = new ScheduleTaskFactory();
       const scheduleTask = factory.createFromSourceEntity({
-        identityId: event.identityId,
+        identityId,
         sourceModule: SourceModule.Reminder,
         sourceEntityId: reminder.id,
         sourceEntity: reminder,
@@ -164,6 +182,14 @@ export class ReminderHandlerSupport {
         error: maybeError?.message ?? String(error),
       });
     }
+  }
+
+  resolveTemplateId<TPayload>(event: ReminderBusEvent<TPayload>): string | undefined {
+    return this.getTemplateId(event);
+  }
+
+  resolveGroupId<TPayload>(event: ReminderBusEvent<TPayload>): string | undefined {
+    return this.getGroupId(event);
   }
 
   async enableScheduleTaskForReminder(reminderId: string): Promise<void> {
@@ -282,5 +308,35 @@ export class ReminderHandlerSupport {
     return typeof payload === 'object' && payload !== null
       ? (payload as Record<string, unknown>)
       : undefined;
+  }
+
+  private getPayloadObject<TPayload>(
+    event: ReminderBusEvent<TPayload>,
+  ): Record<string, unknown> | undefined {
+    return this.asRecord((event as any)?.payload ?? event);
+  }
+
+  private getIdentityId<TPayload>(event: ReminderBusEvent<TPayload>): string | undefined {
+    const payloadObject = this.getPayloadObject(event);
+    return event.identityId ?? (payloadObject?.identityId as string | undefined);
+  }
+
+  private getTemplateId<TPayload>(event: ReminderBusEvent<TPayload>): string | undefined {
+    const payloadObject = this.getPayloadObject(event);
+    return (
+      event.aggregateId ??
+      (payloadObject?.templateId as string | undefined) ??
+      (payloadObject?.reminderId as string | undefined) ??
+      ((payloadObject?.reminder as ReminderTemplateServerDTO | undefined)?.id as string | undefined)
+    );
+  }
+
+  private getGroupId<TPayload>(event: ReminderBusEvent<TPayload>): string | undefined {
+    const payloadObject = this.getPayloadObject(event);
+    return (
+      event.aggregateId ??
+      (payloadObject?.groupId as string | undefined) ??
+      ((payloadObject?.group as ReminderGroupServerDTO | undefined)?.id as string | undefined)
+    );
   }
 }

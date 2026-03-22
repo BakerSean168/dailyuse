@@ -275,7 +275,7 @@ export function createTaskUseCases(dependencies: TaskModuleDependencies): TaskMo
     listTaskTemplatesByPriority: new ListTaskTemplatesByPriority(taskTemplateRepository),
 
     // Instance commands
-    completeTaskInstance: new CompleteTaskInstance(taskInstanceRepository, taskTemplateRepository),
+    completeTaskInstance: new CompleteTaskInstance(taskInstanceRepository),
     skipTaskInstance: new SkipTaskInstance(taskInstanceRepository),
     startTaskInstance: new StartTaskInstance(taskInstanceRepository),
     deleteTaskInstance: new DeleteTaskInstance(taskInstanceRepository),

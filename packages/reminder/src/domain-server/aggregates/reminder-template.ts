@@ -243,10 +243,9 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布创建事件
     template.addDomainEvent('reminder:template:created', {
-      templateId: id as string,
       identityId: params.identityId,
-      title: params.title,
-      type: params.type,
+      templateId: id as string,
+      reminder: template.toServerDTO(),
     });
 
     return template;
@@ -361,10 +360,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
     this._props.updatedAt = new Date(now);
 
     // 发布更新事件
+    const changes = Object.keys(updates);
     this.addDomainEvent('reminder:template:updated', {
-      template: this.toServerDTO(),
-      updates: Object.keys(updates),
       identityId: this._props.identityId,
+      templateId: this.id,
+      reminder: this.toServerDTO(),
+      changes,
     });
   }
 
@@ -389,9 +390,10 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布启用事件
     this.addDomainEvent('reminder:template:enabled', {
-      templateId: this.id,
       activatedAt: now,
       identityId: this._props.identityId,
+      templateId: this.id,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -410,8 +412,9 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布暂停事件
     this.addDomainEvent('reminder:template:paused', {
-      templateId: this.id,
       identityId: this._props.identityId,
+      templateId: this.id,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -447,10 +450,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布移动事件
     this.addDomainEvent('reminder:template:moved', {
+      identityId: this._props.identityId,
       templateId: this.id,
       oldGroupId,
       newGroupId: targetGroupId,
-      identityId: this._props.identityId,
+      reminder: this.toServerDTO(),
     });
   }
 
@@ -543,10 +547,11 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布触发事件
     this.addDomainEvent('reminder:triggered', {
+      identityId: this._props.identityId,
       templateId: this.id,
+      groupId: this._props.groupId,
       triggeredAt: now,
       nextTriggerAt: this._props.nextTriggerAt,
-      identityId: this._props.identityId,
       reminder: this.toServerDTO(),
     });
   }
@@ -588,9 +593,12 @@ export class ReminderTemplate extends AggregateRoot<ReminderTemplateId> {
 
     // 发布删除事件
     this.addDomainEvent('reminder:template:deleted', {
+      identityId: this._props.identityId,
       templateId: this.id,
       templateTitle: this._props.title,
-      identityId: this._props.identityId,
+      reminder: this.toServerDTO(),
+      isSoftDelete: true,
+      deletedAt: this._props.deletedAt,
     });
   }
 

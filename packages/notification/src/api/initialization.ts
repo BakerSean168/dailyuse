@@ -21,35 +21,23 @@ import {
   generateUUID,
   eventBus,
 } from '@dailyuse/utils';
+import type {
+  NotificationDispatchDesktopEvent,
+  NotificationDispatchInAppEvent,
+} from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import type { NotificationChannel } from '@dailyuse/contracts/reminder';
+import type { ReminderEventMap, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { SourceModule } from '@dailyuse/contracts/schedule';
-import { ExecutionStatus } from '@dailyuse/contracts/schedule';
+import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
+import { SourceModule, ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 const notificationEventHandlersInitTask: InitializationTask = {
   name: 'notificationEventHandlers',
   phase: InitializationPhase.APP_STARTUP,
   priority: 35,
   initialize: async () => {
-    const handleReminderTriggered = (event: {
-      identityId?: string;
-      payload?: {
-        reminder?: {
-          id?: string;
-          name?: string;
-          description?: string | null;
-          importanceLevel?: ImportanceLevel;
-          notificationConfig?: {
-            title?: string | null;
-            body?: string | null;
-            sound?: { enabled: boolean; soundName?: string | null } | null;
-            channels?: NotificationChannel[];
-          } | null;
-        };
-      };
-    }): void => {
-      const reminder = event.payload?.reminder;
+    const handleReminderTriggered = (event: ReminderEventMap['reminder:triggered']): void => {
+      const reminder = event.reminder;
       if (!event.identityId || !reminder?.id) {
         console.warn('[NotificationInit] Missing reminder identity or id');
         return;
@@ -60,7 +48,7 @@ const notificationEventHandlersInitTask: InitializationTask = {
       const soundConfig = reminder.notificationConfig?.sound ?? null;
       const channels = reminder.notificationConfig?.channels ?? [];
 
-      const base = {
+      const base: NotificationDispatchDesktopEvent & NotificationDispatchInAppEvent = {
         id: generateUUID(),
         identityId: event.identityId,
         title,
@@ -79,21 +67,13 @@ const notificationEventHandlersInitTask: InitializationTask = {
       };
 
       if (!channels.length || channels.includes('InApp')) {
-        eventBus.send('notification:dispatch_in_app' as any, base as any);
+        eventBus.send('notification:dispatch_in_app', base);
       }
 
-      eventBus.send('notification:dispatch_desktop' as any, base as any);
+      eventBus.send('notification:dispatch_desktop', base);
     };
 
-    const handleScheduleExecuted = (event: {
-      payload?: {
-        taskId?: string;
-        sourceModule?: SourceModule;
-        status?: ExecutionStatus;
-        payload?: Record<string, unknown>;
-        identityId?: string;
-      };
-    }): void => {
+    const handleScheduleExecuted = (event: ScheduleEventMap['schedule:task:executed']): void => {
       const identityId = event.payload?.identityId;
       if (!identityId) {
         console.warn('[NotificationInit] Missing identityId in schedule:task:executed');
@@ -117,12 +97,12 @@ const notificationEventHandlersInitTask: InitializationTask = {
               : 'Schedule task';
 
       const title =
-        (payload.goalTitle as string | undefined) ||
-        (payload.taskTitle as string | undefined) ||
-        (payload.reminderTitle as string | undefined) ||
+        (typeof payload['goalTitle'] === 'string' ? payload['goalTitle'] : undefined) ||
+        (typeof payload['taskTitle'] === 'string' ? payload['taskTitle'] : undefined) ||
+        (typeof payload['reminderTitle'] === 'string' ? payload['reminderTitle'] : undefined) ||
         titleFallback;
 
-      const base = {
+      const base: NotificationDispatchDesktopEvent & NotificationDispatchInAppEvent = {
         id: generateUUID(),
         identityId,
         title,
@@ -147,12 +127,12 @@ const notificationEventHandlersInitTask: InitializationTask = {
         sound: { enabled: true, name: null },
       };
 
-      eventBus.send('notification:dispatch_desktop' as any, base as any);
-      eventBus.send('notification:dispatch_in_app' as any, base as any);
+      eventBus.send('notification:dispatch_desktop', base);
+      eventBus.send('notification:dispatch_in_app', base);
     };
 
-    eventBus.on('reminder:triggered' as any, handleReminderTriggered as any);
-    eventBus.on('schedule:task:executed' as any, handleScheduleExecuted as any);
+    eventBus.on('reminder:triggered', handleReminderTriggered);
+    eventBus.on('schedule:task:executed', handleScheduleExecuted);
     console.log('✓ Notification event handlers initialized');
   },
 };

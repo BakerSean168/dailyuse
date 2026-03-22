@@ -12,7 +12,6 @@
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok, error } from '@dailyuse/contracts/result';
 
@@ -42,20 +41,6 @@ export class PauseTaskTemplate {
 
     // 2. 删除生效时点之后未完成的实例
     const instancesDeleted = await this.deleteIncompleteInstancesFrom(id, effectiveFrom);
-
-    // 3. 发布暂停事件
-    try {
-      eventBus.send('task:template:paused' as any, {
-        taskTemplateId: template.id,
-        identityId: template.identityId,
-        pausedAt: Date.now(),
-        effectiveFrom,
-        instancesDeleted,
-        reason: reason || '用户手动暂停模板',
-      });
-    } catch (error) {
-      console.error('[PauseTaskTemplate] Failed to publish pause event:', error);
-    }
 
     return ok({
       template: template.toClientDTO(),

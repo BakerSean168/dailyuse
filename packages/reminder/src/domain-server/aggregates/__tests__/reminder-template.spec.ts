@@ -141,7 +141,8 @@ describe('ReminderTemplate aggregate', () => {
       expect(events.length).toBeGreaterThanOrEqual(1);
       const createdEvent = events.find((e) => e.eventType === 'reminder:template:created');
       expect(createdEvent).toBeDefined();
-      expect((createdEvent!.payload as any).title).toBe('Daily Standup');
+      expect((createdEvent!.payload as any).templateId).toBe(template.id);
+      expect((createdEvent!.payload as any).reminder?.name).toBe('Daily Standup');
     });
 
     it('should default smartFrequencyEnabled to true', () => {

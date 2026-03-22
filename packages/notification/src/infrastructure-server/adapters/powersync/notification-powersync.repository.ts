@@ -5,9 +5,12 @@ import type {
   NotificationStatus,
   NotificationType,
 } from '@dailyuse/contracts/notification';
+import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import type { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type { INotificationRepository } from '../../../domain-server/repositories/INotificationRepository';
-import type { Notification } from '../../../domain-server/aggregates/notification';
+import { Notification } from '../../../domain-server/aggregates/notification';
+import { NotificationId, NotificationAction, NotificationMetadata } from '../../../domain-shared/value-objects';
+import { eventBus } from '@dailyuse/utils';
 
 interface NotificationRow {
   id: string;
@@ -68,21 +71,25 @@ function toServerDTO(row: NotificationRow): NotificationServerDTO {
 function hydrateNotification(row: NotificationRow): Notification {
   const dto = toServerDTO(row);
 
-  return {
-    get id() {
-      return dto.id;
-    },
-    markAsRead() {
-      if (dto.isRead) return;
-      dto.isRead = true;
-      dto.readAt = Date.now();
-      dto.status = 'Read' as NotificationStatus;
-      dto.updatedAt = Date.now();
-    },
-    toServerDTO() {
-      return { ...dto };
-    },
-  } as Notification;
+  return Notification.load({
+    id: NotificationId.of(String(dto.id)),
+    identityId: dto.identityId,
+    title: dto.title,
+    content: dto.content,
+    type: dto.type,
+    category: dto.category,
+    importance: dto.importance,
+    status: dto.status,
+    isRead: dto.isRead,
+    readAt: dto.readAt ?? null,
+    actions: dto.actions?.map((action) => NotificationAction.fromDTO(action)) ?? null,
+    metadata: dto.metadata ? NotificationMetadata.fromDTO(dto.metadata) : null,
+    version: dto.version,
+    deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+    notificationChannels: [],
+  });
 }
 
 export class PowerSyncNotificationRepository implements INotificationRepository {
@@ -90,29 +97,104 @@ export class PowerSyncNotificationRepository implements INotificationRepository 
 
   async save(notification: Notification): Promise<void> {
     const dto = notification.toServerDTO();
-    await this.db.execute(
-      `UPDATE notifications
-          SET status = ?,
-              is_read = ?,
-              read_at = ?,
-              metadata = ?,
-              actions = ?,
-              version = ?,
-              updated_at = ?,
-              deleted_at = ?
-        WHERE id = ?`,
-      [
-        dto.status,
-        dto.isRead ? 1 : 0,
-        dto.readAt ? new Date(dto.readAt).toISOString() : null,
-        dto.metadata ? JSON.stringify(dto.metadata) : null,
-        dto.actions ? JSON.stringify(dto.actions) : null,
-        dto.version,
-        new Date(dto.updatedAt).toISOString(),
-        dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null,
-        dto.id,
-      ],
+    const existing = await this.db.getOptional<{ id: string }>(
+      `SELECT id FROM notifications WHERE id = ? LIMIT 1`,
+      [dto.id],
     );
+
+    if (existing) {
+      await this.db.execute(
+        `UPDATE notifications
+            SET identity_id = ?,
+                title = ?,
+                content = ?,
+                type = ?,
+                category = ?,
+                importance = ?,
+                urgency = ?,
+                status = ?,
+                is_read = ?,
+                read_at = ?,
+                related_entity_type = ?,
+                related_entity_id = ?,
+                metadata = ?,
+                actions = ?,
+                version = ?,
+                updated_at = ?,
+                deleted_at = ?
+          WHERE id = ?`,
+        [
+          dto.identityId,
+          dto.title,
+          dto.content,
+          dto.type,
+          dto.category,
+          dto.importance,
+          dto.importance,
+          dto.status,
+          dto.isRead ? 1 : 0,
+          dto.readAt ? new Date(dto.readAt).toISOString() : null,
+          null,
+          null,
+          dto.metadata ? JSON.stringify(dto.metadata) : null,
+          dto.actions ? JSON.stringify(dto.actions) : null,
+          dto.version,
+          new Date(dto.updatedAt).toISOString(),
+          dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null,
+          dto.id,
+        ],
+      );
+    } else {
+      await this.db.execute(
+        `INSERT INTO notifications (
+            id,
+            identity_id,
+            title,
+            content,
+            type,
+            category,
+            importance,
+            urgency,
+            status,
+            is_read,
+            read_at,
+            related_entity_type,
+            related_entity_id,
+            metadata,
+            actions,
+            version,
+            created_at,
+            updated_at,
+            deleted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          dto.id,
+          dto.identityId,
+          dto.title,
+          dto.content,
+          dto.type,
+          dto.category,
+          dto.importance,
+          dto.importance,
+          dto.status,
+          dto.isRead ? 1 : 0,
+          dto.readAt ? new Date(dto.readAt).toISOString() : null,
+          null,
+          null,
+          dto.metadata ? JSON.stringify(dto.metadata) : null,
+          dto.actions ? JSON.stringify(dto.actions) : null,
+          dto.version,
+          new Date(dto.createdAt).toISOString(),
+          new Date(dto.updatedAt).toISOString(),
+          dto.deletedAt ? new Date(dto.deletedAt).toISOString() : null,
+        ],
+      );
+    }
+
+    for (const event of notification.pullDomainEvents()) {
+      const eventType = event.eventType as keyof AppEventRegistry;
+      eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
+    }
   }
 
   async saveMany(notifications: Notification[]): Promise<void> {

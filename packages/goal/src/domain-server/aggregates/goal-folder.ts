@@ -27,6 +27,7 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { GoalFolderId } from '../../domain-shared';
+import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import type {
   FolderType,
   GoalFolderClientDTO,
@@ -200,9 +201,10 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
       version: 1,
     });
 
-    // 发送领域事件
-    folder.addDomainEvent('GoalFolderCreated', {
+    folder.addDomainEvent<GoalEventMap['goal:folder-create']>('goal:folder-create', {
       identityId: params.identityId,
+      folderId: folder.id,
+      folder: folder.toServerDTO(),
     });
 
     return folder;
@@ -239,16 +241,10 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
       throw new Error('Cannot rename system folder');
     }
 
-    const previousData: Partial<GoalFolderServerDTO> = {
-      name: this._props.name,
-    };
-
     this._props.name = trimmed;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent('GoalFolderUpdated', {
-      changes: ['name'],
-    });
+    this.emitUpdated(['name']);
   }
 
   /**
@@ -257,6 +253,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   public updateDescription(description: string): void {
     this._props.description = description.trim() || null;
     this._props.updatedAt = new Date();
+    this.emitUpdated(['description']);
   }
 
   /**
@@ -265,6 +262,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   public updateIcon(icon: string): void {
     this._props.icon = icon.trim() || null;
     this._props.updatedAt = new Date();
+    this.emitUpdated(['icon']);
   }
 
   /**
@@ -273,6 +271,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   public updateColor(color: string): void {
     this._props.color = color.trim() || null;
     this._props.updatedAt = new Date();
+    this.emitUpdated(['color']);
   }
 
   /**
@@ -287,6 +286,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     }
     this._props.sortOrder = sortOrder;
     this._props.updatedAt = new Date();
+    this.emitUpdated(['sortOrder']);
   }
 
   /**
@@ -309,9 +309,13 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     this._props.completedGoalCount = completedCount;
     this._props.updatedAt = new Date();
 
-    this.addDomainEvent('GoalFolderStatsUpdated', {
+    this.addDomainEvent<GoalEventMap['goal:folder-stats-update']>('goal:folder-stats-update', {
+      identityId: this._props.identityId,
+      folderId: this.id,
+      folder: this.toServerDTO(),
       goalCount: this._props.goalCount,
       completedGoalCount: this._props.completedGoalCount,
+      completionRate: this.getCompletionRate(),
     });
   }
 
@@ -333,8 +337,12 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     this._props.deletedAt = new Date();
     this._props.updatedAt = this._props.deletedAt;
 
-    this.addDomainEvent('GoalFolderDeleted', {
+    this.addDomainEvent<GoalEventMap['goal:folder-delete']>('goal:folder-delete', {
+      identityId: this._props.identityId,
+      folderId: this.id,
+      folder: this.toServerDTO(),
       isSoftDelete: true,
+      deletedAt: this._props.deletedAt.getTime(),
     });
   }
 
@@ -348,6 +356,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     if (!this._props.deletedAt) return; // 幂等
     this._props.deletedAt = null;
     this._props.updatedAt = new Date();
+    this.emitUpdated(['deletedAt']);
   }
 
   /**
@@ -356,6 +365,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   public moveToParent(parentFolderId: GoalFolderId | null): void {
     this._props.parentFolderId = parentFolderId;
     this._props.updatedAt = new Date();
+    this.emitUpdated(['parentFolderId']);
   }
 
   /**
@@ -364,6 +374,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   public incrementGoalCount(): void {
     this._props.goalCount++;
     this._props.updatedAt = new Date();
+    this.emitStatsUpdated();
   }
 
   /**
@@ -373,6 +384,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     if (this._props.goalCount > 0) {
       this._props.goalCount--;
       this._props.updatedAt = new Date();
+      this.emitStatsUpdated();
     }
   }
 
@@ -382,6 +394,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
   public incrementCompletedCount(): void {
     this._props.completedGoalCount++;
     this._props.updatedAt = new Date();
+    this.emitStatsUpdated();
   }
 
   /**
@@ -391,6 +404,7 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
     if (this._props.completedGoalCount > 0) {
       this._props.completedGoalCount--;
       this._props.updatedAt = new Date();
+      this.emitStatsUpdated();
     }
   }
 
@@ -407,6 +421,26 @@ export class GoalFolder extends AggregateRoot<GoalFolderId> {
    */
   public isEmpty(): boolean {
     return this._props.goalCount === 0;
+  }
+
+  private emitUpdated(changes: string[]): void {
+    this.addDomainEvent<GoalEventMap['goal:folder-update']>('goal:folder-update', {
+      identityId: this._props.identityId,
+      folderId: this.id,
+      folder: this.toServerDTO(),
+      changes,
+    });
+  }
+
+  private emitStatsUpdated(): void {
+    this.addDomainEvent<GoalEventMap['goal:folder-stats-update']>('goal:folder-stats-update', {
+      identityId: this._props.identityId,
+      folderId: this.id,
+      folder: this.toServerDTO(),
+      goalCount: this._props.goalCount,
+      completedGoalCount: this._props.completedGoalCount,
+      completionRate: this.getCompletionRate(),
+    });
   }
 
   // ================= 6. 序列化 (Serialization) =================

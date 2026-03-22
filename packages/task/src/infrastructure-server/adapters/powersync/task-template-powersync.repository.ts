@@ -4,12 +4,15 @@ import type {
 } from '../../../domain-server/repositories/ITaskTemplateRepository';
 import { TaskTemplate } from '../../../domain-server/aggregates/task-template';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import { eventBus } from '@dailyuse/utils';
 import {
   PowerSyncTaskTemplateMapper,
   type PowerSyncTaskTemplateRow,
 } from './mappers/powersync-task-template.mapper';
 import { PowerSyncTaskInstanceMapper } from './mappers/powersync-task-instance.mapper';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 type Queryable = {
   getAll<T>(sql: string, parameters?: unknown[]): Promise<T[]>;
@@ -18,10 +21,15 @@ type Queryable = {
   execute(sql: string, parameters?: unknown[]): Promise<unknown>;
 };
 
-export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository {
-  constructor(private readonly db: Queryable) {}
+export class PowerSyncTaskTemplateRepository
+  extends AggregateRepositoryBase<TaskTemplate>
+  implements ITaskTemplateRepository
+{
+  constructor(private readonly db: Queryable) {
+    super(eventBusAdapter);
+  }
 
-  async save(template: TaskTemplate): Promise<void> {
+  protected async persist(template: TaskTemplate): Promise<void> {
     const data = PowerSyncTaskTemplateMapper.toPersistence(template);
     const existing = await this.db.getOptional<{ id: string }>(
       'SELECT id FROM task_templates WHERE id = ? LIMIT 1',
@@ -168,10 +176,6 @@ export class PowerSyncTaskTemplateRepository implements ITaskTemplateRepository 
           data.deletedAt,
         ],
       );
-    }
-
-    for (const evt of template.pullDomainEvents()) {
-      eventBus.send(evt.eventType as any, evt.payload as any);
     }
   }
 

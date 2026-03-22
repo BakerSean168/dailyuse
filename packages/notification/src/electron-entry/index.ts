@@ -24,6 +24,7 @@ import { createLogger } from '@dailyuse/utils';
 import { createNotificationTransportHandlers } from '../api/transport-handlers';
 import { createNotificationRuntimeContribution } from '../api/runtime';
 import type { NotificationModuleInstance } from '../infrastructure-server';
+import type { INotificationRepository } from '../domain-server/repositories';
 
 const logger = createLogger('NotificationElectron');
 
@@ -40,6 +41,14 @@ const Ch = {
 
 const channels = Object.values(Ch);
 let activeNotificationModule: NotificationModuleInstance | null = null;
+
+export function getNotificationRepository(): INotificationRepository {
+  if (!activeNotificationModule) {
+    throw new Error('Notification module not registered yet');
+  }
+
+  return activeNotificationModule.notificationRepository;
+}
 
 export const NotificationElectronModule: IElectronModule = {
   name: 'Notification',

@@ -22,6 +22,7 @@ import { createReminderTransportHandlers } from '../api/transport-handlers';
 import { createLogger } from '@dailyuse/utils';
 import { withAuthenticatedValue } from './authenticated-ipc';
 import type { ReminderModuleInstance } from '../infrastructure-server';
+import type { IReminderTemplateRepository } from '../domain-server/repositories/IReminderTemplateRepository';
 
 const logger = createLogger('ReminderElectron');
 
@@ -49,6 +50,14 @@ const Ch = {
 
 const channels = Object.values(Ch);
 let activeReminderModule: ReminderModuleInstance | null = null;
+
+export function getReminderTemplateRepository(): IReminderTemplateRepository {
+  if (!activeReminderModule) {
+    throw new Error('Reminder module not registered yet');
+  }
+
+  return activeReminderModule.reminderTemplateRepository;
+}
 
 export const ReminderElectronModule: IElectronModule = {
   name: 'Reminder',

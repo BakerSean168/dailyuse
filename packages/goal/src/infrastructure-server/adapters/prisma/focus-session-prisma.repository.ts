@@ -2,7 +2,11 @@ import type { PrismaClient, FocusSession as PrismaFocusSession, Prisma } from '@
 import type { IFocusSessionRepository } from '@/domain-server';
 import { FocusSession } from '@/domain-server';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
+import { eventBus } from '@dailyuse/utils';
 import { PrismaFocusSessionMapper } from './mappers/prisma-focus-session-mapper';
+
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
 /**
  * FocusSession Prisma Repository
@@ -10,8 +14,13 @@ import { PrismaFocusSessionMapper } from './mappers/prisma-focus-session-mapper'
  * Prisma implementation of IFocusSessionRepository.
  * Maps between Domain Entity and Prisma Model.
  */
-export class FocusSessionPrismaRepository implements IFocusSessionRepository {
-  constructor(private prisma: PrismaClient) {}
+export class FocusSessionPrismaRepository
+  extends AggregateRepositoryBase<FocusSession>
+  implements IFocusSessionRepository
+{
+  constructor(private prisma: PrismaClient) {
+    super(eventBusAdapter);
+  }
 
   /**
    * Map Prisma row to domain entity
@@ -23,7 +32,7 @@ export class FocusSessionPrismaRepository implements IFocusSessionRepository {
   /**
    * Save domain entity to database (upsert)
    */
-  async save(session: FocusSession): Promise<void> {
+  protected async persist(session: FocusSession): Promise<void> {
     const dto = session.toServerDTO();
 
     const updateData = {

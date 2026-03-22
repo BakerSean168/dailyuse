@@ -6,7 +6,6 @@
 
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -26,24 +25,12 @@ export class DeleteTaskTemplate {
       return ok({ success: true });
     }
 
-    if (soft) {
-      await this.instanceRepository.deleteByTemplateId(id);
-      await this.templateRepository.softDelete(id);
-    } else {
-      await this.instanceRepository.deleteByTemplateId(id);
-      await this.templateRepository.delete(id);
-    }
+    template.softDelete();
+    await this.templateRepository.save(template);
+    await this.instanceRepository.deleteByTemplateId(id);
 
-    // 鍙戝竷鍒犻櫎浜嬩欢
-    try {
-      eventBus.send('task:template:deleted' as any, {
-        aggregateId: id,
-        taskTemplateId: id,
-        identityId: template.identityId,
-        deletedAt: Date.now(),
-      });
-    } catch (error) {
-      console.error(`锟?[DeleteTaskTemplate] 鍙戝竷鍒犻櫎浜嬩欢澶辫触:`, error);
+    if (!soft) {
+      await this.templateRepository.delete(id);
     }
 
     return ok({ success: true });

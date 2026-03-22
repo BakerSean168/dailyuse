@@ -7,17 +7,6 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { PauseTaskTemplate } from '../pause-task-template';
 
-// Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
-  return {
-    ...actual,
-    eventBus: { send: vi.fn() },
-  };
-});
-
-import { eventBus } from '@dailyuse/utils';
-
 describe('PauseTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
@@ -98,53 +87,6 @@ describe('PauseTaskTemplate', () => {
     if (result.ok) {
       expect(result.data.instancesDeleted).toBe(0);
     }
-  });
-
-  describe('event publishing', () => {
-    it('should publish task:template:paused event', async () => {
-      const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
-
-      await useCase.execute(template.id, 'Taking a break');
-
-      expect(eventBus.send).toHaveBeenCalledWith(
-        'task:template:paused',
-        expect.objectContaining({
-          taskTemplateId: template.id,
-          identityId: template.identityId,
-          pausedAt: expect.any(Number),
-          effectiveFrom: expect.any(Number),
-          instancesDeleted: expect.any(Number),
-          reason: 'Taking a break',
-        }),
-      );
-    });
-
-    it('should use default reason when none provided', async () => {
-      const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
-
-      await useCase.execute(template.id);
-
-      expect(eventBus.send).toHaveBeenCalledWith(
-        'task:template:paused',
-        expect.objectContaining({
-          reason: expect.any(String),
-        }),
-      );
-    });
-
-    it('should not fail if event publishing throws', async () => {
-      const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Active });
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
-      vi.mocked(eventBus.send).mockImplementation(() => {
-        throw new Error('Event bus down');
-      });
-
-      const result = await useCase.execute(template.id);
-
-      expect(result).toBeOk();
-    });
   });
 
   it('should return the template client DTO', async () => {

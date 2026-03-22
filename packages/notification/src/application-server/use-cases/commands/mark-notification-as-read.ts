@@ -27,10 +27,24 @@ export class MarkNotificationAsRead {
   }
 
   async executeMany(ids: string[]): Promise<void> {
-    await this.notificationRepository.markManyAsRead(ids);
+    const notifications = (
+      await Promise.all(ids.map((id) => this.notificationRepository.findById(id)))
+    ).filter((notification): notification is NonNullable<typeof notification> => notification !== null);
+
+    for (const notification of notifications) {
+      notification.markAsRead();
+    }
+
+    await this.notificationRepository.saveMany(notifications);
   }
 
   async executeAll(identityId: string): Promise<void> {
-    await this.notificationRepository.markAllAsRead(identityId);
+    const notifications = await this.notificationRepository.findUnread(identityId);
+
+    for (const notification of notifications) {
+      notification.markAsRead();
+    }
+
+    await this.notificationRepository.saveMany(notifications);
   }
 }

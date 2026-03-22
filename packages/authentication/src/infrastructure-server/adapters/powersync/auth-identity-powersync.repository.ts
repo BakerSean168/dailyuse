@@ -3,6 +3,7 @@ import type { IAuthIdentityRepository } from '../../../domain-server';
 import { AuthIdentity } from '../../../domain-server';
 import type { OAuthProvider } from '../../../domain-shared';
 import { createLogger, eventBus } from '@dailyuse/utils';
+import { AggregateRepositoryBase, createEventBusAdapter } from '@dailyuse/patterns';
 import {
   PowerSyncAuthIdentityMapper,
   type PowerSyncAuthCredentialRow,
@@ -12,11 +13,17 @@ import {
 } from './mappers';
 
 const logger = createLogger('PowerSyncAuthIdentityRepository');
+const eventBusAdapter = createEventBusAdapter(eventBus);
 
-export class PowerSyncAuthIdentityRepository implements IAuthIdentityRepository {
-  constructor(private readonly db: IElectronDatabase) {}
+export class PowerSyncAuthIdentityRepository
+  extends AggregateRepositoryBase<AuthIdentity>
+  implements IAuthIdentityRepository
+{
+  constructor(private readonly db: IElectronDatabase) {
+    super(eventBusAdapter);
+  }
 
-  async save(identity: AuthIdentity): Promise<void> {
+  protected async persist(identity: AuthIdentity): Promise<void> {
     const data = PowerSyncAuthIdentityMapper.toPersistence(identity);
     const d = data.identity;
 
@@ -122,11 +129,6 @@ export class PowerSyncAuthIdentityRepository implements IAuthIdentityRepository 
         );
       }
     });
-
-    const domainEvents = identity.pullDomainEvents();
-    for (const evt of domainEvents) {
-      eventBus.send(evt.eventType as any, evt.payload as any);
-    }
 
     logger.debug('[PowerSyncAuthIdentityRepository] Identity saved', { id: d.id });
   }

@@ -1,22 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@dailyuse/test-utils/helpers/result-matchers';
 import { createMockRepo } from '@dailyuse/test-utils/mocks';
-import { aOneTimeTask, aLoadedTaskTemplate } from '@dailyuse/test-utils/fixtures';
+import { aOneTimeTask } from '@dailyuse/test-utils/fixtures';
 import type { ITaskTemplateRepository } from '@/domain-server/repositories/ITaskTemplateRepository';
 import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITaskInstanceRepository';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { DeleteTaskTemplate } from '../delete-task-template';
-
-// Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
-  return {
-    ...actual,
-    eventBus: { send: vi.fn() },
-  };
-});
-
-import { eventBus } from '@dailyuse/utils';
 
 describe('DeleteTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
@@ -28,8 +16,8 @@ describe('DeleteTaskTemplate', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     templateRepo = createMockRepo<ITaskTemplateRepository>({
       findById: vi.fn(),
+      save: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
-      softDelete: vi.fn().mockResolvedValue(undefined),
     });
     instanceRepo = createMockRepo<ITaskInstanceRepository>({
       deleteByTemplateId: vi.fn().mockResolvedValue(undefined),
@@ -51,7 +39,7 @@ describe('DeleteTaskTemplate', () => {
       expect(result.data.success).toBe(true);
     }
     expect(templateRepo.delete).not.toHaveBeenCalled();
-    expect(templateRepo.softDelete).not.toHaveBeenCalled();
+    expect(templateRepo.save).not.toHaveBeenCalled();
     expect(instanceRepo.deleteByTemplateId).not.toHaveBeenCalled();
   });
 
@@ -62,9 +50,9 @@ describe('DeleteTaskTemplate', () => {
     const result = await useCase.execute(template.id);
 
     expect(result).toBeOk();
+    expect(templateRepo.save).toHaveBeenCalledWith(template);
     expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
     expect(templateRepo.delete).toHaveBeenCalledWith(template.id);
-    expect(templateRepo.softDelete).not.toHaveBeenCalled();
   });
 
   it('should soft-delete when soft=true', async () => {
@@ -74,46 +62,9 @@ describe('DeleteTaskTemplate', () => {
     const result = await useCase.execute(template.id, true);
 
     expect(result).toBeOk();
+    expect(templateRepo.save).toHaveBeenCalledWith(template);
     expect(instanceRepo.deleteByTemplateId).toHaveBeenCalledWith(template.id);
-    expect(templateRepo.softDelete).toHaveBeenCalledWith(template.id);
     expect(templateRepo.delete).not.toHaveBeenCalled();
-  });
-
-  it('should publish task:template:deleted event', async () => {
-    const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
-
-    await useCase.execute(template.id);
-
-    expect(eventBus.send).toHaveBeenCalledWith(
-      'task:template:deleted',
-      expect.objectContaining({
-        aggregateId: template.id,
-        taskTemplateId: template.id,
-        identityId: template.identityId,
-        deletedAt: expect.any(Number),
-      }),
-    );
-  });
-
-  it('should not publish event when template not found', async () => {
-    vi.mocked(templateRepo.findById).mockResolvedValue(null);
-
-    await useCase.execute('non-existent');
-
-    expect(eventBus.send).not.toHaveBeenCalled();
-  });
-
-  it('should not fail if event publishing throws', async () => {
-    const template = aOneTimeTask();
-    vi.mocked(templateRepo.findById).mockResolvedValue(template);
-    vi.mocked(eventBus.send).mockImplementation(() => {
-      throw new Error('Event bus down');
-    });
-
-    const result = await useCase.execute(template.id);
-
-    expect(result).toBeOk();
   });
 
   it('should return success:true after delete', async () => {

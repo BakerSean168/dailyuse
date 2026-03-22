@@ -5,7 +5,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 
 export interface ReminderBusEvent<TPayload> {
-  aggregateId: string;
+  aggregateId?: string;
   identityId?: string;
   payload: TPayload;
 }

@@ -1,13 +1,8 @@
-/**
- * Key Result Added Event
- * 
- * Triggered when: Key result is added to goal
- * Subscribers: Goal statistics, User notifications
- * 
- * Note: aggregateId (goalId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
+import type { GoalServerDTO } from '../../aggregates';
+import type { KeyResultServerDTO } from '../../entities';
+
 export interface KeyResultAddedEvent {
-  /** Key result unique identifier */
-  keyResultId: string;
+  identityId: string;
+  goal: GoalServerDTO;
+  keyResult: KeyResultServerDTO;
 }

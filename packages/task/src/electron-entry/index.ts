@@ -21,6 +21,8 @@ import { TaskInstanceController } from '../api/controllers/task-instance.control
 import { TaskDependencyController } from '../api/controllers/task-dependency.controller';
 import { createLogger } from '@dailyuse/utils';
 import type { TaskModuleInstance } from '../infrastructure-server';
+import type { ITaskTemplateRepository } from '../domain-server/repositories/ITaskTemplateRepository';
+import type { ITaskInstanceRepository } from '../domain-server/repositories/ITaskInstanceRepository';
 import { withAuthenticatedValue } from './authenticated-ipc';
 
 const logger = createLogger('TaskElectron');
@@ -58,6 +60,24 @@ const Ch = {
 
 const channels = Object.values(Ch);
 let activeTaskModule: TaskModuleInstance | null = null;
+let taskTemplateRepository: ITaskTemplateRepository | null = null;
+let taskInstanceRepository: ITaskInstanceRepository | null = null;
+
+export function getTaskTemplateRepository(): ITaskTemplateRepository {
+  if (!taskTemplateRepository) {
+    throw new Error('Task module not registered yet');
+  }
+
+  return taskTemplateRepository;
+}
+
+export function getTaskInstanceRepository(): ITaskInstanceRepository {
+  if (!taskInstanceRepository) {
+    throw new Error('Task module not registered yet');
+  }
+
+  return taskInstanceRepository;
+}
 
 function normalizeTemplateListParams(
   requestContext: { identityId: string },
@@ -83,6 +103,8 @@ export const TaskElectronModule: IElectronModule = {
     const runtimeContribution = createTaskRuntimeContribution();
     const taskModule = createTaskPowerSyncModule(db as any, runtimeContribution);
     activeTaskModule = taskModule;
+    taskTemplateRepository = taskModule.taskTemplateRepository;
+    taskInstanceRepository = taskModule.taskInstanceRepository;
     taskModule.start();
 
     // 2. Transport handlers — map flat API to controller-specific interfaces
@@ -290,6 +312,8 @@ export const TaskElectronModule: IElectronModule = {
     }
     activeTaskModule?.dispose();
     activeTaskModule = null;
+    taskTemplateRepository = null;
+    taskInstanceRepository = null;
     logger.info('Task module destroyed');
   },
 };

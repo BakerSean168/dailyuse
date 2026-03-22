@@ -13,6 +13,7 @@
 
 import type { PrismaClient, Prisma } from '@dailyuse/database';
 import type { INotificationRepository } from '../../../domain-server';
+import type { AppEventRegistry } from '@dailyuse/contracts/shared';
 import type {
   NotificationCategory,
   NotificationStatus,
@@ -33,6 +34,7 @@ import {
   ChannelError,
   ChannelResponse,
 } from '../../../domain-shared/value-objects';
+import { eventBus } from '@dailyuse/utils';
 
 // ============================================================
 // Type definitions for Prisma query results
@@ -256,6 +258,11 @@ export class NotificationPrismaRepository implements INotificationRepository {
         }
       }
     });
+
+    for (const event of notification.pullDomainEvents()) {
+      const eventType = event.eventType as keyof AppEventRegistry;
+      eventBus.send(eventType, event.payload as AppEventRegistry[typeof eventType]);
+    }
   }
 
   async saveMany(notifications: Notification[]): Promise<void> {

@@ -23,9 +23,14 @@
  */
 
 import { createLogger, generateUUID, eventBus } from '@dailyuse/utils';
+import type {
+  NotificationDispatchDesktopEvent,
+  NotificationDispatchInAppEvent,
+} from '@dailyuse/contracts/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
-import type { NotificationChannel } from '@dailyuse/contracts/reminder';
+import type { ReminderEventMap, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type { ScheduleEventMap } from '@dailyuse/contracts/schedule';
 import { SourceModule, ExecutionStatus } from '@dailyuse/contracts/schedule';
 import type { NotificationModuleRuntimeContribution } from '../infrastructure-server';
 
@@ -51,24 +56,8 @@ export type NotificationRuntimeContribution = NotificationModuleRuntimeContribut
  * 将提醒载荷转换为通知分发事件。
  * 当提醒触发时，根据提醒的通知配置创建应用内和/或桌面通知。
  */
-function handleReminderTriggered(event: {
-  identityId?: string;
-  payload?: {
-    reminder?: {
-      id?: string;
-      name?: string;
-      description?: string | null;
-      importanceLevel?: ImportanceLevel;
-      notificationConfig?: {
-        title?: string | null;
-        body?: string | null;
-        sound?: { enabled: boolean; soundName?: string | null } | null;
-        channels?: NotificationChannel[];
-      } | null;
-    };
-  };
-}): void {
-  const reminder = event.payload?.reminder;
+function handleReminderTriggered(event: ReminderEventMap['reminder:triggered']): void {
+  const reminder = event.reminder;
   if (!event.identityId || !reminder?.id) {
     logger.warn('[Notification] Missing reminder identity or id');
     return;
@@ -79,7 +68,7 @@ function handleReminderTriggered(event: {
   const soundConfig = reminder.notificationConfig?.sound ?? null;
   const channels = reminder.notificationConfig?.channels ?? [];
 
-  const base = {
+  const base: NotificationDispatchDesktopEvent & NotificationDispatchInAppEvent = {
     id: generateUUID(),
     identityId: event.identityId,
     title,
@@ -100,12 +89,12 @@ function handleReminderTriggered(event: {
   // Dispatch to in-app channel if no channels specified or InApp is included.
   // 如果未指定渠道或包含 InApp 则分发到应用内渠道。
   if (!channels.length || channels.includes('InApp')) {
-    eventBus.send('notification:dispatch_in_app' as any, base as any);
+    eventBus.send('notification:dispatch_in_app', base);
   }
 
   // Always dispatch to desktop channel for reminders.
   // 提醒通知始终分发到桌面渠道。
-  eventBus.send('notification:dispatch_desktop' as any, base as any);
+  eventBus.send('notification:dispatch_desktop', base);
 }
 
 /**
@@ -119,15 +108,7 @@ function handleReminderTriggered(event: {
  * 将计划执行载荷转换为通知分发事件。
  * 仅对成功的执行触发，将源模块映射到相应的通知类别。
  */
-function handleScheduleExecuted(event: {
-  payload?: {
-    taskId?: string;
-    sourceModule?: SourceModule;
-    status?: ExecutionStatus;
-    payload?: Record<string, unknown>;
-    identityId?: string;
-  };
-}): void {
+function handleScheduleExecuted(event: ScheduleEventMap['schedule:task:executed']): void {
   const identityId = event.payload?.identityId;
   if (!identityId) {
     logger.warn('[Notification] Missing identityId in schedule:task:executed');
@@ -153,12 +134,12 @@ function handleScheduleExecuted(event: {
           : 'Schedule task';
 
   const title =
-    (payload.goalTitle as string | undefined) ||
-    (payload.taskTitle as string | undefined) ||
-    (payload.reminderTitle as string | undefined) ||
+    (typeof payload['goalTitle'] === 'string' ? payload['goalTitle'] : undefined) ||
+    (typeof payload['taskTitle'] === 'string' ? payload['taskTitle'] : undefined) ||
+    (typeof payload['reminderTitle'] === 'string' ? payload['reminderTitle'] : undefined) ||
     titleFallback;
 
-  const base = {
+  const base: NotificationDispatchDesktopEvent & NotificationDispatchInAppEvent = {
     id: generateUUID(),
     identityId,
     title,
@@ -185,8 +166,8 @@ function handleScheduleExecuted(event: {
 
   // Dispatch to both desktop and in-app channels.
   // 同时分发到桌面和应用内渠道。
-  eventBus.send('notification:dispatch_desktop' as any, base as any);
-  eventBus.send('notification:dispatch_in_app' as any, base as any);
+  eventBus.send('notification:dispatch_desktop', base);
+  eventBus.send('notification:dispatch_in_app', base);
 }
 
 // ============ Runtime Contribution Factory ============
@@ -213,8 +194,8 @@ export function createNotificationRuntimeContribution(): NotificationRuntimeCont
 
       // Subscribe to cross-module events.
       // 订阅跨模块事件。
-      (eventBus as any).on('reminder:triggered', handleReminderTriggered);
-      (eventBus as any).on('schedule:task:executed', handleScheduleExecuted);
+      eventBus.on('reminder:triggered', handleReminderTriggered);
+      eventBus.on('schedule:task:executed', handleScheduleExecuted);
 
       started = true;
       logger.info('[Notification] Runtime contribution started');
@@ -227,8 +208,8 @@ export function createNotificationRuntimeContribution(): NotificationRuntimeCont
 
       // Unsubscribe from all events.
       // 取消所有事件订阅。
-      (eventBus as any).off('reminder:triggered', handleReminderTriggered);
-      (eventBus as any).off('schedule:task:executed', handleScheduleExecuted);
+      eventBus.off('reminder:triggered', handleReminderTriggered);
+      eventBus.off('schedule:task:executed', handleScheduleExecuted);
 
       started = false;
       logger.info('[Notification] Runtime contribution stopped');

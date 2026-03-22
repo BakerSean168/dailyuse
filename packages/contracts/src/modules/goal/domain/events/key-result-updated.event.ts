@@ -1,19 +1,12 @@
-/**
- * Key Result Updated Event
- * 
- * Triggered when: Key result progress is updated
- * Subscribers: Goal progress calculator, User notifications
- * 
- * Note: aggregateId (goalId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
+import type { GoalServerDTO } from '../../aggregates';
+import type { KeyResultServerDTO } from '../../entities';
+
 export interface KeyResultUpdatedEvent {
-  /** Key result unique identifier */
-  keyResultId: string;
-
-  /** Previous progress value */
-  previousValue: number;
-
-  /** New progress value */
-  newValue: number;
+  identityId: string;
+  goal: GoalServerDTO;
+  keyResult: KeyResultServerDTO;
+  changes: string[];
+  previousValue: number | null;
+  newValue: number | null;
+  goalProgress: number;
 }

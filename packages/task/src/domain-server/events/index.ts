@@ -10,8 +10,13 @@ export type {
   TaskCreatedEvent,
   TaskUpdatedEvent,
   TaskDeletedEvent,
-  TaskCompletedEvent,
   TaskUncompletedEvent,
+  TaskInstanceCompletedEvent,
+  TaskInstancesGeneratedEvent,
+  TaskTemplatePausedEvent,
+  TaskTemplateResumedEvent,
+  TaskTemplateScheduleTimeChangedEvent,
+  TaskTemplateRecurrenceChangedEvent,
 } from '@dailyuse/contracts/task';
 
 export type { TaskEventMap } from '@dailyuse/contracts/task';

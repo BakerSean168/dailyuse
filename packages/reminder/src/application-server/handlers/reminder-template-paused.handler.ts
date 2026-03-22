@@ -6,6 +6,9 @@ export class ReminderTemplatePausedHandler {
 
   async handle(event: ReminderBusEvent<ReminderTemplatePausedPayload>): Promise<void> {
     await this.support.emitTemplateRefresh(event, 'template-paused');
-    await this.support.pauseScheduleTaskForReminder(event.aggregateId);
+    const templateId = this.support.resolveTemplateId(event);
+    if (templateId) {
+      await this.support.pauseScheduleTaskForReminder(templateId);
+    }
   }
 }

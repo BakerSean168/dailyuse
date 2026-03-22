@@ -340,11 +340,11 @@ describe('TaskInstance Aggregate', () => {
         expect(() => instance.complete()).toThrow('Cannot complete task in current state');
       });
 
-      it('should emit task:complete domain event', () => {
+      it('should emit task:instance:completed domain event', () => {
         instance.complete();
         const events = instance.pullDomainEvents();
         expect(events.length).toBeGreaterThanOrEqual(1);
-        expect(events.some((e) => e.eventType === 'task:complete')).toBe(true);
+        expect(events.some((e) => e.eventType === 'task:instance:completed')).toBe(true);
       });
     });
 
@@ -816,14 +816,14 @@ describe('TaskInstance Aggregate', () => {
 
   // ==================== Domain Events ====================
   describe('Domain Events', () => {
-    it('should emit task:complete event on completion', () => {
+    it('should emit task:instance:completed event on completion', () => {
       const instance = makeInstance();
       instance.complete();
 
       const events = instance.pullDomainEvents();
       expect(events.length).toBeGreaterThanOrEqual(1);
 
-      const completeEvent = events.find((e) => e.eventType === 'task:complete');
+      const completeEvent = events.find((e) => e.eventType === 'task:instance:completed');
       expect(completeEvent).toBeDefined();
       expect(completeEvent!.aggregateId).toBe(instance.id);
     });

@@ -74,6 +74,8 @@ describe('Account', () => {
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
       expect(events[0].eventType).toBe('account:create');
+      expect(events[0].payload.accountId).toBe(account.id.toString());
+      expect(events[0].payload.account.email.address).toBe(account.email.address);
     });
   });
 
@@ -118,6 +120,8 @@ describe('Account', () => {
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
       expect(events[0].eventType).toBe('account:close');
+      expect(events[0].payload.accountId).toBe(account.id.toString());
+      expect(events[0].payload.account.status).toBe(AccountStatus.Deactivated);
     });
 
     it('should throw if already deactivated', () => {
@@ -173,6 +177,7 @@ describe('Account', () => {
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
       expect(events[0].eventType).toBe('account:update-profile');
+      expect(events[0].payload.account.profile.nickname).toBe('Updated');
     });
 
     it('should refresh updatedAt', () => {
@@ -203,6 +208,7 @@ describe('Account', () => {
       const events = account.domainEvents;
       expect(events).toHaveLength(1);
       expect(events[0].eventType).toBe('account:update-settings');
+      expect(events[0].payload.account.settings.timezone).toBe('America/New_York');
     });
   });
 

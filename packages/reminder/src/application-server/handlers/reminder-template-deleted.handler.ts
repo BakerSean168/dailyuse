@@ -8,6 +8,9 @@ export class ReminderTemplateDeletedHandler {
     await this.support.emitTemplateRefresh(event, 'template-deleted', {
       skipSnapshot: true,
     });
-    await this.support.deleteScheduleTaskForReminder(event.aggregateId);
+    const templateId = this.support.resolveTemplateId(event);
+    if (templateId) {
+      await this.support.deleteScheduleTaskForReminder(templateId);
+    }
   }
 }

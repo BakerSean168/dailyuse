@@ -5,7 +5,6 @@
  */
 
 import type { IAIConversationRepository } from '../../../domain-server/repositories/IAIConversationRepository';
-import { eventBus } from '@dailyuse/utils';
 
 /**
  * Delete Conversation Service
@@ -24,11 +23,7 @@ export class DeleteConversation {
       throw new Error('Not authorized to delete this conversation');
     }
 
-    await this.conversationRepository.delete(id);
-
-    eventBus.send('AIConversationDeleted' as any, {
-      conversationId: id,
-      identityId,
-    });
+    conversation.softDelete();
+    await this.conversationRepository.save(conversation);
   }
 }

@@ -12,7 +12,6 @@ import type {
   ReminderTemplateClientDTO,
   CreateReminderTemplateReq,
 } from '@dailyuse/contracts/reminder';
-import { eventBus } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 
 /**
@@ -62,19 +61,6 @@ export class CreateReminderTemplate {
     policy.assertValidGroupAssignment(template, group);
     template.setEffectiveEnabled(policy.calculateEffectiveEnabled(template, group));
     await this.templateRepository.save(template);
-
-    // 发布领域事件
-    const events = template.pullDomainEvents();
-    for (const event of events) {
-      const payload = event.payload as Record<string, unknown>;
-      eventBus.send(
-        event.eventType as any,
-        {
-          ...payload,
-          reminderData: template.toServerDTO(),
-        } as any,
-      );
-    }
 
     return template.toClientDTO();
   }

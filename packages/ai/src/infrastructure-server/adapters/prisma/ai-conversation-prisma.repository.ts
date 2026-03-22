@@ -18,9 +18,13 @@ import type { MessagePersistenceDTO } from '@dailyuse/contracts/ai';
 import { AiConversationId } from '../../../domain-shared/value-objects/ai-conversation-id';
 import { AiMessageId } from '../../../domain-shared/value-objects/ai-message-id';
 import { IdentityId } from '@dailyuse/domain-shared/shared';
+import { eventBus } from '@dailyuse/utils';
 
 type PrismaAiConversationWithMessages = PrismaAiConversation & {
   messages?: PrismaAiMessage[];
+};
+const untypedEventBus = eventBus as unknown as {
+  send(eventType: string, payload: unknown): void;
 };
 
 /**
@@ -81,6 +85,10 @@ export class AIConversationPrismaRepository implements IAIConversationRepository
           skipDuplicates: true,
         });
       }
+    }
+
+    for (const event of conversation.pullDomainEvents()) {
+      untypedEventBus.send(event.eventType, event.payload);
     }
   }
 

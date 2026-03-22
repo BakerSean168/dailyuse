@@ -1,10 +1,7 @@
-/**
- * Goal Archived Event
- * 
- * Triggered when: Goal is archived
- * Subscribers: Goal folder stats, User statistics
- * 
- * Note: aggregateId (goalId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
-export interface GoalArchivedEvent {}
+import type { GoalServerDTO } from '../../aggregates';
+
+export interface GoalArchivedEvent {
+  identityId: string;
+  goal: GoalServerDTO;
+  archivedAt: number;
+}

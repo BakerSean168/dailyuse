@@ -37,12 +37,15 @@ import { AccountElectronModule } from '@dailyuse/account/electron-entry';
 import { DesktopAuthElectronModule } from './modules/authentication/desktop-auth.electron-module';
 import { GovernanceElectronModule } from '@dailyuse/governance/electron-entry';
 import { DesktopKnowledgeNotePersistenceAdapter } from './modules/ai/desktop-knowledge-note-persistence.adapter';
+import type { SearchResponse as RepositorySearchResponse } from '@dailyuse/contracts/repository';
 
 const AIElectronModule = createAIElectronModule({
   createKnowledgeNotePersistence: (context: {
     db: Parameters<typeof createRepositoryPowerSyncModule>[0];
   }) => new DesktopKnowledgeNotePersistenceAdapter(context.db),
 });
+
+type RepositorySearchItem = RepositorySearchResponse['results'][number];
 
 /** Kept as module-level for graceful shutdown access. */
 let bootstrapper: ElectronBootstrapper | null = null;
@@ -63,6 +66,70 @@ async function initializeApp(): Promise<void> {
   const editorRepositoryModule = createRepositoryPowerSyncModule(db, {
     storagePort: new FsStorageAdapter(repositoryStorageDir),
   });
+
+  const searchRepositoryResources = async (
+    repositoryId: string,
+    query: string,
+    caseSensitive = false,
+  ): Promise<RepositorySearchResponse> => {
+    const startedAt = Date.now();
+    const resources = await editorRepositoryModule.resourceRepository.findByRepositoryId(repositoryId);
+    const normalizedQuery = caseSensitive ? query : query.toLowerCase();
+
+    const results = resources
+      .map((resource): RepositorySearchItem | null => {
+        const dto = resource.toClientDTO();
+        const haystacks = [dto.name, dto.path, dto.content ?? ''];
+        const matches = haystacks.flatMap((value, index) => {
+          const source = caseSensitive ? value : value.toLowerCase();
+          const matchIndex = source.indexOf(normalizedQuery);
+          if (matchIndex < 0) {
+            return [];
+          }
+
+          return [
+            {
+              lineNumber: index + 1,
+              lineContent: value,
+              startIndex: matchIndex,
+              endIndex: matchIndex + query.length,
+            },
+          ];
+        });
+
+        if (matches.length === 0) {
+          return null;
+        }
+
+        return {
+          resourceId: dto.id,
+          resourceName: dto.name,
+          resourcePath: dto.path,
+          resourceType: dto.type,
+          matchType: (dto.name.toLowerCase().includes(normalizedQuery.toLowerCase())
+            ? 'filename'
+            : 'content') as RepositorySearchItem['matchType'],
+          matches,
+          matchCount: matches.length,
+          createdAt: new Date(dto.createdAt).toISOString(),
+          updatedAt: new Date(dto.updatedAt).toISOString(),
+          size: dto.size,
+        };
+      })
+      .filter((item: RepositorySearchItem | null): item is RepositorySearchItem => item !== null);
+
+    return {
+      results,
+      totalResults: results.length,
+      totalMatches: results.reduce(
+        (sum: number, item: RepositorySearchItem) => sum + item.matchCount,
+        0,
+      ),
+      searchTime: Date.now() - startedAt,
+      query,
+      mode: 'all',
+    };
+  };
 
   bootstrapper = new ElectronBootstrapper(db);
   await bootstrapper
@@ -109,31 +176,26 @@ async function initializeApp(): Promise<void> {
               return { results: [], total: 0 };
             }
 
-            const repositorySearch = await editorRepositoryModule.api.search({
-              repositoryId: request.workspaceId,
-              query: request.query,
-              mode: 'all',
-              page: 1,
-              pageSize: request.limit ?? 20,
-            });
-
-            if (!repositorySearch.ok) {
-              return { results: [], total: 0 };
-            }
+            const repositorySearch = await searchRepositoryResources(
+              request.workspaceId,
+              request.query,
+            );
 
             return {
-              results: repositorySearch.data.results.map((item) => ({
+              results: repositorySearch.results
+                .slice(request.offset ?? 0, (request.offset ?? 0) + (request.limit ?? 20))
+                .map((item: RepositorySearchItem) => ({
                 resourceId: item.resourceId,
                 resourcePath: item.resourcePath,
                 resourceName: item.resourceName,
                 snippet: item.matches[0]?.lineContent ?? '',
                 score: item.matchCount,
-                highlights: item.matches.map((match) => ({
+                highlights: item.matches.map((match: RepositorySearchItem['matches'][number]) => ({
                   line: match.lineNumber,
                   text: match.lineContent,
                 })),
               })),
-              total: repositorySearch.data.totalResults,
+              total: repositorySearch.totalResults,
             };
           },
         },

@@ -10,7 +10,6 @@ import { TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { CreateTaskTemplate } from '../create-task-template';
 
-// Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
 vi.mock('@dailyuse/utils', async () => {
   const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
   return {
@@ -24,7 +23,6 @@ vi.mock('@dailyuse/utils', async () => {
       addTransport: vi.fn(),
       child: vi.fn(),
     })),
-    eventBus: { send: vi.fn() },
   };
 });
 
@@ -39,9 +37,6 @@ vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
     },
   };
 });
-
-import { eventBus } from '@dailyuse/utils';
-
 describe('CreateTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
   let instanceRepo: ReturnType<typeof createMockRepo<ITaskInstanceRepository>>;
@@ -101,6 +96,28 @@ describe('CreateTaskTemplate', () => {
     await useCase.execute(request);
 
     expect(templateRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should persist goal binding on the created template', async () => {
+    const request = aCreateRequest({
+      goalBinding: {
+        goalId: 'goal-1',
+        keyResultId: 'kr-1',
+        goalRecordValue: 2,
+      },
+    });
+
+    await useCase.execute(request);
+
+    expect(templateRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        goalBinding: expect.objectContaining({
+          goalId: 'goal-1',
+          keyResultId: 'kr-1',
+          goalRecordValue: 2,
+        }),
+      }),
+    );
   });
 
   it('should create a recurring task template', async () => {
@@ -209,30 +226,23 @@ describe('CreateTaskTemplate', () => {
       }
     });
 
-    it('should publish event when instances are generated', async () => {
+    it('should save generated instances when instances are generated', async () => {
       const fakeInstances = [{}, {}, {}, {}, {}];
       mockGenerateInstances.mockReturnValue(fakeInstances);
       const request = aCreateRequest();
 
       await useCase.execute(request);
 
-      expect(eventBus.send).toHaveBeenCalledWith(
-        'task:instances:generated',
-        expect.objectContaining({
-          payload: expect.objectContaining({
-            instanceCount: 5,
-          }),
-        }),
-      );
+      expect(instanceRepo.saveMany).toHaveBeenCalledWith(fakeInstances);
     });
 
-    it('should not publish event when no instances generated', async () => {
+    it('should not save instances when no instances are generated', async () => {
       mockGenerateInstances.mockReturnValue([]);
       const request = aCreateRequest();
 
       await useCase.execute(request);
 
-      expect(eventBus.send).not.toHaveBeenCalled();
+      expect(instanceRepo.saveMany).not.toHaveBeenCalled();
     });
 
     it('should handle instance generation error gracefully', async () => {

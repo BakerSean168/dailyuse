@@ -5,6 +5,7 @@
  */
 
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
+import type { ReminderEventMap } from '@dailyuse/contracts/reminder';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -76,17 +77,15 @@ export class AdjustReminderFrequency {
     await this.templateRepository.save(template);
 
     // Publish event
-    eventBus.send(
-      'reminder:frequency:adjusted' as any,
-      {
-        templateId: request.templateId,
-        originalInterval,
-        adjustedInterval: request.newInterval,
-        reason: request.reason,
-        identityId: request.identityId,
-        adjustedAt: Date.now(),
-      } as any,
-    );
+    const adjustedEvent: ReminderEventMap['reminder:frequency:adjusted'] = {
+      templateId: request.templateId,
+      originalInterval,
+      adjustedInterval: request.newInterval,
+      reason: request.reason,
+      identityId: request.identityId,
+      adjustedAt: Date.now(),
+    };
+    eventBus.send('reminder:frequency:adjusted', adjustedEvent);
 
     return {
       templateId: request.templateId,
@@ -110,13 +109,11 @@ export class AdjustReminderFrequency {
       throw new Error(`Template ${templateId} not found`);
     }
 
-    eventBus.send(
-      'reminder:frequency:adjustment-rejected' as any,
-      {
-        templateId,
-        identityId,
-        rejectedAt: Date.now(),
-      } as any,
-    );
+    const rejectedEvent: ReminderEventMap['reminder:frequency:adjustment-rejected'] = {
+      templateId,
+      identityId,
+      rejectedAt: Date.now(),
+    };
+    eventBus.send('reminder:frequency:adjustment-rejected', rejectedEvent);
   }
 }

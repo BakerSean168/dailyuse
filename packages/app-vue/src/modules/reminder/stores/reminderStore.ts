@@ -16,6 +16,7 @@ export interface ReminderState {
   preferences: UserReminderPreferencesClientDTO | null;
   isLoading: boolean;
   error: string | null;
+  isInitialized: boolean;
 }
 
 export const useReminderStore = defineStore('reminder', {
@@ -25,6 +26,7 @@ export const useReminderStore = defineStore('reminder', {
     preferences: null,
     isLoading: false,
     error: null,
+    isInitialized: false,
   }),
 
   actions: {
@@ -65,6 +67,9 @@ export const useReminderStore = defineStore('reminder', {
     },
     setError(e: string | null) {
       this.error = e;
+    },
+    setInitialized(v: boolean) {
+      this.isInitialized = v;
     },
     reset() {
       this.$reset();

@@ -28,6 +28,7 @@ export class DeleteGoalFolder {
       throw new Error('Unauthorized access to goal folder');
     }
 
-    await this.goalFolderRepository.delete(id);
+    folder.softDelete();
+    await this.goalFolderRepository.save(folder);
   }
 }

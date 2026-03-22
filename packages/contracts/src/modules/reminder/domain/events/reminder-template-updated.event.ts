@@ -1,14 +1,8 @@
-/**
- * Reminder Template Updated Event
- * 
- * Triggered when: Reminder template properties are updated
- * Subscribers: Reminder service, Cache invalidation
- * 
- * 【说明】
- * - aggregateId 已由 addDomainEvent 自动生成，无需重复定义
- * - occurredAt 已由 addDomainEvent 自动生成，无需重复定义
- */
+import type { ReminderTemplateServerDTO } from '../../aggregates';
+
 export interface ReminderTemplateUpdatedEvent {
-  /** List of fields that were changed */
+  identityId: string;
+  templateId: string;
+  reminder: ReminderTemplateServerDTO;
   changes: string[];
 }

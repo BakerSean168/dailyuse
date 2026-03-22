@@ -357,6 +357,13 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     if (instances.length > 0) {
       this._props.lastGeneratedDate = new Date(toDate);
       this._props.updatedAt = new Date();
+      this.addDomainEvent<TaskEventMap['task:instances:generated']>('task:instances:generated', {
+        identityId: this._props.identityId,
+        templateId: this.id,
+        templateTitle: this.title,
+        instanceCount: instances.length,
+        strategy: instances.length <= 20 ? 'full' : 'summary',
+      });
     }
 
     return instances;
@@ -481,6 +488,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.status = TaskTemplateStatus.Active;
     this._props.updatedAt = new Date();
     this.addHistory('resumed');
+    this.addDomainEvent<TaskEventMap['task:template:resumed']>('task:template:resumed', {
+      identityId: this._props.identityId,
+      taskTemplateId: this.id,
+      resumedAt: this._props.updatedAt.getTime(),
+      taskTemplate: this.toServerDTO(),
+    });
   }
 
   /** Pauses the template. */
@@ -495,6 +508,12 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.status = TaskTemplateStatus.Paused;
     this._props.updatedAt = new Date();
     this.addHistory('Paused');
+    this.addDomainEvent<TaskEventMap['task:template:paused']>('task:template:paused', {
+      identityId: this._props.identityId,
+      taskTemplateId: this.id,
+      pausedAt: this._props.updatedAt.getTime(),
+      taskTemplate: this.toServerDTO(),
+    });
   }
 
   /** Archives the template. */
@@ -530,7 +549,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     // Publish domain event
     this.addDomainEvent<TaskEventMap['task:delete']>('task:delete', {
+      identityId: this._props.identityId,
+      taskTemplateId: this.id,
       isSoftDelete: true,
+      deletedAt: this._props.deletedAt.getTime(),
+      task: this.toServerDTO(),
     });
   }
 
@@ -620,6 +643,8 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
 
     // Publish domain event
     this.addDomainEvent<TaskEventMap['task:update']>('task:update', {
+      identityId: this._props.identityId,
+      task: this.toServerDTO(),
       changes: ['title'],
     });
   }
@@ -650,13 +675,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
 
-    this.addDomainEvent('task:template:schedule-time-changed', {
-      taskTemplate: this.toServerDTO(),
-      oldStartDate: oldStartDate,
-      oldDueDate: this._props.dueDate,
-      newStartDate: newStartDate,
-      newDueDate: this._props.dueDate,
-    });
+    this.addDomainEvent<TaskEventMap['task:template:schedule-time-changed']>(
+      'task:template:schedule-time-changed',
+      {
+        identityId: this._props.identityId,
+        taskTemplate: this.toServerDTO(),
+        oldStartDate: oldStartDate,
+        oldDueDate: this._props.dueDate,
+        newStartDate: newStartDate,
+        newDueDate: this._props.dueDate,
+      },
+    );
   }
 
   /** Updates the due date (OneTime tasks only). */
@@ -676,13 +705,17 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     this._props.updatedAt = new Date();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
 
-    this.addDomainEvent('task:template:schedule-time-changed', {
-      taskTemplate: this.toServerDTO(),
-      oldStartDate: this._props.startDate,
-      oldDueDate: oldDueDate,
-      newStartDate: this._props.startDate,
-      newDueDate: newDueDate,
-    });
+    this.addDomainEvent<TaskEventMap['task:template:schedule-time-changed']>(
+      'task:template:schedule-time-changed',
+      {
+        identityId: this._props.identityId,
+        taskTemplate: this.toServerDTO(),
+        oldStartDate: this._props.startDate,
+        oldDueDate: oldDueDate,
+        newStartDate: this._props.startDate,
+        newDueDate: newDueDate,
+      },
+    );
   }
 
   /**
@@ -698,15 +731,19 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newTimeConfig: newTimeConfig?.toDTO() ?? null,
     });
 
-    this.addDomainEvent('task:template:schedule-time-changed', {
-      taskTemplate: this.toServerDTO(),
-      oldStartDate: this._props.startDate,
-      oldDueDate: this._props.dueDate,
-      newStartDate: this._props.startDate,
-      newDueDate: this._props.dueDate,
-      oldTimeConfig,
-      newTimeConfig: newTimeConfig?.toDTO() ?? null,
-    });
+    this.addDomainEvent<TaskEventMap['task:template:schedule-time-changed']>(
+      'task:template:schedule-time-changed',
+      {
+        identityId: this._props.identityId,
+        taskTemplate: this.toServerDTO(),
+        oldStartDate: this._props.startDate,
+        oldDueDate: this._props.dueDate,
+        newStartDate: this._props.startDate,
+        newDueDate: this._props.dueDate,
+        oldTimeConfig,
+        newTimeConfig: newTimeConfig?.toDTO() ?? null,
+      },
+    );
   }
 
   /** Updates the recurrence rule (Recurring tasks only). */
@@ -726,11 +763,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       newRule: newRule.toDTO(),
     });
 
-    this.addDomainEvent('task:template:recurrence-changed', {
-      taskTemplate: this.toServerDTO(),
-      oldRecurrenceRule: oldRuleDTO,
-      newRecurrenceRule: newRule.toDTO(),
-    });
+    this.addDomainEvent<TaskEventMap['task:template:recurrence-changed']>(
+      'task:template:recurrence-changed',
+      {
+        identityId: this._props.identityId,
+        taskTemplate: this.toServerDTO(),
+        oldRecurrenceRule: oldRuleDTO,
+        newRecurrenceRule: newRule.toDTO(),
+      },
+    );
   }
 
   /**
@@ -797,11 +838,15 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       endConditionType,
     });
 
-    this.addDomainEvent('task:template:recurrence-changed', {
-      taskTemplate: this.toServerDTO(),
-      oldRecurrenceRule: oldRuleDTO,
-      newRecurrenceRule: updatedRule.toDTO(),
-    });
+    this.addDomainEvent<TaskEventMap['task:template:recurrence-changed']>(
+      'task:template:recurrence-changed',
+      {
+        identityId: this._props.identityId,
+        taskTemplate: this.toServerDTO(),
+        oldRecurrenceRule: oldRuleDTO,
+        newRecurrenceRule: updatedRule.toDTO(),
+      },
+    );
   }
 
   /** Updates the importance level. */
@@ -1475,6 +1520,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     tags?: string[];
     color?: string;
     generateAheadDays?: number;
+    goalBinding?: {
+      goalId: string;
+      keyResultId: string;
+      goalRecordValue: number;
+    } | null;
   }): TaskTemplate {
     if (!params.identityId) {
       throw new InvalidTaskTemplateStateError('Identity ID is required', {
@@ -1516,10 +1566,10 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
       recurrenceRule: params.recurrenceRule ?? null,
       reminderConfig: params.reminderConfig ?? null,
       importance: (params.importance ?? ImportanceLevel.Moderate) as ImportanceLevel,
-      goalBinding: null,
+      goalBinding: params.goalBinding ? TaskGoalBinding.fromDTO(params.goalBinding) : null,
       folderId: params.folderId ?? null,
-      goalId: null,
-      keyResultId: null,
+      goalId: (params.goalBinding?.goalId as GoalId | undefined) ?? null,
+      keyResultId: (params.goalBinding?.keyResultId as KeyResultId | undefined) ?? null,
       checklist: [],
       parentTaskId: null,
       lastGeneratedDate: null,
@@ -1543,10 +1593,11 @@ export class TaskTemplate extends AggregateRoot<TaskTemplateId> {
     });
 
     template.addHistory('created');
-
     template.addDomainEvent<TaskEventMap['task:create']>('task:create', {
+      identityId: params.identityId,
+      task: template.toServerDTO(),
       templateId: template.id,
-      goalId: null,
+      goalId: template.goalBinding?.goalId ?? null,
     });
 
     return template;

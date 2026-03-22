@@ -57,6 +57,14 @@ export class ScheduleEventPublisher {
     (eventBus.send as any)(eventType, payload);
   }
 
+  private static getEventPayload<T>(event: any): T {
+    return (event?.payload ?? event) as T;
+  }
+
+  private static getEventIdentityId(event: any): string | undefined {
+    return event?.identityId ?? this.getEventPayload<{ identityId?: string }>(event).identityId;
+  }
+
   /**
    * 初始化事件监听器（在应用启动时调用一次）
    */
@@ -96,12 +104,21 @@ export class ScheduleEventPublisher {
      */
     this.onAny('goal:delete', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{ identityId?: string; goalId?: string; goal?: GoalServerDTO }>(
+          event,
+        );
+        if (!payload.identityId) {
           console.error('❌ [ScheduleEventPublisher] Missing identityId in goal:delete event');
           return;
         }
 
-        await this.handleGoalDeleted(event.identityId, event.aggregateId);
+        const goalId = payload.goalId ?? payload.goal?.id;
+        if (!goalId) {
+          console.error('❌ [ScheduleEventPublisher] Missing goalId in goal:delete event');
+          return;
+        }
+
+        await this.handleGoalDeleted(payload.identityId, goalId);
       } catch (error) {
         console.error('❌ [ScheduleEventPublisher] Error handling goal:delete:', error);
       }
@@ -132,30 +149,30 @@ export class ScheduleEventPublisher {
 
     const handleTaskTemplateUpdate = async (event: any) => {
       try {
-        if (!event.identityId) {
+        const identityId = this.getEventIdentityId(event);
+        if (!identityId) {
           console.error(
-            `❌ [ScheduleEventPublisher] Missing identityId in ${event.eventType} event`,
+            '❌ [ScheduleEventPublisher] Missing identityId in task template update event',
           );
           return;
         }
-        const { taskTemplateData, taskTemplate, template } = event.payload as {
+        const payload = this.getEventPayload<{
           taskTemplateData?: TaskTemplateServerDTO;
           taskTemplate?: TaskTemplateServerDTO;
           template?: TaskTemplateServerDTO;
-        };
+        }>(event);
+        const { taskTemplateData, taskTemplate, template } = payload;
 
         const resolvedTemplate = taskTemplate ?? taskTemplateData ?? template;
 
         if (!resolvedTemplate) {
-          console.error(
-            `❌ [ScheduleEventPublisher] Missing taskTemplateData in ${event.eventType}`,
-          );
+          console.error('❌ [ScheduleEventPublisher] Missing task template data in update event');
           return;
         }
 
-        await this.handleTaskTemplateScheduleChanged(event.identityId, resolvedTemplate);
+        await this.handleTaskTemplateScheduleChanged(identityId, resolvedTemplate);
       } catch (error) {
-        console.error(`❌ [ScheduleEventPublisher] Error handling ${event.eventType}:`, error);
+        console.error('❌ [ScheduleEventPublisher] Error handling task template update:', error);
       }
     };
 
@@ -168,15 +185,19 @@ export class ScheduleEventPublisher {
      */
     this.onAny('task:template:paused', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const identityId = this.getEventIdentityId(event);
+        if (!identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in task:template:paused event',
           );
           return;
         }
 
-        const taskTemplateId =
-          event.taskTemplateId ?? event.aggregateId ?? event.payload?.taskTemplateId;
+        const payload = this.getEventPayload<{
+          taskTemplateId?: string;
+          taskTemplate?: TaskTemplateServerDTO;
+        }>(event);
+        const taskTemplateId = payload.taskTemplateId ?? payload.taskTemplate?.id;
         if (!taskTemplateId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:template:paused event',
@@ -186,7 +207,7 @@ export class ScheduleEventPublisher {
 
         console.log(`⏸️  [ScheduleEventPublisher] 处理任务模板暂停: ${taskTemplateId}`);
         // 使用 pause 而不是 delete
-        await this.pauseTasksBySource(event.identityId, SourceModule.Task, taskTemplateId);
+        await this.pauseTasksBySource(identityId, SourceModule.Task, taskTemplateId);
       } catch (error) {
         console.error('❌ [ScheduleEventPublisher] Error handling task:template:paused:', error);
       }
@@ -197,15 +218,19 @@ export class ScheduleEventPublisher {
      */
     this.onAny('task:template:resumed', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const identityId = this.getEventIdentityId(event);
+        if (!identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in task:template:resumed event',
           );
           return;
         }
 
-        const taskTemplateId =
-          event.taskTemplateId ?? event.aggregateId ?? event.payload?.taskTemplateId;
+        const payload = this.getEventPayload<{
+          taskTemplateId?: string;
+          taskTemplate?: TaskTemplateServerDTO;
+        }>(event);
+        const taskTemplateId = payload.taskTemplateId ?? payload.taskTemplate?.id;
         if (!taskTemplateId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:template:resumed event',
@@ -215,7 +240,7 @@ export class ScheduleEventPublisher {
 
         console.log(`▶️  [ScheduleEventPublisher] 处理任务模板恢复: ${taskTemplateId}`);
         // 使用 resume 而不是 recreate
-        await this.resumeTasksBySource(event.identityId, SourceModule.Task, taskTemplateId);
+        await this.resumeTasksBySource(identityId, SourceModule.Task, taskTemplateId);
       } catch (error) {
         console.error('❌ [ScheduleEventPublisher] Error handling task:template:resumed:', error);
       }
@@ -226,16 +251,23 @@ export class ScheduleEventPublisher {
      */
     this.onAny('task:create', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{
+          identityId?: string;
+          task?: TaskTemplateServerDTO;
+        }>(event);
+        if (!payload.identityId) {
           console.error('❌ [ScheduleEventPublisher] Missing identityId in task:create event');
           return;
         }
 
-        const { task } = event.payload as {
-          task: any; // TaskServerDTO
-        };
+        const { task } = payload;
 
-        await this.handleTaskCreated(event.identityId, task);
+        if (!task) {
+          console.error('❌ [ScheduleEventPublisher] Missing task in task:create event');
+          return;
+        }
+
+        await this.handleTaskCreated(payload.identityId, task);
       } catch (error) {
         console.error('❌ [ScheduleEventPublisher] Error handling task:create:', error);
       }
@@ -246,38 +278,27 @@ export class ScheduleEventPublisher {
      */
     this.onAny('task:delete', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{
+          identityId?: string;
+          taskTemplateId?: string;
+          task?: TaskTemplateServerDTO;
+        }>(event);
+        if (!payload.identityId) {
           console.error('❌ [ScheduleEventPublisher] Missing identityId in task:delete event');
           return;
         }
 
-        await this.handleTaskDeleted(event.identityId, event.aggregateId);
-      } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling task:delete:', error);
-      }
-    });
-
-    this.onAny('task:template:deleted', async (event: any) => {
-      try {
-        if (!event.identityId) {
-          console.error(
-            '❌ [ScheduleEventPublisher] Missing identityId in task:template:deleted event',
-          );
-          return;
-        }
-
-        const taskTemplateId =
-          event.taskTemplateId ?? event.aggregateId ?? event.payload?.taskTemplateId;
+        const taskTemplateId = payload.taskTemplateId ?? payload.task?.id;
         if (!taskTemplateId) {
           console.error(
-            '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:template:deleted event',
+            '❌ [ScheduleEventPublisher] Missing taskTemplateId in task:delete event',
           );
           return;
         }
 
-        await this.handleTaskDeleted(event.identityId, taskTemplateId);
+        await this.handleTaskDeleted(payload.identityId, taskTemplateId);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling task:template:deleted:', error);
+        console.error('❌ [ScheduleEventPublisher] Error handling task:delete:', error);
       }
     });
 
@@ -287,34 +308,27 @@ export class ScheduleEventPublisher {
      * 监听 Reminder 创建事件
      */
     this.onAny('reminder:template:created', async (event: any) => {
-      console.log('🎯 [ScheduleEventPublisher] Received reminder:template:created event:', {
-        identityId: event.identityId,
-        aggregateId: event.aggregateId,
-        hasPayload: !!event.payload,
-        hasReminder: !!(event.payload as any)?.reminder,
-      });
-
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{
+          identityId?: string;
+          reminder?: any;
+          reminderData?: any;
+        }>(event);
+        if (!payload.identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in reminder:template:created event',
           );
           return;
         }
 
-        const { reminder } = event.payload as {
-          reminder: any; // ReminderServerDTO
-        };
+        const reminder = payload.reminder ?? payload.reminderData;
 
         if (!reminder) {
-          console.error(
-            '❌ [ScheduleEventPublisher] Missing reminder in event payload',
-            event.payload,
-          );
+          console.error('❌ [ScheduleEventPublisher] Missing reminder in reminder:template:created event');
           return;
         }
 
-        await this.handleReminderCreated(event.identityId, reminder);
+        await this.handleReminderCreated(payload.identityId, reminder);
       } catch (error) {
         console.error(
           '❌ [ScheduleEventPublisher] Error handling reminder:template:created:',
@@ -328,14 +342,20 @@ export class ScheduleEventPublisher {
      */
     this.onAny('reminder:template:updated', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{
+          identityId?: string;
+          template?: any;
+          reminder?: any;
+          reminderData?: any;
+        }>(event);
+        if (!payload.identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in reminder:template:updated event',
           );
           return;
         }
 
-        const { template } = event.payload as { template: any };
+        const template = payload.template ?? payload.reminder ?? payload.reminderData;
 
         if (!template) {
           console.error(
@@ -345,7 +365,7 @@ export class ScheduleEventPublisher {
         }
 
         // 使用事件携带的完整数据更新调度
-        await this.handleReminderUpdated(event.identityId, template);
+        await this.handleReminderUpdated(payload.identityId, template);
       } catch (error) {
         console.error(
           '❌ [ScheduleEventPublisher] Error handling reminder:template:updated:',
@@ -359,7 +379,10 @@ export class ScheduleEventPublisher {
      */
     this.onAny('reminder:template:enabled', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{ identityId?: string; templateId?: string; reminder?: any }>(
+          event,
+        );
+        if (!payload.identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in reminder:template:enabled event',
           );
@@ -367,7 +390,15 @@ export class ScheduleEventPublisher {
         }
 
         // 启用时：恢复调度任务
-        await this.resumeTasksBySource(event.identityId, SourceModule.Reminder, event.aggregateId);
+        const reminderId = payload.templateId ?? payload.reminder?.id;
+        if (!reminderId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing templateId in reminder:template:enabled event',
+          );
+          return;
+        }
+
+        await this.resumeTasksBySource(payload.identityId, SourceModule.Reminder, reminderId);
       } catch (error) {
         console.error(
           '❌ [ScheduleEventPublisher] Error handling reminder:template:enabled:',
@@ -381,7 +412,10 @@ export class ScheduleEventPublisher {
      */
     this.onAny('reminder:template:paused', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{ identityId?: string; templateId?: string; reminder?: any }>(
+          event,
+        );
+        if (!payload.identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in reminder:template:paused event',
           );
@@ -389,7 +423,15 @@ export class ScheduleEventPublisher {
         }
 
         // 禁用时：暂停调度任务
-        await this.pauseTasksBySource(event.identityId, SourceModule.Reminder, event.aggregateId);
+        const reminderId = payload.templateId ?? payload.reminder?.id;
+        if (!reminderId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing templateId in reminder:template:paused event',
+          );
+          return;
+        }
+
+        await this.pauseTasksBySource(payload.identityId, SourceModule.Reminder, reminderId);
       } catch (error) {
         console.error(
           '❌ [ScheduleEventPublisher] Error handling reminder:template:paused:',
@@ -403,14 +445,25 @@ export class ScheduleEventPublisher {
      */
     this.onAny('reminder:template:deleted', async (event: any) => {
       try {
-        if (!event.identityId) {
+        const payload = this.getEventPayload<{ identityId?: string; templateId?: string; reminderId?: string; reminder?: any }>(
+          event,
+        );
+        if (!payload.identityId) {
           console.error(
             '❌ [ScheduleEventPublisher] Missing identityId in reminder:template:deleted event',
           );
           return;
         }
 
-        await this.handleReminderDeleted(event.identityId, event.aggregateId);
+        const reminderId = payload.templateId ?? payload.reminderId ?? payload.reminder?.id;
+        if (!reminderId) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing templateId in reminder:template:deleted event',
+          );
+          return;
+        }
+
+        await this.handleReminderDeleted(payload.identityId, reminderId);
       } catch (error) {
         console.error(
           '❌ [ScheduleEventPublisher] Error handling reminder:template:deleted:',
@@ -896,7 +949,6 @@ export class ScheduleEventPublisher {
       'task:delete',
       'task:template:paused',
       'task:template:resumed',
-      'task:template:deleted',
       'task:template:schedule-time-changed',
       'task:template:recurrence-changed',
       // Reminder 模块事件

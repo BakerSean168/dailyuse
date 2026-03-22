@@ -15,7 +15,6 @@ import type {
   TaskTemplateStatus as TaskTemplateStatusType,
 } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { eventBus } from '@dailyuse/utils';
 import type { Result } from '@dailyuse/contracts/result';
 import { ok } from '@dailyuse/contracts/result';
 
@@ -94,17 +93,6 @@ export class ListTaskTemplates {
         if (instances.length > 0) {
           await this.instanceRepository.saveMany(instances);
           await this.templateRepository.save(template);
-
-          eventBus.send('task:instances:generated' as any, {
-            eventType: 'task:instances:generated',
-            aggregateId: template.id,
-            identityId: template.identityId,
-            payload: {
-              templateId: template.id,
-              templateTitle: template.title,
-              instanceCount: instances.length,
-            },
-          });
         }
       }
     } catch (error) {

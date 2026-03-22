@@ -6,6 +6,7 @@ import type {
   NotificationServerDTO,
   NotificationActionDTO,
   NotificationMetadataDTO,
+  NotificationEventMap,
 } from '@dailyuse/contracts/notification';
 import type { IdentityId } from '@dailyuse/contracts/primitives';
 import {
@@ -142,8 +143,18 @@ export class Notification extends AggregateRoot<NotificationId> {
       throw new Error('只能发送待发送状态的通知');
     }
 
+    const previousStatus = this._props.status;
     this._props.status = NotificationStatus.Sent;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<NotificationEventMap['notification:send']>('notification:send', {
+      identityId: String(this._props.identityId),
+      notificationId: String(this.id),
+      notification: this.toServerDTO(),
+      channelTypes: this._props.notificationChannels.map((channel) => channel.channelType),
+      sentAt: this._props.updatedAt.getTime(),
+    });
+    this.emitStatusChanged(previousStatus, this._props.status);
 
     logger.info('✅ [聚合根] 通知已标记为已发送', {
       id: String(this.id),
@@ -155,26 +166,39 @@ export class Notification extends AggregateRoot<NotificationId> {
     if (this._props.status !== NotificationStatus.Sent) {
       throw new Error('只能将已发送状态的通知标记为已送达');
     }
+    const previousStatus = this._props.status;
     this._props.status = NotificationStatus.Delivered;
     this._props.updatedAt = new Date();
+    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
   public markAsRead(): void {
     if (this._props.isRead) return;
 
+    const previousStatus = this._props.status;
     this._props.isRead = true;
     this._props.readAt = Date.now();
     this._props.status = NotificationStatus.Read;
     this._props.updatedAt = new Date();
+
+    this.addDomainEvent<NotificationEventMap['notification:read']>('notification:read', {
+      identityId: String(this._props.identityId),
+      notificationId: String(this.id),
+      notification: this.toServerDTO(),
+      readAt: this._props.readAt,
+    });
+    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
   public markAsUnread(): void {
     if (!this._props.isRead) return;
 
+    const previousStatus = this._props.status;
     this._props.isRead = false;
     this._props.readAt = null;
     this._props.status = NotificationStatus.Delivered;
     this._props.updatedAt = new Date();
+    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
   public cancel(): void {
@@ -185,13 +209,34 @@ export class Notification extends AggregateRoot<NotificationId> {
       throw new Error('无法取消：通知已交付或已读');
     }
 
+    const previousStatus = this._props.status;
     this._props.status = NotificationStatus.Cancelled;
     this._props.updatedAt = new Date();
+    this.emitStatusChanged(previousStatus, this._props.status);
   }
 
   public markAsFailed(): void {
+    const previousStatus = this._props.status;
     this._props.status = NotificationStatus.Failed;
     this._props.updatedAt = new Date();
+    this.emitStatusChanged(previousStatus, this._props.status);
+  }
+
+  public softDelete(): void {
+    if (this._props.deletedAt) {
+      return;
+    }
+
+    this._props.deletedAt = new Date();
+    this._props.updatedAt = new Date();
+
+    this.addDomainEvent<NotificationEventMap['notification:delete']>('notification:delete', {
+      identityId: String(this._props.identityId),
+      notificationId: String(this.id),
+      notification: this.toServerDTO(),
+      isSoftDelete: true,
+      deletedAt: this._props.deletedAt.getTime(),
+    });
   }
 
   public isPending(): boolean {
@@ -298,6 +343,32 @@ export class Notification extends AggregateRoot<NotificationId> {
       status: notification.status,
     });
 
+    notification.addDomainEvent<NotificationEventMap['notification:create']>('notification:create', {
+      identityId: String(notification.identityId),
+      notificationId: String(notification.id),
+      notification: notification.toServerDTO(),
+    });
+
     return notification;
+  }
+
+  private emitStatusChanged(
+    previousStatus: NotificationStatus,
+    newStatus: NotificationStatus,
+  ): void {
+    if (previousStatus === newStatus) {
+      return;
+    }
+
+    this.addDomainEvent<NotificationEventMap['notification:status-change']>(
+      'notification:status-change',
+      {
+        identityId: String(this._props.identityId),
+        notificationId: String(this.id),
+        notification: this.toServerDTO(),
+        previousStatus,
+        newStatus,
+      },
+    );
   }
 }

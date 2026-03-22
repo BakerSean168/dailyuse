@@ -1,13 +1,9 @@
-/**
- * Goal Deleted Event
- * 
- * Triggered when: Goal is deleted
- * Subscribers: Cleanup services, Audit log, Goal folder stats
- * 
- * Note: aggregateId (goalId) is automatically set by the domain event system.
- * Note: occurredAt timestamp is automatically set by the domain event system.
- */
+import type { GoalServerDTO } from '../../aggregates';
+
 export interface GoalDeletedEvent {
-  /** Whether this is a soft delete */
+  identityId: string;
+  goalId: string;
+  goal: GoalServerDTO;
   isSoftDelete: boolean;
+  deletedAt: number;
 }

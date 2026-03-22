@@ -5,7 +5,6 @@
  */
 
 import type { IReminderTemplateRepository } from '@/domain-server/repositories/IReminderTemplateRepository';
-import { eventBus } from '@dailyuse/utils';
 import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
 
 /**
@@ -14,7 +13,7 @@ import { ReminderPolicy } from '@/domain-server/services/ReminderPolicy';
 export class DeleteReminderTemplate {
   constructor(private readonly templateRepository: IReminderTemplateRepository) {}
 
-  async execute(id: string, identityId: string): Promise<void> {
+  async execute(id: string, _identityId: string): Promise<void> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       return; // 幂等性
@@ -25,19 +24,5 @@ export class DeleteReminderTemplate {
 
     template.softDelete();
     await this.templateRepository.save(template);
-
-    // 发布删除事件
-    try {
-      eventBus.send(
-        'reminder:template:deleted' as any,
-        {
-          reminderId: id,
-          identityId: identityId,
-          deletedAt: Date.now(),
-        } as any,
-      );
-    } catch (error) {
-      console.error(`❌ [DeleteReminderTemplate] 发布删除事件失败:`, error);
-    }
   }
 }

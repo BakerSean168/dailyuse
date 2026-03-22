@@ -6,6 +6,9 @@ export class ReminderTemplateEnabledHandler {
 
   async handle(event: ReminderBusEvent<ReminderTemplateEnabledPayload>): Promise<void> {
     await this.support.emitTemplateRefresh(event, 'template-enabled');
-    await this.support.enableScheduleTaskForReminder(event.aggregateId);
+    const templateId = this.support.resolveTemplateId(event);
+    if (templateId) {
+      await this.support.enableScheduleTaskForReminder(templateId);
+    }
   }
 }

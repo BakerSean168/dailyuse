@@ -27,6 +27,7 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import { IdentityId } from '@dailyuse/domain-shared';
 import { FocusSessionId, GoalId } from '../../domain-shared';
+import type { GoalEventMap } from '@dailyuse/contracts/goal';
 import { FocusSessionStatus } from '@dailyuse/contracts/goal';
 import type {
   FocusSessionServerDTO,
@@ -186,9 +187,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
       deletedAt: null,
     });
 
-    session.addDomainEvent('focus-session:created', {
-      goalId: params.goalId ?? null,
-    });
+    session.emitStarted();
 
     return session;
   }
@@ -218,7 +217,7 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     this._props.startedAt = now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent('focus-session:started', {});
+    this.emitStarted();
   }
 
   /**
@@ -228,13 +227,23 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     if (this._props.status !== FocusSessionStatus.Active) {
       throw new Error('只能暂停活跃的专注周期');
     }
+    if (this._props.pausedAt !== null) {
+      throw new Error('专注周期已暂停');
+    }
 
     const now = new Date();
     this._props.pausedAt = now;
     this._props.pauseCount += 1;
     this._props.updatedAt = now;
 
-    this.addDomainEvent('focus-session:paused', {});
+    this.addDomainEvent<GoalEventMap['goal:focus-session-pause']>('goal:focus-session-pause', {
+      identityId: this._props.identityId,
+      sessionId: this.id,
+      goalId: this._props.goalId,
+      session: this.toServerDTO(),
+      pausedAt: now.getTime(),
+      pauseCount: this._props.pauseCount,
+    });
   }
 
   /**
@@ -253,9 +262,17 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
 
     this._props.pausedDurationMinutes += pauseDurationMinutes;
     this._props.pausedAt = null;
+    this._props.resumedAt = now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent('focus-session:resumed', {});
+    this.addDomainEvent<GoalEventMap['goal:focus-session-resume']>('goal:focus-session-resume', {
+      identityId: this._props.identityId,
+      sessionId: this.id,
+      goalId: this._props.goalId,
+      session: this.toServerDTO(),
+      resumedAt: now.getTime(),
+      pausedDurationMinutes: this._props.pausedDurationMinutes,
+    });
   }
 
   /**
@@ -279,9 +296,17 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
 
     this._props.status = FocusSessionStatus.Completed;
     this._props.pausedAt = null;
+    this._props.completedAt = now;
     this._props.updatedAt = now;
 
-    this.addDomainEvent('focus-session:completed', {
+    this.addDomainEvent<GoalEventMap['goal:focus-session-complete']>('goal:focus-session-complete', {
+      identityId: this._props.identityId,
+      sessionId: this.id,
+      goalId: this._props.goalId,
+      session: this.toServerDTO(),
+      completedAt: now.getTime(),
+      actualDurationMinutes: this._props.actualDurationMinutes,
+      pausedDurationMinutes: this._props.pausedDurationMinutes,
       duration: this._props.actualDurationMinutes * 60 * 1000,
     });
   }
@@ -300,7 +325,13 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     this._props.pausedAt = null;
     this._props.updatedAt = now;
 
-    this.addDomainEvent('focus-session:cancelled', {});
+    this.addDomainEvent<GoalEventMap['goal:focus-session-cancel']>('goal:focus-session-cancel', {
+      identityId: this._props.identityId,
+      sessionId: this.id,
+      goalId: this._props.goalId,
+      session: this.toServerDTO(),
+      cancelledAt: now.getTime(),
+    });
   }
 
   /**
@@ -394,6 +425,20 @@ export class FocusSession extends AggregateRoot<FocusSessionId> {
     const progress =
       ((this._props.durationMinutes - this.remainingMinutes) / this._props.durationMinutes) * 100;
     return Math.round(Math.max(0, Math.min(100, progress)));
+  }
+
+  private emitStarted(): void {
+    if (this._props.startedAt === null) {
+      throw new Error('开始时间不存在，无法发送开始事件');
+    }
+
+    this.addDomainEvent<GoalEventMap['goal:focus-session-start']>('goal:focus-session-start', {
+      identityId: this._props.identityId,
+      sessionId: this.id,
+      goalId: this._props.goalId,
+      session: this.toServerDTO(),
+      startedAt: this._props.startedAt.getTime(),
+    });
   }
 
   private calculateActualDurationMinutes(completedAt: Date): number {

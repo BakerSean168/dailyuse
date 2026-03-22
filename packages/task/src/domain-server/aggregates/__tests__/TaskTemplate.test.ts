@@ -389,7 +389,7 @@ describe('TaskTemplate Aggregate', () => {
         ).toThrow(InvalidTaskTemplateStateError);
       });
 
-      it('should emit task:create domain event', () => {
+      it('should emit task:create during aggregate construction', () => {
         const template = TaskTemplate.create({
           identityId: makeIdentityId(),
           title: 'Task',
@@ -398,10 +398,13 @@ describe('TaskTemplate Aggregate', () => {
         });
 
         const events = template.domainEvents;
-        expect(events.length).toBeGreaterThanOrEqual(1);
         const createEvent = events.find((e) => e.eventType === 'task:create');
         expect(createEvent).toBeDefined();
-        expect(createEvent!.payload).toHaveProperty('templateId', template.id);
+        expect(createEvent?.payload).toMatchObject({
+          identityId: template.identityId,
+          templateId: template.id,
+          goalId: null,
+        });
       });
     });
 
@@ -2090,9 +2093,9 @@ describe('TaskTemplate Aggregate', () => {
         timeConfig: makeAllDayTimeConfig(),
       });
 
-      // create() emits task:create
       const events = template.pullDomainEvents();
-      expect(events.length).toBeGreaterThanOrEqual(1);
+      expect(events).toHaveLength(1);
+      expect(events[0]?.eventType).toBe('task:create');
 
       // After pull, events should be cleared
       expect(template.domainEvents).toHaveLength(0);

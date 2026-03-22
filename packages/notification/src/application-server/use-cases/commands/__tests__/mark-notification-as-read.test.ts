@@ -33,9 +33,9 @@ describe('MarkNotificationAsRead', () => {
 
     notificationRepo = createMockRepo<INotificationRepository>({
       save: vi.fn().mockResolvedValue(undefined),
+      saveMany: vi.fn().mockResolvedValue(undefined),
       findById: vi.fn(),
-      markManyAsRead: vi.fn().mockResolvedValue(undefined),
-      markAllAsRead: vi.fn().mockResolvedValue(undefined),
+      findUnread: vi.fn().mockResolvedValue([]),
     });
 
     useCase = new MarkNotificationAsRead(notificationRepo);
@@ -81,28 +81,42 @@ describe('MarkNotificationAsRead', () => {
   });
 
   describe('executeMany()', () => {
-    it('should delegate to repository markManyAsRead', async () => {
-      const ids = ['id-1', 'id-2', 'id-3'];
+    it('should mark found notifications as read and save them', async () => {
+      const notifications = [
+        aDeliveredNotification(),
+        aDeliveredNotification(),
+        aDeliveredNotification(),
+      ];
+      const ids = notifications.map((notification) => String(notification.id));
+      vi.mocked(notificationRepo.findById)
+        .mockResolvedValueOnce(notifications[0])
+        .mockResolvedValueOnce(notifications[1])
+        .mockResolvedValueOnce(notifications[2]);
 
       await useCase.executeMany(ids);
 
-      expect(notificationRepo.markManyAsRead).toHaveBeenCalledWith(ids);
+      expect(notificationRepo.saveMany).toHaveBeenCalledTimes(1);
+      expect(notifications.every((notification) => notification.isRead)).toBe(true);
     });
 
     it('should handle empty array', async () => {
       await useCase.executeMany([]);
 
-      expect(notificationRepo.markManyAsRead).toHaveBeenCalledWith([]);
+      expect(notificationRepo.saveMany).toHaveBeenCalledWith([]);
     });
   });
 
   describe('executeAll()', () => {
-    it('should delegate to repository markAllAsRead', async () => {
+    it('should mark unread notifications from the identity and save them', async () => {
       const identityId = anIdentityId();
+      const notifications = [aDeliveredNotification(), aDeliveredNotification()];
+      vi.mocked(notificationRepo.findUnread).mockResolvedValue(notifications);
 
       await useCase.executeAll(identityId);
 
-      expect(notificationRepo.markAllAsRead).toHaveBeenCalledWith(identityId);
+      expect(notificationRepo.findUnread).toHaveBeenCalledWith(identityId);
+      expect(notificationRepo.saveMany).toHaveBeenCalledWith(notifications);
+      expect(notifications.every((notification) => notification.isRead)).toBe(true);
     });
   });
 });

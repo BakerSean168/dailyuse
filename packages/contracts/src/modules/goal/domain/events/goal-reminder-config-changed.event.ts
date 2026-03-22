@@ -1,3 +1,5 @@
+import type { GoalServerDTO } from '../../aggregates';
+
 /**
  * Goal Reminder Config Changed Event
  *
@@ -9,7 +11,7 @@ export interface GoalReminderConfigChangedEvent {
   identityId: string;
 
   /** Updated goal snapshot */
-  goal: any;
+  goal: GoalServerDTO;
 
   /** Changed reminder config fields */
   changes: string[];

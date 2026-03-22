@@ -7,15 +7,6 @@ import type { ITaskInstanceRepository } from '@/domain-server/repositories/ITask
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { ActivateTaskTemplate } from '../activate-task-template';
 
-// Mock eventBus — preserve all real exports (e.g. createIdType) while replacing eventBus
-vi.mock('@dailyuse/utils', async () => {
-  const actual = await vi.importActual<typeof import('@dailyuse/utils')>('@dailyuse/utils');
-  return {
-    ...actual,
-    eventBus: { send: vi.fn() },
-  };
-});
-
 // Mock TaskInstanceGenerationService — provide a constructor mock
 const mockGenerateInstances = vi.fn().mockReturnValue([]);
 vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
@@ -27,8 +18,6 @@ vi.mock('@/domain-server/services/TaskInstanceGenerationService', () => {
     },
   };
 });
-
-import { eventBus } from '@dailyuse/utils';
 
 describe('ActivateTaskTemplate', () => {
   let templateRepo: ReturnType<typeof createMockRepo<ITaskTemplateRepository>>;
@@ -136,37 +125,6 @@ describe('ActivateTaskTemplate', () => {
     if (result.ok) {
       expect(result.data.instancesGenerated).toBe(5);
     }
-  });
-
-  describe('event publishing', () => {
-    it('should publish task:template:resumed event', async () => {
-      const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
-
-      await useCase.execute(template.id);
-
-      expect(eventBus.send).toHaveBeenCalledWith(
-        'task:template:resumed',
-        expect.objectContaining({
-          taskTemplateId: template.id,
-          identityId: template.identityId,
-          resumedAt: expect.any(Number),
-        }),
-      );
-    });
-
-    it('should not fail if event publishing throws', async () => {
-      const template = aLoadedTaskTemplate({ status: TaskTemplateStatus.Paused });
-      vi.mocked(templateRepo.findById).mockResolvedValue(template);
-      vi.mocked(eventBus.send).mockImplementation(() => {
-        throw new Error('Event bus error');
-      });
-
-      const result = await useCase.execute(template.id);
-
-      // Fire-and-forget — should still succeed
-      expect(result).toBeOk();
-    });
   });
 
   it('should return the template client DTO', async () => {

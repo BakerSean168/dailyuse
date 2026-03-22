@@ -27,6 +27,7 @@ describe('NotificationDomainService', () => {
 
     notificationRepo = createMockRepo<INotificationRepository>({
       save: vi.fn().mockResolvedValue(undefined),
+      saveMany: vi.fn().mockResolvedValue(undefined),
       findById: vi.fn(),
       findByIdentityId: vi.fn().mockResolvedValue([]),
       findUnread: vi.fn().mockResolvedValue([]),
@@ -152,26 +153,77 @@ describe('NotificationDomainService', () => {
   });
 
   describe('markManyAsRead()', () => {
-    it('should delegate to repository', async () => {
+    it('should mark found notifications as read and save them', async () => {
+      const notifications = [
+        Notification.create({
+          identityId: testIdentityId,
+          title: 'A',
+          content: 'A',
+          type: NotificationType.Info,
+          category: NotificationCategory.System,
+        }),
+        Notification.create({
+          identityId: testIdentityId,
+          title: 'B',
+          content: 'B',
+          type: NotificationType.Info,
+          category: NotificationCategory.System,
+        }),
+      ];
+      for (const notification of notifications) {
+        await notification.send();
+        notification.markAsDelivered();
+      }
+      vi.mocked(notificationRepo.findById)
+        .mockResolvedValueOnce(notifications[0])
+        .mockResolvedValueOnce(notifications[1]);
+
       await service.markManyAsRead(['id-1', 'id-2']);
 
-      expect(notificationRepo.markManyAsRead).toHaveBeenCalledWith(['id-1', 'id-2']);
+      expect(notificationRepo.saveMany).toHaveBeenCalledWith(notifications);
+      expect(notifications.every((notification) => notification.isRead)).toBe(true);
     });
   });
 
   describe('markAllAsRead()', () => {
-    it('should delegate to repository', async () => {
+    it('should mark unread notifications as read and save them', async () => {
+      const notifications = [
+        Notification.create({
+          identityId: testIdentityId,
+          title: 'A',
+          content: 'A',
+          type: NotificationType.Info,
+          category: NotificationCategory.System,
+        }),
+      ];
+      for (const notification of notifications) {
+        await notification.send();
+        notification.markAsDelivered();
+      }
+      vi.mocked(notificationRepo.findUnread).mockResolvedValue(notifications);
+
       await service.markAllAsRead(testIdentityId);
 
-      expect(notificationRepo.markAllAsRead).toHaveBeenCalledWith(testIdentityId);
+      expect(notificationRepo.findUnread).toHaveBeenCalledWith(testIdentityId);
+      expect(notificationRepo.saveMany).toHaveBeenCalledWith(notifications);
     });
   });
 
   describe('deleteNotification()', () => {
-    it('should soft delete by default', async () => {
+    it('should soft delete by default through the aggregate', async () => {
+      const notification = Notification.create({
+        identityId: testIdentityId,
+        title: 'Test',
+        content: 'Content',
+        type: NotificationType.Info,
+        category: NotificationCategory.System,
+      });
+      vi.mocked(notificationRepo.findById).mockResolvedValue(notification);
+
       await service.deleteNotification('id-1');
 
-      expect(notificationRepo.softDelete).toHaveBeenCalledWith('id-1');
+      expect(notification.deletedAt).toBeInstanceOf(Date);
+      expect(notificationRepo.save).toHaveBeenCalledWith(notification);
     });
 
     it('should hard delete when soft=false', async () => {

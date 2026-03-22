@@ -170,7 +170,9 @@ export const GoalElectronModule: IElectronModule = {
     ipcMain.handle(Ch.KEY_RESULT_ADD, async (_, goalId, dto) =>
       withAuthenticatedValue(ctx, async () => goalController.addKeyResult(goalId, dto)),
     );
-    ipcMain.handle(Ch.KEY_RESULT_LIST, (_, goalId) => goalController.getKeyResults(goalId));
+    ipcMain.handle(Ch.KEY_RESULT_LIST, async (_, goalId) =>
+      withAuthenticatedValue(ctx, async () => goalController.getKeyResults(goalId)),
+    );
     ipcMain.handle(Ch.KEY_RESULT_UPDATE, async (_, goalId, keyResultId, dto) =>
       withAuthenticatedValue(ctx, async () =>
         goalController.updateKeyResult(goalId, keyResultId, dto),
