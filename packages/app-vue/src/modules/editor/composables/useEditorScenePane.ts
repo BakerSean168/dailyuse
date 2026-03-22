@@ -13,7 +13,7 @@ export interface EditorScenePaneController {
 
 export function useEditorScenePane(documentState: ReturnType<typeof useActiveEditorDocument>) {
   const activeDocumentPaneRef = ref<EditorScenePaneController | null>(null);
-  const viewMode = ref<'edit' | 'split' | 'preview'>('split');
+  const viewMode = ref<'source' | 'live' | 'preview'>('live');
   const editorContent = computed({
     get: () => documentState.content.value,
     set: (value: string) => documentState.updateContent(value),
@@ -39,7 +39,7 @@ export function useEditorScenePane(documentState: ReturnType<typeof useActiveEdi
     activeDocumentPaneRef.value?.wrapSelection(prefix, suffix);
   }
 
-  function handleViewModeChange(mode: 'edit' | 'split' | 'preview') {
+  function handleViewModeChange(mode: 'source' | 'live' | 'preview') {
     viewMode.value = mode;
   }
 

@@ -2,6 +2,7 @@
   <div class="flex h-full flex-col">
     <EditorToolbar
       :saving="saving"
+      :view-mode="viewMode"
       @insert-text="emit('insert-text', $event)"
       @insert-resource="emit('insert-resource')"
       @insert-existing-image="emit('insert-existing-image')"
@@ -17,9 +18,11 @@
           <MarkdownEditor
             ref="markdownEditorRef"
             :model-value="content"
+            :view-mode="viewMode === 'preview' ? 'live' : viewMode"
             :placeholder="placeholder"
             @update:model-value="emit('update:content', $event)"
             @change="emit('change', $event)"
+            @link-click="emit('link-click', $event)"
             @paste-files="handlePasteFiles"
             @trigger-suggestion="emit('trigger-suggestion', $event)"
             @close-suggestion="emit('close-suggestion')"
@@ -70,7 +73,7 @@ defineProps<{
   content: string;
   saving: boolean;
   dirty: boolean;
-  viewMode: 'edit' | 'split' | 'preview';
+  viewMode: 'source' | 'live' | 'preview';
   placeholder: string;
   diagnostics: ResourceReferenceUsage[];
   brokenResourceReferences: ResolvedMarkdownResourceReference[];
@@ -89,7 +92,7 @@ const emit = defineEmits<{
   'insert-existing-image': [];
   'export-self-contained': [];
   'wrap-selection': [prefix: string, suffix: string];
-  'view-mode-change': [mode: 'edit' | 'split' | 'preview'];
+  'view-mode-change': [mode: 'source' | 'live' | 'preview'];
   save: [];
   'paste-files': [files: File[], selection: EditorSelectionRange];
   'link-click': [title: string];

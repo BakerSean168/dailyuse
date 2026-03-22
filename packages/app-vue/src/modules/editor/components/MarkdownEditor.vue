@@ -1,16 +1,40 @@
 <template>
-  <div class="flex flex-col w-full h-full">
+  <div class="relative flex h-full w-full flex-col">
     <div ref="editorRef" class="flex-1 overflow-auto" />
+    <div
+      v-if="previewImage"
+      class="absolute inset-0 z-20 flex items-center justify-center bg-background/90 p-6 backdrop-blur-sm"
+      @click="closePreviewImage"
+    >
+      <figure
+        class="flex max-h-full max-w-[min(92vw,72rem)] flex-col gap-3 rounded-2xl border bg-background p-4 shadow-2xl"
+        @click.stop
+      >
+        <img
+          :src="previewImage.src"
+          :alt="previewImage.alt"
+          class="max-h-[75vh] max-w-full rounded-xl object-contain"
+        />
+        <figcaption class="text-sm text-muted-foreground">
+          {{ previewImage.alt }}
+        </figcaption>
+      </figure>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { EditorState, type Extension } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import { getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import { EditorState } from '@codemirror/state';
+import { EditorView, type ViewUpdate } from '@codemirror/view';
+import { createMarkdownEditorExtensions } from '../codemirror/createMarkdownEditorExtensions';
+import { markdownLivePreview } from '../codemirror/markdownLivePreview';
 import { findActiveWikiLinkRange } from '../utils/wikiLinks';
+import { resolveMarkdownResourceReferences } from '../utils/markdownResourceReferences';
 import type { EditorSelectionRange } from '../composables/useResourceInsertion';
+import { useRepositoryResourceGateway } from '../../repository/services/repositoryResourceGateway';
 import { logEditorIssue } from '../../../shared/utils/editorIssueDebug';
+import { REPOSITORY_SERVICE_KEY } from '../../../di/keys';
 
 const props = withDefaults(
   defineProps<{
@@ -18,11 +42,13 @@ const props = withDefaults(
     darkMode?: boolean;
     readonly?: boolean;
     placeholder?: string;
+    viewMode?: 'source' | 'live';
   }>(),
   {
     darkMode: false,
     readonly: false,
     placeholder: '',
+    viewMode: 'live',
   },
 );
 
@@ -30,57 +56,39 @@ const emit = defineEmits<{
   'update:modelValue': [value: string];
   change: [value: string];
   keydown: [event: KeyboardEvent];
+  'link-click': [title: string];
   'trigger-suggestion': [position: { x: number; y: number; query: string }];
   'close-suggestion': [];
   'paste-files': [files: File[], selection: EditorSelectionRange];
 }>();
 
 const editorRef = ref<HTMLElement | null>(null);
+const livePreviewImageSources = shallowRef<ReadonlyMap<string, string>>(new Map());
+const previewImage = ref<{ src: string; alt: string } | null>(null);
+
 let editorView: EditorView | null = null;
+let livePreviewCompartment: ReturnType<typeof createMarkdownEditorExtensions>['livePreviewCompartment'] | null =
+  null;
+let imageSyncRunId = 0;
+let repository: ReturnType<typeof useRepositoryResourceGateway> | null = null;
+const currentInstance = getCurrentInstance();
+const hasRepositoryService = Boolean(
+  currentInstance?.appContext.provides[REPOSITORY_SERVICE_KEY as symbol],
+);
 
-const editorTheme = EditorView.theme({
-  '&': {
-    height: '100%',
-    color: 'hsl(var(--foreground))',
-    backgroundColor: 'hsl(var(--background))',
-  },
-  '.cm-scroller': {
-    overflow: 'auto',
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-    fontSize: '0.875rem',
-    lineHeight: '1.25rem',
-  },
-  '.cm-content': {
-    minHeight: '100%',
-    padding: '1rem',
-    caretColor: 'hsl(var(--foreground))',
-  },
-  '.cm-gutters': {
-    color: 'hsl(var(--foreground))',
-    backgroundColor: 'hsl(var(--background))',
-    border: 'none',
-  },
-  '.cm-activeLine, .cm-activeLineGutter': {
-    backgroundColor: 'hsl(var(--muted) / 0.45)',
-  },
-  '&.cm-focused .cm-cursor, .cm-dropCursor': {
-    borderLeftColor: 'hsl(var(--foreground))',
-  },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-    backgroundColor: 'hsl(var(--primary) / 0.28)',
-  },
-  '.cm-line': {
-    lineHeight: '1.625',
-  },
-});
+if (hasRepositoryService) {
+  repository = useRepositoryResourceGateway();
+}
 
-function handleUpdate(content: string) {
+function handleContentChange(content: string) {
   emit('update:modelValue', content);
   emit('change', content);
 }
 
 function emitSuggestionState(view: EditorView | null = editorView) {
-  if (!view) return;
+  if (!view) {
+    return;
+  }
 
   const cursor = view.state.selection.main.from;
   const content = view.state.doc.toString();
@@ -104,12 +112,23 @@ function emitSuggestionState(view: EditorView | null = editorView) {
   });
 }
 
-function handleKeyDown(event: KeyboardEvent) {
-  emit('keydown', event);
+function getSelectionRange(): EditorSelectionRange {
+  if (!editorView) {
+    return { from: 0, to: 0 };
+  }
 
-  setTimeout(() => {
-    emitSuggestionState();
-  }, 0);
+  const { from, to } = editorView.state.selection.main;
+  return { from, to };
+}
+
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && previewImage.value) {
+    previewImage.value = null;
+    return;
+  }
+
+  emit('keydown', event);
+  queueMicrotask(() => emitSuggestionState());
 }
 
 function handlePaste(event: ClipboardEvent) {
@@ -144,30 +163,117 @@ function handlePaste(event: ClipboardEvent) {
   emit('paste-files', files, selection);
 }
 
-function initializeEditor() {
-  if (!editorRef.value) return;
-
-  const extensions: Extension[] = [
-    EditorView.updateListener.of((update) => {
-      if (update.docChanged) {
-        handleUpdate(update.state.doc.toString());
-      }
-
-      if (update.docChanged || update.selectionSet) {
-        emitSuggestionState(update.view);
-      }
-    }),
-    EditorView.lineWrapping,
-    editorTheme,
-  ];
-
-  if (props.readonly) {
-    extensions.push(EditorView.editable.of(false));
+function toggleTaskCheckbox(from: number, to: number, checked: boolean) {
+  if (!editorView || props.readonly) {
+    return;
   }
+
+  const nextValue = checked ? '[ ]' : '[x]';
+  editorView.dispatch({
+    changes: {
+      from,
+      to,
+      insert: nextValue,
+    },
+    selection: { anchor: from + nextValue.length },
+  });
+  editorView.focus();
+}
+
+function handleEditorClick(event: MouseEvent) {
+  const target = event.target instanceof HTMLElement ? event.target : null;
+  if (!target) {
+    return;
+  }
+
+  const previewImageTarget = target.closest<HTMLImageElement>('[data-image-preview-src]');
+  if (previewImageTarget) {
+    event.preventDefault();
+    previewImage.value = {
+      src: previewImageTarget.dataset.imagePreviewSrc ?? previewImageTarget.getAttribute('src') ?? '',
+      alt: previewImageTarget.dataset.imagePreviewAlt ?? previewImageTarget.getAttribute('alt') ?? '',
+    };
+    return;
+  }
+
+  const taskToggle = target.closest<HTMLElement>('[data-task-from][data-task-to]');
+  if (taskToggle) {
+    event.preventDefault();
+    toggleTaskCheckbox(
+      Number(taskToggle.dataset.taskFrom ?? 0),
+      Number(taskToggle.dataset.taskTo ?? 0),
+      taskToggle.dataset.taskChecked === 'true',
+    );
+    return;
+  }
+
+  const codeCopyButton = target.closest<HTMLElement>('[data-code-copy-from][data-code-copy-to]');
+  if (codeCopyButton) {
+    event.preventDefault();
+    void copyCodeBlock(
+      Number(codeCopyButton.dataset.codeCopyFrom ?? 0),
+      Number(codeCopyButton.dataset.codeCopyTo ?? 0),
+    );
+    return;
+  }
+
+  const wikiLink = target.closest<HTMLElement>('[data-wiki-title]');
+  if (wikiLink) {
+    event.preventDefault();
+    emit('link-click', wikiLink.dataset.wikiTitle ?? '');
+  }
+}
+
+async function copyCodeBlock(from: number, to: number) {
+  if (!editorView || Number.isNaN(from) || Number.isNaN(to) || to < from) {
+    return;
+  }
+
+  const code = editorView.state.doc.sliceString(from, to).replace(/\n$/, '');
+  if (!code) {
+    return;
+  }
+
+  await navigator.clipboard?.writeText(code);
+}
+
+function closePreviewImage() {
+  previewImage.value = null;
+}
+
+function handleEditorUpdate(update: ViewUpdate) {
+  if (update.docChanged) {
+    const content = update.state.doc.toString();
+    handleContentChange(content);
+    void syncLivePreviewImages(content);
+  }
+
+  if (update.docChanged || update.selectionSet) {
+    emitSuggestionState(update.view);
+  }
+}
+
+function initializeEditor() {
+  if (!editorRef.value) {
+    return;
+  }
+
+  const configuration = createMarkdownEditorExtensions({
+    placeholderText: props.placeholder,
+    readonly: props.readonly,
+    viewMode: props.viewMode,
+    imageSources: livePreviewImageSources.value,
+    onUpdate: handleEditorUpdate,
+    onKeydown: handleKeyDown,
+    onPaste: handlePaste,
+    onClick: handleEditorClick,
+  });
+
+  livePreviewCompartment = configuration.livePreviewCompartment;
 
   const state = EditorState.create({
     doc: props.modelValue,
-    extensions,
+    extensions: configuration.extensions,
   });
 
   editorView = new EditorView({
@@ -175,45 +281,88 @@ function initializeEditor() {
     parent: editorRef.value,
   });
 
-  editorView.contentDOM.addEventListener('keydown', handleKeyDown);
-  editorView.contentDOM.addEventListener('paste', handlePaste);
-
-  if (props.readonly) {
-    editorView.contentDOM.setAttribute('contenteditable', 'false');
-  }
+  editorView.dom.addEventListener('click', handleEditorClick);
 }
 
 function destroyEditor() {
-  if (editorView) {
-    editorView.contentDOM.removeEventListener('keydown', handleKeyDown);
-    editorView.contentDOM.removeEventListener('paste', handlePaste);
-    editorView.destroy();
-    editorView = null;
+  editorView?.dom.removeEventListener('click', handleEditorClick);
+  editorView?.destroy();
+  editorView = null;
+  livePreviewCompartment = null;
+}
+
+function reconfigureLivePreview() {
+  if (!editorView || !livePreviewCompartment) {
+    return;
   }
+
+  editorView.dispatch({
+    effects: livePreviewCompartment.reconfigure(
+      props.viewMode === 'live'
+        ? markdownLivePreview({ imageSources: livePreviewImageSources.value })
+        : [],
+    ),
+  });
+}
+
+async function syncLivePreviewImages(markdown: string) {
+  const currentRunId = ++imageSyncRunId;
+
+  if (props.viewMode !== 'live') {
+    livePreviewImageSources.value = new Map();
+    reconfigureLivePreview();
+    return;
+  }
+
+  if (!repository) {
+    livePreviewImageSources.value = new Map();
+    reconfigureLivePreview();
+    return;
+  }
+
+  await repository.ensureReady();
+  const references = resolveMarkdownResourceReferences(markdown, repository.resources.value).filter(
+    (reference) => reference.kind === 'image' && reference.isRepositoryReference && reference.resource,
+  );
+  const nextSources = new Map<string, string>();
+
+  for (const reference of references) {
+    if (!reference.resource || nextSources.has(reference.destination)) {
+      continue;
+    }
+
+    try {
+      nextSources.set(reference.destination, await repository.readResourceAsDataUrl(reference.resource));
+    } catch {
+      // Preview falls back to caption-only cards for unresolved local assets.
+    }
+  }
+
+  if (currentRunId !== imageSyncRunId) {
+    return;
+  }
+
+  livePreviewImageSources.value = nextSources;
+  reconfigureLivePreview();
 }
 
 function insertText(text: string) {
-  if (!editorView) return;
+  if (!editorView) {
+    return;
+  }
 
-  const { state } = editorView;
-  const { from, to } = state.selection.main;
-
+  const { from, to } = editorView.state.selection.main;
   editorView.dispatch({
     changes: { from, to, insert: text },
     selection: { anchor: from + text.length },
   });
-
   editorView.focus();
 }
 
-function insertTextAtCursor(text: string) {
-  if (!editorView) return;
-
-  replaceActiveWikiLink(text);
-}
-
 function replaceActiveWikiLink(text: string) {
-  if (!editorView) return;
+  if (!editorView) {
+    return;
+  }
 
   const { state } = editorView;
   const { from, to } = state.selection.main;
@@ -236,8 +385,14 @@ function replaceActiveWikiLink(text: string) {
   emitSuggestionState();
 }
 
+function insertTextAtCursor(text: string) {
+  replaceActiveWikiLink(text);
+}
+
 function wrapSelection(prefix: string, suffix: string) {
-  if (!editorView) return;
+  if (!editorView) {
+    return;
+  }
 
   const { state } = editorView;
   const { from, to } = state.selection.main;
@@ -251,29 +406,20 @@ function wrapSelection(prefix: string, suffix: string) {
       head: from + prefix.length + selectedText.length,
     },
   });
-
   editorView.focus();
 }
 
 function replaceSelection(text: string) {
-  if (!editorView) return;
+  if (!editorView) {
+    return;
+  }
 
-  const { state } = editorView;
-  const { from, to } = state.selection.main;
-
+  const { from, to } = editorView.state.selection.main;
   editorView.dispatch({
     changes: { from, to, insert: text },
     selection: { anchor: from + text.length },
   });
-
   editorView.focus();
-}
-
-function getSelectionRange(): EditorSelectionRange {
-  if (!editorView) return { from: 0, to: 0 };
-
-  const { from, to } = editorView.state.selection.main;
-  return { from, to };
 }
 
 function insertTextAtSelection(text: string, selection?: EditorSelectionRange) {
@@ -297,27 +443,26 @@ function insertTextAtSelection(text: string, selection?: EditorSelectionRange) {
     changes: { from: range.from, to: range.to, insert: text },
     selection: { anchor: range.from + text.length },
   });
-
   editorView.focus();
   emitSuggestionState();
+
   logEditorIssue('editor:insert-at-selection:done', {
     selection: range,
     nextDocumentLength: editorView.state.doc.length,
   });
 }
 
-function getSelection(): string {
-  if (!editorView) return '';
+function getSelection() {
+  if (!editorView) {
+    return '';
+  }
 
-  const { state } = editorView;
-  const { from, to } = state.selection.main;
-  return state.doc.sliceString(from, to);
+  const { from, to } = editorView.state.selection.main;
+  return editorView.state.doc.sliceString(from, to);
 }
 
 function focus() {
-  if (editorView) {
-    editorView.focus();
-  }
+  editorView?.focus();
 }
 
 defineExpose({
@@ -330,12 +475,13 @@ defineExpose({
   getSelectionRange,
   insertTextAtSelection,
   focus,
-  editorView,
+  getEditorView: () => editorView,
 });
 
 onMounted(() => {
   initializeEditor();
   emitSuggestionState();
+  void syncLivePreviewImages(props.modelValue);
 });
 
 onBeforeUnmount(() => {
@@ -344,30 +490,36 @@ onBeforeUnmount(() => {
 
 watch(
   () => props.modelValue,
-  (newValue) => {
-    if (!editorView) return;
+  (nextValue) => {
+    if (!editorView) {
+      return;
+    }
 
     const currentValue = editorView.state.doc.toString();
-    if (newValue !== currentValue) {
-      logEditorIssue('editor:model-sync-overwrite', {
-        incomingLength: newValue.length,
-        currentLength: currentValue.length,
-        incomingPreview: newValue.slice(Math.max(0, newValue.length - 160)),
-        currentPreview: currentValue.slice(Math.max(0, currentValue.length - 160)),
-      });
-      editorView.dispatch({
-        changes: { from: 0, to: currentValue.length, insert: newValue },
-      });
-      emitSuggestionState();
+    if (nextValue === currentValue) {
+      return;
     }
+
+    logEditorIssue('editor:model-sync-overwrite', {
+      incomingLength: nextValue.length,
+      currentLength: currentValue.length,
+      incomingPreview: nextValue.slice(Math.max(0, nextValue.length - 160)),
+      currentPreview: currentValue.slice(Math.max(0, currentValue.length - 160)),
+    });
+
+    editorView.dispatch({
+      changes: { from: 0, to: currentValue.length, insert: nextValue },
+    });
+    emitSuggestionState();
+    void syncLivePreviewImages(nextValue);
   },
 );
 
 watch(
-  () => props.darkMode,
+  () => props.viewMode,
   () => {
-    destroyEditor();
-    initializeEditor();
+    reconfigureLivePreview();
+    void syncLivePreviewImages(editorView?.state.doc.toString() ?? props.modelValue);
   },
 );
 </script>
@@ -375,30 +527,5 @@ watch(
 <style>
 .cm-editor {
   height: 100%;
-}
-
-.cm-line .tok-heading {
-  font-weight: 700;
-  color: hsl(var(--primary));
-}
-
-.cm-line .tok-strong {
-  font-weight: 700;
-}
-
-.cm-line .tok-emphasis {
-  font-style: italic;
-}
-
-.cm-line .tok-link {
-  color: hsl(var(--primary));
-  text-decoration-line: underline;
-}
-
-.cm-line .tok-monospace {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  background-color: hsl(var(--muted));
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
 }
 </style>

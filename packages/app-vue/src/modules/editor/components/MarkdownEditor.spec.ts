@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MarkdownEditor from './MarkdownEditor.vue';
 
 class ResizeObserverMock {
@@ -28,6 +28,15 @@ document.createRange = (() =>
     selectNodeContents: () => {},
     insertNode: () => {},
   }) as unknown as Range) as typeof document.createRange;
+
+beforeEach(() => {
+  Object.defineProperty(globalThis.navigator, 'clipboard', {
+    value: {
+      writeText: vi.fn().mockResolvedValue(undefined),
+    },
+    configurable: true,
+  });
+});
 
 describe('MarkdownEditor', () => {
   it('emits pasted clipboard image files with the current selection', async () => {
@@ -122,6 +131,104 @@ describe('MarkdownEditor', () => {
 
     const updates = wrapper.emitted('update:modelValue');
     expect(updates?.at(-1)?.[0]).toBe('hello daily');
+
+    wrapper.unmount();
+  });
+
+  it('toggles markdown task list items from the live preview checkbox', async () => {
+    const wrapper = mount(MarkdownEditor, {
+      props: {
+        modelValue: '- [ ] ship live preview',
+      },
+      attachTo: document.body,
+    });
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), 0);
+    });
+
+    const checkbox = wrapper.element.querySelector('.cm-md-task-checkbox') as HTMLButtonElement | null;
+    expect(checkbox).not.toBeNull();
+
+    checkbox?.click();
+
+    const updates = wrapper.emitted('update:modelValue');
+    expect(updates?.at(-1)?.[0]).toBe('- [x] ship live preview');
+
+    wrapper.unmount();
+  });
+
+  it('emits link-click when clicking a live preview wiki link chip', async () => {
+    const wrapper = mount(MarkdownEditor, {
+      props: {
+        modelValue: 'See [[Roadmap]] next',
+      },
+      attachTo: document.body,
+    });
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), 0);
+    });
+
+    const wikiChip = wrapper.element.querySelector('[data-wiki-title="Roadmap"]') as HTMLElement | null;
+    expect(wikiChip).not.toBeNull();
+
+    wikiChip?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(wrapper.emitted('link-click')?.at(-1)?.[0]).toBe('Roadmap');
+
+    wrapper.unmount();
+  });
+
+  it('opens an image lightbox when clicking a live preview image', async () => {
+    const wrapper = mount(MarkdownEditor, {
+      props: {
+        modelValue: 'Intro\n![demo](data:image/png;base64,ZmFrZQ==)',
+      },
+      attachTo: document.body,
+    });
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), 0);
+    });
+
+    const image = wrapper.element.querySelector('[data-image-preview-src]') as HTMLImageElement | null;
+    expect(image).not.toBeNull();
+
+    image?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    await wrapper.vm.$nextTick();
+
+    const overlayImage = wrapper.element.querySelector('.z-20 img') as HTMLImageElement | null;
+    expect(overlayImage?.getAttribute('src')).toContain('data:image/png;base64,ZmFrZQ==');
+
+    wrapper.unmount();
+  });
+
+  it('copies fenced code block contents from the live preview header action', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+
+    const wrapper = mount(MarkdownEditor, {
+      props: {
+        modelValue: 'Intro\n```ts\nconst answer = 42;\n```',
+      },
+      attachTo: document.body,
+    });
+
+    await new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), 0);
+    });
+
+    const copyButton = wrapper.element.querySelector('[data-code-copy-from][data-code-copy-to]') as HTMLButtonElement | null;
+    expect(copyButton).not.toBeNull();
+
+    copyButton?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+
+    expect(writeText).toHaveBeenCalledWith('const answer = 42;');
 
     wrapper.unmount();
   });
