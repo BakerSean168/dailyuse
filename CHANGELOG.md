@@ -1,5 +1,61 @@
 # Changelog
 
+## [0.1.0](https://github.com/BakerSean168/dailyuse/compare/v0.0.1...v0.1.0) (2026-03-23)
+
+
+### Features
+
+* add ActiveDocumentPane component to RepositoryWorkspaceView ([81759d3](https://github.com/BakerSean168/dailyuse/commit/81759d31ffb3918f58aa679ac8856bf2e57eec87))
+* add tests for resource deletion and mutations ([958f517](https://github.com/BakerSean168/dailyuse/commit/958f517144313a91a294eda18fec8771e337581b))
+* implement dashboard data aggregation and related services ([afe3773](https://github.com/BakerSean168/dailyuse/commit/afe377321a4c143165d1480a46ee02aa3f64ad55))
+* implement Prisma repositories for editor sessions and tabs ([c9dbd53](https://github.com/BakerSean168/dailyuse/commit/c9dbd53f724c04d5ddf363f6506c2179f9a2749b))
+* **reminder:** add user preferences management and update template/group handling ([14ffe5c](https://github.com/BakerSean168/dailyuse/commit/14ffe5cf52bcf8fd34bf44cce432cdfd023def1c))
+* unify sidebar creation and repository tree actions ([7ed2513](https://github.com/BakerSean168/dailyuse/commit/7ed25133154bcad23ad6fdc2b14aac251edf39d0))
+* update identity IDs in tests and services for consistency ([969715e](https://github.com/BakerSean168/dailyuse/commit/969715e55c0c71ea5d952111429f3256f9311840))
+* 任务和目标联动 ([aa5886f](https://github.com/BakerSean168/dailyuse/commit/aa5886f58a1b4bdff574c48ab6fdd331d486a00a))
+* 实现确实的功能，优化领域事件架构 ([72b738c](https://github.com/BakerSean168/dailyuse/commit/72b738c63ac530c0cd0c6c50c1128d3c3b77caae))
+
+
+### Bug Fixes
+
+* action release ([21a6cd2](https://github.com/BakerSean168/dailyuse/commit/21a6cd28fe2031a5f73e31c472a30892d36ee25f))
+* action1 ([022804e](https://github.com/BakerSean168/dailyuse/commit/022804e23976cb80ccce92cfd1d06d5e4b6ad2ce))
+* action1 ([bc7649b](https://github.com/BakerSean168/dailyuse/commit/bc7649b595c33ae0660b3752d21bfe254ad08c12))
+* action2 ([a450e61](https://github.com/BakerSean168/dailyuse/commit/a450e61523e37bc3fe18eead09e54286720a35ee))
+* **auth:** resolve guest id validation error and update logout warning ([e25da64](https://github.com/BakerSean168/dailyuse/commit/e25da642233979e21622fcc6a939474071b1845e))
+* **ci:** resolve governance lint and typecheck regressions ([5f27d1f](https://github.com/BakerSean168/dailyuse/commit/5f27d1f3da9e8a760cd6eff2d28dcab6b41510bd))
+* Desktop 访客模式仓库笔记创建后无法打开问题复盘 ([db47c12](https://github.com/BakerSean168/dailyuse/commit/db47c122f22490a3fd287d457cf86c2e9aa46249))
+* **editor:** resolve disabled new note button and unresponsive note opening ([71898c0](https://github.com/BakerSean168/dailyuse/commit/71898c051067a66dbccd512bc833fbe6096fe2e0))
+* goal  模块国际化，keyresult创建，值，创建复盘等的优化 ([115787e](https://github.com/BakerSean168/dailyuse/commit/115787e02b27101b1545657ae1a5a02550709a6c))
+* identityId ([de0af1a](https://github.com/BakerSean168/dailyuse/commit/de0af1a897bf853c42f966b17cfd176c65fd45e7))
+* refactor pause functionality to delete incomplete instances and update related tests ([5870d95](https://github.com/BakerSean168/dailyuse/commit/5870d954338d91d5b0f4437fdffbfe2479d1ad26))
+* release ([bb66691](https://github.com/BakerSean168/dailyuse/commit/bb666917a7bdf960906909a7ca2fac01cc3c8092))
+* resolve disabled new note button and unresponsive note opening ([e1ee5ba](https://github.com/BakerSean168/dailyuse/commit/e1ee5baa0fadd91279428dcdb1731c2868ddda4a))
+* resolve guest id validation error and update logout warning ([e44dcc7](https://github.com/BakerSean168/dailyuse/commit/e44dcc7b4681ca2177db6a84747c2da15d60245e))
+* **typecheck:** restore workspace package resolution for CI ([001ae00](https://github.com/BakerSean168/dailyuse/commit/001ae00da68a02e6643904111209da2f0c7cfe5e))
+* **ui:** remove duplicate type fields and resolve id prefix warnings ([2f41d6a](https://github.com/BakerSean168/dailyuse/commit/2f41d6a020fdb246f1aae7ed9e71914fedf648c0))
+* **ui:** remove duplicate type fields and resolve id prefix warnings ([9e5ce5a](https://github.com/BakerSean168/dailyuse/commit/9e5ce5af7378f13b31d46b028d2b6706d936f5f3))
+* update tab management and improve ActionableWrapper usage for better responsiveness ([20b452a](https://github.com/BakerSean168/dailyuse/commit/20b452a3821a505fc02f0be13aad8f978efa72a5))
+* 修复 goal card 的 krs显示 0/0 问题 ([0bd03f7](https://github.com/BakerSean168/dailyuse/commit/0bd03f7fd54a81d551e368938e42e7dfc84bb598))
+* 修复 identity问题 ([7c8b933](https://github.com/BakerSean168/dailyuse/commit/7c8b933a45cda04104b9a856339f2dd1704d16f3))
+* 修复 schedule 中任务实例完成后报错的错误，还有统计信息错误的问题 ([7f910ce](https://github.com/BakerSean168/dailyuse/commit/7f910cef0b0c65aa959daad09643b7de42d2e0e2))
+* 修复desktop identityId导致问题 ([4edd4ac](https://github.com/BakerSean168/dailyuse/commit/4edd4accf1902c523f82e4c3de4da4fab32ee12d))
+* 修复desktop源码引用路径错误问题 ([c66aae1](https://github.com/BakerSean168/dailyuse/commit/c66aae11df3d958609e0b579c7f11bd471ef33ba))
+* 修复goal传入 identity问题 ([466cf01](https://github.com/BakerSean168/dailyuse/commit/466cf013964f02604a1fd0b6b2270ce4a417e8e1))
+* 修复reminder模块数据格式不对其问题，并收缩相关的数据类型定义 ([2678d7c](https://github.com/BakerSean168/dailyuse/commit/2678d7cf2eb77c8bc6044225037e82761a3f116b))
+* 修复tab 不能正确切换的问题 ([d5072de](https://github.com/BakerSean168/dailyuse/commit/d5072def73428212ed05930f02ac1f7376eb61e4))
+* 修复进入不了主页面问题 ([4f7efa2](https://github.com/BakerSean168/dailyuse/commit/4f7efa27470b1932f00f8b3d023d8ab9b5afa611))
+* 初始实现编辑器功能 ([935363e](https://github.com/BakerSean168/dailyuse/commit/935363e823bf4982144fe9ca6016f8a0aa22797f))
+* 本地登录的id问题 ([f34ba06](https://github.com/BakerSean168/dailyuse/commit/f34ba06674fa56761bd34c55d5d14dc0bf09a1db))
+* 统一和修复reminder 的表单无法滚动问题 ([9f26b05](https://github.com/BakerSean168/dailyuse/commit/9f26b05dd4cde0779e9e8a1ad4ec64b414573a56))
+
+
+### Performance Improvements
+
+* 使用自定义的标题栏按钮，而非electron原生按钮 ([aa23345](https://github.com/BakerSean168/dailyuse/commit/aa233452f88df0838b60c06b5101428d421518b1))
+* 添加goal调试代码 ([ebc27a5](https://github.com/BakerSean168/dailyuse/commit/ebc27a57acaf100eea5466889653bd9b76be0095))
+* 补充实现，优化旧代码 ([157941e](https://github.com/BakerSean168/dailyuse/commit/157941e04b20de0106714fddb1229527db0fa810))
+
 ## [0.0.1](https://github.com/BakerSean168/dailyuse/compare/v0.0.1...v0.0.1) (2026-03-13)
 
 
